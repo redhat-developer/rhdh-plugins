@@ -102,6 +102,17 @@ describe('validateConnectorStartupConfig', () => {
       ).toThrow(/Credential field 'auth.token' is invalid/);
     });
 
+    it('rejects whitespace-only credential values', () => {
+      const config = new ConfigReader({
+        auth: { token: '   ' },
+      });
+      expect(() =>
+        validateConnectorStartupConfig(config, {
+          credentialFields: ['auth.token'],
+        }),
+      ).toThrow(/Credential field 'auth.token' is invalid/);
+    });
+
     it('allows missing credential fields (optional)', () => {
       const config = new ConfigReader({});
       expect(() =>

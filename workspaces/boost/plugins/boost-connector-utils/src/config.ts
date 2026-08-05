@@ -34,8 +34,11 @@ export function isConnectorEnabled(connectorConfig: Config): boolean {
 
 /**
  * Validate connector startup configuration. Checks that credential
- * fields use Backstage `$env` references (not plaintext) and that
- * the endpoint URL is a valid HTTPS URL.
+ * fields are non-empty when present and that the endpoint URL is a
+ * valid HTTPS URL. Prefer backing credentials with
+ * `{ $env: "ENV_VAR_NAME" }` mounted from K8s Secrets — Backstage
+ * resolves `$env` at config-load time, so this function cannot
+ * distinguish plaintext from resolved secret values.
  *
  * Throws a descriptive error on the first validation failure,
  * suitable for use in backend module `init()`.
@@ -49,7 +52,7 @@ export function validateConnectorStartupConfig(
   connectorConfig: Config,
   options: ValidateConnectorStartupConfigOptions,
 ): void {
-  // Validate credential fields use $env references (not plaintext strings)
+  // Validate credential fields are non-empty when present
   for (const field of options.credentialFields) {
     validateCredentialField(connectorConfig, field);
   }
@@ -77,17 +80,25 @@ function validateCredentialField(config: Config, field: string): void {
     return;
   }
 
-  // Backstage's ConfigReader.getOptionalString() throws on empty
-  // strings and object values, so we catch and re-throw with a
-  // descriptive message pointing the deployer to $env usage.
-  try {
-    config.getOptionalString(field);
-  } catch {
-    throw new Error(
+  const invalidCredentialError = () =>
+    new Error(
       `Credential field '${field}' is invalid. ` +
         `Use { $env: "ENV_VAR_NAME" } backed by mounted K8s Secrets. ` +
         `Example: ${field}: { $env: "${toEnvVarName(field)}" }`,
     );
+
+  // Backstage's ConfigReader.getOptionalString() throws on empty
+  // strings and object values, so we catch and re-throw with a
+  // descriptive message pointing the deployer to $env usage.
+  let value: string | undefined;
+  try {
+    value = config.getOptionalString(field);
+  } catch {
+    throw invalidCredentialError();
+  }
+
+  if (value !== undefined && value.trim() === '') {
+    throw invalidCredentialError();
   }
 }
 

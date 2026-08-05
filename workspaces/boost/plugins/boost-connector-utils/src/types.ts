@@ -58,7 +58,8 @@ export interface ConnectorErrorContext {
 export interface ValidateConnectorStartupConfigOptions {
   /**
    * Config keys (relative to the connector Config subtree) that hold
-   * credential values and must use Backstage `$env` references.
+   * credential values. Validated as non-empty when present; prefer
+   * Backstage `$env` references backed by K8s Secrets.
    * Example: `['auth.token', 'auth.clientSecret']`
    */
   credentialFields: string[];

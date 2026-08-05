@@ -5,7 +5,7 @@ Shared utilities for Boost AI catalog connector entity providers. Provides:
 - **CA bundle resolution** — load custom CA certificates from file paths or `$env` references for air-gapped HTTPS
 - **Fault isolation** — wrap entity providers to catch crashes without taking down the catalog backend
 - **Enable/disable** — guard connector registration based on config
-- **Startup validation** — reject plaintext credentials and invalid endpoint URLs at startup
+- **Startup validation** — reject empty credentials and invalid endpoint URLs at startup
 
 ## Installation
 
@@ -56,6 +56,7 @@ ai-catalog:
 - Certificate chains (multiple concatenated PEM blocks) → returned as-is
 - No `tls` block → returns `undefined` (uses system CA)
 - Expired certificates are **not** checked at load time — they surface at TLS handshake time and are caught by the fault isolation wrapper
+- `createHttpsAgent(caBundle)` passes `ca` to `https.Agent`, which **replaces** the default Mozilla CA store — concatenate PEMs when both public and private trust are needed
 
 > **Note:** For process-wide CA trust, set `NODE_EXTRA_CA_CERTS` in the container environment. This is outside the scope of per-connector config.
 
@@ -185,7 +186,9 @@ validateConnectorStartupConfig(connectorConfig, {
 | `classifyConnectorError(error)`                 | Classify error as retryable/non-retryable    |
 | `isConnectorEnabled(config)`                    | Check if connector is enabled via config     |
 | `validateConnectorStartupConfig(config, opts)`  | Validate credentials and endpoint at startup |
+| `ConnectorEntityProvider`                       | Minimal EntityProvider-compatible interface  |
 | `ConnectorErrorContext`                         | Interface for structured error context       |
+| `FaultIsolationContext`                         | Optional endpoint / nextRetryAt for wrappers |
 | `ValidateConnectorStartupConfigOptions`         | Options for startup validation               |
 
 ## Reference Configuration

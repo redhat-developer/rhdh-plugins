@@ -40,10 +40,8 @@ export function loadCaBundle(
   connectorConfig: Config,
   logger: LoggerService,
 ): Buffer | undefined {
-  let tlsConfig: Config;
-  try {
-    tlsConfig = connectorConfig.getConfig('tls');
-  } catch {
+  const tlsConfig = connectorConfig.getOptionalConfig('tls');
+  if (!tlsConfig) {
     // No tls block configured — use system CA bundle
     return undefined;
   }
@@ -128,6 +126,10 @@ function isValidPem(content: Buffer): boolean {
 
 /**
  * Create an `https.Agent` configured with a custom CA bundle.
+ *
+ * When `caBundle` is provided, Node replaces the default Mozilla CA
+ * store with that bundle. Concatenate PEMs if both public and private
+ * CAs must be trusted.
  *
  * @param caBundle - A Buffer containing PEM-encoded CA certificates,
  *   or `undefined` to use the system default.

@@ -38,7 +38,7 @@ ai-catalog:
         #   $env: MCP_REGISTRY_CA_BUNDLE
 
       # Registry credentials via mounted K8s Secret (optional)
-      # Values MUST use $env references — plaintext is rejected at startup
+      # Values MUST use $env references — empty credentials are rejected at startup
       auth:
         token:
           $env: MCP_REGISTRY_TOKEN
@@ -63,7 +63,7 @@ ai-catalog:
           caFile: /etc/rhdh/ca-bundles/rhoai-ca.pem
 
         # RHOAI credentials via mounted K8s Secret (required)
-        # Values MUST use $env references — plaintext is rejected at startup
+        # Values MUST use $env references — empty credentials are rejected at startup
         auth:
           clientId:
             $env: RHOAI_CLIENT_ID

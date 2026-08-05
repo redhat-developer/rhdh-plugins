@@ -45,6 +45,8 @@ describe('classifyConnectorError', () => {
     ['ECONNREFUSED', 'Connection refused'],
     ['ECONNRESET', 'Connection reset'],
     ['ETIMEDOUT', 'Timed out'],
+    ['EPIPE', 'Broken pipe'],
+    ['EAI_AGAIN', 'DNS lookup timed out'],
   ])('classifies %s as retryable', (code, message) => {
     const error = new Error(message);
     (error as NodeJS.ErrnoException).code = code;
@@ -100,26 +102,19 @@ describe('classifyConnectorError', () => {
     expect(classifyConnectorError(error)).toBe(false);
   });
 
-  it('classifies TypeError with retryable cause.code as retryable (native fetch)', () => {
-    const cause = new Error('connect ECONNREFUSED 127.0.0.1:443');
-    (cause as NodeJS.ErrnoException).code = 'ECONNREFUSED';
-    const error = new TypeError('fetch failed', { cause });
-    expect(classifyConnectorError(error)).toBe(true);
-  });
-
-  it('classifies TypeError with ETIMEDOUT cause as retryable', () => {
-    const cause = new Error('connection timed out');
-    (cause as NodeJS.ErrnoException).code = 'ETIMEDOUT';
-    const error = new TypeError('fetch failed', { cause });
-    expect(classifyConnectorError(error)).toBe(true);
-  });
-
-  it('classifies TypeError with non-retryable TLS cause as non-retryable', () => {
-    const cause = new Error('certificate has expired');
-    (cause as NodeJS.ErrnoException).code = 'CERT_HAS_EXPIRED';
-    const error = new TypeError('fetch failed', { cause });
-    expect(classifyConnectorError(error)).toBe(false);
-  });
+  it.each([
+    ['ECONNREFUSED', true],
+    ['ETIMEDOUT', true],
+    ['CERT_HAS_EXPIRED', false],
+  ])(
+    'classifies TypeError with cause.code=%s as retryable=%s (native fetch)',
+    (causeCode, expectedRetryable) => {
+      const cause = new Error(`cause ${causeCode}`);
+      (cause as NodeJS.ErrnoException).code = causeCode;
+      const error = new TypeError('fetch failed', { cause });
+      expect(classifyConnectorError(error)).toBe(expectedRetryable);
+    },
+  );
 
   it('classifies SyntaxError as non-retryable', () => {
     const error = new SyntaxError('Unexpected token');
