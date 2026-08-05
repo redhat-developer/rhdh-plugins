@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { TableColumn } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import {
@@ -81,31 +81,34 @@ export function CatalogItemInstancesTabContent() {
   const { t } = useTranslation();
 
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
+  const [catalogItemsError, setCatalogItemsError] = useState<string | null>(
+    null,
+  );
   const [rehydratingId, setRehydratingId] = useState<string | null>(null);
   const [rehydrateError, setRehydrateError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [rehydrateConfirmInst, setRehydrateConfirmInst] =
     useState<CatalogItemInstance | null>(null);
 
+  // Fetch catalog items once on mount; page navigation does not re-fetch.
+  useEffect(() => {
+    catalogApi
+      .listCatalogItems({ max_page_size: 100 })
+      .then(r => setCatalogItems(r.results ?? []))
+      .catch(err => setCatalogItemsError(extractApiError(err)));
+  }, [catalogApi]);
+
   const crud = usePaginatedCrudTab<CatalogItemInstance, InstanceForm>({
-    loadFn: async ({ pageToken, pageSize: ps }) => {
-      const [instanceResult, itemList] = await Promise.all([
-        catalogApi
-          .listCatalogItemInstances({
-            page_token: pageToken,
-            max_page_size: ps,
-          })
-          .then(r => ({
-            items: r.results ?? [],
-            nextPageToken: r.next_page_token,
-          })),
-        catalogApi
-          .listCatalogItems({ max_page_size: 25 })
-          .then(r => r.results ?? []),
-      ]);
-      setCatalogItems(itemList);
-      return instanceResult;
-    },
+    loadFn: ({ pageToken, pageSize: ps }) =>
+      catalogApi
+        .listCatalogItemInstances({
+          page_token: pageToken,
+          max_page_size: ps,
+        })
+        .then(r => ({
+          items: r.results ?? [],
+          nextPageToken: r.next_page_token,
+        })),
     storageKey: 'catalog-item-instances',
     createFn: form =>
       catalogApi.createCatalogItemInstance(formToInstance(form)),
@@ -291,8 +294,11 @@ export function CatalogItemInstancesTabContent() {
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
-        actionError={rehydrateError}
-        onDismissActionError={() => setRehydrateError(null)}
+        actionError={catalogItemsError ?? rehydrateError}
+        onDismissActionError={() => {
+          setCatalogItemsError(null);
+          setRehydrateError(null);
+        }}
         search={crud.search}
         onSearchChange={crud.handleSearchChange}
         cursorPagination={crud.cursorPagination}

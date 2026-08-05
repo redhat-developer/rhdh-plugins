@@ -74,6 +74,7 @@ import type {
   CatalogItem,
   ServiceType,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import { extractApiError } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { catalogApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
@@ -99,6 +100,9 @@ export function CatalogItemsTabContent() {
   const { t } = useTranslation();
 
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
+  const [serviceTypesError, setServiceTypesError] = useState<string | null>(
+    null,
+  );
   /** Tracks whether a submit was attempted so field-level errors show for all fields. */
   const [createSubmitAttempted, setCreateSubmitAttempted] = useState(false);
   const [editSubmitAttempted, setEditSubmitAttempted] = useState(false);
@@ -108,7 +112,7 @@ export function CatalogItemsTabContent() {
     catalogApi
       .listServiceTypes({ max_page_size: 100 })
       .then(r => setServiceTypes(r.results ?? []))
-      .catch(() => {});
+      .catch(err => setServiceTypesError(extractApiError(err)));
   }, [catalogApi]);
 
   const crud = usePaginatedCrudTab<CatalogItem, CatalogItemForm>({
@@ -333,8 +337,8 @@ export function CatalogItemsTabContent() {
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
-        actionError={null}
-        onDismissActionError={undefined}
+        actionError={serviceTypesError}
+        onDismissActionError={() => setServiceTypesError(null)}
         search={crud.search}
         onSearchChange={crud.handleSearchChange}
         cursorPagination={crud.cursorPagination}

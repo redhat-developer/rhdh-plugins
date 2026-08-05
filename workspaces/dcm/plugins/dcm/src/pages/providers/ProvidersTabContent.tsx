@@ -41,6 +41,7 @@ import type {
   Provider,
   ServiceType,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import { extractApiError } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { catalogApiRef, providersApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
@@ -71,13 +72,16 @@ export function ProvidersTabContent() {
   const { t } = useTranslation();
 
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
+  const [serviceTypesError, setServiceTypesError] = useState<string | null>(
+    null,
+  );
 
   // Fetch dropdown options once on mount; page navigation does not re-fetch.
   useEffect(() => {
     catalogApi
       .listServiceTypes({ max_page_size: 100 })
       .then(r => setServiceTypes(r.results ?? []))
-      .catch(() => {});
+      .catch(err => setServiceTypesError(extractApiError(err)));
   }, [catalogApi]);
 
   const crud = usePaginatedCrudTab<Provider, ProviderForm>({
@@ -310,8 +314,8 @@ export function ProvidersTabContent() {
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
-        actionError={null}
-        onDismissActionError={undefined}
+        actionError={serviceTypesError}
+        onDismissActionError={() => setServiceTypesError(null)}
         search={crud.search}
         onSearchChange={crud.handleSearchChange}
         cursorPagination={crud.cursorPagination}

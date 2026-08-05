@@ -220,7 +220,9 @@ export function DcmCrudTabLayout<T extends object>({
         </Button>
       </Box>
       <InfoCard
-        title={`${entityLabel} (${filtered.length})`}
+        title={
+          cursorPagination ? entityLabel : `${entityLabel} (${filtered.length})`
+        }
         action={
           <Box display="flex" alignItems="center">
             <DcmSearchCardAction
