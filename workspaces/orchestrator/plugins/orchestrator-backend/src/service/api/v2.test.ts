@@ -471,6 +471,15 @@ describe('executeWorkflow as event type', () => {
     );
   });
 
+  it('throws when compiled start.stateName fixture cannot rewrite start', () => {
+    expect(() =>
+      generateTestWorkflowInfoForEventypeWithStartStateName('test_workflowId', {
+        id: 'test_workflowId',
+        source: 'id: lock-flow\nstart: somethingElse\n',
+      }),
+    ).toThrow(/Failed to rewrite start to start.stateName/);
+  });
+
   it('executes a given workflow: event type with compiled start.stateName', async () => {
     // Arrange
     const correlationContextAttributeId = '12345';

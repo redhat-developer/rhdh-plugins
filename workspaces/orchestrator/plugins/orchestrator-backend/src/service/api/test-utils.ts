@@ -353,8 +353,8 @@ states:
 /** Compiled workflows use start.stateName instead of a string start. */
 export function generateTestWorkflowInfoForEventypeWithStartStateName(
   id: string = 'test_workflowId',
+  base: WorkflowInfo = generateTestWorkflowInfoForEventype(id),
 ): WorkflowInfo {
-  const base = generateTestWorkflowInfoForEventype(id);
   const startMarker = 'start: listenToLock';
   const compiledStart = 'start:\n  stateName: listenToLock';
   const source = base.source as string;
