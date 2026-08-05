@@ -84,12 +84,17 @@
       `KubeConfig built from app-config fields for cluster '${clusterName}'`,
     );
   } else {
+    if (config.url || config.serviceAccountToken) {
+      logger.warn(
+        'Partial K8s config: both url and serviceAccountToken are required for config-based auth; falling back to loadFromDefault()',
+      );
+    }
     kc.loadFromDefault();
     logger.info('KubeConfig loaded from default (kubeconfig file / env)');
   }
   ```
 - [ ] 4.2 Simplify the token extraction: when config fields are present, `config.serviceAccountToken` is the token — skip the currentUser/users list scanning. When falling back to `loadFromDefault()`, keep the existing extraction logic (currentUser → users list) and `K8S_TOKEN` env var override. Note: `loadFromDefault()` also supports `KUBECONFIG` env var and `~/.kube/config` from `oc login` / `kubectl login` — these are valid local dev options that work automatically.
-- [ ] 4.3 Store the resolved token on `config.k8sToken` so the rest of the code (e.g., `fetchModelCardViaAnnotations`) can use it unchanged.
+- [ ] 4.3 Store the resolved token on `config.serviceAccountToken` (NOT `config.k8sToken`). Remove the `k8sToken` field from `ReconcilerConfig` entirely — `serviceAccountToken` is the single token field regardless of source. Update all code that reads `config.k8sToken` (e.g., `fetchModelCardViaAnnotations` in InformerService.ts) to read `config.serviceAccountToken` instead.
 - [ ] 4.4 Add logging: log the cluster URL (NOT the token) and whether config or loadFromDefault was used.
 - [ ] 4.5 Verify `yarn tsc` passes
 

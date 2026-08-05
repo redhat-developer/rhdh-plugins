@@ -183,7 +183,7 @@ When `kubernetesPluginRef` is set and the referenced cluster is found, its K8s f
 
 **Choice:** Remove `baseUrl` from `ModelCatalogConfig`, `readModelCatalogApiEntityConfig`, and `ModelCatalogResourceEntityProvider`. Also remove `baseUrl` from `config.d.ts`.
 
-**Rationale:** The entity provider uses `DiscoveryService.getBaseUrl()` to resolve the connector's URL at runtime (line 169 of `ModelCatalogResourceEntityProvider.ts`). The `baseUrl` field was a manual override — if `baseUrl` was set, it took priority over discovery. But if discovery fails, the `auth.getPluginRequestToken()` call (line 174) also fails because it depends on the same plugin registration. So `baseUrl` is either redundant (discovery works) or insufficient (discovery broken). Removing it simplifies config and eliminates confusion.
+**Rationale:** The entity provider uses `DiscoveryService.getBaseUrl()` to resolve the connector's URL at runtime (line 169 of `ModelCatalogResourceEntityProvider.ts`). The `baseUrl` field was a manual override — if `baseUrl` was set, it took priority over discovery. But a hardcoded `baseUrl` cannot help when the connector service is unreachable: the subsequent HTTP call to fetch the model catalog will fail regardless. So `baseUrl` is either redundant (discovery works and the service is reachable) or insufficient (service is down). Removing it simplifies config and eliminates confusion.
 
 **Impact:** The `run()` method in `ModelCatalogResourceEntityProvider.ts` simplifies from:
 
@@ -210,6 +210,7 @@ const url = await this.discovery.getBaseUrl(this.name);
 **Implementation:**
 
 - `ReconcilerConfig` in `types.ts` gains: `clusterName?`, `url?`, `serviceAccountToken?`, `skipTLSVerify?`, `caData?` (K8s connection); keeps `catalogUrl?`, `defaultOwner?`, `defaultLifecycle?` as optional (was required, now optional with defaults applied in `setupInformer`). `clusterName` comes from the `name` field in the cluster sub-config and is used in `loadFromOptions` for KubeConfig cluster/context naming.
+- The existing `k8sToken` field is **removed** from `ReconcilerConfig`. The new `serviceAccountToken` field replaces it as the single token field — `setupInformer` populates it with the resolved token regardless of source (app-config, `K8S_TOKEN` env var, or kubeconfig extraction). All code reading `config.k8sToken` (e.g., `fetchModelCardViaAnnotations`) is updated to read `config.serviceAccountToken`.
   Note: `defaultOwner` and `defaultLifecycle` change from required `string` to optional `string` (`?: string`) on the type — `setupInformer` continues to apply defaults (`process.env.OWNER || 'default-owner'` and `process.env.LIFECYCLE || 'production'`) before any code that depends on them.
 - `ConnectorConfig` interface and its export in `InformerService.ts` are removed.
 - `plugin.ts` builds a `ReconcilerConfig` directly (minus the runtime K8s objects, which `setupInformer` populates).
@@ -250,11 +251,16 @@ if (config.url && config.serviceAccountToken) {
     currentContext: clusterName,
   });
 } else {
+  if (config.url || config.serviceAccountToken) {
+    logger.warn(
+      'Partial K8s config: both url and serviceAccountToken are required for config-based auth; falling back to loadFromDefault()',
+    );
+  }
   kc.loadFromDefault();
 }
 ```
 
-Note: `clusterName` comes from the `name` field in the cluster sub-config (e.g., `name: my-k8s-cluster`). OCM uses the same pattern — its `hubApiClient()` passes the cluster name from config to `loadFromOptions`.
+Note: `clusterName` comes from the `name` field in the cluster sub-config (e.g., `name: my-k8s-cluster`). OCM uses the same pattern — its `hubApiClient()` passes the cluster name from config to `loadFromOptions`. If only one of `url` or `serviceAccountToken` is present, a warning is logged before falling back to `loadFromDefault()` — this helps catch partial config mistakes.
 
 **Rationale:** `loadFromDefault()` reads from `KUBECONFIG` env var or `~/.kube/config` — appropriate for local dev but not for deployed Backstage instances where config should come from `app-config.yaml`. `loadFromOptions()` builds the KubeConfig programmatically from the exact fields we control. The `K8S_TOKEN` env var override in the current code becomes unnecessary when credentials come from config.
 

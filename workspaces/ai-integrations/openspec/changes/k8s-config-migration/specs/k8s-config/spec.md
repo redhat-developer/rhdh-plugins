@@ -31,8 +31,15 @@ When the cluster sub-config contains `url` and `serviceAccountToken`, the connec
 
 - **GIVEN** `cluster-1` has `url` but no `serviceAccountToken`
 - **WHEN** the connector plugin initializes
-- **THEN** `loadFromDefault()` is used as fallback
-- **AND** the plugin logs that it fell back to default KubeConfig
+- **THEN** a warning is logged: partial K8s config (both `url` and `serviceAccountToken` are required)
+- **AND** `loadFromDefault()` is used as fallback
+
+#### Scenario: Direct config missing url
+
+- **GIVEN** `cluster-1` has `serviceAccountToken` but no `url`
+- **WHEN** the connector plugin initializes
+- **THEN** a warning is logged: partial K8s config (both `url` and `serviceAccountToken` are required)
+- **AND** `loadFromDefault()` is used as fallback
 
 ---
 
