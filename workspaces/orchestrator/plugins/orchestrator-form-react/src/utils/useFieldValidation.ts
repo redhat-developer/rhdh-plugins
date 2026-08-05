@@ -128,7 +128,17 @@ export function useFieldValidation({
         if (areAllGroupFieldsPopulated(members, formDataRef.current)) {
           for (const memberPath of members) {
             if (memberPath !== fieldPath) {
-              validateField(memberPath);
+              if (mode === 'change') {
+                const existing = debounceTimers.current.get(memberPath);
+                if (existing) clearTimeout(existing);
+                const timer = setTimeout(() => {
+                  debounceTimers.current.delete(memberPath);
+                  validateField(memberPath);
+                }, FIELD_VALIDATION_DEBOUNCE_MS);
+                debounceTimers.current.set(memberPath, timer);
+              } else {
+                validateField(memberPath);
+              }
             }
           }
         }

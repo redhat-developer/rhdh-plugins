@@ -129,6 +129,60 @@ describe('validateSingleField', () => {
     expect(result).toEqual({});
   });
 
+  it('collects all error messages from multiple keys in response body', async () => {
+    evaluateTemplateString.mockResolvedValue(
+      'http://example.com/validate/test',
+    );
+    const body = {
+      name: ['Name is required', 'Name must be alphanumeric'],
+      format: 'Invalid format',
+    };
+    mockFetch.mockResolvedValue({
+      status: 422,
+      json: async () => body,
+      text: async () => JSON.stringify(body),
+    });
+
+    const result = await validateSingleField({
+      formData: { userId: 'test' },
+      fieldPath: 'userId',
+      uiSchemaProperty: {
+        'ui:widget': 'ActiveTextInput',
+        'ui:props': { 'validate:url': 'http://example.com/validate/${userId}' },
+      },
+      unitEvaluator: mockUnitEvaluator,
+      fetchApi: mockFetchApi,
+    });
+
+    expect(result.userId?.[ERRORS_KEY]).toEqual([
+      'Name is required',
+      'Name must be alphanumeric',
+      'Invalid format',
+    ]);
+  });
+
+  it('returns network error when fetch throws', async () => {
+    evaluateTemplateString.mockResolvedValue(
+      'http://example.com/validate/test',
+    );
+    mockFetch.mockRejectedValue(new TypeError('Failed to fetch'));
+
+    const result = await validateSingleField({
+      formData: { userId: 'test' },
+      fieldPath: 'userId',
+      uiSchemaProperty: {
+        'ui:widget': 'ActiveTextInput',
+        'ui:props': { 'validate:url': 'http://example.com/validate/${userId}' },
+      },
+      unitEvaluator: mockUnitEvaluator,
+      fetchApi: mockFetchApi,
+    });
+
+    expect(result.userId?.[ERRORS_KEY]).toEqual([
+      'Validation request failed: unable to reach the server',
+    ]);
+  });
+
   it('returns error when validate:url fails to evaluate to a string', async () => {
     evaluateTemplateString.mockResolvedValue(42);
 

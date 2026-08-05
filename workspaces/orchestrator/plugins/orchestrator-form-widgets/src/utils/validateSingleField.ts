@@ -85,10 +85,16 @@ export async function validateSingleField(params: {
     formData,
   );
 
-  const response = await fetchApi.fetch(
-    evaluatedValidateUrl,
-    evaluatedRequestInit,
-  );
+  let response: Response;
+  try {
+    response = await fetchApi.fetch(evaluatedValidateUrl, evaluatedRequestInit);
+  } catch {
+    safeSet(errors, fieldPath, {
+      [ERRORS_KEY]: ['Validation request failed: unable to reach the server'],
+    });
+    return errors;
+  }
+
   if (response.status !== 200) {
     const data = await parseValidationErrorBody(response);
     if (!data || Object.keys(data).length === 0) {
@@ -100,16 +106,18 @@ export async function validateSingleField(params: {
       return errors;
     }
 
+    const allMessages: string[] = [];
     Object.keys(data).forEach(key => {
       // @ts-ignore
       const issues = data[key];
       if (issues) {
         const array = (Array.isArray(issues) ? issues : [issues]) as string[];
-        safeSet(errors, fieldPath, {
-          [ERRORS_KEY]: array.map(e => e?.toString()),
-        });
+        allMessages.push(...array.map(e => e?.toString()));
       }
     });
+    if (allMessages.length > 0) {
+      safeSet(errors, fieldPath, { [ERRORS_KEY]: allMessages });
+    }
   }
 
   return errors;
