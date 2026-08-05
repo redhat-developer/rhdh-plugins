@@ -6,7 +6,7 @@ on:
       - closed
     branches:
       - 'workspace/**'
-      - 'release-*/**'
+      - 'release-*/*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -44,7 +44,7 @@ jobs:
               if [[ "$BASE_REF" == workspace/* ]]; then
                 WORKSPACE_NAME=$(echo "$BASE_REF" | cut -d'/' -f2)
               elif [[ "$BASE_REF" == release-*/* ]]; then
-                WORKSPACE_NAME=$(echo "$BASE_REF" | cut -d'/' -f2-)
+                WORKSPACE_NAME=$(echo "$BASE_REF" | cut -d'/' -f2)
               else
                 WORKSPACE_NAME=$(echo "$BASE_REF" | cut -d'/' -f1)
               fi
