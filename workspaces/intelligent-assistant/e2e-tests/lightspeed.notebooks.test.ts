@@ -136,13 +136,12 @@ test.describe('Intelligent assistant notebooks', () => {
     await notebooks.clickOpenUploadDocumentModal();
     uploadModal = notebooks.uploadDocumentModal();
     await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
 
     const overwriteModal = notebooks.notebookOverwriteConfirmModal();
     await overwriteModal.expectDialogVisible();
     await overwriteModal.expectListedOverwriteFile(fileName);
-    await overwriteModal.clickCancel();
-    await sharedPage.waitForTimeout(200);
-    await uploadModal.clickCancel();
+    await overwriteModal.clickBack();
 
     await notebooks.deleteFirstListedDocumentFromSidebarOverflowMenu();
     await notebooks.expectNotebookEditorUploadResourceButtonVisible();
