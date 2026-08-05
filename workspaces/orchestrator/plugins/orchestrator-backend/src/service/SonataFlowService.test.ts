@@ -296,6 +296,51 @@ describe('SonataFlowService', () => {
       expect(result?.id).toBe('12345');
     });
 
+    it('should use empty CE data when workflowdata is missing or non-object', async () => {
+      const kafkaServiceOptionsMock: OrchestratorKafkaServiceOptions = {
+        clientId: 'kafkaClientId',
+        brokers: ['localhost:9091'],
+      };
+      const sonataFlowServiceWithKafka = new SonataFlowService(
+        dataIndexServiceMock,
+        loggerMock,
+        kafkaServiceOptionsMock,
+      );
+
+      const sendMock = jest.fn();
+
+      jest
+        .spyOn(
+          sonataFlowServiceWithKafka.getOrchestratorKafkaImpl() as any,
+          'producer',
+        )
+        .mockImplementation(() => ({
+          connect: jest.fn(),
+          send: sendMock,
+          disconnect: jest.fn(),
+        }));
+
+      await sonataFlowServiceWithKafka.executeWorkflowAsCloudEvent({
+        definitionId,
+        workflowSource: 'workflowSource',
+        workflowEventType: 'workflowEventType',
+        contextAttribute: 'lockid',
+        inputData: {
+          workflowdata: 'not-an-object' as any,
+        },
+      });
+
+      expect(sendMock).toHaveBeenCalledTimes(1);
+
+      const { messages } = sendMock.mock.calls[0][0];
+      const parsed = JSON.parse(messages[0].value);
+
+      expect(parsed.data).toEqual({
+        lockid: '12345',
+      });
+      expect(parsed.data.workflowdata).toBeUndefined();
+    });
+
     it('should error on a bad connection', async () => {
       const kafkaServiceOptionsMock: OrchestratorKafkaServiceOptions = {
         clientId: 'kafkaClientId',
