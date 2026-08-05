@@ -112,6 +112,7 @@ Note: Use `safeGetOptionalString` (see AGENTS.md `ConfigReader getOptionalString
 - [ ] 5.2 If `kubernetesPluginRef` is set, look up the cluster in `kubernetes.clusterLocatorMethods`:
   ```typescript
   if (kubernetesPluginRef) {
+    let matched = false;
     const k8sConfig = config.getOptionalConfig('kubernetes');
     if (k8sConfig) {
       const locators =
@@ -120,8 +121,8 @@ Note: Use `safeGetOptionalString` (see AGENTS.md `ConfigReader getOptionalString
         if (locator.getOptionalString('type') !== 'config') continue;
         const clusters = locator.getOptionalConfigArray('clusters') ?? [];
         for (const cluster of clusters) {
-          if (cluster.getOptionalString('name') === kubernetesPluginRef) {
-            // Extract K8s connection fields from kubernetes plugin config
+          if (safeGetOptionalString(cluster, 'name') === kubernetesPluginRef) {
+            matched = true;
             reconcilerConfig.url = safeGetOptionalString(cluster, 'url');
             reconcilerConfig.serviceAccountToken = safeGetOptionalString(
               cluster,
@@ -133,12 +134,16 @@ Note: Use `safeGetOptionalString` (see AGENTS.md `ConfigReader getOptionalString
             break;
           }
         }
-        if (reconcilerConfig.url) break;
+        if (matched) break;
       }
     }
-    if (!reconcilerConfig.url) {
+    if (!matched) {
       logger.warn(
         `kubernetesPluginRef '${kubernetesPluginRef}' not found in kubernetes.clusterLocatorMethods, falling through to direct config`,
+      );
+    } else if (!reconcilerConfig.url) {
+      logger.warn(
+        `kubernetesPluginRef '${kubernetesPluginRef}' matched but cluster has no url, falling through to direct config`,
       );
     }
   }

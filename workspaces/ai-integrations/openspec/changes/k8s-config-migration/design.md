@@ -332,6 +332,7 @@ Also remove `baseUrl` from the connector-level fields (per D2).
 **Reading kubernetesPluginRef:** In `plugin.ts`, when `kubernetesPluginRef` is present in the cluster sub-config:
 
 ```typescript
+let matched = false;
 const k8sConfig = config.getOptionalConfig('kubernetes');
 if (k8sConfig) {
   const locators =
@@ -340,10 +341,12 @@ if (k8sConfig) {
     if (locator.getOptionalString('type') !== 'config') continue;
     const clusters = locator.getOptionalConfigArray('clusters') ?? [];
     for (const cluster of clusters) {
-      if (cluster.getOptionalString('name') === kubernetesPluginRef) {
-        // Found matching cluster — extract url, serviceAccountToken, skipTLSVerify, caData
+      if (safeGetOptionalString(cluster, 'name') === kubernetesPluginRef) {
+        matched = true;
+        // Extract url, serviceAccountToken, skipTLSVerify, caData
       }
     }
+    if (matched) break;
   }
 }
 ```

@@ -93,6 +93,15 @@ When `kubernetesPluginRef` is set in the cluster sub-config, the connector SHALL
 - **THEN** a warning is logged
 - **AND** `loadFromDefault()` is used as final fallback
 
+#### Scenario: kubernetesPluginRef matches but cluster has incomplete K8s fields
+
+- **GIVEN** `cluster-1` has `kubernetesPluginRef: my-k8s-cluster`
+- **AND** the referenced cluster in `kubernetes.clusterLocatorMethods` has `url` but no `serviceAccountToken`
+- **AND** `cluster-1` has no direct K8s connection fields
+- **WHEN** the connector plugin initializes
+- **THEN** a warning is logged that the matched cluster has no url or incomplete fields
+- **AND** `loadFromDefault()` is used as fallback (per D4 partial-config warning → D7 step 4)
+
 #### Scenario: kubernetesPluginRef cluster uses non-serviceAccount authProvider
 
 - **GIVEN** `cluster-1` has `kubernetesPluginRef: my-k8s-cluster`
