@@ -141,10 +141,14 @@ Note: Use `safeGetOptionalString` (see AGENTS.md `ConfigReader getOptionalString
       logger.warn(
         `kubernetesPluginRef '${kubernetesPluginRef}' not found in kubernetes.clusterLocatorMethods, falling through to direct config`,
       );
-    } else if (!reconcilerConfig.url) {
+    } else if (!reconcilerConfig.url || !reconcilerConfig.serviceAccountToken) {
       logger.warn(
-        `kubernetesPluginRef '${kubernetesPluginRef}' matched but cluster has no url, falling through to direct config`,
+        `kubernetesPluginRef '${kubernetesPluginRef}' matched but cluster has incomplete K8s fields (url: ${!!reconcilerConfig.url}, serviceAccountToken: ${!!reconcilerConfig.serviceAccountToken}), falling through to direct config`,
       );
+      reconcilerConfig.url = undefined;
+      reconcilerConfig.serviceAccountToken = undefined;
+      reconcilerConfig.skipTLSVerify = undefined;
+      reconcilerConfig.caData = undefined;
     }
   }
   ```
@@ -157,9 +161,9 @@ Note: Use `safeGetOptionalString` (see AGENTS.md `ConfigReader getOptionalString
     );
   }
   ```
-- [ ] 5.4 If `kubernetesPluginRef` is NOT set OR if `kubernetesPluginRef` lookup failed (no `url` resolved), read K8s fields directly from the cluster sub-config (per D7 fall-through precedence):
+- [ ] 5.4 If `kubernetesPluginRef` is NOT set OR if `kubernetesPluginRef` lookup failed (incomplete K8s fields), read K8s fields directly from the cluster sub-config (per D7 fall-through precedence):
   ```typescript
-  if (!reconcilerConfig.url) {
+  if (!reconcilerConfig.url || !reconcilerConfig.serviceAccountToken) {
     reconcilerConfig.url = safeGetOptionalString(clusterConfig, 'url');
     reconcilerConfig.serviceAccountToken = safeGetOptionalString(
       clusterConfig,

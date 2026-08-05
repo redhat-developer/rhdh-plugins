@@ -209,7 +209,7 @@ const url = await this.discovery.getBaseUrl(this.name);
 
 **Implementation:**
 
-- `ReconcilerConfig` in `types.ts` gains: `clusterName?`, `url?`, `serviceAccountToken?`, `skipTLSVerify?`, `caData?` (K8s connection); keeps `catalogUrl?`, `defaultOwner?`, `defaultLifecycle?` as optional (was required, now optional with defaults applied in `setupInformer`). `clusterName` comes from the `name` field in the cluster sub-config and is used in `loadFromOptions` for KubeConfig cluster/context naming.
+- `ReconcilerConfig` in `types.ts` gains: `clusterName?`, `url?`, `serviceAccountToken?`, `skipTLSVerify?`, `caData?` (K8s connection); changes `catalogUrl?`, `defaultOwner?`, `defaultLifecycle?` from required to optional (defaults applied in `setupInformer`). `clusterName` comes from the `name` field in the cluster sub-config and is used in `loadFromOptions` for KubeConfig cluster/context naming.
 - The existing `k8sToken` field is **removed** from `ReconcilerConfig`. The new `serviceAccountToken` field replaces it as the single token field — `setupInformer` populates it with the resolved token regardless of source (app-config, `K8S_TOKEN` env var, or kubeconfig extraction). All code reading `config.k8sToken` (e.g., `fetchModelCardViaAnnotations`) is updated to read `config.serviceAccountToken`.
   Note: `defaultOwner` and `defaultLifecycle` change from required `string` to optional `string` (`?: string`) on the type — `setupInformer` continues to apply defaults (`process.env.OWNER || 'default-owner'` and `process.env.LIFECYCLE || 'production'`) before any code that depends on them.
 - `ConnectorConfig` interface and its export in `InformerService.ts` are removed.
@@ -321,7 +321,8 @@ Also remove `baseUrl` from the connector-level fields (per D2).
 
 **Choice:** The following precedence order determines how the KubeConfig is built:
 
-1. **kubernetesPluginRef** (found): If set AND the referenced cluster is found in `kubernetes.clusterLocatorMethods`, use its `url`, `serviceAccountToken`, `skipTLSVerify`, `caData`.
+1. **kubernetesPluginRef** (found, complete): If set AND the referenced cluster is found in `kubernetes.clusterLocatorMethods` with both `url` and `serviceAccountToken`, use its K8s fields.
+   1b. **kubernetesPluginRef** (found, incomplete): If the matched cluster is missing `url` or `serviceAccountToken`, log a warning, clear any stale fields, and fall through to step 3.
 2. **kubernetesPluginRef** (not found): If set but the referenced cluster is NOT found, log a warning and fall through to step 3 (do NOT skip to `loadFromDefault`).
 3. **Direct config**: If `url` and `serviceAccountToken` are present in the cluster sub-config, use them.
 4. **Local dev — loadFromDefault()**: If none of the above, use `loadFromDefault()` which supports three local dev options:

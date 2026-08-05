@@ -99,8 +99,10 @@ When `kubernetesPluginRef` is set in the cluster sub-config, the connector SHALL
 - **AND** the referenced cluster in `kubernetes.clusterLocatorMethods` has `url` but no `serviceAccountToken`
 - **AND** `cluster-1` has no direct K8s connection fields
 - **WHEN** the connector plugin initializes
-- **THEN** a warning is logged that the matched cluster has no url or incomplete fields
-- **AND** `loadFromDefault()` is used as fallback (per D4 partial-config warning → D7 step 4)
+- **THEN** a warning is logged that the matched cluster has incomplete K8s fields (url: true, serviceAccountToken: false)
+- **AND** the stale K8s fields from the matched cluster are cleared (per D7 step 1b)
+- **AND** direct config fallback is attempted but finds no fields (per D7 step 3)
+- **AND** `loadFromDefault()` is used as final fallback (per D7 step 4)
 
 #### Scenario: kubernetesPluginRef cluster uses non-serviceAccount authProvider
 
@@ -167,7 +169,8 @@ K8s credentials from `app-config.yaml` SHALL take precedence over local dev opti
 - **AND** no `K8S_TOKEN` or `KUBECONFIG` env vars are set
 - **AND** `~/.kube/config` does not exist
 - **WHEN** the connector plugin initializes
-- **THEN** `loadFromDefault()` is called and fails with a K8s client error
+- **THEN** `loadFromDefault()` is called and loads an empty KubeConfig (no throw at init time)
+- **AND** the first K8s API call fails with a connection error (failure is deferred to connection time, not initialization)
 
 ---
 
