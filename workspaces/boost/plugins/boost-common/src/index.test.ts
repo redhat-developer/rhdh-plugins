@@ -18,6 +18,7 @@ import {
   BOOST_PLUGIN_ID,
   BOOST_AGENT_RESOURCE_TYPE,
   BOOST_TOOL_RESOURCE_TYPE,
+  AI_CATALOG_ASSET_RESOURCE_TYPE,
   BOOST_RULE_IS_OWNER,
   BOOST_RULE_IS_NOT_CREATOR,
   BOOST_RULE_HAS_LIFECYCLE_STAGE,
@@ -30,11 +31,15 @@ import {
   boostToolResourcePermissions,
   boostAccessPermission,
   boostAdminPermission,
-  aiCatalogAdminPermission,
   boostAgentListPermission,
   boostAgentPromotePermission,
   boostToolPromotePermission,
   boostKagentiAdminPermission,
+  aiCatalogPermissions,
+  aiCatalogResourcePermissions,
+  aiCatalogAssetReadPermission,
+  aiCatalogAssetReadUsageDocsPermission,
+  aiCatalogAdminPermission,
 } from './index';
 
 import type {
@@ -59,6 +64,10 @@ describe('boost-common', () => {
 
     it('exports boost-tool resource type', () => {
       expect(BOOST_TOOL_RESOURCE_TYPE).toBe('boost-tool');
+    });
+
+    it('exports ai-catalog-asset resource type', () => {
+      expect(AI_CATALOG_ASSET_RESOURCE_TYPE).toBe('ai-catalog-asset');
     });
   });
 
@@ -172,9 +181,57 @@ describe('boost-common', () => {
     });
   });
 
+  describe('AI catalog permissions', () => {
+    it('exports exactly 3 AI catalog permissions', () => {
+      expect(aiCatalogPermissions).toHaveLength(3);
+    });
+
+    it('ai-catalog.asset.read is resource-scoped', () => {
+      expect(aiCatalogAssetReadPermission.name).toBe('ai-catalog.asset.read');
+      expect(aiCatalogAssetReadPermission.resourceType).toBe(
+        AI_CATALOG_ASSET_RESOURCE_TYPE,
+      );
+      expect(aiCatalogAssetReadPermission.attributes.action).toBe('read');
+    });
+
+    it('ai-catalog.asset.read.usage-docs is resource-scoped', () => {
+      expect(aiCatalogAssetReadUsageDocsPermission.name).toBe(
+        'ai-catalog.asset.read.usage-docs',
+      );
+      expect(aiCatalogAssetReadUsageDocsPermission.resourceType).toBe(
+        AI_CATALOG_ASSET_RESOURCE_TYPE,
+      );
+      expect(aiCatalogAssetReadUsageDocsPermission.attributes.action).toBe(
+        'read',
+      );
+    });
+
+    it('ai-catalog.admin is a basic permission', () => {
+      expect(aiCatalogAdminPermission.name).toBe('ai-catalog.admin');
+      expect(aiCatalogAdminPermission.attributes.action).toBe('update');
+      expect(
+        'resourceType' in aiCatalogAdminPermission &&
+          aiCatalogAdminPermission.resourceType,
+      ).toBeFalsy();
+    });
+
+    it('exports 2 AI catalog resource permissions', () => {
+      expect(aiCatalogResourcePermissions).toHaveLength(2);
+      for (const perm of aiCatalogResourcePermissions) {
+        expect(perm.resourceType).toBe(AI_CATALOG_ASSET_RESOURCE_TYPE);
+      }
+    });
+
+    it('AI catalog permissions use ai-catalog.* naming', () => {
+      for (const perm of aiCatalogPermissions) {
+        expect(perm.name).toMatch(/^ai-catalog\./);
+      }
+    });
+  });
+
   describe('combined permissions', () => {
-    it('includes all 24 permissions (16 resource + 5 functional + 3 gate)', () => {
-      expect(boostPermissions).toHaveLength(24);
+    it('includes all 26 permissions (16 entity + 5 functional + 2 gate + 3 ai-catalog)', () => {
+      expect(boostPermissions).toHaveLength(26);
     });
 
     it('all permission names are unique', () => {

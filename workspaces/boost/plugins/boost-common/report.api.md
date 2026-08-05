@@ -29,7 +29,28 @@ export interface AgentRecord {
 }
 
 // @public
+export const AI_CATALOG_ASSET_RESOURCE_TYPE = 'ai-catalog-asset';
+
+// @public
 export const aiCatalogAdminPermission: BasicPermission;
+
+// @public
+export const aiCatalogAssetReadPermission: ResourcePermission<'ai-catalog-asset'>;
+
+// @public
+export const aiCatalogAssetReadUsageDocsPermission: ResourcePermission<'ai-catalog-asset'>;
+
+// @public
+export const aiCatalogPermissions: readonly [
+  ResourcePermission<'ai-catalog-asset'>,
+  ResourcePermission<'ai-catalog-asset'>,
+  BasicPermission,
+];
+
+// @public
+export const aiCatalogResourcePermissions: ResourcePermission<
+  typeof AI_CATALOG_ASSET_RESOURCE_TYPE
+>[];
 
 // @public
 export interface ApprovalRequest {
@@ -194,6 +215,8 @@ export const boostPermissions: readonly [
   BasicPermission,
   BasicPermission,
   BasicPermission,
+  ResourcePermission<'ai-catalog-asset'>,
+  ResourcePermission<'ai-catalog-asset'>,
   BasicPermission,
 ];
 
