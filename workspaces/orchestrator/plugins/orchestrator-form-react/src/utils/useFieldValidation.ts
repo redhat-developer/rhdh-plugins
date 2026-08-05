@@ -106,45 +106,42 @@ export function useFieldValidation({
     [uiSchema, getExtraErrorsForField, setExtraErrors, formDataRef],
   );
 
+  const scheduleValidation = useCallback(
+    (path: string, mode: ValidateOnMode) => {
+      if (mode === 'change') {
+        const existing = debounceTimers.current.get(path);
+        if (existing) clearTimeout(existing);
+        const timer = setTimeout(() => {
+          debounceTimers.current.delete(path);
+          validateField(path);
+        }, FIELD_VALIDATION_DEBOUNCE_MS);
+        debounceTimers.current.set(path, timer);
+      } else {
+        validateField(path);
+      }
+    },
+    [validateField],
+  );
+
   const triggerFieldValidation = useCallback(
     (fieldPath: string, mode: ValidateOnMode) => {
       const config = getFieldValidationConfig(uiSchema, fieldPath);
       if (!config?.validateOn.includes(mode)) return;
 
-      if (mode === 'change') {
-        const existing = debounceTimers.current.get(fieldPath);
-        if (existing) clearTimeout(existing);
-        const timer = setTimeout(() => {
-          debounceTimers.current.delete(fieldPath);
-          validateField(fieldPath);
-        }, FIELD_VALIDATION_DEBOUNCE_MS);
-        debounceTimers.current.set(fieldPath, timer);
-      } else {
-        validateField(fieldPath);
-      }
+      scheduleValidation(fieldPath, mode);
 
       if (config.validateGroup) {
         const members = getGroupMembers(uiSchema, config.validateGroup);
         if (areAllGroupFieldsPopulated(members, formDataRef.current)) {
           for (const memberPath of members) {
             if (memberPath !== fieldPath) {
-              if (mode === 'change') {
-                const existing = debounceTimers.current.get(memberPath);
-                if (existing) clearTimeout(existing);
-                const timer = setTimeout(() => {
-                  debounceTimers.current.delete(memberPath);
-                  validateField(memberPath);
-                }, FIELD_VALIDATION_DEBOUNCE_MS);
-                debounceTimers.current.set(memberPath, timer);
-              } else {
-                validateField(memberPath);
-              }
+              scheduleValidation(memberPath, mode);
             }
           }
         }
       }
     },
-    [uiSchema, validateField, formDataRef],
+    [uiSchema, scheduleValidation, formDataRef],
   );
 
   const cleanupTimers = useCallback(() => {
