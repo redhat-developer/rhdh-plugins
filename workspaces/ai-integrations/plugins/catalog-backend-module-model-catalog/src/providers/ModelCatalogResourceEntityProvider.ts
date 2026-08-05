@@ -45,7 +45,6 @@ import { GenerateCatalogEntities } from '../clients/ModelCatalogGenerator';
  */
 export class ModelCatalogResourceEntityProvider implements EntityProvider {
   private readonly name: string;
-  private readonly baseUrl: string;
   private readonly logger: LoggerService;
   private readonly discovery: DiscoveryService;
   private readonly auth: AuthService;
@@ -103,7 +102,6 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
     taskRunner: SchedulerServiceTaskRunner,
   ) {
     this.name = config.id;
-    this.baseUrl = config.baseUrl;
     this.discovery = discovery;
     this.auth = auth;
     this.logger = logger.child({
@@ -166,11 +164,7 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
 
     /** [5]: Fetch the model catalog keys from the bridge and fetch the corresponding catalog entries. */
     // the api docs for this method says to run it each time vs. once during init, as the URL can change
-    const svcUrl = await this.discovery.getBaseUrl(this.name);
-    let url = this.baseUrl;
-    if (svcUrl.length > 0 && url.length === 0) {
-      url = svcUrl;
-    }
+    const url = await this.discovery.getBaseUrl(this.name);
     const backendToken = await this.auth.getPluginRequestToken({
       onBehalfOf: await this.auth.getOwnServiceCredentials(),
       targetPluginId: this.name,
