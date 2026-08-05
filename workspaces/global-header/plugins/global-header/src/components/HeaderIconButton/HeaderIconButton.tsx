@@ -48,7 +48,7 @@ export const HeaderIconButton = ({
   icon,
   tooltip,
   color = 'inherit',
-  size = 'small',
+  size = 'medium',
   ariaLabel,
   to,
 }: HeaderIconButtonProps) => {

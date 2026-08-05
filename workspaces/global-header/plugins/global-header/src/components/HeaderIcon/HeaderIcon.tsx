@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ComponentType } from 'react';
 import { useApp } from '@backstage/core-plugin-api';
+import type { SvgIconProps } from '@mui/material/SvgIcon';
 import MuiIcon from '@mui/material/Icon';
 import Box from '@mui/material/Box';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 
 /**
  * @public
@@ -36,6 +38,14 @@ function toMaterialIconLigature(name: string): string {
 }
 
 /**
+ * Bundled MUI icon fallbacks for names used in default toolbar extensions.
+ * Avoids reliance on the Material Icons web font being loaded at runtime.
+ */
+const BUILTIN_ICONS: Record<string, ComponentType<SvgIconProps>> = {
+  addCircleOutline: AddCircleOutlineIcon,
+};
+
+/**
  * @public
  */
 export const HeaderIcon = ({
@@ -53,6 +63,15 @@ export const HeaderIcon = ({
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', ...layout }}>
         <SystemIcon fontSize={size} />
+      </Box>
+    );
+  }
+
+  const BuiltinIcon = BUILTIN_ICONS[icon];
+  if (BuiltinIcon) {
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', ...layout }}>
+        <BuiltinIcon fontSize={size} />
       </Box>
     );
   }
