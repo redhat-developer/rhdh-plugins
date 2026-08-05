@@ -355,12 +355,17 @@ export function generateTestWorkflowInfoForEventypeWithStartStateName(
   id: string = 'test_workflowId',
 ): WorkflowInfo {
   const base = generateTestWorkflowInfoForEventype(id);
+  const startMarker = 'start: listenToLock';
+  const compiledStart = 'start:\n  stateName: listenToLock';
+  const source = base.source as string;
+  if (!source.includes(startMarker)) {
+    throw new Error(
+      'Failed to rewrite start to start.stateName: base fixture missing "start: listenToLock"',
+    );
+  }
   return {
     ...base,
-    source: (base.source as string).replace(
-      'start: listenToLock',
-      'start:\n  stateName: listenToLock',
-    ),
+    source: source.replace(startMarker, compiledStart),
   };
 }
 

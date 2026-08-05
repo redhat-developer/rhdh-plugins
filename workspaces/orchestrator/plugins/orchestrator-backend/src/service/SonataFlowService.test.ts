@@ -330,6 +330,8 @@ describe('SonataFlowService', () => {
         },
       });
 
+      expect(sendMock).toHaveBeenCalledTimes(1);
+
       const { messages } = sendMock.mock.calls[0][0];
       const parsed = JSON.parse(messages[0].value);
 
