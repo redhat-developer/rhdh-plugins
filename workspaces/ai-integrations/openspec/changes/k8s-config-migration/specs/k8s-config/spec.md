@@ -7,16 +7,16 @@ When the cluster sub-config contains `url` and `serviceAccountToken`, the connec
 #### Scenario: Direct config with all fields
 
 - **GIVEN** `app-config.yaml` has `catalog.providers.modelCatalog.kserve-kubeflow-connector.cluster-1` with:
-  - `url: https://api.my-cluster.example.com:6443`
-  - `serviceAccountToken: eyJhbG...`
-  - `skipTLSVerify: true`
-  - `caData: LS0tLS1C...`
+  - `url` set to a cluster API endpoint
+  - `serviceAccountToken` set to a valid token
+  - `skipTLSVerify: false`
+  - `caData` set to a base64-encoded CA certificate
 - **WHEN** the connector plugin initializes
 - **THEN** `KubeConfig.loadFromOptions()` is called with one cluster, one user, and one context
-- **AND** the cluster's `server` is `https://api.my-cluster.example.com:6443`
-- **AND** the user's `token` is the serviceAccountToken value
-- **AND** `skipTLSVerify` is `true`
-- **AND** `caData` is `LS0tLS1C...`
+- **AND** the cluster's `server` is the configured `url` value
+- **AND** the user's `token` is the configured `serviceAccountToken` value
+- **AND** `skipTLSVerify` is `false`
+- **AND** `caData` is the configured `caData` value
 - **AND** `loadFromDefault()` is NOT called
 
 #### Scenario: Direct config with minimum fields
