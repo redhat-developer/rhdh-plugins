@@ -32,6 +32,7 @@ import {
 } from '../../hooks/useWorkflowsCount';
 import { filterWorkflowOverviewsBySearch } from '../../utils/filterWorkflowOverviews';
 import { OrchestratorEmptyState } from '../ui/OrchestratorEmptyState';
+import { slicePaginatedPage } from './WorkflowsTabContent.helpers';
 import { WorkflowsTable } from './WorkflowsTable';
 
 type WorkflowsTabContentViewProps = {
@@ -93,15 +94,6 @@ export const WorkflowsTabContentView = ({
       ) : null}
     </Content>
   );
-};
-
-const slicePaginatedPage = (
-  overviews: WorkflowOverviewDTO[],
-  page: number,
-  pageSize: number,
-) => {
-  const start = page * pageSize;
-  return overviews.slice(start, start + pageSize);
 };
 
 const WorkflowsTabContentWithFetch = ({

@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import plugin from './alpha';
+import plugin, { adoptionInsightsTranslationsModule } from './alpha';
+import translationsModuleDefault from './adoptionInsightsTranslationsModuleExport';
 
 describe('adoption-insights alpha', () => {
   it('should export a valid frontend plugin', () => {
@@ -28,5 +29,16 @@ describe('adoption-insights alpha', () => {
   it('should have routes defined', () => {
     expect(plugin.routes).toBeDefined();
     expect(plugin.routes).toHaveProperty('root');
+  });
+
+  it('should export a translations module targeting the app plugin', () => {
+    expect(adoptionInsightsTranslationsModule).toBeDefined();
+    expect(adoptionInsightsTranslationsModule.$$type).toBe(
+      '@backstage/FrontendModule',
+    );
+  });
+
+  it('should export the translations module as default for NFS discovery', () => {
+    expect(translationsModuleDefault).toBe(adoptionInsightsTranslationsModule);
   });
 });

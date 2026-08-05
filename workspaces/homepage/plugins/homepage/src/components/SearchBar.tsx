@@ -19,6 +19,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { SearchBarBase } from '@backstage/plugin-search-react';
 
+import Button from '@mui/material/Button';
+import InputAdornment from '@mui/material/InputAdornment';
 import { styled } from '@mui/material/styles';
 
 import { useTranslation } from '../hooks/useTranslation';
@@ -39,6 +41,11 @@ const StyledSearchBar = styled(SearchBarBase)(({ theme }) => ({
   },
   '& .MuiOutlinedInput-notchedOutline, & fieldset': {
     border: 'none',
+  },
+  '& .MuiInputAdornment-positionEnd .MuiButton-root': {
+    color: theme.palette.text.primary,
+    fontWeight: theme.typography.fontWeightRegular,
+    textTransform: 'none',
   },
 }));
 
@@ -71,6 +78,12 @@ export const SearchBar = ({ path, queryParam }: SearchBarProps) => {
     navigate(`${url.pathname}${search ? '?' : ''}${search}`);
   }, [navigate, path, queryParam]);
 
+  const handleClear = useCallback(() => {
+    setValue('');
+  }, []);
+
+  const clearLabel = t('search.clearButton');
+
   return (
     <StyledSearchBar
       placeholder={t('search.placeholder')}
@@ -79,6 +92,24 @@ export const SearchBar = ({ path, queryParam }: SearchBarProps) => {
       onSubmit={handleSubmit}
       margin="none"
       inputProps={{ ref }}
+      clearButton={false}
+      endAdornment={
+        <InputAdornment position="end">
+          <Button
+            aria-label={clearLabel}
+            color="inherit"
+            size="small"
+            onClick={handleClear}
+            onKeyDown={event => {
+              if (event.key === 'Enter') {
+                event.stopPropagation();
+              }
+            }}
+          >
+            {clearLabel}
+          </Button>
+        </InputAdornment>
+      }
     />
   );
 };

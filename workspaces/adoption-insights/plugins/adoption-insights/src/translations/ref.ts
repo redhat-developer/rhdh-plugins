@@ -125,6 +125,7 @@ export const adoptionInsightsMessages = {
     filteredBy: 'filtered by',
     invalidDateFormat: 'Invalid date format',
     csvFilename: 'active_users',
+    loading: 'Loading',
   },
   permission: {
     title: 'Missing permissions',

@@ -195,6 +195,9 @@ spec:
   type: ai-model
   lifecycle: production
   owner: team-ml-ops
+  remotes:
+    - url: oci://registry.example.com/models/granite-3-code:latest
+      type: oci
 
 ---
 # ---------------------------------------------------------------------------

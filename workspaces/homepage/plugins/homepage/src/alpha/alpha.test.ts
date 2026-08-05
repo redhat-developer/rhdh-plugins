@@ -15,6 +15,7 @@
  */
 
 import { homepageTranslationsModule, homePageModule } from '.';
+import translationsModuleDefault from '../homepageTranslationsModuleExport';
 import { homepageTranslationRef, homepageTranslations } from '../translations';
 import { homePageLayoutExtension } from './extensions/homePageLayoutExtension';
 import {
@@ -25,6 +26,7 @@ import {
   searchBarWidget,
   featuredDocsCardWidget,
   catalogStarredWidget,
+  disableRandomJoke,
   disableToolkit,
   RecentlyVisitedWidget,
   TopVisitedWidget,
@@ -45,6 +47,10 @@ describe('Dynamic Home Page plugin Alpha (NFS)', () => {
         '@backstage/FrontendModule',
       );
       expect(homepageTranslationsModule.pluginId).toBe('app');
+    });
+
+    it('should export the translations module as default for NFS discovery', () => {
+      expect(translationsModuleDefault).toBe(homepageTranslationsModule);
     });
   });
 
@@ -76,6 +82,7 @@ describe('Dynamic Home Page plugin Alpha (NFS)', () => {
       expect(featuredDocsCardWidget).toBeDefined();
       expect(catalogStarredWidget).toBeDefined();
       expect(disableToolkit).toBeDefined();
+      expect(disableRandomJoke).toBeDefined();
       expect(RecentlyVisitedWidget).toBeDefined();
       expect(TopVisitedWidget).toBeDefined();
     });

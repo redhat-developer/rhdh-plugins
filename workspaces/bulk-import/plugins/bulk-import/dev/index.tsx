@@ -52,7 +52,7 @@ import MenuItem from '@mui/material/MenuItem';
 
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
-import bulkImportPlugin, { bulkImportTranslationsModule } from '../src/alpha';
+import bulkImportPlugin, { bulkImportTranslationsModule } from '../src';
 import {
   bulkImportApiRef,
   mockBulkImportApi,
@@ -60,18 +60,9 @@ import {
   mockConfigApi,
 } from './mocks';
 
-const bulkImportDevModule = createFrontendModule({
-  pluginId: 'bulk-import',
+const appDevOverrides = createFrontendModule({
+  pluginId: 'app',
   extensions: [
-    ApiBlueprint.make({
-      name: 'bulk-import-mock',
-      params: defineParams =>
-        defineParams({
-          api: bulkImportApiRef,
-          deps: {},
-          factory: () => mockBulkImportApi,
-        }),
-    }),
     ApiBlueprint.make({
       name: 'config-mock',
       params: defineParams =>
@@ -97,6 +88,21 @@ const bulkImportDevModule = createFrontendModule({
           api: catalogApiRef,
           deps: {},
           factory: () => mockCatalogApi as any,
+        }),
+    }),
+  ],
+});
+
+const bulkImportDevModule = createFrontendModule({
+  pluginId: 'bulk-import',
+  extensions: [
+    ApiBlueprint.make({
+      name: 'bulk-import-mock',
+      params: defineParams =>
+        defineParams({
+          api: bulkImportApiRef,
+          deps: {},
+          factory: () => mockBulkImportApi,
         }),
     }),
   ],
@@ -216,6 +222,7 @@ const app = createApp({
     bulkImportPlugin,
     bulkImportTranslationsModule,
     bulkImportDevModule,
+    appDevOverrides,
     rhdhThemeModule,
     devNavModule,
   ],

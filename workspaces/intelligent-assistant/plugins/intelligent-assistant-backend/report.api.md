@@ -28,6 +28,7 @@ export interface McpServerResponse {
   auth?: McpServerAuth;
   // (undocumented)
   enabled: boolean;
+  hasOrgToken: boolean;
   // (undocumented)
   hasToken: boolean;
   // (undocumented)

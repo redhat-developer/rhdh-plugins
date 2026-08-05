@@ -27,6 +27,89 @@
 - When a task is driven by local implementation specs, check `openspec/changes/` for proposal, design, tasks, and behavioral requirements
 - Prefer local workspace OpenSpec materials over external copies when both exist
 
+## Backstage Backend Conventions
+
+### Service-to-service auth (`targetPluginId`)
+
+When calling `auth.getPluginRequestToken({ onBehalfOf, targetPluginId })`,
+`targetPluginId` must be the **receiving** plugin's ID as registered in its
+`createBackendPlugin({ pluginId: '...' })` call. Look up the target plugin's
+`plugin.ts` and use the exact `pluginId` string — do not use a service ref ID,
+a variable reference like `someServiceRef.id`, or an arbitrary string.
+
+```ts
+// ✅ Correct — matches the target plugin's registered pluginId
+const token = await auth.getPluginRequestToken({
+  onBehalfOf: await auth.getOwnServiceCredentials(),
+  targetPluginId: 'kserve-kubeflow-connector', // from createBackendPlugin({ pluginId: 'kserve-kubeflow-connector' })
+});
+
+// ❌ Wrong — service ref IDs are not plugin IDs
+const token = await auth.getPluginRequestToken({
+  onBehalfOf: await auth.getOwnServiceCredentials(),
+  targetPluginId: urlReaderFactoriesServiceRef.id,
+});
+```
+
+### Config visibility annotations
+
+Fields in `config.d.ts` that contain backend-only values (cluster URLs, API
+endpoints, credentials, cluster names) must use `@visibility backend`. Only
+use `@visibility frontend` for values the browser genuinely needs to render
+the UI. Exposing backend-only values to the frontend is a security risk.
+
+```ts
+// ✅ Correct — backend-only fields use @visibility backend
+export interface Config {
+  catalog?: {
+    providers?: {
+      myPlugin?: {
+        /** @visibility backend */
+        apiUrl?: string;
+        /** @visibility backend */
+        clusterName?: string;
+      };
+    };
+  };
+}
+
+// ❌ Wrong — exposes backend secrets to the browser
+export interface Config {
+  catalog?: {
+    providers?: {
+      myPlugin?: {
+        /** @visibility frontend */
+        apiUrl?: string;
+      };
+    };
+  };
+}
+```
+
+### ConfigReader `getOptionalString()` edge case
+
+Backstage's `ConfigReader` throws `TypeError` when the underlying config
+value is an empty string (e.g., from env var substitution like
+`${UNSET_ENV_VAR:-}`), rather than returning `undefined`. When reading
+config values that may come from environment variable substitution, wrap
+calls in a try-catch that returns `undefined` (or a default) on
+`TypeError`:
+
+```ts
+function safeGetOptionalString(
+  config: Config,
+  key: string,
+): string | undefined {
+  try {
+    return config.getOptionalString(key);
+  } catch {
+    // ConfigReader throws TypeError for empty-string values
+    // from env var substitution like ${VAR:-}
+    return undefined;
+  }
+}
+```
+
 ## PR Conventions
 
 - All commits must have an `Assisted-by: <model>` footer below the sign offs

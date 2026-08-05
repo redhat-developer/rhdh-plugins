@@ -17,11 +17,25 @@
 import { useTranslation } from '../hooks/useTranslation';
 import { getTranslatedTextWithFallback } from '../translations/utils';
 
+/**
+ * Optional title overrides. Prefer `titleKey` (translation key) when provided;
+ * `title` is English fallback only (e.g. blueprint catalog string).
+ *
+ * Used by Content components so on-card headers translate at render time,
+ * while blueprint `params.title` remains English for AddWidgetDialog.
+ */
 export interface TranslatableCardTitleProps {
   title?: string;
   titleKey?: string;
 }
 
+/**
+ * Resolves the on-card title from `homepageTranslationRef`.
+ *
+ * @param defaultTitleKey - Plugin message key for this widget's title
+ * @param props - Optional `titleKey` override (legacy mount points) and
+ *   English `title` fallback from the blueprint
+ */
 export function useHomePageCardTitle(
   defaultTitleKey: string,
   props: TranslatableCardTitleProps,

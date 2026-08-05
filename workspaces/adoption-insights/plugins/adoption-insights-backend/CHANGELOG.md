@@ -1,5 +1,25 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-backend
 
+## 0.9.1
+
+### Patch Changes
+
+- d623d36: Refreshed `yarn.lock` to align resolved dependency versions.
+- Updated dependencies [d623d36]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.9.1
+
+## 0.9.0
+
+### Minor Changes
+
+- 8af2af2: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- 0acb261: Updated dependency `json-2-csv` to `^5.5.11`.
+- Updated dependencies [8af2af2]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.9.0
+
 ## 0.8.4
 
 ### Patch Changes

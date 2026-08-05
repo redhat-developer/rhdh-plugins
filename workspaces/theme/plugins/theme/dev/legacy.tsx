@@ -15,7 +15,7 @@
  */
 
 import { createDevApp } from '@backstage/dev-utils';
-import { getAllThemes } from '../src';
+import { getAllThemes } from '../src/legacyExports';
 import { ThemeTestPage } from './ThemeTestPage';
 
 createDevApp()

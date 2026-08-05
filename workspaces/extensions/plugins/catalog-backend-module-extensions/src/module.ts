@@ -61,11 +61,11 @@ export const catalogModuleExtensions = createBackendModule({
       }) {
         logger.info('Adding Extensions providers and processors to catalog...');
         const taskRunner = scheduler.createScheduledTaskRunner({
-          frequency: { minutes: 30 },
+          frequency: { hours: 1 },
           timeout: { minutes: 10 },
         });
         const delayedTaskRunner = scheduler.createScheduledTaskRunner({
-          frequency: { minutes: 30 },
+          frequency: { hours: 1 },
           timeout: { minutes: 10 },
           initialDelay: { seconds: 20 },
         });

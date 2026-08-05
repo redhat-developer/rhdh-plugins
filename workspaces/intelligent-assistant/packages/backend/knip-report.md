@@ -1,12 +1,11 @@
 # Knip report
 
-## Unused dependencies (10)
+## Unused dependencies (9)
 
 | Name                                                         | Location          | Severity |
 | :----------------------------------------------------------- | :---------------- | :------- |
 | @backstage/plugin-permission-backend-module-allow-all-policy | package.json:37:6 | error    |
 | @backstage/plugin-search-backend-node                        | package.json:46:6 | error    |
-| @backstage/plugin-permission-backend                         | package.json:36:6 | error    |
 | @backstage/plugin-permission-common                          | package.json:38:6 | error    |
 | @backstage/plugin-permission-node                            | package.json:39:6 | error    |
 | @backstage/plugin-auth-node                                  | package.json:31:6 | error    |

@@ -139,6 +139,7 @@ const InsightsHeader: FC<InsightsHeaderProps> = () => {
         value={selectedOption}
         onChange={handleChange}
         renderValue={(selected: string) => getLabel(selected)}
+        inputProps={{ 'aria-label': t('header.dateRange.title') }}
         sx={{
           minWidth: 190,
           marginRight: '10px',

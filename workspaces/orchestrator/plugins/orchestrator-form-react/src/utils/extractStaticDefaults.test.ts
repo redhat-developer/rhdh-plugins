@@ -116,4 +116,103 @@ describe('extractStaticDefaults', () => {
       foo: 'existing',
     });
   });
+
+  it('resolves $ref defaults from root schema paths', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      $defs: {
+        Named: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', default: 'from-ref' },
+          },
+        },
+      },
+      properties: {
+        person: { $ref: '#/$defs/Named' },
+      },
+    };
+
+    expect(extractStaticDefaults(schema)).toEqual({
+      person: { name: 'from-ref' },
+    });
+  });
+
+  it('applies defaults from anyOf, if/then/else, and dependencies', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      properties: {
+        mode: { type: 'string' },
+      },
+      anyOf: [
+        {
+          properties: {
+            anyField: { type: 'string', default: 'any' },
+          },
+        },
+      ],
+      if: {
+        properties: {
+          mode: { const: 'on' },
+        },
+      },
+      then: {
+        properties: {
+          thenField: { type: 'string', default: 'then' },
+        },
+      },
+      else: {
+        properties: {
+          elseField: { type: 'string', default: 'else' },
+        },
+      },
+      dependencies: {
+        mode: {
+          properties: {
+            depField: { type: 'string', default: 'dep' },
+          },
+        },
+      },
+    };
+
+    expect(extractStaticDefaults(schema)).toEqual({
+      anyField: 'any',
+      thenField: 'then',
+      elseField: 'else',
+      depField: 'dep',
+    });
+  });
+
+  it('merges nested defaults with existing nested form data', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      properties: {
+        nested: {
+          type: 'object',
+          properties: {
+            a: { type: 'string', default: 'default-a' },
+            b: { type: 'string', default: 'default-b' },
+          },
+        },
+      },
+    };
+
+    expect(
+      extractStaticDefaults(schema, { nested: { a: 'existing-a' } }),
+    ).toEqual({
+      nested: { a: 'existing-a', b: 'default-b' },
+    });
+  });
+
+  it('ignores boolean schema nodes while processing properties', () => {
+    const schema: JSONSchema7 = {
+      type: 'object',
+      properties: {
+        allowed: { type: 'string', default: 'ok' },
+        denied: true,
+      },
+    };
+
+    expect(extractStaticDefaults(schema)).toEqual({ allowed: 'ok' });
+  });
 });

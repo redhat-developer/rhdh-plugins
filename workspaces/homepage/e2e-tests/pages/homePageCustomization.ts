@@ -232,7 +232,7 @@ export class HomePageCustomization {
     await this.page.waitForTimeout(1000); // Wait for dialog to open
 
     // Select the specific widget type from the dialog
-    await this.page.getByRole('button', { name: title }).click();
+    await this.page.getByRole('button', { name: title, exact: true }).click();
     await this.page.waitForTimeout(1000);
   }
 

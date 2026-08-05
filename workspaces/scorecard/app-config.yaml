@@ -14,7 +14,7 @@ app:
           path: /
 
     # Scorecard tab: entity shows tab if it matches any filter below.
-    - entity-content:catalog/entity-content-scorecard:
+    - entity-content:scorecard/entity-content-scorecard:
         config:
           allowedFilters:
             - kind: component # e.g. Component with spec.type: website
@@ -183,8 +183,7 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
-    guest:
-      userEntityRef: user:development/guest
+    guest: {}
 
 scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
@@ -243,12 +242,12 @@ scorecard:
       title: GitHub Open PRs KPI
       type: statusGrouped
       description: This KPI is provide information about GitHub open PRs grouped by status.
-      metricId: github.open_prs
+      metricId: github.openPRs
     openPrsWeightedKpi:
-      title: GitHub Open PRs (weighted health)
+      title: GitHub Open PRs KPI (weighted health)
       type: weightedStatusScore
       description: Weighted health score for open PRs by threshold status across your entities.
-      metricId: github.open_prs
+      metricId: github.openPRs
       options:
         statusScores:
           success: 100
@@ -269,30 +268,66 @@ scorecard:
       title: Jira Open Issues KPI
       type: statusGrouped
       description: This KPI is provide information about Jira open issues grouped by status.
-      metricId: jira.open_issues
+      metricId: jira.openIssues
     licenseFileExistsKpi:
       title: License File Exists KPI
       type: statusGrouped
       description: This KPI is provide information about whether the license file exists in the repository.
       metricId: filecheck.license
-  plugins:
+    totalOpenPrs:
+      title: Total Open PRs
+      description: Sum of open PRs across owned entities
+      type: sum
+      metricId: github.openPRs
+      options:
+        thresholds:
+          rules:
+            - key: success
+              expression: '>=80'
+              color: '#6bb300' # green
+            - key: warning
+              expression: '<80'
+              color: 'rgb(224, 189, 108)' # light orange
+    avgOpenIssues:
+      title: Average Open Issues
+      description: Mean open issues count per entity
+      type: average
+      metricId: jira.openIssues
+    entitiesWithOpenPrs:
+      title: Entities with Open PRs
+      description: Count of entities with a stored open-prs value
+      type: count
+      metricId: github.openPRs
+    maxOpenPrs:
+      title: Maximum Open PRs
+      description: Maximum open PR count per entity
+      type: max
+      metricId: github.openPRs
+    minOpenIssues:
+      title: Minimum Open Issues
+      description: Minimum open issues count per entity
+      type: min
+      metricId: jira.openIssues
+  metricProviders:
     jira:
-      open_issues:
+      openIssues:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
     github:
-      open_prs:
+      openPRs:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
     filecheck:
-      files:
-        license: 'LICENSE'
-        codeowners: 'CODEOWNERS'
-      schedule:
-        frequency: { minutes: 5 }
-        timeout: { minutes: 10 }
-        initialDelay: { seconds: 10 }
+      fileExistence:
+        options:
+          files:
+            license: 'LICENSE'
+            codeowners: 'CODEOWNERS'
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }

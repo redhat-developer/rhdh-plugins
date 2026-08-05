@@ -220,6 +220,7 @@ const orchestratorTranslationJa = createTranslationMessages({
     'workflow.fields.version': 'バージョン',
     'workflow.fields.workflow': 'ワークフロー',
     'workflow.fields.workflowId': '実行 ID',
+    'workflow.fields.workflowIdCopy': '実行 ID をコピー',
     'workflow.fields.workflowIdCopied':
       '実行 ID がクリップボードにコピーされました',
     'workflow.fields.workflowStatus': 'ワークフローステータス',

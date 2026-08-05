@@ -16,8 +16,6 @@
 
 import { Route, Routes } from 'react-router-dom';
 
-import { createGenerateClassName, StylesProvider } from '@mui/styles';
-
 import {
   entityInstanceRouteRef,
   entityWorkflowRouteRef,
@@ -31,34 +29,28 @@ import { OrchestratorPage } from './OrchestratorPage/OrchestratorPage';
 import { WorkflowInstancePage } from './WorkflowInstancePage/WorkflowInstancePage';
 import { WorkflowPage } from './WorkflowPage/WorkflowPage';
 
-const generateClassName = createGenerateClassName({
-  seed: 'orchestrator',
-});
-
 export const Router = () => {
   return (
-    <StylesProvider generateClassName={generateClassName}>
-      {/* relative to orchestrator/ */}
-      <Routes>
-        <Route path="/*" element={<OrchestratorPage />} />
-        <Route path={`${workflowRouteRef.path}/*`} element={<WorkflowPage />} />
-        <Route
-          path={executeWorkflowRouteRef.path}
-          element={<ExecuteWorkflowPage />}
-        />
-        <Route
-          path={workflowInstanceRouteRef.path}
-          element={<WorkflowInstancePage />}
-        />
-        <Route
-          path={entityWorkflowRouteRef.path}
-          element={<CatalogWorkflowPage />}
-        />
-        <Route
-          path={entityInstanceRouteRef.path}
-          element={<WorkflowInstancePage />}
-        />
-      </Routes>
-    </StylesProvider>
+    // relative to orchestrator/
+    <Routes>
+      <Route path="/*" element={<OrchestratorPage />} />
+      <Route path={`${workflowRouteRef.path}/*`} element={<WorkflowPage />} />
+      <Route
+        path={executeWorkflowRouteRef.path}
+        element={<ExecuteWorkflowPage />}
+      />
+      <Route
+        path={workflowInstanceRouteRef.path}
+        element={<WorkflowInstancePage />}
+      />
+      <Route
+        path={entityWorkflowRouteRef.path}
+        element={<CatalogWorkflowPage />}
+      />
+      <Route
+        path={entityInstanceRouteRef.path}
+        element={<WorkflowInstancePage />}
+      />
+    </Routes>
   );
 };

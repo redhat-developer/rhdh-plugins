@@ -71,11 +71,15 @@ function createBackendConfig(pluginSources: string[]) {
       },
     },
     scorecard: {
-      plugins: {
+      metricProviders: {
         filecheck: {
-          files: {
-            license: 'LICENSE',
-            codeowners: 'CODEOWNERS',
+          fileExistence: {
+            options: {
+              files: {
+                license: 'LICENSE',
+                codeowners: 'CODEOWNERS',
+              },
+            },
           },
         },
       },

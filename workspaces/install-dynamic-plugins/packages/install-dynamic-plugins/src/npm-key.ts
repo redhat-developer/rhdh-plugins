@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { isLocalPath } from './protocols';
 
 // [@scope/]name[@version]
 const NPM_PACKAGE_PATTERN = /^(@[^/]+\/)?([^@]+)(?:@(.+))?$/;
@@ -32,7 +33,7 @@ const GIT_URL_PATTERNS: RegExp[] = [
 
 export function npmPluginKey(pkg: string): string {
   // Local packages and tarballs have no version to strip.
-  if (pkg.startsWith('./') || pkg.endsWith('.tgz')) return pkg;
+  if (isLocalPath(pkg) || pkg.endsWith('.tgz')) return pkg;
 
   // Aliases: "my-alias@npm:real-pkg@1.2.3" -> "my-alias@npm:real-pkg"
   const aliasKey = tryParseAlias(pkg);

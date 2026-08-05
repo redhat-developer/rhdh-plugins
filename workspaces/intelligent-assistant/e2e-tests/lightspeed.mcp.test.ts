@@ -18,6 +18,7 @@ import { test, expect, Page } from '@playwright/test';
 import {
   conversations,
   E2E_MCP_VALID_TOKEN,
+  mcpServer,
   mcpServerScenarios,
   tokenCredentialNoUrlScenario,
   tokenCredentialValidationScenario,
@@ -29,10 +30,15 @@ import { openLightspeed, sendMessage } from './utils/testHelper';
 import {
   openChatbot,
   selectDisplayMode,
+  type DisplayMode,
   expectBackstagePageVisible,
   verifyMcpSettingsPanel,
   openMcpSettingsPanel,
   closeMcpSettingsPanel,
+  mcpConfigureModalSaveButton,
+  mcpCredentialConfigureModal,
+  mcpEditServerButton,
+  mcpPersonalAccessTokenInput,
   mcpServerToggle,
   mcpServerRow,
   clickMcpServersStatusColumn,
@@ -45,6 +51,7 @@ import {
   mockConversations,
   mockMcpServers,
   mockQuery,
+  type MockMcpServersOptions,
 } from './utils/devMode';
 import {
   LightspeedMessages,
@@ -67,10 +74,23 @@ test.describe('Intelligent assistant MCP', () => {
   });
 
   test.describe('Chatbot MCP settings', () => {
-    async function runMcpPanelScenario(mcpList: McpServersListMock) {
+    async function openChatbotWithMcpMock(
+      mcpList: McpServersListMock = mcpServerScenarios.default,
+    ) {
       await mockMcpServers(sharedPage, mcpList);
       await openChatbot(sharedPage, translations);
+    }
+
+    async function verifyMcpPanelScenario(mcpList: McpServersListMock) {
+      await openChatbotWithMcpMock(mcpList);
       await verifyMcpSettingsPanel(sharedPage, translations, mcpList);
+    }
+
+    async function openMcpPanelWithMock(
+      mcpList: McpServersListMock = mcpServerScenarios.default,
+    ) {
+      await openChatbotWithMcpMock(mcpList);
+      await openMcpSettingsPanel(sharedPage, translations);
     }
 
     test.beforeEach(async () => {
@@ -81,216 +101,446 @@ test.describe('Intelligent assistant MCP', () => {
       await mockMcpServers(sharedPage);
     });
 
-    test('Overlay', async () => {
-      await expectBackstagePageVisible(sharedPage);
-      await openChatbot(sharedPage, translations);
-      await verifyMcpSettingsPanel(sharedPage, translations);
-    });
-
-    test('Dock to Window', async () => {
-      await openChatbot(sharedPage, translations);
-      await selectDisplayMode(sharedPage, translations, 'Dock to window');
-      await verifyMcpSettingsPanel(sharedPage, translations);
-    });
-
-    test('Fullscreen', async () => {
-      await openChatbot(sharedPage, translations);
-      await selectDisplayMode(sharedPage, translations, 'Fullscreen');
-      await verifyMcpSettingsPanel(sharedPage, translations);
-    });
-
-    test('Empty list', async () => {
-      await runMcpPanelScenario(mcpServerScenarios.empty);
-    });
-
-    test.describe('Two-row mocks', () => {
-      test('All healthy', async () => {
-        await runMcpPanelScenario(mcpServerScenarios.allHealthy);
+    test.describe('Panel rendering', () => {
+      test('renders in overlay mode', async () => {
+        await expectBackstagePageVisible(sharedPage);
+        await openChatbot(sharedPage, translations);
+        await verifyMcpSettingsPanel(sharedPage, translations);
       });
 
-      test('Failed + OK', async () => {
-        await runMcpPanelScenario(mcpServerScenarios.errorAndOk);
+      test('renders in docked mode', async () => {
+        await openChatbot(sharedPage, translations);
+        await selectDisplayMode(sharedPage, translations, 'Dock to window');
+        await verifyMcpSettingsPanel(sharedPage, translations);
       });
 
-      test('Disabled + active', async () => {
-        await runMcpPanelScenario(mcpServerScenarios.disabledAndOk);
+      test('renders in fullscreen mode', async () => {
+        await openChatbot(sharedPage, translations);
+        await selectDisplayMode(sharedPage, translations, 'Fullscreen');
+        await verifyMcpSettingsPanel(sharedPage, translations);
       });
 
-      test('Both need token', async () => {
-        await runMcpPanelScenario(mcpServerScenarios.twoTokenRequired);
+      test('renders empty state when no MCP servers are configured', async () => {
+        await verifyMcpPanelScenario(mcpServerScenarios.empty);
+      });
+
+      test.describe('scenario coverage', () => {
+        test('renders all healthy servers', async () => {
+          await verifyMcpPanelScenario(mcpServerScenarios.allHealthy);
+        });
+
+        test('renders failed and healthy servers together', async () => {
+          await verifyMcpPanelScenario(mcpServerScenarios.errorAndOk);
+        });
+
+        test('renders disabled and active servers together', async () => {
+          await verifyMcpPanelScenario(mcpServerScenarios.disabledAndOk);
+        });
+
+        test('renders token-required servers', async () => {
+          await verifyMcpPanelScenario(mcpServerScenarios.twoTokenRequired);
+        });
       });
     });
 
-    test('Sort works as expected', async () => {
-      await mockMcpServers(sharedPage, mcpServerScenarios.allHealthy);
-      await openChatbot(sharedPage, translations);
-      await openMcpSettingsPanel(sharedPage, translations);
+    test.describe('Table interactions', () => {
+      test('sorts rows by server name', async () => {
+        await openMcpPanelWithMock(mcpServerScenarios.allHealthy);
 
-      const rows = mcpServersTableBodyRows(sharedPage, translations);
-      await expect(rows.nth(0)).toContainText('alpha-mcp');
-      await expect(rows.nth(1)).toContainText('beta-mcp');
+        const rows = mcpServersTableBodyRows(sharedPage, translations);
+        await expect(rows.nth(0)).toContainText('alpha-mcp');
+        await expect(rows.nth(1)).toContainText('beta-mcp');
 
-      await clickMcpServersNameColumn(sharedPage, translations);
-      await expect(rows.nth(0)).toContainText('beta-mcp');
-      await expect(rows.nth(1)).toContainText('alpha-mcp');
+        await clickMcpServersNameColumn(sharedPage, translations);
+        await expect(rows.nth(0)).toContainText('beta-mcp');
+        await expect(rows.nth(1)).toContainText('alpha-mcp');
 
-      await closeMcpSettingsPanel(sharedPage, translations);
+        await closeMcpSettingsPanel(sharedPage, translations);
+      });
+
+      test('sorts rows by status rank and tool-count tie-breaker', async () => {
+        const statusSortScenario: McpServersListMock = {
+          servers: [
+            mcpServer('ok-many-tools', { toolCount: 5 }),
+            mcpServer('failed-server', { status: 'error', toolCount: 0 }),
+            mcpServer('token-required-server', {
+              hasToken: false,
+              hasOrgToken: false,
+              toolCount: 0,
+              status: 'unknown',
+            }),
+            mcpServer('disabled-server', { enabled: false, toolCount: 8 }),
+            mcpServer('ok-one-tool', { toolCount: 1 }),
+            mcpServer('unknown-server', { status: 'unknown', toolCount: 4 }),
+          ],
+        };
+
+        await openMcpPanelWithMock(statusSortScenario);
+
+        const rows = mcpServersTableBodyRows(sharedPage, translations);
+        await clickMcpServersStatusColumn(sharedPage, translations);
+
+        await expect(rows.nth(0)).toContainText('ok-one-tool');
+        await expect(rows.nth(1)).toContainText('ok-many-tools');
+        await expect(rows.nth(2)).toContainText('disabled-server');
+        await expect(rows.nth(3)).toContainText('unknown-server');
+        await expect(rows.nth(4)).toContainText('token-required-server');
+        await expect(rows.nth(5)).toContainText('failed-server');
+
+        await clickMcpServersStatusColumn(sharedPage, translations);
+
+        await expect(rows.nth(0)).toContainText('failed-server');
+        await expect(rows.nth(1)).toContainText('token-required-server');
+        await expect(rows.nth(2)).toContainText('unknown-server');
+        await expect(rows.nth(3)).toContainText('disabled-server');
+        await expect(rows.nth(4)).toContainText('ok-many-tools');
+        await expect(rows.nth(5)).toContainText('ok-one-tool');
+
+        await closeMcpSettingsPanel(sharedPage, translations);
+      });
+
+      test('toggles server enabled state from the table', async () => {
+        const serverName = 'mcp-integration-tools';
+        await openMcpPanelWithMock();
+
+        const row = mcpServerRow(sharedPage, serverName, translations);
+        await clickMcpServersStatusColumn(sharedPage, translations);
+        await mcpServerToggle(sharedPage, serverName, translations).click();
+        await expect(
+          row.getByText(translations['mcp.settings.status.disabled'], {
+            exact: true,
+          }),
+        ).toBeVisible();
+
+        await mcpServerToggle(sharedPage, serverName, translations).click();
+        await expect(
+          row.getByText(formatMcpToolCountStatus(translations, 14), {
+            exact: true,
+          }),
+        ).toBeVisible();
+
+        await closeMcpSettingsPanel(sharedPage, translations);
+      });
     });
 
-    test('Toggle works as expected', async () => {
-      const serverName = 'mcp-integration-tools';
-      await openChatbot(sharedPage, translations);
-      await openMcpSettingsPanel(sharedPage, translations);
-
-      const row = mcpServerRow(sharedPage, serverName, translations);
-      await clickMcpServersStatusColumn(sharedPage, translations);
-      await mcpServerToggle(sharedPage, serverName, translations).click();
-      await expect(
-        row.getByText(translations['mcp.settings.status.disabled'], {
-          exact: true,
-        }),
-      ).toBeVisible();
-
-      await mcpServerToggle(sharedPage, serverName, translations).click();
-      await expect(
-        row.getByText(formatMcpToolCountStatus(translations, 14), {
-          exact: true,
-        }),
-      ).toBeVisible();
-
-      await closeMcpSettingsPanel(sharedPage, translations);
-    });
-
-    test.describe('Configure MCP server token', () => {
+    test.describe('Configure MCP server modal', () => {
       let mcpToken: McpConfigureTokenPage;
+      const credentialServerName = 'credential-test-mcp';
+      const noUrlServerName = 'no-url-mcp';
+
+      async function openCredentialServerModal(
+        mode: DisplayMode,
+        mockOptions?: MockMcpServersOptions,
+      ) {
+        await mcpToken.gotoMcpSettings(
+          tokenCredentialValidationScenario,
+          mode,
+          mockOptions,
+        );
+        await mcpToken.seeRowStatus(
+          credentialServerName,
+          translations['mcp.settings.status.tokenRequired'],
+        );
+        await mcpToken.openEditServer(credentialServerName);
+      }
+
+      async function openNoUrlServerModal(mode: DisplayMode) {
+        await mcpToken.gotoMcpSettings(tokenCredentialNoUrlScenario, mode);
+        await mcpToken.openEditServer(noUrlServerName);
+      }
 
       test.beforeEach(() => {
         mcpToken = new McpConfigureTokenPage(sharedPage, translations);
       });
 
-      test('Valid token saves and row shows tools — Overlay', async () => {
-        await mcpToken.gotoMcpSettings(
-          tokenCredentialValidationScenario,
-          'Overlay',
-        );
+      test.describe('Token validation and persistence', () => {
+        test('saves a valid personal token from token-required state — Overlay', async () => {
+          await openCredentialServerModal('Overlay');
 
-        const serverName = 'credential-test-mcp';
-        await mcpToken.seeRowStatus(
-          serverName,
-          translations['mcp.settings.status.tokenRequired'],
-        );
+          const modal = mcpCredentialConfigureModal(sharedPage);
+          const tokenRequiredSwitch = modal.getByRole('switch', {
+            name: evaluateMessage(
+              translations['mcp.settings.toggleServerAriaLabel'],
+              credentialServerName,
+            ),
+          });
+          await expect(tokenRequiredSwitch).toBeDisabled();
 
-        await mcpToken.openEditServer(serverName);
-        await mcpToken.typeToken(E2E_MCP_VALID_TOKEN);
-        await mcpToken.save();
+          await mcpToken.typeToken(E2E_MCP_VALID_TOKEN);
+          await mcpToken.save();
 
-        await mcpToken.seeTokenHidden();
-        await mcpToken.seeRowStatus(
-          serverName,
-          formatMcpToolCountStatus(translations, 5),
-        );
+          await mcpToken.seeTokenHidden();
+          await mcpToken.seeRowStatus(
+            credentialServerName,
+            formatMcpToolCountStatus(translations, 5),
+          );
+          await mcpToken.closeMcpPanel();
+        });
 
-        await mcpToken.closeMcpPanel();
+        test('shows invalid credentials, then succeeds with a valid token — Dock to window', async () => {
+          await openCredentialServerModal('Dock to window');
+
+          await mcpToken.typeToken('bad-token');
+          await mcpToken.save();
+          await mcpToken.seeMessage(
+            translations['mcp.settings.token.invalidCredentials'],
+          );
+
+          await mcpToken.typeToken(E2E_MCP_VALID_TOKEN);
+          await mcpToken.save();
+          await mcpToken.seeTokenHidden();
+          await mcpToken.seeRowStatus(
+            credentialServerName,
+            formatMcpToolCountStatus(translations, 5),
+          );
+          await mcpToken.closeMcpPanel();
+        });
+
+        test('cancel closes modal without persisting token draft — Fullscreen', async () => {
+          await openCredentialServerModal('Fullscreen');
+
+          await mcpToken.typeToken('draft-token');
+          await mcpToken.cancel();
+
+          await mcpToken.seeModalClosed();
+          await mcpToken.seeRowStatus(
+            credentialServerName,
+            translations['mcp.settings.status.tokenRequired'],
+          );
+          await mcpToken.closeMcpPanel();
+        });
+
+        test('clear token input empties PAT and restores helper text — Fullscreen', async () => {
+          await openNoUrlServerModal('Fullscreen');
+
+          await mcpToken.typeThenClearToken('e2e-draft-personal-access-token');
+          await mcpToken.cancel();
+          await mcpToken.closeMcpPanel();
+        });
       });
 
-      test('Invalid token then valid token — Dock to window', async () => {
-        await mcpToken.gotoMcpSettings(
-          tokenCredentialValidationScenario,
-          'Dock to window',
-        );
-
-        const serverName = 'credential-test-mcp';
-        await mcpToken.openEditServer(serverName);
-
-        await mcpToken.typeToken('bad-token');
-        await mcpToken.save();
-        await mcpToken.seeMessage(
-          translations['mcp.settings.token.invalidCredentials'],
-        );
-
-        await mcpToken.typeToken(E2E_MCP_VALID_TOKEN);
-        await mcpToken.save();
-        await mcpToken.seeTokenHidden();
-        await mcpToken.seeRowStatus(
-          serverName,
-          formatMcpToolCountStatus(translations, 5),
-        );
-
-        await mcpToken.closeMcpPanel();
-      });
-
-      test('Cancel discards without saving — Fullscreen', async () => {
-        await mcpToken.gotoMcpSettings(
-          tokenCredentialValidationScenario,
-          'Fullscreen',
-        );
-
-        const serverName = 'credential-test-mcp';
-        await mcpToken.openEditServer(serverName);
-        await mcpToken.typeToken('draft-token');
-        await mcpToken.cancel();
-
-        await mcpToken.seeModalClosed();
-        await mcpToken.seeRowStatus(
-          serverName,
-          translations['mcp.settings.status.tokenRequired'],
-        );
-
-        await mcpToken.closeMcpPanel();
-      });
-
-      test('Server validation failure shows error — Overlay', async () => {
-        await mcpToken.gotoMcpSettings(
-          tokenCredentialValidationScenario,
-          'Overlay',
-          {
-            failServerValidateFor: 'credential-test-mcp',
+      test.describe('Validation errors', () => {
+        test('shows server validation failure after save — Overlay', async () => {
+          await openCredentialServerModal('Overlay', {
+            failServerValidateFor: credentialServerName,
             failServerValidateError:
               translations['mcp.settings.token.validationFailed'],
-          },
-        );
+          });
 
-        const serverName = 'credential-test-mcp';
-        await mcpToken.openEditServer(serverName);
-        await mcpToken.typeToken(E2E_MCP_VALID_TOKEN);
-        await mcpToken.save();
+          await mcpToken.typeToken(E2E_MCP_VALID_TOKEN);
+          await mcpToken.save();
+          await mcpToken.seeMessage(
+            translations['mcp.settings.token.validationFailed'],
+          );
+          await mcpToken.cancel();
+          await mcpToken.closeMcpPanel();
+        });
 
-        await mcpToken.seeMessage(
-          translations['mcp.settings.token.validationFailed'],
-        );
-        await mcpToken.cancel();
-        await mcpToken.closeMcpPanel();
+        test('shows URL-unavailable error when server URL is missing — Dock to window', async () => {
+          await openNoUrlServerModal('Dock to window');
+
+          await mcpToken.typeToken(E2E_MCP_VALID_TOKEN);
+          await mcpToken.save();
+          await mcpToken.seeMessage(
+            translations['mcp.settings.token.urlUnavailableForValidation'],
+          );
+          await mcpToken.cancel();
+          await mcpToken.closeMcpPanel();
+        });
       });
 
-      test('Missing server URL shows error — Dock to window', async () => {
-        await mcpToken.gotoMcpSettings(
-          tokenCredentialNoUrlScenario,
-          'Dock to window',
-        );
+      test.describe('Credential source modes', () => {
+        test('shows DCR-only modal content for DCR-authenticated servers — Overlay', async () => {
+          const serverName = 'mcp-integration-tools';
+          const dcrServerTools = [
+            'mcp_list_tools',
+            'mcp_create_incident',
+            'mcp_get_service_status',
+          ];
+          const dcrScenario: McpServersListMock = {
+            servers: [
+              mcpServer(serverName, {
+                url: 'http://localhost:7008/api/mcp-actions/v1',
+                auth: 'dcr',
+                hasToken: true,
+                hasUserToken: false,
+                hasOrgToken: false,
+                enabled: true,
+                status: 'connected',
+                toolCount: dcrServerTools.length,
+              }),
+            ],
+          };
 
-        const serverName = 'no-url-mcp';
-        await mcpToken.openEditServer(serverName);
-        await mcpToken.typeToken(E2E_MCP_VALID_TOKEN);
-        await mcpToken.save();
+          await mcpToken.gotoMcpSettings(dcrScenario, 'Overlay', {
+            validationToolsByServer: {
+              [serverName]: dcrServerTools,
+            },
+          });
+          await mcpEditServerButton(
+            sharedPage,
+            serverName,
+            translations,
+          ).click();
 
-        await mcpToken.seeMessage(
-          translations['mcp.settings.token.urlUnavailableForValidation'],
-        );
-        await mcpToken.cancel();
-        await mcpToken.closeMcpPanel();
-      });
+          const modal = mcpCredentialConfigureModal(sharedPage);
+          await expect(modal).toContainText(
+            translations['mcp.settings.modalDescriptionDcr'],
+          );
+          await expect(
+            modal.getByRole('button', { name: translations['common.cancel'] }),
+          ).toBeVisible();
+          await expect(
+            modal.getByRole('button', { name: translations['modal.save'] }),
+          ).toBeDisabled();
+          await expect(mcpPersonalAccessTokenInput(sharedPage)).toBeHidden();
+          for (const toolName of dcrServerTools) {
+            await expect(
+              modal.getByText(toolName, { exact: true }),
+            ).toBeVisible();
+          }
 
-      test('Clear token input empties PAT — Fullscreen', async () => {
-        await mcpToken.gotoMcpSettings(
-          tokenCredentialNoUrlScenario,
-          'Fullscreen',
-        );
+          await modal
+            .getByRole('button', {
+              name: translations['mcp.settings.closeConfigureModalAriaLabel'],
+            })
+            .click();
+          await mcpToken.closeMcpPanel();
+        });
 
-        await mcpToken.openEditServer('no-url-mcp');
-        await mcpToken.typeThenClearToken('e2e-draft-personal-access-token');
+        test('switching to organization token hides personal token input — Overlay', async () => {
+          const serverName = 'org-backed-mcp';
+          const orgServerTools = ['github.list-repos', 'github.get-repo'];
+          const organizationTokenScenario: McpServersListMock = {
+            servers: [
+              mcpServer(serverName, {
+                url: 'http://localhost:8555/mcp',
+                hasUserToken: true,
+                hasOrgToken: true,
+                hasToken: true,
+                toolCount: 2,
+                status: 'connected',
+              }),
+            ],
+          };
 
-        await mcpToken.cancel();
-        await mcpToken.closeMcpPanel();
+          await mcpToken.gotoMcpSettings(organizationTokenScenario, 'Overlay', {
+            validationToolsByServer: {
+              [serverName]: orgServerTools,
+            },
+          });
+          await mcpToken.openEditServer(serverName);
+
+          const modal = mcpCredentialConfigureModal(sharedPage);
+          const organizationTokenRadio = modal.getByRole('radio', {
+            name: translations[
+              'mcp.settings.modal.credentialMode.organization'
+            ],
+          });
+          const personalTokenRadio = modal.getByRole('radio', {
+            name: translations['mcp.settings.modal.credentialMode.personal'],
+          });
+
+          await expect(personalTokenRadio).toBeChecked();
+          for (const toolName of orgServerTools) {
+            await expect(
+              modal.getByText(toolName, { exact: true }),
+            ).toBeVisible();
+          }
+          await organizationTokenRadio.click();
+          await expect(organizationTokenRadio).toBeChecked();
+          await expect(mcpPersonalAccessTokenInput(sharedPage)).toBeHidden();
+          await expect(
+            mcpConfigureModalSaveButton(sharedPage, translations),
+          ).toBeEnabled();
+
+          await mcpToken.save();
+          await mcpToken.seeModalClosed();
+          await mcpToken.seeRowStatus(
+            serverName,
+            formatMcpToolCountStatus(translations, 2),
+          );
+          await mcpToken.closeMcpPanel();
+        });
+
+        test('removing a personal token changes status to token required — Overlay', async () => {
+          const serverName = 'personal-only-mcp';
+          const personalServerTools = ['jira.search-issues', 'jira.get-issue'];
+          const personalTokenScenario: McpServersListMock = {
+            servers: [
+              mcpServer(serverName, {
+                url: 'http://localhost:8666/mcp',
+                hasUserToken: true,
+                hasOrgToken: false,
+                hasToken: true,
+                toolCount: 2,
+                status: 'connected',
+              }),
+            ],
+          };
+
+          await mcpToken.gotoMcpSettings(personalTokenScenario, 'Overlay', {
+            validationToolsByServer: {
+              [serverName]: personalServerTools,
+            },
+          });
+          await mcpToken.seeRowStatus(
+            serverName,
+            formatMcpToolCountStatus(translations, 2),
+          );
+          await mcpToken.openEditServer(serverName);
+
+          const modal = mcpCredentialConfigureModal(sharedPage);
+          const removePersonalTokenButton = modal.getByRole('button', {
+            name: translations['mcp.settings.removePersonalToken'],
+          });
+
+          await expect(
+            modal.getByText(
+              formatMcpToolCountStatus(
+                translations,
+                personalServerTools.length,
+              ),
+              {
+                exact: true,
+              },
+            ),
+          ).toBeVisible();
+          for (const toolName of personalServerTools) {
+            await expect(
+              modal.getByText(toolName, { exact: true }),
+            ).toBeVisible();
+          }
+          await expect(removePersonalTokenButton).toBeVisible();
+          await removePersonalTokenButton.click();
+          await expect(
+            modal.getByText(
+              translations['mcp.settings.modal.tokenRemovedWarning'],
+            ),
+          ).toBeVisible();
+          await expect(
+            modal.getByText(translations['mcp.settings.status.tokenRequired'], {
+              exact: true,
+            }),
+          ).toBeVisible();
+          for (const toolName of personalServerTools) {
+            await expect(
+              modal.getByText(toolName, { exact: true }),
+            ).toBeHidden();
+          }
+          await expect(removePersonalTokenButton).toBeDisabled();
+          await expect(
+            mcpConfigureModalSaveButton(sharedPage, translations),
+          ).toBeEnabled();
+
+          await mcpToken.save();
+          await mcpToken.seeModalClosed();
+          await mcpToken.seeRowStatus(
+            serverName,
+            translations['mcp.settings.status.tokenRequired'],
+          );
+          await mcpToken.closeMcpPanel();
+        });
       });
     });
   });

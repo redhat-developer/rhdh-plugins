@@ -29,4 +29,7 @@ export {
   resolveStatusColor,
 } from './statusUtils';
 export { getThresholdRuleColor, getThresholdRuleIcon } from './thresholdUtils';
-export { resolveMetricTranslation } from './translationUtils';
+export {
+  resolveMetricTranslation,
+  extractPluginName,
+} from './translationUtils';

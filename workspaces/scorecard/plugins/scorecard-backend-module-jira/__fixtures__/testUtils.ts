@@ -76,9 +76,9 @@ export function newMockRootConfig({
     data: {
       jira,
       scorecard: {
-        plugins: {
+        metricProviders: {
           jira: {
-            open_issues: {
+            openIssues: {
               options,
               thresholds,
             },

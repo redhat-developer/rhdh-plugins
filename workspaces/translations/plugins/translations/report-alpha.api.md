@@ -6,18 +6,17 @@
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const translationsPluginTranslationRef: TranslationRef<
   'plugin.translations',
   {
+    readonly 'page.title': string;
+    readonly 'page.subtitle': string;
     readonly 'table.title': string;
     readonly 'table.headers.refId': string;
     readonly 'table.headers.key': string;
     readonly 'table.options.pageSize': string;
     readonly 'table.options.pageSizeOptions': string;
-    readonly 'language.displayFormat': string;
-    readonly 'page.title': string;
-    readonly 'page.subtitle': string;
     readonly 'export.title': string;
     readonly 'export.downloadButton': string;
     readonly 'export.filename': string;
@@ -25,11 +24,10 @@ export const translationsPluginTranslationRef: TranslationRef<
     readonly 'common.error': string;
     readonly 'common.noData': string;
     readonly 'common.refresh': string;
+    readonly 'language.displayFormat': string;
   }
 >;
 
-// @alpha (undocumented)
+// @public (undocumented)
 export const translationsPluginTranslations: TranslationResource<'plugin.translations'>;
-
-// (No @packageDocumentation comment for this package)
 ```

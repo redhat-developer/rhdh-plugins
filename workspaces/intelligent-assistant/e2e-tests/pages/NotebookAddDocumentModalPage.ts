@@ -20,7 +20,7 @@ import type { LightspeedMessages } from '../utils/translations';
 import { substituteNotebookTemplate } from '../utils/notebookTranslation';
 
 /**
- * “Add a document to Notebook” modal: staged files, browse picker, localized Add(n).
+ * “Add a resource to Notebook” modal: staged files, browse picker, localized Add(n).
  */
 export class NotebookAddDocumentModalPage {
   constructor(

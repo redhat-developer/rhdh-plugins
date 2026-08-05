@@ -41,24 +41,28 @@ export class SonarQubeNumberMetricProvider
     super(client, metricId, thresholds, 'number');
   }
 
-  async calculateMetric(entity: Entity): Promise<number> {
+  async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const { instanceName, projectKey } = parseProjectKeyAnnotation(entity);
     const mapping = SONARQUBE_API_METRIC_KEYS[this.metricId];
 
-    if ('useOpenIssuesApi' in mapping) {
-      return this.client.getOpenIssuesCount(projectKey, instanceName);
-    }
+    let value: number;
 
-    if ('apiKey' in mapping) {
+    if ('useOpenIssuesApi' in mapping) {
+      value = await this.client.getOpenIssuesCount(projectKey, instanceName);
+    } else if ('apiKey' in mapping) {
       const measures = await this.client.getMeasures(
         projectKey,
         [mapping.apiKey],
         instanceName,
       );
-      return measures[mapping.apiKey];
+      value = measures[mapping.apiKey];
+    } else {
+      throw new Error(`Unsupported metric ID: ${this.metricId}`);
     }
 
-    throw new Error(`Unsupported metric ID: ${this.metricId}`);
+    const results = new Map<string, number>();
+    results.set(this.getProviderId(), value);
+    return results;
   }
 
   static fromConfig(

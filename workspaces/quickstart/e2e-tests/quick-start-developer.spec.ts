@@ -109,7 +109,9 @@ test.describe('Test Quick Start plugin', () => {
       page,
       testInfo,
       'quick-start-user-accessibility.json',
-      { skipViolationsAssert: true },
+      {
+        exclude: ['table', '.v5-MuiButton-textInherit'],
+      },
     );
 
     await uiHelper.verifyText(translations.header.subtitle);

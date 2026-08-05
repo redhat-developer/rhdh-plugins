@@ -19,10 +19,7 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { rest } from 'msw';
 import request from 'supertest';
 
-import {
-  CATALOG_API_LOCATIONS_LOCAL_ADDR,
-  LOCAL_ADDR,
-} from '../../../../__fixtures__/handlers';
+import { LOCAL_ADDR } from '../../../../__fixtures__/handlers';
 import {
   setupTest,
   startBackendServer,
@@ -210,25 +207,19 @@ describe('repositories', () => {
       });
 
       it('returns filtered (not yet imported) repos when some repos are already imported', async () => {
-        const { server, mockCatalogClient } = useTestData();
+        const { mockCatalogClient } = useTestData();
 
-        server.use(
-          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
-            res(
-              ctx.status(200),
-              ctx.json([
-                {
-                  data: {
-                    id: 'imported-funtimes',
-                    target:
-                      'http://localhost:8765/saltypig1/funtimes/blob/main/catalog-info.yaml',
-                    type: 'url',
-                  },
-                },
-              ]),
-            ),
-          ),
-        );
+        mockCatalogClient.getLocations.mockResolvedValue({
+          items: [
+            {
+              id: 'imported-funtimes',
+              target:
+                'http://localhost:8765/saltypig1/funtimes/blob/main/catalog-info.yaml',
+              type: 'url',
+              entityRef: 'location:default/imported-funtimes',
+            },
+          ],
+        });
 
         const backendServer = await startBackendServer(
           mockCatalogClient,
@@ -269,41 +260,33 @@ describe('repositories', () => {
       });
 
       it('returns empty array when all repos are already imported', async () => {
-        const { server, mockCatalogClient } = useTestData();
+        const { mockCatalogClient } = useTestData();
 
-        server.use(
-          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
-            res(
-              ctx.status(200),
-              ctx.json([
-                {
-                  data: {
-                    id: 'imported-dolbear',
-                    target:
-                      'http://localhost:8765/saltypig1/dolbear/blob/main/catalog-info.yaml',
-                    type: 'url',
-                  },
-                },
-                {
-                  data: {
-                    id: 'imported-funtimes',
-                    target:
-                      'http://localhost:8765/saltypig1/funtimes/blob/main/catalog-info.yaml',
-                    type: 'url',
-                  },
-                },
-                {
-                  data: {
-                    id: 'imported-swapi-node',
-                    target:
-                      'http://localhost:8765/saltypig1/swapi-node/blob/main/catalog-info.yaml',
-                    type: 'url',
-                  },
-                },
-              ]),
-            ),
-          ),
-        );
+        mockCatalogClient.getLocations.mockResolvedValue({
+          items: [
+            {
+              id: 'imported-dolbear',
+              target:
+                'http://localhost:8765/saltypig1/dolbear/blob/main/catalog-info.yaml',
+              type: 'url',
+              entityRef: 'location:default/imported-dolbear',
+            },
+            {
+              id: 'imported-funtimes',
+              target:
+                'http://localhost:8765/saltypig1/funtimes/blob/main/catalog-info.yaml',
+              type: 'url',
+              entityRef: 'location:default/imported-funtimes',
+            },
+            {
+              id: 'imported-swapi-node',
+              target:
+                'http://localhost:8765/saltypig1/swapi-node/blob/main/catalog-info.yaml',
+              type: 'url',
+              entityRef: 'location:default/imported-swapi-node',
+            },
+          ],
+        });
 
         const backendServer = await startBackendServer(
           mockCatalogClient,
@@ -325,25 +308,19 @@ describe('repositories', () => {
       });
 
       it('returns all repos even though a non-root catalog location exists', async () => {
-        const { server, mockCatalogClient } = useTestData();
+        const { mockCatalogClient } = useTestData();
 
-        server.use(
-          rest.get(CATALOG_API_LOCATIONS_LOCAL_ADDR, (_, res, ctx) =>
-            res(
-              ctx.status(200),
-              ctx.json([
-                {
-                  data: {
-                    id: 'imported-funtimes-nested',
-                    target:
-                      'http://localhost:8765/saltypig1/funtimes/blob/main/packages/backend/catalog-info.yaml',
-                    type: 'url',
-                  },
-                },
-              ]),
-            ),
-          ),
-        );
+        mockCatalogClient.getLocations.mockResolvedValue({
+          items: [
+            {
+              id: 'imported-funtimes-nested',
+              target:
+                'http://localhost:8765/saltypig1/funtimes/blob/main/packages/backend/catalog-info.yaml',
+              type: 'url',
+              entityRef: 'location:default/imported-funtimes-nested',
+            },
+          ],
+        });
 
         const backendServer = await startBackendServer(
           mockCatalogClient,

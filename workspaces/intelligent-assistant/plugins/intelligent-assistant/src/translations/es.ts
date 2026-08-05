@@ -26,6 +26,8 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
   ref: intelligentAssistantTranslationRef,
   messages: {
     'aria.chatHistoryMenu': 'Menú del historial de chat',
+    'modelSelector.disabledTooltip':
+      'Cada sesión de chat solo admite un modelo. Para cambiar de modelo, abra un nuevo chat.',
     'aria.chatbotSelector': 'Selector de chatbot',
     'aria.close': 'Cerrar chatbot',
     'aria.closeDrawerPanel': 'Cerrar el panel lateral',
@@ -126,7 +128,8 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'mcp.settings.closeAriaLabel': 'Cerrar configuración de MCP',
     'mcp.settings.closeConfigureModalAriaLabel':
       'Cerrar modal de configuración',
-    'mcp.settings.configureServerTitle': 'Configurar servidor {{serverName}}',
+    'mcp.settings.configureServerTitle':
+      '{{serverName}} — configuración del servidor MCP',
     'mcp.settings.edit': 'Editar',
     'mcp.settings.editServerAriaLabel': 'Editar {{serverName}}',
     'mcp.settings.enabled': 'Habilitado',
@@ -136,6 +139,28 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
       'Las credenciales se almacenan cifradas y se limitan a tu perfil. El asistente inteligente funcionará con exactamente tus permisos.',
     'mcp.settings.modalDescriptionDcr':
       'Este servidor utiliza Dynamic Client Registration (DCR). Los tokens se generan automáticamente usando tu identidad de Backstage — no se necesita un token manual.',
+    'mcp.settings.authenticationToken': 'Token de autenticación',
+    'mcp.settings.modal.authenticationHeading': 'Autenticación',
+    'mcp.settings.modal.credentialMode.organization':
+      'Usar token predeterminado de la organización',
+    'mcp.settings.modal.credentialMode.organizationDescription':
+      'Usa el token configurado por su administrador.',
+    'mcp.settings.modal.credentialMode.personal': 'Usar token personal',
+    'mcp.settings.modal.toolsHeading': 'Herramientas ({{count}})',
+    'mcp.settings.modal.loadingTools': 'Cargando herramientas...',
+    'mcp.settings.modal.fetchingStatus': 'Obteniendo estado...',
+    'mcp.settings.modal.loadingStatus': 'Desconectando...',
+    'mcp.settings.modal.tokenRemovedWarning':
+      'Se eliminó el token. Para volver a usar este servidor MCP, proporcione un nuevo token.',
+    'mcp.settings.modal.noToolsAvailable': 'No hay herramientas disponibles.',
+    'mcp.settings.modal.toolsLoadFailed':
+      'No se pudieron cargar las herramientas.',
+    'mcp.settings.modal.enabledDescription':
+      'Este servidor está activo y disponible en el chat.',
+    'mcp.settings.modal.enabledDescriptionOff':
+      'Este servidor está deshabilitado y no está disponible en el chat.',
+    'mcp.settings.modal.enabledDescriptionTokenRequired':
+      'Este servidor está deshabilitado actualmente. Proporcione un token para habilitarlo.',
     'mcp.settings.name': 'Nombre',
     'mcp.settings.noneAvailable': 'No hay servidores MCP disponibles.',
     'mcp.settings.personalAccessToken': 'Token de acceso personal',
@@ -165,8 +190,6 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'mcp.settings.token.validating': 'Validando token...',
     'mcp.settings.token.validationFailed':
       'La validación falló. Revisa la URL del servidor y el token.',
-    'mcp.settings.usingAdminCredential':
-      'Se están usando credenciales proporcionadas por el administrador. Introduce un token personal para reemplazarlas en tu cuenta.',
     'menu.newConversation': 'Nuevo chat',
     'message.options.label': 'Opciones',
     'modal.cancel': 'Cancelar',
@@ -213,13 +236,13 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'notebook.upload.modal.title': 'Agregar recursos',
     'notebook.view.close': 'Cerrar cuaderno',
     'notebook.view.documents.add': 'Agregar',
-    'notebook.view.documents.count': '{{count}} Documentos',
+    'notebook.view.documents.count': '{{count}} Recursos',
     'notebook.view.documents.maxReached':
-      'Se permiten un máximo de 10 documentos. Elimina un documento para subir uno nuevo.',
-    'notebook.view.documents.uploading': 'Subiendo documento',
+      'Se permiten un máximo de 10 recursos. Elimina un recurso para subir uno nuevo.',
+    'notebook.view.documents.uploading': 'Subiendo recurso',
     'notebook.view.input.disabledTooltip':
       'Selecciona al menos un recurso cargado para comenzar a chatear',
-    'notebook.view.input.placeholder': 'Pregunta sobre tus documentos...',
+    'notebook.view.input.placeholder': 'Pregunta sobre tus recursos...',
     'notebook.view.sidebar.collapse': 'Contraer barra lateral',
     'notebook.view.sidebar.expand': 'Expandir barra lateral',
     'notebook.view.sidebar.resize': 'Redimensionar barra lateral',
@@ -237,10 +260,10 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
       'Ya no verás este cuaderno aquí. Esto también eliminará actividad relacionada como solicitudes, respuestas y comentarios de tu actividad.',
     'notebooks.delete.title': '¿Eliminar {{name}}?',
     'notebooks.delete.toast': '¡Cuaderno eliminado!',
-    'notebooks.documents': 'Documentos',
-    'notebooks.documents.none': 'Sin documentos',
-    'notebooks.documents.one': '1 documento',
-    'notebooks.documents.other': '{{count}} documentos',
+    'notebooks.documents': 'Recursos',
+    'notebooks.documents.none': 'Sin recursos',
+    'notebooks.documents.one': '1 recurso',
+    'notebooks.documents.other': '{{count}} recursos',
     'notebooks.empty.action': 'Crear un cuaderno nuevo',
     'notebooks.empty.description':
       'Crea un nuevo cuaderno para organizar tus fuentes y generar información con IA.',

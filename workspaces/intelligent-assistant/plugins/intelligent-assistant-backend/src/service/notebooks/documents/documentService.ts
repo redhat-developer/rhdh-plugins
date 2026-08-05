@@ -153,7 +153,7 @@ export class DocumentService {
 
       if (conflictingFile) {
         throw new ConflictError(
-          `A document with the title "${newTitle || title}" already exists in this session`,
+          `A resource with the title "${newTitle || title}" already exists in this session`,
         );
       }
     }
@@ -205,7 +205,7 @@ export class DocumentService {
     const file = await this.findFileByTitle(sessionId, documentTitle);
 
     if (!file) {
-      throw new NotFoundError(`Document not found: ${documentTitle}`);
+      throw new NotFoundError(`Resource not found: ${documentTitle}`);
     }
     return {
       status: file.status,
@@ -274,7 +274,7 @@ export class DocumentService {
     const file = await this.findFileByTitle(sessionId, documentTitle);
 
     if (!file) {
-      throw new NotFoundError(`Document not found: ${documentTitle}`);
+      throw new NotFoundError(`Resource not found: ${documentTitle}`);
     }
 
     // Delete from vector store first

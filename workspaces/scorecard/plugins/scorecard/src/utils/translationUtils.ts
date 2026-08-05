@@ -24,7 +24,7 @@ type ScorecardTranslationFunction = TranslationFunction<
 /**
  * Resolves a metric's translated title or description using a cascading lookup:
  *
- * 1. Exact key: metric.<metricId>.<field> (e.g. metric.github.open_prs.title)
+ * 1. Exact key: metric.<metricId>.<field> (e.g. metric.github.openPRs.title)
  * 2. Template key: metric.<provider>.<field> with name = <rest of metricId>
  *    The first dot-separated segment is always the provider/namespace.
  *    E.g. filecheck.codeowners -> metric.filecheck.title with name = codeowners
@@ -51,4 +51,25 @@ export function resolveMetricTranslation(
   }
 
   return fallback ?? translated;
+}
+
+/**
+ * Extracts the plugin name from a metric ID.
+ * The plugin name is the first segment of the metric ID.
+ * E.g. filecheck.codeowners -> Filecheck
+ *      github.openPrs -> Github
+ *      gitlab.openIssues -> Gitlab
+ *      sonarqube.codeSmells -> Sonarqube
+ *      etc.
+ * @param metricId - The metric ID.
+ * @param fallback - The fallback value if the metric ID is undefined.
+ * @returns The plugin name.
+ */
+export function extractPluginName(
+  metricId: string | undefined,
+  fallback: string,
+): string {
+  if (!metricId) return fallback;
+  const prefix = metricId.split('.')[0] ?? metricId;
+  return prefix.charAt(0).toUpperCase() + prefix.slice(1);
 }

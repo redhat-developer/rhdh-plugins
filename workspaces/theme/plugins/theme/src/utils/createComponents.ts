@@ -34,6 +34,7 @@ export type Components = UnifiedThemeOptions['components'] & {
   BackstageHeaderTabs?: Component;
   BackstageSidebar?: Component;
   BackstageSidebarItem?: Component;
+  BackstageSidebarSubmenuItem?: Component;
   BackstagePage?: Component;
   BackstageContent?: Component;
   BackstageContentHeader?: Component;
@@ -629,9 +630,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         drawer: {
           gap: '0.25rem',
-          borderRight: `0.5rem solid ${sidebarBackgroundColor}`,
           paddingBottom: '1.5rem',
           backgroundColor: sidebarBackgroundColor,
+          alignItems: 'stretch',
           '& hr': {
             backgroundColor: general.sidebarDividerColor,
           },
@@ -644,16 +645,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
                 color: 'inherit !important',
               },
             },
-          '& [class*="BackstageSidebarItem-selected-"][class*="BackstageSidebarItem-root-"]':
-            {
-              backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
-              color: `${navigationSelectedColor} !important`,
-            },
-
-          '& [class*="BackstageSidebarSubmenuItem-selected-"]': {
-            background: `${sidebarItemInteractionBackgroundColor} !important`,
-            color: `${navigationSelectedColor} !important`,
-          },
         },
       },
     };
@@ -661,7 +652,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         root: {
           borderRadius: '6px',
-          width: 'calc(100% - 0.5rem) !important',
+          width: 'calc(100% - 1rem) !important',
           marginLeft: '0.5rem !important',
           textDecorationLine: 'none',
           '&:hover, &:focus-visible': {
@@ -674,8 +665,16 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           },
         },
         selected: {
-          backgroundColor: sidebarItemInteractionBackgroundColor,
-          color: navigationSelectedColor,
+          backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
+          color: `${navigationSelectedColor} !important`,
+        },
+      },
+    };
+    components.BackstageSidebarSubmenuItem = {
+      styleOverrides: {
+        selected: {
+          background: `${sidebarItemInteractionBackgroundColor} !important`,
+          color: `${navigationSelectedColor} !important`,
         },
       },
     };
@@ -755,6 +754,15 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     components.BackstageSidebarPage = {
       styleOverrides: {
         root: {
+          // Fill the viewport so short pages don't leave a gap below the shell.
+          // App root wrappers (e.g. ApplicationDrawer) can collapse to content
+          // height; without a min-height here the page-inset background stops
+          // early and body/html shows through (RHDHBUGS-3498).
+          minHeight: '100vh',
+          // Let BUI Container's flex: 1 grow into the remaining viewport below
+          // PluginHeader / Header slots (those slots set flex: none).
+          display: 'flex',
+          flexDirection: 'column',
           // Controls the page inset as in PF6 -- only in desktop view
           '@media (min-width: 600px)': {
             backgroundColor:
@@ -774,8 +782,24 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
               clipPath: 'rect(0 100% 100% 0 round 1rem)',
               // Emulate the PatternFly 6 page inset using a margin
               margin: general.pageInset,
+              // Fill the inset well so short pages use mainSectionBackgroundColor
+              // (#292929) instead of leaving a pageInset (#151515) band below content.
+              backgroundColor: general.mainSectionBackgroundColor,
+              minHeight: `calc(100vh - 2 * ${general.pageInset})`,
               // Prevent overflow in the main container due to the margin
               maxHeight: `calc(100vh - 2 * ${general.pageInset})`,
+            },
+            // NFS / BUI pages use Container instead of <main>. Match the content
+            // well color (same token as BackstageContent) and rely on flex: 1
+            // from BUI rather than 100vh so PluginHeader siblings are not overflowed.
+            "& > [class*='bui-Container']:not([class*='bui-Header'])": {
+              backgroundColor: general.mainSectionBackgroundColor,
+            },
+            // Settings and other pages render BackstageContent as <article>.
+            // Grow it to fill the flex column so pageInset doesn't show as a band.
+            '& > article, & > [class*="BackstageContent-root"]': {
+              flex: 1,
+              backgroundColor: general.mainSectionBackgroundColor,
             },
             // Prevent TechDocs double scrollbar: the page-inset max-height puts
             // <main>'s scrollbar at the same position as the ToC sidebar scrollbar.

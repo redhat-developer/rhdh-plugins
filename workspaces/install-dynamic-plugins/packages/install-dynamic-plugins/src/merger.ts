@@ -24,10 +24,11 @@ import {
   type ParsedOciKey,
   tryParseOciRegistryAndPath,
 } from './oci-key';
+import { extractPluginName } from './plugin-name';
+import { isOciUrl, isRefUrl, OCI_PROTO, REF_PROTO } from './protocols';
 import {
   type DynamicPluginsConfig,
   isPluginDisabled,
-  OCI_PROTO,
   type Plugin,
   type PluginMap,
   type PluginSpec,
@@ -125,6 +126,23 @@ export async function mergePluginsFromFile(
   }
 }
 
+export function resolveRefPlugin(pkg: string, allPlugins: PluginMap): string {
+  const refName = pkg.slice(REF_PROTO.length);
+  if (!refName) {
+    throw new InstallException(
+      `Invalid ref:// reference: empty plugin name in ref://`,
+    );
+  }
+  for (const entry of Object.values(allPlugins)) {
+    if (extractPluginName(entry.package) === refName) {
+      return entry.package;
+    }
+  }
+  throw new InstallException(
+    `Cannot resolve ref:// reference: no plugin named '${refName}' found in included plugins`,
+  );
+}
+
 export async function mergePlugin(
   plugin: Plugin,
   allPlugins: PluginMap,
@@ -137,7 +155,10 @@ export async function mergePlugin(
       `content of the 'plugins.package' field must be a string in ${configFile}`,
     );
   }
-  if (plugin.package.startsWith(OCI_PROTO)) {
+  if (isRefUrl(plugin.package)) {
+    plugin.package = resolveRefPlugin(plugin.package, allPlugins);
+  }
+  if (isOciUrl(plugin.package)) {
     await mergeOciPlugin(plugin, allPlugins, configFile, level, imageCache);
   } else {
     mergeNpmPlugin(plugin, allPlugins, configFile, level);
@@ -431,7 +452,7 @@ function processOciEntry(
   sourceFile: string,
 ): void {
   const pkg = plugin.package;
-  if (typeof pkg !== 'string' || !pkg.startsWith(OCI_PROTO)) return;
+  if (typeof pkg !== 'string' || !isOciUrl(pkg)) return;
   const disabled = isPluginDisabled(plugin);
   const parsed = tryParseOciRegistryAndPath(pkg);
   if (!parsed) {
@@ -555,7 +576,7 @@ export function filterDisabledOciPlugins(
   const out: PluginSpec[] = [];
   for (const plugin of plugins) {
     const pkg = plugin.package;
-    if (typeof pkg === 'string' && pkg.startsWith(OCI_PROTO)) {
+    if (typeof pkg === 'string' && isOciUrl(pkg)) {
       const parsed = tryParseOciRegistryAndPath(pkg);
       if (parsed && disabledRegistries.has(parsed.registry)) {
         log(`\n======= Disabling OCI plugin ${pkg}`);

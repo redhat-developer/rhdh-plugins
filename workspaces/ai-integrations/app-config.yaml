@@ -85,7 +85,8 @@ auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   providers:
     # See https://backstage.io/docs/auth/guest/provider
-    guest: {}
+    guest:
+      dangerouslyAllowOutsideDevelopment: true
 
 scaffolder:
   {}
@@ -96,14 +97,34 @@ catalog:
     entityFilename: catalog-info.yaml
     pullRequestBranchName: backstage-integration
   rules:
-    - allow: [Component, System, API, Resource, Location]
+    - allow:
+        [Component, System, API, Resource, Location, User, Group, AiResource]
+  locations:
+    # Local org + AiResource examples for entity-page verification (RHIDP-14558).
+    # Paths are relative to the backend process cwd (typically packages/backend).
+    - type: file
+      target: ../../examples/org.yaml
+      rules:
+        - allow: [User, Group]
+    - type: file
+      target: ../../examples/ai-resources-oci-skills.yaml
+      rules:
+        - allow: [AiResource]
+    - type: file
+      target: ../../examples/ai-resource-git.yaml
+      rules:
+        - allow: [AiResource]
+    - type: file
+      target: ../../examples/ai-resource-oci.yaml
+      rules:
+        - allow: [AiResource]
   providers:
     modelCatalog:
       # The field underneath should list the connector plugin ID that the entity provider accesses through
       # the discovery service
       kserve-kubeflow-connector:
-        # `http://localhost:9090` works in both local testing and when the bridge is running as a sidecar
-        # we'll hardcode for now and see about env vars later on once we officially take on running the bridge as
-        # a separate pod
-        # baseUrl: 'http://localhost:9090'
-        name: my-k8s-cluster
+        cluster-1:
+          name: my-k8s-cluster
+          kubeflow-model-catalog-url: '${KUBEFLOW_MODEL_CATALOG_URL:-}'
+          default-owner: '${OWNER:-default-owner}'
+          default-lifecycle: '${LIFECYCLE:-production}'

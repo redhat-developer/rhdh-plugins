@@ -1766,6 +1766,7 @@ export const LightspeedChat = ({
           onSendMessage={sendMessage}
           isSendButtonDisabled={isSendButtonDisabled}
           hasAttachButton
+          attachButtonPosition="start"
           handleAttach={handleAttach}
           hasMicrophoneButton
           value={draftMessage}
@@ -1795,14 +1796,9 @@ export const LightspeedChat = ({
             <MessageBarModelSelector
               selectedModel={selectedModel}
               models={models}
-              onSelect={item => {
-                if (!isFullscreenMode) {
-                  setIsMcpSettingsOpen(false);
-                }
-                onNewChat();
-                handleSelectedModel(item);
-              }}
-              disabled={isSendButtonDisabled}
+              onSelect={handleSelectedModel}
+              disabled={isSendButtonDisabled || messages.length > 0}
+              disabledTooltip={t('modelSelector.disabledTooltip')}
             />
           }
           forceMultilineLayout
@@ -1965,16 +1961,9 @@ export const LightspeedChat = ({
 
           <LightspeedChatBoxHeader
             selectedModel={selectedModel}
-            handleSelectedModel={item => {
-              if (!isFullscreenMode) {
-                setIsMcpSettingsOpen(false);
-              }
-              onNewChat();
-              handleSelectedModel(item);
-            }}
+            handleSelectedModel={handleSelectedModel}
             models={models}
             isPinningChatsEnabled={isPinningChatsEnabled}
-            isModelSelectorDisabled={isSendButtonDisabled}
             hideModelSelector
             showChatTabOptions={!showNotebooksPanel}
             setDisplayMode={setDisplayModeFromHeader}

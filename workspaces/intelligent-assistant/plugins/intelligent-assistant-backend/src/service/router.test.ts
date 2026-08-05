@@ -29,6 +29,7 @@ import request from 'supertest';
 import { handlers, LOCAL_AI_ADDR } from '../../__fixtures__/handlers';
 import { lcsHandlers, LOCAL_LCS_ADDR } from '../../__fixtures__/lcsHandlers';
 import { intelligentAssistantPlugin } from '../plugin';
+import { ModelCapabilitiesCache } from './attachment-validation';
 import { VectorStoresOperator } from './notebooks/VectorStoresOperator';
 
 const mockUserId = `user: default/user1`;
@@ -555,6 +556,406 @@ describe('intelligent-assistant router tests', () => {
       );
 
       expect(feedbackResponse.statusCode).toEqual(403);
+    });
+  });
+
+  describe('saved-prompts routes', () => {
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    describe('GET /v1/saved-prompts/config', () => {
+      it('returns config limits without injecting user_id', async () => {
+        const upstreamUrls: URL[] = [];
+        server.use(
+          http.get(
+            `${LOCAL_LCS_ADDR}/v1/saved-prompts/config`,
+            ({ request: req }) => {
+              upstreamUrls.push(new URL(req.url));
+              return HttpResponse.json({
+                max_prompts_per_user: 50,
+                max_display_name_length: 255,
+                max_content_length: 10000,
+              });
+            },
+          ),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer).get(
+          '/api/intelligent-assistant/v1/saved-prompts/config',
+        );
+
+        expect(response.statusCode).toEqual(200);
+        expect(response.body).toEqual({
+          max_prompts_per_user: 50,
+          max_display_name_length: 255,
+          max_content_length: 10000,
+        });
+        expect(upstreamUrls).toHaveLength(1);
+        expect(upstreamUrls[0].searchParams.get('user_id')).toBeNull();
+      });
+
+      it('returns 403 when permission is denied', async () => {
+        const backendServer = await startBackendServer(
+          {},
+          AuthorizeResult.DENY,
+        );
+        const response = await request(backendServer).get(
+          '/api/intelligent-assistant/v1/saved-prompts/config',
+        );
+        expect(response.statusCode).toEqual(403);
+      });
+    });
+
+    describe('GET /v1/saved-prompts', () => {
+      it('lists saved prompts and injects user_id', async () => {
+        const upstreamUrls: URL[] = [];
+        server.use(
+          http.get(`${LOCAL_LCS_ADDR}/v1/saved-prompts`, ({ request: req }) => {
+            upstreamUrls.push(new URL(req.url));
+            return HttpResponse.json({
+              prompts: [
+                {
+                  id: 'sp-1',
+                  name: 'Explain error',
+                  content: 'Explain this stack trace',
+                  created_at: '2026-07-22T16:00:00+00:00',
+                  updated_at: '2026-07-22T16:00:00+00:00',
+                },
+              ],
+            });
+          }),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer).get(
+          '/api/intelligent-assistant/v1/saved-prompts',
+        );
+
+        expect(response.statusCode).toEqual(200);
+        expect(response.body.prompts).toHaveLength(1);
+        expect(response.body.prompts[0].id).toEqual('sp-1');
+        expect(upstreamUrls).toHaveLength(1);
+        expect(upstreamUrls[0].searchParams.get('user_id')).toEqual(mockUserId);
+      });
+
+      it('returns empty prompts array and injects user_id', async () => {
+        const upstreamUrls: URL[] = [];
+        server.use(
+          http.get(`${LOCAL_LCS_ADDR}/v1/saved-prompts`, ({ request: req }) => {
+            upstreamUrls.push(new URL(req.url));
+            return HttpResponse.json({ prompts: [] });
+          }),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer).get(
+          '/api/intelligent-assistant/v1/saved-prompts',
+        );
+
+        expect(response.statusCode).toEqual(200);
+        expect(response.body.prompts).toEqual([]);
+        expect(upstreamUrls).toHaveLength(1);
+        expect(upstreamUrls[0].searchParams.get('user_id')).toEqual(mockUserId);
+      });
+
+      it('returns 403 when permission is denied', async () => {
+        const backendServer = await startBackendServer(
+          {},
+          AuthorizeResult.DENY,
+        );
+        const response = await request(backendServer).get(
+          '/api/intelligent-assistant/v1/saved-prompts',
+        );
+        expect(response.statusCode).toEqual(403);
+      });
+    });
+
+    describe('POST /v1/saved-prompts', () => {
+      it('creates a saved prompt and injects user_id', async () => {
+        const upstreamUrls: URL[] = [];
+        server.use(
+          http.post(
+            `${LOCAL_LCS_ADDR}/v1/saved-prompts`,
+            async ({ request: req }) => {
+              upstreamUrls.push(new URL(req.url));
+              const body = (await req.json()) as {
+                name: string;
+                content: string;
+              };
+              return HttpResponse.json(
+                {
+                  id: 'sp-new',
+                  name: body.name,
+                  content: body.content,
+                  created_at: '2026-07-22T16:00:00+00:00',
+                  updated_at: '2026-07-22T16:00:00+00:00',
+                },
+                { status: 201 },
+              );
+            },
+          ),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer)
+          .post('/api/intelligent-assistant/v1/saved-prompts')
+          .send({ name: 'Deploy', content: 'Help me deploy' });
+
+        expect(response.statusCode).toEqual(201);
+        expect(response.body).toEqual({
+          id: 'sp-new',
+          name: 'Deploy',
+          content: 'Help me deploy',
+          created_at: '2026-07-22T16:00:00+00:00',
+          updated_at: '2026-07-22T16:00:00+00:00',
+        });
+        expect(upstreamUrls).toHaveLength(1);
+        expect(upstreamUrls[0].searchParams.get('user_id')).toEqual(mockUserId);
+      });
+
+      it('returns 403 when permission is denied', async () => {
+        const backendServer = await startBackendServer(
+          {},
+          AuthorizeResult.DENY,
+        );
+        const response = await request(backendServer)
+          .post('/api/intelligent-assistant/v1/saved-prompts')
+          .send({ name: 'Deploy', content: 'Help me deploy' });
+        expect(response.statusCode).toEqual(403);
+      });
+
+      it('relays Core 422 with sanitized error', async () => {
+        server.use(
+          http.post(`${LOCAL_LCS_ADDR}/v1/saved-prompts`, () => {
+            return new HttpResponse(
+              JSON.stringify({
+                detail: {
+                  response: 'Invalid attribute value',
+                  cause: 'name exceeds max_display_name_length',
+                },
+              }),
+              {
+                status: 422,
+                headers: { 'Content-Type': 'application/json' },
+              },
+            );
+          }),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer)
+          .post('/api/intelligent-assistant/v1/saved-prompts')
+          .send({ name: 'x'.repeat(300), content: 'Help me deploy' });
+
+        expect(response.statusCode).toEqual(422);
+        expect(response.body.error).toContain(
+          'Error from lightspeed-core server',
+        );
+        expect(response.body.error).not.toContain('max_display_name_length');
+      });
+
+      it('relays Core 422 for per-user limit exceeded with sanitized error', async () => {
+        server.use(
+          http.post(`${LOCAL_LCS_ADDR}/v1/saved-prompts`, () => {
+            return new HttpResponse(
+              JSON.stringify({
+                detail: {
+                  response: 'Saved prompt limit exceeded',
+                  cause:
+                    'Saved prompt limit exceeded: 50 existing prompts, maximum is 50',
+                },
+              }),
+              {
+                status: 422,
+                headers: { 'Content-Type': 'application/json' },
+              },
+            );
+          }),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer)
+          .post('/api/intelligent-assistant/v1/saved-prompts')
+          .send({ name: 'Deploy', content: 'Help me deploy' });
+
+        expect(response.statusCode).toEqual(422);
+        expect(response.body.error).toContain(
+          'Error from lightspeed-core server',
+        );
+        expect(response.body.error).not.toContain('50 existing prompts');
+      });
+
+      it('relays Core 409 with sanitized error', async () => {
+        server.use(
+          http.post(`${LOCAL_LCS_ADDR}/v1/saved-prompts`, () => {
+            return new HttpResponse(
+              JSON.stringify({
+                detail: {
+                  response: 'Saved prompt already exists',
+                  cause: 'duplicate name Deploy',
+                },
+              }),
+              {
+                status: 409,
+                headers: { 'Content-Type': 'application/json' },
+              },
+            );
+          }),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer)
+          .post('/api/intelligent-assistant/v1/saved-prompts')
+          .send({ name: 'Deploy', content: 'Help me deploy' });
+
+        expect(response.statusCode).toEqual(409);
+        expect(response.body.error).toContain(
+          'Error from lightspeed-core server',
+        );
+        expect(response.body.error).not.toContain('duplicate name');
+      });
+
+      it('returns 500 when upstream fetch throws', async () => {
+        server.use(
+          http.post(`${LOCAL_LCS_ADDR}/v1/saved-prompts`, () => {
+            return HttpResponse.error();
+          }),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer)
+          .post('/api/intelligent-assistant/v1/saved-prompts')
+          .send({ name: 'Deploy', content: 'Help me deploy' });
+
+        expect(response.statusCode).toEqual(500);
+        expect(response.body.error).toContain(
+          'Error while creating saved prompt',
+        );
+      });
+    });
+
+    describe('DELETE /v1/saved-prompts/:prompt_id', () => {
+      it('deletes a saved prompt with 200 JSON body and injects user_id', async () => {
+        const upstreamUrls: URL[] = [];
+        server.use(
+          http.delete(
+            `${LOCAL_LCS_ADDR}/v1/saved-prompts/:prompt_id`,
+            ({ request: req, params }) => {
+              upstreamUrls.push(new URL(req.url));
+              return HttpResponse.json({
+                prompt_id: params.prompt_id,
+                deleted: true,
+                response: 'Saved prompt deleted successfully',
+              });
+            },
+          ),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer).delete(
+          '/api/intelligent-assistant/v1/saved-prompts/sp-1',
+        );
+
+        expect(response.statusCode).toEqual(200);
+        expect(response.body).toEqual({
+          prompt_id: 'sp-1',
+          deleted: true,
+          response: 'Saved prompt deleted successfully',
+        });
+        expect(upstreamUrls).toHaveLength(1);
+        expect(upstreamUrls[0].searchParams.get('user_id')).toEqual(mockUserId);
+      });
+
+      it('returns 403 when permission is denied', async () => {
+        const backendServer = await startBackendServer(
+          {},
+          AuthorizeResult.DENY,
+        );
+        const response = await request(backendServer).delete(
+          '/api/intelligent-assistant/v1/saved-prompts/sp-1',
+        );
+        expect(response.statusCode).toEqual(403);
+      });
+
+      it('relays Core 403 for non-owned prompt', async () => {
+        server.use(
+          http.delete(`${LOCAL_LCS_ADDR}/v1/saved-prompts/:prompt_id`, () => {
+            return new HttpResponse(
+              JSON.stringify({
+                detail: {
+                  response: 'Forbidden',
+                  cause: 'saved prompt owned by another user',
+                },
+              }),
+              {
+                status: 403,
+                headers: { 'Content-Type': 'application/json' },
+              },
+            );
+          }),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer).delete(
+          '/api/intelligent-assistant/v1/saved-prompts/sp-other',
+        );
+
+        expect(response.statusCode).toEqual(403);
+      });
+
+      it('relays Core missing prompt as 200 with deleted false', async () => {
+        server.use(
+          http.delete(
+            `${LOCAL_LCS_ADDR}/v1/saved-prompts/:prompt_id`,
+            ({ params }) =>
+              HttpResponse.json({
+                prompt_id: params.prompt_id,
+                deleted: false,
+                response: 'Saved prompt not found',
+              }),
+          ),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer).delete(
+          '/api/intelligent-assistant/v1/saved-prompts/sp-missing',
+        );
+
+        expect(response.statusCode).toEqual(200);
+        expect(response.body).toEqual({
+          prompt_id: 'sp-missing',
+          deleted: false,
+          response: 'Saved prompt not found',
+        });
+      });
+
+      it('relays Core 400 for invalid prompt id', async () => {
+        server.use(
+          http.delete(`${LOCAL_LCS_ADDR}/v1/saved-prompts/:prompt_id`, () => {
+            return new HttpResponse(
+              JSON.stringify({
+                detail: {
+                  response: 'Bad request',
+                  cause: 'invalid saved prompt id',
+                },
+              }),
+              {
+                status: 400,
+                headers: { 'Content-Type': 'application/json' },
+              },
+            );
+          }),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer).delete(
+          '/api/intelligent-assistant/v1/saved-prompts/not-a-valid-id',
+        );
+
+        expect(response.statusCode).toEqual(400);
+      });
     });
   });
 
@@ -1354,6 +1755,128 @@ describe('intelligent-assistant router tests', () => {
       );
 
       expect(modelsResponse.statusCode).toBe(200);
+    });
+  });
+
+  describe('POST /v1/validate-model-vision', () => {
+    beforeEach(() => {
+      ModelCapabilitiesCache.clear();
+    });
+
+    it('returns true when model supports vision', async () => {
+      server.use(
+        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => {
+          return HttpResponse.json({ id: 'resp-1', output: [] });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/validate-model-vision')
+        .send({ model: 'gpt-4o', provider: 'test-server' });
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({
+        model: 'gpt-4o',
+        provider: 'test-server',
+        supportsVision: true,
+      });
+    });
+
+    it('returns 400 when model or provider is missing', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/validate-model-vision')
+        .send({ model: 'gpt-4o' });
+
+      expect(response.statusCode).toEqual(400);
+      expect(response.body).toEqual({
+        error: 'model and provider are required',
+      });
+    });
+  });
+
+  describe('POST /v1/query attachment validation', () => {
+    const VALID_JPEG_B64 = Buffer.from([
+      0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10,
+    ]).toString('base64');
+
+    beforeEach(() => {
+      ModelCapabilitiesCache.clear();
+    });
+
+    it('rejects attachments when model lacks vision', async () => {
+      ModelCapabilitiesCache.set('test-server/gpt-3.5-turbo', false);
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/query')
+        .send({
+          model: 'gpt-3.5-turbo',
+          provider: 'test-server',
+          query: 'What is this?',
+          attachments: [
+            {
+              attachment_type: 'image',
+              content_type: 'image/jpeg',
+              content: VALID_JPEG_B64,
+            },
+          ],
+        });
+
+      expect(response.statusCode).toEqual(400);
+      expect(response.body.error).toContain(
+        'This model does not support JPEG images',
+      );
+    });
+
+    it('accepts attachments when model supports vision', async () => {
+      ModelCapabilitiesCache.set('test-server/gpt-4o', true);
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/query')
+        .send({
+          model: 'gpt-4o',
+          provider: 'test-server',
+          query: 'What is this?',
+          attachments: [
+            {
+              attachment_type: 'image',
+              content_type: 'image/jpeg',
+              content: VALID_JPEG_B64,
+            },
+          ],
+        });
+
+      expect(response.statusCode).toEqual(200);
+    });
+
+    it('accepts empty attachments regardless of vision support', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/query')
+        .send({
+          model: 'gpt-3.5-turbo',
+          provider: 'test-server',
+          query: 'Hello',
+          attachments: [],
+        });
+
+      expect(response.statusCode).toEqual(200);
+    });
+
+    it('accepts no attachments field regardless of vision support', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/query')
+        .send({
+          model: 'gpt-3.5-turbo',
+          provider: 'test-server',
+          query: 'Hello',
+        });
+
+      expect(response.statusCode).toEqual(200);
     });
   });
 });

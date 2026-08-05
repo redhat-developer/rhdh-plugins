@@ -57,7 +57,7 @@ _Augment lesson: 17 home-grown caches identified, only 2 migrated after months o
 
 ### 2. Fine-Grained Backstage Permissions from Day One
 
-All authorization decisions use `permissions.authorize()` with specific permissions and conditional rules. No parallel authorization systems in route handlers.
+All authorization decisions use `permissions.authorize()` (single-resource endpoints) or `permissions.authorizeConditional()` (list endpoints with resource-scoped permissions) with specific permissions and conditional rules. No parallel authorization systems in route handlers.
 
 _Augment lesson: 2,132 lines of custom governance code implementing 12 authorization decisions outside Backstage permissions, vs. 73 lines of actual Backstage permission integration (29x ratio). Shadow authorization invisible to RBAC configuration._
 

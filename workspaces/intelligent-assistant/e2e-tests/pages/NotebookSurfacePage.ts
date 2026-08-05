@@ -121,7 +121,7 @@ export class NotebookSurfacePage {
     });
   }
 
-  /** Composer stub while no documents are attached. */
+  /** Composer stub while no resources are attached. */
   disabledComposerPlaceholder(): Locator {
     return this.chatbotRegion().getByRole('textbox', {
       name: this.t['notebook.view.input.placeholder'],
@@ -180,7 +180,7 @@ export class NotebookSurfacePage {
   }
 
   /**
-   * New notebook with no documents: upload prompts, disclaimer, disabled composer (+ tooltip when hovered), sidebar Add.
+   * New notebook with no resources: upload prompts, disclaimer, disabled composer (+ tooltip when hovered), sidebar Add.
    */
   async expectNewNotebookEditorEmptyStateOnboarding(): Promise<void> {
     await expect(this.closeNotebookButton()).toBeVisible();
@@ -295,7 +295,7 @@ export class NotebookSurfacePage {
     await card.getByText(NOTEBOOK_UNTITLED_GRID_NAME, { exact: true }).click();
   }
 
-  /** Shown again when no documents remain in the sidebar list. */
+  /** Shown again when no resources remain in the sidebar list. */
   async expectNotebookEditorUploadResourceButtonVisible(
     timeout = 5_000,
   ): Promise<void> {

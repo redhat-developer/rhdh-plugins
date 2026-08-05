@@ -35,10 +35,10 @@ export const intelligentAssistantMessages = {
   'notebooks.empty.description':
     'Start a new notebook to organize your sources and generate AI-powered insights.',
   'notebooks.empty.action': 'Create a new notebook',
-  'notebooks.documents': 'Documents',
-  'notebooks.documents.none': 'No documents',
-  'notebooks.documents.one': '1 document',
-  'notebooks.documents.other': '{{count}} documents',
+'notebooks.documents': 'Resources',
+'notebooks.documents.none': 'No resources',
+'notebooks.documents.one': '1 resource',
+'notebooks.documents.other': '{{count}} resources',
   'notebooks.actions.rename': 'Rename',
   'notebooks.actions.delete': 'Delete',
   'notebooks.rename.title': 'Rename {{name}}?',
@@ -66,24 +66,24 @@ export const intelligentAssistantMessages = {
   // Notebook view
   'notebook.view.title': 'Untitled notebook',
   'notebook.view.close': 'Close notebook',
-  'notebook.view.documents.count': '{{count}} Documents',
+  'notebook.view.documents.count': '{{count}} Resources',
   'notebook.view.documents.add': 'Add',
   'notebook.view.upload.heading': 'Upload a resource to get started',
   'notebook.view.upload.action': 'Upload a resource',
   'notebook.view.processing.heading': 'Processing resources...',
   'notebook.view.processing.description':
     'Your files are being indexed. You can start asking questions once processing is complete.',
-  'notebook.view.input.placeholder': 'Ask about your documents...',
+  'notebook.view.input.placeholder': 'Ask about your resources...',
   'notebook.view.input.disabledTooltip':
     'Select at least one loaded resource to start chatting',
   'notebook.view.sidebar.collapse': 'Collapse sidebar',
   'notebook.view.sidebar.expand': 'Expand sidebar',
   'notebook.view.sidebar.resize': 'Resize sidebar',
-  'notebook.view.documents.uploading': 'Uploading document',
+  'notebook.view.documents.uploading': 'Uploading resource',
   'notebook.view.documents.maxReached':
-    'Maximum 10 documents are allowed. Delete a document to upload a new document.',
+    'Maximum 10 resources are allowed. Delete a resource to upload a new resource.',
   'notebook.view.documents.uploadsInProgress':
-    'Please wait for current uploads to complete before adding more documents.',
+    'Please wait for current uploads to complete before adding more resources.',
   'notebook.upload.failed': '"{{fileName}}" upload failed.',
 
   // Notebook upload modal
@@ -227,6 +227,10 @@ export const intelligentAssistantMessages = {
   'chatbox.fileUpload.infoText':
     'Supported file types are: .txt, .yaml, and .json. The maximum file size is 25 MB.',
 
+  // Model selector
+  'modelSelector.disabledTooltip':
+    'Each chat session supports only one model. To switch models, open a new chat.',
+
   // Accessibility and ARIA labels
   'aria.chatbotSelector': 'Chatbot selector',
   'aria.important': 'Important',
@@ -359,14 +363,33 @@ export const intelligentAssistantMessages = {
     'This server uses Dynamic Client Registration (DCR). Tokens are minted automatically using your Backstage identity — no manual token is needed.',
   'mcp.settings.toggleServerAriaLabel': 'Toggle {{serverName}}',
   'mcp.settings.editServerAriaLabel': 'Edit {{serverName}}',
-  'mcp.settings.configureServerTitle': 'Configure {{serverName}} server',
+  'mcp.settings.configureServerTitle': '{{serverName}} MCP server settings',
   'mcp.settings.closeConfigureModalAriaLabel': 'Close configure modal',
   'mcp.settings.modalDescription':
-    'Credentials are encrypted at rest and scoped to your profile. The intelligent assistant will operate with your exact permissions.',
+    'Credentials are encrypted and operations use your exact permissions.',
+  'mcp.settings.authenticationToken': 'Authentication token',
+  'mcp.settings.modal.authenticationHeading': 'Authentication',
+  'mcp.settings.modal.credentialMode.organization':
+    'Use organization default token',
+  'mcp.settings.modal.credentialMode.organizationDescription':
+    'Uses the token configured by your administrator.',
+  'mcp.settings.modal.credentialMode.personal': 'Use personal token',
+  'mcp.settings.modal.toolsHeading': 'Tools ({{count}})',
+  'mcp.settings.modal.loadingTools': 'Loading tools...',
+  'mcp.settings.modal.fetchingStatus': 'Fetching status...',
+  'mcp.settings.modal.loadingStatus': 'Disconnecting...',
+  'mcp.settings.modal.tokenRemovedWarning':
+    'Token has been removed. To use this MCP server again, provide a new token.',
+  'mcp.settings.modal.noToolsAvailable': 'No tools available.',
+  'mcp.settings.modal.toolsLoadFailed': 'Failed to load tools.',
+  'mcp.settings.modal.enabledDescription':
+    'This server is active and available in chat.',
+  'mcp.settings.modal.enabledDescriptionOff':
+    'This server is disabled and unavailable in chat.',
+  'mcp.settings.modal.enabledDescriptionTokenRequired':
+    'This server is currently disabled. Provide a token to enable.',
   'mcp.settings.savedToken': 'Saved token',
   'mcp.settings.personalAccessToken': 'Personal Access Token',
-  'mcp.settings.usingAdminCredential':
-    'Using Administrator provided credential. Enter a personal token to override for your account.',
   'mcp.settings.enterToken': 'Enter your token',
   'mcp.settings.removePersonalToken': 'Remove personal token',
   'mcp.settings.token.clearAriaLabel': 'Clear token input',
