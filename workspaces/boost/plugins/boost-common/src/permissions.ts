@@ -37,6 +37,14 @@ export const BOOST_AGENT_RESOURCE_TYPE = 'boost-agent';
  */
 export const BOOST_TOOL_RESOURCE_TYPE = 'boost-tool';
 
+/**
+ * Resource type for AI catalog assets (models, agents, skills, MCP servers,
+ * model servers).
+ *
+ * @public
+ */
+export const AI_CATALOG_ASSET_RESOURCE_TYPE = 'ai-catalog-asset';
+
 // ---------------------------------------------------------------------------
 // Agent permissions — 10 total (2 basic + 8 resource-scoped)
 // ---------------------------------------------------------------------------
@@ -321,6 +329,68 @@ export const boostAdminPermission = createPermission({
 });
 
 // ---------------------------------------------------------------------------
+// AI Catalog permissions — 3 total (2 resource-scoped + 1 basic)
+// ---------------------------------------------------------------------------
+
+/**
+ * Tier 1: basic discovery of AI catalog assets (name, description, category,
+ * lifecycle stage, version count, tags). Resource-scoped to support
+ * CONDITIONAL evaluation via RBAC conditional policies.
+ *
+ * @public
+ */
+export const aiCatalogAssetReadPermission = createPermission({
+  name: 'ai-catalog.asset.read',
+  attributes: { action: 'read' },
+  resourceType: AI_CATALOG_ASSET_RESOURCE_TYPE,
+});
+
+/**
+ * Tier 2: sensitive details including usage documentation, connection
+ * endpoints, and configuration. Resource-scoped to support CONDITIONAL
+ * evaluation via RBAC conditional policies.
+ *
+ * @public
+ */
+export const aiCatalogAssetReadUsageDocsPermission = createPermission({
+  name: 'ai-catalog.asset.read.usage-docs',
+  attributes: { action: 'read' },
+  resourceType: AI_CATALOG_ASSET_RESOURCE_TYPE,
+});
+
+/**
+ * Management actions: posture config, policy management, admin UI access.
+ * Basic permission (binary ALLOW/DENY) because management actions are
+ * not scoped to individual assets.
+ *
+ * @public
+ */
+export const aiCatalogAdminPermission = createPermission({
+  name: 'ai-catalog.admin',
+  attributes: { action: 'update' },
+});
+
+/**
+ * All 3 AI Catalog permissions.
+ *
+ * @public
+ */
+export const aiCatalogPermissions = [
+  aiCatalogAssetReadPermission,
+  aiCatalogAssetReadUsageDocsPermission,
+  aiCatalogAdminPermission,
+] as const;
+
+/**
+ * AI Catalog resource permissions (those with resourceType `ai-catalog-asset`).
+ *
+ * @public
+ */
+export const aiCatalogResourcePermissions: ResourcePermission<
+  typeof AI_CATALOG_ASSET_RESOURCE_TYPE
+>[] = [aiCatalogAssetReadPermission, aiCatalogAssetReadUsageDocsPermission];
+
+// ---------------------------------------------------------------------------
 // Conditional rule names
 // ---------------------------------------------------------------------------
 
@@ -450,4 +520,5 @@ export const boostPermissions = [
   ...boostFunctionalPermissions,
   boostAccessPermission,
   boostAdminPermission,
+  ...aiCatalogPermissions,
 ] as const;

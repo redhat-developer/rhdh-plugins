@@ -23,8 +23,10 @@ import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import {
+  AI_CATALOG_ASSET_RESOURCE_TYPE,
   boostAdminPermission,
   boostPermissions,
+  aiCatalogPermissions,
 } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import {
   boostAiProviderServiceRef,
@@ -52,6 +54,7 @@ import { RateLimiter } from './chat/RateLimiter';
 import { BackendApprovalStore } from './approval/BackendApprovalStore';
 import { DocumentSyncService } from './documents/DocumentSyncService';
 import { createSkillsRoutes } from './skills/routes';
+import { aiCatalogRules } from './ai-catalog/rules';
 
 /**
  * The ProviderManager instance shared between the plugin and the
@@ -242,6 +245,7 @@ export const boostPlugin = createBackendPlugin({
         });
 
         // Register all boost permissions with the framework
+        // (boostPermissions already includes aiCatalogPermissions)
         permissionsRegistry.addPermissions([...boostPermissions]);
         logger.info(`Registered ${boostPermissions.length} boost permissions`);
 
@@ -266,6 +270,15 @@ export const boostPlugin = createBackendPlugin({
           permissions: [...boostPermissions],
         });
         router.use(permissionIntegrationRouter);
+
+        // AI Catalog permission integration router with conditional rules
+        // (task 4.7: register isAiAssetCategory, isFromConnector, isInTenant)
+        const aiCatalogPermissionRouter = createPermissionIntegrationRouter({
+          resourceType: AI_CATALOG_ASSET_RESOURCE_TYPE,
+          permissions: [...aiCatalogPermissions],
+          rules: Object.values(aiCatalogRules) as any,
+        });
+        router.use(aiCatalogPermissionRouter);
 
         // Agent lifecycle routes (tasks 3.1–3.7)
         const agentRoutes = createAgentRoutes({
