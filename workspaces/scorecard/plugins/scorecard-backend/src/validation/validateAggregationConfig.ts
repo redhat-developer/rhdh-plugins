@@ -22,7 +22,7 @@ import { ThresholdResolver } from '../threshold/ThresholdResolver';
 import { validateScalarAggregationConfig } from './validateScalarAggregationConfig';
 import { parseValidatedAggregationConfig } from '../utils/aggregation/parseValidatedAggregationConfig';
 import { buildAggregationConfig } from '../utils/aggregation/buildAggregationConfig';
-import { isScalarAggregationType } from '../utils/aggregation/isScalarAggregationType';
+import { isScalarAggregationConfig } from '../utils/aggregation/isScalarAggregationConfig';
 
 export function validateAggregationConfig(options: {
   rootConfig: Config;
@@ -54,7 +54,7 @@ export function validateAggregationConfig(options: {
       );
     }
 
-    if (isScalarAggregationType(aggregationConfig.type)) {
+    if (isScalarAggregationConfig(aggregationConfig)) {
       validateScalarAggregationConfig({
         aggregationConfig,
         aggregationId,

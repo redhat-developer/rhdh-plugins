@@ -19,17 +19,16 @@ import type { AggregationConfigFilter } from '@red-hat-developer-hub/backstage-p
 
 export function buildAggregationConfigFilter(
   config: Config,
-): AggregationConfigFilter {
-  const filterConfig = {} as AggregationConfigFilter;
-
+): AggregationConfigFilter | undefined {
   const filter = config.getOptionalConfig('filter');
-
-  if (filter) {
-    const status = filter.getOptionalString('status');
-    if (status) {
-      filterConfig.status = status;
-    }
+  if (!filter) {
+    return undefined;
   }
 
-  return filterConfig;
+  const status = filter.getOptionalString('status');
+  if (!status) {
+    return undefined;
+  }
+
+  return { status };
 }

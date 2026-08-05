@@ -18,14 +18,11 @@ import { InputError } from '@backstage/errors';
 import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdResolver } from '../threshold/ThresholdResolver';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
-import {
-  ScalarAggregationConfig,
-  ValidatedAggregationConfig,
-} from './schemas/aggregationConfigSchemas';
+import { ScalarAggregationConfig } from './schemas/aggregationConfigSchemas';
 import { validateScalarFilterStatus } from './validateScalarFilterStatus';
 
 type ValidateScalarAggregationConfigOptions = {
-  aggregationConfig: ValidatedAggregationConfig;
+  aggregationConfig: ScalarAggregationConfig;
   aggregationId: string;
   registry: MetricProvidersRegistry;
   thresholdResolver: ThresholdResolver;
@@ -48,7 +45,7 @@ export function validateScalarAggregationConfig(
   }
 
   validateScalarFilterStatus({
-    aggregationConfig: aggregationConfig as ScalarAggregationConfig,
+    aggregationConfig,
     aggregationId,
     registry,
     thresholdResolver,

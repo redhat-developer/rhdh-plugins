@@ -54,7 +54,7 @@ export function buildAggregationConfig(
     aggregationConfig.options.thresholds =
       buildAggregationConfigThresholds(config);
     const filter = buildAggregationConfigFilter(config);
-    if (Object.keys(filter).length > 0) {
+    if (filter) {
       aggregationConfig.filter = filter;
     }
   }

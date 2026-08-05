@@ -152,7 +152,7 @@ export class DatabaseMetricValues {
       .whereIn('id', latestIdsSubquery)
       .whereRaw(`NOT ${DatabaseMetricValues.metricValueIsMissingExpr}`);
 
-    if (filter?.status) {
+    if (filter?.status && filter.status !== '') {
       aggregateQuery.where('status', filter.status);
     }
 

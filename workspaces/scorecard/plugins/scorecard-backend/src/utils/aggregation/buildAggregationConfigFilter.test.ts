@@ -20,7 +20,7 @@ import { AGGREGATION_KPIS_CONFIG_PATH } from '../../constants';
 import { buildAggregationConfigFilter } from './buildAggregationConfigFilter';
 
 describe('buildAggregationConfigFilter', () => {
-  it('should return an empty object when filter is absent', () => {
+  it('should return undefined when filter is absent', () => {
     const rootConfig = mockServices.rootConfig({
       data: {
         scorecard: {
@@ -39,10 +39,10 @@ describe('buildAggregationConfigFilter', () => {
       `${AGGREGATION_KPIS_CONFIG_PATH}.totalOpenPrsKpi`,
     );
 
-    expect(buildAggregationConfigFilter(config)).toEqual({});
+    expect(buildAggregationConfigFilter(config)).toBeUndefined();
   });
 
-  it('should return an empty object when filter has no properties', () => {
+  it('should return undefined when filter has no properties', () => {
     const rootConfig = mockServices.rootConfig({
       data: {
         scorecard: {
@@ -62,7 +62,7 @@ describe('buildAggregationConfigFilter', () => {
       `${AGGREGATION_KPIS_CONFIG_PATH}.totalOpenPrsKpi`,
     );
 
-    expect(buildAggregationConfigFilter(config)).toEqual({});
+    expect(buildAggregationConfigFilter(config)).toBeUndefined();
   });
 
   it('should map filter.status from KPI config', () => {
