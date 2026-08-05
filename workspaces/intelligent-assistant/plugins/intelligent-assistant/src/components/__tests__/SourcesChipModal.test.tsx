@@ -30,11 +30,13 @@ const mockSources: SourcesCardProps = {
       title: 'aws-bedrock-walkthrough.md',
       body: 'Documentation covering architecture, usage guidelines, and best practices.',
       link: '',
+      subtitle: 'rhdh-product-docs-1_10',
     },
     {
       title: 'codecov.yml',
       body: 'Application configuration including backend, database, authentication, and catalog settings.',
       link: '',
+      subtitle: 'v1',
     },
   ],
 };
@@ -78,6 +80,15 @@ describe('SourcesChipModal', () => {
 
     expect(screen.getByText('aws-bedrock-walkthrough.md')).toBeInTheDocument();
     expect(screen.getByText('codecov.yml')).toBeInTheDocument();
+  });
+
+  test('should display RAG source labels next to each document title', () => {
+    render(<SourcesChipModal sources={mockSources} />);
+
+    fireEvent.click(screen.getByText('2 Sources'));
+
+    expect(screen.getByText('rhdh-product-docs-1_10')).toBeInTheDocument();
+    expect(screen.getByText('v1')).toBeInTheDocument();
   });
 
   test('should display source descriptions in the popover', () => {
