@@ -283,7 +283,7 @@ describe('buildAggregationConfig', () => {
     expect('filter' in result).toBe(false);
   });
 
-  it('should not map filter for statusGrouped KPIs even when configured', () => {
+  it('should ignore filter for statusGrouped KPIs even when configured', () => {
     const rootConfig = mockServices.rootConfig({
       data: {
         scorecard: {
@@ -306,6 +306,40 @@ describe('buildAggregationConfig', () => {
     );
 
     const result = buildAggregationConfig('statusKpi', { config });
+
+    expect(result.filter).toBeUndefined();
+  });
+
+  it('should ignore filter for weightedStatusScore KPIs even when configured', () => {
+    const rootConfig = mockServices.rootConfig({
+      data: {
+        scorecard: {
+          aggregationKPIs: {
+            weightedKpi: {
+              title: 'Weighted health',
+              description: 'Weighted health score across statuses',
+              type: aggregationTypes.weightedStatusScore,
+              metricId: 'github.openPRs',
+              filter: {
+                status: 'error',
+              },
+              options: {
+                statusScores: {
+                  error: 0,
+                  warning: 50,
+                  success: 100,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    const config = rootConfig.getConfig(
+      `${AGGREGATION_KPIS_CONFIG_PATH}.weightedKpi`,
+    );
+
+    const result = buildAggregationConfig('weightedKpi', { config });
 
     expect(result.filter).toBeUndefined();
   });

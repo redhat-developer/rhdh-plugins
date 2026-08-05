@@ -700,7 +700,7 @@ describe('validateAggregationConfig', () => {
     );
   });
 
-  it('should not apply filter to statusGrouped KPIs', () => {
+  it('should ignore filter on statusGrouped KPIs', () => {
     const registry = buildMockMetricProvidersRegistry({
       provider: new MockNumberProvider('github.openPRs', 'github'),
     });
@@ -726,7 +726,7 @@ describe('validateAggregationConfig', () => {
     expect(() => validateConfig(rootConfig, registry)).not.toThrow();
   });
 
-  it('should not apply filter to weightedStatusScore KPIs', () => {
+  it('should ignore filter on weightedStatusScore KPIs', () => {
     const registry = buildMockMetricProvidersRegistry({
       provider: new MockNumberProvider('github.openPRs', 'github'),
     });

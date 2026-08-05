@@ -215,7 +215,7 @@ scorecard:
 
 ### Status filter (scalar types)
 
-Scalar KPIs may include an optional top-level **`filter.status`** to restrict aggregation to latest rows whose threshold evaluation matches the given status key (for example `success`, `warning`, `error`, or any custom threshold key). **`filter`** is rejected on non-scalar types at startup.
+Scalar KPIs may include an optional top-level **`filter.status`** to restrict aggregation to latest rows whose threshold evaluation matches the given status key (for example `success`, `warning`, `error`, or any custom threshold key). On non-scalar types (`statusGrouped`, `weightedStatusScore`), **`filter`** is silently ignored.
 
 **Startup validation:** When **`filter.status`** is set, the backend validates at plugin load that the value is a **threshold rule key** for the KPI’s **`metricId`** (provider defaults plus app-config at **`scorecard.metricProviders.<datasource>.<providerName>.metrics.<metricName>.thresholds`** or provider-level **`scorecard.metricProviders.<datasource>.<providerName>.thresholds`** — for example `scorecard.metricProviders.jira.openIssues.metrics.openIssues.thresholds` when **`metricId`** is `jira.openIssues`). Keys are **case-sensitive** (`error` ≠ `Error`) and must be 1–64 characters. Invalid keys cause startup to fail with an error listing valid keys. Per-entity annotation threshold overrides are **not** considered (they apply at metric sync time only). See [thresholds.md — Scalar status filter](./thresholds.md#5-aggregation-kpi-result-thresholds-scalar-types).
 
