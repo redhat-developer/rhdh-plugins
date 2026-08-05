@@ -15,7 +15,13 @@
  */
 
 import { useState } from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import {
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CatalogItemWizardDialog } from './CatalogItemWizardDialog';
 import { emptyCatalogItemForm } from '../catalogItemFormTypes';
@@ -97,12 +103,12 @@ describe('CatalogItemWizardDialog – file import error handling', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('shows an error alert when an invalid JSON file is imported', async () => {
-    const { container } = render(<Wrapper />);
+    render(<Wrapper />);
 
     const file = new File(['not valid json'], 'bad.json', {
       type: 'application/json',
     });
-    const input = container.querySelector(
+    const input = document.querySelector(
       'input[type="file"]',
     ) as HTMLInputElement;
 
@@ -114,12 +120,12 @@ describe('CatalogItemWizardDialog – file import error handling', () => {
   });
 
   it('does not show an error alert when a valid JSON file is imported', async () => {
-    const { container } = render(<Wrapper />);
+    render(<Wrapper />);
 
     const file = new File([VALID_CATALOG_JSON], 'good.json', {
       type: 'application/json',
     });
-    const input = container.querySelector(
+    const input = document.querySelector(
       'input[type="file"]',
     ) as HTMLInputElement;
 
@@ -133,22 +139,21 @@ describe('CatalogItemWizardDialog – file import error handling', () => {
   });
 
   it('dismisses the error alert when the close button is clicked', async () => {
-    const { container } = render(<Wrapper />);
+    render(<Wrapper />);
 
     const file = new File(['not valid json'], 'bad.json', {
       type: 'application/json',
     });
-    const input = container.querySelector(
+    const input = document.querySelector(
       'input[type="file"]',
     ) as HTMLInputElement;
 
     await userEvent.upload(input, file);
 
-    expect(
-      await screen.findByText(/Failed to import file/i),
-    ).toBeInTheDocument();
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/Failed to import file/i);
 
-    const closeBtn = screen.getByRole('button', { name: /close/i });
+    const closeBtn = within(alert).getByRole('button');
     fireEvent.click(closeBtn);
 
     await waitFor(() =>
