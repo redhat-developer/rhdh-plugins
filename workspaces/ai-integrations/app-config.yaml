@@ -134,7 +134,6 @@ catalog:
           kubeflow-model-catalog-url: '${KUBEFLOW_MODEL_CATALOG_URL:-}'
           default-owner: '${OWNER:-default-owner}'
           default-lifecycle: '${LIFECYCLE:-production}'
-
 # Uncomment to use kubernetesPluginRef — the Backstage kubernetes plugin
 # does NOT need to be installed, only its config section is needed.
 # kubernetes:
