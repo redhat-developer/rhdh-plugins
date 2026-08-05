@@ -72,9 +72,9 @@ describe('usePaginatedCrudTab', () => {
 
       await waitFor(() => expect(opts.loadFn as jest.Mock).toHaveBeenCalled());
 
-      const [[firstCall]] = (opts.loadFn as jest.Mock).mock.calls as [
-        [PaginatedLoadParams],
-      ][];
+      const firstCall = (
+        (opts.loadFn as jest.Mock).mock.calls[0] as [PaginatedLoadParams]
+      )[0];
       expect(firstCall.pageToken).toBeUndefined();
       expect(firstCall.pageSize).toBeGreaterThan(0);
     });
