@@ -311,7 +311,7 @@ Note: `serviceAccountToken` and `caData` use `@visibility secret` — they must 
 
 Also remove `baseUrl` from the connector-level fields (per D2).
 
-### D7 — Precedence: kubernetesPluginRef > direct config > env vars > loadFromDefault
+### D7 — Precedence: kubernetesPluginRef > direct config > loadFromDefault (local dev)
 
 **Choice:** The following precedence order determines how the KubeConfig is built:
 
@@ -353,7 +353,7 @@ if (k8sConfig) {
 | Resource            | API Group            | Verbs            | Used by                                     |
 | ------------------- | -------------------- | ---------------- | ------------------------------------------- |
 | `inferenceservices` | `serving.kserve.io`  | get, watch, list | K8s Informer in `setupInformer`             |
-| `routes`            | `route.openshift.io` | get, watch, list | `setupCatalogRoute` in `Catalog.ts`         |
+| `routes`            | `route.openshift.io` | get, list        | `setupCatalogRoute` in `Catalog.ts`         |
 | `serviceaccounts`   | `""` (core)          | get, list        | `getAuthentication` in `InformerService.ts` |
 
 **Rationale:** Platform engineers need to know what RBAC to set up before the connector can function. This is the same pattern OCM follows in its README (showing the ClusterRole rules). The example YAML is more maintainable than inline documentation and can be applied directly with `kubectl apply`.

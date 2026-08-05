@@ -42,7 +42,7 @@ Additionally, two type-level issues have accumulated:
 - `kubeconfig-init`: `setupInformer` builds KubeConfig from config fields via `loadFromOptions()` when available; `loadFromDefault()` is the fallback for local dev
 - `entity-provider-config`: `baseUrl` removed from `ModelCatalogConfig` — entity provider relies on `DiscoveryService` exclusively
 
-## Non-goals
+## Non-Goals
 
 - Frontend-level config — all new config is backend-only (`@visibility backend`)
 - Auth providers other than `serviceAccount` — no OIDC, Google SA, or other auth methods in this iteration

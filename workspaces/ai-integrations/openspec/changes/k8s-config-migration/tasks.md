@@ -95,11 +95,12 @@
 
 ## 5. Implement kubernetesPluginRef Lookup in plugin.ts
 
-Note: Use `safeGetOptionalString` (already defined in `catalog-techdoc-url-reader-backend/src/plugin.ts`, see AGENTS.md `ConfigReader getOptionalString() edge case`) for all optional string config reads from cluster sub-config and kubernetes plugin config. Backstage's `getOptionalString` throws TypeError on empty env var substitution (e.g., `${K8S_CLUSTER_URL:-}`). Either import the existing helper or duplicate it locally in the connector's `plugin.ts`.
+Note: Use `safeGetOptionalString` (see AGENTS.md `ConfigReader getOptionalString() edge case`) for all optional string config reads from cluster sub-config and kubernetes plugin config. Backstage's `getOptionalString` throws TypeError on empty env var substitution (e.g., `${K8S_CLUSTER_URL:-}`). Duplicate the helper locally in the connector's `plugin.ts` using the AGENTS.md pattern (returns `undefined` on error, NOT empty string). The existing helper in `catalog-techdoc-url-reader-backend/src/plugin.ts` returns `''` on error — do NOT import that variant, as empty string passes truthiness checks (e.g., `if (config.url)`) and would cause `loadFromOptions` to receive an empty URL.
 
 - [ ] 5.1 In `kserve-kubeflow-connector-backend/src/plugin.ts`, when reading cluster sub-config, check for `kubernetesPluginRef`:
   ```typescript
-  const kubernetesPluginRef = clusterConfig.getOptionalString(
+  const kubernetesPluginRef = safeGetOptionalString(
+    clusterConfig,
     'kubernetesPluginRef',
   );
   ```
@@ -137,7 +138,16 @@ Note: Use `safeGetOptionalString` (already defined in `catalog-techdoc-url-reade
     }
   }
   ```
-- [ ] 5.3 If `kubernetesPluginRef` is NOT set OR if `kubernetesPluginRef` lookup failed (no `url` resolved), read K8s fields directly from the cluster sub-config (per D7 fall-through precedence):
+- [ ] 5.3 When `kubernetesPluginRef` lookup succeeds, check the matched cluster's `authProvider` field. If it is set and is not `serviceAccount`, log a warning (per D5) but proceed — the `serviceAccountToken` field is what matters:
+  ```typescript
+  const authProvider = safeGetOptionalString(cluster, 'authProvider');
+  if (authProvider && authProvider !== 'serviceAccount') {
+    logger.warn(
+      `kubernetesPluginRef '${kubernetesPluginRef}' uses authProvider '${authProvider}' — only serviceAccount is supported; proceeding with serviceAccountToken`,
+    );
+  }
+  ```
+- [ ] 5.4 If `kubernetesPluginRef` is NOT set OR if `kubernetesPluginRef` lookup failed (no `url` resolved), read K8s fields directly from the cluster sub-config (per D7 fall-through precedence):
   ```typescript
   if (!reconcilerConfig.url) {
     reconcilerConfig.url = safeGetOptionalString(clusterConfig, 'url');
@@ -150,7 +160,7 @@ Note: Use `safeGetOptionalString` (already defined in `catalog-techdoc-url-reade
     reconcilerConfig.caData = safeGetOptionalString(clusterConfig, 'caData');
   }
   ```
-- [ ] 5.4 Verify `yarn tsc` passes
+- [ ] 5.5 Verify `yarn tsc` passes
 
 ## 6. Update config.d.ts Schema
 
@@ -238,7 +248,6 @@ Note: Use `safeGetOptionalString` (already defined in `catalog-techdoc-url-reade
         - routes
       verbs:
         - get
-        - watch
         - list
     - apiGroups:
         - ''

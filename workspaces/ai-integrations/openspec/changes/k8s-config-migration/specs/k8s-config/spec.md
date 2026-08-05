@@ -86,6 +86,15 @@ When `kubernetesPluginRef` is set in the cluster sub-config, the connector SHALL
 - **THEN** a warning is logged
 - **AND** `loadFromDefault()` is used as final fallback
 
+#### Scenario: kubernetesPluginRef cluster uses non-serviceAccount authProvider
+
+- **GIVEN** `cluster-1` has `kubernetesPluginRef: my-k8s-cluster`
+- **AND** the referenced cluster in `kubernetes.clusterLocatorMethods` has `authProvider: oidc`
+- **AND** the referenced cluster also has a valid `serviceAccountToken`
+- **WHEN** the connector plugin initializes
+- **THEN** a warning is logged indicating `authProvider 'oidc'` is not supported and only `serviceAccount` is used
+- **AND** the `serviceAccountToken` is still used for the connection (per D5)
+
 ---
 
 ## Config Precedence
