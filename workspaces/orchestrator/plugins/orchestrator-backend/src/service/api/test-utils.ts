@@ -350,6 +350,20 @@ states:
   };
 }
 
+/** Compiled workflows use start.stateName instead of a string start. */
+export function generateTestWorkflowInfoForEventypeWithStartStateName(
+  id: string = 'test_workflowId',
+): WorkflowInfo {
+  const base = generateTestWorkflowInfoForEventype(id);
+  return {
+    ...base,
+    source: (base.source as string).replace(
+      'start: listenToLock',
+      'start:\n  stateName: listenToLock',
+    ),
+  };
+}
+
 export function generateTestExecuteWorkflowResponse(
   id: string = 'test_execId',
 ): WorkflowExecutionResponse {
