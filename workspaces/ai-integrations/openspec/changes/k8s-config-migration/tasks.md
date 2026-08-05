@@ -2,22 +2,22 @@
 
 ## 1. Remove baseUrl from Entity Provider
 
-- [ ] 1.1 In `catalog-backend-module-model-catalog/src/providers/types.ts`, remove `baseUrl` from `ModelCatalogConfig`
-- [ ] 1.2 In `catalog-backend-module-model-catalog/src/providers/config.ts`, remove `baseUrl` reading from `readModelCatalogApiEntityConfig` (remove the `if (config.has('baseUrl'))` block and the `baseUrl` field from the returned object)
-- [ ] 1.3 In `catalog-backend-module-model-catalog/src/providers/ModelCatalogResourceEntityProvider.ts`:
+- [ ] 1.1 In `plugins/catalog-backend-module-model-catalog/src/providers/types.ts`, remove `baseUrl` from `ModelCatalogConfig`
+- [ ] 1.2 In `plugins/catalog-backend-module-model-catalog/src/providers/config.ts`, remove `baseUrl` reading from `readModelCatalogApiEntityConfig` (remove the `if (config.has('baseUrl'))` block and the `baseUrl` field from the returned object)
+- [ ] 1.3 In `plugins/catalog-backend-module-model-catalog/src/providers/ModelCatalogResourceEntityProvider.ts`:
   - Remove `private readonly baseUrl: string` field
   - Remove `this.baseUrl = config.baseUrl` from constructor
   - Simplify `run()` method: replace the `baseUrl`/`svcUrl` fallback logic (lines 169-173) with `const url = await this.discovery.getBaseUrl(this.name)`
-- [ ] 1.4 In `catalog-backend-module-model-catalog/config.d.ts`, remove `baseUrl?: string` from the connector-level fields
+- [ ] 1.4 In `plugins/catalog-backend-module-model-catalog/config.d.ts`, remove `baseUrl?: string` from the connector-level fields
 - [ ] 1.5 Verify `yarn tsc` passes
 
 ## 2. Merge ConnectorConfig into ReconcilerConfig
 
-- [ ] 2.1 In `kserve-kubeflow-connector-backend/src/services/types.ts`, update `ReconcilerConfig`:
+- [ ] 2.1 In `plugins/kserve-kubeflow-connector-backend/src/services/types.ts`, update `ReconcilerConfig`:
   - Change `defaultLifecycle: string` → `defaultLifecycle?: string`
   - Change `defaultOwner: string` → `defaultOwner?: string`
   - These are now optional because defaults are applied in `setupInformer`, not at the type level
-- [ ] 2.2 In `kserve-kubeflow-connector-backend/src/services/InformerService.ts`:
+- [ ] 2.2 In `plugins/kserve-kubeflow-connector-backend/src/services/InformerService.ts`:
   - Remove the `ConnectorConfig` interface (lines 556-560)
   - Remove the `ConnectorConfig` export
   - Update `setupInformer` signature from `(connectorConfig?: ConnectorConfig)` to `(config: ReconcilerConfig, logger: LoggerService)` — the caller (`plugin.ts`) now builds `ReconcilerConfig` directly
@@ -28,7 +28,7 @@
     config.defaultOwner = config.defaultOwner || process.env.OWNER || 'default-owner';
     config.defaultLifecycle = config.defaultLifecycle || process.env.LIFECYCLE || 'production';
     ```
-- [ ] 2.3 In `kserve-kubeflow-connector-backend/src/plugin.ts`:
+- [ ] 2.3 In `plugins/kserve-kubeflow-connector-backend/src/plugin.ts`:
   - Remove the `ConnectorConfig` import
   - Import `ReconcilerConfig` from `./services/types`
   - Update the config-reading code to build a `ReconcilerConfig` directly (without K8s fields for now — those are added in Task 3)
@@ -38,7 +38,7 @@
 
 ## 3. Add K8s Connection Fields to ReconcilerConfig
 
-- [ ] 3.1 In `kserve-kubeflow-connector-backend/src/services/types.ts`, add to `ReconcilerConfig`:
+- [ ] 3.1 In `plugins/kserve-kubeflow-connector-backend/src/services/types.ts`, add to `ReconcilerConfig`:
   ```typescript
   clusterName?: string;
   url?: string;
@@ -51,7 +51,7 @@
 
 ## 4. Implement KubeConfig from Config Fields
 
-- [ ] 4.1 In `kserve-kubeflow-connector-backend/src/services/InformerService.ts`, update `setupInformer` to build KubeConfig from config fields when available (matches OCM's `hubApiClient()` pattern):
+- [ ] 4.1 In `plugins/kserve-kubeflow-connector-backend/src/services/InformerService.ts`, update `setupInformer` to build KubeConfig from config fields when available (matches OCM's `hubApiClient()` pattern):
   ```typescript
   const kc = new k8s.KubeConfig();
   const clusterName = config.clusterName || 'target-cluster';
@@ -95,9 +95,9 @@
 
 ## 5. Implement kubernetesPluginRef Lookup in plugin.ts
 
-Note: Use `safeGetOptionalString` (see AGENTS.md `ConfigReader getOptionalString() edge case`) for all optional string config reads from cluster sub-config and kubernetes plugin config. Backstage's `getOptionalString` throws TypeError on empty env var substitution (e.g., `${K8S_CLUSTER_URL:-}`). Duplicate the helper locally in the connector's `plugin.ts` using the AGENTS.md pattern (returns `undefined` on error, NOT empty string). The existing helper in `catalog-techdoc-url-reader-backend/src/plugin.ts` returns `''` on error — do NOT import that variant, as empty string passes truthiness checks (e.g., `if (config.url)`) and would cause `loadFromOptions` to receive an empty URL.
+Note: Use `safeGetOptionalString` (see AGENTS.md `ConfigReader getOptionalString() edge case`) for all optional string config reads from cluster sub-config and kubernetes plugin config. Backstage's `getOptionalString` throws TypeError on empty env var substitution (e.g., `${K8S_CLUSTER_URL:-}`). Duplicate the helper locally in the connector's `plugin.ts` using the AGENTS.md pattern (returns `undefined` on error, NOT empty string). The existing helper in `plugins/catalog-techdoc-url-reader-backend/src/plugin.ts` returns `''` on error — do NOT import that variant, as empty string passes truthiness checks (e.g., `if (config.url)`) and would cause `loadFromOptions` to receive an empty URL.
 
-- [ ] 5.1 In `kserve-kubeflow-connector-backend/src/plugin.ts`, when reading cluster sub-config, check for `kubernetesPluginRef`:
+- [ ] 5.1 In `plugins/kserve-kubeflow-connector-backend/src/plugin.ts`, when reading cluster sub-config, check for `kubernetesPluginRef`:
   ```typescript
   const kubernetesPluginRef = safeGetOptionalString(
     clusterConfig,
@@ -164,7 +164,7 @@ Note: Use `safeGetOptionalString` (see AGENTS.md `ConfigReader getOptionalString
 
 ## 6. Update config.d.ts Schema
 
-- [ ] 6.1 In `catalog-backend-module-model-catalog/config.d.ts`, add K8s connection fields to the cluster sub-key type within the `[clusterKey: string]` union:
+- [ ] 6.1 In `plugins/catalog-backend-module-model-catalog/config.d.ts`, add K8s connection fields to the cluster sub-key type within the `[clusterKey: string]` union:
   ```typescript
   /** @visibility backend */
   url?: string;

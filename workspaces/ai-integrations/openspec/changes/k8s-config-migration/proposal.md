@@ -12,7 +12,7 @@ Additionally, two type-level issues have accumulated:
 ## Starting Point
 
 - Connector plugin (`kserve-kubeflow-connector-backend`) uses `kc.loadFromDefault()` in `InformerService.ts` (reads `~/.kube/config` or `KUBECONFIG` env var) with optional `K8S_TOKEN` env var token override
-- `ModelCatalogConfig` in `catalog-backend-module-model-catalog/src/providers/types.ts` contains `baseUrl`, `id`, `schedule`
+- `ModelCatalogConfig` in `plugins/catalog-backend-module-model-catalog/src/providers/types.ts` contains `baseUrl`, `id`, `schedule`
 - `ConnectorConfig` (InformerService.ts:556) is a thin wrapper with `catalogUrl?`, `defaultOwner?`, `defaultLifecycle?`
 - `ReconcilerConfig` (types.ts:113) merges those fields with runtime K8s objects (`routeClient`, `coreClient`, `informer`, `k8sToken`)
 - Entity provider's `config.d.ts` declares cluster sub-key fields but not K8s connection fields
@@ -54,8 +54,7 @@ Additionally, two type-level issues have accumulated:
 
 - **Parent openspec**: `openspec/changes/transition-oai-connector-to-kserve-plugin/` — Decision 2
 - **Jira**: [RHIDP-15201](https://redhat.atlassian.net/browse/RHIDP-15201)
-- **Reference**: [OCM plugin setup](https://github.com/backstage/community-plugins/tree/main/workspaces/ocm/plugins/ocm#setting-up-the-ocm-backend-package), [Backstage K8s plugin config](https://backstage.io/docs/features/kubernetes/configuration), [Backstage K8s plugin auth](https://backstage.io/docs/features/kubernetes/authentication)
-- **Local refs**: Backstage K8s plugin at `/home/gmontero/go/src/github.com/backstage/backstage/plugins/kubernetes*`, OCM plugin at `/home/gmontero/go/src/github.com/backstage/community-plugins/workspaces/ocm`
+- **Reference**: [OCM plugin setup](https://github.com/backstage/community-plugins/tree/main/workspaces/ocm/plugins/ocm#setting-up-the-ocm-backend-package), [Backstage K8s plugin config](https://backstage.io/docs/features/kubernetes/configuration), [Backstage K8s plugin auth](https://backstage.io/docs/features/kubernetes/authentication), [Backstage K8s plugin config.d.ts](https://github.com/backstage/backstage/blob/master/plugins/kubernetes-backend/config.d.ts), [OCM config helper](https://github.com/backstage/community-plugins/blob/main/workspaces/ocm/plugins/ocm-backend/src/helpers/config.ts)
 
 **Change type**: feature
 

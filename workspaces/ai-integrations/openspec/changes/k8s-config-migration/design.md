@@ -47,11 +47,11 @@ catalog:
 
 When `kubernetesPluginRef` is provided, it takes precedence over direct K8s fields. The Backstage kubernetes plugin does NOT need to be installed — only its config section in `app-config.yaml` is required.
 
-**OCM reference implementation** (local clones for cross-reference):
+**OCM reference implementation**:
 
-- Config reading: `/home/gmontero/go/src/github.com/backstage/community-plugins/workspaces/ocm/plugins/ocm-backend/src/helpers/config.ts` — `deferToKubernetesPlugin()`, `getHubClusterFromKubernetesConfig()`, `getHubClusterFromOcmConfig()`
-- K8s client creation: `/home/gmontero/go/src/github.com/backstage/community-plugins/workspaces/ocm/plugins/ocm-backend/src/helpers/kubernetes.ts` — `hubApiClient()` uses `loadFromOptions()`
-- Backstage K8s plugin config schema: `/home/gmontero/go/src/github.com/backstage/backstage/plugins/kubernetes-backend/config.d.ts`
+- Config reading: [`ocm-backend/src/helpers/config.ts`](https://github.com/backstage/community-plugins/blob/main/workspaces/ocm/plugins/ocm-backend/src/helpers/config.ts) — `deferToKubernetesPlugin()`, `getHubClusterFromKubernetesConfig()`, `getHubClusterFromOcmConfig()`
+- K8s client creation: [`ocm-backend/src/helpers/kubernetes.ts`](https://github.com/backstage/community-plugins/blob/main/workspaces/ocm/plugins/ocm-backend/src/helpers/kubernetes.ts) — `hubApiClient()` uses `loadFromOptions()`
+- Backstage K8s plugin config schema: [`kubernetes-backend/config.d.ts`](https://github.com/backstage/backstage/blob/master/plugins/kubernetes-backend/config.d.ts)
 
 ### Current config structure
 
@@ -274,7 +274,7 @@ Note: `clusterName` comes from the `name` field in the cluster sub-config (e.g.,
 
 ### D6 — Config.d.ts: K8s fields in entity provider's existing config.d.ts
 
-**Choice:** Add the K8s connection fields (`url`, `serviceAccountToken`, `skipTLSVerify`, `caData`, `kubernetesPluginRef`) to the cluster sub-key type in the entity provider's existing `catalog-backend-module-model-catalog/config.d.ts`. Do NOT create a separate `config.d.ts` in the connector plugin.
+**Choice:** Add the K8s connection fields (`url`, `serviceAccountToken`, `skipTLSVerify`, `caData`, `kubernetesPluginRef`) to the cluster sub-key type in the entity provider's existing `plugins/catalog-backend-module-model-catalog/config.d.ts`. Do NOT create a separate `config.d.ts` in the connector plugin.
 
 **Rationale:** The entire `catalog.providers.modelCatalog` config tree is already declared in the entity provider's `config.d.ts`. Adding the K8s fields there keeps all schema declarations for this config path in one place. Backstage merges config schemas across plugins, so a separate connector `config.d.ts` would also work, but splitting the schema for the same config path across two files is harder to maintain.
 
