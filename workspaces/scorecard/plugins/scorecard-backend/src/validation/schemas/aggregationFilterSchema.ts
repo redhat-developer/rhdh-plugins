@@ -14,17 +14,8 @@
  * limitations under the License.
  */
 
-export function normalizeTimestamp(timestamp?: unknown): Date {
-  if (timestamp instanceof Date) {
-    return timestamp;
-  }
+import { z } from 'zod';
 
-  if (typeof timestamp === 'number' || typeof timestamp === 'string') {
-    if (timestamp === '') {
-      return new Date(0);
-    }
-    return new Date(timestamp);
-  }
-
-  return new Date(0);
-}
+export const aggregationFilterSchema = z.object({
+  status: z.string().min(1).max(64).optional(),
+});

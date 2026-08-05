@@ -14,8 +14,22 @@
  * limitations under the License.
  */
 
-export function toIsoTimestamp(timestamp?: Date): string {
-  return timestamp
-    ? new Date(timestamp).toISOString()
-    : new Date().toISOString();
+import type { Config } from '@backstage/config';
+import type { AggregationConfigFilter } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+export function buildAggregationConfigFilter(
+  config: Config,
+): AggregationConfigFilter {
+  const filterConfig = {} as AggregationConfigFilter;
+
+  const filter = config.getOptionalConfig('filter');
+
+  if (filter) {
+    const status = filter.getOptionalString('status');
+    if (status) {
+      filterConfig.status = status;
+    }
+  }
+
+  return filterConfig;
 }

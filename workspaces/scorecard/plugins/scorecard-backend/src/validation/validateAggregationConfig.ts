@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
+import { InputError } from '@backstage/errors';
 import type { Config } from '@backstage/config';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { AGGREGATION_KPIS_CONFIG_PATH } from '../constants';
-import { buildAggregationConfig } from '../utils/aggregation/buildAggregationConfig';
+import { ThresholdResolver } from '../threshold/ThresholdResolver';
+import { validateScalarAggregationConfig } from './validateScalarAggregationConfig';
 import { parseValidatedAggregationConfig } from '../utils/aggregation/parseValidatedAggregationConfig';
+import { buildAggregationConfig } from '../utils/aggregation/buildAggregationConfig';
 import { isScalarAggregationType } from '../utils/aggregation/isScalarAggregationType';
 
 export function validateAggregationConfig(options: {
   rootConfig: Config;
   registry: MetricProvidersRegistry;
+  thresholdResolver: ThresholdResolver;
 }): void {
-  const { rootConfig, registry } = options;
+  const { rootConfig, registry, thresholdResolver } = options;
 
   const aggregationKPIsConfig = rootConfig.getOptionalConfig(
     AGGREGATION_KPIS_CONFIG_PATH,
@@ -45,20 +49,18 @@ export function validateAggregationConfig(options: {
     );
 
     if (!registry.hasProvider(aggregationConfig.metricId)) {
-      throw new Error(
+      throw new InputError(
         `Metric provider with ID '${aggregationConfig.metricId}' is not registered (${AGGREGATION_KPIS_CONFIG_PATH}.${aggregationId}).`,
       );
     }
 
-    const metric = registry.getMetric(aggregationConfig.metricId);
-
-    if (
-      isScalarAggregationType(aggregationConfig.type) &&
-      metric.type === 'boolean'
-    ) {
-      throw new Error(
-        `Aggregation KPI "${aggregationId}" uses type "${aggregationConfig.type}" which requires a number metric, but "${aggregationConfig.metricId}" is boolean.`,
-      );
+    if (isScalarAggregationType(aggregationConfig.type)) {
+      validateScalarAggregationConfig({
+        aggregationConfig,
+        aggregationId,
+        registry,
+        thresholdResolver,
+      });
     }
   }
 }

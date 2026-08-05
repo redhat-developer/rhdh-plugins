@@ -274,20 +274,25 @@ scorecard:
       type: statusGrouped
       description: This KPI is provide information about whether the license file exists in the repository.
       metricId: filecheck.license
-    totalOpenPrs:
-      title: Total Open PRs
-      description: Sum of open PRs across owned entities
+    totalCriticalPRs:
+      title: Total Critical PRs
+      description: Sum of open PRs for entities in error status
       type: sum
       metricId: github.openPRs
+      filter:
+        status: error
       options:
         thresholds:
           rules:
             - key: success
-              expression: '>=80'
-              color: '#6bb300' # green
+              expression: '<30'
+              color: '#6bb300'
             - key: warning
-              expression: '<80'
-              color: 'rgb(224, 189, 108)' # light orange
+              expression: '30-80'
+              color: 'rgb(224, 189, 108)'
+            - key: error
+              expression: '>80'
+              color: '#be1ec7'
     avgOpenIssues:
       title: Average Open Issues
       description: Mean open issues count per entity
