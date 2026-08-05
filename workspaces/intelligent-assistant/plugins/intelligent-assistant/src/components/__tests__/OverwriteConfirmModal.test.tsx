@@ -134,4 +134,26 @@ describe('OverwriteConfirmModal', () => {
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it('should update upload count when switching from ignore back to replace', () => {
+    renderModal();
+
+    const ignoreRadio = screen.getByLabelText('Ignore duplicated files');
+    fireEvent.click(ignoreRadio);
+    expect(
+      screen.getByRole('button', { name: /Upload \(1\)/ }),
+    ).toBeInTheDocument();
+
+    const replaceRadio = screen.getByLabelText('Replace existing files');
+    fireEvent.click(replaceRadio);
+    expect(
+      screen.getByRole('button', { name: /Upload \(3\)/ }),
+    ).toBeInTheDocument();
+  });
+
+  it('should render an empty file list gracefully when no files provided', () => {
+    renderModal({ allFiles: [], duplicateFileNames: [] });
+
+    expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
+  });
 });

@@ -482,9 +482,16 @@ export const NotebookView = ({
     const isUntitled = notebookName === UNTITLED_NOTEBOOK_NAME;
     const hasNoDocuments = documents.length === 0;
     const hasNoPendingUploads = !pendingUploads.length;
+    const hasNoUploading = !uploadingFileNames.length;
     const hasNoChat = conversationId === TEMP_CONVERSATION_ID;
 
-    if (isUntitled && hasNoDocuments && hasNoPendingUploads && hasNoChat) {
+    if (
+      isUntitled &&
+      hasNoDocuments &&
+      hasNoPendingUploads &&
+      hasNoUploading &&
+      hasNoChat
+    ) {
       await notebooksApi.deleteSession(sessionId).catch(() => {});
     }
     onClose();

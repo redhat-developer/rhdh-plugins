@@ -247,6 +247,22 @@ describe('AddDocumentModal', () => {
     expect(screen.queryByText('test-file.txt')).not.toBeInTheDocument();
   });
 
+  it('should show disabled dropzone with tooltip when file limit is reached', () => {
+    const existingNames = Array.from({ length: 10 }, (_, i) => `file-${i}.txt`);
+    render(
+      <AddDocumentModal
+        {...defaultProps}
+        existingDocumentNames={existingNames}
+      />,
+    );
+
+    expect(
+      screen.getByText('Drag and drop files here, or click to browse'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Maximum file size is 25 MB.')).toBeInTheDocument();
+    expect(screen.getByText('Supported formats:')).toBeInTheDocument();
+  });
+
   it('should call onDuplicatesFound when Add is clicked with duplicate files', async () => {
     render(
       <AddDocumentModal
