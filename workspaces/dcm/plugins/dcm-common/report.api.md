@@ -114,7 +114,6 @@ export interface CatalogItemInstance {
   display_name: string;
   // (undocumented)
   path?: string;
-  resource_id?: string;
   // (undocumented)
   spec: CatalogItemInstanceSpec;
   // (undocumented)
@@ -135,6 +134,7 @@ export interface CatalogItemInstanceList {
 export interface CatalogItemInstanceSpec {
   // (undocumented)
   catalog_item_id: string;
+  resource_ids?: string[];
   // (undocumented)
   user_values: UserValue[];
 }
@@ -149,10 +149,15 @@ export interface CatalogItemList {
 
 // @public
 export interface CatalogItemSpec {
-  // (undocumented)
+  resources?: CatalogResource[];
+}
+
+// @public
+export interface CatalogResource {
   fields?: FieldConfiguration[];
-  // (undocumented)
-  service_type?: string;
+  name: string;
+  requires_resources?: string[];
+  service_type: string;
 }
 
 // @public
@@ -516,6 +521,7 @@ export interface ServiceTypeList {
 export interface UserValue {
   // (undocumented)
   path: string;
+  resource: string;
   // (undocumented)
   value: unknown;
 }

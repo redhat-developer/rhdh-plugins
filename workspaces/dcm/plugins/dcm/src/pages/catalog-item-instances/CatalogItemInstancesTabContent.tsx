@@ -42,13 +42,11 @@ import { catalogApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
 import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
-import { DcmFormDialog } from '../../components/DcmFormDialog';
-import { DcmFormDialogActions } from '../../components/DcmFormDialogActions';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
 import { useCrudTab } from '../../hooks/useCrudTab';
 import { useTranslation } from '../../hooks/useTranslation';
 import emptyIllustration from '../../assets/environments-empty-state.png';
-import { InstanceFormFields } from './components/InstanceFormFields';
+import { InstanceWizardDialog } from './components/InstanceWizardDialog';
 import {
   emptyInstanceForm,
   formToInstance,
@@ -69,7 +67,6 @@ const useStyles = makeStyles(() => ({
     flexWrap: 'nowrap',
     gap: 4,
   },
-  /** Lets Tooltip wrap disabled IconButton (ref + layout) without raw `<span>`. */
   tooltipTrigger: {
     display: 'inline-flex',
   },
@@ -104,7 +101,7 @@ export function CatalogItemInstancesTabContent() {
       inst.display_name,
       inst.spec?.catalog_item_id,
       inst.uid,
-      inst.resource_id,
+      ...(inst.spec?.resource_ids ?? []),
     ],
     emptyForm: emptyInstanceForm,
     isValid: isInstanceFormValid,
@@ -173,18 +170,23 @@ export function CatalogItemInstancesTabContent() {
         ),
       },
       {
-        title: t('instances.columns.resourceId'),
-        field: 'resource_id',
-        render: inst => (
-          <TruncatedText
-            text={inst.resource_id}
-            variant="body2"
-            color="textSecondary"
-            bold={false}
-            maxWidth={180}
-            fallback={<DcmEmptyCell />}
-          />
-        ),
+        title: t('instances.columns.resourceIds'),
+        field: 'spec.resource_ids',
+        sorting: false,
+        render: inst => {
+          const ids = inst.spec?.resource_ids ?? [];
+          if (ids.length === 0) return <DcmEmptyCell />;
+          return (
+            <TruncatedText
+              text={ids.join(', ')}
+              variant="body2"
+              color="textSecondary"
+              bold={false}
+              maxWidth={180}
+              fallback={<DcmEmptyCell />}
+            />
+          );
+        },
       },
       {
         title: t('instances.columns.apiVersion'),
@@ -267,10 +269,6 @@ export function CatalogItemInstancesTabContent() {
     ],
   );
 
-  type ScalarTouched = Partial<
-    Record<Exclude<keyof InstanceForm, 'user_values'>, boolean>
-  >;
-
   return (
     <>
       <DcmCrudTabLayout<CatalogItemInstance>
@@ -297,35 +295,18 @@ export function CatalogItemInstancesTabContent() {
         entityLabel={t('instances.entityLabel')}
       />
 
-      <DcmFormDialog
+      <InstanceWizardDialog
         open={crud.createOpen}
         onClose={crud.handleCloseCreate}
         title={t('instances.createDialogTitle')}
-        maxWidth="sm"
-        error={crud.createError}
+        form={crud.createForm}
+        setForm={crud.setCreateForm}
+        catalogItems={catalogItems}
+        onSubmit={crud.handleCreateSubmit}
+        submitLabel={t('instances.createButton')}
         submitting={crud.createSubmitting}
-        actions={
-          <DcmFormDialogActions
-            onSubmit={crud.handleCreateSubmit}
-            onCancel={crud.handleCloseCreate}
-            submitLabel={t('instances.createButton')}
-            submitting={crud.createSubmitting}
-            disabled={!isInstanceFormValid(crud.createForm)}
-          />
-        }
-      >
-        <InstanceFormFields
-          form={crud.createForm}
-          setForm={crud.setCreateForm}
-          catalogItems={catalogItems}
-          touched={crud.createTouched as ScalarTouched}
-          setTouched={
-            crud.setCreateTouched as React.Dispatch<
-              React.SetStateAction<ScalarTouched>
-            >
-          }
-        />
-      </DcmFormDialog>
+        error={crud.createError}
+      />
 
       <DcmDeleteDialog
         open={crud.deleteOpen}
