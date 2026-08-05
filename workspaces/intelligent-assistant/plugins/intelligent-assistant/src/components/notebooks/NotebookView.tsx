@@ -281,6 +281,10 @@ const useStyles = makeStyles(theme => ({
     display: 'inline-flex',
     alignItems: 'center',
     color: 'inherit',
+    '&:focus-visible': {
+      outline: '2px solid var(--pf-t--global--border--color--brand--default)',
+      outlineOffset: 2,
+    },
     marginLeft: theme.spacing(2),
   },
   chatContent: {
@@ -338,6 +342,7 @@ export const NotebookView = ({
   const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
   const [requestId, setRequestId] = useState('');
   const { mutate: stopConversation } = useStopConversation();
+  const wasStoppedByUserRef = useRef(false);
   const [announcement, setAnnouncement] = useState<string | undefined>(
     undefined,
   );
@@ -356,7 +361,10 @@ export const NotebookView = ({
   const onComplete = useCallback(
     (message: string) => {
       setIsSendButtonDisabled(false);
-      setAnnouncement(`Message from Bot: ${message}`);
+      if (!wasStoppedByUserRef.current) {
+        setAnnouncement(`Message from Bot: ${message}`);
+      }
+      wasStoppedByUserRef.current = false;
       queryClient.invalidateQueries({
         queryKey: ['conversationMessages', conversationId],
       });
@@ -404,6 +412,7 @@ export const NotebookView = ({
 
   const sendMessage = useCallback(
     (message: string | number) => {
+      wasStoppedByUserRef.current = false;
       setAnnouncement(
         t('conversation.announcement.userMessage' as any, {
           prompt: message.toString(),
@@ -416,6 +425,7 @@ export const NotebookView = ({
   );
 
   const handleStopButton = useCallback(() => {
+    wasStoppedByUserRef.current = true;
     if (requestId) {
       stopConversation(requestId);
       setRequestId('');
@@ -838,74 +848,70 @@ export const NotebookView = ({
                   renderNotebookDisclaimerAlert()}
 
                 <ChatbotFooter className={classes.footer}>
-                  {hasNoDocuments ? (
-                    <Tooltip
-                      content={t('notebook.view.input.disabledTooltip')}
-                      position="top"
-                    >
-                      <div>
-                        <MessageBar
-                          className={classes.messageBar}
-                          hasAttachButton={false}
-                          hasMicrophoneButton={false}
-                          hasStopButton={false}
-                          isSendButtonDisabled
-                          isDisabled
-                          onSendMessage={sendMessage}
-                          placeholder={t('notebook.view.input.placeholder')}
-                          additionalActions={
-                            <button
-                              type="button"
-                              onClick={() => handleOpenUploadModal()}
-                              aria-label={t('notebook.view.documents.add')}
-                              className={classes.addResourceButton}
-                            >
-                              <PlusIcon style={{ width: 16, height: 16 }} />
-                            </button>
-                          }
-                          buttonProps={{
-                            send: {
-                              tooltipContent: t('tooltip.send'),
+                  {(() => {
+                    const addResourceAction = (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenUploadModal()}
+                        aria-label={t('notebook.view.documents.add')}
+                        className={classes.addResourceButton}
+                      >
+                        <PlusIcon style={{ width: 16, height: 16 }} />
+                      </button>
+                    );
+                    return hasNoDocuments ? (
+                      <Tooltip
+                        content={t('notebook.view.input.disabledTooltip')}
+                        position="top"
+                      >
+                        <div>
+                          <MessageBar
+                            className={classes.messageBar}
+                            hasAttachButton={false}
+                            hasMicrophoneButton={false}
+                            hasStopButton={false}
+                            isSendButtonDisabled
+                            isDisabled
+                            onSendMessage={sendMessage}
+                            placeholder={t('notebook.view.input.placeholder')}
+                            forceMultilineLayout
+                            additionalActions={addResourceAction}
+                            buttonProps={{
+                              send: {
+                                tooltipContent: t('tooltip.send'),
+                              },
+                            }}
+                          />
+                        </div>
+                      </Tooltip>
+                    ) : (
+                      <MessageBar
+                        className={classes.messageBar}
+                        hasAttachButton={false}
+                        hasMicrophoneButton
+                        hasStopButton={isSendButtonDisabled}
+                        handleStopButton={
+                          isSendButtonDisabled ? handleStopButton : undefined
+                        }
+                        isSendButtonDisabled={isSendButtonDisabled}
+                        onSendMessage={sendMessage}
+                        placeholder={t('notebook.view.input.placeholder')}
+                        forceMultilineLayout
+                        additionalActions={addResourceAction}
+                        buttonProps={{
+                          microphone: {
+                            tooltipContent: {
+                              active: t('tooltip.microphone.active'),
+                              inactive: t('tooltip.microphone.inactive'),
                             },
-                          }}
-                        />
-                      </div>
-                    </Tooltip>
-                  ) : (
-                    <MessageBar
-                      className={classes.messageBar}
-                      hasAttachButton={false}
-                      hasMicrophoneButton
-                      hasStopButton={isSendButtonDisabled}
-                      handleStopButton={
-                        isSendButtonDisabled ? handleStopButton : undefined
-                      }
-                      isSendButtonDisabled={isSendButtonDisabled}
-                      onSendMessage={sendMessage}
-                      placeholder={t('notebook.view.input.placeholder')}
-                      additionalActions={
-                        <button
-                          type="button"
-                          onClick={() => handleOpenUploadModal()}
-                          aria-label={t('notebook.view.documents.add')}
-                          className={classes.addResourceButton}
-                        >
-                          <PlusIcon style={{ width: 16, height: 16 }} />
-                        </button>
-                      }
-                      buttonProps={{
-                        microphone: {
-                          tooltipContent: {
-                            active: t('tooltip.microphone.active'),
-                            inactive: t('tooltip.microphone.inactive'),
                           },
-                        },
-                        send: {
-                          tooltipContent: t('tooltip.send'),
-                        },
-                      }}
-                    />
-                  )}
+                          send: {
+                            tooltipContent: t('tooltip.send'),
+                          },
+                        }}
+                      />
+                    );
+                  })()}
                   <ChatbotFootnoteWithIcon label={t('footer.accuracy.label')} />
                 </ChatbotFooter>
               </div>

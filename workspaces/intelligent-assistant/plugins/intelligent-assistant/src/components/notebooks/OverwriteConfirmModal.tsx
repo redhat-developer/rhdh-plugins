@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
@@ -132,7 +132,14 @@ export const OverwriteConfirmModal = ({
     'replace',
   );
 
-  const duplicateSet = new Set(duplicateFileNames);
+  useEffect(() => {
+    if (isOpen) setDuplicateAction('replace');
+  }, [isOpen]);
+
+  const duplicateSet = useMemo(
+    () => new Set(duplicateFileNames),
+    [duplicateFileNames],
+  );
   const newFiles = allFiles.filter(f => !duplicateSet.has(f.name));
   const duplicateFiles = allFiles.filter(f => duplicateSet.has(f.name));
 
@@ -217,7 +224,11 @@ export const OverwriteConfirmModal = ({
       </DialogContent>
 
       <div className={classes.dialogActions}>
-        <Button variant="primary" onClick={handleConfirm}>
+        <Button
+          variant="primary"
+          onClick={handleConfirm}
+          isDisabled={filesToUpload.length === 0}
+        >
           {(t as Function)('notebook.overwrite.modal.action', {
             count: filesToUpload.length,
           })}

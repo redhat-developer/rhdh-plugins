@@ -156,4 +156,62 @@ describe('OverwriteConfirmModal', () => {
 
     expect(screen.queryByRole('listitem')).not.toBeInTheDocument();
   });
+
+  it('should disable Upload button when all files are duplicates and ignore is selected', () => {
+    renderModal({
+      allFiles: [createFile('dup1.txt'), createFile('dup2.txt')],
+      duplicateFileNames: ['dup1.txt', 'dup2.txt'],
+    });
+
+    const ignoreRadio = screen.getByLabelText('Ignore duplicated files');
+    fireEvent.click(ignoreRadio);
+
+    const uploadButton = screen.getByRole('button', {
+      name: /Upload \(0\)/,
+    });
+    expect(uploadButton).toBeDisabled();
+  });
+
+  it('should reset radio to replace when modal reopens', () => {
+    const { rerender } = render(
+      <OverwriteConfirmModal
+        isOpen
+        onClose={onClose}
+        onConfirm={onConfirm}
+        onBack={onBack}
+        allFiles={allFiles}
+        duplicateFileNames={duplicateFileNames}
+      />,
+    );
+
+    fireEvent.click(screen.getByLabelText('Ignore duplicated files'));
+    expect(
+      screen.getByRole('button', { name: /Upload \(1\)/ }),
+    ).toBeInTheDocument();
+
+    rerender(
+      <OverwriteConfirmModal
+        isOpen={false}
+        onClose={onClose}
+        onConfirm={onConfirm}
+        onBack={onBack}
+        allFiles={allFiles}
+        duplicateFileNames={duplicateFileNames}
+      />,
+    );
+    rerender(
+      <OverwriteConfirmModal
+        isOpen
+        onClose={onClose}
+        onConfirm={onConfirm}
+        onBack={onBack}
+        allFiles={allFiles}
+        duplicateFileNames={duplicateFileNames}
+      />,
+    );
+
+    expect(
+      screen.getByRole('button', { name: /Upload \(3\)/ }),
+    ).toBeInTheDocument();
+  });
 });

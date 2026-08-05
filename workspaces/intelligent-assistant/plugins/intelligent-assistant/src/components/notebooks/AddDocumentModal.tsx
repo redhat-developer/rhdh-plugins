@@ -48,6 +48,10 @@ import {
 } from '../../utils/notebook-upload-utils';
 import { FileListItem } from './FileListItem';
 
+const UNIQUE_FILE_TYPE_LABELS = [
+  ...new Set(Object.values(NOTEBOOK_EXTENSION_TO_FILE_TYPE)),
+].map(t => t.toUpperCase());
+
 const useStyles = makeStyles(theme => ({
   dialogPaper: {
     borderRadius: 24,
@@ -175,6 +179,7 @@ const DropzoneClickArea = ({
   return (
     <div
       role="button"
+      aria-label="Drag and drop files here, or click to browse"
       tabIndex={isDisabled ? -1 : 0}
       onClick={isDisabled ? undefined : open}
       onKeyDown={
@@ -383,11 +388,9 @@ export const AddDocumentModal = ({
                   {t('notebook.upload.modal.supportedFormats')}
                 </Typography>
                 <div className={classes.chipContainer}>
-                  {[
-                    ...new Set(Object.values(NOTEBOOK_EXTENSION_TO_FILE_TYPE)),
-                  ].map(label => (
+                  {UNIQUE_FILE_TYPE_LABELS.map(label => (
                     <span key={label} className={classes.fileTypeChip}>
-                      {label.toUpperCase()}
+                      {label}
                     </span>
                   ))}
                 </div>
