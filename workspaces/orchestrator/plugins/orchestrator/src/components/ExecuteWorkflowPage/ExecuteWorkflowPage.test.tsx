@@ -111,24 +111,44 @@ jest.mock(
   () => {
     const React = require('react');
     return {
-      SubmitButton: ({
-        children,
-        handleClick,
-        submitting,
+      OrchestratorForm: ({
+        handleExecute,
+        handleExecuteAsEvent,
+        executeLabel,
+        executeAsEventLabel,
+        isExecuting,
       }: {
-        children: ReactNode;
-        handleClick: () => void;
-        submitting?: boolean;
+        handleExecute: (parameters: Record<string, unknown>) => Promise<void>;
+        handleExecuteAsEvent?: (
+          parameters: Record<string, unknown>,
+        ) => Promise<void>;
+        executeLabel?: string;
+        executeAsEventLabel?: string;
+        isExecuting?: boolean;
       }) =>
         React.createElement(
-          'button',
-          {
-            type: 'button',
-            onClick: handleClick,
-            disabled: submitting ?? false,
-            'data-testid': 'submit-button',
-          },
-          children,
+          React.Fragment,
+          null,
+          React.createElement(
+            'button',
+            {
+              type: 'button',
+              onClick: () => handleExecute({}),
+              disabled: isExecuting ?? false,
+            },
+            executeLabel,
+          ),
+          handleExecuteAsEvent && executeAsEventLabel
+            ? React.createElement(
+                'button',
+                {
+                  type: 'button',
+                  onClick: () => handleExecuteAsEvent({}),
+                  disabled: isExecuting ?? false,
+                },
+                executeAsEventLabel,
+              )
+            : null,
         ),
     };
   },
@@ -157,7 +177,14 @@ describe('ExecuteWorkflowPage', () => {
     mockKafkaEnabled = true;
     mockSearchParams = new URLSearchParams();
     mockAuthenticate.mockResolvedValue([]);
-    mockGetWorkflowDataInputSchema.mockResolvedValue({ data: {} });
+    // Minimal schema so the page takes the OrchestratorForm path (primary UX),
+    // not MissingSchemaNotice (already covered in MissingSchemaNotice.test.tsx).
+    mockGetWorkflowDataInputSchema.mockResolvedValue({
+      data: {
+        inputSchema: { type: 'object', properties: {} },
+        data: {},
+      },
+    });
     mockGetWorkflowOverview.mockResolvedValue({ data: { name: 'WF' } });
     mockExecuteWorkflow.mockResolvedValue({ data: { id: 'kafkaEvent' } });
   });
