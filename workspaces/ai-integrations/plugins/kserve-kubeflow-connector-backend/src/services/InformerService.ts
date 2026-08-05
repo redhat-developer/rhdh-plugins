@@ -15,6 +15,7 @@
  */
 
 import * as k8s from '@kubernetes/client-node';
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import {
   type ReconcilerConfig,
   type InferenceService,
@@ -260,8 +261,8 @@ async function reconcileInferenceService(
   // Call backstage printers (equivalent to kserve.CallBackstagePrinters in Go)
   console.log(`Calling backstage printers for ${namespace}/${name}`);
   const catalogData = await callKServeBackstagePrinters(
-    config.defaultOwner,
-    config.defaultLifecycle,
+    config.defaultOwner || 'default-owner',
+    config.defaultLifecycle || 'production',
     is,
     authentication,
   );
@@ -338,8 +339,8 @@ async function fetchModelCardViaAnnotations(
     }
     modelCardKey = `${catalogSource}/${catalogModel}`;
     let token = '';
-    if (config.k8sToken !== undefined) {
-      token = config.k8sToken;
+    if (config.serviceAccountToken !== undefined) {
+      token = config.serviceAccountToken;
     }
     const catalogClient = createCatalogClient(
       config.catalogRoute,
@@ -553,52 +554,86 @@ export function getModelCard(id: string): string | undefined {
   return undefined;
 }
 
-export interface ConnectorConfig {
-  catalogUrl?: string;
-  defaultOwner?: string;
-  defaultLifecycle?: string;
-}
+export const setupInformer = async (
+  config: ReconcilerConfig,
+  logger: LoggerService,
+) => {
+  // Apply defaults for optional config fields
+  config.defaultLifecycle =
+    config.defaultLifecycle || process.env.LIFECYCLE || 'production';
+  config.defaultOwner =
+    config.defaultOwner || process.env.OWNER || 'default-owner';
 
-export const setupInformer = async (connectorConfig?: ConnectorConfig) => {
   const kc = new k8s.KubeConfig();
-  kc.loadFromDefault();
+  const clusterName = config.clusterName || 'target-cluster';
+
+  if (config.url && config.serviceAccountToken) {
+    logger.info(
+      `Building KubeConfig from app-config fields for cluster '${clusterName}' at ${config.url}`,
+    );
+    kc.loadFromOptions({
+      clusters: [
+        {
+          name: clusterName,
+          server: config.url,
+          skipTLSVerify: config.skipTLSVerify ?? false,
+          caData: config.caData,
+        },
+      ],
+      users: [
+        {
+          name: 'backstage-sa',
+          token: config.serviceAccountToken,
+        },
+      ],
+      contexts: [
+        {
+          name: clusterName,
+          cluster: clusterName,
+          user: 'backstage-sa',
+        },
+      ],
+      currentContext: clusterName,
+    });
+  } else {
+    if (config.url || config.serviceAccountToken) {
+      logger.warn(
+        'Partial K8s config: both url and serviceAccountToken are required for config-based auth; falling back to loadFromDefault()',
+      );
+    }
+    logger.info(
+      'No config-based K8s credentials; using loadFromDefault() (KUBECONFIG env, ~/.kube/config, or oc login)',
+    );
+    kc.loadFromDefault();
+
+    // Extract token from kubeconfig for catalog API calls
+    let k8sToken: string | undefined = '';
+    const currentUser = kc.getCurrentUser();
+    if (currentUser !== null) {
+      k8sToken = currentUser.token;
+    } else {
+      const users = kc.getUsers();
+      for (const user of users) {
+        if (user.token !== null) {
+          k8sToken = user.token;
+          break;
+        }
+      }
+    }
+    // K8S_TOKEN env var override for backward compatibility
+    if (process.env.K8S_TOKEN && process.env.K8S_TOKEN.length > 0) {
+      k8sToken = process.env.K8S_TOKEN;
+    }
+    config.serviceAccountToken = k8sToken;
+  }
 
   const client = kc.makeApiClient(k8s.CustomObjectsApi);
   const coreClient = kc.makeApiClient(k8s.CoreV1Api);
 
-  let k8sToken: string | undefined = '';
-  const currentUser = kc.getCurrentUser();
-  if (currentUser !== null) {
-    k8sToken = currentUser.token;
-  } else {
-    const users = kc.getUsers();
-    for (const user of users) {
-      if (user.token !== null) {
-        k8sToken = user.token;
-        break;
-      }
-    }
-  }
-  if (process.env.K8S_TOKEN && process.env.K8S_TOKEN.length > 0) {
-    k8sToken = process.env.K8S_TOKEN;
-  }
+  config.routeClient = client;
+  config.coreClient = coreClient;
 
-  // Initialize configuration from plugin config with environment variable fallback
-  const config: ReconcilerConfig = {
-    catalogRoute: undefined,
-    catalogUrl: connectorConfig?.catalogUrl,
-    defaultLifecycle:
-      connectorConfig?.defaultLifecycle ||
-      process.env.LIFECYCLE ||
-      'production',
-    defaultOwner:
-      connectorConfig?.defaultOwner || process.env.OWNER || 'default-owner',
-    k8sToken: k8sToken,
-    routeClient: client,
-    coreClient: coreClient,
-  };
-
-  console.log('Reconciler configuration:', {
+  logger.info('Reconciler configuration:', {
     defaultLifecycle: config.defaultLifecycle,
     defaultOwner: config.defaultOwner,
   });
@@ -606,11 +641,11 @@ export const setupInformer = async (connectorConfig?: ConnectorConfig) => {
   // Discover catalog route for future catalog integration
   try {
     await setupCatalogRoute(config);
-    console.log(
+    logger.info(
       `Catalog route discovered: ${config.catalogRoute ? 'yes' : 'no'}`,
     );
   } catch (error) {
-    console.error('Error setting up catalog route:', error);
+    logger.error('Error setting up catalog route:', error as Error);
   }
 
   const listFn: k8s.ListPromise<InferenceService> = () =>
@@ -689,9 +724,9 @@ export const setupInformer = async (connectorConfig?: ConnectorConfig) => {
     }, 5000);
   });
 
-  console.log('Starting informer for InferenceServices...');
+  logger.info('Starting informer for InferenceServices...');
   await config.informer.start();
-  console.log('Informer started.');
+  logger.info('Informer started.');
 
   // Start background polling to supplement the informer
   // since there is no re-list / re-sync in the typescript informer, unlike
@@ -702,16 +737,19 @@ export const setupInformer = async (connectorConfig?: ConnectorConfig) => {
   ); // Default 10 minutes
 
   if (pollingInterval > 0) {
-    console.log(
+    logger.info(
       `Starting background polling every ${pollingInterval / 1000} seconds`,
     );
     // Store the timer in case we need to stop it later
     (config.informer as any).__pollingTimer = setInterval(async () => {
       try {
-        console.log('Background polling: Calling innerStart');
+        logger.debug('Background polling: Calling innerStart');
         await innerStart(client, config);
       } catch (error) {
-        console.error('Background polling: Error during innerStart:', error);
+        logger.error(
+          'Background polling: Error during innerStart:',
+          error as Error,
+        );
       }
     }, pollingInterval);
   }

@@ -113,9 +113,13 @@ export interface CatalogModel {
 export interface ReconcilerConfig {
   catalogRoute?: Route;
   catalogUrl?: string;
-  defaultLifecycle: string;
-  defaultOwner: string;
-  k8sToken?: string;
+  defaultLifecycle?: string;
+  defaultOwner?: string;
+  serviceAccountToken?: string;
+  clusterName?: string;
+  url?: string;
+  skipTLSVerify?: boolean;
+  caData?: string;
   routeClient?: k8s.CustomObjectsApi;
   coreClient?: k8s.CoreV1Api;
   informer?: k8s.Informer<InferenceService> & k8s.ObjectCache<InferenceService>;
