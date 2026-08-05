@@ -15,14 +15,8 @@
  */
 
 /**
- * Common functionalities for the ai-experience plugin.
+ * The ai-resource-agent backend module for the catalog plugin.
  *
  * @packageDocumentation
  */
-
-/**
- * In this package you might for example declare types that are common
- * between the frontend and backend plugin packages.
- */
-export * from './utils';
-export * from './types';
+export { catalogModuleAiResourceAgent as default } from './module';

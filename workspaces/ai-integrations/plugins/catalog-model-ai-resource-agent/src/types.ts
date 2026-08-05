@@ -20,18 +20,21 @@ import type { JsonValue } from '@backstage/types';
 /**
  * Model settings for an agent AiResource entity.
  *
+ * Uses a type alias (not an interface) so that TypeScript generates an
+ * implicit index signature, keeping the type assignable to JsonObject
+ * (required by Entity.spec) without an explicit open index signature.
+ * This matches the closed JSON schema (`additionalProperties: false`).
+ *
  * @public
  */
-export interface AgentAiResourceModelSettings {
+export type AgentAiResourceModelSettings = {
   /** Sampling temperature. */
   temperature?: number;
   /** Maximum number of tokens to generate. */
   maxTokens?: number;
   /** Tool choice strategy — a string preset or a structured object. */
   toolChoice?: string | Record<string, JsonValue | undefined>;
-  /** Index signature for JsonObject compatibility. */
-  [key: string]: JsonValue | undefined;
-}
+};
 
 /**
  * AiResource entity with spec.type 'agent'. Represents an autonomous

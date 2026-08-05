@@ -19,6 +19,7 @@ import {
   entityKindSchemaValidator,
   type KindValidator,
 } from '@backstage/catalog-model';
+import { createCatalogModelLayer } from '@backstage/catalog-model/alpha';
 import type { AgentAiResourceEntityV1alpha1 } from './types';
 import agentJsonSchema from './AiResource.v1alpha1.agent.schema.json';
 
@@ -56,3 +57,45 @@ export function isAgentAiResourceEntity(
     entity.spec?.type === 'agent'
   );
 }
+
+/**
+ * Extends the catalog model with the agent specType for the AiResource kind.
+ *
+ * Follows the upstream pattern established by `aiResourceEntityModel` for
+ * skill/rule, using `addKindVersion` to register the agent JSON schema
+ * under `specType: 'agent'`.
+ *
+ * @public
+ */
+export const agentAiResourceEntityModel = createCatalogModelLayer({
+  layerId: 'redhat.com/kind-ai-resource-agent',
+  builder: model => {
+    model.addKindVersion({
+      kind: 'AiResource',
+      versions: [
+        {
+          name: 'v1alpha1',
+          specType: 'agent',
+          relationFields: [
+            {
+              selector: { path: 'spec.owner' },
+              relation: 'ownedBy',
+              defaultKind: 'Group',
+              defaultNamespace: 'inherit',
+              allowedKinds: ['Group', 'User'],
+            },
+            {
+              selector: { path: 'spec.system' },
+              relation: 'partOf',
+              defaultKind: 'System',
+              defaultNamespace: 'inherit',
+            },
+          ],
+          schema: {
+            jsonSchema: agentJsonSchema,
+          },
+        },
+      ],
+    });
+  },
+});

@@ -14,11 +14,19 @@
  * limitations under the License.
  */
 
+/**
+ * Catalog model types, validator, and CatalogModelLayer for AiResource
+ * agent entities (spec.type: agent).
+ *
+ * @packageDocumentation
+ */
+
 export type {
   AgentAiResourceEntityV1alpha1,
   AgentAiResourceModelSettings,
 } from './types';
 export {
   agentAiResourceEntityV1alpha1Validator,
+  agentAiResourceEntityModel,
   isAgentAiResourceEntity,
 } from './AgentAiResourceEntityV1alpha1';

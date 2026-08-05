@@ -13,16 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-/**
- * Common functionalities for the ai-experience plugin.
- *
- * @packageDocumentation
- */
-
-/**
- * In this package you might for example declare types that are common
- * between the frontend and backend plugin packages.
- */
-export * from './utils';
-export * from './types';
+module.exports = require('@backstage/cli/config/eslint-factory')(__dirname);
