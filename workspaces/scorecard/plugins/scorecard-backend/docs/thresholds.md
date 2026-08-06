@@ -173,9 +173,11 @@ scorecard:
 | `entityAnnotations.enabled` | `entityAnnotations.thresholds.enabled` | `entityAnnotations.thresholds.except`       | Threshold annotations applied for `metricId`? |
 | --------------------------- | -------------------------------------- | ------------------------------------------- | --------------------------------------------- |
 | `false`                     | —                                      | —                                           | **No**                                        |
-| `true` (or unset)           | `false`                                | ignored                                     | **No**                                        |
+| `true` (or unset)           | `false`                                | —                                           | **No**                                        |
 | `true` (or unset)           | `true` (or unset)                      | includes `metricId`                         | **No**                                        |
 | `true` (or unset)           | `true` (or unset)                      | unset / empty / does not include `metricId` | **Yes**                                       |
+
+`—`: means this setting is not consulted for that row.
 
 **Summary:**
 
@@ -233,7 +235,7 @@ These thresholds are **not** per-entity metric rules. They apply to homepage agg
 
 Thresholds are applied with the following priority (highest to lowest):
 
-1. **Entity Annotations** (highest priority) - _merged_ with existing rules
+1. **Entity Annotations** (highest priority) - _merged_ with existing rules, when honored (see [Controlling whether threshold annotations are honored](#controlling-whether-threshold-annotations-are-honored))
 2. **App Configuration (metric)** - _completely replaces_ metric code defaults and provider app configuration
 3. **App Configuration (provider)** - _completely replaces_ metric code defaults
 4. **Metric code defaults** (lowest priority)
