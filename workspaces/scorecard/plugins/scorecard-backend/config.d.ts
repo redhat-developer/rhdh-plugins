@@ -16,7 +16,7 @@
 
 import { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/backend-plugin-api';
 import {
-  AggregationType,
+  aggregationTypes,
   ThresholdConfig,
   AggregationThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -27,30 +27,63 @@ export interface Config {
     /** Configuration for scorecard aggregation KPIs */
     aggregationKPIs?: {
       /** Unique identifier for scorecard aggregation KPIs */
-      [aggregationId: string]: {
-        /** Title of the aggregation */
-        title: string;
-        /** Description of the aggregation */
-        description: string;
-        /** Type of the aggregation */
-        type: AggregationType;
-        /** Metric ID for which the aggregation is calculated */
-        metricId: string;
-        /** Type-specific settings */
-        options?: {
-          /** Required under `options` when `type` is `weightedStatusScore` */
-          statusScores?: {
-            [thresholdRuleKey: string]: number;
+      [aggregationId: string]:
+        | {
+            /** Title of the aggregation */
+            title: string;
+            /** Description of the aggregation */
+            description: string;
+            /** Metric ID for which the aggregation is calculated */
+            metricId: string;
+            /** Status grouped aggregation type */
+            type: typeof aggregationTypes.statusGrouped;
+          }
+        | {
+            /** Title of the aggregation */
+            title: string;
+            /** Description of the aggregation */
+            description: string;
+            /** Metric ID for which the aggregation is calculated */
+            metricId: string;
+            /** Weighted status score aggregation type */
+            type: typeof aggregationTypes.weightedStatusScore;
+            /** Options specific to the weighted status score aggregation type */
+            options: {
+              /** Required: Status scores for the aggregation */
+              statusScores: {
+                [thresholdRuleKey: string]: number;
+              };
+              /**
+               * Optional: threshold rules for coloring the KPI headline value from the aggregation result
+               * (e.g. weighted status score percentage 0–100).
+               */
+              thresholds?: {
+                rules: AggregationThresholdRule[];
+              };
+            };
+          }
+        | {
+            /** Title of the aggregation */
+            title: string;
+            /** Description of the aggregation */
+            description: string;
+            /** Metric ID for which the aggregation is calculated */
+            metricId: string;
+            /** Scalar aggregation type */
+            type:
+              | typeof aggregationTypes.sum
+              | typeof aggregationTypes.average
+              | typeof aggregationTypes.max
+              | typeof aggregationTypes.min
+              | typeof aggregationTypes.count;
+            /** Options specific to the scalar aggregation type */
+            options?: {
+              /** Optional: threshold rules for coloring the KPI headline value from the aggregation result */
+              thresholds?: {
+                rules: AggregationThresholdRule[];
+              };
+            };
           };
-          /**
-           * Optional: threshold rules for coloring the KPI headline value from the aggregation result
-           * (e.g. weighted status score percentage 0–100 for `weightedStatusScore` KPIs).
-           */
-          thresholds?: {
-            rules: AggregationThresholdRule[];
-          };
-        };
-      };
     };
     /** Number of days to retain metric data in the database. Older data will be automatically cleaned up. Default: 365 days */
     dataRetentionDays?: number;
@@ -66,29 +99,36 @@ export interface Config {
         except?: string[];
       };
     };
-    /** Configuration for scorecard metric providers */
-    plugins?: {
-      /** Configuration for datasource */
+    /** Metric providers calculate one or more metrics on a schedule. */
+    metricProviders?: {
+      /** Datasource ID, matches `getProviderDatasourceId()` of a provider (e.g., `jira`, `github`, `filecheck`). */
       [datasource: string]: {
-        /** Configuration for metric providers within the datasource.
-         * Each key corresponds to the metric name part of the provider ID (datasource.metricName).
+        /** Configuration for a specific metric provider.
+         * Use the local name without datasource prefix (e.g., `openPRs` instead of `github.openPRs`).
          */
-        [metricName: string]: {
-          /** Threshold configuration for the metric */
-          thresholds?: ThresholdConfig;
-          /**
-           * Schedule for collecting this metric. If not set, the default hourly schedule is used.
-           *
-           * Default schedule:
-           * ```ts
-           * {
-           *   frequency: { hours: 1 },
-           *   timeout: { minutes: 15 },
-           *   initialDelay: { minutes: 1 },
-           * }
-           * ```
-           */
+        [providerName: string]: {
+          /** How often metrics will be calculated for this provider. */
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+          /**
+           * How metric values are categorized for all metrics of this provider.
+           * Overridden by metric-level thresholds when set.
+           */
+          thresholds?: ThresholdConfig;
+          /** Per-metric configuration. */
+          metrics?: {
+            /** Configuration for a specific metric.
+             * Use the local name without datasource prefix (e.g., 'openPRs' instead of 'github.openPRs').
+             */
+            [metricName: string]: {
+              /**
+               * How metric values are categorized for this metric.
+               * Overrides provider-level thresholds.
+               */
+              thresholds?: ThresholdConfig;
+            };
+          };
+          /** Provider-specific options (shape defined by each module). */
+          options?: unknown;
         };
       };
     };

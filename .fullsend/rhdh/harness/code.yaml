@@ -3,6 +3,10 @@ agent: rhdh/agents/code.md
 policy: rhdh/policies/code.yaml
 skills:
   - https://github.com/redhat-developer/rhdh-skill/tree/e84109919ae6085e3dcfe568c695e6dda54874ce/skills/rhdh-coding#sha256=5a4bc35476108a215091ccf1180cee68547c7668c6b193de4402674bc7b6cded
+# Harness-level allowlist required for URL skills (not inherited from base or
+# config.yaml). Must also be covered by config.yaml allowed_remote_resources.
+allowed_remote_resources:
+  - https://github.com/redhat-developer/rhdh-skill/
 host_files:
   - src: rhdh/bin/yarn
     dest: /sandbox/workspace/bin/yarn

@@ -330,4 +330,49 @@ describe('useCrudTab', () => {
       expect(result.current.items).toHaveLength(3);
     });
   });
+
+  describe('server-side pagination (PagedLoadResult)', () => {
+    it('extracts items and nextPageToken from a PagedLoadResult', async () => {
+      const opts = makeOptions({
+        loadFn: jest.fn().mockResolvedValue({
+          items: [...ITEMS],
+          nextPageToken: 'page2token',
+        }),
+      });
+      const { result } = renderHook(() => useCrudTab<Item, Form>(opts));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.items).toHaveLength(3);
+      expect(result.current.nextPageToken).toBe('page2token');
+    });
+
+    it('clears nextPageToken when last page is returned (empty token)', async () => {
+      const opts = makeOptions({
+        loadFn: jest.fn().mockResolvedValue({
+          items: [...ITEMS],
+          nextPageToken: '',
+        }),
+      });
+      const { result } = renderHook(() => useCrudTab<Item, Form>(opts));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.nextPageToken).toBe('');
+    });
+
+    it('nextPageToken defaults to empty string for plain array loadFn', async () => {
+      const { result } = renderHook(() =>
+        useCrudTab<Item, Form>(makeOptions()),
+      );
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.nextPageToken).toBe('');
+    });
+
+    it('clears nextPageToken on load failure', async () => {
+      const opts = makeOptions({
+        loadFn: jest.fn().mockRejectedValue(new Error('fail')),
+      });
+      const { result } = renderHook(() => useCrudTab<Item, Form>(opts));
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.nextPageToken).toBe('');
+      expect(result.current.loadError).toBe('fail');
+    });
+  });
 });

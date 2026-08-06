@@ -10,7 +10,7 @@
 
 ## 1. Mirror Endpoint Configuration (P0) — RHIDP-15317
 
-- [ ] 1.1 Add `catalog.providers.mcpRegistry.endpoint` config schema in `config.d.ts`
+- [ ] 1.1 Add `ai-catalog.providers.mcpRegistry.endpoint` config schema in `config.d.ts`
 - [ ] 1.2 Implement endpoint configuration loading from app-config
 - [ ] 1.3 Add environment variable override support (`MCP_REGISTRY_ENDPOINT`)
 - [ ] 1.4 Implement endpoint URL validation (schema, host, port)
@@ -34,13 +34,13 @@
 ## 2. TLS and Credential Hardening (P0) — RHIDP-15318
 
 - [ ] 2.1 Integrate shared utilities from RHIDP-15316 (`loadCaBundle()`, `createHttpsAgent()`, `createProviderWrapper()`, `createSafeRefresh()`, `isConnectorEnabled()`) via `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
-- [ ] 2.2 Add `catalog.providers.mcpRegistry.tls.caFile` config schema
-- [ ] 2.3 Implement custom CA bundle loading via `loadCaBundle(config.getConfig('catalog.providers.mcpRegistry'))`
+- [ ] 2.2 Add `ai-catalog.providers.mcpRegistry.tls.caFile` config schema
+- [ ] 2.3 Implement custom CA bundle loading via `loadCaBundle(config.getConfig('ai-catalog.providers.mcpRegistry'))`
 - [ ] 2.4 Add graceful degradation: invalid CA bundle falls back to system CA bundle
 - [ ] 2.5 Add warning logging for invalid/unreadable/malformed CA bundle files
 - [ ] 2.6 Implement HTTPS agent configuration with custom CA bundle
 - [ ] 2.7 Enforce TLS certificate validation (`rejectUnauthorized: true`)
-- [ ] 2.8 Add `catalog.providers.mcpRegistry.auth.secretRef` config schema
+- [ ] 2.8 Add `ai-catalog.providers.mcpRegistry.auth.secretRef` config schema
 - [ ] 2.9 Implement Kubernetes Secret reading via Backstage Kubernetes client
 - [ ] 2.10 Implement credential extraction from Secret (`username`/`password` or `token`)
 - [ ] 2.11 Implement HTTP Basic Auth for username/password credentials
@@ -69,7 +69,7 @@
 - [ ] 3.2 Implement entity emission interception before `applyMutation`
 - [ ] 3.3 Implement annotation enrichment logic (`enrichWithAiAssetAnnotations()`)
 - [ ] 3.4 Add `rhdh.io/ai-asset-category: "mcp-server"` annotation population
-- [ ] 3.5 Add `rhdh.io/ai-asset-source: "mcp-registry/<instance-id>"` annotation population (where `<instance-id>` is the configuration key under `catalog.providers`, e.g., `mcpRegistry`)
+- [ ] 3.5 Add `rhdh.io/ai-asset-source: "mcp-registry/<instance-id>"` annotation population (where `<instance-id>` is the configuration key under `ai-catalog.providers`, e.g., `mcpRegistry`)
 - [ ] 3.6 Implement version metadata extraction from MCP server manifest
 - [ ] 3.7 Add `rhdh.io/ai-asset-version` annotation population — extract raw version via `extractVersion(entity)`, normalize via `normalizeAIAssetVersion()` (SDK-exported from RHDHPLAN-1507), fall back to `"unknown"`
 - [ ] 3.8 Add graceful degradation: enrichment failure logs warning, emits entity without annotations

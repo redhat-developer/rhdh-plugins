@@ -6,7 +6,7 @@
 - [ ] 1.2 Define `loadCaBundle(connectorConfig: Config): Buffer | undefined` function signature — caller passes the Config subtree containing the `tls` block
 - [ ] 1.3 Implement caFile resolution — read CA from `tls.caFile` within the provided Config subtree
 - [ ] 1.4 Implement caSecret resolution — read CA from `tls.caSecret.$env` within the provided Config subtree
-- [ ] 1.5 Add per-connector config isolation — each connector resolves its own Config nesting before calling `loadCaBundle()` (e.g., MCP passes `config.getConfig('catalog.providers.mcpRegistry')`, RHOAI passes `config.getConfig('catalog.providers.rhoai.mcpCatalog')`, OCI passes per-registry Config node)
+- [ ] 1.5 Add per-connector config isolation — each connector resolves its own Config nesting before calling `loadCaBundle()` (e.g., MCP passes `config.getConfig('ai-catalog.providers.mcpRegistry')`, RHOAI passes `config.getConfig('ai-catalog.providers.rhoai.mcpCatalog')`, OCI passes per-registry Config node)
 - [ ] 1.6 Create `https.Agent` factory utility: `createHttpsAgent(caBundle?: Buffer): https.Agent | undefined`
 - [ ] 1.7 Handle missing CA file: log WARN-level warning with expected file path, return `undefined` (don't crash)
 - [ ] 1.8 Handle invalid/expired CA certificate: log ERROR with certificate details (issuer, expiry), return `undefined`
@@ -34,7 +34,7 @@
 
 ## 3. Enable/Disable Pattern (P0) — RHIDP-15330
 
-- [ ] 3.1 Define enable/disable config schema in README: `catalog.providers.<id>.enabled: boolean`
+- [ ] 3.1 Define enable/disable config schema in README: `ai-catalog.providers.<id>.enabled: boolean`
 - [ ] 3.2 Create `isConnectorEnabled(connectorConfig: Config): boolean` utility — caller passes the Config subtree (same pattern as `loadCaBundle`)
 - [ ] 3.3 Implement config reader: read `enabled` from the provided Config subtree, return `true` if omitted (default enabled)
 - [ ] 3.4 Create registration guard pattern for backend module `init()` example in README
@@ -75,11 +75,13 @@
 - [ ] 6.6 Add air-gapped deployment variant showing zero-internet configuration
 - [ ] 6.7 Place reference YAML in `workspaces/boost/examples/` or alongside connector README files
 
-## 7. Connector Integration (P2)
+## ~~7. Connector Integration (P2) — deferred~~
 
-- [ ] 7.1 Update MCP Registry connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
-- [ ] 7.2 Update RHOAI connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
-- [ ] 7.3 Update OCI Skill connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`
-- [ ] 7.4 Verify all three connectors use consistent CA bundle loading pattern
-- [ ] 7.5 Verify all three connectors use consistent enable/disable config
-- [ ] 7.6 Verify all three connectors use consistent structured error logging
+~~These tasks require connectors that are created in Tier 1 (Issues 9–16). Each connector issue will consume `boost-connector-utils` as part of its own implementation. See Issues 9 (OCI), 13–14 (MCP Registry), 15–16 (RHOAI).~~
+
+- ~~7.1 Update MCP Registry connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`~~
+- ~~7.2 Update RHOAI connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`~~
+- ~~7.3 Update OCI Skill connector to consume `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`~~
+- ~~7.4 Verify all three connectors use consistent CA bundle loading pattern~~
+- ~~7.5 Verify all three connectors use consistent enable/disable config~~
+- ~~7.6 Verify all three connectors use consistent structured error logging~~

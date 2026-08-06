@@ -105,6 +105,7 @@ const orchestratorEntityContent = EntityContentBlueprint.make({
 });
 
 const orchestratorTranslation = TranslationBlueprint.make({
+  name: 'orchestrator-translations',
   params: {
     resource: orchestratorTranslations,
   },

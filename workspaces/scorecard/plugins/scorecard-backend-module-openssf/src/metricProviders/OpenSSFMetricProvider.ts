@@ -35,24 +35,12 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
     this.openSSFClient = new OpenSSFClient();
   }
 
-  getMetricName(): string {
-    return this.config.name;
-  }
-
-  getMetricDisplayTitle(): string {
-    return this.config.displayTitle;
-  }
-
-  getMetricDescription(): string {
-    return this.config.description;
-  }
-
   getProviderDatasourceId(): string {
     return 'openssf';
   }
 
   getProviderId(): string {
-    const normalizedName = this.getMetricName()
+    const normalizedName = this.config.name
       .toLowerCase()
       .replace(/-([a-z])/g, (_, c) => c.toUpperCase());
     return `openssf.${normalizedName}`;
@@ -62,8 +50,8 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
     return [
       {
         id: this.getProviderId(),
-        title: this.getMetricDisplayTitle(),
-        description: this.getMetricDescription(),
+        title: this.config.displayTitle,
+        description: this.config.description,
         type: 'number',
         thresholds: OPENSSF_THRESHOLDS,
         history: true,
@@ -80,7 +68,7 @@ export class OpenSSFMetricProvider implements MetricProvider<'number'> {
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const scorecard = await this.openSSFClient.getScorecard(entity);
 
-    const metricName = this.getMetricName();
+    const metricName = this.config.name;
     const metric = scorecard.checks.find(c => c.name === metricName);
 
     if (!metric) {

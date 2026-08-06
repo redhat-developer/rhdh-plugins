@@ -254,7 +254,7 @@ export const boostPlugin = createBackendPlugin({
         } else {
           logger.warn(
             'No AI providers registered. Install a provider module ' +
-              '(e.g., boost-backend-module-llamastack) to enable AI features.',
+              '(e.g., boost-backend-module-ogx) to enable AI features.',
           );
         }
 
