@@ -58,7 +58,7 @@ import { DcmFormDialog } from '../../components/DcmFormDialog';
 import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { DcmFormDialogActions } from '../../components/DcmFormDialogActions';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
-import { useCrudTab } from '../../hooks/useCrudTab';
+import { usePaginatedCrudTab } from '../../hooks/usePaginatedCrudTab';
 import { useTranslation } from '../../hooks/useTranslation';
 import { extractApiError } from '../../utils/extractApiError';
 import emptyIllustration from '../../assets/environments-empty-state.png';
@@ -99,8 +99,18 @@ export function PoliciesTabContent() {
   const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
   const [toggleError, setToggleError] = useState<string | null>(null);
 
-  const crud = useCrudTab<Policy, PolicyForm>({
-    loadFn: () => policyApi.listPolicies().then(res => res.policies ?? []),
+  const crud = usePaginatedCrudTab<Policy, PolicyForm>({
+    loadFn: ({ pageToken, pageSize: ps }) =>
+      policyApi
+        .listPolicies({
+          page_token: pageToken,
+          max_page_size: ps,
+        })
+        .then(res => ({
+          items: res.policies ?? [],
+          nextPageToken: res.next_page_token,
+        })),
+    storageKey: 'policies',
     createFn: form => policyApi.createPolicy(formToPolicy(form)),
     updateFn: (id, form) => policyApi.updatePolicy(id, formToPolicy(form)),
     deleteFn: id => policyApi.deletePolicy(id),
@@ -109,7 +119,6 @@ export function PoliciesTabContent() {
     emptyForm: emptyPolicyForm,
     isValid: isPolicyFormValid,
     itemToForm: policyToForm,
-    storageKey: 'policies',
     createSuccessMessage: t('policies.createSuccess'),
     editSuccessMessage: t('policies.updateSuccess'),
     deleteSuccessMessage: t('policies.deleteSuccess'),
@@ -335,7 +344,7 @@ export function PoliciesTabContent() {
       <DcmCrudTabLayout<Policy>
         items={crud.items}
         filtered={crud.filtered}
-        paginated={crud.paginated}
+        paginated={crud.filtered}
         columns={columns}
         loading={crud.loading}
         loadError={crud.loadError}
@@ -343,11 +352,8 @@ export function PoliciesTabContent() {
         actionError={toggleError}
         onDismissActionError={() => setToggleError(null)}
         search={crud.search}
-        onSearchChange={crud.setSearch}
-        page={crud.page}
-        pageSize={crud.pageSize}
-        onPageChange={crud.onPageChange}
-        onRowsPerPageChange={crud.onRowsPerPageChange}
+        onSearchChange={crud.handleSearchChange}
+        cursorPagination={crud.cursorPagination}
         emptyTitle={t('policies.emptyTitle')}
         emptyDescription={t('policies.emptyDescription')}
         primaryActionLabel={t('policies.createButton')}

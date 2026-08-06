@@ -48,11 +48,11 @@
 
 ## 3. Toolscope Package (P2)
 
-- [ ] 3.1 Create `@boost/toolscope` package (29 files, zero Backstage dependencies)
+- [ ] 3.1 Create `@red-hat-developer-hub/backstage-plugin-boost-toolscope` package (29 files, zero Backstage dependencies)
 - [ ] 3.2 Define `CacheAdapter` interface for embedding and session caches
 - [ ] 3.3 Create default in-memory `CacheAdapter` for standalone use
 - [ ] 3.4 Create Backstage `CacheAdapter` wrapping `coreServices.cache`
-- [ ] 3.5 Import `@boost/toolscope` from `boost-backend`
+- [ ] 3.5 Import `@red-hat-developer-hub/backstage-plugin-boost-toolscope` from `boost-backend`
 
 ## 4. Lifecycle Model (P1)
 

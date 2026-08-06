@@ -163,14 +163,14 @@ export class PullMetricsByProviderTask implements SchedulerTask {
               return enabledMetricIds.map(metricId => {
                 if (!resultsMap.has(metricId)) {
                   return {
-                    catalog_entity_ref: entityRef,
-                    metric_id: metricId,
+                    catalogEntityRef: entityRef,
+                    metricId,
                     value: undefined,
                     timestamp: new Date(),
-                    error_message: `calculateMetrics() did not return an entry for metric '${metricId}'`,
-                    entity_kind: entityKind,
-                    entity_namespace: entityNamespace,
-                    entity_owner: entityOwner,
+                    errorMessage: `calculateMetrics() did not return an entry for metric '${metricId}'`,
+                    entityKind,
+                    entityNamespace,
+                    entityOwner,
                   } as DbMetricValueCreate;
                 }
 
@@ -192,26 +192,26 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                     );
 
                   return {
-                    catalog_entity_ref: entityRef,
-                    metric_id: metricId,
+                    catalogEntityRef: entityRef,
+                    metricId,
                     value,
                     timestamp: new Date(),
                     status,
-                    entity_kind: entityKind,
-                    entity_namespace: entityNamespace,
-                    entity_owner: entityOwner,
+                    entityKind,
+                    entityNamespace,
+                    entityOwner,
                   } as DbMetricValueCreate;
                 } catch (error) {
                   return {
-                    catalog_entity_ref: entityRef,
-                    metric_id: metricId,
+                    catalogEntityRef: entityRef,
+                    metricId,
                     value,
                     timestamp: new Date(),
-                    error_message:
+                    errorMessage:
                       error instanceof Error ? error.message : String(error),
-                    entity_kind: entityKind,
-                    entity_namespace: entityNamespace,
-                    entity_owner: entityOwner,
+                    entityKind,
+                    entityNamespace,
+                    entityOwner,
                   } as DbMetricValueCreate;
                 }
               });
@@ -219,15 +219,15 @@ export class PullMetricsByProviderTask implements SchedulerTask {
               return enabledMetricIds.map(
                 metricId =>
                   ({
-                    catalog_entity_ref: entityRef,
-                    metric_id: metricId,
+                    catalogEntityRef: entityRef,
+                    metricId,
                     value: undefined,
                     timestamp: new Date(),
-                    error_message:
+                    errorMessage:
                       error instanceof Error ? error.message : String(error),
-                    entity_kind: entityKind,
-                    entity_namespace: entityNamespace,
-                    entity_owner: entityOwner,
+                    entityKind,
+                    entityNamespace,
+                    entityOwner,
                   } as DbMetricValueCreate),
               );
             }
@@ -242,7 +242,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
         );
 
         if (batchResults.length > 0) {
-          const errorCount = batchResults.filter(r => r.error_message).length;
+          const errorCount = batchResults.filter(r => r.errorMessage).length;
           logger.debug(
             `Storing ${batchResults.length} metric values (${errorCount} errors)`,
           );

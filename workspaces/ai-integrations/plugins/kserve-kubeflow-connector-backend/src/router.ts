@@ -48,10 +48,10 @@ export async function createRouter(): Promise<express.Router> {
     }
   });
 
-  router.get('/modelcard/:sourceId/:modelName', async (req, res) => {
+  router.get('/modelcard/:sourceId/*', async (req, res) => {
     try {
       const sourceId = req.params.sourceId;
-      const modelName = req.params.modelName;
+      const modelName = (req.params as Record<string, string>)[0];
       const modelCard = getModelCard(`${sourceId}/${modelName}`);
       if (modelCard) {
         res.setHeader('Content-Type', 'text/markdown');

@@ -264,21 +264,21 @@ describe('PullMetricsByProviderTask', () => {
     it('should create metric values', async () => {
       const metricValues = [
         {
-          catalog_entity_ref: 'component:default/test1',
-          entity_kind: 'component',
-          entity_namespace: undefined,
-          entity_owner: undefined,
-          metric_id: 'github.testMetric',
+          catalogEntityRef: 'component:default/test1',
+          entityKind: 'component',
+          entityNamespace: undefined,
+          entityOwner: undefined,
+          metricId: 'github.testMetric',
           timestamp: new Date('2024-01-15T12:00:00.000Z'),
           value: 42,
           status: 'success',
         },
         {
-          catalog_entity_ref: 'component:default/test2',
-          metric_id: 'github.testMetric',
-          entity_kind: 'component',
-          entity_namespace: undefined,
-          entity_owner: undefined,
+          catalogEntityRef: 'component:default/test2',
+          metricId: 'github.testMetric',
+          entityKind: 'component',
+          entityNamespace: undefined,
+          entityOwner: undefined,
           status: 'success',
           timestamp: new Date('2024-01-15T12:00:00.000Z'),
           value: 42,
@@ -316,7 +316,7 @@ describe('PullMetricsByProviderTask', () => {
 
       expect(createMetricValuesSpy).toHaveBeenCalledWith(
         expect.arrayContaining([
-          expect.objectContaining({ entity_owner: 'group:default/my-team' }),
+          expect.objectContaining({ entityOwner: 'group:default/my-team' }),
         ]),
       );
     });
@@ -344,12 +344,12 @@ describe('PullMetricsByProviderTask', () => {
 
       expect(createMetricValuesSpy).toHaveBeenCalledWith(
         expect.arrayContaining([
-          expect.objectContaining({ entity_owner: 'group:default/my-team' }),
+          expect.objectContaining({ entityOwner: 'group:default/my-team' }),
         ]),
       );
     });
 
-    it('should produce the same entity_owner regardless of whether spec.owner is a short name or full ref', async () => {
+    it('should produce the same entityOwner regardless of whether spec.owner is a short name or full ref', async () => {
       const shortNameEntity = {
         apiVersion: '1.0.0',
         kind: 'Component',
@@ -377,8 +377,8 @@ describe('PullMetricsByProviderTask', () => {
       await (task as any).pullProviderMetrics(mockProvider, mockLogger);
 
       const saved = createMetricValuesSpy.mock.calls[0][0];
-      expect(saved[0].entity_owner).toBe('group:default/my-team');
-      expect(saved[1].entity_owner).toBe('group:default/my-team');
+      expect(saved[0].entityOwner).toBe('group:default/my-team');
+      expect(saved[1].entityOwner).toBe('group:default/my-team');
     });
 
     it('should log completion', async () => {
@@ -483,26 +483,26 @@ describe('PullMetricsByProviderTask', () => {
         expect(createMetricValuesSpy).toHaveBeenCalledWith(
           expect.arrayContaining([
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test1',
-              metric_id: 'filecheck.readme',
+              catalogEntityRef: 'component:default/test1',
+              metricId: 'filecheck.readme',
               value: true,
               status: 'success',
             }),
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test1',
-              metric_id: 'filecheck.license',
+              catalogEntityRef: 'component:default/test1',
+              metricId: 'filecheck.license',
               value: true,
               status: 'success',
             }),
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test2',
-              metric_id: 'filecheck.readme',
+              catalogEntityRef: 'component:default/test2',
+              metricId: 'filecheck.readme',
               value: true,
               status: 'success',
             }),
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test2',
-              metric_id: 'filecheck.license',
+              catalogEntityRef: 'component:default/test2',
+              metricId: 'filecheck.license',
               value: true,
               status: 'success',
             }),
@@ -537,24 +537,24 @@ describe('PullMetricsByProviderTask', () => {
         expect(createMetricValuesSpy).toHaveBeenCalledWith(
           expect.arrayContaining([
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test1',
-              metric_id: 'filecheck.readme',
-              error_message: 'GitHub API error',
+              catalogEntityRef: 'component:default/test1',
+              metricId: 'filecheck.readme',
+              errorMessage: 'GitHub API error',
             }),
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test1',
-              metric_id: 'filecheck.license',
-              error_message: 'GitHub API error',
+              catalogEntityRef: 'component:default/test1',
+              metricId: 'filecheck.license',
+              errorMessage: 'GitHub API error',
             }),
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test2',
-              metric_id: 'filecheck.readme',
-              error_message: 'GitHub API error',
+              catalogEntityRef: 'component:default/test2',
+              metricId: 'filecheck.readme',
+              errorMessage: 'GitHub API error',
             }),
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test2',
-              metric_id: 'filecheck.license',
-              error_message: 'GitHub API error',
+              catalogEntityRef: 'component:default/test2',
+              metricId: 'filecheck.license',
+              errorMessage: 'GitHub API error',
             }),
           ]),
         );
@@ -577,10 +577,10 @@ describe('PullMetricsByProviderTask', () => {
         expect(createMetricValuesSpy).toHaveBeenCalledWith(
           expect.arrayContaining([
             expect.objectContaining({
-              catalog_entity_ref: 'component:default/test1',
-              metric_id: 'filecheck.readme',
+              catalogEntityRef: 'component:default/test1',
+              metricId: 'filecheck.readme',
               value: true,
-              error_message: 'Threshold evaluation failed',
+              errorMessage: 'Threshold evaluation failed',
             }),
           ]),
         );
@@ -645,8 +645,8 @@ describe('PullMetricsByProviderTask', () => {
 
         expect(createMetricValuesSpy).toHaveBeenCalledWith([
           expect.objectContaining({
-            catalog_entity_ref: 'component:default/partial-disabled',
-            metric_id: 'filecheck.readme',
+            catalogEntityRef: 'component:default/partial-disabled',
+            metricId: 'filecheck.readme',
             value: true,
           }),
         ]);
@@ -684,7 +684,7 @@ describe('PullMetricsByProviderTask', () => {
 
         const savedRecords = createMetricValuesSpy.mock.calls[0][0];
         const metricIds = savedRecords.map(
-          (r: { metric_id: string }) => r.metric_id,
+          (r: { metricId: string }) => r.metricId,
         );
         expect(metricIds).not.toContain('filecheck.license');
         expect(metricIds).toContain('filecheck.readme');
@@ -720,9 +720,9 @@ describe('PullMetricsByProviderTask', () => {
 
         expect(createMetricValuesSpy).toHaveBeenCalledWith([
           expect.objectContaining({
-            catalog_entity_ref: 'component:default/partial-disabled',
-            metric_id: 'filecheck.readme',
-            error_message: 'GitHub API error',
+            catalogEntityRef: 'component:default/partial-disabled',
+            metricId: 'filecheck.readme',
+            errorMessage: 'GitHub API error',
           }),
         ]);
         const savedRecords = createMetricValuesSpy.mock.calls[0][0];

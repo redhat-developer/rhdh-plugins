@@ -6,8 +6,8 @@
 import { AppDrawerContent } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
-import { GlobalHeaderMenuItemData } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
-import { MenuItemParams } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import { GlobalHeaderMenuItemData } from '@red-hat-developer-hub/backstage-plugin-global-header';
+import { MenuItemParams } from '@red-hat-developer-hub/backstage-plugin-global-header';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
 import { TranslationRef } from '@backstage/frontend-plugin-api';

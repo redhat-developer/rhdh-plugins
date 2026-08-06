@@ -49,7 +49,7 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 - Shared validation utilities rejecting entities with missing/invalid annotations
 - Neo4j sync adapter interface for knowledge graph integration
 - SkillBundle metadata contract for skillcard.yaml schema
-- Published npm package (`@boost/entity-provider-sdk`)
+- Published npm package (`@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`)
 
 ### Delta Sync Framework
 

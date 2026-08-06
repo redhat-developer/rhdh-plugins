@@ -25,7 +25,7 @@ The reference YAML must demonstrate MCP Registry connector configuration fields.
 - **WHEN** a deployer configures the MCP Registry connector for an air-gapped environment
 - **THEN** the reference YAML includes:
   ```yaml
-  catalog:
+  ai-catalog:
     providers:
       mcpRegistry:
         # Mirror endpoint overrides public registry.modelcontextprotocol.io
@@ -49,7 +49,7 @@ The reference YAML must demonstrate RHOAI connector configuration fields.
 - **WHEN** a deployer configures the RHOAI connector for a separate AI cluster
 - **THEN** the reference YAML includes:
   ```yaml
-  catalog:
+  ai-catalog:
     providers:
       rhoai:
         mcpCatalog:
@@ -78,7 +78,7 @@ The reference YAML must demonstrate OCI Skill connector configuration fields.
 - **WHEN** a deployer configures the OCI Skill connector for multiple registries
 - **THEN** the reference YAML includes:
   ```yaml
-  catalog:
+  ai-catalog:
     providers:
       ociSkill:
         enabled: true

@@ -21,7 +21,7 @@ None — this is a new productization wrapper around the upstream MCP Registry e
 **WHEN** the connector is configured with a custom mirror endpoint in app-config:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       endpoint: https://registry.internal.example.com
@@ -38,7 +38,7 @@ catalog:
 **WHEN** the connector is configured without a custom mirror endpoint:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry: {}
 ```
@@ -52,7 +52,7 @@ catalog:
 **WHEN** the connector is configured with an invalid mirror endpoint URL:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       endpoint: not-a-valid-url
@@ -69,7 +69,7 @@ catalog:
 **WHEN** the connector is configured with a non-HTTPS mirror endpoint:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       endpoint: http://registry.internal.example.com
@@ -86,7 +86,7 @@ catalog:
 **WHEN** the connector is configured with a mirror endpoint:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       endpoint: https://registry.internal.example.com

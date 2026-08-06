@@ -244,7 +244,7 @@ scorecard:
       description: This KPI is provide information about GitHub open PRs grouped by status.
       metricId: github.openPRs
     openPrsWeightedKpi:
-      title: GitHub Open PRs (weighted health)
+      title: GitHub Open PRs KPI (weighted health)
       type: weightedStatusScore
       description: Weighted health score for open PRs by threshold status across your entities.
       metricId: github.openPRs
@@ -274,6 +274,40 @@ scorecard:
       type: statusGrouped
       description: This KPI is provide information about whether the license file exists in the repository.
       metricId: filecheck.license
+    totalOpenPrs:
+      title: Total Open PRs
+      description: Sum of open PRs across owned entities
+      type: sum
+      metricId: github.openPRs
+      options:
+        thresholds:
+          rules:
+            - key: success
+              expression: '>=80'
+              color: '#6bb300' # green
+            - key: warning
+              expression: '<80'
+              color: 'rgb(224, 189, 108)' # light orange
+    avgOpenIssues:
+      title: Average Open Issues
+      description: Mean open issues count per entity
+      type: average
+      metricId: jira.openIssues
+    entitiesWithOpenPrs:
+      title: Entities with Open PRs
+      description: Count of entities with a stored open-prs value
+      type: count
+      metricId: github.openPRs
+    maxOpenPrs:
+      title: Maximum Open PRs
+      description: Maximum open PR count per entity
+      type: max
+      metricId: github.openPRs
+    minOpenIssues:
+      title: Minimum Open Issues
+      description: Minimum open issues count per entity
+      type: min
+      metricId: jira.openIssues
   metricProviders:
     jira:
       openIssues:

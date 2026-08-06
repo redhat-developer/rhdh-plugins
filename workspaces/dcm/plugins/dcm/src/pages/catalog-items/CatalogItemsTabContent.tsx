@@ -23,13 +23,14 @@ import type {
   CatalogItem,
   ServiceType,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import { extractApiError } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { catalogApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
 import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { createEditDeleteColumn } from '../../components/dcmTabListHelpers';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
-import { useCrudTab } from '../../hooks/useCrudTab';
+import { usePaginatedCrudTab } from '../../hooks/usePaginatedCrudTab';
 import { useTranslation } from '../../hooks/useTranslation';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { CatalogItemWizardDialog } from './components/CatalogItemWizardDialog';
@@ -60,17 +61,28 @@ export function CatalogItemsTabContent() {
   const { t } = useTranslation();
 
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
+  const [serviceTypesError, setServiceTypesError] = useState<string | null>(
+    null,
+  );
+  const [createSubmitAttempted, setCreateSubmitAttempted] = useState(false);
+  const [editSubmitAttempted, setEditSubmitAttempted] = useState(false);
 
   useEffect(() => {
     catalogApi
-      .listServiceTypes()
+      .listServiceTypes({ max_page_size: 100 })
       .then(r => setServiceTypes(r.results ?? []))
-      .catch(() => {});
+      .catch(err => setServiceTypesError(extractApiError(err)));
   }, [catalogApi]);
 
-  const crud = useCrudTab<CatalogItem, CatalogItemForm>({
-    loadFn: () =>
-      catalogApi.listCatalogItems().then(r => r.results ?? []),
+  const crud = usePaginatedCrudTab<CatalogItem, CatalogItemForm>({
+    loadFn: ({ pageToken, pageSize: ps }) =>
+      catalogApi
+        .listCatalogItems({ page_token: pageToken, max_page_size: ps })
+        .then(r => ({
+          items: r.results ?? [],
+          nextPageToken: r.next_page_token,
+        })),
+    storageKey: 'catalog-items',
     createFn: form => catalogApi.createCatalogItem(formToCatalogItem(form)),
     updateFn: (id, form) =>
       catalogApi.updateCatalogItem(id, formToCatalogItemForUpdate(form)),
@@ -84,7 +96,6 @@ export function CatalogItemsTabContent() {
     emptyForm: emptyCatalogItemForm,
     isValid: isCatalogItemFormValid,
     itemToForm: catalogItemToForm,
-    storageKey: 'catalog-items',
     createSuccessMessage: t('catalogItems.createSuccess'),
     editSuccessMessage: t('catalogItems.updateSuccess'),
     deleteSuccessMessage: t('catalogItems.deleteSuccess'),
@@ -193,19 +204,16 @@ export function CatalogItemsTabContent() {
       <DcmCrudTabLayout<CatalogItem>
         items={crud.items}
         filtered={crud.filtered}
-        paginated={crud.paginated}
+        paginated={crud.filtered}
         columns={columns}
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
-        actionError={null}
-        onDismissActionError={undefined}
+        actionError={serviceTypesError}
+        onDismissActionError={() => setServiceTypesError(null)}
         search={crud.search}
-        onSearchChange={crud.setSearch}
-        page={crud.page}
-        pageSize={crud.pageSize}
-        onPageChange={crud.onPageChange}
-        onRowsPerPageChange={crud.onRowsPerPageChange}
+        onSearchChange={crud.handleSearchChange}
+        cursorPagination={crud.cursorPagination}
         emptyTitle={t('catalogItems.emptyTitle')}
         emptyDescription={t('catalogItems.emptyDescription')}
         primaryActionLabel={t('catalogItems.createButton')}
