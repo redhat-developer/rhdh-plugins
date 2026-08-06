@@ -13,4 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { TemplateSectionContent } from './TemplateSection';
+
+/**
+ * Legacy frontend system API surface for the Dynamic Home Page plugin.
+ *
+ * @deprecated Use the root import instead: `import from '@red-hat-developer-hub/backstage-plugin-homepage'`
+ * @packageDocumentation
+ */
+
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+
+ClassNameGenerator.configure(componentName => {
+  return componentName.startsWith('v5-')
+    ? componentName
+    : `v5-${componentName}`;
+});
+
+export * from './legacy/plugin';
+
+export { homepageTranslations, homepageTranslationRef } from './translations';

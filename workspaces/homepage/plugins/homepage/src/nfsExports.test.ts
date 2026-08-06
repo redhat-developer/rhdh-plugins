@@ -15,8 +15,8 @@
  */
 
 import { homepageTranslationsModule, homePageModule } from '.';
-import translationsModuleDefault from '../homepageTranslationsModuleExport';
-import { homepageTranslationRef, homepageTranslations } from '../translations';
+import translationsModuleDefault from './homepageTranslationsModuleExport';
+import { homepageTranslationRef, homepageTranslations } from './translations';
 import { homePageLayoutExtension } from './extensions/homePageLayoutExtension';
 import {
   onboardingSectionWidget,
@@ -31,11 +31,11 @@ import {
   RecentlyVisitedWidget,
   TopVisitedWidget,
 } from './extensions/homePageCards';
-import { quickAccessApi } from './extensions/apis';
+import { quickAccessApi, defaultWidgetsApi } from './extensions/apis';
 
-describe('Dynamic Home Page plugin Alpha (NFS)', () => {
+describe('Dynamic Home Page plugin (NFS)', () => {
   describe('Modules', () => {
-    it('should export homePageDevModule with correct structure', () => {
+    it('should export homePageModule with correct structure', () => {
       expect(homePageModule).toBeDefined();
       expect(homePageModule.$$type).toBe('@backstage/FrontendModule');
       expect(homePageModule.pluginId).toBe('home');
@@ -49,7 +49,7 @@ describe('Dynamic Home Page plugin Alpha (NFS)', () => {
       expect(homepageTranslationsModule.pluginId).toBe('app');
     });
 
-    it('should export the translations module as default for NFS discovery', () => {
+    it('should default-export app modules for NFS discovery', () => {
       expect(translationsModuleDefault).toBe(homepageTranslationsModule);
     });
   });
@@ -91,6 +91,10 @@ describe('Dynamic Home Page plugin Alpha (NFS)', () => {
   describe('APIs', () => {
     it('should export quickAccessApi', () => {
       expect(quickAccessApi).toBeDefined();
+    });
+
+    it('should export defaultWidgetsApi', () => {
+      expect(defaultWidgetsApi).toBeDefined();
     });
   });
 });

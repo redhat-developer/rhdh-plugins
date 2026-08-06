@@ -1,14 +1,22 @@
-# please keep this in sync with packages/app/src/App.tsx
+# please keep this in sync with packages/app-legacy mount points
+# Note: Legacy/OFS exports are only available from `module: Legacy`.
+# The default module (PluginRoot) is NFS-only.
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-homepage:
+      translationResources:
+        - importName: homepageTranslations
+          module: Legacy
+          ref: homepageTranslationRef
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage
+          module: Legacy
       mountPoints:
         # Default homepage cards - appear by default
         - mountPoint: home.page/cards
           importName: OnboardingSection
+          module: Legacy
           config:
             layouts:
               xl: { w: 12, h: 6 }
@@ -19,6 +27,7 @@ dynamicPlugins:
               xxs: { w: 12, h: 14 }
         - mountPoint: home.page/cards
           importName: EntitySection
+          module: Legacy
           config:
             layouts:
               xl: { w: 12, h: 7 }
@@ -29,6 +38,7 @@ dynamicPlugins:
               xxs: { w: 12, h: 15 }
         - mountPoint: home.page/cards
           importName: TemplateSection
+          module: Legacy
           config:
             layouts:
               xl: { w: 12, h: 5 }
@@ -41,6 +51,7 @@ dynamicPlugins:
         # Additional plugin widgets - available in "Add widget" dialog
         - mountPoint: home.page/widgets
           importName: RecentlyVisitedCard
+          module: Legacy
           config:
             title: 'Recently Visited'
             description: 'Quick access to recently viewed entities and pages'
@@ -54,6 +65,7 @@ dynamicPlugins:
               xxs: { w: 12, h: 3 }
         - mountPoint: home.page/widgets
           importName: TopVisitedCard
+          module: Legacy
           config:
             title: 'Most Visited'
             description: 'Your most frequently accessed entities and services'

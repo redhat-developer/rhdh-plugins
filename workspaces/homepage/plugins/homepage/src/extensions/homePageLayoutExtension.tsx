@@ -16,7 +16,7 @@
 
 import { HomePageLayoutBlueprint } from '@backstage/plugin-home-react/alpha';
 import { z } from 'zod';
-import { HomePageCardConfig } from '../../types';
+import { HomePageCardConfig } from '../types';
 
 /**
  * Custom home page layout extension for the New Frontend System.
@@ -27,7 +27,6 @@ import { HomePageCardConfig } from '../../types';
  * The layout component is loaded via dynamic `import()` inside the async
  * loader so it stays out of the Module Federation sync chunk graph.
  *
- * @alpha
  */
 export const homePageLayoutExtension =
   HomePageLayoutBlueprint.makeWithOverrides({
