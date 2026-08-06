@@ -49,6 +49,7 @@ import {
   generateTestWorkflowInfoForEventypeNoStartStateNameStates,
   generateTestWorkflowInfoForEventypeNoStartStates,
   generateTestWorkflowInfoForEventypeWithNoCorrelationContextAttribute,
+  generateTestWorkflowInfoForEventypeWithStartStateName,
   generateTestWorkflowOverview,
   generateTestWorkflowOverviewList,
   generateWorkflowDefinition,
@@ -452,6 +453,94 @@ describe('executeWorkflow as event type', () => {
     // Assert
     expect(actualResultV2).toBeDefined();
     expect(actualResultV2.id).toBeDefined();
+    expect(
+      mockOrchestratorService.executeWorkflowAsCloudEvent,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        definitionId: workflowInfo.id,
+        workflowEventType: 'lock-event',
+        workflowSource: 'local',
+        contextAttribute: 'lockid',
+        inputData: expect.objectContaining({
+          workflowdata: workflowData,
+          initiatorEntity: 'someUserEntity',
+          targetEntity: 'someEntity',
+        }),
+        backstageToken: 'someToken',
+      }),
+    );
+  });
+
+  it('throws when compiled start.stateName fixture cannot rewrite start', () => {
+    expect(() =>
+      generateTestWorkflowInfoForEventypeWithStartStateName('test_workflowId', {
+        id: 'test_workflowId',
+        source: 'id: lock-flow\nstart: somethingElse\n',
+      }),
+    ).toThrow(/Failed to rewrite start to start.stateName/);
+  });
+
+  it('executes a given workflow: event type with compiled start.stateName', async () => {
+    // Arrange
+    const correlationContextAttributeId = '12345';
+    const workflowInfo =
+      generateTestWorkflowInfoForEventypeWithStartStateName();
+    const execResponse = generateTestExecuteWorkflowResponse(
+      correlationContextAttributeId,
+    );
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
+    (
+      mockOrchestratorService.pingWorkflowService as jest.Mock
+    ).mockResolvedValue(workflowInfo);
+
+    const processInstance = generateProcessInstanceForEventType(
+      1,
+      correlationContextAttributeId,
+    );
+
+    (mockOrchestratorService.fetchInstances as jest.Mock).mockResolvedValue([
+      processInstance,
+    ]);
+
+    (
+      mockOrchestratorService.executeWorkflowAsCloudEvent as jest.Mock
+    ).mockResolvedValue(execResponse);
+    const workflowData = {
+      customAttrib: 'My customAttrib',
+      isEvent: true,
+    };
+    // Act
+    const actualResultV2: ExecuteWorkflowResponseDTO = await v2.executeWorkflow(
+      {
+        inputData: workflowData,
+        targetEntity: 'someEntity',
+      },
+      workflowInfo.id,
+      'someUserEntity',
+      'someToken',
+    );
+
+    // Assert
+    expect(actualResultV2).toBeDefined();
+    expect(actualResultV2.id).toBeDefined();
+    expect(
+      mockOrchestratorService.executeWorkflowAsCloudEvent,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        definitionId: workflowInfo.id,
+        workflowEventType: 'lock-event',
+        workflowSource: 'local',
+        contextAttribute: 'lockid',
+        inputData: expect.objectContaining({
+          workflowdata: workflowData,
+          initiatorEntity: 'someUserEntity',
+          targetEntity: 'someEntity',
+        }),
+        backstageToken: 'someToken',
+      }),
+    );
   });
 
   it('executes a given workflow: event type, no instance, not an error', async () => {

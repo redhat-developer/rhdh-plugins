@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TableColumn } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import { Box, Chip, Tooltip, Typography } from '@material-ui/core';
@@ -41,6 +41,7 @@ import type {
   Provider,
   ServiceType,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import { extractApiError } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { catalogApiRef, providersApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
@@ -49,7 +50,7 @@ import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { DcmFormDialogActions } from '../../components/DcmFormDialogActions';
 import { createEditDeleteColumn } from '../../components/dcmTabListHelpers';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
-import { useCrudTab } from '../../hooks/useCrudTab';
+import { usePaginatedCrudTab } from '../../hooks/usePaginatedCrudTab';
 import { useTranslation } from '../../hooks/useTranslation';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { CopyButton } from './components/CopyButton';
@@ -71,16 +72,27 @@ export function ProvidersTabContent() {
   const { t } = useTranslation();
 
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
+  const [serviceTypesError, setServiceTypesError] = useState<string | null>(
+    null,
+  );
 
-  const crud = useCrudTab<Provider, ProviderForm>({
-    loadFn: async () => {
-      const [providerList, serviceTypeList] = await Promise.all([
-        providersApi.listProviders().then(r => r.providers ?? []),
-        catalogApi.listServiceTypes().then(r => r.results ?? []),
-      ]);
-      setServiceTypes(serviceTypeList);
-      return providerList;
-    },
+  // Fetch dropdown options once on mount; page navigation does not re-fetch.
+  useEffect(() => {
+    catalogApi
+      .listServiceTypes({ max_page_size: 100 })
+      .then(r => setServiceTypes(r.results ?? []))
+      .catch(err => setServiceTypesError(extractApiError(err)));
+  }, [catalogApi]);
+
+  const crud = usePaginatedCrudTab<Provider, ProviderForm>({
+    loadFn: ({ pageToken, pageSize: ps }) =>
+      providersApi
+        .listProviders({ page_token: pageToken, max_page_size: ps })
+        .then(r => ({
+          items: r.providers ?? [],
+          nextPageToken: r.next_page_token,
+        })),
+    storageKey: 'providers',
     createFn: form => providersApi.createProvider(formToProvider(form)),
     updateFn: (id, form) =>
       providersApi.applyProvider(id, formToProvider(form)),
@@ -90,7 +102,6 @@ export function ProvidersTabContent() {
     emptyForm: emptyProviderForm,
     isValid: isProviderFormValid,
     itemToForm: providerToForm,
-    storageKey: 'providers',
     createSuccessMessage: t('providers.createSuccess'),
     editSuccessMessage: t('providers.updateSuccess'),
     deleteSuccessMessage: t('providers.deleteSuccess'),
@@ -298,27 +309,22 @@ export function ProvidersTabContent() {
       <DcmCrudTabLayout<Provider>
         items={crud.items}
         filtered={crud.filtered}
-        paginated={crud.paginated}
+        paginated={crud.filtered}
         columns={columns}
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
-        actionError={null}
-        onDismissActionError={undefined}
+        actionError={serviceTypesError}
+        onDismissActionError={() => setServiceTypesError(null)}
         search={crud.search}
-        onSearchChange={crud.setSearch}
-        page={crud.page}
-        pageSize={crud.pageSize}
-        onPageChange={crud.onPageChange}
-        onRowsPerPageChange={crud.onRowsPerPageChange}
+        onSearchChange={crud.handleSearchChange}
+        cursorPagination={crud.cursorPagination}
         emptyTitle={t('providers.emptyTitle')}
         emptyDescription={t('providers.emptyDescription')}
         primaryActionLabel={t('providers.registerButton')}
         onPrimaryAction={crud.handleOpenCreate}
         illustrationSrc={emptyIllustration}
         entityLabel={t('providers.entityLabel')}
-        onRefresh={crud.reload}
-        refreshing={crud.refreshing}
       />
 
       {formDialog({

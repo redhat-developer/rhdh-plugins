@@ -45,17 +45,32 @@ export const kserveKubeflowConnectorPlugin = createBackendPlugin({
           'catalog.providers.modelCatalog',
         );
         if (providerConfigs) {
-          const keys = providerConfigs.keys();
-          if (keys.length > 0) {
-            const providerConfig = providerConfigs.getConfig(keys[0]);
+          const connectorKeys = providerConfigs.keys();
+          if (connectorKeys.length > 0) {
+            const connectorLevelConfig = providerConfigs.getConfig(
+              connectorKeys[0],
+            );
+            // Navigate cluster sub-keys under the connector key.
+            // TODO: Multi-cluster support — iterate all cluster sub-keys
+            // instead of using only the first one.
+            const clusterKeys = connectorLevelConfig.keys();
+            let clusterConfig = connectorLevelConfig;
+            for (const ck of clusterKeys) {
+              const sub = connectorLevelConfig.getOptionalConfig(ck);
+              if (!sub || sub.has('frequency') || sub.has('timeout')) {
+                continue;
+              }
+              clusterConfig = sub;
+              break;
+            }
             connectorConfig = {
-              catalogUrl: providerConfig.getOptionalString(
+              catalogUrl: clusterConfig.getOptionalString(
                 'kubeflow-model-catalog-url',
               ),
               defaultOwner:
-                providerConfig.getOptionalString('default-owner') || undefined,
+                clusterConfig.getOptionalString('default-owner') || undefined,
               defaultLifecycle:
-                providerConfig.getOptionalString('default-lifecycle') ||
+                clusterConfig.getOptionalString('default-lifecycle') ||
                 undefined,
             };
           }

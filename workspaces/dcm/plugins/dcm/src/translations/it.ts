@@ -45,6 +45,8 @@ const dcmTranslationIt: TranslationMessages<
     'common.saving': 'Salvataggio\u2026',
     'common.close': 'Chiudi',
     'common.rows': 'righe',
+    'common.previousPage': 'Precedente',
+    'common.nextPage': 'Successivo',
     'deleteDialog.title': 'Elimina {{resourceLabel}}',
     'deleteDialog.confirmButton': 'Elimina',
     'deleteDialog.cancelButton': 'Annulla',

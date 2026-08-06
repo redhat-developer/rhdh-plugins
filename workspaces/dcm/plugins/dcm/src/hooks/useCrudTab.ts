@@ -46,9 +46,20 @@ function removeItemById<T>(
  * @template T - The domain entity type (e.g. Provider, Policy)
  * @template F - The form state type (e.g. ProviderForm)
  */
+/** Result shape returned by server-side-paginated load functions. */
+export interface PagedLoadResult<T> {
+  items: T[];
+  /** Opaque cursor returned by the API. Empty string or undefined means no next page. */
+  nextPageToken?: string;
+}
+
 export interface UseCrudTabOptions<T, F extends Record<string, unknown>> {
-  /** Fetches all items from the API. May also set secondary state as a side effect. */
-  loadFn: () => Promise<T[]>;
+  /**
+   * Fetches items from the API. Returns either a plain array (client-side
+   * pagination) or a {@link PagedLoadResult} object when server-side
+   * cursor-based pagination is in use.
+   */
+  loadFn: () => Promise<T[] | PagedLoadResult<T>>;
   /**
    * Creates a new item. Receives the raw form so the caller can apply any
    * transformation or pass extra params (e.g. a client-assigned ID).
@@ -109,6 +120,11 @@ export interface UseCrudTabResult<T, F extends Record<string, unknown>> {
   refreshing: boolean;
   loadError: string | null;
   reload: () => void;
+  /**
+   * Opaque cursor token for the next page, populated when `loadFn` returns a
+   * {@link PagedLoadResult}. Empty string means no next page or client-side mode.
+   */
+  nextPageToken: string;
 
   // ── Search + pagination ────────────────────────────────────────────────────
   search: string;
@@ -196,6 +212,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [nextPageToken, setNextPageToken] = useState('');
   const hasLoadedRef = useRef(false);
 
   // ── Search + pagination ──────────────────────────────────────────────────
@@ -263,12 +280,19 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
     optsRef.current
       .loadFn()
       .then(result => {
-        setItems(result);
+        if (Array.isArray(result)) {
+          setItems(result);
+          setNextPageToken('');
+        } else {
+          setItems(result.items);
+          setNextPageToken(result.nextPageToken ?? '');
+        }
         hasLoadedRef.current = true;
       })
       .catch(err => {
         setLoadError(extractApiError(err));
         setItems([]);
+        setNextPageToken('');
         hasLoadedRef.current = false;
       })
       .finally(() => {
@@ -444,6 +468,7 @@ export function useCrudTab<T, F extends Record<string, unknown>>(
     refreshing,
     loadError,
     reload,
+    nextPageToken,
 
     // Search + pagination
     search,

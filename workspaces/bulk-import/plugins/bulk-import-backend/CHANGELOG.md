@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import-backend
 
+## 8.0.1
+
+### Patch Changes
+
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 503c66e: Updated dependency `@openapitools/openapi-generator-cli` to `2.40.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.15.0`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+- Updated dependencies [e0d0986]
+- Updated dependencies [8966faf]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@8.0.1
+
 ## 8.0.0
 
 ### Minor Changes

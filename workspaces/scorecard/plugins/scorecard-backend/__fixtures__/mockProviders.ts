@@ -63,10 +63,6 @@ abstract class MockMetricProvider<T extends MetricType>
     return this.providerId;
   }
 
-  supportsEntity(_: Entity): boolean {
-    return true;
-  }
-
   getMetrics(): Metric<T>[] {
     return [
       {
@@ -169,7 +165,7 @@ export class MockBatchBooleanProvider implements MetricProvider<'boolean'> {
 
   constructor(
     private readonly datasourceId: string,
-    private readonly providerIdPrefix: string,
+    private readonly providerId: string,
     metricConfigs: Array<{ id: string; path: string }>,
   ) {
     this.metricConfigs = metricConfigs;
@@ -180,12 +176,12 @@ export class MockBatchBooleanProvider implements MetricProvider<'boolean'> {
   }
 
   getProviderId(): string {
-    return this.providerIdPrefix;
+    return this.providerId;
   }
 
   getMetrics(): Metric<'boolean'>[] {
     return this.metricConfigs.map(c => ({
-      id: `${this.providerIdPrefix}.${c.id}`,
+      id: `${this.datasourceId}.${c.id}`,
       title: `File: ${c.path}`,
       description: `Checks if ${c.path} exists.`,
       type: 'boolean' as const,
@@ -200,7 +196,7 @@ export class MockBatchBooleanProvider implements MetricProvider<'boolean'> {
   async calculateMetrics(_entity: Entity): Promise<Map<string, boolean>> {
     const results = new Map<string, boolean>();
     for (const config of this.metricConfigs) {
-      results.set(`${this.providerIdPrefix}.${config.id}`, true);
+      results.set(`${this.datasourceId}.${config.id}`, true);
     }
     return results;
   }
@@ -208,7 +204,7 @@ export class MockBatchBooleanProvider implements MetricProvider<'boolean'> {
 
 export const filecheckBatchProvider = new MockBatchBooleanProvider(
   'filecheck',
-  'filecheck',
+  'filecheck.fileExistence',
   [
     { id: 'readme', path: 'README.md' },
     { id: 'license', path: 'LICENSE' },
