@@ -6,9 +6,11 @@
 - [ ] 1.2 Document `rhdh.io/ai-asset-version` annotation format and normalization rules
 - [ ] 1.3 Document `rhdh.io/ai-asset-source` annotation format
 - [ ] 1.4 Document entity kind + `spec.type` mapping table for all AI Asset types
-- [ ] 1.5 Map each entity type to RFC #32062 (McpServer) target (if applicable)
-- [ ] 1.6 Map each entity type to RFC #33060 (ai-model/ai-model-server) targets (if applicable)
-- [ ] 1.7 Assign confidence levels to each mapping (high/medium/low)
+- [ ] 1.5 Map MCP server to upstream `McpServerApiEntity` ([#34016](https://github.com/backstage/backstage/pull/34016)) — kind already aligned, document field/module gaps
+- [ ] 1.6 Map skills/rules to upstream `AiResource` ([#33575](https://github.com/backstage/backstage/issues/33575)) — document kind/name casing alignment
+- [ ] 1.6a Map model-server to candidate `API` / `ai-model-server` ([#34476](https://github.com/backstage/backstage/pull/34476)) — hedge on open PR
+- [ ] 1.6b Map remaining categories (ai-model, agent, skill-bundle) — document explicit uncertainty
+- [ ] 1.7 Assign confidence levels to each mapping (high/medium–high/medium–low/low)
 - [ ] 1.8 Document fields requiring transformation per entity type
 - [ ] 1.9 Add explicit "Future Work" section framing actual migration as separate effort
 - [ ] 1.10 Add header with draft status and last-updated date

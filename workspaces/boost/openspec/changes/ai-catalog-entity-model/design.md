@@ -2,7 +2,7 @@
 
 ## Context
 
-The AI Catalog entity model establishes RHDH's standardized approach to classifying, versioning, and tracking AI assets from heterogeneous sources. The Backstage catalog has no built-in entity kinds for agents, skills, models, or MCP servers. Upstream RFCs #32062 (AI Agent kind) and #33060 (AI Model kind) propose first-class kinds, but they're not yet merged or stabilized.
+The AI Catalog entity model establishes RHDH's standardized approach to classifying, versioning, and tracking AI assets from heterogeneous sources. The Backstage catalog has no built-in entity kinds for agents, skills, models, or MCP servers. Upstream developments include: RFC [#32062](https://github.com/backstage/backstage/issues/32062) Option 3 shipped as `McpServerApiEntity` ([backstage#34016](https://github.com/backstage/backstage/pull/34016)) for MCP servers, `AiResource` shipped upstream ([#33575](https://github.com/backstage/backstage/issues/33575)) for skills/rules, and a candidate `API` / `ai-model-server` in [backstage#34476](https://github.com/backstage/backstage/pull/34476) for model servers. Agent and AI model kinds are not yet proposed upstream.
 
 Boost cannot wait for upstream — customers need AI Catalog today. The model uses custom annotations as an independent classification layer ON TOP OF existing entity kinds, with a documented migration path to upstream kinds when available.
 
