@@ -32,7 +32,7 @@ type NotebooksTabProps = {
   openNotebookMenuId: string | null;
   setOpenNotebookMenuId: React.Dispatch<React.SetStateAction<string | null>>;
   onSelectNotebook: (notebook: NotebookSession) => void;
-  onRename: (sessionId: string) => void;
+  onRename: (sessionId: string, newName: string) => void;
   onDelete: (sessionId: string) => void;
   onCreateNotebook: () => void;
   t: TranslationFunction<typeof intelligentAssistantTranslationRef.T>;
