@@ -38,8 +38,8 @@ import Box from '@mui/material/Box';
 import 'react-grid-layout/css/styles.css';
 
 import useMeasure from 'react-use/lib/useMeasure';
-import { HomePageCardConfig } from '../../types';
-import { isCardADefaultConfiguration } from '../utils';
+import { HomePageCardConfig } from '../types';
+import { isCardADefaultConfiguration } from '../utils/nfsLayout';
 
 interface Card {
   id: string;
@@ -79,10 +79,9 @@ const defaultProps: ResponsiveProps = {
   compactType: null,
 };
 
-import { cardWrapperSx } from '../../styles/cardWrapperSx';
+import { cardWrapperSx } from '../styles/cardWrapperSx';
 /**
  * Props for the read-only grid layout.
- * @alpha
  */
 export interface ReadOnlyGridLayoutProps {
   homepageCards: HomePageCardConfig[];
@@ -92,7 +91,6 @@ export interface ReadOnlyGridLayoutProps {
  * Read-only grid layout for the NFS home page.
  * Respects layout configuration (breakpoints) when provided via app config.
  *
- * @alpha
  */
 export const ReadOnlyGridLayout = ({
   homepageCards,

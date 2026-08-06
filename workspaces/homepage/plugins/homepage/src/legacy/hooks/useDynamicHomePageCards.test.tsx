@@ -19,7 +19,7 @@ import { renderHook } from '@testing-library/react';
 import { ScalprumContext } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
 
-import { HomePageCardMountPoint } from '../types';
+import { HomePageCardMountPoint } from '../../types';
 import { useDynamicHomePageCards } from './useDynamicHomePageCards';
 
 // Mock component for testing

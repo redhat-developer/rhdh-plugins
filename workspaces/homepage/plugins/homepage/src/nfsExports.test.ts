@@ -1,0 +1,60 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import homePageModuleDefault, {
+  homepageTranslationsModule,
+  homePageModule,
+} from '.';
+import translationsModuleDefault from './homepageTranslationsModuleExport';
+import { homepageTranslationRef, homepageTranslations } from './translations';
+
+describe('Dynamic Home Page plugin (NFS)', () => {
+  describe('Modules', () => {
+    it('should export homePageModule with correct structure', () => {
+      expect(homePageModule).toBeDefined();
+      expect(homePageModule.$$type).toBe('@backstage/FrontendModule');
+      expect(homePageModule.pluginId).toBe('home');
+    });
+
+    it('should export homepageTranslationsModule with correct structure', () => {
+      expect(homepageTranslationsModule).toBeDefined();
+      expect(homepageTranslationsModule.$$type).toBe(
+        '@backstage/FrontendModule',
+      );
+      expect(homepageTranslationsModule.pluginId).toBe('app');
+    });
+
+    it('should export homePageModule as the package default', () => {
+      expect(homePageModuleDefault).toBe(homePageModule);
+    });
+
+    it('should default-export app modules for NFS discovery', () => {
+      expect(translationsModuleDefault).toBe(homepageTranslationsModule);
+    });
+  });
+
+  describe('Translations', () => {
+    it('should export homepageTranslationRef', () => {
+      expect(homepageTranslationRef).toBeDefined();
+      expect(homepageTranslationRef.id).toBe('plugin.homepage');
+    });
+
+    it('should export homepageTranslations', () => {
+      expect(homepageTranslations).toBeDefined();
+      expect(typeof homepageTranslations).toBe('object');
+    });
+  });
+});

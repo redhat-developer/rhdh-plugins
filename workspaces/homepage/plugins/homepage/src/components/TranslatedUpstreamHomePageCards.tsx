@@ -25,7 +25,7 @@ import {
 import {
   TranslatableCardTitleProps,
   useHomePageCardTitle,
-} from '../../utils/useHomePageCardTitle';
+} from '../utils/useHomePageCardTitle';
 
 /** @public */
 export type CatalogStarredEntitiesCardProps = StarredEntitiesProps &
