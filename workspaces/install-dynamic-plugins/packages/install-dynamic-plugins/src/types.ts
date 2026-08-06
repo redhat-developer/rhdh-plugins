@@ -70,8 +70,6 @@ export type DynamicPluginsConfig = {
   plugins?: PluginSpec[];
 };
 
-export const DOCKER_PROTO = 'docker://';
-export const OCI_PROTO = 'oci://';
 /**
  * Tag suffix that, by convention, opts an OCI plugin into `pullPolicy: Always`
  * when no explicit policy is set — mirrors the Python script's behaviour and

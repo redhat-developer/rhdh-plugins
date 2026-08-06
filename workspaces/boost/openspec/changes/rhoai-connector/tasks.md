@@ -26,11 +26,11 @@
 
 ## 2. Deployment Configuration — RHIDP-15323
 
-- [ ] 2.1 Define Zod config schema for `catalog.providers.rhoai.mcpCatalog` (enabled, endpoint, auth.secretRef, tls.caFile)
+- [ ] 2.1 Define Zod config schema for `ai-catalog.providers.rhoai.mcpCatalog` (enabled, endpoint, auth.secretRef, tls.caFile)
 - [ ] 2.2 Implement config validation in module startup (missing endpoint, invalid URL)
 - [ ] 2.3 Implement enable/disable toggle: skip provider registration when `enabled: false`
 - [ ] 2.4 Implement K8s Secret loader utility in `src/utils/secretLoader.ts` (supports `token` and `username`/`password` keys)
-- [ ] 2.5 Integrate shared utilities from RHIDP-15316 (`loadCaBundle()`, `createHttpsAgent()`, `createProviderWrapper()`, `createSafeRefresh()`, `isConnectorEnabled()`) via `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` — call `loadCaBundle(config.getConfig('catalog.providers.rhoai.mcpCatalog'))` for RHOAI's nested config
+- [ ] 2.5 Integrate shared utilities from RHIDP-15316 (`loadCaBundle()`, `createHttpsAgent()`, `createProviderWrapper()`, `createSafeRefresh()`, `isConnectorEnabled()`) via `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` — call `loadCaBundle(config.getConfig('ai-catalog.providers.rhoai.mcpCatalog'))` for RHOAI's nested config
 - [ ] 2.6 Implement Secret refresh on each `refresh()` cycle (no credential caching across cycles)
 - [ ] 2.7 Implement CA bundle fallback to system CA when custom bundle is missing or fails to load
 - [ ] 2.8 Add startup logging: enabled/disabled status, endpoint URL, Secret ref

@@ -62,7 +62,6 @@ import {
   Label,
   MenuToggle,
   MenuToggleElement,
-  Button as PFButton,
   Select,
   SelectList,
   SelectOption,
@@ -72,13 +71,11 @@ import {
 } from '@patternfly/react-core';
 import {
   PenIcon,
-  PlusCircleIcon,
   PlusIcon,
   SearchIcon,
   SortAmountDownAltIcon,
   SortAmountDownIcon,
   ThumbtackIcon,
-  TimesIcon,
   TrashIcon,
 } from '@patternfly/react-icons';
 import { RhUiAiExperienceIcon } from '@patternfly/react-icons/dist/esm/icons/rh-ui-ai-experience-icon';
@@ -107,6 +104,7 @@ import {
 } from '../hooks';
 import { useCreateNotebook } from '../hooks/notebooks/useCreateNotebook';
 import { useNotebookDocuments } from '../hooks/notebooks/useNotebookDocuments';
+import { useRenameNotebookWithAlert } from '../hooks/notebooks/useRenameNotebookWithAlert';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
@@ -129,13 +127,9 @@ import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
 import { McpServersSettings } from './McpServersSettings';
 import { MessageBarModelSelector } from './MessageBarModelSelector';
 import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
+import { NotebookHeaderActions } from './notebooks/NotebookHeaderActions';
 import { NotebooksTab } from './notebooks/NotebooksTab';
 import { NotebookView } from './notebooks/NotebookView';
-import { RenameNotebookModal } from './notebooks/RenameNotebookModal';
-import {
-  SidebarCollapseIcon,
-  SidebarExpandIcon,
-} from './notebooks/SidebarCollapseIcon';
 import PermissionRequiredState from './PermissionRequiredState';
 import { RenameConversationModal } from './RenameConversationModal';
 
@@ -248,6 +242,7 @@ const useStyles = makeStyles(theme => ({
   notebooksHeading: {
     marginBottom: 0,
     whiteSpace: 'nowrap',
+    fontSize: '1.25rem',
   },
   notebooksHeadingEmpty: {
     '&&': {
@@ -358,6 +353,13 @@ const useStyles = makeStyles(theme => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+    cursor: 'pointer',
+    borderRadius: 4,
+    padding: '2px 6px',
+    '&:hover': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--action--plain--hover)',
+    },
   },
   notebookMenuButton: {
     color: theme.palette.text.secondary,
@@ -709,6 +711,7 @@ export const LightspeedChat = ({
   const [filterValue, setFilterValue] = useState<string>('');
   const [announcement, setAnnouncement] = useState<string>('');
   const [activeTab, setActiveTab] = useState<number>(() => {
+    // Route matches only occur in fullscreen mode; compact modes don't navigate to /notebooks URLs.
     if (notebooksRouteMatch || notebookViewRouteMatch) {
       return 1;
     }
@@ -734,10 +737,9 @@ export const LightspeedChat = ({
   const [openNotebookMenuId, setOpenNotebookMenuId] = useState<string | null>(
     null,
   );
-  const [renameNotebookId, setRenameNotebookId] = useState<string | null>(null);
   const [deleteNotebookId, setDeleteNotebookId] = useState<string | null>(null);
   const effectiveNotebookId =
-    routeNotebookId || (!isFullscreenMode ? activeNotebookId : undefined);
+    routeNotebookId ?? (!isFullscreenMode ? activeNotebookId : undefined);
   const { data: activeNotebook, isError: activeNotebookError } =
     useNotebookSession(effectiveNotebookId);
 
@@ -761,12 +763,18 @@ export const LightspeedChat = ({
     [],
   );
   const createNotebookMutation = useCreateNotebook();
+
+  const handleRenameNotebook = useRenameNotebookWithAlert({
+    setAlerts: setNotebookAlerts,
+    getNotebookName: (sid: string) =>
+      notebooks.find(n => n.session_id === sid)?.name ?? 'notebook',
+  });
   const { data: notebookDocuments = [], isFetching: isDocumentsFetching } =
     useNotebookDocuments(activeNotebook?.session_id);
   const [notebookUploadsInProgress, setNotebookUploadsInProgress] =
     useState(false);
   const [notebookSidebarCollapsed, setNotebookSidebarCollapsed] =
-    useState(true);
+    useState(!isFullscreenMode);
   const [notebookUploadModalOpen, setNotebookUploadModalOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string>('');
   const [requestId, setRequestId] = useState<string>('');
@@ -1941,13 +1949,14 @@ export const LightspeedChat = ({
           conversationId={targetConversationId}
         />
       )}
-      {renameNotebookId && (
-        <RenameNotebookModal
-          isOpen={Boolean(renameNotebookId)}
-          onClose={() => setRenameNotebookId(null)}
-          sessionId={renameNotebookId}
-          currentName={
-            notebooks.find(n => n.session_id === renameNotebookId)?.name ?? ''
+      {deleteNotebookId && (
+        <DeleteNotebookModal
+          isOpen={Boolean(deleteNotebookId)}
+          onClose={() => setDeleteNotebookId(null)}
+          onDeleted={handleNotebookDeleted}
+          sessionId={deleteNotebookId}
+          name={
+            notebooks.find(n => n.session_id === deleteNotebookId)?.name ?? ''
           }
           isCompact={!isFullscreenMode}
         />
@@ -1972,68 +1981,15 @@ export const LightspeedChat = ({
               />
             )}
             {!isFullscreenMode && showNotebooksPanel && activeNotebook && (
-              <div
+              <NotebookHeaderActions
                 className={classes.notebookHeaderActions}
-                style={
-                  notebookUploadModalOpen
-                    ? { opacity: 0.4, pointerEvents: 'none' }
-                    : undefined
-                }
-              >
-                <Tooltip content={t('notebook.view.close')} position="bottom">
-                  <PFButton
-                    variant="plain"
-                    onClick={handleCloseNotebook}
-                    aria-label={t('notebook.view.close')}
-                    size="sm"
-                  >
-                    <TimesIcon />
-                  </PFButton>
-                </Tooltip>
-                <Tooltip
-                  content={
-                    notebookUploadsInProgress
-                      ? t('notebook.view.documents.uploadsInProgress')
-                      : t('notebook.view.documents.add')
-                  }
-                  position="bottom"
-                >
-                  <PFButton
-                    variant="plain"
-                    onClick={() => setNotebookUploadModalOpen(true)}
-                    aria-label={t('notebook.view.documents.add')}
-                    size="sm"
-                    isDisabled={notebookUploadsInProgress}
-                  >
-                    <PlusCircleIcon />
-                  </PFButton>
-                </Tooltip>
-                <Tooltip
-                  content={
-                    notebookSidebarCollapsed
-                      ? t('notebook.view.sidebar.expand')
-                      : t('notebook.view.sidebar.collapse')
-                  }
-                  position="bottom"
-                >
-                  <PFButton
-                    variant="plain"
-                    onClick={() => setNotebookSidebarCollapsed(prev => !prev)}
-                    aria-label={
-                      notebookSidebarCollapsed
-                        ? t('notebook.view.sidebar.expand')
-                        : t('notebook.view.sidebar.collapse')
-                    }
-                    size="sm"
-                  >
-                    {notebookSidebarCollapsed ? (
-                      <SidebarExpandIcon size={18} />
-                    ) : (
-                      <SidebarCollapseIcon size={18} />
-                    )}
-                  </PFButton>
-                </Tooltip>
-              </div>
+                onClose={handleCloseNotebook}
+                onOpenUploadModal={() => setNotebookUploadModalOpen(true)}
+                uploadsInProgress={notebookUploadsInProgress}
+                uploadModalOpen={notebookUploadModalOpen}
+                sidebarCollapsed={notebookSidebarCollapsed}
+                onSidebarCollapsedChange={setNotebookSidebarCollapsed}
+              />
             )}
             {isFullscreenMode && (
               <>
@@ -2302,24 +2258,11 @@ export const LightspeedChat = ({
                     setActiveNotebookId(notebook.session_id);
                   }
                 }}
-                onRename={setRenameNotebookId}
+                onRename={handleRenameNotebook}
                 onDelete={setDeleteNotebookId}
                 onCreateNotebook={handleCreateNotebook}
                 t={t}
               />
-              {deleteNotebookId && (
-                <DeleteNotebookModal
-                  isOpen={Boolean(deleteNotebookId)}
-                  onClose={() => setDeleteNotebookId(null)}
-                  onDeleted={handleNotebookDeleted}
-                  sessionId={deleteNotebookId}
-                  name={
-                    notebooks.find(n => n.session_id === deleteNotebookId)
-                      ?.name ?? ''
-                  }
-                  isCompact={!isFullscreenMode}
-                />
-              )}
             </div>
           )}
         {showNotebooksPanel &&

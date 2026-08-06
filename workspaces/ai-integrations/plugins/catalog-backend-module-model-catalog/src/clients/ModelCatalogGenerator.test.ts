@@ -70,7 +70,7 @@ describe('Model Catalog Generator', () => {
           lifecycle: 'production',
           owner: 'example-user',
           annotations: {
-            TechDocs:
+            techdocs:
               'https://github.com/redhat-ai-dev/granite-3.1-8b-lab-docs/tree/main',
           },
         },
@@ -110,7 +110,7 @@ describe('Model Catalog Generator', () => {
           lifecycle: 'production',
           owner: 'example-user',
           annotations: {
-            TechDocs:
+            techdocs:
               '      https://github.com/redhat-ai-dev/granite-3.1-8b-lab-docs/tree/main           ',
           },
         },
@@ -652,7 +652,7 @@ describe('Model Catalog Generator', () => {
           lifecycle: 'production',
           owner: 'example-user',
           annotations: {
-            TechDocs:
+            techdocs:
               'https://github.com/redhat-ai-dev/granite-3.1-8b-lab-docs/tree/main',
             'custom.io/model-annotation1': 'model-value1',
             'custom.io/model-annotation2': 'model-value2',

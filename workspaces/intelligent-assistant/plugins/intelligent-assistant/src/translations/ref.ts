@@ -35,15 +35,11 @@ export const intelligentAssistantMessages = {
   'notebooks.empty.description':
     'Start a new notebook to organize your sources and generate AI-powered insights.',
   'notebooks.empty.action': 'Create a new notebook',
-  'notebooks.documents': 'Documents',
+  'notebooks.documents': 'Resources',
   'notebooks.actions.rename': 'Rename',
   'notebooks.actions.delete': 'Delete',
-  'notebooks.rename.title': 'Rename {{name}}?',
-  'notebooks.rename.description':
-    'Please input the new name for this notebook and click submit to proceed.',
-  'notebooks.rename.label': 'New name',
-  'notebooks.rename.placeholder': 'New name',
-  'notebooks.rename.action': 'Submit',
+  'notebooks.rename.inline.tooltip': 'Click to rename',
+  'notebooks.rename.inline.error': 'Failed to rename "{{notebookName}}".',
   'notebooks.delete.title': 'Delete {{name}}?',
   'notebooks.delete.message':
     "You'll no longer see this notebook here. This will also delete related activity like prompts, responses, and feedback from your activity.",
@@ -63,28 +59,28 @@ export const intelligentAssistantMessages = {
   // Notebook view
   'notebook.view.title': 'Untitled notebook',
   'notebook.view.close': 'Close notebook',
-  'notebook.view.documents.count': '{{count}} Documents',
+  'notebook.view.documents.count': '{{count}} Resources',
   'notebook.view.documents.add': 'Add',
   'notebook.view.upload.heading': 'Upload a resource to get started',
   'notebook.view.upload.action': 'Upload a resource',
   'notebook.view.processing.heading': 'Processing resources...',
   'notebook.view.processing.description':
     'Your files are being indexed. You can start asking questions once processing is complete.',
-  'notebook.view.input.placeholder': 'Ask about your documents...',
+  'notebook.view.input.placeholder': 'Ask about your resources...',
   'notebook.view.input.disabledTooltip':
     'Select at least one loaded resource to start chatting',
   'notebook.view.sidebar.collapse': 'Collapse sidebar',
   'notebook.view.sidebar.expand': 'Expand sidebar',
   'notebook.view.sidebar.resize': 'Resize sidebar',
-  'notebook.view.documents.uploading': 'Uploading document',
+  'notebook.view.documents.uploading': 'Uploading resource',
   'notebook.view.documents.maxReached':
-    'Maximum 10 documents are allowed. Delete a document to upload a new document.',
+    'Maximum 10 resources are allowed. Delete a resource to upload a new resource.',
   'notebook.view.documents.uploadsInProgress':
-    'Please wait for current uploads to complete before adding more documents.',
+    'Please wait for current uploads to complete before adding more resources.',
   'notebook.upload.failed': '"{{fileName}}" upload failed.',
 
   // Notebook upload modal
-  'notebook.upload.modal.title': 'Add a document to Notebook',
+  'notebook.upload.modal.title': 'Add a resource to Notebook',
   'notebook.upload.modal.dragDropTitle': 'Drag and drop files here',
   'notebook.upload.modal.browseButton': 'Upload',
   'notebook.upload.modal.separator': 'or',

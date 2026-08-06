@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { PaginationParams } from '../types/common';
 import type { Provider, ProviderList } from '../types/providers';
 
 /**
@@ -22,7 +23,7 @@ import type { Provider, ProviderList } from '../types/providers';
  * @public
  */
 export interface ProvidersApi {
-  listProviders(): Promise<ProviderList>;
+  listProviders(params?: PaginationParams): Promise<ProviderList>;
   getProvider(providerId: string): Promise<Provider>;
   createProvider(provider: Provider): Promise<Provider>;
   applyProvider(providerId: string, provider: Provider): Promise<Provider>;

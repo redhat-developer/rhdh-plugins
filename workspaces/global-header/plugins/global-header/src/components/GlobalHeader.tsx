@@ -14,15 +14,50 @@
  * limitations under the License.
  */
 
-import { useGlobalHeaderMountPoints } from '../hooks/useGlobalHeaderMountPoints';
-import { GlobalHeaderComponent } from './GlobalHeaderComponent';
+import { ErrorBoundary } from '@backstage/core-components';
 
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
+
+import { useGlobalHeaderComponents } from '../extensions/GlobalHeaderContext';
+
+/**
+ * Global header bar. Reads toolbar items from GlobalHeaderContext
+ * and renders them in a sticky AppBar.
+ *
+ * @public
+ */
 export const GlobalHeader = () => {
-  const allGlobalHeaderMountPoints = useGlobalHeaderMountPoints();
+  const components = useGlobalHeaderComponents();
 
   return (
-    <GlobalHeaderComponent
-      globalHeaderMountPoints={allGlobalHeaderMountPoints ?? []}
-    />
+    <AppBar
+      position="sticky"
+      component="nav"
+      id="global-header"
+      sx={{
+        width: 'auto',
+        marginRight: 'var(--docked-drawer-width, 0px)',
+        transition: 'margin-right 225ms cubic-bezier(0, 0, 0.2, 1)',
+      }}
+    >
+      <Toolbar
+        sx={{
+          gap: 1,
+          color: theme =>
+            (theme as any).rhdh?.general?.appBarForegroundColor ??
+            theme.palette.text.primary,
+        }}
+      >
+        {components.map((item, index) => (
+          <ErrorBoundary key={`gh-component-${index}`}>
+            <Box sx={item.layout}>
+              <item.component />
+            </Box>
+          </ErrorBoundary>
+        ))}
+      </Toolbar>
+    </AppBar>
   );
 };

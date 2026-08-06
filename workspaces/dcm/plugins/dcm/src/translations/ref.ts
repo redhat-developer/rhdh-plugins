@@ -49,6 +49,8 @@ export const dcmMessages = {
     saving: 'Saving\u2026',
     close: 'Close',
     rows: 'rows',
+    previousPage: 'Previous',
+    nextPage: 'Next',
   },
   deleteDialog: {
     title: 'Delete {{resourceLabel}}',

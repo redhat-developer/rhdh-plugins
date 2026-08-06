@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common
 
+## 3.2.0
+
+### Minor Changes
+
+- 81b7ed2: add saved prompts endpoint
+
+### Patch Changes
+
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+
 ## 3.1.0
 
 ## 3.0.3

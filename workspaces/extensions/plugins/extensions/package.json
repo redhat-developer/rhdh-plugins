@@ -25,12 +25,16 @@
   "exports": {
     ".": "./src/index.ts",
     "./alpha": "./src/alpha/index.tsx",
+    "./extensions-translations-module": "./src/extensionsTranslationsModuleExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "alpha": [
         "src/alpha/index.tsx"
+      ],
+      "extensions-translations-module": [
+        "src/extensionsTranslationsModuleExport.ts"
       ],
       "package.json": [
         "package.json"

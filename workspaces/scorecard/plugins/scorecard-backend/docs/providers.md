@@ -21,8 +21,7 @@ yarn new
 
 This will start an interactive setup to create a new plugin. The following are what will need to be selected to create the new plugin module:
 
-```markdown:workspaces/scorecard/plugins/scorecard-backend/docs/providers.md
-<code_block_to_apply_changes_from>
+```
 ? What do you want to create? backend-module - A new backend module
 ? Enter the ID of the plugin [required] scorecard
 ? Enter the ID of the module [required] my-datasource
@@ -42,73 +41,64 @@ yarn --cwd plugins/scorecard-backend-module-my-datasource add @red-hat-developer
 Create the metric provider in the newly created plugin module `/plugins/scorecard-backend-module-my-datasource/src/metricProviders/MyMetricProvider.ts` and populate it with the following:
 
 ```typescript
+import type { Entity } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
-import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  DEFAULT_NUMBER_THRESHOLDS,
+  Metric,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 export class MyMetricProvider implements MetricProvider<'number'> {
-  // The datasource identifier for this provider
   getProviderDatasourceId(): string {
     return 'myDatasource';
   }
 
-  // The unique provider ID that combines datasource and metric name
+  // Unique provider ID: <datasource>.<providerName>
   getProviderId(): string {
     return 'myDatasource.exampleMetric';
   }
 
-  // Returns the metric type
-  getMetricType(): 'number' {
-    return 'number';
+  // One or more metrics this provider exposes
+  getMetrics(): Metric<'number'>[] {
+    return [
+      {
+        id: 'myDatasource.exampleMetric',
+        title: 'Example Metric',
+        description: 'Example metric description.',
+        type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        history: true,
+      },
+    ];
   }
 
-  // Returns the metric definition
-  getMetric(): Metric<'number'> {
-    return {
-      id: this.getProviderId(),
-      title: 'Example Metric',
-      type: this.getMetricType(),
-      history: true,
-    };
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return {
-      rules: [
-        { key: 'error', expression: '>50' },
-        { key: 'warning', expression: '10-50' },
-        { key: 'success', expression: '<10' },
-      ],
-    };
-  }
-
-  // Returns a catalog filter that specifies which entities this metric provider can process.
-  // Use CATALOG_FILTER_EXISTS to check for the presence of specific annotations or fields.
+  // Entities this provider can process
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
     return {
       'metadata.annotations.myDatasource/project': CATALOG_FILTER_EXISTS,
     };
   }
 
-  // Calculates and returns the metric value
-  async calculateMetric(): Promise<number> {
+  // Map of metric ID -> value. Keys must match getMetrics()[].id
+  async calculateMetrics(_entity: Entity): Promise<Map<string, number>> {
+    const results = new Map<string, number>();
     // TODO: Implement your metric calculation logic here
-    // This could involve API calls to your data source
-    return 42;
+    results.set('myDatasource.exampleMetric', 42);
+    return results;
   }
 }
 ```
 
 **Important:** Metric providers must follow certain conventions:
 
-- The provider ID (from `getProviderId()`) and metric ID (from `getMetric().id`) must be identical
-- Both IDs must follow the format `<datasourceId>.<metricName>` where:
-  - `datasourceId` matches the value returned by `getProviderDatasourceId()`
-  - `metricName` is a non-empty identifier for the specific metric
-- Use `lowerCamelCase` for both `datasourceId` and `metricName` (e.g., `jira.openIssues`, `openssf.ciiBestPractices`)
-- The metric type returned by `getMetricType()` must match the `type` property in the metric returned by `getMetric()`
-- In `getMetric()`, always use `type: this.getMetricType()` instead of hardcoding the type value
-- Configuration for metric provider must follow the schema defined in [`config.d.ts`](../config.d.ts).
+- Provider ID format: `<datasourceId>.<providerName>` (from `getProviderId()`). `datasourceId` must match `getProviderDatasourceId()`
+- Metric ID format: `<datasourceId>.<metricName>` (from each entry in `getMetrics()`)
+- Use `lowerCamelCase` for datasource, provider, and metric names (e.g. `jira.openIssues`, `openssf.ciiBestPractices`)
+- For single-metric providers, provider ID and metric ID are often the same; batch providers (e.g. filecheck) use one provider ID and multiple metric IDs
+- `calculateMetrics()` must return an entry for every metric ID from `getMetrics()`, keyed by **metric ID**
+- Each metric carries its own `type` and `thresholds`
+- Configuration for metric providers follows the schema in [`config.d.ts`](../config.d.ts) under `scorecard.metricProviders.<datasource>.<providerName>` (e.g., for schedule and threshold configurations)
 
 ## Updating the Module
 
@@ -156,20 +146,20 @@ backend.add(
 Your metric provider will now be automatically registered and available through the Scorecard API endpoints. To confirm, try running `metrics` endpoint which should return your defined metrics:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics?datasource=my_datasource" -H "Content-Type: application/json" -H "Authorization: Bearer $token"
+curl -X GET "{{url}}/api/scorecard/metrics?datasource=myDatasource" -H "Content-Type: application/json" -H "Authorization: Bearer $token"
 ```
 
 ## Metric Collection Scheduling
 
 The Scorecard plugin uses Backstage's built-in scheduler service to automatically collect metrics from all registered providers. Each metric provider runs on its own schedule to collect and store metric values in the database.
 
-You can customize the schedule for any metric provider by adding a `schedule` configuration in your `app-config.yaml`, under path `scorecard.plugins.{datasourceId}.{metricName}`:
+You can customize the schedule for any metric provider by adding a `schedule` configuration in your `app-config.yaml`, under path `scorecard.metricProviders.<datasource>.<providerName>`:
 
 ```yaml
 scorecard:
-  plugins:
-    my_datasource:
-      example_metric:
+  metricProviders:
+    myDatasource:
+      exampleProvider:
         schedule:
           frequency:
             cron: '0 6 * * *'
@@ -198,4 +188,5 @@ The following are examples of existing metric providers that you can reference:
 
 - **GitHub Datasource**: [GithubOpenPRsProvider](../../scorecard-backend-module-github/src/metricProviders/GithubOpenPRsProvider.ts)
 - **Jira Datasource**: [JiraOpenIssuesProvider](../../scorecard-backend-module-jira/src/metricProviders/JiraOpenIssuesProvider.ts)
-- **OpenSSF Datasource**: [DefaultOpenSSFMetricProvider](../../scorecard-backend-module-openssf/src/metricProviders/DefaultOpenSSFMetricProvider.ts)
+- **OpenSSF Datasource**: [OpenSSFMetricProvider](../../scorecard-backend-module-openssf/src/metricProviders/OpenSSFMetricProvider.ts)
+- **Filecheck Datasource** (batch / multi-metric): [FilecheckMetricProvider](../../scorecard-backend-module-filecheck/src/metricProviders/FilecheckMetricProvider.ts)

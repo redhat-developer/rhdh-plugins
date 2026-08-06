@@ -45,7 +45,7 @@ import {
   QuickstartDrawerProvider,
   QuickstartDrawerContent,
   QuickstartDrawerStateExposer,
-} from '@red-hat-developer-hub/backstage-plugin-quickstart';
+} from '@red-hat-developer-hub/backstage-plugin-quickstart/legacy';
 import { QuickstartSidebarItem } from './QuickstartSidebarItem';
 import { Administration } from '@backstage-community/plugin-rbac';
 import { ApplicationDrawer } from './ApplicationDrawer';

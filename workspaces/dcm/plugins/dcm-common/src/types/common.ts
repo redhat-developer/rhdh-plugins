@@ -50,3 +50,16 @@ export interface DcmHealth {
   status: string;
   path?: string;
 }
+
+/**
+ * Query parameters shared by all DCM list endpoints that support
+ * cursor-based pagination (AEP-158).
+ *
+ * @public
+ */
+export interface PaginationParams {
+  /** Maximum number of results to return in one page (1–100, default 100). */
+  max_page_size?: number;
+  /** Opaque page token returned by a previous list response. */
+  page_token?: string;
+}
