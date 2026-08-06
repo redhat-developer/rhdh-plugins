@@ -188,14 +188,14 @@ test.describe('Intelligent assistant notebooks', () => {
     await notebooks.expectUntitledNotebookCardCount(untitledBefore);
   });
 
-  test('grid: double-click card title triggers inline rename', async () => {
+  test('grid: click card title triggers inline rename', async () => {
     await notebooks.clickPrimaryNotebookCreate();
     await notebooks.clickCloseNotebookEditor();
 
     const card = notebooks.newestUntitledNotebookCard();
     await expect(card).toBeVisible();
 
-    await notebooks.doubleClickCardTitle(card);
+    await notebooks.clickCardTitle(card);
     await expect(notebooks.inlineRenameInput()).toBeVisible();
 
     const newName = 'DoubleClick Renamed';
@@ -252,7 +252,7 @@ test.describe('Intelligent assistant notebooks', () => {
     const card = notebooks.newestUntitledNotebookCard();
     await expect(card).toBeVisible();
 
-    await notebooks.doubleClickCardTitle(card);
+    await notebooks.clickCardTitle(card);
     await expect(notebooks.inlineRenameInput()).toBeVisible();
 
     const newName = 'Blur Saved Name';
@@ -280,7 +280,7 @@ test.describe('Intelligent assistant notebooks', () => {
     const card = notebooks.newestUntitledNotebookCard();
     await expect(card).toBeVisible();
 
-    await notebooks.doubleClickCardTitle(card);
+    await notebooks.clickCardTitle(card);
     await expect(notebooks.inlineRenameInput()).toBeVisible();
 
     await notebooks.inlineRenameInput().fill('');
@@ -291,9 +291,7 @@ test.describe('Intelligent assistant notebooks', () => {
       notebooks.notebookCardByDisplayedName(NOTEBOOK_UNTITLED_GRID_NAME),
     ).toBeVisible();
 
-    await notebooks.doubleClickCardTitle(
-      notebooks.newestUntitledNotebookCard(),
-    );
+    await notebooks.clickCardTitle(notebooks.newestUntitledNotebookCard());
     await expect(notebooks.inlineRenameInput()).toBeVisible();
     await notebooks.inlineRenameInput().press('Enter');
 
@@ -312,11 +310,11 @@ test.describe('Intelligent assistant notebooks', () => {
     await confirmDelete.confirmDeletion();
   });
 
-  test('sidebar: double-click title to rename inside editor', async () => {
+  test('sidebar: click title to rename inside editor', async () => {
     await notebooks.clickPrimaryNotebookCreate();
 
     await expect(notebooks.sidebarTitleText()).toBeVisible();
-    await notebooks.doubleClickSidebarTitle();
+    await notebooks.clickSidebarTitle();
 
     const sidebarInput = notebooks.inlineRenameInput();
     await expect(sidebarInput).toBeVisible();

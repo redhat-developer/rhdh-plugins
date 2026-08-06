@@ -182,16 +182,15 @@ export const NotebookCard = ({
               onChange={(_event, value) => setEditName(value)}
               onBlur={saveRename}
               onKeyDown={handleKeyDown}
-              aria-label={t('notebook.rename.inline.tooltip')}
+              aria-label={t('notebooks.rename.inline.tooltip')}
               onClick={e => e.stopPropagation()}
             />
           ) : (
             <Typography
               component="span"
               className={classes.notebookTitleText}
-              title={t('notebook.rename.inline.tooltip')}
-              onClick={e => e.stopPropagation()}
-              onDoubleClick={e => {
+              title={t('notebooks.rename.inline.tooltip')}
+              onClick={e => {
                 e.stopPropagation();
                 startEditing();
               }}

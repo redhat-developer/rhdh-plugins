@@ -239,8 +239,8 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'notebooks.prompts.coreConcepts.title': '¿Cuáles son los conceptos clave?',
     'notebooks.prompts.vulnerabilities.title':
       'Mostrar mis vulnerabilidades críticas',
-    'notebook.rename.inline.tooltip': 'Doble clic para renombrar',
-    'notebook.rename.inline.error': 'Error al renombrar "{{notebookName}}".',
+    'notebooks.rename.inline.tooltip': 'Clic para renombrar',
+    'notebooks.rename.inline.error': 'Error al renombrar "{{notebookName}}".',
     'notebooks.title': 'Mis cuadernos',
     'notebooks.updated.days': 'Actualizado hace {{days}} días',
     'notebooks.updated.on': 'Actualizado el',

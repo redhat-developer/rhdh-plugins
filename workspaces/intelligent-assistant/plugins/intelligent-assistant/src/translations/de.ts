@@ -243,8 +243,8 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebooks.prompts.coreConcepts.title': 'Was sind die Kernkonzepte?',
     'notebooks.prompts.vulnerabilities.title':
       'Zeige meine kritischen Schwachstellen',
-    'notebook.rename.inline.tooltip': 'Doppelklick zum Umbenennen',
-    'notebook.rename.inline.error':
+    'notebooks.rename.inline.tooltip': 'Klicken zum Umbenennen',
+    'notebooks.rename.inline.error':
       'Umbenennung von "{{notebookName}}" fehlgeschlagen.',
     'notebooks.title': 'Meine Notizbücher',
     'notebooks.updated.days': 'Vor {{days}} Tagen aktualisiert',

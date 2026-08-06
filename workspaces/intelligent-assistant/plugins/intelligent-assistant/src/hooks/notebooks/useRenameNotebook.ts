@@ -23,16 +23,23 @@ import {
 } from '@tanstack/react-query';
 
 import { notebooksApiRef } from '../../api/notebooksApi';
+import { NotebookSession } from '../../types';
 
 type RenameNotebookPayload = {
   sessionId: string;
   name: string;
 };
 
+type RenameNotebookContext = {
+  previousSessions: NotebookSession[] | undefined;
+  previousSession: NotebookSession | undefined;
+};
+
 export const useRenameNotebook = (): UseMutationResult<
   void,
   unknown,
-  RenameNotebookPayload
+  RenameNotebookPayload,
+  RenameNotebookContext
 > => {
   const notebooksApi = useApi(notebooksApiRef);
   const queryClient = useQueryClient();
@@ -41,8 +48,62 @@ export const useRenameNotebook = (): UseMutationResult<
     mutationFn: async (payload: RenameNotebookPayload) => {
       await notebooksApi.renameSession(payload.sessionId, payload.name);
     },
-    onSuccess: () => {
+    onMutate: async (payload): Promise<RenameNotebookContext> => {
+      await queryClient.cancelQueries({
+        queryKey: ['notebooks', 'sessions'],
+      });
+      await queryClient.cancelQueries({
+        queryKey: ['notebooks', 'session', payload.sessionId],
+      });
+
+      const previousSessions = queryClient.getQueryData<NotebookSession[]>([
+        'notebooks',
+        'sessions',
+      ]);
+      const previousSession = queryClient.getQueryData<NotebookSession>([
+        'notebooks',
+        'session',
+        payload.sessionId,
+      ]);
+
+      queryClient.setQueryData<NotebookSession[]>(
+        ['notebooks', 'sessions'],
+        old =>
+          old?.map(s =>
+            s.session_id === payload.sessionId
+              ? { ...s, name: payload.name }
+              : s,
+          ),
+      );
+
+      if (previousSession) {
+        queryClient.setQueryData<NotebookSession>(
+          ['notebooks', 'session', payload.sessionId],
+          old => (old ? { ...old, name: payload.name } : old),
+        );
+      }
+
+      return { previousSessions, previousSession };
+    },
+    onError: (_err, payload, context) => {
+      if (context?.previousSessions) {
+        queryClient.setQueryData(
+          ['notebooks', 'sessions'],
+          context.previousSessions,
+        );
+      }
+      if (context?.previousSession) {
+        queryClient.setQueryData(
+          ['notebooks', 'session', payload.sessionId],
+          context.previousSession,
+        );
+      }
+    },
+    onSettled: (_data, _error, payload) => {
       queryClient.invalidateQueries({ queryKey: ['notebooks', 'sessions'] });
+      queryClient.invalidateQueries({
+        queryKey: ['notebooks', 'session', payload.sessionId],
+      });
     },
   });
 };

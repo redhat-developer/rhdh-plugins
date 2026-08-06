@@ -104,7 +104,7 @@ import {
 } from '../hooks';
 import { useCreateNotebook } from '../hooks/notebooks/useCreateNotebook';
 import { useNotebookDocuments } from '../hooks/notebooks/useNotebookDocuments';
-import { useRenameNotebook } from '../hooks/notebooks/useRenameNotebook';
+import { useRenameNotebookWithAlert } from '../hooks/notebooks/useRenameNotebookWithAlert';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useLightspeedUpdatePermission } from '../hooks/useLightspeedUpdatePermission';
 import { useTranslation } from '../hooks/useTranslation';
@@ -742,29 +742,12 @@ export const LightspeedChat = ({
     [],
   );
   const createNotebookMutation = useCreateNotebook();
-  const { mutateAsync: renameNotebookMutation } = useRenameNotebook();
 
-  const handleRenameNotebook = useCallback(
-    async (sessionId: string, newName: string) => {
-      const currentName =
-        notebooks.find(n => n.session_id === sessionId)?.name ?? newName;
-      try {
-        await renameNotebookMutation({ sessionId, name: newName });
-      } catch {
-        setNotebookAlerts(prev => [
-          {
-            key: Date.now() + sessionId,
-            title: (t as Function)('notebook.rename.inline.error', {
-              notebookName: currentName,
-            }) as string,
-            variant: 'danger',
-          },
-          ...prev,
-        ]);
-      }
-    },
-    [renameNotebookMutation, t, notebooks],
-  );
+  const handleRenameNotebook = useRenameNotebookWithAlert({
+    setAlerts: setNotebookAlerts,
+    getNotebookName: (sid: string) =>
+      notebooks.find(n => n.session_id === sid)?.name ?? 'notebook',
+  });
   const { data: notebookDocuments = [], isFetching: isDocumentsFetching } =
     useNotebookDocuments(activeNotebook?.session_id);
   const [conversationId, setConversationId] = useState<string>('');

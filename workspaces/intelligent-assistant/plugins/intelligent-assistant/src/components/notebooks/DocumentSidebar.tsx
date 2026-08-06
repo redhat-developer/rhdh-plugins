@@ -210,13 +210,13 @@ export const DocumentSidebar = ({
             onChange={(_event, value) => setEditTitle(value)}
             onBlur={saveTitle}
             onKeyDown={handleTitleKeyDown}
-            aria-label={t('notebook.rename.inline.tooltip')}
+            aria-label={t('notebooks.rename.inline.tooltip')}
           />
         ) : (
           <Typography
             className={classes.title}
-            title={t('notebook.rename.inline.tooltip')}
-            onDoubleClick={startEditingTitle}
+            title={t('notebooks.rename.inline.tooltip')}
+            onClick={startEditingTitle}
           >
             {notebookName}
           </Typography>

@@ -53,8 +53,8 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'notebooks.documents': string;
     readonly 'notebooks.actions.rename': string;
     readonly 'notebooks.actions.delete': string;
-    readonly 'notebook.rename.inline.tooltip': string;
-    readonly 'notebook.rename.inline.error': string;
+    readonly 'notebooks.rename.inline.tooltip': string;
+    readonly 'notebooks.rename.inline.error': string;
     readonly 'notebooks.delete.title': string;
     readonly 'notebooks.delete.message': string;
     readonly 'notebooks.delete.action': string;

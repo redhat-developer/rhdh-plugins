@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 type UseInlineEditOptions = {
   currentName: string;
@@ -36,11 +36,14 @@ export const useInlineEdit = ({
     setIsEditing(true);
     setEditValue(currentName);
     onStart?.();
-    setTimeout(() => {
+  }, [currentName, onStart]);
+
+  useEffect(() => {
+    if (isEditing) {
       inputRef.current?.focus();
       inputRef.current?.select();
-    }, 0);
-  }, [currentName, onStart]);
+    }
+  }, [isEditing]);
 
   const cancelEditing = useCallback(() => {
     setIsEditing(false);

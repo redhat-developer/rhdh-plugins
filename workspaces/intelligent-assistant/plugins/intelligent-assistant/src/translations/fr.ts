@@ -244,8 +244,9 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
       'Quels sont les concepts fondamentaux ?',
     'notebooks.prompts.vulnerabilities.title':
       'Afficher mes vulnérabilités critiques',
-    'notebook.rename.inline.tooltip': 'Double-cliquez pour renommer',
-    'notebook.rename.inline.error': 'Échec du renommage de "{{notebookName}}".',
+    'notebooks.rename.inline.tooltip': 'Cliquez pour renommer',
+    'notebooks.rename.inline.error':
+      'Échec du renommage de "{{notebookName}}".',
     'notebooks.title': 'Mes carnets',
     'notebooks.updated.days': 'Mis à jour il y a {{days}} jours',
     'notebooks.updated.on': 'Mis à jour le',

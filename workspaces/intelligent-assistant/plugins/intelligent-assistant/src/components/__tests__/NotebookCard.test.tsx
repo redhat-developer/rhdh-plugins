@@ -148,10 +148,10 @@ describe('NotebookCard', () => {
       openNotebookMenuId: 'session-123',
     };
 
-    it('should enter edit mode on double-click', () => {
+    it('should enter edit mode on click', () => {
       render(<NotebookCard {...defaultProps} />);
 
-      fireEvent.doubleClick(screen.getByText('My Notebook'));
+      fireEvent.click(screen.getByText('My Notebook'));
 
       const input = screen.getByRole('textbox');
       expect(input).toBeInTheDocument();
@@ -206,7 +206,7 @@ describe('NotebookCard', () => {
     it('should block card click while editing', () => {
       render(<NotebookCard {...defaultProps} />);
 
-      fireEvent.doubleClick(screen.getByText('My Notebook'));
+      fireEvent.click(screen.getByText('My Notebook'));
       onClick.mockClear();
 
       const card = screen.getByLabelText(/Open notebook My Notebook/i);
@@ -219,7 +219,7 @@ describe('NotebookCard', () => {
       render(<NotebookCard {...defaultProps} />);
 
       const title = screen.getByText('My Notebook');
-      expect(title).toHaveAttribute('title', 'Double-click to rename');
+      expect(title).toHaveAttribute('title', 'Click to rename');
     });
   });
 

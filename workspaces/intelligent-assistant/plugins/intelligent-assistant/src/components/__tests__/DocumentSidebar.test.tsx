@@ -148,10 +148,10 @@ describe('DocumentSidebar', () => {
       onRenameNotebook,
     };
 
-    it('should enter edit mode on double-click', () => {
+    it('should enter edit mode on click', () => {
       render(<DocumentSidebar {...titleRenameProps} />);
 
-      fireEvent.doubleClick(screen.getByText('Test Notebook'));
+      fireEvent.click(screen.getByText('Test Notebook'));
 
       const input = screen.getByRole('textbox');
       expect(input).toBeInTheDocument();
@@ -161,7 +161,7 @@ describe('DocumentSidebar', () => {
     it('should call onRenameNotebook on Enter with new name', () => {
       render(<DocumentSidebar {...titleRenameProps} />);
 
-      fireEvent.doubleClick(screen.getByText('Test Notebook'));
+      fireEvent.click(screen.getByText('Test Notebook'));
       const input = screen.getByRole('textbox');
       fireEvent.change(input, { target: { value: 'New Name' } });
       fireEvent.keyDown(input, { key: 'Enter' });
@@ -172,7 +172,7 @@ describe('DocumentSidebar', () => {
     it('should cancel editing on Escape', () => {
       render(<DocumentSidebar {...titleRenameProps} />);
 
-      fireEvent.doubleClick(screen.getByText('Test Notebook'));
+      fireEvent.click(screen.getByText('Test Notebook'));
       const input = screen.getByRole('textbox');
       fireEvent.change(input, { target: { value: 'Changed' } });
       fireEvent.keyDown(input, { key: 'Escape' });
@@ -185,7 +185,7 @@ describe('DocumentSidebar', () => {
     it('should not call onRenameNotebook if name is unchanged', () => {
       render(<DocumentSidebar {...titleRenameProps} />);
 
-      fireEvent.doubleClick(screen.getByText('Test Notebook'));
+      fireEvent.click(screen.getByText('Test Notebook'));
       const input = screen.getByRole('textbox');
       fireEvent.keyDown(input, { key: 'Enter' });
 
@@ -195,7 +195,7 @@ describe('DocumentSidebar', () => {
     it('should not call onRenameNotebook if name is empty', () => {
       render(<DocumentSidebar {...titleRenameProps} />);
 
-      fireEvent.doubleClick(screen.getByText('Test Notebook'));
+      fireEvent.click(screen.getByText('Test Notebook'));
       const input = screen.getByRole('textbox');
       fireEvent.change(input, { target: { value: '   ' } });
       fireEvent.keyDown(input, { key: 'Enter' });
@@ -207,7 +207,7 @@ describe('DocumentSidebar', () => {
       render(<DocumentSidebar {...titleRenameProps} />);
 
       const title = screen.getByText('Test Notebook');
-      expect(title).toHaveAttribute('title', 'Double-click to rename');
+      expect(title).toHaveAttribute('title', 'Click to rename');
     });
   });
 });
