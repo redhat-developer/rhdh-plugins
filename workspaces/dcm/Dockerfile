@@ -76,8 +76,12 @@ COPY --from=build /app/plugins/dcm-backend/config.d.ts plugins/dcm-backend/confi
 COPY --from=build /app/packages/app/dist packages/app/dist
 COPY app-config.yaml app-config.production.yaml ./
 
-RUN chown -R node:node /app
-USER node
+# OpenShift arbitrary UID compatibility:
+# Set GID to 0 (root group) and allow group read/directory traversal (g+rX)
+RUN chown -R node:0 /app && \
+    chmod -R g+rX /app
+
+USER 1000
 
 EXPOSE 7007
 
