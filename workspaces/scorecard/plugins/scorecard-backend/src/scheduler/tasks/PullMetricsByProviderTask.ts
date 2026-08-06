@@ -17,7 +17,6 @@
 import { DatabaseMetricValues } from '../../database/DatabaseMetricValues';
 import {
   AuthService,
-  readSchedulerServiceTaskScheduleDefinitionFromConfig,
   SchedulerService,
   SchedulerServiceTaskScheduleDefinition,
   LoggerService,
@@ -28,6 +27,7 @@ import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecar
 import { isMetricIdDisabled } from '../../utils/metricUtils';
 import { randomUUID } from 'node:crypto';
 import { normalizeOwnerRef } from '../../utils/normalizeOwnerRef';
+import { resolveScheduleFromConfig } from '../../utils/metricProviderConfigKeys';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { DbMetricValueCreate } from '../../database/types';
 import { SchedulerOptions, SchedulerTask } from '../types';
@@ -85,8 +85,12 @@ export class PullMetricsByProviderTask implements SchedulerTask {
   }
 
   async start(): Promise<void> {
-    const scheduleConfigPath = `scorecard.plugins.${this.providerId}.schedule`;
-    const schedule = this.getScheduleFromConfig(scheduleConfigPath);
+    const schedule =
+      resolveScheduleFromConfig(
+        this.config,
+        this.provider.getProviderDatasourceId(),
+        this.providerId,
+      ) ?? PullMetricsByProviderTask.DEFAULT_SCHEDULE;
 
     const taskRunner = this.scheduler.createScheduledTaskRunner(schedule);
 
@@ -109,16 +113,6 @@ export class PullMetricsByProviderTask implements SchedulerTask {
         }
       },
     });
-  }
-
-  private getScheduleFromConfig(
-    schedulePath: string,
-  ): SchedulerServiceTaskScheduleDefinition {
-    return this.config.has(schedulePath)
-      ? readSchedulerServiceTaskScheduleDefinitionFromConfig(
-          this.config.getConfig(schedulePath),
-        )
-      : PullMetricsByProviderTask.DEFAULT_SCHEDULE;
   }
 
   private async pullProviderMetrics(
@@ -169,14 +163,14 @@ export class PullMetricsByProviderTask implements SchedulerTask {
               return enabledMetricIds.map(metricId => {
                 if (!resultsMap.has(metricId)) {
                   return {
-                    catalog_entity_ref: entityRef,
-                    metric_id: metricId,
+                    catalogEntityRef: entityRef,
+                    metricId,
                     value: undefined,
                     timestamp: new Date(),
-                    error_message: `calculateMetrics() did not return an entry for metric '${metricId}'`,
-                    entity_kind: entityKind,
-                    entity_namespace: entityNamespace,
-                    entity_owner: entityOwner,
+                    errorMessage: `calculateMetrics() did not return an entry for metric '${metricId}'`,
+                    entityKind,
+                    entityNamespace,
+                    entityOwner,
                   } as DbMetricValueCreate;
                 }
 
@@ -188,7 +182,6 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                     this.thresholdResolver.resolveEntityThresholds(
                       entity,
                       metric,
-                      provider.getProviderId(),
                     );
 
                   const status =
@@ -199,26 +192,26 @@ export class PullMetricsByProviderTask implements SchedulerTask {
                     );
 
                   return {
-                    catalog_entity_ref: entityRef,
-                    metric_id: metricId,
+                    catalogEntityRef: entityRef,
+                    metricId,
                     value,
                     timestamp: new Date(),
                     status,
-                    entity_kind: entityKind,
-                    entity_namespace: entityNamespace,
-                    entity_owner: entityOwner,
+                    entityKind,
+                    entityNamespace,
+                    entityOwner,
                   } as DbMetricValueCreate;
                 } catch (error) {
                   return {
-                    catalog_entity_ref: entityRef,
-                    metric_id: metricId,
+                    catalogEntityRef: entityRef,
+                    metricId,
                     value,
                     timestamp: new Date(),
-                    error_message:
+                    errorMessage:
                       error instanceof Error ? error.message : String(error),
-                    entity_kind: entityKind,
-                    entity_namespace: entityNamespace,
-                    entity_owner: entityOwner,
+                    entityKind,
+                    entityNamespace,
+                    entityOwner,
                   } as DbMetricValueCreate;
                 }
               });
@@ -226,15 +219,15 @@ export class PullMetricsByProviderTask implements SchedulerTask {
               return enabledMetricIds.map(
                 metricId =>
                   ({
-                    catalog_entity_ref: entityRef,
-                    metric_id: metricId,
+                    catalogEntityRef: entityRef,
+                    metricId,
                     value: undefined,
                     timestamp: new Date(),
-                    error_message:
+                    errorMessage:
                       error instanceof Error ? error.message : String(error),
-                    entity_kind: entityKind,
-                    entity_namespace: entityNamespace,
-                    entity_owner: entityOwner,
+                    entityKind,
+                    entityNamespace,
+                    entityOwner,
                   } as DbMetricValueCreate),
               );
             }
@@ -242,18 +235,14 @@ export class PullMetricsByProviderTask implements SchedulerTask {
         ).then(promises =>
           promises.reduce((acc, curr) => {
             if (curr.status === 'fulfilled' && curr.value !== undefined) {
-              const result = curr.value;
-              if (Array.isArray(result)) {
-                return [...acc, ...result];
-              }
-              return [...acc, result];
+              return [...acc, ...curr.value];
             }
             return acc;
           }, [] as DbMetricValueCreate[]),
         );
 
         if (batchResults.length > 0) {
-          const errorCount = batchResults.filter(r => r.error_message).length;
+          const errorCount = batchResults.filter(r => r.errorMessage).length;
           logger.debug(
             `Storing ${batchResults.length} metric values (${errorCount} errors)`,
           );

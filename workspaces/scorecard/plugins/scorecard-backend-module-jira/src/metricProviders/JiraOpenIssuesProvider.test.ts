@@ -111,26 +111,6 @@ describe('JiraOpenIssuesProvider', () => {
     });
   });
 
-  describe('supportsEntity', () => {
-    it('should return true when entity has project key annotation', () => {
-      const provider = JiraOpenIssuesProvider.fromConfig(
-        mockConfig,
-        mockAuthOptions,
-      );
-      expect(provider.supportsEntity(mockEntity)).toBe(true);
-    });
-
-    it('should return false when entity does not have project key annotation', () => {
-      const mockEmptyEntity: Entity = newEntityComponent({});
-
-      const provider = JiraOpenIssuesProvider.fromConfig(
-        mockConfig,
-        mockAuthOptions,
-      );
-      expect(provider.supportsEntity(mockEmptyEntity)).toBe(false);
-    });
-  });
-
   describe('fromConfig', () => {
     it('should create provider with default thresholds on metric', () => {
       const provider = JiraOpenIssuesProvider.fromConfig(

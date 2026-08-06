@@ -374,7 +374,7 @@ function createNotebookLightspeedRouteHandler(page: Page) {
     if (!docsFor(sid).has(docId)) {
       await route.fulfill({
         status: 404,
-        json: { status: 'error', error: 'Document not found' },
+        json: { status: 'error', error: 'Resource not found' },
       });
       return true;
     }

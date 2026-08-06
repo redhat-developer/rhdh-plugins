@@ -99,17 +99,17 @@ export interface UserValue {
 /** Paginated list of {@link ServiceType} resources. */
 export interface ServiceTypeList {
   results: ServiceType[];
-  next_page_token: string;
+  next_page_token?: string;
 }
 
 /** Paginated list of {@link CatalogItem} resources. */
 export interface CatalogItemList {
   results: CatalogItem[];
-  next_page_token: string;
+  next_page_token?: string;
 }
 
 /** Paginated list of {@link CatalogItemInstance} resources. */
 export interface CatalogItemInstanceList {
   results: CatalogItemInstance[];
-  next_page_token: string;
+  next_page_token?: string;
 }

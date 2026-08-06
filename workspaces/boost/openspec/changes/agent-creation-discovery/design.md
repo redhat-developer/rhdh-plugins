@@ -51,7 +51,7 @@ Boost uses catalog entities as the primary source of truth for AI domain objects
 
 ### Decision 4: toolscope extraction as standalone npm package
 
-The toolscope subsystem (29 files) has zero Backstage dependencies. Packaged as `@boost/toolscope` with injectable `CacheAdapter` interface — default in-memory adapter for standalone use, Backstage adapter wrapping `coreServices.cache`.
+The toolscope subsystem (29 files) has zero Backstage dependencies. Packaged as `@red-hat-developer-hub/backstage-plugin-boost-toolscope` with injectable `CacheAdapter` interface — default in-memory adapter for standalone use, Backstage adapter wrapping `coreServices.cache`.
 
 ### Decision 5: 4-stage lifecycle with ownership
 

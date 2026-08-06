@@ -20,7 +20,8 @@ import {
   type AggregatedMetricResult,
   type ThresholdConfig,
   ThresholdRule,
-  type AggregationConfigOptions,
+  aggregationTypes,
+  type StatusScoreAggregationOption,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS } from '../../../constants/aggregationKPIs';
 import { AggregatedMetricMapper } from '../../mappers';
@@ -44,23 +45,17 @@ export class WeightedStatusScoreAggregationStrategy
     thresholds,
     aggregationConfig,
   }: AggregationOptions): Promise<AggregatedMetricResult> {
-    const { options } = aggregationConfig;
-
-    if (!options?.statusScores) {
+    if (aggregationConfig.type !== aggregationTypes.weightedStatusScore) {
       throw new Error(
-        `The "scorecard.aggregationKPIs.${aggregationConfig.id}.options.statusScores" is required for weightedStatusScore aggregation`,
+        `Expected aggregation type "${aggregationTypes.weightedStatusScore}" but received "${aggregationConfig.type}"`,
       );
     }
 
-    if (!options.thresholds) {
-      this.logger.info(
-        `The "scorecard.aggregationKPIs.${aggregationConfig.id}.options.thresholds" is not configured for weightedStatusScore aggregation; ` +
-          'using the default 0–100% health scale (higher is better).',
-      );
-    }
-
-    const headlineThresholds =
-      options.thresholds ?? DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS;
+    const {
+      statusScores,
+      thresholds:
+        headlineThresholds = DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS,
+    } = aggregationConfig.options;
 
     const aggregatedMetric =
       await this.loader.loadStatusGroupedMetricByEntityRefs(
@@ -70,14 +65,14 @@ export class WeightedStatusScoreAggregationStrategy
 
     const weightedSum = this.calculateWeightedSum(
       aggregatedMetric.values,
-      options.statusScores,
+      statusScores,
       metric.id,
     );
 
     const { weightedStatusScore, maxPossibleScore } =
       this.prepareWeightedStatusScoreValues(
         aggregatedMetric.total,
-        options.statusScores,
+        statusScores,
         thresholds.rules,
         weightedSum,
       );
@@ -101,7 +96,7 @@ export class WeightedStatusScoreAggregationStrategy
       values: thresholds.rules.map(rule => ({
         name: rule.key,
         count: aggregatedMetric.values[rule.key] ?? 0,
-        score: options.statusScores[rule.key] ?? 0,
+        score: statusScores[rule.key] ?? 0,
       })),
       thresholds,
       weightedStatusScore,
@@ -119,7 +114,7 @@ export class WeightedStatusScoreAggregationStrategy
 
   private calculateWeightedSum(
     values: Pick<AggregatedMetric, 'values'>['values'],
-    statusScores: AggregationConfigOptions['statusScores'],
+    statusScores: StatusScoreAggregationOption,
     metricId: string,
   ): number {
     let weightedSum = 0;
@@ -153,7 +148,7 @@ export class WeightedStatusScoreAggregationStrategy
 
   private prepareWeightedStatusScoreValues(
     numberOfEntities: Pick<AggregatedMetric, 'total'>['total'],
-    statusScores: AggregationConfigOptions['statusScores'],
+    statusScores: StatusScoreAggregationOption,
     rules: ThresholdRule[],
     weightedSum: number,
   ): { weightedStatusScore: number; maxPossibleScore: number } {

@@ -19,48 +19,61 @@ import {
   AggregatedMetricResult,
   AggregationMetadata,
   Metric,
-  aggregationTypes,
   AggregationResultByType,
-  type AggregationConfig,
+  ScalarAggregatedMetric,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DbAggregatedMetric } from '../database/types';
+import type { DbScalarAggregatedMetric } from '../database/types';
+import { toIsoTimestamp } from '../utils/toIsoTimestamp';
+import { ValidatedAggregationConfig } from '../validation/schemas/aggregationConfigSchemas';
 
 export class AggregatedMetricMapper {
   static toAggregatedMetric(
     aggregatedMetric?: DbAggregatedMetric,
   ): AggregatedMetric {
     const total = aggregatedMetric?.total ?? 0;
-    const timestamp = aggregatedMetric?.max_timestamp
-      ? new Date(aggregatedMetric.max_timestamp).toISOString()
-      : new Date().toISOString();
+    const timestamp = toIsoTimestamp(aggregatedMetric?.maxTimestamp);
 
     return {
       values: aggregatedMetric?.statusCounts ?? {},
       total,
       timestamp,
-      entitiesConsidered: aggregatedMetric?.latest_entity_count ?? 0,
-      calculationErrorCount: aggregatedMetric?.calculation_error_count ?? 0,
+      entitiesConsidered: aggregatedMetric?.latestEntityCount ?? 0,
+      calculationErrorCount: aggregatedMetric?.calculationErrorCount ?? 0,
+    };
+  }
+
+  static toScalarAggregatedMetric(
+    scalarMetric?: DbScalarAggregatedMetric,
+  ): ScalarAggregatedMetric {
+    const timestamp = toIsoTimestamp(scalarMetric?.maxTimestamp);
+
+    return {
+      value: scalarMetric?.value ?? 0,
+      total: scalarMetric?.total ?? 0,
+      entitiesConsidered: scalarMetric?.latestEntityCount ?? 0,
+      calculationErrorCount: scalarMetric?.calculationErrorCount ?? 0,
+      timestamp,
     };
   }
 
   static toAggregationMetadata(
     metric: Metric,
-    aggregationConfig?: AggregationConfig,
+    aggregationConfig: ValidatedAggregationConfig,
   ): AggregationMetadata {
     return {
-      title: aggregationConfig?.title ?? metric.title,
-      description: aggregationConfig?.description ?? metric.description,
       type: metric.type,
       history: metric.history,
-      aggregationType:
-        aggregationConfig?.type ?? aggregationTypes.statusGrouped, // By default, return the status grouped aggregation type
+      title: aggregationConfig.title,
+      description: aggregationConfig.description,
+      aggregationType: aggregationConfig.type,
     };
   }
 
   static toAggregatedMetricResult(
     metric: Metric,
     result: AggregationResultByType,
-    aggregationConfig?: AggregationConfig,
+    aggregationConfig: ValidatedAggregationConfig,
   ): AggregatedMetricResult {
     return {
       id: metric.id,

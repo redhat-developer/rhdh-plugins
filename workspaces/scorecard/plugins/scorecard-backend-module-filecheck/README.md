@@ -43,28 +43,30 @@ backend.start();
 
 ### Files Configuration
 
-Define which files to check under `scorecard.plugins.filecheck.files` in your `app-config.yaml`. Keys become the metric identifier suffix and values are relative file paths inside the repository:
+Define which files to check under `scorecard.metricProviders.filecheck.fileExistence.options.files` in your `app-config.yaml`. Keys become the metric identifier suffix and values are relative file paths inside the repository:
 
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     filecheck:
-      files:
-        readme: README.md
-        license: LICENSE
-        codeowners: CODEOWNERS
-        contributing: CONTRIBUTING.md
+      fileExistence:
+        options:
+          files:
+            readme: README.md
+            license: LICENSE
+            codeowners: CODEOWNERS
+            contributing: CONTRIBUTING.md
 ```
 
 This produces the following metrics:
 
-| Metric ID                | Checked file path |
-| ------------------------ | ----------------- |
-| `filecheck.readme`       | `README.md`       |
-| `filecheck.license`      | `LICENSE`         |
-| `filecheck.codeowners`   | `CODEOWNERS`      |
-| `filecheck.contributing` | `CONTRIBUTING.md` |
+| Metric ID                | Provider ID               | Checked file path |
+| ------------------------ | ------------------------- | ----------------- |
+| `filecheck.readme`       | `filecheck.fileExistence` | `README.md`       |
+| `filecheck.license`      | `filecheck.fileExistence` | `LICENSE`         |
+| `filecheck.codeowners`   | `filecheck.fileExistence` | `CODEOWNERS`      |
+| `filecheck.contributing` | `filecheck.fileExistence` | `CONTRIBUTING.md` |
 
 If no files are configured, no metrics are registered and the module has no effect.
 
@@ -91,28 +93,30 @@ metadata:
 Each configured file produces one boolean metric.
 
 - **Metric ID**: `filecheck.<id>` (where `<id>` is the key from the `files` config)
+- **Provider ID**: `filecheck.fileExistence`
 - **Type**: Boolean
 - **Datasource**: `filecheck`
 
 ## Default thresholds
 
-All configured file checks share the same default thresholds. Default thresholds for `filecheck` (applies to every `filecheck.<id>` metric):
+All configured file checks share the same default thresholds. Provider-level thresholds for `filecheck.fileExistence` (applies to every `filecheck.<id>` metric):
 
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     filecheck:
-      thresholds:
-        rules:
-          - key: exist
-            expression: '==true'
-            icon: scorecardSuccessStatusIcon
-            color: 'success.main'
-          - key: missing
-            expression: '==false'
-            icon: scorecardErrorStatusIcon
-            color: 'error.main'
+      fileExistence:
+        thresholds:
+          rules:
+            - key: exist
+              expression: '==true'
+              icon: scorecardSuccessStatusIcon
+              color: 'success.main'
+            - key: missing
+              expression: '==false'
+              icon: scorecardErrorStatusIcon
+              color: 'error.main'
 ```
 
 Custom threshold keys other than `success`, `warning`, or `error` must include `color` and `icon` in app-config.
@@ -125,17 +129,18 @@ The Scorecard plugin uses Backstage's built-in scheduler service to automaticall
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     filecheck:
-      schedule:
-        frequency:
-          cron: '0 6 * * *'
-        timeout:
-          minutes: 5
-        initialDelay:
-          seconds: 5
+      fileExistence:
+        schedule:
+          frequency:
+            cron: '0 6 * * *'
+          timeout:
+            minutes: 5
+          initialDelay:
+            seconds: 5
 ```
 
-The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157).
+The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157). For more details on how to configure schedule, see [Metric Collection Scheduling](../scorecard-backend/docs/providers.md#metric-collection-scheduling).
 
 Note: all configured file checks share a single schedule — the module fetches each entity's repository tree once per run and checks all configured paths in that single request.

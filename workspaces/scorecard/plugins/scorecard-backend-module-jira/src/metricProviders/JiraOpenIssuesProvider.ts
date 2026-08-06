@@ -24,7 +24,6 @@ import {
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { JiraClient } from '../clients/base';
 import { JiraClientFactory } from '../clients/JiraClientFactory';
-import { ScorecardJiraAnnotations } from '../annotations';
 import {
   type AuthService,
   type DiscoveryService,
@@ -36,7 +35,6 @@ import {
 } from '../strategies/ConnectionStrategy';
 import { Product } from '../clients/types';
 
-const { PROJECT_KEY } = ScorecardJiraAnnotations;
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 
 export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
@@ -72,10 +70,6 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
         history: true,
       },
     ];
-  }
-
-  supportsEntity(entity: Entity): boolean {
-    return entity.metadata.annotations?.[PROJECT_KEY] !== undefined;
   }
 
   static fromConfig(

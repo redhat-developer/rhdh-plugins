@@ -728,6 +728,16 @@ The widgets manage waiting for asynchronous promises and chains of functions to 
 When exposing additional keys in the future, we will consider not only the [frontend-visibility](https://backstage.io/docs/conf/defining/#visibility) but security as well, since a malicious workflow can retrieve configuration of plugins or Backstage, eventually with their secrets.
 That’s the reason for listing the exposed keys explicitly.
 
+Values referenced through `rjsfConfig` are configured under `orchestrator.rjsf-widgets`:
+
+```yaml
+orchestrator:
+  rjsf-widgets:
+    defaultEnvironment: production
+```
+
+All values in this namespace are exposed to the frontend and must not contain secrets.
+
 |                                 Key Family                                  |                                                      Key                                                       |                                                                                                                                                                                                                                     Value of at runtime\<br\>(skipping promises for simplicity)                                                                                                                                                                                                                                     |
 | :-------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 |                                   current                                   |                                           \[whatever property name\]                                           |                                                                                                                    Value of other field/property of the form. The properties build hierarchy separated by `.` (dots) matching the structure of fields/objects defined by the data input schema. Arrays or branches of a complex object structure can be passed as well, data are encoded into JSON in that case.                                                                                                                    |
