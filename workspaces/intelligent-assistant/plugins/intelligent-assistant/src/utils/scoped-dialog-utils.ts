@@ -27,7 +27,6 @@ export function getScopedDialogProps(isCompact: boolean): Partial<DialogProps> {
       position: 'absolute',
       inset: 0,
       margin: 0,
-      // padding: 0,
       '& [class*="Backdrop-root"]': {
         position: 'absolute',
       },

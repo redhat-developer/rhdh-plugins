@@ -130,10 +130,7 @@ import { McpServersSettings } from './McpServersSettings';
 import { MessageBarModelSelector } from './MessageBarModelSelector';
 import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
 import { NotebooksTab } from './notebooks/NotebooksTab';
-import {
-  NotebookView,
-  type NotebookViewHandle,
-} from './notebooks/NotebookView';
+import { NotebookView } from './notebooks/NotebookView';
 import { RenameNotebookModal } from './notebooks/RenameNotebookModal';
 import {
   SidebarCollapseIcon,
@@ -739,37 +736,22 @@ export const LightspeedChat = ({
   );
   const [renameNotebookId, setRenameNotebookId] = useState<string | null>(null);
   const [deleteNotebookId, setDeleteNotebookId] = useState<string | null>(null);
-  const [activeNotebook, setActiveNotebook] = useState<NotebookSession | null>(
-    null,
-  );
   const effectiveNotebookId =
     routeNotebookId || (!isFullscreenMode ? activeNotebookId : undefined);
-  const {
-    data: routeNotebook,
-    isLoading: routeNotebookLoading,
-    isError: routeNotebookError,
-  } = useNotebookSession(effectiveNotebookId);
+  const { data: activeNotebook, isError: activeNotebookError } =
+    useNotebookSession(effectiveNotebookId);
 
   useEffect(() => {
-    if (effectiveNotebookId && routeNotebook && !routeNotebookLoading) {
-      setActiveNotebook(routeNotebook);
-      setActiveNotebookId(routeNotebook.session_id);
-    } else if (effectiveNotebookId && routeNotebookError) {
+    if (effectiveNotebookId && activeNotebookError) {
       if (isFullscreenMode) {
         navigate(`${LIGHTSPEED_PATH}/notebooks`, { replace: true });
       } else {
-        setActiveNotebook(null);
         setActiveNotebookId(undefined);
       }
-    } else if (!effectiveNotebookId && notebooksRouteMatch) {
-      setActiveNotebook(null);
     }
   }, [
     effectiveNotebookId,
-    routeNotebook,
-    routeNotebookLoading,
-    routeNotebookError,
-    notebooksRouteMatch,
+    activeNotebookError,
     isFullscreenMode,
     navigate,
     setActiveNotebookId,
@@ -779,7 +761,6 @@ export const LightspeedChat = ({
     [],
   );
   const createNotebookMutation = useCreateNotebook();
-  const notebookViewRef = useRef<NotebookViewHandle>(null);
   const { data: notebookDocuments = [], isFetching: isDocumentsFetching } =
     useNotebookDocuments(activeNotebook?.session_id);
   const [notebookUploadsInProgress, setNotebookUploadsInProgress] =
@@ -887,7 +868,6 @@ export const LightspeedChat = ({
           if (isFullscreenMode) {
             navigate(`${LIGHTSPEED_PATH}/notebooks/${session.session_id}`);
           } else {
-            setActiveNotebook(session);
             setActiveNotebookId(session.session_id);
           }
         },
@@ -899,7 +879,6 @@ export const LightspeedChat = ({
     if (isFullscreenMode) {
       navigate(`${LIGHTSPEED_PATH}/notebooks`);
     } else {
-      setActiveNotebook(null);
       setActiveNotebookId(undefined);
     }
     refetchNotebooks();
@@ -2021,7 +2000,7 @@ export const LightspeedChat = ({
                 >
                   <PFButton
                     variant="plain"
-                    onClick={() => notebookViewRef.current?.openUploadModal()}
+                    onClick={() => setNotebookUploadModalOpen(true)}
                     aria-label={t('notebook.view.documents.add')}
                     size="sm"
                     isDisabled={notebookUploadsInProgress}
@@ -2039,7 +2018,7 @@ export const LightspeedChat = ({
                 >
                   <PFButton
                     variant="plain"
-                    onClick={() => notebookViewRef.current?.toggleSidebar()}
+                    onClick={() => setNotebookSidebarCollapsed(prev => !prev)}
                     aria-label={
                       notebookSidebarCollapsed
                         ? t('notebook.view.sidebar.expand')
@@ -2262,7 +2241,6 @@ export const LightspeedChat = ({
           hasNotebooksAccess &&
           activeNotebook && (
             <NotebookView
-              ref={notebookViewRef}
               sessionId={activeNotebook.session_id}
               notebookName={activeNotebook.name}
               documents={notebookDocuments}
@@ -2281,9 +2259,11 @@ export const LightspeedChat = ({
               topicRestrictionEnabled={topicRestrictionEnabled}
               onClose={handleCloseNotebook}
               isCompact={!isFullscreenMode}
-              onUploadsInProgressChange={setNotebookUploadsInProgress}
+              sidebarCollapsed={notebookSidebarCollapsed}
               onSidebarCollapsedChange={setNotebookSidebarCollapsed}
+              isUploadModalOpen={notebookUploadModalOpen}
               onUploadModalOpenChange={setNotebookUploadModalOpen}
+              onUploadsInProgressChange={setNotebookUploadsInProgress}
             />
           )}
         {showNotebooksPanel &&
@@ -2319,7 +2299,6 @@ export const LightspeedChat = ({
                       `${LIGHTSPEED_PATH}/notebooks/${notebook.session_id}`,
                     );
                   } else {
-                    setActiveNotebook(notebook);
                     setActiveNotebookId(notebook.session_id);
                   }
                 }}

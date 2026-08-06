@@ -14,14 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
@@ -293,11 +286,6 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-export type NotebookViewHandle = {
-  openUploadModal: () => void;
-  toggleSidebar: () => void;
-};
-
 type NotebookViewProps = {
   sessionId: string;
   notebookName?: string;
@@ -311,584 +299,561 @@ type NotebookViewProps = {
   topicRestrictionEnabled: boolean;
   onClose: () => void;
   isCompact?: boolean;
+  sidebarCollapsed: boolean;
+  onSidebarCollapsedChange: (collapsed: boolean) => void;
+  isUploadModalOpen: boolean;
+  onUploadModalOpenChange: (open: boolean) => void;
   onUploadsInProgressChange?: (inProgress: boolean) => void;
-  onSidebarCollapsedChange?: (collapsed: boolean) => void;
-  onUploadModalOpenChange?: (open: boolean) => void;
 };
 
-export const NotebookView = forwardRef<NotebookViewHandle, NotebookViewProps>(
-  (
-    {
-      sessionId,
-      notebookName = UNTITLED_NOTEBOOK_NAME,
-      documents = [],
-      isDocumentsFetching = false,
-      metadata,
-      topicSummary,
-      userName,
-      avatar,
-      profileLoading,
-      topicRestrictionEnabled,
-      onClose,
-      isCompact = false,
-      onUploadsInProgressChange,
-      onSidebarCollapsedChange,
-      onUploadModalOpenChange,
-    },
-    ref,
-  ) => {
-    const classes = useStyles();
-    const { t } = useTranslation();
-    const queryClient = useQueryClient();
-    const configApi = useApi(configApiRef);
-    const notebooksApi = useApi(notebooksApiRef);
-    const { mutateAsync: notebookCreateMessage } = useCreateNotebookMessage();
+export const NotebookView = ({
+  sessionId,
+  notebookName = UNTITLED_NOTEBOOK_NAME,
+  documents = [],
+  isDocumentsFetching = false,
+  metadata,
+  topicSummary,
+  userName,
+  avatar,
+  profileLoading,
+  topicRestrictionEnabled,
+  onClose,
+  isCompact = false,
+  sidebarCollapsed,
+  onSidebarCollapsedChange,
+  isUploadModalOpen,
+  onUploadModalOpenChange,
+  onUploadsInProgressChange,
+}: NotebookViewProps) => {
+  const classes = useStyles();
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const configApi = useApi(configApiRef);
+  const notebooksApi = useApi(notebooksApiRef);
+  const { mutateAsync: notebookCreateMessage } = useCreateNotebookMessage();
 
-    // Use notebook-specific model from config instead of chat's selected model
-    const notebookModel =
-      configApi.getOptionalString(
-        'intelligent-assistant.notebooks.queryDefaults.model',
-      ) || '';
+  // Use notebook-specific model from config instead of chat's selected model
+  const notebookModel =
+    configApi.getOptionalString(
+      'intelligent-assistant.notebooks.queryDefaults.model',
+    ) || '';
 
-    const [conversationId, setConversationId] = useState(
-      metadata?.conversation_id ?? TEMP_CONVERSATION_ID,
-    );
-    const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
-    const [announcement, setAnnouncement] = useState<string | undefined>(
-      undefined,
-    );
-    const [deletingDocumentIds, setDeletingDocumentIds] = useState<Set<string>>(
-      new Set(),
-    );
-    const [deleteDocumentTarget, setDeleteDocumentTarget] = useState<{
-      id: string;
-      name: string;
-    } | null>(null);
+  const [conversationId, setConversationId] = useState(
+    metadata?.conversation_id ?? TEMP_CONVERSATION_ID,
+  );
+  const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
+  const [announcement, setAnnouncement] = useState<string | undefined>(
+    undefined,
+  );
+  const [deletingDocumentIds, setDeletingDocumentIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [deleteDocumentTarget, setDeleteDocumentTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
-    const handleDeleteDocument = useCallback((documentId: string) => {
-      setDeleteDocumentTarget({ id: documentId, name: documentId });
-    }, []);
+  const handleDeleteDocument = useCallback((documentId: string) => {
+    setDeleteDocumentTarget({ id: documentId, name: documentId });
+  }, []);
 
-    const onComplete = useCallback(
-      (message: string) => {
-        setIsSendButtonDisabled(false);
-        setAnnouncement(`Message from Bot: ${message}`);
-        queryClient.invalidateQueries({
-          queryKey: ['conversationMessages', conversationId],
-        });
-      },
-      [queryClient, conversationId],
-    );
-
-    const onStart = useCallback((conv_id: string) => {
-      setConversationId(conv_id);
-    }, []);
-
-    const createMessageAdapter = useCallback(
-      async (vars: CreateMessageVariables) => {
-        return notebookCreateMessage({
-          prompt: vars.prompt,
-          sessionId,
-        });
-      },
-      [notebookCreateMessage, sessionId],
-    );
-
-    const { conversationMessages, handleInputPrompt, scrollToBottomRef } =
-      useConversationMessages(
-        conversationId,
-        userName,
-        notebookModel,
-        '',
-        avatar,
-        onComplete,
-        onStart,
-        createMessageAdapter,
-      );
-
-    const [messages, setMessages] =
-      useState<MessageProps[]>(conversationMessages);
-
-    useEffect(() => {
-      setMessages(conversationMessages);
-    }, [conversationMessages]);
-
-    const sendMessage = useCallback(
-      (message: string | number) => {
-        setAnnouncement(
-          t('conversation.announcement.userMessage' as any, {
-            prompt: message.toString(),
-          }),
-        );
-        handleInputPrompt(message.toString(), []);
-        setIsSendButtonDisabled(true);
-      },
-      [handleInputPrompt, t],
-    );
-
-    const notebookPrompts = useNotebookWelcomePrompts();
-    const welcomePrompts = notebookPrompts.map(title => ({
-      title,
-      onClick: () => sendMessage(title),
-    }));
-
-    const [sidebarCollapsed, setSidebarCollapsed] = useState(isCompact);
-    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-
-    useImperativeHandle(ref, () => ({
-      openUploadModal: () => setIsUploadModalOpen(true),
-      toggleSidebar: () => setSidebarCollapsed(prev => !prev),
-    }));
-    const [uploadingFileNames, setUploadingFileNames] = useState<string[]>([]);
-    const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
-    const [toastAlerts, setToastAlerts] = useState<Partial<AlertProps>[]>([]);
-    const processedIds = useRef<Set<string>>(new Set());
-    const [completedFileNames, setCompletedFileNames] = useState<Set<string>>(
-      new Set(),
-    );
-    const [filesToOverwrite, setFilesToOverwrite] = useState<File[]>([]);
-    const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
-    const [filesToAddToModal, setFilesToAddToModal] = useState<File[]>([]);
-
-    const confirmDeleteDocument = useCallback(async () => {
-      if (!deleteDocumentTarget) return;
-      const { id: documentId, name: documentName } = deleteDocumentTarget;
-      setDeleteDocumentTarget(null);
-      setDeletingDocumentIds(prev => new Set(prev).add(documentId));
-      try {
-        await notebooksApi.deleteDocument(sessionId, documentId);
-        queryClient.invalidateQueries({
-          queryKey: ['notebooks', 'documents', sessionId],
-        });
-        setToastAlerts(prev => [
-          {
-            key: Date.now() + documentId,
-            title: (t as Function)('notebook.document.delete.success', {
-              documentName,
-            }) as string,
-            variant: 'success',
-          },
-          ...prev,
-        ]);
-      } finally {
-        setDeletingDocumentIds(prev => {
-          const next = new Set(prev);
-          next.delete(documentId);
-          return next;
-        });
-      }
-    }, [deleteDocumentTarget, notebooksApi, sessionId, queryClient, t]);
-
-    const handleOpenUploadModal = () => setIsUploadModalOpen(true);
-    const handleCloseUploadModal = () => setIsUploadModalOpen(false);
-
-    const handleFilesUploading = (files: File[]) => {
-      setUploadingFileNames(prev => {
-        const newNames = files
-          .map(f => f.name)
-          .filter(name => !prev.includes(name));
-        return [...prev, ...newNames];
+  const onComplete = useCallback(
+    (message: string) => {
+      setIsSendButtonDisabled(false);
+      setAnnouncement(`Message from Bot: ${message}`);
+      queryClient.invalidateQueries({
+        queryKey: ['conversationMessages', conversationId],
       });
-    };
+    },
+    [queryClient, conversationId],
+  );
 
-    const handleUploadStarted = (info: {
-      fileName: string;
-      documentId: string;
-    }) => {
-      processedIds.current.delete(info.documentId);
-      setPendingUploads(prev => [
-        ...prev,
-        { fileName: info.fileName, documentId: info.documentId },
-      ]);
-    };
+  const onStart = useCallback((conv_id: string) => {
+    setConversationId(conv_id);
+  }, []);
 
-    const handleUploadFailed = (fileName: string) => {
-      setUploadingFileNames(prev => prev.filter(n => n !== fileName));
+  const createMessageAdapter = useCallback(
+    async (vars: CreateMessageVariables) => {
+      return notebookCreateMessage({
+        prompt: vars.prompt,
+        sessionId,
+      });
+    },
+    [notebookCreateMessage, sessionId],
+  );
+
+  const { conversationMessages, handleInputPrompt, scrollToBottomRef } =
+    useConversationMessages(
+      conversationId,
+      userName,
+      notebookModel,
+      '',
+      avatar,
+      onComplete,
+      onStart,
+      createMessageAdapter,
+    );
+
+  const [messages, setMessages] =
+    useState<MessageProps[]>(conversationMessages);
+
+  useEffect(() => {
+    setMessages(conversationMessages);
+  }, [conversationMessages]);
+
+  const sendMessage = useCallback(
+    (message: string | number) => {
+      setAnnouncement(
+        t('conversation.announcement.userMessage' as any, {
+          prompt: message.toString(),
+        }),
+      );
+      handleInputPrompt(message.toString(), []);
+      setIsSendButtonDisabled(true);
+    },
+    [handleInputPrompt, t],
+  );
+
+  const notebookPrompts = useNotebookWelcomePrompts();
+  const welcomePrompts = notebookPrompts.map(title => ({
+    title,
+    onClick: () => sendMessage(title),
+  }));
+
+  const [uploadingFileNames, setUploadingFileNames] = useState<string[]>([]);
+  const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
+  const [toastAlerts, setToastAlerts] = useState<Partial<AlertProps>[]>([]);
+  const processedIds = useRef<Set<string>>(new Set());
+  const [completedFileNames, setCompletedFileNames] = useState<Set<string>>(
+    new Set(),
+  );
+  const [filesToOverwrite, setFilesToOverwrite] = useState<File[]>([]);
+  const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
+  const [filesToAddToModal, setFilesToAddToModal] = useState<File[]>([]);
+
+  const confirmDeleteDocument = useCallback(async () => {
+    if (!deleteDocumentTarget) return;
+    const { id: documentId, name: documentName } = deleteDocumentTarget;
+    setDeleteDocumentTarget(null);
+    setDeletingDocumentIds(prev => new Set(prev).add(documentId));
+    try {
+      await notebooksApi.deleteDocument(sessionId, documentId);
+      queryClient.invalidateQueries({
+        queryKey: ['notebooks', 'documents', sessionId],
+      });
       setToastAlerts(prev => [
         {
-          key: Date.now() + fileName,
-          title: (t as Function)('notebook.upload.failed', {
-            fileName,
+          key: Date.now() + documentId,
+          title: (t as Function)('notebook.document.delete.success', {
+            documentName,
           }) as string,
-          variant: 'danger',
+          variant: 'success',
         },
         ...prev,
       ]);
-    };
+    } finally {
+      setDeletingDocumentIds(prev => {
+        const next = new Set(prev);
+        next.delete(documentId);
+        return next;
+      });
+    }
+  }, [deleteDocumentTarget, notebooksApi, sessionId, queryClient, t]);
 
-    const handleDuplicatesFound = (files: File[]) => {
-      setFilesToOverwrite(files);
-      setIsOverwriteModalOpen(true);
-    };
+  const handleOpenUploadModal = () => onUploadModalOpenChange(true);
+  const handleCloseUploadModal = () => onUploadModalOpenChange(false);
 
-    const handleOverwriteConfirm = () => {
-      const files = filesToOverwrite;
-      setIsOverwriteModalOpen(false);
-      setFilesToOverwrite([]);
+  const handleFilesUploading = (files: File[]) => {
+    setUploadingFileNames(prev => {
+      const newNames = files
+        .map(f => f.name)
+        .filter(name => !prev.includes(name));
+      return [...prev, ...newNames];
+    });
+  };
 
-      if (files.length === 0) return;
+  const handleUploadStarted = (info: {
+    fileName: string;
+    documentId: string;
+  }) => {
+    processedIds.current.delete(info.documentId);
+    setPendingUploads(prev => [
+      ...prev,
+      { fileName: info.fileName, documentId: info.documentId },
+    ]);
+  };
 
-      setFilesToAddToModal(files);
-    };
+  const handleUploadFailed = (fileName: string) => {
+    setUploadingFileNames(prev => prev.filter(n => n !== fileName));
+    setToastAlerts(prev => [
+      {
+        key: Date.now() + fileName,
+        title: (t as Function)('notebook.upload.failed', {
+          fileName,
+        }) as string,
+        variant: 'danger',
+      },
+      ...prev,
+    ]);
+  };
 
-    const handleFilesAddedToModal = () => {
-      setFilesToAddToModal([]);
-    };
+  const handleDuplicatesFound = (files: File[]) => {
+    setFilesToOverwrite(files);
+    setIsOverwriteModalOpen(true);
+  };
 
-    const handleOverwriteCancel = () => {
-      setIsOverwriteModalOpen(false);
-      setFilesToOverwrite([]);
-    };
+  const handleOverwriteConfirm = () => {
+    const files = filesToOverwrite;
+    setIsOverwriteModalOpen(false);
+    setFilesToOverwrite([]);
 
-    const pollingResults = useDocumentStatusPolling(sessionId, pendingUploads);
+    if (files.length === 0) return;
 
-    useEffect(() => {
-      const completedOrFailed = pollingResults.filter(
-        r =>
-          (r.status === 'completed' ||
-            r.status === 'failed' ||
-            r.status === 'cancelled') &&
-          !processedIds.current.has(r.documentId),
-      );
+    setFilesToAddToModal(files);
+  };
 
-      if (completedOrFailed.length === 0) return;
+  const handleFilesAddedToModal = () => {
+    setFilesToAddToModal([]);
+  };
 
-      const idsToRemove = new Set<string>();
-      const namesToRemove = new Set<string>();
-      const newAlerts: Partial<AlertProps>[] = [];
+  const handleOverwriteCancel = () => {
+    setIsOverwriteModalOpen(false);
+    setFilesToOverwrite([]);
+  };
 
-      const newCompletedNames = new Set<string>();
+  const pollingResults = useDocumentStatusPolling(sessionId, pendingUploads);
 
-      for (const result of completedOrFailed) {
-        processedIds.current.add(result.documentId);
-        idsToRemove.add(result.documentId);
-        namesToRemove.add(result.fileName);
-        if (result.status === 'completed') {
-          newCompletedNames.add(result.fileName);
-        }
+  useEffect(() => {
+    const completedOrFailed = pollingResults.filter(
+      r =>
+        (r.status === 'completed' ||
+          r.status === 'failed' ||
+          r.status === 'cancelled') &&
+        !processedIds.current.has(r.documentId),
+    );
 
-        if (result.status !== 'completed') {
-          const errorDetail = result.error ? ` ${result.error}` : '';
-          newAlerts.push({
-            key: Date.now() + result.documentId,
-            title: `${
-              (t as Function)('notebook.upload.failed', {
-                fileName: result.fileName,
-              }) as string
-            }${errorDetail}`,
-            variant: 'danger',
-          });
-        }
+    if (completedOrFailed.length === 0) return;
+
+    const idsToRemove = new Set<string>();
+    const namesToRemove = new Set<string>();
+    const newAlerts: Partial<AlertProps>[] = [];
+
+    const newCompletedNames = new Set<string>();
+
+    for (const result of completedOrFailed) {
+      processedIds.current.add(result.documentId);
+      idsToRemove.add(result.documentId);
+      namesToRemove.add(result.fileName);
+      if (result.status === 'completed') {
+        newCompletedNames.add(result.fileName);
       }
 
-      setPendingUploads(prev =>
-        prev.filter(u => !idsToRemove.has(u.documentId)),
-      );
-      setUploadingFileNames(prev =>
-        prev.filter(name => !namesToRemove.has(name)),
-      );
-      if (newCompletedNames.size > 0) {
-        setCompletedFileNames(prev => new Set([...prev, ...newCompletedNames]));
-        queryClient.invalidateQueries({
-          queryKey: ['notebooks', 'documents', sessionId],
+      if (result.status !== 'completed') {
+        const errorDetail = result.error ? ` ${result.error}` : '';
+        newAlerts.push({
+          key: Date.now() + result.documentId,
+          title: `${
+            (t as Function)('notebook.upload.failed', {
+              fileName: result.fileName,
+            }) as string
+          }${errorDetail}`,
+          variant: 'danger',
         });
       }
-      setToastAlerts(prev => [...newAlerts, ...prev]);
-    }, [pollingResults, t, queryClient, sessionId]);
+    }
 
-    const handleRemoveToastAlert = (key: React.Key) => {
-      setToastAlerts(prev => prev.filter(a => a.key !== key));
-    };
-
-    const totalDocumentCount = documents.length + uploadingFileNames.length;
-    const hasUploadsInProgress =
-      pendingUploads.length > 0 || isDocumentsFetching;
-    const hasNoDocuments = documents.length === 0;
-    const isAddDisabled =
-      totalDocumentCount >= NOTEBOOK_MAX_FILES || hasUploadsInProgress;
-
-    useEffect(() => {
-      onUploadsInProgressChange?.(hasUploadsInProgress);
-    }, [hasUploadsInProgress, onUploadsInProgressChange]);
-
-    useEffect(() => {
-      onSidebarCollapsedChange?.(sidebarCollapsed);
-    }, [sidebarCollapsed, onSidebarCollapsedChange]);
-
-    useEffect(() => {
-      onUploadModalOpenChange?.(isUploadModalOpen);
-    }, [isUploadModalOpen, onUploadModalOpenChange]);
-
-    const panelContent = (
-      <DrawerPanelContent
-        isResizable={!isCompact}
-        defaultSize={isCompact ? '100%' : '310px'}
-        minSize={isCompact ? '100%' : '232px'}
-        maxSize={isCompact ? '100%' : '50%'}
-        resizeAriaLabel={t('notebook.view.sidebar.resize')}
-      >
-        <DocumentSidebar
-          notebookName={notebookName}
-          documents={documents}
-          uploadingFileNames={uploadingFileNames}
-          completedFileNames={completedFileNames}
-          deletingDocumentIds={deletingDocumentIds}
-          collapsed={sidebarCollapsed}
-          hasUploadsInProgress={hasUploadsInProgress}
-          onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
-          onAddDocument={handleOpenUploadModal}
-          onDeleteDocument={handleDeleteDocument}
-        />
-      </DrawerPanelContent>
+    setPendingUploads(prev => prev.filter(u => !idsToRemove.has(u.documentId)));
+    setUploadingFileNames(prev =>
+      prev.filter(name => !namesToRemove.has(name)),
     );
+    if (newCompletedNames.size > 0) {
+      setCompletedFileNames(prev => new Set([...prev, ...newCompletedNames]));
+      queryClient.invalidateQueries({
+        queryKey: ['notebooks', 'documents', sessionId],
+      });
+    }
+    setToastAlerts(prev => [...newAlerts, ...prev]);
+  }, [pollingResults, t, queryClient, sessionId]);
 
-    const renderNotebookDisclaimerAlert = () => (
-      <div className={classes.notebookDisclaimerStrip}>
-        <div className={classes.notebookDisclaimerInner}>
-          <Alert isInline variant="info" title={t('aria.important')}>
-            {t('disclaimer.withoutValidation')}
-          </Alert>
-        </div>
+  const handleRemoveToastAlert = (key: React.Key) => {
+    setToastAlerts(prev => prev.filter(a => a.key !== key));
+  };
+
+  const totalDocumentCount = documents.length + uploadingFileNames.length;
+  const hasUploadsInProgress = pendingUploads.length > 0 || isDocumentsFetching;
+  const hasNoDocuments = documents.length === 0;
+  const isAddDisabled =
+    totalDocumentCount >= NOTEBOOK_MAX_FILES || hasUploadsInProgress;
+
+  useEffect(() => {
+    onUploadsInProgressChange?.(hasUploadsInProgress);
+  }, [hasUploadsInProgress, onUploadsInProgressChange]);
+
+  const panelContent = (
+    <DrawerPanelContent
+      isResizable={!isCompact}
+      defaultSize={isCompact ? '100%' : '310px'}
+      minSize={isCompact ? '100%' : '232px'}
+      maxSize={isCompact ? '100%' : '50%'}
+      resizeAriaLabel={t('notebook.view.sidebar.resize')}
+    >
+      <DocumentSidebar
+        notebookName={notebookName}
+        documents={documents}
+        uploadingFileNames={uploadingFileNames}
+        completedFileNames={completedFileNames}
+        deletingDocumentIds={deletingDocumentIds}
+        collapsed={sidebarCollapsed}
+        hasUploadsInProgress={hasUploadsInProgress}
+        onToggleCollapse={() => onSidebarCollapsedChange(!sidebarCollapsed)}
+        onAddDocument={handleOpenUploadModal}
+        onDeleteDocument={handleDeleteDocument}
+      />
+    </DrawerPanelContent>
+  );
+
+  const renderNotebookDisclaimerAlert = () => (
+    <div className={classes.notebookDisclaimerStrip}>
+      <div className={classes.notebookDisclaimerInner}>
+        <Alert isInline variant="info" title={t('aria.important')}>
+          {t('disclaimer.withoutValidation')}
+        </Alert>
       </div>
-    );
+    </div>
+  );
 
-    const renderMainContent = () => {
-      if (hasNoDocuments && messages.length === 0) {
-        return (
-          <Typography component="span" className={classes.notebookEmptyUpload}>
-            <UploadResourceScreen
-              onUploadClick={handleOpenUploadModal}
-              isProcessing={uploadingFileNames.length > 0}
-            />
-          </Typography>
-        );
-      }
-      if (messages.length > 0) {
-        return (
-          <ChatbotContent className={classes.chatContent}>
-            <LightspeedChatBox
-              userName={userName}
-              messages={messages}
-              profileLoading={profileLoading}
-              announcement={announcement}
-              ref={scrollToBottomRef}
-              welcomePrompts={[]}
-              conversationId={conversationId}
-              isStreaming={isSendButtonDisabled}
-              topicRestrictionEnabled={topicRestrictionEnabled}
-              showSourcesChipPopover
-            />
-          </ChatbotContent>
-        );
-      }
+  const renderMainContent = () => {
+    if (hasNoDocuments && messages.length === 0) {
       return (
-        <div className={classes.welcomeContainer}>
-          <div style={{ flex: 1 }} />
-          {renderNotebookDisclaimerAlert()}
-          <div className={classes.notebookContentArea}>
-            <Typography className={classes.notebookHeading}>
-              {notebookName}
+        <Typography component="span" className={classes.notebookEmptyUpload}>
+          <UploadResourceScreen
+            onUploadClick={handleOpenUploadModal}
+            isProcessing={uploadingFileNames.length > 0}
+          />
+        </Typography>
+      );
+    }
+    if (messages.length > 0) {
+      return (
+        <ChatbotContent className={classes.chatContent}>
+          <LightspeedChatBox
+            userName={userName}
+            messages={messages}
+            profileLoading={profileLoading}
+            announcement={announcement}
+            ref={scrollToBottomRef}
+            welcomePrompts={[]}
+            conversationId={conversationId}
+            isStreaming={isSendButtonDisabled}
+            topicRestrictionEnabled={topicRestrictionEnabled}
+            showSourcesChipPopover
+          />
+        </ChatbotContent>
+      );
+    }
+    return (
+      <div className={classes.welcomeContainer}>
+        <div style={{ flex: 1 }} />
+        {renderNotebookDisclaimerAlert()}
+        <div className={classes.notebookContentArea}>
+          <Typography className={classes.notebookHeading}>
+            {notebookName}
+          </Typography>
+          {topicSummary && (
+            <Typography className={classes.notebookSummary}>
+              {topicSummary}
             </Typography>
-            {topicSummary && (
-              <Typography className={classes.notebookSummary}>
-                {topicSummary}
-              </Typography>
-            )}
-          </div>
-          {welcomePrompts.length > 0 && (
-            <div className={classes.promptSuggestions}>
-              {welcomePrompts.map(prompt => (
-                <button
-                  key={prompt.title}
-                  type="button"
-                  className={classes.promptPill}
-                  onClick={prompt.onClick}
-                >
-                  {prompt.title}
-                </button>
-              ))}
-            </div>
           )}
         </div>
-      );
-    };
-
-    return (
-      <div
-        className={classes.root}
-        style={isCompact ? { position: 'relative' as const } : undefined}
-      >
-        {toastAlerts.length > 0 && (
-          <AlertGroup
-            hasAnimations
-            isToast
-            isLiveRegion
-            className={classes.toastAlertGroup}
-          >
-            {toastAlerts.map(({ key, title, variant }) => (
-              <Alert
-                key={key}
-                variant={AlertVariant[variant ?? 'success']}
-                title={title}
-                className={classes.toastAlert}
-                timeout={2000}
-                onTimeout={() => handleRemoveToastAlert(key as React.Key)}
-                actionClose={
-                  <AlertActionCloseButton
-                    title={title as string}
-                    variantLabel={`${variant ?? 'success'} alert`}
-                    onClose={() => handleRemoveToastAlert(key as React.Key)}
-                  />
-                }
-              />
+        {welcomePrompts.length > 0 && (
+          <div className={classes.promptSuggestions}>
+            {welcomePrompts.map(prompt => (
+              <button
+                key={prompt.title}
+                type="button"
+                className={classes.promptPill}
+                onClick={prompt.onClick}
+              >
+                {prompt.title}
+              </button>
             ))}
-          </AlertGroup>
+          </div>
         )}
-        <Drawer
-          isExpanded={!sidebarCollapsed}
-          isInline
-          position="start"
-          className={classes.drawerContainer}
+      </div>
+    );
+  };
+
+  return (
+    <div
+      className={classes.root}
+      style={isCompact ? { position: 'relative' as const } : undefined}
+    >
+      {toastAlerts.length > 0 && (
+        <AlertGroup
+          hasAnimations
+          isToast
+          isLiveRegion
+          className={classes.toastAlertGroup}
         >
-          <DrawerContent
-            panelContent={!sidebarCollapsed ? panelContent : undefined}
-          >
-            <DrawerContentBody className={classes.drawerContentBody}>
-              <div className={classes.mainArea}>
-                {sidebarCollapsed && !isCompact && (
-                  <div className={classes.expandStrip}>
-                    <Tooltip
-                      content={t('notebook.view.sidebar.expand')}
-                      position="right"
+          {toastAlerts.map(({ key, title, variant }) => (
+            <Alert
+              key={key}
+              variant={AlertVariant[variant ?? 'success']}
+              title={title}
+              className={classes.toastAlert}
+              timeout={2000}
+              onTimeout={() => handleRemoveToastAlert(key as React.Key)}
+              actionClose={
+                <AlertActionCloseButton
+                  title={title as string}
+                  variantLabel={`${variant ?? 'success'} alert`}
+                  onClose={() => handleRemoveToastAlert(key as React.Key)}
+                />
+              }
+            />
+          ))}
+        </AlertGroup>
+      )}
+      <Drawer
+        isExpanded={!sidebarCollapsed}
+        isInline
+        position="start"
+        className={classes.drawerContainer}
+      >
+        <DrawerContent
+          panelContent={!sidebarCollapsed ? panelContent : undefined}
+        >
+          <DrawerContentBody className={classes.drawerContentBody}>
+            <div className={classes.mainArea}>
+              {sidebarCollapsed && !isCompact && (
+                <div className={classes.expandStrip}>
+                  <Tooltip
+                    content={t('notebook.view.sidebar.expand')}
+                    position="right"
+                  >
+                    <Button
+                      variant="plain"
+                      onClick={() => onSidebarCollapsedChange(false)}
+                      aria-label={t('notebook.view.sidebar.expand')}
+                      size="sm"
                     >
+                      <SidebarExpandIcon />
+                    </Button>
+                  </Tooltip>
+                  <Tooltip
+                    content={(() => {
+                      if (hasUploadsInProgress)
+                        return t('notebook.view.documents.uploadsInProgress');
+                      if (isAddDisabled)
+                        return t('notebook.view.documents.maxReached');
+                      return t('notebook.view.documents.add');
+                    })()}
+                    position="right"
+                  >
+                    <Typography component="span">
                       <Button
                         variant="plain"
-                        onClick={() => setSidebarCollapsed(false)}
-                        aria-label={t('notebook.view.sidebar.expand')}
-                        size="sm"
+                        className={classes.addIconButton}
+                        onClick={
+                          isAddDisabled ? undefined : handleOpenUploadModal
+                        }
+                        aria-label={t('notebook.view.documents.add')}
+                        isDisabled={isAddDisabled}
                       >
-                        <SidebarExpandIcon />
+                        <AddCircleFilledIcon disabled={isAddDisabled} />
                       </Button>
-                    </Tooltip>
-                    <Tooltip
-                      content={(() => {
-                        if (hasUploadsInProgress)
-                          return t('notebook.view.documents.uploadsInProgress');
-                        if (isAddDisabled)
-                          return t('notebook.view.documents.maxReached');
-                        return t('notebook.view.documents.add');
-                      })()}
-                      position="right"
+                    </Typography>
+                  </Tooltip>
+                </div>
+              )}
+
+              <div className={classes.contentColumn}>
+                {!isCompact && (
+                  <div className={classes.topBar}>
+                    <Button
+                      variant="link"
+                      className={classes.closeButton}
+                      onClick={onClose}
+                      icon={<TimesIcon />}
+                      iconPosition="end"
                     >
-                      <Typography component="span">
-                        <Button
-                          variant="plain"
-                          className={classes.addIconButton}
-                          onClick={
-                            isAddDisabled ? undefined : handleOpenUploadModal
-                          }
-                          aria-label={t('notebook.view.documents.add')}
-                          isDisabled={isAddDisabled}
-                        >
-                          <AddCircleFilledIcon disabled={isAddDisabled} />
-                        </Button>
-                      </Typography>
-                    </Tooltip>
+                      {t('notebook.view.close')}
+                    </Button>
                   </div>
                 )}
 
-                <div className={classes.contentColumn}>
-                  {!isCompact && (
-                    <div className={classes.topBar}>
-                      <Button
-                        variant="link"
-                        className={classes.closeButton}
-                        onClick={onClose}
-                        icon={<TimesIcon />}
-                        iconPosition="end"
-                      >
-                        {t('notebook.view.close')}
-                      </Button>
-                    </div>
-                  )}
+                <div className={classes.mainContent}>{renderMainContent()}</div>
 
-                  <div className={classes.mainContent}>
-                    {renderMainContent()}
-                  </div>
+                {hasNoDocuments &&
+                  messages.length === 0 &&
+                  renderNotebookDisclaimerAlert()}
 
-                  {hasNoDocuments &&
-                    messages.length === 0 &&
-                    renderNotebookDisclaimerAlert()}
-
-                  <ChatbotFooter className={classes.footer}>
-                    {hasNoDocuments ? (
-                      <Tooltip
-                        content={t('notebook.view.input.disabledTooltip')}
-                        position="top"
-                      >
-                        <div>
-                          <MessageBar
-                            hasAttachButton={false}
-                            hasMicrophoneButton={false}
-                            hasStopButton={false}
-                            isSendButtonDisabled
-                            isDisabled
-                            onSendMessage={sendMessage}
-                            placeholder={t('notebook.view.input.placeholder')}
-                          />
-                        </div>
-                      </Tooltip>
-                    ) : (
-                      <MessageBar
-                        hasAttachButton={false}
-                        hasMicrophoneButton
-                        hasStopButton={false}
-                        isSendButtonDisabled={isSendButtonDisabled}
-                        onSendMessage={sendMessage}
-                        placeholder={t('notebook.view.input.placeholder')}
-                      />
-                    )}
-                    <ChatbotFootnoteWithIcon
-                      label={t('footer.accuracy.label')}
+                <ChatbotFooter className={classes.footer}>
+                  {hasNoDocuments ? (
+                    <Tooltip
+                      content={t('notebook.view.input.disabledTooltip')}
+                      position="top"
+                    >
+                      <div>
+                        <MessageBar
+                          hasAttachButton={false}
+                          hasMicrophoneButton={false}
+                          hasStopButton={false}
+                          isSendButtonDisabled
+                          isDisabled
+                          onSendMessage={sendMessage}
+                          placeholder={t('notebook.view.input.placeholder')}
+                        />
+                      </div>
+                    </Tooltip>
+                  ) : (
+                    <MessageBar
+                      hasAttachButton={false}
+                      hasMicrophoneButton
+                      hasStopButton={false}
+                      isSendButtonDisabled={isSendButtonDisabled}
+                      onSendMessage={sendMessage}
+                      placeholder={t('notebook.view.input.placeholder')}
                     />
-                  </ChatbotFooter>
-                </div>
+                  )}
+                  <ChatbotFootnoteWithIcon label={t('footer.accuracy.label')} />
+                </ChatbotFooter>
               </div>
-            </DrawerContentBody>
-          </DrawerContent>
-        </Drawer>
+            </div>
+          </DrawerContentBody>
+        </DrawerContent>
+      </Drawer>
 
-        <AddDocumentModal
-          isOpen={isUploadModalOpen}
-          onClose={handleCloseUploadModal}
-          sessionId={sessionId}
-          existingDocumentNames={documents.map(d => d.title)}
-          hasUploadsInProgress={hasUploadsInProgress}
-          onFilesUploading={handleFilesUploading}
-          onUploadStarted={handleUploadStarted}
-          onUploadFailed={handleUploadFailed}
-          onDuplicatesFound={handleDuplicatesFound}
-          filesToAdd={filesToAddToModal}
-          onFilesAdded={handleFilesAddedToModal}
-          isCompact={isCompact}
-        />
+      <AddDocumentModal
+        isOpen={isUploadModalOpen}
+        onClose={handleCloseUploadModal}
+        sessionId={sessionId}
+        existingDocumentNames={documents.map(d => d.title)}
+        hasUploadsInProgress={hasUploadsInProgress}
+        onFilesUploading={handleFilesUploading}
+        onUploadStarted={handleUploadStarted}
+        onUploadFailed={handleUploadFailed}
+        onDuplicatesFound={handleDuplicatesFound}
+        filesToAdd={filesToAddToModal}
+        onFilesAdded={handleFilesAddedToModal}
+        isCompact={isCompact}
+      />
 
-        <OverwriteConfirmModal
-          isOpen={isOverwriteModalOpen}
-          onClose={handleOverwriteCancel}
-          onConfirm={handleOverwriteConfirm}
-          fileNames={filesToOverwrite.map(f => f.name)}
-          isCompact={isCompact}
-        />
+      <OverwriteConfirmModal
+        isOpen={isOverwriteModalOpen}
+        onClose={handleOverwriteCancel}
+        onConfirm={handleOverwriteConfirm}
+        fileNames={filesToOverwrite.map(f => f.name)}
+        isCompact={isCompact}
+      />
 
-        <DeleteDocumentModal
-          isOpen={deleteDocumentTarget !== null}
-          onClose={() => setDeleteDocumentTarget(null)}
-          onConfirm={confirmDeleteDocument}
-          documentName={deleteDocumentTarget?.name ?? ''}
-          isCompact={isCompact}
-        />
-      </div>
-    );
-  },
-);
+      <DeleteDocumentModal
+        isOpen={deleteDocumentTarget !== null}
+        onClose={() => setDeleteDocumentTarget(null)}
+        onConfirm={confirmDeleteDocument}
+        documentName={deleteDocumentTarget?.name ?? ''}
+        isCompact={isCompact}
+      />
+    </div>
+  );
+};
