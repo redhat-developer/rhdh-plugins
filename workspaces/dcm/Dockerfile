@@ -76,10 +76,10 @@ COPY --from=build /app/plugins/dcm-backend/config.d.ts plugins/dcm-backend/confi
 COPY --from=build /app/packages/app/dist packages/app/dist
 COPY app-config.yaml app-config.production.yaml ./
 
-# Fix OpenShift arbitrary UID compatibility:
-# Set GID to 0 (root group) and mirror user permissions to group permissions (g=u)
+# OpenShift arbitrary UID compatibility:
+# Set GID to 0 (root group) and allow group read/directory traversal (g+rX)
 RUN chown -R node:0 /app && \
-    chmod -R g=u /app
+    chmod -R g+rX /app
 
 USER 1000
 
