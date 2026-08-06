@@ -64,3 +64,30 @@ spec:
     - lookup-account
     - process-refund
   resetToolChoice: true
+
+---
+# Specialist agent — handles technical support with tool use behavior control.
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
+metadata:
+  name: technical-specialist-agent
+  title: Technical Specialist Agent
+  description: Specialist agent for technical troubleshooting and engineering inquiries.
+  tags:
+    - agent
+    - support
+    - technical
+spec:
+  type: agent
+  lifecycle: production
+  owner: ai-platform-team
+  instructions: >-
+    You are a technical specialist agent. Diagnose and resolve technical issues,
+    guide users through troubleshooting steps, and escalate unresolved issues to
+    the engineering team.
+  handoffDescription: Handles technical troubleshooting and engineering inquiries.
+  model: gpt-4o
+  tools:
+    - run-diagnostics
+    - search-knowledge-base
+  toolUseBehavior: run_llm_again

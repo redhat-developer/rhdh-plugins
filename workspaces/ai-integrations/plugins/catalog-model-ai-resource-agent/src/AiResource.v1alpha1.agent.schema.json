@@ -65,7 +65,8 @@
             },
             "handoffDescription": {
               "type": "string",
-              "description": "A description used when this agent is listed as a handoff target."
+              "description": "A description used when this agent is listed as a handoff target.",
+              "minLength": 1
             },
             "model": {
               "type": "string",
