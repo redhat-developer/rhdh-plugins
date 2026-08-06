@@ -86,7 +86,7 @@ export function registerAdversarialAgentRoutes(
     const createAgentSchema = z.object({
       name: z.string().min(3).max(100),
       prompt: z.string().min(50).max(5000),
-      phases: z.array(z.string()).min(1),
+      phases: z.array(z.enum(['analyze', 'migrate'])).min(1),
       critical: z.boolean(),
     });
 
@@ -129,7 +129,7 @@ export function registerAdversarialAgentRoutes(
     const updateAgentSchema = z.object({
       name: z.string().min(3).max(100),
       prompt: z.string().min(50).max(5000),
-      phases: z.array(z.string()).min(1),
+      phases: z.array(z.enum(['analyze', 'migrate'])).min(1),
       critical: z.boolean(),
     });
 

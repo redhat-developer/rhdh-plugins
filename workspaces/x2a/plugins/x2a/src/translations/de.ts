@@ -322,6 +322,86 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'rulesPage.dialog.cancel': 'Abbrechen',
     'rulesPage.dialog.createError': 'Fehler beim Erstellen der Regel',
     'rulesPage.dialog.updateError': 'Fehler beim Aktualisieren der Regel',
+    'createProjectPage.adversarialAgents.loading':
+      'Adversarielle Agenten werden geladen...',
+    'createProjectPage.adversarialAgents.title': 'Adversarielle Agenten',
+    'createProjectPage.adversarialAgents.subtitle':
+      'Wählen Sie KI-Agenten aus, um Migrationsergebnisse auf Sicherheitslücken, funktionale Lücken und Korrektheit zu überprüfen',
+    'createProjectPage.adversarialAgents.placeholder': 'Agenten auswählen…',
+    'createProjectPage.adversarialAgents.selected': 'ausgewählt',
+    'createProjectPage.adversarialAgents.noAgentsAvailable':
+      'Keine adversariellen Agenten verfügbar. Erstellen Sie Agenten auf der Seite für adversarielle Agenten.',
+    'createProjectPage.adversarialAgents.loadingError':
+      'Fehler beim Laden der adversariellen Agenten',
+    'createProjectPage.adversarialAgents.tooltip':
+      'Adversarielle Agenten überprüfen Migrationsergebnisse auf Sicherheitsprobleme, funktionale Lücken und Korrektheitsprobleme',
+    'modulePage.phases.runAdversarialReview':
+      'Adversarielle Überprüfung starten',
+    'modulePage.phases.adversarialReview': 'Adversarielle Überprüfung',
+    'modulePage.phases.adversarialReviewInstructions':
+      'Konfigurierte adversarielle Agenten gegen die Phasenausgabe ausführen. Agenten schreiben einen Bericht in das Ziel-Repository.',
+    'modulePage.phases.adversarialRunError':
+      'Fehler beim Starten der adversariellen Überprüfung',
+    'artifact.types.adversarial_report': 'Adversarieller Bericht',
+    'adversarialAgentsPage.title': 'Adversarielle Agenten',
+    'adversarialAgentsPage.subtitle':
+      'Verwalten Sie KI-Agenten, die Migrationsergebnisse auf Sicherheitslücken, funktionale Lücken und Korrektheitsprobleme überprüfen.',
+    'adversarialAgentsPage.manageAdversarialAgents':
+      'Adversarielle Agenten verwalten',
+    'adversarialAgentsPage.addAgent': 'Agent hinzufügen',
+    'adversarialAgentsPage.notAllowed':
+      'Sie haben keine Berechtigung, adversarielle Agenten zu verwalten.',
+    'adversarialAgentsPage.table.name': 'Name',
+    'adversarialAgentsPage.table.prompt': 'Prompt',
+    'adversarialAgentsPage.table.phases': 'Phasen',
+    'adversarialAgentsPage.table.severity': 'Schweregrad',
+    'adversarialAgentsPage.table.critical': 'Kritisch',
+    'adversarialAgentsPage.table.warning': 'Warnung',
+    'adversarialAgentsPage.table.createdAt': 'Erstellt',
+    'adversarialAgentsPage.table.createdBy': 'Erstellt von',
+    'adversarialAgentsPage.table.editAgent': 'Agent bearbeiten',
+    'adversarialAgentsPage.table.deleteAgent': 'Agent löschen',
+    'adversarialAgentsPage.table.noAgents':
+      'Noch keine adversariellen Agenten definiert.',
+    'adversarialAgentsPage.table.fetchError':
+      'Fehler beim Abrufen der adversariellen Agenten',
+    'adversarialAgentsPage.deleteConfirm.title': 'Agent "{{name}}" löschen?',
+    'adversarialAgentsPage.deleteConfirm.message':
+      'Diese Aktion kann nicht rückgängig gemacht werden.',
+    'adversarialAgentsPage.deleteConfirm.confirm': 'Löschen',
+    'adversarialAgentsPage.deleteConfirm.cancel': 'Abbrechen',
+    'adversarialAgentsPage.deleteConfirm.deleteError':
+      'Fehler beim Löschen des Agenten',
+    'adversarialAgentsPage.dialog.createTitle':
+      'Adversariellen Agenten erstellen',
+    'adversarialAgentsPage.dialog.editTitle':
+      'Adversariellen Agenten bearbeiten',
+    'adversarialAgentsPage.dialog.nameField': 'Name',
+    'adversarialAgentsPage.dialog.namePlaceholder':
+      'z.B. Prüfung auf Rechteausweitung',
+    'adversarialAgentsPage.dialog.promptField': 'Prompt',
+    'adversarialAgentsPage.dialog.promptPlaceholder':
+      'Beschreiben Sie, worauf dieser Agent achten soll...',
+    'adversarialAgentsPage.dialog.promptHelper':
+      'Geben Sie genau an, wonach gesucht werden soll und wie Ergebnisse gemeldet werden sollen (50–5000 Zeichen)',
+    'adversarialAgentsPage.dialog.phasesField': 'Workflow-Phasen',
+    'adversarialAgentsPage.dialog.phasesHelper':
+      'Wählen Sie aus, in welchen Workflow-Phasen dieser Agent ausgeführt wird',
+    'adversarialAgentsPage.dialog.phaseAnalyze': 'Analysieren',
+    'adversarialAgentsPage.dialog.phaseMigrate': 'Migrieren',
+    'adversarialAgentsPage.dialog.criticalField': 'Kritischer Agent',
+    'adversarialAgentsPage.dialog.criticalHelper':
+      'Kritische Agenten erzeugen Befunde mit kritischem Schweregrad; nicht-kritische Agenten erzeugen Warnungen',
+    'adversarialAgentsPage.dialog.nameValidation':
+      'Der Name muss zwischen 3 und 100 Zeichen lang sein',
+    'adversarialAgentsPage.dialog.phasesValidation':
+      'Mindestens eine Phase ist erforderlich',
+    'adversarialAgentsPage.dialog.save': 'Speichern',
+    'adversarialAgentsPage.dialog.cancel': 'Abbrechen',
+    'adversarialAgentsPage.dialog.createError':
+      'Fehler beim Erstellen des Agenten',
+    'adversarialAgentsPage.dialog.updateError':
+      'Fehler beim Aktualisieren des Agenten',
   },
 });
 

@@ -19,7 +19,7 @@ import { AdversarialAgentEntity } from './AdversarialAgent';
 const VALID_PROMPT =
   'Review the migration output for security vulnerabilities, privilege escalation, and correctness issues in the generated Ansible playbooks.';
 
-const makeEntity = (overrides = {}) => {
+const makeEntity = (overrides: Partial<AdversarialAgentEntity> = {}) => {
   const now = new Date('2025-01-01T00:00:00Z');
   return new AdversarialAgentEntity(
     overrides.id ?? 'aaaaaaaa-0000-0000-0000-000000000001',

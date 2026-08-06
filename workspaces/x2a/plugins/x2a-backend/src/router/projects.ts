@@ -527,10 +527,18 @@ export function registerProjectRoutes(
         projectId,
         moduleId,
       });
-      const activeAdversarialJob = existingJobs.find(
+      const activeAdversarialJobs = existingJobs.filter(
         j =>
           j.phase === adversarialPhase.value &&
           JobStatus.from(j.status).isActive(),
+      );
+      const reconciledJobs = await Promise.all(
+        activeAdversarialJobs.map(job =>
+          reconcileJobStatus(job, { kubeService, x2aDatabase, logger }),
+        ),
+      );
+      const activeAdversarialJob = reconciledJobs.find(job =>
+        JobStatus.from(job.status).isActive(),
       );
       if (activeAdversarialJob) {
         return res.status(409).json({
