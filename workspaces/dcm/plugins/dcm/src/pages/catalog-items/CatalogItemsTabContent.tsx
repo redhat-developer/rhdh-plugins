@@ -64,9 +64,6 @@ export function CatalogItemsTabContent() {
   const [serviceTypesError, setServiceTypesError] = useState<string | null>(
     null,
   );
-  const [createSubmitAttempted, setCreateSubmitAttempted] = useState(false);
-  const [editSubmitAttempted, setEditSubmitAttempted] = useState(false);
-
   useEffect(() => {
     catalogApi
       .listServiceTypes({ max_page_size: 100 })
