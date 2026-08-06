@@ -30,7 +30,6 @@ export const useInlineEdit = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
-  const savingRef = useRef(false);
 
   const startEditing = useCallback(() => {
     setIsEditing(true);
@@ -51,16 +50,13 @@ export const useInlineEdit = ({
   }, []);
 
   const save = useCallback(() => {
-    if (savingRef.current) return;
     const trimmed = editValue.trim();
     if (!trimmed || trimmed === currentName) {
       cancelEditing();
       return;
     }
-    savingRef.current = true;
     onSave(trimmed);
     cancelEditing();
-    savingRef.current = false;
   }, [editValue, currentName, onSave, cancelEditing]);
 
   const handleKeyDown = useCallback(

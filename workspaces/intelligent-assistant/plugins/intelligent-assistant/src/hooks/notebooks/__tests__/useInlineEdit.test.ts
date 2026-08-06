@@ -249,29 +249,6 @@ describe('useInlineEdit', () => {
     });
   });
 
-  describe('savingRef guard', () => {
-    it('should not call onSave twice when save is followed by save with empty value', () => {
-      const onSave = jest.fn();
-      const { result } = renderHook(() =>
-        useInlineEdit({ ...defaultOptions, onSave }),
-      );
-
-      act(() => {
-        result.current.startEditing();
-      });
-      act(() => {
-        result.current.setEditValue('New Name');
-      });
-      act(() => {
-        result.current.save();
-      });
-
-      expect(onSave).toHaveBeenCalledTimes(1);
-      expect(onSave).toHaveBeenCalledWith('New Name');
-      expect(result.current.isEditing).toBe(false);
-    });
-  });
-
   describe('setEditValue', () => {
     it('should update the edit value', () => {
       const { result } = renderHook(() => useInlineEdit(defaultOptions));
