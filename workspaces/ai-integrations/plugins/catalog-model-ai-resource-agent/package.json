@@ -18,7 +18,10 @@
   "backstage": {
     "role": "common-library",
     "pluginId": "catalog-model-ai-resource-agent",
-    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent"
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent"
+    ]
   },
   "sideEffects": false,
   "scripts": {
