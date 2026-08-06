@@ -53,13 +53,13 @@
 - [ ] 4.4 Document confidence levels and their implications
 - [ ] 4.5 Customer-facing messaging: this is readiness assessment, not migration
 - [ ] 4.6 Cross-reference annotation specification document
-- [ ] 4.7 Add tracking links for RFC #32062 and RFC #33060
+- [ ] 4.7 Add tracking links for upstream targets: [#34016](https://github.com/backstage/backstage/pull/34016) (McpServerApiEntity), [#33575](https://github.com/backstage/backstage/issues/33575) (AiResource), [#34476](https://github.com/backstage/backstage/pull/34476) (model-server candidate)
 - [ ] 4.8 Document future work: actual migration, processor hook
 
 ## 5. Cross-References and Dependencies (P2)
 
 - [ ] 5.1 Cross-reference RHDHPLAN-1507's `ai-catalog-entity-model` change
 - [ ] 5.2 Cross-reference `agent-creation-discovery/catalog-entities` spec
-- [ ] 5.3 Link to Backstage RFCs #32062 and #33060
+- [ ] 5.3 Link to upstream targets: [#34016](https://github.com/backstage/backstage/pull/34016) (McpServerApiEntity), [#33575](https://github.com/backstage/backstage/issues/33575) (AiResource), [#34476](https://github.com/backstage/backstage/pull/34476) (model-server candidate)
 - [ ] 5.4 Cross-reference RHDHPLAN-1507 RHIDP-15302 and RHIDP-15303 (migration-readiness stories in the entity model epic)
 - [ ] 5.5 Update `ai-catalog-entity-model` change to reference this specification

@@ -70,7 +70,7 @@ This mapping is documented for reference — connectors MAY map differently base
 
 > **RHDHPLAN-1113 / RHDHPLAN-404 dependencies (updated 2026-07-20):** The `skill`, `rule`, and `skill-bundle` categories use `AIResource` kind per RHDHPLAN-1113 (resolved). The `agent` category mapping is pending RHDHPLAN-1113 — Boost will refrain from defining agent entity kind mappings independently. The `ai-model` and `model-server` mappings are pending RHDHPLAN-404 upstream entity schema work. The `mcp-server` category maps to `API` kind with `spec.type: mcp-server` — this mapping ships in RHDH 2.1 via RHDHPLAN-1510.
 
-**Migration path:** When upstream kinds become available (e.g., `kind: AIAgent`), we document a transformation: `kind: AIResource` + `spec.type: ai-agent` + `rhdh.io/ai-asset-category: agent` → `kind: AIAgent`. The annotation remains for backward compatibility during the transition.
+**Migration path:** When upstream kinds stabilize, we document field-level transformations. For example, `AiResource` casing alignment for skills: `kind: AIResource` + `spec.type: skill` + `rhdh.io/ai-asset-category: skill` → `kind: AiResource` (see [#33575](https://github.com/backstage/backstage/issues/33575)). The annotation remains for backward compatibility during the transition.
 
 ### Decision 2: SDK package scope and structure
 

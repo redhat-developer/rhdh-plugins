@@ -107,8 +107,8 @@ The migration document MUST identify consumer-facing changes when transitioning 
 
 #### Scenario: Entity refs change format (RHIDP-15302)
 
-- **WHEN** an entity ref is currently `airesource:default/my-skill`
-- **THEN** the migration document identifies: "After upstream alignment, entity refs become `airesource:default/my-skill` (casing change in kind: `AIResource` → `AiResource`). For model-server if #34476 merges: `resource:default/my-server` → `api:default/my-server`."
+- **WHEN** an entity ref uses a kind that will change (e.g., model-server: `resource:default/my-server`)
+- **THEN** the migration document identifies: "For model-server if [#34476](https://github.com/backstage/backstage/pull/34476) merges: `resource:default/my-server` → `api:default/my-server` (kind change `Resource` → `API`). For skills/rules: entity refs stay the same (`airesource:default/my-skill`) because Backstage lowercases kind prefixes and `AIResource` → `AiResource` produces the same ref string."
 - **AND** this impacts: entity links in catalog, relationship references, API queries filtering by entity ref
 
 #### Scenario: Queries and API calls impacted (RHIDP-15302)

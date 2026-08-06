@@ -137,7 +137,7 @@ Entity: my-mcp-server
 Entity: my-skill
   Current: kind=AIResource, spec.type=skill
   Target:  kind=AiResource (upstream shipped, #33575)
-  Confidence: Medium-High
+  Confidence: Medium–High
   Transformations:
     - Kind/name casing alignment: AIResource → AiResource
     - Field alignment per upstream AiResource schema

@@ -49,9 +49,9 @@ The annotation specification maps current RHDH annotations to upstream entity ki
 For each RHDH entity type, the mapping table shows:
 
 - Current kind + `spec.type`
-- Proposed RFC kind
+- Upstream target kind
 - Fields requiring transformation
-- Confidence level (high/medium/low)
+- Confidence level (high/medium–high/medium–low/low)
 
 **Confidence levels:**
 
@@ -103,7 +103,7 @@ The tooling scaffold and spec document are NOT the migration. The actual migrati
 **How to apply:**
 
 - The specification document includes a "Future Work" section explicitly listing: actual entity migration, catalog processor for automated migration, entity kind transition plan
-- The dry-run tool output includes a footer: "This is a migration-readiness assessment. Actual migration is future work pending RFC finalization."
+- The dry-run tool output includes a footer: "This is a migration-readiness assessment. Actual migration is future work pending upstream stabilization."
 - Customer-facing messaging emphasizes readiness assessment, not migration execution
 
 ## Risks
