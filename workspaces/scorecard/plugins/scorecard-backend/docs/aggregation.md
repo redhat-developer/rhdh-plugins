@@ -244,14 +244,14 @@ The response shape includes **`id`**, **`status`**, **`metadata`** (title, descr
 
 When **`metadata.aggregationType`** is one of **`sum`**, **`average`**, **`max`**, **`min`**, or **`count`**, **`result`** is a scalar aggregation payload:
 
-| Field                       | Description                                                                                                                                                                                                                                                                                                                                                                                                    |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`value`**                 | Aggregated scalar from the configured SQL function (`sum`, `average`, `max`, `min`, or entity count for `count`) over latest non-null metric values. Evaluated by **`options.thresholds`** when present. When **`total`** is **`0`**, **`value`** is also **`0`** (SQL aggregates return null over an empty set); for **`min`** / **`max`**, treat **`total: 0`** as “no data”, not a real extreme of **`0`**. |
-| **`total`**                 | Number of latest rows that contributed to **`value`** (non-null values; calculation failures excluded; optionally narrowed by **`filter.status`**). For **`count`**, equals **`value`**. Use **`total: 0`** to detect an empty contribution set (no owned entities, or filter matched nothing).                                                                                                                |
-| **`entitiesConsidered`**    | In-scope owned entities with **at least one** latest `metric_values` row for this metric (includes calculation-error rows).                                                                                                                                                                                                                                                                                    |
-| **`calculationErrorCount`** | Among **`entitiesConsidered`**, how many latest rows are metric calculation failures (`error_message` set and `value` null).                                                                                                                                                                                                                                                                                   |
-| **`timestamp`**             | ISO timestamp of the most recent among the latest rows in scope (portfolio data freshness. Same merge rule as other aggregation types). When **`filter.status`** matches no rows, still the portfolio freshness — not “now”.                                                                                                                                                                                   |
-| **`thresholds`**            | Number-style threshold rules for classifying **`value`**; from **`options.thresholds`** or **`DEFAULT_NUMBER_THRESHOLDS`** when omitted. First matching rule can drive custom UI coloring.                                                                                                                                                                                                                     |
+| Field                       | Description                                                                                                                                                                    |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`value`**                 | Aggregated number from the KPI type (`sum` / `average` / `max` / `min` / `count`) over contributing latest non-null rows. Classified by **`options.thresholds`** when present. |
+| **`total`**                 | How many latest rows contributed to **`value`** (non-null, calculation failures excluded, optionally narrowed by **`filter.status`**). For **`count`**, equals **`value`**.    |
+| **`entitiesConsidered`**    | Owned entities in scope that have at least one latest row for this metric (includes calculation-error rows).                                                                   |
+| **`calculationErrorCount`** | Among **`entitiesConsidered`**, how many latest rows are metric calculation failures (`error_message` set and `value` null).                                                   |
+| **`timestamp`**             | Portfolio data freshness — ISO timestamp of the most recent latest row in scope (same merge rule as other aggregation types).                                                  |
+| **`thresholds`**            | Number-style rules for classifying **`value`**; from **`options.thresholds`** or **`DEFAULT_NUMBER_THRESHOLDS`** when omitted.                                                 |
 
 Example scalar response with status filter:
 
@@ -283,11 +283,27 @@ Example scalar response with status filter:
 }
 ```
 
-**`entitiesConsidered`** (all types): count of in-scope owned entities that have **at least one** latest `metric_values` row for this metric. **`calculationErrorCount`**: how many of those latest rows are metric calculation failures (`error_message` set and `value` null), so the homepage ratio matches the population behind the drill-down table rather than the raw number of owned catalog refs. For scalar types, **`total`** is the number of rows that contributed to **`value`** (non-null latest values, calculation failures excluded, optionally narrowed by **`filter.status`**).
-
-**“Without calculation errors” on the homepage:** `healthy = entitiesConsidered - calculationErrorCount` counts only among entities that already have a latest stored row for this metric. Owned entities with **no** row yet are omitted from **`entitiesConsidered`** (same as omitting them from the drill-down list until data exists).
+**“Without calculation errors” on the homepage:** `healthy = entitiesConsidered - calculationErrorCount` counts only among entities that already have a latest stored row for this metric. Owned entities with **no** row yet are omitted from **`entitiesConsidered`** (same as omitting them from the drill-down list until data exists). The homepage ratio matches the population behind the drill-down table rather than the raw number of owned catalog refs.
 
 **Partial totals:** The drill-down entities list can cap how many DB rows are considered and exposes **`entityHealth.countsArePartial`** when that cap applies. The aggregation path runs over the **full** list of owned catalog entity refs supplied to the query (there is no equivalent row cap), so **`entitiesConsidered`** / **`calculationErrorCount`** on **`GET /aggregations/:aggregationId`** are not marked partial in the same way.
+
+#### Interpreting scalar results
+
+Always read **`value`** together with **`total`**. When nothing contributed, SQL aggregates (`SUM` / `AVG` / `MIN` / `MAX`) return null over an empty set and the API coerces that to **`value: 0`** with **`total: 0`**. That shape means **no data**, not a real aggregate of zero — especially important for **`min`** / **`max`**, where a bare **`value: 0`** would otherwise look like a real extreme.
+
+| What you see                                | What it means                                                                                                                                                                                                |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`value: 0`**, **`total: 0`**              | Empty contribution set: no owned entities in scope, or **`filter.status`** matched no latest rows. Not an API error. For **`min`** / **`max`**, do **not** treat this as a real extreme of **`0`**.          |
+| **`value: 0`**, **`total: N`** (N > 0)      | Real zero aggregate over **N** contributing entities (for example **N** owned components in **`error`** status each with metric value **`0`** → **`min`** / **`sum`** / **`average`** can be **`0`**).       |
+| **`value: 42`**, **`total: 10`**            | Aggregate over 10 contributing rows (for example sum of open issues across 10 matching entities).                                                                                                            |
+| **`total`** vs **`entitiesConsidered`**     | **`total`** can be lower than **`entitiesConsidered`** when some latest rows are calculation failures and/or when **`filter.status`** excludes rows. Failures never contribute to **`value`** / **`total`**. |
+| **`count`** type                            | **`value`** always equals **`total`** (both are the count of contributing rows).                                                                                                                             |
+| **`timestamp`** when filter matches nothing | Still portfolio freshness from latest rows in scope — not “now”.                                                                                                                                             |
+
+**Worked example** — KPI type **`min`** on **`github.openPRs`** with **`filter.status: error`**:
+
+- Response **`{ "value": 0, "total": 5 }`** means you own 5 components currently in **`error`** status whose open-PR values contributed, and the minimum among them is **`0`**.
+- Response **`{ "value": 0, "total": 0 }`** means no **`error`**-status rows contributed — show “no data”, not “min is 0”.
 
 ### `GET /aggregations/:aggregationId/metadata`
 
@@ -303,7 +319,7 @@ Same resolution as above, but returns only metadata fields (no aggregate counts)
 
 #### Empty results
 
-When the user owns no relevant entities, the API returns an aggregation with **zero total** and zeroed bucket counts for distribution types, or **`value: 0`** with **`total: 0`** for scalar types (not an error). The same **`value: 0`** / **`total: 0`** shape applies when a scalar **`filter.status`** matches no latest rows — clients should key off **`total: 0`**, especially for **`min`** / **`max`**, where a bare **`value: 0`** would otherwise be ambiguous.
+When the user owns no relevant entities, distribution types (**`statusGrouped`**, **`weightedStatusScore`**) return **zero total** and zeroed bucket counts (not an error). For scalar empty / filtered-empty handling — including why **`value: 0`** with **`total: 0`** is ambiguous for **`min`** / **`max`** — see [Interpreting scalar results](#interpreting-scalar-results).
 
 ### Drill-down vs aggregation id
 
