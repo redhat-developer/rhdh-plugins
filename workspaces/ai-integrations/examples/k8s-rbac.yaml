@@ -5,11 +5,13 @@
 #   - InferenceServices (serving.kserve.io): informer watch/list/get
 #   - Routes (route.openshift.io): catalog route discovery (OpenShift only)
 #   - ServiceAccounts (core): authentication check for InferenceService owners
+
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: backstage-kserve-connector
+  # change to whatever namespace you use
   namespace: backstage
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -39,6 +41,7 @@ rules:
     verbs:
       - get
       - list
+      # we used to watch as well
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -51,4 +54,5 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: backstage-kserve-connector
+    # change to whatever namespace you use
     namespace: backstage

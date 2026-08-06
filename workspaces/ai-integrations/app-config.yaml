@@ -125,10 +125,10 @@ catalog:
       kserve-kubeflow-connector:
         cluster-1:
           name: my-k8s-cluster
-          url: '${K8S_CLUSTER_URL:-}'
-          serviceAccountToken: '${K8S_SA_TOKEN:-}'
-          skipTLSVerify: false
-          caData: '${K8S_CA_DATA:-}'
+#          url: '${K8S_CLUSTER_URL:-}'
+#          serviceAccountToken: '${K8S_SA_TOKEN:-}'
+#          skipTLSVerify: false
+#          caData: '${K8S_CA_DATA:-}'
           # Alternative: reference a cluster from the Backstage kubernetes plugin config
           # kubernetesPluginRef: my-k8s-cluster
           kubeflow-model-catalog-url: '${KUBEFLOW_MODEL_CATALOG_URL:-}'
@@ -136,7 +136,7 @@ catalog:
           default-lifecycle: '${LIFECYCLE:-production}'
 # Uncomment to use kubernetesPluginRef — the Backstage kubernetes plugin
 # does NOT need to be installed, only its config section is needed.
-# kubernetes:
+#kubernetes:
 #   serviceLocatorMethod:
 #     type: 'multiTenant'
 #   clusterLocatorMethods:
@@ -145,5 +145,6 @@ catalog:
 #         - name: my-k8s-cluster
 #           url: '${K8S_CLUSTER_URL}'
 #           serviceAccountToken: '${K8S_SA_TOKEN}'
+#           authProvider: serviceAccount
 #           skipTLSVerify: false
 #           caData: '${K8S_CA_DATA:-}'
