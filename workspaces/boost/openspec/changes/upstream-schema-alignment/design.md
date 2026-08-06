@@ -66,12 +66,12 @@ For each RHDH entity type, the mapping table shows:
 
 **Example mapping entries:**
 
-| AI Asset     | Current Kind | spec.type       | Upstream Target                                             | Confidence  | Transformation Requirements                                                                         |
-| ------------ | ------------ | --------------- | ----------------------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------- |
-| MCP Server   | API          | mcp-server      | Same — `McpServerApiEntity` ([#34016](https://github.com/backstage/backstage/pull/34016)) | High        | No kind change. Field gaps: adopt `spec.remotes` instead of `spec.definition`; opt in to catalog-model AI module. Flag fallback `Resource` entities. |
-| Skill        | AIResource   | skill           | `AiResource` ([#33575](https://github.com/backstage/backstage/issues/33575))               | Medium–High | Kind/name casing alignment (`AIResource` → `AiResource`). Field alignment per upstream schema.       |
-| Model Server | Resource     | ai-model-server | Candidate `API` / `ai-model-server` ([#34476](https://github.com/backstage/backstage/pull/34476)) | Medium/Low  | `Resource` → `API` kind change + field mapping. Hedge on open PR status.                             |
-| AI Model     | Resource     | ai-model        | No solid upstream kind yet                                  | Low         | Continue using current mapping. Track future upstream proposals.                                      |
+| AI Asset     | Current Kind | spec.type       | Upstream Target                                                                                   | Confidence  | Transformation Requirements                                                                                                                          |
+| ------------ | ------------ | --------------- | ------------------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| MCP Server   | API          | mcp-server      | Same — `McpServerApiEntity` ([#34016](https://github.com/backstage/backstage/pull/34016))         | High        | No kind change. Field gaps: adopt `spec.remotes` instead of `spec.definition`; opt in to catalog-model AI module. Flag fallback `Resource` entities. |
+| Skill        | AIResource   | skill           | `AiResource` ([#33575](https://github.com/backstage/backstage/issues/33575))                      | Medium–High | Kind/name casing alignment (`AIResource` → `AiResource`). Field alignment per upstream schema.                                                       |
+| Model Server | Resource     | ai-model-server | Candidate `API` / `ai-model-server` ([#34476](https://github.com/backstage/backstage/pull/34476)) | Medium/Low  | `Resource` → `API` kind change + field mapping. Hedge on open PR status.                                                                             |
+| AI Model     | Resource     | ai-model        | No solid upstream kind yet                                                                        | Low         | Continue using current mapping. Track future upstream proposals.                                                                                     |
 
 ### Decision 3: Dry-run tool as external CLI command
 
