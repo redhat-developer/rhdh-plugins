@@ -35,6 +35,7 @@ import {
   iaMcpReadPermission,
   iaPermissions,
   iaSavedPromptsManagePermission,
+  iaSkillsAccessPermission,
 } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import { Readable } from 'node:stream';
@@ -657,6 +658,34 @@ export async function createRouter(
     generalRateLimiter,
     requirePermission(iaSavedPromptsManagePermission),
     apiProxy,
+  );
+
+  router.get(
+    '/v1/skills',
+    generalRateLimiter,
+    requirePermission(iaSkillsAccessPermission),
+    async (_request, response) => {
+      try {
+        const fetchResponse = await fetch(`${lcsBaseUrl}/v1/skills`);
+
+        if (!fetchResponse.ok) {
+          await handleLCSFetchError(
+            fetchResponse,
+            logger,
+            'fetching skills',
+            response,
+          );
+          return;
+        }
+
+        const data = await fetchResponse.json();
+        response.status(fetchResponse.status).json(data);
+      } catch (error) {
+        const errormsg = `Error while fetching skills: ${error}`;
+        logger.error(errormsg);
+        response.status(500).json({ error: errormsg });
+      }
+    },
   );
 
   router.post(
