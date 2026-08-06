@@ -21,7 +21,7 @@ None — this is a new productization wrapper around the upstream MCP Registry e
 **WHEN** the connector is configured with a custom CA bundle path:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       endpoint: https://registry.internal.example.com
@@ -74,7 +74,7 @@ catalog:
 **WHEN** the connector is configured with a Kubernetes Secret reference for authentication:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       endpoint: https://registry.internal.example.com
@@ -133,7 +133,7 @@ catalog:
 **WHEN** multiple MCP Registry connector instances are configured with different TLS settings:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistryPrimary:
       endpoint: https://registry-primary.internal.example.com

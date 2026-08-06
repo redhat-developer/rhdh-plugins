@@ -8,6 +8,9 @@ import type { DiscoveryApi } from '@backstage/core-plugin-api';
 import type { FetchApi } from '@backstage/core-plugin-api';
 
 // @public
+export function buildPaginationQuery(params: PaginationParams): string;
+
+// @public
 export interface CatalogApi {
   // (undocumented)
   createCatalogItem(catalogItem: CatalogItem): Promise<CatalogItem>;
@@ -30,11 +33,13 @@ export interface CatalogApi {
   // (undocumented)
   getServiceType(serviceTypeId: string): Promise<ServiceType>;
   // (undocumented)
-  listCatalogItemInstances(): Promise<CatalogItemInstanceList>;
+  listCatalogItemInstances(
+    params?: PaginationParams,
+  ): Promise<CatalogItemInstanceList>;
   // (undocumented)
-  listCatalogItems(): Promise<CatalogItemList>;
+  listCatalogItems(params?: PaginationParams): Promise<CatalogItemList>;
   // (undocumented)
-  listServiceTypes(): Promise<ServiceTypeList>;
+  listServiceTypes(params?: PaginationParams): Promise<ServiceTypeList>;
   rehydrateCatalogItemInstance(
     catalogItemInstanceId: string,
   ): Promise<CatalogItemInstance>;
@@ -68,11 +73,13 @@ export class CatalogClient extends DcmBaseClient implements CatalogApi {
   // (undocumented)
   getServiceType(serviceTypeId: string): Promise<ServiceType>;
   // (undocumented)
-  listCatalogItemInstances(): Promise<CatalogItemInstanceList>;
+  listCatalogItemInstances(
+    params?: PaginationParams,
+  ): Promise<CatalogItemInstanceList>;
   // (undocumented)
-  listCatalogItems(): Promise<CatalogItemList>;
+  listCatalogItems(params?: PaginationParams): Promise<CatalogItemList>;
   // (undocumented)
-  listServiceTypes(): Promise<ServiceTypeList>;
+  listServiceTypes(params?: PaginationParams): Promise<ServiceTypeList>;
   // (undocumented)
   rehydrateCatalogItemInstance(
     catalogItemInstanceId: string,
@@ -126,7 +133,7 @@ export interface CatalogItemInstance {
 // @public
 export interface CatalogItemInstanceList {
   // (undocumented)
-  next_page_token: string;
+  next_page_token?: string;
   // (undocumented)
   results: CatalogItemInstance[];
 }
@@ -142,7 +149,7 @@ export interface CatalogItemInstanceSpec {
 // @public
 export interface CatalogItemList {
   // (undocumented)
-  next_page_token: string;
+  next_page_token?: string;
   // (undocumented)
   results: CatalogItem[];
 }
@@ -279,6 +286,12 @@ export interface ListServiceTypeInstancesParams {
 }
 
 // @public
+export interface PaginationParams {
+  max_page_size?: number;
+  page_token?: string;
+}
+
+// @public
 export function parseDcmEntityStatus(raw: string): DcmEntityStatus | undefined;
 
 // @public
@@ -319,7 +332,7 @@ export interface PolicyManagerApi {
   // (undocumented)
   getPolicy(policyId: string): Promise<Policy>;
   // (undocumented)
-  listPolicies(): Promise<PolicyList>;
+  listPolicies(params?: PaginationParams): Promise<PolicyList>;
   // (undocumented)
   updatePolicy(policyId: string, patch: Partial<Policy>): Promise<Policy>;
 }
@@ -336,7 +349,7 @@ export class PolicyManagerClient
   // (undocumented)
   getPolicy(policyId: string): Promise<Policy>;
   // (undocumented)
-  listPolicies(): Promise<PolicyList>;
+  listPolicies(params?: PaginationParams): Promise<PolicyList>;
   // (undocumented)
   protected readonly serviceName = 'Policy Manager';
   // (undocumented)
@@ -403,7 +416,7 @@ export interface ProvidersApi {
   // (undocumented)
   getProvider(providerId: string): Promise<Provider>;
   // (undocumented)
-  listProviders(): Promise<ProviderList>;
+  listProviders(params?: PaginationParams): Promise<ProviderList>;
 }
 
 // @public
@@ -417,7 +430,7 @@ export class ProvidersClient extends DcmBaseClient implements ProvidersApi {
   // (undocumented)
   getProvider(providerId: string): Promise<Provider>;
   // (undocumented)
-  listProviders(): Promise<ProviderList>;
+  listProviders(params?: PaginationParams): Promise<ProviderList>;
   // (undocumented)
   protected readonly serviceName = 'Providers';
 }
@@ -507,7 +520,7 @@ export interface ServiceTypeInstanceSpec {
 // @public
 export interface ServiceTypeList {
   // (undocumented)
-  next_page_token: string;
+  next_page_token?: string;
   // (undocumented)
   results: ServiceType[];
 }

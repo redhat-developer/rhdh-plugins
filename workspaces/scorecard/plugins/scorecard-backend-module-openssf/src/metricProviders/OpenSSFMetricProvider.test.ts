@@ -59,17 +59,6 @@ describe('OpenSSFMetricProvider', () => {
   });
 
   describe('metadata', () => {
-    it('returns metric name from config', () => {
-      const provider = new OpenSSFMetricProvider(maintainedConfig);
-      expect(provider.getMetricName()).toBe('Maintained');
-    });
-
-    it('returns display title and description from config', () => {
-      const provider = new OpenSSFMetricProvider(maintainedConfig);
-      expect(provider.getMetricDisplayTitle()).toBe('OpenSSF Maintained');
-      expect(provider.getMetricDescription()).toContain('actively maintained');
-    });
-
     it('returns provider id as openssf.<normalized_name>', () => {
       const provider = new OpenSSFMetricProvider(maintainedConfig);
       expect(provider.getProviderId()).toBe('openssf.maintained');
@@ -92,6 +81,7 @@ describe('OpenSSFMetricProvider', () => {
       const metric = metrics[0];
       expect(metric.id).toBe('openssf.maintained');
       expect(metric.title).toBe('OpenSSF Maintained');
+      expect(metric.description).toContain('actively maintained');
       expect(metric.type).toBe('number');
       expect(metric.thresholds).toEqual(OPENSSF_THRESHOLDS);
       expect(metric.history).toBe(true);

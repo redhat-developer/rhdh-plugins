@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { usePersistedPageSize } from '../../hooks/usePersistedPageSize';
+import { usePaginatedFetch } from '../../hooks/usePaginatedFetch';
 import { TableColumn, Progress } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import { Box, Button, Chip, Typography } from '@material-ui/core';
@@ -24,7 +25,6 @@ import type { ServiceType } from '@red-hat-developer-hub/backstage-plugin-dcm-co
 import { catalogApiRef } from '../../apis';
 import { DcmSearchTableCard } from '../../components/dcmTabListHelpers';
 import { useDcmStyles } from '../../components/dcmStyles';
-import { extractApiError } from '../../utils/extractApiError';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { DcmDataCenterTabEmptyState } from '../../components/DcmDataCenterTabEmptyState';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
@@ -37,49 +37,39 @@ export function ServiceTypesTabContent() {
   const catalogApi = useApi(catalogApiRef);
   const { t } = useTranslation();
 
-  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = usePersistedPageSize('service-types');
+  const [search, setSearch] = useState('');
 
-  const load = useCallback(() => {
-    setLoading(true);
-    setLoadError(null);
-    catalogApi
-      .listServiceTypes()
-      .then(res => setServiceTypes(res.results ?? []))
-      .catch(err => {
-        setLoadError(extractApiError(err));
-        setServiceTypes([]);
-      })
-      .finally(() => setLoading(false));
-  }, [catalogApi]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
-  useEffect(() => {
-    setPage(0);
-  }, [search]);
+  const {
+    data,
+    loading,
+    error,
+    hasNext,
+    hasPrev,
+    goNext,
+    goPrev,
+    resetToFirstPage,
+  } = usePaginatedFetch<ServiceType>({
+    fetchFn: ({ pageToken, pageSize: ps }) =>
+      catalogApi
+        .listServiceTypes({ page_token: pageToken, max_page_size: ps })
+        .then(res => ({
+          items: res.results ?? [],
+          nextPageToken: res.next_page_token ?? '',
+        })),
+    pageSize,
+  });
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return serviceTypes;
+    if (!search.trim()) return data;
     const q = search.toLowerCase();
-    return serviceTypes.filter(
+    return data.filter(
       st =>
         (st.service_type ?? '').toLowerCase().includes(q) ||
         (st.api_version ?? '').toLowerCase().includes(q) ||
         (st.uid ?? '').toLowerCase().includes(q),
     );
-  }, [serviceTypes, search]);
-
-  const paginated = useMemo(() => {
-    const start = page * pageSize;
-    return filtered.slice(start, start + pageSize);
-  }, [filtered, page, pageSize]);
+  }, [data, search]);
 
   const columns = useMemo<TableColumn<ServiceType>[]>(
     () => [
@@ -151,21 +141,21 @@ export function ServiceTypesTabContent() {
     [classes, t],
   );
 
-  if (loading) return <Progress />;
+  if (loading && data.length === 0) return <Progress />;
 
-  if (loadError) {
+  if (error) {
     return (
       <Box p={2}>
         <MuiAlert
           severity="error"
           variant="outlined"
           action={
-            <Button color="inherit" size="small" onClick={load}>
+            <Button color="inherit" size="small" onClick={resetToFirstPage}>
               {t('common.retry')}
             </Button>
           }
         >
-          {loadError}
+          {error}
         </MuiAlert>
       </Box>
     );
@@ -173,7 +163,7 @@ export function ServiceTypesTabContent() {
 
   return (
     <Box className={classes.root}>
-      {serviceTypes.length === 0 ? (
+      {data.length === 0 && !hasPrev ? (
         <DcmDataCenterTabEmptyState
           title={t('serviceTypes.emptyTitle')}
           description={t('serviceTypes.emptyDescription')}
@@ -184,15 +174,24 @@ export function ServiceTypesTabContent() {
           title={(t as any)('serviceTypes.cardTitle', {
             count: filtered.length,
           })}
-          data={paginated}
+          data={filtered}
           columns={columns}
           totalCount={filtered.length}
-          page={page}
+          page={1}
           pageSize={pageSize}
-          setPage={setPage}
+          setPage={() => {}}
           setPageSize={setPageSize}
           search={search}
           setSearch={setSearch}
+          cursorPagination={{
+            hasNext,
+            hasPrev,
+            onNext: goNext,
+            onPrev: goPrev,
+            loading,
+            pageSize,
+            onPageSizeChange: setPageSize,
+          }}
         />
       )}
     </Box>

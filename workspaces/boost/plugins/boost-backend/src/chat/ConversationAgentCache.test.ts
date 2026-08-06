@@ -58,9 +58,9 @@ describe('ConversationAgentCache', () => {
   });
 
   it('stores and retrieves a conversation-agent mapping', async () => {
-    await conversationCache.set('conv-1', 'llamastack');
+    await conversationCache.set('conv-1', 'ogx');
     const result = await conversationCache.get('conv-1');
-    expect(result).toBe('llamastack');
+    expect(result).toBe('ogx');
   });
 
   it('returns undefined for unknown conversation', async () => {
@@ -69,7 +69,7 @@ describe('ConversationAgentCache', () => {
   });
 
   it('deletes a conversation-agent mapping', async () => {
-    await conversationCache.set('conv-1', 'llamastack');
+    await conversationCache.set('conv-1', 'ogx');
     await conversationCache.delete('conv-1');
     const result = await conversationCache.get('conv-1');
     expect(result).toBeUndefined();

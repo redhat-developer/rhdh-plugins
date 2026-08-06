@@ -123,11 +123,8 @@ catalog:
       # The field underneath should list the connector plugin ID that the entity provider accesses through
       # the discovery service
       kserve-kubeflow-connector:
-        # `http://localhost:9090` works in both local testing and when the bridge is running as a sidecar
-        # we'll hardcode for now and see about env vars later on once we officially take on running the bridge as
-        # a separate pod
-        # baseUrl: 'http://localhost:9090'
-        name: my-k8s-cluster
-        kubeflow-model-catalog-url: '${KUBEFLOW_MODEL_CATALOG_URL:-}'
-        default-owner: '${OWNER:-default-owner}'
-        default-lifecycle: '${LIFECYCLE:-production}'
+        cluster-1:
+          name: my-k8s-cluster
+          kubeflow-model-catalog-url: '${KUBEFLOW_MODEL_CATALOG_URL:-}'
+          default-owner: '${OWNER:-default-owner}'
+          default-lifecycle: '${LIFECYCLE:-production}'

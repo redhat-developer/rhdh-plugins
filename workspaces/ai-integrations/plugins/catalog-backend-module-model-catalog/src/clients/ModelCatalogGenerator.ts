@@ -28,6 +28,9 @@ import {
 } from '@backstage/catalog-model';
 import { LoggerService } from '@backstage/backend-plugin-api';
 
+// Matches PropertyKeys.TechDocsKey in kserve-kubeflow-connector-backend; duplicated because @backstage/no-mixed-plugin-imports forbids backend-plugin-module → backend-plugin imports. Consider a common module if more constants need sharing.
+const TECHDOCS_KEY = 'techdocs';
+
 function isModelCatalog(o: any): o is ModelCatalog {
   return 'models' in o || 'modelServer' in o;
 }
@@ -146,12 +149,13 @@ export function GenerateModelResourceEntities(
       // Copy all annotations from model to resource entity
       Object.keys(model.annotations).forEach(key => {
         // Special handling for TechDocs annotation
-        if (key === 'TechDocs') {
+        if (key === TECHDOCS_KEY) {
           let techdocsUrl: string = model.annotations![key];
           techdocsUrl = techdocsUrl.trim();
-          // TODO GGM prepend svc URL
           if (techdocsUrl !== '') {
-            if (svcUrl !== undefined) {
+            // Auto-set paths (from rhdh.io/catalog-source + rhdh.io/catalog-model) start with '/' and need
+            // the connector base URL prepended. Explicit rhdh.io/techdocs annotations are full URLs and used as-is.
+            if (svcUrl !== undefined && techdocsUrl.startsWith('/')) {
               techdocsUrl = svcUrl + techdocsUrl;
             }
             modelResourceEntity.metadata.annotations![

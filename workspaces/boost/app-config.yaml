@@ -70,8 +70,8 @@ boost:
       - 'user:default/guest'
 
   providers:
-    llamastack:
-      baseUrl: ${BOOST_LLAMA_STACK_URL:-http://localhost:8321}
+    ogx:
+      baseUrl: ${BOOST_OGX_URL:-http://localhost:8321}
       defaultModel: ${BOOST_MODEL:-default}
     kagenti:
       baseUrl: ${KAGENTI_BASE_URL:-http://localhost:8080}

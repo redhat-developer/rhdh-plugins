@@ -84,7 +84,7 @@ Options define configuration that affect fetch jira issues global configuration,
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     jira:
       openIssues:
         options:
@@ -100,7 +100,7 @@ The Scorecard plugin uses Backstage's built-in scheduler service to automaticall
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     jira:
       openIssues:
         schedule:
@@ -112,7 +112,7 @@ scorecard:
             seconds: 5
 ```
 
-The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157).
+The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157). For more details on how to configure schedule, see [Metric Collection Scheduling](../scorecard-backend/docs/providers.md#metric-collection-scheduling).
 
 ## Installation
 
@@ -191,7 +191,7 @@ Default thresholds for `jira.openIssues`:
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     jira:
       openIssues:
         thresholds:

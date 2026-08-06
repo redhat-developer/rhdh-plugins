@@ -74,7 +74,7 @@ This mapping is documented for reference — connectors MAY map differently base
 
 ### Decision 2: SDK package scope and structure
 
-Single npm package `@boost/entity-provider-sdk` exports:
+Single npm package `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk` exports:
 
 - Provider interface types (`AIAssetEntityProvider`, entity emission contract)
 - Annotation constants (`AI_ASSET_CATEGORY_ANNOTATION`, `AI_ASSET_VERSION_ANNOTATION`, `AI_ASSET_SOURCE_ANNOTATION`)

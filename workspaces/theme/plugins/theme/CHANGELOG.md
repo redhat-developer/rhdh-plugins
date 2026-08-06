@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.0.2
+
+### Patch Changes
+
+- 0f401be: Fixed empty space and background mismatch on short NFS pages: BackstageSidebarPage fills the viewport and becomes a column flex container so BUI Containers can grow, and content wells use mainSectionBackgroundColor to match the article/content area
+
 ## 1.0.1
 
 ### Patch Changes
