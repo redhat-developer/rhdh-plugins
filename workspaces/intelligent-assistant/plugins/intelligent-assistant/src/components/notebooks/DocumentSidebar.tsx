@@ -243,14 +243,12 @@ export const DocumentSidebar = ({
   const [editingDocId, setEditingDocId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
-  const savingRef = useRef(false);
 
   const startEditing = useCallback((docId: string, currentTitle: string) => {
     const { baseName } = splitFileName(currentTitle);
     setEditingDocId(docId);
     setEditName(baseName);
     setOpenMenuDocId(null);
-    savingRef.current = false;
     setTimeout(() => {
       inputRef.current?.focus();
       inputRef.current?.select();
@@ -282,7 +280,6 @@ export const DocumentSidebar = ({
 
   const saveRename = useCallback(
     (docId: string, originalTitle: string) => {
-      if (savingRef.current) return;
       const trimmedBase = editName.trim();
       const { baseName, extension } = splitFileName(originalTitle);
       if (!trimmedBase || trimmedBase === baseName) {
@@ -300,7 +297,6 @@ export const DocumentSidebar = ({
         cancelEditing();
         return;
       }
-      savingRef.current = true;
       onRenameDocument?.(docId, newFullName);
       cancelEditing();
     },
