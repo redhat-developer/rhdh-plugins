@@ -105,7 +105,13 @@ export const intelligentAssistantMessages = {
 
   // Notebook overwrite modal
   'notebook.overwrite.modal.title': 'File already exists',
+  'notebook.overwrite.modal.title.one': 'File already exists',
+  'notebook.overwrite.modal.title.other': 'Files already exist',
   'notebook.overwrite.modal.description':
+    '{{duplicateCount}} files already exist in this notebook. {{newCount}} new resources will be added regardless.',
+  'notebook.overwrite.modal.description.one':
+    '{{duplicateCount}} file already exists in this notebook. {{newCount}} new resources will be added regardless.',
+  'notebook.overwrite.modal.description.other':
     '{{duplicateCount}} files already exist in this notebook. {{newCount}} new resources will be added regardless.',
   'notebook.overwrite.modal.replace': 'Replace existing files',
   'notebook.overwrite.modal.ignore': 'Ignore duplicated files',

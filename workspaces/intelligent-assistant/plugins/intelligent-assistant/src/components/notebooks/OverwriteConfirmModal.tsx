@@ -170,7 +170,11 @@ export const OverwriteConfirmModal = ({
     >
       <DialogTitle className={classes.dialogTitle}>
         <Typography component="h2" className={classes.titleText}>
-          {t('notebook.overwrite.modal.title')}
+          {(t as Function)(
+            duplicateFiles.length === 1
+              ? 'notebook.overwrite.modal.title.one'
+              : 'notebook.overwrite.modal.title.other',
+          )}
         </Typography>
         <IconButton
           aria-label={t('common.close')}
@@ -186,10 +190,15 @@ export const OverwriteConfirmModal = ({
         <Alert
           variant="warning"
           isInline
-          title={(t as Function)('notebook.overwrite.modal.description', {
-            duplicateCount: duplicateFiles.length,
-            newCount: newFiles.length,
-          })}
+          title={(t as Function)(
+            duplicateFiles.length === 1
+              ? 'notebook.overwrite.modal.description.one'
+              : 'notebook.overwrite.modal.description.other',
+            {
+              duplicateCount: duplicateFiles.length,
+              newCount: newFiles.length,
+            },
+          )}
           className={classes.warningAlert}
         />
 

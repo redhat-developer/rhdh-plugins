@@ -61,6 +61,7 @@ import { useStopConversation } from '../../hooks/useStopConversation';
 import { useTranslation } from '../../hooks/useTranslation';
 import { NotebookSessionMetadata, SessionDocument } from '../../types';
 import { ChatbotFootnoteWithIcon } from '../../utils/lightspeed-chatbox-utils';
+import { runFileUploads } from '../../utils/notebook-upload-runner';
 import { LightspeedChatBox } from '../LightspeedChatBox';
 import { AddDocumentModal } from './AddDocumentModal';
 import { DeleteDocumentModal } from './DeleteDocumentModal';
@@ -561,20 +562,11 @@ export const NotebookView = ({
 
     if (filesToUpload.length === 0) return;
 
-    handleFilesUploading(filesToUpload);
-    for (const file of filesToUpload) {
-      uploadMutation
-        .mutateAsync({ sessionId, file })
-        .then(data => {
-          handleUploadStarted({
-            fileName: file.name,
-            documentId: data.document_id,
-          });
-        })
-        .catch(() => {
-          handleUploadFailed(file.name);
-        });
-    }
+    runFileUploads(uploadMutation, sessionId, filesToUpload, {
+      onUploading: handleFilesUploading,
+      onStarted: handleUploadStarted,
+      onFailed: handleUploadFailed,
+    });
   };
 
   const handleFilesAddedToModal = () => {

@@ -209,6 +209,12 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebook.overwrite.modal.ignore': '重複ファイルを無視',
     'notebook.overwrite.modal.replace': '既存のファイルを置換',
     'notebook.overwrite.modal.title': 'ファイルが既に存在します',
+    'notebook.overwrite.modal.title.one': 'ファイルが既に存在します',
+    'notebook.overwrite.modal.title.other': 'ファイルが既に存在します',
+    'notebook.overwrite.modal.description.one':
+      '{{duplicateCount}} 件のファイルがこのノートブックに既に存在します。{{newCount}} 件の新しいリソースはそのまま追加されます。',
+    'notebook.overwrite.modal.description.other':
+      '{{duplicateCount}} 件のファイルがこのノートブックに既に存在します。{{newCount}} 件の新しいリソースはそのまま追加されます。',
     'notebook.upload.error.fileTooLarge':
       'アップロードエラー: ファイルサイズが 25 MB の制限を超えています。',
     'notebook.upload.error.tooManyFiles':

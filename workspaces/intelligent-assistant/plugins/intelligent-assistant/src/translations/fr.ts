@@ -215,6 +215,12 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'notebook.overwrite.modal.ignore': 'Ignorer les fichiers en double',
     'notebook.overwrite.modal.replace': 'Remplacer les fichiers existants',
     'notebook.overwrite.modal.title': 'Le fichier existe déjà',
+    'notebook.overwrite.modal.title.one': 'Le fichier existe déjà',
+    'notebook.overwrite.modal.title.other': 'Les fichiers existent déjà',
+    'notebook.overwrite.modal.description.one':
+      '{{duplicateCount}} fichier existe déjà dans ce carnet. {{newCount}} nouvelles ressources seront ajoutées quand même.',
+    'notebook.overwrite.modal.description.other':
+      '{{duplicateCount}} fichiers existent déjà dans ce carnet. {{newCount}} nouvelles ressources seront ajoutées quand même.',
     'notebook.upload.error.fileTooLarge':
       'Erreur de chargement : la taille du fichier dépasse la limite de 25 Mo.',
     'notebook.upload.error.tooManyFiles':

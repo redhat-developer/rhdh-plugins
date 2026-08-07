@@ -216,6 +216,12 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebook.overwrite.modal.ignore': 'Doppelte Dateien ignorieren',
     'notebook.overwrite.modal.replace': 'Bestehende Dateien ersetzen',
     'notebook.overwrite.modal.title': 'Datei existiert bereits',
+    'notebook.overwrite.modal.title.one': 'Datei existiert bereits',
+    'notebook.overwrite.modal.title.other': 'Dateien existieren bereits',
+    'notebook.overwrite.modal.description.one':
+      '{{duplicateCount}} Datei existiert bereits in diesem Notizbuch. {{newCount}} neue Ressourcen werden trotzdem hinzugefügt.',
+    'notebook.overwrite.modal.description.other':
+      '{{duplicateCount}} Dateien existieren bereits in diesem Notizbuch. {{newCount}} neue Ressourcen werden trotzdem hinzugefügt.',
     'notebook.upload.error.fileTooLarge':
       'Upload-Fehler: Dateigröße überschreitet das Limit von 25 MB.',
     'notebook.upload.error.tooManyFiles':

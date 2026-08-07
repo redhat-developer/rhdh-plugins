@@ -17,6 +17,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import type { LightspeedMessages } from '../utils/translations';
+import { substituteNotebookTemplate } from '../utils/notebookTranslation';
 
 /**
  * "File already exists" confirmation when uploading a file whose name already exists in the notebook (`OverwriteConfirmModal.tsx`).
@@ -55,11 +56,19 @@ export class NotebookOverwriteConfirmModalPage {
     ).toBeVisible();
   }
 
+  uploadButtonPattern(): RegExp {
+    const escaped = substituteNotebookTemplate(
+      this.t['notebook.overwrite.modal.action'],
+      { count: '\\d+' },
+    )
+      .replace('(', '\\(')
+      .replace(')', '\\)');
+    return new RegExp(escaped);
+  }
+
   async clickUpload(): Promise<void> {
     await this.dialog()
-      .getByRole('button', {
-        name: /Upload|Hochladen|Subir|Charger|Carica|アップロード/i,
-      })
+      .getByRole('button', { name: this.uploadButtonPattern() })
       .click();
   }
 }

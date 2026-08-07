@@ -42,6 +42,7 @@ import {
 } from '../../const';
 import { useUploadDocument } from '../../hooks/notebooks/useUploadDocument';
 import { useTranslation } from '../../hooks/useTranslation';
+import { runFileUploads } from '../../utils/notebook-upload-runner';
 import {
   getNotebookAcceptedFileTypes,
   validateFiles,
@@ -175,15 +176,17 @@ const useStyles = makeStyles(theme => ({
 const DropzoneClickArea = ({
   children,
   isDisabled,
+  ariaLabel,
 }: {
   children: React.ReactNode;
   isDisabled?: boolean;
+  ariaLabel?: string;
 }) => {
   const { open } = useContext(MultipleFileUploadContext);
   return (
     <div
       role="button"
-      aria-label="Drag and drop files here, or click to browse"
+      aria-label={ariaLabel}
       tabIndex={isDisabled ? -1 : 0}
       onClick={isDisabled ? undefined : open}
       onKeyDown={
@@ -290,20 +293,11 @@ export const AddDocumentModal = ({
       return;
     }
 
-    onFilesUploading?.(selectedFiles);
-    for (const file of selectedFiles) {
-      uploadMutation
-        .mutateAsync({ sessionId, file })
-        .then(data => {
-          onUploadStarted?.({
-            fileName: file.name,
-            documentId: data.document_id,
-          });
-        })
-        .catch(() => {
-          onUploadFailed?.(file.name);
-        });
-    }
+    runFileUploads(uploadMutation, sessionId, selectedFiles, {
+      onUploading: onFilesUploading,
+      onStarted: onUploadStarted,
+      onFailed: onUploadFailed,
+    });
 
     setSelectedFiles([]);
     setValidationErrors([]);
@@ -388,7 +382,10 @@ export const AddDocumentModal = ({
               }}
               onFileDrop={handleFileDrop}
             >
-              <DropzoneClickArea isDisabled={isDropzoneDisabled}>
+              <DropzoneClickArea
+                isDisabled={isDropzoneDisabled}
+                ariaLabel={t('notebook.upload.modal.dragDropTitle')}
+              >
                 <MultipleFileUploadMain
                   titleIcon={<UploadIcon className={classes.uploadIcon} />}
                   titleText={t('notebook.upload.modal.dragDropTitle')}
