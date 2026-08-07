@@ -67,12 +67,18 @@ export function useLightspeedProviderState(): {
     FileContent[]
   >([]);
   const [shellViewTab, setShellViewTabState] = useState(0);
+  const [activeNotebookId, setActiveNotebookIdState] = useState<
+    string | undefined
+  >(undefined);
   const shellViewTabRef = useRef(shellViewTab);
   shellViewTabRef.current = shellViewTab;
   const setShellViewTab = useCallback((tab: number) => {
     const next = tab === 1 ? 1 : 0;
     shellViewTabRef.current = next;
     setShellViewTabState(next);
+  }, []);
+  const setActiveNotebookId = useCallback((id: string | undefined) => {
+    setActiveNotebookIdState(id);
   }, []);
   const openedViaFABRef = useRef(false);
   const dockedAfterLeavingFullscreenRef = useRef(false);
@@ -311,9 +317,6 @@ export function useLightspeedProviderState(): {
         }
         setIsOpen(true);
       } else {
-        // Notebooks exist only in fullscreen; leaving embedded for overlay/docked
-        // must not keep shellViewTab on Notebooks (next fullscreen open should be Chat).
-        setShellViewTab(0);
         if (isLightspeedRoute) {
           leavingLightspeedForNonEmbeddedShellRef.current = true;
           pendingOverlayThreadHandoffRef.current = true;
@@ -329,7 +332,6 @@ export function useLightspeedProviderState(): {
       leaveLightspeedRouteForShellDisplayMode,
       navigate,
       setPersistedDisplayMode,
-      setShellViewTab,
       syncShellDrawerForMode,
     ],
   );
@@ -356,6 +358,8 @@ export function useLightspeedProviderState(): {
       consumePendingOverlayThreadHandoff,
       shellViewTab,
       setShellViewTab,
+      activeNotebookId,
+      setActiveNotebookId,
     }),
     [
       isOpen,
@@ -372,6 +376,8 @@ export function useLightspeedProviderState(): {
       consumePendingOverlayThreadHandoff,
       shellViewTab,
       setShellViewTab,
+      activeNotebookId,
+      setActiveNotebookId,
     ],
   );
 

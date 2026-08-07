@@ -73,12 +73,20 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     flex: 1,
     minHeight: 0,
-    height: '100%',
+    minWidth: 0,
+    width: '100%',
+    overflow: 'hidden',
     backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
   },
   drawerContainer: {
     flex: 1,
     minHeight: 0,
+    minWidth: 0,
+    '& .pf-v6-c-drawer__content, & .pf-v5-c-drawer__content': {
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+    },
     '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
       backgroundColor:
         'var(--pf-t--global--background--color--floating--default) !important',
@@ -114,7 +122,8 @@ const useStyles = makeStyles(theme => ({
   mainArea: {
     display: 'flex',
     flexDirection: 'row',
-    height: '100%',
+    flex: 1,
+    minHeight: 0,
     minWidth: 0,
   },
   topBar: {
@@ -132,10 +141,15 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     flex: 1,
     minHeight: 0,
+    minWidth: 0,
   },
   drawerContentBody: {
     backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
-    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    minHeight: 0,
+    minWidth: 0,
   },
   contentColumn: {
     display: 'flex',
@@ -198,6 +212,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
     minHeight: 0,
+    minWidth: 0,
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default)',
   },
@@ -284,6 +299,12 @@ type NotebookViewProps = {
   profileLoading: boolean;
   topicRestrictionEnabled: boolean;
   onClose: () => void;
+  isCompact?: boolean;
+  sidebarCollapsed: boolean;
+  onSidebarCollapsedChange: (collapsed: boolean) => void;
+  isUploadModalOpen: boolean;
+  onUploadModalOpenChange: (open: boolean) => void;
+  onUploadsInProgressChange?: (inProgress: boolean) => void;
 };
 
 export const NotebookView = ({
@@ -298,6 +319,12 @@ export const NotebookView = ({
   profileLoading,
   topicRestrictionEnabled,
   onClose,
+  isCompact = false,
+  sidebarCollapsed,
+  onSidebarCollapsedChange,
+  isUploadModalOpen,
+  onUploadModalOpenChange,
+  onUploadsInProgressChange,
 }: NotebookViewProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
@@ -394,8 +421,6 @@ export const NotebookView = ({
     onClick: () => sendMessage(title),
   }));
 
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [uploadingFileNames, setUploadingFileNames] = useState<string[]>([]);
   const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
   const [toastAlerts, setToastAlerts] = useState<Partial<AlertProps>[]>([]);
@@ -441,8 +466,8 @@ export const NotebookView = ({
     }
   }, [deleteDocumentTarget, notebooksApi, sessionId, queryClient, t]);
 
-  const handleOpenUploadModal = () => setIsUploadModalOpen(true);
-  const handleCloseUploadModal = () => setIsUploadModalOpen(false);
+  const handleOpenUploadModal = () => onUploadModalOpenChange(true);
+  const handleCloseUploadModal = () => onUploadModalOpenChange(false);
 
   const handleFilesUploading = (files: File[]) => {
     setUploadingFileNames(prev => {
@@ -566,12 +591,16 @@ export const NotebookView = ({
   const isAddDisabled =
     totalDocumentCount >= NOTEBOOK_MAX_FILES || hasUploadsInProgress;
 
+  useEffect(() => {
+    onUploadsInProgressChange?.(hasUploadsInProgress);
+  }, [hasUploadsInProgress, onUploadsInProgressChange]);
+
   const panelContent = (
     <DrawerPanelContent
-      isResizable
-      defaultSize="310px"
-      minSize="232px"
-      maxSize="50%"
+      isResizable={!isCompact}
+      defaultSize={isCompact ? '100%' : '310px'}
+      minSize={isCompact ? '100%' : '232px'}
+      maxSize={isCompact ? '100%' : '50%'}
       resizeAriaLabel={t('notebook.view.sidebar.resize')}
     >
       <DocumentSidebar
@@ -582,7 +611,7 @@ export const NotebookView = ({
         deletingDocumentIds={deletingDocumentIds}
         collapsed={sidebarCollapsed}
         hasUploadsInProgress={hasUploadsInProgress}
-        onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
+        onToggleCollapse={() => onSidebarCollapsedChange(!sidebarCollapsed)}
         onAddDocument={handleOpenUploadModal}
         onDeleteDocument={handleDeleteDocument}
         onRenameNotebook={newName => handleRenameNotebook(sessionId, newName)}
@@ -662,7 +691,10 @@ export const NotebookView = ({
   };
 
   return (
-    <div className={classes.root}>
+    <div
+      className={classes.root}
+      style={isCompact ? { position: 'relative' as const } : undefined}
+    >
       {toastAlerts.length > 0 && (
         <AlertGroup
           hasAnimations
@@ -700,7 +732,7 @@ export const NotebookView = ({
         >
           <DrawerContentBody className={classes.drawerContentBody}>
             <div className={classes.mainArea}>
-              {sidebarCollapsed && (
+              {sidebarCollapsed && !isCompact && (
                 <div className={classes.expandStrip}>
                   <Tooltip
                     content={t('notebook.view.sidebar.expand')}
@@ -708,7 +740,7 @@ export const NotebookView = ({
                   >
                     <Button
                       variant="plain"
-                      onClick={() => setSidebarCollapsed(false)}
+                      onClick={() => onSidebarCollapsedChange(false)}
                       aria-label={t('notebook.view.sidebar.expand')}
                       size="sm"
                     >
@@ -743,17 +775,19 @@ export const NotebookView = ({
               )}
 
               <div className={classes.contentColumn}>
-                <div className={classes.topBar}>
-                  <Button
-                    variant="link"
-                    className={classes.closeButton}
-                    onClick={onClose}
-                    icon={<TimesIcon />}
-                    iconPosition="end"
-                  >
-                    {t('notebook.view.close')}
-                  </Button>
-                </div>
+                {!isCompact && (
+                  <div className={classes.topBar}>
+                    <Button
+                      variant="link"
+                      className={classes.closeButton}
+                      onClick={onClose}
+                      icon={<TimesIcon />}
+                      iconPosition="end"
+                    >
+                      {t('notebook.view.close')}
+                    </Button>
+                  </div>
+                )}
 
                 <div className={classes.mainContent}>{renderMainContent()}</div>
 
@@ -809,6 +843,7 @@ export const NotebookView = ({
         onDuplicatesFound={handleDuplicatesFound}
         filesToAdd={filesToAddToModal}
         onFilesAdded={handleFilesAddedToModal}
+        isCompact={isCompact}
       />
 
       <OverwriteConfirmModal
@@ -816,6 +851,7 @@ export const NotebookView = ({
         onClose={handleOverwriteCancel}
         onConfirm={handleOverwriteConfirm}
         fileNames={filesToOverwrite.map(f => f.name)}
+        isCompact={isCompact}
       />
 
       <DeleteDocumentModal
@@ -823,6 +859,7 @@ export const NotebookView = ({
         onClose={() => setDeleteDocumentTarget(null)}
         onConfirm={confirmDeleteDocument}
         documentName={deleteDocumentTarget?.name ?? ''}
+        isCompact={isCompact}
       />
     </div>
   );

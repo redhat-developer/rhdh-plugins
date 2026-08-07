@@ -72,7 +72,6 @@ export const UploadResourceScreen = ({
 }: UploadResourceScreenProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
-
   return (
     <div className={classes.container}>
       <CatalogIcon className={classes.icon} />

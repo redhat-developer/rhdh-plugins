@@ -26,6 +26,7 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { getScopedDialogProps } from '../../utils/scoped-dialog-utils';
 import { FileTypeIcon } from './FileTypeIcon';
 
 const useStyles = makeStyles(theme => ({
@@ -33,11 +34,21 @@ const useStyles = makeStyles(theme => ({
     borderRadius: 24,
     maxWidth: 578,
   },
+  dialogPaperCompact: {
+    borderRadius: 12,
+    maxWidth: '100%',
+  },
   dialogTitle: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '24px 24px 16px',
+  },
+  dialogTitleCompact: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '16px 16px 12px !important',
   },
   titleText: {
     fontWeight: 500,
@@ -45,11 +56,20 @@ const useStyles = makeStyles(theme => ({
     lineHeight: '1.625rem',
     letterSpacing: '-0.25px',
   },
+  titleTextCompact: {
+    fontWeight: 600,
+    fontSize: '1rem',
+    lineHeight: '1.375rem',
+    letterSpacing: '-0.25px',
+  },
   closeButton: {
     color: theme.palette.text.primary,
   },
   dialogContent: {
     padding: '0 24px 24px',
+  },
+  dialogContentCompact: {
+    padding: '0 16px 16px !important',
   },
   fileList: {
     margin: 0,
@@ -65,6 +85,14 @@ const useStyles = makeStyles(theme => ({
       '1px solid var(--pf-t--global--border--color--default, #c7c7c7)',
     cursor: 'pointer',
   },
+  fileItemCompact: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    padding: `${theme.spacing(1)}px 0`,
+    borderBottom:
+      '1px solid var(--pf-t--global--border--color--default, #c7c7c7)',
+  },
   fileName: {
     flex: 1,
     minWidth: 0,
@@ -74,21 +102,54 @@ const useStyles = makeStyles(theme => ({
     fontSize: '0.875rem',
     lineHeight: '1.25rem',
   },
+  fileNameCompact: {
+    flex: 1,
+    minWidth: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    fontSize: '0.8125rem',
+    lineHeight: '1.125rem',
+  },
   dialogActions: {
     justifyContent: 'left',
     padding: theme.spacing(2.5),
+    gap: theme.spacing(1),
+  },
+  dialogActionsCompact: {
+    justifyContent: 'flex-start',
+    padding: '12px 16px !important',
     gap: theme.spacing(1),
   },
   overwriteButton: {
     textTransform: 'none',
     borderRadius: 999,
   },
+  overwriteButtonCompact: {
+    textTransform: 'none',
+    borderRadius: 999,
+    fontSize: '0.8125rem',
+    padding: '4px 16px',
+  },
   cancelButton: {
     textTransform: 'none',
     borderRadius: 999,
   },
+  cancelButtonCompact: {
+    textTransform: 'none',
+    borderRadius: 999,
+    fontSize: '0.8125rem',
+    padding: '4px 16px',
+  },
   warningAlert: {
     borderRadius: '6px',
+  },
+  warningAlertCompact: {
+    borderRadius: '6px',
+    fontSize: '0.8125rem',
+    '& .MuiAlert-icon': {
+      fontSize: '1.125rem',
+    },
   },
 }));
 
@@ -97,6 +158,7 @@ type OverwriteConfirmModalProps = {
   onClose: () => void;
   onConfirm: () => void;
   fileNames: string[];
+  isCompact?: boolean;
 };
 
 export const OverwriteConfirmModal = ({
@@ -104,21 +166,31 @@ export const OverwriteConfirmModal = ({
   onClose,
   onConfirm,
   fileNames,
+  isCompact = false,
 }: OverwriteConfirmModalProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
+
+  const scopedProps = getScopedDialogProps(isCompact);
 
   return (
     <Dialog
       open={isOpen}
       onClose={onClose}
       aria-labelledby="overwrite-confirm-modal-title"
+      {...scopedProps}
       PaperProps={{
-        className: classes.dialogPaper,
+        className: isCompact ? classes.dialogPaperCompact : classes.dialogPaper,
+        ...scopedProps.PaperProps,
       }}
     >
-      <DialogTitle className={classes.dialogTitle}>
-        <Typography component="h2" className={classes.titleText}>
+      <DialogTitle
+        className={isCompact ? classes.dialogTitleCompact : classes.dialogTitle}
+      >
+        <Typography
+          component="h2"
+          className={isCompact ? classes.titleTextCompact : classes.titleText}
+        >
           {t('notebook.overwrite.modal.title')}
         </Typography>
         <IconButton
@@ -127,38 +199,66 @@ export const OverwriteConfirmModal = ({
           className={classes.closeButton}
           size="small"
         >
-          <CloseIcon />
+          <CloseIcon fontSize={isCompact ? 'small' : 'medium'} />
         </IconButton>
       </DialogTitle>
 
-      <DialogContent className={classes.dialogContent}>
-        <Alert severity="warning" className={classes.warningAlert}>
+      <DialogContent
+        className={
+          isCompact ? classes.dialogContentCompact : classes.dialogContent
+        }
+      >
+        <Alert
+          severity="warning"
+          className={
+            isCompact ? classes.warningAlertCompact : classes.warningAlert
+          }
+        >
           {t('notebook.overwrite.modal.description')}
         </Alert>
 
         <ul className={classes.fileList}>
           {fileNames.map(name => (
-            <li key={name} className={classes.fileItem}>
+            <li
+              key={name}
+              className={isCompact ? classes.fileItemCompact : classes.fileItem}
+            >
               <FileTypeIcon fileName={name} />
-              <Typography className={classes.fileName}>{name}</Typography>
+              <Typography
+                className={
+                  isCompact ? classes.fileNameCompact : classes.fileName
+                }
+              >
+                {name}
+              </Typography>
             </li>
           ))}
         </ul>
       </DialogContent>
 
-      <DialogActions className={classes.dialogActions}>
+      <DialogActions
+        className={
+          isCompact ? classes.dialogActionsCompact : classes.dialogActions
+        }
+      >
         <Button
           variant="contained"
           color="error"
-          className={classes.overwriteButton}
+          className={
+            isCompact ? classes.overwriteButtonCompact : classes.overwriteButton
+          }
           onClick={onConfirm}
+          size={isCompact ? 'small' : 'medium'}
         >
           {t('notebook.overwrite.modal.action')}
         </Button>
         <Button
           variant="outlined"
-          className={classes.cancelButton}
+          className={
+            isCompact ? classes.cancelButtonCompact : classes.cancelButton
+          }
           onClick={onClose}
+          size={isCompact ? 'small' : 'medium'}
         >
           {t('common.cancel')}
         </Button>
