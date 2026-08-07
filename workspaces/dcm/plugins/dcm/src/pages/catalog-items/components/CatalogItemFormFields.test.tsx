@@ -107,9 +107,9 @@ describe('CatalogItemFormFields – file import error handling', () => {
 
     await userEvent.upload(input, file);
 
-    await waitFor(() =>
-      expect(screen.getByText(/Failed to import file/i)).toBeInTheDocument(),
-    );
+    expect(
+      await screen.findByText(/Failed to import file/i),
+    ).toBeInTheDocument();
   });
 
   it('does not show an error alert when a valid JSON file is imported', async () => {
@@ -148,9 +148,9 @@ describe('CatalogItemFormFields – file import error handling', () => {
     await userEvent.upload(input, file);
 
     // Wait for error to appear
-    await waitFor(() =>
-      expect(screen.getByText(/Failed to import file/i)).toBeInTheDocument(),
-    );
+    expect(
+      await screen.findByText(/Failed to import file/i),
+    ).toBeInTheDocument();
 
     // MuiAlert renders a close button
     const closeBtn = screen.getByRole('button', { name: /close/i });

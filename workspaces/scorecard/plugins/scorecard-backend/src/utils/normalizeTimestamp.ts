@@ -20,8 +20,11 @@ export function normalizeTimestamp(timestamp?: unknown): Date {
   }
 
   if (typeof timestamp === 'number' || typeof timestamp === 'string') {
+    if (timestamp === '') {
+      return new Date(0);
+    }
     return new Date(timestamp);
   }
 
-  return new Date();
+  return new Date(0);
 }

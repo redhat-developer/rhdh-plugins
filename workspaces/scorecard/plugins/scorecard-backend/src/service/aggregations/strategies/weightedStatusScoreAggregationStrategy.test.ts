@@ -21,7 +21,7 @@ import {
   mockWeightedStatusScoreAggregationConfig,
 } from '../../../../__fixtures__/mockAggregationConfig';
 import { mockWeightedStatusScoreAggregationResult } from '../../../../__fixtures__/mockAggregatedMetricResult';
-import { mockFirstThresholds } from '../../../../__fixtures__/mockThresholds';
+import { mockHigherIsBetterThresholds } from '../../../../__fixtures__/mockThresholds';
 import { AggregatedMetricMapper } from '../../mappers';
 import { AggregatedMetricLoader } from '../AggregatedMetricLoader';
 import { WeightedStatusScoreAggregationStrategy } from './WeightedStatusScoreAggregationStrategy';
@@ -52,7 +52,7 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
       { name: 'success', count: 2, score: 100 },
       { name: 'error', count: 0, score: 0 },
     ],
-    thresholds: mockFirstThresholds,
+    thresholds: mockHigherIsBetterThresholds,
     weightedStatusScore: 100,
     weightedStatusSum: 200,
     weightedStatusMaxPossible: 200,
@@ -104,7 +104,7 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
       strategy.aggregate({
         metric,
         entityRefs,
-        thresholds: mockFirstThresholds,
+        thresholds: mockHigherIsBetterThresholds,
         aggregationConfig: invalidAggregationConfig,
       }),
     ).rejects.toThrow(
@@ -132,7 +132,7 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
       strategy.aggregate({
         metric,
         entityRefs,
-        thresholds: mockFirstThresholds,
+        thresholds: mockHigherIsBetterThresholds,
         aggregationConfig: aggregationConfigWithoutColors,
       }),
     ).rejects.toThrow(
@@ -153,7 +153,7 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
     await strategy.aggregate({
       metric,
       entityRefs,
-      thresholds: mockFirstThresholds,
+      thresholds: mockHigherIsBetterThresholds,
       aggregationConfig: defaultAggregationConfig,
     });
 
@@ -168,7 +168,7 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
     await strategy.aggregate({
       metric,
       entityRefs,
-      thresholds: mockFirstThresholds,
+      thresholds: mockHigherIsBetterThresholds,
       aggregationConfig,
     });
 
@@ -182,7 +182,7 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
     await strategy.aggregate({
       metric,
       entityRefs,
-      thresholds: mockFirstThresholds,
+      thresholds: mockHigherIsBetterThresholds,
       aggregationConfig,
     });
 
@@ -197,7 +197,7 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
     const result = await strategy.aggregate({
       metric,
       entityRefs,
-      thresholds: mockFirstThresholds,
+      thresholds: mockHigherIsBetterThresholds,
       aggregationConfig,
     });
 

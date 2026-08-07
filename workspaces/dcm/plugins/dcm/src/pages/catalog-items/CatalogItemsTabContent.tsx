@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { TableColumn } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import {
@@ -74,13 +74,14 @@ import type {
   CatalogItem,
   ServiceType,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import { extractApiError } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { catalogApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
 import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { createEditDeleteColumn } from '../../components/dcmTabListHelpers';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
-import { useCrudTab } from '../../hooks/useCrudTab';
+import { usePaginatedCrudTab } from '../../hooks/usePaginatedCrudTab';
 import { useTranslation } from '../../hooks/useTranslation';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { CatalogItemFormFields } from './components/CatalogItemFormFields';
@@ -99,19 +100,30 @@ export function CatalogItemsTabContent() {
   const { t } = useTranslation();
 
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
+  const [serviceTypesError, setServiceTypesError] = useState<string | null>(
+    null,
+  );
   /** Tracks whether a submit was attempted so field-level errors show for all fields. */
   const [createSubmitAttempted, setCreateSubmitAttempted] = useState(false);
   const [editSubmitAttempted, setEditSubmitAttempted] = useState(false);
 
-  const crud = useCrudTab<CatalogItem, CatalogItemForm>({
-    loadFn: async () => {
-      const [itemList, serviceTypeList] = await Promise.all([
-        catalogApi.listCatalogItems().then(r => r.results ?? []),
-        catalogApi.listServiceTypes().then(r => r.results ?? []),
-      ]);
-      setServiceTypes(serviceTypeList);
-      return itemList;
-    },
+  // Fetch dropdown options once on mount; page navigation does not re-fetch.
+  useEffect(() => {
+    catalogApi
+      .listServiceTypes({ max_page_size: 100 })
+      .then(r => setServiceTypes(r.results ?? []))
+      .catch(err => setServiceTypesError(extractApiError(err)));
+  }, [catalogApi]);
+
+  const crud = usePaginatedCrudTab<CatalogItem, CatalogItemForm>({
+    loadFn: ({ pageToken, pageSize: ps }) =>
+      catalogApi
+        .listCatalogItems({ page_token: pageToken, max_page_size: ps })
+        .then(r => ({
+          items: r.results ?? [],
+          nextPageToken: r.next_page_token,
+        })),
+    storageKey: 'catalog-items',
     createFn: form => catalogApi.createCatalogItem(formToCatalogItem(form)),
     updateFn: (id, form) =>
       catalogApi.updateCatalogItem(id, formToCatalogItemForUpdate(form)),
@@ -125,7 +137,6 @@ export function CatalogItemsTabContent() {
     emptyForm: emptyCatalogItemForm,
     isValid: isCatalogItemFormValid,
     itemToForm: catalogItemToForm,
-    storageKey: 'catalog-items',
     createSuccessMessage: t('catalogItems.createSuccess'),
     editSuccessMessage: t('catalogItems.updateSuccess'),
     deleteSuccessMessage: t('catalogItems.deleteSuccess'),
@@ -321,19 +332,16 @@ export function CatalogItemsTabContent() {
       <DcmCrudTabLayout<CatalogItem>
         items={crud.items}
         filtered={crud.filtered}
-        paginated={crud.paginated}
+        paginated={crud.filtered}
         columns={columns}
         loading={crud.loading}
         loadError={crud.loadError}
         onRetry={crud.reload}
-        actionError={null}
-        onDismissActionError={undefined}
+        actionError={serviceTypesError}
+        onDismissActionError={() => setServiceTypesError(null)}
         search={crud.search}
-        onSearchChange={crud.setSearch}
-        page={crud.page}
-        pageSize={crud.pageSize}
-        onPageChange={crud.onPageChange}
-        onRowsPerPageChange={crud.onRowsPerPageChange}
+        onSearchChange={crud.handleSearchChange}
+        cursorPagination={crud.cursorPagination}
         emptyTitle={t('catalogItems.emptyTitle')}
         emptyDescription={t('catalogItems.emptyDescription')}
         primaryActionLabel={t('catalogItems.createButton')}
