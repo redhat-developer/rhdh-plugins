@@ -313,6 +313,33 @@ scorecard:
       description: This KPI provides a minimum open issues count per entity.
       type: min
       metricId: jira.openIssues
+
+  # Globally disabled metrics — these checks never run, regardless of entity annotations.
+  # disabledMetrics:
+  #   - openssf.packaging
+
+  # Control whether entity annotations can override scorecard behavior.
+  # entityAnnotations:
+  #   # Global switch: if false, all scorecard entity annotations are ignored. Default: true.
+  #   enabled: true
+  #   # Per-entity threshold override annotations (scorecard.io/<metricId>.thresholds.rules.<key>).
+  #   thresholds:
+  #     # If true (default), entities can customize thresholds via annotations
+  #     # for metrics not listed in `except`; if false, threshold annotations have no effect.
+  #     enabled: true
+  #     # Metric IDs listed here cannot have their thresholds customized via entity annotations.
+  #     except:
+  #       - github.openPRs
+  #   # Per-entity disabled-metrics annotation (scorecard.io/disabled-metrics).
+  #   disabledMetrics:
+  #     # If true (default), entities can disable metrics via annotation
+  #     # for metrics not listed in `except`; if false, the annotation has no effect.
+  #     enabled: true
+  #     # Entity annotations cannot disable metric IDs listed here
+  #     # (these checks always run unless mentioned in scorecard.disabledMetrics).
+  #     except:
+  #       - openssf.maintained
+
   metricProviders:
     jira:
       openIssues:

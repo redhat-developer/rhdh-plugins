@@ -18,25 +18,36 @@ import { ConfigReader } from '@backstage/config';
 import {
   MockNumberProvider,
   MockBatchBooleanProvider,
+  jiraBooleanProvider,
 } from '../../__fixtures__/mockProviders';
 import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
 import { ThresholdResolver } from './ThresholdResolver';
 
 describe('ThresholdResolver', () => {
-  const customThresholds = {
+  const defaultNumberThresholds = {
+    rules: [
+      { key: 'error', expression: '>40' },
+      { key: 'warning', expression: '>20' },
+      { key: 'success', expression: '<=20' },
+    ],
+  };
+
+  const configuredNumberThresholds = {
+    rules: [
+      { key: 'error', expression: '>100' },
+      { key: 'warning', expression: '>50' },
+      { key: 'success', expression: '<=50' },
+    ],
+  };
+
+  const customThresholdsConfig = {
     scorecard: {
       metricProviders: {
         github: {
           numberMetric: {
             metrics: {
               numberMetric: {
-                thresholds: {
-                  rules: [
-                    { key: 'error', expression: '>100' },
-                    { key: 'warning', expression: '>50' },
-                    { key: 'success', expression: '<=50' },
-                  ],
-                },
+                thresholds: configuredNumberThresholds,
               },
             },
           },
@@ -55,13 +66,7 @@ describe('ThresholdResolver', () => {
               otherMetric: {
                 metrics: {
                   otherMetric: {
-                    thresholds: {
-                      rules: [
-                        { key: 'error', expression: '>100' },
-                        { key: 'warning', expression: '>50' },
-                        { key: 'success', expression: '<=50' },
-                      ],
-                    },
+                    thresholds: configuredNumberThresholds,
                   },
                 },
               },
@@ -72,13 +77,9 @@ describe('ThresholdResolver', () => {
       [provider, new MockNumberProvider('github.otherMetric', 'github')],
     );
 
-    expect(resolver.resolveMetricThresholds(provider.getMetrics()[0])).toEqual({
-      rules: [
-        { key: 'error', expression: '>40' },
-        { key: 'warning', expression: '>20' },
-        { key: 'success', expression: '<=20' },
-      ],
-    });
+    expect(resolver.resolveMetricThresholds(provider.getMetrics()[0])).toEqual(
+      defaultNumberThresholds,
+    );
   });
 
   it('uses configured provider-level thresholds when configured metric thresholds are absent', () => {
@@ -89,13 +90,7 @@ describe('ThresholdResolver', () => {
           metricProviders: {
             github: {
               numberMetric: {
-                thresholds: {
-                  rules: [
-                    { key: 'error', expression: '>100' },
-                    { key: 'warning', expression: '>50' },
-                    { key: 'success', expression: '<=50' },
-                  ],
-                },
+                thresholds: configuredNumberThresholds,
               },
             },
           },
@@ -104,13 +99,9 @@ describe('ThresholdResolver', () => {
       [provider],
     );
 
-    expect(resolver.resolveMetricThresholds(provider.getMetrics()[0])).toEqual({
-      rules: [
-        { key: 'error', expression: '>100' },
-        { key: 'warning', expression: '>50' },
-        { key: 'success', expression: '<=50' },
-      ],
-    });
+    expect(resolver.resolveMetricThresholds(provider.getMetrics()[0])).toEqual(
+      configuredNumberThresholds,
+    );
   });
 
   it('uses configured metric-level thresholds over configured provider-level thresholds', () => {
@@ -130,13 +121,7 @@ describe('ThresholdResolver', () => {
                 },
                 metrics: {
                   numberMetric: {
-                    thresholds: {
-                      rules: [
-                        { key: 'error', expression: '>100' },
-                        { key: 'warning', expression: '>50' },
-                        { key: 'success', expression: '<=50' },
-                      ],
-                    },
+                    thresholds: configuredNumberThresholds,
                   },
                 },
               },
@@ -147,13 +132,9 @@ describe('ThresholdResolver', () => {
       [provider],
     );
 
-    expect(resolver.resolveMetricThresholds(provider.getMetrics()[0])).toEqual({
-      rules: [
-        { key: 'error', expression: '>100' },
-        { key: 'warning', expression: '>50' },
-        { key: 'success', expression: '<=50' },
-      ],
-    });
+    expect(resolver.resolveMetricThresholds(provider.getMetrics()[0])).toEqual(
+      configuredNumberThresholds,
+    );
   });
 
   it('uses configured thresholds per metric for batch providers', () => {
@@ -269,9 +250,10 @@ describe('ThresholdResolver', () => {
 
   it('merges entity annotation overrides on top of custom provider thresholds', () => {
     const provider = new MockNumberProvider('github.numberMetric', 'github');
-    const resolver = new ThresholdResolver(new ConfigReader(customThresholds), [
-      provider,
-    ]);
+    const resolver = new ThresholdResolver(
+      new ConfigReader(customThresholdsConfig),
+      [provider],
+    );
     const entity = new MockEntityBuilder()
       .withAnnotations({
         'scorecard.io/github.numberMetric.thresholds.rules.warning': '>10',
@@ -290,6 +272,119 @@ describe('ThresholdResolver', () => {
     });
   });
 
+  it('ignores entity annotation overrides when entityAnnotations.enabled is false', () => {
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
+    const resolver = new ThresholdResolver(
+      new ConfigReader({
+        scorecard: {
+          entityAnnotations: {
+            enabled: false,
+            thresholds: {
+              enabled: true,
+            },
+          },
+        },
+      }),
+      [provider],
+    );
+    const entity = new MockEntityBuilder()
+      .withAnnotations({
+        'scorecard.io/github.numberMetric.thresholds.rules.warning': '>10',
+        'scorecard.io/github.numberMetric.thresholds.rules.success': '<=10',
+      })
+      .build();
+
+    expect(
+      resolver.resolveEntityThresholds(entity, provider.getMetrics()[0]),
+    ).toEqual(defaultNumberThresholds);
+  });
+
+  it('ignores entity annotation overrides when entityAnnotations are enabled and entityAnnotations.thresholds.enabled is false', () => {
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
+    const resolver = new ThresholdResolver(
+      new ConfigReader({
+        scorecard: {
+          entityAnnotations: {
+            thresholds: {
+              enabled: false,
+            },
+          },
+        },
+      }),
+      [provider],
+    );
+    const entity = new MockEntityBuilder()
+      .withAnnotations({
+        'scorecard.io/github.numberMetric.thresholds.rules.warning': '>10',
+        'scorecard.io/github.numberMetric.thresholds.rules.success': '<=10',
+      })
+      .build();
+
+    expect(
+      resolver.resolveEntityThresholds(entity, provider.getMetrics()[0]),
+    ).toEqual(defaultNumberThresholds);
+  });
+
+  it('ignores entity annotation overrides when entityAnnotations are enabled and metric is in entityAnnotations.thresholds.except', () => {
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
+    const resolver = new ThresholdResolver(
+      new ConfigReader({
+        scorecard: {
+          entityAnnotations: {
+            thresholds: {
+              enabled: true,
+              except: ['github.numberMetric'],
+            },
+          },
+        },
+      }),
+      [provider],
+    );
+    const entity = new MockEntityBuilder()
+      .withAnnotations({
+        'scorecard.io/github.numberMetric.thresholds.rules.warning': '>10',
+        'scorecard.io/github.numberMetric.thresholds.rules.success': '<=10',
+      })
+      .build();
+
+    expect(
+      resolver.resolveEntityThresholds(entity, provider.getMetrics()[0]),
+    ).toEqual(defaultNumberThresholds);
+  });
+
+  it('uses entity annotation overrides when entityAnnotations are enabled and metric is not in entityAnnotations.thresholds.except', () => {
+    const provider = new MockNumberProvider('github.numberMetric', 'github');
+    const resolver = new ThresholdResolver(
+      new ConfigReader({
+        scorecard: {
+          entityAnnotations: {
+            thresholds: {
+              enabled: true,
+              except: ['jira.booleanMetric'],
+            },
+          },
+        },
+      }),
+      [jiraBooleanProvider, provider],
+    );
+    const entity = new MockEntityBuilder()
+      .withAnnotations({
+        'scorecard.io/github.numberMetric.thresholds.rules.warning': '>10',
+        'scorecard.io/github.numberMetric.thresholds.rules.success': '<=10',
+      })
+      .build();
+
+    expect(
+      resolver.resolveEntityThresholds(entity, provider.getMetrics()[0]),
+    ).toEqual({
+      rules: [
+        { key: 'error', expression: '>40' },
+        { key: 'warning', expression: '>10' },
+        { key: 'success', expression: '<=10' },
+      ],
+    });
+  });
+
   it('loads configured thresholds once at startup', () => {
     const config = new ConfigReader({
       scorecard: {
@@ -298,13 +393,7 @@ describe('ThresholdResolver', () => {
             numberMetric: {
               metrics: {
                 numberMetric: {
-                  thresholds: {
-                    rules: [
-                      { key: 'error', expression: '>100' },
-                      { key: 'warning', expression: '>50' },
-                      { key: 'success', expression: '<=50' },
-                    ],
-                  },
+                  thresholds: configuredNumberThresholds,
                 },
               },
             },
