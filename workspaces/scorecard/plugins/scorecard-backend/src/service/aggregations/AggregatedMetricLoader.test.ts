@@ -136,6 +136,7 @@ describe('AggregatedMetricLoader', () => {
         ['component:default/a'],
         'metric.id',
         'sum',
+        undefined,
       );
     });
 
@@ -148,6 +149,22 @@ describe('AggregatedMetricLoader', () => {
 
       expect(spyMethods.toScalarAggregatedMetricSpy).toHaveBeenCalledWith(
         scalarAggregatedMetric,
+      );
+    });
+
+    it('should forward filter to scalar DB read', async () => {
+      await loader.loadScalarMetricByEntityRefs(
+        ['component:default/a'],
+        'metric.id',
+        'sum',
+        { status: 'error' },
+      );
+
+      expect(readScalarAggregatedMetricByEntityRefs).toHaveBeenCalledWith(
+        ['component:default/a'],
+        'metric.id',
+        'sum',
+        { status: 'error' },
       );
     });
   });

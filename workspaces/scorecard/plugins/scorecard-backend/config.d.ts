@@ -76,6 +76,11 @@ export interface Config {
               | typeof aggregationTypes.max
               | typeof aggregationTypes.min
               | typeof aggregationTypes.count;
+            /** Optional: filter applied when aggregating scalar KPI values */
+            filter?: {
+              /** Threshold status key to include (e.g. success, warning, error) */
+              status?: string;
+            };
             /** Options specific to the scalar aggregation type */
             options?: {
               /** Optional: threshold rules for coloring the KPI headline value from the aggregation result */

@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-export function normalizeTimestamp(timestamp?: unknown): Date {
-  if (timestamp instanceof Date) {
-    return timestamp;
-  }
+import { bulkImportPermission } from './permissions';
 
-  if (typeof timestamp === 'number' || typeof timestamp === 'string') {
-    if (timestamp === '') {
-      return new Date(0);
-    }
-    return new Date(timestamp);
-  }
-
-  return new Date(0);
-}
+describe('bulkImportPermission', () => {
+  it('exports the stable permission name and resource type contract', () => {
+    expect(bulkImportPermission.name).toBe('bulk.import');
+    expect(bulkImportPermission.resourceType).toBe('bulk-import');
+  });
+});

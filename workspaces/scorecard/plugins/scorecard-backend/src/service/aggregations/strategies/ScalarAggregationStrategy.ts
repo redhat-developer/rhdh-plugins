@@ -56,6 +56,7 @@ export class ScalarAggregationStrategy implements AggregationStrategy {
       entityRefs,
       metric.id,
       this.aggregationFn,
+      aggregationConfig.filter,
     );
 
     const result = {
