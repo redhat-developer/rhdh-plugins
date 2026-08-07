@@ -72,16 +72,17 @@ Agents, tools, models, MCP servers, and vector stores are Backstage catalog enti
 
 ### Package structure
 
-| Package                        | Purpose                                                              |
-| ------------------------------ | -------------------------------------------------------------------- |
-| `boost`                        | Chat UI, agent gallery, admin panels, composable routable extensions |
-| `boost-common`                 | Shared types, permissions (browser-safe, `common-library` role)      |
-| `boost-node`                   | `boostAiProviderServiceRef`, extension points (`node-library` role)  |
-| `boost-backend`                | Core routes, services, middleware, ProviderManager                   |
-| `boost-backend-module-ogx`     | OGX provider module                                                  |
-| `boost-backend-module-kagenti` | Kagenti provider module                                              |
-| `ogx-entity-provider`          | Independently deployable catalog entity provider                     |
-| `kagenti-entity-provider`      | Independently deployable catalog entity provider                     |
+| Package                        | Purpose                                                                                       |
+| ------------------------------ | --------------------------------------------------------------------------------------------- |
+| `boost`                        | Chat UI, agent gallery, admin panels, composable routable extensions                          |
+| `boost-common`                 | Shared types, permissions (browser-safe, `common-library` role)                               |
+| `boost-node`                   | `boostAiProviderServiceRef`, extension points (`node-library` role)                           |
+| `boost-connector-utils`        | Shared connector utils (`node-library` role) — CA bundle, fault isolation, startup validation |
+| `boost-backend`                | Core routes, services, middleware, ProviderManager                                            |
+| `boost-backend-module-ogx`     | OGX provider module                                                                           |
+| `boost-backend-module-kagenti` | Kagenti provider module                                                                       |
+| `ogx-entity-provider`          | Independently deployable catalog entity provider                                              |
+| `kagenti-entity-provider`      | Independently deployable catalog entity provider                                              |
 
 ### Naming
 
