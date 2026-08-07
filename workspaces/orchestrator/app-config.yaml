@@ -114,6 +114,7 @@ auth:
 #   enabled: true
 #   rbac:
 #     policies-csv-file: ../../docs/rbac-policy.csv
+#     conditionalPoliciesFile: ../../docs/conditional-policies.yaml
 #     policyFileReload: true
 #     pluginsWithPermission:
 #       - orchestrator
@@ -161,9 +162,10 @@ orchestrator:
   # Uncomment to set the content length limit for the requests. Defaults to 102400 bytes (100kb)
   # contentLengthLimit: 10mb
   # Uncomment and configure to use the log viewer
-  # workflowLogProvider:
-  #   loki:
-  #     baseUrl: http://localhost:3100
+  workflowLogProvider:
+    loki:
+      baseUrl: http://localhost:3100
+      token: secret-token
   # Uncomment if using a custom log stream selector
   # logStreamSelectors:
   #   - label: 'selector'
@@ -189,7 +191,7 @@ orchestrator:
     # If you're using a MacBook with M-series chips, uncomment the line below to use ARM images.
     # To pull the image, you'll first need to authenticate with the registry.
     # For more information, visit: https://red.ht/410mMNU.
-    # container:  registry.redhat.io/openshift-serverless-1/logic-swf-devmode-rhel8:1.35.0
+    # container:  registry.redhat.io/openshift-serverless-1/logic-swf-devmode-rhel8:1.36.0
     # notsecret
     notificationsBearerToken: bXljdXJscGFzc3dkCg== # NOSONAR
     notificationsUrl: http://host.docker.internal:7007

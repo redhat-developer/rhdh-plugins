@@ -1,5 +1,38 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-node
 
+## 4.1.0
+
+### Patch Changes
+
+- Updated dependencies [3af0fb2]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.1.0
+
+## 4.0.0
+
+### Patch Changes
+
+- Updated dependencies [8c14679]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.0.0
+
+## 3.0.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.1
+
+## 3.0.0
+
+### Minor Changes
+
+- c7f89e7: Introduce `scorecardCollectorsExtensionPoint` for registering collectors to fetch data from different datasources, and `scorecardCollectorsServiceRef` for consuming collected data in metric providers `calculateMetrics` through `collect(...)`.
+- 50447ac: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- Updated dependencies [50447ac]
+- Updated dependencies [6ea1575]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.0
+
 ## 2.8.1
 
 ### Patch Changes

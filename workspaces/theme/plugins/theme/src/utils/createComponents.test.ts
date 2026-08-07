@@ -15,6 +15,7 @@
  */
 
 import type { ThemeConfig } from '../types';
+import { customDarkTheme } from '../darkTheme';
 import { createComponents, type Components } from './createComponents';
 
 interface TestCase {
@@ -84,5 +85,70 @@ describe('createComponents', () => {
       const actual = createComponents(testCase.config);
       expect(actual).toEqual(testCase.expected);
     });
+  });
+
+  it('sets BackstageSidebarPage minHeight to fill the viewport', () => {
+    const actual = createComponents({});
+    expect(actual.BackstageSidebarPage?.styleOverrides?.root).toEqual(
+      expect.objectContaining({
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+      }),
+    );
+  });
+
+  it('stretches main with mainSectionBackgroundColor inside the page inset', () => {
+    const actual = createComponents({ palette: customDarkTheme() });
+    const root = actual.BackstageSidebarPage?.styleOverrides?.root as
+      | Record<string, unknown>
+      | undefined;
+    const desktop = root?.['@media (min-width: 600px)'] as
+      | Record<string, unknown>
+      | undefined;
+    expect(
+      desktop?.["& > [class*='MuiLinearProgress-root'], & > main"],
+    ).toEqual(
+      expect.objectContaining({
+        backgroundColor: '#292929',
+        minHeight: 'calc(100vh - 2 * 1.5rem)',
+        maxHeight: 'calc(100vh - 2 * 1.5rem)',
+      }),
+    );
+  });
+
+  it('paints BUI content Containers with mainSectionBackgroundColor', () => {
+    const actual = createComponents({ palette: customDarkTheme() });
+    const root = actual.BackstageSidebarPage?.styleOverrides?.root as
+      | Record<string, unknown>
+      | undefined;
+    const desktop = root?.['@media (min-width: 600px)'] as
+      | Record<string, unknown>
+      | undefined;
+    expect(
+      desktop?.["& > [class*='bui-Container']:not([class*='bui-Header'])"],
+    ).toEqual(
+      expect.objectContaining({
+        backgroundColor: '#292929',
+      }),
+    );
+  });
+
+  it('grows BackstageContent article to fill the flex column', () => {
+    const actual = createComponents({ palette: customDarkTheme() });
+    const root = actual.BackstageSidebarPage?.styleOverrides?.root as
+      | Record<string, unknown>
+      | undefined;
+    const desktop = root?.['@media (min-width: 600px)'] as
+      | Record<string, unknown>
+      | undefined;
+    expect(
+      desktop?.['& > article, & > [class*="BackstageContent-root"]'],
+    ).toEqual(
+      expect.objectContaining({
+        flex: 1,
+        backgroundColor: '#292929',
+      }),
+    );
   });
 });

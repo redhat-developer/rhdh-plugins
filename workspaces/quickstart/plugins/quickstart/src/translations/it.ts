@@ -28,6 +28,7 @@ const quickstartTranslationIt = createTranslationMessages({
     'button.gotIt': 'Fatto!',
     'button.openQuickstartGuide': 'Apri guida rapida',
     'button.quickstart': 'Avvio rapido',
+    'content.loading': 'Caricamento',
     'content.emptyState.title':
       'Il contenuto di avvio rapido non è disponibile per il tuo ruolo.',
     'dev.currentState': 'Stato attuale del cassetto: {{state}}',

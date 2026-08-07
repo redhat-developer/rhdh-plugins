@@ -34,10 +34,12 @@ describe('createDependabotMetricProvider', () => {
       mockLogger,
       'high',
     );
-    expect(provider.getProviderId()).toBe('dependabot.alerts_high');
+    expect(provider.getProviderId()).toBe('dependabot.alertsHigh');
     expect(provider.getProviderDatasourceId()).toBe('dependabot');
-    expect(provider.getMetricType()).toBe('number');
-    expect(provider.getMetricThresholds()).toBe(DEPENDABOT_THRESHOLDS);
+    const metrics = provider.getMetrics();
+    expect(metrics).toHaveLength(1);
+    expect(metrics[0].type).toBe('number');
+    expect(metrics[0].thresholds).toBe(DEPENDABOT_THRESHOLDS);
   });
 });
 
@@ -46,10 +48,10 @@ describe('createDependabotMetricProviders', () => {
     const providers = createDependabotMetricProviders(mockConfig, mockLogger);
     expect(providers).toHaveLength(4);
     expect(providers.map(p => p.getProviderId())).toEqual([
-      'dependabot.alerts_critical',
-      'dependabot.alerts_high',
-      'dependabot.alerts_medium',
-      'dependabot.alerts_low',
+      'dependabot.alertsCritical',
+      'dependabot.alertsHigh',
+      'dependabot.alertsMedium',
+      'dependabot.alertsLow',
     ]);
   });
 });

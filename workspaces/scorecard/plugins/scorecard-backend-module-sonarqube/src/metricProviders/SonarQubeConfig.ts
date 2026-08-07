@@ -51,39 +51,39 @@ export function parseProjectKeyAnnotation(entity: Entity): SonarQubeAnnotation {
 }
 
 export const SONARQUBE_METRICS = [
-  'quality_gate',
-  'open_issues',
-  'security_rating',
-  'security_issues',
-  'security_review_rating',
-  'security_hotspots',
-  'reliability_rating',
-  'reliability_issues',
-  'maintainability_rating',
-  'maintainability_issues',
-  'code_coverage',
-  'code_duplications',
+  'qualityGate',
+  'openIssues',
+  'securityRating',
+  'securityIssues',
+  'securityReviewRating',
+  'securityHotspots',
+  'reliabilityRating',
+  'reliabilityIssues',
+  'maintainabilityRating',
+  'maintainabilityIssues',
+  'codeCoverage',
+  'codeDuplications',
 ] as const;
 
 export type SonarQubeMetricId = (typeof SONARQUBE_METRICS)[number];
 
-export const SONARQUBE_BOOLEAN_METRICS = ['quality_gate'] as const;
+export const SONARQUBE_BOOLEAN_METRICS = ['qualityGate'] as const;
 
 export type SonarQubeBooleanMetricId =
   (typeof SONARQUBE_BOOLEAN_METRICS)[number];
 
 export const SONARQUBE_NUMBER_METRICS = [
-  'open_issues',
-  'security_rating',
-  'security_issues',
-  'security_review_rating',
-  'security_hotspots',
-  'reliability_rating',
-  'reliability_issues',
-  'maintainability_rating',
-  'maintainability_issues',
-  'code_coverage',
-  'code_duplications',
+  'openIssues',
+  'securityRating',
+  'securityIssues',
+  'securityReviewRating',
+  'securityHotspots',
+  'reliabilityRating',
+  'reliabilityIssues',
+  'maintainabilityRating',
+  'maintainabilityIssues',
+  'codeCoverage',
+  'codeDuplications',
 ] as const;
 
 export type SonarQubeNumberMetricId = (typeof SONARQUBE_NUMBER_METRICS)[number];
@@ -92,64 +92,64 @@ export const SONARQUBE_METRIC_CONFIG: Record<
   SonarQubeMetricId,
   { id: string; title: string; description: string }
 > = {
-  quality_gate: {
-    id: 'sonarqube.quality_gate',
+  qualityGate: {
+    id: 'sonarqube.qualityGate',
     title: 'SonarQube Quality Gate Status',
     description: 'Whether the project passes its SonarQube quality gate.',
   },
-  open_issues: {
-    id: 'sonarqube.open_issues',
+  openIssues: {
+    id: 'sonarqube.openIssues',
     title: 'SonarQube Open Issues',
     description:
       'Count of open issues (OPEN, CONFIRMED, REOPENED) in SonarQube.',
   },
-  security_rating: {
-    id: 'sonarqube.security_rating',
+  securityRating: {
+    id: 'sonarqube.securityRating',
     title: 'SonarQube Security Rating',
     description: 'SonarQube security rating.',
   },
-  security_issues: {
-    id: 'sonarqube.security_issues',
+  securityIssues: {
+    id: 'sonarqube.securityIssues',
     title: 'SonarQube Security Issues',
     description: 'Count of open security vulnerabilities in SonarQube.',
   },
-  security_review_rating: {
-    id: 'sonarqube.security_review_rating',
+  securityReviewRating: {
+    id: 'sonarqube.securityReviewRating',
     title: 'SonarQube Security Review Rating',
     description: 'SonarQube security review rating.',
   },
-  security_hotspots: {
-    id: 'sonarqube.security_hotspots',
+  securityHotspots: {
+    id: 'sonarqube.securityHotspots',
     title: 'SonarQube Security Hotspots',
     description: 'Count of security hotspots to review in SonarQube.',
   },
-  reliability_rating: {
-    id: 'sonarqube.reliability_rating',
+  reliabilityRating: {
+    id: 'sonarqube.reliabilityRating',
     title: 'SonarQube Reliability Rating',
     description: 'SonarQube reliability rating.',
   },
-  reliability_issues: {
-    id: 'sonarqube.reliability_issues',
+  reliabilityIssues: {
+    id: 'sonarqube.reliabilityIssues',
     title: 'SonarQube Reliability Issues',
     description: 'Count of open bugs in SonarQube.',
   },
-  maintainability_rating: {
-    id: 'sonarqube.maintainability_rating',
+  maintainabilityRating: {
+    id: 'sonarqube.maintainabilityRating',
     title: 'SonarQube Maintainability Rating',
     description: 'SonarQube maintainability rating.',
   },
-  maintainability_issues: {
-    id: 'sonarqube.maintainability_issues',
+  maintainabilityIssues: {
+    id: 'sonarqube.maintainabilityIssues',
     title: 'SonarQube Maintainability Issues',
     description: 'Count of open code smells in SonarQube.',
   },
-  code_coverage: {
-    id: 'sonarqube.code_coverage',
+  codeCoverage: {
+    id: 'sonarqube.codeCoverage',
     title: 'SonarQube Code Coverage',
     description: 'Overall code coverage percentage in SonarQube.',
   },
-  code_duplications: {
-    id: 'sonarqube.code_duplications',
+  codeDuplications: {
+    id: 'sonarqube.codeDuplications',
     title: 'SonarQube Code Duplications',
     description: 'Percentage of duplicated lines in SonarQube.',
   },
@@ -157,24 +157,24 @@ export const SONARQUBE_METRIC_CONFIG: Record<
 
 /**
  * Maps scorecard metric IDs to SonarQube API metric keys.
- * `open_issues` uses a dedicated API endpoint, so it has no measures key.
+ * `openIssues` uses a dedicated API endpoint, so it has no measures key.
  */
 export const SONARQUBE_API_METRIC_KEYS: Record<
   SonarQubeMetricId,
   { apiKey: string } | { useQualityGateApi: true } | { useOpenIssuesApi: true }
 > = {
-  quality_gate: { useQualityGateApi: true },
-  open_issues: { useOpenIssuesApi: true },
-  security_rating: { apiKey: 'security_rating' },
-  security_issues: { apiKey: 'vulnerabilities' },
-  security_review_rating: { apiKey: 'security_review_rating' },
-  security_hotspots: { apiKey: 'security_hotspots' },
-  reliability_rating: { apiKey: 'reliability_rating' },
-  reliability_issues: { apiKey: 'bugs' },
-  maintainability_rating: { apiKey: 'sqale_rating' },
-  maintainability_issues: { apiKey: 'code_smells' },
-  code_coverage: { apiKey: 'coverage' },
-  code_duplications: { apiKey: 'duplicated_lines_density' },
+  qualityGate: { useQualityGateApi: true },
+  openIssues: { useOpenIssuesApi: true },
+  securityRating: { apiKey: 'security_rating' },
+  securityIssues: { apiKey: 'vulnerabilities' },
+  securityReviewRating: { apiKey: 'security_review_rating' },
+  securityHotspots: { apiKey: 'security_hotspots' },
+  reliabilityRating: { apiKey: 'reliability_rating' },
+  reliabilityIssues: { apiKey: 'bugs' },
+  maintainabilityRating: { apiKey: 'sqale_rating' },
+  maintainabilityIssues: { apiKey: 'code_smells' },
+  codeCoverage: { apiKey: 'coverage' },
+  codeDuplications: { apiKey: 'duplicated_lines_density' },
 };
 
 export const SONARQUBE_BOOLEAN_THRESHOLDS: ThresholdConfig = {
@@ -223,53 +223,53 @@ export const SONARQUBE_NUMBER_THRESHOLDS: Record<
   SonarQubeNumberMetricId,
   ThresholdConfig
 > = {
-  open_issues: {
+  openIssues: {
     rules: [
       { key: 'success', expression: '<1' },
       { key: 'warning', expression: '1-10' },
       { key: 'error', expression: '>10' },
     ],
   },
-  security_rating: RATING_THRESHOLDS,
-  security_review_rating: RATING_THRESHOLDS,
-  reliability_rating: RATING_THRESHOLDS,
-  maintainability_rating: RATING_THRESHOLDS,
-  security_issues: {
+  securityRating: RATING_THRESHOLDS,
+  securityReviewRating: RATING_THRESHOLDS,
+  reliabilityRating: RATING_THRESHOLDS,
+  maintainabilityRating: RATING_THRESHOLDS,
+  securityIssues: {
     rules: [
       { key: 'success', expression: '<1' },
       { key: 'warning', expression: '1-5' },
       { key: 'error', expression: '>5' },
     ],
   },
-  security_hotspots: {
+  securityHotspots: {
     rules: [
       { key: 'success', expression: '<1' },
       { key: 'warning', expression: '1-5' },
       { key: 'error', expression: '>5' },
     ],
   },
-  reliability_issues: {
+  reliabilityIssues: {
     rules: [
       { key: 'success', expression: '<1' },
       { key: 'warning', expression: '1-5' },
       { key: 'error', expression: '>5' },
     ],
   },
-  maintainability_issues: {
+  maintainabilityIssues: {
     rules: [
       { key: 'success', expression: '<10' },
       { key: 'warning', expression: '10-50' },
       { key: 'error', expression: '>50' },
     ],
   },
-  code_coverage: {
+  codeCoverage: {
     rules: [
       { key: 'success', expression: '>80' },
       { key: 'warning', expression: '50-80' },
       { key: 'error', expression: '<50' },
     ],
   },
-  code_duplications: {
+  codeDuplications: {
     rules: [
       { key: 'success', expression: '<3' },
       { key: 'warning', expression: '3-10' },

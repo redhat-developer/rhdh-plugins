@@ -16,13 +16,21 @@
 
 import { createPermission } from '@backstage/plugin-permission-common';
 
+export const ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE = 'orchestrator-workflow';
+
 export const orchestratorWorkflowPermission = createPermission({
   name: 'orchestrator.workflow',
   attributes: {
     action: 'read',
   },
+  resourceType: ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
 });
 
+/**
+ * @deprecated Use conditional policies with IS_ALLOWED_WORKFLOW_ID rule instead.
+ * These permissions could only be created via CSV policy files or REST API, not through the RBAC UI.
+ * Will be removed in the next release.
+ */
 export const orchestratorWorkflowSpecificPermission = (workflowId: string) =>
   createPermission({
     name: `orchestrator.workflow.${workflowId}`,
@@ -36,8 +44,14 @@ export const orchestratorWorkflowUsePermission = createPermission({
   attributes: {
     action: 'update',
   },
+  resourceType: ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
 });
 
+/**
+ * @deprecated Use conditional policies with IS_ALLOWED_WORKFLOW_ID rule instead.
+ * These permissions could only be created via CSV policy files or REST API, not through the RBAC UI.
+ * Will be removed in the next release.
+ */
 export const orchestratorWorkflowUseSpecificPermission = (workflowId: string) =>
   createPermission({
     name: `orchestrator.workflow.use.${workflowId}`,

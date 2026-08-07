@@ -141,6 +141,11 @@ catalog:
 permission:
   # setting this to `false` will disable permissions
   enabled: false
+  rbac:
+    pluginsWithPermission:
+      - catalog
+      - scaffolder
+      - bulk-import
 # scaffolder template execution configuration. Disabled by default.
 # bulkImport:
 #   importTemplate: template:default/create-pr-with-catalog-info

@@ -45,6 +45,8 @@ const dcmTranslationFr: TranslationMessages<
     'common.saving': 'Enregistrement\u2026',
     'common.close': 'Fermer',
     'common.rows': 'lignes',
+    'common.previousPage': 'Précédent',
+    'common.nextPage': 'Suivant',
     'deleteDialog.title': 'Supprimer {{resourceLabel}}',
     'deleteDialog.confirmButton': 'Supprimer',
     'deleteDialog.cancelButton': 'Annuler',

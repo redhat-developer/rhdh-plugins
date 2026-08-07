@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-import type { AggregatedMetric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type {
+  AggregatedMetric,
+  ScalarAggregatedMetric,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DatabaseMetricValues } from '../../database/DatabaseMetricValues';
+import type { ScalarAggregationFn } from '../../database/types';
 import { AggregatedMetricMapper } from '../mappers';
 
 export class AggregatedMetricLoader {
@@ -36,5 +40,24 @@ export class AggregatedMetricLoader {
       );
 
     return AggregatedMetricMapper.toAggregatedMetric(aggregatedMetric);
+  }
+
+  async loadScalarMetricByEntityRefs(
+    entityRefs: string[],
+    metricId: string,
+    aggregationFn: ScalarAggregationFn,
+  ): Promise<ScalarAggregatedMetric> {
+    if (entityRefs.length === 0) {
+      return AggregatedMetricMapper.toScalarAggregatedMetric();
+    }
+
+    const scalarMetric =
+      await this.database.readScalarAggregatedMetricByEntityRefs(
+        entityRefs,
+        metricId,
+        aggregationFn,
+      );
+
+    return AggregatedMetricMapper.toScalarAggregatedMetric(scalarMetric);
   }
 }

@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-qe-theme
 
+## 0.12.0
+
+### Minor Changes
+
+- 22d09cd: Backstage version bump to v1.52.1
+
 ## 0.11.1
 
 ### Patch Changes

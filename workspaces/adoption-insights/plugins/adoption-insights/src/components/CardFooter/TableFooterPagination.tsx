@@ -112,6 +112,11 @@ const TableFooterPagination: FC<TableFooterPaginationProps> = ({
         ActionsComponent={() => null}
         slotProps={{
           select: {
+            inputProps: {
+              'aria-label': t('table.pagination.topN' as any, {
+                count: rowsPerPage.toString(),
+              }),
+            },
             MenuProps: {
               MenuListProps: {
                 autoFocusItem: false,

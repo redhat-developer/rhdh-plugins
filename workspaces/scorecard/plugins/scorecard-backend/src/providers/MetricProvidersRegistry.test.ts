@@ -23,19 +23,30 @@ import {
   jiraBooleanProvider,
   MockNumberProvider,
   MockBooleanProvider,
-  MockBatchBooleanProvider,
   filecheckBatchProvider,
   filecheckBatchMetrics,
 } from '../../__fixtures__/mockProviders';
-import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
+import {
+  validateMetricId,
+  validateProviderId,
+} from '../validation/validateMetricProviderIds';
+
+jest.mock('../validation/validateMetricProviderIds', () => {
+  const actual = jest.requireActual('../validation/validateMetricProviderIds');
+  return {
+    ...actual,
+    validateProviderId: jest.fn(actual.validateProviderId),
+    validateMetricId: jest.fn(actual.validateMetricId),
+  };
+});
 
 describe('MetricProvidersRegistry', () => {
   let registry: MetricProvidersRegistry;
 
-  const mockEntity = new MockEntityBuilder().build();
-
   beforeEach(() => {
     registry = new MetricProvidersRegistry();
+    jest.mocked(validateProviderId).mockClear();
+    jest.mocked(validateMetricId).mockClear();
   });
 
   describe('register', () => {
@@ -44,122 +55,130 @@ describe('MetricProvidersRegistry', () => {
       expect(() => registry.register(jiraBooleanProvider)).not.toThrow();
       expect(registry.listMetrics()).toEqual([
         {
-          id: 'github.number_metric',
+          id: 'github.numberMetric',
           ...githubNumberMetricMetadata,
         },
         {
-          id: 'jira.boolean_metric',
+          id: 'jira.booleanMetric',
           ...jiraBooleanMetricMetadata,
         },
       ]);
     });
 
-    it('should throw ConflictError when registering provider with duplicate ID', () => {
-      const provider1 = new MockNumberProvider('jira.duplicate_id', 'jira');
-      const provider2 = new MockBooleanProvider('jira.duplicate_id', 'jira');
-      registry.register(provider1);
+    it('should throw ConflictError when registering duplicate metric IDs', () => {
+      class ProviderWithSharedMetric extends MockNumberProvider {
+        getMetrics() {
+          return [
+            {
+              id: 'jira.sharedMetric',
+              title: 'Shared',
+              description: 'Shared',
+              type: 'number' as const,
+              thresholds: this.getDefaultThresholds(),
+            },
+          ];
+        }
+      }
 
-      expect(() => registry.register(provider2)).toThrow(
+      registry.register(new ProviderWithSharedMetric('jira.providerA', 'jira'));
+
+      expect(() =>
+        registry.register(
+          new ProviderWithSharedMetric('jira.providerB', 'jira'),
+        ),
+      ).toThrow(
         new ConflictError(
-          "Metric provider with ID 'jira.duplicate_id' has already been registered",
+          "Metric with ID 'jira.sharedMetric' has already been registered",
         ),
       );
     });
 
-    it('should throw error when provider ID does not match metric ID', () => {
-      class InvalidProvider extends MockNumberProvider {
-        getMetric() {
-          const metric = super.getMetric();
-          return { ...metric, id: 'different.id' };
+    it('should throw ConflictError when registering providers with duplicate provider ID', () => {
+      class ProviderWithMetricA extends MockNumberProvider {
+        getMetrics() {
+          return [
+            {
+              id: 'github.metricA',
+              title: 'A',
+              description: 'A',
+              type: 'number' as const,
+              thresholds: this.getDefaultThresholds(),
+            },
+          ];
+        }
+      }
+      class ProviderWithMetricB extends MockNumberProvider {
+        getMetrics() {
+          return [
+            {
+              id: 'github.metricB',
+              title: 'B',
+              description: 'B',
+              type: 'number' as const,
+              thresholds: this.getDefaultThresholds(),
+            },
+          ];
         }
       }
 
-      const invalidProvider = new InvalidProvider(
-        'github.test_metric',
-        'github',
-      );
+      registry.register(new ProviderWithMetricA('github.shared', 'github'));
 
-      expect(() => registry.register(invalidProvider)).toThrow(
-        new Error(
-          "Invalid metric provider: metric ID 'github.test_metric' returned by getMetricIds() " +
-            'does not have a corresponding metric in getMetrics()',
+      expect(() =>
+        registry.register(new ProviderWithMetricB('github.shared', 'github')),
+      ).toThrow(
+        new ConflictError(
+          "Metric provider with ID 'github.shared' has already been registered",
         ),
       );
     });
 
-    it('should throw error when metric type does not match metricType', () => {
-      class InvalidProvider extends MockNumberProvider {
-        // @ts-expect-error - put wrong metric type for testing
-        getMetricType() {
-          return 'boolean';
-        }
+    it('should call validateProviderId when registering', () => {
+      registry.register(githubNumberProvider);
+
+      expect(validateProviderId).toHaveBeenCalledWith(
+        githubNumberProvider.getProviderId(),
+        githubNumberProvider.getProviderDatasourceId(),
+      );
+    });
+
+    it('should call validateMetricId for each metric when registering', () => {
+      registry.register(filecheckBatchProvider);
+
+      expect(validateMetricId).toHaveBeenCalledTimes(
+        filecheckBatchMetrics.length,
+      );
+      for (const metric of filecheckBatchMetrics) {
+        expect(validateMetricId).toHaveBeenCalledWith(
+          metric.id,
+          filecheckBatchProvider.getProviderDatasourceId(),
+        );
       }
-
-      const invalidProvider = new InvalidProvider(
-        'github.test_metric',
-        'github',
-      );
-
-      // @ts-expect-error - expect error to be thrown
-      expect(() => registry.register(invalidProvider)).toThrow(
-        new Error(
-          "Invalid metric provider with ID github.test_metric, getMetricType() must match getMetric().type. Expected 'boolean', but got 'number'",
-        ),
-      );
-    });
-
-    it('should throw error when provider ID does not start with datasource ID', () => {
-      const invalidProvider = new MockNumberProvider(
-        'invalid_format',
-        'github',
-      );
-
-      expect(() => registry.register(invalidProvider)).toThrow(
-        new Error(
-          "Invalid metric provider with ID invalid_format, must have format 'github.<metric_name>' where metric name is not empty",
-        ),
-      );
-    });
-
-    it('should throw error when provider ID has no metric name after datasource', () => {
-      const invalidProvider = new MockNumberProvider('github.', 'github');
-
-      expect(() => registry.register(invalidProvider)).toThrow(
-        new Error(
-          "Invalid metric provider with ID github., must have format 'github.<metric_name>' where metric name is not empty",
-        ),
-      );
-    });
-
-    it('should throw error for provider ID missing dot separator', () => {
-      const invalidProvider = new MockNumberProvider(
-        'githubopen_prs',
-        'github',
-      );
-
-      expect(() => registry.register(invalidProvider)).toThrow(
-        new Error(
-          "Invalid metric provider with ID githubopen_prs, must have format 'github.<metric_name>' where metric name is not empty",
-        ),
-      );
     });
 
     it('should throw error when provider default thresholds are invalid', () => {
       class InvalidThresholdFormatProvider extends MockNumberProvider {
-        getMetricThresholds() {
-          return {
-            rules: [{ key: 'error', expression: 'Invalid expression' }],
-          } as any;
+        getMetrics() {
+          return [
+            {
+              id: this.getProviderId(),
+              title: 'Invalid Threshold Metric',
+              description: 'Test',
+              type: 'number' as const,
+              thresholds: {
+                rules: [{ key: 'error', expression: 'Invalid expression' }],
+              },
+            },
+          ];
         }
       }
 
       const invalidProvider = new InvalidThresholdFormatProvider(
-        'github.invalid_threshold_format',
+        'github.invalidThresholdFormat',
         'github',
       );
 
       expect(() => registry.register(invalidProvider)).toThrow(
-        'Invalid default thresholds for metric provider \'github.invalid_threshold_format\'; caused by ThresholdConfigFormatError: Invalid threshold expression: "Invalid expression"',
+        /Invalid default thresholds for metric provider 'github.invalidThresholdFormat'/,
       );
     });
 
@@ -192,65 +211,8 @@ describe('MetricProvidersRegistry', () => {
 
         expect(() => registry.register(filecheckBatchProvider)).toThrow(
           new ConflictError(
-            "Metric provider with ID 'filecheck.readme' has already been registered",
+            "Metric with ID 'filecheck.readme' has already been registered",
           ),
-        );
-      });
-
-      it('should throw error when metric ID from getMetricIds has no corresponding metric', () => {
-        class InvalidBatchProvider extends MockBatchBooleanProvider {
-          getMetricIds(): string[] {
-            return ['filecheck.readme', 'filecheck.nonexistent'];
-          }
-          getMetrics() {
-            return [
-              {
-                id: 'filecheck.readme',
-                title: 'README',
-                description: 'README check',
-                type: 'boolean' as const,
-              },
-            ];
-          }
-        }
-
-        const invalidProvider = new InvalidBatchProvider(
-          'filecheck',
-          'filecheck',
-          [],
-        );
-
-        expect(() => registry.register(invalidProvider)).toThrow(
-          "Invalid metric provider: metric ID 'filecheck.nonexistent' returned by getMetricIds() " +
-            'does not have a corresponding metric in getMetrics()',
-        );
-      });
-
-      it('should throw error when batch provider metric ID has wrong format', () => {
-        class InvalidBatchProvider extends MockBatchBooleanProvider {
-          getMetricIds(): string[] {
-            return ['invalid_format'];
-          }
-          getMetrics() {
-            return [
-              {
-                id: 'invalid_format',
-                title: 'Invalid',
-                description: 'Invalid',
-                type: 'boolean' as const,
-              },
-            ];
-          }
-        }
-
-        const invalidProvider = new InvalidBatchProvider(
-          'github',
-          'filecheck',
-          [],
-        );
-
-        expect(() => registry.register(invalidProvider)).toThrow(
-          "Invalid metric provider with ID invalid_format, must have format 'github.<metric_name>' where metric name is not empty",
         );
       });
     });
@@ -260,15 +222,15 @@ describe('MetricProvidersRegistry', () => {
     it('should return provider for registered provider', () => {
       registry.register(githubNumberProvider);
 
-      const provider = registry.getProvider('github.number_metric');
+      const provider = registry.getProvider('github.numberMetric');
 
       expect(provider).toEqual(githubNumberProvider);
     });
 
     it('should throw NotFoundError for unregistered provider', () => {
-      expect(() => registry.getProvider('non_existent')).toThrow(
+      expect(() => registry.getProvider('nonExistent')).toThrow(
         new NotFoundError(
-          "No metric provider registered for metric ID 'non_existent'.",
+          "No metric provider registered for metric ID 'nonExistent'.",
         ),
       );
     });
@@ -278,18 +240,18 @@ describe('MetricProvidersRegistry', () => {
     it('should return metric for registered provider', () => {
       registry.register(githubNumberProvider);
 
-      const metric = registry.getMetric('github.number_metric');
+      const metric = registry.getMetric('github.numberMetric');
 
       expect(metric).toEqual({
-        id: 'github.number_metric',
+        id: 'github.numberMetric',
         ...githubNumberMetricMetadata,
       });
     });
 
     it('should throw NotFoundError for unregistered provider', () => {
-      expect(() => registry.getMetric('non_existent')).toThrow(
+      expect(() => registry.getMetric('nonExistent')).toThrow(
         new NotFoundError(
-          "No metric provider registered for metric ID 'non_existent'.",
+          "No metric provider registered for metric ID 'nonExistent'.",
         ),
       );
     });
@@ -304,108 +266,6 @@ describe('MetricProvidersRegistry', () => {
       expect(readmeMetric).toEqual(filecheckBatchMetrics[0]);
       expect(licenseMetric).toEqual(filecheckBatchMetrics[1]);
       expect(codeownersMetric).toEqual(filecheckBatchMetrics[2]);
-    });
-  });
-
-  describe('calculateMetric', () => {
-    it('should calculate metric for registered provider', async () => {
-      registry.register(githubNumberProvider);
-
-      const result = await registry.calculateMetric(
-        'github.number_metric',
-        mockEntity,
-      );
-
-      expect(result).toBe(42);
-    });
-
-    it('should throw NotFoundError for unregistered provider', async () => {
-      await expect(
-        registry.calculateMetric('non_existent', mockEntity),
-      ).rejects.toThrow(
-        new NotFoundError(
-          "No metric provider registered for metric ID 'non_existent'.",
-        ),
-      );
-    });
-  });
-
-  describe('calculateMetrics', () => {
-    it('should handle empty provider IDs array', async () => {
-      const results = await registry.calculateMetrics([], mockEntity);
-
-      expect(results).toEqual([]);
-    });
-
-    it('should calculate metrics for multiple registered providers', async () => {
-      registry.register(githubNumberProvider);
-      registry.register(jiraBooleanProvider);
-
-      const results = await registry.calculateMetrics(
-        ['github.number_metric', 'jira.boolean_metric'],
-        mockEntity,
-      );
-
-      expect(results).toHaveLength(2);
-      expect(results[0]).toEqual({
-        metricId: 'github.number_metric',
-        value: 42,
-      });
-      expect(results[1]).toEqual({
-        metricId: 'jira.boolean_metric',
-        value: false,
-      });
-    });
-
-    it('should calculate metrics for only specified providers', async () => {
-      registry.register(githubNumberProvider);
-      registry.register(
-        new MockNumberProvider(
-          'github.open_issues',
-          'github',
-          'GitHub Open Issues',
-          'Github Open Issues description',
-          10,
-        ),
-      );
-      registry.register(jiraBooleanProvider);
-
-      const results = await registry.calculateMetrics(
-        ['github.number_metric', 'github.open_issues'],
-        mockEntity,
-      );
-
-      expect(results).toHaveLength(2);
-      expect(results[0]).toEqual({
-        metricId: 'github.number_metric',
-        value: 42,
-      });
-      expect(results[1]).toEqual({
-        metricId: 'github.open_issues',
-        value: 10,
-      });
-    });
-
-    it('should handle mix of successful and failed metric calculations', async () => {
-      registry.register(githubNumberProvider);
-
-      const results = await registry.calculateMetrics(
-        ['github.number_metric', 'non_existent'],
-        mockEntity,
-      );
-
-      expect(results).toHaveLength(2);
-      expect(results[0]).toEqual({
-        metricId: 'github.number_metric',
-        value: 42,
-      });
-      expect(results[1]).toEqual({
-        metricId: 'non_existent',
-        error: expect.any(NotFoundError),
-      });
-      expect(results[1].error?.message).toBe(
-        "No metric provider registered for metric ID 'non_existent'.",
-      );
     });
   });
 
@@ -456,15 +316,15 @@ describe('MetricProvidersRegistry', () => {
       const metrics = registry.listMetrics();
 
       expect(metrics).toHaveLength(2);
-      expect(metrics[0].id).toBe('github.number_metric');
-      expect(metrics[1].id).toBe('jira.boolean_metric');
+      expect(metrics[0].id).toBe('github.numberMetric');
+      expect(metrics[1].id).toBe('jira.booleanMetric');
     });
 
     it('should return filtered metrics', () => {
-      const metrics = registry.listMetrics(['jira.boolean_metric']);
+      const metrics = registry.listMetrics(['jira.booleanMetric']);
 
       expect(metrics).toHaveLength(1);
-      expect(metrics[0].id).toBe('jira.boolean_metric');
+      expect(metrics[0].id).toBe('jira.booleanMetric');
     });
 
     it('should return empty array when all provider IDs are non-existent', () => {
@@ -478,15 +338,15 @@ describe('MetricProvidersRegistry', () => {
 
     it('should return only existing metrics when mix of existing and non-existent IDs', () => {
       const metrics = registry.listMetrics([
-        'github.number_metric',
+        'github.numberMetric',
         'non.existent.metric',
-        'jira.boolean_metric',
+        'jira.booleanMetric',
         'another.non.existent',
       ]);
 
       expect(metrics).toHaveLength(2);
-      expect(metrics[0].id).toBe('github.number_metric');
-      expect(metrics[1].id).toBe('jira.boolean_metric');
+      expect(metrics[0].id).toBe('github.numberMetric');
+      expect(metrics[1].id).toBe('jira.booleanMetric');
     });
 
     describe('with batch providers', () => {
@@ -504,7 +364,7 @@ describe('MetricProvidersRegistry', () => {
           'filecheck.readme',
           'filecheck.license',
           'filecheck.codeowners',
-          'jira.boolean_metric',
+          'jira.booleanMetric',
         ]);
       });
 
@@ -536,7 +396,7 @@ describe('MetricProvidersRegistry', () => {
       registry.register(jiraBooleanProvider);
       registry.register(
         new MockNumberProvider(
-          'github.open_issues',
+          'github.openIssues',
           'github',
           'GitHub Open Issues',
         ),
@@ -554,15 +414,15 @@ describe('MetricProvidersRegistry', () => {
       const metrics = registry.listMetricsByDatasource('github');
 
       expect(metrics).toHaveLength(2);
-      expect(metrics[0].id).toBe('github.number_metric');
-      expect(metrics[1].id).toBe('github.open_issues');
+      expect(metrics[0].id).toBe('github.numberMetric');
+      expect(metrics[1].id).toBe('github.openIssues');
     });
 
     it('should return metrics for jira datasource', () => {
       const metrics = registry.listMetricsByDatasource('jira');
 
       expect(metrics).toHaveLength(1);
-      expect(metrics[0].id).toBe('jira.boolean_metric');
+      expect(metrics[0].id).toBe('jira.booleanMetric');
     });
 
     it('should return empty array when datasource does not exist', () => {
@@ -598,7 +458,7 @@ describe('MetricProvidersRegistry', () => {
         const githubMetrics = registry.listMetricsByDatasource('github');
 
         expect(githubMetrics).toHaveLength(1);
-        expect(githubMetrics[0].id).toBe('github.number_metric');
+        expect(githubMetrics[0].id).toBe('github.numberMetric');
       });
 
       it('should not duplicate metrics from batch providers in datasource listing', () => {

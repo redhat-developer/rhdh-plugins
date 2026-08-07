@@ -39,12 +39,10 @@ export async function getAllAppOrgs(
   const result = new Map<string, GithubOrganization>();
   const resp = await githubCredentialsProvider.getAllAppInstallations(ghConfig);
   for (const installation of resp ?? []) {
-    if (
-      !(
-        installation.account &&
-        installation.target_type?.toLowerCase() === 'organization'
-      )
-    ) {
+    if (!(
+      installation.account &&
+      installation.target_type?.toLowerCase() === 'organization'
+    )) {
       continue;
     }
     const acc = installation.account!;

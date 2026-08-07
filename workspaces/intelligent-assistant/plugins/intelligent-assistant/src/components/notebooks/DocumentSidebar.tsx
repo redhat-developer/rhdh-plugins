@@ -30,8 +30,8 @@ import {
   Tooltip,
 } from '@patternfly/react-core';
 import { EllipsisVIcon, PlusCircleIcon } from '@patternfly/react-icons';
-
 import { NOTEBOOK_MAX_FILES, NOTEBOOK_MAX_TITLE_LENGTH } from '../../const';
+import { useInlineEdit } from '../../hooks/notebooks/useInlineEdit';
 import { useTranslation } from '../../hooks/useTranslation';
 import { SessionDocument } from '../../types';
 import { FileTypeIcon } from './FileTypeIcon';
@@ -61,8 +61,28 @@ const useStyles = makeStyles(theme => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+    flex: '0 1 auto',
+    minWidth: 0,
+    cursor: 'pointer',
+    borderRadius: 4,
+    padding: '2px 6px',
+    '&:hover': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--action--plain--hover)',
+    },
+  },
+  titleInput: {
     flex: 1,
     minWidth: 0,
+    '--pf-v6-c-form-control--FontSize': '1.25rem',
+    '--pf-v6-c-form-control--LineHeight': '2rem',
+    '--pf-v6-c-form-control--before--BorderStyle': 'none',
+    '& input': {
+      fontWeight: 500,
+      letterSpacing: '-0.25px',
+      padding: '0 4px',
+      outline: 'none',
+    },
   },
   collapseButton: {
     flexShrink: 0,
@@ -199,6 +219,7 @@ type DocumentSidebarProps = {
   onAddDocument: () => void;
   onDeleteDocument?: (documentId: string) => void;
   onRenameDocument?: (documentId: string, newTitle: string) => void;
+  onRenameNotebook?: (newName: string) => void;
 };
 
 export const DocumentSidebar = ({
@@ -213,6 +234,7 @@ export const DocumentSidebar = ({
   onAddDocument,
   onDeleteDocument,
   onRenameDocument,
+  onRenameNotebook,
 }: DocumentSidebarProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
@@ -297,6 +319,19 @@ export const DocumentSidebar = ({
     [saveRename, cancelEditing],
   );
 
+  const {
+    isEditing: isEditingTitle,
+    editValue: editTitle,
+    setEditValue: setEditTitle,
+    inputRef: titleInputRef,
+    startEditing: startEditingTitle,
+    save: saveTitle,
+    handleKeyDown: handleTitleKeyDown,
+  } = useInlineEdit({
+    currentName: notebookName,
+    onSave: newName => onRenameNotebook?.(newName),
+  });
+
   if (collapsed) {
     return null;
   }
@@ -311,7 +346,25 @@ export const DocumentSidebar = ({
   return (
     <div className={classes.sidebar}>
       <div className={classes.titleRow}>
-        <Typography className={classes.title}>{notebookName}</Typography>
+        {isEditingTitle ? (
+          <TextInput
+            ref={titleInputRef}
+            className={classes.titleInput}
+            value={editTitle}
+            onChange={(_event, value) => setEditTitle(value)}
+            onBlur={saveTitle}
+            onKeyDown={handleTitleKeyDown}
+            aria-label={t('notebooks.rename.inline.tooltip')}
+          />
+        ) : (
+          <Typography
+            className={classes.title}
+            title={t('notebooks.rename.inline.tooltip')}
+            onClick={startEditingTitle}
+          >
+            {notebookName}
+          </Typography>
+        )}
         <Tooltip content={t('notebook.view.sidebar.collapse')} position="right">
           <Button
             variant="plain"

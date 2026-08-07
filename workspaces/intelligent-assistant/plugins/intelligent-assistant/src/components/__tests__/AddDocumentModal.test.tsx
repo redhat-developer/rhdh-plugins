@@ -50,7 +50,7 @@ describe('AddDocumentModal', () => {
   it('should render the modal when open', () => {
     render(<AddDocumentModal {...defaultProps} />);
 
-    expect(screen.getByText('Add a document to Notebook')).toBeInTheDocument();
+    expect(screen.getByText('Add a resource to Notebook')).toBeInTheDocument();
     expect(screen.getByText('Drag and drop files here')).toBeInTheDocument();
   });
 

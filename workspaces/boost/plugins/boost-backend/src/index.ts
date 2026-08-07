@@ -33,6 +33,7 @@ export {
   type SecurityMode,
   type ResourceLoader,
   type AuthorizeLifecycleActionOptions,
+  type BoostAuthorizedRequest,
 } from './middleware/security';
 export {
   AdminConfigService,

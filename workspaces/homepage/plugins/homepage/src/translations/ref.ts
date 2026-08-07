@@ -33,6 +33,7 @@ export const homepageMessages = {
   },
   search: {
     placeholder: 'Search',
+    clearButton: 'Clear',
   },
   quickAccess: {
     title: 'Quick Access',
@@ -44,13 +45,15 @@ export const homepageMessages = {
     learnMore: ' Learn more',
   },
   starredEntities: {
-    title: 'Starred catalog entities',
+    title: 'Starred Catalog Entities',
   },
   recentlyVisited: {
     title: 'Recently Visited',
+    description: 'Quick access to recently viewed entities and pages',
   },
   topVisited: {
     title: 'Top Visited',
+    description: 'Your most frequently accessed entities and services',
   },
   templates: {
     title: 'Explore Templates',

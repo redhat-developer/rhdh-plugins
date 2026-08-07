@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { ComponentType } from 'react';
-import { render } from '@testing-library/react';
+import { act, render } from '@testing-library/react';
 import { FormWidgetsApi } from './FormWidgetsApi';
 import * as utils from './utils';
 
@@ -39,7 +39,10 @@ describe('FormWidgetsApi', () => {
     expect(api.getReviewComponent?.()).toBeUndefined();
   });
 
-  it('decorates form component with widgets and context props', () => {
+  it('decorates form component with widgets and context props', async () => {
+    // Pre-load the lazy module so import() resolves from cache
+    await import('./FormDecoratorContent');
+
     const api = new FormWidgetsApi();
     const receivedProps: Record<string, unknown>[] = [];
 
@@ -60,6 +63,10 @@ describe('FormWidgetsApi', () => {
         setIsChangedByUser={() => {}}
       />,
     );
+
+    // Flush the microtask queue so the dynamic import resolves
+    // and the state update re-renders the component
+    await act(async () => {});
 
     expect(receivedProps).toHaveLength(1);
     expect(receivedProps[0].widgets).toEqual(

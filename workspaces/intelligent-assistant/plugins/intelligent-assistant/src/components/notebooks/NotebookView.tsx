@@ -53,6 +53,7 @@ import {
   type PendingUpload,
 } from '../../hooks/notebooks/useDocumentStatusPolling';
 import { useRenameDocument } from '../../hooks/notebooks/useRenameDocument';
+import { useRenameNotebookWithAlert } from '../../hooks/notebooks/useRenameNotebookWithAlert';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { CreateMessageVariables } from '../../hooks/useCreateCoversationMessage';
 import { useNotebookWelcomePrompts } from '../../hooks/useNotebookWelcomePrompts';
@@ -428,6 +429,10 @@ export const NotebookView = ({
     },
     [renameDocument, sessionId, t],
   );
+  const handleRenameNotebook = useRenameNotebookWithAlert({
+    setAlerts: setToastAlerts,
+    getNotebookName: () => notebookName,
+  });
 
   const confirmDeleteDocument = useCallback(async () => {
     if (!deleteDocumentTarget) return;
@@ -603,6 +608,7 @@ export const NotebookView = ({
         onAddDocument={handleOpenUploadModal}
         onDeleteDocument={handleDeleteDocument}
         onRenameDocument={handleRenameDocument}
+        onRenameNotebook={newName => handleRenameNotebook(sessionId, newName)}
       />
     </DrawerPanelContent>
   );

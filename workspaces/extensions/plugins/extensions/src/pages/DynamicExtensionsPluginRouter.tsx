@@ -21,7 +21,6 @@ import {
   useLocation,
   Navigate,
 } from 'react-router-dom';
-import { createGenerateClassName, StylesProvider } from '@mui/styles';
 import {
   Page,
   Header,
@@ -44,8 +43,6 @@ import { ExtensionsPackageDrawer } from '../components/ExtensionsPackageDrawer';
 import { ExtensionsPackageInstallPage } from './ExtensionsPackageInstallPage';
 import { InstallationContextProvider } from '../components/InstallationContext';
 import { useTranslation } from '../hooks/useTranslation';
-
-const generateClassName = createGenerateClassName({ seed: 'extensions' });
 
 // Constants for consistent styling
 const TAB_ICON_STYLE = {
@@ -149,33 +146,31 @@ const ExtensionsPage = () => {
 };
 
 export const DynamicExtensionsPluginRouter = () => (
-  <StylesProvider generateClassName={generateClassName}>
-    <InstallationContextProvider>
-      <ReactQueryProvider>
-        <Routes>
-          <Route
-            path="/collections/:namespace/:name"
-            Component={ExtensionsCollectionPage}
-          />
-          <Route
-            path="/plugins/:namespace/:name/install"
-            Component={ExtensionsPluginInstallPage}
-          />
-          {/* Use existing install route as the edit page */}
-          <Route
-            path="/packages/:namespace/:name/install"
-            Component={ExtensionsPackageInstallPage}
-          />
-          {/* Redirect package routes to show installed-packages tab */}
-          <Route
-            path="/packages/:namespace/:name"
-            Component={PackageDeepLinkRedirect}
-          />
-          <Route path="/*" Component={ExtensionsPage} />
-        </Routes>
-      </ReactQueryProvider>
-    </InstallationContextProvider>
-  </StylesProvider>
+  <InstallationContextProvider>
+    <ReactQueryProvider>
+      <Routes>
+        <Route
+          path="/collections/:namespace/:name"
+          Component={ExtensionsCollectionPage}
+        />
+        <Route
+          path="/plugins/:namespace/:name/install"
+          Component={ExtensionsPluginInstallPage}
+        />
+        {/* Use existing install route as the edit page */}
+        <Route
+          path="/packages/:namespace/:name/install"
+          Component={ExtensionsPackageInstallPage}
+        />
+        {/* Redirect package routes to show installed-packages tab */}
+        <Route
+          path="/packages/:namespace/:name"
+          Component={PackageDeepLinkRedirect}
+        />
+        <Route path="/*" Component={ExtensionsPage} />
+      </Routes>
+    </ReactQueryProvider>
+  </InstallationContextProvider>
 );
 
 export const DynamicExtensionsPluginContent = () => (

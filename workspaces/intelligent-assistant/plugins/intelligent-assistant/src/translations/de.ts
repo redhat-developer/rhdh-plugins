@@ -26,6 +26,8 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
   ref: intelligentAssistantTranslationRef,
   messages: {
     'aria.chatHistoryMenu': 'Chatverlauf-Menü',
+    'modelSelector.disabledTooltip':
+      'Jede Chatsitzung unterstützt nur ein Modell. Um das Modell zu wechseln, starten Sie einen neuen Chat.',
     'aria.chatbotSelector': 'Chatbot-Auswahl',
     'aria.close': 'Chatbot schließen',
     'aria.closeDrawerPanel': 'Drawer-Fenster schließen',
@@ -129,7 +131,8 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'mcp.settings.closeAriaLabel': 'MCP-Einstellungen schließen',
     'mcp.settings.closeConfigureModalAriaLabel':
       'Konfigurationsdialog schließen',
-    'mcp.settings.configureServerTitle': 'Server {{serverName}} konfigurieren',
+    'mcp.settings.configureServerTitle':
+      '{{serverName}} MCP-Server-Einstellungen',
     'mcp.settings.edit': 'Bearbeiten',
     'mcp.settings.editServerAriaLabel': '{{serverName}} bearbeiten',
     'mcp.settings.enabled': 'Aktiviert',
@@ -139,6 +142,28 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
       'Anmeldedaten werden verschlüsselt gespeichert und sind auf Ihr Profil beschränkt. Der intelligente Assistent arbeitet mit genau Ihren Berechtigungen.',
     'mcp.settings.modalDescriptionDcr':
       'Dieser Server verwendet Dynamic Client Registration (DCR). Token werden automatisch mit Ihrer Backstage-Identität erstellt — kein manuelles Token erforderlich.',
+    'mcp.settings.authenticationToken': 'Authentifizierungstoken',
+    'mcp.settings.modal.authenticationHeading': 'Authentifizierung',
+    'mcp.settings.modal.credentialMode.organization':
+      'Organisations-Standard-Token verwenden',
+    'mcp.settings.modal.credentialMode.organizationDescription':
+      'Verwendet den von Ihrem Administrator konfigurierten Token.',
+    'mcp.settings.modal.credentialMode.personal':
+      'Persönlichen Token verwenden',
+    'mcp.settings.modal.toolsHeading': 'Tools ({{count}})',
+    'mcp.settings.modal.loadingTools': 'Tools werden geladen...',
+    'mcp.settings.modal.fetchingStatus': 'Status wird abgerufen...',
+    'mcp.settings.modal.loadingStatus': 'Verbindung wird getrennt...',
+    'mcp.settings.modal.tokenRemovedWarning':
+      'Token wurde entfernt. Um diesen MCP-Server erneut zu verwenden, geben Sie einen neuen Token ein.',
+    'mcp.settings.modal.noToolsAvailable': 'Keine Tools verfügbar.',
+    'mcp.settings.modal.toolsLoadFailed': 'Tools konnten nicht geladen werden.',
+    'mcp.settings.modal.enabledDescription':
+      'Dieser Server ist aktiv und im Chat verfügbar.',
+    'mcp.settings.modal.enabledDescriptionOff':
+      'Dieser Server ist deaktiviert und im Chat nicht verfügbar.',
+    'mcp.settings.modal.enabledDescriptionTokenRequired':
+      'Dieser Server ist derzeit deaktiviert. Geben Sie einen Token ein, um ihn zu aktivieren.',
     'mcp.settings.name': 'Name',
     'mcp.settings.noneAvailable': 'Keine MCP-Server verfügbar.',
     'mcp.settings.personalAccessToken': 'Persönlicher Zugriffstoken',
@@ -169,8 +194,6 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'mcp.settings.token.validating': 'Token wird validiert...',
     'mcp.settings.token.validationFailed':
       'Validierung fehlgeschlagen. Überprüfen Sie Server-URL und Token.',
-    'mcp.settings.usingAdminCredential':
-      'Administratoranmeldedaten werden verwendet. Geben Sie einen persönlichen Token ein, um ihn für Ihr Konto zu überschreiben.',
     'menu.newConversation': 'Neuer Chat',
     'message.options.label': 'Optionen',
     'modal.cancel': 'Abbrechen',
@@ -212,16 +235,16 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebook.upload.modal.selectedFiles':
       '{{count}} von {{max}} Dateien ausgewählt',
     'notebook.upload.modal.separator': 'oder',
-    'notebook.upload.modal.title': 'Dokument zum Notizbuch hinzufügen',
+    'notebook.upload.modal.title': 'Ressource zum Notizbuch hinzufügen',
     'notebook.view.close': 'Notizbuch schließen',
     'notebook.view.documents.add': 'Hinzufügen',
-    'notebook.view.documents.count': '{{count}} Dokumente',
+    'notebook.view.documents.count': '{{count}} Ressourcen',
     'notebook.view.documents.maxReached':
-      'Maximal 10 Dokumente sind erlaubt. Löschen Sie ein Dokument, um ein neues hochzuladen.',
-    'notebook.view.documents.uploading': 'Dokument wird hochgeladen',
+      'Maximal 10 Ressourcen sind erlaubt. Löschen Sie eine Ressource, um eine neue hochzuladen.',
+    'notebook.view.documents.uploading': 'Ressource wird hochgeladen',
     'notebook.view.input.disabledTooltip':
       'Wählen Sie mindestens eine geladene Ressource aus, um den Chat zu starten',
-    'notebook.view.input.placeholder': 'Fragen Sie zu Ihren Dokumenten...',
+    'notebook.view.input.placeholder': 'Fragen Sie zu Ihren Ressourcen...',
     'notebook.view.sidebar.collapse': 'Seitenleiste einklappen',
     'notebook.view.sidebar.expand': 'Seitenleiste ausklappen',
     'notebook.view.sidebar.resize': 'Größe der Seitenleiste ändern',
@@ -240,7 +263,7 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
       'Dieses Notizbuch wird hier nicht mehr angezeigt. Dadurch werden auch zugehörige Aktivitäten wie Eingaben, Antworten und Feedback aus Ihrer Aktivität gelöscht.',
     'notebooks.delete.title': '{{name}} löschen?',
     'notebooks.delete.toast': 'Notizbuch gelöscht!',
-    'notebooks.documents': 'Dokumente',
+    'notebooks.documents': 'Ressourcen',
     'notebooks.empty.action': 'Neues Notizbuch erstellen',
     'notebooks.empty.description':
       'Erstellen Sie ein neues Notizbuch, um Ihre Quellen zu organisieren und KI-gestützte Erkenntnisse zu gewinnen.',
@@ -249,12 +272,9 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebooks.prompts.coreConcepts.title': 'Was sind die Kernkonzepte?',
     'notebooks.prompts.vulnerabilities.title':
       'Zeige meine kritischen Schwachstellen',
-    'notebooks.rename.action': 'Senden',
-    'notebooks.rename.description':
-      'Bitte geben Sie den neuen Namen für dieses Notizbuch ein und klicken Sie auf „Senden“, um fortzufahren.',
-    'notebooks.rename.label': 'Neuer Name',
-    'notebooks.rename.placeholder': 'Neuer Name',
-    'notebooks.rename.title': '{{name}} umbenennen?',
+    'notebooks.rename.inline.tooltip': 'Klicken zum Umbenennen',
+    'notebooks.rename.inline.error':
+      'Umbenennung von "{{notebookName}}" fehlgeschlagen.',
     'notebooks.title': 'Meine Notizbücher',
     'notebooks.updated.days': 'Vor {{days}} Tagen aktualisiert',
     'notebooks.updated.on': 'Aktualisiert am',

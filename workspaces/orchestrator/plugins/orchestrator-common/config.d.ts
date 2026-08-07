@@ -84,6 +84,14 @@ export interface Config {
       url: string;
     };
     /**
+     * Public string values available to form widget templates through `rjsfConfig.<key>`.
+     * Do not store secrets in this configuration because workflow authors can access every value.
+     * @deepVisibility frontend
+     */
+    'rjsf-widgets'?: {
+      [key: string]: string;
+    };
+    /**
      * Kafka configuration for event-triggered workflows (KafkaJS-style).
      * When present, the UI can show actions such as "Run as Event".
      * @visibility frontend

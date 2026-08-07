@@ -86,15 +86,17 @@ describe('boost-common', () => {
       }
     });
 
-    it('exports 7 resource-scoped agent permissions', () => {
-      expect(boostAgentResourcePermissions).toHaveLength(7);
+    it('exports 8 resource-scoped agent permissions', () => {
+      expect(boostAgentResourcePermissions).toHaveLength(8);
       for (const perm of boostAgentResourcePermissions) {
         expect(perm.resourceType).toBe(BOOST_AGENT_RESOURCE_TYPE);
       }
     });
 
-    it('basic agent permissions have no resourceType', () => {
-      expect(boostAgentListPermission).not.toHaveProperty('resourceType');
+    it('list permission is resource-scoped for conditional filtering', () => {
+      expect(boostAgentListPermission.resourceType).toBe(
+        BOOST_AGENT_RESOURCE_TYPE,
+      );
     });
 
     it('resource agent permissions have resourceType', () => {
@@ -284,13 +286,13 @@ describe('boost-common', () => {
   describe('no provider-specific types', () => {
     it('does not export provider-specific configuration types', () => {
       // This is a static verification — the common package must not
-      // contain LlamaStackConfig, KagentiConfig, or similar types.
+      // contain OgxConfig, KagentiConfig, or similar types.
       // If someone adds them, they must add them to this deny list
       // and this test will fail the review.
       const exports = require('./index');
       const exportNames = Object.keys(exports);
       const providerSpecificPatterns = [
-        /LlamaStack/i,
+        /Ogx/i,
         /Kagenti(?!Admin)/i,
         /ResponsesApi/i,
       ];

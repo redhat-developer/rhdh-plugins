@@ -20,12 +20,10 @@ import { JIRA_CONFIG_PATH } from '../constants';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
-  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { JiraClient } from '../clients/base';
 import { JiraClientFactory } from '../clients/JiraClientFactory';
-import { ScorecardJiraAnnotations } from '../annotations';
 import {
   type AuthService,
   type DiscoveryService,
@@ -37,7 +35,6 @@ import {
 } from '../strategies/ConnectionStrategy';
 import { Product } from '../clients/types';
 
-const { PROJECT_KEY } = ScorecardJiraAnnotations;
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 
 export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
@@ -45,10 +42,6 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
 
   private constructor(config: Config, connectionStrategy: ConnectionStrategy) {
     this.jiraClient = JiraClientFactory.create(config, connectionStrategy);
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return DEFAULT_NUMBER_THRESHOLDS;
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -62,26 +55,21 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
   }
 
   getProviderId() {
-    return 'jira.open_issues';
+    return 'jira.openIssues';
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
-    return {
-      id: this.getProviderId(),
-      title: 'Jira open blocking tickets',
-      description:
-        'Highlights the number of issues that are currently open in Jira.',
-      type: this.getMetricType(),
-      history: true,
-    };
-  }
-
-  supportsEntity(entity: Entity): boolean {
-    return entity.metadata.annotations?.[PROJECT_KEY] !== undefined;
+  getMetrics(): Metric<'number'>[] {
+    return [
+      {
+        id: this.getProviderId(),
+        title: 'Jira open blocking tickets',
+        description:
+          'Highlights the number of issues that are currently open in Jira.',
+        type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        history: true,
+      },
+    ];
   }
 
   static fromConfig(
@@ -113,7 +101,10 @@ export class JiraOpenIssuesProvider implements MetricProvider<'number'> {
     return new JiraOpenIssuesProvider(config, connectionStrategy);
   }
 
-  async calculateMetric(entity: Entity): Promise<number> {
-    return this.jiraClient.getCountOpenIssues(entity);
+  async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
+    const value = await this.jiraClient.getCountOpenIssues(entity);
+    const results = new Map<string, number>();
+    results.set(this.getProviderId(), value);
+    return results;
   }
 }

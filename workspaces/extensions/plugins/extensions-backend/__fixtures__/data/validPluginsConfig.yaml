@@ -1,8 +1,8 @@
 plugins:
   - package: ./dynamic-plugins/dist/package11-backend-dynamic
-    disabled: true
+    enabled: false
   - package: ./dynamic-plugins/dist/package12
-    disabled: true
+    enabled: false
     pluginConfig:
       dynamicPlugins:
         frontend:
@@ -11,4 +11,4 @@ plugins:
               - path: /package12
                 importName: Package12Page
   - package: ./dynamic-plugins/dist/package21-backend-dynamic
-    disabled: true
+    enabled: false

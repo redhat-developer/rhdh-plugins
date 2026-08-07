@@ -18,32 +18,12 @@ import { SidebarItem } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import { useTheme } from '@mui/material/styles';
-
 import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
 import { useTranslation } from '../hooks/useTranslation';
-import { getImageForIconClass } from '../utils/icons';
+import { BulkImportIcon } from './BulkImportIcon';
 
-/**
- * @public
- * Bulk Import Icon
- */
-export const BulkImportIcon = () => {
-  const theme = useTheme();
-  const isDarkTheme = theme.palette.mode === 'dark';
-  const iconClass = isDarkTheme
-    ? 'icon-bulk-import-white'
-    : 'icon-bulk-import-black';
-
-  return (
-    <img
-      src={getImageForIconClass(iconClass)}
-      alt="bulk import icon"
-      style={{ height: '25px' }}
-    />
-  );
-};
+export { BulkImportIcon } from './BulkImportIcon';
 
 export const BulkImportSidebarItem = () => {
   const { t } = useTranslation();

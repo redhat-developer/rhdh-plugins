@@ -51,7 +51,6 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
-import { scorecardTranslations } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import {
@@ -60,7 +59,8 @@ import {
   ScorecardErrorStatusIcon,
   ScorecardSuccessStatusIcon,
   ScorecardWarningStatusIcon,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard';
+  scorecardTranslations,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard/legacy';
 
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
@@ -68,8 +68,8 @@ import {
   DynamicCustomizableHomePage,
   OnboardingSection,
   HomePageCardMountPoint,
-} from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
-import { homepageTranslations } from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-homepage';
+import { homepageTranslations } from '@red-hat-developer-hub/backstage-plugin-homepage/alpha';
 import { ComponentType } from 'react';
 
 const mountPoints: HomePageCardMountPoint[] = [
@@ -117,7 +117,7 @@ const mountPoints: HomePageCardMountPoint[] = [
       },
       props: {
         // The "metricId" represent deprecated logic and will be removed in the future
-        metricId: 'jira.open_issues',
+        metricId: 'jira.openIssues',
       },
     },
   },
@@ -149,7 +149,7 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6 },
       },
       props: {
-        aggregationId: 'github.open_prs',
+        aggregationId: 'github.openPRs',
       },
     },
   },
@@ -342,10 +342,10 @@ const mountPoints: HomePageCardMountPoint[] = [
             metricId: {
               title: 'Metric (Needs currently a page reload after change!)',
               type: 'string',
-              default: 'jira.open_issues',
+              default: 'jira.openIssues',
               enum: [
-                'jira.open_issues',
-                'github.open_prs',
+                'jira.openIssues',
+                'github.openPRs',
                 'filecheck.license',
                 'filecheck.codeowners',
               ],

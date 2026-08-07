@@ -84,9 +84,9 @@ Options define configuration that affect fetch jira issues global configuration,
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     jira:
-      open_issues:
+      openIssues:
         options:
           # Optional: use mandatoryFilter filter if need to replaces default which is "type = Bug AND resolution = Unresolved"
           mandatoryFilter: Type = Task AND Resolution = Resolved
@@ -100,9 +100,9 @@ The Scorecard plugin uses Backstage's built-in scheduler service to automaticall
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     jira:
-      open_issues:
+      openIssues:
         schedule:
           frequency:
             cron: '0 6 * * *'
@@ -112,7 +112,7 @@ scorecard:
             seconds: 5
 ```
 
-The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157).
+The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157). For more details on how to configure schedule, see [Metric Collection Scheduling](../scorecard-backend/docs/providers.md#metric-collection-scheduling).
 
 ## Installation
 
@@ -176,24 +176,24 @@ spec:
 
 ## Available Metrics
 
-### Jira Issues (`jira.open_issues`)
+### Jira Issues (`jira.openIssues`)
 
 This metric counts all jira issues that match the filter condition specified in annotation and app-config.yaml
 
-- **Metric ID**: `jira.open_issues`
+- **Metric ID**: `jira.openIssues`
 - **Type**: `Number`
 - **Datasource**: `jira`
 
 ## Default thresholds
 
-Default thresholds for `jira.open_issues`:
+Default thresholds for `jira.openIssues`:
 
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     jira:
-      open_issues:
+      openIssues:
         thresholds:
           rules:
             - key: success

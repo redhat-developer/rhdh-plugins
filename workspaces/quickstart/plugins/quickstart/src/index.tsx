@@ -21,7 +21,7 @@ import {
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
-import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 import { quickstartTranslations } from './translations';
 import { QUICKSTART_DRAWER_ID } from './const';
@@ -97,5 +97,3 @@ export {
   quickstartTranslationRef,
   quickstartTranslations,
 } from './translations';
-
-export * from './legacyExports';

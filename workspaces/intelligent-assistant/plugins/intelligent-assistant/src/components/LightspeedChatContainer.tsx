@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import '@patternfly/react-core/dist/styles/base-no-reset.css';
+import '@patternfly/chatbot/dist/css/main.css';
+
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useAsync } from 'react-use';
 
 import { identityApiRef, useApi } from '@backstage/core-plugin-api';
@@ -68,7 +71,12 @@ const LightspeedChatContainerInner = () => {
     refetch: refetchModels,
   } = useAllModels();
 
-  const { allowed: hasViewAccess, loading } = useLightspeedViewPermission();
+  const {
+    allowed: hasViewAccess,
+    loading,
+    iaChatAccessPermissionName,
+    iaChatUsePermissionName,
+  } = useLightspeedViewPermission();
 
   const { value: profile, loading: profileLoading } = useAsync(
     async () => await identityApi.getProfileInfo(),
@@ -93,8 +101,7 @@ const LightspeedChatContainerInner = () => {
     [models],
   );
 
-  // Handle dark theme class on document
-  useEffect(() => {
+  useLayoutEffect(() => {
     const htmlTagElement = document.documentElement;
     if (type === THEME_DARK) {
       htmlTagElement.classList.add(THEME_DARK_CLASS);
@@ -165,10 +172,7 @@ const LightspeedChatContainerInner = () => {
     return (
       <PermissionRequiredState
         subject={t('permission.subject.plugin')}
-        permissions={[
-          'intelligent-assistant.chat.read',
-          'intelligent-assistant.chat.create',
-        ]}
+        permissions={[iaChatAccessPermissionName, iaChatUsePermissionName]}
         action={
           <Button
             variant="outlined"

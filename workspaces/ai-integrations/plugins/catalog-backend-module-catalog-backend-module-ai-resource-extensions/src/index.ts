@@ -25,4 +25,3 @@ export {
   VALID_AI_RESOURCE_SCOPES,
 } from './AIResourceExtensionsProcessor';
 export type { AIResourceScope } from './AIResourceExtensionsProcessor';
-export { AIResourceOciProcessor } from './AIResourceOciProcessor';

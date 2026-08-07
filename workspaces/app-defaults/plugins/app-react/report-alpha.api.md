@@ -6,8 +6,11 @@
 import { ConfigurableExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionBlueprint } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
+import { ExtensionInput } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
+import { ReactNode } from 'react';
 
 // @public
 export interface AppDrawerApi {
@@ -66,6 +69,33 @@ export const appDrawerContentDataRef: ConfigurableExtensionDataRef<
   'app.drawer.content',
   {}
 >;
+
+// @alpha
+export const appDrawerExtension: OverridableExtensionDefinition<{
+  config: {};
+  configInput: {};
+  output: ExtensionDataRef<
+    (props: { children: ReactNode }) => JSX.Element | null,
+    'app.root.wrapper',
+    {}
+  >;
+  inputs: {
+    drawers: ExtensionInput<
+      ConfigurableExtensionDataRef<AppDrawerContent, 'app.drawer.content', {}>,
+      {
+        singleton: false;
+        optional: false;
+        internal: false;
+      }
+    >;
+  };
+  kind: 'app-root-wrapper';
+  name: 'drawer';
+  params: {
+    Component?: [error: 'Use the `component` parameter instead'];
+    component: (props: { children: ReactNode }) => JSX.Element | null;
+  };
+}>;
 
 // @alpha
 export const appDrawerModule: FrontendModule;

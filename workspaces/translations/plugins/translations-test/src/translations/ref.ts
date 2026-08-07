@@ -84,4 +84,11 @@ export const translationsTestMessages = {
 export const translationsTestTranslationRef = createTranslationRef({
   id: 'plugin.translations-test',
   messages: translationsTestMessages,
+  translations: {
+    de: () => import('./de') as any,
+    es: () => import('./es') as any,
+    fr: () => import('./fr') as any,
+    it: () => import('./it') as any,
+    ja: () => import('./ja') as any,
+  },
 });

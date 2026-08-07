@@ -15,10 +15,17 @@
  */
 
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import { GlobalHeaderMenuItem } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import { GlobalHeaderMenuItem } from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 import { QUICKSTART_DRAWER_ID } from './const';
 
+/**
+ * Help-dropdown menu item that toggles the Quick start drawer.
+ *
+ * Relies on `GlobalHeaderMenuItem` from global-header >= 1.21.1, which no
+ * longer uses `component={Fragment}` when `to` is absent (that dropped
+ * onClick / menuitem role in 1.21.0).
+ */
 export const QuickstartHelpMenuItem = ({
   handleClose,
 }: {

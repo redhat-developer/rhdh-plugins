@@ -1,5 +1,93 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot
 
+## 1.0.1
+
+### Patch Changes
+
+- Updated dependencies [3af0fb2]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.1.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.1.0
+
+## 1.0.0
+
+### Major Changes
+
+- 8c14679: **BREAKING**: Scorecard provider configuration now lives under top-level `scorecard.metricProviders` instead of `scorecard.plugins`. Provider IDs must be `<datasource>.<providerName>` (no longer equal to the datasource alone). Entity annotations for thresholds use now the full metric ID instead of provider ID.
+
+  Thresholds from configuration are determined by the most specific setting (**metric > provider**):
+
+  1. `metricProviders.<datasource>.<providerName>.metrics.<metricName>.thresholds`
+  2. `metricProviders.<datasource>.<providerName>.thresholds`
+
+  Config keys are local names (no datasource prefix). Entity annotations use the full metric ID:
+  `scorecard.io/<metricId>.thresholds.rules.<key>`.
+
+  Filecheck provider ID is now `filecheck.fileExistence`; files move under `options`:
+
+  ```diff
+   scorecard:
+  -  plugins:
+  -    filecheck:
+  -      files:
+  -        license: LICENSE
+  -        codeowners: CODEOWNERS
+  -      thresholds: ...
+  -      schedule: ...
+  +  metricProviders:
+  +    filecheck:
+  +      fileExistence:
+  +        options:
+  +          files:
+  +            license: LICENSE
+  +            codeowners: CODEOWNERS
+  +        thresholds: ...
+  +        schedule: ...
+  ```
+
+  Migration from the previous `scorecard.plugins` layout:
+
+  ```diff
+   scorecard:
+  -  plugins:
+  +  metricProviders:
+       github:
+         openPRs:
+           schedule: ...
+           thresholds: ...
+  ```
+
+### Patch Changes
+
+- Updated dependencies [8c14679]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.0.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.0.0
+
+## 0.4.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.1
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@3.0.1
+
+## 0.4.0
+
+### Minor Changes
+
+- 50447ac: Backstage version bump to v1.52.0
+- dfb90b7: **BREAKING**: Standardize all metric and provider IDs from `snake_case` to `lowerCamelCase`.
+
+  This aligns metric IDs with the naming convention used in `app-config.yaml` and the planned Scorecard design. For example, `github.open_prs` is now `github.openPRs`, `sonarqube.quality_gate` is now `sonarqube.qualityGate`, and `dependabot.alerts_critical` is now `dependabot.alertsCritical`.
+
+  If you reference metric IDs in your `app-config.yaml` (e.g., in `metricId` fields or plugin schedule config keys), update them to use `lowerCamelCase`.
+
+### Patch Changes
+
+- Updated dependencies [c7f89e7]
+- Updated dependencies [50447ac]
+- Updated dependencies [6ea1575]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@3.0.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.0
+
 ## 0.3.1
 
 ### Patch Changes

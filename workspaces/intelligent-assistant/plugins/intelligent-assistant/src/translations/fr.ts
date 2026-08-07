@@ -26,6 +26,8 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
   ref: intelligentAssistantTranslationRef,
   messages: {
     'aria.chatHistoryMenu': 'Menu de l’historique de conversations',
+    'modelSelector.disabledTooltip':
+      "Chaque session de chat ne prend en charge qu'un seul modèle. Pour changer de modèle, ouvrez un nouveau chat.",
     'aria.chatbotSelector': 'Sélecteur Chatbot',
     'aria.close': 'Fermer le chatbot',
     'aria.closeDrawerPanel': 'Fermer le panneau de tiroirs',
@@ -129,7 +131,8 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'mcp.settings.closeAriaLabel': 'Fermer les paramètres MCP',
     'mcp.settings.closeConfigureModalAriaLabel':
       'Fermer la fenêtre de configuration',
-    'mcp.settings.configureServerTitle': 'Configurer le serveur {{serverName}}',
+    'mcp.settings.configureServerTitle':
+      '{{serverName}} — paramètres du serveur MCP',
     'mcp.settings.edit': 'Modifier',
     'mcp.settings.editServerAriaLabel': 'Modifier {{serverName}}',
     'mcp.settings.enabled': 'Activé',
@@ -139,6 +142,27 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
       'Les identifiants sont chiffrés au repos et limités à votre profil. L\u2019assistant intelligent fonctionnera avec exactement vos autorisations.',
     'mcp.settings.modalDescriptionDcr':
       'Ce serveur utilise Dynamic Client Registration (DCR). Les jetons sont générés automatiquement à partir de votre identité Backstage — aucun jeton manuel n\u2019est nécessaire.',
+    'mcp.settings.authenticationToken': "Jeton d'authentification",
+    'mcp.settings.modal.authenticationHeading': 'Authentification',
+    'mcp.settings.modal.credentialMode.organization':
+      'Utiliser le jeton par défaut de l\u2019organisation',
+    'mcp.settings.modal.credentialMode.organizationDescription':
+      'Utilise le jeton configuré par votre administrateur.',
+    'mcp.settings.modal.credentialMode.personal': 'Utiliser un jeton personnel',
+    'mcp.settings.modal.toolsHeading': 'Outils ({{count}})',
+    'mcp.settings.modal.loadingTools': 'Chargement des outils...',
+    'mcp.settings.modal.fetchingStatus': 'Récupération du statut...',
+    'mcp.settings.modal.loadingStatus': 'Déconnexion...',
+    'mcp.settings.modal.tokenRemovedWarning':
+      'Le jeton a été supprimé. Pour réutiliser ce serveur MCP, fournissez un nouveau jeton.',
+    'mcp.settings.modal.noToolsAvailable': 'Aucun outil disponible.',
+    'mcp.settings.modal.toolsLoadFailed': 'Échec du chargement des outils.',
+    'mcp.settings.modal.enabledDescription':
+      'Ce serveur est actif et disponible dans le chat.',
+    'mcp.settings.modal.enabledDescriptionOff':
+      'Ce serveur est désactivé et indisponible dans le chat.',
+    'mcp.settings.modal.enabledDescriptionTokenRequired':
+      'Ce serveur est actuellement désactivé. Fournissez un jeton pour l\u2019activer.',
     'mcp.settings.name': 'Nom',
     'mcp.settings.noneAvailable': 'Aucun serveur MCP disponible.',
     'mcp.settings.personalAccessToken': "Jeton d'accès personnel",
@@ -169,8 +193,6 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'mcp.settings.token.validating': 'Validation du jeton...',
     'mcp.settings.token.validationFailed':
       'Échec de la validation. Vérifiez l’URL du serveur et le jeton.',
-    'mcp.settings.usingAdminCredential':
-      'Les identifiants fournis par l’administrateur sont utilisés. Saisissez un jeton personnel pour les remplacer pour votre compte.',
     'menu.newConversation': 'Nouvelle Conversation',
     'message.options.label': 'Options',
     'modal.cancel': 'Annuler',
@@ -212,17 +234,17 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'notebook.upload.modal.selectedFiles':
       '{{count}} sur {{max}} fichiers sélectionnés',
     'notebook.upload.modal.separator': 'ou',
-    'notebook.upload.modal.title': 'Ajouter un document au carnet',
+    'notebook.upload.modal.title': 'Ajouter une ressource au carnet',
     'notebook.view.close': 'Fermer le carnet',
     'notebook.view.documents.add': 'Ajouter',
-    'notebook.view.documents.count': '{{count}} Documents',
+    'notebook.view.documents.count': '{{count}} Ressources',
     'notebook.view.documents.maxReached':
-      'Maximum 10 documents autorisés. Supprimez un document pour en charger un nouveau.',
-    'notebook.view.documents.uploading': 'Chargement du document',
+      'Maximum 10 ressources autorisées. Supprimez une ressource pour en charger une nouvelle.',
+    'notebook.view.documents.uploading': 'Chargement de la ressource',
     'notebook.view.input.disabledTooltip':
       'Sélectionnez au moins une ressource chargée pour commencer à discuter',
     'notebook.view.input.placeholder':
-      'Posez des questions sur vos documents...',
+      'Posez des questions sur vos ressources...',
     'notebook.view.sidebar.collapse': 'Réduire la barre latérale',
     'notebook.view.sidebar.expand': 'Développer la barre latérale',
     'notebook.view.sidebar.resize': 'Redimensionner la barre latérale',
@@ -240,7 +262,7 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
       'Vous ne verrez plus ce carnet ici. Cela supprimera également l’activité associée comme les requêtes, réponses et retours depuis votre activité.',
     'notebooks.delete.title': 'Supprimer {{name}} ?',
     'notebooks.delete.toast': 'Carnet supprimé !',
-    'notebooks.documents': 'Documents',
+    'notebooks.documents': 'Ressources',
     'notebooks.empty.action': 'Créer un nouveau carnet',
     'notebooks.empty.description':
       'Créez un nouveau carnet pour organiser vos sources et générer des informations alimentées par l’IA.',
@@ -250,12 +272,9 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
       'Quels sont les concepts fondamentaux ?',
     'notebooks.prompts.vulnerabilities.title':
       'Afficher mes vulnérabilités critiques',
-    'notebooks.rename.action': 'Envoyer',
-    'notebooks.rename.description':
-      'Veuillez saisir le nouveau nom de ce carnet et cliquer sur Envoyer pour continuer.',
-    'notebooks.rename.label': 'Nouveau nom',
-    'notebooks.rename.placeholder': 'Nouveau nom',
-    'notebooks.rename.title': 'Renommer {{name}} ?',
+    'notebooks.rename.inline.tooltip': 'Cliquez pour renommer',
+    'notebooks.rename.inline.error':
+      'Échec du renommage de "{{notebookName}}".',
     'notebooks.title': 'Mes carnets',
     'notebooks.updated.days': 'Mis à jour il y a {{days}} jours',
     'notebooks.updated.on': 'Mis à jour le',

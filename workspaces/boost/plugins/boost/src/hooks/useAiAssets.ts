@@ -18,10 +18,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Entity } from '@backstage/catalog-model';
 import { useApi } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
-import { type EntityFilters, applyEntityFilters } from '../utils/entityHelpers';
+import type { FilterDefinition } from '../blueprints/AiCatalogFilterBlueprint';
+import { applyEntityFilters } from '../utils/entityHelpers';
 import { buildCatalogFilter, isAiAsset } from '../utils/isAiAsset';
-
-export type AiAssetFilters = EntityFilters;
 
 export interface UseAiAssetsResult {
   /** Entities after all client-side filters. */
@@ -37,15 +36,12 @@ export interface UseAiAssetsResult {
  * Fetches all AI asset entities from the catalog and applies filters
  * client-side. The catalog API is called once on mount (and on retry);
  * all filtering is a pure memo over the cached result.
- *
- * Callers must pass a memoized `filters` object (e.g. from useMemo or
- * useUrlFilters) — an inline object literal will defeat the memo and
- * recompute on every render.
- *
- * When catalogs grow beyond ~500 assets, the internals can switch to
- * cursor-based queryEntities without changing the consumer API.
  */
-export function useAiAssets(filters: AiAssetFilters = {}): UseAiAssetsResult {
+export function useAiAssets(
+  search: string | undefined,
+  filters: FilterDefinition[],
+  filterValues: Map<string, string[]>,
+): UseAiAssetsResult {
   const catalogApi = useApi(catalogApiRef);
   const [allEntities, setAllEntities] = useState<Entity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,8 +86,8 @@ export function useAiAssets(filters: AiAssetFilters = {}): UseAiAssetsResult {
   }, [catalogApi, retryCount]);
 
   const entities = useMemo(
-    () => applyEntityFilters(allEntities, filters),
-    [allEntities, filters],
+    () => applyEntityFilters(allEntities, search, filters, filterValues),
+    [allEntities, search, filters, filterValues],
   );
 
   return { entities, allEntities, loading, error, retry };

@@ -13,7 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export {
-  translationsPluginTranslationRef,
-  translationsPluginTranslations,
-} from './translations';
+/**
+ * @deprecated Use the root import instead: `import from '@red-hat-developer-hub/backstage-plugin-translations'`
+ * @packageDocumentation
+ */
+export * from './translations';

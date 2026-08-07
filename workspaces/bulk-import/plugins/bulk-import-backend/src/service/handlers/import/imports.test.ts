@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-import type {
-  CatalogRequestOptions,
-  QueryEntitiesRequest,
-  QueryEntitiesResponse,
-} from '@backstage/catalog-client';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
 import { rest } from 'msw';
@@ -37,7 +32,7 @@ describe('imports', () => {
     it.each([undefined, 'v1', 'v2'])(
       'returns 200 with empty list when there is nothing in catalog yet and no open PR for each repo (API Version: %s)',
       async apiVersion => {
-        const { server, mockCatalogClient } = useTestData();
+        const { mockCatalogClient } = useTestData();
         const backendServer = await startBackendServer(
           mockCatalogClient,
           AuthorizeResult.ALLOW,
@@ -45,15 +40,12 @@ describe('imports', () => {
             catalog: { locations: [] },
           },
         );
-        server.use(
-          rest.get(
-            `http://localhost:${backendServer.port()}/api/catalog/locations`,
-            (_, res, ctx) => res(ctx.status(200), ctx.json([])),
-          ),
-        );
-        mockCatalogClient.queryEntities = jest
-          .fn()
-          .mockResolvedValue({ items: [] });
+        mockCatalogClient.getLocations.mockResolvedValue({ items: [] });
+        mockCatalogClient.queryEntities.mockResolvedValue({
+          items: [],
+          pageInfo: {},
+          totalItems: 0,
+        });
 
         let req = request(backendServer).get('/api/bulk-import/imports');
         if (apiVersion) {
@@ -78,46 +70,30 @@ describe('imports', () => {
     it.each([undefined, 'v1', 'v2'])(
       'returns 200 with appropriate import status (with data coming from the repos and data coming from the app-config files) (API Version: %s)',
       async apiVersion => {
-        const { server, mockCatalogClient } = useTestData();
+        const { mockCatalogClient } = useTestData();
         const backendServer = await startBackendServer(
           mockCatalogClient,
           AuthorizeResult.ALLOW,
         );
-        server.use(
-          rest.get(
-            `http://localhost:${backendServer.port()}/api/catalog/locations`,
-            (_, res, ctx) =>
-              res(
-                ctx.status(200),
-                ctx.json(loadTestFixture('catalog/locations.json')),
-              ),
-          ),
+        mockCatalogClient.getLocations.mockResolvedValue(
+          loadTestFixture('catalog/locations.json'),
         );
-        mockCatalogClient.queryEntities = jest
-          .fn()
-          .mockImplementation(
-            async (
-              _request?: QueryEntitiesRequest,
-              _options?: CatalogRequestOptions,
-            ): Promise<QueryEntitiesResponse> => {
-              return {
-                items: [
-                  {
-                    apiVersion: 'backstage.io/v1alpha1',
-                    kind: 'Location',
-                    metadata: {
-                      name: `generated-from-tests-${Math.floor(
-                        Math.random() * 100 + 1,
-                      )}`,
-                      namespace: 'default',
-                    },
-                  },
-                ],
-                totalItems: 1,
-                pageInfo: {},
-              };
+        mockCatalogClient.queryEntities.mockResolvedValue({
+          items: [
+            {
+              apiVersion: 'backstage.io/v1alpha1',
+              kind: 'Location',
+              metadata: {
+                name: `generated-from-tests-${Math.floor(
+                  Math.random() * 100 + 1,
+                )}`,
+                namespace: 'default',
+              },
             },
-          );
+          ],
+          totalItems: 1,
+          pageInfo: {},
+        });
 
         let req = request(backendServer).get('/api/bulk-import/imports');
         if (apiVersion) {
@@ -282,31 +258,22 @@ describe('imports', () => {
             return Promise.resolve({ exists: exists });
           },
         );
-      mockCatalogClient.queryEntities = jest
-        .fn()
-        .mockImplementation(
-          async (
-            _request?: QueryEntitiesRequest,
-            _options?: CatalogRequestOptions,
-          ): Promise<QueryEntitiesResponse> => {
-            return {
-              items: [
-                {
-                  apiVersion: 'backstage.io/v1alpha1',
-                  kind: 'Location',
-                  metadata: {
-                    name: `generated-from-tests-${Math.floor(
-                      Math.random() * 100 + 1,
-                    )}`,
-                    namespace: 'default',
-                  },
-                },
-              ],
-              totalItems: 1,
-              pageInfo: {},
-            };
+      mockCatalogClient.queryEntities.mockResolvedValue({
+        items: [
+          {
+            apiVersion: 'backstage.io/v1alpha1',
+            kind: 'Location',
+            metadata: {
+              name: `generated-from-tests-${Math.floor(
+                Math.random() * 100 + 1,
+              )}`,
+              namespace: 'default',
+            },
           },
-        );
+        ],
+        totalItems: 1,
+        pageInfo: {},
+      });
 
       server.use(
         rest.post(

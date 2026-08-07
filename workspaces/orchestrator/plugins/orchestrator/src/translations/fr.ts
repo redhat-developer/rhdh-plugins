@@ -225,6 +225,7 @@ const orchestratorTranslationFr = createTranslationMessages({
     'workflow.fields.version': 'Version',
     'workflow.fields.workflow': 'Flux de travail',
     'workflow.fields.workflowId': "ID d'exécution",
+    'workflow.fields.workflowIdCopy': "Copier l'ID d'exécution",
     'workflow.fields.workflowIdCopied':
       "L'identifiant de l'exécution a été copié dans le presse-papiers.",
     'workflow.fields.workflowStatus': 'État du flux de travail',

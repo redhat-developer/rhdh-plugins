@@ -25,7 +25,7 @@ import { FilecheckMetricProvider } from './FilecheckMetricProvider';
 
 /**
  * Creates a FilecheckMetricProvider from root Backstage config and services.
- * Returns undefined if no files are configured under `scorecard.plugins.filecheck.files`.
+ * Returns undefined if no files are configured under `scorecard.metricProviders.filecheck.fileExistence.options.files`.
  */
 export function createFilecheckMetricProvider(
   config: Config,

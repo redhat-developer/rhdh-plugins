@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/cli-module-install-dynamic-plugins",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Backstage CLI module that installs RHDH dynamic plugins from a dynamic-plugins.yaml config (OCI, NPM, local).",
   "license": "Apache-2.0",
   "backstage": {
@@ -48,7 +48,7 @@
   "dependencies": {
     "@backstage/cli-node": "^0.3.2",
     "cleye": "^2.6.0",
-    "tar": "^7.5.13",
+    "tar": "^7.5.21",
     "yaml": "^2.8.2"
   },
   "devDependencies": {

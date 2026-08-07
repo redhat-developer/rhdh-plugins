@@ -279,10 +279,7 @@ export const transformDocumentsToSources = (
 };
 
 export type SortOption =
-  | 'newest'
-  | 'oldest'
-  | 'alphabeticalAsc'
-  | 'alphabeticalDesc';
+  'newest' | 'oldest' | 'alphabeticalAsc' | 'alphabeticalDesc';
 
 const sortConversations = (
   messages: ConversationList,

@@ -41,23 +41,23 @@ describe('ProviderManager', () => {
 
   describe('registerProvider', () => {
     it('registers a provider', () => {
-      const provider = createMockProvider('llamastack');
+      const provider = createMockProvider('ogx');
       manager.registerProvider(provider);
 
       expect(manager.hasProvider()).toBe(true);
       expect(manager.getRegisteredProviders()).toHaveLength(1);
-      expect(manager.getRegisteredProviders()[0].id).toBe('llamastack');
+      expect(manager.getRegisteredProviders()[0].id).toBe('ogx');
     });
 
     it('first registered provider becomes active', () => {
-      const provider = createMockProvider('llamastack');
+      const provider = createMockProvider('ogx');
       manager.registerProvider(provider);
 
       expect(manager.getActiveProvider()).toBe(provider);
     });
 
     it('second registered provider does not replace active', () => {
-      const first = createMockProvider('llamastack');
+      const first = createMockProvider('ogx');
       const second = createMockProvider('kagenti');
       manager.registerProvider(first);
       manager.registerProvider(second);
@@ -66,11 +66,11 @@ describe('ProviderManager', () => {
     });
 
     it('rejects duplicate provider IDs', () => {
-      manager.registerProvider(createMockProvider('llamastack'));
+      manager.registerProvider(createMockProvider('ogx'));
 
-      expect(() =>
-        manager.registerProvider(createMockProvider('llamastack')),
-      ).toThrow('Provider "llamastack" is already registered');
+      expect(() => manager.registerProvider(createMockProvider('ogx'))).toThrow(
+        'Provider "ogx" is already registered',
+      );
     });
   });
 
@@ -82,7 +82,7 @@ describe('ProviderManager', () => {
     });
 
     it('returns the active provider', () => {
-      const provider = createMockProvider('llamastack');
+      const provider = createMockProvider('ogx');
       manager.registerProvider(provider);
 
       expect(manager.getActiveProvider()).toBe(provider);
@@ -91,7 +91,7 @@ describe('ProviderManager', () => {
 
   describe('switchProvider', () => {
     it('switches to a registered provider', () => {
-      const first = createMockProvider('llamastack');
+      const first = createMockProvider('ogx');
       const second = createMockProvider('kagenti');
       manager.registerProvider(first);
       manager.registerProvider(second);
@@ -101,7 +101,7 @@ describe('ProviderManager', () => {
     });
 
     it('throws for unregistered provider', () => {
-      manager.registerProvider(createMockProvider('llamastack'));
+      manager.registerProvider(createMockProvider('ogx'));
 
       expect(() => manager.switchProvider('nonexistent')).toThrow(
         'Provider "nonexistent" is not registered',
@@ -109,11 +109,11 @@ describe('ProviderManager', () => {
     });
 
     it('includes available providers in error message', () => {
-      manager.registerProvider(createMockProvider('llamastack'));
+      manager.registerProvider(createMockProvider('ogx'));
       manager.registerProvider(createMockProvider('kagenti'));
 
       expect(() => manager.switchProvider('nonexistent')).toThrow(
-        'Available providers: llamastack, kagenti',
+        'Available providers: ogx, kagenti',
       );
     });
   });
@@ -124,13 +124,13 @@ describe('ProviderManager', () => {
     });
 
     it('returns descriptors for all registered providers', () => {
-      manager.registerProvider(createMockProvider('llamastack', 'Llama Stack'));
+      manager.registerProvider(createMockProvider('ogx', 'OGX'));
       manager.registerProvider(createMockProvider('kagenti', 'Kagenti'));
 
       const descriptors = manager.getRegisteredProviders();
       expect(descriptors).toHaveLength(2);
-      expect(descriptors[0].id).toBe('llamastack');
-      expect(descriptors[0].name).toBe('Llama Stack');
+      expect(descriptors[0].id).toBe('ogx');
+      expect(descriptors[0].name).toBe('OGX');
       expect(descriptors[1].id).toBe('kagenti');
       expect(descriptors[1].name).toBe('Kagenti');
     });
@@ -142,7 +142,7 @@ describe('ProviderManager', () => {
     });
 
     it('returns true when a provider is registered', () => {
-      manager.registerProvider(createMockProvider('llamastack'));
+      manager.registerProvider(createMockProvider('ogx'));
       expect(manager.hasProvider()).toBe(true);
     });
   });

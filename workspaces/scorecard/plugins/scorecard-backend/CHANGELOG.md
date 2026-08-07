@@ -1,5 +1,139 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend
 
+## 4.1.0
+
+### Minor Changes
+
+- 3af0fb2: This update introduces new scalar aggregation KPIs in the scorecard configuration, including:
+
+  - **`sum`**: Single numeric total of latest metric values across owned entities
+  - **`average`**: Mean of latest metric values across owned entities
+  - **`max`**: Maximum latest metric value across owned entities
+  - **`min`**: Minimum latest metric value across owned entities
+  - **`count`**: Number of entities with a non-null latest stored value
+
+### Patch Changes
+
+- Updated dependencies [3af0fb2]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.1.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.1.0
+
+## 4.0.0
+
+### Major Changes
+
+- 8c14679: **BREAKING**: Scorecard provider configuration now lives under top-level `scorecard.metricProviders` instead of `scorecard.plugins`. Provider IDs must be `<datasource>.<providerName>` (no longer equal to the datasource alone). Entity annotations for thresholds use now the full metric ID instead of provider ID.
+
+  Thresholds from configuration are determined by the most specific setting (**metric > provider**):
+
+  1. `metricProviders.<datasource>.<providerName>.metrics.<metricName>.thresholds`
+  2. `metricProviders.<datasource>.<providerName>.thresholds`
+
+  Config keys are local names (no datasource prefix). Entity annotations use the full metric ID:
+  `scorecard.io/<metricId>.thresholds.rules.<key>`.
+
+  Filecheck provider ID is now `filecheck.fileExistence`; files move under `options`:
+
+  ```diff
+   scorecard:
+  -  plugins:
+  -    filecheck:
+  -      files:
+  -        license: LICENSE
+  -        codeowners: CODEOWNERS
+  -      thresholds: ...
+  -      schedule: ...
+  +  metricProviders:
+  +    filecheck:
+  +      fileExistence:
+  +        options:
+  +          files:
+  +            license: LICENSE
+  +            codeowners: CODEOWNERS
+  +        thresholds: ...
+  +        schedule: ...
+  ```
+
+  Migration from the previous `scorecard.plugins` layout:
+
+  ```diff
+   scorecard:
+  -  plugins:
+  +  metricProviders:
+       github:
+         openPRs:
+           schedule: ...
+           thresholds: ...
+  ```
+
+### Patch Changes
+
+- Updated dependencies [8c14679]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.0.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.0.0
+
+## 3.0.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.1
+- @red-hat-developer-hub/backstage-plugin-scorecard-node@3.0.1
+
+## 3.0.0
+
+### Major Changes
+
+- 6ea1575: **BREAKING**: Rename aggregation KPI type `average` to `weightedStatusScore`.
+
+  ### App config
+
+  - `scorecard.aggregationKPIs.*.type`: `average` → `weightedStatusScore`
+
+  ### `GET /aggregations/:aggregationId` API
+
+  - `metadata.aggregationType`: `average` → `weightedStatusScore`
+  - `result.averageScore` → `result.weightedStatusScore`
+  - `result.averageWeightedSum` → `result.weightedStatusSum`
+  - `result.averageMaxPossible` → `result.weightedStatusMaxPossible`
+
+  ### Frontend translations (`metric.*`)
+
+  Update any scorecard translation overrides that used the old `average*` keys:
+
+  - `metric.averageCenterTooltipTotalLabel` → `metric.weightedStatusScoreCenterTooltipTotalLabel`
+  - `metric.averageCenterTooltipMaxLabel` → `metric.weightedStatusScoreCenterTooltipMaxLabel`
+  - `metric.averageCenterTooltipBreakdownRow_one` / `_other` → `metric.weightedStatusScoreCenterTooltipBreakdownRow_one` / `_other`
+  - `metric.averageLegendTooltipEntitiesEach_one` / `_other` → `metric.weightedStatusScoreLegendTooltipEntitiesEach_one` / `_other`
+  - `metric.averageLegendTooltipRowTotal` → `metric.weightedStatusScoreLegendTooltipRowTotal`
+
+  The `averageLegendTooltip*` keys served the removed side-legend tooltip; the center donut tooltip uses the `weightedStatusScoreCenterTooltip*` keys (including per-status breakdown rows).
+
+  ### UI `data-testid` values
+
+  Update downstream e2e selectors that targeted the weighted-status-score card center label:
+
+  - `average-card-center-percent` → `weighted-status-score-card-center-percent`
+  - `average-card-center-percent-hit-area` → `weighted-status-score-card-center-percent-hit-area`
+
+- dfb90b7: **BREAKING**: Standardize all metric and provider IDs from `snake_case` to `lowerCamelCase`.
+
+  This aligns metric IDs with the naming convention used in `app-config.yaml` and the planned Scorecard design. For example, `github.open_prs` is now `github.openPRs`, `sonarqube.quality_gate` is now `sonarqube.qualityGate`, and `dependabot.alerts_critical` is now `dependabot.alertsCritical`.
+
+  If you reference metric IDs in your `app-config.yaml` (e.g., in `metricId` fields or plugin schedule config keys), update them to use `lowerCamelCase`.
+
+### Minor Changes
+
+- c7f89e7: Introduce `scorecardCollectorsExtensionPoint` for registering collectors to fetch data from different datasources, and `scorecardCollectorsServiceRef` for consuming collected data in metric providers `calculateMetrics` through `collect(...)`.
+- 50447ac: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- Updated dependencies [c7f89e7]
+- Updated dependencies [50447ac]
+- Updated dependencies [6ea1575]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@3.0.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.0
+
 ## 2.8.1
 
 ### Patch Changes

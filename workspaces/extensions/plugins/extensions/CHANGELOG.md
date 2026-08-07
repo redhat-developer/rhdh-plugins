@@ -1,5 +1,26 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 0.19.1
+
+### Patch Changes
+
+- 83d8a47: Removed unused `StylesProvider` and `createGenerateClassName` JSS wrapper from plugin router. Dropped `@mui/styles` dependency since JSS class-name isolation is no longer needed after the MUI5 migration.
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.19.1
+
+## 0.19.0
+
+### Minor Changes
+
+- 2636ed4: Replaced `disabled` field with `enabled` in plugin configuration
+- 90a1446: Backstage version bump to v1.52.1
+
+### Patch Changes
+
+- 493df1f: Fix accessibility violations (role-img-alt, aria-prohibited-attr, label) and remove suppression flag from e2e accessibility tests.
+- Updated dependencies [2636ed4]
+- Updated dependencies [90a1446]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.19.0
+
 ## 0.18.1
 
 ### Patch Changes

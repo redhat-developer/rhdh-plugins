@@ -1,5 +1,26 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.9.1
+
+### Patch Changes
+
+- e3fb07a: Export translations module as default for NFS auto-discovery
+- d623d36: Refreshed `yarn.lock` to align resolved dependency versions.
+- Updated dependencies [d623d36]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.9.1
+
+## 0.9.0
+
+### Minor Changes
+
+- 8af2af2: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- f8f09d1: Fix four accessibility violations (aria-input-field-name, button-name, color-contrast, svg-img-alt) and remove suppression filter from e2e accessibility tests.
+- Updated dependencies [8af2af2]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.9.0
+
 ## 0.8.4
 
 ### Patch Changes

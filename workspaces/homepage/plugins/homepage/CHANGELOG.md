@@ -1,5 +1,29 @@
 # @red-hat-developer-hub/backstage-plugin-homepage
 
+## 1.17.1
+
+### Patch Changes
+
+- e3fb07a: Export translations module as default for NFS auto-discovery
+
+## 1.17.0
+
+### Minor Changes
+
+- a6fced5: Backstage version bump to v1.52.1
+
+### Patch Changes
+
+- Updated dependencies [a6fced5]
+  - @red-hat-developer-hub/backstage-plugin-homepage-common@0.4.0
+
+## 1.16.1
+
+### Patch Changes
+
+- cc5ab93: optimized how homepage layout is loaded
+- 83d8a47: Removed unused `HomePageStylesProvider` component and `@mui/styles` dependency. JSS class-name isolation is no longer needed after the MUI5 migration.
+
 ## 1.16.0
 
 ### Minor Changes
