@@ -48,6 +48,8 @@ const dcmTranslationJa: TranslationMessages<
     'common.saving': '\u4fdd\u5b58\u4e2d\u2026',
     'common.close': '\u9589\u3058\u308b',
     'common.rows': '\u884c',
+    'common.previousPage': '\u524d\u3078',
+    'common.nextPage': '\u6b21\u3078',
     'deleteDialog.title': '{{resourceLabel}}\u3092\u524a\u9664',
     'deleteDialog.confirmButton': '\u524a\u9664',
     'deleteDialog.cancelButton': '\u30ad\u30e3\u30f3\u30bb\u30eb',

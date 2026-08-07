@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { useCallback } from 'react';
+
 import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 
 import Typography from '@mui/material/Typography';
@@ -26,6 +28,7 @@ import {
   DropdownItem,
   DropdownList,
   MenuToggle,
+  TextInput,
 } from '@patternfly/react-core';
 import {
   CatalogIcon,
@@ -34,6 +37,7 @@ import {
   TrashIcon,
 } from '@patternfly/react-icons';
 
+import { useInlineEdit } from '../../hooks/notebooks/useInlineEdit';
 import { intelligentAssistantTranslationRef } from '../../translations/ref';
 import { NotebookSession } from '../../types';
 import { formatUpdatedLabel } from '../../utils/notebooks-utils';
@@ -44,10 +48,25 @@ type NotebookCardProps = {
   openNotebookMenuId: string | null;
   setOpenNotebookMenuId: React.Dispatch<React.SetStateAction<string | null>>;
   onClick: (notebook: NotebookSession) => void;
-  onRename: (sessionId: string) => void;
+  onRename: (sessionId: string, newName: string) => void;
   onDelete: (sessionId: string) => void;
   t: TranslationFunction<typeof intelligentAssistantTranslationRef.T>;
 };
+
+const titleInputStyle: React.CSSProperties = {
+  '--pf-v6-c-form-control--before--BorderStyle': 'none',
+  '--pf-v6-c-form-control--after--BorderColor':
+    'var(--pf-t--global--text--color--brand--default)',
+  '--pf-v6-c-form-control--FontSize': '1.25rem',
+  '--pf-v6-c-form-control--PaddingBlockStart': '2px',
+  '--pf-v6-c-form-control--PaddingBlockEnd': '2px',
+  '--pf-v6-c-form-control--PaddingInlineStart': '6px',
+  '--pf-v6-c-form-control--PaddingInlineEnd': '6px',
+  '--pf-v6-c-form-control--OutlineOffset': '0',
+  width: '100%',
+  minWidth: 0,
+  fontWeight: 500,
+} as React.CSSProperties;
 
 export const NotebookCard = ({
   notebook,
@@ -61,8 +80,28 @@ export const NotebookCard = ({
 }: NotebookCardProps) => {
   const isMenuOpen = openNotebookMenuId === notebook.session_id;
 
+  const {
+    isEditing,
+    editValue: editName,
+    setEditValue: setEditName,
+    inputRef,
+    startEditing,
+    save: saveRename,
+    handleKeyDown,
+  } = useInlineEdit({
+    currentName: notebook.name,
+    onSave: newName => onRename(notebook.session_id, newName),
+    onStart: () => setOpenNotebookMenuId(null),
+  });
+
+  const handleCardClick = useCallback(() => {
+    if (!isEditing) {
+      onClick(notebook);
+    }
+  }, [isEditing, onClick, notebook]);
+
   const handleCardKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
+    if (!isEditing && (e.key === 'Enter' || e.key === ' ')) {
       e.preventDefault();
       onClick(notebook);
     }
@@ -84,7 +123,7 @@ export const NotebookCard = ({
       aria-label={(t as Function)('notebooks.card.openAria', {
         name: notebook.name,
       })}
-      onClick={() => onClick(notebook)}
+      onClick={handleCardClick}
       onKeyDown={handleCardKeyDown}
     >
       <CardHeader
@@ -127,8 +166,7 @@ export const NotebookCard = ({
                   icon={<PenIcon />}
                   onClick={event => {
                     event.stopPropagation();
-                    onRename(notebook.session_id);
-                    setOpenNotebookMenuId(null);
+                    startEditing();
                   }}
                 >
                   {t('notebooks.actions.rename')}
@@ -152,9 +190,30 @@ export const NotebookCard = ({
       >
         <CardTitle className={classes.notebookTitle}>
           <CatalogIcon />
-          <Typography component="span" className={classes.notebookTitleText}>
-            {notebook.name}
-          </Typography>
+          {isEditing ? (
+            <TextInput
+              ref={inputRef}
+              style={titleInputStyle}
+              value={editName}
+              onChange={(_event, value) => setEditName(value)}
+              onBlur={saveRename}
+              onKeyDown={handleKeyDown}
+              aria-label={t('notebooks.rename.inline.tooltip')}
+              onClick={e => e.stopPropagation()}
+            />
+          ) : (
+            <Typography
+              component="span"
+              className={classes.notebookTitleText}
+              title={t('notebooks.rename.inline.tooltip')}
+              onClick={e => {
+                e.stopPropagation();
+                startEditing();
+              }}
+            >
+              {notebook.name}
+            </Typography>
+          )}
         </CardTitle>
       </CardHeader>
       <div className={classes.notebookCardDivider} />

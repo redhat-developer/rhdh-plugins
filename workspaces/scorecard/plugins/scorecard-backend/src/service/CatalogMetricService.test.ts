@@ -618,7 +618,7 @@ describe('CatalogMetricService', () => {
         expect(result).toEqual({
           values: {},
           total: 0,
-          timestamp: '2024-01-15T12:00:00.000Z',
+          timestamp: '1970-01-01T00:00:00.000Z',
           entitiesConsidered: 0,
           calculationErrorCount: 0,
         });

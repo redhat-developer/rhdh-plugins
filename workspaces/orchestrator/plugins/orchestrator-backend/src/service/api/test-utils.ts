@@ -350,6 +350,25 @@ states:
   };
 }
 
+/** Compiled workflows use start.stateName instead of a string start. */
+export function generateTestWorkflowInfoForEventypeWithStartStateName(
+  id: string = 'test_workflowId',
+  base: WorkflowInfo = generateTestWorkflowInfoForEventype(id),
+): WorkflowInfo {
+  const startMarker = 'start: listenToLock';
+  const compiledStart = 'start:\n  stateName: listenToLock';
+  const source = base.source as string;
+  if (!source.includes(startMarker)) {
+    throw new Error(
+      'Failed to rewrite start to start.stateName: base fixture missing "start: listenToLock"',
+    );
+  }
+  return {
+    ...base,
+    source: source.replace(startMarker, compiledStart),
+  };
+}
+
 export function generateTestExecuteWorkflowResponse(
   id: string = 'test_execId',
 ): WorkflowExecutionResponse {

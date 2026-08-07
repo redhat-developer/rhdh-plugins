@@ -52,6 +52,7 @@ import {
   useDocumentStatusPolling,
   type PendingUpload,
 } from '../../hooks/notebooks/useDocumentStatusPolling';
+import { useRenameNotebookWithAlert } from '../../hooks/notebooks/useRenameNotebookWithAlert';
 import { useUploadDocument } from '../../hooks/notebooks/useUploadDocument';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { CreateMessageVariables } from '../../hooks/useCreateCoversationMessage';
@@ -456,6 +457,11 @@ export const NotebookView = ({
   const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
   const [filesToAddToModal, setFilesToAddToModal] = useState<File[]>([]);
 
+  const handleRenameNotebook = useRenameNotebookWithAlert({
+    setAlerts: setToastAlerts,
+    getNotebookName: () => notebookName,
+  });
+
   const confirmDeleteDocument = useCallback(async () => {
     if (!deleteDocumentTarget) return;
     const { id: documentId, name: documentName } = deleteDocumentTarget;
@@ -672,6 +678,7 @@ export const NotebookView = ({
         onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
         onAddDocument={handleOpenUploadModal}
         onDeleteDocument={handleDeleteDocument}
+        onRenameNotebook={newName => handleRenameNotebook(sessionId, newName)}
       />
     </DrawerPanelContent>
   );
