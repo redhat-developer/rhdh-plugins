@@ -17,14 +17,24 @@
 /**
  * Default toolbar component extensions (`gh-component`) for the global header.
  *
- * Heavy UI uses blueprint `loader` (ExtensionBoundary.lazyComponent).
- * Data-driven items (self-service) omit loader and let the blueprint lazy-load
- * HeaderIconButton.
+ * First-paint widgets resolve through shared loaders in `components/loaders.ts`
+ * (one critical async chunk). Dropdown menus use separate interaction loaders.
  *
  * @internal
  */
 
 import { GlobalHeaderComponentBlueprint } from '../extensions/blueprints';
+import {
+  loadCompanyLogo,
+  loadDivider,
+  loadHelpDropdown,
+  loadNotificationButton,
+  loadProfileDropdown,
+  loadSearchComponent,
+  loadSpacer,
+  loadStarredDropdown,
+  loadApplicationLauncherDropdown,
+} from '../components/loaders';
 
 /** @public */
 export const companyLogoExtension = GlobalHeaderComponentBlueprint.make({
@@ -32,11 +42,8 @@ export const companyLogoExtension = GlobalHeaderComponentBlueprint.make({
   params: {
     priority: 200,
     loader: async () => {
-      const [{ CompanyLogo }, { rhdhLogo }] = await Promise.all([
-        import('../components/CompanyLogo/CompanyLogo'),
-        import('./rhdhLogo'),
-      ]);
-      return () => <CompanyLogo to="/" logo={rhdhLogo} />;
+      const CompanyLogo = await loadCompanyLogo();
+      return () => <CompanyLogo to="/" />;
     },
   },
 });
@@ -47,10 +54,7 @@ export const searchExtension = GlobalHeaderComponentBlueprint.make({
   params: {
     priority: 100,
     layout: { flexGrow: 1 },
-    loader: () =>
-      import('../components/SearchComponent/SearchComponent').then(
-        m => m.SearchComponent,
-      ),
+    loader: loadSearchComponent,
   },
 });
 
@@ -60,7 +64,7 @@ export const spacerExtension = GlobalHeaderComponentBlueprint.make({
   params: {
     priority: 99,
     layout: { flexGrow: 0 },
-    loader: () => import('../components/Spacer/Spacer').then(m => m.Spacer),
+    loader: loadSpacer,
   },
 });
 
@@ -70,7 +74,7 @@ export const selfServiceButtonExtension = GlobalHeaderComponentBlueprint.make({
   params: {
     title: 'Self-service',
     titleKey: 'create.title',
-    icon: 'addCircleOutline',
+    icon: 'add',
     link: '/create',
     priority: 90,
   },
@@ -81,10 +85,7 @@ export const starredDropdownExtension = GlobalHeaderComponentBlueprint.make({
   name: 'starred-dropdown',
   params: {
     priority: 85,
-    loader: () =>
-      import('../components/HeaderDropdownComponent/StarredDropdown').then(
-        m => m.StarredDropdown,
-      ),
+    loader: loadStarredDropdown,
   },
 });
 
@@ -94,10 +95,7 @@ export const applicationLauncherDropdownExtension =
     name: 'app-launcher-dropdown',
     params: {
       priority: 82,
-      loader: () =>
-        import('../components/ApplicationLauncherDropdown').then(
-          m => m.ApplicationLauncherDropdown,
-        ),
+      loader: loadApplicationLauncherDropdown,
     },
   });
 
@@ -106,8 +104,7 @@ export const helpDropdownExtension = GlobalHeaderComponentBlueprint.make({
   name: 'help-dropdown',
   params: {
     priority: 80,
-    loader: () =>
-      import('../components/HelpDropdown').then(m => m.HelpDropdown),
+    loader: loadHelpDropdown,
   },
 });
 
@@ -116,10 +113,7 @@ export const notificationButtonExtension = GlobalHeaderComponentBlueprint.make({
   name: 'notification-button',
   params: {
     priority: 70,
-    loader: () =>
-      import('../components/NotificationButton/NotificationButton').then(
-        m => m.NotificationButton,
-      ),
+    loader: loadNotificationButton,
   },
 });
 
@@ -128,7 +122,7 @@ export const dividerExtension = GlobalHeaderComponentBlueprint.make({
   name: 'divider',
   params: {
     priority: 50,
-    loader: () => import('../components/Divider/Divider').then(m => m.Divider),
+    loader: loadDivider,
   },
 });
 
@@ -137,7 +131,6 @@ export const profileDropdownExtension = GlobalHeaderComponentBlueprint.make({
   name: 'profile-dropdown',
   params: {
     priority: 10,
-    loader: () =>
-      import('../components/ProfileDropdown').then(m => m.ProfileDropdown),
+    loader: loadProfileDropdown,
   },
 });

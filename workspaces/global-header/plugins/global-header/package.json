@@ -128,7 +128,6 @@
       "PluginRoot": "./src/index.ts",
       "Alpha": "./src/alpha/index.ts",
       "Legacy": "./src/legacy.ts",
-      "Components": "./src/componentsExport.ts",
       "GlobalHeaderModule": "./src/globalHeaderModuleExport.ts",
       "GlobalHeaderTranslationsModule": "./src/globalHeaderTranslationsModuleExport.ts"
     }

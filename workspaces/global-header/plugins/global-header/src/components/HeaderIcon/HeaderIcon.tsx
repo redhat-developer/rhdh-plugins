@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-// Self-load the outlined icon font on this lazy UI path so ligature fallbacks
-// work in hosts (e.g. RHDH) that do not import material-icons CSS themselves.
-import 'material-icons/iconfont/outlined.css';
-
 import type { CSSProperties } from 'react';
 import { useApp } from '@backstage/core-plugin-api';
 import MuiIcon from '@mui/material/Icon';
 import Box from '@mui/material/Box';
+
+import { ShapesOutlinedIcon } from '../../icons/ShapesOutlinedIcon';
 
 /**
  * @public
@@ -33,18 +31,6 @@ export interface HeaderIconProps {
 }
 
 /**
- * Converts camelCase icon names to snake_case for Material Icons ligatures.
- * e.g. `manageAccounts` -> `manage_accounts`, `accountCircle` -> `account_circle`
- */
-function toMaterialIconLigature(name: string): string {
-  return name.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`);
-}
-
-/**
- * Same resolution order as Quickstart's `QuickstartItemIcon`: system icon,
- * inline SVG, image URL, then Material Icons outlined ligature. The font CSS
- * is imported above so the ligature path works without host setup.
- *
  * @public
  */
 export const HeaderIcon = ({
@@ -92,14 +78,14 @@ export const HeaderIcon = ({
     );
   }
 
-  const ligature = toMaterialIconLigature(icon);
+  // eslint-disable-next-line no-console
+  console.warn(
+    `HeaderIcon: unregistered icon id "${icon}". Register via IconBundleBlueprint, app.getSystemIcon(), or use an image/SVG URL.`,
+  );
+
   return (
-    <MuiIcon
-      fontSize={size}
-      baseClassName="material-icons-outlined"
-      sx={layout}
-    >
-      {ligature}
-    </MuiIcon>
+    <Box aria-hidden sx={{ display: 'flex', alignItems: 'center', ...layout }}>
+      <ShapesOutlinedIcon fontSize={size} />
+    </Box>
   );
 };

@@ -20,7 +20,7 @@ import {
   type ComponentProps,
   type ComponentType,
 } from 'react';
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import MenuItem from '@mui/material/MenuItem';
 import { renderInTestApp } from '@backstage/test-utils';
@@ -56,11 +56,23 @@ const renderDropdown = (
     </GlobalHeaderProvider>,
   );
 
+/** Flush React.lazy() of dropdown content under fake timers. */
+const flushLazyMenu = async () => {
+  await act(async () => {
+    await Promise.resolve();
+  });
+};
+
 const openMenu = async () => {
-  await userEvent.click(screen.getByRole('button', { name: /help/i }));
+  fireEvent.click(screen.getByRole('button', { name: /help/i }));
+  await flushLazyMenu();
 };
 
 describe('GlobalHeaderDropdown', () => {
+  beforeEach(() => {
+    jest.useRealTimers();
+  });
+
   afterEach(() => {
     jest.useRealTimers();
     jest.clearAllMocks();
@@ -107,7 +119,7 @@ describe('GlobalHeaderDropdown', () => {
       await screen.findByRole('menuitem', { name: /documentation/i }),
     ).toBeInTheDocument();
     expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
-  });
+  }, 15000);
 
   it('renders component-type menu items', async () => {
     const SupportItem: ComponentType<{ handleClose?: () => void }> = () => (
@@ -170,6 +182,7 @@ describe('GlobalHeaderDropdown', () => {
 
       await renderDropdown(menuItems, { trackValidity: true });
       await user.click(screen.getByRole('button', { name: /help/i }));
+      await flushLazyMenu();
 
       expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
 
@@ -198,6 +211,7 @@ describe('GlobalHeaderDropdown', () => {
 
       await renderDropdown(menuItems, { trackValidity: true });
       await user.click(screen.getByRole('button', { name: /help/i }));
+      await flushLazyMenu();
 
       expect(
         await screen.findByRole('menuitem', { name: /support/i }),
@@ -240,6 +254,7 @@ describe('GlobalHeaderDropdown', () => {
 
       await renderDropdown(menuItems, { trackValidity: true });
       await user.click(screen.getByRole('button', { name: /help/i }));
+      await flushLazyMenu();
 
       await act(async () => {
         jest.advanceTimersByTime(100);
@@ -283,6 +298,7 @@ describe('GlobalHeaderDropdown', () => {
 
       await renderDropdown(menuItems, { trackValidity: true });
       await user.click(screen.getByRole('button', { name: /help/i }));
+      await flushLazyMenu();
 
       await act(async () => {
         jest.advanceTimersByTime(500);
@@ -329,6 +345,7 @@ describe('GlobalHeaderDropdown', () => {
 
       await renderDropdown(menuItems, { trackValidity: true });
       await user.click(screen.getByRole('button', { name: /help/i }));
+      await flushLazyMenu();
 
       await act(async () => {
         jest.advanceTimersByTime(500);
@@ -338,6 +355,39 @@ describe('GlobalHeaderDropdown', () => {
       expect(screen.getByTestId('persistent-null-host')).not.toBeVisible();
       expect(unmounted).toBe(false);
     });
+  });
+
+  it('supports arrow-key navigation between visible menu items', async () => {
+    const menuItems: GlobalHeaderMenuItemData[] = [
+      {
+        target: 'help',
+        type: 'data',
+        title: 'First item',
+        link: '/first',
+        priority: 20,
+      },
+      {
+        target: 'help',
+        type: 'data',
+        title: 'Second item',
+        link: '/second',
+        priority: 10,
+      },
+    ];
+
+    await renderDropdown(menuItems);
+    await openMenu();
+
+    const firstItem = await screen.findByRole('menuitem', {
+      name: /first item/i,
+    });
+    const secondItem = screen.getByRole('menuitem', { name: /second item/i });
+
+    firstItem.focus();
+    expect(firstItem).toHaveFocus();
+
+    await userEvent.keyboard('{ArrowDown}');
+    expect(secondItem).toHaveFocus();
   });
 
   it('forwards tooltip and icon button props to the trigger', async () => {

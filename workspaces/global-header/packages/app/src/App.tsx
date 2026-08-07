@@ -65,7 +65,7 @@ const headerExamplesPlugin = createFrontendPlugin({
         target: 'help',
         priority: 50,
         // Import building blocks from `/components` inside the loader so they
-        // stay off the main `/alpha` NFS sync chunk.
+        // stay off the root Module Federation sync chunk.
         loader: async () => {
           const { GlobalHeaderMenuItem } = await import(
             '@red-hat-developer-hub/backstage-plugin-global-header/components'
@@ -79,7 +79,7 @@ const headerExamplesPlugin = createFrontendPlugin({
               <GlobalHeaderMenuItem
                 to="https://backstage.io/docs"
                 title="Backstage Docs"
-                icon="menu_book"
+                icon="article"
                 onClick={handleClose}
               />
             );

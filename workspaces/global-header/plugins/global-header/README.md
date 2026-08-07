@@ -45,8 +45,9 @@ export default createApp({
 Other plugins can contribute toolbar items and dropdown menu items using
 `GlobalHeaderComponentBlueprint` and `GlobalHeaderMenuItemBlueprint` from the
 root. Building-block UI (`GlobalHeaderMenuItem`, `GlobalHeaderDropdown`,
-…) must be imported from `/components` (ideally inside a blueprint `loader`) so
-MUI-heavy UI stays off the main NFS Module Federation sync chunk. See the
+…) must be imported from the `/components` package subpath (from a file reached
+only via a blueprint `loader`) so MUI-heavy UI stays off the root NFS sync
+chunk. See the
 [New Frontend System documentation](../../docs/new-frontend-system.md) for
 detailed examples and API reference.
 

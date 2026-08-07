@@ -27,6 +27,7 @@ import {
   globalHeaderComponentDataRef,
   globalHeaderMenuItemDataRef,
 } from './dataRefs';
+import { loadHeaderBundle, loadHeaderIconButton } from '../components/loaders';
 
 /**
  * Params accepted by {@link GlobalHeaderComponentBlueprint}.
@@ -107,6 +108,9 @@ function resolveLazyComponent(
   node: AppNode,
   loader: () => Promise<ComponentType<any>>,
 ): ComponentType<any> {
+  // ExtensionBoundary.lazyComponent wraps each resolved component in its own
+  // ExtensionBoundary + Suspense (Progress fallback) — suspending items do not
+  // bubble to the app-root Suspense around LazyGlobalHeader.
   return ExtensionBoundary.lazyComponent(node, async () => {
     const Comp = await loader();
     return (props: any) => <Comp {...props} />;
@@ -133,9 +137,7 @@ function createDataDrivenToolbarLoader(
 ): () => Promise<ComponentType<any>> {
   return async () => {
     if (params.link) {
-      const { HeaderIconButton } = await import(
-        '../components/HeaderIconButton/HeaderIconButton'
-      );
+      const HeaderIconButton = await loadHeaderIconButton();
       return () => (
         <HeaderIconButton
           title={params.title ?? ''}
@@ -150,16 +152,18 @@ function createDataDrivenToolbarLoader(
     const [
       { default: IconButton },
       { default: Tooltip },
-      { HeaderIcon },
+      onMountBundle,
       { useTranslation },
       { translateWithFallback },
     ] = await Promise.all([
       import('@mui/material/IconButton'),
       import('@mui/material/Tooltip'),
-      import('../components/HeaderIcon/HeaderIcon'),
+      loadHeaderBundle(),
       import('../hooks/useTranslation'),
       import('../utils/translationUtils'),
     ]);
+
+    const { HeaderIcon } = onMountBundle;
 
     return () => {
       const { t } = useTranslation();
