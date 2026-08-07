@@ -1,5 +1,22 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.12.0
+
+### Minor Changes
+
+- f48dfb4: Add conditional RBAC policy support for orchestrator workflows using the `IS_ALLOWED_WORKFLOW_ID` rule. Dynamic workflow-specific permissions (`orchestrator.workflow.<workflowId>` and `orchestrator.workflow.use.<workflowId>`) are deprecated and will be removed in the next release.
+
+  Migrate from deprecated dynamic permissions to conditional policies. See `docs/MIGRATION-CONDITIONAL-POLICIES.md`.
+
+### Patch Changes
+
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+- Updated dependencies [f48dfb4]
+- Updated dependencies [c74276c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.9.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.4.1
+
 ## 8.11.0
 
 ### Minor Changes
