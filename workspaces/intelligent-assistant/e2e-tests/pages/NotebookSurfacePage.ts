@@ -269,12 +269,12 @@ export class NotebookSurfacePage {
     });
   }
 
-  /** Double-clicks the filename, clears input, types new name, presses Enter. */
-  async renameDocumentInlineViaDoubleClick(
+  /** Clicks the filename, clears input, types new name, presses Enter. */
+  async renameDocumentInlineViaClick(
     oldName: string,
     newName: string,
   ): Promise<void> {
-    await this.documentFileName(oldName).dblclick();
+    await this.documentFileName(oldName).click();
     const input = this.chatbotRegion().getByRole('textbox', {
       name: this.t['notebook.document.rename'],
     });

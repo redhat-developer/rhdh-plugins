@@ -201,188 +201,190 @@ describe('DocumentSidebar', () => {
       render(<DocumentSidebar {...renameProps} />);
 
       fireEvent.click(screen.getByText('readme.md'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: '   ' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      expect(onRenameDocument).not.toHaveBeenCalled();
     });
-    describe('inline notebook title rename', () => {
-      const onRenameNotebook = jest.fn();
 
-      const titleRenameProps = {
-        ...defaultProps,
-        onRenameNotebook,
-      };
+    it('should enter edit mode from kebab Rename action with base name', () => {
+      render(<DocumentSidebar {...renameProps} />);
 
-      it('should enter edit mode on click', () => {
-        render(<DocumentSidebar {...titleRenameProps} />);
-
-        fireEvent.click(screen.getByText('Test Notebook'));
-
-        const input = screen.getByRole('textbox');
-        expect(input).toBeInTheDocument();
-        expect(input).toHaveValue('Test Notebook');
+      const kebab = screen.getByRole('button', {
+        name: /Options readme\.md/i,
       });
+      fireEvent.click(kebab);
 
-      it('should call onRenameNotebook on Enter with new name', () => {
-        render(<DocumentSidebar {...titleRenameProps} />);
+      const renameItem = screen.getByText('Rename');
+      fireEvent.click(renameItem);
 
-        fireEvent.click(screen.getByText('Test Notebook'));
-        const input = screen.getByRole('textbox');
-        fireEvent.change(input, { target: { value: 'New Name' } });
-        fireEvent.keyDown(input, { key: 'Enter' });
+      const input = screen.getByRole('textbox');
+      expect(input).toBeInTheDocument();
+      expect(input).toHaveValue('readme');
+      expect(screen.getByText('.md')).toBeInTheDocument();
+    });
 
-        expect(onRenameNotebook).toHaveBeenCalledWith('New Name');
-      });
+    it('should show rename tooltip on filename', () => {
+      render(<DocumentSidebar {...renameProps} />);
 
-      it('should cancel editing on Escape', () => {
-        render(<DocumentSidebar {...titleRenameProps} />);
+      const fileName = screen.getByText('readme.md');
+      expect(fileName).toHaveAttribute('title', 'Click to rename');
+    });
 
-        fireEvent.click(screen.getByText('Test Notebook'));
-        const input = screen.getByRole('textbox');
-        fireEvent.change(input, { target: { value: 'Changed' } });
-        fireEvent.keyDown(input, { key: 'Escape' });
+    it('should show error and block save when name conflicts with existing document', () => {
+      const twoDocuments = [
+        mockDocument('doc-1', 'readme.md'),
+        mockDocument('doc-2', 'notes.md'),
+      ];
+      render(
+        <DocumentSidebar
+          {...defaultProps}
+          documents={twoDocuments}
+          onRenameDocument={onRenameDocument}
+        />,
+      );
 
-        expect(onRenameNotebook).not.toHaveBeenCalled();
-        expect(screen.getByText('Test Notebook')).toBeInTheDocument();
-        expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-      });
+      fireEvent.click(screen.getByText('readme.md'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'notes' } });
 
-      it('should not call onRenameNotebook if name is unchanged', () => {
-        render(<DocumentSidebar {...titleRenameProps} />);
+      expect(screen.getByText('Name already exists.')).toBeInTheDocument();
 
-        fireEvent.click(screen.getByText('Test Notebook'));
-        const input = screen.getByRole('textbox');
-        fireEvent.keyDown(input, { key: 'Enter' });
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(onRenameDocument).not.toHaveBeenCalled();
+    });
 
-        expect(onRenameNotebook).not.toHaveBeenCalled();
-      });
+    it('should not show error when name does not conflict', () => {
+      const twoDocuments = [
+        mockDocument('doc-1', 'readme.md'),
+        mockDocument('doc-2', 'notes.md'),
+      ];
+      render(
+        <DocumentSidebar
+          {...defaultProps}
+          documents={twoDocuments}
+          onRenameDocument={onRenameDocument}
+        />,
+      );
 
-      it('should not call onRenameNotebook if name is empty', () => {
-        render(<DocumentSidebar {...titleRenameProps} />);
+      fireEvent.click(screen.getByText('readme.md'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'unique-name' } });
 
-        fireEvent.click(screen.getByText('Test Notebook'));
-        const input = screen.getByRole('textbox');
-        fireEvent.change(input, { target: { value: '   ' } });
-        fireEvent.keyDown(input, { key: 'Enter' });
+      expect(
+        screen.queryByText('Name already exists.'),
+      ).not.toBeInTheDocument();
+    });
 
-        expect(onRenameDocument).not.toHaveBeenCalled();
-      });
+    it('should save rename on blur', () => {
+      render(<DocumentSidebar {...renameProps} />);
 
-      it('should enter edit mode from kebab Rename action with base name', () => {
-        render(<DocumentSidebar {...renameProps} />);
+      fireEvent.click(screen.getByText('readme.md'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'blurred-name' } });
+      fireEvent.blur(input);
 
-        const kebab = screen.getByRole('button', {
-          name: /Options readme\.md/i,
-        });
-        fireEvent.click(kebab);
+      expect(onRenameDocument).toHaveBeenCalledWith('doc-1', 'blurred-name.md');
+    });
 
-        const renameItem = screen.getByText('Rename');
-        fireEvent.click(renameItem);
+    it('should show error and block save when title exceeds 255 characters', () => {
+      render(<DocumentSidebar {...renameProps} />);
 
-        const input = screen.getByRole('textbox');
-        expect(input).toBeInTheDocument();
-        expect(input).toHaveValue('readme');
-        expect(screen.getByText('.md')).toBeInTheDocument();
-      });
+      fireEvent.click(screen.getByText('readme.md'));
+      const input = screen.getByRole('textbox');
+      const longName = 'a'.repeat(260);
+      fireEvent.change(input, { target: { value: longName } });
 
-      it('should show rename tooltip on filename', () => {
-        render(<DocumentSidebar {...renameProps} />);
+      expect(screen.getByText('Name too long (max 255)')).toBeInTheDocument();
 
-        const fileName = screen.getByText('readme.md');
-        expect(fileName).toHaveAttribute('title', 'Click to rename');
-      });
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(onRenameDocument).not.toHaveBeenCalled();
+    });
 
-      it('should show error and block save when name conflicts with existing document', () => {
-        const twoDocuments = [
-          mockDocument('doc-1', 'readme.md'),
-          mockDocument('doc-2', 'notes.md'),
-        ];
-        render(
-          <DocumentSidebar
-            {...defaultProps}
-            documents={twoDocuments}
-            onRenameDocument={onRenameDocument}
-          />,
-        );
+    it('should exit edit mode on blur when title is too long', () => {
+      render(<DocumentSidebar {...renameProps} />);
 
-        fireEvent.click(screen.getByText('readme.md'));
-        const input = screen.getByRole('textbox');
-        fireEvent.change(input, { target: { value: 'notes' } });
+      fireEvent.click(screen.getByText('readme.md'));
+      const input = screen.getByRole('textbox');
+      const longName = 'a'.repeat(260);
+      fireEvent.change(input, { target: { value: longName } });
+      fireEvent.blur(input);
 
-        expect(screen.getByText('Name already exists.')).toBeInTheDocument();
+      expect(onRenameDocument).not.toHaveBeenCalled();
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+      expect(screen.getByText('readme.md')).toBeInTheDocument();
+    });
+  });
 
-        fireEvent.keyDown(input, { key: 'Enter' });
-        expect(onRenameDocument).not.toHaveBeenCalled();
-      });
+  describe('inline notebook title rename', () => {
+    const onRenameNotebook = jest.fn();
 
-      it('should not show error when name does not conflict', () => {
-        const twoDocuments = [
-          mockDocument('doc-1', 'readme.md'),
-          mockDocument('doc-2', 'notes.md'),
-        ];
-        render(
-          <DocumentSidebar
-            {...defaultProps}
-            documents={twoDocuments}
-            onRenameDocument={onRenameDocument}
-          />,
-        );
+    const titleRenameProps = {
+      ...defaultProps,
+      onRenameNotebook,
+    };
 
-        fireEvent.click(screen.getByText('readme.md'));
-        const input = screen.getByRole('textbox');
-        fireEvent.change(input, { target: { value: 'unique-name' } });
+    it('should enter edit mode on click', () => {
+      render(<DocumentSidebar {...titleRenameProps} />);
 
-        expect(
-          screen.queryByText('Name already exists.'),
-        ).not.toBeInTheDocument();
-      });
+      fireEvent.click(screen.getByText('Test Notebook'));
 
-      it('should save rename on blur', () => {
-        render(<DocumentSidebar {...renameProps} />);
+      const input = screen.getByRole('textbox');
+      expect(input).toBeInTheDocument();
+      expect(input).toHaveValue('Test Notebook');
+    });
 
-        fireEvent.click(screen.getByText('readme.md'));
-        const input = screen.getByRole('textbox');
-        fireEvent.change(input, { target: { value: 'blurred-name' } });
-        fireEvent.blur(input);
+    it('should call onRenameNotebook on Enter with new name', () => {
+      render(<DocumentSidebar {...titleRenameProps} />);
 
-        expect(onRenameDocument).toHaveBeenCalledWith(
-          'doc-1',
-          'blurred-name.md',
-        );
-      });
+      fireEvent.click(screen.getByText('Test Notebook'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'New Name' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
 
-      it('should show error and block save when title exceeds 255 characters', () => {
-        render(<DocumentSidebar {...renameProps} />);
+      expect(onRenameNotebook).toHaveBeenCalledWith('New Name');
+    });
 
-        fireEvent.click(screen.getByText('readme.md'));
-        const input = screen.getByRole('textbox');
-        const longName = 'a'.repeat(260);
-        fireEvent.change(input, { target: { value: longName } });
+    it('should cancel editing on Escape', () => {
+      render(<DocumentSidebar {...titleRenameProps} />);
 
-        expect(screen.getByText('Name too long (max 255)')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('Test Notebook'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: 'Changed' } });
+      fireEvent.keyDown(input, { key: 'Escape' });
 
-        fireEvent.keyDown(input, { key: 'Enter' });
-        expect(onRenameDocument).not.toHaveBeenCalled();
-      });
+      expect(onRenameNotebook).not.toHaveBeenCalled();
+      expect(screen.getByText('Test Notebook')).toBeInTheDocument();
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    });
 
-      it('should exit edit mode on blur when title is too long', () => {
-        render(<DocumentSidebar {...renameProps} />);
+    it('should not call onRenameNotebook if name is unchanged', () => {
+      render(<DocumentSidebar {...titleRenameProps} />);
 
-        fireEvent.click(screen.getByText('readme.md'));
-        const input = screen.getByRole('textbox');
-        const longName = 'a'.repeat(260);
-        fireEvent.change(input, { target: { value: longName } });
-        fireEvent.blur(input);
+      fireEvent.click(screen.getByText('Test Notebook'));
+      const input = screen.getByRole('textbox');
+      fireEvent.keyDown(input, { key: 'Enter' });
 
-        expect(onRenameDocument).not.toHaveBeenCalled();
-        expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
-        expect(screen.getByText('readme.md')).toBeInTheDocument();
-        expect(onRenameNotebook).not.toHaveBeenCalled();
-      });
+      expect(onRenameNotebook).not.toHaveBeenCalled();
+    });
 
-      it('should show rename tooltip on notebook title', () => {
-        render(<DocumentSidebar {...titleRenameProps} />);
+    it('should not call onRenameNotebook if name is empty', () => {
+      render(<DocumentSidebar {...titleRenameProps} />);
 
-        const title = screen.getByText('Test Notebook');
-        expect(title).toHaveAttribute('title', 'Click to rename');
-      });
+      fireEvent.click(screen.getByText('Test Notebook'));
+      const input = screen.getByRole('textbox');
+      fireEvent.change(input, { target: { value: '   ' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+
+      expect(onRenameNotebook).not.toHaveBeenCalled();
+    });
+
+    it('should show rename tooltip on notebook title', () => {
+      render(<DocumentSidebar {...titleRenameProps} />);
+
+      const title = screen.getByText('Test Notebook');
+      expect(title).toHaveAttribute('title', 'Click to rename');
     });
   });
 });

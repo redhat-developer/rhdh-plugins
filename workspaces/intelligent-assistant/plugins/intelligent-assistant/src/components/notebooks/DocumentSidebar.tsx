@@ -250,6 +250,7 @@ export const DocumentSidebar = ({
     setEditingDocId(docId);
     setEditName(baseName);
     setOpenMenuDocId(null);
+    savingRef.current = false;
     setTimeout(() => {
       inputRef.current?.focus();
       inputRef.current?.select();
@@ -259,7 +260,6 @@ export const DocumentSidebar = ({
   const cancelEditing = useCallback(() => {
     setEditingDocId(null);
     setEditName('');
-    savingRef.current = false;
   }, []);
 
   const getValidationError = useCallback(

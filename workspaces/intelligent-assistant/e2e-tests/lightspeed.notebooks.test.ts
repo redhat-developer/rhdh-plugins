@@ -94,7 +94,7 @@ test.describe('Intelligent assistant notebooks', () => {
     await notebooks.expectNotebookEditorUploadResourceButtonVisible();
   });
 
-  test('document sidebar: rename document via double-click', async ({}, testInfo) => {
+  test('document sidebar: rename document via click', async ({}, testInfo) => {
     const { absolutePath, fileName } = localeNotebookUpload1Path(
       testInfo.project.name,
     );
@@ -110,7 +110,7 @@ test.describe('Intelligent assistant notebooks', () => {
     const newBaseName = `${baseName}-renamed`;
     const newFileName = `${newBaseName}${ext}`;
 
-    await notebooks.renameDocumentInlineViaDoubleClick(fileName, newBaseName);
+    await notebooks.renameDocumentInlineViaClick(fileName, newBaseName);
     await notebooks.expectDocumentFileListedInSidebar(newFileName);
 
     await notebooks.deleteFirstListedDocumentFromSidebarOverflowMenu();
