@@ -177,23 +177,27 @@ export const kserveKubeflowConnectorPlugin = createBackendPlugin({
                 clusterConfig,
                 'serviceAccountToken',
               );
-              if (directUrl) {
+              if (directUrl && directToken) {
                 reconcilerConfig.url = directUrl;
-              }
-              if (directToken) {
                 reconcilerConfig.serviceAccountToken = directToken;
-              }
-              const directSkipTLS =
-                clusterConfig.getOptionalBoolean('skipTLSVerify');
-              if (directSkipTLS !== undefined) {
-                reconcilerConfig.skipTLSVerify = directSkipTLS;
-              }
-              const directCaData = safeGetOptionalString(
-                clusterConfig,
-                'caData',
-              );
-              if (directCaData) {
-                reconcilerConfig.caData = directCaData;
+                const directSkipTLS =
+                  clusterConfig.getOptionalBoolean('skipTLSVerify');
+                if (directSkipTLS !== undefined) {
+                  reconcilerConfig.skipTLSVerify = directSkipTLS;
+                }
+                const directCaData = safeGetOptionalString(
+                  clusterConfig,
+                  'caData',
+                );
+                if (directCaData) {
+                  reconcilerConfig.caData = directCaData;
+                }
+              } else if (directUrl || directToken) {
+                logger.warn(
+                  `Partial direct config for cluster '${
+                    reconcilerConfig.clusterName || 'unknown'
+                  }': both url and serviceAccountToken are required; falling through to loadFromDefault()`,
+                );
               }
             }
           }
