@@ -101,6 +101,8 @@ export class JobResourceBuilder {
     // Resolve SSL verification: skip=false by default (SSL is verified)
     const skipSSL = config.credentials.aap?.skipSSLVerification ?? false;
 
+    const syncTimeout = config.credentials.aap?.syncTimeoutSeconds;
+
     return {
       apiVersion: 'v1',
       kind: 'Secret',
@@ -135,6 +137,10 @@ export class JobResourceBuilder {
 
         // AAP SSL verification setting (derived from skipSSLVerification config)
         AAP_VERIFY_SSL: String(!skipSSL),
+
+        ...(syncTimeout !== undefined
+          ? { AAP_SYNC_TIMEOUT_S: String(syncTimeout) }
+          : {}),
       },
     };
   }
