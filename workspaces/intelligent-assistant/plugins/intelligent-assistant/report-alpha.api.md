@@ -99,7 +99,11 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'notebook.upload.error.fileTooLarge': string;
     readonly 'notebook.upload.error.tooManyFiles': string;
     readonly 'notebook.overwrite.modal.title': string;
+    readonly 'notebook.overwrite.modal.title.one': string;
+    readonly 'notebook.overwrite.modal.title.other': string;
     readonly 'notebook.overwrite.modal.description': string;
+    readonly 'notebook.overwrite.modal.description.one': string;
+    readonly 'notebook.overwrite.modal.description.other': string;
     readonly 'notebook.overwrite.modal.replace': string;
     readonly 'notebook.overwrite.modal.ignore': string;
     readonly 'notebook.overwrite.modal.action': string;
