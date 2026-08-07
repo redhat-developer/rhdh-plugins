@@ -17893,7 +17893,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-to-chromium@npm:^1.5.328":
+"electron-to-chromium@npm:1.5.349":
   version: 1.5.349
   resolution: "electron-to-chromium@npm:1.5.349"
   checksum: 10c0/5acd94d9c70b91383f95bc9c04f39b6f92263ef2b232f4f0d4c71d17dcd3db49ef480cd025c379f6d58b534cf568ca5cb566b0f9be238f057b9a5773d76760ec
