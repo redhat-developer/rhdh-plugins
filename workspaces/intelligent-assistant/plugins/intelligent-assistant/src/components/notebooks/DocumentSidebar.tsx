@@ -30,6 +30,7 @@ import {
   Tooltip,
 } from '@patternfly/react-core';
 import { EllipsisVIcon, PlusCircleIcon } from '@patternfly/react-icons';
+
 import { NOTEBOOK_MAX_FILES, NOTEBOOK_MAX_TITLE_LENGTH } from '../../const';
 import { useInlineEdit } from '../../hooks/notebooks/useInlineEdit';
 import { useTranslation } from '../../hooks/useTranslation';
