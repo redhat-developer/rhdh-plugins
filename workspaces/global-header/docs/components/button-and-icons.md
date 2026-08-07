@@ -75,8 +75,6 @@ Resolution order (same pattern as Quickstart's `QuickstartItemIcon`):
 3. Image URL (`http(s)://`, `/`, or `data:image/`)
 4. Material Icons **outlined** ligature for other string ids
 
-The plugin loads `material-icons/iconfont/outlined.css` with `HeaderIcon`, so ligature fallbacks work in hosts that do not import that font themselves (including RHDH). CamelCase ids are converted to snake_case ligatures (e.g. `manageAccounts` → `manage_accounts`).
-
 ## HeaderIconButton
 
 Shows a clickable icon in the header.

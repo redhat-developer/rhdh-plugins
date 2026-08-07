@@ -85,7 +85,6 @@
     "@mui/material": "5.18.0",
     "@mui/styled-engine": "5.18.0",
     "@scalprum/react-core": "0.11.3",
-    "material-icons": "^1.13.14",
     "react-use": "^17.5.0"
   },
   "peerDependencies": {
