@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-app-integrations
 
+## 0.1.1
+
+### Patch Changes
+
+- 7f30033: Pin `electron-to-chromium` to `1.5.349` via Yarn resolutions so hermetic Konflux/Hermeto builds do not float to freshly published versions that 404 on the cluster npm proxy.
+
 ## 0.1.0
 
 ### Minor Changes
