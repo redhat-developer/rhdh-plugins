@@ -19,6 +19,7 @@ import { createDevApp } from '@backstage/dev-utils';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { TestApiProvider } from '@backstage/test-utils';
 
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { adoptionInsightsPlugin, AdoptionInsightsPage } from '../src/plugin';
 import { adoptionInsightsApiRef } from '../src/api';
 import { adoptionInsightsTranslations } from '../src/translations';
@@ -95,9 +96,52 @@ export class MockAdoptionInsightsApiClient implements AdoptionInsightsApi {
   }
 }
 
+const mockCatalogApi = {
+  getEntities: async () => ({
+    items: [
+      {
+        apiVersion: 'scaffolder.backstage.io/v1beta3',
+        kind: 'Template',
+        metadata: {
+          name: 'example-go-template-1',
+          namespace: 'default',
+          title: 'Example Go Template 1',
+          annotations: { 'rhdh.redhat.com/time-saved': '30' },
+        },
+        spec: { type: 'service' },
+      },
+      {
+        apiVersion: 'scaffolder.backstage.io/v1beta3',
+        kind: 'Template',
+        metadata: {
+          name: 'example-go-template-2',
+          namespace: 'default',
+          title: 'Example Go Template 2',
+          annotations: { 'rhdh.redhat.com/time-saved': '144' },
+        },
+        spec: { type: 'service' },
+      },
+      {
+        apiVersion: 'scaffolder.backstage.io/v1beta3',
+        kind: 'Template',
+        metadata: {
+          name: 'example-go-template-3',
+          namespace: 'default',
+          title: 'Example Go Template 3',
+          annotations: { 'rhdh.redhat.com/time-saved': '1' },
+        },
+        spec: { type: 'service' },
+      },
+    ],
+  }),
+};
+
 const AdoptionInsightsWrapper = ({ children }: { children: ReactNode }) => (
   <TestApiProvider
-    apis={[[adoptionInsightsApiRef, new MockAdoptionInsightsApiClient()]]}
+    apis={[
+      [adoptionInsightsApiRef, new MockAdoptionInsightsApiClient()],
+      [catalogApiRef, mockCatalogApi],
+    ]}
   >
     <Page themeId="home">
       <Content>

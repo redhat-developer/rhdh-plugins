@@ -45,4 +45,7 @@ export const TECHDOCS_TABLE_HEADERS = [
 export const TEMPLATE_TABLE_HEADERS = [
   { id: 'name', titleKey: 'table.headers.name' },
   { id: 'executions', titleKey: 'table.headers.executions' },
+  { id: 'estTimeSaved', titleKey: 'table.headers.estTimeSaved' },
 ];
+
+export const TIME_SAVED_ANNOTATION = 'rhdh.redhat.com/time-saved';
