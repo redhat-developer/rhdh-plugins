@@ -17,59 +17,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { TableColumn } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
-import {
-  Box,
-  Button,
-  Chip,
-  CircularProgress,
-  Collapse,
-  Drawer,
-  IconButton,
-  Typography,
-} from '@material-ui/core';
+import { Box, Chip, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import MuiAlert from '@material-ui/lab/Alert';
-import CloseIcon from '@material-ui/icons/Close';
-
-const useStyles = makeStyles(theme => ({
-  apiVersionChip: {
-    maxWidth: 140,
-  },
-  serviceTypeChip: {
-    maxWidth: 160,
-  },
-  drawer: {
-    width: 680,
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-  },
-  drawerHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: theme.spacing(2, 3),
-    borderBottom: `1px solid ${theme.palette.divider}`,
-    flexShrink: 0,
-  },
-  drawerContent: {
-    flex: 1,
-    overflowY: 'auto',
-    padding: theme.spacing(3),
-  },
-  drawerErrorBanner: {
-    marginTop: theme.spacing(2),
-  },
-  drawerFooter: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: theme.spacing(1),
-    padding: theme.spacing(2, 3),
-    borderTop: `1px solid ${theme.palette.divider}`,
-    flexShrink: 0,
-  },
-}));
-
 import type {
   CatalogItem,
   ServiceType,
@@ -84,7 +33,7 @@ import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
 import { usePaginatedCrudTab } from '../../hooks/usePaginatedCrudTab';
 import { useTranslation } from '../../hooks/useTranslation';
 import emptyIllustration from '../../assets/environments-empty-state.png';
-import { CatalogItemFormFields } from './components/CatalogItemFormFields';
+import { CatalogItemWizardDialog } from './components/CatalogItemWizardDialog';
 import {
   catalogItemToForm,
   emptyCatalogItemForm,
@@ -93,6 +42,18 @@ import {
   isCatalogItemFormValid,
 } from './catalogItemFormTypes';
 import type { CatalogItemForm } from './catalogItemFormTypes';
+
+const useStyles = makeStyles(theme => ({
+  apiVersionChip: {
+    maxWidth: 140,
+  },
+  resourceChip: {
+    maxWidth: 160,
+    margin: theme.spacing(0.25),
+    height: 22,
+    fontSize: theme.typography.pxToRem(12),
+  },
+}));
 
 export function CatalogItemsTabContent() {
   const classes = useStyles();
@@ -103,11 +64,6 @@ export function CatalogItemsTabContent() {
   const [serviceTypesError, setServiceTypesError] = useState<string | null>(
     null,
   );
-  /** Tracks whether a submit was attempted so field-level errors show for all fields. */
-  const [createSubmitAttempted, setCreateSubmitAttempted] = useState(false);
-  const [editSubmitAttempted, setEditSubmitAttempted] = useState(false);
-
-  // Fetch dropdown options once on mount; page navigation does not re-fetch.
   useEffect(() => {
     catalogApi
       .listServiceTypes({ max_page_size: 100 })
@@ -131,7 +87,7 @@ export function CatalogItemsTabContent() {
     getId: item => item.uid ?? '',
     getSearchText: item => [
       item.display_name,
-      item.spec?.service_type,
+      ...(item.spec?.resources?.map(r => r.service_type) ?? []),
       item.uid,
     ],
     emptyForm: emptyCatalogItemForm,
@@ -174,28 +130,42 @@ export function CatalogItemsTabContent() {
           ),
       },
       {
-        title: t('catalogItems.columns.serviceType'),
-        field: 'spec.service_type',
-        render: item =>
-          item.spec?.service_type ? (
-            <Chip
-              label={item.spec.service_type}
-              size="small"
-              variant="outlined"
-              className={classes.serviceTypeChip}
-            />
-          ) : (
-            <Typography variant="caption" color="textSecondary">
-              -
-            </Typography>
-          ),
+        title: t('catalogItems.columns.resources'),
+        field: 'spec.resources',
+        sorting: false,
+        render: item => {
+          const resources = item.spec?.resources ?? [];
+          if (resources.length === 0) {
+            return (
+              <Typography variant="caption" color="textSecondary">
+                -
+              </Typography>
+            );
+          }
+          return (
+            <Box display="flex" flexWrap="wrap">
+              {resources.map(r => (
+                <Chip
+                  key={r.name}
+                  label={r.service_type}
+                  size="small"
+                  variant="outlined"
+                  className={classes.resourceChip}
+                />
+              ))}
+            </Box>
+          );
+        },
       },
       {
         title: t('catalogItems.columns.fields'),
-        field: 'spec.fields',
+        field: 'spec.resources',
         sorting: false,
         render: item => {
-          const count = item.spec?.fields?.length ?? 0;
+          const count = (item.spec?.resources ?? []).reduce(
+            (sum, r) => sum + (r.fields?.length ?? 0),
+            0,
+          );
           return (
             <Typography variant="body2" color="textSecondary">
               {(t as any)('catalogItems.fieldCount', { count })}
@@ -226,107 +196,6 @@ export function CatalogItemsTabContent() {
     [classes, crud.handleOpenEdit, crud.handleOpenDelete, t],
   );
 
-  type ScalarTouched = Partial<
-    Record<Exclude<keyof CatalogItemForm, 'fields'>, boolean>
-  >;
-
-  type CatalogItemDrawerProps = {
-    title: string;
-    open: boolean;
-    onClose: () => void;
-    form: CatalogItemForm;
-    setForm: React.Dispatch<React.SetStateAction<CatalogItemForm>>;
-    touched: Partial<Record<keyof CatalogItemForm, boolean>>;
-    setTouched: React.Dispatch<
-      React.SetStateAction<Partial<Record<keyof CatalogItemForm, boolean>>>
-    >;
-    onSubmit: () => void;
-    submitLabel: string;
-    submitting: boolean;
-    error: string | null;
-    submitAttempted: boolean;
-    isEditMode: boolean;
-  };
-
-  const itemFormDrawer = ({
-    title,
-    open,
-    onClose,
-    form,
-    setForm,
-    touched,
-    setTouched,
-    onSubmit,
-    submitLabel,
-    submitting,
-    error,
-    submitAttempted,
-    isEditMode,
-  }: CatalogItemDrawerProps) => (
-    <Drawer
-      anchor="right"
-      open={open}
-      onClose={submitting || Boolean(error) ? undefined : onClose}
-    >
-      <Box className={classes.drawer}>
-        <Box className={classes.drawerHeader}>
-          <Typography variant="h6">{title}</Typography>
-          <IconButton
-            size="small"
-            aria-label={t('common.close')}
-            onClick={onClose}
-            disabled={submitting}
-          >
-            <CloseIcon />
-          </IconButton>
-        </Box>
-
-        <Box className={classes.drawerContent}>
-          <CatalogItemFormFields
-            form={form}
-            setForm={setForm}
-            serviceTypes={serviceTypes}
-            touched={touched as ScalarTouched}
-            setTouched={
-              setTouched as React.Dispatch<React.SetStateAction<ScalarTouched>>
-            }
-            submitAttempted={submitAttempted}
-            isEditMode={isEditMode}
-          />
-          <Collapse in={Boolean(error)} className={classes.drawerErrorBanner}>
-            <MuiAlert severity="error" variant="outlined">
-              {error}
-            </MuiAlert>
-          </Collapse>
-        </Box>
-
-        <Box className={classes.drawerFooter}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={onSubmit}
-            disabled={submitting}
-            startIcon={
-              submitting ? (
-                <CircularProgress size={16} color="inherit" />
-              ) : undefined
-            }
-          >
-            {submitting ? t('common.saving') : submitLabel}
-          </Button>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={onClose}
-            disabled={submitting}
-          >
-            {t('common.cancel')}
-          </Button>
-        </Box>
-      </Box>
-    </Drawer>
-  );
-
   return (
     <>
       <DcmCrudTabLayout<CatalogItem>
@@ -345,57 +214,38 @@ export function CatalogItemsTabContent() {
         emptyTitle={t('catalogItems.emptyTitle')}
         emptyDescription={t('catalogItems.emptyDescription')}
         primaryActionLabel={t('catalogItems.createButton')}
-        onPrimaryAction={() => {
-          setCreateSubmitAttempted(false);
-          crud.handleOpenCreate();
-        }}
+        onPrimaryAction={crud.handleOpenCreate}
         illustrationSrc={emptyIllustration}
         entityLabel={t('catalogItems.entityLabel')}
       />
 
-      {itemFormDrawer({
-        title: t('catalogItems.createDrawerTitle'),
-        open: crud.createOpen,
-        onClose: () => {
-          setCreateSubmitAttempted(false);
-          crud.handleCloseCreate();
-        },
-        form: crud.createForm,
-        setForm: crud.setCreateForm,
-        touched: crud.createTouched,
-        setTouched: crud.setCreateTouched,
-        onSubmit: () => {
-          setCreateSubmitAttempted(true);
-          crud.handleCreateSubmit();
-        },
-        submitLabel: t('catalogItems.createButton'),
-        submitting: crud.createSubmitting,
-        error: crud.createError,
-        submitAttempted: createSubmitAttempted,
-        isEditMode: false,
-      })}
+      <CatalogItemWizardDialog
+        open={crud.createOpen}
+        onClose={crud.handleCloseCreate}
+        title={t('catalogItems.createDrawerTitle')}
+        form={crud.createForm}
+        setForm={crud.setCreateForm}
+        serviceTypes={serviceTypes}
+        onSubmit={crud.handleCreateSubmit}
+        submitLabel={t('catalogItems.createButton')}
+        submitting={crud.createSubmitting}
+        error={crud.createError}
+        isEditMode={false}
+      />
 
-      {itemFormDrawer({
-        title: t('catalogItems.editDrawerTitle'),
-        open: crud.editOpen,
-        onClose: () => {
-          setEditSubmitAttempted(false);
-          crud.handleCloseEdit();
-        },
-        form: crud.editForm,
-        setForm: crud.setEditForm,
-        touched: crud.editTouched,
-        setTouched: crud.setEditTouched,
-        onSubmit: () => {
-          setEditSubmitAttempted(true);
-          crud.handleEditSubmit();
-        },
-        submitLabel: t('catalogItems.saveButton'),
-        submitting: crud.editSubmitting,
-        error: crud.editError,
-        submitAttempted: editSubmitAttempted,
-        isEditMode: true,
-      })}
+      <CatalogItemWizardDialog
+        open={crud.editOpen}
+        onClose={crud.handleCloseEdit}
+        title={t('catalogItems.editDrawerTitle')}
+        form={crud.editForm}
+        setForm={crud.setEditForm}
+        serviceTypes={serviceTypes}
+        onSubmit={crud.handleEditSubmit}
+        submitLabel={t('catalogItems.saveButton')}
+        submitting={crud.editSubmitting}
+        error={crud.editError}
+        isEditMode
+      />
 
       <DcmDeleteDialog
         open={crud.deleteOpen}

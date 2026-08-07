@@ -15,21 +15,22 @@
  */
 
 import { useState } from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import {
-  CatalogItemFormFields,
-  CatalogItemFormFieldsProps,
-} from './CatalogItemFormFields';
-import { emptyCatalogItemForm, CatalogItemForm } from '../catalogItemFormTypes';
+  render,
+  screen,
+  waitFor,
+  fireEvent,
+  within,
+} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { CatalogItemWizardDialog } from './CatalogItemWizardDialog';
+import { emptyCatalogItemForm } from '../catalogItemFormTypes';
+import type { CatalogItemForm } from '../catalogItemFormTypes';
 
 jest.mock('../../../hooks/useTranslation', () => {
   const mod = require('../../../test-utils/mockTranslations');
   return { useTranslation: mod.mockUseTranslation };
 });
-
-type ScalarFields = Omit<CatalogItemForm, 'fields'>;
-type TouchedMap = Partial<Record<keyof ScalarFields, boolean>>;
 
 let uuidCounter = 0;
 
@@ -62,20 +63,23 @@ beforeAll(() => {
 });
 
 function Wrapper(
-  props: Readonly<
-    Pick<CatalogItemFormFieldsProps, 'serviceTypes' | 'isEditMode'>
-  >,
+  props: Readonly<{
+    isEditMode?: boolean;
+  }>,
 ) {
-  const [form, setForm] = useState(emptyCatalogItemForm());
-  const [touched, setTouched] = useState<TouchedMap>({});
+  const [form, setForm] = useState<CatalogItemForm>(emptyCatalogItemForm());
   return (
-    <CatalogItemFormFields
+    <CatalogItemWizardDialog
+      open
+      onClose={() => {}}
+      title="Test"
       form={form}
       setForm={setForm}
-      serviceTypes={props.serviceTypes ?? []}
-      touched={touched}
-      setTouched={setTouched}
-      submitAttempted={false}
+      serviceTypes={[]}
+      onSubmit={() => {}}
+      submitLabel="Create"
+      submitting={false}
+      error={null}
       isEditMode={props.isEditMode ?? false}
     />
   );
@@ -85,23 +89,26 @@ const VALID_CATALOG_JSON = JSON.stringify({
   display_name: 'My Item',
   api_version: 'v1alpha1',
   spec: {
-    service_type: 'vm',
-    fields: [{ path: 'config.replicas' }],
+    resources: [
+      {
+        name: 'app',
+        service_type: 'vm',
+        fields: [{ path: 'config.replicas' }],
+      },
+    ],
   },
 });
 
-describe('CatalogItemFormFields – file import error handling', () => {
+describe('CatalogItemWizardDialog – file import error handling', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('shows an error alert when an invalid JSON file is imported', async () => {
-    const { container } = render(
-      <Wrapper serviceTypes={[]} isEditMode={false} />,
-    );
+    render(<Wrapper />);
 
     const file = new File(['not valid json'], 'bad.json', {
       type: 'application/json',
     });
-    const input = container.querySelector(
+    const input = document.querySelector(
       'input[type="file"]',
     ) as HTMLInputElement;
 
@@ -113,14 +120,12 @@ describe('CatalogItemFormFields – file import error handling', () => {
   });
 
   it('does not show an error alert when a valid JSON file is imported', async () => {
-    const { container } = render(
-      <Wrapper serviceTypes={[]} isEditMode={false} />,
-    );
+    render(<Wrapper />);
 
     const file = new File([VALID_CATALOG_JSON], 'good.json', {
       type: 'application/json',
     });
-    const input = container.querySelector(
+    const input = document.querySelector(
       'input[type="file"]',
     ) as HTMLInputElement;
 
@@ -134,26 +139,21 @@ describe('CatalogItemFormFields – file import error handling', () => {
   });
 
   it('dismisses the error alert when the close button is clicked', async () => {
-    const { container } = render(
-      <Wrapper serviceTypes={[]} isEditMode={false} />,
-    );
+    render(<Wrapper />);
 
     const file = new File(['not valid json'], 'bad.json', {
       type: 'application/json',
     });
-    const input = container.querySelector(
+    const input = document.querySelector(
       'input[type="file"]',
     ) as HTMLInputElement;
 
     await userEvent.upload(input, file);
 
-    // Wait for error to appear
-    expect(
-      await screen.findByText(/Failed to import file/i),
-    ).toBeInTheDocument();
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/Failed to import file/i);
 
-    // MuiAlert renders a close button
-    const closeBtn = screen.getByRole('button', { name: /close/i });
+    const closeBtn = within(alert).getByRole('button');
     fireEvent.click(closeBtn);
 
     await waitFor(() =>

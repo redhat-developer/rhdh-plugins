@@ -51,6 +51,8 @@ export const dcmMessages = {
     rows: 'rows',
     previousPage: 'Previous',
     nextPage: 'Next',
+    next: 'Next',
+    back: 'Back',
   },
   deleteDialog: {
     title: 'Delete {{resourceLabel}}',
@@ -160,7 +162,7 @@ export const dcmMessages = {
   catalogItems: {
     emptyTitle: 'No catalog items defined',
     emptyDescription:
-      'Catalog items are service templates that developers can provision. Each catalog item references a service type and defines the fields available for customization.',
+      'Catalog items are service templates that developers can provision. Each catalog item references one or more service types and defines the fields available for customization.',
     createButton: 'Create',
     entityLabel: 'Catalog items',
     createDrawerTitle: 'Create catalog item',
@@ -173,12 +175,14 @@ export const dcmMessages = {
     columns: {
       displayName: 'Display name',
       apiVersion: 'API version',
-      serviceType: 'Service type',
+      resources: 'Resources',
       fields: 'Fields',
       created: 'Created',
     },
     fieldCount_one: '1 field',
     fieldCount_other: '{{count}} fields',
+    resourceCount_one: '1 resource',
+    resourceCount_other: '{{count}} resources',
     form: {
       importButton: 'Import from file',
       importTooltip:
@@ -195,7 +199,8 @@ export const dcmMessages = {
       serviceTypeHelperEdit: 'Service type cannot be changed after creation',
       serviceTypeHelperNoTypes:
         'No service types available \u2014 create one in the Service types tab',
-      serviceTypeHelperDefault: 'Select the service type this item is based on',
+      serviceTypeHelperDefault:
+        'Select the service type this resource is based on',
       fieldsLabel: 'Fields *',
       fieldsCaption: '(at least one required)',
       fieldsErrorEmpty: 'Add at least one field with a non-empty path.',
@@ -221,6 +226,24 @@ export const dcmMessages = {
       schemaMustBeObject: 'Must be a JSON object, not an array or primitive',
       schemaInvalidJson: 'Invalid JSON syntax',
     },
+    wizard: {
+      tabOverview: 'Overview',
+      tabApi: 'API',
+      tabResources: 'Resources',
+      resourcesDescription:
+        'Add one or more resources. Each resource references a service type and defines its own field configurations.',
+      resourcesRequired: 'At least one resource is required.',
+      addResourceButton: 'Add resource',
+      removeResource: 'Remove resource',
+      unnamedResource: '(unnamed)',
+      resourceNameLabel: 'Resource name *',
+      resourceNameHelper:
+        'Unique identifier within this catalog item \u2014 e.g. app, ordersDb',
+      requiresResourcesLabel: 'Requires resources',
+      requiresResourcesHelper:
+        'Select other resources that must be provisioned before this one',
+      apiVersionImmutable: 'API version cannot be changed after creation',
+    },
   },
   instances: {
     emptyTitle: 'No instances provisioned',
@@ -244,7 +267,7 @@ export const dcmMessages = {
     columns: {
       displayName: 'Display name',
       catalogItem: 'Catalog item',
-      resourceId: 'Resource ID',
+      resourceIds: 'Resource IDs',
       apiVersion: 'API version',
       created: 'Created',
     },
@@ -263,7 +286,10 @@ export const dcmMessages = {
         'Must follow the pattern v<number>[alpha|beta][number] \u2014 e.g. v1, v1alpha1',
       fieldValuesSection: 'Field values',
       fieldValuesSectionHint: '(editable fields defined by this catalog item)',
-      noEditableFields: 'This catalog item has no editable fields.',
+      noEditableFields: 'This resource has no editable fields.',
+    },
+    wizard: {
+      tabOverview: 'Overview',
     },
   },
   resources: {
@@ -324,11 +350,19 @@ export const dcmMessages = {
       apiVersionPattern:
         'Must follow the pattern v<number>[alpha|beta][number] \u2014 e.g. v1, v1alpha1',
       serviceTypeRequired: 'Service type is required',
+      resourceNameRequired: 'Resource name is required',
+      resourceNameDuplicate:
+        'Resource name must be unique within the catalog item',
+      resourceNamePattern:
+        'Only letters, numbers, hyphens and underscores are allowed (must start with a letter)',
+      resourcesRequired: 'At least one resource is required',
       duplicatePath: 'Duplicate path \u2014 paths must be unique',
       invalidJson:
         'Invalid JSON \u2014 fix the syntax or use a plain string value',
       schemaMustBeObject:
         'Must be a JSON object \u2014 e.g. {"type":"integer"}',
+      schemaRequiredNotBoolean:
+        '"required" must be an array of property names, not a boolean',
       schemaMinMaxConflict:
         'minimum ({{min}}) must not exceed maximum ({{max}})',
       defaultBelowMin:

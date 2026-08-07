@@ -47,6 +47,8 @@ const dcmTranslationIt: TranslationMessages<
     'common.rows': 'righe',
     'common.previousPage': 'Precedente',
     'common.nextPage': 'Successivo',
+    'common.next': 'Avanti',
+    'common.back': 'Indietro',
     'deleteDialog.title': 'Elimina {{resourceLabel}}',
     'deleteDialog.confirmButton': 'Elimina',
     'deleteDialog.cancelButton': 'Annulla',
@@ -157,11 +159,13 @@ const dcmTranslationIt: TranslationMessages<
     'catalogItems.deleteLabel': 'elemento del catalogo',
     'catalogItems.columns.displayName': 'Nome visualizzato',
     'catalogItems.columns.apiVersion': 'Versione API',
-    'catalogItems.columns.serviceType': 'Tipo di servizio',
+    'catalogItems.columns.resources': 'Risorse',
     'catalogItems.columns.fields': 'Campi',
     'catalogItems.columns.created': 'Creato',
     'catalogItems.fieldCount_one': '1 campo',
     'catalogItems.fieldCount_other': '{{count}} campi',
+    'catalogItems.resourceCount_one': '1 risorsa',
+    'catalogItems.resourceCount_other': '{{count}} risorse',
     'catalogItems.form.importButton': 'Importa da file',
     'catalogItems.form.importTooltip':
       'Compila il modulo da una definizione JSON o YAML',
@@ -206,6 +210,24 @@ const dcmTranslationIt: TranslationMessages<
     'catalogItems.form.schemaMustBeObject':
       'Deve essere un oggetto JSON, non un array o un valore primitivo',
     'catalogItems.form.schemaInvalidJson': 'Sintassi JSON non valida',
+    'catalogItems.wizard.tabOverview': 'Panoramica',
+    'catalogItems.wizard.tabApi': 'API',
+    'catalogItems.wizard.tabResources': 'Risorse',
+    'catalogItems.wizard.resourcesDescription':
+      'Aggiungi una o pi\u00f9 risorse. Ogni risorsa fa riferimento a un tipo di servizio e definisce i propri campi.',
+    'catalogItems.wizard.resourcesRequired':
+      '\u00c8 richiesta almeno una risorsa.',
+    'catalogItems.wizard.addResourceButton': 'Aggiungi risorsa',
+    'catalogItems.wizard.removeResource': 'Rimuovi risorsa',
+    'catalogItems.wizard.unnamedResource': '(senza nome)',
+    'catalogItems.wizard.resourceNameLabel': 'Nome risorsa *',
+    'catalogItems.wizard.resourceNameHelper':
+      'Identificatore univoco all\u2019interno di questo elemento del catalogo \u2014 p.\u00a0es. app, ordersDb',
+    'catalogItems.wizard.requiresResourcesLabel': 'Risorse richieste',
+    'catalogItems.wizard.requiresResourcesHelper':
+      'Seleziona le risorse che devono essere sottoposte a provisioning prima di questa',
+    'catalogItems.wizard.apiVersionImmutable':
+      'La versione API non pu\u00f2 essere modificata dopo la creazione',
     'instances.emptyTitle': 'Nessuna istanza sottoposta a provisioning',
     'instances.emptyDescription':
       'Le istanze degli elementi del catalogo rappresentano servizi sottoposti a provisioning.',
@@ -227,7 +249,7 @@ const dcmTranslationIt: TranslationMessages<
     'instances.rehydrateDialogConfirm': 'Reidrata',
     'instances.columns.displayName': 'Nome visualizzato',
     'instances.columns.catalogItem': 'Elemento del catalogo',
-    'instances.columns.resourceId': 'ID risorsa',
+    'instances.columns.resourceIds': 'ID risorse',
     'instances.columns.apiVersion': 'Versione API',
     'instances.columns.created': 'Creato',
     'instances.form.displayNameLabel': 'Nome visualizzato *',
@@ -248,6 +270,7 @@ const dcmTranslationIt: TranslationMessages<
       '(campi modificabili definiti da questo elemento del catalogo)',
     'instances.form.noEditableFields':
       'Questo elemento del catalogo non ha campi modificabili.',
+    'instances.wizard.tabOverview': 'Panoramica',
     'resources.emptyTitle': 'Nessuna risorsa trovata',
     'resources.emptyDescription':
       'Le istanze dei tipi di servizio sottoposte a provisioning tramite DCM appariranno qui.',
@@ -311,12 +334,22 @@ const dcmTranslationIt: TranslationMessages<
       'Deve seguire il formato v<numero>[alpha|beta][numero] \u2014 es. v1, v1alpha1',
     'validation.catalogItem.serviceTypeRequired':
       'Il tipo di servizio \u00e8 obbligatorio',
+    'validation.catalogItem.resourceNameRequired':
+      'Il nome della risorsa \u00e8 obbligatorio',
+    'validation.catalogItem.resourceNameDuplicate':
+      'Il nome della risorsa deve essere univoco all\u2019interno dell\u2019elemento del catalogo',
+    'validation.catalogItem.resourceNamePattern':
+      'Sono consentiti solo lettere, numeri, trattini e underscore (deve iniziare con una lettera)',
+    'validation.catalogItem.resourcesRequired':
+      '\u00c8 richiesta almeno una risorsa',
     'validation.catalogItem.duplicatePath':
       'Percorso duplicato \u2014 i percorsi devono essere univoci',
     'validation.catalogItem.invalidJson':
       'JSON non valido \u2014 correggere la sintassi o usare un valore stringa semplice',
     'validation.catalogItem.schemaMustBeObject':
       'Deve essere un oggetto JSON \u2014 es. {"type":"integer"}',
+    'validation.catalogItem.schemaRequiredNotBoolean':
+      '"required" deve essere un array di nomi di propriet\u00e0, non un booleano',
     'validation.catalogItem.schemaMinMaxConflict':
       'Il minimo ({{min}}) non deve superare il massimo ({{max}})',
     'validation.catalogItem.defaultBelowMin':
