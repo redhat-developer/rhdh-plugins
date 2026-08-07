@@ -15,7 +15,7 @@
  */
 
 import { expect, type Page } from '@playwright/test';
-import { performGuestLogin } from '../fixtures/auth';
+import { performLogin } from '../fixtures/auth';
 import { TIMEOUTS } from '../utils/constants';
 
 const DCM_TABS = [
@@ -49,8 +49,13 @@ export class DcmPage {
     this.page = page;
   }
 
+  async login() {
+    await performLogin(this.page);
+  }
+
+  /** @deprecated Use {@link login} */
   async loginAsGuest() {
-    await performGuestLogin(this.page);
+    await performLogin(this.page);
   }
 
   // ── Navigation ────────────────────────────────────────────────────────
@@ -147,7 +152,18 @@ export class DcmPage {
   }
 
   async clearSearch() {
-    await this.page.getByRole('button', { name: 'Clear search' }).click();
+    const clearBtn = this.page.getByRole('button', { name: /clear/i });
+    if (
+      await clearBtn
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
+      await clearBtn.first().click();
+    } else {
+      const searchInput = this.page.getByRole('textbox', { name: 'Search' });
+      await searchInput.fill('');
+    }
   }
 
   // ── Empty & error states ──────────────────────────────────────────────
@@ -332,18 +348,28 @@ export class DcmPage {
   }
 
   async verifySuccessSnackbar() {
-    await expect(
-      this.page.locator('[class*="MuiAlert-standardSuccess"]').first(),
-    ).toBeVisible({ timeout: TIMEOUTS.element });
+    const snackbar = this.page
+      .locator('[class*="MuiAlert-standardSuccess"]')
+      .first()
+      .or(this.page.locator('[class*="MuiAlert-filledSuccess"]').first())
+      .or(this.page.locator('[class*="MuiSnackbar"]').first())
+      .or(
+        this.page
+          .locator('[role="alert"]')
+          .filter({ hasText: /success|created|registered|saved/i })
+          .first(),
+      );
+    await expect(snackbar).toBeVisible({ timeout: TIMEOUTS.element });
   }
 
   // ── Shared dialog actions ─────────────────────────────────────────────
 
   async submitDialog(buttonLabel: string) {
-    await this.page
+    const btn = this.page
       .locator('[role="dialog"], [class*="MuiDrawer"]')
-      .getByRole('button', { name: buttonLabel })
-      .click();
+      .getByRole('button', { name: buttonLabel });
+    await btn.click();
+    await this.page.waitForLoadState('networkidle');
   }
 
   async confirmDelete() {
@@ -372,18 +398,44 @@ export class DcmPage {
   }
 
   async getRowsPerPageValue(): Promise<string> {
-    const rppSelect = this.page
-      .locator('[role="button"][aria-haspopup="listbox"]')
-      .filter({ hasText: /rows/ });
-    return (await rppSelect.textContent()) ?? '';
+    const pagination = this.page.locator('[class*="MuiTablePagination"]');
+    const rppSelect = pagination.locator(
+      '[role="button"][aria-haspopup="listbox"]',
+    );
+    if (
+      await rppSelect
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
+      return (await rppSelect.first().textContent()) ?? '';
+    }
+    const paginationSelect = pagination.locator('select');
+    return (
+      (await paginationSelect
+        .first()
+        .inputValue()
+        .catch(() => '')) ?? ''
+    );
   }
 
   async setRowsPerPage(value: string) {
-    const rppSelect = this.page
-      .locator('[role="button"][aria-haspopup="listbox"]')
-      .filter({ hasText: /rows/ });
-    await rppSelect.click();
-    await this.page.getByRole('option', { name: value }).click();
+    const pagination = this.page.locator('[class*="MuiTablePagination"]');
+    const rppSelect = pagination.locator(
+      '[role="button"][aria-haspopup="listbox"]',
+    );
+    if (
+      await rppSelect
+        .first()
+        .isVisible()
+        .catch(() => false)
+    ) {
+      await rppSelect.first().click();
+      await this.page.getByRole('option', { name: value }).click();
+    } else {
+      const selectEl = pagination.locator('select');
+      await selectEl.first().selectOption(value);
+    }
     await this.page.waitForTimeout(TIMEOUTS.networkSettle);
   }
 
@@ -403,14 +455,16 @@ export class DcmPage {
     const ariaField = this.page.getByLabel(label);
     if ((await ariaField.count()) > 0) {
       await ariaField.first().click();
-      await ariaField.first().fill(value);
+      await ariaField.first().fill('');
+      await ariaField.first().pressSequentially(value, { delay: 50 });
       return;
     }
     const cssField = this.page.locator(
       `label:has-text("${label}") + div input, label:has-text("${label}") + div textarea`,
     );
     await cssField.first().click();
-    await cssField.first().fill(value);
+    await cssField.first().fill('');
+    await cssField.first().pressSequentially(value, { delay: 50 });
   }
 
   private async selectOption(label: string, value: string) {

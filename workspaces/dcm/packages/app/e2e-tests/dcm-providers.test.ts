@@ -25,7 +25,7 @@ test.describe('DCM Providers CRUD @dcm', () => {
 
   test.beforeEach(async ({ page }) => {
     dcm = new DcmPage(page);
-    await dcm.loginAsGuest();
+    await dcm.login();
     await dcm.navigateToDataCenter();
   });
 

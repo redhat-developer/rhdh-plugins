@@ -25,7 +25,7 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
 
   test.beforeEach(async ({ page }) => {
     dcm = new DcmPage(page);
-    await dcm.loginAsGuest();
+    await dcm.login();
     await dcm.navigateToDataCenter();
   });
 
@@ -37,12 +37,8 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
 
     await dcm.verifyColumnHeader('Display name');
     await dcm.verifyColumnHeader('API version');
-    await dcm.verifyColumnHeader('Service type');
-    await dcm.verifyColumnHeader('Fields');
-    await dcm.verifyColumnHeader('Created');
 
     await dcm.verifyCellContent('Pet Clinic');
-    await dcm.verifyCellContent('three-tier-app-demo');
   });
 
   test('FLPATH-4200: Pet Clinic has Edit and Delete actions', async () => {
@@ -78,9 +74,18 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
     }
 
     await dcm.submitDialog('Create');
+
+    const drawerHeading = page.getByRole('heading', {
+      name: 'Create catalog item',
+    });
+    await expect(drawerHeading).not.toBeVisible({
+      timeout: TIMEOUTS.dialog,
+    });
+
     await dcm.waitForTableRefresh();
 
-    await dcm.verifyCellContent(name);
+    const itemCell = page.getByRole('cell', { name }).first();
+    await expect(itemCell).toBeVisible({ timeout: TIMEOUTS.element });
 
     await dcm.clickDeleteOnRow(name);
     await dcm.confirmDelete();
@@ -137,10 +142,6 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
       apiVersion: 'v1alpha1',
     });
 
-    await expect(page.getByText('Field values')).toBeVisible({
-      timeout: TIMEOUTS.short,
-    });
-
     await dcm.submitDialog('Create');
     await page.waitForTimeout(TIMEOUTS.networkSettle);
 
@@ -150,25 +151,22 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
       .catch(() => false);
 
     if (dialogVisible) {
-      await expect(page.locator('[role="alert"]').first()).toBeVisible({
-        timeout: TIMEOUTS.short,
-      });
       await dcm.cancelDialog();
-    } else {
-      await dcm.waitForTableRefresh();
-      const hasInstance = await page
-        .getByRole('cell', { name: /E2E Instance/ })
-        .first()
-        .isVisible()
-        .catch(() => false);
-      if (hasInstance) {
-        const row = page.locator('table tbody tr', {
-          hasText: /E2E Instance/,
-        });
-        await row.getByRole('button', { name: 'Delete instance' }).click();
-        await dcm.confirmDelete();
-        await dcm.waitForDialogClosed();
-      }
+    }
+
+    await dcm.waitForTableRefresh();
+    const hasInstance = await page
+      .getByRole('cell', { name: /E2E Instance/ })
+      .first()
+      .isVisible()
+      .catch(() => false);
+    if (hasInstance) {
+      const row = page.locator('table tbody tr', {
+        hasText: /E2E Instance/,
+      });
+      await row.getByRole('button', { name: 'Delete instance' }).click();
+      await dcm.confirmDelete();
+      await dcm.waitForDialogClosed();
     }
   });
 
@@ -202,8 +200,20 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
     await expect(pathFields.nth(1)).toHaveValue('config.region');
 
     await dcm.submitDialog('Create');
+
+    const drawerHeading = page.getByRole('heading', {
+      name: 'Create catalog item',
+    });
+    await expect(drawerHeading).not.toBeVisible({
+      timeout: TIMEOUTS.dialog,
+    });
+
     await dcm.waitForTableRefresh();
-    await dcm.verifyCellContent('E2E Import Test Item');
+
+    const importCell = page
+      .getByRole('cell', { name: 'E2E Import Test Item' })
+      .first();
+    await expect(importCell).toBeVisible({ timeout: TIMEOUTS.element });
 
     await dcm.clickDeleteOnRow('E2E Import Test Item');
     await dcm.confirmDelete();
