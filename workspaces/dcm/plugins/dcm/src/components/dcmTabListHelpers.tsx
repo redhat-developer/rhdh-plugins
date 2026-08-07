@@ -30,6 +30,10 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import SearchIcon from '@material-ui/icons/Search';
 import { useTranslation } from '../hooks/useTranslation';
+import {
+  CursorPaginatedTable,
+  type CursorPaginationControlsProps,
+} from './CursorPaginationControls';
 
 const useStyles = makeStyles({
   filterInput: { minWidth: 200 },
@@ -107,12 +111,15 @@ function ActionsCell({ onEdit, onDelete }: ActionsCellProps) {
   );
 }
 
+/** Alias kept for backwards compatibility — use {@link CursorPaginationControlsProps} directly when possible. */
+export type CursorPaginationProps = CursorPaginationControlsProps;
+
 export type DcmSearchTableCardProps<T extends object> = Readonly<{
   title: string;
   /** Already-paginated rows to render. */
   data: T[];
   columns: TableColumn<T>[];
-  /** Total rows after filtering (drives the pagination footer). */
+  /** Total rows after filtering (drives the pagination footer). Ignored in cursor mode. */
   totalCount: number;
   page: number;
   pageSize: number;
@@ -121,6 +128,11 @@ export type DcmSearchTableCardProps<T extends object> = Readonly<{
   search: string;
   setSearch: Dispatch<SetStateAction<string>>;
   pageSizeOptions?: number[];
+  /**
+   * When provided, disables the Table's built-in pager and renders
+   * {@link CursorPaginationControls} below the table instead.
+   */
+  cursorPagination?: CursorPaginationProps;
 }>;
 
 /**
@@ -140,6 +152,7 @@ export function DcmSearchTableCard<T extends object>({
   search,
   setSearch,
   pageSizeOptions = [5, 10, 25],
+  cursorPagination,
 }: DcmSearchTableCardProps<T>) {
   const classes = useDcmStyles();
   const { t } = useTranslation();
@@ -157,31 +170,41 @@ export function DcmSearchTableCard<T extends object>({
       titleTypographyProps={{ className: classes.cardTitle }}
     >
       <Box className={classes.cardContent}>
-        <Table<T>
-          data={data}
-          columns={columns}
-          options={{
-            paging: true,
-            pageSize,
-            pageSizeOptions,
-            search: false,
-            sorting: true,
-            padding: 'default',
-            toolbar: false,
-            emptyRowsWhenPaging: false,
-          }}
-          totalCount={totalCount}
-          page={page}
-          onPageChange={(p, ps) => {
-            setPage(p);
-            setPageSize(ps);
-          }}
-          onRowsPerPageChange={ps => {
-            setPageSize(ps);
-            setPage(0);
-          }}
-          localization={{ pagination: { labelRowsPerPage: t('common.rows') } }}
-        />
+        {cursorPagination ? (
+          <CursorPaginatedTable<T>
+            data={data}
+            columns={columns}
+            pagination={cursorPagination}
+          />
+        ) : (
+          <Table<T>
+            data={data}
+            columns={columns}
+            options={{
+              paging: true,
+              pageSize,
+              pageSizeOptions,
+              search: false,
+              sorting: true,
+              padding: 'default',
+              toolbar: false,
+              emptyRowsWhenPaging: false,
+            }}
+            totalCount={totalCount}
+            page={Math.max(0, page - 1)}
+            onPageChange={(p, ps) => {
+              setPage(p + 1);
+              setPageSize(ps);
+            }}
+            onRowsPerPageChange={ps => {
+              setPageSize(ps);
+              setPage(1);
+            }}
+            localization={{
+              pagination: { labelRowsPerPage: t('common.rows') },
+            }}
+          />
+        )}
       </Box>
     </InfoCard>
   );

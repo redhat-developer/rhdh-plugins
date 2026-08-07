@@ -59,6 +59,19 @@ describe('ProvidersClient', () => {
     );
   });
 
+  it('listProviders appends max_page_size and page_token query params', async () => {
+    const fetchFn = jest
+      .fn()
+      .mockResolvedValue(okJson({ providers: [MOCK_PROVIDER] }));
+    const client = makeClient(fetchFn);
+
+    await client.listProviders({ max_page_size: 10, page_token: 'tok-1' });
+
+    const [url] = fetchFn.mock.calls[0];
+    expect(url).toContain('max_page_size=10');
+    expect(url).toContain('page_token=tok-1');
+  });
+
   it('getProvider calls GET /providers/{id}', async () => {
     const fetchFn = jest.fn().mockResolvedValue(okJson(MOCK_PROVIDER));
     const client = makeClient(fetchFn);

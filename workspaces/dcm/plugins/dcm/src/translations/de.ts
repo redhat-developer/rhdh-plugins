@@ -45,6 +45,8 @@ const dcmTranslationDe: TranslationMessages<
     'common.saving': 'Wird gespeichert\u2026',
     'common.close': 'Schlie\u00dfen',
     'common.rows': 'Zeilen',
+    'common.previousPage': 'Zurück',
+    'common.nextPage': 'Weiter',
     'deleteDialog.title': '{{resourceLabel}} l\u00f6schen',
     'deleteDialog.confirmButton': 'L\u00f6schen',
     'deleteDialog.cancelButton': 'Abbrechen',

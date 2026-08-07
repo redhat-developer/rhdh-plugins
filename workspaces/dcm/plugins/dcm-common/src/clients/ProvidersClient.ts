@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
+import type { PaginationParams } from '../types/common';
 import type { Provider, ProviderList } from '../types/providers';
+import { buildPaginationQuery } from '../utils/buildPaginationQuery';
 import type { ProvidersApi } from './ProvidersApi';
 import { DcmBaseClient } from './DcmBaseClient';
 
@@ -30,8 +32,8 @@ import { DcmBaseClient } from './DcmBaseClient';
 export class ProvidersClient extends DcmBaseClient implements ProvidersApi {
   protected readonly serviceName = 'Providers';
 
-  async listProviders(): Promise<ProviderList> {
-    return this.fetch<ProviderList>('providers');
+  async listProviders(params: PaginationParams = {}): Promise<ProviderList> {
+    return this.fetch<ProviderList>(`providers${buildPaginationQuery(params)}`);
   }
 
   async getProvider(providerId: string): Promise<Provider> {
