@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.7.15
+
+### Patch Changes
+
+- 48c4f69: Fix workflow instance page layout overlap when `cardHeightMode` is set to `content`.
+
 ## 5.7.14
 
 ### Patch Changes
