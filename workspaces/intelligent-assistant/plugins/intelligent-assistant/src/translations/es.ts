@@ -198,6 +198,11 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'modal.save': 'Guardar',
     'modal.title.edit': 'Modificar archivo adjunto',
     'modal.title.preview': 'Previsualizar archivo adjunto',
+    'notebook.document.rename': 'Renombrar',
+    'notebook.document.rename.tooltip': 'Clic para renombrar',
+    'notebook.document.rename.error': 'Error al renombrar "{{documentName}}".',
+    'notebook.document.rename.conflict': 'El nombre ya existe.',
+    'notebook.document.rename.tooLong': 'Nombre demasiado largo (máx 255).',
     'notebook.document.delete': 'Eliminar',
     'notebook.document.delete.action': 'Eliminar',
     'notebook.document.delete.description':
