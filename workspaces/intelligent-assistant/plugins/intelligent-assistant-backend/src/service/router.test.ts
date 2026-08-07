@@ -1879,4 +1879,67 @@ describe('intelligent-assistant router tests', () => {
       expect(response.statusCode).toEqual(200);
     });
   });
+
+  describe('GET /v1/skills', () => {
+    it('should return skills list from LCORE', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(
+        '/api/intelligent-assistant/v1/skills',
+      );
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({
+        skills: [
+          {
+            name: 'rhdh-dynamic-plugins',
+            description: 'Guidance for RHDH dynamic plugin development',
+          },
+          {
+            name: 'coding-standards',
+            description: 'Organization coding standards and best practices',
+          },
+        ],
+      });
+    });
+
+    it('should return empty skills list when LCORE has no skills', async () => {
+      server.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/skills`, () => {
+          return HttpResponse.json({ skills: [] });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(
+        '/api/intelligent-assistant/v1/skills',
+      );
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({ skills: [] });
+    });
+
+    it('should fail with unauthorized error', async () => {
+      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+      const response = await request(backendServer).get(
+        '/api/intelligent-assistant/v1/skills',
+      );
+
+      expect(response.statusCode).toEqual(403);
+    });
+
+    it('should return 500 when LCORE is unreachable', async () => {
+      server.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/skills`, () => {
+          return HttpResponse.error();
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(
+        '/api/intelligent-assistant/v1/skills',
+      );
+
+      expect(response.statusCode).toEqual(500);
+    });
+  });
 });
