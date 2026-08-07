@@ -664,28 +664,7 @@ export async function createRouter(
     '/v1/skills',
     generalRateLimiter,
     requirePermission(iaSkillsAccessPermission),
-    async (_request, response) => {
-      try {
-        const fetchResponse = await fetch(`${lcsBaseUrl}/v1/skills`);
-
-        if (!fetchResponse.ok) {
-          await handleLCSFetchError(
-            fetchResponse,
-            logger,
-            'fetching skills',
-            response,
-          );
-          return;
-        }
-
-        const data = await fetchResponse.json();
-        response.status(fetchResponse.status).json(data);
-      } catch (error) {
-        const errormsg = `Error while fetching skills: ${error}`;
-        logger.error(errormsg);
-        response.status(500).json({ error: errormsg });
-      }
-    },
+    apiProxy,
   );
 
   router.post(
@@ -825,7 +804,6 @@ export async function createRouter(
       try {
         const { userEntityRef, credentials } = getIdentity(request);
         logger.info(`/v1/query receives call from user: ${userEntityRef}`);
-
         if (request.body.attachments?.length) {
           logger.info(
             `/v1/query includes ${request.body.attachments.length} attachment(s): ${request.body.attachments.map((a: { attachment_type: string }) => a.attachment_type).join(', ')}`,
