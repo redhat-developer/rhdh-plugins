@@ -86,6 +86,7 @@ import {
 import { installWebpackDevOverlayGuards } from './utils/devOverlays';
 
 test.describe('Scorecard Plugin Tests', () => {
+  const isNfs = process.env.APP_MODE === 'nfs';
   let page: Page;
   let catalogPage: CatalogPage;
   let scorecardPage: ScorecardPage;
@@ -317,8 +318,6 @@ test.describe('Scorecard Plugin Tests', () => {
   });
 
   test.describe('SonarQube Entity Scorecards', () => {
-    const isNfs = process.env.APP_MODE === 'nfs';
-
     test('Verify all SonarQube metrics display correctly', async ({}, testInfo) => {
       const sonarqubeMetricTitles = Object.entries(translations.metric)
         .filter(([key]) => key.startsWith('sonarqube.'))
@@ -400,13 +399,32 @@ test.describe('Scorecard Plugin Tests', () => {
       if (isNfs) {
         await expect(page.getByLabel('Code Quality')).toBeVisible();
       } else {
+        const legacyOnlyValues: Record<string, string> = {
+          [translations.metric['sonarqube.qualityGate'].title]: 'Success',
+          [translations.metric['sonarqube.openIssues'].title]: '3',
+          [translations.metric['sonarqube.securityRating'].title]: '1',
+          [translations.metric['sonarqube.securityHotspots'].title]: '2',
+          [translations.metric['sonarqube.maintainabilityRating'].title]: '1',
+          [translations.metric['sonarqube.codeCoverage'].title]: '82.5',
+        };
+
+        for (const [title, value] of Object.entries(legacyOnlyValues)) {
+          const card = page
+            .locator('[role="article"]')
+            .filter({ hasText: title })
+            .first();
+          await expect(card).toContainText(value);
+        }
+
         const qualityGateCard = page
           .locator('[role="article"]')
           .filter({
             hasText: translations.metric['sonarqube.qualityGate'].title,
           })
           .first();
-        await expect(qualityGateCard).toBeVisible();
+        await expect(
+          qualityGateCard.getByTestId('CheckCircleOutlineIcon'),
+        ).toBeVisible();
       }
     });
 
@@ -439,6 +457,9 @@ test.describe('Scorecard Plugin Tests', () => {
           })
           .first();
         await expect(qualityGateCard).toBeVisible({ timeout: 10000 });
+        await expect(
+          qualityGateCard.getByTestId('DangerousOutlinedIcon'),
+        ).toBeVisible();
       }
     });
 
@@ -1127,10 +1148,7 @@ test.describe('Scorecard Plugin Tests', () => {
   });
 
   test.describe('Metric Group Cards', () => {
-    test.skip(
-      process.env.APP_MODE !== 'nfs',
-      'MetricGroupCard is only available in NFS mode',
-    );
+    test.skip(!isNfs, 'MetricGroupCard is only available in NFS mode');
 
     test.beforeAll(async () => {
       await mockSonarqubeScorecardResponse(page, sonarqubeScorecardResponse);
