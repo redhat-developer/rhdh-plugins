@@ -170,8 +170,11 @@ export function addHandlersForGHTokenAppErrors(server: SetupServer) {
 export async function startBackendServer(
   mockCatalogClient: ServiceMock<CatalogServiceMock>,
   authorizeResult?: AuthorizeResult.DENY | AuthorizeResult.ALLOW,
-  config?: any,
-  db?: any,
+  config?: Record<string, unknown>,
+  db?: BackendFeature | Promise<{ default: BackendFeature }>,
+  extraFeatures: Array<
+    BackendFeature | Promise<{ default: BackendFeature }>
+  > = [],
 ): Promise<any> {
   const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] = [
     bulkImportPlugin,
@@ -182,6 +185,7 @@ export async function startBackendServer(
     mockServices.cache.factory(),
     mockCatalogClient.factory,
     db ?? mockServices.database.factory(),
+    ...extraFeatures,
   ];
   if (authorizeResult) {
     features.push(

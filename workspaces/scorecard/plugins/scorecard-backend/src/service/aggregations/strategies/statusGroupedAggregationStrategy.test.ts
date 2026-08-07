@@ -20,7 +20,7 @@ import {
   mockStatusGroupedAggregationConfig,
 } from '../../../../__fixtures__/mockAggregationConfig';
 import { mockStatusGroupedAggregationResult } from '../../../../__fixtures__/mockAggregatedMetricResult';
-import { mockFirstThresholds } from '../../../../__fixtures__/mockThresholds';
+import { mockHigherIsBetterThresholds } from '../../../../__fixtures__/mockThresholds';
 import { AggregatedMetricMapper } from '../../mappers';
 import { AggregatedMetricLoader } from '../AggregatedMetricLoader';
 import { StatusGroupedAggregationStrategy } from './StatusGroupedAggregationStrategy';
@@ -51,7 +51,7 @@ describe('StatusGroupedAggregationStrategy', () => {
       { name: 'success', count: 2 },
       { name: 'error', count: 0 },
     ],
-    thresholds: mockFirstThresholds,
+    thresholds: mockHigherIsBetterThresholds,
   };
 
   const entityRefs = ['component:default/a'];
@@ -101,7 +101,7 @@ describe('StatusGroupedAggregationStrategy', () => {
       strategy.aggregate({
         metric,
         entityRefs,
-        thresholds: mockFirstThresholds,
+        thresholds: mockHigherIsBetterThresholds,
         aggregationConfig: invalidAggregationConfig,
       }),
     ).rejects.toThrow(
@@ -113,7 +113,7 @@ describe('StatusGroupedAggregationStrategy', () => {
     await strategy.aggregate({
       metric,
       entityRefs,
-      thresholds: mockFirstThresholds,
+      thresholds: mockHigherIsBetterThresholds,
       aggregationConfig,
     });
 
@@ -127,7 +127,7 @@ describe('StatusGroupedAggregationStrategy', () => {
     await strategy.aggregate({
       metric,
       entityRefs,
-      thresholds: mockFirstThresholds,
+      thresholds: mockHigherIsBetterThresholds,
       aggregationConfig,
     });
 
@@ -142,7 +142,7 @@ describe('StatusGroupedAggregationStrategy', () => {
     const result = await strategy.aggregate({
       metric,
       entityRefs,
-      thresholds: mockFirstThresholds,
+      thresholds: mockHigherIsBetterThresholds,
       aggregationConfig,
     });
 
