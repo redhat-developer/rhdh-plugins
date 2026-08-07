@@ -205,7 +205,9 @@ export const NotebookCard = ({
         <div>
           <div className={classes.notebookDocuments}>
             <Typography variant="body2">
-              {notebook.document_count ?? 0} {t('notebooks.documents')}
+              {(t as Function)('notebooks.documents', {
+                count: notebook.document_count ?? 0,
+              })}
             </Typography>
           </div>
           <div className={classes.notebookUpdated}>

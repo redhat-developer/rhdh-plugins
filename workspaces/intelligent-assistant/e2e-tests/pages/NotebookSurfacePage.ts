@@ -342,11 +342,15 @@ export class NotebookSurfacePage {
   }
 
   /**
-   * Shown on each card as count + plural label (same pattern as NotebookCard.tsx:
-   * `{ document_count } { t('notebooks.documents') }`, not `notebook.view.documents.count`).
+   * Shown on each card as a pluralized count label (same pattern as NotebookCard.tsx:
+   * `t('notebooks.documents', { count })` with `_one`/`_other` suffixes).
    */
   formatNotebookCardDocumentsSummary(documentCount: number): string {
-    return `${documentCount} ${this.t['notebooks.documents']}`;
+    const key =
+      documentCount === 1
+        ? 'notebooks.documents_one'
+        : 'notebooks.documents_other';
+    return (this.t[key] as string).replace('{{count}}', String(documentCount));
   }
 
   async expectUntitledNotebookCardCount(expected: number): Promise<void> {
