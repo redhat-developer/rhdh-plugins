@@ -284,10 +284,9 @@ export class DocumentService {
       return [];
     }
 
-    // Map files to SessionDocument format
+    // Map files to SessionDocument format, sorted by original upload time
     const documents = filesResponse.data
       .filter((file: any) => {
-        // Apply file type filter if provided
         if (fileTypeFilter && file.attributes?.source_type !== fileTypeFilter) {
           return false;
         }
@@ -302,6 +301,11 @@ export class DocumentService {
           created_at: attrs.created_at,
           updated_at: attrs.updated_at,
         };
+      })
+      .sort((a: SessionDocument, b: SessionDocument) => {
+        const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return timeA - timeB;
       });
 
     this.logger.info(
