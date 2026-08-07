@@ -296,7 +296,7 @@ describe('DocumentSidebar', () => {
       const longName = 'a'.repeat(260);
       fireEvent.change(input, { target: { value: longName } });
 
-      expect(screen.getByText('Name too long (max 255)')).toBeInTheDocument();
+      expect(screen.getByText('Name too long (max 255).')).toBeInTheDocument();
 
       fireEvent.keyDown(input, { key: 'Enter' });
       expect(onRenameDocument).not.toHaveBeenCalled();
