@@ -38,12 +38,14 @@ const referenced_documents: ReferencedDocuments = [
     doc_description: 'Document description test',
     doc_url:
       'https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.6/html-single/about_red_hat_developer_hub/index',
+    source: 'rhdh-product-docs-1_10',
   },
   {
     doc_description: undefined,
     doc_title: 'Adoption Insights in Red Hat Developer Hub',
     doc_url:
       'https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.6/html-single/adoption_insights_in_red_hat_developer_hub/index',
+    source: 'v1',
   },
 ];
 
@@ -353,10 +355,32 @@ describe('transformDocumentsToSources', () => {
             isExternal: true,
             link: expect.anything(),
             title: expect.anything(),
+            subtitle: 'rhdh-product-docs-1_10',
+          }),
+          expect.objectContaining({
+            isExternal: true,
+            link: expect.anything(),
+            title: expect.anything(),
+            subtitle: 'v1',
           }),
         ]),
       }),
     );
+  });
+
+  it('should omit subtitle when referenced document has no source', () => {
+    const sources = transformDocumentsToSources([
+      {
+        doc_title: 'Untitled source doc',
+        doc_url: 'https://example.com/doc',
+      },
+    ]);
+    expect(sources?.sources).toEqual([
+      expect.objectContaining({
+        title: 'Untitled source doc',
+        subtitle: undefined,
+      }),
+    ]);
   });
 
   it('should add document description in referenced documents into message sources', () => {
