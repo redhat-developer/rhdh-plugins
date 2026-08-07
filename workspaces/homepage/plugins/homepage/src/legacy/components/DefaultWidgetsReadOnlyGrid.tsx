@@ -32,8 +32,8 @@ import 'react-grid-layout/css/styles.css';
 
 import useMeasure from 'react-use/lib/useMeasure';
 
-import type { VisibleDefaultWidget } from '../api/DefaultWidgetsApiClient';
-import { HomePageCardMountPoint } from '../types';
+import type { VisibleDefaultWidget } from '../../api/DefaultWidgetsApiClient';
+import { HomePageCardMountPoint } from '../../types';
 
 interface Card {
   id: string;

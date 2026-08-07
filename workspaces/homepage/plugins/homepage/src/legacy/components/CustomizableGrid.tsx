@@ -38,15 +38,15 @@ import { useTheme } from '@mui/material/styles';
 // Removes the doubled scrollbar
 import 'react-grid-layout/css/styles.css';
 
-import { HomePageCardMountPoint } from '../types';
+import { HomePageCardMountPoint } from '../../types';
 import { dynamicHomePagePlugin } from '../plugin';
-import { useTranslation } from '../hooks/useTranslation';
-import { useContainerQuery } from '../hooks/useContainerQuery';
+import { useTranslation } from '../../hooks/useTranslation';
+import { useContainerQuery } from '../../hooks/useContainerQuery';
 import {
   isCardADefaultConfiguration,
   getCardTitle,
   getCardDescription,
-} from '../utils/customizable-cards';
+} from '../../utils/customizable-cards';
 
 /**
  * @public

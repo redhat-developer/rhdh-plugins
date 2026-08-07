@@ -31,13 +31,16 @@ import { useTheme } from '@mui/material/styles';
 
 import 'react-grid-layout/css/styles.css';
 
-import type { VisibleDefaultWidget } from '../api/DefaultWidgetsApiClient';
-import { HomePageCardMountPoint } from '../types';
+import type { VisibleDefaultWidget } from '../../api/DefaultWidgetsApiClient';
+import { HomePageCardMountPoint } from '../../types';
 import { dynamicHomePagePlugin } from '../plugin';
-import { useTranslation } from '../hooks/useTranslation';
-import { useContainerQuery } from '../hooks/useContainerQuery';
-import { getCardTitle, getCardDescription } from '../utils/customizable-cards';
-import { getTranslatedTextWithFallback } from '../translations/utils';
+import { useTranslation } from '../../hooks/useTranslation';
+import { useContainerQuery } from '../../hooks/useContainerQuery';
+import {
+  getCardTitle,
+  getCardDescription,
+} from '../../utils/customizable-cards';
+import { getTranslatedTextWithFallback } from '../../translations/utils';
 
 export interface DefaultWidgetsCustomizableGridProps {
   defaultWidgets: VisibleDefaultWidget[];

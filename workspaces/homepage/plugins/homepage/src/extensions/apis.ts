@@ -26,13 +26,12 @@ import {
   defaultWidgetsApiRef,
   QuickAccessApiClient,
   quickAccessApiRef,
-} from '../../api';
+} from '../api';
 
 /**
  * Quick access API for the New Frontend System.
  * Provides access to quick access links from app config.
  *
- * @alpha
  */
 const quickAccessApi = ApiBlueprint.make({
   name: 'quickaccess',
@@ -54,7 +53,6 @@ const quickAccessApi = ApiBlueprint.make({
  * Default cards API for the New Frontend System.
  * Provides access to permission-filtered homepage cards from the backend.
  *
- * @alpha
  */
 const defaultWidgetsApi = ApiBlueprint.make({
   name: 'default-widgets',

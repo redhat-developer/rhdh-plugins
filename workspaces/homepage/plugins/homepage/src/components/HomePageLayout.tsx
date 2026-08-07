@@ -15,15 +15,14 @@
  */
 
 import { Content, EmptyState, Page } from '@backstage/core-components';
-import { useTranslation } from '../../hooks/useTranslation';
-import { HeaderProps, Header } from '../../components/Header';
+import { useTranslation } from '../hooks/useTranslation';
+import { HeaderProps, Header } from './Header';
 import { ReadOnlyGridLayout } from './ReadOnlyGirdLayout';
 import { CustomizableGridLayout } from './CustomizableGridLayout';
-import { HomePageCardConfig } from '../../types';
+import { HomePageCardConfig } from '../types';
 
 /**
  * Props for the NFS home page layout component.
- * @alpha
  */
 export interface HomePageProps extends HeaderProps {
   widgets: HomePageCardConfig[];
@@ -34,7 +33,6 @@ export interface HomePageProps extends HeaderProps {
  * NFS home page layout that renders widgets in a read-only or customizable grid.
  * Used by the dynamic-homepage-layout extension.
  *
- * @alpha
  */
 export const HomePageLayout = ({ widgets, customizable }: HomePageProps) => {
   const { t } = useTranslation();

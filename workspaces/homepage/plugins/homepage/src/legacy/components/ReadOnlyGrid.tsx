@@ -39,8 +39,8 @@ import 'react-grid-layout/css/styles.css';
 
 import useMeasure from 'react-use/lib/useMeasure';
 
-import { HomePageCardMountPoint } from '../types';
-import { isCardADefaultConfiguration } from '../utils/customizable-cards';
+import { HomePageCardMountPoint } from '../../types';
+import { isCardADefaultConfiguration } from '../../utils/customizable-cards';
 
 interface Card {
   id: string;
