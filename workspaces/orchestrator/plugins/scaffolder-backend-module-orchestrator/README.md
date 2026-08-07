@@ -4,6 +4,8 @@ The Orchestrator module [@backstage/plugin-scaffolder-backend](https://www.npmjs
 
 An example of using these actions can be found in the `workspaces/orchestrator/entities/convertWorkflowToTemplate.yaml` template.
 
+For local development and contributor workflows, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## Installation
 
 ### Static Plugin Installation
