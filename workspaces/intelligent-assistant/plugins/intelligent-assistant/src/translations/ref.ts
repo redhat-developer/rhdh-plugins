@@ -102,7 +102,7 @@ export const intelligentAssistantMessages = {
     'The following files already exist in this notebook. Do you want to overwrite them with the new versions?',
   'notebook.overwrite.modal.action': 'Overwrite',
   'notebook.document.rename': 'Rename',
-  'notebook.document.rename.tooltip': 'Double-click to rename',
+  'notebook.document.rename.tooltip': 'Click to rename',
   'notebook.document.rename.error': 'Failed to rename "{{documentName}}".',
   'notebook.document.rename.conflict': 'Name already exists.',
   'notebook.document.rename.tooLong': 'Name too long (max 255)',

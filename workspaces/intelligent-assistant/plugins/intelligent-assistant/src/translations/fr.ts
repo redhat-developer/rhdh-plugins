@@ -202,7 +202,7 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'modal.title.edit': 'Modifier la pièce jointe',
     'modal.title.preview': 'Aperçu de la pièce jointe',
     'notebook.document.rename': 'Renommer',
-    'notebook.document.rename.tooltip': 'Double-cliquez pour renommer',
+    'notebook.document.rename.tooltip': 'Cliquez pour renommer',
     'notebook.document.rename.error':
       'Échec du renommage de "{{documentName}}".',
     'notebook.document.rename.conflict': 'Le nom existe déjà.',

@@ -150,11 +150,11 @@ describe('DocumentSidebar', () => {
       onRenameDocument,
     };
 
-    it('should enter edit mode on double-click with base name only', () => {
+    it('should enter edit mode on click with base name only', () => {
       render(<DocumentSidebar {...renameProps} />);
 
       const fileName = screen.getByText('readme.md');
-      fireEvent.doubleClick(fileName);
+      fireEvent.click(fileName);
 
       const input = screen.getByRole('textbox');
       expect(input).toBeInTheDocument();
@@ -165,7 +165,7 @@ describe('DocumentSidebar', () => {
     it('should call onRenameDocument with full filename on Enter', () => {
       render(<DocumentSidebar {...renameProps} />);
 
-      fireEvent.doubleClick(screen.getByText('readme.md'));
+      fireEvent.click(screen.getByText('readme.md'));
 
       const input = screen.getByRole('textbox');
       fireEvent.change(input, { target: { value: 'updated' } });
@@ -177,7 +177,7 @@ describe('DocumentSidebar', () => {
     it('should cancel editing on Escape', () => {
       render(<DocumentSidebar {...renameProps} />);
 
-      fireEvent.doubleClick(screen.getByText('readme.md'));
+      fireEvent.click(screen.getByText('readme.md'));
       const input = screen.getByRole('textbox');
       fireEvent.change(input, { target: { value: 'changed' } });
       fireEvent.keyDown(input, { key: 'Escape' });
@@ -190,7 +190,7 @@ describe('DocumentSidebar', () => {
     it('should not call onRenameDocument if name is unchanged', () => {
       render(<DocumentSidebar {...renameProps} />);
 
-      fireEvent.doubleClick(screen.getByText('readme.md'));
+      fireEvent.click(screen.getByText('readme.md'));
       const input = screen.getByRole('textbox');
       fireEvent.keyDown(input, { key: 'Enter' });
 
@@ -200,7 +200,7 @@ describe('DocumentSidebar', () => {
     it('should not call onRenameDocument if name is empty', () => {
       render(<DocumentSidebar {...renameProps} />);
 
-      fireEvent.doubleClick(screen.getByText('readme.md'));
+      fireEvent.click(screen.getByText('readme.md'));
     });
     describe('inline notebook title rename', () => {
       const onRenameNotebook = jest.fn();
@@ -286,7 +286,7 @@ describe('DocumentSidebar', () => {
         render(<DocumentSidebar {...renameProps} />);
 
         const fileName = screen.getByText('readme.md');
-        expect(fileName).toHaveAttribute('title', 'Double-click to rename');
+        expect(fileName).toHaveAttribute('title', 'Click to rename');
       });
 
       it('should show error and block save when name conflicts with existing document', () => {
@@ -302,7 +302,7 @@ describe('DocumentSidebar', () => {
           />,
         );
 
-        fireEvent.doubleClick(screen.getByText('readme.md'));
+        fireEvent.click(screen.getByText('readme.md'));
         const input = screen.getByRole('textbox');
         fireEvent.change(input, { target: { value: 'notes' } });
 
@@ -325,7 +325,7 @@ describe('DocumentSidebar', () => {
           />,
         );
 
-        fireEvent.doubleClick(screen.getByText('readme.md'));
+        fireEvent.click(screen.getByText('readme.md'));
         const input = screen.getByRole('textbox');
         fireEvent.change(input, { target: { value: 'unique-name' } });
 
@@ -337,7 +337,7 @@ describe('DocumentSidebar', () => {
       it('should save rename on blur', () => {
         render(<DocumentSidebar {...renameProps} />);
 
-        fireEvent.doubleClick(screen.getByText('readme.md'));
+        fireEvent.click(screen.getByText('readme.md'));
         const input = screen.getByRole('textbox');
         fireEvent.change(input, { target: { value: 'blurred-name' } });
         fireEvent.blur(input);
@@ -351,7 +351,7 @@ describe('DocumentSidebar', () => {
       it('should show error and block save when title exceeds 255 characters', () => {
         render(<DocumentSidebar {...renameProps} />);
 
-        fireEvent.doubleClick(screen.getByText('readme.md'));
+        fireEvent.click(screen.getByText('readme.md'));
         const input = screen.getByRole('textbox');
         const longName = 'a'.repeat(260);
         fireEvent.change(input, { target: { value: longName } });
@@ -365,7 +365,7 @@ describe('DocumentSidebar', () => {
       it('should exit edit mode on blur when title is too long', () => {
         render(<DocumentSidebar {...renameProps} />);
 
-        fireEvent.doubleClick(screen.getByText('readme.md'));
+        fireEvent.click(screen.getByText('readme.md'));
         const input = screen.getByRole('textbox');
         const longName = 'a'.repeat(260);
         fireEvent.change(input, { target: { value: longName } });

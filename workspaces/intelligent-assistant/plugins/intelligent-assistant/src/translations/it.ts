@@ -200,7 +200,7 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'modal.title.edit': 'Modifica allegato',
     'modal.title.preview': 'Anteprima allegato',
     'notebook.document.rename': 'Rinomina',
-    'notebook.document.rename.tooltip': 'Doppio clic per rinominare',
+    'notebook.document.rename.tooltip': 'Clicca per rinominare',
     'notebook.document.rename.error':
       'Impossibile rinominare "{{documentName}}".',
     'notebook.document.rename.conflict': 'Il nome esiste già.',

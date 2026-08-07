@@ -23,6 +23,7 @@ import {
 } from '@tanstack/react-query';
 
 import { notebooksApiRef } from '../../api/notebooksApi';
+import { SessionDocument } from '../../types';
 
 type RenameDocumentPayload = {
   sessionId: string;
@@ -30,10 +31,15 @@ type RenameDocumentPayload = {
   newTitle: string;
 };
 
+type RenameDocumentContext = {
+  previousDocuments: SessionDocument[] | undefined;
+};
+
 export const useRenameDocument = (): UseMutationResult<
   void,
   unknown,
-  RenameDocumentPayload
+  RenameDocumentPayload,
+  RenameDocumentContext
 > => {
   const notebooksApi = useApi(notebooksApiRef);
   const queryClient = useQueryClient();
@@ -46,9 +52,40 @@ export const useRenameDocument = (): UseMutationResult<
         payload.newTitle,
       );
     },
-    onSuccess: (_data, variables) => {
+    onMutate: async (payload): Promise<RenameDocumentContext> => {
+      await queryClient.cancelQueries({
+        queryKey: ['notebooks', 'documents', payload.sessionId],
+      });
+
+      const previousDocuments = queryClient.getQueryData<SessionDocument[]>([
+        'notebooks',
+        'documents',
+        payload.sessionId,
+      ]);
+
+      queryClient.setQueryData<SessionDocument[]>(
+        ['notebooks', 'documents', payload.sessionId],
+        old =>
+          old?.map(doc =>
+            doc.document_id === payload.documentId
+              ? { ...doc, title: payload.newTitle }
+              : doc,
+          ),
+      );
+
+      return { previousDocuments };
+    },
+    onError: (_err, payload, context) => {
+      if (context?.previousDocuments) {
+        queryClient.setQueryData(
+          ['notebooks', 'documents', payload.sessionId],
+          context.previousDocuments,
+        );
+      }
+    },
+    onSettled: (_data, _error, payload) => {
       queryClient.invalidateQueries({
-        queryKey: ['notebooks', 'documents', variables.sessionId],
+        queryKey: ['notebooks', 'documents', payload.sessionId],
       });
     },
   });

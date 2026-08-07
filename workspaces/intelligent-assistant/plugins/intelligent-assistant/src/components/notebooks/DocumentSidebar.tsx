@@ -460,7 +460,7 @@ export const DocumentSidebar = ({
                 <Typography
                   className={classes.fileName}
                   title={t('notebook.document.rename.tooltip')}
-                  onDoubleClick={() => startEditing(doc.document_id, doc.title)}
+                  onClick={() => startEditing(doc.document_id, doc.title)}
                 >
                   {doc.title}
                 </Typography>
