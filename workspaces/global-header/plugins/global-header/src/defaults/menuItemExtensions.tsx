@@ -17,8 +17,8 @@
 /**
  * Default menu item extensions (`gh-menu-item`) for the global header dropdowns.
  *
- * - Items with only `component` (no data fields) are rendered directly by
- *   the dropdown — they control their own layout and `MenuItem` wrapping.
+ * - Items with only `loader`/`component` (no data fields) are rendered directly
+ *   by the dropdown — they control their own layout and `MenuItem` wrapping.
  * - Items with data fields (`title`, `link`, etc.) are grouped by `sectionLabel`
  *   and rendered through `MenuSection`.
  *
@@ -26,10 +26,6 @@
  */
 
 import { GlobalHeaderMenuItemBlueprint } from '../extensions/blueprints';
-
-import { LogoutButton } from '../components/LogoutButton/LogoutButton';
-import { SupportButton } from '../components/SupportButton/SupportButton';
-import { MyProfileMenuItem } from '../components/MyProfileMenuItem';
 
 // ---------------------------------------------------------------------------
 // Profile dropdown items
@@ -53,8 +49,9 @@ export const myProfileMenuItemExtension = GlobalHeaderMenuItemBlueprint.make({
   name: 'my-profile',
   params: {
     target: 'profile',
-    component: MyProfileMenuItem,
     priority: 90,
+    loader: () =>
+      import('../components/MyProfileMenuItem').then(m => m.MyProfileMenuItem),
   },
 });
 
@@ -63,8 +60,11 @@ export const logoutMenuItemExtension = GlobalHeaderMenuItemBlueprint.make({
   name: 'logout',
   params: {
     target: 'profile',
-    component: LogoutButton,
     priority: 10,
+    loader: () =>
+      import('../components/LogoutButton/LogoutButton').then(
+        m => m.LogoutButton,
+      ),
   },
 });
 
@@ -78,8 +78,11 @@ export const supportButtonMenuItemExtension =
     name: 'support-button',
     params: {
       target: 'help',
-      component: SupportButton,
       priority: 10,
+      loader: () =>
+        import('../components/SupportButton/SupportButton').then(
+          m => m.SupportButton,
+        ),
     },
   });
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import type { PropsWithChildren } from 'react';
 
 import {
@@ -25,7 +25,6 @@ import { AppRootWrapperBlueprint } from '@backstage/plugin-app-react';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { GlobalHeaderProvider } from './GlobalHeaderContext';
-import { GlobalHeader } from '../components/GlobalHeader';
 import {
   globalHeaderComponentDataRef,
   globalHeaderMenuItemDataRef,
@@ -36,6 +35,12 @@ import type {
 } from '../types';
 import { readConfigMenuItems } from '../utils/readConfigMenuItems';
 import { readConfigComponents } from '../utils/readConfigComponents';
+
+// AppRootWrapperBlueprint has no loader — lazy the AppBar shell so MUI stays
+// off the root federation sync chunk (same idea as PageBlueprint loaders).
+const LazyGlobalHeader = lazy(() =>
+  import('../components/GlobalHeader').then(m => ({ default: m.GlobalHeader })),
+);
 
 function GlobalHeaderWrapper({
   extensionComponents,
@@ -70,7 +75,9 @@ function GlobalHeaderWrapper({
   );
   return (
     <GlobalHeaderProvider components={allComponents} menuItems={allMenuItems}>
-      <GlobalHeader />
+      <Suspense fallback={null}>
+        <LazyGlobalHeader />
+      </Suspense>
       {children}
     </GlobalHeaderProvider>
   );

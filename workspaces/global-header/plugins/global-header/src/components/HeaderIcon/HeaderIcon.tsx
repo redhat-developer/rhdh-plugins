@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import type { CSSProperties } from 'react';
 import { useApp } from '@backstage/core-plugin-api';
 import MuiIcon from '@mui/material/Icon';
@@ -69,7 +70,8 @@ export const HeaderIcon = ({
   if (
     icon.startsWith('https://') ||
     icon.startsWith('http://') ||
-    icon.startsWith('/')
+    icon.startsWith('/') ||
+    icon.startsWith('data:image/')
   ) {
     return (
       <MuiIcon

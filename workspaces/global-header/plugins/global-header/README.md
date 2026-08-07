@@ -21,13 +21,14 @@ yarn --cwd packages/app add @red-hat-developer-hub/backstage-plugin-global-heade
 
 ### New Frontend System
 
-Import the plugin and module in your NFS app:
+The NFS plugin is available from the package root (`.`). Import the
+plugin and module in your NFS app:
 
 ```typescript
 import { createApp } from '@backstage/frontend-defaults';
 import globalHeaderPlugin, {
   globalHeaderModule,
-} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 export default createApp({
   features: [
@@ -38,11 +39,21 @@ export default createApp({
 });
 ```
 
-Other plugins can contribute toolbar items and dropdown menu items using `GlobalHeaderComponentBlueprint` and `GlobalHeaderMenuItemBlueprint`. See the [New Frontend System documentation](../../docs/new-frontend-system.md) for detailed examples and API reference.
+> `/alpha` is deprecated and translations-only — use the root import for NFS.
+> Legacy (OFS) mounts live under `/legacy`.
+
+Other plugins can contribute toolbar items and dropdown menu items using
+`GlobalHeaderComponentBlueprint` and `GlobalHeaderMenuItemBlueprint` from the
+root. Building-block UI (`GlobalHeaderMenuItem`, `GlobalHeaderDropdown`,
+…) must be imported from `/components` (ideally inside a blueprint `loader`) so
+MUI-heavy UI stays off the main NFS Module Federation sync chunk. See the
+[New Frontend System documentation](../../docs/new-frontend-system.md) for
+detailed examples and API reference.
 
 ### Legacy (Mount Points)
 
-For legacy Backstage apps using dynamic plugin mount points, see the [Configuration documentation](../../docs/configuration.md).
+For legacy Backstage apps using dynamic plugin mount points, import from
+`/legacy` and see the [Configuration documentation](../../docs/configuration.md).
 
 ## Configuration
 
