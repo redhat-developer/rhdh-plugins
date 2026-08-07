@@ -33,6 +33,7 @@ import {
   iaChatUsePermission,
   iaMcpManagePermission,
   iaMcpReadPermission,
+  iaNotebooksUsePermission,
   iaPermissions,
   iaSavedPromptsManagePermission,
 } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
@@ -565,6 +566,7 @@ export async function createRouter(
   router.get(
     '/notebook-conversation-ids',
     generalRateLimiter,
+    requirePermission(iaNotebooksUsePermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
