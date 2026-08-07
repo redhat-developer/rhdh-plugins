@@ -251,11 +251,11 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'notebook.view.sidebar.expand': 'Développer la barre latérale',
     'notebook.view.sidebar.resize': 'Redimensionner la barre latérale',
     'notebook.view.title': 'Carnet sans titre',
-    'notebook.view.upload.action': 'Charger une ressource',
+    'notebook.view.upload.action': 'Ajouter une ressource',
     'notebook.view.processing.description':
       'Vos fichiers sont en cours d’indexation. Vous pourrez poser des questions une fois le traitement terminé.',
     'notebook.view.processing.heading': 'Traitement des ressources...',
-    'notebook.view.upload.heading': 'Chargez une ressource pour commencer',
+    'notebook.view.upload.heading': 'Ajoutez une ressource pour commencer',
     'notebooks.actions.delete': 'Supprimer',
     'notebooks.actions.rename': 'Renommer',
     'notebooks.card.openAria': 'Ouvrir le carnet {{name}}',

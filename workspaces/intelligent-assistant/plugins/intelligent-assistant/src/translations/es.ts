@@ -247,11 +247,11 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'notebook.view.sidebar.expand': 'Expandir barra lateral',
     'notebook.view.sidebar.resize': 'Redimensionar barra lateral',
     'notebook.view.title': 'Cuaderno sin título',
-    'notebook.view.upload.action': 'Subir un recurso',
+    'notebook.view.upload.action': 'Agregar un recurso',
     'notebook.view.processing.description':
       'Sus archivos están siendo indexados. Puede comenzar a hacer preguntas una vez que se complete el procesamiento.',
     'notebook.view.processing.heading': 'Procesando recursos...',
-    'notebook.view.upload.heading': 'Sube un recurso para empezar',
+    'notebook.view.upload.heading': 'Agrega un recurso para empezar',
     'notebooks.actions.delete': 'Eliminar',
     'notebooks.actions.rename': 'Renombrar',
     'notebooks.card.openAria': 'Abrir el cuaderno {{name}}',

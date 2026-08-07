@@ -53,6 +53,7 @@ const useStyles = makeStyles(theme => ({
     padding: '0 24px 24px',
   },
   warningAlert: {
+    '--pf-v6-c-alert--PaddingBlockEnd': '0',
     marginBottom: theme.spacing(2),
     '& .pf-v6-c-alert__title': {
       marginTop: 0,
@@ -61,7 +62,7 @@ const useStyles = makeStyles(theme => ({
   radioGroup: {
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing(0.5),
+    gap: theme.spacing(1),
     marginBottom: theme.spacing(2),
     '& label': {
       display: 'flex',
@@ -69,6 +70,9 @@ const useStyles = makeStyles(theme => ({
       gap: theme.spacing(1),
       cursor: 'pointer',
       fontSize: '0.875rem',
+    },
+    '& input[type="radio"]': {
+      cursor: 'pointer',
     },
   },
   fileList: {

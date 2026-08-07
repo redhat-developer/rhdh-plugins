@@ -292,7 +292,7 @@ const useStyles = makeStyles(theme => ({
     },
   },
   notebookCardHeader: {
-    padding: theme.spacing(2),
+    padding: theme.spacing(3),
     paddingBottom: 0,
     alignItems: 'center',
   },
@@ -301,14 +301,14 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(1),
   },
   notebookCardBody: {
-    padding: theme.spacing(2),
-    paddingTop: theme.spacing(1.5),
+    padding: theme.spacing(3),
+    paddingTop: theme.spacing(2),
   },
   notebookDocuments: {
     paddingTop: theme.spacing(1),
   },
   notebookUpdated: {
-    paddingBottom: theme.spacing(5),
+    paddingBottom: theme.spacing(3),
     paddingTop: theme.spacing(2),
   },
   notebookTitle: {

@@ -19,7 +19,6 @@ import { FileRejection } from 'react-dropzone';
 
 import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
-import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -29,6 +28,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 import {
+  Alert,
   MultipleFileUpload,
   MultipleFileUploadContext,
   MultipleFileUploadMain,
@@ -77,6 +77,10 @@ const useStyles = makeStyles(theme => ({
   },
   errorAlert: {
     marginBottom: theme.spacing(2),
+    '--pf-v6-c-alert--PaddingBlockEnd': '0',
+    '& .pf-v6-c-alert__title': {
+      marginBlockStart: 0,
+    },
   },
   dropzone: {
     borderColor: 'var(--pf-t--global--border--color--brand--default)',
@@ -115,7 +119,7 @@ const useStyles = makeStyles(theme => ({
   },
   dialogActions: {
     padding: '16px 24px',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
     gap: theme.spacing(1),
   },
   addButton: {
@@ -348,8 +352,11 @@ export const AddDocumentModal = ({
 
       <DialogContent className={classes.dialogContent}>
         {validationErrors.length > 0 && (
-          <Alert severity="error" className={classes.errorAlert}>
-            {validationErrors
+          <Alert
+            variant="danger"
+            isInline
+            className={classes.errorAlert}
+            title={validationErrors
               .map(errorKey => {
                 const message = (t as Function)(errorKey) as string;
                 return errorKey === 'notebook.upload.error.tooManyFiles'
@@ -357,13 +364,16 @@ export const AddDocumentModal = ({
                   : message;
               })
               .join('\n')}
-          </Alert>
+          />
         )}
 
         {hasUploadsInProgress && (
-          <Alert severity="info" className={classes.errorAlert}>
-            {t('notebook.view.documents.uploadsInProgress')}
-          </Alert>
+          <Alert
+            variant="info"
+            isInline
+            className={classes.errorAlert}
+            title={t('notebook.view.documents.uploadsInProgress')}
+          />
         )}
 
         {(() => {
@@ -442,13 +452,6 @@ export const AddDocumentModal = ({
 
       <DialogActions className={classes.dialogActions}>
         <Button
-          onClick={handleClose}
-          className={classes.cancelButton}
-          color="inherit"
-        >
-          {t('common.cancel')}
-        </Button>
-        <Button
           onClick={handleAddFiles}
           className={classes.addButton}
           variant="contained"
@@ -460,6 +463,13 @@ export const AddDocumentModal = ({
                 count: selectedFiles.length,
               })
             : t('notebook.upload.modal.addButtonEmpty')}
+        </Button>
+        <Button
+          onClick={handleClose}
+          className={classes.cancelButton}
+          color="inherit"
+        >
+          {t('common.cancel')}
         </Button>
       </DialogActions>
     </Dialog>
