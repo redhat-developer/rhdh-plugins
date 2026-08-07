@@ -82,13 +82,16 @@ export class AggregationsService {
 
       const metric = metricProviderRegistry.getMetric(aggregationId);
 
-      return {
+      const fallbackConfig: ValidatedAggregationConfig = {
         id: aggregationId,
         metricId: aggregationId,
         title: metric.title,
         description: metric.description,
         type: aggregationTypes.statusGrouped,
       };
+      this.aggregationKpisConfigCache.set(aggregationId, fallbackConfig);
+
+      return fallbackConfig;
     }
 
     const validatedConfig = parseValidatedAggregationConfig(

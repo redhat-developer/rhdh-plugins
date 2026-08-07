@@ -36,7 +36,13 @@ export type AggregationConfig = {
   description: string;
   type: AggregationType;
   metricId: string;
+  filter?: AggregationConfigFilter;
   options?: AggregationConfigOptions;
+};
+
+// @public
+export type AggregationConfigFilter = {
+  status?: string;
 };
 
 // @public (undocumented)
@@ -52,6 +58,7 @@ export type AggregationMetadata = {
   type: MetricType;
   history?: boolean;
   aggregationType: AggregationType;
+  filter?: AggregationConfigFilter;
 };
 
 // @public (undocumented)

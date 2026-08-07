@@ -28,7 +28,7 @@ import {
   mockWeightedStatusScoreAggregationResult,
   mockScalarAggregationResult,
 } from '../../../__fixtures__/mockAggregatedMetricResult';
-import { mockFirstThresholds } from '../../../__fixtures__/mockThresholds';
+import { mockHigherIsBetterThresholds } from '../../../__fixtures__/mockThresholds';
 import { buildMockMetricProvidersRegistry } from '../../../__fixtures__/mockMetricProvidersRegistry';
 import { createAggregationStrategyRegistry } from './strategies/registerStrategies';
 import type { AggregationStrategy } from './strategies/types';
@@ -144,7 +144,7 @@ describe('AggregationsService', () => {
       const options = {
         metric,
         entityRefs,
-        thresholds: mockFirstThresholds,
+        thresholds: mockHigherIsBetterThresholds,
         aggregationConfig: statusGroupedAggregationConfig,
       };
 
@@ -159,7 +159,7 @@ describe('AggregationsService', () => {
       const result = await service.getAggregatedMetricByEntityRefs({
         metric,
         entityRefs,
-        thresholds: mockFirstThresholds,
+        thresholds: mockHigherIsBetterThresholds,
         aggregationConfig: statusGroupedAggregationConfig,
       });
 
@@ -170,7 +170,7 @@ describe('AggregationsService', () => {
       const options = {
         metric,
         entityRefs,
-        thresholds: mockFirstThresholds,
+        thresholds: mockHigherIsBetterThresholds,
         aggregationConfig: weightedAggregationConfig,
       };
 
@@ -184,7 +184,7 @@ describe('AggregationsService', () => {
       const options = {
         metric,
         entityRefs,
-        thresholds: mockFirstThresholds,
+        thresholds: mockHigherIsBetterThresholds,
         aggregationConfig: scalarAggregationConfig,
       };
 
@@ -199,7 +199,7 @@ describe('AggregationsService', () => {
         service.getAggregatedMetricByEntityRefs({
           metric,
           entityRefs: [],
-          thresholds: mockFirstThresholds,
+          thresholds: mockHigherIsBetterThresholds,
           aggregationConfig: {
             id: metric.id,
             metricId: metric.id,
@@ -305,6 +305,45 @@ describe('AggregationsService', () => {
       );
     });
 
+    it('should parse filter.status for scalar KPIs from scorecard.aggregationKPIs', () => {
+      const config = mockServices.rootConfig({
+        data: {
+          scorecard: {
+            aggregationKPIs: {
+              totalCriticalPrs: {
+                title: 'Total Critical PRs',
+                description: 'Sum of open PRs for entities in error status',
+                type: aggregationTypes.sum,
+                metricId: 'github.openPRs',
+                filter: {
+                  status: 'error',
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const serviceWithConfig = new AggregationsService({
+        config,
+        database,
+        logger,
+      });
+
+      expect(
+        serviceWithConfig.getAggregationConfig(
+          'totalCriticalPrs',
+          metricProvidersRegistry,
+        ),
+      ).toEqual(
+        expect.objectContaining({
+          id: 'totalCriticalPrs',
+          type: aggregationTypes.sum,
+          filter: { status: 'error' },
+        }),
+      );
+    });
+
     it('should return cached config on repeated lookup for configured KPIs', () => {
       const config = mockServices.rootConfig({
         data: {
@@ -348,7 +387,7 @@ describe('AggregationsService', () => {
       expect(second).toBe(first);
     });
 
-    it('should not cache fallback config when KPI block is absent', () => {
+    it('should cache fallback config when KPI block is absent', () => {
       const first = service.getAggregationConfig(
         'github.openPRs',
         metricProvidersRegistry,
@@ -358,10 +397,9 @@ describe('AggregationsService', () => {
         metricProvidersRegistry,
       );
 
-      expect(second).toEqual(first);
-      expect(second).not.toBe(first);
-      expect(logger.warn).toHaveBeenCalledTimes(2);
-      expect(metricProvidersRegistry.getMetric).toHaveBeenCalledTimes(2);
+      expect(second).toBe(first);
+      expect(logger.warn).toHaveBeenCalledTimes(1);
+      expect(metricProvidersRegistry.getMetric).toHaveBeenCalledTimes(1);
     });
   });
 });

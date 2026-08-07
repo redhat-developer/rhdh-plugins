@@ -22,6 +22,7 @@ import {
 import { isScalarAggregationType } from './isScalarAggregationType';
 import { buildAggregationConfigThresholds } from './buildAggregationConfigThresholds';
 import { buildAggregationStatusScores } from './buildAggregationStatusScores';
+import { buildAggregationConfigFilter } from './buildAggregationConfigFilter';
 
 type Options = {
   config: Config;
@@ -33,6 +34,7 @@ export function buildAggregationConfig(
 ): AggregationConfig {
   const { config } = options;
 
+  // Represents base attributes for all aggregation types.
   const aggregationConfig: AggregationConfig = {
     id: aggregationId,
     type: config.getString('type'),
@@ -51,6 +53,10 @@ export function buildAggregationConfig(
   } else if (isScalarAggregationType(aggregationConfig.type)) {
     aggregationConfig.options.thresholds =
       buildAggregationConfigThresholds(config);
+    const filter = buildAggregationConfigFilter(config);
+    if (filter) {
+      aggregationConfig.filter = filter;
+    }
   }
 
   return aggregationConfig;

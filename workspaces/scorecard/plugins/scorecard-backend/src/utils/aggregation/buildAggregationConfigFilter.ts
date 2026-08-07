@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-export function normalizeTimestamp(timestamp?: unknown): Date {
-  if (timestamp instanceof Date) {
-    return timestamp;
+import type { Config } from '@backstage/config';
+import type { AggregationConfigFilter } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+export function buildAggregationConfigFilter(
+  config: Config,
+): AggregationConfigFilter | undefined {
+  const filter = config.getOptionalConfig('filter');
+  if (!filter) {
+    return undefined;
   }
 
-  if (typeof timestamp === 'number' || typeof timestamp === 'string') {
-    if (timestamp === '') {
-      return new Date(0);
-    }
-    return new Date(timestamp);
+  const status = filter.getOptionalString('status');
+  if (!status) {
+    return undefined;
   }
 
-  return new Date(0);
+  return { status };
 }

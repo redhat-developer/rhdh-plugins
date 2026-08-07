@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-export function toIsoTimestamp(timestamp?: Date): string {
-  return timestamp
-    ? new Date(timestamp).toISOString()
-    : new Date().toISOString();
-}
+import { z } from 'zod';
+
+export const aggregationThresholdsConfigSchema = z.object({
+  rules: z.array(
+    z.object({
+      key: z.string(),
+      expression: z.string(),
+      color: z.string().optional(),
+    }),
+  ),
+});
