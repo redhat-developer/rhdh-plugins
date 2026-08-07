@@ -17,6 +17,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import type { LightspeedMessages } from '../utils/translations';
+import { substituteNotebookTemplate } from '../utils/notebookTranslation';
 import { openLightspeed } from '../utils/testHelper';
 
 import { NotebookAddDocumentModalPage } from './NotebookAddDocumentModalPage';
@@ -341,12 +342,12 @@ export class NotebookSurfacePage {
     });
   }
 
-  /**
-   * Shown on each card as count + plural label (same pattern as NotebookCard.tsx:
-   * `{ document_count } { t('notebooks.documents') }`, not `notebook.view.documents.count`).
-   */
   formatNotebookCardDocumentsSummary(documentCount: number): string {
-    return `${documentCount} ${this.t['notebooks.documents']}`;
+    if (documentCount === 0) return this.t['notebooks.documents.none'];
+    if (documentCount === 1) return this.t['notebooks.documents.one'];
+    return substituteNotebookTemplate(this.t['notebooks.documents.other'], {
+      count: documentCount,
+    });
   }
 
   async expectUntitledNotebookCardCount(expected: number): Promise<void> {

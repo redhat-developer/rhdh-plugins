@@ -38,7 +38,7 @@ import {
   Tooltip,
   type AlertProps,
 } from '@patternfly/react-core';
-import { TimesIcon } from '@patternfly/react-icons';
+import { PlusIcon, TimesIcon } from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { notebooksApiRef } from '../../api/notebooksApi';
@@ -53,12 +53,15 @@ import {
   type PendingUpload,
 } from '../../hooks/notebooks/useDocumentStatusPolling';
 import { useRenameNotebookWithAlert } from '../../hooks/notebooks/useRenameNotebookWithAlert';
+import { useUploadDocument } from '../../hooks/notebooks/useUploadDocument';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { CreateMessageVariables } from '../../hooks/useCreateCoversationMessage';
 import { useNotebookWelcomePrompts } from '../../hooks/useNotebookWelcomePrompts';
+import { useStopConversation } from '../../hooks/useStopConversation';
 import { useTranslation } from '../../hooks/useTranslation';
 import { NotebookSessionMetadata, SessionDocument } from '../../types';
 import { ChatbotFootnoteWithIcon } from '../../utils/lightspeed-chatbox-utils';
+import { runFileUploads } from '../../utils/notebook-upload-runner';
 import { LightspeedChatBox } from '../LightspeedChatBox';
 import { AddDocumentModal } from './AddDocumentModal';
 import { DeleteDocumentModal } from './DeleteDocumentModal';
@@ -257,11 +260,34 @@ const useStyles = makeStyles(theme => ({
           ? theme.palette.grey[100]
           : 'var(--pf-t--global--background--color--secondary--default)',
     },
-    '& .pf-chatbot__button--send, & .pf-chatbot__button--microphone': {
-      '--pf-v6-c-button--BorderRadius':
-        'var(--pf-t--global--border--radius--pill)',
-      borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
+    '& .pf-chatbot__button--stop, & .pf-chatbot__button--attach, & .pf-chatbot__button--send, & .pf-chatbot__button--microphone':
+      {
+        '--pf-v6-c-button--BorderRadius':
+          'var(--pf-t--global--border--radius--pill)',
+        borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
+      },
+  },
+  messageBar: {
+    border: '1px solid var(--pf-t--global--border--color--default)',
+    borderRadius: 24,
+    padding: theme.spacing(0.5),
+    '&::after': {
+      display: 'none',
     },
+  },
+  addResourceButton: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: 4,
+    display: 'inline-flex',
+    alignItems: 'center',
+    color: 'inherit',
+    '&:focus-visible': {
+      outline: '2px solid var(--pf-t--global--border--color--brand--default)',
+      outlineOffset: 2,
+    },
+    marginLeft: theme.spacing(2),
   },
   chatContent: {
     minHeight: 0,
@@ -316,6 +342,9 @@ export const NotebookView = ({
     metadata?.conversation_id ?? TEMP_CONVERSATION_ID,
   );
   const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
+  const [requestId, setRequestId] = useState('');
+  const { mutate: stopConversation } = useStopConversation();
+  const wasStoppedByUserRef = useRef(false);
   const [announcement, setAnnouncement] = useState<string | undefined>(
     undefined,
   );
@@ -334,7 +363,10 @@ export const NotebookView = ({
   const onComplete = useCallback(
     (message: string) => {
       setIsSendButtonDisabled(false);
-      setAnnouncement(`Message from Bot: ${message}`);
+      if (!wasStoppedByUserRef.current) {
+        setAnnouncement(`Message from Bot: ${message}`);
+      }
+      wasStoppedByUserRef.current = false;
       queryClient.invalidateQueries({
         queryKey: ['conversationMessages', conversationId],
       });
@@ -356,6 +388,10 @@ export const NotebookView = ({
     [notebookCreateMessage, sessionId],
   );
 
+  const onRequestIdReady = useCallback((rid: string) => {
+    setRequestId(rid);
+  }, []);
+
   const { conversationMessages, handleInputPrompt, scrollToBottomRef } =
     useConversationMessages(
       conversationId,
@@ -366,6 +402,7 @@ export const NotebookView = ({
       onComplete,
       onStart,
       createMessageAdapter,
+      onRequestIdReady,
     );
 
   const [messages, setMessages] =
@@ -377,6 +414,7 @@ export const NotebookView = ({
 
   const sendMessage = useCallback(
     (message: string | number) => {
+      wasStoppedByUserRef.current = false;
       setAnnouncement(
         t('conversation.announcement.userMessage' as any, {
           prompt: message.toString(),
@@ -388,11 +426,23 @@ export const NotebookView = ({
     [handleInputPrompt, t],
   );
 
+  const handleStopButton = useCallback(() => {
+    wasStoppedByUserRef.current = true;
+    if (requestId) {
+      stopConversation(requestId);
+      setRequestId('');
+    }
+    setIsSendButtonDisabled(false);
+    setAnnouncement(t('conversation.announcement.responseStopped'));
+  }, [requestId, stopConversation, t]);
+
   const notebookPrompts = useNotebookWelcomePrompts();
   const welcomePrompts = notebookPrompts.map(title => ({
     title,
     onClick: () => sendMessage(title),
   }));
+
+  const uploadMutation = useUploadDocument();
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -404,6 +454,7 @@ export const NotebookView = ({
     new Set(),
   );
   const [filesToOverwrite, setFilesToOverwrite] = useState<File[]>([]);
+  const [allFilesForOverwrite, setAllFilesForOverwrite] = useState<File[]>([]);
   const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
   const [filesToAddToModal, setFilesToAddToModal] = useState<File[]>([]);
 
@@ -444,6 +495,25 @@ export const NotebookView = ({
   const handleOpenUploadModal = () => setIsUploadModalOpen(true);
   const handleCloseUploadModal = () => setIsUploadModalOpen(false);
 
+  const handleCloseNotebook = async () => {
+    const isUntitled = notebookName === UNTITLED_NOTEBOOK_NAME;
+    const hasNoDocuments = documents.length === 0;
+    const hasNoPendingUploads = !pendingUploads.length;
+    const hasNoUploading = !uploadingFileNames.length;
+    const hasNoChat = conversationId === TEMP_CONVERSATION_ID;
+
+    if (
+      isUntitled &&
+      hasNoDocuments &&
+      hasNoPendingUploads &&
+      hasNoUploading &&
+      hasNoChat
+    ) {
+      await notebooksApi.deleteSession(sessionId).catch(() => {});
+    }
+    onClose();
+  };
+
   const handleFilesUploading = (files: File[]) => {
     setUploadingFileNames(prev => {
       const newNames = files
@@ -478,28 +548,43 @@ export const NotebookView = ({
     ]);
   };
 
-  const handleDuplicatesFound = (files: File[]) => {
-    setFilesToOverwrite(files);
+  const handleDuplicatesFound = (duplicateFiles: File[], allFiles: File[]) => {
+    setFilesToOverwrite(duplicateFiles);
+    setAllFilesForOverwrite(allFiles);
+    setIsUploadModalOpen(false);
     setIsOverwriteModalOpen(true);
   };
 
-  const handleOverwriteConfirm = () => {
-    const files = filesToOverwrite;
+  const handleOverwriteConfirm = (filesToUpload: File[]) => {
     setIsOverwriteModalOpen(false);
     setFilesToOverwrite([]);
+    setAllFilesForOverwrite([]);
 
-    if (files.length === 0) return;
+    if (filesToUpload.length === 0) return;
 
-    setFilesToAddToModal(files);
+    runFileUploads(uploadMutation, sessionId, filesToUpload, {
+      onUploading: handleFilesUploading,
+      onStarted: handleUploadStarted,
+      onFailed: handleUploadFailed,
+    });
   };
 
   const handleFilesAddedToModal = () => {
     setFilesToAddToModal([]);
   };
 
+  const handleOverwriteBack = () => {
+    setIsOverwriteModalOpen(false);
+    setFilesToAddToModal(allFilesForOverwrite);
+    setFilesToOverwrite([]);
+    setAllFilesForOverwrite([]);
+    setIsUploadModalOpen(true);
+  };
+
   const handleOverwriteCancel = () => {
     setIsOverwriteModalOpen(false);
     setFilesToOverwrite([]);
+    setAllFilesForOverwrite([]);
   };
 
   const pollingResults = useDocumentStatusPolling(sessionId, pendingUploads);
@@ -747,7 +832,7 @@ export const NotebookView = ({
                   <Button
                     variant="link"
                     className={classes.closeButton}
-                    onClick={onClose}
+                    onClick={handleCloseNotebook}
                     icon={<TimesIcon />}
                     iconPosition="end"
                   >
@@ -762,33 +847,70 @@ export const NotebookView = ({
                   renderNotebookDisclaimerAlert()}
 
                 <ChatbotFooter className={classes.footer}>
-                  {hasNoDocuments ? (
-                    <Tooltip
-                      content={t('notebook.view.input.disabledTooltip')}
-                      position="top"
-                    >
-                      <div>
-                        <MessageBar
-                          hasAttachButton={false}
-                          hasMicrophoneButton={false}
-                          hasStopButton={false}
-                          isSendButtonDisabled
-                          isDisabled
-                          onSendMessage={sendMessage}
-                          placeholder={t('notebook.view.input.placeholder')}
-                        />
-                      </div>
-                    </Tooltip>
-                  ) : (
-                    <MessageBar
-                      hasAttachButton={false}
-                      hasMicrophoneButton
-                      hasStopButton={false}
-                      isSendButtonDisabled={isSendButtonDisabled}
-                      onSendMessage={sendMessage}
-                      placeholder={t('notebook.view.input.placeholder')}
-                    />
-                  )}
+                  {(() => {
+                    const addResourceAction = (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenUploadModal()}
+                        aria-label={t('notebook.view.documents.add')}
+                        className={classes.addResourceButton}
+                      >
+                        <PlusIcon style={{ width: 16, height: 16 }} />
+                      </button>
+                    );
+                    return hasNoDocuments ? (
+                      <Tooltip
+                        content={t('notebook.view.input.disabledTooltip')}
+                        position="top"
+                      >
+                        <div>
+                          <MessageBar
+                            className={classes.messageBar}
+                            hasAttachButton={false}
+                            hasMicrophoneButton={false}
+                            hasStopButton={false}
+                            isSendButtonDisabled
+                            isDisabled
+                            onSendMessage={sendMessage}
+                            placeholder={t('notebook.view.input.placeholder')}
+                            forceMultilineLayout
+                            additionalActions={addResourceAction}
+                            buttonProps={{
+                              send: {
+                                tooltipContent: t('tooltip.send'),
+                              },
+                            }}
+                          />
+                        </div>
+                      </Tooltip>
+                    ) : (
+                      <MessageBar
+                        className={classes.messageBar}
+                        hasAttachButton={false}
+                        hasMicrophoneButton
+                        hasStopButton={isSendButtonDisabled}
+                        handleStopButton={
+                          isSendButtonDisabled ? handleStopButton : undefined
+                        }
+                        isSendButtonDisabled={isSendButtonDisabled}
+                        onSendMessage={sendMessage}
+                        placeholder={t('notebook.view.input.placeholder')}
+                        forceMultilineLayout
+                        additionalActions={addResourceAction}
+                        buttonProps={{
+                          microphone: {
+                            tooltipContent: {
+                              active: t('tooltip.microphone.active'),
+                              inactive: t('tooltip.microphone.inactive'),
+                            },
+                          },
+                          send: {
+                            tooltipContent: t('tooltip.send'),
+                          },
+                        }}
+                      />
+                    );
+                  })()}
                   <ChatbotFootnoteWithIcon label={t('footer.accuracy.label')} />
                 </ChatbotFooter>
               </div>
@@ -815,7 +937,9 @@ export const NotebookView = ({
         isOpen={isOverwriteModalOpen}
         onClose={handleOverwriteCancel}
         onConfirm={handleOverwriteConfirm}
-        fileNames={filesToOverwrite.map(f => f.name)}
+        onBack={handleOverwriteBack}
+        allFiles={allFilesForOverwrite}
+        duplicateFileNames={filesToOverwrite.map(f => f.name)}
       />
 
       <DeleteDocumentModal

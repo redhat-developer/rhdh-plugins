@@ -30,8 +30,12 @@ import {
   MenuToggle,
   TextInput,
 } from '@patternfly/react-core';
-import { EllipsisVIcon } from '@patternfly/react-icons';
-import { CatalogIcon } from '@patternfly/react-icons/dist/esm/icons';
+import {
+  CatalogIcon,
+  EllipsisVIcon,
+  PenIcon,
+  TrashIcon,
+} from '@patternfly/react-icons';
 
 import { useInlineEdit } from '../../hooks/notebooks/useInlineEdit';
 import { intelligentAssistantTranslationRef } from '../../translations/ref';
@@ -103,12 +107,22 @@ export const NotebookCard = ({
     }
   };
 
+  const count = notebook.document_count ?? 0;
+  const getDocumentCountText = () => {
+    if (count === 0) return t('notebooks.documents.none');
+    if (count === 1) return t('notebooks.documents.one');
+    return (t as Function)('notebooks.documents.other', { count });
+  };
+  const documentCountText = getDocumentCountText();
+
   return (
     <Card
       className={classes.notebookCard}
       component="div"
       tabIndex={0}
-      aria-label={t('notebooks.card.openAria' as any, { name: notebook.name })}
+      aria-label={(t as Function)('notebooks.card.openAria', {
+        name: notebook.name,
+      })}
       onClick={handleCardClick}
       onKeyDown={handleCardKeyDown}
     >
@@ -149,6 +163,7 @@ export const NotebookCard = ({
               <DropdownList className={classes.notebookDropdownList}>
                 <DropdownItem
                   className={classes.notebookDropdownItem}
+                  icon={<PenIcon />}
                   onClick={event => {
                     event.stopPropagation();
                     startEditing();
@@ -158,6 +173,7 @@ export const NotebookCard = ({
                 </DropdownItem>
                 <DropdownItem
                   className={classes.notebookDropdownItem}
+                  icon={<TrashIcon />}
                   onClick={event => {
                     event.stopPropagation();
                     onDelete(notebook.session_id);
@@ -204,9 +220,7 @@ export const NotebookCard = ({
       <CardBody className={classes.notebookCardBody}>
         <div>
           <div className={classes.notebookDocuments}>
-            <Typography variant="body2">
-              {notebook.document_count ?? 0} {t('notebooks.documents')}
-            </Typography>
+            <Typography variant="body2">{documentCountText}</Typography>
           </div>
           <div className={classes.notebookUpdated}>
             <Typography variant="caption">
