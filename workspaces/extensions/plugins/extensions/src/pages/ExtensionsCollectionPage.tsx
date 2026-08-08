@@ -43,7 +43,12 @@ const CollectionHeader = () => {
   const collectionsLink = useRouteRef(collectionsRouteRef)();
 
   return (
-    <Header title={displayName} type="Collections" typeLink={collectionsLink} />
+    <Header
+      title={displayName}
+      pageTitleOverride={displayName}
+      type="Collections"
+      typeLink={collectionsLink}
+    />
   );
 };
 

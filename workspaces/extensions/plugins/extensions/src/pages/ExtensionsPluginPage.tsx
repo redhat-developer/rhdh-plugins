@@ -35,7 +35,14 @@ const PluginHeader = () => {
   const displayName = plugin.data?.metadata.title ?? params.name;
   const pluginsLink = useRouteRef(pluginsRouteRef)();
 
-  return <Header title={displayName} type="Plugins" typeLink={pluginsLink} />;
+  return (
+    <Header
+      title={displayName}
+      pageTitleOverride={displayName}
+      type="Plugins"
+      typeLink={pluginsLink}
+    />
+  );
 };
 
 export const ExtensionsPluginPage = () => (

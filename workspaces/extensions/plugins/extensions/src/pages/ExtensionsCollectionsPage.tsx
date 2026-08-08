@@ -32,7 +32,10 @@ export const ExtensionsCollectionsPage = () => {
   return (
     <ReactQueryProvider>
       <Page themeId={themeId}>
-        <Header title={t('header.collectionsPage')} />
+        <Header
+          title={t('header.collectionsPage')}
+          pageTitleOverride={t('header.collectionsPage')}
+        />
         <Content>
           <ErrorBoundary>
             <ExtensionsCollectionsGrid />
