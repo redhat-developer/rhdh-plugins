@@ -20,6 +20,7 @@ import {
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GithubOpenPRsProvider } from './metricProviders/GithubOpenPRsProvider';
 
+/** @public */
 export const scorecardModuleGithub = createBackendModule({
   pluginId: 'scorecard',
   moduleId: 'github',
