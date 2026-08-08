@@ -143,18 +143,19 @@ export const kserveKubeflowConnectorPlugin = createBackendPlugin({
                         reconcilerConfig.serviceAccountToken = undefined;
                         reconcilerConfig.skipTLSVerify = undefined;
                         reconcilerConfig.caData = undefined;
-                      }
-
-                      // Check authProvider — warn if not serviceAccount
-                      const authProvider = safeGetOptionalString(
-                        cluster,
-                        'authProvider',
-                      );
-                      if (authProvider && authProvider !== 'serviceAccount') {
-                        logger.warn(
-                          `kubernetesPluginRef '${kubernetesPluginRef}' has authProvider '${authProvider}'; only serviceAccount is supported, proceeding with serviceAccountToken`,
+                      } else {
+                        // Check authProvider — warn if not serviceAccount
+                        const authProvider = safeGetOptionalString(
+                          cluster,
+                          'authProvider',
                         );
+                        if (authProvider && authProvider !== 'serviceAccount') {
+                          logger.warn(
+                            `kubernetesPluginRef '${kubernetesPluginRef}' has authProvider '${authProvider}'; only serviceAccount is supported, proceeding with serviceAccountToken`,
+                          );
+                        }
                       }
+                      break;
                     }
                   }
                   if (matched) break;

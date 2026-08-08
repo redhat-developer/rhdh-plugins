@@ -5,6 +5,10 @@
 #   - InferenceServices (serving.kserve.io): informer watch/list/get
 #   - Routes (route.openshift.io): catalog route discovery (OpenShift only)
 #   - ServiceAccounts (core): authentication check for InferenceService owners
+#
+# NOTE: This example uses a ClusterRole/ClusterRoleBinding for cluster-wide
+# access. If InferenceServices are confined to known namespaces, consider
+# using namespace-scoped Roles and RoleBindings instead to limit visibility.
 
 ---
 apiVersion: v1
