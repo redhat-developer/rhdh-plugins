@@ -16,3 +16,7 @@ dist-types
 
 # Coverage
 coverage
+
+# Playwright
+e2e-test-report/
+test-results/
