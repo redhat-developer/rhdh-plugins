@@ -138,6 +138,15 @@ permission:
         - name: user:development/guest
 
 extensions:
+  catalogSources:
+    primary:
+      label: Red Hat
+      description: Plugins provided and supported by Red Hat
+      badge: Red Hat
+    community:
+      label: Community
+      description: Community-maintained plugins
+      badge: Community
   # YAML files are in the examples directory
   directory: ../../examples
 

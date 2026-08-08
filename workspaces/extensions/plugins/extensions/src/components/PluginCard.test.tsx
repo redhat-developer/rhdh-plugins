@@ -16,7 +16,8 @@
 
 import { BrowserRouter } from 'react-router-dom';
 import { render, screen } from '@testing-library/react';
-import { TestApiProvider } from '@backstage/test-utils';
+import { TestApiProvider, MockConfigApi } from '@backstage/test-utils';
+import { configApiRef } from '@backstage/core-plugin-api';
 
 import {
   ExtensionsPlugin,
@@ -55,9 +56,11 @@ const mockPlugin: ExtensionsPlugin = {
   },
 };
 
+const mockConfig = new MockConfigApi({});
+
 const renderPluginCard = (plugin: ExtensionsPlugin) => {
   return render(
-    <TestApiProvider apis={[]}>
+    <TestApiProvider apis={[[configApiRef, mockConfig]]}>
       <BrowserRouter>
         <PluginCard plugin={plugin} />
       </BrowserRouter>
