@@ -94,6 +94,7 @@ const useStyles = makeStyles(theme => ({
     '& .pf-v6-c-drawer__splitter, & .pf-v5-c-drawer__splitter': {
       backgroundColor:
         'var(--pf-t--global--background--color--floating--default)',
+      borderRight: '1px solid var(--pf-t--global--border--color--default)',
     },
   },
   expandStrip: {
