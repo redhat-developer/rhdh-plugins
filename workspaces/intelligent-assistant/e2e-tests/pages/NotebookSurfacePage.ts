@@ -33,10 +33,15 @@ export const NOTEBOOK_UNTITLED_GRID_NAME = 'Untitled Notebook';
  * Same role as {@link ./LightspeedPage.ts}: shared locators/assertions keep specs short.
  */
 export class NotebookSurfacePage {
+  private readonly pluralRules: Intl.PluralRules;
+
   constructor(
     private readonly page: Page,
     private readonly t: LightspeedMessages,
-  ) {}
+    locale = 'en',
+  ) {
+    this.pluralRules = new Intl.PluralRules(locale);
+  }
 
   /**
    * Scoped to the fullscreen chatbot region that contains notebooks (list + notebook editor).
@@ -346,8 +351,9 @@ export class NotebookSurfacePage {
    * `t('notebooks.documents', { count })` with `_one`/`_other` suffixes).
    */
   formatNotebookCardDocumentsSummary(documentCount: number): string {
+    const category = this.pluralRules.select(documentCount);
     const key =
-      documentCount === 1
+      category === 'one'
         ? 'notebooks.documents_one'
         : 'notebooks.documents_other';
     return (this.t[key] as string).replace('{{count}}', String(documentCount));
