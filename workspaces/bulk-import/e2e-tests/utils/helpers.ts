@@ -76,4 +76,9 @@ export async function runAccessibilityTests(
     body: JSON.stringify(accessibilityScanResults, null, 2),
     contentType: 'application/json',
   });
+
+  expect(
+    accessibilityScanResults.violations,
+    'Accessibility violations found',
+  ).toEqual([]);
 }
