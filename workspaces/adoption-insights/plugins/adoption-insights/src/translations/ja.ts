@@ -81,6 +81,7 @@ const adoptionInsightsTranslationJa = createTranslationMessages({
     'searches.week': '週',
     'table.headers.entity': 'エンティティー',
     'table.headers.executions': '実行回数',
+    'table.headers.estTimeSaved': '推定節約時間',
     'table.headers.kind': '種類',
     'table.headers.lastUsed': '最終使用',
     'table.headers.name': '名前',
@@ -99,6 +100,9 @@ const adoptionInsightsTranslationJa = createTranslationMessages({
     'users.loggedInUsers': 'ログイン済みユーザー',
     'users.ofTotal': '/ {{total}}',
     'users.title': '総ユーザー数',
+    'units.days': '{{value}} 日',
+    'units.hours': '{{value}} 時間',
+    'units.minutes': '{{value}} 分',
     'users.tooltip': 'ライセンスユーザー数は app-config.yaml で設定します',
   },
 });

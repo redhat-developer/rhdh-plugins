@@ -42,6 +42,7 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'table.headers.lastUsed': string;
     readonly 'table.headers.views': string;
     readonly 'table.headers.executions': string;
+    readonly 'table.headers.estTimeSaved': string;
     readonly 'table.headers.trend': string;
     readonly 'table.headers.entity': string;
     readonly 'table.pagination.topN': string;
@@ -97,6 +98,9 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'common.invalidDateFormat': string;
     readonly 'common.csvFilename': string;
     readonly 'common.loading': string;
+    readonly 'units.days': string;
+    readonly 'units.hours': string;
+    readonly 'units.minutes': string;
     readonly 'permission.title': string;
     readonly 'permission.description': string;
   }

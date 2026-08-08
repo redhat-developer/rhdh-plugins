@@ -82,6 +82,7 @@ const adoptionInsightsTranslationIt = createTranslationMessages({
     'searches.week': 'settimana',
     'table.headers.entity': 'Entità',
     'table.headers.executions': 'Esecuzioni',
+    'table.headers.estTimeSaved': 'Tempo stimato risparmiato',
     'table.headers.kind': 'Tipo',
     'table.headers.lastUsed': 'Ultimo utilizzo',
     'table.headers.name': 'Nome',
@@ -100,6 +101,9 @@ const adoptionInsightsTranslationIt = createTranslationMessages({
     'users.loggedInUsers': 'Utenti loggati',
     'users.ofTotal': 'di {{totale}}',
     'users.title': 'Numero totale di utenti',
+    'units.days': '{{value}} g',
+    'units.hours': '{{value}} h',
+    'units.minutes': '{{value}} min',
     'users.tooltip':
       'Imposta il numero di utenti con licenza nel file app-config.yaml',
   },

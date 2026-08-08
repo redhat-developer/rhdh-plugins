@@ -82,6 +82,7 @@ const adoptionInsightsTranslationDe = createTranslationMessages({
     'searches.week': 'Woche',
     'table.headers.entity': 'Entity',
     'table.headers.executions': 'Ausführungen',
+    'table.headers.estTimeSaved': 'Gesch. Zeitersparnis',
     'table.headers.kind': 'Art',
     'table.headers.lastUsed': 'Zuletzt verwendet',
     'table.headers.name': 'Name',
@@ -100,8 +101,11 @@ const adoptionInsightsTranslationDe = createTranslationMessages({
     'users.loggedInUsers': 'Angemeldete Benutzer',
     'users.ofTotal': 'von {{total}}',
     'users.title': 'Gesamtzahl der Benutzer',
+    'units.days': '{{value}} T',
+    'units.hours': '{{value}} Std',
+    'units.minutes': '{{value}} Min',
     'users.tooltip':
-      'Legen Sie die Anzahl der lizenzierten Benutzer in der Datei „app-config.yaml“ fest.',
+      'Legen Sie die Anzahl der lizenzierten Benutzer in der Datei „app-config.yaml” fest.',
   },
 });
 

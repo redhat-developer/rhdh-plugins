@@ -284,10 +284,18 @@ test.describe(() => {
     await verifyPanelContainsTexts(panel, [
       translations.table.headers.name,
       translations.table.headers.executions,
+      translations.table.headers.estTimeSaved,
     ]);
 
     await panel.scrollIntoViewIfNeeded();
     await verifyTableEntries(panel, 1, 'Example Node.js Template');
+
+    const timeSavedCell = panel
+      .locator('tbody tr')
+      .first()
+      .locator('td')
+      .nth(2);
+    await expect(timeSavedCell).toBeVisible();
     await page.keyboard.press('Escape');
     const templateRow = page.getByText('Example Node.js Template');
     await templateRow.scrollIntoViewIfNeeded();
