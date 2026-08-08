@@ -196,6 +196,13 @@ export interface Config {
          * @visibility backend
          */
         skipSSLVerification?: boolean;
+        /**
+         * Timeout in seconds for AAP project sync after publish.
+         * Increase for cross-datacenter deployments where receptor mesh latency is high.
+         * Defaults to 120 if not set (convertor default).
+         * @visibility backend
+         */
+        syncTimeoutSeconds?: number;
       };
     };
   };
