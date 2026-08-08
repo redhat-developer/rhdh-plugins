@@ -81,13 +81,32 @@ const rulesAcceptanceField = FormFieldBlueprint.make({
   },
 });
 
+const adversarialAgentsPickerField = FormFieldBlueprint.make({
+  name: 'AdversarialAgentsPicker',
+  params: {
+    field: () =>
+      import('./scaffolder').then(m =>
+        createFormField({
+          name: 'AdversarialAgentsPicker',
+          component: m.AdversarialAgentsPickerFieldExtension,
+          validation: async () => {},
+        }),
+      ),
+  },
+});
+
 /**
  * The X2Ansible plugin for the new frontend system.
  * @alpha
  */
 export default createFrontendPlugin({
   pluginId: 'x2a',
-  extensions: [x2aPage, repoAuthField, rulesAcceptanceField],
+  extensions: [
+    x2aPage,
+    repoAuthField,
+    rulesAcceptanceField,
+    adversarialAgentsPickerField,
+  ],
   routes: {
     root: rootRouteRef,
   },

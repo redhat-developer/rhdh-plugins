@@ -169,6 +169,7 @@ export const PhaseDetails = (
     projectId: string;
     onRunPhase?: (phase: MigrationPhase) => void;
     onCancelPhase?: (phase: MigrationPhase) => void;
+    onRunAdversarial?: (phase: 'analyze' | 'migrate') => void;
   } & OptionalModuleId,
 ) => {
   const { t } = useTranslation();
@@ -177,7 +178,14 @@ export const PhaseDetails = (
   const empty = t('module.phases.none');
   const [showLog, setShowLog] = useState(false);
 
-  const { phase, projectId, phaseName, onRunPhase, onCancelPhase } = props;
+  const {
+    phase,
+    projectId,
+    phaseName,
+    onRunPhase,
+    onCancelPhase,
+    onRunAdversarial,
+  } = props;
   const moduleId = 'moduleId' in props ? props.moduleId : undefined;
 
   const durationSeconds = phase
@@ -246,6 +254,24 @@ export const PhaseDetails = (
             onCancelPhase={onCancelPhase}
           />
         )}
+        {onRunAdversarial &&
+          (phaseName === 'analyze' || phaseName === 'migrate') &&
+          phase?.status === 'success' && (
+            <>
+              <Button
+                variant="outlined"
+                color="default"
+                size="small"
+                disabled={!canRunPhase}
+                onClick={() => onRunAdversarial(phaseName)}
+              >
+                {t('modulePage.phases.runAdversarialReview')}
+              </Button>
+              <Typography>
+                {t('modulePage.phases.adversarialReviewInstructions')}
+              </Typography>
+            </>
+          )}
       </Grid>
 
       <Grid item xs={2}>

@@ -54,4 +54,8 @@ export interface ProjectsPostRequest {
    * UUIDs of rules the project accepts (required rules auto-appended)
    */
   acceptedRuleIds?: Array<string>;
+  /**
+   * Optional list of agent IDs to enable for this project (snapshots will be stored)
+   */
+  adversarialAgentIds?: Array<string>;
 }

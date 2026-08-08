@@ -26,6 +26,7 @@ export class ArtifactKind {
   static readonly MIGRATED_SOURCES = new ArtifactKind('migrated_sources');
   static readonly PROJECT_METADATA = new ArtifactKind('project_metadata');
   static readonly ANSIBLE_PROJECT = new ArtifactKind('ansible_project');
+  static readonly ADVERSARIAL_REPORT = new ArtifactKind('adversarial_report');
 
   private static readonly ALL = Object.freeze([
     ArtifactKind.MIGRATION_PLAN,
@@ -33,6 +34,7 @@ export class ArtifactKind {
     ArtifactKind.MIGRATED_SOURCES,
     ArtifactKind.PROJECT_METADATA,
     ArtifactKind.ANSIBLE_PROJECT,
+    ArtifactKind.ADVERSARIAL_REPORT,
   ]);
 
   private static readonly BY_VALUE = new Map<string, ArtifactKind>(

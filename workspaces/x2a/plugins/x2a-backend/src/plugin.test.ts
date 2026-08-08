@@ -153,6 +153,28 @@ const getX2aDatabaseServiceMock = (): typeof x2aDatabaseServiceRef.T => ({
   getAcceptedRulesForProject: jest
     .fn()
     .mockRejectedValue(new NotAllowedError('mock error')),
+  // adversarial agents
+  createAdversarialAgent: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  listAdversarialAgents: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  getAdversarialAgent: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  updateAdversarialAgent: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  deleteAdversarialAgent: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  attachAdversarialAgentsToProject: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
+  getAdversarialAgentsForProject: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
 });
 
 const getKubeServiceMock = () =>

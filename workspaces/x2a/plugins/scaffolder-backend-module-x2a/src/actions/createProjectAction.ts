@@ -110,6 +110,7 @@ async function handleManualCreation(params: {
     targetRepoBranch: string;
     userPrompt?: string;
     acceptedRuleIds?: string;
+    adversarialAgentIds?: string[];
   };
   secrets: Record<string, string> | undefined;
   api: DefaultApiClient;
@@ -187,6 +188,7 @@ async function handleManualCreation(params: {
     targetRepoToken,
     userPrompt: input.userPrompt,
     acceptedRuleIds,
+    adversarialAgentIds: input.adversarialAgentIds,
     backstageToken: token,
     hostProviderMap,
     logger,
@@ -365,6 +367,12 @@ export function createProjectAction(
                 description: 'JSON-stringified array of accepted rule UUIDs',
               })
               .optional(),
+            adversarialAgentIds: z
+              .array(z.string(), {
+                description:
+                  'UUIDs of adversarial agents to attach to the project',
+              })
+              .optional(),
             csvContent: z.string().optional(),
           }),
           z.object({
@@ -397,6 +405,7 @@ export function createProjectAction(
             targetRepoUrl: z.string().optional(),
             targetRepoBranch: z.string().optional(),
             acceptedRuleIds: z.string().optional(),
+            adversarialAgentIds: z.array(z.string()).optional(),
           }),
         ]),
       output: {

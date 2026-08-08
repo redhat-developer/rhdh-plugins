@@ -24,6 +24,7 @@ import {
   MigrationPhase,
   SourceTechnology,
   Telemetry,
+  AdversarialAgentSnapshot,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 export function mapRowToProject(row: Record<string, unknown>): Project {
@@ -39,12 +40,28 @@ export function mapRowToProject(row: Record<string, unknown>): Project {
     createdAt: new Date(row.created_at as string | Date),
     dirName: (row.dir_name as string) || undefined,
     acceptedRules: parseAcceptedRules(row.accepted_rules as string | undefined),
+    adversarialAgents: parseAdversarialAgents(
+      row.adversarial_agents as string | undefined,
+    ),
   };
 }
 
 function parseAcceptedRules(
   raw: string | undefined,
 ): Array<{ id: string; title: string; description: string }> | undefined {
+  if (!raw) {
+    return undefined;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return undefined;
+  }
+}
+
+function parseAdversarialAgents(
+  raw: string | undefined,
+): AdversarialAgentSnapshot[] | undefined {
   if (!raw) {
     return undefined;
   }

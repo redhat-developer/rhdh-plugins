@@ -108,6 +108,8 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'module.phases.analyze': 'Analizar',
     'module.phases.migrate': 'Migrar',
     'module.phases.publish': 'Publicar',
+    'module.phases.adversarial-analyze': 'Análisis Adversarial',
+    'module.phases.adversarial-migrate': 'Migración Adversarial',
     'module.summary.total': 'Total',
     'module.summary.finished': 'Finalizado',
     'module.summary.waiting': 'En espera',
@@ -325,6 +327,81 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'rulesPage.dialog.cancel': 'Cancelar',
     'rulesPage.dialog.createError': 'Error al crear la regla',
     'rulesPage.dialog.updateError': 'Error al actualizar la regla',
+    'createProjectPage.adversarialAgents.loading':
+      'Cargando agentes adversariales...',
+    'createProjectPage.adversarialAgents.title': 'Agentes Adversariales',
+    'createProjectPage.adversarialAgents.subtitle':
+      'Seleccione agentes de IA para revisar los resultados de migración en busca de problemas de seguridad, brechas funcionales y corrección',
+    'createProjectPage.adversarialAgents.placeholder': 'Elegir agentes…',
+    'createProjectPage.adversarialAgents.selected': 'seleccionado',
+    'createProjectPage.adversarialAgents.noAgentsAvailable':
+      'No hay agentes adversariales disponibles. Cree agentes en la página de Agentes Adversariales.',
+    'createProjectPage.adversarialAgents.loadingError':
+      'Error al cargar los agentes adversariales',
+    'createProjectPage.adversarialAgents.tooltip':
+      'Los agentes adversariales revisan los resultados de migración en busca de problemas de seguridad, brechas funcionales y problemas de corrección',
+    'modulePage.phases.runAdversarialReview': 'Ejecutar revisión adversarial',
+    'modulePage.phases.adversarialReview': 'Revisión Adversarial',
+    'modulePage.phases.adversarialReviewInstructions':
+      'Ejecute los agentes adversariales configurados contra la salida de la fase. Los agentes escribirán un informe en el repositorio de destino.',
+    'modulePage.phases.adversarialRunError':
+      'Error al iniciar la revisión adversarial',
+    'artifact.types.adversarial_report': 'Informe Adversarial',
+    'adversarialAgentsPage.title': 'Agentes Adversariales',
+    'adversarialAgentsPage.subtitle':
+      'Gestione agentes de IA que revisan los resultados de migración en busca de problemas de seguridad, brechas funcionales y corrección.',
+    'adversarialAgentsPage.manageAdversarialAgents':
+      'Gestionar agentes adversariales',
+    'adversarialAgentsPage.addAgent': 'Agregar agente',
+    'adversarialAgentsPage.notAllowed':
+      'No tiene permiso para gestionar agentes adversariales.',
+    'adversarialAgentsPage.table.name': 'Nombre',
+    'adversarialAgentsPage.table.prompt': 'Prompt',
+    'adversarialAgentsPage.table.phases': 'Fases',
+    'adversarialAgentsPage.table.severity': 'Gravedad',
+    'adversarialAgentsPage.table.critical': 'Crítico',
+    'adversarialAgentsPage.table.warning': 'Advertencia',
+    'adversarialAgentsPage.table.createdAt': 'Creado',
+    'adversarialAgentsPage.table.createdBy': 'Creado por',
+    'adversarialAgentsPage.table.editAgent': 'Editar agente',
+    'adversarialAgentsPage.table.deleteAgent': 'Eliminar agente',
+    'adversarialAgentsPage.table.noAgents':
+      'Aún no hay agentes adversariales definidos.',
+    'adversarialAgentsPage.table.fetchError':
+      'Error al obtener los agentes adversariales',
+    'adversarialAgentsPage.deleteConfirm.title': '¿Eliminar agente "{{name}}"?',
+    'adversarialAgentsPage.deleteConfirm.message':
+      'Esta acción no se puede deshacer.',
+    'adversarialAgentsPage.deleteConfirm.confirm': 'Eliminar',
+    'adversarialAgentsPage.deleteConfirm.cancel': 'Cancelar',
+    'adversarialAgentsPage.deleteConfirm.deleteError':
+      'Error al eliminar el agente',
+    'adversarialAgentsPage.dialog.createTitle': 'Crear agente adversarial',
+    'adversarialAgentsPage.dialog.editTitle': 'Editar agente adversarial',
+    'adversarialAgentsPage.dialog.nameField': 'Nombre',
+    'adversarialAgentsPage.dialog.namePlaceholder':
+      'p.ej., Verificación de escalada de privilegios',
+    'adversarialAgentsPage.dialog.promptField': 'Prompt',
+    'adversarialAgentsPage.dialog.promptPlaceholder':
+      'Describa qué debe verificar este agente...',
+    'adversarialAgentsPage.dialog.promptHelper':
+      'Sea específico sobre qué buscar y cómo reportar los hallazgos (50-5000 caracteres)',
+    'adversarialAgentsPage.dialog.phasesField': 'Fases del flujo de trabajo',
+    'adversarialAgentsPage.dialog.phasesHelper':
+      'Seleccione en qué fases del flujo de trabajo se ejecuta este agente',
+    'adversarialAgentsPage.dialog.phaseAnalyze': 'Analizar',
+    'adversarialAgentsPage.dialog.phaseMigrate': 'Migrar',
+    'adversarialAgentsPage.dialog.criticalField': 'Agente crítico',
+    'adversarialAgentsPage.dialog.criticalHelper':
+      'Los agentes críticos producen hallazgos de gravedad crítica; los agentes no críticos producen advertencias',
+    'adversarialAgentsPage.dialog.nameValidation':
+      'El nombre debe tener entre 3 y 100 caracteres',
+    'adversarialAgentsPage.dialog.phasesValidation':
+      'Se requiere al menos una fase',
+    'adversarialAgentsPage.dialog.save': 'Guardar',
+    'adversarialAgentsPage.dialog.cancel': 'Cancelar',
+    'adversarialAgentsPage.dialog.createError': 'Error al crear el agente',
+    'adversarialAgentsPage.dialog.updateError': 'Error al actualizar el agente',
   },
 });
 
