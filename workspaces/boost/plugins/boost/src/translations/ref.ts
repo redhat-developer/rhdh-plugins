@@ -37,6 +37,12 @@ export const boostMessages = {
     },
     card: {
       summaryTitle: 'Summary',
+      summaryCategory: 'Category',
+      summaryVersion: 'Version',
+      summarySource: 'Source',
+      summaryLifecycle: 'Lifecycle',
+      summaryLifecycleProduction: 'Production',
+      summaryLifecycleExperimental: 'Experimental',
       adoptionTitle: 'Get Started',
       versionTitle: 'Versions',
       versionCurrent: 'current',
