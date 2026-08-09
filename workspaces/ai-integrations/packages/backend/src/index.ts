@@ -89,6 +89,11 @@ backend.add(
 );
 backend.add(
   import(
+    '@redh-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server'
+  );
+);
+backend.add(
+  import(
     '@red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend'
   ),
 );

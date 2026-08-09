@@ -122,6 +122,10 @@ catalog:
       target: ../../examples/ai-resource-agents.yaml
       rules:
         - allow: [AiResource]
+      type: file
+      target: ../../examples/ai-model-server-api.yaml
+      rules:
+          allow: [AiModelServerAPI]
   providers:
     modelCatalog:
       # The field underneath should list the connector plugin ID that the entity provider accesses through
