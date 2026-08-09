@@ -16,6 +16,122 @@ export interface AAPCredentials {
 }
 
 // @public
+export interface AdversarialAgent {
+  createdAt: Date;
+  createdBy: string;
+  critical: boolean;
+  id: string;
+  name: string;
+  phases: Array<AdversarialAgentPhasesEnum>;
+  prompt: string;
+  updatedAt: Date;
+}
+
+// @public (undocumented)
+export class AdversarialAgentEntity {
+  constructor(
+    id: string,
+    name: string,
+    prompt: string,
+    phases: string[],
+    critical: boolean,
+    createdBy: string,
+    createdAt: Date,
+    updatedAt: Date,
+  );
+  // (undocumented)
+  readonly createdAt: Date;
+  // (undocumented)
+  readonly createdBy: string;
+  // (undocumented)
+  readonly critical: boolean;
+  // (undocumented)
+  equals(other: AdversarialAgentEntity): boolean;
+  // (undocumented)
+  static fromJSON(json: unknown): AdversarialAgentEntity;
+  // (undocumented)
+  static fromRow(row: Record<string, unknown>): AdversarialAgentEntity;
+  // (undocumented)
+  readonly id: string;
+  // (undocumented)
+  readonly name: string;
+  // (undocumented)
+  readonly phases: string[];
+  // (undocumented)
+  readonly prompt: string;
+  // (undocumented)
+  toSnapshot(): AdversarialAgentSnapshot;
+  // (undocumented)
+  toString(): string;
+  // (undocumented)
+  readonly updatedAt: Date;
+}
+
+// @public (undocumented)
+export type AdversarialAgentPhasesEnum = 'analyze' | 'migrate';
+
+// @public (undocumented)
+export type AdversarialAgentsGet = {
+  query: {
+    phase?: 'analyze' | 'migrate';
+  };
+};
+
+// @public (undocumented)
+export interface AdversarialAgentsGet200Response {
+  // (undocumented)
+  agents?: Array<AdversarialAgent>;
+  total?: number;
+}
+
+// @public (undocumented)
+export type AdversarialAgentsIdDelete = {
+  path: {
+    id: string;
+  };
+};
+
+// @public (undocumented)
+export type AdversarialAgentsIdGet = {
+  path: {
+    id: string;
+  };
+};
+
+// @public (undocumented)
+export type AdversarialAgentsIdPut = {
+  path: {
+    id: string;
+  };
+  body: AdversarialAgentsPostRequest;
+};
+
+// @public
+export interface AdversarialAgentSnapshot {
+  critical: boolean;
+  id: string;
+  name: string;
+  phases: Array<string>;
+  prompt: string;
+}
+
+// @public (undocumented)
+export type AdversarialAgentsPost = {
+  body: AdversarialAgentsPostRequest;
+};
+
+// @public (undocumented)
+export interface AdversarialAgentsPostRequest {
+  critical: boolean;
+  name: string;
+  phases: Array<AdversarialAgentsPostRequestPhasesEnum>;
+  prompt: string;
+}
+
+// @public (undocumented)
+export type AdversarialAgentsPostRequestPhasesEnum = 'analyze' | 'migrate';
+
+// @public
 export interface AgentMetrics {
   durationSeconds: number;
   endedAt?: Date;
@@ -44,6 +160,8 @@ export interface Artifact {
 
 // @public (undocumented)
 export class ArtifactKind {
+  // (undocumented)
+  static readonly ADVERSARIAL_REPORT: ArtifactKind;
   // (undocumented)
   static all(): readonly ArtifactKind[];
   // (undocumented)
@@ -84,7 +202,8 @@ export type ArtifactType =
   | 'module_migration_plan'
   | 'migrated_sources'
   | 'project_metadata'
-  | 'ansible_project';
+  | 'ansible_project'
+  | 'adversarial_report';
 
 // @public
 export interface AuthToken {
@@ -132,6 +251,26 @@ export class DefaultApiClient {
       fetch: typeof fetch;
     };
   });
+  adversarialAgentsGet(
+    request: AdversarialAgentsGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<AdversarialAgentsGet200Response>>;
+  adversarialAgentsIdDelete(
+    request: AdversarialAgentsIdDelete,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<void>>;
+  adversarialAgentsIdGet(
+    request: AdversarialAgentsIdGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<AdversarialAgent>>;
+  adversarialAgentsIdPut(
+    request: AdversarialAgentsIdPut,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<AdversarialAgent>>;
+  adversarialAgentsPost(
+    request: AdversarialAgentsPost,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<AdversarialAgent>>;
   projectsGet(
     request: ProjectsGet,
     options?: RequestOptions,
@@ -140,6 +279,10 @@ export class DefaultApiClient {
     request: ProjectsPost,
     options?: RequestOptions,
   ): Promise<TypedResponse<Project>>;
+  projectsProjectIdAdversarialRunPost(
+    request: ProjectsProjectIdAdversarialRunPost,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<ProjectsProjectIdAdversarialRunPost202Response>>;
   projectsProjectIdCollectArtifactsPost(
     request: ProjectsProjectIdCollectArtifactsPost,
     options?: RequestOptions,
@@ -318,10 +461,20 @@ export const MAX_BACKOFF_MS: number;
 export const MAX_CONCURRENT_BULK_RUN = 3;
 
 // @public (undocumented)
-export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
+export type MigrationPhase =
+  | 'init'
+  | 'analyze'
+  | 'migrate'
+  | 'publish'
+  | 'adversarial-analyze'
+  | 'adversarial-migrate';
 
 // @public (undocumented)
 export interface Module {
+  // (undocumented)
+  adversarialAnalyze?: Job;
+  // (undocumented)
+  adversarialMigrate?: Job;
   // (undocumented)
   analyze?: Job;
   errorDetails?: string;
@@ -378,6 +531,14 @@ export function parseCsvContent(dataUrl: string): CsvProjectRow[];
 // @public (undocumented)
 export class Phase {
   // (undocumented)
+  static readonly ADVERSARIAL_ANALYZE: Phase;
+  // (undocumented)
+  static readonly ADVERSARIAL_MIGRATE: Phase;
+  // (undocumented)
+  static adversarialAgentPhaseValues(): readonly ('analyze' | 'migrate')[];
+  // (undocumented)
+  static adversarialPhases(): readonly Phase[];
+  // (undocumented)
   static all(): readonly Phase[];
   // (undocumented)
   static readonly ANALYZE: Phase;
@@ -415,6 +576,7 @@ export const POLLING_INTERVAL_MS: number;
 // @public (undocumented)
 export interface Project {
   acceptedRules?: Array<RuleSnapshot>;
+  adversarialAgents?: Array<AdversarialAgentSnapshot>;
   createdAt: Date;
   description?: string;
   dirName?: string;
@@ -460,6 +622,7 @@ export type ProjectsPost = {
 // @public (undocumented)
 export interface ProjectsPostRequest {
   acceptedRuleIds?: Array<string>;
+  adversarialAgentIds?: Array<string>;
   description: string;
   name: string;
   ownedByGroup?: string;
@@ -468,6 +631,33 @@ export interface ProjectsPostRequest {
   targetRepoBranch: string;
   targetRepoUrl: string;
 }
+
+// @public (undocumented)
+export type ProjectsProjectIdAdversarialRunPost = {
+  path: {
+    projectId: string;
+  };
+  body: ProjectsProjectIdAdversarialRunPostRequest;
+};
+
+// @public (undocumented)
+export interface ProjectsProjectIdAdversarialRunPost202Response {
+  jobId: string;
+  k8sJobName: string;
+}
+
+// @public (undocumented)
+export interface ProjectsProjectIdAdversarialRunPostRequest {
+  moduleId: string;
+  phase: ProjectsProjectIdAdversarialRunPostRequestPhaseEnum;
+  // (undocumented)
+  targetRepoAuth: GitRepoAuth;
+}
+
+// @public (undocumented)
+export type ProjectsProjectIdAdversarialRunPostRequestPhaseEnum =
+  | 'analyze'
+  | 'migrate';
 
 // @public (undocumented)
 export type ProjectsProjectIdCollectArtifactsPost = {
@@ -572,7 +762,7 @@ export type ProjectsProjectIdModulesModuleIdLogGet = {
   };
   query: {
     streaming?: boolean;
-    phase: ModulePhase;
+    phase: MigrationPhase;
   };
 };
 
@@ -881,6 +1071,7 @@ export const X2A_ARTIFACT_TYPE_VALUES: readonly [
   'migration_plan',
   'module_migration_plan',
   'migrated_sources',
+  'adversarial_report',
   'project_metadata',
   'ansible_project',
 ];

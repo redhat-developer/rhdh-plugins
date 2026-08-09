@@ -13,6 +13,12 @@ import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public (undocumented)
+export const AdversarialAgentsPickerExtension: FieldExtensionComponent<
+  string[],
+  {}
+>;
+
+// @public (undocumented)
 export const RepoAuthenticationExtension: FieldExtensionComponent<string, {}>;
 
 // @public (undocumented)
@@ -85,6 +91,14 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'projectPage.deleteConfirm.cancel': string;
     readonly 'projectPage.deleteConfirm.confirm': string;
     readonly 'projectTable.deleteError': string;
+    readonly 'createProjectPage.adversarialAgents.title': string;
+    readonly 'createProjectPage.adversarialAgents.loading': string;
+    readonly 'createProjectPage.adversarialAgents.placeholder': string;
+    readonly 'createProjectPage.adversarialAgents.selected': string;
+    readonly 'createProjectPage.adversarialAgents.tooltip': string;
+    readonly 'createProjectPage.adversarialAgents.subtitle': string;
+    readonly 'createProjectPage.adversarialAgents.noAgentsAvailable': string;
+    readonly 'createProjectPage.adversarialAgents.loadingError': string;
     readonly 'projectDetailsCard.title': string;
     readonly 'projectDetailsCard.name': string;
     readonly 'projectDetailsCard.dirName': string;
@@ -143,7 +157,11 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'modulePage.phases.runPublish': string;
     readonly 'modulePage.phases.republishInstructions': string;
     readonly 'modulePage.phases.rerunPublish': string;
+    readonly 'modulePage.phases.runAdversarialReview': string;
+    readonly 'modulePage.phases.adversarialReview': string;
+    readonly 'modulePage.phases.adversarialReviewInstructions': string;
     readonly 'modulePage.phases.runError': string;
+    readonly 'modulePage.phases.adversarialRunError': string;
     readonly 'modulePage.phases.cancelError': string;
     readonly 'modulePage.phases.attempts': string;
     readonly 'modulePage.phases.totalElapsed': string;
@@ -225,6 +243,8 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'module.phases.analyze': string;
     readonly 'module.phases.migrate': string;
     readonly 'module.phases.publish': string;
+    readonly 'module.phases.adversarial-analyze': string;
+    readonly 'module.phases.adversarial-migrate': string;
     readonly 'module.statuses.error': string;
     readonly 'module.statuses.none': string;
     readonly 'module.statuses.pending': string;
@@ -253,6 +273,7 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'artifact.types.migrated_sources': string;
     readonly 'artifact.types.ansible_project': string;
     readonly 'artifact.types.project_metadata': string;
+    readonly 'artifact.types.adversarial_report': string;
     readonly 'scaffolder.rulesAcceptance.required': string;
     readonly 'scaffolder.rulesAcceptance.loadingRules': string;
     readonly 'scaffolder.rulesAcceptance.noRulesConfigured': string;
@@ -285,6 +306,47 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'rulesPage.addRule': string;
     readonly 'rulesPage.manageRules': string;
     readonly 'rulesPage.notAllowed': string;
+    readonly 'adversarialAgentsPage.dialog.cancel': string;
+    readonly 'adversarialAgentsPage.dialog.updateError': string;
+    readonly 'adversarialAgentsPage.dialog.createTitle': string;
+    readonly 'adversarialAgentsPage.dialog.editTitle': string;
+    readonly 'adversarialAgentsPage.dialog.save': string;
+    readonly 'adversarialAgentsPage.dialog.createError': string;
+    readonly 'adversarialAgentsPage.dialog.nameField': string;
+    readonly 'adversarialAgentsPage.dialog.namePlaceholder': string;
+    readonly 'adversarialAgentsPage.dialog.promptField': string;
+    readonly 'adversarialAgentsPage.dialog.promptPlaceholder': string;
+    readonly 'adversarialAgentsPage.dialog.promptHelper': string;
+    readonly 'adversarialAgentsPage.dialog.phasesField': string;
+    readonly 'adversarialAgentsPage.dialog.phasesHelper': string;
+    readonly 'adversarialAgentsPage.dialog.phaseAnalyze': string;
+    readonly 'adversarialAgentsPage.dialog.phaseMigrate': string;
+    readonly 'adversarialAgentsPage.dialog.criticalField': string;
+    readonly 'adversarialAgentsPage.dialog.criticalHelper': string;
+    readonly 'adversarialAgentsPage.dialog.nameValidation': string;
+    readonly 'adversarialAgentsPage.dialog.phasesValidation': string;
+    readonly 'adversarialAgentsPage.table.name': string;
+    readonly 'adversarialAgentsPage.table.phases': string;
+    readonly 'adversarialAgentsPage.table.createdAt': string;
+    readonly 'adversarialAgentsPage.table.warning': string;
+    readonly 'adversarialAgentsPage.table.fetchError': string;
+    readonly 'adversarialAgentsPage.table.prompt': string;
+    readonly 'adversarialAgentsPage.table.severity': string;
+    readonly 'adversarialAgentsPage.table.critical': string;
+    readonly 'adversarialAgentsPage.table.createdBy': string;
+    readonly 'adversarialAgentsPage.table.editAgent': string;
+    readonly 'adversarialAgentsPage.table.deleteAgent': string;
+    readonly 'adversarialAgentsPage.table.noAgents': string;
+    readonly 'adversarialAgentsPage.title': string;
+    readonly 'adversarialAgentsPage.subtitle': string;
+    readonly 'adversarialAgentsPage.deleteConfirm.title': string;
+    readonly 'adversarialAgentsPage.deleteConfirm.deleteError': string;
+    readonly 'adversarialAgentsPage.deleteConfirm.message': string;
+    readonly 'adversarialAgentsPage.deleteConfirm.cancel': string;
+    readonly 'adversarialAgentsPage.deleteConfirm.confirm': string;
+    readonly 'adversarialAgentsPage.notAllowed': string;
+    readonly 'adversarialAgentsPage.manageAdversarialAgents': string;
+    readonly 'adversarialAgentsPage.addAgent': string;
     readonly empty: string;
   }
 >;
