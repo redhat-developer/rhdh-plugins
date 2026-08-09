@@ -169,7 +169,20 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
       onBehalfOf: await this.auth.getOwnServiceCredentials(),
       targetPluginId: this.name,
     });
-    let catalogKeys = await fetchModelCatalogKeys(url, backendToken);
+    let catalogKeys: string[];
+    try {
+      catalogKeys = await fetchModelCatalogKeys(url, backendToken);
+    } catch (error) {
+      // 404 is expected during startup — the connector plugin hasn't
+      // registered its routes yet. The scheduler will retry.
+      if (isError(error) && error.message === 'Not Found') {
+        this.logger.debug(
+          `Connector plugin '${this.name}' not ready yet (404); will retry on next schedule`,
+        );
+        return;
+      }
+      throw error;
+    }
     // If no models are registered yet, the catalogKeys array may be null, so handle it by setting it to be an emptyList
     if (catalogKeys === null || catalogKeys === undefined) {
       catalogKeys = [];
