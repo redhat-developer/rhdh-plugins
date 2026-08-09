@@ -1,0 +1,197 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import html2canvas from 'html2canvas-pro';
+
+import { sanitizeClonedDom } from './sensitive-data-redactor';
+
+const DEFAULT_QUALITY = 0.7;
+const DEFAULT_MAX_WIDTH = 1280;
+const DEFAULT_TIMEOUT_MS = 3000;
+const DEFAULT_EXCLUDE_SELECTOR = '[data-screen-capture-exclude]';
+
+export interface CaptureOptions {
+  /** Image quality 0-1 (default: 0.7) */
+  quality?: number;
+  /** CSS selector for elements to exclude (default: '[data-screen-capture-exclude]') */
+  excludeSelector?: string;
+  /** Max output width in pixels for compression (default: 1280) */
+  maxWidth?: number;
+  /** Maximum time allowed for capture in ms (default: 3000) */
+  timeoutMs?: number;
+}
+
+export interface CaptureResult {
+  success: true;
+  /** Base64-encoded image without the data URI prefix */
+  base64: string;
+  /** MIME type: 'image/webp' or 'image/jpeg' */
+  contentType: string;
+  width: number;
+  height: number;
+  /** Time taken for the capture in milliseconds */
+  captureTimeMs: number;
+}
+
+export interface CaptureError {
+  success: false;
+  error: string;
+}
+
+export type CaptureResponse = CaptureResult | CaptureError;
+
+function stripDataUriPrefix(dataUri: string): string {
+  const commaIdx = dataUri.indexOf(',');
+  return commaIdx !== -1 ? dataUri.slice(commaIdx + 1) : dataUri;
+}
+
+function waitForIdle(): Promise<void> {
+  return new Promise(resolve => {
+    if ('requestIdleCallback' in window) {
+      (window as Window).requestIdleCallback(() => resolve(), { timeout: 100 });
+    } else {
+      setTimeout(resolve, 0);
+    }
+  });
+}
+
+function scaleCanvas(
+  canvas: HTMLCanvasElement,
+  maxWidth: number,
+): HTMLCanvasElement {
+  if (canvas.width <= maxWidth) {
+    return canvas;
+  }
+
+  const scaleFactor = maxWidth / canvas.width;
+  const scaledWidth = maxWidth;
+  const scaledHeight = Math.round(canvas.height * scaleFactor);
+
+  const scaledCanvas = document.createElement('canvas');
+  scaledCanvas.width = scaledWidth;
+  scaledCanvas.height = scaledHeight;
+
+  const ctx = scaledCanvas.getContext('2d');
+  if (ctx) {
+    ctx.drawImage(canvas, 0, 0, scaledWidth, scaledHeight);
+  }
+
+  return scaledCanvas;
+}
+
+function negotiateFormat(
+  canvas: HTMLCanvasElement,
+  quality: number,
+): { dataUri: string; contentType: string } {
+  const webpDataUri = canvas.toDataURL('image/webp', quality);
+  if (webpDataUri.startsWith('data:image/webp')) {
+    return { dataUri: webpDataUri, contentType: 'image/webp' };
+  }
+  const jpegDataUri = canvas.toDataURL('image/jpeg', quality);
+  return { dataUri: jpegDataUri, contentType: 'image/jpeg' };
+}
+
+async function doCapture(
+  options: Required<CaptureOptions>,
+): Promise<CaptureResponse> {
+  const targetElement = document.querySelector('#root');
+  if (!targetElement) {
+    return { success: false, error: 'Root element (#root) not found' };
+  }
+
+  const start = window.performance.now();
+
+  const canvas = await html2canvas(targetElement as HTMLElement, {
+    useCORS: true,
+    allowTaint: false,
+    logging: false,
+    onclone: (clonedDocument: Document) => {
+      sanitizeClonedDom(clonedDocument);
+    },
+    ignoreElements: (element: Element) => {
+      if (element.hasAttribute('data-screen-capture-exclude')) {
+        return true;
+      }
+      if (element.classList.contains('pf-chatbot')) {
+        return true;
+      }
+      const selector = options.excludeSelector;
+      if (selector !== DEFAULT_EXCLUDE_SELECTOR && element.matches(selector)) {
+        return true;
+      }
+      return false;
+    },
+  });
+
+  const scaledCanvas = scaleCanvas(canvas, options.maxWidth);
+  const { dataUri, contentType } = negotiateFormat(
+    scaledCanvas,
+    options.quality,
+  );
+
+  const captureTimeMs = Math.round(window.performance.now() - start);
+
+  return {
+    success: true,
+    base64: stripDataUriPrefix(dataUri),
+    contentType,
+    width: scaledCanvas.width,
+    height: scaledCanvas.height,
+    captureTimeMs,
+  };
+}
+
+/**
+ * Captures a screenshot of the current RHDH viewport, excluding the
+ * Lightspeed chat panel and redacting sensitive data.
+ *
+ * Uses WebP format when the browser supports it, falling back to JPEG.
+ * Includes performance guardrails: visibility check, idle deferral, and timeout.
+ */
+export async function captureScreenshot(
+  options?: CaptureOptions,
+): Promise<CaptureResponse> {
+  if (document.visibilityState === 'hidden') {
+    return { success: false, error: 'Tab not visible' };
+  }
+
+  await waitForIdle();
+
+  const resolvedOptions: Required<CaptureOptions> = {
+    quality: options?.quality ?? DEFAULT_QUALITY,
+    excludeSelector: options?.excludeSelector ?? DEFAULT_EXCLUDE_SELECTOR,
+    maxWidth: options?.maxWidth ?? DEFAULT_MAX_WIDTH,
+    timeoutMs: options?.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+  };
+
+  try {
+    const result = await Promise.race<CaptureResponse>([
+      doCapture(resolvedOptions),
+      new Promise<CaptureError>(resolve =>
+        setTimeout(
+          () => resolve({ success: false, error: 'Capture timeout exceeded' }),
+          resolvedOptions.timeoutMs,
+        ),
+      ),
+    ]);
+    return result;
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Unknown capture error',
+    };
+  }
+}

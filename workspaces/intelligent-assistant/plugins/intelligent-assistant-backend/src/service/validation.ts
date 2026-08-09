@@ -25,6 +25,9 @@ import {
 import { Attachments, QueryRequestBody } from './types';
 
 const JPEG_MAGIC = [0xff, 0xd8, 0xff];
+const WEBP_RIFF = [0x52, 0x49, 0x46, 0x46]; // "RIFF"
+const WEBP_MARKER = [0x57, 0x45, 0x42, 0x50]; // "WEBP" at offset 8
+const WEBP_MIN_BYTES = 12;
 
 function extractBase64(content: string): string {
   const commaIndex = content.indexOf(',');
@@ -34,12 +37,25 @@ function extractBase64(content: string): string {
   return content;
 }
 
-function hasValidJpegMagicBytes(content: string): boolean {
+function hasValidImageMagicBytes(content: string): boolean {
   const bytes = Buffer.from(extractBase64(content), 'base64');
-  return (
+
+  if (
     bytes.length >= JPEG_MAGIC.length &&
     JPEG_MAGIC.every((b, i) => bytes[i] === b)
-  );
+  ) {
+    return true;
+  }
+
+  if (
+    bytes.length >= WEBP_MIN_BYTES &&
+    WEBP_RIFF.every((b, i) => bytes[i] === b) &&
+    WEBP_MARKER.every((b, i) => bytes[i + 8] === b)
+  ) {
+    return true;
+  }
+
+  return false;
 }
 
 function isValidJson(content: string): boolean {
@@ -68,9 +84,9 @@ function validateAttachments(attachments: Array<Attachments>): string | null {
     if (
       attachment.attachment_type === 'image' &&
       attachment.content &&
-      !hasValidJpegMagicBytes(attachment.content)
+      !hasValidImageMagicBytes(attachment.content)
     ) {
-      return 'Image attachment does not contain a valid JPEG file';
+      return 'Image attachment does not contain a valid image file (JPEG or WebP)';
     }
 
     if (
@@ -179,7 +195,7 @@ export const validateAttachmentsForModel = (
   if (!supportsVision) {
     return res.status(400).json({
       error:
-        'This model does not support JPEG images. Please select a vision-capable model.',
+        'This model does not support images. Please select a vision-capable model.',
       model,
     });
   }
