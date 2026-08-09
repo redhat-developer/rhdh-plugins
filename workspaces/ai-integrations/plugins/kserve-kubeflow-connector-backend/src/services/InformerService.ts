@@ -568,6 +568,11 @@ export const setupInformer = async (
   const clusterName = config.clusterName || 'target-cluster';
 
   if (config.url && config.serviceAccountToken) {
+    if (config.skipTLSVerify) {
+      logger.warn(
+        `skipTLSVerify is enabled for cluster '${clusterName}' — TLS certificate validation is disabled, exposing the service account token to MITM interception`,
+      );
+    }
     logger.info(
       `Building KubeConfig from app-config fields for cluster '${clusterName}' at ${config.url}`,
     );
