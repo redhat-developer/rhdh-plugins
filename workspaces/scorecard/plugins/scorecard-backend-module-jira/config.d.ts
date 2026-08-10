@@ -35,25 +35,6 @@ export interface Config {
   };
   /** Configuration for scorecard plugin */
   scorecard?: {
-    /**
-     * Plugin-level settings.
-     */
-    plugins?: {
-      jira?: {
-        collectors?: {
-          incidents?: {
-            options?: {
-              /**
-               * Jira issue type used by the `jira:incidents` collector.
-               * Defaults to `Incident`. Overridden by entity annotation
-               * `jira/incident-issue-type` when set.
-               */
-              issueType?: string;
-            };
-          };
-        };
-      };
-    };
     /** Metric providers calculate one or more metrics on a schedule. */
     metricProviders?: {
       /** JIRA datasource configuration */

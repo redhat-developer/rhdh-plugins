@@ -56,7 +56,7 @@ Optional incident-only filters:
 - `jira/incident-label`
 - `jira/incident-team`
 - `jira/incident-custom-filter`
-- `jira/incident-issue-type` (overrides app-config `scorecard.plugins.jira.collectors.incidents.options.issueType`; default issue type is `Incident`)
+- `jira/incident-issue-type` (overrides app-config `scorecard.metricProviders.dora.meanTimeToRestore.options.collectors.incidents.input.issueType`; default issue type is `Incident`)
 
 #### Incidents collector contract
 
@@ -91,7 +91,12 @@ scorecard:
           collectors:
             incidents:
               id: jira:incidents
+              # Optional: override default Incident issue type
+              # input:
+              #   issueType: ServiceIncident
 ```
+
+For more details about the `jira:incidents` collector, see the [scorecard-backend-module-jira README](../../../scorecard-backend-module-jira/README.md).
 
 ### Use custom incidents collector
 

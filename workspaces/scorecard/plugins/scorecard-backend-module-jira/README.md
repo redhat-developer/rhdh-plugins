@@ -84,14 +84,6 @@ Options define configuration that affect fetch jira issues global configuration,
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
-    jira:
-      collectors:
-        incidents:
-          options:
-            # Optional: Jira issue type for jira:incidents (default: Incident).
-            # Overridden by entity annotation jira/incident-issue-type when set.
-            issueType: Incident
   metricProviders:
     jira:
       # Scorecard-owned Jira datasource settings (auth stays under top-level jira:)
@@ -212,6 +204,7 @@ Collectors in Scorecard are schema-validated at runtime. Any custom collector re
 - **Input schema**
   - `from: string` (ISO datetime)
   - `to: string` (ISO datetime)
+  - `issueType?: string` (optional; default `Incident`)
 - **Output schema**
   - `incidents: Array<{ id: string; createdAt: string; resolutionAt: string | null }>`
 - **Annotation requirements**
@@ -223,7 +216,7 @@ Collectors in Scorecard are schema-validated at runtime. Any custom collector re
     - `jira/incident-label`
     - `jira/incident-team`
     - `jira/incident-custom-filter`
-    - `jira/incident-issue-type` (overrides app-config `issueType` when set)
+    - `jira/incident-issue-type` (overrides app-config `input.issueType` when set)
 - **Behavior**
   - Collects Jira issues matching the configured issue type (default `Incident`)
   - Does not apply the open-issues `mandatoryFilter` / global `customFilter` from app-config

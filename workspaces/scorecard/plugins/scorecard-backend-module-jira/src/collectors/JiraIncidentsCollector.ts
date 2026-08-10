@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import type { Collector } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { z } from 'zod';
@@ -24,10 +23,6 @@ import {
   ScorecardJiraAnnotations,
 } from '../annotations';
 import { JiraClient } from '../clients/base';
-import {
-  parseJiraIncidentsConfigOptions,
-  type JiraIncidentOptions,
-} from './JiraIncidentsConfig';
 import { buildIncidentJql } from './incidentJql';
 import {
   incidentsCollectorInputSchema,
@@ -47,24 +42,9 @@ export class JiraIncidentsCollector
   static readonly outputSchema = incidentsCollectorOutputSchema;
 
   private readonly jiraClient: JiraClient;
-  private readonly incidentOptions: JiraIncidentOptions;
 
-  private constructor(
-    jiraClient: JiraClient,
-    incidentOptions: JiraIncidentOptions,
-  ) {
+  constructor(jiraClient: JiraClient) {
     this.jiraClient = jiraClient;
-    this.incidentOptions = incidentOptions;
-  }
-
-  static fromConfig(
-    config: Config,
-    options: { jiraClient: JiraClient },
-  ): JiraIncidentsCollector {
-    return new JiraIncidentsCollector(
-      options.jiraClient,
-      parseJiraIncidentsConfigOptions(config),
-    );
   }
 
   getCollectorId(): string {
@@ -97,7 +77,7 @@ export class JiraIncidentsCollector
       {
         from: options.input.from,
         to: options.input.to,
-        issueType: this.incidentOptions.issueType,
+        issueType: options.input.issueType,
       },
       options.entity,
     );

@@ -403,6 +403,9 @@ scorecard:
               #   workflowName: Create Test Deployment on PR Merge
             incidents:
               id: jira:incidents
+              # Optional: override default Incident issue type
+              # input:
+              #   issueType: ServiceIncident
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
@@ -412,6 +415,9 @@ scorecard:
           collectors:
             incidents:
               id: jira:incidents
+              # Optional: override default Incident issue type
+              # input:
+              #   issueType: ServiceIncident
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }

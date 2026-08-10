@@ -44,9 +44,7 @@ export const scorecardModuleJira = createBackendModule({
           discovery,
           logger,
         });
-        collectors.addCollector(
-          JiraIncidentsCollector.fromConfig(config, { jiraClient }),
-        );
+        collectors.addCollector(new JiraIncidentsCollector(jiraClient));
         metrics.addMetricProvider(
           JiraOpenIssuesProvider.fromConfig(config, { jiraClient }),
         );

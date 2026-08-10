@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  newEntityComponent,
-  newMockRootConfig,
-} from '../../__fixtures__/testUtils';
+import { newEntityComponent } from '../../__fixtures__/testUtils';
 import {
   ScorecardJiraAnnotations,
   ScorecardJiraIncidentAnnotations,
@@ -60,34 +57,7 @@ describe('JiraIncidentsCollector', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockJiraClient.getIssues.mockResolvedValue(defaultIncidents);
-    collector = JiraIncidentsCollector.fromConfig(newMockRootConfig(), {
-      jiraClient: mockJiraClient,
-    });
-  });
-
-  describe('fromConfig', () => {
-    it('should load issueType from app-config', () => {
-      collector = JiraIncidentsCollector.fromConfig(
-        newMockRootConfig({
-          incidentOptions: { issueType: 'ServiceIncident' },
-        }),
-        { jiraClient: mockJiraClient },
-      );
-
-      expect((collector as any).incidentOptions).toEqual({
-        issueType: 'ServiceIncident',
-      });
-    });
-
-    it('should leave empty options if not set in app-config', () => {
-      collector = JiraIncidentsCollector.fromConfig(newMockRootConfig({}), {
-        jiraClient: mockJiraClient,
-      });
-
-      expect((collector as any).incidentOptions).toEqual({
-        issueType: undefined,
-      });
-    });
+    collector = new JiraIncidentsCollector(mockJiraClient);
   });
 
   describe('collect', () => {
@@ -105,7 +75,7 @@ describe('JiraIncidentsCollector', () => {
       ).rejects.toThrow('Jira API error');
     });
 
-    it('should use default issue type when app-config options are unset', async () => {
+    it('should use default issue type when input.issueType is unset', async () => {
       await collector.collect({ entity: mockEntity, input });
 
       expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
@@ -113,15 +83,11 @@ describe('JiraIncidentsCollector', () => {
       );
     });
 
-    it('should overwrite default issue type with app-config issueType', async () => {
-      collector = JiraIncidentsCollector.fromConfig(
-        newMockRootConfig({
-          incidentOptions: { issueType: 'ServiceIncident' },
-        }),
-        { jiraClient: mockJiraClient },
-      );
-
-      await collector.collect({ entity: mockEntity, input });
+    it('should overwrite default issue type with input.issueType', async () => {
+      await collector.collect({
+        entity: mockEntity,
+        input: { ...input, issueType: 'ServiceIncident' },
+      });
 
       expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
         '(project = "INC") AND (type = "ServiceIncident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59")',
@@ -143,20 +109,13 @@ describe('JiraIncidentsCollector', () => {
       );
     });
 
-    it('should apply app-config issueType with entity annotation filters', async () => {
-      collector = JiraIncidentsCollector.fromConfig(
-        newMockRootConfig({
-          incidentOptions: { issueType: 'ServiceIncident' },
-        }),
-        { jiraClient: mockJiraClient },
-      );
-
+    it('should apply input.issueType with entity annotation filters', async () => {
       await collector.collect({
         entity: newEntityComponent({
           [INCIDENT_PROJECT_KEY]: 'INC',
           [INCIDENT_COMPONENT]: 'Payments',
         }),
-        input,
+        input: { ...input, issueType: 'ServiceIncident' },
       });
 
       expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
@@ -164,14 +123,24 @@ describe('JiraIncidentsCollector', () => {
       );
     });
 
-    it('should prefer entity issue-type annotation over app-config', async () => {
-      collector = JiraIncidentsCollector.fromConfig(
-        newMockRootConfig({
-          incidentOptions: { issueType: 'ServiceIncident' },
+    it('should prefer entity issue-type annotation over input.issueType', async () => {
+      await collector.collect({
+        entity: newEntityComponent({
+          [INCIDENT_PROJECT_KEY]: 'INC',
+          [INCIDENT_ISSUE_TYPE]: 'ProductionIncident',
         }),
-        { jiraClient: mockJiraClient },
-      );
+        input: { ...input, issueType: 'ServiceIncident' },
+      });
 
+      expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
+        expect.stringContaining('(type = "ProductionIncident")'),
+      );
+      expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
+        expect.not.stringContaining('(type = "ServiceIncident")'),
+      );
+    });
+
+    it('should use entity issue-type annotation when input.issueType is unset', async () => {
       await collector.collect({
         entity: newEntityComponent({
           [INCIDENT_PROJECT_KEY]: 'INC',
@@ -182,9 +151,6 @@ describe('JiraIncidentsCollector', () => {
 
       expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
         expect.stringContaining('(type = "ProductionIncident")'),
-      );
-      expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
-        expect.not.stringContaining('(type = "ServiceIncident")'),
       );
     });
 

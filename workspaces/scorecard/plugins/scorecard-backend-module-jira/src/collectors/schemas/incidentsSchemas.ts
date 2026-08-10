@@ -20,6 +20,12 @@ export const incidentsCollectorInputSchema = z
   .object({
     from: z.string().datetime(),
     to: z.string().datetime(),
+    /**
+     * Jira issue type for incident queries.
+     * Defaults to `Incident`. Overridden by entity annotation
+     * `jira/incident-issue-type` when set.
+     */
+    issueType: z.string().min(1).optional(),
   })
   .passthrough();
 

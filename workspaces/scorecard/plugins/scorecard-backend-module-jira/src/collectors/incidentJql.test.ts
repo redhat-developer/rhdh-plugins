@@ -30,7 +30,7 @@ describe('buildIncidentJql', () => {
     project: 'project = "INC"',
   };
 
-  it('should use default issue type and date bounds when app-config options are unset', () => {
+  it('should use default issue type and date bounds when input.issueType is unset', () => {
     const jql = buildIncidentJql(baseFilters, options, newEntityComponent());
 
     expect(jql).toBe(
@@ -38,7 +38,7 @@ describe('buildIncidentJql', () => {
     );
   });
 
-  it('should apply app-config issueType instead of default issue type', () => {
+  it('should apply input.issueType instead of default issue type', () => {
     const jql = buildIncidentJql(
       baseFilters,
       { ...options, issueType: 'ServiceIncident' },
@@ -66,7 +66,7 @@ describe('buildIncidentJql', () => {
     );
   });
 
-  it('should prefer entity issue-type annotation over app-config issueType', () => {
+  it('should prefer entity issue-type annotation over input.issueType', () => {
     const jql = buildIncidentJql(
       baseFilters,
       { ...options, issueType: 'ServiceIncident' },
@@ -79,5 +79,19 @@ describe('buildIncidentJql', () => {
       '(project = "INC") AND (type = "ProductionIncident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59")',
     );
     expect(jql).not.toContain('(type = "ServiceIncident")');
+  });
+
+  it('should use entity issue-type annotation when input.issueType is unset', () => {
+    const jql = buildIncidentJql(
+      baseFilters,
+      options,
+      newEntityComponent({
+        [INCIDENT_ISSUE_TYPE]: 'ProductionIncident',
+      }),
+    );
+
+    expect(jql).toBe(
+      '(project = "INC") AND (type = "ProductionIncident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59")',
+    );
   });
 });

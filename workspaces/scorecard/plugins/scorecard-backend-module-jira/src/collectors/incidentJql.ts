@@ -52,18 +52,14 @@ export function buildIncidentJql(
 
 function resolveIncidentIssueType(
   entity: Entity,
-  configuredIssueType?: string,
+  inputIssueType?: string,
 ): string {
   const annotations = entity.metadata?.annotations || {};
+  // Entity annotation overrides configured input default.
   const issueType =
     annotations[INCIDENT_ISSUE_TYPE] ||
-    configuredIssueType ||
+    inputIssueType ||
     DEFAULT_INCIDENT_ISSUE_TYPE;
 
-  return validateJQLValue(
-    sanitizeValue(issueType),
-    annotations[INCIDENT_ISSUE_TYPE]
-      ? INCIDENT_ISSUE_TYPE
-      : 'incident issue type',
-  );
+  return validateJQLValue(sanitizeValue(issueType), 'type');
 }
