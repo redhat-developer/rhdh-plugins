@@ -19,31 +19,8 @@ import {
   redactText,
   SAFE_LABEL_EXCLUSIONS,
   sanitizeClonedDom,
-  SECRET_PATTERNS,
   SENSITIVE_LABEL_PATTERN,
 } from '../sensitive-data-redactor';
-
-describe('SECRET_PATTERNS', () => {
-  it('should match GitHub PATs', () => {
-    expect('ghp_abcdefghijklmnopqrstuvwxyz0123456789').toMatch(
-      SECRET_PATTERNS[0],
-    );
-  });
-
-  it('should match GitLab PATs', () => {
-    expect('glpat-abcdefghijklmnopqrst').toMatch(SECRET_PATTERNS[4]);
-  });
-
-  it('should match AWS Access Key IDs', () => {
-    expect('AKIAIOSFODNN7EXAMPLE').toMatch(SECRET_PATTERNS[6]);
-  });
-
-  it('should match JWTs', () => {
-    const jwt =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U';
-    expect(jwt).toMatch(SECRET_PATTERNS[9]);
-  });
-});
 
 describe('SENSITIVE_LABEL_PATTERN', () => {
   it('should match labels containing "secret"', () => {

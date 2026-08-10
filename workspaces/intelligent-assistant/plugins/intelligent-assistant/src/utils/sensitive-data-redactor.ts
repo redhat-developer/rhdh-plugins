@@ -80,7 +80,7 @@ export function isSensitiveElement(el: Element, doc: Document): boolean {
 
   const id = el.getAttribute('id');
   if (id) {
-    const label = doc.querySelector(`label[for="${id}"]`);
+    const label = doc.querySelector(`label[for="${CSS.escape(id)}"]`);
     if (label?.textContent && SENSITIVE_LABEL_PATTERN.test(label.textContent)) {
       return !SAFE_LABEL_EXCLUSIONS.test(label.textContent);
     }
@@ -105,10 +105,7 @@ export function isSensitiveElement(el: Element, doc: Document): boolean {
 export function sanitizeClonedDom(clonedDoc: Document): void {
   // 1. Mask all sensitive inputs/textareas (password fields + label-detected)
   clonedDoc.querySelectorAll('input, textarea').forEach(el => {
-    if (
-      (el as HTMLInputElement).type === 'password' ||
-      isSensitiveElement(el, clonedDoc)
-    ) {
+    if (isSensitiveElement(el, clonedDoc)) {
       (el as HTMLInputElement).value = MASK;
     }
   });
@@ -131,7 +128,9 @@ export function sanitizeClonedDom(clonedDoc: Document): void {
 
   // 3. Handle visibility-toggle secrets (e.g. Akeyless show/hide pattern)
   clonedDoc
-    .querySelectorAll('[aria-label*="Hide secret"], [aria-label*="Hide value"]')
+    .querySelectorAll(
+      '[aria-label*="Hide secret" i], [aria-label*="Hide value" i]',
+    )
     .forEach(btn => {
       const container = btn.closest('[class*="Box"], [class*="flex"]');
       if (container) {

@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import html2canvas from 'html2canvas-pro';
-
 import { sanitizeClonedDom } from './sensitive-data-redactor';
 
 const DEFAULT_QUALITY = 0.7;
@@ -112,6 +110,8 @@ async function doCapture(
     return { success: false, error: 'Root element (#root) not found' };
   }
 
+  const { default: html2canvas } = await import('html2canvas-pro');
+
   const start = window.performance.now();
 
   const canvas = await html2canvas(targetElement as HTMLElement, {
@@ -128,9 +128,14 @@ async function doCapture(
       if (element.classList.contains('pf-chatbot')) {
         return true;
       }
-      const selector = options.excludeSelector;
-      if (selector !== DEFAULT_EXCLUDE_SELECTOR && element.matches(selector)) {
-        return true;
+      if (options.excludeSelector !== DEFAULT_EXCLUDE_SELECTOR) {
+        try {
+          if (element.matches(options.excludeSelector)) {
+            return true;
+          }
+        } catch {
+          // Invalid selector — skip rather than crash capture
+        }
       }
       return false;
     },
@@ -177,15 +182,16 @@ export async function captureScreenshot(
     timeoutMs: options?.timeoutMs ?? DEFAULT_TIMEOUT_MS,
   };
 
+  let timeoutId: ReturnType<typeof setTimeout>;
   try {
     const result = await Promise.race<CaptureResponse>([
       doCapture(resolvedOptions),
-      new Promise<CaptureError>(resolve =>
-        setTimeout(
+      new Promise<CaptureError>(resolve => {
+        timeoutId = setTimeout(
           () => resolve({ success: false, error: 'Capture timeout exceeded' }),
           resolvedOptions.timeoutMs,
-        ),
-      ),
+        );
+      }),
     ]);
     return result;
   } catch (err) {
@@ -193,5 +199,7 @@ export async function captureScreenshot(
       success: false,
       error: err instanceof Error ? err.message : 'Unknown capture error',
     };
+  } finally {
+    clearTimeout(timeoutId!);
   }
 }
