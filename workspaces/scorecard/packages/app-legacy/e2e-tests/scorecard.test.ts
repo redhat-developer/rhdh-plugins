@@ -400,7 +400,8 @@ test.describe('Scorecard Plugin Tests', () => {
         await expect(page.getByLabel('Code Quality')).toBeVisible();
       } else {
         const legacyOnlyValues: Record<string, string> = {
-          [translations.metric['sonarqube.qualityGate'].title]: 'Success',
+          [translations.metric['sonarqube.qualityGate'].title]:
+            translations.thresholds.success,
           [translations.metric['sonarqube.openIssues'].title]: '3',
           [translations.metric['sonarqube.securityRating'].title]: '1',
           [translations.metric['sonarqube.securityHotspots'].title]: '2',
