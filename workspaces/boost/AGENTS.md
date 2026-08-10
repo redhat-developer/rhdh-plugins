@@ -84,6 +84,21 @@ Agents, tools, models, MCP servers, and vector stores are Backstage catalog enti
 | `ogx-entity-provider`          | Independently deployable catalog entity provider                                              |
 | `kagenti-entity-provider`      | Independently deployable catalog entity provider                                              |
 
+### ConfigReader `getOptionalString()` edge case
+
+Backstage's `ConfigReader` throws `TypeError` when the underlying config
+value is an empty string (e.g., from env var substitution like
+`${UNSET_ENV_VAR:-}`), rather than returning `undefined`. When reading
+config values that may come from environment variable substitution, use
+`safeGetOptionalString` from
+`@red-hat-developer-hub/backstage-plugin-boost-connector-utils`:
+
+```ts
+import { safeGetOptionalString } from '@red-hat-developer-hub/backstage-plugin-boost-connector-utils';
+
+const endpoint = safeGetOptionalString(config, 'endpoint');
+```
+
 ### Naming
 
 - Config namespace: `boost.*` (e.g., `boost.features.agentCreation`, `boost.security.mode`)

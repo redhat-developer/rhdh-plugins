@@ -31,7 +31,11 @@ export {
   classifyConnectorError,
   type FaultIsolationContext,
 } from './fault-isolation';
-export { isConnectorEnabled, validateConnectorStartupConfig } from './config';
+export {
+  isConnectorEnabled,
+  safeGetOptionalString,
+  validateConnectorStartupConfig,
+} from './config';
 export type {
   ConnectorEntityProvider,
   ConnectorErrorContext,

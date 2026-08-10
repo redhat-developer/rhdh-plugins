@@ -1,9 +1,12 @@
 # Reference App-Config for AI Catalog Connectors
 #
-# This file demonstrates the configurable fields for all three AI catalog
-# connectors (MCP Registry, RHOAI MCP Catalog, OCI Skill Registry).
-# Copy the relevant sections into your app-config.yaml and adjust values
-# for your deployment environment.
+# This file demonstrates the configurable fields for Boost AI catalog
+# connectors under ai-catalog.providers (RHOAI MCP Catalog, OCI Skill
+# Registry). Copy the relevant sections into your app-config.yaml and
+# adjust values for your deployment environment.
+#
+# Note: MCP Registry lives under RHDHPLAN-393 with its own independent
+# config namespace — it is not configured under ai-catalog.providers.
 #
 # Config root: ai-catalog.providers.<connectorId>
 # Each connector reads its own Config subtree — shared utilities do not
@@ -17,37 +20,6 @@
 
 ai-catalog:
   providers:
-    # --- MCP Registry Connector ---
-    mcpRegistry:
-      # Whether this connector is registered at startup (default: true)
-      enabled: true
-
-      # MCP Registry endpoint URL (required, must be HTTPS)
-      # Falls back to public registry.modelcontextprotocol.io when omitted
-      endpoint: https://registry.modelcontextprotocol.io
-
-      # TLS configuration for custom CA bundles (optional)
-      # Use when the registry has a self-signed or internal CA certificate
-      tls:
-        # Option 1: Path to a PEM file mounted from a K8s Secret/ConfigMap
-        # caFile: /etc/ssl/certs/custom-ca-bundle.crt
-
-        # Option 2: PEM content from an environment variable
-        # The env var is populated by K8s via Secret mount
-        # caSecret:
-        #   $env: MCP_REGISTRY_CA_BUNDLE
-
-      # Registry credentials via mounted K8s Secret (optional)
-      # Values MUST use $env references — empty credentials are rejected at startup
-      auth:
-        token:
-          $env: MCP_REGISTRY_TOKEN
-
-      # Sync schedule (optional)
-      schedule:
-        frequency: { minutes: 30 }
-        timeout: { minutes: 10 }
-
     # --- RHOAI MCP Catalog Connector ---
     rhoai:
       mcpCatalog:
@@ -61,6 +33,11 @@ ai-catalog:
         tls:
           # Path to a PEM file mounted from a K8s Secret/ConfigMap
           caFile: /etc/rhdh/ca-bundles/rhoai-ca.pem
+
+          # Option 2: PEM content from an environment variable
+          # The env var is populated by K8s via Secret mount
+          # caSecret:
+          #   $env: RHOAI_CA_BUNDLE
 
         # RHOAI credentials via mounted K8s Secret (required)
         # Values MUST use $env references — empty credentials are rejected at startup
@@ -117,19 +94,6 @@ ai-catalog:
 #
 # ai-catalog:
 #   providers:
-#     # --- MCP Registry (internal mirror) ---
-#     mcpRegistry:
-#       enabled: true
-#       endpoint: https://registry.internal.example.com
-#       tls:
-#         caFile: /etc/ssl/certs/internal-ca-bundle.pem
-#       auth:
-#         token:
-#           $env: MCP_REGISTRY_TOKEN
-#       schedule:
-#         frequency: { minutes: 30 }
-#         timeout: { minutes: 10 }
-#
 #     # --- RHOAI MCP Catalog (internal cluster) ---
 #     rhoai:
 #       mcpCatalog:

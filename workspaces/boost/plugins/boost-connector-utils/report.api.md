@@ -61,6 +61,12 @@ export function loadCaBundle(
 ): Buffer | undefined;
 
 // @public
+export function safeGetOptionalString(
+  config: Config,
+  key: string,
+): string | undefined;
+
+// @public
 export function validateConnectorStartupConfig(
   connectorConfig: Config,
   options: ValidateConnectorStartupConfigOptions,

@@ -15,7 +15,32 @@
  */
 
 import { ConfigReader } from '@backstage/config';
-import { isConnectorEnabled, validateConnectorStartupConfig } from './config';
+import {
+  isConnectorEnabled,
+  safeGetOptionalString,
+  validateConnectorStartupConfig,
+} from './config';
+
+describe('safeGetOptionalString', () => {
+  it('returns the string when present', () => {
+    const config = new ConfigReader({ endpoint: 'https://example.com' });
+    expect(safeGetOptionalString(config, 'endpoint')).toBe(
+      'https://example.com',
+    );
+  });
+
+  it('returns undefined when the key is missing', () => {
+    const config = new ConfigReader({});
+    expect(safeGetOptionalString(config, 'endpoint')).toBeUndefined();
+  });
+
+  it('returns undefined when ConfigReader throws on empty-string values', () => {
+    // ConfigReader.getOptionalString() throws TypeError for empty strings
+    // (e.g. from env var substitution like ${VAR:-}).
+    const config = new ConfigReader({ endpoint: '' });
+    expect(safeGetOptionalString(config, 'endpoint')).toBeUndefined();
+  });
+});
 
 describe('isConnectorEnabled', () => {
   it('returns true when enabled is true', () => {
@@ -87,6 +112,32 @@ describe('validateConnectorStartupConfig', () => {
           endpointField: 'endpoint',
         }),
       ).not.toThrow();
+    });
+
+    it('rejects a wrong-typed endpoint value', () => {
+      const config = new ConfigReader({
+        endpoint: { nested: true },
+      });
+      expect(() =>
+        validateConnectorStartupConfig(config, {
+          credentialFields: [],
+          endpointField: 'endpoint',
+        }),
+      ).toThrow(/Invalid endpoint.*empty or not a string/);
+    });
+
+    it('rejects an empty-string endpoint when the key is present', () => {
+      // ConfigReader throws TypeError for empty strings; validation must
+      // surface that as a startup failure, not treat it as "missing".
+      const config = new ConfigReader({
+        endpoint: '',
+      });
+      expect(() =>
+        validateConnectorStartupConfig(config, {
+          credentialFields: [],
+          endpointField: 'endpoint',
+        }),
+      ).toThrow(/Invalid endpoint/);
     });
   });
 

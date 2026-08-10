@@ -26,7 +26,9 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-boost-connector-utils';
 
 // In your connector's init():
-const connectorConfig = config.getConfig('ai-catalog.providers.mcpRegistry');
+const connectorConfig = config.getConfig(
+  'ai-catalog.providers.rhoai.mcpCatalog',
+);
 const caBundle = loadCaBundle(connectorConfig, logger);
 const agent = createHttpsAgent(caBundle);
 
@@ -39,14 +41,15 @@ const client = axios.create({ httpsAgent: agent });
 ```yaml
 ai-catalog:
   providers:
-    mcpRegistry:
-      tls:
-        # Option 1: Direct file path (K8s Secret mounted as volume)
-        caFile: /etc/ssl/certs/custom-ca-bundle.pem
+    rhoai:
+      mcpCatalog:
+        tls:
+          # Option 1: Direct file path (K8s Secret mounted as volume)
+          caFile: /etc/ssl/certs/custom-ca-bundle.pem
 
-        # Option 2: K8s Secret reference (resolved via $env pattern)
-        caSecret:
-          $env: MCP_REGISTRY_CA_BUNDLE # Env var containing PEM content
+          # Option 2: K8s Secret reference (resolved via $env pattern)
+          caSecret:
+            $env: RHOAI_CA_BUNDLE # Env var containing PEM content
 ```
 
 **Behavior:**
@@ -55,6 +58,7 @@ ai-catalog:
 - Invalid PEM → logs ERROR, returns `undefined`
 - Certificate chains (multiple concatenated PEM blocks) → returned as-is
 - No `tls` block → returns `undefined` (uses system CA)
+- If both `tls.caFile` and `tls.caSecret` are set → `caFile` wins and a WARN is logged that `caSecret` is ignored
 - Expired certificates are **not** checked at load time — they surface at TLS handshake time and are caught by the fault isolation wrapper
 - `createHttpsAgent(caBundle)` passes `ca` to `https.Agent`, which **replaces** the default Mozilla CA store — concatenate PEMs when both public and private trust are needed
 
@@ -71,18 +75,18 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-boost-connector-utils';
 
 // Wrap the provider before registering it
-const rawProvider = new McpRegistryEntityProvider(config, logger);
+const rawProvider = new RhoaiMcpCatalogEntityProvider(config, logger);
 const provider = createProviderWrapper(rawProvider, logger, {
-  endpoint: 'https://registry.example.com',
+  endpoint: 'https://mcp-catalog.example.com',
 });
 catalog.addEntityProvider(provider);
 
 // Wrap refresh callbacks for scheduled tasks
 const safeRefresh = createSafeRefresh(
   () => provider.refresh(),
-  'mcpRegistry',
+  'rhoai.mcpCatalog',
   logger,
-  { endpoint: 'https://registry.example.com' },
+  { endpoint: 'https://mcp-catalog.example.com' },
 );
 scheduler.scheduleTask({ fn: safeRefresh, frequency: { minutes: 10 } });
 ```
@@ -98,10 +102,10 @@ Structured error context logged on failure:
 
 ```json
 {
-  "connectorId": "mcpRegistry",
-  "endpoint": "https://registry.example.com",
+  "connectorId": "rhoai.mcpCatalog",
+  "endpoint": "https://mcp-catalog.example.com",
   "errorType": "FetchError",
-  "errorMessage": "request to https://registry.example.com failed",
+  "errorMessage": "request to https://mcp-catalog.example.com failed",
   "retryable": true
 }
 ```
@@ -118,7 +122,7 @@ import {
 
 export default createBackendModule({
   pluginId: 'catalog',
-  moduleId: 'mcp-registry',
+  moduleId: 'rhoai-mcp-catalog',
   register(env) {
     env.registerInit({
       deps: {
@@ -128,21 +132,21 @@ export default createBackendModule({
       },
       async init({ catalog, config, logger }) {
         const connectorConfig = config.getConfig(
-          'ai-catalog.providers.mcpRegistry',
+          'ai-catalog.providers.rhoai.mcpCatalog',
         );
 
         if (!isConnectorEnabled(connectorConfig)) {
-          logger.info('MCP Registry connector is disabled');
+          logger.info('RHOAI MCP Catalog connector is disabled');
           return;
         }
 
         // Validate credentials and endpoint before registering
         validateConnectorStartupConfig(connectorConfig, {
-          credentialFields: ['auth.token'],
+          credentialFields: ['auth.clientId', 'auth.clientSecret'],
           endpointField: 'endpoint',
         });
 
-        const provider = new McpRegistryEntityProvider(config, logger);
+        const provider = new RhoaiMcpCatalogEntityProvider(config, logger);
         catalog.addEntityProvider(createProviderWrapper(provider, logger));
       },
     });
@@ -155,9 +159,10 @@ export default createBackendModule({
 ```yaml
 ai-catalog:
   providers:
-    mcpRegistry:
-      enabled: true # Default: true if omitted
-      endpoint: https://registry.example.com
+    rhoai:
+      mcpCatalog:
+        enabled: true # Default: true if omitted
+        endpoint: https://mcp-catalog.example.com
 ```
 
 ### Startup Validation
@@ -177,20 +182,21 @@ validateConnectorStartupConfig(connectorConfig, {
 
 ## API Reference
 
-| Export                                          | Description                                  |
-| ----------------------------------------------- | -------------------------------------------- |
-| `loadCaBundle(config, logger)`                  | Load CA bundle from connector config subtree |
-| `createHttpsAgent(caBundle?)`                   | Create `https.Agent` with custom CA          |
-| `createProviderWrapper(provider, logger, ctx?)` | Wrap entity provider with fault isolation    |
-| `createSafeRefresh(fn, id, logger, ctx?)`       | Wrap refresh callback with fault isolation   |
-| `classifyConnectorError(error)`                 | Classify error as retryable/non-retryable    |
-| `isConnectorEnabled(config)`                    | Check if connector is enabled via config     |
-| `validateConnectorStartupConfig(config, opts)`  | Validate credentials and endpoint at startup |
-| `ConnectorEntityProvider`                       | Minimal EntityProvider-compatible interface  |
-| `ConnectorErrorContext`                         | Interface for structured error context       |
-| `FaultIsolationContext`                         | Optional endpoint / nextRetryAt for wrappers |
-| `ValidateConnectorStartupConfigOptions`         | Options for startup validation               |
+| Export                                          | Description                                     |
+| ----------------------------------------------- | ----------------------------------------------- |
+| `loadCaBundle(config, logger)`                  | Load CA bundle from connector config subtree    |
+| `createHttpsAgent(caBundle?)`                   | Create `https.Agent` with custom CA             |
+| `createProviderWrapper(provider, logger, ctx?)` | Wrap entity provider with fault isolation       |
+| `createSafeRefresh(fn, id, logger, ctx?)`       | Wrap refresh callback with fault isolation      |
+| `classifyConnectorError(error)`                 | Classify error as retryable/non-retryable       |
+| `isConnectorEnabled(config)`                    | Check if connector is enabled via config        |
+| `safeGetOptionalString(config, key)`            | Read optional string without empty-string throw |
+| `validateConnectorStartupConfig(config, opts)`  | Validate credentials and endpoint at startup    |
+| `ConnectorEntityProvider`                       | Minimal EntityProvider-compatible interface     |
+| `ConnectorErrorContext`                         | Interface for structured error context          |
+| `FaultIsolationContext`                         | Optional endpoint / nextRetryAt for wrappers    |
+| `ValidateConnectorStartupConfigOptions`         | Options for startup validation                  |
 
 ## Reference Configuration
 
-See [`workspaces/boost/examples/app-config.connectors.yaml`](../../examples/app-config.connectors.yaml) for a complete reference configuration with all three connectors and an air-gapped deployment variant.
+See [`workspaces/boost/examples/app-config.connectors.yaml`](../../examples/app-config.connectors.yaml) for a complete reference configuration with RHOAI MCP Catalog and OCI Skill Registry connectors, plus an air-gapped deployment variant.

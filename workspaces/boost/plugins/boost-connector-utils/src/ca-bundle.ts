@@ -18,15 +18,18 @@ import { readFileSync } from 'node:fs';
 import { Agent as HttpsAgent } from 'node:https';
 import type { Config } from '@backstage/config';
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import { safeGetOptionalString } from './config';
 
 const PEM_HEADER = '-----BEGIN CERTIFICATE-----';
+const PEM_FOOTER = '-----END CERTIFICATE-----';
 
 /**
  * Load a CA bundle from the connector's Config subtree.
  *
  * Reads the CA from either `tls.caFile` (file path) or
  * `tls.caSecret.$env` (environment variable containing PEM content)
- * within the provided Config subtree.
+ * within the provided Config subtree. When both are set, `tls.caFile`
+ * takes precedence and a WARN is logged that `tls.caSecret` is ignored.
  *
  * @param connectorConfig - The connector's Config subtree containing
  *   the `tls` block.
@@ -46,14 +49,21 @@ export function loadCaBundle(
     return undefined;
   }
 
-  // Option 1: tls.caFile — read from file path
-  const caFile = tlsConfig.getOptionalString('caFile');
+  const caFile = safeGetOptionalString(tlsConfig, 'caFile');
+  const caSecret = safeGetOptionalString(tlsConfig, 'caSecret');
+
+  // Option 1: tls.caFile — takes precedence over tls.caSecret
   if (caFile) {
+    if (caSecret) {
+      logger.warn(
+        'Both tls.caFile and tls.caSecret are set; using tls.caFile and ignoring tls.caSecret',
+        { caFile },
+      );
+    }
     return loadCaFromFile(caFile, logger);
   }
 
   // Option 2: tls.caSecret.$env — read PEM from environment variable
-  const caSecret = tlsConfig.getOptionalString('caSecret');
   if (caSecret) {
     return loadCaFromEnvValue(caSecret, logger);
   }
@@ -116,12 +126,19 @@ function loadCaFromEnvValue(
 }
 
 /**
- * Check whether a buffer contains at least one PEM certificate block.
+ * Check whether a buffer contains at least one complete PEM certificate
+ * block (matching BEGIN/END markers and equal block counts).
  *
  * @internal
  */
 function isValidPem(content: Buffer): boolean {
-  return content.toString('utf-8').includes(PEM_HEADER);
+  const text = content.toString('utf-8');
+  if (!text.includes(PEM_HEADER) || !text.includes(PEM_FOOTER)) {
+    return false;
+  }
+  const beginCount = text.split(PEM_HEADER).length - 1;
+  const endCount = text.split(PEM_FOOTER).length - 1;
+  return beginCount > 0 && beginCount === endCount;
 }
 
 /**

@@ -84,6 +84,26 @@ describe('loadCaBundle', () => {
     expect(result!.toString('utf-8')).toContain('-----BEGIN CERTIFICATE-----');
   });
 
+  it('prefers tls.caFile over tls.caSecret and warns when both are set', () => {
+    const caPath = path.join(tmpDir, 'ca.pem');
+    fs.writeFileSync(caPath, VALID_PEM);
+
+    const config = new ConfigReader({
+      tls: {
+        caFile: caPath,
+        caSecret: SECOND_PEM,
+      },
+    });
+    const result = loadCaBundle(config, logger);
+
+    expect(result).toBeInstanceOf(Buffer);
+    expect(result!.toString('utf-8')).toEqual(fs.readFileSync(caPath, 'utf-8'));
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Both tls.caFile and tls.caSecret are set; using tls.caFile and ignoring tls.caSecret',
+      expect.objectContaining({ caFile: caPath }),
+    );
+  });
+
   it('loads CA from environment variable (tls.caSecret resolved via $env)', () => {
     // In production, Backstage resolves { $env: "VAR" } at config
     // loading time. By the time our code sees it, the value is a
@@ -121,6 +141,40 @@ describe('loadCaBundle', () => {
     expect(logger.error).toHaveBeenCalledWith(
       'CA file does not contain valid PEM data',
       expect.objectContaining({ caFile: invalidPath }),
+    );
+  });
+
+  it('returns undefined and logs ERROR for truncated PEM missing footer', () => {
+    const truncatedPath = path.join(tmpDir, 'truncated.pem');
+    fs.writeFileSync(
+      truncatedPath,
+      '-----BEGIN CERTIFICATE-----\nMIIBkTCB+wIJALRiMLAh0GRF\n',
+    );
+
+    const config = new ConfigReader({ tls: { caFile: truncatedPath } });
+    const result = loadCaBundle(config, logger);
+
+    expect(result).toBeUndefined();
+    expect(logger.error).toHaveBeenCalledWith(
+      'CA file does not contain valid PEM data',
+      expect.objectContaining({ caFile: truncatedPath }),
+    );
+  });
+
+  it('returns undefined and logs ERROR when a chain has a truncated trailing cert', () => {
+    const truncatedChainPath = path.join(tmpDir, 'truncated-chain.pem');
+    fs.writeFileSync(
+      truncatedChainPath,
+      `${VALID_PEM}\n-----BEGIN CERTIFICATE-----\nMIIBkTCB+wIJALRiMLAh0GRF\n`,
+    );
+
+    const config = new ConfigReader({ tls: { caFile: truncatedChainPath } });
+    const result = loadCaBundle(config, logger);
+
+    expect(result).toBeUndefined();
+    expect(logger.error).toHaveBeenCalledWith(
+      'CA file does not contain valid PEM data',
+      expect.objectContaining({ caFile: truncatedChainPath }),
     );
   });
 

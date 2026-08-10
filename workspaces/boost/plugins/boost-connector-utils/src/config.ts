@@ -18,6 +18,32 @@ import type { Config } from '@backstage/config';
 import type { ValidateConnectorStartupConfigOptions } from './types';
 
 /**
+ * Safely read an optional string from a Backstage Config object.
+ *
+ * `ConfigReader.getOptionalString()` throws `TypeError` for empty-string
+ * values from env var substitution like `${VAR:-}`, rather than returning
+ * `undefined`. Catch that case and treat it as absent.
+ *
+ * @param config - Backstage Config (or Config subtree).
+ * @param key - Config key relative to `config`.
+ * @returns The string value, or `undefined` when missing or empty.
+ *
+ * @public
+ */
+export function safeGetOptionalString(
+  config: Config,
+  key: string,
+): string | undefined {
+  try {
+    return config.getOptionalString(key);
+  } catch {
+    // ConfigReader throws TypeError for empty-string values
+    // from env var substitution like ${VAR:-}
+    return undefined;
+  }
+}
+
+/**
  * Check whether a connector is enabled via its Config subtree.
  *
  * Reads the `enabled` boolean from the provided Config subtree.
@@ -105,12 +131,37 @@ function validateCredentialField(config: Config, field: string): void {
 /**
  * Validate that an endpoint URL field contains a valid HTTPS URL.
  *
+ * Unlike soft optional reads via {@link safeGetOptionalString}, a present
+ * but empty or wrong-typed value fails startup validation so misconfigured
+ * connectors do not silently skip the check.
+ *
  * @internal
  */
 function validateEndpointField(config: Config, field: string): void {
-  const value = config.getOptionalString(field);
-  if (value === undefined) {
+  // If the field is not present at all, skip validation — it may be optional
+  if (!config.has(field)) {
     return;
+  }
+
+  const invalidEndpointError = (detail: string) =>
+    new Error(
+      `Invalid ${field}: ${detail}. Must be a valid HTTPS URL. ` +
+        `Example: https://registry.internal.example.com`,
+    );
+
+  // ConfigReader throws on empty strings and non-string values; rethrow as
+  // a descriptive startup error rather than treating them as "absent".
+  let value: string | undefined;
+  try {
+    value = config.getOptionalString(field);
+  } catch {
+    throw invalidEndpointError(
+      'value is empty or not a string (check env substitution and YAML type)',
+    );
+  }
+
+  if (value === undefined || value.trim() === '') {
+    throw invalidEndpointError('value is empty');
   }
 
   let parsed: URL;
