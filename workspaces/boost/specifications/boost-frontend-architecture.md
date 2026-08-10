@@ -199,15 +199,15 @@ Backstage v1.51.0 introduced two AI-related additions via `@backstage/plugin-cat
 
 Boost's entity model (Decision 1 in the agent-creation-discovery design) uses upstream kinds where available and existing kinds as fallback:
 
-| Category      | Entity Kind  | `spec.type`    | Notes                                                                             |
-| ------------- | ------------ | -------------- | --------------------------------------------------------------------------------- |
-| Skills        | `AiResource` | `skill`        | Upstream. Has `disciplines`, `categories`, `agents`, `dependsOn`                  |
-| Rules         | `AiResource` | `rule`         | Upstream. Has `category` (required), `rationale` (required)                       |
-| MCP Servers   | `API`        | `mcp-server`   | Upstream. Has `spec.remotes` list                                                 |
-| Agents        | `Component`  | `ai-agent`     | Boost-defined. No upstream kind yet                                               |
-| Models        | `Resource`   | `ai-model`     | Boost-defined. RFC #33060 pending — may move to `API` with `ai-model-server` type |
-| Tools         | `Resource`   | `ai-tool`      | Boost-defined (Kagenti-specific)                                                  |
-| Vector Stores | `Resource`   | `vector-store` | Boost-defined                                                                     |
+| Category      | Entity Kind  | `spec.type`    | Notes                                                            |
+| ------------- | ------------ | -------------- | ---------------------------------------------------------------- |
+| Skills        | `AiResource` | `skill`        | Upstream. Has `disciplines`, `categories`, `agents`, `dependsOn` |
+| Rules         | `AiResource` | `rule`         | Upstream. Has `category` (required), `rationale` (required)      |
+| MCP Servers   | `API`        | `mcp-server`   | Upstream. Has `spec.remotes` list                                |
+| Agents        | `Component`  | `ai-agent`     | Boost-defined. No upstream kind yet                              |
+| Models        | `Resource`   | `ai-model`     | Boost-defined. No solid upstream kind yet                        |
+| Tools         | `Resource`   | `ai-tool`      | Boost-defined (Kagenti-specific)                                 |
+| Vector Stores | `Resource`   | `vector-store` | Boost-defined                                                    |
 
 Boost-defined entities carry `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, and `rhdh.io/ai-asset-source` annotations as an interim bridge (RHDHPLAN-1507). Custom `CatalogProcessor` validators support both current and future kinds during upstream transitions.
 

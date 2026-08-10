@@ -110,7 +110,7 @@ Backstage v1.51.0 introduced `AiResource` kind and `API` with `spec.type: mcp-se
 | Rules         | AiResource  | rule         | Upstream. category (required), rationale (required)  |
 | MCP Servers   | API         | mcp-server   | Upstream. spec.remotes list                          |
 | Agents        | Component   | ai-agent     | Boost-defined                                        |
-| Models        | Resource    | ai-model     | Boost-defined. RFC #33060 pending                    |
+| Models        | Resource    | ai-model     | Boost-defined. No solid upstream kind yet            |
 | Tools         | Resource    | ai-tool      | Boost-defined (Kagenti)                              |
 | Vector Stores | Resource    | vector-store | Boost-defined                                        |
 
