@@ -8,6 +8,7 @@ metadata:
     github.com/project-slug: dzemanov/test-scorecard-github-dora
     backstage.io/source-location: url:https://github.com/dzemanov/test-scorecard-github-dora
     scorecard.io/dora: 'true'
+    jira/incident-project-key: RSPT
 spec:
   type: service
   owner: group:development/guests

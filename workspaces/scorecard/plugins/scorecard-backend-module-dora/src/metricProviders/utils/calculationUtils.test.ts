@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { calculateMedian } from './calculationUtils';
+import { calculateMean, calculateMedian } from './calculationUtils';
 
 describe('calculateMedian', () => {
   it('returns median for odd number of values', () => {
@@ -32,6 +32,22 @@ describe('calculateMedian', () => {
   it('throws on empty values', () => {
     expect(() => calculateMedian([])).toThrow(
       'Unable to calculate median from empty values',
+    );
+  });
+});
+
+describe('calculateMean', () => {
+  it('returns mean for multiple values', () => {
+    expect(calculateMean([1, 2, 6])).toBe(3);
+  });
+
+  it('returns the same value for single-element input', () => {
+    expect(calculateMean([7])).toBe(7);
+  });
+
+  it('throws on empty values', () => {
+    expect(() => calculateMean([])).toThrow(
+      'Unable to calculate mean from empty values',
     );
   });
 });

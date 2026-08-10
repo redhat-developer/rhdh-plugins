@@ -51,6 +51,9 @@ interface NewMockRootConfigProps {
     mandatoryFilter?: string;
     customFilter?: string;
   };
+  incidentOptions?: {
+    issueType?: string;
+  };
   jiraConfig?: {
     baseUrl?: string;
     token?: string;
@@ -62,11 +65,12 @@ interface NewMockRootConfigProps {
 export function newMockRootConfig({
   thresholds,
   options,
+  incidentOptions,
   jiraConfig,
 }: NewMockRootConfigProps = {}): Config {
   const jira = {
     baseUrl: 'https://example.com/api',
-    token: 'Fds31dsF32',
+    token: 'dummyToken',
     product: 'cloud',
     proxyPath: '/jira/api',
     ...jiraConfig,
@@ -78,6 +82,13 @@ export function newMockRootConfig({
       scorecard: {
         metricProviders: {
           jira: {
+            collectors: incidentOptions
+              ? {
+                  incidents: {
+                    options: incidentOptions,
+                  },
+                }
+              : undefined,
             openIssues: {
               options,
               thresholds,

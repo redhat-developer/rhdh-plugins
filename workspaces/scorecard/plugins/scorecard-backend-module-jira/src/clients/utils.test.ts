@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-import { validateJQLValue, validateIdentifier, sanitizeValue } from './utils';
+import {
+  joinJqlClauses,
+  sanitizeValue,
+  toIsoDateTime,
+  toJiraDateTime,
+  validateIdentifier,
+  validateJQLValue,
+} from './utils';
 
 describe('utils', () => {
   describe('validateJQLValue', () => {
@@ -44,6 +51,56 @@ describe('utils', () => {
   describe('sanitizeValue', () => {
     it('should sanitize value', () => {
       expect(sanitizeValue('T"EST\\123')).toBe('T\\"EST\\\\123');
+    });
+  });
+
+  describe('joinJqlClauses', () => {
+    it('wraps clauses in parentheses and joins with AND', () => {
+      expect(
+        joinJqlClauses([
+          'project = "INC"',
+          'type = Incident',
+          'created >= "2026-06-01 00:00"',
+        ]),
+      ).toBe(
+        '(project = "INC") AND (type = Incident) AND (created >= "2026-06-01 00:00")',
+      );
+    });
+
+    it('skips undefined, null, and empty clauses', () => {
+      expect(
+        joinJqlClauses([
+          'project = "INC"',
+          undefined,
+          null,
+          '',
+          'type = Incident',
+        ]),
+      ).toBe('(project = "INC") AND (type = Incident)');
+    });
+
+    it('returns an empty string when no clauses remain', () => {
+      expect(joinJqlClauses([undefined, null, ''])).toBe('');
+    });
+
+    it('wraps a single clause', () => {
+      expect(joinJqlClauses(['project = "INC"'])).toBe('(project = "INC")');
+    });
+  });
+
+  describe('toJiraDateTime', () => {
+    it('should convert ISO datetime to Jira datetime format', () => {
+      expect(toJiraDateTime('2026-06-01T10:05:00.000Z')).toBe(
+        '2026-06-01 10:05',
+      );
+    });
+  });
+
+  describe('toIsoDateTime', () => {
+    it('should normalize Jira datetime offset without colon', () => {
+      expect(toIsoDateTime('2026-07-15T18:21:34.862+0530')).toBe(
+        '2026-07-15T12:51:34.862Z',
+      );
     });
   });
 });

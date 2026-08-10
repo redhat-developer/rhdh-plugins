@@ -31,7 +31,7 @@ describe('ConnectionStrategy', () => {
   describe('DirectConnectionStrategy', () => {
     const connectionStrategy = new DirectConnectionStrategy(
       'https://example.com/api',
-      'Fds31dsF32',
+      'dummyToken',
       'cloud',
     );
 
@@ -51,17 +51,17 @@ describe('ConnectionStrategy', () => {
     describe('getAuthHeaders', () => {
       it('should return Basic auth headers when product is cloud', async () => {
         const authHeaders = await connectionStrategy.getAuthHeaders();
-        expect(authHeaders).toEqual({ Authorization: 'Basic Fds31dsF32' });
+        expect(authHeaders).toEqual({ Authorization: 'Basic dummyToken' });
       });
 
       it('should return Bearer auth headers when product is datacenter', async () => {
         const dataCenterStrategy = new DirectConnectionStrategy(
           'https://example.com/api',
-          'Fds31dsF32',
+          'dummyToken',
           'datacenter',
         );
         const authHeaders = await dataCenterStrategy.getAuthHeaders();
-        expect(authHeaders).toEqual({ Authorization: 'Bearer Fds31dsF32' });
+        expect(authHeaders).toEqual({ Authorization: 'Bearer dummyToken' });
       });
     });
   });
@@ -92,10 +92,10 @@ describe('ConnectionStrategy', () => {
       it('should return Bearer auth headers when service token is present', async () => {
         jest
           .spyOn(mockAuth, 'getPluginRequestToken')
-          .mockResolvedValue({ token: 'Fds31dsF32' });
+          .mockResolvedValue({ token: 'dummyToken' });
 
         const authHeaders = await connectionStrategy.getAuthHeaders();
-        expect(authHeaders).toEqual({ Authorization: 'Bearer Fds31dsF32' });
+        expect(authHeaders).toEqual({ Authorization: 'Bearer dummyToken' });
       });
 
       it('should return an empty object when service token is not present', async () => {
@@ -112,12 +112,12 @@ describe('ConnectionStrategy', () => {
       it('should return the service token', async () => {
         jest
           .spyOn(mockAuth, 'getPluginRequestToken')
-          .mockResolvedValue({ token: 'Fds31dsF32' });
+          .mockResolvedValue({ token: 'dummyToken' });
 
         const serviceToken = await (
           connectionStrategy as any
         ).getServiceToken();
-        expect(serviceToken).toEqual('Fds31dsF32');
+        expect(serviceToken).toEqual('dummyToken');
       });
     });
   });

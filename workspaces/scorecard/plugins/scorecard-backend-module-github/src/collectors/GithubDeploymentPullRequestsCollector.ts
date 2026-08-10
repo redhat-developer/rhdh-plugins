@@ -46,16 +46,19 @@ export class GithubDeploymentPullRequestsCollector
   private readonly client: GithubClient;
   private readonly logger: LoggerService;
 
-  private constructor(config: Config, options: { logger: LoggerService }) {
-    this.client = new GithubClient(config);
-    this.logger = options.logger;
+  private constructor(client: GithubClient, logger: LoggerService) {
+    this.client = client;
+    this.logger = logger;
   }
 
   static fromConfig(
     config: Config,
     options: { logger: LoggerService },
   ): GithubDeploymentPullRequestsCollector {
-    return new GithubDeploymentPullRequestsCollector(config, options);
+    return new GithubDeploymentPullRequestsCollector(
+      new GithubClient(config, options.logger),
+      options.logger,
+    );
   }
 
   getCollectorId(): string {

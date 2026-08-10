@@ -101,8 +101,9 @@ metadata:
   - `deployments: Array<{ id: string; commitSha: string; environment?: string; createdAt: string; result: 'success' | 'failure' | '' }>`
 - **Annotation requirements**
   - Requires `github.com/project-slug` on the entity
-- **Ordering**
-  - Records are returned in ascending `createdAt` order (oldest to newest).
+- **Behavior**
+  - Records are returned in ascending `createdAt` order (oldest to newest)
+  - Client-side fetch cap: at most **1000** deployments are collected per request. Pagination stops once the cap is reached, the cap keeps the most recent in-window runs
 
 `github:deploymentWorkflowRuns`
 
@@ -114,10 +115,10 @@ metadata:
   - `deployments: Array<{ id: string; commitSha: string; environment?: string; createdAt: string; result: 'success' | 'failure' | '' }>`
 - **Annotation requirements**
   - Requires `github.com/project-slug` on the entity
-- **Ordering**
-  - Records are returned in ascending `createdAt` order (oldest to newest).
-- **Workflow selection**
-  - `workflowName` can match the workflow display name, the full workflow path (for example `.github/workflows/deploy.yml`), or a filename suffix (for example `deploy.yml`).
+- **Behavior**
+  - Records are returned in ascending `createdAt` order (oldest to newest)
+  - `workflowName` can match the workflow display name, the full workflow path (for example `.github/workflows/deploy.yml`), or a filename suffix (for example `deploy.yml`)
+  - Client-side fetch cap: at most **1000** workflow runs are collected per request. Pagination stops once the cap is reached, the cap keeps the most recent in-window runs
 
 `github:deploymentPullRequests`
 

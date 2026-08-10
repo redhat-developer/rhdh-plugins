@@ -21,8 +21,10 @@ import {
   scorecardCollectorsServiceRef,
   scorecardMetricsExtensionPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { DoraChangeFailureRateProvider } from './metricProviders/DoraChangeFailureRateProvider';
 import { DoraDeploymentFrequencyProvider } from './metricProviders/DoraDeploymentFrequencyProvider';
 import { DoraMedianLeadTimeForChangesProvider } from './metricProviders/DoraMedianLeadTimeForChangesProvider';
+import { DoraMeanTimeToRestoreProvider } from './metricProviders/DoraMeanTimeToRestoreProvider';
 
 export const scorecardModuleDora = createBackendModule({
   pluginId: 'scorecard',
@@ -43,6 +45,13 @@ export const scorecardModuleDora = createBackendModule({
           DoraMedianLeadTimeForChangesProvider.fromConfig(config, {
             collectorsService,
             logger,
+          }),
+          DoraMeanTimeToRestoreProvider.fromConfig(config, {
+            collectorsService,
+            logger,
+          }),
+          DoraChangeFailureRateProvider.fromConfig(config, {
+            collectorsService,
           }),
         );
       },

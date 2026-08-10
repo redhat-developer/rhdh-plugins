@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import {
   DefaultGithubCredentialsProvider,
@@ -29,18 +30,23 @@ import {
   GithubDeploymentsQueryResponse,
   GithubCommitsPullRequestsQueryResponse,
 } from './types';
-import { GITHUB_BATCH_SIZE } from './constants';
+import {
+  DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT,
+  GITHUB_BATCH_SIZE,
+} from './constants';
 import { buildCommitsPullRequestsQuery } from './queries/buildCommitsPullRequestsQuery';
 import { mapCommitsPullRequests } from './mappers';
 
 export class GithubClient {
   private readonly integrations: ScmIntegrations;
   private readonly credentialsProvider: DefaultGithubCredentialsProvider;
+  private readonly logger: LoggerService;
 
-  constructor(config: Config) {
+  constructor(config: Config, logger: LoggerService) {
     this.integrations = ScmIntegrations.fromConfig(config);
     this.credentialsProvider =
       DefaultGithubCredentialsProvider.fromIntegrations(this.integrations);
+    this.logger = logger;
   }
 
   private async getOctokitClient(url: string): Promise<typeof graphql> {
@@ -116,14 +122,17 @@ export class GithubClient {
     repository: GithubRepository,
     from: Date,
     to: Date,
+    options?: { fetchItemsLimit?: number },
   ): Promise<GithubDeployment[]> {
+    const fetchItemsLimit =
+      options?.fetchItemsLimit ?? DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT;
     const octokit = await this.getOctokitClient(url);
     const deployments: GithubDeployment[] = [];
     const query = `
       query getDeployments($owner: String!, $repo: String!, $after: String) {
         repository(owner: $owner, name: $repo) {
           deployments(
-            first: 100
+            first: ${GITHUB_BATCH_SIZE}
             orderBy: { field: CREATED_AT, direction: DESC }
             after: $after
           ) {
@@ -150,7 +159,7 @@ export class GithubClient {
     let hasMorePages = true;
     let reachedOlderThanWindow = false;
 
-    while (hasMorePages) {
+    while (hasMorePages && deployments.length < fetchItemsLimit) {
       const response: GithubDeploymentsQueryResponse = await octokit(query, {
         owner: repository.owner,
         repo: repository.repo,
@@ -169,7 +178,13 @@ export class GithubClient {
         break;
       }
 
+      let truncatedCurrentPage = false;
       for (const deployment of pageDeployments) {
+        if (deployments.length >= fetchItemsLimit) {
+          truncatedCurrentPage = true;
+          break;
+        }
+
         if (!deployment || !deployment.databaseId || !deployment.commitOid) {
           continue;
         }
@@ -194,9 +209,22 @@ export class GithubClient {
         }
       }
 
+      const githubHasNextPage = Boolean(
+        response.repository.deployments?.pageInfo.hasNextPage,
+      );
+      if (
+        deployments.length >= fetchItemsLimit &&
+        (githubHasNextPage || truncatedCurrentPage)
+      ) {
+        this.logger.warn(
+          `Reached fetchItemsLimit of ${fetchItemsLimit} for deployments in ${repository.owner}/${repository.repo}; stopping fetch`,
+        );
+      }
+
       hasMorePages =
+        deployments.length < fetchItemsLimit &&
         !reachedOlderThanWindow &&
-        Boolean(response.repository.deployments?.pageInfo.hasNextPage);
+        githubHasNextPage;
       after = response.repository.deployments?.pageInfo.endCursor ?? null;
     }
 
@@ -290,7 +318,10 @@ export class GithubClient {
     workflowName: string,
     from: Date,
     to: Date,
+    options?: { fetchItemsLimit?: number },
   ): Promise<GithubWorkflowRun[]> {
+    const fetchItemsLimit =
+      options?.fetchItemsLimit ?? DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT;
     const octokit = await this.getOctokitRestClient(url);
 
     const workflows = await octokit.paginate(
@@ -316,23 +347,35 @@ export class GithubClient {
       );
     }
 
-    const workflowRuns = await octokit.paginate(
+    const workflowRuns: GithubWorkflowRun[] = [];
+    await octokit.paginate(
       octokit.actions.listWorkflowRuns,
       {
         owner: repository.owner,
         repo: repository.repo,
         workflow_id: workflow.id,
         created: `${from.toISOString()}..${to.toISOString()}`,
-        per_page: 100,
+        per_page: GITHUB_BATCH_SIZE,
       },
-      response =>
-        response.data.map(run => ({
+      (response, done) => {
+        const remaining = fetchItemsLimit - workflowRuns.length;
+        const pageRuns =
+          response.data.length > remaining
+            ? response.data.slice(0, remaining)
+            : response.data;
+        const mapped = pageRuns.map(run => ({
           id: run.id,
           sha: run.head_sha,
           createdAt: run.created_at,
           status: run.status ?? null,
           conclusion: run.conclusion ?? null,
-        })),
+        }));
+        workflowRuns.push(...mapped);
+        if (workflowRuns.length === fetchItemsLimit) {
+          done();
+        }
+        return mapped;
+      },
     );
 
     // GitHub returns DESC by createdAt

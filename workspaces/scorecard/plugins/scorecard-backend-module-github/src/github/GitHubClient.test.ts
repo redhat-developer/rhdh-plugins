@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { mockServices } from '@backstage/backend-test-utils';
 import { ConfigReader } from '@backstage/config';
 import { DefaultGithubCredentialsProvider } from '@backstage/integration';
 import { GithubClient } from './GithubClient';
@@ -52,6 +53,7 @@ jest.mock('@octokit/rest', () => ({
 
 describe('GithubClient', () => {
   let githubClient: GithubClient;
+  const mockedLogger = mockServices.logger.mock();
   const repository: GithubRepository = {
     owner: 'owner',
     repo: 'repo',
@@ -78,7 +80,7 @@ describe('GithubClient', () => {
         ],
       },
     });
-    githubClient = new GithubClient(mockConfig);
+    githubClient = new GithubClient(mockConfig, mockedLogger);
   });
 
   describe('getOpenPullRequestsCount', () => {
@@ -200,6 +202,232 @@ describe('GithubClient', () => {
         }),
       );
       expect(getCredentialsSpy).toHaveBeenCalledWith({ url });
+    });
+
+    it('should stop paging once fetchItemsLimit of in-window deployments is reached', async () => {
+      const url = `https://github.com/owner/repo`;
+      const from = new Date('2026-05-01T00:00:00.000Z');
+      const to = new Date('2026-05-31T23:59:59.000Z');
+
+      mockedGraphqlClient.mockResolvedValueOnce({
+        repository: {
+          deployments: {
+            nodes: [
+              {
+                databaseId: 103,
+                commitOid: 'sha-three',
+                createdAt: '2026-05-20T10:00:00.000Z',
+                environment: 'production',
+                latestStatus: { state: 'SUCCESS' },
+              },
+              {
+                databaseId: 102,
+                commitOid: 'sha-two',
+                createdAt: '2026-05-15T10:00:00.000Z',
+                environment: 'production',
+                latestStatus: { state: 'SUCCESS' },
+              },
+            ],
+            pageInfo: {
+              hasNextPage: true,
+              endCursor: 'cursor-1',
+            },
+          },
+        },
+      });
+
+      const deployments = await githubClient.getDeployments(
+        url,
+        repository,
+        from,
+        to,
+        { fetchItemsLimit: 2 },
+      );
+
+      expect(deployments).toEqual([
+        {
+          id: 102,
+          sha: 'sha-two',
+          createdAt: '2026-05-15T10:00:00.000Z',
+          environment: 'production',
+          status: 'SUCCESS',
+        },
+        {
+          id: 103,
+          sha: 'sha-three',
+          createdAt: '2026-05-20T10:00:00.000Z',
+          environment: 'production',
+          status: 'SUCCESS',
+        },
+      ]);
+      expect(mockedGraphqlClient).toHaveBeenCalledTimes(1);
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        'Reached fetchItemsLimit of 2 for deployments in owner/repo; stopping fetch',
+      );
+    });
+
+    it('should take only remaining items when page exceeds fetchItemsLimit', async () => {
+      const url = `https://github.com/owner/repo`;
+      const from = new Date('2026-05-01T00:00:00.000Z');
+      const to = new Date('2026-05-31T23:59:59.000Z');
+
+      mockedGraphqlClient
+        .mockResolvedValueOnce({
+          repository: {
+            deployments: {
+              nodes: [
+                {
+                  databaseId: 104,
+                  commitOid: 'sha-four',
+                  createdAt: '2026-05-25T10:00:00.000Z',
+                  environment: 'production',
+                  latestStatus: { state: 'SUCCESS' },
+                },
+                {
+                  databaseId: 103,
+                  commitOid: 'sha-three',
+                  createdAt: '2026-05-20T10:00:00.000Z',
+                  environment: 'production',
+                  latestStatus: { state: 'SUCCESS' },
+                },
+              ],
+              pageInfo: {
+                hasNextPage: true,
+                endCursor: 'cursor-1',
+              },
+            },
+          },
+        })
+        .mockResolvedValueOnce({
+          repository: {
+            deployments: {
+              nodes: [
+                {
+                  databaseId: 102,
+                  commitOid: 'sha-two',
+                  createdAt: '2026-05-15T10:00:00.000Z',
+                  environment: 'production',
+                  latestStatus: { state: 'SUCCESS' },
+                },
+                {
+                  databaseId: 101,
+                  commitOid: 'sha-one',
+                  createdAt: '2026-05-10T10:00:00.000Z',
+                  environment: 'production',
+                  latestStatus: { state: 'SUCCESS' },
+                },
+              ],
+              pageInfo: {
+                hasNextPage: true,
+                endCursor: 'cursor-2',
+              },
+            },
+          },
+        });
+
+      const deployments = await githubClient.getDeployments(
+        url,
+        repository,
+        from,
+        to,
+        { fetchItemsLimit: 3 },
+      );
+
+      expect(deployments).toEqual([
+        {
+          id: 102,
+          sha: 'sha-two',
+          createdAt: '2026-05-15T10:00:00.000Z',
+          environment: 'production',
+          status: 'SUCCESS',
+        },
+        {
+          id: 103,
+          sha: 'sha-three',
+          createdAt: '2026-05-20T10:00:00.000Z',
+          environment: 'production',
+          status: 'SUCCESS',
+        },
+        {
+          id: 104,
+          sha: 'sha-four',
+          createdAt: '2026-05-25T10:00:00.000Z',
+          environment: 'production',
+          status: 'SUCCESS',
+        },
+      ]);
+      expect(mockedGraphqlClient).toHaveBeenCalledTimes(2);
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        'Reached fetchItemsLimit of 3 for deployments in owner/repo; stopping fetch',
+      );
+    });
+
+    it('should warn when fetchItemsLimit truncates the last page', async () => {
+      const url = `https://github.com/owner/repo`;
+      const from = new Date('2026-05-01T00:00:00.000Z');
+      const to = new Date('2026-05-31T23:59:59.000Z');
+
+      mockedGraphqlClient.mockResolvedValueOnce({
+        repository: {
+          deployments: {
+            nodes: [
+              {
+                databaseId: 103,
+                commitOid: 'sha-three',
+                createdAt: '2026-05-20T10:00:00.000Z',
+                environment: 'production',
+                latestStatus: { state: 'SUCCESS' },
+              },
+              {
+                databaseId: 102,
+                commitOid: 'sha-two',
+                createdAt: '2026-05-15T10:00:00.000Z',
+                environment: 'production',
+                latestStatus: { state: 'SUCCESS' },
+              },
+              {
+                databaseId: 101,
+                commitOid: 'sha-one',
+                createdAt: '2026-05-10T10:00:00.000Z',
+                environment: 'production',
+                latestStatus: { state: 'SUCCESS' },
+              },
+            ],
+            pageInfo: {
+              hasNextPage: false,
+              endCursor: null,
+            },
+          },
+        },
+      });
+
+      const deployments = await githubClient.getDeployments(
+        url,
+        repository,
+        from,
+        to,
+        { fetchItemsLimit: 2 },
+      );
+
+      expect(deployments).toEqual([
+        {
+          id: 102,
+          sha: 'sha-two',
+          createdAt: '2026-05-15T10:00:00.000Z',
+          environment: 'production',
+          status: 'SUCCESS',
+        },
+        {
+          id: 103,
+          sha: 'sha-three',
+          createdAt: '2026-05-20T10:00:00.000Z',
+          environment: 'production',
+          status: 'SUCCESS',
+        },
+      ]);
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        'Reached fetchItemsLimit of 2 for deployments in owner/repo; stopping fetch',
+      );
     });
 
     it('should throw when repository is not found or inaccessible', async () => {
@@ -365,27 +593,33 @@ describe('GithubClient', () => {
       const from = new Date('2026-05-01T00:00:00.000Z');
       const to = new Date('2026-05-31T23:59:59.000Z');
 
-      mockedPaginate
-        .mockResolvedValueOnce([
-          { id: 11, name: 'Deploy', path: '.github/workflows/deploy.yml' },
-          { id: 22, name: 'CI', path: '.github/workflows/ci.yml' },
-        ])
-        .mockResolvedValueOnce([
+      mockedPaginate.mockImplementation(async (endpoint, _params, mapFn) => {
+        if (endpoint === mockedListRepoWorkflows) {
+          const data = [
+            { id: 11, name: 'Deploy', path: '.github/workflows/deploy.yml' },
+            { id: 22, name: 'CI', path: '.github/workflows/ci.yml' },
+          ];
+          return mapFn ? mapFn({ data }) : data;
+        }
+
+        const data = [
           {
             id: 1002,
-            sha: 'sha-two',
-            createdAt: '2026-05-11T10:00:00.000Z',
+            head_sha: 'sha-two',
+            created_at: '2026-05-11T10:00:00.000Z',
             status: null,
             conclusion: null,
           },
           {
             id: 1001,
-            sha: 'sha-one',
-            createdAt: '2026-05-10T10:00:00.000Z',
+            head_sha: 'sha-one',
+            created_at: '2026-05-10T10:00:00.000Z',
             status: 'completed',
             conclusion: 'success',
           },
-        ]);
+        ];
+        return mapFn ? mapFn({ data }, () => undefined) : data;
+      });
 
       const workflowRuns = await githubClient.getWorkflowRuns(
         url,
@@ -423,11 +657,204 @@ describe('GithubClient', () => {
       );
     });
 
+    it('should stop paging once fetchItemsLimit of workflow runs is reached', async () => {
+      const url = `https://github.com/owner/repo`;
+      const from = new Date('2026-05-01T00:00:00.000Z');
+      const to = new Date('2026-05-31T23:59:59.000Z');
+
+      mockedPaginate.mockImplementation(async (endpoint, _params, mapFn) => {
+        if (endpoint === mockedListRepoWorkflows) {
+          const data = [
+            { id: 11, name: 'Deploy', path: '.github/workflows/deploy.yml' },
+          ];
+          return mapFn ? mapFn({ data }) : data;
+        }
+
+        const pages = [
+          [
+            {
+              id: 1003,
+              head_sha: 'sha-three',
+              created_at: '2026-05-12T10:00:00.000Z',
+              status: 'completed',
+              conclusion: 'success',
+            },
+            {
+              id: 1002,
+              head_sha: 'sha-two',
+              created_at: '2026-05-11T10:00:00.000Z',
+              status: 'completed',
+              conclusion: 'success',
+            },
+          ],
+          [
+            {
+              id: 1001,
+              head_sha: 'sha-one',
+              created_at: '2026-05-10T10:00:00.000Z',
+              status: 'completed',
+              conclusion: 'success',
+            },
+          ],
+        ];
+
+        const results: unknown[] = [];
+        for (const data of pages) {
+          let stopped = false;
+          const mapped = mapFn
+            ? mapFn({ data }, () => {
+                stopped = true;
+              })
+            : data;
+          results.push(...(Array.isArray(mapped) ? mapped : []));
+          if (stopped) {
+            break;
+          }
+        }
+        return results;
+      });
+
+      const workflowRuns = await githubClient.getWorkflowRuns(
+        url,
+        repository,
+        'Deploy',
+        from,
+        to,
+        { fetchItemsLimit: 2 },
+      );
+
+      expect(workflowRuns).toEqual([
+        {
+          id: 1002,
+          sha: 'sha-two',
+          createdAt: '2026-05-11T10:00:00.000Z',
+          status: 'completed',
+          conclusion: 'success',
+        },
+        {
+          id: 1003,
+          sha: 'sha-three',
+          createdAt: '2026-05-12T10:00:00.000Z',
+          status: 'completed',
+          conclusion: 'success',
+        },
+      ]);
+      expect(mockedPaginate).toHaveBeenCalledTimes(2);
+    });
+
+    it('should slice the last page and call done when it exceeds remaining fetchItemsLimit', async () => {
+      const url = `https://github.com/owner/repo`;
+      const from = new Date('2026-05-01T00:00:00.000Z');
+      const to = new Date('2026-05-31T23:59:59.000Z');
+      const doneCalls: boolean[] = [];
+
+      mockedPaginate.mockImplementation(async (endpoint, _params, mapFn) => {
+        if (endpoint === mockedListRepoWorkflows) {
+          const data = [
+            { id: 11, name: 'Deploy', path: '.github/workflows/deploy.yml' },
+          ];
+          return mapFn ? mapFn({ data }) : data;
+        }
+
+        const pages = [
+          [
+            {
+              id: 1003,
+              head_sha: 'sha-three',
+              created_at: '2026-05-12T10:00:00.000Z',
+              status: 'completed',
+              conclusion: 'success',
+            },
+            {
+              id: 1002,
+              head_sha: 'sha-two',
+              created_at: '2026-05-11T10:00:00.000Z',
+              status: 'completed',
+              conclusion: 'success',
+            },
+          ],
+          [
+            {
+              id: 1001,
+              head_sha: 'sha-one',
+              created_at: '2026-05-10T10:00:00.000Z',
+              status: 'completed',
+              conclusion: 'success',
+            },
+            {
+              id: 1000,
+              head_sha: 'sha-zero',
+              created_at: '2026-05-09T10:00:00.000Z',
+              status: 'completed',
+              conclusion: 'success',
+            },
+          ],
+        ];
+
+        const results: unknown[] = [];
+        for (const data of pages) {
+          let stopped = false;
+          const mapped = mapFn
+            ? mapFn({ data }, () => {
+                stopped = true;
+                doneCalls.push(true);
+              })
+            : data;
+          results.push(...(Array.isArray(mapped) ? mapped : []));
+          if (stopped) {
+            break;
+          }
+        }
+        return results;
+      });
+
+      const workflowRuns = await githubClient.getWorkflowRuns(
+        url,
+        repository,
+        'Deploy',
+        from,
+        to,
+        { fetchItemsLimit: 3 },
+      );
+
+      expect(workflowRuns).toEqual([
+        {
+          id: 1001,
+          sha: 'sha-one',
+          createdAt: '2026-05-10T10:00:00.000Z',
+          status: 'completed',
+          conclusion: 'success',
+        },
+        {
+          id: 1002,
+          sha: 'sha-two',
+          createdAt: '2026-05-11T10:00:00.000Z',
+          status: 'completed',
+          conclusion: 'success',
+        },
+        {
+          id: 1003,
+          sha: 'sha-three',
+          createdAt: '2026-05-12T10:00:00.000Z',
+          status: 'completed',
+          conclusion: 'success',
+        },
+      ]);
+      expect(doneCalls).toEqual([true]);
+      expect(mockedPaginate).toHaveBeenCalledTimes(2);
+    });
+
     it('should throw when workflow cannot be resolved by name', async () => {
       const url = `https://github.com/owner/repo`;
-      mockedPaginate.mockResolvedValueOnce([
-        { id: 22, name: 'CI', path: '.github/workflows/ci.yml' },
-      ]);
+      mockedPaginate.mockImplementation(async (endpoint, _params, mapFn) => {
+        if (endpoint === mockedListRepoWorkflows) {
+          const data = [
+            { id: 22, name: 'CI', path: '.github/workflows/ci.yml' },
+          ];
+          return mapFn ? mapFn({ data }) : data;
+        }
+        return [];
+      });
 
       await expect(
         githubClient.getWorkflowRuns(

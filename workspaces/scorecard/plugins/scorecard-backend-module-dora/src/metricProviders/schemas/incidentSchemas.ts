@@ -14,10 +14,25 @@
  * limitations under the License.
  */
 
-export enum ScorecardJiraAnnotations {
-  PROJECT_KEY = 'jira/project-key',
-  COMPONENT = 'jira/component',
-  LABEL = 'jira/label',
-  TEAM = 'jira/team',
-  CUSTOM_FILTER = 'jira/custom-filter',
-}
+import { z } from 'zod';
+
+export const incidentsCollectorInputSchema = z
+  .object({
+    from: z.string().datetime(),
+    to: z.string().datetime(),
+  })
+  .passthrough();
+
+const incidentSchema = z
+  .object({
+    id: z.string(),
+    createdAt: z.string().datetime(),
+    resolutionAt: z.string().datetime().nullable(),
+  })
+  .passthrough();
+
+export const incidentsCollectorOutputSchema = z.object({
+  incidents: z.array(incidentSchema),
+});
+
+export type Incident = z.infer<typeof incidentSchema>;

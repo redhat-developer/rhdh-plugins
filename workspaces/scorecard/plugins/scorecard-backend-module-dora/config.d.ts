@@ -62,6 +62,37 @@ export interface Config {
           thresholds?: ThresholdConfig;
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
         };
+        meanTimeToRestore?: {
+          /**
+           * Provider-specific options.
+           */
+          options?: {
+            collectors?: {
+              incidents?: CollectorConfig;
+            };
+          };
+          thresholds?: ThresholdConfig;
+          schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+        };
+        changeFailureRate?: {
+          /**
+           * Provider-specific options.
+           */
+          options?: {
+            /**
+             * Environment names treated as production (case-insensitive).
+             * Missing/unknown deployment environments still count as production.
+             * @default ['production']
+             */
+            productionEnvironments?: string[];
+            collectors?: {
+              deployments?: CollectorConfig;
+              incidents?: CollectorConfig;
+            };
+          };
+          thresholds?: ThresholdConfig;
+          schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+        };
       };
     };
   };

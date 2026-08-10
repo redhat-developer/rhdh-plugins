@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { mockServices } from '@backstage/backend-test-utils';
 import { ConfigReader } from '@backstage/config';
 import { GithubClient } from '../github/GithubClient';
 import { GithubDeploymentsCollector } from './GithubDeploymentsCollector';
@@ -32,6 +33,7 @@ const testEntity = {
 
 describe('GithubDeploymentsCollector', () => {
   let collector: GithubDeploymentsCollector;
+  const mockedLogger = mockServices.logger.mock();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -46,6 +48,7 @@ describe('GithubDeploymentsCollector', () => {
           ],
         },
       }),
+      { logger: mockedLogger },
     );
   });
 

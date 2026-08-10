@@ -392,3 +392,27 @@ scorecard:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
+      changeFailureRate:
+        options:
+          collectors:
+            deployments:
+              id: github:deployments
+              # Uncomment the following to use workflow runs
+              # id: github:deploymentWorkflowRuns
+              # input:
+              #   workflowName: Create Test Deployment on PR Merge
+            incidents:
+              id: jira:incidents
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+      meanTimeToRestore:
+        options:
+          collectors:
+            incidents:
+              id: jira:incidents
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }

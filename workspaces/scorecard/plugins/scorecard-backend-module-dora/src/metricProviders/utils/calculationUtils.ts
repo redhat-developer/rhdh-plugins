@@ -25,3 +25,10 @@ export function calculateMedian(values: number[]): number {
     ? (sortedValues[middleIndex - 1] + sortedValues[middleIndex]) / 2
     : sortedValues[middleIndex];
 }
+
+export function calculateMean(values: number[]): number {
+  if (values.length === 0) {
+    throw new Error('Unable to calculate mean from empty values');
+  }
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}

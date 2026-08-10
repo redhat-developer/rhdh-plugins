@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Entity } from '@backstage/catalog-model';
 import { getEntitySourceLocation } from '@backstage/catalog-model';
 import type { Config } from '@backstage/config';
@@ -42,12 +43,17 @@ export class GithubDeploymentWorkflowRunsCollector
 
   private readonly client: GithubClient;
 
-  private constructor(config: Config) {
-    this.client = new GithubClient(config);
+  private constructor(client: GithubClient) {
+    this.client = client;
   }
 
-  static fromConfig(config: Config): GithubDeploymentWorkflowRunsCollector {
-    return new GithubDeploymentWorkflowRunsCollector(config);
+  static fromConfig(
+    config: Config,
+    options: { logger: LoggerService },
+  ): GithubDeploymentWorkflowRunsCollector {
+    return new GithubDeploymentWorkflowRunsCollector(
+      new GithubClient(config, options.logger),
+    );
   }
 
   getCollectorId(): string {

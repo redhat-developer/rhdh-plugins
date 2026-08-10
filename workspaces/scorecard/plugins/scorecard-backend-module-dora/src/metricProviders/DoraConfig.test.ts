@@ -18,10 +18,13 @@ import { ConfigReader } from '@backstage/config';
 import {
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+  DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
   DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
 } from '../constants';
 import {
+  parseDoraChangeFailureRateConfig,
   parseDoraDeploymentFrequencyConfig,
+  parseDoraMeanTimeToRestoreConfig,
   parseDoraMedianLeadTimeForChangesConfig,
 } from './DoraConfig';
 
@@ -144,6 +147,103 @@ describe('DoraConfig', () => {
           input: { label: 'prs' },
         },
         productionEnvironments: ['prod'],
+      });
+    });
+  });
+
+  describe('parseDoraMeanTimeToRestoreConfig', () => {
+    it('returns defaults when unset', () => {
+      expect(parseDoraMeanTimeToRestoreConfig(new ConfigReader({}))).toEqual({
+        incidentsCollector: {
+          id: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+          input: {},
+        },
+      });
+    });
+
+    it('parses incidents collector', () => {
+      expect(
+        parseDoraMeanTimeToRestoreConfig(
+          new ConfigReader({
+            scorecard: {
+              plugins: {
+                dora: {
+                  meanTimeToRestore: {
+                    options: {
+                      collectors: {
+                        incidents: {
+                          id: 'custom:incidents',
+                          input: { project: 'OPS' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          }),
+        ),
+      ).toEqual({
+        incidentsCollector: {
+          id: 'custom:incidents',
+          input: { project: 'OPS' },
+        },
+      });
+    });
+  });
+
+  describe('parseDoraChangeFailureRateConfig', () => {
+    it('returns defaults when unset', () => {
+      expect(parseDoraChangeFailureRateConfig(new ConfigReader({}))).toEqual({
+        deploymentsCollector: {
+          id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+          input: {},
+        },
+        incidentsCollector: {
+          id: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+          input: {},
+        },
+        productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+      });
+    });
+
+    it('parses collectors and productionEnvironments', () => {
+      expect(
+        parseDoraChangeFailureRateConfig(
+          new ConfigReader({
+            scorecard: {
+              plugins: {
+                dora: {
+                  changeFailureRate: {
+                    options: {
+                      productionEnvironments: ['prod', 'live'],
+                      collectors: {
+                        deployments: {
+                          id: 'custom:deployments',
+                          input: { workflowName: 'Deploy' },
+                        },
+                        incidents: {
+                          id: 'custom:incidents',
+                          input: { project: 'OPS' },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          }),
+        ),
+      ).toEqual({
+        deploymentsCollector: {
+          id: 'custom:deployments',
+          input: { workflowName: 'Deploy' },
+        },
+        incidentsCollector: {
+          id: 'custom:incidents',
+          input: { project: 'OPS' },
+        },
+        productionEnvironments: ['prod', 'live'],
       });
     });
   });

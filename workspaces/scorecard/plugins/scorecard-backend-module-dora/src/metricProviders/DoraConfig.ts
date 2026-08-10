@@ -23,6 +23,7 @@ import {
 import {
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+  DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
   DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
 } from '../constants';
 import { JsonValue } from '@backstage/types';
@@ -35,6 +36,16 @@ export type DoraDeploymentFrequencyConfig = {
 export type DoraMedianLeadTimeForChangesConfig = {
   deploymentsCollector: CollectorConfig;
   deploymentPullRequestsCollector: CollectorConfig;
+  productionEnvironments: string[];
+};
+
+export type DoraMeanTimeToRestoreConfig = {
+  incidentsCollector: CollectorConfig;
+};
+
+export type DoraChangeFailureRateConfig = {
+  deploymentsCollector: CollectorConfig;
+  incidentsCollector: CollectorConfig;
   productionEnvironments: string[];
 };
 
@@ -82,6 +93,56 @@ export const DEFAULT_DORA_MEDIAN_LEAD_TIME_THRESHOLDS: ThresholdConfig =
       {
         key: 'low',
         expression: '>168',
+        color: ScorecardThresholdRuleColors.ERROR,
+        icon: 'scorecardErrorStatusIcon',
+      },
+    ],
+  };
+
+export const DEFAULT_DORA_CHANGE_FAILURE_RATE_THRESHOLDS: ThresholdConfig =
+  // Calculated metric is in percentage
+  {
+    rules: [
+      {
+        key: 'elite',
+        expression: '<5',
+        color: ScorecardThresholdRuleColors.SUCCESS,
+        icon: 'scorecardSuccessStatusIcon',
+      },
+      {
+        key: 'medium',
+        expression: '5-15',
+        color: ScorecardThresholdRuleColors.WARNING,
+        icon: 'scorecardWarningStatusIcon',
+      },
+      {
+        key: 'low',
+        expression: '>15',
+        color: ScorecardThresholdRuleColors.ERROR,
+        icon: 'scorecardErrorStatusIcon',
+      },
+    ],
+  };
+
+export const DEFAULT_DORA_MEAN_TIME_TO_RESTORE_THRESHOLDS: ThresholdConfig =
+  // Calculated metric is in hours
+  {
+    rules: [
+      {
+        key: 'elite',
+        expression: '<1',
+        color: ScorecardThresholdRuleColors.SUCCESS,
+        icon: 'scorecardSuccessStatusIcon',
+      },
+      {
+        key: 'medium',
+        expression: '1-24',
+        color: ScorecardThresholdRuleColors.WARNING,
+        icon: 'scorecardWarningStatusIcon',
+      },
+      {
+        key: 'low',
+        expression: '>24',
         color: ScorecardThresholdRuleColors.ERROR,
         icon: 'scorecardErrorStatusIcon',
       },
@@ -156,6 +217,49 @@ export function parseDoraMedianLeadTimeForChangesConfig(
       config,
       `${providerConfigPath}.options.collectors.deploymentPullRequests`,
       DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+    ),
+    productionEnvironments: parseProductionEnvironments(
+      config,
+      providerConfigPath,
+    ),
+  };
+}
+
+/**
+ * Parses mean-time-to-restore provider config from the root Backstage config.
+ */
+export function parseDoraMeanTimeToRestoreConfig(
+  config: Config,
+): DoraMeanTimeToRestoreConfig {
+  const providerConfigPath = 'scorecard.plugins.dora.meanTimeToRestore';
+
+  return {
+    incidentsCollector: parseCollectorConfig(
+      config,
+      `${providerConfigPath}.options.collectors.incidents`,
+      DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+    ),
+  };
+}
+
+/**
+ * Parses change-failure-rate provider config from the root Backstage config.
+ */
+export function parseDoraChangeFailureRateConfig(
+  config: Config,
+): DoraChangeFailureRateConfig {
+  const providerConfigPath = 'scorecard.plugins.dora.changeFailureRate';
+
+  return {
+    deploymentsCollector: parseCollectorConfig(
+      config,
+      `${providerConfigPath}.options.collectors.deployments`,
+      DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+    ),
+    incidentsCollector: parseCollectorConfig(
+      config,
+      `${providerConfigPath}.options.collectors.incidents`,
+      DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
     ),
     productionEnvironments: parseProductionEnvironments(
       config,

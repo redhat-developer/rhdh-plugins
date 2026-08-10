@@ -21,6 +21,11 @@ import {
   deploymentsCollectorOutputSchema,
 } from '../schemas/deploymentSchemas';
 import {
+  Incident,
+  incidentsCollectorInputSchema,
+  incidentsCollectorOutputSchema,
+} from '../schemas/incidentSchemas';
+import {
   PullRequest,
   deploymentPullRequestsCollectorInputSchema,
   deploymentPullRequestsCollectorOutputSchema,
@@ -57,6 +62,23 @@ export function buildMockDeploymentPullRequestsCollector(options: {
     getOutputSchema: () => deploymentPullRequestsCollectorOutputSchema,
     collect: jest.fn(async () => ({
       pullRequests,
+    })),
+  };
+}
+
+export function buildMockIncidentsCollector(options: {
+  incidents: Incident[];
+  collectorId?: string;
+}): Collector {
+  const { incidents, collectorId = 'jira:incidents' } = options;
+
+  return {
+    getCollectorId: () => collectorId,
+    getCollectorDescription: () => 'mock incidents collector',
+    getInputSchema: () => incidentsCollectorInputSchema,
+    getOutputSchema: () => incidentsCollectorOutputSchema,
+    collect: jest.fn(async () => ({
+      incidents,
     })),
   };
 }

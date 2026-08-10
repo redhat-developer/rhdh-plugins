@@ -67,9 +67,7 @@ describe('GithubDeploymentPullRequestsCollector', () => {
           ],
         },
       }),
-      {
-        logger: mockedLogger,
-      },
+      { logger: mockedLogger },
     );
 
     const result = await collector.collect({

@@ -7,7 +7,8 @@
 
 Deployment Frequency measures how often a team successfully deploys changes to production.
 
-The metric counts successful deployments to production (or unknown environment) and normalizes that count to weekly frequency.
+The metric counts successful deployments to production (or unknown environment) over the last 30 days and normalizes that count to weekly frequency.
+The result is: `(successfulProductionDeployments / 30) * 7`.
 
 ## Options
 

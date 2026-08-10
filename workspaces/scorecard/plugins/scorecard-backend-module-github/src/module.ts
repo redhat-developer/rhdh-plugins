@@ -39,13 +39,13 @@ export const scorecardModuleGithub = createBackendModule({
       },
       async init({ collectors, config, logger, metrics }) {
         collectors.addCollector(
-          GithubDeploymentsCollector.fromConfig(config),
-          GithubDeploymentWorkflowRunsCollector.fromConfig(config),
-          GithubDeploymentPullRequestsCollector.fromConfig(config, {
-            logger,
-          }),
+          GithubDeploymentsCollector.fromConfig(config, { logger }),
+          GithubDeploymentWorkflowRunsCollector.fromConfig(config, { logger }),
+          GithubDeploymentPullRequestsCollector.fromConfig(config, { logger }),
         );
-        metrics.addMetricProvider(GithubOpenPRsProvider.fromConfig(config));
+        metrics.addMetricProvider(
+          GithubOpenPRsProvider.fromConfig(config, { logger }),
+        );
       },
     });
   },
