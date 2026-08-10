@@ -6,13 +6,13 @@
   "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./alpha": "./src/alpha.tsx",
+    "./legacy": "./src/legacyExports.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
-      "alpha": [
-        "src/alpha.tsx"
+      "legacy": [
+        "src/legacyExports.ts"
       ],
       "package.json": [
         "package.json"
@@ -89,7 +89,8 @@
   "scalprum": {
     "name": "red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets",
     "exposedModules": {
-      "PluginRoot": "./src/index.ts"
+      "PluginRoot": "./src/index.ts",
+      "Legacy": "./src/legacyExports.ts"
     }
   },
   "devDependencies": {

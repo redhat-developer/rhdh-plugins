@@ -6,23 +6,33 @@ Documentation of implemented widgets can be found in a [orchestratorFormWidgets.
 
 ## Deployment
 
-### Static (for development)
+### New frontend system (NFS)
 
-In the packages/app/src/App.tsx:
+```tsx
+import orchestratorFormWidgetsPlugin from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets';
 
+export default createApp({
+  features: [
+    // ...
+    orchestratorFormWidgetsPlugin,
+  ],
+});
 ```
-import { orchestratorFormWidgetsPlugin } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets';
-...
+
+### Legacy frontend (OFS)
+
+```tsx
+import { orchestratorFormWidgetsPlugin } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets/legacy';
+
 const app = createApp({
-    ...
-    plugins: [orchestratorFormWidgetsPlugin],
-})
+  plugins: [orchestratorFormWidgetsPlugin],
+});
 ```
 
 ### Dynamic (for RHDH production)
 
-For RHDH production deployments, it is expected that the plugin is exported as a dynamic plugin using RHDH CLI a loaded among the other dynamic frontend plugins.
-No explicit configuration is needed.
+For RHDH production deployments, it is expected that the plugin is exported as a dynamic plugin using RHDH CLI and loaded among the other dynamic frontend plugins.
+No explicit configuration is needed for NFS. Legacy OFS Scalprum consumers should use `module: Legacy`.
 
 ## `http-workflow-dev-server` - HTTP server for dynamic widgets development
 

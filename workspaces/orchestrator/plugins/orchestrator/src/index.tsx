@@ -17,8 +17,8 @@
 /**
  * @packageDocumentation
  *
- * Alpha exports for the Orchestrator plugin (Backstage new frontend system).
- * Provides the plugin instance, pages, nav items, entity content, and translation module.
+ * Orchestrator plugin for the Backstage new frontend system (NFS).
+ * Provides the plugin instance, pages, entity content, and translation module.
  */
 
 import { discoveryApiRef, identityApiRef } from '@backstage/core-plugin-api';
@@ -83,7 +83,6 @@ const orchestratorApi = ApiBlueprint.make({
 });
 
 /**
- * @alpha
  * @param entity - The entity to check if it has the orchestrator.io/workflows annotation
  * @returns True if the entity has the orchestrator.io/workflows annotation
  */
@@ -113,7 +112,7 @@ const orchestratorTranslation = TranslationBlueprint.make({
 
 /**
  * The Orchestrator plugin for the new frontend system.
- * @alpha
+ * @public
  */
 export default createFrontendPlugin({
   pluginId: 'orchestrator',
@@ -136,7 +135,7 @@ export default createFrontendPlugin({
  * A frontend module that registers Orchestrator translations.
  * Must be installed separately in the app's features since TranslationBlueprint
  * is restricted to the app plugin (pluginId: 'app').
- * @alpha
+ * @public
  */
 export const orchestratorTranslationsModule = createFrontendModule({
   pluginId: 'app',

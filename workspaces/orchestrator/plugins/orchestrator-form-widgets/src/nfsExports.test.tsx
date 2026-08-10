@@ -13,32 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import plugin, { orchestratorTranslationsModule } from './alpha';
-import translationsModuleDefault from './orchestratorTranslationsModuleExport';
+import plugin from './index';
 
-describe('orchestrator alpha plugin test', () => {
+describe('orchestrator-form-widgets NFS', () => {
   it('should export a valid frontend plugin', () => {
     expect(plugin).toBeDefined();
     expect(plugin.$$type).toBe('@backstage/FrontendPlugin');
   });
 
   it('should have the correct plugin id', () => {
-    expect(plugin.id).toBe('orchestrator');
-  });
-
-  it('should have routes defined', () => {
-    expect(plugin.routes).toBeDefined();
-    expect(plugin.routes).toHaveProperty('root');
-  });
-
-  it('should export a translations module targeting the app plugin', () => {
-    expect(orchestratorTranslationsModule).toBeDefined();
-    expect(orchestratorTranslationsModule.$$type).toBe(
-      '@backstage/FrontendModule',
-    );
-  });
-
-  it('should export the translations module as default for NFS discovery', () => {
-    expect(translationsModuleDefault).toBe(orchestratorTranslationsModule);
+    expect(plugin.id).toBe('orchestrator-form-widgets');
   });
 });
