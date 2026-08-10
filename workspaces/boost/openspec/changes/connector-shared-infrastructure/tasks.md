@@ -3,7 +3,7 @@
 ## 1. CA Bundle Resolution Utility (P0) — RHIDP-15329
 
 - [ ] 1.1 Create `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` package with `package.json`, TypeScript config, and README
-- [ ] 1.2 Define `loadCaBundle(connectorConfig: Config): Buffer | undefined` function signature — caller passes the Config subtree containing the `tls` block
+- [ ] 1.2 Define `loadCaBundle(connectorConfig: Config, logger: LoggerService): Buffer | undefined` function signature — caller passes the Config subtree containing the `tls` block
 - [ ] 1.3 Implement caFile resolution — read CA from `tls.caFile` within the provided Config subtree
 - [ ] 1.4 Implement caSecret resolution — read CA from `tls.caSecret.$env` within the provided Config subtree
 - [ ] 1.5 Add per-connector config isolation — each connector resolves its own Config nesting before calling `loadCaBundle()` (e.g., MCP passes `config.getConfig('ai-catalog.providers.mcpRegistry')`, RHOAI passes `config.getConfig('ai-catalog.providers.rhoai.mcpCatalog')`, OCI passes per-registry Config node)
@@ -21,7 +21,7 @@
 ## 2. Fault Isolation Wrapper (P0) — RHIDP-15330
 
 - [ ] 2.1 Define `ConnectorErrorContext` interface: `connectorId`, `endpoint`, `errorType`, `errorMessage`, `retryable`, `nextRetryAt`
-- [ ] 2.2 Create `createProviderWrapper(provider: EntityProvider, logger: LoggerService): EntityProvider` function
+- [ ] 2.2 Create `createProviderWrapper(provider: ConnectorEntityProvider, logger: LoggerService, ctx?: FaultIsolationContext): ConnectorEntityProvider` function
 - [ ] 2.3 Implement try/catch wrapper around provider `connect()` via `createProviderWrapper()` to catch unhandled rejections
 - [ ] 2.4 Implement `createSafeRefresh()` — try/catch wrapper around scheduled refresh callback to catch unhandled rejections
 - [ ] 2.5 Implement structured error logging with connector context fields
@@ -47,7 +47,7 @@
 
 ## 4. Package and Documentation (P1)
 
-- [ ] 4.1 Export shared utilities from `src/index.ts`: `loadCaBundle`, `createHttpsAgent`, `createProviderWrapper`, `createSafeRefresh`, `isConnectorEnabled`, `ConnectorErrorContext`
+- [ ] 4.1 Export shared utilities from `src/index.ts`: `loadCaBundle`, `createHttpsAgent`, `createProviderWrapper`, `createSafeRefresh`, `classifyConnectorError`, `isConnectorEnabled`, `validateConnectorStartupConfig`, `ConnectorEntityProvider`, `ConnectorErrorContext`, `FaultIsolationContext`, `ValidateConnectorStartupConfigOptions`
 - [ ] 4.2 Document app-config schema for CA bundle config in README with YAML examples
 - [ ] 4.3 Document enable/disable pattern in README with backend module example
 - [ ] 4.4 Document structured error logging pattern in README with example `ConnectorErrorContext` usage
