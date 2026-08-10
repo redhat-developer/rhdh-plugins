@@ -167,6 +167,16 @@ This approach uses per-release branches (e.g., `release-1.10/my-plugin`), elimin
 6. Open a PR with the `CHANGELOG` additions to `redhat-developer/rhdh-plugins` main branch:
    - This is necessary for history to be clear on the latest branch.
 
+### Yarn.lock-only changes (CVE fixes without code changes)
+
+When only `yarn.lock` changes (e.g., a CVE fix that bumps a transitive dependency) and no plugin code is modified, you can skip the Version Packages flow entirely — no changeset, no version bump, no npm publish is needed.
+
+1. Merge the `yarn.lock` fix into the release branch (e.g., `release-x.y/${plugin}` or `workspace/${workspace}`).
+2. Update `source.json` in the corresponding release branch of [rhdh-plugin-export-overlays](https://github.com/redhat-developer/rhdh-plugin-export-overlays) to point `repo-ref` to the commit with the `yarn.lock` change.
+3. Run `/publish` on the overlays PR — the export step rebuilds the dynamic plugin images from source at that commit, so the CVE fix is picked up without a new npm release.
+
+This avoids unnecessary version bumps when no plugin API or behavior has changed.
+
 ### Legacy: `workspace/{plugin}` branches
 
 > **Note:** This approach uses a shared `workspace/{plugin}` branch, which blocks concurrent backports to different releases for the same plugin. Use the `release-x.y/{plugin}` approach above when possible.
