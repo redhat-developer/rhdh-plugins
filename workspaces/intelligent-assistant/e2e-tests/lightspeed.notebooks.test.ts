@@ -100,7 +100,7 @@ test.describe('Intelligent assistant notebooks', () => {
     await uploadModal.selectFilesViaBrowsePicker(
       notebookElevenFileStagingPaths(),
     );
-    await expect(uploadModal.dialog().getByRole('alert')).toContainText(
+    await expect(uploadModal.errorAlert()).toContainText(
       substituteNotebookTemplate(
         translations['notebook.upload.error.tooManyFiles'],
         { max: NOTEBOOK_SESSION_MAX_DOCUMENTS },
@@ -115,7 +115,7 @@ test.describe('Intelligent assistant notebooks', () => {
     await uploadModal.selectFilesViaBrowsePicker([
       notebookUnsupportedTypeFixturePath(),
     ]);
-    await expect(uploadModal.dialog().getByRole('alert')).toContainText(
+    await expect(uploadModal.errorAlert()).toContainText(
       translations['notebook.upload.error.unsupportedType'],
     );
     await uploadModal.clickCancel();
@@ -196,8 +196,19 @@ test.describe('Intelligent assistant notebooks', () => {
     await notebooks.expectUntitledNotebookCardCount(untitledBefore);
   });
 
-  test('grid: click card title triggers inline rename', async () => {
+  test('grid: click card title triggers inline rename', async ({}, testInfo) => {
+    const { absolutePath, fileName } = localeNotebookUpload1Path(
+      testInfo.project.name,
+    );
+
     await notebooks.clickPrimaryNotebookCreate();
+
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+
     await notebooks.clickCloseNotebookEditor();
 
     const card = notebooks.newestUntitledNotebookCard();

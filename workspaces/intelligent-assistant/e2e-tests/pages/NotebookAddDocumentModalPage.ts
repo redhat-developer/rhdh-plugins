@@ -123,7 +123,7 @@ export class NotebookAddDocumentModalPage {
   }
 
   errorAlert(): Locator {
-    return this.dialog().getByRole('alert');
+    return this.dialog().locator('[data-ouia-component-type="PF6/Alert"]');
   }
 
   async expectValidationAlertsInclude(text: string): Promise<void> {
