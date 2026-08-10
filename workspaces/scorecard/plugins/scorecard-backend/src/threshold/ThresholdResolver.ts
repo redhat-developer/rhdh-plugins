@@ -24,6 +24,7 @@ import {
   getThresholdsFromConfig,
   type MetricProvider,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { areThresholdAnnotationOverridesAllowed } from './thresholdAnnotations';
 import { mergeEntityAndMetricThresholds } from '../utils/mergeEntityAndMetricThresholds';
 import { resolveThresholdsConfigPath } from '../utils/metricProviderConfigKeys';
 
@@ -41,6 +42,9 @@ export class ThresholdResolver {
   }
 
   resolveEntityThresholds(entity: Entity, metric: Metric): ThresholdConfig {
+    if (!areThresholdAnnotationOverridesAllowed(this.config, metric.id)) {
+      return this.resolveMetricThresholds(metric);
+    }
     return mergeEntityAndMetricThresholds(
       entity,
       metric,
