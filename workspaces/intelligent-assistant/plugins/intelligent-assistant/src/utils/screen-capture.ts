@@ -83,9 +83,10 @@ function scaleCanvas(
   scaledCanvas.height = scaledHeight;
 
   const ctx = scaledCanvas.getContext('2d');
-  if (ctx) {
-    ctx.drawImage(canvas, 0, 0, scaledWidth, scaledHeight);
+  if (!ctx) {
+    return canvas;
   }
+  ctx.drawImage(canvas, 0, 0, scaledWidth, scaledHeight);
 
   return scaledCanvas;
 }
@@ -182,6 +183,10 @@ export async function captureScreenshot(
     timeoutMs: options?.timeoutMs ?? DEFAULT_TIMEOUT_MS,
   };
 
+  // When the timeout wins the race, doCapture continues running in the background
+  // since html2canvas-pro does not support AbortController-based cancellation.
+  // The timeout prevents the caller from waiting indefinitely; background work
+  // completes harmlessly and its result is discarded.
   let timeoutId: ReturnType<typeof setTimeout>;
   try {
     const result = await Promise.race<CaptureResponse>([

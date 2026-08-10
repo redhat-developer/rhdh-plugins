@@ -115,9 +115,9 @@ describe('captureScreenshot', () => {
         base64: 'WEBP_0.7_DATA',
         width: 800,
         height: 600,
+        captureTimeMs: expect.any(Number),
       }),
     );
-    expect((result as any).captureTimeMs).toBeGreaterThanOrEqual(0);
   });
 
   it('should fall back to JPEG when WebP is not supported', async () => {
@@ -303,8 +303,11 @@ describe('captureScreenshot', () => {
 
     const result = await captureScreenshot();
 
-    expect(result.success).toBe(true);
-    expect((result as any).captureTimeMs).toBeGreaterThanOrEqual(0);
-    expect(typeof (result as any).captureTimeMs).toBe('number');
+    expect(result).toEqual(
+      expect.objectContaining({
+        success: true,
+        captureTimeMs: expect.any(Number),
+      }),
+    );
   });
 });

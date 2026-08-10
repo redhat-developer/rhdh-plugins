@@ -20,6 +20,8 @@ const MASK = '••••••••';
 /**
  * Regex patterns matching known secret/token formats.
  * Each pattern uses the global flag for replaceAll behavior.
+ * WARNING: These regexes are stateful (/g). Reset lastIndex before calling
+ * .test() or .exec() directly. Prefer using redactText() instead.
  */
 export const SECRET_PATTERNS: RegExp[] = [
   /ghp_[a-zA-Z0-9]{36,}/g,
