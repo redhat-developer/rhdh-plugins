@@ -170,6 +170,7 @@ export const PhaseDetails = (
     onRunPhase?: (phase: MigrationPhase) => void;
     onCancelPhase?: (phase: MigrationPhase) => void;
     onRunAdversarial?: (phase: 'analyze' | 'migrate') => void;
+    hasAdversarialAgents?: boolean;
   } & OptionalModuleId,
 ) => {
   const { t } = useTranslation();
@@ -185,6 +186,7 @@ export const PhaseDetails = (
     onRunPhase,
     onCancelPhase,
     onRunAdversarial,
+    hasAdversarialAgents,
   } = props;
   const moduleId = 'moduleId' in props ? props.moduleId : undefined;
 
@@ -262,13 +264,15 @@ export const PhaseDetails = (
                 variant="outlined"
                 color="default"
                 size="small"
-                disabled={!canRunPhase}
+                disabled={!canRunPhase || !hasAdversarialAgents}
                 onClick={() => onRunAdversarial(phaseName)}
               >
                 {t('modulePage.phases.runAdversarialReview')}
               </Button>
               <Typography>
-                {t('modulePage.phases.adversarialReviewInstructions')}
+                {hasAdversarialAgents
+                  ? t('modulePage.phases.adversarialReviewInstructions')
+                  : t('modulePage.phases.noAdversarialAgentsConfigured')}
               </Typography>
             </>
           )}

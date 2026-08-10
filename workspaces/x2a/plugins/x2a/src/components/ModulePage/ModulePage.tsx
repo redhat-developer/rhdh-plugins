@@ -25,6 +25,7 @@ import {
 import { Box, Grid } from '@material-ui/core';
 import {
   resolveScmProvider,
+  CancellablePhase,
   MigrationPhase,
   ModulePhase,
   Module,
@@ -207,7 +208,7 @@ export const ModulePage = () => {
         const response =
           await clientService.projectsProjectIdModulesModuleIdCancelPost({
             path: { projectId, moduleId },
-            body: { phase: phase as ModulePhase },
+            body: { phase: phase as CancellablePhase },
           });
         if (response.status !== 200) {
           const body = await response

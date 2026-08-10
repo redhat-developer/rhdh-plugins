@@ -151,6 +151,8 @@ export const x2aPluginMessages = {
       adversarialReview: 'Adversarial Review',
       adversarialReviewInstructions:
         'Run configured adversarial agents against the phase output. Agents will write a report to the target repository.',
+      noAdversarialAgentsConfigured:
+        'No adversarial agents are configured for this project.',
       runError: 'Failed to run phase for module',
       adversarialRunError: 'Failed to start adversarial review',
       cancelError: 'Failed to cancel phase for module',

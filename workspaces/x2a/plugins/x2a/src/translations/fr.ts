@@ -347,6 +347,8 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'modulePage.phases.adversarialReview': 'Revue Adversariale',
     'modulePage.phases.adversarialReviewInstructions':
       'Exécutez les agents adversariaux configurés sur la sortie de la phase. Les agents rédigeront un rapport dans le référentiel cible.',
+    'modulePage.phases.noAdversarialAgentsConfigured':
+      "Aucun agent adversarial n'est configuré pour ce projet.",
     'modulePage.phases.adversarialRunError':
       'Échec du démarrage de la revue adversariale',
     'artifact.types.adversarial_report': 'Rapport Adversarial',

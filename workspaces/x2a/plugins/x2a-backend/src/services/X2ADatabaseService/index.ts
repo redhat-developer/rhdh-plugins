@@ -403,10 +403,15 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
       );
 
       // Attach attempt stats per phase
-      const phases = ['analyze', 'migrate', 'publish'] as const;
+      const phaseJobPairs: Array<[MigrationPhase, Job | undefined]> = [
+        ['analyze', module.analyze],
+        ['migrate', module.migrate],
+        ['publish', module.publish],
+        ['adversarial-analyze', module.adversarialAnalyze],
+        ['adversarial-migrate', module.adversarialMigrate],
+      ];
       await Promise.all(
-        phases.map(async phase => {
-          const job = module[phase];
+        phaseJobPairs.map(async ([phase, job]) => {
           if (job) {
             const stats = await this.#jobOps.getPhaseAttemptStats({
               projectId: module.projectId,

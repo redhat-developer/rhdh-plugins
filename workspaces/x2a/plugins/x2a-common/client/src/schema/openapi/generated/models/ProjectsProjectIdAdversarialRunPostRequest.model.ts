@@ -31,7 +31,7 @@ export interface ProjectsProjectIdAdversarialRunPostRequest {
    * UUID of the module to review
    */
   moduleId: string;
-  targetRepoAuth: GitRepoAuth;
+  targetRepoAuth?: GitRepoAuth;
 }
 
 /**

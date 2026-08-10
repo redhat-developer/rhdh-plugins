@@ -63,7 +63,7 @@ jest.mock('./DeleteAgentDialog', () => ({
     open ? <div data-testid="delete-dialog" /> : null,
 }));
 
-import { render, screen, act, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AdversarialAgentsTable } from './AdversarialAgentsTable';
 
@@ -111,9 +111,7 @@ describe('AdversarialAgentsTable', () => {
   it('renders agents after successful fetch', async () => {
     mockAdversarialAgentsGet.mockResolvedValue(successResponse(mockAgents));
 
-    await act(async () => {
-      render(<AdversarialAgentsTable />);
-    });
+    render(<AdversarialAgentsTable />);
 
     await waitFor(() => {
       expect(screen.getByText('Security Checker')).toBeInTheDocument();
@@ -124,9 +122,7 @@ describe('AdversarialAgentsTable', () => {
   it('shows empty state when no agents exist', async () => {
     mockAdversarialAgentsGet.mockResolvedValue(successResponse([]));
 
-    await act(async () => {
-      render(<AdversarialAgentsTable />);
-    });
+    render(<AdversarialAgentsTable />);
 
     await waitFor(() => {
       expect(screen.getByTestId('table-empty')).toBeInTheDocument();
@@ -140,9 +136,7 @@ describe('AdversarialAgentsTable', () => {
       json: async () => ({ message: 'Internal server error' }),
     });
 
-    await act(async () => {
-      render(<AdversarialAgentsTable />);
-    });
+    render(<AdversarialAgentsTable />);
 
     await waitFor(() => {
       expect(screen.getByTestId('error-panel')).toBeInTheDocument();
@@ -152,11 +146,9 @@ describe('AdversarialAgentsTable', () => {
   it('opens create dialog when add button is clicked', async () => {
     mockAdversarialAgentsGet.mockResolvedValue(successResponse([]));
 
-    await act(async () => {
-      render(<AdversarialAgentsTable />);
-    });
+    render(<AdversarialAgentsTable />);
 
-    await waitFor(() => screen.getByTestId('table-empty'));
+    await screen.findByTestId('table-empty');
 
     await userEvent.click(screen.getByRole('button', { name: /add agent/i }));
     expect(screen.getByTestId('agent-dialog')).toBeInTheDocument();

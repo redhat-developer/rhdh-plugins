@@ -80,6 +80,10 @@ export class ArtifactKind {
     return this === ArtifactKind.ANSIBLE_PROJECT;
   }
 
+  isAdversarialReport(): boolean {
+    return this === ArtifactKind.ADVERSARIAL_REPORT;
+  }
+
   equals(other: ArtifactKind): boolean {
     return this.value === other.value;
   }

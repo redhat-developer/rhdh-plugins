@@ -41,7 +41,7 @@ jest.mock('@backstage/core-components', () => ({
   ),
 }));
 
-import { render, screen, act, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { AdversarialAgent } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { AgentDialog } from './AgentDialog';
@@ -108,9 +108,7 @@ describe('AgentDialog', () => {
       );
       await userEvent.click(screen.getByLabelText(/analyze/i));
 
-      await act(async () => {
-        await userEvent.click(screen.getByRole('button', { name: /save/i }));
-      });
+      await userEvent.click(screen.getByRole('button', { name: /save/i }));
 
       await waitFor(() => {
         expect(mockAdversarialAgentsPost).toHaveBeenCalledWith(
@@ -151,9 +149,7 @@ describe('AgentDialog', () => {
         />,
       );
 
-      await act(async () => {
-        await userEvent.click(screen.getByRole('button', { name: /save/i }));
-      });
+      await userEvent.click(screen.getByRole('button', { name: /save/i }));
 
       await waitFor(() => {
         expect(mockAdversarialAgentsIdPut).toHaveBeenCalledWith(

@@ -22,6 +22,7 @@ export * from '../models/AdversarialAgentsPostRequest.model';
 export * from '../models/AgentMetrics.model';
 export * from '../models/Artifact.model';
 export * from '../models/ArtifactType.model';
+export * from '../models/CancellablePhase.model';
 export * from '../models/GitRepoAuth.model';
 export * from '../models/Job.model';
 export * from '../models/JobStatusEnum.model';

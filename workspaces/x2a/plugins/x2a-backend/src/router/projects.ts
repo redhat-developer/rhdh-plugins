@@ -176,6 +176,36 @@ export function registerProjectRoutes(
       }
     }
 
+    // Pre-validate rule IDs to avoid orphan projects on invalid input
+    if (requestBody.acceptedRuleIds?.length) {
+      const ruleChecks = await Promise.all(
+        requestBody.acceptedRuleIds.map(async id => ({
+          id,
+          exists: !!(await x2aDatabase.getRule({ id })),
+        })),
+      );
+      const missingRules = ruleChecks.filter(r => !r.exists).map(r => r.id);
+      if (missingRules.length) {
+        throw new InputError(`Rules not found: ${missingRules.join(', ')}`);
+      }
+    }
+
+    // Pre-validate adversarial agent IDs to avoid orphan projects on invalid input
+    if (requestBody.adversarialAgentIds?.length) {
+      const agentChecks = await Promise.all(
+        requestBody.adversarialAgentIds.map(async id => ({
+          id,
+          exists: !!(await x2aDatabase.getAdversarialAgent({ id })),
+        })),
+      );
+      const missingAgents = agentChecks.filter(a => !a.exists).map(a => a.id);
+      if (missingAgents.length) {
+        throw new InputError(
+          `Adversarial agents not found: ${missingAgents.join(', ')}`,
+        );
+      }
+    }
+
     // create project
     const newProject = await x2aDatabase.createProject(requestBody, {
       credentials: await httpAuth.credentials(req, { allow: ['user'] }),
@@ -502,12 +532,13 @@ export function registerProjectRoutes(
 
       assertProjectHasDirName(project);
 
-      const adversarialAgents =
-        await x2aDatabase.getAdversarialAgentsForProject({ projectId });
-      if (!adversarialAgents || adversarialAgents.length === 0) {
+      const adversarialAgents = (
+        await x2aDatabase.getAdversarialAgentsForProject({ projectId })
+      ).filter(agent => agent.phases.includes(phase));
+      if (adversarialAgents.length === 0) {
         return res.status(400).json({
           error: 'NoAdversarialAgents',
-          message: 'No adversarial agents are configured for this project',
+          message: `No adversarial agents are configured for the ${phase} phase on this project`,
         });
       }
 

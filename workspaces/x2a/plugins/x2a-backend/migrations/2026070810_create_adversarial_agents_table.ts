@@ -16,18 +16,87 @@
 
 import type { Knex } from 'knex';
 
+const EXTENDED_PHASES = [
+  'init',
+  'analyze',
+  'migrate',
+  'publish',
+  'adversarial-analyze',
+  'adversarial-migrate',
+];
+const ORIGINAL_PHASES = ['init', 'analyze', 'migrate', 'publish'];
+
+function createJobsTable(table: Knex.CreateTableBuilder, phases: string[]) {
+  table.uuid('id').primary();
+  table.text('log');
+  table.timestamp('started_at').notNullable();
+  table.timestamp('finished_at');
+  table
+    .string('status')
+    .notNullable()
+    .defaultTo('pending')
+    .checkIn(['pending', 'running', 'success', 'error', 'cancelled']);
+  table.string('phase').notNullable().defaultTo('init').checkIn(phases);
+  table.text('error_details');
+  table.text('telemetry');
+  table.string('k8s_job_name');
+  table.string('callback_token');
+  table.string('commit_id').nullable();
+  table
+    .uuid('project_id')
+    .notNullable()
+    .references('id')
+    .inTable('projects')
+    .onDelete('CASCADE')
+    .index();
+  table
+    .uuid('module_id')
+    .nullable()
+    .references('id')
+    .inTable('modules')
+    .onDelete('CASCADE')
+    .index();
+  table.index('started_at');
+  table.index('finished_at');
+  table.index('status');
+  table.index('phase');
+  table.index('k8s_job_name');
+}
+
+async function recreateJobsTableSqlite(
+  knex: Knex,
+  phases: string[],
+): Promise<void> {
+  await knex.schema.raw('PRAGMA foreign_keys = OFF');
+  try {
+    await knex.schema.createTable('jobs_new', table =>
+      createJobsTable(table, phases),
+    );
+    await knex.schema.raw('INSERT INTO jobs_new SELECT * FROM jobs');
+    await knex.schema.dropTable('jobs');
+    await knex.schema.raw('ALTER TABLE jobs_new RENAME TO jobs');
+  } finally {
+    await knex.schema.raw('PRAGMA foreign_keys = ON');
+  }
+}
+
 /**
  * Creates the adversarial_agents table, adds adversarial_agents column to projects,
- * and expands the jobs.phase CHECK constraint to include adversarial phases (PostgreSQL only).
+ * and expands the jobs.phase CHECK constraint to include adversarial phases.
  *
  * @public
  */
 export async function up(knex: Knex): Promise<void> {
-  if (knex.client.config.client === 'pg') {
-    await knex.schema.raw(
+  const client = knex.client.config.client;
+
+  if (client === 'better-sqlite3') {
+    await recreateJobsTableSqlite(knex, EXTENDED_PHASES);
+  } else {
+    // PostgreSQL: drop and recreate the named constraint
+    await knex.raw(
       `ALTER TABLE jobs DROP CONSTRAINT IF EXISTS jobs_phase_check`,
     );
-    await knex.schema.raw(
+    await knex.raw(
       `ALTER TABLE jobs ADD CONSTRAINT jobs_phase_check CHECK (phase IN ('init', 'analyze', 'migrate', 'publish', 'adversarial-analyze', 'adversarial-migrate'))`,
     );
   }
@@ -53,7 +122,7 @@ export async function up(knex: Knex): Promise<void> {
 
 /**
  * Drops adversarial_agents column from projects, drops adversarial_agents table,
- * and restores the original jobs.phase CHECK constraint (PostgreSQL only).
+ * and restores the original jobs.phase CHECK constraint.
  *
  * @public
  */
@@ -64,11 +133,15 @@ export async function down(knex: Knex): Promise<void> {
 
   await knex.schema.dropTable('adversarial_agents');
 
-  if (knex.client.config.client === 'pg') {
-    await knex.schema.raw(
+  const client = knex.client.config.client;
+
+  if (client === 'better-sqlite3') {
+    await recreateJobsTableSqlite(knex, ORIGINAL_PHASES);
+  } else {
+    await knex.raw(
       `ALTER TABLE jobs DROP CONSTRAINT IF EXISTS jobs_phase_check`,
     );
-    await knex.schema.raw(
+    await knex.raw(
       `ALTER TABLE jobs ADD CONSTRAINT jobs_phase_check CHECK (phase IN ('init', 'analyze', 'migrate', 'publish'))`,
     );
   }

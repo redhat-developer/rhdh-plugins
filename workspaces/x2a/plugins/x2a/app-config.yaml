@@ -4,6 +4,7 @@ dynamicPlugins:
       scaffolderFieldExtensions:
         - importName: RepoAuthenticationExtension
         - importName: RulesAcceptanceExtension
+        - importName: AdversarialAgentsPickerExtension
       translationResources:
         - importName: x2aPluginTranslations
           ref: x2aPluginTranslationRef

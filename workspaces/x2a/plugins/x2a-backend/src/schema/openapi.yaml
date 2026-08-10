@@ -649,7 +649,7 @@ paths:
               type: object
               properties:
                 phase:
-                  $ref: '#/components/schemas/ModulePhase'
+                  $ref: '#/components/schemas/CancellablePhase'
               required:
                 - phase
       responses:
@@ -758,7 +758,6 @@ paths:
               required:
                 - phase
                 - moduleId
-                - targetRepoAuth
       responses:
         '202':
           description: Adversarial review job accepted
@@ -1222,6 +1221,16 @@ components:
         - migrate
         - publish
       description: Phases to execute on a module
+
+    CancellablePhase:
+      type: string
+      enum:
+        - analyze
+        - migrate
+        - publish
+        - adversarial-analyze
+        - adversarial-migrate
+      description: Phases that support cancellation
 
     SourceTechnology:
       type: string

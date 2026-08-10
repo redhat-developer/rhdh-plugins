@@ -36,14 +36,7 @@ export async function up(knex: Knex): Promise<void> {
       .string('phase')
       .notNullable()
       .defaultTo('init')
-      .checkIn([
-        'init',
-        'analyze',
-        'migrate',
-        'publish',
-        'adversarial-analyze',
-        'adversarial-migrate',
-      ]);
+      .checkIn(['init', 'analyze', 'migrate', 'publish']);
     table.text('error_details');
     table.text('telemetry'); // JSON-serialized Telemetry object
     table.string('k8s_job_name');

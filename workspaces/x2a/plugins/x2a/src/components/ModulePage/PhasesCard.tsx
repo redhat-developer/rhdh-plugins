@@ -98,6 +98,7 @@ export const PhasesCard = ({
   const publishPhase = module?.publish;
   const adversarialAnalyzePhase = module?.adversarialAnalyze;
   const adversarialMigratePhase = module?.adversarialMigrate;
+  const hasAdversarialAgents = (project?.adversarialAgents?.length ?? 0) > 0;
 
   return (
     <InfoCard title={t('modulePage.phases.title')} variant="gridItem">
@@ -157,6 +158,7 @@ export const PhasesCard = ({
           onRunPhase={onRunPhase}
           onCancelPhase={onCancelPhase}
           onRunAdversarial={onRunAdversarial}
+          hasAdversarialAgents={hasAdversarialAgents}
         />
         <AdversarialJobDetails
           job={adversarialAnalyzePhase}
@@ -165,6 +167,11 @@ export const PhasesCard = ({
           phaseName="adversarial-analyze"
           targetRepoUrl={project?.targetRepoUrl || ''}
           targetRepoBranch={project?.targetRepoBranch || ''}
+          onCancel={
+            onCancelPhase
+              ? () => onCancelPhase('adversarial-analyze')
+              : undefined
+          }
         />
       </Box>
       <Box className={activeTab === 1 ? classes.tabPanel : classes.hiddenPanel}>
@@ -176,6 +183,7 @@ export const PhasesCard = ({
           onRunPhase={onRunPhase}
           onCancelPhase={onCancelPhase}
           onRunAdversarial={onRunAdversarial}
+          hasAdversarialAgents={hasAdversarialAgents}
         />
         <AdversarialJobDetails
           job={adversarialMigratePhase}
@@ -184,6 +192,11 @@ export const PhasesCard = ({
           phaseName="adversarial-migrate"
           targetRepoUrl={project?.targetRepoUrl || ''}
           targetRepoBranch={project?.targetRepoBranch || ''}
+          onCancel={
+            onCancelPhase
+              ? () => onCancelPhase('adversarial-migrate')
+              : undefined
+          }
         />
       </Box>
       <Box className={activeTab === 2 ? classes.tabPanel : classes.hiddenPanel}>

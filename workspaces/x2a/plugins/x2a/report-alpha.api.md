@@ -263,6 +263,7 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'modulePage.phases.runAdversarialReview': string;
     readonly 'modulePage.phases.adversarialReview': string;
     readonly 'modulePage.phases.adversarialReviewInstructions': string;
+    readonly 'modulePage.phases.noAdversarialAgentsConfigured': string;
     readonly 'modulePage.phases.runError': string;
     readonly 'modulePage.phases.adversarialRunError': string;
     readonly 'modulePage.phases.cancelError': string;

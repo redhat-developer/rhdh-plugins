@@ -20,6 +20,7 @@ import { LogViewer, Progress } from '@backstage/core-components';
 import {
   Box,
   Button,
+  ButtonGroup,
   Divider,
   Grid,
   Typography,
@@ -36,6 +37,7 @@ import { useLogStream } from '../../hooks/useLogStream';
 import { useClientService } from '../../ClientService';
 import { ItemField } from '../ItemField';
 import { PhaseStatus } from '../PhaseStatus';
+import { canCancelPhase } from '../tools';
 import { PhaseTelemetry } from '../PhaseTelemetry';
 import { ArtifactLink } from '../ArtifactLink';
 import {
@@ -66,6 +68,7 @@ export const AdversarialJobDetails = ({
   phaseName,
   targetRepoUrl,
   targetRepoBranch,
+  onCancel,
 }: {
   job?: Job;
   projectId: string;
@@ -73,6 +76,7 @@ export const AdversarialJobDetails = ({
   phaseName: MigrationPhase;
   targetRepoUrl: string;
   targetRepoBranch: string;
+  onCancel?: () => void;
 }) => {
   const { t } = useTranslation();
   const classes = useStyles();
@@ -207,15 +211,22 @@ export const AdversarialJobDetails = ({
           </Grid>
 
           <Grid item xs={12}>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => setShowLog(prev => !prev)}
-            >
-              {showLog
-                ? t('modulePage.phases.hideLog')
-                : t('modulePage.phases.viewLog')}
-            </Button>
+            <ButtonGroup>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setShowLog(prev => !prev)}
+              >
+                {showLog
+                  ? t('modulePage.phases.hideLog')
+                  : t('modulePage.phases.viewLog')}
+              </Button>
+              {canCancelPhase(job.status) && onCancel && (
+                <Button variant="outlined" onClick={onCancel}>
+                  {t('modulePage.phases.cancel')}
+                </Button>
+              )}
+            </ButtonGroup>
           </Grid>
 
           {showLog && (

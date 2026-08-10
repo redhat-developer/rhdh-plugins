@@ -668,24 +668,24 @@ case "${PHASE}" in
     echo "=== Running adversarial review (${ACTUAL_PHASE} phase) ==="
     OUTPUT_DIR="${PROJECT_PATH}/modules/${MODULE_NAME}"
 
-    if [ "${ACTUAL_PHASE}" = "analyze" ]; then
+    if [[ "${ACTUAL_PHASE}" = "analyze" ]]; then
       SOURCE_DIR="${OUTPUT_DIR}"
     else
       SOURCE_DIR="${OUTPUT_DIR}/ansible"
     fi
 
-    if [ ! -d "${SOURCE_DIR}" ]; then
+    if [[ ! -d "${SOURCE_DIR}" ]]; then
       ERROR_MESSAGE="Source directory not found: ${SOURCE_DIR}. Ensure the ${ACTUAL_PHASE} phase completed before running adversarial review."
       exit 1
     fi
 
     AGENTS_CONFIG="/config/adversarial-agents/agents.json"
-    if [ ! -f "${AGENTS_CONFIG}" ]; then
+    if [[ ! -f "${AGENTS_CONFIG}" ]]; then
       ERROR_MESSAGE="Adversarial agents config not found at ${AGENTS_CONFIG}"
       exit 1
     fi
 
-    if [ ! -d /app ] || [ ! -f /app/app.py ]; then
+    if [[ ! -d /app ]] || [[ ! -f /app/app.py ]]; then
       ERROR_MESSAGE="/app/app.py not found - x2a tool is required"
       exit 1
     fi
@@ -704,7 +704,7 @@ case "${PHASE}" in
       --config "${AGENTS_CONFIG}" \
       --report-path "${REPORT_MD}"
 
-    if [ -f "/app/agent-adversarial-report.json" ]; then
+    if [[ -f "/app/agent-adversarial-report.json" ]]; then
       cp "/app/agent-adversarial-report.json" "${REPORT_JSON_DEST}"
     fi
 

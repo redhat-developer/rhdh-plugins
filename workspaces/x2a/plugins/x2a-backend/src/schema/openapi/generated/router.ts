@@ -1002,7 +1002,7 @@ export const spec = {
                 "type": "object",
                 "properties": {
                   "phase": {
-                    "$ref": "#/components/schemas/ModulePhase"
+                    "$ref": "#/components/schemas/CancellablePhase"
                   }
                 },
                 "required": [
@@ -1162,8 +1162,7 @@ export const spec = {
                 },
                 "required": [
                   "phase",
-                  "moduleId",
-                  "targetRepoAuth"
+                  "moduleId"
                 ]
               }
             }
@@ -1744,6 +1743,17 @@ export const spec = {
           "publish"
         ],
         "description": "Phases to execute on a module"
+      },
+      "CancellablePhase": {
+        "type": "string",
+        "enum": [
+          "analyze",
+          "migrate",
+          "publish",
+          "adversarial-analyze",
+          "adversarial-migrate"
+        ],
+        "description": "Phases that support cancellation"
       },
       "SourceTechnology": {
         "type": "string",

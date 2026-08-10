@@ -42,20 +42,7 @@ export class AdversarialAgentOperations {
     const id = crypto.randomUUID();
     const now = new Date();
 
-    await this.#dbClient('adversarial_agents').insert({
-      id,
-      name: input.name,
-      prompt: input.prompt,
-      phases: JSON.stringify(input.phases),
-      critical: input.critical,
-      created_by: input.createdBy,
-      created_at: now,
-      updated_at: now,
-    });
-
-    this.#logger.info(`Created adversarial agent: ${id} "${input.name}"`);
-
-    return new AdversarialAgentEntity(
+    const entity = new AdversarialAgentEntity(
       id,
       input.name,
       input.prompt,
@@ -65,6 +52,21 @@ export class AdversarialAgentOperations {
       now,
       now,
     );
+
+    await this.#dbClient('adversarial_agents').insert({
+      id: entity.id,
+      name: entity.name,
+      prompt: entity.prompt,
+      phases: JSON.stringify(entity.phases),
+      critical: entity.critical,
+      created_by: entity.createdBy,
+      created_at: entity.createdAt,
+      updated_at: entity.updatedAt,
+    });
+
+    this.#logger.info(`Created adversarial agent: ${id} "${input.name}"`);
+
+    return entity;
   }
 
   async listAdversarialAgents(filters?: {

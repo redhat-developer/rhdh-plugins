@@ -225,6 +225,14 @@ export const bitbucketProvider: ScmProvider;
 // @public
 export function buildScmHostMap(config: Config): Map<string, ScmProviderName>;
 
+// @public (undocumented)
+export type CancellablePhase =
+  | 'analyze'
+  | 'migrate'
+  | 'publish'
+  | 'adversarial-analyze'
+  | 'adversarial-migrate';
+
 // @public
 export const CREATE_PROJECT_TEMPLATE_PATH =
   '/create/templates/default/x2a-conversion-project-template';
@@ -651,7 +659,7 @@ export interface ProjectsProjectIdAdversarialRunPostRequest {
   moduleId: string;
   phase: ProjectsProjectIdAdversarialRunPostRequestPhaseEnum;
   // (undocumented)
-  targetRepoAuth: GitRepoAuth;
+  targetRepoAuth?: GitRepoAuth;
 }
 
 // @public (undocumented)
@@ -743,7 +751,7 @@ export type ProjectsProjectIdModulesModuleIdCancelPost = {
 // @public (undocumented)
 export interface ProjectsProjectIdModulesModuleIdCancelPostRequest {
   // (undocumented)
-  phase: ModulePhase;
+  phase: CancellablePhase;
 }
 
 // @public (undocumented)
