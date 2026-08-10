@@ -35,6 +35,7 @@ import {
   iaMcpReadPermission,
   iaPermissions,
   iaSavedPromptsManagePermission,
+  iaSkillsAccessPermission,
 } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import { Readable } from 'node:stream';
@@ -659,6 +660,13 @@ export async function createRouter(
     apiProxy,
   );
 
+  router.get(
+    '/v1/skills',
+    generalRateLimiter,
+    requirePermission(iaSkillsAccessPermission),
+    apiProxy,
+  );
+
   router.post(
     '/v1/feedback',
     generalRateLimiter,
@@ -796,7 +804,6 @@ export async function createRouter(
       try {
         const { userEntityRef, credentials } = getIdentity(request);
         logger.info(`/v1/query receives call from user: ${userEntityRef}`);
-
         if (request.body.attachments?.length) {
           logger.info(
             `/v1/query includes ${request.body.attachments.length} attachment(s): ${request.body.attachments.map((a: { attachment_type: string }) => a.attachment_type).join(', ')}`,
