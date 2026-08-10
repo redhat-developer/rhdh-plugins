@@ -19,8 +19,8 @@ import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorec
 import { AGGREGATION_KPIS_CONFIG_PATH } from '../../constants';
 import { buildAggregationConfig } from './buildAggregationConfig';
 import {
-  mockFirstThresholds,
-  mockSecondThresholds,
+  mockHigherIsBetterThresholds,
+  mockLowerIsBetterThresholds,
 } from '../../../__fixtures__/mockThresholds';
 
 describe('buildAggregationConfig', () => {
@@ -108,7 +108,7 @@ describe('buildAggregationConfig', () => {
               metricId: 'github.openPRs',
               options: {
                 statusScores: { success: 100, warning: 50, error: 0 },
-                thresholds: mockFirstThresholds,
+                thresholds: mockHigherIsBetterThresholds,
               },
             },
           },
@@ -121,7 +121,7 @@ describe('buildAggregationConfig', () => {
 
     const result = buildAggregationConfig('weightedKpi', { config });
 
-    expect(result.options?.thresholds).toEqual(mockFirstThresholds);
+    expect(result.options?.thresholds).toEqual(mockHigherIsBetterThresholds);
   });
 
   it('should map optional thresholds for scalar KPIs', () => {
@@ -135,7 +135,7 @@ describe('buildAggregationConfig', () => {
               type: aggregationTypes.sum,
               metricId: 'github.openPRs',
               options: {
-                thresholds: mockSecondThresholds,
+                thresholds: mockLowerIsBetterThresholds,
               },
             },
           },
@@ -148,7 +148,7 @@ describe('buildAggregationConfig', () => {
 
     const result = buildAggregationConfig('totalOpenPrsKpi', { config });
 
-    expect(result.options?.thresholds).toEqual(mockSecondThresholds);
+    expect(result.options?.thresholds).toEqual(mockLowerIsBetterThresholds);
   });
 
   it('should not map thresholds for statusGrouped KPIs even when configured', () => {
@@ -162,7 +162,7 @@ describe('buildAggregationConfig', () => {
               type: aggregationTypes.statusGrouped,
               metricId: 'github.openPRs',
               options: {
-                thresholds: mockFirstThresholds,
+                thresholds: mockHigherIsBetterThresholds,
               },
             },
           },
@@ -217,5 +217,130 @@ describe('buildAggregationConfig', () => {
         thresholds: undefined,
       },
     });
+    expect(result.filter).toBeUndefined();
+  });
+
+  it('should map filter.status for scalar KPIs', () => {
+    const rootConfig = mockServices.rootConfig({
+      data: {
+        scorecard: {
+          aggregationKPIs: {
+            totalCriticalPrs: {
+              title: 'Total Critical PRs',
+              description: 'Sum of open PRs for entities in error status',
+              type: aggregationTypes.sum,
+              metricId: 'github.openPRs',
+              filter: {
+                status: 'error',
+              },
+            },
+          },
+        },
+      },
+    });
+    const config = rootConfig.getConfig(
+      `${AGGREGATION_KPIS_CONFIG_PATH}.totalCriticalPrs`,
+    );
+
+    const result = buildAggregationConfig('totalCriticalPrs', { config });
+
+    expect(result.filter).toEqual({ status: 'error' });
+  });
+
+  it('should omit filter when filter block has no properties', () => {
+    const rootConfig = mockServices.rootConfig({
+      data: {
+        scorecard: {
+          aggregationKPIs: {
+            totalOpenPrsKpi: {
+              title: 'Total Open PRs',
+              description: 'Sum of open PRs',
+              type: aggregationTypes.sum,
+              metricId: 'github.openPRs',
+              filter: {},
+            },
+          },
+        },
+      },
+    });
+    const config = rootConfig.getConfig(
+      `${AGGREGATION_KPIS_CONFIG_PATH}.totalOpenPrsKpi`,
+    );
+
+    const result = buildAggregationConfig('totalOpenPrsKpi', { config });
+
+    expect(result).toEqual({
+      id: 'totalOpenPrsKpi',
+      title: 'Total Open PRs',
+      description: 'Sum of open PRs',
+      type: aggregationTypes.sum,
+      metricId: 'github.openPRs',
+      options: {
+        thresholds: undefined,
+      },
+    });
+    expect(result.filter).toBeUndefined();
+    expect('filter' in result).toBe(false);
+  });
+
+  it('should ignore filter for statusGrouped KPIs even when configured', () => {
+    const rootConfig = mockServices.rootConfig({
+      data: {
+        scorecard: {
+          aggregationKPIs: {
+            statusKpi: {
+              title: 'Status breakdown',
+              description: 'Counts by status',
+              type: aggregationTypes.statusGrouped,
+              metricId: 'github.openPRs',
+              filter: {
+                status: 'error',
+              },
+            },
+          },
+        },
+      },
+    });
+    const config = rootConfig.getConfig(
+      `${AGGREGATION_KPIS_CONFIG_PATH}.statusKpi`,
+    );
+
+    const result = buildAggregationConfig('statusKpi', { config });
+
+    expect(result.filter).toBeUndefined();
+  });
+
+  it('should ignore filter for weightedStatusScore KPIs even when configured', () => {
+    const rootConfig = mockServices.rootConfig({
+      data: {
+        scorecard: {
+          aggregationKPIs: {
+            weightedKpi: {
+              title: 'Weighted health',
+              description: 'Weighted health score across statuses',
+              type: aggregationTypes.weightedStatusScore,
+              metricId: 'github.openPRs',
+              filter: {
+                status: 'error',
+              },
+              options: {
+                statusScores: {
+                  error: 0,
+                  warning: 50,
+                  success: 100,
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+    const config = rootConfig.getConfig(
+      `${AGGREGATION_KPIS_CONFIG_PATH}.weightedKpi`,
+    );
+
+    const result = buildAggregationConfig('weightedKpi', { config });
+
+    expect(result.filter).toBeUndefined();
   });
 });

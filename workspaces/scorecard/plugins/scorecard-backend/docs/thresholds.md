@@ -191,7 +191,9 @@ These thresholds are **not** per-entity metric rules. They apply to homepage agg
 
 - **YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**). Expressions are **number**-style and are evaluated against **`result.value`**, the aggregated scalar from the KPI (see [Entity Aggregation — Scalar result fields](./aggregation.md#scalar-result-fields)). The **first** matching rule wins; its **`color`** and **`key`** can be used by custom UIs that render scalar KPIs.
 
-- **Defaults:** If **`thresholds`** is omitted from app-config under **`options`**, **`ScalarAggregationStrategy`** applies **`DEFAULT_NUMBER_THRESHOLDS`** from scorecard-common when serving an aggregation and includes them on the API as **`result.thresholds`**.
+- **Defaults:** If **`thresholds`** is omitted from app-config under **`options`**, **`ScalarAggregationStrategy`** applies **`DEFAULT_NUMBER_THRESHOLDS`** from scorecard-common when serving an aggregation and includes them on the API as **`result.thresholds`**: **`<10`** → success, **`10-50`** → warning, **`>50`** → error.
+
+- **Scalar status filter:** The **`key`** values from metric threshold rules (provider defaults or app-config overrides at **`scorecard.metricProviders.<datasource>.<providerName>.metrics.<metricName>.thresholds`** / provider-level **`scorecard.metricProviders.<datasource>.<providerName>.thresholds`** — see [§1 Provider Default Thresholds](#1-provider-default-thresholds) and [§2 App Configuration Thresholds](#2-app-configuration-thresholds)) are the valid values for scalar KPI **`filter.status`**. Startup validation checks **`filter.status`** against those keys only (not per-entity annotation overrides). See [Entity Aggregation — Status filter (scalar types)](./aggregation.md#status-filter-scalar-types).
 
 - **Startup validation:** Invalid rules or expressions are caught when the backend plugin loads, together with the rest of **`scorecard.aggregationKPIs`**. Scalar KPI **`options.thresholds`** must also satisfy **joint full-line coverage** for number expressions when multiple rules apply (see [Joint coverage (number metrics)](#joint-coverage-number-metrics)). See [aggregation.md — Configuration validation](./aggregation.md#configuration-validation).
 
@@ -461,6 +463,6 @@ rules:
 
 ## Related documentation
 
-- [Entity Aggregation](./aggregation.md) — ownership, **`GET /aggregations/:aggregationId`**, **`statusGrouped`**, **`weightedStatusScore`**, and scalar types
+- [Entity Aggregation](./aggregation.md) — ownership, **`GET /aggregations/:aggregationId`**, **`statusGrouped`**, **`weightedStatusScore`**, scalar types, and **`filter.status`**
 - [Drill-down](./drill-down.md) — entity list for a metric (`metricId`, not KPI id)
 - [Scorecard backend README](../README.md) — install, RBAC, **`aggregationKPIs`** examples

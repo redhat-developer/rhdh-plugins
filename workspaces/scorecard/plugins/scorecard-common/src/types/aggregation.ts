@@ -62,6 +62,14 @@ export type ScalarAggregatedMetric = Omit<AggregatedMetric, 'values'> & {
 };
 
 /**
+ * Optional filter applied to scalar aggregation KPIs.
+ * @public
+ */
+export type AggregationConfigFilter = {
+  status?: string;
+};
+
+/**
  * @public
  */
 export type AggregationMetadata = {
@@ -70,6 +78,7 @@ export type AggregationMetadata = {
   type: MetricType;
   history?: boolean;
   aggregationType: AggregationType;
+  filter?: AggregationConfigFilter;
 };
 
 /**
@@ -138,5 +147,6 @@ export type AggregationConfig = {
   description: string;
   type: AggregationType;
   metricId: string;
+  filter?: AggregationConfigFilter;
   options?: AggregationConfigOptions;
 };

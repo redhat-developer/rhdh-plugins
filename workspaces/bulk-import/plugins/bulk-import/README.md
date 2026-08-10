@@ -2,6 +2,8 @@
 
 This plugin allows bulk import of multiple catalog entities into the catalog.
 
+For local development, tests, and Backstage bump smoke checks, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## For administrators
 
 ### Installation

@@ -39,7 +39,7 @@ export type MetricValueRowWithId = MetricValueRow & {
   entity_namespace: string | null;
 };
 
-export type MetricValueCreateInput = Omit<
+export type DbMetricValueCreateInput = Omit<
   DbMetricValueCreate,
   'value' | 'errorMessage' | 'entityKind' | 'entityOwner' | 'entityNamespace'
 > & {
@@ -51,7 +51,7 @@ export type MetricValueCreateInput = Omit<
 };
 
 export function toMetricValueRow(
-  value: MetricValueCreateInput,
+  value: DbMetricValueCreateInput,
 ): MetricValueRow {
   return {
     catalog_entity_ref: value.catalogEntityRef,

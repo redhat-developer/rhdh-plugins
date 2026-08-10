@@ -30,6 +30,9 @@ export const iaPermissions: BasicPermission[];
 export const iaSavedPromptsManagePermission: BasicPermission;
 
 // @public
+export const iaSkillsAccessPermission: BasicPermission;
+
+// @public
 export interface SavedPrompt {
   content: string;
   created_at: string;
