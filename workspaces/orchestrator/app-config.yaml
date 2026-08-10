@@ -26,6 +26,20 @@ backend:
           # echo mycurlpasswd | base64
           token: bXljdXJscGFzc3dkCg== # NOSONAR
           subject: my-external-feed
+      # Uncomment to let MCP clients (e.g. Cursor, Claude Code) authenticate
+      # against the Orchestrator MCP Actions below - see
+      # plugins/orchestrator-backend/README.md#mcp-actions
+      # - type: static
+      #   options:
+      #     token: ${MCP_TOKEN}
+      #     subject: mcp-clients
+  # Uncomment this when Orchestrator MCP Actions are needed (RHIDP-14041) -
+  # without this, actions registered via the Actions Registry are not
+  # exposed through @backstage/plugin-mcp-actions-backend, even though the
+  # plugin is wired in packages/backend/src/index.ts.
+  # actions:
+  #   pluginSources:
+  #     - 'orchestrator'
   listen:
     port: 7007
     # Uncomment the following host directive to bind to specific interfaces
