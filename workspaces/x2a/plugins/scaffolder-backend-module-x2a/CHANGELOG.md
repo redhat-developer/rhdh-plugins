@@ -1,4 +1,4 @@
-# @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a
+# @red-hat-developer-hub/backstage-plugin-x2a-scaffolder-module
 
 ## 1.0.0
 

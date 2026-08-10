@@ -63,8 +63,7 @@ const PLUGINS = [
   {
     name: 'Scaffolder Backend Module (scaffolder-backend-module-x2a)',
     dir: 'scaffolder-backend-module-x2a',
-    targetDir:
-      'red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-x2a',
+    targetDir: 'red-hat-developer-hub-backstage-plugin-x2a-scaffolder-module',
     embedPackages: [EMBED_COMMON],
   },
 ];
