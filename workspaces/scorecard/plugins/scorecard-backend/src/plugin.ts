@@ -136,6 +136,7 @@ export const scorecardPlugin = createBackendPlugin({
         validateAggregationConfig({
           rootConfig: config,
           registry: metricProvidersRegistry,
+          thresholdResolver,
         });
 
         Scheduler.create({

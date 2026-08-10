@@ -32,9 +32,7 @@ const CONFIG = {
   catalog: {
     providers: {
       modelCatalog: {
-        development: {
-          baseUrl: 'http://localhost:9090',
-        },
+        development: {},
       },
     },
   },

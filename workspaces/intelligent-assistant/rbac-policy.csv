@@ -12,6 +12,7 @@ p, role:default/intelligent-assistant-user, intelligent-assistant.chat.manage, u
 p, role:default/intelligent-assistant-user, intelligent-assistant.mcp.read, read, allow
 p, role:default/intelligent-assistant-user, intelligent-assistant.mcp.manage, update, allow
 p, role:default/intelligent-assistant-user, intelligent-assistant.notebooks.use, update, allow
+p, role:default/intelligent-assistant-user, intelligent-assistant.skills.access, use, allow
 
 # --- Catalog permissions (needed for MCP tools to query entities) ---
 p, role:default/intelligent-assistant-user, catalog.entity.read, read, allow
