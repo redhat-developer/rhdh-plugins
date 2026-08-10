@@ -84,6 +84,11 @@ backend.add(
 );
 backend.add(
   import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent'
+  ),
+);
+backend.add(
+  import(
     '@red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend'
   ),
 );

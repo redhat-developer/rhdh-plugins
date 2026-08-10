@@ -99,7 +99,7 @@ metadata:
     rhdh.io/oci-image-name: my-org/summarization-skills
     rhdh.io/oci-tag: latest
 spec:
-  type: skills
+  type: skill
   lifecycle: experimental
   owner: team-ml-platform
   scope: organization

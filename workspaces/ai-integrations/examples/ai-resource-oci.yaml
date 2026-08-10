@@ -21,7 +21,7 @@ metadata:
     rhdh.io/ai-asset-category: skill
     rhdh.io/ai-asset-source: oci-skill-registry/default
 spec:
-  type: skills
+  type: skill
   lifecycle: experimental
   owner: team-ml-platform
   scope: team
