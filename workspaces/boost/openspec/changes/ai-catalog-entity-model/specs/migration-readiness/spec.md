@@ -2,7 +2,7 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 >
-> **Design document:** [ai-asset-upstream-migration-design.md](../../../../specifications/ai-asset-upstream-migration-design.md) — implements RHIDP-15302 tasks 8.1-8.4 from this specification.
+> **Design document:** [ai-asset-upstream-migration-design.md](../../../../../specifications/ai-asset-upstream-migration-design.md) — implements RHIDP-15302 tasks 8.1-8.4 from this specification.
 
 Design document mapping custom annotations and entity kinds to upstream Backstage entity kind targets, identifying consumer-facing changes, and obtaining upstream sign-off. Current-state source of truth: [ai-catalog-entity-model/design.md Decision 1](../../design.md). MCP server kind is already aligned with upstream (`McpServerApiEntity`, [backstage#34016](https://github.com/backstage/backstage/pull/34016)); RFC [#32062](https://github.com/backstage/backstage/issues/32062) is MCP-only and does **not** define an `AIAgent` kind.
 

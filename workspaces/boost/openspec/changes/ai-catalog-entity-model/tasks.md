@@ -84,7 +84,7 @@
 
 ## 8. Migration Readiness Design (P2) — _RHIDP-15258_
 
-> Tasks 8.1-8.4 implemented in [ai-asset-upstream-migration-design.md](../../specifications/ai-asset-upstream-migration-design.md) via [#4223](https://github.com/redhat-developer/rhdh-plugins/issues/4223).
+> Tasks 8.1-8.4 implemented in [ai-asset-upstream-migration-design.md](../../../specifications/ai-asset-upstream-migration-design.md) via [#4223](https://github.com/redhat-developer/rhdh-plugins/issues/4223).
 
 - [x] 8.1 Create migration design document with mapping table: current kind/spec.type/annotation → target upstream kind (RHIDP-15302)
 - [x] 8.2 Document transformation rules for each AI asset category (RHIDP-15302)
