@@ -50,18 +50,18 @@ without breaking existing catalog consumers.
 
 The authoritative current-state entity mapping is
 [ai-catalog-entity-model/design.md Decision 1][decision-1]. It defines
-seven `rhdh.io/ai-asset-category` values and their entity kind + 
+seven `rhdh.io/ai-asset-category` values and their entity kind +
 `spec.type` pairings:
 
-| Category       | Backstage Kind | `spec.type`       | Notes                                  |
-| -------------- | -------------- | ----------------- | -------------------------------------- |
-| `agent`        | Component      | `ai-agent`        | Pending RHDHPLAN-1113 agent kind def   |
-| `skill`        | AIResource     | `skill`           | AIResource per RHDHPLAN-1113           |
-| `rule`         | AIResource     | `rule`            | AIResource per RHDHPLAN-1113           |
-| `skill-bundle` | AIResource     | `ai-skill-bundle` | Curated skill collections              |
-| `mcp-server`   | API            | `mcp-server`      | Ships in RHDH 2.1 via RHDHPLAN-1510   |
-| `ai-model`     | Resource       | `ai-model`        | Pending RHDHPLAN-404 upstream work     |
-| `model-server` | Resource       | `ai-model-server` | Pending RHDHPLAN-404 upstream work     |
+| Category       | Backstage Kind | `spec.type`       | Notes                                |
+| -------------- | -------------- | ----------------- | ------------------------------------ |
+| `agent`        | Component      | `ai-agent`        | Pending RHDHPLAN-1113 agent kind def |
+| `skill`        | AIResource     | `skill`           | AIResource per RHDHPLAN-1113         |
+| `rule`         | AIResource     | `rule`            | AIResource per RHDHPLAN-1113         |
+| `skill-bundle` | AIResource     | `ai-skill-bundle` | Curated skill collections            |
+| `mcp-server`   | API            | `mcp-server`      | Ships in RHDH 2.1 via RHDHPLAN-1510  |
+| `ai-model`     | Resource       | `ai-model`        | Pending RHDHPLAN-404 upstream work   |
+| `model-server` | Resource       | `ai-model-server` | Pending RHDHPLAN-404 upstream work   |
 
 All entities carry `rhdh.io/ai-asset-category` as the domain
 classifier, independent of the Backstage structural kind.
@@ -75,24 +75,24 @@ reflects the post-reconciliation OpenSpec state. Confidence levels
 follow
 [upstream-schema-alignment/design.md Decision 2][usa-design-d2].
 
-| AI Asset | Current Kind | Current `spec.type` | `rhdh.io/ai-asset-category` | Upstream Target | Confidence | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-| MCP Server | `API` | `mcp-server` | `mcp-server` | Same — `McpServerApiEntity` ([backstage#34016][bs-34016], merged). **No kind rename.** | High | Kind already aligned. Remaining work is field/module gaps (see section 4). |
-| Model Server | `Resource` | `ai-model-server` | `model-server` | Candidate `kind: API`, `spec.type: ai-model-server` ([backstage#34476][bs-34476], open PR; downstream [#4211][rhdh-4211]). **Not** a new kind. | Medium/Low | `Resource` to `API` kind change + field mapping. Hedge on open PR status. |
-| AI Model | `Resource` | `ai-model` | `ai-model` | No solid upstream kind yet. | Low | Continue current mapping. Track future upstream proposals. |
-| Skill | `AIResource` | `skill` | `skill` | `AiResource` (shipped upstream; [#33575][bs-33575] lineage). | Medium-High | Kind/name casing alignment (`AIResource` to `AiResource`). Field alignment needed. |
-| Rule | `AIResource` | `rule` | `rule` | `AiResource` (shipped upstream; [#33575][bs-33575] lineage). | Medium-High | Kind/name casing alignment (`AIResource` to `AiResource`). Field alignment needed. |
-| Skill Bundle | `AIResource` | `ai-skill-bundle` | `skill-bundle` | No upstream kind yet. | Low | Stay on current mapping; track future RFCs. |
-| Agent | `Component` | `ai-agent` | `agent` | No upstream kind via RFC [#32062][bs-32062] (that RFC is MCP-only). Track RHIDP-15865 / [#4164][rhdh-4164] (`AiResource` + `spec.type: agent`). | Low | Do **not** attribute agent kind to RFC #32062. Agent-kind ownership tracked under RHDHPLAN-1113. |
+| AI Asset     | Current Kind | Current `spec.type` | `rhdh.io/ai-asset-category` | Upstream Target                                                                                                                                 | Confidence  | Notes                                                                                            |
+| ------------ | ------------ | ------------------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------ |
+| MCP Server   | `API`        | `mcp-server`        | `mcp-server`                | Same — `McpServerApiEntity` ([backstage#34016][bs-34016], merged). **No kind rename.**                                                          | High        | Kind already aligned. Remaining work is field/module gaps (see section 4).                       |
+| Model Server | `Resource`   | `ai-model-server`   | `model-server`              | Candidate `kind: API`, `spec.type: ai-model-server` ([backstage#34476][bs-34476], open PR; downstream [#4211][rhdh-4211]). **Not** a new kind.  | Medium/Low  | `Resource` to `API` kind change + field mapping. Hedge on open PR status.                        |
+| AI Model     | `Resource`   | `ai-model`          | `ai-model`                  | No solid upstream kind yet.                                                                                                                     | Low         | Continue current mapping. Track future upstream proposals.                                       |
+| Skill        | `AIResource` | `skill`             | `skill`                     | `AiResource` (shipped upstream; [#33575][bs-33575] lineage).                                                                                    | Medium-High | Kind/name casing alignment (`AIResource` to `AiResource`). Field alignment needed.               |
+| Rule         | `AIResource` | `rule`              | `rule`                      | `AiResource` (shipped upstream; [#33575][bs-33575] lineage).                                                                                    | Medium-High | Kind/name casing alignment (`AIResource` to `AiResource`). Field alignment needed.               |
+| Skill Bundle | `AIResource` | `ai-skill-bundle`   | `skill-bundle`              | No upstream kind yet.                                                                                                                           | Low         | Stay on current mapping; track future RFCs.                                                      |
+| Agent        | `Component`  | `ai-agent`          | `agent`                     | No upstream kind via RFC [#32062][bs-32062] (that RFC is MCP-only). Track RHIDP-15865 / [#4164][rhdh-4164] (`AiResource` + `spec.type: agent`). | Low         | Do **not** attribute agent kind to RFC #32062. Agent-kind ownership tracked under RHDHPLAN-1113. |
 
 ### Confidence level definitions
 
-| Level | Meaning |
-| --- | --- |
-| **High** | Upstream kind shipped and stable; RHDH kind already aligned. |
-| **Medium-High** | Upstream kind shipped; field/name alignment work remains. |
-| **Medium/Low** | Upstream target proposed in an open PR; hedge accordingly. |
-| **Low** | No solid upstream kind yet, or mapping is speculative. |
+| Level           | Meaning                                                      |
+| --------------- | ------------------------------------------------------------ |
+| **High**        | Upstream kind shipped and stable; RHDH kind already aligned. |
+| **Medium-High** | Upstream kind shipped; field/name alignment work remains.    |
+| **Medium/Low**  | Upstream target proposed in an open PR; hedge accordingly.   |
+| **Low**         | No solid upstream kind yet, or mapping is speculative.       |
 
 ## 4. Transformation Rules
 
@@ -105,11 +105,11 @@ what changes beyond the kind and `spec.type`.
 
 **Field transformations:**
 
-| Field | Current | Target | Action |
-| --- | --- | --- | --- |
-| `spec.type` | `mcp-server` | `mcp-server` | No change. |
-| `spec.definition` | Free-form API definition string | `spec.remotes` (structured MCP server remotes) | Migrate `spec.definition` content to structured `spec.remotes` per `McpServerApiEntity` schema. |
-| catalog-model module | Not opted in | `@backstage/plugin-catalog-backend-module-ai-model` | Opt in to the upstream AI catalog-model module for entity validation. |
+| Field                | Current                         | Target                                              | Action                                                                                          |
+| -------------------- | ------------------------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `spec.type`          | `mcp-server`                    | `mcp-server`                                        | No change.                                                                                      |
+| `spec.definition`    | Free-form API definition string | `spec.remotes` (structured MCP server remotes)      | Migrate `spec.definition` content to structured `spec.remotes` per `McpServerApiEntity` schema. |
+| catalog-model module | Not opted in                    | `@backstage/plugin-catalog-backend-module-ai-model` | Opt in to the upstream AI catalog-model module for entity validation.                           |
 
 **Additional considerations:**
 
@@ -126,14 +126,14 @@ what changes beyond the kind and `spec.type`.
 
 **Field transformations (conditional on PR merge):**
 
-| Field | Current | Target | Action |
-| --- | --- | --- | --- |
-| `kind` | `Resource` | `API` | Kind change from Resource to API. |
-| `spec.type` | `ai-model-server` | `ai-model-server` | No change to type value. |
-| `spec.owner` | Standard | Standard | No change (both kinds use `spec.owner`). |
-| `spec.serverType` | Not present | Required (`serverType`) | Add `spec.serverType` per upstream schema. |
-| `spec.serverUrl` | Not present | Required (`spec.serverUrl`) | Add `spec.serverUrl` per upstream schema. |
-| `spec.models` | Not present | Optional (`spec.models`) | Add discoverable/available/default model lists if applicable. |
+| Field             | Current           | Target                      | Action                                                        |
+| ----------------- | ----------------- | --------------------------- | ------------------------------------------------------------- |
+| `kind`            | `Resource`        | `API`                       | Kind change from Resource to API.                             |
+| `spec.type`       | `ai-model-server` | `ai-model-server`           | No change to type value.                                      |
+| `spec.owner`      | Standard          | Standard                    | No change (both kinds use `spec.owner`).                      |
+| `spec.serverType` | Not present       | Required (`serverType`)     | Add `spec.serverType` per upstream schema.                    |
+| `spec.serverUrl`  | Not present       | Required (`spec.serverUrl`) | Add `spec.serverUrl` per upstream schema.                     |
+| `spec.models`     | Not present       | Optional (`spec.models`)    | Add discoverable/available/default model lists if applicable. |
 
 **Hedge:** This mapping is conditional on
 [backstage#34476][bs-34476] merging. If the PR is declined or the
@@ -158,11 +158,11 @@ transformation rules.
 
 **Field transformations:**
 
-| Field | Current | Target | Action |
-| --- | --- | --- | --- |
-| `kind` | `AIResource` | `AiResource` | Casing change. Backstage lowercases kind in entity refs, so `airesource:default/my-skill` stays the same. |
-| `spec.type` | `skill` | `skill` | No change. |
-| `spec.*` fields | RHDH-defined fields | Upstream `AiResource` schema fields | Align field names and types per upstream `AiResource` schema ([#33575][bs-33575] lineage). |
+| Field           | Current             | Target                              | Action                                                                                                    |
+| --------------- | ------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `kind`          | `AIResource`        | `AiResource`                        | Casing change. Backstage lowercases kind in entity refs, so `airesource:default/my-skill` stays the same. |
+| `spec.type`     | `skill`             | `skill`                             | No change.                                                                                                |
+| `spec.*` fields | RHDH-defined fields | Upstream `AiResource` schema fields | Align field names and types per upstream `AiResource` schema ([#33575][bs-33575] lineage).                |
 
 **Note:** The `AIResource` to `AiResource` casing change does not
 affect entity ref strings because Backstage lowercases the kind prefix
@@ -213,39 +213,39 @@ areas: catalog UI filters, entity references, and API queries.
 
 ### 5.1 Catalog UI Filters
 
-| Category | Current filter | Post-migration filter | Impact |
-| --- | --- | --- | --- |
-| MCP Server | `kind: API` + `rhdh.io/ai-asset-category: mcp-server` | No change (kind already aligned). | **None.** |
-| Model Server | `kind: Resource` + `rhdh.io/ai-asset-category: model-server` | `kind: API`, `spec.type: ai-model-server` (if [#34476][bs-34476] merges). | **Kind filter changes** from `Resource` to `API`. |
-| AI Model | `kind: Resource` + `rhdh.io/ai-asset-category: ai-model` | No change (no upstream kind yet). | **None** until upstream kind proposed. |
-| Skill | `kind: AIResource` + `rhdh.io/ai-asset-category: skill` | `kind: AiResource` (casing change). Annotation filter still useful for category distinction. | **Minimal** — casing change only. |
-| Rule | `kind: AIResource` + `rhdh.io/ai-asset-category: rule` | `kind: AiResource` (casing change). | **Minimal** — same as Skill. |
-| Skill Bundle | `kind: AIResource` + `rhdh.io/ai-asset-category: skill-bundle` | No change (no upstream kind yet). | **None** until upstream kind proposed. |
-| Agent | `kind: Component` + `rhdh.io/ai-asset-category: agent` | No change (no upstream kind yet). | **None** until upstream kind proposed. |
+| Category     | Current filter                                                 | Post-migration filter                                                                        | Impact                                            |
+| ------------ | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| MCP Server   | `kind: API` + `rhdh.io/ai-asset-category: mcp-server`          | No change (kind already aligned).                                                            | **None.**                                         |
+| Model Server | `kind: Resource` + `rhdh.io/ai-asset-category: model-server`   | `kind: API`, `spec.type: ai-model-server` (if [#34476][bs-34476] merges).                    | **Kind filter changes** from `Resource` to `API`. |
+| AI Model     | `kind: Resource` + `rhdh.io/ai-asset-category: ai-model`       | No change (no upstream kind yet).                                                            | **None** until upstream kind proposed.            |
+| Skill        | `kind: AIResource` + `rhdh.io/ai-asset-category: skill`        | `kind: AiResource` (casing change). Annotation filter still useful for category distinction. | **Minimal** — casing change only.                 |
+| Rule         | `kind: AIResource` + `rhdh.io/ai-asset-category: rule`         | `kind: AiResource` (casing change).                                                          | **Minimal** — same as Skill.                      |
+| Skill Bundle | `kind: AIResource` + `rhdh.io/ai-asset-category: skill-bundle` | No change (no upstream kind yet).                                                            | **None** until upstream kind proposed.            |
+| Agent        | `kind: Component` + `rhdh.io/ai-asset-category: agent`         | No change (no upstream kind yet).                                                            | **None** until upstream kind proposed.            |
 
 ### 5.2 Entity References
 
-| Category | Current entity ref | Post-migration entity ref | Impact |
-| --- | --- | --- | --- |
-| MCP Server | `api:default/my-mcp-server` | `api:default/my-mcp-server` | **No change.** |
-| Model Server | `resource:default/my-server` | `api:default/my-server` (if [#34476][bs-34476] merges). | **Breaking** — entity ref kind prefix changes from `resource:` to `api:`. All entity links, relationship references, and stored entity refs must be updated. |
-| AI Model | `resource:default/my-model` | No change. | **No change.** |
-| Skill | `airesource:default/my-skill` | `airesource:default/my-skill` | **No change.** Backstage lowercases kind prefixes; `AIResource` and `AiResource` both produce `airesource:`. |
-| Rule | `airesource:default/my-rule` | `airesource:default/my-rule` | **No change** (same as Skill). |
-| Skill Bundle | `airesource:default/my-bundle` | No change. | **No change.** |
-| Agent | `component:default/my-agent` | No change. | **No change.** |
+| Category     | Current entity ref             | Post-migration entity ref                               | Impact                                                                                                                                                       |
+| ------------ | ------------------------------ | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| MCP Server   | `api:default/my-mcp-server`    | `api:default/my-mcp-server`                             | **No change.**                                                                                                                                               |
+| Model Server | `resource:default/my-server`   | `api:default/my-server` (if [#34476][bs-34476] merges). | **Breaking** — entity ref kind prefix changes from `resource:` to `api:`. All entity links, relationship references, and stored entity refs must be updated. |
+| AI Model     | `resource:default/my-model`    | No change.                                              | **No change.**                                                                                                                                               |
+| Skill        | `airesource:default/my-skill`  | `airesource:default/my-skill`                           | **No change.** Backstage lowercases kind prefixes; `AIResource` and `AiResource` both produce `airesource:`.                                                 |
+| Rule         | `airesource:default/my-rule`   | `airesource:default/my-rule`                            | **No change** (same as Skill).                                                                                                                               |
+| Skill Bundle | `airesource:default/my-bundle` | No change.                                              | **No change.**                                                                                                                                               |
+| Agent        | `component:default/my-agent`   | No change.                                              | **No change.**                                                                                                                                               |
 
 ### 5.3 API Queries
 
-| Category | Current query | Post-migration query | Impact |
-| --- | --- | --- | --- |
-| MCP Server | `?filter=kind=API,spec.type=mcp-server` | No change. | **None.** |
-| Model Server | `?filter=kind=Resource,rhdh.io/ai-asset-category=model-server` | `?filter=kind=API,spec.type=ai-model-server` (if [#34476][bs-34476] merges). | **Breaking** — both kind and filter field change. |
-| AI Model | `?filter=kind=Resource,rhdh.io/ai-asset-category=ai-model` | No change. | **None.** |
-| Skill | `?filter=kind=AIResource,rhdh.io/ai-asset-category=skill` | `?filter=kind=AiResource,rhdh.io/ai-asset-category=skill` | **Minimal** — casing change in kind filter value. |
-| Rule | `?filter=kind=AIResource,rhdh.io/ai-asset-category=rule` | `?filter=kind=AiResource,rhdh.io/ai-asset-category=rule` | **Minimal** — same as Skill. |
-| Skill Bundle | `?filter=kind=AIResource,rhdh.io/ai-asset-category=skill-bundle` | No change. | **None.** |
-| Agent | `?filter=kind=Component,rhdh.io/ai-asset-category=agent` | No change. | **None.** |
+| Category     | Current query                                                    | Post-migration query                                                         | Impact                                            |
+| ------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------- |
+| MCP Server   | `?filter=kind=API,spec.type=mcp-server`                          | No change.                                                                   | **None.**                                         |
+| Model Server | `?filter=kind=Resource,rhdh.io/ai-asset-category=model-server`   | `?filter=kind=API,spec.type=ai-model-server` (if [#34476][bs-34476] merges). | **Breaking** — both kind and filter field change. |
+| AI Model     | `?filter=kind=Resource,rhdh.io/ai-asset-category=ai-model`       | No change.                                                                   | **None.**                                         |
+| Skill        | `?filter=kind=AIResource,rhdh.io/ai-asset-category=skill`        | `?filter=kind=AiResource,rhdh.io/ai-asset-category=skill`                    | **Minimal** — casing change in kind filter value. |
+| Rule         | `?filter=kind=AIResource,rhdh.io/ai-asset-category=rule`         | `?filter=kind=AiResource,rhdh.io/ai-asset-category=rule`                     | **Minimal** — same as Skill.                      |
+| Skill Bundle | `?filter=kind=AIResource,rhdh.io/ai-asset-category=skill-bundle` | No change.                                                                   | **None.**                                         |
+| Agent        | `?filter=kind=Component,rhdh.io/ai-asset-category=agent`         | No change.                                                                   | **None.**                                         |
 
 ## 6. Backward Compatibility
 
@@ -271,14 +271,14 @@ period.
 
 ### Per-category compatibility notes
 
-| Category | Compatibility impact | Notes |
-| --- | --- | --- |
-| MCP Server | **No breaking change** | Kind already aligned. Only field/module changes. |
+| Category     | Compatibility impact       | Notes                                                                                                                                         |
+| ------------ | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| MCP Server   | **No breaking change**     | Kind already aligned. Only field/module changes.                                                                                              |
 | Model Server | **Breaking** (conditional) | Kind changes from `Resource` to `API`. Entity refs change. Requires dual-filter support during transition. Conditional on [#34476][bs-34476]. |
-| AI Model | **No change** | No upstream kind yet. |
-| Skill / Rule | **Minimal** | Casing change only (`AIResource` to `AiResource`). Entity refs unchanged. |
-| Skill Bundle | **No change** | No upstream kind yet. |
-| Agent | **No change** | No upstream kind yet. |
+| AI Model     | **No change**              | No upstream kind yet.                                                                                                                         |
+| Skill / Rule | **Minimal**                | Casing change only (`AIResource` to `AiResource`). Entity refs unchanged.                                                                     |
+| Skill Bundle | **No change**              | No upstream kind yet.                                                                                                                         |
+| Agent        | **No change**              | No upstream kind yet.                                                                                                                         |
 
 ## 7. Out of Scope
 
@@ -307,12 +307,12 @@ document:
 > tasks 8.5-8.6. It will be filled in by a human reviewer after this
 > document is merged.
 
-| Field | Value |
-| --- | --- |
-| Reviewer | _(to be filled)_ |
-| Role | RHDH Architect |
-| Date | _(to be filled)_ |
-| Status | _(pending review)_ |
+| Field    | Value              |
+| -------- | ------------------ |
+| Reviewer | _(to be filled)_   |
+| Role     | RHDH Architect     |
+| Date     | _(to be filled)_   |
+| Status   | _(pending review)_ |
 
 ---
 
