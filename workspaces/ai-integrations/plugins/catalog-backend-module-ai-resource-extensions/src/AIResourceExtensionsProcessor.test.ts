@@ -530,6 +530,168 @@ describe('AIResourceExtensionsProcessor', () => {
     });
   });
 
+  describe('agent validation (spec.type: agent)', () => {
+    it('should accept a valid agent entity with required fields', async () => {
+      const entity = makeAIResource({
+        type: 'agent',
+        lifecycle: 'production',
+        owner: 'ai-platform-team',
+        instructions: 'You are a test agent.',
+      });
+
+      const result = await processor.preProcessEntity(entity, location, emit);
+
+      expect(result).toEqual(entity);
+    });
+
+    it('should accept a valid agent with all optional fields', async () => {
+      const entity = makeAIResource({
+        type: 'agent',
+        lifecycle: 'production',
+        owner: 'ai-platform-team',
+        instructions: 'You are a fully configured agent.',
+        handoffDescription: 'Handles everything.',
+        model: 'gpt-4o',
+        handoffs: ['agent-a', 'agent-b'],
+        tools: ['tool-x', 'tool-y'],
+        toolUseBehavior: 'run_llm_again',
+        resetToolChoice: true,
+        modelSettings: { temperature: 0.5 },
+        outputSchema: { type: 'object' },
+      });
+
+      const result = await processor.preProcessEntity(entity, location, emit);
+
+      expect(result).toEqual(entity);
+    });
+
+    it('should accept opaque handoffs and tools strings', async () => {
+      const entity = makeAIResource({
+        type: 'agent',
+        instructions: 'Agent with opaque refs.',
+        handoffs: ['some-arbitrary-string', 'another-ref'],
+        tools: ['my-custom-tool'],
+      });
+
+      const result = await processor.preProcessEntity(entity, location, emit);
+
+      expect(result).toEqual(entity);
+    });
+
+    it('should reject agent with missing instructions', async () => {
+      const entity = makeAIResource({
+        type: 'agent',
+        lifecycle: 'production',
+        owner: 'team',
+      });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('spec.instructions');
+    });
+
+    it('should reject agent with empty instructions', async () => {
+      const entity = makeAIResource({
+        type: 'agent',
+        instructions: '',
+      });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('spec.instructions');
+    });
+
+    it('should reject agent with wrong-type instructions', async () => {
+      const entity = makeAIResource({
+        type: 'agent',
+        instructions: 42,
+      });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('spec.instructions');
+    });
+
+    it('should reject agent with handoffs as non-array', async () => {
+      const entity = makeAIResource({
+        type: 'agent',
+        instructions: 'Valid instructions.',
+        handoffs: 'not-an-array',
+      });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('spec.handoffs');
+    });
+
+    it('should reject agent with resetToolChoice as non-boolean', async () => {
+      const entity = makeAIResource({
+        type: 'agent',
+        instructions: 'Valid instructions.',
+        resetToolChoice: 'yes',
+      });
+
+      await expect(
+        processor.preProcessEntity(entity, location, emit),
+      ).rejects.toThrow('spec.resetToolChoice');
+    });
+
+    it('should not apply agent instructions rule to skill entities', async () => {
+      const entity = makeAIResource({
+        type: 'skill',
+        lifecycle: 'production',
+        owner: 'team',
+      });
+
+      const result = await processor.preProcessEntity(entity, location, emit);
+
+      expect(result).toEqual(entity);
+    });
+
+    it('should not apply agent instructions rule to entities without spec.type', async () => {
+      const entity = makeAIResource({
+        lifecycle: 'production',
+        owner: 'team',
+      });
+
+      const result = await processor.preProcessEntity(entity, location, emit);
+
+      expect(result).toEqual(entity);
+    });
+
+    it('should report agent and scope errors together', async () => {
+      const entity = makeAIResource({
+        type: 'agent',
+        scope: 'invalid',
+      });
+
+      const error = await processor
+        .preProcessEntity(entity, location, emit)
+        .catch((e: Error) => e);
+
+      expect(error).toBeInstanceOf(Error);
+      const message = (error as Error).message;
+      expect(message).toContain('spec.scope');
+      expect(message).toContain('spec.instructions');
+    });
+
+    it('should not expose internal class names in agent errors', async () => {
+      const entity = makeAIResource({
+        type: 'agent',
+      });
+
+      const error = await processor
+        .preProcessEntity(entity, location, emit)
+        .catch((e: Error) => e);
+
+      expect(error).toBeInstanceOf(Error);
+      expect((error as Error).message).not.toMatch(
+        /AIResourceExtensionsProcessor/,
+      );
+      expect((error as Error).message).not.toMatch(/at\s+\w+\.\w+\s+\(/);
+    });
+  });
+
   describe('non-AIResource entities', () => {
     it('should pass through Component entities unchanged', async () => {
       const entity: Entity = {

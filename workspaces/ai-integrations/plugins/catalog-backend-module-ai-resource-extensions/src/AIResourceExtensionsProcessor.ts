@@ -20,6 +20,7 @@ import {
 } from '@backstage/plugin-catalog-node';
 import { Entity } from '@backstage/catalog-model';
 import { LocationSpec } from '@backstage/plugin-catalog-common';
+import { collectAgentErrors } from './collectAgentErrors';
 import { collectOciErrors } from './collectOciErrors';
 
 /**
@@ -49,6 +50,8 @@ export type AIResourceScope = (typeof VALID_AI_RESOURCE_SCOPES)[number];
  *   'product', or 'team'
  * - `backstage.io/source-location`: OCI URI format when the
  *   location-ref target uses the `oci://` scheme
+ * - Agent-specific fields when `spec.type` is `'agent'`:
+ *   required `spec.instructions`, optional field shape checks
  *
  * All constraint violations are collected and reported in a single
  * error rather than stopping at the first failure.
@@ -86,6 +89,7 @@ export class AIResourceExtensionsProcessor implements CatalogProcessor {
       );
     }
 
+    errors.push(...collectAgentErrors(entity));
     errors.push(...collectOciErrors(entity));
 
     if (errors.length > 0) {
