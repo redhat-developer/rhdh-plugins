@@ -119,7 +119,7 @@ The migration document MUST identify consumer-facing changes when transitioning 
 #### Scenario: Backward compatibility strategy documented (RHIDP-15302)
 
 - **WHEN** the migration document specifies consumer-facing changes
-- **THEN** it also documents backward compatibility approach: "Keep `rhdh.io/ai-asset-category` annotation on migrated entities for one major version, allowing queries to work with both old and new filters. Deprecation notice in release notes."
+- **THEN** it also documents backward compatibility approach: "Keep `rhdh.io/ai-asset-category` annotation on migrated entities for one major version. Annotation-only queries (full path `metadata.annotations.rhdh.io/ai-asset-category`) span kind-changing migrations; pre-migration kind+annotation AND filters do not. Casing-only kind changes (`AIResource` → `AiResource`) remain filter-compatible because catalog kind matching is case-insensitive. Deprecation notice in release notes."
 
 ### Requirement: Upstream Maintainer or RHDH Architect Sign-Off
 
