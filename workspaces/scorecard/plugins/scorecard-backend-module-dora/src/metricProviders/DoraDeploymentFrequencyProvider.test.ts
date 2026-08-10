@@ -89,7 +89,7 @@ describe('DoraDeploymentFrequencyProvider', () => {
       const customProvider = DoraDeploymentFrequencyProvider.fromConfig(
         new ConfigReader({
           scorecard: {
-            plugins: {
+            metricProviders: {
               dora: {
                 deploymentFrequency: {
                   options: {
@@ -185,7 +185,7 @@ describe('DoraDeploymentFrequencyProvider', () => {
       const customProvider = DoraDeploymentFrequencyProvider.fromConfig(
         new ConfigReader({
           scorecard: {
-            plugins: {
+            metricProviders: {
               dora: {
                 deploymentFrequency: {
                   options: {

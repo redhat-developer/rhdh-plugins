@@ -45,7 +45,7 @@ describe('DoraConfig', () => {
         parseDoraDeploymentFrequencyConfig(
           new ConfigReader({
             scorecard: {
-              plugins: {
+              metricProviders: {
                 dora: {
                   deploymentFrequency: {
                     options: {
@@ -77,7 +77,7 @@ describe('DoraConfig', () => {
         parseDoraDeploymentFrequencyConfig(
           new ConfigReader({
             scorecard: {
-              plugins: {
+              metricProviders: {
                 dora: {
                   deploymentFrequency: {
                     options: {
@@ -115,7 +115,7 @@ describe('DoraConfig', () => {
         parseDoraMedianLeadTimeForChangesConfig(
           new ConfigReader({
             scorecard: {
-              plugins: {
+              metricProviders: {
                 dora: {
                   medianLeadTimeForChanges: {
                     options: {
@@ -166,7 +166,7 @@ describe('DoraConfig', () => {
         parseDoraMeanTimeToRestoreConfig(
           new ConfigReader({
             scorecard: {
-              plugins: {
+              metricProviders: {
                 dora: {
                   meanTimeToRestore: {
                     options: {
@@ -212,7 +212,7 @@ describe('DoraConfig', () => {
         parseDoraChangeFailureRateConfig(
           new ConfigReader({
             scorecard: {
-              plugins: {
+              metricProviders: {
                 dora: {
                   changeFailureRate: {
                     options: {

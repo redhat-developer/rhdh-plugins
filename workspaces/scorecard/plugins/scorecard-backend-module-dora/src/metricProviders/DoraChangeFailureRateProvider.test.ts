@@ -143,7 +143,7 @@ describe('DoraChangeFailureRateProvider', () => {
       const customProvider = DoraChangeFailureRateProvider.fromConfig(
         new ConfigReader({
           scorecard: {
-            plugins: {
+            metricProviders: {
               dora: {
                 changeFailureRate: {
                   options: {
@@ -308,7 +308,7 @@ describe('DoraChangeFailureRateProvider', () => {
       const customProvider = DoraChangeFailureRateProvider.fromConfig(
         new ConfigReader({
           scorecard: {
-            plugins: {
+            metricProviders: {
               dora: {
                 changeFailureRate: {
                   options: {

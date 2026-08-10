@@ -153,7 +153,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       const customProvider = DoraMedianLeadTimeForChangesProvider.fromConfig(
         new ConfigReader({
           scorecard: {
-            plugins: {
+            metricProviders: {
               dora: {
                 medianLeadTimeForChanges: {
                   options: {
@@ -296,7 +296,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       const customProvider = DoraMedianLeadTimeForChangesProvider.fromConfig(
         new ConfigReader({
           scorecard: {
-            plugins: {
+            metricProviders: {
               dora: {
                 medianLeadTimeForChanges: {
                   options: {

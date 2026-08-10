@@ -76,7 +76,7 @@ See [threshold configuration](../scorecard-backend/docs/thresholds.md) for detai
 ```yaml
 # app-config.yaml
 scorecard:
-  plugins:
+  metricProviders:
     dora:
       deploymentFrequency:
         thresholds:
@@ -89,7 +89,7 @@ scorecard:
               expression: '<1'
 ```
 
-Paths follow `scorecard.plugins.dora.<metricProviderName>.thresholds` (update `metricProviderName` to `deploymentFrequency`, `medianLeadTimeForChanges`, `meanTimeToRestore` or `changeFailureRate`).
+Paths follow `scorecard.metricProviders.dora.<metricProviderName>.thresholds` (update `metricProviderName` to `deploymentFrequency`, `medianLeadTimeForChanges`, `meanTimeToRestore` or `changeFailureRate`).
 
 **Entity annotation example** (overrides selected keys; others keep app-config or defaults):
 
@@ -126,7 +126,7 @@ Collector inputs are merged with provider-generated required inputs. This lets y
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     dora:
       deploymentFrequency:
         options:
@@ -155,9 +155,9 @@ scorecard:
 
 DORA providers follow Scorecard scheduling settings under their metric keys:
 
-- `scorecard.plugins.dora.deploymentFrequency.schedule`
-- `scorecard.plugins.dora.medianLeadTimeForChanges.schedule`
-- `scorecard.plugins.dora.meanTimeToRestore.schedule`
-- `scorecard.plugins.dora.changeFailureRate.schedule`
+- `scorecard.metricProviders.dora.deploymentFrequency.schedule`
+- `scorecard.metricProviders.dora.medianLeadTimeForChanges.schedule`
+- `scorecard.metricProviders.dora.meanTimeToRestore.schedule`
+- `scorecard.metricProviders.dora.changeFailureRate.schedule`
 
 See [providers.md](../scorecard-backend/docs/providers.md#metric-collection-scheduling) for schedule schema and defaults.

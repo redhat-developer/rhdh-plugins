@@ -23,7 +23,7 @@ import {
 export interface Config {
   /** Configuration for scorecard dora plugin */
   scorecard?: {
-    plugins?: {
+    metricProviders?: {
       dora?: {
         deploymentFrequency?: {
           /**

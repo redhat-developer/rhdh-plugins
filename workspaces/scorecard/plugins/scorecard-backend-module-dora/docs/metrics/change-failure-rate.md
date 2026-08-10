@@ -30,7 +30,7 @@ Provider-specific settings are under `options`:
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     dora:
       changeFailureRate:
         options:
@@ -60,7 +60,7 @@ Thresholds are applied to the computed percentage value:
 
 Configure thresholds via:
 
-- `scorecard.plugins.dora.changeFailureRate.thresholds`
+- `scorecard.metricProviders.dora.changeFailureRate.thresholds`
 
 ## Collectors
 
@@ -144,7 +144,7 @@ Collector-specific extra input fields are allowed, but they do not replace requi
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     dora:
       changeFailureRate:
         options:
@@ -161,7 +161,7 @@ When using workflow runs as the deployments source, provide `workflowName` as ex
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     dora:
       changeFailureRate:
         options:
@@ -178,7 +178,7 @@ scorecard:
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     dora:
       changeFailureRate:
         options:

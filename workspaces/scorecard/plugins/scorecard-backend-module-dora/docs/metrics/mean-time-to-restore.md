@@ -25,7 +25,7 @@ Thresholds are applied to the computed value in hours:
 
 Configure thresholds via:
 
-- `scorecard.plugins.dora.meanTimeToRestore.thresholds`
+- `scorecard.metricProviders.dora.meanTimeToRestore.thresholds`
 
 ## Collectors
 
@@ -84,7 +84,7 @@ Collector-specific extra input fields are allowed, but they do not replace requi
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     dora:
       meanTimeToRestore:
         options:
@@ -97,7 +97,7 @@ scorecard:
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     dora:
       meanTimeToRestore:
         options:

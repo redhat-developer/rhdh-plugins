@@ -35,9 +35,10 @@ export interface Config {
   };
   /** Configuration for scorecard plugin */
   scorecard?: {
-    /** Metric providers calculate one or more metrics on a schedule. */
-    metricProviders?: {
-      /** JIRA datasource configuration */
+    /**
+     * Plugin-level settings.
+     */
+    plugins?: {
       jira?: {
         collectors?: {
           incidents?: {
@@ -51,6 +52,12 @@ export interface Config {
             };
           };
         };
+      };
+    };
+    /** Metric providers calculate one or more metrics on a schedule. */
+    metricProviders?: {
+      /** JIRA datasource configuration */
+      jira?: {
         openIssues?: {
           options?: {
             mandatoryFilter?: string;

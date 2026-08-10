@@ -184,7 +184,8 @@ function parseProductionEnvironments(
 export function parseDoraDeploymentFrequencyConfig(
   config: Config,
 ): DoraDeploymentFrequencyConfig {
-  const providerConfigPath = 'scorecard.plugins.dora.deploymentFrequency';
+  const providerConfigPath =
+    'scorecard.metricProviders.dora.deploymentFrequency';
 
   return {
     deploymentsCollector: parseCollectorConfig(
@@ -205,7 +206,8 @@ export function parseDoraDeploymentFrequencyConfig(
 export function parseDoraMedianLeadTimeForChangesConfig(
   config: Config,
 ): DoraMedianLeadTimeForChangesConfig {
-  const providerConfigPath = 'scorecard.plugins.dora.medianLeadTimeForChanges';
+  const providerConfigPath =
+    'scorecard.metricProviders.dora.medianLeadTimeForChanges';
 
   return {
     deploymentsCollector: parseCollectorConfig(
@@ -231,7 +233,7 @@ export function parseDoraMedianLeadTimeForChangesConfig(
 export function parseDoraMeanTimeToRestoreConfig(
   config: Config,
 ): DoraMeanTimeToRestoreConfig {
-  const providerConfigPath = 'scorecard.plugins.dora.meanTimeToRestore';
+  const providerConfigPath = 'scorecard.metricProviders.dora.meanTimeToRestore';
 
   return {
     incidentsCollector: parseCollectorConfig(
@@ -248,7 +250,7 @@ export function parseDoraMeanTimeToRestoreConfig(
 export function parseDoraChangeFailureRateConfig(
   config: Config,
 ): DoraChangeFailureRateConfig {
-  const providerConfigPath = 'scorecard.plugins.dora.changeFailureRate';
+  const providerConfigPath = 'scorecard.metricProviders.dora.changeFailureRate';
 
   return {
     deploymentsCollector: parseCollectorConfig(

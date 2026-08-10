@@ -16,7 +16,7 @@ Provider-specific settings are under `options`:
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     dora:
       deploymentFrequency:
         options:
@@ -44,7 +44,7 @@ Thresholds are applied to the computed `deployments/week` value:
 
 Configure thresholds via:
 
-- `scorecard.plugins.dora.deploymentFrequency.thresholds`
+- `scorecard.metricProviders.dora.deploymentFrequency.thresholds`
 
 ## Collectors
 
@@ -94,7 +94,7 @@ Required output:
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     dora:
       deploymentFrequency:
         options:
@@ -109,7 +109,7 @@ When using workflow runs, provide `workflowName` as extra collector input.
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     dora:
       deploymentFrequency:
         options:
@@ -124,7 +124,7 @@ scorecard:
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     dora:
       deploymentFrequency:
         options:

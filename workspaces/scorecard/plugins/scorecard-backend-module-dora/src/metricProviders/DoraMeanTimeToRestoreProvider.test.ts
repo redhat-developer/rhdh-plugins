@@ -103,7 +103,7 @@ describe('DoraMeanTimeToRestoreProvider', () => {
       const customProvider = DoraMeanTimeToRestoreProvider.fromConfig(
         new ConfigReader({
           scorecard: {
-            plugins: {
+            metricProviders: {
               dora: {
                 meanTimeToRestore: {
                   options: {

@@ -24,7 +24,7 @@ Provider-specific settings are under `options`:
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     dora:
       medianLeadTimeForChanges:
         options:
@@ -54,7 +54,7 @@ Thresholds are applied to the computed value in hours:
 
 Configure thresholds via:
 
-- `scorecard.plugins.dora.medianLeadTimeForChanges.thresholds`
+- `scorecard.metricProviders.dora.medianLeadTimeForChanges.thresholds`
 
 ## Collectors
 
@@ -143,7 +143,7 @@ Collector-specific extra input fields are allowed, but they do not replace requi
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     dora:
       medianLeadTimeForChanges:
         options:
@@ -160,7 +160,7 @@ When using workflow runs as the deployments source, provide `workflowName` as ex
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     dora:
       medianLeadTimeForChanges:
         options:
@@ -177,7 +177,7 @@ scorecard:
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     dora:
       medianLeadTimeForChanges:
         options:
