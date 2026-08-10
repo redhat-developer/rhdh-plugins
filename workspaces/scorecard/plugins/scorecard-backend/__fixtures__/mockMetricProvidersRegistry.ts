@@ -40,6 +40,9 @@ export const buildMockMetricProvidersRegistry = ({
   const getProvider = provider
     ? jest.fn().mockReturnValue(provider)
     : jest.fn();
+  const listProviders = provider
+    ? jest.fn().mockReturnValue([provider])
+    : jest.fn().mockReturnValue([]);
   const listMetrics = metricsList
     ? jest.fn().mockImplementation((metricIds?: string[]) => {
         if (metricIds && metricIds.length !== 0) {
@@ -72,5 +75,6 @@ export const buildMockMetricProvidersRegistry = ({
     hasProvider,
     getMetric,
     listMetrics,
+    listProviders,
   } as unknown as jest.Mocked<MetricProvidersRegistry>;
 };

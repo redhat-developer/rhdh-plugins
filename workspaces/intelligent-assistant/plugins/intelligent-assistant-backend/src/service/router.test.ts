@@ -640,6 +640,26 @@ describe('intelligent-assistant router tests', () => {
         expect(upstreamUrls[0].searchParams.get('user_id')).toEqual(mockUserId);
       });
 
+      it('returns empty prompts array and injects user_id', async () => {
+        const upstreamUrls: URL[] = [];
+        server.use(
+          http.get(`${LOCAL_LCS_ADDR}/v1/saved-prompts`, ({ request: req }) => {
+            upstreamUrls.push(new URL(req.url));
+            return HttpResponse.json({ prompts: [] });
+          }),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer).get(
+          '/api/intelligent-assistant/v1/saved-prompts',
+        );
+
+        expect(response.statusCode).toEqual(200);
+        expect(response.body.prompts).toEqual([]);
+        expect(upstreamUrls).toHaveLength(1);
+        expect(upstreamUrls[0].searchParams.get('user_id')).toEqual(mockUserId);
+      });
+
       it('returns 403 when permission is denied', async () => {
         const backendServer = await startBackendServer(
           {},
@@ -734,6 +754,37 @@ describe('intelligent-assistant router tests', () => {
           'Error from lightspeed-core server',
         );
         expect(response.body.error).not.toContain('max_display_name_length');
+      });
+
+      it('relays Core 422 for per-user limit exceeded with sanitized error', async () => {
+        server.use(
+          http.post(`${LOCAL_LCS_ADDR}/v1/saved-prompts`, () => {
+            return new HttpResponse(
+              JSON.stringify({
+                detail: {
+                  response: 'Saved prompt limit exceeded',
+                  cause:
+                    'Saved prompt limit exceeded: 50 existing prompts, maximum is 50',
+                },
+              }),
+              {
+                status: 422,
+                headers: { 'Content-Type': 'application/json' },
+              },
+            );
+          }),
+        );
+
+        const backendServer = await startBackendServer();
+        const response = await request(backendServer)
+          .post('/api/intelligent-assistant/v1/saved-prompts')
+          .send({ name: 'Deploy', content: 'Help me deploy' });
+
+        expect(response.statusCode).toEqual(422);
+        expect(response.body.error).toContain(
+          'Error from lightspeed-core server',
+        );
+        expect(response.body.error).not.toContain('50 existing prompts');
       });
 
       it('relays Core 409 with sanitized error', async () => {
@@ -1732,72 +1783,6 @@ describe('intelligent-assistant router tests', () => {
       });
     });
 
-    it('returns false when model lacks vision', async () => {
-      server.use(
-        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => {
-          return new HttpResponse(
-            JSON.stringify({ error: 'Model does not support vision' }),
-            { status: 400 },
-          );
-        }),
-      );
-
-      const backendServer = await startBackendServer();
-      const response = await request(backendServer)
-        .post('/api/intelligent-assistant/v1/validate-model-vision')
-        .send({ model: 'gpt-3.5-turbo', provider: 'test-server' });
-
-      expect(response.statusCode).toEqual(200);
-      expect(response.body).toEqual({
-        model: 'gpt-3.5-turbo',
-        provider: 'test-server',
-        supportsVision: false,
-      });
-    });
-
-    it('returns false when model is not found', async () => {
-      server.use(
-        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => {
-          return new HttpResponse(
-            JSON.stringify({ error: 'Model not found' }),
-            { status: 404 },
-          );
-        }),
-      );
-
-      const backendServer = await startBackendServer();
-      const response = await request(backendServer)
-        .post('/api/intelligent-assistant/v1/validate-model-vision')
-        .send({ model: 'gpt-4o', provider: 'test-server' });
-
-      expect(response.statusCode).toEqual(200);
-      expect(response.body).toEqual({
-        model: 'gpt-4o',
-        provider: 'test-server',
-        supportsVision: false,
-      });
-    });
-
-    it('returns 502 without caching when upstream returns 5xx', async () => {
-      server.use(
-        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => {
-          return new HttpResponse(
-            JSON.stringify({ error: 'Internal server error' }),
-            { status: 500 },
-          );
-        }),
-      );
-
-      const backendServer = await startBackendServer();
-      const response = await request(backendServer)
-        .post('/api/intelligent-assistant/v1/validate-model-vision')
-        .send({ model: 'gpt-4o', provider: 'test-server' });
-
-      expect(response.statusCode).toEqual(502);
-      expect(response.body.error).toContain('Unable to verify vision support');
-      expect(ModelCapabilitiesCache.has('test-server/gpt-4o')).toBe(false);
-    });
-
     it('returns 400 when model or provider is missing', async () => {
       const backendServer = await startBackendServer();
       const response = await request(backendServer)
@@ -1892,6 +1877,69 @@ describe('intelligent-assistant router tests', () => {
         });
 
       expect(response.statusCode).toEqual(200);
+    });
+  });
+
+  describe('GET /v1/skills', () => {
+    it('should return skills list from LCORE', async () => {
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(
+        '/api/intelligent-assistant/v1/skills',
+      );
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({
+        skills: [
+          {
+            name: 'rhdh-dynamic-plugins',
+            description: 'Guidance for RHDH dynamic plugin development',
+          },
+          {
+            name: 'coding-standards',
+            description: 'Organization coding standards and best practices',
+          },
+        ],
+      });
+    });
+
+    it('should return empty skills list when LCORE has no skills', async () => {
+      server.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/skills`, () => {
+          return HttpResponse.json({ skills: [] });
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(
+        '/api/intelligent-assistant/v1/skills',
+      );
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({ skills: [] });
+    });
+
+    it('should fail with unauthorized error', async () => {
+      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+      const response = await request(backendServer).get(
+        '/api/intelligent-assistant/v1/skills',
+      );
+
+      expect(response.statusCode).toEqual(403);
+    });
+
+    it('should return 500 when LCORE is unreachable', async () => {
+      server.use(
+        http.get(`${LOCAL_LCS_ADDR}/v1/skills`, () => {
+          return HttpResponse.error();
+        }),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(
+        '/api/intelligent-assistant/v1/skills',
+      );
+
+      expect(response.statusCode).toEqual(500);
     });
   });
 });

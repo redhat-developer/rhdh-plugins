@@ -32,6 +32,7 @@ export * from './notebooks/useNotebookSession';
 export * from './notebooks/useNotebookSessions';
 export * from './usePinnedChatsSettings';
 export * from './notebooks/useRenameNotebook';
+export * from './notebooks/useRenameNotebookWithAlert';
 export * from './useSortSettings';
 export * from './useStopConversation';
 export * from './useTranslation';

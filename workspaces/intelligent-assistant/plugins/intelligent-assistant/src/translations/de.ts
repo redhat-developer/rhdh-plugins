@@ -266,12 +266,9 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebooks.prompts.coreConcepts.title': 'Was sind die Kernkonzepte?',
     'notebooks.prompts.vulnerabilities.title':
       'Zeige meine kritischen Schwachstellen',
-    'notebooks.rename.action': 'Senden',
-    'notebooks.rename.description':
-      'Bitte geben Sie den neuen Namen für dieses Notizbuch ein und klicken Sie auf „Senden“, um fortzufahren.',
-    'notebooks.rename.label': 'Neuer Name',
-    'notebooks.rename.placeholder': 'Neuer Name',
-    'notebooks.rename.title': '{{name}} umbenennen?',
+    'notebooks.rename.inline.tooltip': 'Klicken zum Umbenennen',
+    'notebooks.rename.inline.error':
+      'Umbenennung von "{{notebookName}}" fehlgeschlagen.',
     'notebooks.title': 'Meine Notizbücher',
     'notebooks.updated.days': 'Vor {{days}} Tagen aktualisiert',
     'notebooks.updated.on': 'Aktualisiert am',

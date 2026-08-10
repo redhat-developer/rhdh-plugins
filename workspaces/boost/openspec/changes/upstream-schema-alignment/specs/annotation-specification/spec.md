@@ -6,7 +6,7 @@
 
 ## Overview
 
-Formal specification of all RHDH AI Asset annotations and entity kinds, with explicit mapping to draft Backstage RFCs #32062 (McpServer entity kind) and #33060 (ai-model/ai-model-server kinds). Published in a location accessible to platform engineers. Actual migration is explicitly framed as future work.
+Formal specification of all RHDH AI Asset annotations and entity kinds, with explicit mapping to upstream Backstage entity kind targets. Covers all seven AI-asset categories per [ai-catalog-entity-model/design.md Decision 1](../../design.md). MCP servers are kind-aligned with upstream (`McpServerApiEntity`, [backstage#34016](https://github.com/backstage/backstage/pull/34016)); remaining categories have varying upstream readiness. Published in a location accessible to platform engineers. Actual migration is explicitly framed as future work.
 
 ---
 
@@ -40,30 +40,65 @@ Formal specification of all RHDH AI Asset annotations and entity kinds, with exp
 
 ---
 
-## Scenario: Mapping to RFC #32062 documented
+## Scenario: MCP server mapping documented (kind-aligned)
 
-**GIVEN** draft Backstage RFC #32062 proposes `McpServer` entity kind  
+**GIVEN** upstream Backstage shipped `McpServerApiEntity` via [backstage#34016](https://github.com/backstage/backstage/pull/34016) (RFC [#32062](https://github.com/backstage/backstage/issues/32062) Option 3)  
 **WHEN** the specification document is published  
-**THEN** the mapping from RHDH MCP Server entities to RFC #32062 is documented:
+**THEN** the mapping from RHDH MCP Server entities is documented:
 
 - Current: `kind: API`, `spec.type: mcp-server`
-- Target: `kind: McpServer` (RFC #32062)
-- Transformation requirements: migrate kind from API → McpServer
-- Confidence level: Medium (RFC active but schema may evolve)
-- Fields requiring transformation listed explicitly
+- Target: Same — `kind: API`, `spec.type: mcp-server` (`McpServerApiEntity`). **No kind rename.**
+- Confidence level: High (kind already aligned, upstream shipped)
+- Remaining work: field/module gaps — adopt `spec.remotes` instead of `spec.definition`, opt in to `@backstage/plugin-catalog-backend-module-ai-model`
+- Flag fallback `Resource` entities that need migration to `API` kind
 
 ---
 
-## Scenario: Mapping to RFC #33060 documented
+## Scenario: Model server mapping documented (candidate)
 
-**GIVEN** draft Backstage RFC #33060 proposes `ai-model` and `ai-model-server` entity kinds  
+**GIVEN** an open upstream PR [backstage#34476](https://github.com/backstage/backstage/pull/34476) proposes `kind: API`, `spec.type: ai-model-server`  
 **WHEN** the specification document is published  
-**THEN** the mapping from RHDH AI Model and Model Server entities to RFC #33060 is documented:
+**THEN** the mapping from RHDH Model Server entities is documented:
 
-- **AI Model:** Current `kind: Resource`, `spec.type: ai-model` → Target `kind: ai-model` (RFC #33060)
-- **Model Server:** Current `kind: Resource`, `spec.type: ai-model-server` → Target `kind: ai-model-server` (RFC #33060). Note: if the upstream Backstage API extension ([backstage/backstage#34476](https://github.com/backstage/backstage/pull/34476)) becomes available, the Model Server mapping will pivot to that upstream kind.
-- Transformation requirements listed per entity type
-- Confidence level: Medium (RFC active but schema may evolve)
+- **Model Server:** Current `kind: Resource`, `spec.type: ai-model-server` → Candidate target `kind: API`, `spec.type: ai-model-server`. **Not** a new kind named `ai-model-server`.
+- Confidence level: Medium/Low (open PR, hedge accordingly)
+- Transformation: `Resource` → `API` kind change + field mapping
+
+---
+
+## Scenario: AI model mapping documented (no upstream kind)
+
+**GIVEN** no solid upstream kind exists for AI models  
+**WHEN** the specification document is published  
+**THEN** the mapping documents explicit uncertainty:
+
+- **AI Model:** Current `kind: Resource`, `spec.type: ai-model` → No solid upstream kind yet
+- Confidence level: Low
+- Recommendation: Continue using current mapping until upstream stabilizes
+
+---
+
+## Scenario: Skill and rule mapping documented (upstream shipped)
+
+**GIVEN** upstream Backstage shipped `AiResource` kind (see [#33575](https://github.com/backstage/backstage/issues/33575) lineage)  
+**WHEN** the specification document is published  
+**THEN** the mapping from RHDH Skill and Rule entities is documented:
+
+- **Skill:** Current `kind: AIResource`, `spec.type: skill` → `AiResource` (shipped upstream)
+- **Rule:** Current `kind: AIResource`, `spec.type: rule` → `AiResource` (shipped upstream)
+- Confidence level: Medium–High (kind shipped, field alignment work remains)
+- Transformation: kind/name casing alignment (`AIResource` → `AiResource`) + field alignment
+
+---
+
+## Scenario: Skill bundle and agent mappings documented
+
+**GIVEN** no upstream kinds exist for skill bundles or agents  
+**WHEN** the specification document is published  
+**THEN** the mappings document explicit uncertainty:
+
+- **Skill Bundle:** Current `kind: AIResource`, `spec.type: ai-skill-bundle` → No upstream kind. Confidence: Low. Stay on current mapping; track future RFCs.
+- **Agent:** Current `kind: Component`, `spec.type: ai-agent` → No upstream kind via RFC #32062 (that RFC is MCP-only). Confidence: Low. Track agent-kind ownership under RHDHPLAN-1113.
 
 ---
 
@@ -73,9 +108,10 @@ Formal specification of all RHDH AI Asset annotations and entity kinds, with exp
 **WHEN** the specification document includes entity mappings  
 **THEN** each mapping includes a confidence level:
 
-- **High:** RFC schema stable, unlikely to change
-- **Medium:** RFC active, schema may evolve
-- **Low:** No corresponding RFC yet, or mapping is speculative
+- **High:** Upstream kind shipped and stable, kind already aligned (e.g., MCP server)
+- **Medium–High:** Upstream kind shipped, field/name alignment work remains (e.g., skills, rules)
+- **Medium/Low:** Upstream target proposed in an open PR, hedge accordingly (e.g., model server)
+- **Low:** No solid upstream kind yet, or mapping is speculative (e.g., AI model, agent, skill bundle)
 - Confidence level rationale documented per mapping
 
 ---
