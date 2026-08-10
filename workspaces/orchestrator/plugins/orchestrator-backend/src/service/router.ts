@@ -416,8 +416,10 @@ function setupInternalRoutes(
       const workflowId = c.request.params.workflowId as string;
       const credentials = await httpAuth.credentials(req);
       const token = req.headers.authorization?.split(' ')[1];
-      const initiatorEntity = (await userInfo.getUserInfo(credentials))
-        .userEntityRef;
+      const initiatorEntity = await workflowAuth.resolveInitiatorEntity(
+        credentials,
+        userInfo,
+      );
 
       const auditEvent = await auditor.createEvent({
         eventId: 'execute-workflow',
@@ -810,8 +812,10 @@ function setupInternalRoutes(
         }
 
         const credentials = await httpAuth.credentials(req);
-        const initiatorEntity = (await userInfo.getUserInfo(credentials))
-          .userEntityRef;
+        const initiatorEntity = await workflowAuth.resolveInitiatorEntity(
+          credentials,
+          userInfo,
+        );
         const isUserAuthorizedForInstanceAdminView: boolean = // This permission will let user see ALL instances (including ones others created)
           await isUserAuthorizedForInstanceAdminViewPermission(
             req,
@@ -935,8 +939,10 @@ function setupInternalRoutes(
         );
 
         const credentials = await httpAuth.credentials(request);
-        const initiatorEntity = (await userInfo.getUserInfo(credentials))
-          .userEntityRef;
+        const initiatorEntity = await workflowAuth.resolveInitiatorEntity(
+          credentials,
+          userInfo,
+        );
         // Check if user is authorized to view all instances
         const isUserAuthorizedForInstanceAdminView =
           await isUserAuthorizedForInstanceAdminViewPermission(

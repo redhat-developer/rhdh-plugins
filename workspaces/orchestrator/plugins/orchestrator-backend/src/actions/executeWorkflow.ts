@@ -152,8 +152,10 @@ export const createExecuteWorkflowAction = ({
         }
       }
 
-      const { userEntityRef: initiatorEntity } =
-        await userInfo.getUserInfo(credentials);
+      const initiatorEntity = await workflowAuth.resolveInitiatorEntity(
+        credentials,
+        userInfo,
+      );
 
       const executionResponse = await orchestratorService.executeWorkflow({
         definitionId: workflowId,

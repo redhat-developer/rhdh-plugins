@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { mockServices } from '@backstage/backend-test-utils';
+import { mockCredentials, mockServices } from '@backstage/backend-test-utils';
 import { actionsRegistryServiceMock } from '@backstage/backend-test-utils/alpha';
 import { NotAllowedError, NotFoundError } from '@backstage/errors';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
@@ -81,6 +81,7 @@ describe('createGetInstanceAction', () => {
     const result = await mockActionsRegistry.invoke({
       id: 'test:get-instance',
       input: { instanceId: 'instance-1' },
+      credentials: mockCredentials.user('user:default/jdoe'),
     });
 
     expect(result.output).toMatchObject({
@@ -127,6 +128,7 @@ describe('createGetInstanceAction', () => {
     const result = await mockActionsRegistry.invoke({
       id: 'test:get-instance',
       input: { instanceId: 'instance-1' },
+      credentials: mockCredentials.user('user:default/jdoe'),
     });
 
     expect(result.output).toMatchObject({
@@ -225,8 +227,46 @@ describe('createGetInstanceAction', () => {
       mockActionsRegistry.invoke({
         id: 'test:get-instance',
         input: { instanceId: 'instance-1' },
+        credentials: mockCredentials.user('user:default/someone-else'),
       }),
     ).rejects.toThrow(NotAllowedError);
+  });
+
+  // Regression test for https://github.com/redhat-developer/rhdh-plugins/pull/4117#issuecomment-5240741356:
+  // a static-token MCP caller (a service principal, never a user principal)
+  // without instance admin-view must not crash UserInfoService.getUserInfo's
+  // "Only user credentials are supported" check.
+  it('denies access for a non-admin service-principal caller who did not initiate the instance, without crashing', async () => {
+    const mockActionsRegistry = actionsRegistryServiceMock();
+    const mockPermissions = mockServices.permissions.mock();
+    const mockUserInfo = mockServices.userInfo.mock();
+    mockPermissions.authorizeConditional.mockResolvedValue([
+      { result: AuthorizeResult.ALLOW },
+    ]);
+    mockPermissions.authorize.mockResolvedValue([
+      { result: AuthorizeResult.DENY },
+    ]);
+    (mockOrchestratorService.fetchInstance as jest.Mock).mockResolvedValue(
+      baseRawInstance,
+    );
+
+    createGetInstanceAction({
+      actionsRegistry: mockActionsRegistry,
+      permissions: mockPermissions,
+      userInfo: mockUserInfo,
+      orchestratorService: mockOrchestratorService,
+      conditionTransformer,
+      logger,
+    });
+
+    await expect(
+      mockActionsRegistry.invoke({
+        id: 'test:get-instance',
+        input: { instanceId: 'instance-1' },
+        credentials: mockCredentials.service('mcp-clients'),
+      }),
+    ).rejects.toThrow(NotAllowedError);
+    expect(mockUserInfo.getUserInfo).not.toHaveBeenCalled();
   });
 
   it('allows viewing another user instance when admin view permission is granted', async () => {

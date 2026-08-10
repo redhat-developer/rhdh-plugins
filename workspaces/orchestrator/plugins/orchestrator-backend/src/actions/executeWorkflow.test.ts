@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { mockServices } from '@backstage/backend-test-utils';
+import { mockCredentials, mockServices } from '@backstage/backend-test-utils';
 import { actionsRegistryServiceMock } from '@backstage/backend-test-utils/alpha';
 import {
   InputError,
@@ -107,6 +107,7 @@ describe('createExecuteWorkflowAction', () => {
     const result = await mockActionsRegistry.invoke({
       id: 'test:execute-workflow',
       input: { workflowId: 'workflow1', inputs: { name: 'test' } },
+      credentials: mockCredentials.user('user:default/jdoe'),
     });
 
     expect(result.output).toMatchObject({
@@ -123,6 +124,52 @@ describe('createExecuteWorkflowAction', () => {
         }),
       }),
     );
+  });
+
+  // Regression test for https://github.com/redhat-developer/rhdh-plugins/pull/4117#issuecomment-5240741356:
+  // an MCP client authenticated via a static `backend.auth.externalAccess`
+  // token is a service principal, never a user principal, so
+  // UserInfoService.getUserInfo() would unconditionally throw "Only user
+  // credentials are supported" if called directly.
+  it('falls back to the system initiator ref instead of crashing when the caller is a service principal (e.g. a static MCP token)', async () => {
+    const mockActionsRegistry = actionsRegistryServiceMock();
+    const mockPermissions = mockServices.permissions.mock();
+    allowAccess(mockPermissions);
+    setUpWorkflow();
+    (mockOrchestratorService.executeWorkflow as jest.Mock).mockResolvedValue({
+      id: 'instance-1',
+    });
+    (mockOrchestratorService.fetchInstance as jest.Mock).mockResolvedValue({
+      id: 'instance-1',
+      processId: 'workflow1',
+      state: 'ACTIVE',
+      nodes: [],
+    });
+
+    createExecuteWorkflowAction({
+      actionsRegistry: mockActionsRegistry,
+      permissions: mockPermissions,
+      userInfo: mockUserInfo,
+      orchestratorService: mockOrchestratorService,
+      conditionTransformer,
+      logger,
+    });
+
+    const result = await mockActionsRegistry.invoke({
+      id: 'test:execute-workflow',
+      input: { workflowId: 'workflow1', inputs: { name: 'test' } },
+      credentials: mockCredentials.service('mcp-clients'),
+    });
+
+    expect(result.output).toMatchObject({ instanceId: 'instance-1' });
+    expect(mockOrchestratorService.executeWorkflow).toHaveBeenCalledWith(
+      expect.objectContaining({
+        inputData: expect.objectContaining({
+          initiatorEntity: 'user:default/system',
+        }),
+      }),
+    );
+    expect(mockUserInfo.getUserInfo).not.toHaveBeenCalled();
   });
 
   it('validates inputs against the schema and executes when valid', async () => {
@@ -159,6 +206,7 @@ describe('createExecuteWorkflowAction', () => {
     const result = await mockActionsRegistry.invoke({
       id: 'test:execute-workflow',
       input: { workflowId: 'workflow1', inputs: { name: 'test' } },
+      credentials: mockCredentials.user('user:default/jdoe'),
     });
 
     expect(result.output).toMatchObject({ instanceId: 'instance-1' });
@@ -220,6 +268,7 @@ describe('createExecuteWorkflowAction', () => {
     const result = await mockActionsRegistry.invoke({
       id: 'test:execute-workflow',
       input: { workflowId: 'workflow1', inputs: {} },
+      credentials: mockCredentials.user('user:default/jdoe'),
     });
 
     expect(result.output).toMatchObject({
@@ -252,6 +301,7 @@ describe('createExecuteWorkflowAction', () => {
     const result = await mockActionsRegistry.invoke({
       id: 'test:execute-workflow',
       input: { workflowId: 'workflow1', inputs: {} },
+      credentials: mockCredentials.user('user:default/jdoe'),
     });
 
     expect(result.output).toMatchObject({
@@ -285,6 +335,7 @@ describe('createExecuteWorkflowAction', () => {
       mockActionsRegistry.invoke({
         id: 'test:execute-workflow',
         input: { workflowId: 'workflow1', inputs: {} },
+        credentials: mockCredentials.user('user:default/jdoe'),
       }),
     ).rejects.toThrow(ServiceUnavailableError);
     expect(mockOrchestratorService.fetchInstance).not.toHaveBeenCalled();
@@ -328,6 +379,7 @@ describe('createExecuteWorkflowAction', () => {
       await mockActionsRegistry.invoke({
         id: 'test:execute-workflow',
         input: { workflowId: 'workflow1', inputs: { name: 'first' } },
+        credentials: mockCredentials.user('user:default/jdoe'),
       });
       compileSpy.mockClear();
 
@@ -337,6 +389,7 @@ describe('createExecuteWorkflowAction', () => {
         mockActionsRegistry.invoke({
           id: 'test:execute-workflow',
           input: { workflowId: 'workflow1', inputs: { age: 42 } },
+          credentials: mockCredentials.user('user:default/jdoe'),
         }),
       ).rejects.toThrow(InputError);
 

@@ -55,6 +55,8 @@ import {
   isUserAuthorizedForInstanceAdminViewPermission,
   isWorkflowAccessAllowed,
   matchesWorkflowId,
+  resolveInitiatorEntity,
+  SYSTEM_INITIATOR_ENTITY_REF,
 } from './workflowAuthorization';
 
 const credentials = mockCredentials.user('user:default/test-user');
@@ -678,6 +680,86 @@ describe('assertInstanceOwnership', () => {
         'instance-1',
       ),
     ).rejects.toThrow(NotAllowedError);
+  });
+
+  // Regression test for https://github.com/redhat-developer/rhdh-plugins/pull/4117#issuecomment-5240741356:
+  // a static-token MCP caller (a service principal, never a user principal -
+  // see DefaultAuthService.authenticate) must not crash
+  // UserInfoService.getUserInfo's "Only user credentials are supported"
+  // check; it should be compared against the fixed system initiator ref
+  // instead.
+  it('does not call userInfo.getUserInfo for a non-user (service) principal, and denies access to an instance it did not initiate', async () => {
+    mockUserInfo.getUserInfo.mockClear();
+    const mockPermissions = mockServices.permissions.mock();
+    mockPermissions.authorize.mockResolvedValue([
+      { result: AuthorizeResult.DENY },
+    ]);
+
+    await expect(
+      assertInstanceOwnership(
+        mockCredentials.service('mcp-clients'),
+        mockPermissions,
+        mockUserInfo,
+        { initiatorEntity: 'user:default/someone-else' },
+        'instance-1',
+      ),
+    ).rejects.toThrow(NotAllowedError);
+    expect(mockUserInfo.getUserInfo).not.toHaveBeenCalled();
+  });
+
+  it('allows a non-user (service) principal to view an instance initiated by another service-principal caller', async () => {
+    mockUserInfo.getUserInfo.mockClear();
+    const mockPermissions = mockServices.permissions.mock();
+    mockPermissions.authorize.mockResolvedValue([
+      { result: AuthorizeResult.DENY },
+    ]);
+
+    await expect(
+      assertInstanceOwnership(
+        mockCredentials.service('mcp-clients'),
+        mockPermissions,
+        mockUserInfo,
+        { initiatorEntity: SYSTEM_INITIATOR_ENTITY_REF },
+        'instance-1',
+      ),
+    ).resolves.toBeUndefined();
+    expect(mockUserInfo.getUserInfo).not.toHaveBeenCalled();
+  });
+});
+
+describe('resolveInitiatorEntity', () => {
+  const mockUserInfo = mockServices.userInfo.mock();
+
+  beforeEach(() => {
+    jest.resetAllMocks();
+    mockUserInfo.getUserInfo.mockResolvedValue({
+      userEntityRef: 'user:default/test-user',
+      ownershipEntityRefs: [],
+    });
+  });
+
+  it('resolves the real userEntityRef for a user principal', async () => {
+    await expect(
+      resolveInitiatorEntity(credentials, mockUserInfo),
+    ).resolves.toBe('user:default/test-user');
+    expect(mockUserInfo.getUserInfo).toHaveBeenCalledWith(credentials);
+  });
+
+  it('falls back to the system initiator ref for a service principal, without calling userInfo.getUserInfo', async () => {
+    await expect(
+      resolveInitiatorEntity(
+        mockCredentials.service('mcp-clients'),
+        mockUserInfo,
+      ),
+    ).resolves.toBe(SYSTEM_INITIATOR_ENTITY_REF);
+    expect(mockUserInfo.getUserInfo).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the system initiator ref for a none principal, without calling userInfo.getUserInfo', async () => {
+    await expect(
+      resolveInitiatorEntity(mockCredentials.none(), mockUserInfo),
+    ).resolves.toBe(SYSTEM_INITIATOR_ENTITY_REF);
+    expect(mockUserInfo.getUserInfo).not.toHaveBeenCalled();
   });
 });
 

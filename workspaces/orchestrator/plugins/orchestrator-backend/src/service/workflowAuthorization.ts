@@ -16,6 +16,7 @@
 
 import type {
   BackstageCredentials,
+  BackstageUserPrincipal,
   LoggerService,
   PermissionsService,
   UserInfoService,
@@ -386,6 +387,50 @@ export const assertAnyWorkflowAccess = async (
 };
 
 /**
+ * Synthetic identity recorded (by `execute-workflow`) and checked (by
+ * ownership filters/assertions) for callers whose credentials are not a
+ * real Backstage user principal - most notably MCP clients authenticated
+ * via a `backend.auth.externalAccess` static token, which Backstage always
+ * resolves to a *service* principal, never a *user* one (see
+ * `DefaultAuthService.authenticate`). `UserInfoService.getUserInfo()`
+ * unconditionally throws "Only user credentials are supported" for any
+ * non-user principal (see `DefaultUserInfoService`), so such callers can
+ * never resolve a real `userEntityRef` and must not be routed through it.
+ * `BackstageServicePrincipal.subject` is explicitly documented as purely
+ * informational and must not drive logic, so we can't key ownership off it
+ * either; every non-user caller is instead attributed to this one fixed
+ * identity, mirroring the `SYSTEM_USER_REF` fallback convention already
+ * used by the `x2a-node` package for the same class of problem.
+ */
+export const SYSTEM_INITIATOR_ENTITY_REF = 'user:default/system';
+
+const isUserCredentials = (
+  credentials: BackstageCredentials,
+): credentials is BackstageCredentials<BackstageUserPrincipal> =>
+  typeof (credentials.principal as { userEntityRef?: unknown })
+    ?.userEntityRef === 'string';
+
+/**
+ * Resolves the entity ref to record (on `execute-workflow`) or compare
+ * against (on ownership checks/filters) as a workflow instance's initiator.
+ * Real Backstage users resolve to their `userEntityRef` via
+ * `UserInfoService`. Non-user credentials fall back to
+ * `SYSTEM_INITIATOR_ENTITY_REF` rather than crashing the caller - see that
+ * constant's doc comment for why that's unavoidable for non-user
+ * principals.
+ */
+export const resolveInitiatorEntity = async (
+  credentials: BackstageCredentials,
+  userInfo: UserInfoService,
+): Promise<string> => {
+  if (!isUserCredentials(credentials)) {
+    return SYSTEM_INITIATOR_ENTITY_REF;
+  }
+  const { userEntityRef } = await userInfo.getUserInfo(credentials);
+  return userEntityRef;
+};
+
+/**
  * Asserts that the caller either holds `orchestrator.instanceAdminView` or
  * is the entity that initiated the given instance. Mirrors the ownership
  * check in `service/router.ts`'s `getInstanceById` handler.
@@ -406,7 +451,7 @@ export const assertInstanceOwnership = async (
     return;
   }
 
-  const { userEntityRef } = await userInfo.getUserInfo(credentials);
+  const userEntityRef = await resolveInitiatorEntity(credentials, userInfo);
   const instanceInitiatorEntity = instance.initiatorEntity;
 
   // If the instance has no initiatorEntity recorded, we cannot determine

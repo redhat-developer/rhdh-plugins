@@ -143,8 +143,10 @@ export const createListInstancesAction = ({
         : undefined;
 
       if (!isAdminView) {
-        const { userEntityRef: initiatorEntity } =
-          await userInfo.getUserInfo(credentials);
+        const initiatorEntity = await workflowAuth.resolveInitiatorEntity(
+          credentials,
+          userInfo,
+        );
         filter = workflowAuth.buildInstanceOwnershipFilter(
           initiatorEntity,
           filter,

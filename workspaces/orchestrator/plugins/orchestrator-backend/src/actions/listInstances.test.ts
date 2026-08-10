@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { mockServices } from '@backstage/backend-test-utils';
+import { mockCredentials, mockServices } from '@backstage/backend-test-utils';
 import { actionsRegistryServiceMock } from '@backstage/backend-test-utils/alpha';
 import { NotAllowedError } from '@backstage/errors';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
@@ -147,6 +147,7 @@ describe('createListInstancesAction', () => {
     await mockActionsRegistry.invoke({
       id: 'test:list-instances',
       input: {},
+      credentials: mockCredentials.user('user:default/jdoe'),
     });
 
     expect(mockOrchestratorService.fetchInstances).toHaveBeenCalledWith(
@@ -162,6 +163,49 @@ describe('createListInstancesAction', () => {
         },
       }),
     );
+  });
+
+  // Regression test for https://github.com/redhat-developer/rhdh-plugins/pull/4117#issuecomment-5240741356:
+  // a static-token MCP caller (a service principal, never a user principal)
+  // without instance admin-view must not crash UserInfoService.getUserInfo's
+  // "Only user credentials are supported" check.
+  it('falls back to the system initiator ref for a non-admin service-principal caller, without crashing', async () => {
+    const mockActionsRegistry = actionsRegistryServiceMock();
+    const mockPermissions = mockServices.permissions.mock();
+    allowAccess(mockPermissions);
+    mockPermissions.authorize.mockResolvedValue([
+      { result: AuthorizeResult.DENY },
+    ]); // not admin-view
+    (mockOrchestratorService.fetchInstances as jest.Mock).mockResolvedValue([]);
+
+    createListInstancesAction({
+      actionsRegistry: mockActionsRegistry,
+      permissions: mockPermissions,
+      userInfo: mockUserInfo,
+      orchestratorService: mockOrchestratorService,
+      conditionTransformer,
+      logger,
+    });
+
+    await mockActionsRegistry.invoke({
+      id: 'test:list-instances',
+      input: {},
+      credentials: mockCredentials.service('mcp-clients'),
+    });
+
+    expect(mockOrchestratorService.fetchInstances).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filter: {
+          field: 'variables',
+          nested: {
+            operator: 'EQ',
+            value: 'user:default/system',
+            field: 'initiatorEntity',
+          },
+        },
+      }),
+    );
+    expect(mockUserInfo.getUserInfo).not.toHaveBeenCalled();
   });
 
   it('does not apply an ownership filter for callers with instance admin-view permission', async () => {
