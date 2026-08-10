@@ -1,4 +1,4 @@
-# Migration Design: RHDH AI-Asset Entities to Upstream Backstage Kinds
+# Migration Plan: RHDH AI-Asset Entities to Upstream Backstage Kinds
 
 > **Status: Draft** | **Last updated: 2026-08-10** | **Story: RHIDP-15302**
 >
@@ -14,6 +14,49 @@ impact, and specifies the backward compatibility strategy.
 This is **readiness design** --- it documents the migration path
 without executing migration. The actual migration is future work
 dependent on upstream RFC finalization.
+
+## Context
+
+This plan exists because RHDH ships custom entity kinds and annotations
+(`AIResource`, `rhdh.io/ai-asset-category`, etc.) that diverge from
+upstream Backstage kinds as they stabilize (`AiResource`,
+`McpServerApiEntity`). Customers need a documented path from current to
+upstream schemas so their catalog integrations, filters, and entity refs
+continue to work through the transition.
+
+Key inputs:
+
+- [ai-catalog-entity-model/design.md Decision 1](../../design.md) ---
+  current seven-category model.
+- Upstream RFCs/PRs: `McpServerApiEntity`
+  ([#34016](https://github.com/backstage/backstage/pull/34016)),
+  `AiResource` ([#33575](https://github.com/backstage/backstage/issues/33575)),
+  model-server candidate
+  ([#34476](https://github.com/backstage/backstage/pull/34476)).
+- Reconciliation in
+  [#4189](https://github.com/redhat-developer/rhdh-plugins/pull/4189).
+
+## Risks
+
+- **Upstream PR rejection:** The model-server mapping
+  (`Resource` -> `API`) depends on an open PR
+  ([#34476](https://github.com/backstage/backstage/pull/34476)). If
+  declined, that row must be redesigned.
+- **Inbound relationship breakage:** When an entity's kind changes
+  (e.g., `Resource` -> `API` for model-server), its entity ref changes
+  (`resource:` -> `api:`). Inbound relationships and hardcoded refs in
+  other entities are **not** automatically rewritten by the catalog ---
+  a separate migration plan for ref consumers is required (see
+  [Future Work](#future-work)).
+- **Kind-filter breakage during transition:** Annotation retention
+  supports **annotation-based** queries during the transition period, but
+  pre-migration **kind** filters (e.g., `kind=Resource`) will **not**
+  match after a kind change. Consumers using kind+annotation AND filters
+  must switch to annotation-only or new-kind queries. See
+  [Backward Compatibility Strategy](#backward-compatibility-strategy).
+- **Agent kind uncertainty:** No upstream kind exists for agents.
+  Current `Component` mapping may need to change if an upstream agent
+  kind is proposed.
 
 ## Binding Decisions
 
@@ -235,15 +278,15 @@ kind to RFC #32062 (that RFC is MCP-only). Track:
 
 ### Entity References
 
-| Category       | Current Entity Ref             | Post-Migration Entity Ref                  | Impact                                                                                                                         |
-| -------------- | ------------------------------ | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| `mcp-server`   | `api:default/my-mcp-server`    | `api:default/my-mcp-server`                | None                                                                                                                           |
-| `skill`        | `airesource:default/my-skill`  | `airesource:default/my-skill`              | None (Backstage lowercases kind in entity refs)                                                                                |
-| `rule`         | `airesource:default/my-rule`   | `airesource:default/my-rule`               | None (same lowercasing behavior)                                                                                               |
-| `skill-bundle` | `airesource:default/my-bundle` | `airesource:default/my-bundle`             | None                                                                                                                           |
-| `model-server` | `resource:default/my-server`   | `api:default/my-server` (if #34476 merges) | **Breaking:** entity ref kind prefix changes from `resource:` to `api:`. Impacts entity links, relationships, and API queries. |
-| `ai-model`     | `resource:default/my-model`    | `resource:default/my-model`                | None                                                                                                                           |
-| `agent`        | `component:default/my-agent`   | `component:default/my-agent`               | None                                                                                                                           |
+| Category       | Current Entity Ref             | Post-Migration Entity Ref                  | Impact                                                                                                                                                                                                                                                                                 |
+| -------------- | ------------------------------ | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mcp-server`   | `api:default/my-mcp-server`    | `api:default/my-mcp-server`                | None                                                                                                                                                                                                                                                                                   |
+| `skill`        | `airesource:default/my-skill`  | `airesource:default/my-skill`              | None (Backstage lowercases kind in entity refs)                                                                                                                                                                                                                                        |
+| `rule`         | `airesource:default/my-rule`   | `airesource:default/my-rule`               | None (same lowercasing behavior)                                                                                                                                                                                                                                                       |
+| `skill-bundle` | `airesource:default/my-bundle` | `airesource:default/my-bundle`             | None                                                                                                                                                                                                                                                                                   |
+| `model-server` | `resource:default/my-server`   | `api:default/my-server` (if #34476 merges) | **Breaking:** entity ref kind prefix changes from `resource:` to `api:`. The migrated entity's own ref updates, but inbound relationships and hardcoded refs in other entities are **not** auto-rewritten by the catalog. A ref-consumer migration plan is needed (see Future Work). |
+| `ai-model`     | `resource:default/my-model`    | `resource:default/my-model`                | None                                                                                                                                                                                                                                                                                   |
+| `agent`        | `component:default/my-agent`   | `component:default/my-agent`               | None                                                                                                                                                                                                                                                                                   |
 
 ### API Queries
 
@@ -252,7 +295,7 @@ kind to RFC #32062 (that RFC is MCP-only). Track:
 | `mcp-server`   | `GET /api/catalog/entities?filter=kind=API,spec.type=mcp-server`                        | Same                                                                                                                 | None                 |
 | `skill`        | `GET /api/catalog/entities?filter=kind=AIResource,spec.type=skill`                      | `?filter=kind=AiResource,spec.type=skill`                                                                            | Update kind casing   |
 | `rule`         | `GET /api/catalog/entities?filter=kind=AIResource,spec.type=rule`                       | `?filter=kind=AiResource,spec.type=rule`                                                                             | Update kind casing   |
-| `model-server` | `GET /api/catalog/entities?filter=kind=Resource,rhdh.io/ai-asset-category=model-server` | `?filter=kind=API,spec.type=ai-model-server` (if [#34476](https://github.com/backstage/backstage/pull/34476) merges) | Update kind + filter |
+| `model-server` | `GET /api/catalog/entities?filter=kind=Resource,metadata.annotations.rhdh.io/ai-asset-category=model-server` | `?filter=kind=API,spec.type=ai-model-server` (if [#34476](https://github.com/backstage/backstage/pull/34476) merges) | Update kind + filter |
 | `ai-model`     | `GET /api/catalog/entities?filter=kind=Resource,spec.type=ai-model`                     | Same                                                                                                                 | None                 |
 | `skill-bundle` | `GET /api/catalog/entities?filter=kind=AIResource,spec.type=ai-skill-bundle`            | Same                                                                                                                 | None                 |
 | `agent`        | `GET /api/catalog/entities?filter=kind=Component,spec.type=ai-agent`                    | Same                                                                                                                 | None                 |
@@ -263,16 +306,34 @@ kind to RFC #32062 (that RFC is MCP-only). Track:
 
 The `rhdh.io/ai-asset-category` annotation will be **retained on
 migrated entities for one major version** after upstream kind alignment
-is applied. This allows consumers to query by either the old
-kind-based filter or the annotation-based filter during the transition
-period.
+is applied. This supports **annotation-based** queries during the
+transition period --- consumers can filter by
+`metadata.annotations.rhdh.io/ai-asset-category=<category>` without
+depending on the entity's kind.
+
+**Limitation:** Annotation retention does **not** preserve pre-migration
+**kind** filters for categories that undergo a kind change. For example,
+after `model-server` migrates from `kind: Resource` to `kind: API`, a
+filter combining `kind=Resource` AND `rhdh.io/ai-asset-category=model-server`
+will return no results because the catalog ANDs filter terms within a
+set. Consumers using kind+annotation compound filters must switch to
+annotation-only queries or adopt the new kind.
+
+**Casing-only changes are not affected:** For `skill` and `rule`, the
+kind changes from `AIResource` to `AiResource`. Backstage catalog kind
+matching is case-insensitive, so existing `kind=AIResource` filters
+continue to work after casing alignment. The dual-filter concern applies
+only to actual kind changes (e.g., `Resource` -> `API`).
 
 ### Deprecation Timeline
 
 1. **Migration release (N):** Entities carry both upstream kind and
-   `rhdh.io/ai-asset-category` annotation. Both old and new query
-   patterns work. Release notes include deprecation notice for old
-   query patterns.
+   `rhdh.io/ai-asset-category` annotation. Annotation-based query
+   patterns work (e.g.,
+   `?filter=metadata.annotations.rhdh.io/ai-asset-category=model-server`).
+   Pre-migration **kind** filters do **not** work for categories that
+   changed kind (`Resource` -> `API`). Release notes include deprecation
+   notice for old query patterns.
 2. **Next major release (N+1):** Annotation is removed. Only upstream
    kind-based queries are supported. Migration is complete.
 
@@ -282,9 +343,13 @@ When upstream kinds stabilize and migration is executed:
 
 1. **Catalog processor** applies kind transformations during entity
    refresh (not batch migration).
-2. **Entity refs** are updated by the catalog processor
-   automatically --- the catalog handles ref format changes when the
-   entity kind changes.
+2. **Entity refs** for the migrated entity itself are updated by the
+   catalog processor as a consequence of the kind change (e.g.,
+   `resource:default/my-server` becomes `api:default/my-server`).
+   However, **inbound relationships and hardcoded entity refs in other
+   entities are not automatically rewritten**. A separate migration
+   plan for ref consumers (relationship targets, `spec.dependsOn`
+   entries, etc.) is required --- see [Future Work](#future-work).
 3. **API query patterns** are documented in release notes with
    before/after examples.
 4. **UI filters** are updated in the same release as the catalog
@@ -292,20 +357,29 @@ When upstream kinds stabilize and migration is executed:
 
 ### Dual-Filter Period
 
-During the transition (release N), the following query patterns will
-both work:
+During the transition (release N), consumers should use
+**annotation-only** queries as the backward-compatible pattern, since
+these work regardless of whether the entity's kind has changed:
 
 ```
-# Old pattern (deprecated)
-GET /api/catalog/entities?filter=kind=Resource,rhdh.io/ai-asset-category=model-server
+# Annotation-only pattern (backward-compatible, works before and after migration)
+GET /api/catalog/entities?filter=metadata.annotations.rhdh.io/ai-asset-category=model-server
 
-# New pattern (preferred)
+# New pattern (preferred post-migration)
 GET /api/catalog/entities?filter=kind=API,spec.type=ai-model-server
 ```
 
-The annotation-based filter remains functional because the
-`rhdh.io/ai-asset-category` annotation is retained on all migrated
-entities throughout the transition release.
+> **Note:** The pre-migration compound filter
+> `kind=Resource,rhdh.io/ai-asset-category=model-server` does **not**
+> work after migration because the entity's kind changes to `API` and
+> the catalog ANDs filter terms. Use the annotation-only path
+> (`metadata.annotations.rhdh.io/ai-asset-category`) for queries that
+> must span the transition.
+
+For **casing-only** changes (`AIResource` -> `AiResource` for skills
+and rules), catalog kind matching is case-insensitive, so existing
+kind-based filters continue to work without modification during the
+transition.
 
 ## Upstream Tracking
 
@@ -339,6 +413,10 @@ entities throughout the transition release.
   readiness ([#4220](https://github.com/redhat-developer/rhdh-plugins/issues/4220)).
 - **Entity kind transition plan:** Detailed rollout plan including
   customer communication, staged rollout, and rollback procedures.
+- **Inbound ref migration plan:** For kind-changing categories
+  (e.g., model-server `Resource` -> `API`), document and implement a
+  plan to rewrite inbound relationship targets, `spec.dependsOn`
+  entries, and other hardcoded entity refs in consuming entities.
 - **Catalog processor hook:** Automated migration via catalog
   processing pipeline (post-RFC-finalization).
 - **Upstream RFC finalization tracking:** Continued monitoring of
