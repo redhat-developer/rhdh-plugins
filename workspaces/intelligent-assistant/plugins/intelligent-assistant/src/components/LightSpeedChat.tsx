@@ -2076,7 +2076,7 @@ export const LightspeedChat = ({
                 style: drawerPanelStyle,
               }}
               reverseButtonOrder
-              displayMode={ChatbotDisplayMode.embedded}
+              displayMode={displayMode}
               onDrawerToggle={onChatHistoryDrawerToggle}
               title=""
               navTitleIcon={null}
