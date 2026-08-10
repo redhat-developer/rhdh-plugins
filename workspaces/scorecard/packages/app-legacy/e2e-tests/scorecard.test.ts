@@ -362,17 +362,6 @@ test.describe('Scorecard Plugin Tests', () => {
         [translations.metric['sonarqube.reliabilityIssues'].title]: '0',
         [translations.metric['sonarqube.maintainabilityIssues'].title]: '12',
         [translations.metric['sonarqube.codeDuplications'].title]: '3.2',
-      };
-
-      for (const [title, value] of Object.entries(expectedValues)) {
-        const card = page
-          .locator('[role="article"]')
-          .filter({ hasText: title })
-          .first();
-        await expect(card).toContainText(value);
-      }
-
-      const legacyOnlyValues: Record<string, string> = {
         [translations.metric['sonarqube.qualityGate'].title]:
           translations.thresholds.success,
         [translations.metric['sonarqube.openIssues'].title]: '3',
@@ -382,7 +371,7 @@ test.describe('Scorecard Plugin Tests', () => {
         [translations.metric['sonarqube.codeCoverage'].title]: '82.5',
       };
 
-      for (const [title, value] of Object.entries(legacyOnlyValues)) {
+      for (const [title, value] of Object.entries(expectedValues)) {
         const card = page
           .locator('[role="article"]')
           .filter({ hasText: title })
