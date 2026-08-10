@@ -18,7 +18,7 @@ export const iaChatUsePermission: BasicPermission;
 export const iaMcpManagePermission: BasicPermission;
 
 // @public
-export const iaMcpReadPermission: BasicPermission;
+export const iaMcpUsePermission: BasicPermission;
 
 // @public
 export const iaNotebooksManagePermission: BasicPermission;
