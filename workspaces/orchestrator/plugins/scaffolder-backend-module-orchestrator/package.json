@@ -65,7 +65,7 @@
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
-    "@backstage/backend-defaults": "^0.17.6",
+    "@backstage/backend-defaults": "^0.17.3",
     "@backstage/backend-test-utils": "^1.11.4",
     "@backstage/cli": "^0.36.3",
     "@backstage/plugin-scaffolder-backend": "^4.0.2",
