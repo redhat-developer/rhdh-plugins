@@ -41,8 +41,11 @@ without breaking existing catalog consumers.
   (RHIDP-15347).
 - Annotation specification document (RHIDP-15346) — covered by
   [#4220](https://github.com/redhat-developer/rhdh-plugins/issues/4220).
-- Executing the actual catalog migration or implementing a catalog
-  processor.
+- Live catalog migration (re-mapping entities to finalized upstream
+  kinds) and any catalog processor for automated migration — future
+  work after RFC finalization and sign-off.
+- Detailed production entity-kind transition / rollout plan — future
+  work.
 - Re-writing mapping tables already reconciled in
   [#4189](https://github.com/redhat-developer/rhdh-plugins/pull/4189).
 
@@ -132,16 +135,16 @@ what changes beyond the kind and `spec.type`.
 
 **Field transformations (conditional on PR merge):**
 
-| Field                 | Current           | Target                           | Action                                                        |
-| --------------------- | ----------------- | -------------------------------- | ------------------------------------------------------------- |
-| `kind`                | `Resource`        | `API`                            | Kind change from Resource to API.                             |
-| `spec.type`           | `ai-model-server` | `ai-model-server`                | No change to type value.                                      |
-| `spec.owner`          | Standard          | Standard                         | No change (both kinds use `spec.owner`).                      |
-| `spec.serverType`     | Not present       | Required (`spec.serverType`)     | Add `spec.serverType` per upstream schema.                    |
-| `spec.serverUrl`      | Not present       | Required (`spec.serverUrl`)      | Add `spec.serverUrl` per upstream schema.                     |
-| `spec.models`         | Not present       | Optional (`spec.models`)         | Add discoverable/available/default model lists if applicable. |
-| `spec.requiresApiKey` | Not present       | Optional (`spec.requiresApiKey`) | Add when the server requires an API key.                      |
-| `spec.apiEntityRef`   | Not present       | Optional (`spec.apiEntityRef`)   | Add entity ref to a related API credential/entity if used.    |
+| Field                 | Current           | Target                                                                        | Action                                                     |
+| --------------------- | ----------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `kind`                | `Resource`        | `API`                                                                         | Kind change from Resource to API.                          |
+| `spec.type`           | `ai-model-server` | `ai-model-server`                                                             | No change to type value.                                   |
+| `spec.owner`          | Standard          | Standard                                                                      | No change (both kinds use `spec.owner`).                   |
+| `spec.serverType`     | Not present       | Required (`spec.serverType`)                                                  | Add `spec.serverType` per upstream schema.                 |
+| `spec.serverUrl`      | Not present       | Required (`spec.serverUrl`)                                                   | Add `spec.serverUrl` per upstream schema.                  |
+| `spec.models`         | Not present       | Optional `{ discoverable?: boolean, available?: string[], default?: string }` | Add model discovery metadata when applicable.              |
+| `spec.requiresApiKey` | Not present       | Optional (`spec.requiresApiKey`)                                              | Add when the server requires an API key.                   |
+| `spec.apiEntityRef`   | Not present       | Optional (`spec.apiEntityRef`)                                                | Add entity ref to a related API credential/entity if used. |
 
 **Hedge:** This mapping is conditional on
 [backstage#34476][bs-34476] merging. If the PR is declined or the
@@ -164,13 +167,21 @@ transformation rules.
 
 **Kind change:** `AIResource` to `AiResource` (casing alignment).
 
-**Field transformations:**
+**Field transformations** (upstream `AiResource` skill subtype; see
+[Backstage 1.51][bs-1-51] / [#33575][bs-33575] lineage):
 
-| Field           | Current             | Target                              | Action                                                                                                                                              |
-| --------------- | ------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `kind`          | `AIResource`        | `AiResource`                        | Casing change. Backstage lowercases kind in entity refs, so `airesource:default/my-skill` stays the same.                                           |
-| `spec.type`     | `skill`             | `skill`                             | No change.                                                                                                                                          |
-| `spec.*` fields | RHDH-defined fields | Upstream `AiResource` schema fields | Align field names and types per upstream `AiResource` schema ([#33575][bs-33575] lineage; see also [Backstage 1.51][bs-1-51] / [#34876][bs-34876]). |
+| Field                           | Current                                       | Target                            | Action                                                                                                    |
+| ------------------------------- | --------------------------------------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `kind`                          | `AIResource`                                  | `AiResource`                      | Casing change. Backstage lowercases kind in entity refs, so `airesource:default/my-skill` stays the same. |
+| `spec.type`                     | `skill`                                       | `skill`                           | No change.                                                                                                |
+| `spec.lifecycle` / `spec.owner` | Required base fields                          | Required base fields              | No change.                                                                                                |
+| `spec.system`                   | Optional                                      | Optional                          | No change when present.                                                                                   |
+| `spec.disciplines`              | Optional string array (RHDH / local fixtures) | Optional `string[]`               | Keep; aligns with upstream skill schema.                                                                  |
+| `spec.categories`               | Optional string array                         | Optional `string[]`               | Keep; aligns with upstream skill schema.                                                                  |
+| `spec.agents`                   | Optional refs / identifiers                   | Optional `string[]`               | Keep as catalog-friendly agent identifiers per upstream schema.                                           |
+| `spec.dependsOn`                | Often absent                                  | Optional entity-ref `string[]`    | Add when the skill depends on other `AiResource` entities (`defaultKind: AiResource`).                    |
+| `spec.location` (RHDH-local)    | Sometimes present (`type` + `target`)         | Not part of upstream skill schema | Remove from `spec`; point content via `metadata.annotations['backstage.io/source-location']` instead.     |
+| Skill **content**               | Embedded or custom location fields            | Not stored in entity `spec`       | Providers must set `backstage.io/source-location` to the `SKILL.md` (or equivalent) source file.          |
 
 **Note:** The `AIResource` to `AiResource` casing change does not
 affect entity ref strings because Backstage lowercases the kind prefix
@@ -182,9 +193,19 @@ Current-State Source of Truth.
 
 **Kind change:** `AIResource` to `AiResource` (casing alignment).
 
-**Field transformations:** Same as Skill. Rules use the
-same `AiResource` upstream kind with `spec.type: rule` to distinguish
-them from skills.
+**Field transformations** (upstream `AiResource` rule subtype):
+
+| Field                           | Current                               | Target                           | Action                                                                                                   |
+| ------------------------------- | ------------------------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `kind`                          | `AIResource`                          | `AiResource`                     | Casing change (same entity-ref behavior as Skill).                                                       |
+| `spec.type`                     | `rule`                                | `rule`                           | No change — distinguishes rules from skills on the same kind.                                            |
+| `spec.lifecycle` / `spec.owner` | Required base fields                  | Required base fields             | No change.                                                                                               |
+| `spec.system`                   | Optional                              | Optional                         | No change when present.                                                                                  |
+| `spec.disciplines`              | Optional string array                 | Optional `string[]`              | Keep when used; supported on upstream rule subtype.                                                      |
+| `spec.category`                 | Present in RHDH fixtures              | **Required** string              | Ensure every rule entity sets `spec.category` (upstream required).                                       |
+| `spec.rationale`                | Present in RHDH fixtures              | **Required** string              | Ensure every rule entity sets `spec.rationale` (upstream required).                                      |
+| `spec.location` (RHDH-local)    | Sometimes present (`type` + `target`) | Not part of upstream rule schema | Remove from `spec`; use `metadata.annotations['backstage.io/source-location']` for the rule source file. |
+| Rule **content**                | Embedded or custom location fields    | Not stored in entity `spec`      | Same as Skill — content lives at `backstage.io/source-location`, not in `spec`.                          |
 
 ### Skill Bundle (Low confidence)
 
@@ -247,15 +268,19 @@ areas: catalog UI filters, entity references, and API queries.
 
 ### API Queries
 
-| Category     | Current query                                                    | Post-migration query                                                         | Impact                                            |
-| ------------ | ---------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------- |
-| MCP Server   | `?filter=kind=API,spec.type=mcp-server`                          | No change.                                                                   | **None.**                                         |
-| Model Server | `?filter=kind=Resource,rhdh.io/ai-asset-category=model-server`   | `?filter=kind=API,spec.type=ai-model-server` (if [#34476][bs-34476] merges). | **Breaking** — both kind and filter field change. |
-| AI Model     | `?filter=kind=Resource,rhdh.io/ai-asset-category=ai-model`       | No change.                                                                   | **None.**                                         |
-| Skill        | `?filter=kind=AIResource,rhdh.io/ai-asset-category=skill`        | `?filter=kind=AiResource,rhdh.io/ai-asset-category=skill`                    | **Minimal** — casing change in kind filter value. |
-| Rule         | `?filter=kind=AIResource,rhdh.io/ai-asset-category=rule`         | `?filter=kind=AiResource,rhdh.io/ai-asset-category=rule`                     | **Minimal** — same as Skill.                      |
-| Skill Bundle | `?filter=kind=AIResource,rhdh.io/ai-asset-category=skill-bundle` | No change.                                                                   | **None.**                                         |
-| Agent        | `?filter=kind=Component,rhdh.io/ai-asset-category=agent`         | No change.                                                                   | **None.**                                         |
+Catalog annotation filters use the
+`metadata.annotations.<key>=<value>` path form (see
+[Backstage catalog API filtering](https://backstage.io/docs/features/software-catalog/software-catalog-api#filtering)).
+
+| Category     | Current query                                                                         | Post-migration query                                                           | Impact                                            |
+| ------------ | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------- |
+| MCP Server   | `?filter=kind=API,spec.type=mcp-server`                                               | No change.                                                                     | **None.**                                         |
+| Model Server | `?filter=kind=Resource,metadata.annotations.rhdh.io/ai-asset-category=model-server`   | `?filter=kind=API,spec.type=ai-model-server` (if [#34476][bs-34476] merges).   | **Breaking** — both kind and filter field change. |
+| AI Model     | `?filter=kind=Resource,metadata.annotations.rhdh.io/ai-asset-category=ai-model`       | No change.                                                                     | **None.**                                         |
+| Skill        | `?filter=kind=AIResource,metadata.annotations.rhdh.io/ai-asset-category=skill`        | `?filter=kind=AiResource,metadata.annotations.rhdh.io/ai-asset-category=skill` | **Minimal** — casing change in kind filter value. |
+| Rule         | `?filter=kind=AIResource,metadata.annotations.rhdh.io/ai-asset-category=rule`         | `?filter=kind=AiResource,metadata.annotations.rhdh.io/ai-asset-category=rule`  | **Minimal** — same as Skill.                      |
+| Skill Bundle | `?filter=kind=AIResource,metadata.annotations.rhdh.io/ai-asset-category=skill-bundle` | No change.                                                                     | **None.**                                         |
+| Agent        | `?filter=kind=Component,metadata.annotations.rhdh.io/ai-asset-category=agent`         | No change.                                                                     | **None.**                                         |
 
 ## Backward Compatibility
 
@@ -289,26 +314,6 @@ period.
 | Skill / Rule | **Minimal**                | Casing change only (`AIResource` to `AiResource`). Entity refs unchanged.                                                                     |
 | Skill Bundle | **No change**              | No upstream kind yet.                                                                                                                         |
 | Agent        | **No change**              | No upstream kind yet.                                                                                                                         |
-
-## Out of Scope
-
-The following items are explicitly **not** covered by this design
-document:
-
-- **`vector-store` / `ai-tool` categories** — These are Augment
-  leftovers not yet confirmed as AI-asset mapping rows. See
-  [catalog-entities spec][catalog-entities-spec] for tracking.
-- **Dry-run migration-readiness CLI** (RHIDP-15347) — Covered by
-  [#4220](https://github.com/redhat-developer/rhdh-plugins/issues/4220).
-- **Annotation specification document** (RHIDP-15346) — Covered by
-  [#4220](https://github.com/redhat-developer/rhdh-plugins/issues/4220).
-- **Live catalog migration** — Executing the actual entity migration
-  (re-mapping entities to finalized upstream kinds) is future work
-  dependent on RFC finalization.
-- **Catalog processor for automated migration** — Future work once
-  upstream targets are stable and migration is approved.
-- **Entity kind transition plan** — Detailed rollout plan for
-  production migration is future work.
 
 ## Sign-Off
 
