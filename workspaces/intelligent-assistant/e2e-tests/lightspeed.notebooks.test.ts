@@ -234,8 +234,19 @@ test.describe('Intelligent assistant notebooks', () => {
     await notebooks.expectNotebookCardAbsent(newName);
   });
 
-  test('grid: Escape cancels inline rename', async () => {
+  test('grid: Escape cancels inline rename', async ({}, testInfo) => {
+    const { absolutePath, fileName } = localeNotebookUpload1Path(
+      testInfo.project.name,
+    );
+
     await notebooks.clickPrimaryNotebookCreate();
+
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+
     await notebooks.clickCloseNotebookEditor();
 
     const card = notebooks.newestUntitledNotebookCard();
@@ -264,8 +275,19 @@ test.describe('Intelligent assistant notebooks', () => {
     await confirmDelete.confirmDeletion();
   });
 
-  test('grid: blur saves inline rename', async () => {
+  test('grid: blur saves inline rename', async ({}, testInfo) => {
+    const { absolutePath, fileName } = localeNotebookUpload1Path(
+      testInfo.project.name,
+    );
+
     await notebooks.clickPrimaryNotebookCreate();
+
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+
     await notebooks.clickCloseNotebookEditor();
 
     const card = notebooks.newestUntitledNotebookCard();
@@ -292,8 +314,19 @@ test.describe('Intelligent assistant notebooks', () => {
     await notebooks.expectNotebookCardAbsent(newName);
   });
 
-  test('grid: empty or unchanged name cancels rename', async () => {
+  test('grid: empty or unchanged name cancels rename', async ({}, testInfo) => {
+    const { absolutePath, fileName } = localeNotebookUpload1Path(
+      testInfo.project.name,
+    );
+
     await notebooks.clickPrimaryNotebookCreate();
+
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+
     await notebooks.clickCloseNotebookEditor();
 
     const card = notebooks.newestUntitledNotebookCard();
