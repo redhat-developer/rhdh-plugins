@@ -204,47 +204,49 @@ describe('DatabaseMetricValues', () => {
         const entityRef = 'component:default/test-service';
         const metricId = 'github.metric1';
 
-        await client('metric_values').insert([
-          createMetricValue({
-            entityRef,
-            metricId,
-            value: 1,
-            timestamp: new Date('2023-01-01T10:00:00Z'),
-          }),
-          createMetricValue({
-            entityRef,
-            metricId,
-            value: 2,
-            timestamp: new Date('2023-01-02T10:00:00Z'),
-          }),
-          createMetricValue({
-            entityRef,
-            metricId,
-            value: 3,
-            timestamp: new Date('2023-01-03T10:00:00Z'),
-          }),
-          // outside range
-          createMetricValue({
-            entityRef,
-            metricId,
-            value: 99,
-            timestamp: new Date('2023-01-05T10:00:00Z'),
-          }),
-          // different entity
-          createMetricValue({
-            entityRef: 'component:default/other-service',
-            metricId,
-            value: 50,
-            timestamp: new Date('2023-01-02T12:00:00Z'),
-          }),
-          // different metric
-          createMetricValue({
-            entityRef,
-            metricId: 'github.metric2',
-            value: 50,
-            timestamp: new Date('2023-01-02T12:00:00Z'),
-          }),
-        ]);
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 1,
+              timestamp: new Date('2023-01-01T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 2,
+              timestamp: new Date('2023-01-02T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 3,
+              timestamp: new Date('2023-01-03T10:00:00Z'),
+            }),
+            // outside range
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 99,
+              timestamp: new Date('2023-01-05T10:00:00Z'),
+            }),
+            // different entity
+            createMetricValue({
+              entityRef: 'component:default/other-service',
+              metricId,
+              value: 50,
+              timestamp: new Date('2023-01-02T12:00:00Z'),
+            }),
+            // different metric
+            createMetricValue({
+              entityRef,
+              metricId: 'github.metric2',
+              value: 50,
+              timestamp: new Date('2023-01-02T12:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readEntityMetricValuesInRange(
           entityRef,
@@ -255,10 +257,8 @@ describe('DatabaseMetricValues', () => {
 
         expect(result).toHaveLength(3);
         expect(result.map(r => r.value)).toEqual([1, 2, 3]);
-        expect(result.every(r => r.catalog_entity_ref === entityRef)).toBe(
-          true,
-        );
-        expect(result.every(r => r.metric_id === metricId)).toBe(true);
+        expect(result.every(r => r.catalogEntityRef === entityRef)).toBe(true);
+        expect(result.every(r => r.metricId === metricId)).toBe(true);
       },
     );
 
@@ -269,20 +269,22 @@ describe('DatabaseMetricValues', () => {
         const entityRef = 'component:default/test-service';
         const metricId = 'github.metric1';
 
-        await client('metric_values').insert([
-          createMetricValue({
-            entityRef,
-            metricId,
-            value: 8,
-            timestamp: new Date('2023-01-01T08:00:00Z'),
-          }),
-          createMetricValue({
-            entityRef,
-            metricId,
-            value: 9,
-            timestamp: new Date('2023-01-01T20:00:00Z'),
-          }),
-        ]);
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 8,
+              timestamp: new Date('2023-01-01T08:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 9,
+              timestamp: new Date('2023-01-01T20:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readEntityMetricValuesInRange(
           entityRef,
@@ -308,32 +310,34 @@ describe('DatabaseMetricValues', () => {
         const from = new Date('2023-01-01T12:00:00Z');
         const to = new Date('2023-01-02T12:00:00Z');
 
-        await client('metric_values').insert([
-          createMetricValue({
-            entityRef,
-            metricId,
-            value: 1,
-            timestamp: from,
-          }),
-          createMetricValue({
-            entityRef,
-            metricId,
-            value: 2,
-            timestamp: to,
-          }),
-          createMetricValue({
-            entityRef,
-            metricId,
-            value: 3,
-            timestamp: new Date('2023-01-01T11:59:59Z'),
-          }),
-          createMetricValue({
-            entityRef,
-            metricId,
-            value: 4,
-            timestamp: new Date('2023-01-02T12:00:01Z'),
-          }),
-        ]);
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 1,
+              timestamp: from,
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 2,
+              timestamp: to,
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 3,
+              timestamp: new Date('2023-01-01T11:59:59Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 4,
+              timestamp: new Date('2023-01-02T12:00:01Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
 
         const result = await db.readEntityMetricValuesInRange(
           entityRef,

@@ -233,21 +233,23 @@ export class DatabaseMetricValues {
    * Ordered by timestamp ascending, then id ascending.
    */
   async readEntityMetricValuesInRange(
-    catalog_entity_ref: string,
-    metric_id: string,
+    catalogEntityRef: string,
+    metricId: string,
     from: Date,
     to: Date,
   ): Promise<DbMetricValue[]> {
-    return await this.dbClient(this.tableName)
+    const rows = await this.dbClient(this.tableName)
       .select('*')
-      .where('catalog_entity_ref', catalog_entity_ref)
-      .where('metric_id', metric_id)
+      .where('catalog_entity_ref', catalogEntityRef)
+      .where('metric_id', metricId)
       .where('timestamp', '>=', from)
       .where('timestamp', '<=', to)
       .orderBy([
         { column: 'timestamp', order: 'asc' },
         { column: 'id', order: 'asc' },
       ]);
+
+    return (rows as MetricValueRowWithId[]).map(fromMetricValueRow);
   }
 
   /**
