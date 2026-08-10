@@ -162,12 +162,27 @@ flag_management:
     - name: e2e-adoption-insights
       paths:
         - workspaces/adoption-insights/
+    - name: e2e-app-defaults
+      paths:
+        - workspaces/app-defaults/
+    - name: e2e-bulk-import
+      paths:
+        - workspaces/bulk-import/
+    - name: e2e-extensions
+      paths:
+        - workspaces/extensions/
     - name: e2e-global-header
       paths:
         - workspaces/global-header/
     - name: e2e-homepage
       paths:
         - workspaces/homepage/
+    - name: e2e-intelligent-assistant
+      paths:
+        - workspaces/intelligent-assistant/
+    - name: e2e-orchestrator
+      paths:
+        - workspaces/orchestrator/
     - name: e2e-quickstart
       paths:
         - workspaces/quickstart/
