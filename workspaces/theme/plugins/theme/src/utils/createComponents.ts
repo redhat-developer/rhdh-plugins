@@ -273,6 +273,14 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         },
       },
     };
+    components.MuiToggleButtonGroup = {
+      styleOverrides: {
+        root: {
+          flexWrap: 'wrap',
+          rowGap: '8px',
+        },
+      },
+    };
     components.MuiIconButton = {
       styleOverrides: {
         root: {
