@@ -1,4 +1,4 @@
-# @red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions
+# @red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions
 
 A Backstage catalog backend module that validates RHDH-specific extension
 fields on AIResource entities.

@@ -1,4 +1,4 @@
-# @red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions
+# @red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions
 
 ## 0.3.0
 
