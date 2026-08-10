@@ -84,10 +84,12 @@
 
 ## 8. Migration Readiness Design (P2) — _RHIDP-15258_
 
-- [ ] 8.1 Create migration design document with mapping table: current kind/spec.type/annotation → target upstream kind (RHIDP-15302)
-- [ ] 8.2 Document transformation rules for each AI asset category (RHIDP-15302)
-- [ ] 8.3 Identify consumer-facing changes: catalog UI filters, entity refs, API queries (RHIDP-15302)
-- [ ] 8.4 Document backward compatibility strategy (e.g., keep annotation for one major version) (RHIDP-15302)
+> Tasks 8.1-8.4 implemented in [ai-asset-upstream-migration-design.md](../../specifications/ai-asset-upstream-migration-design.md) via [#4223](https://github.com/redhat-developer/rhdh-plugins/issues/4223).
+
+- [x] 8.1 Create migration design document with mapping table: current kind/spec.type/annotation → target upstream kind (RHIDP-15302)
+- [x] 8.2 Document transformation rules for each AI asset category (RHIDP-15302)
+- [x] 8.3 Identify consumer-facing changes: catalog UI filters, entity refs, API queries (RHIDP-15302)
+- [x] 8.4 Document backward compatibility strategy (e.g., keep annotation for one major version) (RHIDP-15302)
 - [ ] 8.5 Obtain upstream Backstage maintainer or RHDH architect sign-off on migration document (RHIDP-15302)
 - [ ] 8.6 Document sign-off in spec: reviewer name, role, date, approval status (RHIDP-15302)
 
