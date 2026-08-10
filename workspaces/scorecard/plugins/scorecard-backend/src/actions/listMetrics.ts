@@ -52,6 +52,7 @@ export const createListMetricsAction = ({
               description: z.string(),
               type: z.enum(['number', 'boolean']),
               history: z.boolean().optional(),
+              defaultVisualization: z.enum(['value', 'sparkline']).optional(),
             }),
           ),
         }),

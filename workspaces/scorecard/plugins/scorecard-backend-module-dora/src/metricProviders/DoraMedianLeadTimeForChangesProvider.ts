@@ -91,6 +91,7 @@ export class DoraMedianLeadTimeForChangesProvider
         type: 'number',
         thresholds: DEFAULT_DORA_MEDIAN_LEAD_TIME_THRESHOLDS,
         history: true,
+        defaultVisualization: 'sparkline',
       },
     ];
   }

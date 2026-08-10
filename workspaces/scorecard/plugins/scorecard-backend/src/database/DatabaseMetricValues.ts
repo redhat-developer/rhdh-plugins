@@ -229,6 +229,28 @@ export class DatabaseMetricValues {
   }
 
   /**
+   * Get metric values for a specific entity and metric within a timestamp range.
+   * Ordered by timestamp ascending, then id ascending.
+   */
+  async readEntityMetricValuesInRange(
+    catalog_entity_ref: string,
+    metric_id: string,
+    from: Date,
+    to: Date,
+  ): Promise<DbMetricValue[]> {
+    return await this.dbClient(this.tableName)
+      .select('*')
+      .where('catalog_entity_ref', catalog_entity_ref)
+      .where('metric_id', metric_id)
+      .where('timestamp', '>=', from)
+      .where('timestamp', '<=', to)
+      .orderBy([
+        { column: 'timestamp', order: 'asc' },
+        { column: 'id', order: 'asc' },
+      ]);
+  }
+
+  /**
    * Delete metric values that are older than the given date
    */
   async cleanupExpiredMetrics(olderThan: Date): Promise<number> {

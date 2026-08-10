@@ -100,6 +100,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       expect(metrics[0].thresholds).toEqual(
         DEFAULT_DORA_MEDIAN_LEAD_TIME_THRESHOLDS,
       );
+      expect(metrics[0].defaultVisualization).toBe('sparkline');
     });
   });
 

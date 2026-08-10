@@ -22,11 +22,17 @@ import {
   ScorecardEntityHealthSummary,
   aggregationTypes,
   AggregatedMetric,
+  MetricTimeSeriesResponse,
+  MetricTimeSeriesPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { Entity } from '@backstage/catalog-model';
 import { normalizeOwnerRef } from '../utils/normalizeOwnerRef';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
-import { NotFoundError, stringifyError } from '@backstage/errors';
+import {
+  NotAllowedError,
+  NotFoundError,
+  stringifyError,
+} from '@backstage/errors';
 import {
   AuthService,
   BackstageCredentials,
@@ -159,6 +165,7 @@ export class CatalogMetricService {
             description: metric.description,
             type: metric.type,
             history: metric.history,
+            defaultVisualization: metric.defaultVisualization,
           },
           ...(isMetricCalcError && {
             error:
@@ -178,6 +185,86 @@ export class CatalogMetricService {
         };
       },
     );
+  }
+
+  /**
+   * Get a daily time series for one metric on one catalog entity.
+   *
+   * Buckets samples by UTC calendar day and keeps the latest row (`MAX(id)`) per day.
+   * Calculation failures and null values are excluded from `points`.
+   *
+   * @param entityRef - Entity reference in format "kind:namespace/name"
+   * @param metricId - Metric ID to fetch
+   * @param from - Inclusive range start
+   * @param to - Inclusive range end
+   * @param filter - Permission filter
+   */
+  async getEntityMetricTimeSeries(
+    entityRef: string,
+    metricId: string,
+    from: Date,
+    to: Date,
+    filter?: PermissionCriteria<
+      PermissionCondition<string, PermissionRuleParams>
+    >,
+  ): Promise<MetricTimeSeriesResponse> {
+    const entity = await this.catalog.getEntityByRef(entityRef, {
+      credentials: await this.auth.getOwnServiceCredentials(),
+    });
+    if (!entity) {
+      throw new NotFoundError(`Entity not found: ${entityRef}`);
+    }
+
+    const metric = this.registry.getMetric(metricId);
+    const authorizedMetrics = filterAuthorizedMetrics([metric], filter);
+    if (authorizedMetrics.length === 0) {
+      throw new NotAllowedError(
+        `To view the scorecard metrics, your administrator must grant you the required permission.`,
+      );
+    }
+
+    const rows = await this.database.readEntityMetricValuesInRange(
+      entityRef,
+      metricId,
+      from,
+      to,
+    );
+
+    const latestByUtcDay = new Map<string, DbMetricValue>();
+    for (const row of rows) {
+      if (row.value === null || isMetricCalculationError(row)) {
+        continue;
+      }
+      const dayKey = new Date(row.timestamp).toISOString().slice(0, 10);
+      const existing = latestByUtcDay.get(dayKey);
+      // Postgres may return bigIncrements as strings; compare numerically.
+      if (!existing || Number(row.id) > Number(existing.id)) {
+        latestByUtcDay.set(dayKey, row);
+      }
+    }
+
+    const points: MetricTimeSeriesPoint[] = Array.from(latestByUtcDay.values())
+      .sort(
+        (a, b) =>
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+      )
+      .map(row => ({
+        value: row.value as NonNullable<typeof row.value>,
+        timestamp: new Date(row.timestamp).toISOString(),
+      }));
+
+    return {
+      metricId: metric.id,
+      entityRef,
+      points,
+      metadata: {
+        title: metric.title,
+        description: metric.description,
+        type: metric.type,
+        history: metric.history,
+        defaultVisualization: metric.defaultVisualization,
+      },
+    };
   }
 
   /**

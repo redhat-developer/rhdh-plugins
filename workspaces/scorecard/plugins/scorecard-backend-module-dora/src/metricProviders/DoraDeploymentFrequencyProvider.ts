@@ -79,6 +79,7 @@ export class DoraDeploymentFrequencyProvider
         type: 'number',
         thresholds: DEFAULT_DORA_DEPLOYMENT_FREQUENCY_THRESHOLDS,
         history: true,
+        defaultVisualization: 'sparkline',
       },
     ];
   }

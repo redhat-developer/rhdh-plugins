@@ -19,6 +19,7 @@ import type { Request, Response } from 'express';
 import { validateAggregationIdParam } from './validateAggregationIdParam';
 import { validateMetricIdsQueryParams } from './validateMetricIdsQueryParams';
 import { validateDatasourceQueryParams } from './validateDatasourceQueryParams';
+import { validateTimeSeriesQueryParams } from './validateTimeSeriesQueryParams';
 
 function mockReq(overrides: Partial<Request> = {}): Request {
   return {
@@ -161,6 +162,64 @@ describe('Validators', () => {
         InputError,
       );
       expect(next).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('validateTimeSeriesQueryParams', () => {
+    const validQuery = {
+      metricId: 'github.openPRs',
+      from: '2024-01-01T00:00:00.000Z',
+      to: '2024-01-31T23:59:59.000Z',
+    };
+
+    it('should call next when all query params are valid', () => {
+      const req = mockReq({ query: validQuery });
+
+      validateTimeSeriesQueryParams(req, res, next);
+
+      expect(next).toHaveBeenCalledTimes(1);
+      expect(next).toHaveBeenCalledWith();
+    });
+
+    it.each([
+      ['missing metricId', { from: validQuery.from, to: validQuery.to }],
+      [
+        'empty metricId',
+        { metricId: '', from: validQuery.from, to: validQuery.to },
+      ],
+      ['missing from', { metricId: validQuery.metricId, to: validQuery.to }],
+      ['missing to', { metricId: validQuery.metricId, from: validQuery.from }],
+      ['invalid from', { ...validQuery, from: 'not-a-date' }],
+      ['invalid to', { ...validQuery, to: 'not-a-date' }],
+      [
+        'from after to',
+        {
+          ...validQuery,
+          from: '2024-02-01T00:00:00.000Z',
+          to: '2024-01-01T00:00:00.000Z',
+        },
+      ],
+    ])('should throw InputError when %s', (_label, query) => {
+      const req = mockReq({ query: query as any });
+
+      expect(() => validateTimeSeriesQueryParams(req, res, next)).toThrow(
+        InputError,
+      );
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should call next when from equals to', () => {
+      const req = mockReq({
+        query: {
+          metricId: 'github.openPRs',
+          from: '2024-01-01T00:00:00.000Z',
+          to: '2024-01-01T00:00:00.000Z',
+        },
+      });
+
+      validateTimeSeriesQueryParams(req, res, next);
+
+      expect(next).toHaveBeenCalledTimes(1);
     });
   });
 });

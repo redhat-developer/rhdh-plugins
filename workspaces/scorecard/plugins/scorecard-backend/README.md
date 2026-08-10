@@ -298,6 +298,57 @@ curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service?
   -H "Authorization: Bearer <token>"
 ```
 
+### `GET /metrics/catalog/:kind/:namespace/:name/time-series`
+
+Returns daily time-series points for one metric on a catalog entity. Each point is the latest successful sample (`MAX(id)`) for that UTC calendar day. Calculation failures and null values are omitted. Returns `200` with `points: []` when the entity and metric are authorized but no data exists in the range.
+
+#### Path Parameters
+
+| Parameter   | Type   | Required | Description                        |
+| ----------- | ------ | -------- | ---------------------------------- |
+| `kind`      | string | Yes      | Entity kind (e.g., `component`)    |
+| `namespace` | string | Yes      | Entity namespace (e.g., `default`) |
+| `name`      | string | Yes      | Entity name                        |
+
+#### Query Parameters
+
+| Parameter  | Type   | Required | Description                                       |
+| ---------- | ------ | -------- | ------------------------------------------------- |
+| `metricId` | string | Yes      | Metric ID (e.g., `github.openPRs`)                |
+| `from`     | string | Yes      | Inclusive range start (ISO-8601)                  |
+| `to`       | string | Yes      | Inclusive range end (ISO-8601); must be `>= from` |
+
+#### Permissions
+
+Requires `scorecard.metric.read` permission and `catalog.entity.read` permission for the specific entity.
+
+#### Example Request
+
+```bash
+curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service/time-series?metricId=github.openPRs&from=2026-04-01T00:00:00.000Z&to=2026-04-30T23:59:59.999Z" \
+  -H "Authorization: Bearer <token>"
+```
+
+#### Example Response
+
+```json
+{
+  "metricId": "github.openPRs",
+  "entityRef": "component:default/my-service",
+  "metadata": {
+    "title": "GitHub open PRs",
+    "description": "The number of open pull requests.",
+    "type": "number",
+    "history": true,
+    "defaultVisualization": "value"
+  },
+  "points": [
+    { "value": 8, "timestamp": "2026-04-27T23:10:00.000Z" },
+    { "value": 7, "timestamp": "2026-04-28T22:55:00.000Z" }
+  ]
+}
+```
+
 ### `GET /aggregations/:aggregationId`
 
 Returns aggregated metrics for the authenticated user across all catalog entities they own (same ownership rules as the legacy route; see [aggregation.md](./docs/aggregation.md)).

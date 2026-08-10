@@ -137,7 +137,11 @@ export type Metric<T extends MetricType = MetricType> = {
   type: T;
   thresholds: ThresholdConfig;
   history?: boolean;
+  defaultVisualization?: MetricDefaultVisualization;
 };
+
+// @public
+export type MetricDefaultVisualization = 'value' | 'sparkline';
 
 // @public (undocumented)
 export type MetricResult = {
@@ -148,6 +152,7 @@ export type MetricResult = {
     description: string;
     type: MetricType;
     history?: boolean;
+    defaultVisualization?: MetricDefaultVisualization;
   };
   result: {
     value: MetricValue | null;
@@ -155,6 +160,26 @@ export type MetricResult = {
     thresholdResult: ThresholdResult;
   };
   error?: string;
+};
+
+// @public
+export type MetricTimeSeriesPoint = {
+  value: MetricValue;
+  timestamp: string;
+};
+
+// @public
+export type MetricTimeSeriesResponse = {
+  metricId: string;
+  entityRef: string;
+  points: MetricTimeSeriesPoint[];
+  metadata: {
+    title: string;
+    description: string;
+    type: MetricType;
+    history?: boolean;
+    defaultVisualization?: MetricDefaultVisualization;
+  };
 };
 
 // @public (undocumented)

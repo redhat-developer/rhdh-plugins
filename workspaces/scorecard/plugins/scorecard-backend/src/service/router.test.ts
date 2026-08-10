@@ -37,6 +37,7 @@ import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
   MetricResult,
+  MetricTimeSeriesResponse,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { CatalogMetricService } from './CatalogMetricService';
 import { NotFoundError } from '@backstage/errors';
@@ -502,6 +503,142 @@ describe('createRouter', () => {
       expect(response.status).toBe(400);
       expect(response.body.error.name).toBe('InputError');
       expect(response.body.error.message).toContain('Invalid query parameters');
+    });
+  });
+
+  describe('GET /metrics/catalog/:kind/:namespace/:name/time-series', () => {
+    const mockTimeSeriesResponse: MetricTimeSeriesResponse = {
+      metricId: 'github.openPRs',
+      entityRef: 'component:default/my-service',
+      metadata: {
+        title: 'GitHub open PRs',
+        description: 'The number of open pull requests.',
+        type: 'number',
+        history: true,
+        defaultVisualization: 'value',
+      },
+      points: [
+        { value: 8, timestamp: '2024-01-01T20:00:00.000Z' },
+        { value: 7, timestamp: '2024-01-02T12:00:00.000Z' },
+      ],
+    };
+
+    const timeSeriesPath =
+      '/metrics/catalog/component/default/my-service/time-series';
+    const validQuery =
+      'metricId=github.openPRs&from=2024-01-01T00:00:00.000Z&to=2024-01-31T23:59:59.000Z';
+
+    beforeEach(() => {
+      jest
+        .spyOn(catalogMetricService, 'getEntityMetricTimeSeries')
+        .mockResolvedValue(mockTimeSeriesResponse);
+    });
+
+    it('should return 403 Unauthorized when DENY permissions', async () => {
+      permissionsMock.authorizeConditional.mockResolvedValue([
+        { result: AuthorizeResult.DENY },
+      ]);
+      const result = await request(app).get(`${timeSeriesPath}?${validQuery}`);
+
+      expect(result.statusCode).toBe(403);
+      expect(result.body.error.name).toEqual('NotAllowedError');
+    });
+
+    it('should return time series for a specific entity and metric', async () => {
+      const response = await request(app).get(
+        `${timeSeriesPath}?${validQuery}`,
+      );
+
+      expect(response.status).toBe(200);
+      expect(
+        catalogMetricService.getEntityMetricTimeSeries,
+      ).toHaveBeenCalledWith(
+        'component:default/my-service',
+        'github.openPRs',
+        new Date('2024-01-01T00:00:00.000Z'),
+        new Date('2024-01-31T23:59:59.000Z'),
+        undefined,
+      );
+      expect(response.body).toEqual(mockTimeSeriesResponse);
+    });
+
+    it('should check entity access before returning time series', async () => {
+      const checkEntityAccessSpy = jest.spyOn(
+        permissionUtilsModule,
+        'checkEntityAccess',
+      );
+      const response = await request(app).get(
+        `${timeSeriesPath}?${validQuery}`,
+      );
+
+      expect(response.status).toBe(200);
+      expect(checkEntityAccessSpy).toHaveBeenCalledWith(
+        'component:default/my-service',
+        expect.any(Object),
+        permissionsMock,
+        httpAuthMock,
+      );
+    });
+
+    it('should filter authorized metrics when CONDITIONAL permission', async () => {
+      permissionsMock.authorizeConditional.mockResolvedValue([
+        CONDITIONAL_POLICY_DECISION,
+      ]);
+      const response = await request(app).get(
+        `${timeSeriesPath}?${validQuery}`,
+      );
+
+      expect(response.status).toBe(200);
+      expect(
+        catalogMetricService.getEntityMetricTimeSeries,
+      ).toHaveBeenCalledWith(
+        'component:default/my-service',
+        'github.openPRs',
+        new Date('2024-01-01T00:00:00.000Z'),
+        new Date('2024-01-31T23:59:59.000Z'),
+        {
+          anyOf: [
+            {
+              rule: 'HAS_METRIC_ID',
+              resourceType: 'scorecard-metric',
+              params: { metricIds: ['github.openPRs', 'github.openIssues'] },
+            },
+          ],
+        },
+      );
+    });
+
+    it('should return 404 NotFoundError when entity is not found', async () => {
+      jest
+        .spyOn(catalogMetricService, 'getEntityMetricTimeSeries')
+        .mockRejectedValue(
+          new NotFoundError('Entity not found: component:default/non-existent'),
+        );
+
+      const response = await request(app).get(
+        `/metrics/catalog/component/default/non-existent/time-series?${validQuery}`,
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.body.error.name).toBe('NotFoundError');
+      expect(response.body.error.message).toContain('Entity not found');
+    });
+
+    it('should return 400 InputError when query parameters are missing', async () => {
+      const response = await request(app).get(timeSeriesPath);
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.name).toBe('InputError');
+      expect(response.body.error.message).toContain('Invalid query parameters');
+    });
+
+    it('should return 400 InputError when from is after to', async () => {
+      const response = await request(app).get(
+        `${timeSeriesPath}?metricId=github.openPRs&from=2024-02-01T00:00:00.000Z&to=2024-01-01T00:00:00.000Z`,
+      );
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.name).toBe('InputError');
     });
   });
 

@@ -82,6 +82,7 @@ export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
         type: 'number',
         thresholds: DEFAULT_DORA_CHANGE_FAILURE_RATE_THRESHOLDS,
         history: true,
+        defaultVisualization: 'sparkline',
       },
     ];
   }

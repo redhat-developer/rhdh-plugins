@@ -82,6 +82,7 @@ describe('DoraChangeFailureRateProvider', () => {
       expect(metrics[0].thresholds).toEqual(
         DEFAULT_DORA_CHANGE_FAILURE_RATE_THRESHOLDS,
       );
+      expect(metrics[0].defaultVisualization).toBe('sparkline');
     });
   });
 
