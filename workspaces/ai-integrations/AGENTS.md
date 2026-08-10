@@ -22,6 +22,27 @@
 - `packages/` in each plugin is strictly for the dev environment; do not add application code there
 - `ai-experience-common` holds shared types and API definitions used by both frontend and backend
 
+## AiResource typed variant packages
+
+Each AiResource `spec.type` variant (skill, rule, agent, mcp-server, etc.)
+lives in its own dedicated package pair:
+
+- `plugins/catalog-model-ai-resource-{type}/` — TypeScript types, JSON schema,
+  KindValidator, type guard, CatalogModelLayer, and `report.api.md`
+- `plugins/catalog-backend-module-ai-resource-{type}/` — backend module that
+  calls `catalogModelExtensionPoint.addModelSource()` and is wired into
+  `packages/backend/src/index.ts`
+
+Do NOT place typed-variant types in `ai-experience-common`. Follow the
+existing skill/rule packages as the reference implementation. When creating
+a new typed variant:
+
+1. Create both packages following the naming convention above
+2. Export the CatalogModelLayer from the catalog-model package
+3. Wire the backend module into `packages/backend`
+4. Include a smoke test for the backend module export
+5. Add a minor changeset covering both new packages
+
 ## Specifications
 
 - When a task is driven by local implementation specs, check `openspec/changes/` for proposal, design, tasks, and behavioral requirements
