@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-/**
- * Common types and utilities for the boost plugin.
- *
- * @packageDocumentation
- */
-
-/**
- * The plugin ID for the boost plugin.
- *
- * @public
- */
-export const BOOST_PLUGIN_ID = 'boost';
-
-export * from './types';
-export * from './permissions';
-export * from './ingestion-health';
+export { ErrorClassifier, type ClassifyOptions } from './ErrorClassifier';
+export {
+  SyncAttemptsRepository,
+  type SyncAttemptsRepositoryOptions,
+} from './SyncAttemptsRepository';
+export {
+  ConnectorConfigReader,
+  type ConnectorConfigReaderOptions,
+  type ConnectorCandidate,
+} from './ConnectorConfigReader';
+export {
+  HealthStatusService,
+  type HealthStatusServiceOptions,
+} from './HealthStatusService';
+export {
+  createIngestionHealthRoutes,
+  type IngestionHealthRoutesOptions,
+} from './routes';

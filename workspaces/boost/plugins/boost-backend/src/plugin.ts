@@ -52,6 +52,10 @@ import { RateLimiter } from './chat/RateLimiter';
 import { BackendApprovalStore } from './approval/BackendApprovalStore';
 import { DocumentSyncService } from './documents/DocumentSyncService';
 import { createSkillsRoutes } from './skills/routes';
+import { SyncAttemptsRepository } from './ingestion/SyncAttemptsRepository';
+import { ConnectorConfigReader } from './ingestion/ConnectorConfigReader';
+import { HealthStatusService } from './ingestion/HealthStatusService';
+import { createIngestionHealthRoutes } from './ingestion/routes';
 
 /**
  * The ProviderManager instance shared between the plugin and the
@@ -241,6 +245,64 @@ export const boostPlugin = createBackendPlugin({
           logger,
         });
 
+        // Initialize ingestion health services (issue 5 of 29)
+        const syncAttemptsRepository = new SyncAttemptsRepository({
+          database,
+          logger,
+        });
+
+        const connectorConfigReader = new ConnectorConfigReader({
+          config,
+          logger,
+        });
+
+        const healthStatusService = new HealthStatusService({
+          repository: syncAttemptsRepository,
+          configReader: connectorConfigReader,
+          logger,
+        });
+
+        // Scheduled cleanup job for sync attempts (task 1.5)
+        // Runs retention enforcement for all connectors.
+        const retentionLimit =
+          config.getOptionalNumber(
+            'boost.ingestion.healthRetention.maxAttemptsPerConnector',
+          ) ?? 100;
+
+        // Schedule daily cleanup (best-effort, non-blocking)
+        const runCleanup = async () => {
+          try {
+            const connectorIds =
+              await syncAttemptsRepository.getDistinctConnectorIds();
+            for (const connectorId of connectorIds) {
+              await syncAttemptsRepository.cleanupOldAttempts(
+                connectorId,
+                retentionLimit,
+              );
+            }
+            logger.debug(
+              `Sync attempts retention cleanup completed for ${connectorIds.length} connector(s)`,
+            );
+          } catch (err) {
+            logger.error(
+              'Sync attempts retention cleanup failed',
+              err as Error,
+            );
+          }
+        };
+
+        // Run cleanup once on startup, then daily (24h interval)
+        const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000;
+        void runCleanup();
+        const cleanupTimer = setInterval(
+          () => void runCleanup(),
+          CLEANUP_INTERVAL_MS,
+        );
+        // Unref so the timer doesn't prevent process exit
+        if (typeof cleanupTimer === 'object' && 'unref' in cleanupTimer) {
+          cleanupTimer.unref();
+        }
+
         // Register all boost permissions with the framework
         permissionsRegistry.addPermissions([...boostPermissions]);
         logger.info(`Registered ${boostPermissions.length} boost permissions`);
@@ -331,6 +393,14 @@ export const boostPlugin = createBackendPlugin({
         });
         router.use(skillsRoutes);
 
+        // Ingestion health routes (issue 5 of 29)
+        const ingestionHealthRoutes = createIngestionHealthRoutes({
+          healthService: healthStatusService,
+          httpAuth,
+          logger,
+        });
+        router.use(ingestionHealthRoutes);
+
         // Health check endpoint (always unauthenticated)
         router.get('/health', (_req, res) => {
           res.json({ status: 'ok' });
@@ -404,6 +474,10 @@ export const boostPlugin = createBackendPlugin({
         });
         httpRouter.addAuthPolicy({
           path: '/skills',
+          allow: 'user-cookie',
+        });
+        httpRouter.addAuthPolicy({
+          path: '/ingestion-health',
           allow: 'user-cookie',
         });
 
