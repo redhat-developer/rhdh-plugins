@@ -16,8 +16,10 @@
 
 import { createBackendModule } from '@backstage/backend-plugin-api';
 import { CatalogModelSources } from '@backstage/catalog-model/alpha';
+import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node';
 import { catalogModelExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
 import { agentAiResourceEntityModel } from '@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent';
+import { AiResourceAgentProcessor } from './AiResourceAgentProcessor';
 
 /**
  * Registers the agent specType for the AiResource kind in the catalog.
@@ -35,11 +37,13 @@ export const catalogModuleAiResourceAgent = createBackendModule({
     reg.registerInit({
       deps: {
         model: catalogModelExtensionPoint,
+        catalog: catalogProcessingExtensionPoint,
       },
-      async init({ model }) {
+      async init({ model, catalog }) {
         model.addModelSource(
           CatalogModelSources.static([agentAiResourceEntityModel]),
         );
+        catalog.addProcessor(new AiResourceAgentProcessor());
       },
     });
   },

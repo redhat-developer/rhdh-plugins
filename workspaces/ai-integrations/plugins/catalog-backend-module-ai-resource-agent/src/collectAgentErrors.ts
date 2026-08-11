@@ -17,7 +17,7 @@
 import { Entity } from '@backstage/catalog-model';
 
 /**
- * Collects agent-specific validation errors for an AIResource entity
+ * Collects agent-specific validation errors for an AiResource entity
  * with `spec.type: 'agent'` without throwing. Returns an array of
  * error messages (empty if valid or if `spec.type` is not `'agent'`).
  *

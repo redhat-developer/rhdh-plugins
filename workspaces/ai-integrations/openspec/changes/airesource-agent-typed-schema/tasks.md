@@ -26,10 +26,11 @@
 
 ## 5. Catalog processor validation (RHIDP-15868)
 
-- [ ] 5.1 Extend the AiResource extensions processor to validate agent-specific fields when `spec.type: agent`
+- [ ] 5.1 Add `AiResourceAgentProcessor` in `catalog-backend-module-ai-resource-agent` to validate agent-specific fields when `spec.type: agent`; do **not** extend `AIResourceExtensionsProcessor` (which remains scope/OCI only)
 - [ ] 5.2 Reject missing/empty `spec.instructions` and wrong optional agent field shapes with actionable errors
 - [ ] 5.3 Do not enforce entity-ref format on `handoffs` / `tools`; do not add new owner/lifecycle processor rules
 - [ ] 5.4 Add processor tests for accept and reject paths; ensure non-agent AiResources are unaffected
+- [ ] 5.5 Register `AiResourceAgentProcessor` in the agent backend module alongside the model source
 
 ## 6. Docs and OpenSpec DoD
 

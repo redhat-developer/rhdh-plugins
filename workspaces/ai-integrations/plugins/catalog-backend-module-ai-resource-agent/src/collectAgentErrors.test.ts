@@ -20,7 +20,7 @@ import { collectAgentErrors } from './collectAgentErrors';
 function makeAgent(spec: Entity['spec'] = {}): Entity {
   return {
     apiVersion: 'backstage.io/v1alpha1',
-    kind: 'AIResource',
+    kind: 'AiResource',
     metadata: { name: 'test-agent' },
     spec: {
       type: 'agent',
@@ -44,7 +44,7 @@ describe('collectAgentErrors', () => {
     it('returns no errors for spec.type: rule', () => {
       const entity: Entity = {
         apiVersion: 'backstage.io/v1alpha1',
-        kind: 'AIResource',
+        kind: 'AiResource',
         metadata: { name: 'test-rule' },
         spec: { type: 'rule', lifecycle: 'production', owner: 'team' },
       };
@@ -55,7 +55,7 @@ describe('collectAgentErrors', () => {
     it('returns no errors for spec.type: model', () => {
       const entity: Entity = {
         apiVersion: 'backstage.io/v1alpha1',
-        kind: 'AIResource',
+        kind: 'AiResource',
         metadata: { name: 'test-model' },
         spec: { type: 'model', lifecycle: 'production', owner: 'team' },
       };
@@ -66,7 +66,7 @@ describe('collectAgentErrors', () => {
     it('returns no errors when spec is undefined', () => {
       const entity: Entity = {
         apiVersion: 'backstage.io/v1alpha1',
-        kind: 'AIResource',
+        kind: 'AiResource',
         metadata: { name: 'test' },
       };
 
