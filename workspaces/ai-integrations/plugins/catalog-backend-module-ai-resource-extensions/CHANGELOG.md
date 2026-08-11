@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions
 
+## 0.4.0
+
+### Minor Changes
+
+- 238650c: Rename package from the accidentally doubled
+  `catalog-backend-module-catalog-backend-module-ai-resource-extensions` path/name
+  to `catalog-backend-module-ai-resource-extensions`.
+
 ## 0.3.0
 
 ### Minor Changes
