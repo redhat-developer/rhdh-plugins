@@ -31,8 +31,10 @@ const incidentSchema = z
   })
   .passthrough();
 
-export const incidentsCollectorOutputSchema = z.object({
-  incidents: z.array(incidentSchema),
-});
+export const incidentsCollectorOutputSchema = z
+  .object({
+    incidents: z.array(incidentSchema),
+  })
+  .strict();
 
 export type Incident = z.infer<typeof incidentSchema>;

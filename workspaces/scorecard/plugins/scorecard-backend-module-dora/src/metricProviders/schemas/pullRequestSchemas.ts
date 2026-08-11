@@ -35,7 +35,7 @@ export const deploymentPullRequestsCollectorOutputSchema = z
   .object({
     pullRequests: z.array(pullRequestSchema),
   })
-  .passthrough();
+  .strict();
 
 export type PullRequestsCollectorOutput = {
   pullRequests: PullRequest[];

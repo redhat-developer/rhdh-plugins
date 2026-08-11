@@ -38,7 +38,7 @@ export const deploymentsCollectorOutputSchema = z
   .object({
     deployments: z.array(deploymentSchema),
   })
-  .passthrough()
+  .strict()
   .superRefine((value, ctx) => {
     for (let i = 1; i < value.deployments.length; i++) {
       const previous = value.deployments[i - 1];
