@@ -17,20 +17,20 @@
 import { createBackendModule } from '@backstage/backend-plugin-api';
 import type { CatalogModelSource } from '@backstage/catalog-model/alpha';
 import { catalogModelExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
-import { agentAiResourceEntityModel } from '@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent';
+import { aiModelServerApiEntityModel } from '@red-hat-developer-hub/backstage-plugin-catalog-model-ai-model-server';
 
 /**
- * Registers the agent specType for the AiResource kind in the catalog.
+ * Registers the AiModelServerAPI kind in the catalog.
  *
- * Follows the upstream pattern established by
- * `@backstage/plugin-catalog-backend-module-ai-model` which registers
- * skill/rule via `catalogModelExtensionPoint.addModelSource`.
+ * Uses a dedicated kind to avoid colliding with the upstream API kind.
+ * When backstage/backstage#34476 merges, this module can be replaced
+ * by the upstream `@backstage/plugin-catalog-backend-module-ai-model`.
  *
  * @public
  */
-export const catalogModuleAiResourceAgent = createBackendModule({
+export const catalogModuleAiModelServer = createBackendModule({
   pluginId: 'catalog',
-  moduleId: 'ai-resource-agent',
+  moduleId: 'ai-model-server',
   register(reg) {
     reg.registerInit({
       deps: {
@@ -39,7 +39,7 @@ export const catalogModuleAiResourceAgent = createBackendModule({
       async init({ model }) {
         const source: CatalogModelSource = {
           async *read() {
-            yield { data: [{ layer: agentAiResourceEntityModel }] };
+            yield { data: [{ layer: aiModelServerApiEntityModel }] };
           },
         };
         model.addModelSource(source);
