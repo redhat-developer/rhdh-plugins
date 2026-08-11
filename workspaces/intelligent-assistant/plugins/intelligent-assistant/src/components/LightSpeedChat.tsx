@@ -45,7 +45,6 @@ import {
   ChatbotFooter,
   ChatbotHeader,
   ChatbotHeaderMain,
-  ChatbotHeaderMenu,
   ChatbotHeaderTitle,
   FileDropZone,
   MessageBar,
@@ -58,6 +57,7 @@ import {
   Label,
   MenuToggle,
   MenuToggleElement,
+  Button as PfButton,
   Select,
   SelectList,
   SelectOption,
@@ -126,6 +126,10 @@ import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
 import { NotebookHeaderActions } from './notebooks/NotebookHeaderActions';
 import { NotebooksTab } from './notebooks/NotebooksTab';
 import { NotebookView } from './notebooks/NotebookView';
+import {
+  SidebarCollapseIcon,
+  SidebarExpandIcon,
+} from './notebooks/SidebarCollapseIcon';
 import PermissionRequiredState from './PermissionRequiredState';
 import { RenameConversationModal } from './RenameConversationModal';
 import { ToastAlertGroup } from './ToastAlertGroup';
@@ -190,11 +194,28 @@ const useStyles = makeStyles(theme => ({
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default) !important',
   },
-  headerMenu: {
-    // align hamburger icon with title
-    '& .pf-v6-c-button': {
-      display: 'flex',
-      alignItems: 'center',
+  chatHeaderActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+  },
+  compactDrawerPanel: {
+    '&.pf-v6-c-drawer__panel': {
+      width: '100%',
+      minWidth: '100%',
+      maxWidth: '100%',
+      flexBasis: '100%',
+    },
+  },
+  headerNewChatButton: {
+    '&.pf-v6-c-button': {
+      color: 'var(--pf-t--global--color--brand--default)',
+      '&:hover': {
+        color: 'var(--pf-t--global--color--brand--hover)',
+      },
+      '&:disabled, &.pf-m-disabled': {
+        color: 'var(--pf-t--global--text--color--disabled)',
+      },
     },
   },
   notebookHeaderActions: {
@@ -1935,13 +1956,47 @@ export const LightspeedChat = ({
         <ChatbotHeader className={classes.header}>
           <ChatbotHeaderMain>
             {showChatPanel && !isFullscreenMode && (
-              <ChatbotHeaderMenu
-                aria-expanded={isChatHistoryDrawerOpen}
-                onMenuToggle={onChatHistoryDrawerToggle}
-                className={classes.headerMenu}
-                tooltipContent={t('tooltip.chatHistoryMenu')}
-                aria-label={t('aria.chatHistoryMenu')}
-              />
+              <div className={classes.chatHeaderActions}>
+                <Tooltip
+                  content={
+                    isChatHistoryDrawerOpen
+                      ? t('tooltip.collapseHistoryPanel')
+                      : t('tooltip.expandHistoryPanel')
+                  }
+                  position="bottom"
+                >
+                  <PfButton
+                    variant="plain"
+                    onClick={onChatHistoryDrawerToggle}
+                    aria-expanded={isChatHistoryDrawerOpen}
+                    aria-label={t('aria.chatHistoryMenu')}
+                    size="sm"
+                  >
+                    {isChatHistoryDrawerOpen ? (
+                      <SidebarCollapseIcon size={18} />
+                    ) : (
+                      <SidebarExpandIcon size={18} />
+                    )}
+                  </PfButton>
+                </Tooltip>
+                {!isChatHistoryDrawerOpen && (
+                  <Tooltip
+                    content={t('tooltip.quickNewChat')}
+                    position="bottom"
+                  >
+                    <PfButton
+                      variant="plain"
+                      className={classes.headerNewChatButton}
+                      onClick={onNewChat}
+                      isDisabled={newChatCreated}
+                      aria-label={t('tooltip.quickNewChat')}
+                      size="sm"
+                    >
+                      <PenIcon style={{ width: 18, height: 18 }} />
+                    </PfButton>
+                  </Tooltip>
+                )}
+              </div>
             )}
             {!isFullscreenMode && showNotebooksPanel && activeNotebook && (
               <NotebookHeaderActions
@@ -2087,6 +2142,10 @@ export const LightspeedChat = ({
                 isResizable: isFullscreenMode,
                 hasNoBorder: !isFullscreenMode,
                 style: drawerPanelStyle,
+                ...(!isFullscreenMode &&
+                  isChatHistoryDrawerOpen && {
+                    className: classes.compactDrawerPanel,
+                  }),
               }}
               reverseButtonOrder
               displayMode={ChatbotDisplayMode.embedded}
