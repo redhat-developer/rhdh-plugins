@@ -110,6 +110,34 @@ function safeGetOptionalString(
 }
 ```
 
+## Upstream-Tracking Packages
+
+Some packages in this workspace replicate upstream `backstage/backstage`
+schemas as stopgaps while the corresponding upstream PRs are pending.
+These packages reference the upstream PR (e.g., `backstage/backstage#34476`)
+in their changeset description or linked issue.
+
+When a package explicitly tracks an upstream PR, upstream naming and API
+conventions take precedence over workspace-local conventions. This includes:
+
+- **Interface names** — upstream names are used as-is, even if they omit a
+  version suffix (e.g., `AiModelServerApiEntity` instead of
+  `AgentAiResourceEntityV1alpha1`)
+- **`apiVersion` typing** — may use a broad `string` type instead of a
+  pinned literal union, matching the upstream schema
+- **Type guard patterns** — may omit `apiVersion` checks when the upstream
+  pattern relies on dedicated kinds alone
+- **`moduleId` format** — uses the upstream short form (e.g.,
+  `'ai-model-server'`) matching the upstream convention (e.g., `'ai-model'`)
+
+Do not flag convention deviations in upstream-tracking packages when the
+deviation matches the cited upstream code. These are intentional for
+migration parity and will be reconciled when the upstream PR merges.
+
+The upstream PR number must be documented in the changeset description or
+linked issue so reviewers (human and automated) can verify the upstream
+alignment.
+
 ## PR Conventions
 
 - All commits must have an `Assisted-by: <model>` footer below the sign offs
