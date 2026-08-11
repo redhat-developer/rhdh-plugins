@@ -42,6 +42,7 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'table.headers.lastUsed': string;
     readonly 'table.headers.views': string;
     readonly 'table.headers.executions': string;
+    readonly 'table.headers.estTimeSaved': string;
     readonly 'table.headers.trend': string;
     readonly 'table.headers.entity': string;
     readonly 'table.pagination.topN': string;
@@ -86,6 +87,16 @@ export const adoptionInsightsTranslationRef: TranslationRef<
     readonly 'users.licensedNotLoggedIn': string;
     readonly 'users.ofTotal': string;
     readonly 'users.tooltip': string;
+    readonly 'timeSavedBadge.estTimeSaved': string;
+    readonly 'timeSavedBadge.addEstTimeSaved': string;
+    readonly 'timeSavedBadge.presentTooltip': string;
+    readonly 'timeSavedBadge.absentTooltipInstruction': string;
+    readonly 'timeSavedBadge.annotationSnippet': string;
+    readonly 'timeSavedBadge.copied': string;
+    readonly 'timeSavedBadge.copyAnnotation': string;
+    readonly 'units.days': string;
+    readonly 'units.hours': string;
+    readonly 'units.minutes': string;
     readonly 'common.today': string;
     readonly 'common.noResults': string;
     readonly 'common.readMore': string;

@@ -62,6 +62,7 @@
     "@backstage/plugin-app-react": "^0.2.4",
     "@backstage/plugin-catalog-react": "^3.1.0",
     "@backstage/plugin-permission-react": "^0.5.2",
+    "@backstage/plugin-scaffolder-common": "^2.0.0",
     "@backstage/theme": "^0.7.3",
     "@mui/icons-material": "5.18.0",
     "@mui/lab": "5.0.0-alpha.177",
