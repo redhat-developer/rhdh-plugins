@@ -132,7 +132,7 @@ catalog:
       target: ../../examples/ai-resource-agents.yaml
       rules:
         - allow: [AiResource]
-      type: file
+    - type: file
       target: ../../examples/ai-model-server-api.yaml
       rules:
         - allow: [AiModelServerAPI]

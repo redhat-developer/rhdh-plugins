@@ -89,8 +89,8 @@ backend.add(
 );
 backend.add(
   import(
-    '@redh-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server'
-  );
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server'
+  ),
 );
 backend.add(
   import(
