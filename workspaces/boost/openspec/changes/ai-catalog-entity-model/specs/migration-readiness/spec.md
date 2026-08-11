@@ -13,7 +13,7 @@ Design document mapping custom annotations and entity kinds to upstream Backstag
 > - **Decision 1 baseline:** The current-state source of truth is [ai-catalog-entity-model/design.md Decision 1](../../design.md). The mapping table uses Decision 1's seven categories as the starting point.
 > - **RHDHPLAN-1113 resolved:** Boost uses AIResource for skills/rules directly. The dual-path (Resource/Component interim vs AIResource) is retired as the primary narrative.
 > - **MCP kind-aligned:** RFC [#32062](https://github.com/backstage/backstage/issues/32062) Option 3 shipped as `McpServerApiEntity` ([backstage#34016](https://github.com/backstage/backstage/pull/34016)). MCP stays `kind: API`. **No** `API` → `McpServer` kind rename.
-> - **Skills/rules shipped:** `AiResource` kind shipped upstream ([#33575](https://github.com/backstage/backstage/issues/33575) lineage). Kind/name casing alignment (`AIResource` → `AiResource`) is the remaining work.
+> - **Skills/rules shipped:** `AiResource` kind shipped upstream via [backstage#34261](https://github.com/backstage/backstage/pull/34261) ([#33575](https://github.com/backstage/backstage/issues/33575) lineage). Decision 1 / OpenSpec may still spell `AIResource`; boost runtime already matches `AiResource` case-insensitively. Remaining work is docs/emitter alignment to canonical casing.
 >
 > The mapping scenarios below use Decision 1 as the baseline. The RHDHPLAN-1113 dual-path is no longer the primary narrative.
 
@@ -34,8 +34,8 @@ A design document MUST map current custom annotations to upstream entity kinds w
 
 - **WHEN** the migration document maps the `agent` category
 - **THEN** the migration document specifies:
-  - **Current:** `kind: Component`, `spec.type: ai-agent`, `rhdh.io/ai-asset-category: agent` (pending RHDHPLAN-1113)
-  - **Target:** No upstream kind via RFC #32062 (that RFC is MCP-only, not agent). Track agent-kind ownership under RHDHPLAN-1113.
+  - **Current:** `kind: Component`, `spec.type: ai-agent`, `rhdh.io/ai-asset-category: agent` (Decision 1 / boost today; RHDHPLAN-1113 owns agent-kind strategy)
+  - **Target:** No upstream kind via RFC #32062 (MCP-only). Downstream RHDH target from [rhdh-plugins#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164) (merged): `kind: AiResource`, `spec.type: agent` (`AgentAiResourceEntityV1alpha1`).
   - **Confidence:** Low
   - **Note:** RFC #32062 does **not** define `AIAgent`. Do not attribute agent kind to RFC #32062.
 
@@ -46,17 +46,17 @@ A design document MUST map current custom annotations to upstream entity kinds w
   - **Current:** `kind: API`, `spec.type: mcp-server`, `rhdh.io/ai-asset-category: mcp-server`
   - **Target:** Same — `kind: API`, `spec.type: mcp-server` (`McpServerApiEntity`). **No kind rename.**
   - **Confidence:** High (kind already aligned)
-  - **Remaining work:** Field/module gaps — adopt `spec.remotes` instead of `spec.definition`, opt in to `@backstage/plugin-catalog-backend-module-ai-model`. Flag fallback `Resource` entities.
+  - **Remaining work:** Field/module gaps — hard-replace legacy `spec.definition` with required `spec.remotes` (`McpServerApiEntity` has no `definition` field), opt in to `@backstage/plugin-catalog-backend-module-ai-model`. Flag fallback `Resource` entities.
 
 #### Scenario: Example mapping for skills and rules (RHIDP-15302)
 
-- **WHEN** upstream shipped `AiResource` kind (see [#33575](https://github.com/backstage/backstage/issues/33575) lineage)
+- **WHEN** upstream shipped `AiResource` kind via [backstage#34261](https://github.com/backstage/backstage/pull/34261) (see [#33575](https://github.com/backstage/backstage/issues/33575) lineage)
 - **THEN** the migration document specifies:
-  - **Skill — Current:** `kind: AIResource`, `spec.type: skill`, `rhdh.io/ai-asset-category: skill`
-  - **Rule — Current:** `kind: AIResource`, `spec.type: rule`, `rhdh.io/ai-asset-category: rule`
-  - **Target:** `AiResource` (shipped upstream)
+  - **Skill — Current:** `kind: AIResource` (Decision 1 spelling) / runtime often `AiResource`, `spec.type: skill`, `rhdh.io/ai-asset-category: skill`
+  - **Rule — Current:** `kind: AIResource` (Decision 1 spelling) / runtime often `AiResource`, `spec.type: rule`, `rhdh.io/ai-asset-category: rule`
+  - **Target:** `AiResource` (shipped upstream via #34261)
   - **Confidence:** Medium–High
-  - **Transformation:** Kind/name casing alignment (`AIResource` → `AiResource`) + field alignment per upstream schema
+  - **Transformation:** Docs/emitter casing alignment (`AIResource` → `AiResource`; filters already case-insensitive) + field alignment per upstream schema
 
 #### Scenario: Example mapping for AI models (RHIDP-15302)
 
@@ -88,10 +88,10 @@ A design document MUST map current custom annotations to upstream entity kinds w
 #### Scenario: Mapping for categories without upstream kinds (RHIDP-15302)
 
 - **WHEN** no upstream kind exists for `agent`, `ai-model`, or `skill-bundle`
-- **THEN** the migration document specifies: "No upstream kind defined yet. Continue using current mapping until upstream stabilizes."
+- **THEN** the migration document specifies: "No upstream kind defined yet. Continue using current mapping until upstream stabilizes." For `agent`, also documents the downstream #4164 `AiResource`/`agent` target while boost Decision 1 current remains `Component`/`ai-agent`.
 - **AND** the document tracks relevant upstream proposals or discussions
 
-> **Out of scope / TBD:** `vector-store` and `ai-tool` categories are not yet confirmed as AI-asset mapping rows. See [catalog-entities spec](../../../agent-creation-discovery/specs/catalog-entities/spec.md) for tracking.
+> **Out of scope / TBD:** `vector-store` and `ai-tool` are excluded from the seven-category upstream-migration SoT but remain recognized by boost `isAiAsset` / fixtures until explicitly retired. See [catalog-entities spec](../../../agent-creation-discovery/specs/catalog-entities/spec.md) for tracking.
 
 ### Requirement: Consumer-Facing Changes Identified
 
@@ -115,7 +115,7 @@ The migration document MUST identify consumer-facing changes when transitioning 
 
 #### Scenario: Queries and API calls impacted (RHIDP-15302)
 
-- **WHEN** API clients query `GET /api/catalog/entities?filter=kind=Resource,rhdh.io/ai-asset-category=model-server`
+- **WHEN** API clients query `GET /api/catalog/entities?filter=kind=Resource,metadata.annotations.rhdh.io/ai-asset-category=model-server`
 - **THEN** the migration document identifies: "If [#34476](https://github.com/backstage/backstage/pull/34476) merges, queries must change to `?filter=kind=API,spec.type=ai-model-server`. For MCP servers: no kind change needed (already `kind: API`)."
 
 #### Scenario: Backward compatibility strategy documented (RHIDP-15302)
