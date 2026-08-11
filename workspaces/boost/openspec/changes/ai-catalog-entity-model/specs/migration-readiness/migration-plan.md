@@ -11,7 +11,7 @@ This document maps current RHDH AI-asset entities (per
 documents field-level transformation rules, identifies consumer-facing
 impact, and specifies the backward compatibility strategy.
 
-This is **readiness design** --- it documents the migration path
+This is **readiness design** — it documents the migration path
 without executing migration. The actual migration is future work
 dependent on upstream RFC finalization.
 
@@ -26,7 +26,7 @@ continue to work through the transition.
 
 Key inputs:
 
-- [ai-catalog-entity-model/design.md Decision 1](../../design.md) ---
+- [ai-catalog-entity-model/design.md Decision 1](../../design.md) —
   current seven-category model.
 - Upstream RFCs/PRs: `McpServerApiEntity`
   ([#34016](https://github.com/backstage/backstage/pull/34016)),
@@ -48,7 +48,7 @@ Key inputs:
   tuple `(kind, namespace, name)`, so the change is an **identity cutover**
   (`resource:` -> `api:`), not an in-place rewrite of the same entity.
   Inbound relationships and hardcoded refs in other entities are **not**
-  automatically rewritten by the catalog --- a separate migration plan
+  automatically rewritten by the catalog — a separate migration plan
   for ref consumers is required (see [Future Work](#future-work)).
 - **Kind-filter breakage during transition:** Annotation retention
   supports **annotation-based** queries during the transition period, but
@@ -68,7 +68,7 @@ Key inputs:
 The following decisions are resolved and are not re-litigated here:
 
 - **Current-state SoT:**
-  [ai-catalog-entity-model/design.md Decision 1](../../design.md) ---
+  [ai-catalog-entity-model/design.md Decision 1](../../design.md) —
   seven categories (`agent`, `skill`, `rule`, `skill-bundle`,
   `mcp-server`, `ai-model`, `model-server`).
 - **MCP alignment:** RFC
@@ -102,12 +102,12 @@ The following decisions are resolved and are not re-litigated here:
 Each mapping carries a confidence level reflecting the maturity of the
 upstream target:
 
-| Level        | Meaning                                                   |
-| ------------ | --------------------------------------------------------- |
-| High         | Upstream kind shipped and stable; kind already aligned    |
-| Medium--High | Upstream kind shipped; field/name alignment work remains  |
-| Medium/Low   | Upstream target proposed in an open PR; hedge accordingly |
-| Low          | No solid upstream kind yet, or mapping is speculative     |
+| Level       | Meaning                                                   |
+| ----------- | --------------------------------------------------------- |
+| High        | Upstream kind shipped and stable; kind already aligned    |
+| Medium–High | Upstream kind shipped; field/name alignment work remains  |
+| Medium/Low  | Upstream target proposed in an open PR; hedge accordingly |
+| Low         | No solid upstream kind yet, or mapping is speculative     |
 
 ## Current-to-Upstream Mapping Table
 
@@ -117,15 +117,15 @@ Mapping tables reconciled via
 [#4188](https://github.com/redhat-developer/rhdh-plugins/issues/4188) /
 [#4189](https://github.com/redhat-developer/rhdh-plugins/pull/4189).
 
-| Category       | Current Kind | Current `spec.type` | Current Annotation                        | Upstream Target                                                                                                                                                               | Confidence   |
-| -------------- | ------------ | ------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------ |
-| `mcp-server`   | API          | `mcp-server`        | `rhdh.io/ai-asset-category: mcp-server`   | Same --- `McpServerApiEntity` ([#34016](https://github.com/backstage/backstage/pull/34016), merged)                                                                           | High         |
-| `skill`        | AIResource   | `skill`             | `rhdh.io/ai-asset-category: skill`        | `AiResource` ([#34261](https://github.com/backstage/backstage/pull/34261) merged; [#33575](https://github.com/backstage/backstage/issues/33575) lineage)                      | Medium--High |
-| `rule`         | AIResource   | `rule`              | `rhdh.io/ai-asset-category: rule`         | `AiResource` ([#34261](https://github.com/backstage/backstage/pull/34261) merged; [#33575](https://github.com/backstage/backstage/issues/33575) lineage)                      | Medium--High |
-| `model-server` | Resource     | `ai-model-server`   | `rhdh.io/ai-asset-category: model-server` | Candidate `API` / `ai-model-server` ([#34476](https://github.com/backstage/backstage/pull/34476), open)                                                                       | Medium/Low   |
-| `ai-model`     | Resource     | `ai-model`          | `rhdh.io/ai-asset-category: ai-model`     | No solid upstream kind yet                                                                                                                                                    | Low          |
-| `skill-bundle` | AIResource   | `ai-skill-bundle`   | `rhdh.io/ai-asset-category: skill-bundle` | No upstream kind                                                                                                                                                              | Low          |
-| `agent`        | Component    | `ai-agent`          | `rhdh.io/ai-asset-category: agent`        | No upstream kind via RFC #32062. Downstream target: `AiResource` / `agent` ([#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164), merged). Track RHDHPLAN-1113 | Low          |
+| Category       | Current Kind | Current `spec.type` | Current Annotation                        | Upstream Target                                                                                                                                                               | Confidence  |
+| -------------- | ------------ | ------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `mcp-server`   | API          | `mcp-server`        | `rhdh.io/ai-asset-category: mcp-server`   | Same — `McpServerApiEntity` ([#34016](https://github.com/backstage/backstage/pull/34016), merged)                                                                             | High        |
+| `skill`        | AIResource   | `skill`             | `rhdh.io/ai-asset-category: skill`        | `AiResource` ([#34261](https://github.com/backstage/backstage/pull/34261) merged; [#33575](https://github.com/backstage/backstage/issues/33575) lineage)                      | Medium–High |
+| `rule`         | AIResource   | `rule`              | `rhdh.io/ai-asset-category: rule`         | `AiResource` ([#34261](https://github.com/backstage/backstage/pull/34261) merged; [#33575](https://github.com/backstage/backstage/issues/33575) lineage)                      | Medium–High |
+| `model-server` | Resource     | `ai-model-server`   | `rhdh.io/ai-asset-category: model-server` | Candidate `API` / `ai-model-server` ([#34476](https://github.com/backstage/backstage/pull/34476), open)                                                                       | Medium/Low  |
+| `ai-model`     | Resource     | `ai-model`          | `rhdh.io/ai-asset-category: ai-model`     | No solid upstream kind yet                                                                                                                                                    | Low         |
+| `skill-bundle` | AIResource   | `ai-skill-bundle`   | `rhdh.io/ai-asset-category: skill-bundle` | No upstream kind                                                                                                                                                              | Low         |
+| `agent`        | Component    | `ai-agent`          | `rhdh.io/ai-asset-category: agent`        | No upstream kind via RFC #32062. Downstream target: `AiResource` / `agent` ([#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164), merged). Track RHDHPLAN-1113 | Low         |
 
 ### Notes
 
@@ -134,12 +134,20 @@ Mapping tables reconciled via
   frontend still classifies them via `isAiAsset`
   (`Resource` + `ai-tool` / `vector-store`) and sample fixtures until
   explicitly retired.
+- **Boost `isAiAsset` gap (`skill-bundle` / `model-server`):** Decision 1
+  includes `skill-bundle` (`spec.type: ai-skill-bundle`) and
+  `model-server` (`spec.type: ai-model-server`), but boost
+  `isAiAsset` / `buildCatalogFilter` do **not** track them today.
+  `AI_ASSET_SPEC_TYPES` covers `skill` / `rule`, `mcp-server`,
+  `ai-agent`, and `ai-model` / `ai-tool` / `vector-store` only. Catalog
+  UI Filters "current" rows for `skill-bundle` and `model-server` are
+  catalog/annotation query patterns, not boost frontend coverage yet.
 - **Model-server downstream work:**
   [rhdh-plugins#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211)
   adds the new type for AI model servers downstream (RHIDP-14258), using
   the catalog model layer system in the `ai-integrations` workspace.
   Upstream [backstage#34476](https://github.com/backstage/backstage/pull/34476)
-  proposes `kind: API` / `spec.type: ai-model-server` --- **not** a new
+  proposes `kind: API` / `spec.type: ai-model-server` — **not** a new
   kind named `ai-model-server`. Migration will be handled if/when the
   upstream PR merges.
 - **Agent dual baseline:**
@@ -151,7 +159,7 @@ Mapping tables reconciled via
   classifies). Migration path when boost adopts #4164:
   `Component`+`ai-agent` -> `AiResource`+`agent`. Agent-kind ownership
   remains under RHDHPLAN-1113. RFC #32062 does **not** define an
-  `AIAgent` kind --- do not attribute agent entity kind to that RFC.
+  `AIAgent` kind — do not attribute agent entity kind to that RFC.
 
 ## Field-Level Transformation Rules
 
@@ -173,10 +181,10 @@ Mapping tables reconciled via
   to `API` kind.
 - The `McpServerApiEntity` type
   ([backstage#34016](https://github.com/backstage/backstage/pull/34016))
-  replaces `ApiEntity` `spec` for `mcp-server` --- `spec.remotes` is
+  replaces `ApiEntity` `spec` for `mcp-server` — `spec.remotes` is
   required and there is no `definition` field on that subtype.
 
-### Skill (Confidence: Medium--High)
+### Skill (Confidence: Medium–High)
 
 **Kind change:** Docs/emitter casing alignment to canonical upstream
 `AiResource` (boost runtime filters already case-insensitive).
@@ -203,7 +211,7 @@ Mapping tables reconciled via
 - The `rhdh.io/ai-asset-category: skill` annotation is retained during
   transition.
 
-### Rule (Confidence: Medium--High)
+### Rule (Confidence: Medium–High)
 
 **Kind change:** Docs/emitter casing alignment to canonical upstream
 `AiResource` (same as skill).
@@ -253,13 +261,13 @@ Mapping tables reconciled via
   is adding the new type using the catalog model layer in
   `ai-integrations`; migration will happen if/when upstream merges.
 - The upstream direction is `kind: API` + `spec.type: ai-model-server`
-  --- **not** a new kind named `ai-model-server`.
+  — **not** a new kind named `ai-model-server`.
 
 ### AI Model (Confidence: Low)
 
 **Kind change:** None planned. No solid upstream kind exists.
 
-**Field-level transforms:** N/A --- no target to transform toward.
+**Field-level transforms:** N/A — no target to transform toward.
 
 **Recommendation:** Continue using current mapping
 (`kind: Resource`, `spec.type: ai-model`). Track future upstream
@@ -270,7 +278,7 @@ assign field-level transforms.
 
 **Kind change:** None planned. No upstream kind exists.
 
-**Field-level transforms:** N/A --- no target to transform toward.
+**Field-level transforms:** N/A — no target to transform toward.
 
 **Recommendation:** Stay on current mapping
 (`kind: AIResource`, `spec.type: ai-skill-bundle`). Track future
@@ -305,6 +313,11 @@ attribute agent kind to RFC #32062 (that RFC is MCP-only). Track:
   (merged; downstream `AiResource` agent type)
 
 ## Consumer-Facing Changes
+
+> **Boost frontend note:** Catalog filter patterns below for
+> `skill-bundle` and `model-server` are Decision 1 / catalog query
+> patterns. Boost `isAiAsset` / `buildCatalogFilter` do not yet include
+> those types — see [Notes](#notes).
 
 ### Catalog UI Filters
 
@@ -349,7 +362,7 @@ attribute agent kind to RFC #32062 (that RFC is MCP-only). Track:
 The `rhdh.io/ai-asset-category` annotation will be **retained on
 migrated entities for one major version** after upstream kind alignment
 is applied. This supports **annotation-based** queries during the
-transition period --- consumers can filter by
+transition period — consumers can filter by
 `metadata.annotations.rhdh.io/ai-asset-category=<category>` without
 depending on the entity's kind.
 
@@ -400,7 +413,7 @@ When upstream kinds stabilize and migration is executed:
    longer emits it. **Inbound relationships and hardcoded entity refs
    in other entities are not automatically rewritten**. A separate
    migration plan for ref consumers (relationship targets,
-   `spec.dependsOn` entries, etc.) is required --- see
+   `spec.dependsOn` entries, etc.) is required — see
    [Future Work](#future-work).
 3. **API query patterns** are documented in release notes with
    before/after examples.
@@ -436,15 +449,15 @@ transition.
 
 ## Upstream Tracking
 
-| Upstream Reference                                                              | Status  | Relevance                                              |
-| ------------------------------------------------------------------------------- | ------- | ------------------------------------------------------ |
-| [backstage#34016](https://github.com/backstage/backstage/pull/34016)            | Merged  | `McpServerApiEntity` --- MCP server kind               |
-| [backstage#34261](https://github.com/backstage/backstage/pull/34261)            | Merged  | `AiResource` kind implementation                       |
-| [backstage#33575](https://github.com/backstage/backstage/issues/33575)          | Open    | RFC / lineage for AI catalog kinds (`AIContext` RFC)   |
-| [backstage#34476](https://github.com/backstage/backstage/pull/34476)            | Open PR | `API` / `ai-model-server` candidate for model servers  |
-| [backstage#32062](https://github.com/backstage/backstage/issues/32062)          | Closed  | MCP RFC (Option 3 confirmed) --- **not** agent-related |
-| [rhdh-plugins#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211) | Open PR | Downstream model-server type (RHIDP-14258)             |
-| [rhdh-plugins#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164) | Merged  | Downstream `AiResource` agent type (RHIDP-15865)       |
+| Upstream Reference                                                              | Status  | Relevance                                             |
+| ------------------------------------------------------------------------------- | ------- | ----------------------------------------------------- |
+| [backstage#34016](https://github.com/backstage/backstage/pull/34016)            | Merged  | `McpServerApiEntity` — MCP server kind                |
+| [backstage#34261](https://github.com/backstage/backstage/pull/34261)            | Merged  | `AiResource` kind implementation                      |
+| [backstage#33575](https://github.com/backstage/backstage/issues/33575)          | Open    | RFC / lineage for AI catalog kinds (`AIContext` RFC)  |
+| [backstage#34476](https://github.com/backstage/backstage/pull/34476)            | Open PR | `API` / `ai-model-server` candidate for model servers |
+| [backstage#32062](https://github.com/backstage/backstage/issues/32062)          | Closed  | MCP RFC (Option 3 confirmed) — **not** agent-related  |
+| [rhdh-plugins#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211) | Open PR | Downstream model-server type (RHIDP-14258)            |
+| [rhdh-plugins#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164) | Merged  | Downstream `AiResource` agent type (RHIDP-15865)      |
 
 ## Out of Scope
 
@@ -501,17 +514,17 @@ transition.
 
 ## References
 
-- [ai-catalog-entity-model/design.md Decision 1](../../design.md) ---
+- [ai-catalog-entity-model/design.md Decision 1](../../design.md) —
   current-state source of truth
-- [migration-readiness/spec.md](spec.md) --- OpenSpec requirements
-- [upstream-schema-alignment/proposal.md](../../../upstream-schema-alignment/proposal.md) ---
+- [migration-readiness/spec.md](spec.md) — OpenSpec requirements
+- [upstream-schema-alignment/proposal.md](../../../upstream-schema-alignment/proposal.md) —
   upstream schema alignment proposal
-- [upstream-schema-alignment/design.md](../../../upstream-schema-alignment/design.md) ---
+- [upstream-schema-alignment/design.md](../../../upstream-schema-alignment/design.md) —
   upstream schema alignment design
-- [#4042](https://github.com/redhat-developer/rhdh-plugins/issues/4042) ---
+- [#4042](https://github.com/redhat-developer/rhdh-plugins/issues/4042) —
   tracking issue (narrowed to RHIDP-15302)
 - [#4188](https://github.com/redhat-developer/rhdh-plugins/issues/4188) /
-  [#4189](https://github.com/redhat-developer/rhdh-plugins/pull/4189) ---
+  [#4189](https://github.com/redhat-developer/rhdh-plugins/pull/4189) —
   mapping table reconciliation (merged)
-- [#4220](https://github.com/redhat-developer/rhdh-plugins/issues/4220) ---
+- [#4220](https://github.com/redhat-developer/rhdh-plugins/issues/4220) —
   sibling issue (RHIDP-15346 / RHIDP-15347)

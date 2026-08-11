@@ -1,9 +1,9 @@
 # AI Asset Upstream Migration Design
 
 > **Status: Pointer** — This file is a discoverability stub only.
->
-> **Last updated:** 2026-08-10
->
+
+**Date:** 2026-08-11
+
 > **Story:** RHIDP-15302 | **Feature:** RHDHPLAN-1507 — Epic RHIDP-15258
 > **Parent issue:** [#4042](https://github.com/redhat-developer/rhdh-plugins/issues/4042)
 
