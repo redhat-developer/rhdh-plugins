@@ -26,7 +26,7 @@ import {
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
   DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
 } from '../constants';
-import { JsonValue } from '@backstage/types';
+import type { JsonValue } from '@backstage/types';
 
 export type DoraDeploymentFrequencyConfig = {
   deploymentsCollector: CollectorConfig;

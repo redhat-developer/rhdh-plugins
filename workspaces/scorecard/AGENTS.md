@@ -13,9 +13,9 @@
 
 All metric IDs use `lowerCamelCase` with a `<provider>.<metricName>` format:
 
-- Provider prefix is lowercase: `github`, `jira`, `sonarqube`, `dependabot`, `openssf`, `filecheck`
+- Provider prefix is lowercase: `github`, `jira`, `sonarqube`, `dependabot`, `openssf`, `filecheck`, `dora`
 - Metric name is lowerCamelCase: `openPRs`, `qualityGate`, `ciiBestPractices`
-- Full ID examples: `github.openPRs`, `sonarqube.qualityGate`, `openssf.ciiBestPractices`
+- Full ID examples: `github.openPRs`, `sonarqube.qualityGate`, `openssf.ciiBestPractices`, `dora.deploymentFrequency`
 
 Never use snake_case for metric IDs. SonarQube API keys (e.g.,
 `security_rating`, `code_smells`) are external API field names and remain
@@ -34,6 +34,15 @@ snake_case in the API layer only -- they are not metric IDs.
 | Metric ID         | Type   | Source                      |
 | ----------------- | ------ | --------------------------- |
 | `jira.openIssues` | number | `JiraOpenIssuesProvider.ts` |
+
+### DORA (4 metrics)
+
+| Metric ID                       | Type   | Source                                       |
+| ------------------------------- | ------ | -------------------------------------------- |
+| `dora.deploymentFrequency`      | number | `DoraDeploymentFrequencyProvider.ts`         |
+| `dora.medianLeadTimeForChanges` | number | `DoraMedianLeadTimeForChangesProvider.ts`    |
+| `dora.meanTimeToRestore`        | number | `DoraMeanTimeToRestoreProvider.ts`           |
+| `dora.changeFailureRate`        | number | `DoraChangeFailureRateProvider.ts`           |
 
 ### Dependabot (4 metrics)
 
