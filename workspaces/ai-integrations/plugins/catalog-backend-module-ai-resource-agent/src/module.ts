@@ -15,7 +15,7 @@
  */
 
 import { createBackendModule } from '@backstage/backend-plugin-api';
-import { CatalogModelSources } from '@backstage/catalog-model/alpha';
+import type { CatalogModelSource } from '@backstage/catalog-model/alpha';
 import { catalogModelExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
 import { agentAiResourceEntityModel } from '@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent';
 
@@ -37,9 +37,12 @@ export const catalogModuleAiResourceAgent = createBackendModule({
         model: catalogModelExtensionPoint,
       },
       async init({ model }) {
-        model.addModelSource(
-          CatalogModelSources.static([agentAiResourceEntityModel]),
-        );
+        const source: CatalogModelSource = {
+          async *read() {
+            yield { data: [{ layer: agentAiResourceEntityModel }] };
+          },
+        };
+        model.addModelSource(source);
       },
     });
   },
