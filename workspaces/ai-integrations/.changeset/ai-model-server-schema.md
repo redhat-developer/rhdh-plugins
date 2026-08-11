@@ -2,6 +2,7 @@
 '@red-hat-developer-hub/backstage-plugin-catalog-model-ai-model-server': minor
 '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server': minor
 '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog': major
+'@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent': patch
 ---
 
 Add AiModelServerAPI kind (`spec.type: ai-model-server`) in a dedicated
