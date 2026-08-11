@@ -37,6 +37,7 @@ export const supportedFileTypes = {
 
 export const NOTEBOOK_MAX_FILES = 10;
 export const NOTEBOOK_MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
+export const NOTEBOOK_MAX_TITLE_LENGTH = 255;
 export const UNTITLED_NOTEBOOK_NAME = 'Untitled Notebook';
 
 export const NOTEBOOK_ALLOWED_EXTENSIONS: Record<string, string[]> = {
