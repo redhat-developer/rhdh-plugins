@@ -732,9 +732,9 @@ describe('LightspeedChat', () => {
         expect(screen.getByLabelText('Options')).toBeInTheDocument();
       });
 
-      expect(screen.queryByRole('tab', { name: 'Chat' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Chat' })).toBeInTheDocument();
       expect(
-        screen.queryByRole('tab', { name: 'Notebooks' }),
+        screen.getByRole('tab', { name: 'Notebooks' }),
       ).toBeInTheDocument();
     });
 
@@ -765,9 +765,9 @@ describe('LightspeedChat', () => {
         expect(screen.getByLabelText('Options')).toBeInTheDocument();
       });
 
-      expect(screen.queryByRole('tab', { name: 'Chat' })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: 'Chat' })).toBeInTheDocument();
       expect(
-        screen.queryByRole('tab', { name: 'Notebooks' }),
+        screen.getByRole('tab', { name: 'Notebooks' }),
       ).toBeInTheDocument();
     });
 

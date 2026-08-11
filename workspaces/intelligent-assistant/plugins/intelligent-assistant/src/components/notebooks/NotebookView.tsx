@@ -27,9 +27,6 @@ import {
 } from '@patternfly/chatbot';
 import {
   Alert,
-  AlertActionCloseButton,
-  AlertGroup,
-  AlertVariant,
   Button,
   Drawer,
   DrawerContent,
@@ -60,6 +57,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { NotebookSessionMetadata, SessionDocument } from '../../types';
 import { ChatbotFootnoteWithIcon } from '../../utils/lightspeed-chatbox-utils';
 import { LightspeedChatBox } from '../LightspeedChatBox';
+import { ToastAlertGroup } from '../ToastAlertGroup';
 import { AddDocumentModal } from './AddDocumentModal';
 import { DeleteDocumentModal } from './DeleteDocumentModal';
 import { DocumentSidebar } from './DocumentSidebar';
@@ -185,18 +183,6 @@ const useStyles = makeStyles(theme => ({
     width: '95%',
     maxWidth: 'unset',
     margin: '0 auto',
-  },
-  toastAlertGroup: {
-    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
-    '--pf-v6-c-alert-group--m-toast--ZIndex': '9999',
-  },
-  toastAlert: {
-    maxWidth: '350px',
-    '& .pf-v6-c-alert__title': {
-      margin: 0,
-    },
   },
   welcomeContainer: {
     display: 'flex',
@@ -695,32 +681,10 @@ export const NotebookView = ({
       className={classes.root}
       style={isCompact ? { position: 'relative' as const } : undefined}
     >
-      {toastAlerts.length > 0 && (
-        <AlertGroup
-          hasAnimations
-          isToast
-          isLiveRegion
-          className={classes.toastAlertGroup}
-        >
-          {toastAlerts.map(({ key, title, variant }) => (
-            <Alert
-              key={key}
-              variant={AlertVariant[variant ?? 'success']}
-              title={title}
-              className={classes.toastAlert}
-              timeout={2000}
-              onTimeout={() => handleRemoveToastAlert(key as React.Key)}
-              actionClose={
-                <AlertActionCloseButton
-                  title={title as string}
-                  variantLabel={`${variant ?? 'success'} alert`}
-                  onClose={() => handleRemoveToastAlert(key as React.Key)}
-                />
-              }
-            />
-          ))}
-        </AlertGroup>
-      )}
+      <ToastAlertGroup
+        alerts={toastAlerts}
+        onRemoveAlert={handleRemoveToastAlert}
+      />
       <Drawer
         isExpanded={!sidebarCollapsed}
         isInline

@@ -54,10 +54,6 @@ import {
 } from '@patternfly/chatbot';
 import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
 import {
-  Alert,
-  AlertActionCloseButton,
-  AlertGroup,
-  AlertVariant,
   DropdownItem,
   Label,
   MenuToggle,
@@ -132,6 +128,7 @@ import { NotebooksTab } from './notebooks/NotebooksTab';
 import { NotebookView } from './notebooks/NotebookView';
 import PermissionRequiredState from './PermissionRequiredState';
 import { RenameConversationModal } from './RenameConversationModal';
+import { ToastAlertGroup } from './ToastAlertGroup';
 
 const COLLAPSE_PANEL_ICON_SVG = `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16 21V3H14V21H16ZM12 17V7L7 12L12 17Z' fill='black'/%3E%3C/svg%3E") no-repeat center`;
 
@@ -456,18 +453,6 @@ const useStyles = makeStyles(theme => ({
   chatbotContentScrollNewChat: {
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default) !important',
-  },
-  toastAlertGroup: {
-    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
-    '--pf-v6-c-alert-group--m-toast--ZIndex': '9999',
-  },
-  toastAlert: {
-    maxWidth: '350px',
-    '& .pf-v6-c-alert__title': {
-      margin: 0,
-    },
   },
   // When present, pushes welcome content to bottom (zoom out). Scroll up to see important box (zoom in).
   chatbotContentSpacer: {
@@ -1907,32 +1892,10 @@ export const LightspeedChat = ({
 
   return (
     <>
-      {notebookAlerts.length > 0 && (
-        <AlertGroup
-          hasAnimations
-          isToast
-          isLiveRegion
-          className={classes.toastAlertGroup}
-        >
-          {notebookAlerts.map(({ key, title, variant }) => (
-            <Alert
-              key={key}
-              variant={AlertVariant[variant ?? 'success']}
-              title={title}
-              className={classes.toastAlert}
-              timeout={2000}
-              onTimeout={() => handleRemoveNotebookAlert(key as React.Key)}
-              actionClose={
-                <AlertActionCloseButton
-                  title={title as string}
-                  variantLabel={`${variant ?? 'success'} alert`}
-                  onClose={() => handleRemoveNotebookAlert(key as React.Key)}
-                />
-              }
-            />
-          ))}
-        </AlertGroup>
-      )}
+      <ToastAlertGroup
+        alerts={notebookAlerts}
+        onRemoveAlert={handleRemoveNotebookAlert}
+      />
       {isDeleteModalOpen && (
         <DeleteModal
           isOpen={isDeleteModalOpen}

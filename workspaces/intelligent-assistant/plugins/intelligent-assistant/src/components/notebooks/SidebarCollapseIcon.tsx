@@ -47,7 +47,8 @@ export const SidebarExpandIcon = ({ className, size = 24 }: IconProps) => (
   </svg>
 );
 
-type AddCircleFilledIconProps = IconProps & {
+type AddCircleFilledIconProps = {
+  className?: string;
   disabled?: boolean;
 };
 

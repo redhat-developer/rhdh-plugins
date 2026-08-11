@@ -67,18 +67,15 @@ export function useLightspeedProviderState(): {
     FileContent[]
   >([]);
   const [shellViewTab, setShellViewTabState] = useState(0);
-  const [activeNotebookId, setActiveNotebookIdState] = useState<
-    string | undefined
-  >(undefined);
+  const [activeNotebookId, setActiveNotebookId] = useState<string | undefined>(
+    undefined,
+  );
   const shellViewTabRef = useRef(shellViewTab);
   shellViewTabRef.current = shellViewTab;
   const setShellViewTab = useCallback((tab: number) => {
     const next = tab === 1 ? 1 : 0;
     shellViewTabRef.current = next;
     setShellViewTabState(next);
-  }, []);
-  const setActiveNotebookId = useCallback((id: string | undefined) => {
-    setActiveNotebookIdState(id);
   }, []);
   const openedViaFABRef = useRef(false);
   const dockedAfterLeavingFullscreenRef = useRef(false);

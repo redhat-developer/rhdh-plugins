@@ -28,48 +28,15 @@ import Typography from '@mui/material/Typography';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getScopedDialogProps } from '../../utils/scoped-dialog-utils';
 import { FileTypeIcon } from './FileTypeIcon';
+import { notebookDialogStyles } from './notebookDialogStyles';
 
 const useStyles = makeStyles(theme => ({
-  dialogPaper: {
-    borderRadius: 24,
-    maxWidth: 578,
-  },
-  dialogPaperCompact: {
-    borderRadius: 12,
-    maxWidth: '100%',
-  },
-  dialogTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '24px 24px 16px',
-  },
-  dialogTitleCompact: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '16px 16px 12px !important',
-  },
-  titleText: {
-    fontWeight: 500,
-    fontSize: '1.25rem',
-    lineHeight: '1.625rem',
-    letterSpacing: '-0.25px',
-  },
+  ...notebookDialogStyles(theme),
   titleTextCompact: {
     fontWeight: 600,
     fontSize: '1rem',
     lineHeight: '1.375rem',
     letterSpacing: '-0.25px',
-  },
-  closeButton: {
-    color: theme.palette.text.primary,
-  },
-  dialogContent: {
-    padding: '0 24px 24px',
-  },
-  dialogContentCompact: {
-    padding: '0 16px 16px !important',
   },
   fileList: {
     margin: 0,
