@@ -171,6 +171,8 @@ export class ArtifactKind {
   // (undocumented)
   static from(raw: string): ArtifactKind;
   // (undocumented)
+  isAdversarialReport(): boolean;
+  // (undocumented)
   isAnsibleProject(): boolean;
   // (undocumented)
   isMigratedSources(): boolean;
