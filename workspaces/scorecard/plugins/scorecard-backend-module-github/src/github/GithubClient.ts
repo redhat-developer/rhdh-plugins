@@ -238,7 +238,10 @@ export class GithubClient {
     repository: GithubRepository,
     baseSha: string,
     headSha: string,
+    options?: { fetchItemsLimit?: number },
   ): Promise<string[]> {
+    const fetchItemsLimit =
+      options?.fetchItemsLimit ?? DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT;
     const octokit = await this.getOctokitRestClient(url);
 
     const basehead = `${baseSha}...${headSha}`;
@@ -253,12 +256,29 @@ export class GithubClient {
       per_page: GITHUB_BATCH_SIZE,
       page: 1,
     });
-    commitShas.push(...firstPage.data.commits.map(commit => commit.sha));
 
-    const totalPages = Math.ceil(
-      firstPage.data.total_commits / GITHUB_BATCH_SIZE,
-    );
-    for (let page = 2; page <= totalPages; page++) {
+    const totalCommits = firstPage.data.total_commits;
+    const appendCommits = (commits: Array<{ sha: string }>) => {
+      const remaining = fetchItemsLimit - commitShas.length;
+      if (remaining <= 0) {
+        return;
+      }
+      const pageShas = commits.map(commit => commit.sha);
+      commitShas.push(
+        ...(pageShas.length > remaining
+          ? pageShas.slice(0, remaining)
+          : pageShas),
+      );
+    };
+
+    appendCommits(firstPage.data.commits);
+
+    const totalPages = Math.ceil(totalCommits / GITHUB_BATCH_SIZE);
+    for (
+      let page = 2;
+      page <= totalPages && commitShas.length < fetchItemsLimit;
+      page++
+    ) {
       const response = await octokit.repos.compareCommitsWithBasehead({
         owner: repository.owner,
         repo: repository.repo,
@@ -266,7 +286,13 @@ export class GithubClient {
         per_page: GITHUB_BATCH_SIZE,
         page,
       });
-      commitShas.push(...response.data.commits.map(commit => commit.sha));
+      appendCommits(response.data.commits);
+    }
+
+    if (totalCommits > fetchItemsLimit) {
+      this.logger.warn(
+        `Reached fetchItemsLimit of ${fetchItemsLimit} for commits between ${baseSha}...${headSha} in ${repository.owner}/${repository.repo}; stopping fetch (${totalCommits} commits reported)`,
+      );
     }
 
     return Array.from(new Set(commitShas));

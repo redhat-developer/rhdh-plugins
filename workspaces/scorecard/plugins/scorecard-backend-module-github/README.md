@@ -132,6 +132,7 @@ metadata:
 - **Behavior**
   - The collector resolves commits between `baseCommitSha` and `headCommitSha`, collects associated pull requests for those commits, and de-duplicates pull requests by PR number.
   - `firstCommitAt` is the timestamp of the first commit returned for that pull request (Pull requests with missing `firstCommitAt` are skipped)
+  - Client-side fetch cap: at most **1000** commits are fetched for the `baseCommitSha...headCommitSha` compare range. Pagination stops once the cap is reached
 
 For a complete collector implementation guide, see [collectors.md](../scorecard-backend/docs/collectors.md).
 

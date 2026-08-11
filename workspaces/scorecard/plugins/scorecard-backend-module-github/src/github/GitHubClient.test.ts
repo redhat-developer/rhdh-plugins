@@ -585,6 +585,101 @@ describe('GithubClient', () => {
       );
       expect(getCredentialsSpy).toHaveBeenCalledWith({ url });
     });
+
+    it('should stop paging once fetchItemsLimit of commits is reached', async () => {
+      const url = `https://github.com/owner/repo`;
+      mockedCompareCommitsWithBasehead
+        .mockResolvedValueOnce({
+          data: {
+            total_commits: 250,
+            commits: [{ sha: 'sha-1' }, { sha: 'sha-2' }],
+          },
+        })
+        .mockResolvedValueOnce({
+          data: {
+            total_commits: 250,
+            commits: [{ sha: 'sha-3' }, { sha: 'sha-4' }],
+          },
+        });
+
+      const commitShas = await githubClient.getCommitShasBetween(
+        url,
+        repository,
+        'sha-base',
+        'sha-head',
+        { fetchItemsLimit: 3 },
+      );
+
+      expect(commitShas).toEqual(['sha-1', 'sha-2', 'sha-3']);
+      expect(mockedCompareCommitsWithBasehead).toHaveBeenCalledTimes(2);
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        'Reached fetchItemsLimit of 3 for commits between sha-base...sha-head in owner/repo; stopping fetch (250 commits reported)',
+      );
+    });
+
+    it('should take only remaining items when the first page exceeds fetchItemsLimit', async () => {
+      const url = `https://github.com/owner/repo`;
+      mockedCompareCommitsWithBasehead.mockResolvedValueOnce({
+        data: {
+          total_commits: 5,
+          commits: [
+            { sha: 'sha-1' },
+            { sha: 'sha-2' },
+            { sha: 'sha-3' },
+            { sha: 'sha-4' },
+          ],
+        },
+      });
+
+      const commitShas = await githubClient.getCommitShasBetween(
+        url,
+        repository,
+        'sha-base',
+        'sha-head',
+        { fetchItemsLimit: 2 },
+      );
+
+      expect(commitShas).toEqual(['sha-1', 'sha-2']);
+      expect(mockedCompareCommitsWithBasehead).toHaveBeenCalledTimes(1);
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        'Reached fetchItemsLimit of 2 for commits between sha-base...sha-head in owner/repo; stopping fetch (5 commits reported)',
+      );
+    });
+
+    it('should take only remaining items when a later page exceeds fetchItemsLimit', async () => {
+      const url = `https://github.com/owner/repo`;
+      mockedCompareCommitsWithBasehead
+        .mockResolvedValueOnce({
+          data: {
+            total_commits: 250,
+            commits: [{ sha: 'sha-1' }, { sha: 'sha-2' }, { sha: 'sha-3' }],
+          },
+        })
+        .mockResolvedValueOnce({
+          data: {
+            total_commits: 250,
+            commits: [{ sha: 'sha-4' }, { sha: 'sha-5' }, { sha: 'sha-6' }],
+          },
+        });
+
+      const commitShas = await githubClient.getCommitShasBetween(
+        url,
+        repository,
+        'sha-base',
+        'sha-head',
+        { fetchItemsLimit: 4 },
+      );
+
+      expect(commitShas).toEqual(['sha-1', 'sha-2', 'sha-3', 'sha-4']);
+      expect(mockedCompareCommitsWithBasehead).toHaveBeenCalledTimes(2);
+      expect(mockedCompareCommitsWithBasehead).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ page: 2 }),
+      );
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        'Reached fetchItemsLimit of 4 for commits between sha-base...sha-head in owner/repo; stopping fetch (250 commits reported)',
+      );
+    });
   });
 
   describe('getWorkflowRuns', () => {

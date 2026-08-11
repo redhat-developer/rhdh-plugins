@@ -18,7 +18,7 @@ export const GITHUB_PROJECT_ANNOTATION = 'github.com/project-slug';
 export const GITHUB_BATCH_SIZE = 100;
 
 /**
- * Default client-side cap for deployment list fetches (GitHub deployments and
- * deployment workflow runs).
+ * Default client-side cap for GitHub list/compare fetches (deployments,
+ * deployment workflow runs, and commits between SHAs).
  */
 export const DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT = 1000;
