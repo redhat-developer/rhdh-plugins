@@ -97,7 +97,7 @@ describe('CodecovMetricProvider', () => {
 
     it('returns codecov as provider ID', () => {
       const provider = CodecovMetricProvider.fromConfig(config, logger);
-      expect(provider.getProviderId()).toBe('codecov');
+      expect(provider.getProviderId()).toBe('codecov.coverageReport');
     });
 
     it('returns catalog filter for codecov.io/repo annotation', () => {

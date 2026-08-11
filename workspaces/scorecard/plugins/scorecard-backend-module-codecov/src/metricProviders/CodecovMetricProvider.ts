@@ -134,7 +134,7 @@ export class CodecovMetricProvider implements MetricProvider<'number'> {
   }
 
   getProviderId(): string {
-    return 'codecov';
+    return 'codecov.coverageReport';
   }
 
   getMetrics(): Metric<'number'>[] {
