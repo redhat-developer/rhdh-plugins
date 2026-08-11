@@ -69,14 +69,18 @@ export function isAiModelServerApiEntity(
 export const aiModelServerApiEntityModel = createCatalogModelLayer({
   layerId: 'redhat.com/kind-ai-model-server-api',
   builder: model => {
-    model.addKindVersion({
-      kind: 'AiModelServerAPI',
+    model.addKind({
+      group: 'backstage.io',
+      names: {
+        kind: 'AiModelServerAPI',
+        singular: 'aimodelserverapi',
+        plural: 'aimodelserverapies',
+      },
+      description: 'An AI model server exposed as an AiModelServerAPI entity.',
       versions: [
         {
           name: ['v1alpha1', 'v1beta1'],
           specType: 'ai-model-server',
-          description:
-            'An AI model server exposed as an AiModelServerAPI entity.',
           relationFields: [
             {
               selector: { path: 'spec.owner' },
