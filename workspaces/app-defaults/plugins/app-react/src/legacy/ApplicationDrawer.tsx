@@ -16,14 +16,14 @@
 
 import { useEffect, useRef } from 'react';
 
-import { useAppDrawer } from '../hooks/useAppDrawer';
+import { useAppDrawer } from '../drawer/hooks/useAppDrawer';
 import { DrawerPanel } from './DrawerPanel';
-import type { AppDrawerContent } from '../types';
+import type { AppDrawerContent } from '../drawer/types';
 
 const DEFAULT_WIDTH = 500;
 
 /**
- * Props for {@link ApplicationDrawer}.
+ * Props for ApplicationDrawer.
  *
  * @public
  */

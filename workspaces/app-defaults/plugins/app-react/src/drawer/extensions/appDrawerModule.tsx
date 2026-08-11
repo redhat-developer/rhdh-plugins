@@ -20,7 +20,7 @@ import {
 } from '@backstage/frontend-plugin-api';
 import { AppRootWrapperBlueprint } from '@backstage/plugin-app-react';
 
-import { ApplicationDrawer } from '../components/ApplicationDrawer';
+import { ApplicationDrawer } from '../../legacy/ApplicationDrawer';
 import { appDrawerContentDataRef } from './appDrawerContentDataRef';
 
 /**
@@ -31,7 +31,7 @@ import { appDrawerContentDataRef } from './appDrawerContentDataRef';
  * Drawer state is managed by a global singleton store (see drawerStore.ts)
  * rather than a React context provider.
  *
- * @alpha
+ * @public
  */
 export const appDrawerExtension = AppRootWrapperBlueprint.makeWithOverrides({
   name: 'drawer',
@@ -53,7 +53,7 @@ export const appDrawerExtension = AppRootWrapperBlueprint.makeWithOverrides({
  * Registers a wrapper extension that renders the drawer and accepts
  * drawer content contributions via inputs.
  *
- * @alpha
+ * @public
  */
 export const appDrawerModule = createFrontendModule({
   pluginId: 'app',

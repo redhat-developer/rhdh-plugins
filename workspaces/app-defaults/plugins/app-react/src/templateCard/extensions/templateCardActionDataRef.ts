@@ -22,7 +22,7 @@ import type { TemplateCardActionData } from '../types';
  * Extension data ref carrying a custom action component from a plugin to the
  * template card.
  *
- * @alpha
+ * @public
  */
 export const templateCardActionDataRef =
   createExtensionDataRef<TemplateCardActionData>().with({

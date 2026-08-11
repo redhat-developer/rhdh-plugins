@@ -19,7 +19,7 @@ import { ComponentType } from 'react';
 /**
  * Props passed to a custom template card action component.
  *
- * @alpha
+ * @public
  */
 export interface TemplateCardActionProps {
   /** The current template entity. */
@@ -33,7 +33,7 @@ export interface TemplateCardActionProps {
 /**
  * Data carried by a template card action extension.
  *
- * @alpha
+ * @public
  */
 export interface TemplateCardActionData {
   /** The component that renders the action button. */
@@ -43,7 +43,7 @@ export interface TemplateCardActionData {
 /**
  * Data carried by a template card badge extension.
  *
- * @alpha
+ * @public
  */
 export interface TemplateCardBadgeData {
   /** The component that renders the badge. */
