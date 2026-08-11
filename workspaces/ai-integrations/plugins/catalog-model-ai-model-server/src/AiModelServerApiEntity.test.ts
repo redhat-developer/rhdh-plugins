@@ -27,7 +27,7 @@ function makeMinimalEntity(
 ): Entity {
   return {
     apiVersion: 'backstage.io/v1alpha1',
-    kind: 'API',
+    kind: 'AiModelServerAPI',
     metadata: { name: 'test-ai-model-server' },
     spec: {
       type: 'ai-model-server',
@@ -44,7 +44,7 @@ function makeMinimalEntity(
 function makeFullEntity(): Entity {
   return {
     apiVersion: 'backstage.io/v1alpha1',
-    kind: 'API',
+    kind: 'AiModelServerAPI',
     metadata: {
       name: 'full-ai-model-server',
       title: 'Full AI Model Server',

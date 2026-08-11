@@ -1,5 +1,5 @@
 apiVersion: backstage.io/v1alpha1
-kind: API
+kind: AiModelServerAPI
 metadata:
   name: local-inference-server
   description: A locally hosted AI model server exposing an OpenAI-compatible inference API

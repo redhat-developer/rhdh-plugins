@@ -20,11 +20,11 @@ import { catalogModelExtensionPoint } from '@backstage/plugin-catalog-node/alpha
 import { aiModelServerApiEntityModel } from '@red-hat-developer-hub/backstage-plugin-catalog-model-ai-model-server';
 
 /**
- * Registers the ai-model-server specType for the API kind in the catalog.
+ * Registers the AiModelServerAPI kind in the catalog.
  *
- * Follows the upstream pattern established by
- * `@backstage/plugin-catalog-backend-module-ai-model` which registers
- * ai-model-server via `catalogModelExtensionPoint.addModelSource`.
+ * Uses a dedicated kind to avoid colliding with the upstream API kind.
+ * When backstage/backstage#34476 merges, this module can be replaced
+ * by the upstream `@backstage/plugin-catalog-backend-module-ai-model`.
  *
  * @public
  */

@@ -15,8 +15,8 @@
  */
 
 /**
- * Catalog model types, validator, and CatalogModelLayer for API
- * ai-model-server entities (spec.type: ai-model-server).
+ * Catalog model types, validator, and CatalogModelLayer for
+ * AiModelServerAPI entities (spec.type: ai-model-server).
  *
  * @packageDocumentation
  */

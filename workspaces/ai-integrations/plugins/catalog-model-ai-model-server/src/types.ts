@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-import type { ApiEntityV1alpha1 } from '@backstage/catalog-model';
+import type { Entity } from '@backstage/catalog-model';
 
 /**
- * An AI model server represented as an API entity
- * (spec.type: 'ai-model-server').
+ * An AI model server represented as a dedicated AiModelServerAPI entity
+ * kind with spec.type: 'ai-model-server' as discriminant.
  *
- * Follows the upstream schema from backstage/backstage#34476. Required
- * fields are `serverType` and `serverUrl`; the standard `definition`
- * field from `ApiEntityV1alpha1` is replaced by purpose-built fields.
+ * The schema mirrors upstream backstage/backstage#34476 exactly. When
+ * that PR lands and adds ai-model-server as a specType on the upstream
+ * API kind, a migration processor can convert AiModelServerAPI entities
+ * into API entities with spec.type: 'ai-model-server'.
  *
  * @public
  */
-export interface AiModelServerApiEntity
-  extends Omit<ApiEntityV1alpha1, 'spec'> {
+export interface AiModelServerApiEntity extends Entity {
+  kind: 'AiModelServerAPI';
   spec: {
     /** Must be 'ai-model-server'. */
     type: 'ai-model-server';

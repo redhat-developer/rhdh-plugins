@@ -1,11 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "$id": "ApiV1alpha1AiModelServer",
-  "description": "An AI model server exposed as an API entity. See RFC backstage/backstage#33060.",
+  "$id": "AiModelServerAPIV1alpha1",
+  "description": "An AI model server exposed as an AiModelServerAPI entity. See RFC backstage/backstage#33060.",
   "examples": [
     {
       "apiVersion": "backstage.io/v1alpha1",
-      "kind": "API",
+      "kind": "AiModelServerAPI",
       "metadata": {
         "name": "openai-server",
         "title": "OpenAI",
@@ -38,7 +38,7 @@
           "enum": ["backstage.io/v1alpha1", "backstage.io/v1beta1"]
         },
         "kind": {
-          "enum": ["API"]
+          "enum": ["AiModelServerAPI"]
         },
         "spec": {
           "type": "object",

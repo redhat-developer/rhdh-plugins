@@ -49,29 +49,34 @@ export const aiModelServerApiEntityValidator: KindValidator = {
 export function isAiModelServerApiEntity(
   entity: Entity,
 ): entity is AiModelServerApiEntity {
-  return entity.kind === 'API' && entity.spec?.type === 'ai-model-server';
+  return (
+    entity.kind === 'AiModelServerAPI' &&
+    entity.spec?.type === 'ai-model-server'
+  );
 }
 
 /**
- * Extends the catalog model with the ai-model-server specType for the
- * API kind.
+ * Registers the AiModelServerAPI kind in the catalog model.
  *
- * Follows the upstream pattern from backstage/backstage#34476, using
- * `addKindVersion` to register the ai-model-server JSON schema under
- * both `v1alpha1` and `v1beta1`.
+ * Uses a dedicated kind to avoid colliding with the upstream API kind's
+ * specType registrations. The schema mirrors backstage/backstage#34476
+ * exactly; when that PR lands upstream, a migration processor can
+ * convert AiModelServerAPI entities into API entities with
+ * spec.type: 'ai-model-server'.
  *
  * @public
  */
 export const aiModelServerApiEntityModel = createCatalogModelLayer({
-  layerId: 'redhat.com/kind-api-ai-model-server',
+  layerId: 'redhat.com/kind-ai-model-server-api',
   builder: model => {
     model.addKindVersion({
-      kind: 'API',
+      kind: 'AiModelServerAPI',
       versions: [
         {
           name: ['v1alpha1', 'v1beta1'],
           specType: 'ai-model-server',
-          description: 'An AI model server exposed as an API entity.',
+          description:
+            'An AI model server exposed as an AiModelServerAPI entity.',
           relationFields: [
             {
               selector: { path: 'spec.owner' },
