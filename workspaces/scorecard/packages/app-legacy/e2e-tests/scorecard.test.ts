@@ -317,14 +317,15 @@ test.describe('Scorecard Plugin Tests', () => {
   });
 
   test.describe('SonarQube Entity Scorecards', () => {
-    test('Verify all SonarQube metrics display correctly', async ({
-      browser,
-    }, testInfo) => {
-      const sonarqubeMetrics = Object.entries(translations.metric)
+    test.skip(
+      process.env.APP_MODE === 'nfs',
+      'Legacy-only: NFS uses grouped metric cards',
+    );
+
+    test('Verify all SonarQube metrics display correctly', async ({}, testInfo) => {
+      const sonarqubeMetricTitles = Object.entries(translations.metric)
         .filter(([key]) => key.startsWith('sonarqube.'))
-        .map(
-          ([_key, value]) => value as { title: string; description: string },
-        );
+        .map(([, value]) => (value as { title: string }).title);
 
       await mockSonarqubeScorecardResponse(page, sonarqubeScorecardResponse);
 
@@ -332,12 +333,10 @@ test.describe('Scorecard Plugin Tests', () => {
       await catalogPage.openComponent('sonarqube-scorecard-only');
       await page.getByText('Scorecard', { exact: true }).click();
 
-      for (const sonarqubeMetric of sonarqubeMetrics) {
+      for (const title of sonarqubeMetricTitles) {
         await expect(
-          page.getByText(sonarqubeMetric.title, { exact: true }).first(),
-        ).toBeVisible({
-          timeout: 10000,
-        });
+          page.getByText(title, { exact: true }).first(),
+        ).toBeVisible({ timeout: 10000 });
       }
 
       await runAccessibilityTests(page, testInfo);
@@ -351,21 +350,25 @@ test.describe('Scorecard Plugin Tests', () => {
       await page.getByText('Scorecard', { exact: true }).click();
 
       await expect(
-        page.getByText(translations.metric['sonarqube.qualityGate'].title),
+        page.getByText(translations.metric['sonarqube.securityIssues'].title, {
+          exact: true,
+        }),
       ).toBeVisible({ timeout: 10000 });
 
       const expectedValues: Record<string, string> = {
-        [translations.metric['sonarqube.openIssues'].title]: '3',
-        [translations.metric['sonarqube.securityRating'].title]: '1',
         [translations.metric['sonarqube.securityIssues'].title]: '0',
         [translations.metric['sonarqube.securityReviewRating'].title]: '1',
-        [translations.metric['sonarqube.securityHotspots'].title]: '2',
         [translations.metric['sonarqube.reliabilityRating'].title]: '1',
         [translations.metric['sonarqube.reliabilityIssues'].title]: '0',
-        [translations.metric['sonarqube.maintainabilityRating'].title]: '1',
         [translations.metric['sonarqube.maintainabilityIssues'].title]: '12',
-        [translations.metric['sonarqube.codeCoverage'].title]: '82.5',
         [translations.metric['sonarqube.codeDuplications'].title]: '3.2',
+        [translations.metric['sonarqube.qualityGate'].title]:
+          translations.thresholds.success,
+        [translations.metric['sonarqube.openIssues'].title]: '3',
+        [translations.metric['sonarqube.securityRating'].title]: '1',
+        [translations.metric['sonarqube.securityHotspots'].title]: '2',
+        [translations.metric['sonarqube.maintainabilityRating'].title]: '1',
+        [translations.metric['sonarqube.codeCoverage'].title]: '82.5',
       };
 
       for (const [title, value] of Object.entries(expectedValues)) {
@@ -397,16 +400,13 @@ test.describe('Scorecard Plugin Tests', () => {
       await catalogPage.openComponent('sonarqube-scorecard-only');
       await page.getByText('Scorecard', { exact: true }).click();
 
-      await expect(
-        page.getByText(translations.metric['sonarqube.qualityGate'].title),
-      ).toBeVisible({ timeout: 10000 });
-
       const qualityGateCard = page
         .locator('[role="article"]')
         .filter({
-          hasText: translations.metric['sonarqube.qualityGate'].description,
+          hasText: translations.metric['sonarqube.qualityGate'].title,
         })
         .first();
+      await expect(qualityGateCard).toBeVisible({ timeout: 10000 });
       await expect(
         qualityGateCard.getByTestId('DangerousOutlinedIcon'),
       ).toBeVisible();
