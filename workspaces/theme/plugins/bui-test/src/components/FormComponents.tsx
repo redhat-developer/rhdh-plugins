@@ -100,8 +100,8 @@ const Checkboxes = () => {
     <Flex>
       <Text>Checkboxes</Text>
       <Flex align="center">
-        <Checkbox> </Checkbox>
-        <Checkbox defaultSelected> </Checkbox>
+        <Checkbox aria-label="Checkbox" />
+        <Checkbox aria-label="Checkbox" defaultSelected />
         <Checkbox>Checkbox</Checkbox>
         <Checkbox defaultSelected>Checkbox</Checkbox>
       </Flex>
@@ -114,8 +114,8 @@ const Switches = () => {
     <Flex>
       <Text>Switches</Text>
       <Flex align="center">
-        <Switch />
-        <Switch isSelected />
+        <Switch aria-label="Switch" />
+        <Switch aria-label="Switch" isSelected />
         <Switch label="Switch" />
         <Switch label="Switch" isSelected />
       </Flex>
