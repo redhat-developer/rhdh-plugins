@@ -454,8 +454,7 @@ const useStyles = makeStyles(theme => ({
     flex: 1,
     minHeight: 0,
     '&.pf-chatbot__settings-form-container': {
-      background:
-        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      background: 'var(--pf-t--global--background--color--floating--default)',
       padding: 0,
       margin: 0,
       minHeight: 0,
@@ -471,8 +470,7 @@ const useStyles = makeStyles(theme => ({
     '& .pf-chatbot__settings-form': {
       margin: 0,
       padding: 0,
-      background:
-        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      background: 'var(--pf-t--global--background--color--floating--default)',
       minHeight: 0,
       flex: 1,
       display: 'flex',
@@ -482,8 +480,7 @@ const useStyles = makeStyles(theme => ({
       border: 'none',
     },
     '& .pf-chatbot__settings-form-row': {
-      background:
-        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      background: 'var(--pf-t--global--background--color--floating--default)',
       border: 'none',
       margin: 0,
       padding: 0,
@@ -523,7 +520,7 @@ const useStyles = makeStyles(theme => ({
     minWidth: 0,
     borderLeft: `1px solid ${theme.palette.divider}`,
     backgroundColor:
-      'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      'var(--pf-t--global--background--color--floating--default)',
     display: 'flex',
     flexDirection: 'column',
     minHeight: 0,
