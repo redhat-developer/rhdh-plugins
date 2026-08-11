@@ -8,11 +8,14 @@ import type { AgentRecord } from '@red-hat-developer-hub/backstage-plugin-boost-
 import type { ApprovalRequest } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { BackendFeature } from '@backstage/backend-plugin-api';
 import type { CacheService } from '@backstage/backend-plugin-api';
+import type { ConnectorHealthStatus } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { ConversationDetails } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { ConversationMessage } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { ConversationSummary } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { DatabaseService } from '@backstage/backend-plugin-api';
+import type { ErrorSummary } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { FeedbackRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { HealthStatus } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { HttpAuthService } from '@backstage/backend-plugin-api';
 import type { LifecycleStage } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { LoggerService } from '@backstage/backend-plugin-api';
@@ -29,6 +32,7 @@ import type { RequestHandler } from 'express';
 import type { RootConfigService } from '@backstage/backend-plugin-api';
 import { Router } from 'express';
 import { ServiceFactory } from '@backstage/backend-plugin-api';
+import type { SyncAttemptRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { ToolRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { z } from 'zod';
 
@@ -231,6 +235,11 @@ export interface ChatRoutesOptions {
 }
 
 // @public
+export interface ClassifyOptions {
+  connectorType?: string;
+}
+
+// @public
 export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
   configScope: ConfigScope;
   description: string;
@@ -240,6 +249,26 @@ export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
 
 // @public
 export type ConfigScope = 'yaml-only' | 'db-overridable' | 'db-only';
+
+// @public
+export interface ConnectorCandidate {
+  connectorId: string;
+  connectorType: string;
+  runtimeEnabled: boolean;
+  startupEnabled: boolean;
+}
+
+// @public
+export class ConnectorConfigReader {
+  constructor(options: ConnectorConfigReaderOptions);
+  listCandidates(): ConnectorCandidate[];
+}
+
+// @public
+export interface ConnectorConfigReaderOptions {
+  config: RootConfigService;
+  logger: LoggerService;
+}
 
 // @public
 export class ConversationAgentCache {
@@ -336,6 +365,11 @@ export function createConversationRoutes(
 ): Router;
 
 // @public
+export function createIngestionHealthRoutes(
+  options: IngestionHealthRoutesOptions,
+): Router;
+
+// @public
 export function createKagentiAdminRoutes(
   options: KagentiAdminRoutesOptions,
 ): Router;
@@ -365,6 +399,34 @@ export class DocumentSyncService {
 // @public
 export interface DocumentSyncServiceOptions {
   cache: CacheService;
+  logger: LoggerService;
+}
+
+// @public
+export class ErrorClassifier {
+  static classify(error: unknown, options?: ClassifyOptions): ErrorSummary;
+}
+
+// @public
+export class HealthStatusService {
+  constructor(options: HealthStatusServiceOptions);
+  static deriveStatus(attempts: SyncAttemptRecord[]): HealthStatus;
+  getHealthStatuses(
+    includeDisabled?: boolean,
+  ): Promise<ConnectorHealthStatus[]>;
+}
+
+// @public
+export interface HealthStatusServiceOptions {
+  configReader: ConnectorConfigReader;
+  logger: LoggerService;
+  repository: SyncAttemptsRepository;
+}
+
+// @public
+export interface IngestionHealthRoutesOptions {
+  healthService: HealthStatusService;
+  httpAuth: HttpAuthService;
   logger: LoggerService;
 }
 
@@ -497,6 +559,41 @@ export interface SkillsRoutesOptions {
   httpAuth: HttpAuthService;
   logger: LoggerService;
   permissions: PermissionsService;
+}
+
+// @public
+export class SyncAttemptsRepository {
+  constructor(options: SyncAttemptsRepositoryOptions);
+  cleanupOldAttempts(
+    connectorId: string,
+    retentionLimit: number,
+  ): Promise<number>;
+  getDistinctConnectorIds(): Promise<string[]>;
+  getLatestAttempts(
+    connectorId: string,
+    limit?: number,
+  ): Promise<SyncAttemptRecord[]>;
+  getLatestAttemptsForAll(
+    connectorIds: string[],
+    limit?: number,
+  ): Promise<Map<string, SyncAttemptRecord[]>>;
+  insertSyncAttempt(attempt: {
+    id: string;
+    connectorId: string;
+    outcome: 'success' | 'failure';
+    errorType?: string | null;
+    errorMessage?: string | null;
+    assetsAdded?: number;
+    assetsUpdated?: number;
+    assetsRemoved?: number;
+    durationMs?: number;
+  }): Promise<SyncAttemptRecord>;
+}
+
+// @public
+export interface SyncAttemptsRepositoryOptions {
+  database: DatabaseService;
+  logger: LoggerService;
 }
 
 // @public
