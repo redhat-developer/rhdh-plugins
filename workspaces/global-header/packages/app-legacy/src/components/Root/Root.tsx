@@ -35,7 +35,7 @@ import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import {
   GlobalHeaderComponent,
   defaultGlobalHeaderComponentsMountPoints,
-} from '@red-hat-developer-hub/backstage-plugin-global-header';
+} from '@red-hat-developer-hub/backstage-plugin-global-header/legacy';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 
 /** This component is copy pasted from RHDH and should be kept in sync. */

@@ -2,7 +2,7 @@
 
 ## Context
 
-The AI Catalog entity model establishes RHDH's standardized approach to classifying, versioning, and tracking AI assets from heterogeneous sources. The Backstage catalog has no built-in entity kinds for agents, skills, models, or MCP servers. Upstream RFCs #32062 (AI Agent kind) and #33060 (AI Model kind) propose first-class kinds, but they're not yet merged or stabilized.
+The AI Catalog entity model establishes RHDH's standardized approach to classifying, versioning, and tracking AI assets from heterogeneous sources. The Backstage catalog has no built-in entity kinds for agents, skills, models, or MCP servers. Upstream developments include: RFC [#32062](https://github.com/backstage/backstage/issues/32062) Option 3 shipped as `McpServerApiEntity` ([backstage#34016](https://github.com/backstage/backstage/pull/34016)) for MCP servers, `AiResource` shipped upstream ([#33575](https://github.com/backstage/backstage/issues/33575)) for skills/rules, and a candidate `API` / `ai-model-server` in [backstage#34476](https://github.com/backstage/backstage/pull/34476) for model servers. Agent and AI model kinds are not yet proposed upstream.
 
 Boost cannot wait for upstream — customers need AI Catalog today. The model uses custom annotations as an independent classification layer ON TOP OF existing entity kinds, with a documented migration path to upstream kinds when available.
 
@@ -70,11 +70,11 @@ This mapping is documented for reference — connectors MAY map differently base
 
 > **RHDHPLAN-1113 / RHDHPLAN-404 dependencies (updated 2026-07-20):** The `skill`, `rule`, and `skill-bundle` categories use `AIResource` kind per RHDHPLAN-1113 (resolved). The `agent` category mapping is pending RHDHPLAN-1113 — Boost will refrain from defining agent entity kind mappings independently. The `ai-model` and `model-server` mappings are pending RHDHPLAN-404 upstream entity schema work. The `mcp-server` category maps to `API` kind with `spec.type: mcp-server` — this mapping ships in RHDH 2.1 via RHDHPLAN-1510.
 
-**Migration path:** When upstream kinds become available (e.g., `kind: AIAgent`), we document a transformation: `kind: AIResource` + `spec.type: ai-agent` + `rhdh.io/ai-asset-category: agent` → `kind: AIAgent`. The annotation remains for backward compatibility during the transition.
+**Migration path:** When upstream kinds stabilize, we document field-level transformations. For example, `AiResource` casing alignment for skills: `kind: AIResource` + `spec.type: skill` + `rhdh.io/ai-asset-category: skill` → `kind: AiResource` (see [#33575](https://github.com/backstage/backstage/issues/33575)). The annotation remains for backward compatibility during the transition.
 
 ### Decision 2: SDK package scope and structure
 
-Single npm package `@boost/entity-provider-sdk` exports:
+Single npm package `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk` exports:
 
 - Provider interface types (`AIAssetEntityProvider`, entity emission contract)
 - Annotation constants (`AI_ASSET_CATEGORY_ANNOTATION`, `AI_ASSET_VERSION_ANNOTATION`, `AI_ASSET_SOURCE_ANNOTATION`)

@@ -53,11 +53,8 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'notebooks.documents': string;
     readonly 'notebooks.actions.rename': string;
     readonly 'notebooks.actions.delete': string;
-    readonly 'notebooks.rename.title': string;
-    readonly 'notebooks.rename.description': string;
-    readonly 'notebooks.rename.label': string;
-    readonly 'notebooks.rename.placeholder': string;
-    readonly 'notebooks.rename.action': string;
+    readonly 'notebooks.rename.inline.tooltip': string;
+    readonly 'notebooks.rename.inline.error': string;
     readonly 'notebooks.delete.title': string;
     readonly 'notebooks.delete.message': string;
     readonly 'notebooks.delete.action': string;
@@ -98,6 +95,11 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'notebook.overwrite.modal.title': string;
     readonly 'notebook.overwrite.modal.description': string;
     readonly 'notebook.overwrite.modal.action': string;
+    readonly 'notebook.document.rename': string;
+    readonly 'notebook.document.rename.tooltip': string;
+    readonly 'notebook.document.rename.error': string;
+    readonly 'notebook.document.rename.conflict': string;
+    readonly 'notebook.document.rename.tooLong': string;
     readonly 'notebook.document.delete': string;
     readonly 'notebook.document.delete.title': string;
     readonly 'notebook.document.delete.description': string;

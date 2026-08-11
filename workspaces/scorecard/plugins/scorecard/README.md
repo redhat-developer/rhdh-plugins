@@ -9,7 +9,7 @@ For NFS, register the default `scorecardPlugin` plus `scorecardTranslationsModul
 **Features:**
 
 - **Entity scorecard tab** — View scorecard metrics on catalog entity pages (components, websites, etc.).
-- **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues). Supports **`statusGrouped`** (multi-slice pie) and **`weightedStatusScore`** (weighted health donut) KPI types configured under **`scorecard.aggregationKPIs`**.
+- **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues). Supports **`statusGrouped`** (multi-slice pie) and **`weightedStatusScore`** (weighted health donut) KPI types configured under **`scorecard.aggregationKPIs`**. Scalar types (`sum`, `average`, `max`, `min`, `count`) are supported by the backend API but not yet rendered by the bundled homepage card (see [Homepage scorecard cards](#homepage-scorecard-cards)).
 - **Scorecard Entities page** — Drill down from an aggregated metric to see the list of entities contributing to that metric, with entity-level values and status, so you can identify services impacting the KPI and investigate issues.
 - **Metric group cards (grid layout)** — Group related metrics into cards with threshold bucket tiles, a filterable/sortable data sources dialog, and a Masonry grid layout. Enabled via app-config.yaml.
 
@@ -452,9 +452,17 @@ The plugin exports **`ScorecardHomepageCard`** from `@red-hat-developer-hub/back
 
 Define KPI ids and optional labels under **`scorecard.aggregationKPIs`** so each card can call **`GET /aggregations/<aggregationId>`** with a stable id. See [Scorecard backend README — Aggregation KPIs](../scorecard-backend/README.md#aggregation-kpis-homepage-and-get-aggregations). If you omit a KPI entry, use the **metric id** as `aggregationId` (default status-grouped aggregation).
 
-**`type: weightedStatusScore`** KPIs require **`options.statusScores`** (weights per threshold rule key). Optionally set **`options.thresholds`** so the API returns **`aggregationChartDisplayColor`** for the headline percentage. Behavior, validation, and drill-down notes are described in [aggregation.md](../scorecard-backend/docs/aggregation.md).
+Supported scorecard aggregation types (see [Entity Aggregation — Aggregation types](../scorecard-backend/docs/aggregation.md#aggregation-types)):
 
-For **`type: weightedStatusScore`**, the homepage card shows a **centered donut** with the headline percentage. Hovering the **center** opens a tooltip with **total score**, **max possible score**, and a **per-status breakdown** (from aggregation **`result.values`**). There is **no side status legend**; **`statusGrouped`** cards use a multi-slice pie with a legend instead.
+- [`statusGrouped`](../scorecard-backend/docs/aggregation.md#status-grouped-type) — counts per status (pie chart).
+- [`weightedStatusScore`](../scorecard-backend/docs/aggregation.md#weighted-status-score-type) — weighted portfolio health percentage (donut); requires `options.statusScores`.
+- Scalar types ([`sum`](../scorecard-backend/docs/aggregation.md#sum-type), [`average`](../scorecard-backend/docs/aggregation.md#average-type), [`max`](../scorecard-backend/docs/aggregation.md#max-type), [`min`](../scorecard-backend/docs/aggregation.md#min-type), [`count`](../scorecard-backend/docs/aggregation.md#count-type)) — roll up latest numeric metric values; number metrics only. Optional [`filter.status`](../scorecard-backend/docs/aggregation.md#status-filter-scalar-types) limits the rollup to a threshold status.
+
+**Scalar KPI types** (`sum`, `average`, `max`, `min`, `count`) are fully supported by **`GET /aggregations/:aggregationId`**, including optional **`filter.status`** and **`options.thresholds`**. The bundled **`ScorecardHomepageCard`** / **`AggregatedMetricCard`** only renders **`statusGrouped`** and **`weightedStatusScore`**; scalar types show an unsupported-type error panel. Build a custom card to display **`result.value`** and classify it with **`result.thresholds`**.
+
+**Terminology:** Scalar **`average`** (mean of numeric metric values) is distinct from the former weighted KPI type also named `average`, which was renamed to **`weightedStatusScore`**. Update app-config **`type: average`** entries for weighted health scoring to **`type: weightedStatusScore`** and migrate API consumers from **`result.averageScore`** to **`result.weightedStatusScore`**.
+
+The NFS example widget **`AggregatedCardWithGithubOpenPrs`** uses **`aggregationId: maxOpenPrs`** (scalar **`max`** KPI). Uncomment and configure **`maxOpenPrs`** under **`scorecard.aggregationKPIs`** in app-config to exercise the API; expect the unsupported-type panel until scalar homepage UI is added.
 
 #### Card props
 

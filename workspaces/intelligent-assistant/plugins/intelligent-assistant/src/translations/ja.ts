@@ -195,6 +195,12 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'modal.save': '保存',
     'modal.title.edit': '添付ファイルの編集',
     'modal.title.preview': '添付ファイルのプレビュー',
+    'notebook.document.rename': '名前の変更',
+    'notebook.document.rename.tooltip': 'クリックで名前を変更',
+    'notebook.document.rename.error':
+      '「{{documentName}}」の名前変更に失敗しました。',
+    'notebook.document.rename.conflict': '名前は既に存在します。',
+    'notebook.document.rename.tooLong': '名前が長すぎます（最大255）。',
     'notebook.document.delete': '削除',
     'notebook.document.delete.action': '削除',
     'notebook.document.delete.description':
@@ -222,16 +228,16 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebook.upload.modal.selectedFiles':
       '{{max}} 件中 {{count}} 件のファイルを選択',
     'notebook.upload.modal.separator': 'または',
-    'notebook.upload.modal.title': 'ノートブックにドキュメントを追加',
+    'notebook.upload.modal.title': 'ノートブックにリソースを追加',
     'notebook.view.close': 'ノートブックを閉じる',
     'notebook.view.documents.add': '追加',
-    'notebook.view.documents.count': '{{count}} 件のドキュメント',
+    'notebook.view.documents.count': '{{count}} 件のリソース',
     'notebook.view.documents.maxReached':
-      '最大10個のドキュメントが許可されています。新しいドキュメントをアップロードするには、ドキュメントを削除してください。',
-    'notebook.view.documents.uploading': 'ドキュメントをアップロード中',
+      '最大10個のリソースが許可されています。新しいリソースをアップロードするには、リソースを削除してください。',
+    'notebook.view.documents.uploading': 'リソースをアップロード中',
     'notebook.view.input.disabledTooltip':
       'チャットを開始するには、少なくとも1つのロード済みリソースを選択してください',
-    'notebook.view.input.placeholder': 'ドキュメントについて質問する...',
+    'notebook.view.input.placeholder': 'リソースについて質問する...',
     'notebook.view.sidebar.collapse': 'サイドバーを折りたたむ',
     'notebook.view.sidebar.expand': 'サイドバーを展開する',
     'notebook.view.sidebar.resize': 'サイドバーのサイズを変更する',
@@ -250,7 +256,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
       'このノートブックはここに表示されなくなります。アクティビティに関連するプロンプト、応答、フィードバックも削除されます。',
     'notebooks.delete.title': '{{name}} を削除しますか?',
     'notebooks.delete.toast': 'ノートブックを削除しました！',
-    'notebooks.documents': 'ドキュメント',
+    'notebooks.documents': 'リソース',
     'notebooks.empty.action': '新しいノートブックを作成',
     'notebooks.empty.description':
       '新しいノートブックを作成してソースを整理し、AI による洞察を生成します。',
@@ -258,12 +264,9 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebooks.prompts.accessIssue.title': 'アクセスの問題を解決してください',
     'notebooks.prompts.coreConcepts.title': 'コアコンセプトは何ですか？',
     'notebooks.prompts.vulnerabilities.title': '重大な脆弱性を表示してください',
-    'notebooks.rename.action': '送信',
-    'notebooks.rename.description':
-      'このノートブックの新しい名前を入力し、送信をクリックして続行してください。',
-    'notebooks.rename.label': '新しい名前',
-    'notebooks.rename.placeholder': '新しい名前',
-    'notebooks.rename.title': '{{name}} の名前を変更しますか?',
+    'notebooks.rename.inline.tooltip': 'クリックで名前を変更',
+    'notebooks.rename.inline.error':
+      '「{{notebookName}}」の名前変更に失敗しました。',
     'notebooks.title': 'マイノートブック',
     'notebooks.updated.days': '{{days}}日前に更新',
     'notebooks.updated.on': '更新日',

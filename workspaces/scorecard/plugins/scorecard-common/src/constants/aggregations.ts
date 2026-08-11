@@ -16,6 +16,11 @@
 
 const STATUS_GROUPED = 'statusGrouped' as const;
 const WEIGHTED_STATUS_SCORE = 'weightedStatusScore' as const;
+const SUM = 'sum' as const;
+const AVERAGE = 'average' as const;
+const MAX = 'max' as const;
+const MIN = 'min' as const;
+const COUNT = 'count' as const;
 
 /**
  * Supported aggregation types
@@ -24,4 +29,21 @@ const WEIGHTED_STATUS_SCORE = 'weightedStatusScore' as const;
 export const aggregationTypes = Object.freeze({
   statusGrouped: STATUS_GROUPED,
   weightedStatusScore: WEIGHTED_STATUS_SCORE,
+  sum: SUM,
+  average: AVERAGE,
+  max: MAX,
+  min: MIN,
+  count: COUNT,
 });
+
+/**
+ * Scalar aggregation types that operate on raw metric values.
+ * @public
+ */
+export const scalarAggregationTypes = Object.freeze([
+  SUM,
+  AVERAGE,
+  MAX,
+  MIN,
+  COUNT,
+] as const);

@@ -57,12 +57,28 @@ export type AggregatedMetric = {
 /**
  * @public
  */
+export type ScalarAggregatedMetric = Omit<AggregatedMetric, 'values'> & {
+  value: number;
+};
+
+/**
+ * Optional filter applied to scalar aggregation KPIs.
+ * @public
+ */
+export type AggregationConfigFilter = {
+  status?: string;
+};
+
+/**
+ * @public
+ */
 export type AggregationMetadata = {
   title: string;
   description: string;
   type: MetricType;
   history?: boolean;
   aggregationType: AggregationType;
+  filter?: AggregationConfigFilter;
 };
 
 /**
@@ -87,9 +103,17 @@ export type WeightedStatusScoreAggregationResult =
 /**
  * @public
  */
+export type ScalarAggregationResult = ScalarAggregatedMetric & {
+  thresholds: ThresholdConfig;
+};
+
+/**
+ * @public
+ */
 export type AggregationResultByType =
   | StatusGroupedAggregationResult
-  | WeightedStatusScoreAggregationResult;
+  | WeightedStatusScoreAggregationResult
+  | ScalarAggregationResult;
 
 /**
  * @public
@@ -104,8 +128,13 @@ export type AggregatedMetricResult = {
 /**
  * @public
  */
+export type StatusScoreAggregationOption = Record<string, number>;
+
+/**
+ * @public
+ */
 export type AggregationConfigOptions = {
-  statusScores: Record<string, number>;
+  statusScores?: StatusScoreAggregationOption;
   thresholds?: ThresholdConfig;
 };
 
@@ -118,5 +147,6 @@ export type AggregationConfig = {
   description: string;
   type: AggregationType;
   metricId: string;
+  filter?: AggregationConfigFilter;
   options?: AggregationConfigOptions;
 };

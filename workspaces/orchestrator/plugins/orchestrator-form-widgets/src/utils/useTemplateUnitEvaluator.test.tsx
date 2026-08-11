@@ -121,6 +121,17 @@ describe('useTemplateUnitEvaluator', () => {
     );
   });
 
+  it('evaluates rjsfConfig.* units from public widget configuration', async () => {
+    const { result } = renderHook(() => useTemplateUnitEvaluator());
+
+    await expect(
+      result.current('rjsfConfig.defaultEnvironment', {} as any),
+    ).resolves.toBe('from-config');
+    expect(configApi.getOptionalString).toHaveBeenCalledWith(
+      'orchestrator.rjsf-widgets.defaultEnvironment',
+    );
+  });
+
   it('evaluates fetch response selector units', async () => {
     mockedApplySelectorString.mockResolvedValue('resolved-value');
     const { result } = renderHook(() => useTemplateUnitEvaluator());

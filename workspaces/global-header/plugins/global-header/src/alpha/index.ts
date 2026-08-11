@@ -15,83 +15,8 @@
  */
 
 /**
- * New Frontend System API surface for the global header plugin.
- *
- * @alpha
+ * @deprecated Use the root import instead: `import from '@red-hat-developer-hub/backstage-plugin-global-header'`
  * @packageDocumentation
  */
 
-import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import { TranslationBlueprint } from '@backstage/plugin-app-react';
-import { globalHeaderTranslations } from '../translations';
-
-// ── Core: plugin + module ──────────────────────────────────────────────
-
-export { default } from './plugin';
-export { globalHeaderModule } from './extensions/globalHeaderModule';
-
-// ── Blueprints: for other plugins to contribute header items ───────────
-
-export {
-  GlobalHeaderComponentBlueprint,
-  GlobalHeaderMenuItemBlueprint,
-} from './extensions/blueprints';
-export type {
-  ToolbarComponentParams,
-  MenuItemParams,
-} from './extensions/blueprints';
-
-// ── Data refs ──────────────────────────────────────────────────────────
-
-export {
-  globalHeaderComponentDataRef,
-  globalHeaderMenuItemDataRef,
-} from './extensions/dataRefs';
-
-// ── Context hooks for custom dropdown components ───────────────────────
-
-export {
-  useGlobalHeaderComponents,
-  useGlobalHeaderMenuItems,
-} from './extensions/GlobalHeaderContext';
-
-// ── Types ──────────────────────────────────────────────────────────────
-
-export type {
-  GlobalHeaderComponentData,
-  GlobalHeaderMenuItemData,
-} from './types';
-
-// ── Building block components for plugin authors ───────────────────────
-
-export { HeaderIconButton as GlobalHeaderIconButton } from '../components/HeaderIconButton/HeaderIconButton';
-export type { HeaderIconButtonProps } from '../components/HeaderIconButton/HeaderIconButton';
-export { GlobalHeaderMenuItem } from './components/GlobalHeaderMenuItem';
-export type { GlobalHeaderMenuItemProps } from './components/GlobalHeaderMenuItem';
-export { GlobalHeaderDropdown } from './components/GlobalHeaderDropdown';
-export type { GlobalHeaderDropdownProps } from './components/GlobalHeaderDropdown';
-
-// ── Default extensions (collections + individual for cherry-picking) ───
-
-export * from './defaults';
-
-// ── Translations ───────────────────────────────────────────────────────
-
-export { globalHeaderTranslationRef } from '../translations/ref';
-export { globalHeaderTranslations } from '../translations';
-
-const globalHeaderTranslation = TranslationBlueprint.make({
-  name: 'global-header-translations',
-  params: {
-    resource: globalHeaderTranslations,
-  },
-});
-
-/**
- * App module that registers global header translations.
- * @alpha
- */
-export const globalHeaderTranslationsModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: [globalHeaderTranslation],
-});
+export * from '../translations';

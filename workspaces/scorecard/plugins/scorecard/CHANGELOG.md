@@ -1,5 +1,48 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 4.2.0
+
+### Minor Changes
+
+- e486f80: Implemented filter by `status` for scalar aggregation types (`sum`, `average`, `count`, `min`, `max`).
+
+### Patch Changes
+
+- Updated dependencies [e486f80]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.2.0
+
+## 4.1.0
+
+### Minor Changes
+
+- 3af0fb2: This update introduces new scalar aggregation KPIs in the scorecard configuration, including:
+
+  - **`sum`**: Single numeric total of latest metric values across owned entities
+  - **`average`**: Mean of latest metric values across owned entities
+  - **`max`**: Maximum latest metric value across owned entities
+  - **`min`**: Minimum latest metric value across owned entities
+  - **`count`**: Number of entities with a non-null latest stored value
+
+### Patch Changes
+
+- Updated dependencies [3af0fb2]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.1.0
+
+## 4.0.0
+
+### Patch Changes
+
+- e9b1af3: Add scalprum config and default app configuration example
+- Updated dependencies [8c14679]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.0.0
+
+## 3.0.1
+
+### Patch Changes
+
+- e3fb07a: Export translations module as default for NFS auto-discovery
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.1
+
 ## 3.0.0
 
 ### Major Changes

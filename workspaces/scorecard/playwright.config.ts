@@ -59,6 +59,10 @@ export default defineConfig({
   projects: LOCALES.map(locale => ({
     name: locale,
     testDir: 'packages/app-legacy/e2e-tests',
+    testMatch:
+      appMode === 'nfs'
+        ? ['scorecard.test.ts', 'scorecard-nfs.test.ts']
+        : 'scorecard.test.ts',
     use: {
       channel: 'chrome' as const,
       locale,

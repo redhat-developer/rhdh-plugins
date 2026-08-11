@@ -19,9 +19,9 @@ The provider must connect to the RHOAI MCP catalog API and handle developer-prev
 #### Scenario: Provider connects to MCP catalog API
 
 - **WHEN** the `RhoaiMcpCatalogProvider` starts
-- **THEN** it reads endpoint URL from `catalog.providers.rhoai.mcpCatalog.endpoint`
-- **AND** it loads credentials from K8s Secret referenced in `catalog.providers.rhoai.mcpCatalog.auth.secretRef`
-- **AND** it loads custom CA bundle from `catalog.providers.rhoai.mcpCatalog.tls.caFile` (if configured)
+- **THEN** it reads endpoint URL from `ai-catalog.providers.rhoai.mcpCatalog.endpoint`
+- **AND** it loads credentials from K8s Secret referenced in `ai-catalog.providers.rhoai.mcpCatalog.auth.secretRef`
+- **AND** it loads custom CA bundle from `ai-catalog.providers.rhoai.mcpCatalog.tls.caFile` (if configured)
 - **AND** it validates connectivity by calling `GET <endpoint>/api/mcp/v1/servers?limit=1` with a 15-second timeout
 - **AND** on HTTP 200 with a JSON response body matching `{ "servers": [...], "total": <number> }`, it marks `mcpApiAvailable = true`
 - **AND** on HTTP 200 with an unexpected response schema (Zod validation failure), it logs a warning with the response body and proceeds with `mcpApiAvailable = false`
@@ -114,7 +114,7 @@ All emitted MCP server entities must include standard RHDH annotations.
 - **WHEN** the provider emits an MCP server entity
 - **THEN** it includes `metadata.annotations['rhdh.io/ai-asset-category']` set to `mcp-server`
 - **AND** it includes `metadata.annotations['rhdh.io/ai-asset-version']` set to the version extracted from the MCP server manifest via `normalizeAIAssetVersion()`, or `"unknown"` if the manifest omits version metadata
-- **AND** it includes `metadata.annotations['rhdh.io/ai-asset-source']` set to `rhoai/<instance-id>`, where `<instance-id>` is the configuration key under `catalog.providers` (e.g., `rhoai`)
+- **AND** it includes `metadata.annotations['rhdh.io/ai-asset-source']` set to `rhoai/<instance-id>`, where `<instance-id>` is the configuration key under `ai-catalog.providers` (e.g., `rhoai`)
 
 ### Requirement: Full Sync via applyMutation
 

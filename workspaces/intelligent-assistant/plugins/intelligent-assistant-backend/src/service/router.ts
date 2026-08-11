@@ -28,13 +28,14 @@ import express, { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
 import {
-  lightspeedChatCreatePermission,
-  lightspeedChatDeletePermission,
-  lightspeedChatReadPermission,
-  lightspeedChatUpdatePermission,
-  lightspeedMcpManagePermission,
-  lightspeedMcpReadPermission,
-  lightspeedPermissions,
+  iaChatAccessPermission,
+  iaChatManagePermission,
+  iaChatUsePermission,
+  iaMcpManagePermission,
+  iaMcpReadPermission,
+  iaPermissions,
+  iaSavedPromptsManagePermission,
+  iaSkillsAccessPermission,
 } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import { Readable } from 'node:stream';
@@ -275,7 +276,7 @@ export async function createRouter(
   });
 
   const permissionIntegrationRouter = createPermissionIntegrationRouter({
-    permissions: lightspeedPermissions,
+    permissions: iaPermissions,
   });
   router.use(permissionIntegrationRouter);
 
@@ -317,7 +318,7 @@ export async function createRouter(
   router.get(
     '/mcp-servers',
     generalRateLimiter,
-    requirePermission(lightspeedMcpReadPermission),
+    requirePermission(iaMcpReadPermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -358,7 +359,7 @@ export async function createRouter(
   router.post(
     '/mcp-servers/validate',
     generalRateLimiter,
-    requirePermission(lightspeedMcpReadPermission),
+    requirePermission(iaMcpReadPermission),
     async (req, res) => {
       try {
         const { url, token } = req.body;
@@ -393,7 +394,7 @@ export async function createRouter(
   router.post(
     '/mcp-servers/:name/validate',
     generalRateLimiter,
-    requirePermission(lightspeedMcpManagePermission),
+    requirePermission(iaMcpManagePermission),
     async (req, res) => {
       try {
         const { userEntityRef, credentials } = getIdentity(req);
@@ -478,7 +479,7 @@ export async function createRouter(
   router.patch(
     '/mcp-servers/:name',
     generalRateLimiter,
-    requirePermission(lightspeedMcpManagePermission),
+    requirePermission(iaMcpManagePermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -606,44 +607,70 @@ export async function createRouter(
   router.get(
     '/v1/models',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(iaChatAccessPermission),
     apiProxy,
   );
   router.get(
     '/v1/shields',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(iaChatAccessPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(iaChatAccessPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(iaChatAccessPermission),
     apiProxy,
   );
   router.delete(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(lightspeedChatDeletePermission),
+    requirePermission(iaChatManagePermission),
     apiProxy,
   );
   router.get(
     '/v1/feedback/status',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(iaChatAccessPermission),
+    apiProxy,
+  );
+
+  router.get(
+    '/v1/saved-prompts/config',
+    generalRateLimiter,
+    requirePermission(iaSavedPromptsManagePermission),
+    apiProxy, // SKIP_USER_ID_ENDPOINTS prevents user_id injection for this endpoint
+  );
+  router.get(
+    '/v1/saved-prompts',
+    generalRateLimiter,
+    requirePermission(iaSavedPromptsManagePermission),
+    apiProxy,
+  );
+  router.delete(
+    '/v1/saved-prompts/:prompt_id',
+    generalRateLimiter,
+    requirePermission(iaSavedPromptsManagePermission),
+    apiProxy,
+  );
+
+  router.get(
+    '/v1/skills',
+    generalRateLimiter,
+    requirePermission(iaSkillsAccessPermission),
     apiProxy,
   );
 
   router.post(
     '/v1/feedback',
     generalRateLimiter,
-    requirePermission(lightspeedChatCreatePermission),
+    requirePermission(iaChatUsePermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -684,9 +711,54 @@ export async function createRouter(
   );
 
   router.post(
+    '/v1/saved-prompts',
+    generalRateLimiter,
+    requirePermission(iaSavedPromptsManagePermission),
+    async (request, response) => {
+      try {
+        const { userEntityRef } = getIdentity(request);
+
+        logger.info(
+          `/v1/saved-prompts receives call from user: ${userEntityRef}`,
+        );
+
+        const userQueryParam = `user_id=${encodeURIComponent(userEntityRef)}`;
+        const requestBody = JSON.stringify(request.body);
+        const fetchResponse = await fetch(
+          `${lcsBaseUrl}/v1/saved-prompts?${userQueryParam}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: requestBody,
+          },
+        );
+
+        if (!fetchResponse.ok) {
+          await handleLCSFetchError(
+            fetchResponse,
+            logger,
+            'creating saved prompt',
+            response,
+          );
+          return;
+        }
+
+        const data = await fetchResponse.json();
+        response.status(fetchResponse.status).json(data);
+      } catch (error) {
+        const errormsg = `Error while creating saved prompt: ${error}`;
+        logger.error(errormsg);
+        response.status(500).json({ error: errormsg });
+      }
+    },
+  );
+
+  router.post(
     '/v1/query/interrupt',
     generalRateLimiter,
-    requirePermission(lightspeedChatCreatePermission),
+    requirePermission(iaChatUsePermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -726,13 +798,12 @@ export async function createRouter(
     expensiveRateLimiter,
     validateCompletionsRequest,
     validateAttachmentsForModel,
-    requirePermission(lightspeedChatCreatePermission),
+    requirePermission(iaChatUsePermission),
     async (request, response) => {
       const { provider }: Pick<QueryRequestBody, 'provider'> = request.body;
       try {
         const { userEntityRef, credentials } = getIdentity(request);
         logger.info(`/v1/query receives call from user: ${userEntityRef}`);
-
         if (request.body.attachments?.length) {
           logger.info(
             `/v1/query includes ${request.body.attachments.length} attachment(s): ${request.body.attachments.map((a: { attachment_type: string }) => a.attachment_type).join(', ')}`,
@@ -820,7 +891,7 @@ export async function createRouter(
   router.put(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(lightspeedChatUpdatePermission),
+    requirePermission(iaChatManagePermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -861,7 +932,7 @@ export async function createRouter(
   router.post(
     '/v1/validate-model-vision',
     generalRateLimiter,
-    requirePermission(lightspeedChatReadPermission),
+    requirePermission(iaChatUsePermission),
     async (request, response) => {
       const { model, provider } = request.body;
 
@@ -920,18 +991,6 @@ export async function createRouter(
         if (testResponse.ok) {
           ModelCapabilitiesCache.set(cacheKey, true);
           response.json({ model, provider, supportsVision: true });
-        } else if (testResponse.status >= 500) {
-          logger.warn(
-            `Vision test for ${cacheKey}: ${testResponse.status} ${testResponse.statusText}, not caching`,
-          );
-          response.status(502).json({
-            error: `Unable to verify vision support for model — upstream returned ${testResponse.status}`,
-            model,
-            provider,
-          });
-        } else {
-          ModelCapabilitiesCache.set(cacheKey, false);
-          response.json({ model, provider, supportsVision: false });
         }
       } catch (error) {
         logger.error(`Vision test error for ${cacheKey}:`, error);

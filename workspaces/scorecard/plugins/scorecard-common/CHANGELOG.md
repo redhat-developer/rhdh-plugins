@@ -1,5 +1,73 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-common
 
+## 4.2.0
+
+### Minor Changes
+
+- e486f80: Implemented filter by `status` for scalar aggregation types (`sum`, `average`, `count`, `min`, `max`).
+
+## 4.1.0
+
+### Minor Changes
+
+- 3af0fb2: This update introduces new scalar aggregation KPIs in the scorecard configuration, including:
+
+  - **`sum`**: Single numeric total of latest metric values across owned entities
+  - **`average`**: Mean of latest metric values across owned entities
+  - **`max`**: Maximum latest metric value across owned entities
+  - **`min`**: Minimum latest metric value across owned entities
+  - **`count`**: Number of entities with a non-null latest stored value
+
+## 4.0.0
+
+### Major Changes
+
+- 8c14679: **BREAKING**: Scorecard provider configuration now lives under top-level `scorecard.metricProviders` instead of `scorecard.plugins`. Provider IDs must be `<datasource>.<providerName>` (no longer equal to the datasource alone). Entity annotations for thresholds use now the full metric ID instead of provider ID.
+
+  Thresholds from configuration are determined by the most specific setting (**metric > provider**):
+
+  1. `metricProviders.<datasource>.<providerName>.metrics.<metricName>.thresholds`
+  2. `metricProviders.<datasource>.<providerName>.thresholds`
+
+  Config keys are local names (no datasource prefix). Entity annotations use the full metric ID:
+  `scorecard.io/<metricId>.thresholds.rules.<key>`.
+
+  Filecheck provider ID is now `filecheck.fileExistence`; files move under `options`:
+
+  ```diff
+   scorecard:
+  -  plugins:
+  -    filecheck:
+  -      files:
+  -        license: LICENSE
+  -        codeowners: CODEOWNERS
+  -      thresholds: ...
+  -      schedule: ...
+  +  metricProviders:
+  +    filecheck:
+  +      fileExistence:
+  +        options:
+  +          files:
+  +            license: LICENSE
+  +            codeowners: CODEOWNERS
+  +        thresholds: ...
+  +        schedule: ...
+  ```
+
+  Migration from the previous `scorecard.plugins` layout:
+
+  ```diff
+   scorecard:
+  -  plugins:
+  +  metricProviders:
+       github:
+         openPRs:
+           schedule: ...
+           thresholds: ...
+  ```
+
+## 3.0.1
+
 ## 3.0.0
 
 ### Major Changes

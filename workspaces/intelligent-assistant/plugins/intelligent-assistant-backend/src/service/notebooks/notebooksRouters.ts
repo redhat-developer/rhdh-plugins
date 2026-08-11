@@ -24,7 +24,7 @@ import { Config } from '@backstage/config';
 
 import express, { Router } from 'express';
 
-import { lightspeedNotebooksUsePermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+import { iaNotebooksUsePermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import { Readable, Transform } from 'stream';
 
@@ -117,10 +117,7 @@ export async function createNotebooksRouter(
   ): Promise<void> => {
     try {
       const { credentials } = getIdentity(req);
-      await authorizer.authorizeUser(
-        lightspeedNotebooksUsePermission,
-        credentials,
-      );
+      await authorizer.authorizeUser(iaNotebooksUsePermission, credentials);
       next();
     } catch (error) {
       handleError(logger, res, error, 'Permission denied');
@@ -408,13 +405,13 @@ export async function createNotebooksRouter(
         status: 'processing',
         document_id: newTitle || title,
         session_id: sessionId,
-        message: 'Document upload started',
+        message: 'Resource upload started',
       });
 
       // Upload document to vector store in background
       const docName = newTitle || title;
       documentService
-        .upsertDocument(sessionId, title, fileType, fileId, newTitle)
+        .upsertDocument(sessionId, title, { fileType, fileId, newTitle })
         .then(() => logger.info(`Background upload succeeded: ${docName}`))
         .catch((err: any) =>
           logger.error(`Background upload failed: ${docName}`, err),
@@ -442,6 +439,43 @@ export async function createNotebooksRouter(
     }),
   );
 
+  notebooksRouter.patch(
+    '/v1/sessions/:sessionId/documents/:documentId',
+    generalRateLimiter,
+    requireNotebooksPermission,
+    requireSessionOwnership(),
+    withAuth(async (req, res) => {
+      const { sessionId, documentId } = req.params;
+      const { title } = req.body;
+
+      if (!title || typeof title !== 'string' || !title.trim()) {
+        handleError(logger, res, 'title is required');
+        return;
+      }
+
+      const MAX_TITLE_LENGTH = 255;
+      if (title.trim().length > MAX_TITLE_LENGTH) {
+        handleError(
+          logger,
+          res,
+          `title must be ${MAX_TITLE_LENGTH} characters or less`,
+        );
+        return;
+      }
+
+      await documentService.upsertDocument(sessionId, documentId, {
+        newTitle: title.trim(),
+      });
+      res.json(
+        createDocumentResponse(
+          title.trim(),
+          sessionId,
+          'Document renamed successfully',
+        ),
+      );
+    }),
+  );
+
   notebooksRouter.delete(
     '/v1/sessions/:sessionId/documents/:documentId',
     generalRateLimiter,
@@ -454,7 +488,7 @@ export async function createNotebooksRouter(
         createDocumentResponse(
           documentId,
           sessionId,
-          'Document deleted successfully',
+          'Resource deleted successfully',
         ),
       );
     }),

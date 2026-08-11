@@ -40,7 +40,7 @@ import { migrate } from './database/migration';
 import { DatabaseMetricValues } from './database/DatabaseMetricValues';
 import { Scheduler } from './scheduler';
 import { validateAggregationConfig } from './validation/validateAggregationConfig';
-import { AggregationsService } from './service/aggregations/AggregationService';
+import { AggregationsService } from './service/aggregations/AggregationsService';
 import { ThresholdResolver } from './threshold/ThresholdResolver';
 
 /**
@@ -136,6 +136,7 @@ export const scorecardPlugin = createBackendPlugin({
         validateAggregationConfig({
           rootConfig: config,
           registry: metricProvidersRegistry,
+          thresholdResolver,
         });
 
         Scheduler.create({

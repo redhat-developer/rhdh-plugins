@@ -66,7 +66,7 @@ All AI asset entities MUST carry the `rhdh.io/ai-asset-version` annotation with 
 
 #### Scenario: SDK exports normalizeAIAssetVersion utility (RHIDP-15255)
 
-- **WHEN** a developer imports `normalizeAIAssetVersion` from `@boost/entity-provider-sdk`
+- **WHEN** a developer imports `normalizeAIAssetVersion` from `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk`
 - **THEN** it is a function accepting `sourceVersion: string` and returning normalized semver string
 - **AND** it implements all four normalization rules (semver pass-through, date-based, commit hash, fallback)
 - **AND** unit tests cover all normalization rules
@@ -105,7 +105,7 @@ A documented mapping from custom annotations to upstream Backstage entity kinds 
 #### Scenario: Migration design document exists (RHIDP-15302)
 
 - **WHEN** the migration-readiness spec is reviewed
-- **THEN** it contains a mapping table: current kind + spec.type + annotation → target upstream kind (e.g., `AIResource` + `ai-agent` + `agent` → `AIAgent`)
+- **THEN** it contains a mapping table: current kind + spec.type + annotation → target upstream kind (e.g., `AIResource` + `skill` + `skill` → `AiResource` casing alignment)
 - **AND** it identifies consumer-facing changes during migration (e.g., catalog UI filters, queries, entity refs)
 - **AND** it documents the AIResource starting point per RHDHPLAN-1113 (resolved 2026-07-20)
 

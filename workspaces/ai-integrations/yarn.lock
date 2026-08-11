@@ -2,7 +2,7 @@
 # Manual changes might be lost - proceed with caution!
 
 __metadata:
-  version: 8
+  version: 10
   cacheKey: 10c0
 
 "@adobe/css-tools@npm:^4.4.0":
@@ -9548,14 +9548,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.62.0":
-  version: 1.62.0
-  resolution: "@playwright/test@npm:1.62.0"
+"@playwright/test@npm:1.62.1":
+  version: 1.62.1
+  resolution: "@playwright/test@npm:1.62.1"
   dependencies:
-    playwright: "npm:1.62.0"
+    playwright: "npm:1.62.1"
   bin:
     playwright: cli.js
-  checksum: 10c0/1132666c5cc4955fb043d41447475b4947e6571bd390e1b7c9fdcc9381cb58563fa7f86509a4a61e572e9b0f7ff2d9d9027eb9ee8b1f24bea7423b52b4308436
+  checksum: 10c0/4b76f2f717723f84a73601f74fde97f5d92e4b5c869cf87c0f5628bf247fa1d18c9dc6c8e136463303233239e8ce58f902513d4281a9fabc3c426e911ded2c83
   languageName: node
   linkType: hard
 
@@ -10969,9 +10969,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions@workspace:^, @red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions@workspace:plugins/catalog-backend-module-catalog-backend-module-ai-resource-extensions":
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@workspace:^, @red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@workspace:plugins/catalog-backend-module-ai-resource-agent":
   version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions@workspace:plugins/catalog-backend-module-catalog-backend-module-ai-resource-extensions"
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@workspace:plugins/catalog-backend-module-ai-resource-agent"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.9.2"
+    "@backstage/catalog-model": "npm:^1.9.0"
+    "@backstage/cli": "npm:^0.36.3"
+    "@backstage/plugin-catalog-node": "npm:^2.2.2"
+    "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions@workspace:^, @red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions@workspace:plugins/catalog-backend-module-ai-resource-extensions":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions@workspace:plugins/catalog-backend-module-ai-resource-extensions"
   dependencies:
     "@backstage/backend-plugin-api": "npm:^1.9.2"
     "@backstage/backend-test-utils": "npm:^1.11.4"
@@ -10999,6 +11011,16 @@ __metadata:
     js-yaml: "npm:^4.1.0"
     stream: "npm:^0.0.3"
     yaml: "npm:^2.7.0"
+  languageName: unknown
+  linkType: soft
+
+"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@workspace:^, @red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@workspace:plugins/catalog-model-ai-resource-agent":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@workspace:plugins/catalog-model-ai-resource-agent"
+  dependencies:
+    "@backstage/catalog-model": "npm:^1.9.0"
+    "@backstage/cli": "npm:^0.36.3"
+    "@backstage/types": "npm:^1.2.2"
   languageName: unknown
   linkType: soft
 
@@ -11072,6 +11094,7 @@ __metadata:
     "@backstage/plugin-catalog-node": "npm:^1.20.0"
     "@backstage/types": "npm:^1.2.2"
     "@kubernetes/client-node": "npm:^0.22.0"
+    "@redhat-ai-dev/model-catalog-types": "npm:^1.1.0"
     "@types/express": "npm:^4.17.6"
     "@types/supertest": "npm:^2.0.12"
     express: "npm:^4.17.1"
@@ -15778,7 +15801,7 @@ __metadata:
     "@backstage/ui": "npm:^0.16.0"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
-    "@playwright/test": "npm:1.62.0"
+    "@playwright/test": "npm:1.62.1"
     "@red-hat-developer-hub/backstage-plugin-ai-experience": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^1.21.0"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.15.0"
@@ -16440,7 +16463,8 @@ __metadata:
     "@backstage/plugin-search-backend-node": "npm:^1.4.5"
     "@backstage/plugin-techdocs-backend": "npm:^2.2.1"
     "@red-hat-developer-hub/backstage-plugin-ai-experience-backend": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend": "workspace:^"
@@ -29328,27 +29352,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.62.0":
-  version: 1.62.0
-  resolution: "playwright-core@npm:1.62.0"
+"playwright-core@npm:1.62.1":
+  version: 1.62.1
+  resolution: "playwright-core@npm:1.62.1"
   bin:
     playwright-core: cli.js
-  checksum: 10c0/bc7c770cc4118a7ea65d2c357fc271aaef49af6b5b8964aa19d765d4ea3473e56af926f693123fd63ed6e580830059905722ac68fbf22a31a5b1533e11600228
+  checksum: 10c0/a37d0f03bb73364cfd0eba704c4b3359b609c4779ae2649a88d8e2b3a29c7357dfcc58bdcf0cb68ddffdef7687abf78902c8356e89f189682c7e19be38e108f0
   languageName: node
   linkType: hard
 
-"playwright@npm:1.62.0":
-  version: 1.62.0
-  resolution: "playwright@npm:1.62.0"
+"playwright@npm:1.62.1":
+  version: 1.62.1
+  resolution: "playwright@npm:1.62.1"
   dependencies:
     fsevents: "npm:2.3.2"
-    playwright-core: "npm:1.62.0"
+    playwright-core: "npm:1.62.1"
   dependenciesMeta:
     fsevents:
       optional: true
   bin:
     playwright: cli.js
-  checksum: 10c0/14d2d2c35e4ef88cf69d9e6c5bf351ff47fe9cd00da09da9f48da8aaf75ebdb266330c073cb217821785fb35d7e5d9d89789220b208329e4934aaaa43da260f3
+  checksum: 10c0/4d3522cd46325f50c46f8874d31f70d036f6983228a9f8b9d68fc249e4c17464edcd97cc4adfbb24e712d1829c1386d3bc24e17f58a1ced94e7c423300c21845
   languageName: node
   linkType: hard
 
@@ -31736,20 +31760,20 @@ __metadata:
 
 "resolve@patch:resolve@npm%3A1.22.8#optional!builtin<compat/resolve>":
   version: 1.22.8
-  resolution: "resolve@patch:resolve@npm%3A1.22.8#optional!builtin<compat/resolve>::version=1.22.8&hash=c3c19d"
+  resolution: "resolve@patch:resolve@npm%3A1.22.8#optional!builtin<compat/resolve>::version=1.22.8&hash=9bd1a5"
   dependencies:
     is-core-module: "npm:^2.13.0"
     path-parse: "npm:^1.0.7"
     supports-preserve-symlinks-flag: "npm:^1.0.0"
   bin:
     resolve: bin/resolve
-  checksum: 10c0/0446f024439cd2e50c6c8fa8ba77eaa8370b4180f401a96abf3d1ebc770ac51c1955e12764cde449fde3fff480a61f84388e3505ecdbab778f4bef5f8212c729
+  checksum: 10c0/4bc6de64a713422234e0e773bff296767d77d6e545b98042ff90a796d356f2b131853f4fa1d54e2c415aa6efa6dc2eed5b3f501f63164f834619fda900e33b8e
   languageName: node
   linkType: hard
 
 "resolve@patch:resolve@npm%3A^1.1.7#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.17.0#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.19.0#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.20.0#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.22.1#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A^1.22.4#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A~1.22.1#optional!builtin<compat/resolve>, resolve@patch:resolve@npm%3A~1.22.2#optional!builtin<compat/resolve>":
   version: 1.22.12
-  resolution: "resolve@patch:resolve@npm%3A1.22.12#optional!builtin<compat/resolve>::version=1.22.12&hash=c3c19d"
+  resolution: "resolve@patch:resolve@npm%3A1.22.12#optional!builtin<compat/resolve>::version=1.22.12&hash=9bd1a5"
   dependencies:
     es-errors: "npm:^1.3.0"
     is-core-module: "npm:^2.16.1"
@@ -31757,20 +31781,20 @@ __metadata:
     supports-preserve-symlinks-flag: "npm:^1.0.0"
   bin:
     resolve: bin/resolve
-  checksum: 10c0/fc6519984ae1f894d877c0060ba8b1f5ba3bc0e85a02f74e141929c118c23d74d9735619a9cc2965397387e514884245c65d72a40731dcb6cfc84c7bcdc8321e
+  checksum: 10c0/e12af106e16e652bd83060e8afacece4ee3dcbd0f4cf028e3d9ad178e6ced9ecb1c87ee60158b239582313902a717f8adc57a9b76ea54b1994141ba15f420c65
   languageName: node
   linkType: hard
 
 "resolve@patch:resolve@npm%3A^2.0.0-next.5#optional!builtin<compat/resolve>":
   version: 2.0.0-next.5
-  resolution: "resolve@patch:resolve@npm%3A2.0.0-next.5#optional!builtin<compat/resolve>::version=2.0.0-next.5&hash=c3c19d"
+  resolution: "resolve@patch:resolve@npm%3A2.0.0-next.5#optional!builtin<compat/resolve>::version=2.0.0-next.5&hash=9bd1a5"
   dependencies:
     is-core-module: "npm:^2.13.0"
     path-parse: "npm:^1.0.7"
     supports-preserve-symlinks-flag: "npm:^1.0.0"
   bin:
     resolve: bin/resolve
-  checksum: 10c0/78ad6edb8309a2bfb720c2c1898f7907a37f858866ce11a5974643af1203a6a6e05b2fa9c53d8064a673a447b83d42569260c306d43628bff5bb101969708355
+  checksum: 10c0/9f2cb75a47ee17edca53b3a4e96883e82fe92dadc323a19868621b897da5136f7dd3189b7bac4d4e7715bb3b2fd5c1e8c5145ebccc7e0368b1546206f9644c12
   languageName: node
   linkType: hard
 

@@ -37,7 +37,9 @@ const MOCK_POLICY: Policy = {
 const UPDATED_POLICY: Policy = { ...MOCK_POLICY, enabled: false };
 
 const baseMockApi = {
-  listPolicies: jest.fn().mockResolvedValue({ policies: [MOCK_POLICY] }),
+  listPolicies: jest
+    .fn()
+    .mockResolvedValue({ policies: [MOCK_POLICY], next_page_token: undefined }),
   updatePolicy: jest.fn(),
   createPolicy: jest.fn(),
   deletePolicy: jest.fn(),
@@ -57,6 +59,84 @@ async function renderPoliciesTab(
   );
 }
 
+describe('PoliciesTabContent – pagination params', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('calls listPolicies with pagination params on mount', async () => {
+    const mockApi = buildMockApi();
+    await renderPoliciesTab(mockApi);
+
+    await waitFor(() => expect(mockApi.listPolicies).toHaveBeenCalledTimes(1));
+    expect(mockApi.listPolicies).toHaveBeenCalledWith(
+      expect.objectContaining({ max_page_size: expect.any(Number) }),
+    );
+  });
+});
+
+describe('PoliciesTabContent – cursor pagination', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('shows a Next button when next_page_token is returned', async () => {
+    const mockApi = buildMockApi({
+      listPolicies: jest.fn().mockResolvedValue({
+        policies: [MOCK_POLICY],
+        next_page_token: 'tok-2',
+      }),
+    });
+    await renderPoliciesTab(mockApi);
+
+    expect(
+      await screen.findByRole('button', { name: /next/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('Next button is disabled when no next_page_token', async () => {
+    const mockApi = buildMockApi({
+      listPolicies: jest
+        .fn()
+        .mockResolvedValue({ policies: [MOCK_POLICY], next_page_token: '' }),
+    });
+    await renderPoliciesTab(mockApi);
+
+    const nextBtn = await screen.findByRole('button', { name: /next/i });
+    expect(nextBtn).toBeDisabled();
+  });
+
+  it('Previous button is disabled on the first page', async () => {
+    const mockApi = buildMockApi({
+      listPolicies: jest.fn().mockResolvedValue({
+        policies: [MOCK_POLICY],
+        next_page_token: 'tok-2',
+      }),
+    });
+    await renderPoliciesTab(mockApi);
+
+    const prevBtn = await screen.findByRole('button', { name: /previous/i });
+    expect(prevBtn).toBeDisabled();
+  });
+
+  it('calls listPolicies with next_page_token after clicking Next', async () => {
+    const listPolicies = jest
+      .fn()
+      .mockResolvedValueOnce({
+        policies: [MOCK_POLICY],
+        next_page_token: 'tok-2',
+      })
+      .mockResolvedValueOnce({ policies: [MOCK_POLICY], next_page_token: '' });
+    const mockApi = buildMockApi({ listPolicies });
+    await renderPoliciesTab(mockApi);
+
+    const nextBtn = await screen.findByRole('button', { name: /next/i });
+    fireEvent.click(nextBtn);
+
+    await waitFor(() =>
+      expect(listPolicies).toHaveBeenCalledWith(
+        expect.objectContaining({ page_token: 'tok-2' }),
+      ),
+    );
+  });
+});
+
 describe('PoliciesTabContent – toggle error handling', () => {
   beforeEach(() => jest.clearAllMocks());
 
@@ -73,9 +153,7 @@ describe('PoliciesTabContent – toggle error handling', () => {
     fireEvent.click(toggleSwitch);
 
     // The snackbar should show the error text
-    await waitFor(() =>
-      expect(screen.getByText(/toggle failed/i)).toBeInTheDocument(),
-    );
+    expect(await screen.findByText(/toggle failed/i)).toBeInTheDocument();
   });
 
   it('does not show a snackbar when updatePolicy succeeds', async () => {

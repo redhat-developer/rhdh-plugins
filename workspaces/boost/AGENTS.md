@@ -30,7 +30,9 @@ workspaces/boost/
 │           ├── design.md          # Architecture decisions
 │           ├── tasks.md           # Implementation task breakdown
 │           └── specs/             # Behavioral specs (Given/When/Then)
-└── plugins/                       # Plugin packages (implementation target)
+├── plugins/                       # Plugin packages (implementation target)
+└── scripts/                       # Dev/deployment helper scripts
+    └── load-secrets.sh            # Loads env vars from K8s secrets for local dev
 ```
 
 When implementing an issue:
@@ -48,7 +50,7 @@ Use Backstage `cacheService`, `permissions`, `httpAuth`, `configApi`, and `catal
 
 ### Provider isolation
 
-Each AI provider (`boost-backend-module-llamastack`, `boost-backend-module-kagenti`) is a separate `createBackendModule`. Providers must not import from each other. Shared types live in `boost-common`.
+Each AI provider (`boost-backend-module-ogx`, `boost-backend-module-kagenti`) is a separate `createBackendModule`. Providers must not import from each other. Shared types live in `boost-common`.
 
 ### Capability checks, not identity checks
 
@@ -70,16 +72,32 @@ Agents, tools, models, MCP servers, and vector stores are Backstage catalog enti
 
 ### Package structure
 
-| Package                           | Purpose                                                              |
-| --------------------------------- | -------------------------------------------------------------------- |
-| `boost`                           | Chat UI, agent gallery, admin panels, composable routable extensions |
-| `boost-common`                    | Shared types, permissions (browser-safe, `common-library` role)      |
-| `boost-node`                      | `boostAiProviderServiceRef`, extension points (`node-library` role)  |
-| `boost-backend`                   | Core routes, services, middleware, ProviderManager                   |
-| `boost-backend-module-llamastack` | Llama Stack provider module                                          |
-| `boost-backend-module-kagenti`    | Kagenti provider module                                              |
-| `llamastack-entity-provider`      | Independently deployable catalog entity provider                     |
-| `kagenti-entity-provider`         | Independently deployable catalog entity provider                     |
+| Package                        | Purpose                                                                                       |
+| ------------------------------ | --------------------------------------------------------------------------------------------- |
+| `boost`                        | Chat UI, agent gallery, admin panels, composable routable extensions                          |
+| `boost-common`                 | Shared types, permissions (browser-safe, `common-library` role)                               |
+| `boost-node`                   | `boostAiProviderServiceRef`, extension points (`node-library` role)                           |
+| `boost-connector-utils`        | Shared connector utils (`node-library` role) — CA bundle, fault isolation, startup validation |
+| `boost-backend`                | Core routes, services, middleware, ProviderManager                                            |
+| `boost-backend-module-ogx`     | OGX provider module                                                                           |
+| `boost-backend-module-kagenti` | Kagenti provider module                                                                       |
+| `ogx-entity-provider`          | Independently deployable catalog entity provider                                              |
+| `kagenti-entity-provider`      | Independently deployable catalog entity provider                                              |
+
+### ConfigReader `getOptionalString()` edge case
+
+Backstage's `ConfigReader` throws `TypeError` when the underlying config
+value is an empty string (e.g., from env var substitution like
+`${UNSET_ENV_VAR:-}`), rather than returning `undefined`. When reading
+config values that may come from environment variable substitution, use
+`safeGetOptionalString` from
+`@red-hat-developer-hub/backstage-plugin-boost-connector-utils`:
+
+```ts
+import { safeGetOptionalString } from '@red-hat-developer-hub/backstage-plugin-boost-connector-utils';
+
+const endpoint = safeGetOptionalString(config, 'endpoint');
+```
 
 ### Naming
 
@@ -112,3 +130,14 @@ Every feature ships with tests. Integration tests use real database and cache ba
 - Do not create raw `Map<>` caches — always use `coreServices.cache`
 - Do not add authorization checks outside `permissions.authorize()` / `permissions.authorizeConditional()`
 - Do not add provider ID string checks in the frontend
+
+## Before committing
+
+- Run `yarn prettier:check` from the workspace root. If it fails, run `yarn prettier:fix` and stage the corrected files.
+- If public exports or function signatures changed, run `yarn build:api-reports:only --ci`.
+
+## Scripts directory
+
+`scripts/load-secrets.sh` is sourced before local development to populate environment variables from a Kubernetes secret. The env var names it exports (e.g., `BOOST_OGX_URL`, `BOOST_MODEL`) and the route-discovery function names (e.g., `_discover_ogx_route`) must stay synchronized with the config keys in `app-config.yaml` (under `boost.providers.*`).
+
+When renaming or refactoring config keys in `app-config.yaml`, also check and update `scripts/load-secrets.sh` for corresponding env var names, function names, and log messages.

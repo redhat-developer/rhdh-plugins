@@ -14,82 +14,60 @@
  * limitations under the License.
  */
 
-import { useMemo } from 'react';
-import type { PropsWithChildren } from 'react';
+/**
+ * New Frontend System dev mode for the Global Header plugin.
+ *
+ * Uses createApp() from @backstage/frontend-defaults to exercise the full
+ * NFS extension wiring (blueprints, config-driven composition, extension
+ * resolution) rather than rendering raw components in isolation.
+ */
 
-import { createDevApp } from '@backstage/dev-utils';
-import { mockApis, MockFetchApi, TestApiProvider } from '@backstage/test-utils';
-import { MockSearchApi, searchApiRef } from '@backstage/plugin-search-react';
+import '@backstage/cli/asset-types';
+// eslint-disable-next-line @backstage/no-ui-css-imports-in-non-frontend
+import '@backstage/ui/css/styles.css';
+
+import ReactDOM from 'react-dom/client';
+
+import { createApp } from '@backstage/frontend-defaults';
+import {
+  ApiBlueprint,
+  createFrontendModule,
+  createFrontendPlugin,
+  PageBlueprint,
+} from '@backstage/frontend-plugin-api';
+import { NavContentBlueprint } from '@backstage/plugin-app-react';
+import {
+  Sidebar,
+  SidebarGroup,
+  SidebarItem,
+  SidebarScrollWrapper,
+  SidebarSpace,
+} from '@backstage/core-components';
+import {
+  SidebarLanguageSwitcher,
+  SidebarSignOutButton,
+} from '@backstage/dev-utils';
+import { configApiRef } from '@backstage/core-plugin-api';
 import {
   catalogApiRef,
   MockStarredEntitiesApi,
   starredEntitiesApiRef,
 } from '@backstage/plugin-catalog-react';
 import { catalogApiMock } from '@backstage/plugin-catalog-react/testUtils';
-import { configApiRef } from '@backstage/core-plugin-api';
-import {
-  notificationsApiRef,
-  NotificationsClient,
-} from '@backstage/plugin-notifications';
+import { mockApis } from '@backstage/test-utils';
 
-// eslint-disable-next-line @backstage/no-ui-css-imports-in-non-frontend
-import '@backstage/ui/css/styles.css';
+import Typography from '@mui/material/Typography';
 
-import Button from '@mui/material/Button';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
-import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
-import { PluginStore } from '@openshift/dynamic-plugin-sdk';
+import globalHeaderPlugin, {
+  globalHeaderModule,
+  globalHeaderTranslationsModule,
+} from '../src';
 
-import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-
-import {
-  GlobalHeader,
-  globalHeaderPlugin,
-  NotificationBanner,
-  Spacer,
-} from '../src/plugin';
-
-import { globalHeaderTranslations } from '../src/translations';
-
-import {
-  defaultApplicationLauncherDropdownMountPoints,
-  defaultCreateDropdownMountPoints,
-  defaultGlobalHeaderComponentsMountPoints,
-  defaultHelpDropdownMountPoints,
-  defaultProfileDropdownMountPoints,
-} from '../src/defaultMountPoints/defaultMountPoints';
-
-import { HeaderButton } from '../src/components/HeaderButton/HeaderButton';
-
-const mockSearchApi = new MockSearchApi({
-  results: [
-    {
-      type: 'software-catalog',
-      document: {
-        title: 'example search result',
-        text: 'this is an example search result',
-        location: 'https://example.com',
-      },
-    },
-  ],
-});
-
-const mockConfigApi = mockApis.config({
-  data: {
-    app: {
-      support: {
-        url: 'https://access.redhat.com/products/red-hat-developer-hub',
-      },
-    },
-    dynamicPlugins: {
-      frontend: {
-        'backstage.plugin-notifications': {
-          dynamicRoutes: [{ path: '/notifications' }],
-        },
-      },
-    },
-  },
-});
+// ---------------------------------------------------------------------------
+// Mock data
+// ---------------------------------------------------------------------------
 
 const entities = [
   {
@@ -126,205 +104,123 @@ const entities = [
   },
 ];
 
-const catalogApi = catalogApiMock({ entities });
+// ---------------------------------------------------------------------------
+// Dev override modules (mock APIs)
+// ---------------------------------------------------------------------------
 
-const starredEntitiesApi = new MockStarredEntitiesApi();
-
-const mockBaseUrl = 'https://backstage/api/notifications';
-const discoveryApi = { getBaseUrl: async () => mockBaseUrl };
-const fetchApi = new MockFetchApi();
-const client = new NotificationsClient({ discoveryApi, fetchApi });
-
-const Providers = ({
-  mountPoints,
-}: PropsWithChildren<{ mountPoints: Record<string, any> }>) => {
-  const scalprumState = useMemo<ScalprumState>(
-    () => ({
-      initialized: true,
-      api: {
-        dynamicRootConfig: {
-          mountPoints,
-        },
-      },
-      config: {},
-      pluginStore: new PluginStore(),
+const appDevOverrides = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    ApiBlueprint.make({
+      name: 'config-mock',
+      params: defineParams =>
+        defineParams({
+          api: configApiRef,
+          deps: {},
+          factory: () =>
+            mockApis.config({
+              data: {
+                app: {
+                  support: {
+                    url: 'https://access.redhat.com/products/red-hat-developer-hub',
+                  },
+                },
+              },
+            }),
+        }),
     }),
-    [mountPoints],
-  );
-  starredEntitiesApi.toggleStarred('template:default/mock-starred-template');
+    ApiBlueprint.make({
+      name: 'catalog-mock',
+      params: defineParams =>
+        defineParams({
+          api: catalogApiRef,
+          deps: {},
+          factory: () => catalogApiMock({ entities }) as any,
+        }),
+    }),
+    ApiBlueprint.make({
+      name: 'starred-entities-mock',
+      params: defineParams =>
+        defineParams({
+          api: starredEntitiesApiRef,
+          deps: {},
+          factory: () => new MockStarredEntitiesApi(),
+        }),
+    }),
+  ],
+});
 
-  return (
-    <TestApiProvider
-      apis={[
-        [catalogApiRef, catalogApi],
-        [starredEntitiesApiRef, starredEntitiesApi],
-        [searchApiRef, mockSearchApi],
-        [configApiRef, mockConfigApi],
-        [notificationsApiRef, client],
-      ]}
-    >
-      <ScalprumContext.Provider value={scalprumState}>
-        <GlobalHeader />
-      </ScalprumContext.Provider>
-    </TestApiProvider>
-  );
-};
+// ---------------------------------------------------------------------------
+// Dev sidebar
+// ---------------------------------------------------------------------------
 
-createDevApp()
-  .registerPlugin(globalHeaderPlugin)
-  .addThemes(getAllThemes())
-  .addTranslationResource(globalHeaderTranslations)
-  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it'])
-  .setDefaultLanguage('en')
-  .addPage({
-    element: (
-      <Providers
-        mountPoints={{
-          'global.header/component': defaultGlobalHeaderComponentsMountPoints,
-          'global.header/create': defaultCreateDropdownMountPoints,
-          'global.header/profile': defaultProfileDropdownMountPoints,
-          'global.header/application-launcher':
-            defaultApplicationLauncherDropdownMountPoints,
-          'global.header/help': defaultHelpDropdownMountPoints,
-        }}
-      >
-        <GlobalHeader />
-      </Providers>
+const devSidebarContent = NavContentBlueprint.make({
+  params: {
+    component: ({ items }) => (
+      <Sidebar>
+        <SidebarScrollWrapper>
+          <SidebarGroup label="Menu">
+            {items.map((item, index) => (
+              <SidebarItem {...item} key={index} />
+            ))}
+          </SidebarGroup>
+        </SidebarScrollWrapper>
+        <SidebarSpace />
+        <SidebarLanguageSwitcher />
+        <SidebarSignOutButton />
+      </Sidebar>
     ),
-    title: 'Default header',
-    path: '/default-header',
-  })
-  .addPage({
-    element: (
-      <Providers
-        mountPoints={{
-          'global.header/component': [
-            ...defaultGlobalHeaderComponentsMountPoints.filter(
-              (_mp, index) => index > 0,
-            ),
-            {
-              Component: Spacer,
-              config: {
-                priority: 100, // the greater the number, the more to the left it will be
-              },
-            },
-          ],
-          'global.header/create': defaultCreateDropdownMountPoints,
-          'global.header/profile': defaultProfileDropdownMountPoints,
-          'global.header/application-launcher':
-            defaultApplicationLauncherDropdownMountPoints,
-        }}
-      >
-        <GlobalHeader />
-      </Providers>
-    ),
-    title: 'Header without search',
-    path: '/header-without-search',
-  })
-  .addPage({
-    element: (
-      <Providers
-        mountPoints={{
-          'global.header/component': [
-            {
-              Component: HeaderButton,
-              config: {
-                props: {
-                  title: 'A button',
-                  variant: 'outlined',
-                  to: '/',
-                },
-              },
-            },
-            {
-              Component: HeaderButton,
-              config: {
-                props: {
-                  title: 'Another button',
-                  variant: 'outlined',
-                  to: '/',
-                },
-              },
-            },
-            {
-              Component: HeaderButton,
-              config: {
-                props: {
-                  title: 'Help button',
-                  startIcon: 'help',
-                  to: '/help',
-                },
-              },
-            },
-            {
-              Component: HeaderButton,
-              config: {
-                props: {
-                  title: 'GitHub button',
-                  to: 'https://github.com/',
-                },
-              },
-            },
-            {
-              Component: HeaderButton,
-              config: {
-                props: {
-                  title: 'GitHub button',
-                  to: 'https://github.com/',
-                  externalLinkIcon: false,
-                },
-              },
-            },
-          ],
-        }}
-      >
-        <GlobalHeader />
-      </Providers>
-    ),
-    title: 'Header buttons',
-    path: '/header-buttons',
-  })
-  .addPage({
-    element: (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <NotificationBanner
-          title={`🥳 Happy ${new Date().getFullYear()}! 🥳`}
-        />
-        <NotificationBanner title="## This is Markdown!" markdown />
-        <NotificationBanner title="This is also **Markdown**!" markdown />
-        <NotificationBanner title="This is a super long notification that contains a lot of information! This is a super long notification that contains a lot of information! This is a super long notification that contains a lot of information! This is a super long notification that contains a lot of information! This is a super long notification that contains a lot of information! This is a super long notification that contains a lot of information! This is a super long notification that contains a lot of information! This is a super long notification that contains a lot of information!" />
+  },
+});
 
-        {/* <NotificationBanner title="This is a warning!" icon="info" />
-        <NotificationBanner title="This is a warning!" icon="success" />
-        <NotificationBanner title="This is a warning!" icon="warning" />
-        <NotificationBanner title="This is a warning!" icon="error" /> */}
+const devNavModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [devSidebarContent],
+});
 
-        <NotificationBanner
-          title="A colorized notification: ⚠️ Maintainance planned for this week! ⚠️"
-          textColor="blue"
-          backgroundColor="yellow"
-          borderColor="blue"
-        />
-        <NotificationBanner
-          title="And a dismissable notification! Will appear after reload!"
-          dismiss="session"
-        />
-        <NotificationBanner
-          title="And a dismissable notification! Dismiss option is saved in local storage!"
-          dismiss="localstorage"
-        />
+// ---------------------------------------------------------------------------
+// Dev pages (provides sidebar items and content below the header)
+// ---------------------------------------------------------------------------
 
-        <Button
-          onClick={() => {
-            localStorage.removeItem('global-header/NotificationBanner');
-            window.location.reload();
-          }}
-        >
-          Cleanup localStorage
-        </Button>
-      </div>
-    ),
-    title: 'Notifications',
-    path: '/notifications',
-  })
-  .render();
+const devPlugin = createFrontendPlugin({
+  pluginId: 'dev',
+  extensions: [
+    PageBlueprint.make({
+      params: {
+        path: '/',
+        title: 'Home',
+        loader: async () => (
+          <div style={{ padding: 24 }}>
+            <Typography variant="h4" gutterBottom>
+              Global Header Dev Mode
+            </Typography>
+            <Typography>
+              This page exercises the full NFS extension wiring. The global
+              header above is rendered by the <code>globalHeaderModule</code>{' '}
+              AppRootWrapper with all default toolbar and menu-item extensions
+              resolved via the framework.
+            </Typography>
+          </div>
+        ),
+      },
+    }),
+  ],
+});
+
+// ---------------------------------------------------------------------------
+// App
+// ---------------------------------------------------------------------------
+
+const app = createApp({
+  features: [
+    globalHeaderPlugin,
+    globalHeaderModule,
+    globalHeaderTranslationsModule,
+    appDevOverrides,
+    devPlugin,
+    rhdhThemeModule,
+    devNavModule,
+  ],
+});
+
+ReactDOM.createRoot(document.getElementById('root')!).render(app.createRoot());

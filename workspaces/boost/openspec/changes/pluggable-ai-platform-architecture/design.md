@@ -73,24 +73,24 @@ This follows the Backstage pattern established by `plugin-catalog-backend-module
 
 All provider caches use `cacheService` from day one — no raw `Map<>` caches. Provider modules depend on `coreServices.cache` and use `cache.withOptions()` for namespace isolation. The full cache inventory (informed by the 17 cache use cases identified in the Augment analysis):
 
-| Cache Use Case              | Module/Location         | cacheService Configuration                                          |
-| --------------------------- | ----------------------- | ------------------------------------------------------------------- |
-| RuntimeConfigResolver       | core `boost-backend`    | `cache.withOptions({ defaultTtl: '30s' })` + immediate invalidation |
-| Agent card data             | `kagenti` module        | `cache.withOptions({ defaultTtl: '5m' })`                           |
-| Model lists (per provider)  | each provider module    | `cache.withOptions({ defaultTtl: '60s' })`                          |
-| MCP auth tokens             | `llamastack` module     | `cache.set(key, token, { ttl: expiresIn })`                         |
-| Keycloak tokens             | `kagenti` module        | `cache.set(key, token, { ttl: expiresIn })`                         |
-| Tool schema cache           | `responses-api` toolkit | `cache.withOptions({ defaultTtl: '5m' })`                           |
-| Conversation registry       | core `boost-backend`    | `cache.withOptions({ defaultTtl: '24h' })`                          |
-| Document sync hashes        | core `boost-backend`    | cache with no expiry (content hash tracking)                        |
-| Provider session maps       | each provider module    | `cache.withOptions()` with session TTL                              |
-| Client manager              | `llamastack` module     | identity-keyed cache                                                |
-| Embedding cache (toolscope) | `@boost/toolscope`      | Via injectable `CacheAdapter`                                       |
-| Session cache (toolscope)   | `@boost/toolscope`      | Via injectable `CacheAdapter`                                       |
-| Config resolution           | core `boost-backend`    | Delegates to RuntimeConfigResolver cache (single layer)             |
-| Conversation-agent maps     | core `boost-backend`    | session-scoped cache                                                |
-| Rate limiter state          | core `boost-backend`    | per-window cache                                                    |
-| HITL approval pending state | `responses-api` toolkit | request-scoped cache                                                |
+| Cache Use Case              | Module/Location                                           | cacheService Configuration                                          |
+| --------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------- |
+| RuntimeConfigResolver       | core `boost-backend`                                      | `cache.withOptions({ defaultTtl: '30s' })` + immediate invalidation |
+| Agent card data             | `kagenti` module                                          | `cache.withOptions({ defaultTtl: '5m' })`                           |
+| Model lists (per provider)  | each provider module                                      | `cache.withOptions({ defaultTtl: '60s' })`                          |
+| MCP auth tokens             | `llamastack` module                                       | `cache.set(key, token, { ttl: expiresIn })`                         |
+| Keycloak tokens             | `kagenti` module                                          | `cache.set(key, token, { ttl: expiresIn })`                         |
+| Tool schema cache           | `responses-api` toolkit                                   | `cache.withOptions({ defaultTtl: '5m' })`                           |
+| Conversation registry       | core `boost-backend`                                      | `cache.withOptions({ defaultTtl: '24h' })`                          |
+| Document sync hashes        | core `boost-backend`                                      | cache with no expiry (content hash tracking)                        |
+| Provider session maps       | each provider module                                      | `cache.withOptions()` with session TTL                              |
+| Client manager              | `llamastack` module                                       | identity-keyed cache                                                |
+| Embedding cache (toolscope) | `@red-hat-developer-hub/backstage-plugin-boost-toolscope` | Via injectable `CacheAdapter`                                       |
+| Session cache (toolscope)   | `@red-hat-developer-hub/backstage-plugin-boost-toolscope` | Via injectable `CacheAdapter`                                       |
+| Config resolution           | core `boost-backend`                                      | Delegates to RuntimeConfigResolver cache (single layer)             |
+| Conversation-agent maps     | core `boost-backend`                                      | session-scoped cache                                                |
+| Rate limiter state          | core `boost-backend`                                      | per-window cache                                                    |
+| HITL approval pending state | `responses-api` toolkit                                   | request-scoped cache                                                |
 
 Backstage's cache layer handles max-size eviction and Redis backing in production.
 

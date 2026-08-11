@@ -33,7 +33,7 @@ The shared infrastructure lives in a standalone utility package (`@red-hat-devel
 plugins/boost-connector-utils/
 ├── package.json               # @red-hat-developer-hub/backstage-plugin-boost-connector-utils
 ├── src/
-│   ├── index.ts              # Exports: loadCaBundle, createHttpsAgent, createProviderWrapper, createSafeRefresh, isConnectorEnabled, ConnectorErrorContext
+│   ├── index.ts              # Exports: loadCaBundle, createHttpsAgent, createProviderWrapper, createSafeRefresh, classifyConnectorError, isConnectorEnabled, validateConnectorStartupConfig, ConnectorEntityProvider, ConnectorErrorContext, ValidateConnectorStartupConfigOptions
 │   ├── ca-bundle.ts          # CA bundle loading logic
 │   ├── fault-isolation.ts    # Provider wrapper with error handling
 │   └── config.ts             # Enable/disable guard
@@ -56,7 +56,7 @@ import {
 CA bundles are loaded from mounted file paths or K8s Secret references. The config schema supports both patterns:
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       tls:
@@ -71,14 +71,17 @@ catalog:
 **Function signature:**
 
 ```typescript
-function loadCaBundle(connectorConfig: Config): Buffer | undefined;
+function loadCaBundle(
+  connectorConfig: Config,
+  logger: LoggerService,
+): Buffer | undefined;
 ```
 
 The caller passes the Config subtree that contains the `tls` block. This allows each connector to resolve its own config nesting before calling the shared utility:
 
-- MCP Registry: `loadCaBundle(config.getConfig('catalog.providers.mcpRegistry'))`
-- RHOAI MCP Catalog: `loadCaBundle(config.getConfig('catalog.providers.rhoai.mcpCatalog'))`
-- OCI per-registry: `loadCaBundle(registryConfig)` where `registryConfig` is the per-registry Config node
+- MCP Registry: `loadCaBundle(config.getConfig('ai-catalog.providers.mcpRegistry'), logger)`
+- RHOAI MCP Catalog: `loadCaBundle(config.getConfig('ai-catalog.providers.rhoai.mcpCatalog'), logger)`
+- OCI per-registry: `loadCaBundle(registryConfig, logger)` where `registryConfig` is the per-registry Config node
 
 **Behavior:**
 
@@ -93,8 +96,8 @@ The caller passes the Config subtree that contains the `tls` block. This allows 
 **Integration with HTTP client:**
 
 ```typescript
-const connectorConfig = config.getConfig('catalog.providers.mcpRegistry');
-const caBundle = loadCaBundle(connectorConfig);
+const connectorConfig = config.getConfig('ai-catalog.providers.mcpRegistry');
+const caBundle = loadCaBundle(connectorConfig, logger);
 const agent = caBundle ? new https.Agent({ ca: caBundle }) : undefined;
 
 const client = axios.create({ httpsAgent: agent });
@@ -121,12 +124,13 @@ Backstage already provides entity data isolation per provider via entity buckets
 ```typescript
 // In boost-connector-utils/src/fault-isolation.ts
 export function createProviderWrapper(
-  provider: EntityProvider,
+  provider: ConnectorEntityProvider,
   logger: LoggerService,
-): EntityProvider {
+  ctx?: { endpoint?: string },
+): ConnectorEntityProvider {
   return {
     getProviderName: () => provider.getProviderName(),
-    async connect(connection: EntityProviderConnection): Promise<void> {
+    async connect(connection: unknown): Promise<void> {
       try {
         await provider.connect(connection);
       } catch (error) {
@@ -167,12 +171,12 @@ export function createSafeRefresh(
 
 ### Decision 4: Enable/disable pattern
 
-Each connector checks `catalog.providers.<connectorId>.enabled` at backend module initialization. Disabled connectors are never registered — they produce zero resource usage.
+Each connector checks `ai-catalog.providers.<connectorId>.enabled` at backend module initialization. Disabled connectors are never registered — they produce zero resource usage.
 
 **Config schema:**
 
 ```yaml
-catalog:
+ai-catalog:
   providers:
     mcpRegistry:
       enabled: true # Default: true if omitted
@@ -198,7 +202,7 @@ export default createBackendModule({
       },
       async init({ catalog, config, logger }) {
         const connectorConfig = config.getConfig(
-          'catalog.providers.mcpRegistry',
+          'ai-catalog.providers.mcpRegistry',
         );
         if (!isConnectorEnabled(connectorConfig)) {
           logger.info('MCP Registry connector is disabled');

@@ -201,6 +201,12 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'modal.save': 'Sauvegarder',
     'modal.title.edit': 'Modifier la pièce jointe',
     'modal.title.preview': 'Aperçu de la pièce jointe',
+    'notebook.document.rename': 'Renommer',
+    'notebook.document.rename.tooltip': 'Cliquez pour renommer',
+    'notebook.document.rename.error':
+      'Échec du renommage de "{{documentName}}".',
+    'notebook.document.rename.conflict': 'Le nom existe déjà.',
+    'notebook.document.rename.tooLong': 'Nom trop long (max 255).',
     'notebook.document.delete': 'Supprimer',
     'notebook.document.delete.action': 'Supprimer',
     'notebook.document.delete.description':
@@ -228,17 +234,17 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'notebook.upload.modal.selectedFiles':
       '{{count}} sur {{max}} fichiers sélectionnés',
     'notebook.upload.modal.separator': 'ou',
-    'notebook.upload.modal.title': 'Ajouter un document au carnet',
+    'notebook.upload.modal.title': 'Ajouter une ressource au carnet',
     'notebook.view.close': 'Fermer le carnet',
     'notebook.view.documents.add': 'Ajouter',
-    'notebook.view.documents.count': '{{count}} Documents',
+    'notebook.view.documents.count': '{{count}} Ressources',
     'notebook.view.documents.maxReached':
-      'Maximum 10 documents autorisés. Supprimez un document pour en charger un nouveau.',
-    'notebook.view.documents.uploading': 'Chargement du document',
+      'Maximum 10 ressources autorisées. Supprimez une ressource pour en charger une nouvelle.',
+    'notebook.view.documents.uploading': 'Chargement de la ressource',
     'notebook.view.input.disabledTooltip':
       'Sélectionnez au moins une ressource chargée pour commencer à discuter',
     'notebook.view.input.placeholder':
-      'Posez des questions sur vos documents...',
+      'Posez des questions sur vos ressources...',
     'notebook.view.sidebar.collapse': 'Réduire la barre latérale',
     'notebook.view.sidebar.expand': 'Développer la barre latérale',
     'notebook.view.sidebar.resize': 'Redimensionner la barre latérale',
@@ -256,7 +262,7 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
       'Vous ne verrez plus ce carnet ici. Cela supprimera également l’activité associée comme les requêtes, réponses et retours depuis votre activité.',
     'notebooks.delete.title': 'Supprimer {{name}} ?',
     'notebooks.delete.toast': 'Carnet supprimé !',
-    'notebooks.documents': 'Documents',
+    'notebooks.documents': 'Ressources',
     'notebooks.empty.action': 'Créer un nouveau carnet',
     'notebooks.empty.description':
       'Créez un nouveau carnet pour organiser vos sources et générer des informations alimentées par l’IA.',
@@ -266,12 +272,9 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
       'Quels sont les concepts fondamentaux ?',
     'notebooks.prompts.vulnerabilities.title':
       'Afficher mes vulnérabilités critiques',
-    'notebooks.rename.action': 'Envoyer',
-    'notebooks.rename.description':
-      'Veuillez saisir le nouveau nom de ce carnet et cliquer sur Envoyer pour continuer.',
-    'notebooks.rename.label': 'Nouveau nom',
-    'notebooks.rename.placeholder': 'Nouveau nom',
-    'notebooks.rename.title': 'Renommer {{name}} ?',
+    'notebooks.rename.inline.tooltip': 'Cliquez pour renommer',
+    'notebooks.rename.inline.error':
+      'Échec du renommage de "{{notebookName}}".',
     'notebooks.title': 'Mes carnets',
     'notebooks.updated.days': 'Mis à jour il y a {{days}} jours',
     'notebooks.updated.on': 'Mis à jour le',

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ConfigReader, Config } from '@backstage/config';
+import { Config } from '@backstage/config';
 import {
   mockErrorHandler,
   mockServices,
@@ -34,6 +34,7 @@ import {
   AggregatedMetric,
   AggregatedMetricResult,
   aggregationTypes,
+  DEFAULT_NUMBER_THRESHOLDS,
   Metric,
   MetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -49,9 +50,10 @@ import {
   PermissionsService,
 } from '@backstage/backend-plugin-api';
 import { mockDatabaseMetricValues } from '../../__fixtures__/mockDatabaseMetricValues';
-import { AggregationsService } from './aggregations/AggregationService';
+import { AggregationsService } from './aggregations/AggregationsService';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { DbAggregatedMetric } from '../database/types';
+import { mockStatusGroupedAggregationResult } from '../../__fixtures__/mockAggregatedMetricResult';
 
 jest.mock('../utils/getEntitiesOwnedByUser', () => ({
   getEntitiesOwnedByUser: jest.fn(),
@@ -118,7 +120,7 @@ describe('createRouter', () => {
   beforeEach(async () => {
     metricProvidersRegistry = new MetricProvidersRegistry();
     thresholdResolver = new ThresholdResolver(
-      new ConfigReader({}),
+      mockServices.rootConfig({ data: {} }),
       metricProvidersRegistry.listProviders(),
     );
     const catalog = catalogServiceMock.mock();
@@ -526,37 +528,20 @@ describe('createRouter', () => {
         history: undefined,
         aggregationType: 'statusGrouped',
       },
-      result: {
-        total: mockAggregatedMetric.total,
-        timestamp: mockAggregatedMetric.timestamp,
-        values: [
-          { count: 3, name: 'error' },
-          { count: 4, name: 'warning' },
-          { count: 5, name: 'success' },
-        ],
-        thresholds: {
-          rules: [
-            { key: 'error', expression: '>40' },
-            { key: 'warning', expression: '>20' },
-            { key: 'success', expression: '<=20' },
-          ],
-        },
-        entitiesConsidered: 2,
-        calculationErrorCount: 0,
-      },
+      result: mockStatusGroupedAggregationResult,
     };
 
     const mockDbAggregatedMetric: DbAggregatedMetric = {
-      metric_id: 'github.openPRs',
+      metricId: 'github.openPRs',
       total: 12,
-      max_timestamp: new Date('2025-01-01T10:30:00.000Z'),
+      maxTimestamp: new Date('2025-01-01T10:30:00.000Z'),
       statusCounts: {
         error: 3,
         warning: 4,
         success: 5,
       },
-      calculation_error_count: 1,
-      latest_entity_count: 1,
+      calculationErrorCount: 1,
+      latestEntityCount: 1,
     };
 
     let mockCatalog: ReturnType<typeof catalogServiceMock.mock>;
@@ -737,12 +722,8 @@ describe('createRouter', () => {
       const emptyAggregatedMetric = AggregatedMetricMapper.toAggregatedMetric();
       const { AggregatedMetricMapper: ActualAggregatedMetricMapper } =
         jest.requireActual<typeof import('./mappers')>('./mappers');
-      const provider = metricProvidersRegistry.getProvider('github.openPRs');
       const metric = metricProvidersRegistry.getMetric('github.openPRs');
-      const thresholds = thresholdResolver.resolveMetricThresholds(
-        metric,
-        provider.getProviderId(),
-      );
+      const thresholds = thresholdResolver.resolveMetricThresholds(metric);
       const emptyAggregatedMetricResult =
         ActualAggregatedMetricMapper.toAggregatedMetricResult(
           metric,
@@ -837,7 +818,7 @@ describe('createRouter', () => {
     it('should use registry.getMetric to resolve the correct metric for batch providers', async () => {
       const batchProvider = new MockBatchBooleanProvider(
         'filecheck',
-        'filecheck',
+        'filecheck.fileExistence',
         [
           { id: 'readme', path: 'README.md' },
           { id: 'license', path: 'LICENSE' },
@@ -929,16 +910,16 @@ describe('createRouter', () => {
     };
 
     const mockDbAggregatedMetricForAgId: DbAggregatedMetric = {
-      metric_id: 'github.openPRs',
+      metricId: 'github.openPRs',
       total: 6,
-      max_timestamp: new Date('2025-01-01T10:30:00.000Z'),
+      maxTimestamp: new Date('2025-01-01T10:30:00.000Z'),
       statusCounts: {
         error: 1,
         warning: 2,
         success: 3,
       },
-      calculation_error_count: 1,
-      latest_entity_count: 1,
+      calculationErrorCount: 1,
+      latestEntityCount: 1,
     };
 
     let metricRegistry: MetricProvidersRegistry;
@@ -1080,7 +1061,7 @@ describe('createRouter', () => {
     it('should resolve the correct metric for batch providers', async () => {
       const batchProvider = new MockBatchBooleanProvider(
         'filecheck',
-        'filecheck',
+        'filecheck.fileExistence',
         [
           { id: 'readme', path: 'README.md' },
           { id: 'license', path: 'LICENSE' },
@@ -1133,14 +1114,16 @@ describe('createRouter', () => {
     });
 
     it('should use KPI config metricId and type when aggregationId is a KPI key', async () => {
-      const kpiConfig = new ConfigReader({
-        scorecard: {
-          aggregationKPIs: {
-            myKpi: {
-              title: 'Custom KPI title',
-              description: 'Custom KPI description',
-              type: 'statusGrouped',
-              metricId: 'github.openPRs',
+      const kpiConfig = mockServices.rootConfig({
+        data: {
+          scorecard: {
+            aggregationKPIs: {
+              myKpi: {
+                title: 'Custom KPI title',
+                description: 'Custom KPI description',
+                type: 'statusGrouped',
+                metricId: 'github.openPRs',
+              },
             },
           },
         },
@@ -1192,19 +1175,21 @@ describe('createRouter', () => {
     });
 
     it('should use KPI type weightedStatusScore when configured', async () => {
-      const kpiConfig = new ConfigReader({
-        scorecard: {
-          aggregationKPIs: {
-            weightedKpi: {
-              title: 'Weighted health KPI',
-              description: 'Weighted status score',
-              type: 'weightedStatusScore',
-              metricId: 'github.openPRs',
-              options: {
-                statusScores: {
-                  error: 0,
-                  warning: 50,
-                  success: 100,
+      const kpiConfig = mockServices.rootConfig({
+        data: {
+          scorecard: {
+            aggregationKPIs: {
+              weightedKpi: {
+                title: 'Weighted health KPI',
+                description: 'Weighted status score',
+                type: 'weightedStatusScore',
+                metricId: 'github.openPRs',
+                options: {
+                  statusScores: {
+                    error: 0,
+                    warning: 50,
+                    success: 100,
+                  },
                 },
               },
             },
@@ -1256,6 +1241,181 @@ describe('createRouter', () => {
         'github.openPRs',
       );
     });
+
+    it('should use KPI type sum and return scalar result', async () => {
+      const kpiConfig = mockServices.rootConfig({
+        data: {
+          scorecard: {
+            aggregationKPIs: {
+              totalOpenPrs: {
+                title: 'Total Open PRs',
+                description: 'Sum of open PRs',
+                type: aggregationTypes.sum,
+                metricId: 'github.openPRs',
+              },
+            },
+          },
+        },
+      });
+      const kpiService = new CatalogMetricService({
+        catalog: mockCatalog,
+        auth: mockServices.auth.mock({
+          getOwnServiceCredentials: jest.fn().mockResolvedValue({
+            token: 'test-token',
+          }),
+        }),
+        registry: metricRegistry,
+        database: mockDatabaseMetricValues,
+        logger: mockServices.logger.mock(),
+        thresholdResolver,
+      });
+
+      const getSpy = jest
+        .spyOn(
+          mockDatabaseMetricValues,
+          'readScalarAggregatedMetricByEntityRefs',
+        )
+        .mockResolvedValue({
+          metricId: 'github.openPRs',
+          value: 847,
+          total: 42,
+          latestEntityCount: 45,
+          calculationErrorCount: 3,
+          maxTimestamp: new Date('2025-01-01T10:30:00.000Z'),
+        });
+
+      jest
+        .spyOn(AggregatedMetricMapper, 'toAggregatedMetricResult')
+        .mockRestore();
+
+      const aggregationsServiceSum = createTestAggregationsService(
+        mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+        kpiConfig,
+      );
+
+      const router = await createRouter({
+        metricProvidersRegistry: metricRegistry,
+        service: {
+          aggregationsService: aggregationsServiceSum,
+          catalogMetricService: kpiService,
+        },
+        catalog: mockCatalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+        thresholdResolver,
+      });
+      const kpiApp = express();
+      kpiApp.use(router);
+      kpiApp.use(mockErrorHandler());
+
+      const response = await request(kpiApp).get('/aggregations/totalOpenPrs');
+
+      expect(response.status).toBe(200);
+      expect(getSpy).toHaveBeenCalledWith(
+        ['component:default/my-service', 'component:default/my-other-service'],
+        'github.openPRs',
+        'sum',
+        undefined,
+      );
+      expect(response.body.metadata.aggregationType).toBe(aggregationTypes.sum);
+      expect(response.body.result).toEqual({
+        value: 847,
+        total: 42,
+        entitiesConsidered: 45,
+        calculationErrorCount: 3,
+        timestamp: '2025-01-01T10:30:00.000Z',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+      });
+    });
+
+    it('should use KPI filter.status and return filtered scalar result', async () => {
+      const kpiConfig = mockServices.rootConfig({
+        data: {
+          scorecard: {
+            aggregationKPIs: {
+              totalCriticalBugs: {
+                title: 'Total Critical Bugs',
+                description: 'Sum for entities in error status',
+                type: aggregationTypes.sum,
+                metricId: 'jira.openIssues',
+                filter: {
+                  status: 'error',
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const kpiService = new CatalogMetricService({
+        catalog: mockCatalog,
+        auth: mockServices.auth.mock({
+          getOwnServiceCredentials: jest.fn().mockResolvedValue({
+            token: 'test-token',
+          }),
+        }),
+        registry: metricRegistry,
+        database: mockDatabaseMetricValues,
+        logger: mockServices.logger.mock(),
+        thresholdResolver,
+      });
+
+      const getSpy = jest
+        .spyOn(
+          mockDatabaseMetricValues,
+          'readScalarAggregatedMetricByEntityRefs',
+        )
+        .mockResolvedValue({
+          metricId: 'jira.openIssues',
+          value: 30,
+          total: 2,
+          latestEntityCount: 4,
+          calculationErrorCount: 1,
+          maxTimestamp: new Date('2025-01-01T10:30:00.000Z'),
+        });
+
+      jest
+        .spyOn(AggregatedMetricMapper, 'toAggregatedMetricResult')
+        .mockRestore();
+
+      const aggregationsServiceFiltered = createTestAggregationsService(
+        mockDatabaseMetricValues,
+        kpiConfig,
+      );
+
+      const router = await createRouter({
+        metricProvidersRegistry: metricRegistry,
+        service: {
+          aggregationsService: aggregationsServiceFiltered,
+          catalogMetricService: kpiService,
+        },
+        catalog: mockCatalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+        thresholdResolver,
+      });
+      const kpiApp = express();
+      kpiApp.use(router);
+      kpiApp.use(mockErrorHandler());
+
+      const response = await request(kpiApp).get(
+        '/aggregations/totalCriticalBugs',
+      );
+
+      expect(response.status).toBe(200);
+      expect(getSpy).toHaveBeenCalledWith(
+        ['component:default/my-service', 'component:default/my-other-service'],
+        'jira.openIssues',
+        'sum',
+        { status: 'error' },
+      );
+      expect(response.body.metadata.filter).toEqual({ status: 'error' });
+      expect(response.body.result.value).toBe(30);
+      expect(response.body.result.total).toBe(2);
+      expect(response.body.result.entitiesConsidered).toBe(4);
+    });
   });
 
   describe('GET /aggregations/:aggregationId/metadata', () => {
@@ -1272,14 +1432,16 @@ describe('createRouter', () => {
 
       metaCatalog = catalogServiceMock.mock();
 
-      const metaAggregationConfig = new ConfigReader({
-        scorecard: {
-          aggregationKPIs: {
-            myKpi: {
-              title: 'Custom KPI title',
-              description: 'Custom KPI description',
-              type: 'statusGrouped',
-              metricId: 'github.openPRs',
+      const metaAggregationConfig = mockServices.rootConfig({
+        data: {
+          scorecard: {
+            aggregationKPIs: {
+              myKpi: {
+                title: 'Custom KPI title',
+                description: 'Custom KPI description',
+                type: 'statusGrouped',
+                metricId: 'github.openPRs',
+              },
             },
           },
         },
@@ -1338,7 +1500,7 @@ describe('createRouter', () => {
     it('should resolve the correct metric metadata for batch providers', async () => {
       const batchProvider = new MockBatchBooleanProvider(
         'filecheck',
-        'filecheck',
+        'filecheck.fileExistence',
         [
           { id: 'readme', path: 'README.md' },
           { id: 'license', path: 'LICENSE' },
@@ -1416,6 +1578,101 @@ describe('createRouter', () => {
       expect(response.status).toBe(200);
       expect(response.body.title).toBe('GitHub Open PRs');
       expect(response.body.aggregationType).toBe('statusGrouped');
+    });
+
+    it('should include filter in metadata for scalar KPI with filter.status', async () => {
+      const filteredMetaConfig = mockServices.rootConfig({
+        data: {
+          scorecard: {
+            aggregationKPIs: {
+              totalCriticalBugs: {
+                title: 'Total Critical Bugs',
+                description: 'Sum for entities in error status',
+                type: aggregationTypes.sum,
+                metricId: 'github.openPRs',
+                filter: {
+                  status: 'error',
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const aggregationsMetaServiceFiltered = createTestAggregationsService(
+        mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+        filteredMetaConfig,
+      );
+
+      const router = await createRouter({
+        metricProvidersRegistry: metaRegistry,
+        service: {
+          aggregationsService: aggregationsMetaServiceFiltered,
+          catalogMetricService: metaCatalogMetricService,
+        },
+        catalog: metaCatalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+        thresholdResolver,
+      });
+      const filteredMetaApp = express();
+      filteredMetaApp.use(router);
+      filteredMetaApp.use(mockErrorHandler());
+
+      const response = await request(filteredMetaApp).get(
+        '/aggregations/totalCriticalBugs/metadata',
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body.filter).toEqual({ status: 'error' });
+      expect(response.body.aggregationType).toBe(aggregationTypes.sum);
+    });
+
+    it('should omit filter in metadata for scalar KPI without filter', async () => {
+      const scalarMetaConfig = mockServices.rootConfig({
+        data: {
+          scorecard: {
+            aggregationKPIs: {
+              totalOpenPrs: {
+                title: 'Total Open PRs',
+                description: 'Sum of open PRs',
+                type: aggregationTypes.sum,
+                metricId: 'github.openPRs',
+              },
+            },
+          },
+        },
+      });
+
+      const aggregationsMetaServiceScalar = createTestAggregationsService(
+        mockDatabaseMetricValues as unknown as DatabaseMetricValues,
+        scalarMetaConfig,
+      );
+
+      const router = await createRouter({
+        metricProvidersRegistry: metaRegistry,
+        service: {
+          aggregationsService: aggregationsMetaServiceScalar,
+          catalogMetricService: metaCatalogMetricService,
+        },
+        catalog: metaCatalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+        thresholdResolver,
+      });
+      const scalarMetaApp = express();
+      scalarMetaApp.use(router);
+      scalarMetaApp.use(mockErrorHandler());
+
+      const response = await request(scalarMetaApp).get(
+        '/aggregations/totalOpenPrs/metadata',
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body).not.toHaveProperty('filter');
+      expect(response.body.aggregationType).toBe(aggregationTypes.sum);
     });
   });
 

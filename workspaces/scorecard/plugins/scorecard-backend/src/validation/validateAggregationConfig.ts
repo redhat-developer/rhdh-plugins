@@ -18,40 +18,18 @@ import { InputError } from '@backstage/errors';
 import type { Config } from '@backstage/config';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import { AGGREGATION_KPIS_CONFIG_PATH } from '../constants';
-import { aggregationConfigSchema } from './schemas/aggregationConfigSchemas';
-import { buildAggregationConfig } from '../utils/buildAggregationConfig';
-import { validateThresholdsForAggregation } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import {
-  type AggregationConfig,
-  aggregationTypes,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-
-function parseAggregationConfig(config: unknown): AggregationConfig {
-  const parsed = aggregationConfigSchema.safeParse(config);
-
-  if (!parsed.success) {
-    const errorMessage = parsed.error.errors
-      .map(error => `${error.message} for attribute "${error.path.join('.')}"`)
-      .join('; ');
-
-    throw new InputError(`${errorMessage}`);
-  }
-
-  if (
-    parsed.data?.type === aggregationTypes.weightedStatusScore &&
-    parsed.data.options?.thresholds
-  ) {
-    validateThresholdsForAggregation(parsed.data.options.thresholds, 'number');
-  }
-
-  return parsed.data;
-}
+import { ThresholdResolver } from '../threshold/ThresholdResolver';
+import { validateScalarAggregationConfig } from './validateScalarAggregationConfig';
+import { parseValidatedAggregationConfig } from '../utils/aggregation/parseValidatedAggregationConfig';
+import { buildAggregationConfig } from '../utils/aggregation/buildAggregationConfig';
+import { isScalarAggregationConfig } from '../utils/aggregation/isScalarAggregationConfig';
 
 export function validateAggregationConfig(options: {
   rootConfig: Config;
   registry: MetricProvidersRegistry;
+  thresholdResolver: ThresholdResolver;
 }): void {
-  const { rootConfig, registry } = options;
+  const { rootConfig, registry, thresholdResolver } = options;
 
   const aggregationKPIsConfig = rootConfig.getOptionalConfig(
     AGGREGATION_KPIS_CONFIG_PATH,
@@ -64,16 +42,25 @@ export function validateAggregationConfig(options: {
   for (const aggregationId of aggregationKPIsConfig.keys()) {
     const config = aggregationKPIsConfig.getConfig(aggregationId);
 
-    const aggregationConfig = buildAggregationConfig(aggregationId, {
-      config,
-    });
-
-    parseAggregationConfig(aggregationConfig);
+    const aggregationConfig = parseValidatedAggregationConfig(
+      buildAggregationConfig(aggregationId, {
+        config,
+      }),
+    );
 
     if (!registry.hasProvider(aggregationConfig.metricId)) {
-      throw new Error(
+      throw new InputError(
         `Metric provider with ID '${aggregationConfig.metricId}' is not registered (${AGGREGATION_KPIS_CONFIG_PATH}.${aggregationId}).`,
       );
+    }
+
+    if (isScalarAggregationConfig(aggregationConfig)) {
+      validateScalarAggregationConfig({
+        aggregationConfig,
+        aggregationId,
+        registry,
+        thresholdResolver,
+      });
     }
   }
 }

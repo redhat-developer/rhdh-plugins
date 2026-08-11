@@ -202,6 +202,12 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'modal.save': 'Speichern',
     'modal.title.edit': 'Anhang bearbeiten',
     'modal.title.preview': 'Anhang in der Vorschau anzeigen',
+    'notebook.document.rename': 'Umbenennen',
+    'notebook.document.rename.tooltip': 'Klicken zum Umbenennen',
+    'notebook.document.rename.error':
+      'Umbenennung von "{{documentName}}" fehlgeschlagen.',
+    'notebook.document.rename.conflict': 'Name existiert bereits.',
+    'notebook.document.rename.tooLong': 'Name zu lang (max 255).',
     'notebook.document.delete': 'Löschen',
     'notebook.document.delete.action': 'Entfernen',
     'notebook.document.delete.description':
@@ -229,16 +235,16 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebook.upload.modal.selectedFiles':
       '{{count}} von {{max}} Dateien ausgewählt',
     'notebook.upload.modal.separator': 'oder',
-    'notebook.upload.modal.title': 'Dokument zum Notizbuch hinzufügen',
+    'notebook.upload.modal.title': 'Ressource zum Notizbuch hinzufügen',
     'notebook.view.close': 'Notizbuch schließen',
     'notebook.view.documents.add': 'Hinzufügen',
-    'notebook.view.documents.count': '{{count}} Dokumente',
+    'notebook.view.documents.count': '{{count}} Ressourcen',
     'notebook.view.documents.maxReached':
-      'Maximal 10 Dokumente sind erlaubt. Löschen Sie ein Dokument, um ein neues hochzuladen.',
-    'notebook.view.documents.uploading': 'Dokument wird hochgeladen',
+      'Maximal 10 Ressourcen sind erlaubt. Löschen Sie eine Ressource, um eine neue hochzuladen.',
+    'notebook.view.documents.uploading': 'Ressource wird hochgeladen',
     'notebook.view.input.disabledTooltip':
       'Wählen Sie mindestens eine geladene Ressource aus, um den Chat zu starten',
-    'notebook.view.input.placeholder': 'Fragen Sie zu Ihren Dokumenten...',
+    'notebook.view.input.placeholder': 'Fragen Sie zu Ihren Ressourcen...',
     'notebook.view.sidebar.collapse': 'Seitenleiste einklappen',
     'notebook.view.sidebar.expand': 'Seitenleiste ausklappen',
     'notebook.view.sidebar.resize': 'Größe der Seitenleiste ändern',
@@ -257,7 +263,7 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
       'Dieses Notizbuch wird hier nicht mehr angezeigt. Dadurch werden auch zugehörige Aktivitäten wie Eingaben, Antworten und Feedback aus Ihrer Aktivität gelöscht.',
     'notebooks.delete.title': '{{name}} löschen?',
     'notebooks.delete.toast': 'Notizbuch gelöscht!',
-    'notebooks.documents': 'Dokumente',
+    'notebooks.documents': 'Ressourcen',
     'notebooks.empty.action': 'Neues Notizbuch erstellen',
     'notebooks.empty.description':
       'Erstellen Sie ein neues Notizbuch, um Ihre Quellen zu organisieren und KI-gestützte Erkenntnisse zu gewinnen.',
@@ -266,12 +272,9 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebooks.prompts.coreConcepts.title': 'Was sind die Kernkonzepte?',
     'notebooks.prompts.vulnerabilities.title':
       'Zeige meine kritischen Schwachstellen',
-    'notebooks.rename.action': 'Senden',
-    'notebooks.rename.description':
-      'Bitte geben Sie den neuen Namen für dieses Notizbuch ein und klicken Sie auf „Senden“, um fortzufahren.',
-    'notebooks.rename.label': 'Neuer Name',
-    'notebooks.rename.placeholder': 'Neuer Name',
-    'notebooks.rename.title': '{{name}} umbenennen?',
+    'notebooks.rename.inline.tooltip': 'Klicken zum Umbenennen',
+    'notebooks.rename.inline.error':
+      'Umbenennung von "{{notebookName}}" fehlgeschlagen.',
     'notebooks.title': 'Meine Notizbücher',
     'notebooks.updated.days': 'Vor {{days}} Tagen aktualisiert',
     'notebooks.updated.on': 'Aktualisiert am',

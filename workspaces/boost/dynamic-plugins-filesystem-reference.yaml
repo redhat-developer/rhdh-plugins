@@ -36,8 +36,8 @@ plugins:
   # Provider modules — install at least one
   # -----------------------------------------------------------------------
 
-  # Llama Stack provider: connects to a Llama Stack Responses API endpoint
-  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-boost-backend-module-llamastack-dynamic
+  # OGX provider: connects to a OGX Responses API endpoint
+  - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-boost-backend-module-ogx-dynamic
     disabled: false
 
   # Kagenti provider: connects to a Kagenti multi-agent orchestrator

@@ -199,6 +199,12 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'modal.save': 'Salva',
     'modal.title.edit': 'Modifica allegato',
     'modal.title.preview': 'Anteprima allegato',
+    'notebook.document.rename': 'Rinomina',
+    'notebook.document.rename.tooltip': 'Clicca per rinominare',
+    'notebook.document.rename.error':
+      'Impossibile rinominare "{{documentName}}".',
+    'notebook.document.rename.conflict': 'Il nome esiste già.',
+    'notebook.document.rename.tooLong': 'Nome troppo lungo (max 255).',
     'notebook.document.delete': 'Elimina',
     'notebook.document.delete.action': 'Rimuovi',
     'notebook.document.delete.description':
@@ -226,17 +232,17 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'notebook.upload.modal.selectedFiles':
       '{{count}} di {{max}} file selezionati',
     'notebook.upload.modal.separator': 'o',
-    'notebook.upload.modal.title': 'Aggiungi un documento al quaderno',
+    'notebook.upload.modal.title': 'Aggiungi una risorsa al quaderno',
     'notebook.view.close': 'Chiudi quaderno',
     'notebook.view.documents.add': 'Aggiungi',
-    'notebook.view.documents.count': '{{count}} Documenti',
+    'notebook.view.documents.count': '{{count}} Risorse',
     'notebook.view.documents.maxReached':
-      'Sono consentiti al massimo 10 documenti. Elimina un documento per caricarne uno nuovo.',
-    'notebook.view.documents.uploading': 'Caricamento documento',
+      'Sono consentite al massimo 10 risorse. Elimina una risorsa per caricarne una nuova.',
+    'notebook.view.documents.uploading': 'Caricamento risorsa',
     'notebook.view.input.disabledTooltip':
       'Seleziona almeno una risorsa caricata per iniziare a chattare',
     'notebook.view.input.placeholder':
-      'Chiedi informazioni sui tuoi documenti...',
+      'Chiedi informazioni sulle tue risorse...',
     'notebook.view.sidebar.collapse': 'Comprimi barra laterale',
     'notebook.view.sidebar.expand': 'Espandi barra laterale',
     'notebook.view.sidebar.resize': 'Ridimensiona barra laterale',
@@ -254,7 +260,7 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
       'Non vedrai più questo quaderno qui. Questo eliminerà anche le attività correlate come prompt, risposte e feedback dalla tua attività.',
     'notebooks.delete.title': 'Eliminare {{name}}?',
     'notebooks.delete.toast': 'Quaderno eliminato!',
-    'notebooks.documents': 'Documenti',
+    'notebooks.documents': 'Risorse',
     'notebooks.empty.action': 'Crea un nuovo quaderno',
     'notebooks.empty.description':
       'Crea un nuovo quaderno per organizzare le tue fonti e generare insight basati su IA.',
@@ -263,12 +269,9 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'notebooks.prompts.coreConcepts.title': 'Quali sono i concetti chiave?',
     'notebooks.prompts.vulnerabilities.title':
       'Mostra le mie vulnerabilità critiche',
-    'notebooks.rename.action': 'Invia',
-    'notebooks.rename.description':
-      'Inserisci il nuovo nome per questo quaderno e fai clic su Invia per continuare.',
-    'notebooks.rename.label': 'Nuovo nome',
-    'notebooks.rename.placeholder': 'Nuovo nome',
-    'notebooks.rename.title': 'Rinominare {{name}}?',
+    'notebooks.rename.inline.tooltip': 'Clicca per rinominare',
+    'notebooks.rename.inline.error':
+      'Impossibile rinominare "{{notebookName}}".',
     'notebooks.title': 'I miei quaderni',
     'notebooks.updated.days': 'Aggiornato {{days}} giorni fa',
     'notebooks.updated.on': 'Aggiornato il',

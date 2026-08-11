@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-common
 
+## 0.9.1
+
+### Patch Changes
+
+- d623d36: Refreshed `yarn.lock` to align resolved dependency versions.
+
 ## 0.9.0
 
 ### Minor Changes
