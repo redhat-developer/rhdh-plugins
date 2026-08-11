@@ -15,7 +15,7 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
-import { NotFoundError } from '@backstage/errors';
+import { ConflictError, NotFoundError } from '@backstage/errors';
 
 import { setupServer } from 'msw/node';
 
@@ -110,12 +110,10 @@ describe('DocumentService', () => {
   describe('getFileStatus', () => {
     it('should get file status for existing document', async () => {
       const fileId = await documentService.uploadFile('Content', 'Test Doc');
-      await documentService.upsertDocument(
-        sessionId,
-        'Test Doc',
-        'text',
+      await documentService.upsertDocument(sessionId, 'Test Doc', {
+        fileType: 'text',
         fileId,
-      );
+      });
 
       const status = await documentService.getFileStatus(sessionId, 'Test Doc');
 
@@ -140,8 +138,7 @@ describe('DocumentService', () => {
       const result = await documentService.upsertDocument(
         sessionId,
         'Test Document',
-        'text',
-        fileId,
+        { fileType: 'text', fileId },
       );
 
       expect(result.document_id).toBe('Test Document');
@@ -155,12 +152,10 @@ describe('DocumentService', () => {
         'Original content',
         'Original Title',
       );
-      await documentService.upsertDocument(
-        sessionId,
-        'Original Title',
-        'text',
-        fileId1,
-      );
+      await documentService.upsertDocument(sessionId, 'Original Title', {
+        fileType: 'text',
+        fileId: fileId1,
+      });
 
       const fileId2 = await documentService.uploadFile(
         'Updated content',
@@ -169,13 +164,12 @@ describe('DocumentService', () => {
       const result = await documentService.upsertDocument(
         sessionId,
         'Original Title',
-        'text',
-        fileId2,
+        { fileType: 'text', fileId: fileId2 },
       );
 
       expect(result.document_id).toBe('Original Title');
       expect(result.file_id).toBe(fileId2);
-      expect(result.replaced).toBe(false);
+      expect(result.replaced).toBe(true);
     });
 
     it('should create a new document when title differs from existing', async () => {
@@ -183,12 +177,10 @@ describe('DocumentService', () => {
         'Content',
         'Original Title',
       );
-      await documentService.upsertDocument(
-        sessionId,
-        'Original Title',
-        'text',
-        fileId1,
-      );
+      await documentService.upsertDocument(sessionId, 'Original Title', {
+        fileType: 'text',
+        fileId: fileId1,
+      });
 
       const fileId2 = await documentService.uploadFile(
         'Updated content',
@@ -197,8 +189,7 @@ describe('DocumentService', () => {
       const result = await documentService.upsertDocument(
         sessionId,
         'New Title',
-        'text',
-        fileId2,
+        { fileType: 'text', fileId: fileId2 },
       );
 
       expect(result.document_id).toBe('New Title');
@@ -212,23 +203,19 @@ describe('DocumentService', () => {
         'Content 1',
         'Document 1',
       );
-      await documentService.upsertDocument(
-        sessionId,
-        'Document 1',
-        'text',
-        fileId1,
-      );
+      await documentService.upsertDocument(sessionId, 'Document 1', {
+        fileType: 'text',
+        fileId: fileId1,
+      });
 
       const fileId2 = await documentService.uploadFile(
         'Content 2',
         'Document 2',
       );
-      await documentService.upsertDocument(
-        sessionId,
-        'Document 2',
-        'text',
-        fileId2,
-      );
+      await documentService.upsertDocument(sessionId, 'Document 2', {
+        fileType: 'text',
+        fileId: fileId2,
+      });
 
       const documents = await documentService.listDocuments(sessionId);
 
@@ -245,20 +232,16 @@ describe('DocumentService', () => {
 
     it('should filter documents by file type', async () => {
       const fileId1 = await documentService.uploadFile('Content', 'Text Doc');
-      await documentService.upsertDocument(
-        sessionId,
-        'Text Doc',
-        'text',
-        fileId1,
-      );
+      await documentService.upsertDocument(sessionId, 'Text Doc', {
+        fileType: 'text',
+        fileId: fileId1,
+      });
 
       const fileId2 = await documentService.uploadFile('Content', 'PDF Doc');
-      await documentService.upsertDocument(
-        sessionId,
-        'PDF Doc',
-        'pdf',
-        fileId2,
-      );
+      await documentService.upsertDocument(sessionId, 'PDF Doc', {
+        fileType: 'pdf',
+        fileId: fileId2,
+      });
 
       const textDocs = await documentService.listDocuments(sessionId, 'text');
 
@@ -271,12 +254,10 @@ describe('DocumentService', () => {
         'Content',
         'Test Document',
       );
-      await documentService.upsertDocument(
-        sessionId,
-        'Test Document',
-        'text',
+      await documentService.upsertDocument(sessionId, 'Test Document', {
+        fileType: 'text',
         fileId,
-      );
+      });
 
       const documents = await documentService.listDocuments(sessionId);
 
@@ -288,18 +269,116 @@ describe('DocumentService', () => {
     });
   });
 
+  describe('renameDocument (via upsertDocument)', () => {
+    it('should rename a document successfully', async () => {
+      const fileId = await documentService.uploadFile(
+        'Content',
+        'Original Name',
+      );
+      await documentService.upsertDocument(sessionId, 'Original Name', {
+        fileType: 'text',
+        fileId,
+      });
+
+      await documentService.upsertDocument(sessionId, 'Original Name', {
+        newTitle: 'New Name',
+      });
+
+      const documents = await documentService.listDocuments(sessionId);
+      expect(documents).toHaveLength(1);
+      expect(documents[0].document_id).toBe('New Name');
+    });
+
+    it('should throw NotFoundError for non-existent document when fileId is omitted', async () => {
+      await expect(
+        documentService.upsertDocument(sessionId, 'Non-existent', {
+          newTitle: 'New Name',
+        }),
+      ).rejects.toThrow(NotFoundError);
+    });
+
+    it('should throw ConflictError when new title already exists', async () => {
+      const fileId1 = await documentService.uploadFile('Content 1', 'Doc A');
+      await documentService.upsertDocument(sessionId, 'Doc A', {
+        fileType: 'text',
+        fileId: fileId1,
+      });
+
+      const fileId2 = await documentService.uploadFile('Content 2', 'Doc B');
+      await documentService.upsertDocument(sessionId, 'Doc B', {
+        fileType: 'text',
+        fileId: fileId2,
+      });
+
+      await expect(
+        documentService.upsertDocument(sessionId, 'Doc A', {
+          newTitle: 'Doc B',
+        }),
+      ).rejects.toThrow(ConflictError);
+    });
+
+    it('should preserve other documents when renaming', async () => {
+      const fileId1 = await documentService.uploadFile('Content 1', 'Doc A');
+      await documentService.upsertDocument(sessionId, 'Doc A', {
+        fileType: 'text',
+        fileId: fileId1,
+      });
+
+      const fileId2 = await documentService.uploadFile('Content 2', 'Doc B');
+      await documentService.upsertDocument(sessionId, 'Doc B', {
+        fileType: 'text',
+        fileId: fileId2,
+      });
+
+      await documentService.upsertDocument(sessionId, 'Doc A', {
+        newTitle: 'Doc A Renamed',
+      });
+
+      const documents = await documentService.listDocuments(sessionId);
+      expect(documents).toHaveLength(2);
+      expect(documents.map(d => d.document_id)).toContain('Doc A Renamed');
+      expect(documents.map(d => d.document_id)).toContain('Doc B');
+    });
+
+    it('should rollback when re-create fails after delete', async () => {
+      const fileId = await documentService.uploadFile(
+        'Content',
+        'Rollback Doc',
+      );
+      await documentService.upsertDocument(sessionId, 'Rollback Doc', {
+        fileType: 'text',
+        fileId,
+      });
+
+      // Spy on the vector store files.create to fail on the second call (re-create)
+      const createSpy = jest.spyOn(operator.vectorStores.files, 'create');
+      createSpy.mockRejectedValueOnce(new Error('Simulated create failure'));
+
+      await expect(
+        documentService.upsertDocument(sessionId, 'Rollback Doc', {
+          newTitle: 'Should Fail',
+        }),
+      ).rejects.toThrow('Simulated create failure');
+
+      // Document should still be accessible under its original name after rollback
+      const documents = await documentService.listDocuments(sessionId);
+      expect(documents).toHaveLength(1);
+      expect(documents[0].document_id).toBe('Rollback Doc');
+
+      createSpy.mockRestore();
+    });
+  });
+
   describe('deleteDocument', () => {
     it('should delete a document successfully', async () => {
       const fileId = await documentService.uploadFile(
         'Content',
         'Test Document',
       );
-      await documentService.upsertDocument(
-        sessionId,
-        'Test Document',
-        'text',
+      await documentService.upsertDocument(sessionId, 'Test Document', {
+        fileType: 'text',
         fileId,
-      );
+      });
 
       await documentService.deleteDocument(sessionId, 'Test Document');
 

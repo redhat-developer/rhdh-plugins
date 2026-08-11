@@ -1,27 +1,24 @@
 name: Prior Version Release Workspace
 
 on:
-  # ADDED: Only trigger on PR closed event on workspace/** branch.
-  #        The assumption is that branch protection rules and CODEOWNERS are configured.
-
   pull_request:
     types:
       - closed
     branches:
       - 'workspace/**'
+      - 'release-*/*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
-    # ADDED: Checks if PR is a Version Packages PR on workspace/** branch
-    #        and validates PR title, author, branch and merged status.
   check-merged-pr:
-    name: Check if PR is a Version Packages PR on workspace/** branch
+    name: Check if PR is a Version Packages PR
     runs-on: ubuntu-latest
     outputs:
         is_version_pr: ${{ steps.check_pr.outputs.is_version_pr }}
         workspace_name: ${{ steps.extract_workspace.outputs.workspace_name }}
+        version_branch_id: ${{ steps.extract_workspace.outputs.version_branch_id }}
     steps:
         - name: Check PR title, author, branch and merged status
           id: check_pr
@@ -40,14 +37,23 @@ jobs:
                 echo "is_version_pr=false" >> $GITHUB_OUTPUT
               fi
 
-        # ADDED: Extracts workspace name from branch, ensuring it is a workspace/** branch
         - name: Extract Workspace name from branch
           id: extract_workspace
           env:
             BASE_REF: ${{ github.event.pull_request.base.ref }}
           run: |
-              WORKSPACE_NAME=$(echo "$BASE_REF" | cut -d'/' -f2)
+              if [[ "$BASE_REF" == workspace/* ]]; then
+                WORKSPACE_NAME=$(echo "$BASE_REF" | cut -d'/' -f2)
+                VERSION_BRANCH_ID="$WORKSPACE_NAME"
+              elif [[ "$BASE_REF" == release-*/* ]]; then
+                WORKSPACE_NAME=$(echo "$BASE_REF" | cut -d'/' -f2)
+                VERSION_BRANCH_ID="$BASE_REF"
+              else
+                WORKSPACE_NAME=$(echo "$BASE_REF" | cut -d'/' -f1)
+                VERSION_BRANCH_ID="$WORKSPACE_NAME"
+              fi
               echo "workspace_name=$WORKSPACE_NAME" >> $GITHUB_OUTPUT
+              echo "version_branch_id=$VERSION_BRANCH_ID" >> $GITHUB_OUTPUT
 
   changesets-pr:
     name: Update Version Packages PR for ${{ needs.check-merged-pr.outputs.workspace_name }} on branch ${{ github.ref }}
@@ -70,10 +76,10 @@ jobs:
 
       - name: Verify maintenance-changesets-release branch does not exist
         env:
-          WORKSPACE_NAME: ${{ needs.check-merged-pr.outputs.workspace_name }}         
+          VERSION_BRANCH_ID: ${{ needs.check-merged-pr.outputs.version_branch_id }}
         run: |
-          if git ls-remote --exit-code origin "refs/heads/maintenance-changesets-release/$WORKSPACE_NAME"; then
-            echo "Error: maintenance-changesets-release/$WORKSPACE_NAME branch already exists. Please clean up the branch before proceeding."
+          if git ls-remote --exit-code origin "refs/heads/maintenance-changesets-release/$VERSION_BRANCH_ID"; then
+            echo "Error: maintenance-changesets-release/$VERSION_BRANCH_ID branch already exists. Please clean up the branch before proceeding."
             exit 1
           fi
 
@@ -126,7 +132,7 @@ jobs:
           title: Version Packages (${{ needs.check-merged-pr.outputs.workspace_name }})
           cwd: workspaces/${{ needs.check-merged-pr.outputs.workspace_name }}
           version: yarn changeset version
-          versionBranch: maintenance-changesets-release/${{ needs.check-merged-pr.outputs.workspace_name }}
+          versionBranch: maintenance-changesets-release/${{ needs.check-merged-pr.outputs.version_branch_id }}
           skipRootChangelogUpdate: true
         env:
           GITHUB_TOKEN: ${{ secrets.RHDH_BOT_TOKEN }}

@@ -200,6 +200,21 @@ export class NotebooksApiClient implements NotebooksAPI {
     }));
   }
 
+  async renameDocument(
+    sessionId: string,
+    documentId: string,
+    newTitle: string,
+  ) {
+    const baseUrl = await this.getBaseUrl();
+    await this.fetchJson(
+      `${baseUrl}/v1/sessions/${encodeURIComponent(sessionId)}/documents/${encodeURIComponent(documentId)}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ title: newTitle }),
+      },
+    );
+  }
+
   async deleteDocument(sessionId: string, documentId: string) {
     const baseUrl = await this.getBaseUrl();
     await this.fetchJson(
