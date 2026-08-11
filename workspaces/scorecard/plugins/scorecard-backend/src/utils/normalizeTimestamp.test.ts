@@ -44,7 +44,15 @@ describe('normalizeTimestamp', () => {
     );
   });
 
-  it('should return current time when input is undefined', () => {
-    expect(normalizeTimestamp(undefined)).toEqual(new Date(dateString));
+  it('should return epoch when input is undefined', () => {
+    expect(normalizeTimestamp(undefined)).toEqual(new Date(0));
+  });
+
+  it('should return epoch when input is null', () => {
+    expect(normalizeTimestamp(null)).toEqual(new Date(0));
+  });
+
+  it('should return epoch when input is an empty string', () => {
+    expect(normalizeTimestamp('')).toEqual(new Date(0));
   });
 });

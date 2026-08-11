@@ -16,7 +16,8 @@
 
 import type { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-export const mockFirstThresholds = {
+/** Success when value is >= 80; error otherwise. */
+export const mockHigherIsBetterThresholds = {
   rules: [
     {
       key: 'success',
@@ -31,7 +32,8 @@ export const mockFirstThresholds = {
   ],
 } as ThresholdConfig;
 
-export const mockSecondThresholds = {
+/** Error when value is > 50; warning 10–50; success when < 10. */
+export const mockLowerIsBetterThresholds = {
   rules: [
     {
       key: 'error',

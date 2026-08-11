@@ -150,11 +150,15 @@ or all `"boolean"`).
 each metric, stored per **metric ID** in `ThresholdResolver.configuredThresholds`.
 Higher tiers override lower tiers:
 
-1. **Entity annotations** (highest priority) — per-entity overrides set
-   via catalog annotations with the prefix
+1. **Entity annotations** (highest priority, when allowed) — per-entity
+   overrides set via catalog annotations with the prefix
    `scorecard.io/<metricId>.thresholds.rules.<key>` (full metric ID).
    Merged on top of resolved thresholds by
-   `mergeEntityAndMetricThresholds()`.
+   `mergeEntityAndMetricThresholds()`. Applied only when
+   `areThresholdAnnotationOverridesAllowed()` returns true for the
+   metric ID (`scorecard.entityAnnotations.enabled` and
+   `scorecard.entityAnnotations.thresholds.enabled` / `except`);
+   otherwise this tier is skipped.
 2. **`app-config.yaml` overrides** (middle priority) — administrator
    overrides by configuration, most specific level wins
    (metric > provider), complete replace of metric defaults.

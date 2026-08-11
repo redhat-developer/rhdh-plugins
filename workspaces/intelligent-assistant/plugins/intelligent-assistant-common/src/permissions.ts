@@ -80,6 +80,14 @@ export const iaSavedPromptsManagePermission = createPermission({
   },
 });
 
+/** This permission is used to view the list of configured skills
+ * @public
+ */
+export const iaSkillsAccessPermission = createPermission({
+  name: 'intelligent-assistant.skills.access',
+  attributes: {},
+});
+
 /**
  * List of all permissions on permission polices.
  *
@@ -93,4 +101,5 @@ export const iaPermissions = [
   iaMcpManagePermission,
   iaNotebooksUsePermission,
   iaSavedPromptsManagePermission,
+  iaSkillsAccessPermission,
 ];

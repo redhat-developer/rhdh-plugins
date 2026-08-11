@@ -1646,5 +1646,98 @@ describe('DatabaseMetricValues', () => {
         expect(result).toBeUndefined();
       },
     );
+
+    describe.each(databases.eachSupportedId())(
+      'status filter - %p',
+      databaseId => {
+        let db: DatabaseMetricValues;
+
+        beforeAll(async () => {
+          const database = await createDatabase(databaseId);
+          const { client } = database;
+          db = database.db;
+
+          await client('metric_values').insert(
+            [
+              createMetricValue({
+                entityRef: 'component:default/service1',
+                value: 10,
+                status: 'success',
+              }),
+              createMetricValue({
+                entityRef: 'component:default/service2',
+                value: 25,
+                status: 'error',
+              }),
+              createMetricValue({
+                entityRef: 'component:default/service3',
+                value: 5,
+                status: 'error',
+              }),
+              createMetricValue({
+                entityRef: 'component:default/service4',
+                value: null,
+                status: null,
+                errorMessage: 'Failed to fetch',
+              }),
+            ].map(toMetricValueRow),
+          );
+        });
+
+        const entityRefs = [
+          'component:default/service1',
+          'component:default/service2',
+          'component:default/service3',
+          'component:default/service4',
+        ];
+
+        const portfolioCounts = {
+          latestEntityCount: 4,
+          calculationErrorCount: 1,
+          maxTimestamp: baseTimestamp,
+        };
+
+        it.each([
+          ['sum', 'error', { value: 30, total: 2 }],
+          ['count', 'error', { value: 2, total: 2 }],
+          ['max', 'error', { value: 25, total: 2 }],
+          ['min', 'error', { value: 5, total: 2 }],
+          ['average', 'error', { value: 15, total: 2 }],
+          ['sum', 'success', { value: 10, total: 1 }],
+        ] as const)(
+          'should %s only rows matching filter.status=%s',
+          async (aggregationFn, status, expected) => {
+            const result = await db.readScalarAggregatedMetricByEntityRefs(
+              entityRefs,
+              'github.metric1',
+              aggregationFn,
+              { status },
+            );
+
+            expect(result).toEqual({
+              metricId: 'github.metric1',
+              ...expected,
+              ...portfolioCounts,
+            });
+          },
+        );
+
+        it('should return zero value and total when no rows match filter.status', async () => {
+          const result = await db.readScalarAggregatedMetricByEntityRefs(
+            entityRefs,
+            'github.metric1',
+            'sum',
+            { status: 'warning' },
+          );
+
+          expect(result).toEqual({
+            metricId: 'github.metric1',
+            value: 0,
+            total: 0,
+            ...portfolioCounts,
+          });
+        });
+      },
+    );
   });
 });

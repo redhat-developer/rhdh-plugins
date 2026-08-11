@@ -16,6 +16,7 @@
 
 import type {
   AggregatedMetric,
+  AggregationConfigFilter,
   ScalarAggregatedMetric,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DatabaseMetricValues } from '../../database/DatabaseMetricValues';
@@ -46,6 +47,7 @@ export class AggregatedMetricLoader {
     entityRefs: string[],
     metricId: string,
     aggregationFn: ScalarAggregationFn,
+    filter?: AggregationConfigFilter,
   ): Promise<ScalarAggregatedMetric> {
     if (entityRefs.length === 0) {
       return AggregatedMetricMapper.toScalarAggregatedMetric();
@@ -56,6 +58,7 @@ export class AggregatedMetricLoader {
         entityRefs,
         metricId,
         aggregationFn,
+        filter,
       );
 
     return AggregatedMetricMapper.toScalarAggregatedMetric(scalarMetric);

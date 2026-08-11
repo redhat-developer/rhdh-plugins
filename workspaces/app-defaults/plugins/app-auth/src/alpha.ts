@@ -17,11 +17,14 @@
 /**
  * New Frontend System: RHDH sign-in and auth API extensions for the app plugin.
  *
+ * The sign-in page UI is not re-exported here — it loads via
+ * {@link appAuthModule}'s SignInPageBlueprint loader so MUI / core-components
+ * stay off the Module Federation alpha sync chunk.
+ *
  * @packageDocumentation
  */
 
 export { appAuthModule } from './appAuthModule';
-export { SignInPage } from './components/SignInPage';
 export * from './AuthApiRefs';
 export * from './translations/signIn';
 

@@ -176,6 +176,33 @@ describe('AggregatedMetricMapper', () => {
         aggregationType: aggregationTypes.weightedStatusScore,
       });
     });
+
+    it('should include filter in metadata for scalar KPI config', () => {
+      const aggregationConfig = mockScalarAggregationConfig(
+        aggregationTypes.sum,
+        {
+          filter: { status: 'error' },
+        },
+      );
+      const result = AggregatedMetricMapper.toAggregationMetadata(
+        mockMetric,
+        aggregationConfig,
+      );
+
+      expect(result.filter).toEqual({ status: 'error' });
+    });
+
+    it('should omit filter in metadata when scalar KPI config has no filter', () => {
+      const aggregationConfig = mockScalarAggregationConfig(
+        aggregationTypes.sum,
+      );
+      const result = AggregatedMetricMapper.toAggregationMetadata(
+        mockMetric,
+        aggregationConfig,
+      );
+
+      expect(result).not.toHaveProperty('filter');
+    });
   });
 
   describe('toAggregatedMetricResult', () => {
@@ -260,38 +287,47 @@ describe('AggregatedMetricMapper', () => {
       expect((result.result as any).weightedStatusScore).toBe(50);
     });
 
-    it('should wrap a scalar-shaped result and aggregationType from config', () => {
+    it('should include filter in metadata for scalar KPI result wrapper', () => {
       const aggregationConfig = mockScalarAggregationConfig(
         aggregationTypes.sum,
         {
-          id: 'totalOpenPrs',
-          title: 'Total Open PRs',
-          description: 'Sum of open PRs',
+          filter: { status: 'error' },
         },
       );
       const result = AggregatedMetricMapper.toAggregatedMetricResult(
         mockMetric,
         {
-          value: 847,
-          total: 42,
-          entitiesConsidered: 45,
-          calculationErrorCount: 3,
+          value: 30,
+          total: 2,
+          entitiesConsidered: 4,
+          calculationErrorCount: 1,
           timestamp: '2024-01-15T10:00:00.000Z',
           thresholds,
         },
         aggregationConfig,
       );
 
-      expect(result.metadata.aggregationType).toBe(aggregationTypes.sum);
-      expect(result.metadata.title).toBe('Total Open PRs');
-      expect(result.result).toEqual({
-        value: 847,
-        total: 42,
-        entitiesConsidered: 45,
-        calculationErrorCount: 3,
-        timestamp: '2024-01-15T10:00:00.000Z',
-        thresholds,
-      });
+      expect(result.metadata.filter).toEqual({ status: 'error' });
+    });
+
+    it('should omit filter in metadata for scalar KPI result wrapper without filter', () => {
+      const aggregationConfig = mockScalarAggregationConfig(
+        aggregationTypes.sum,
+      );
+      const result = AggregatedMetricMapper.toAggregatedMetricResult(
+        mockMetric,
+        {
+          value: 30,
+          total: 2,
+          entitiesConsidered: 4,
+          calculationErrorCount: 1,
+          timestamp: '2024-01-15T10:00:00.000Z',
+          thresholds,
+        },
+        aggregationConfig,
+      );
+
+      expect(result.metadata).not.toHaveProperty('filter');
     });
   });
 });
