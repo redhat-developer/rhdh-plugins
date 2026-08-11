@@ -293,6 +293,53 @@ describe('Model Catalog Generator', () => {
     });
   });
 
+  it('should return empty array when modelServer has no API url', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'no-api-service',
+        owner: 'example-user',
+        description: 'Model server without API',
+        lifecycle: 'production',
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect(entities).toEqual([]);
+  });
+
+  it('should handle empty models array', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'empty-models-service',
+        owner: 'example-user',
+        description: 'Model server with no models',
+        lifecycle: 'production',
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect(entities.length).toBe(1);
+    expect(entities[0].spec).toMatchObject({
+      models: {
+        available: [],
+      },
+    });
+    expect((entities[0].spec as any).models.default).toBeUndefined();
+  });
+
   it('should not include annotations when none are present', () => {
     const modelCatalog: ModelCatalog = {
       modelServer: {

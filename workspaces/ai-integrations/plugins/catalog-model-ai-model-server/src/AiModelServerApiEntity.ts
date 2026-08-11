@@ -74,7 +74,7 @@ export const aiModelServerApiEntityModel = createCatalogModelLayer({
       names: {
         kind: 'AiModelServerAPI',
         singular: 'aimodelserverapi',
-        plural: 'aimodelserverapies',
+        plural: 'aimodelserverapis',
       },
       description: 'An AI model server exposed as an AiModelServerAPI entity.',
       versions: [

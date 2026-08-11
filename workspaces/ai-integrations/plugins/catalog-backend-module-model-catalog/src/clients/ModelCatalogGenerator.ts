@@ -44,6 +44,13 @@ export function GenerateCatalogEntities(
     return [];
   }
 
+  if (!modelCatalog.modelServer.API?.url) {
+    logger?.debug(
+      'ModelCatalog modelServer has no API url; skipping AiModelServerAPI generation',
+    );
+    return [];
+  }
+
   const modelServer = modelCatalog.modelServer;
   const models = modelCatalog.models;
 
