@@ -120,7 +120,6 @@ Optional incident-only filters:
 - `jira/incident-component`
 - `jira/incident-label`
 - `jira/incident-team`
-- `jira/incident-custom-filter`
 - `jira/incident-issue-type` (overrides app-config `scorecard.metricProviders.dora.changeFailureRate.options.collectors.incidents.input.issueType`; default issue type is `Incident`)
 
 #### Incidents collector contract

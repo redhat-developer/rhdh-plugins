@@ -215,7 +215,6 @@ Collectors in Scorecard are schema-validated at runtime. Any custom collector re
     - `jira/incident-component`
     - `jira/incident-label`
     - `jira/incident-team`
-    - `jira/incident-custom-filter`
     - `jira/incident-issue-type` (overrides app-config `input.issueType` when set)
 - **Behavior**
   - Collects Jira issues matching the configured issue type (default `Incident`)
@@ -239,7 +238,6 @@ metadata:
     # jira/incident-component: Payments
     # jira/incident-label: sev-1
     # jira/incident-team: team-ops
-    # jira/incident-custom-filter: priority = Highest
     # jira/incident-issue-type: Production Incident
 spec:
   type: service
