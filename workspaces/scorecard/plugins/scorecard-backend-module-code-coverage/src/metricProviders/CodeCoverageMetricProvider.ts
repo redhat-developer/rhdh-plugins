@@ -132,16 +132,14 @@ export const CODE_COVERAGE_THRESHOLDS: Record<
 };
 
 /**
- * Metric provider for a single code-coverage metric.
- * One instance per metric; the module registers eight providers.
+ * Metric provider for all code-coverage metrics.
+ * A single instance provides all eight metrics (line/branch × percentage/available/covered/missed).
  */
 export class CodeCoverageMetricProvider implements MetricProvider<'number'> {
   private readonly client: CodeCoverageClient;
-  private readonly metricId: CodeCoverageMetricId;
 
-  constructor(client: CodeCoverageClient, metricId: CodeCoverageMetricId) {
+  constructor(client: CodeCoverageClient) {
     this.client = client;
-    this.metricId = metricId;
   }
 
   getProviderDatasourceId(): string {
@@ -149,21 +147,21 @@ export class CodeCoverageMetricProvider implements MetricProvider<'number'> {
   }
 
   getProviderId(): string {
-    return CODE_COVERAGE_METRIC_CONFIG[this.metricId].id;
+    return 'codeCoverage.coverageReport';
   }
 
   getMetrics(): Metric<'number'>[] {
-    const meta = CODE_COVERAGE_METRIC_CONFIG[this.metricId];
-    return [
-      {
+    return CODE_COVERAGE_METRICS.map(metricId => {
+      const meta = CODE_COVERAGE_METRIC_CONFIG[metricId];
+      return {
         id: meta.id,
         title: meta.title,
         description: meta.description,
-        type: 'number',
-        thresholds: CODE_COVERAGE_THRESHOLDS[this.metricId],
+        type: 'number' as const,
+        thresholds: CODE_COVERAGE_THRESHOLDS[metricId],
         history: true,
-      },
-    ];
+      };
+    });
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -176,21 +174,25 @@ export class CodeCoverageMetricProvider implements MetricProvider<'number'> {
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const entityRef = stringifyEntityRef(entity);
     const report = await this.client.getReport(entityRef);
-    const mapping = CODE_COVERAGE_AGGREGATE_KEYS[this.metricId];
-    const section = report.aggregate?.[mapping.section];
-    if (!section) {
-      throw new Error(
-        `Code coverage report for ${entityRef} is missing aggregate ${mapping.section} data`,
-      );
-    }
-    const value = section[mapping.field];
-    if (value === undefined || value === null) {
-      throw new Error(
-        `Code coverage report for ${entityRef} is missing ${mapping.section}.${mapping.field} data`,
-      );
-    }
     const results = new Map<string, number>();
-    results.set(this.getProviderId(), value);
+
+    for (const metricId of CODE_COVERAGE_METRICS) {
+      const mapping = CODE_COVERAGE_AGGREGATE_KEYS[metricId];
+      const section = report.aggregate?.[mapping.section];
+      if (!section) {
+        throw new Error(
+          `Code coverage report for ${entityRef} is missing aggregate ${mapping.section} data`,
+        );
+      }
+      const value = section[mapping.field];
+      if (value === undefined || value === null) {
+        throw new Error(
+          `Code coverage report for ${entityRef} is missing ${mapping.section}.${mapping.field} data`,
+        );
+      }
+      results.set(CODE_COVERAGE_METRIC_CONFIG[metricId].id, value);
+    }
+
     return results;
   }
 }

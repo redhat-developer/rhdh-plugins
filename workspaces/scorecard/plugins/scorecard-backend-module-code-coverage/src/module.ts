@@ -18,7 +18,8 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { createCodeCoverageMetricProviders } from './metricProviders/CodeCoverageMetricProviderFactory';
+import { CodeCoverageClient } from './clients/CodeCoverageClient';
+import { CodeCoverageMetricProvider } from './metricProviders/CodeCoverageMetricProvider';
 
 export const scorecardModuleCodeCoverage = createBackendModule({
   pluginId: 'scorecard',
@@ -33,14 +34,9 @@ export const scorecardModuleCodeCoverage = createBackendModule({
       },
 
       async init({ auth, metrics, discovery, logger }) {
-        const providers = createCodeCoverageMetricProviders(
-          auth,
-          discovery,
-          logger,
-        );
-        for (const provider of providers) {
-          metrics.addMetricProvider(provider);
-        }
+        const client = new CodeCoverageClient(auth, discovery, logger);
+        const provider = new CodeCoverageMetricProvider(client);
+        metrics.addMetricProvider(provider);
       },
     });
   },

@@ -21,8 +21,8 @@ import { mockServices } from '@backstage/backend-test-utils';
 import {
   CodeCoverageMetricProvider,
   CODE_COVERAGE_METRIC_CONFIG,
+  CODE_COVERAGE_METRICS,
   CODE_COVERAGE_THRESHOLDS,
-  type CodeCoverageMetricId,
 } from './CodeCoverageMetricProvider';
 import { CODE_COVERAGE_ANNOTATION } from './CodeCoverageConfig';
 import type { CodeCoverageReport } from '../clients/types';
@@ -66,89 +66,65 @@ const sampleReport: CodeCoverageReport = {
   files: [],
 };
 
-function createProvider(
-  metricId: CodeCoverageMetricId,
-): CodeCoverageMetricProvider {
+function createProvider(): CodeCoverageMetricProvider {
   const { CodeCoverageClient } = jest.requireMock(
     '../clients/CodeCoverageClient',
   );
   const client = new CodeCoverageClient(mockAuth, mockDiscovery, mockLogger);
-  return new CodeCoverageMetricProvider(client, metricId);
+  return new CodeCoverageMetricProvider(client);
 }
 
 describe('CodeCoverageMetricProvider', () => {
   describe('getProviderDatasourceId', () => {
     it('returns codeCoverage', () => {
-      const provider = createProvider('linePercentage');
+      const provider = createProvider();
       expect(provider.getProviderDatasourceId()).toBe('codeCoverage');
     });
   });
 
-  describe('getProviderId / getMetrics', () => {
-    it.each([
-      [
-        'linePercentage',
+  describe('getProviderId', () => {
+    it('returns codeCoverage.coverageReport', () => {
+      const provider = createProvider();
+      expect(provider.getProviderId()).toBe('codeCoverage.coverageReport');
+    });
+  });
+
+  describe('getMetrics', () => {
+    it('returns all eight metrics', () => {
+      const provider = createProvider();
+      const metrics = provider.getMetrics();
+      expect(metrics).toHaveLength(8);
+      expect(metrics.map(m => m.id)).toEqual([
         'codeCoverage.linePercentage',
-        'Code coverage (Lines)',
-      ],
-      [
-        'lineAvailable',
         'codeCoverage.lineAvailable',
-        'Code coverage - Tracked lines of code',
-      ],
-      [
-        'lineCovered',
         'codeCoverage.lineCovered',
-        'Code coverage - Covered lines of code',
-      ],
-      [
-        'lineMissed',
         'codeCoverage.lineMissed',
-        'Code coverage - Missed lines of code',
-      ],
-      [
-        'branchPercentage',
         'codeCoverage.branchPercentage',
-        'Code coverage (Branches)',
-      ],
-      [
-        'branchAvailable',
         'codeCoverage.branchAvailable',
-        'Code coverage - Tracked branches',
-      ],
-      [
-        'branchCovered',
         'codeCoverage.branchCovered',
-        'Code coverage - Covered branches',
-      ],
-      [
-        'branchMissed',
         'codeCoverage.branchMissed',
-        'Code coverage - Missed branches',
-      ],
-    ] as const)(
-      'for %s returns id %s and title %s',
-      (metricId, expectedId, expectedTitle) => {
-        const provider = createProvider(metricId);
-        expect(provider.getProviderId()).toBe(expectedId);
-        const metrics = provider.getMetrics();
-        expect(metrics).toHaveLength(1);
-        const metric = metrics[0];
-        expect(metric.id).toBe(expectedId);
-        expect(metric.title).toBe(expectedTitle);
-        expect(metric.description).toBe(
-          CODE_COVERAGE_METRIC_CONFIG[metricId].description,
-        );
-        expect(metric.type).toBe('number');
-        expect(metric.thresholds).toEqual(CODE_COVERAGE_THRESHOLDS[metricId]);
-        expect(metric.history).toBe(true);
-      },
-    );
+      ]);
+    });
+
+    it('returns correct titles and descriptions for each metric', () => {
+      const provider = createProvider();
+      const metrics = provider.getMetrics();
+      for (const metricId of CODE_COVERAGE_METRICS) {
+        const meta = CODE_COVERAGE_METRIC_CONFIG[metricId];
+        const metric = metrics.find(m => m.id === meta.id);
+        expect(metric).toBeDefined();
+        expect(metric!.title).toBe(meta.title);
+        expect(metric!.description).toBe(meta.description);
+        expect(metric!.type).toBe('number');
+        expect(metric!.thresholds).toEqual(CODE_COVERAGE_THRESHOLDS[metricId]);
+        expect(metric!.history).toBe(true);
+      }
+    });
   });
 
   describe('getCatalogFilter', () => {
     it('requires backstage.io/code-coverage annotation', () => {
-      const provider = createProvider('linePercentage');
+      const provider = createProvider();
       expect(provider.getCatalogFilter()).toEqual({
         [`metadata.annotations.${CODE_COVERAGE_ANNOTATION}`]:
           CATALOG_FILTER_EXISTS,
@@ -157,29 +133,34 @@ describe('CodeCoverageMetricProvider', () => {
   });
 
   describe('calculateMetrics', () => {
-    it.each([
-      ['linePercentage', 'codeCoverage.linePercentage', 80],
-      ['lineAvailable', 'codeCoverage.lineAvailable', 5],
-      ['lineCovered', 'codeCoverage.lineCovered', 4],
-      ['lineMissed', 'codeCoverage.lineMissed', 1],
-      ['branchPercentage', 'codeCoverage.branchPercentage', 70],
-      ['branchAvailable', 'codeCoverage.branchAvailable', 10],
-      ['branchCovered', 'codeCoverage.branchCovered', 7],
-      ['branchMissed', 'codeCoverage.branchMissed', 3],
-    ] as const)(
-      'extracts %s from the report and returns %d',
-      async (metricId, expectedKey, expectedValue) => {
-        mockGetReport.mockResolvedValue(sampleReport);
-        const provider = createProvider(metricId);
+    it('extracts all metrics from the report', async () => {
+      mockGetReport.mockResolvedValue(sampleReport);
+      const provider = createProvider();
 
-        const results = await provider.calculateMetrics(entity());
+      const results = await provider.calculateMetrics(entity());
 
-        expect(results.get(expectedKey)).toBe(expectedValue);
-        expect(mockGetReport).toHaveBeenCalledWith(
-          'component:default/my-service',
-        );
-      },
-    );
+      expect(results.size).toBe(8);
+      expect(results.get('codeCoverage.linePercentage')).toBe(80);
+      expect(results.get('codeCoverage.lineAvailable')).toBe(5);
+      expect(results.get('codeCoverage.lineCovered')).toBe(4);
+      expect(results.get('codeCoverage.lineMissed')).toBe(1);
+      expect(results.get('codeCoverage.branchPercentage')).toBe(70);
+      expect(results.get('codeCoverage.branchAvailable')).toBe(10);
+      expect(results.get('codeCoverage.branchCovered')).toBe(7);
+      expect(results.get('codeCoverage.branchMissed')).toBe(3);
+      expect(mockGetReport).toHaveBeenCalledWith(
+        'component:default/my-service',
+      );
+    });
+
+    it('calls getReport only once for all metrics', async () => {
+      mockGetReport.mockResolvedValue(sampleReport);
+      const provider = createProvider();
+
+      await provider.calculateMetrics(entity());
+
+      expect(mockGetReport).toHaveBeenCalledTimes(1);
+    });
 
     it('throws when aggregate section is missing', async () => {
       const reportMissingBranch: CodeCoverageReport = {
@@ -194,7 +175,7 @@ describe('CodeCoverageMetricProvider', () => {
         files: [],
       };
       mockGetReport.mockResolvedValue(reportMissingBranch);
-      const provider = createProvider('branchPercentage');
+      const provider = createProvider();
 
       await expect(provider.calculateMetrics(entity())).rejects.toThrow(
         'missing aggregate branch data',
@@ -205,7 +186,7 @@ describe('CodeCoverageMetricProvider', () => {
       mockGetReport.mockRejectedValueOnce(
         new Error('code-coverage unavailable'),
       );
-      const provider = createProvider('linePercentage');
+      const provider = createProvider();
 
       await expect(provider.calculateMetrics(entity())).rejects.toThrow(
         'code-coverage unavailable',
