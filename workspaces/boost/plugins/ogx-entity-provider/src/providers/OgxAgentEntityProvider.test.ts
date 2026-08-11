@@ -66,7 +66,7 @@ describe('OgxAgentEntityProvider', () => {
     expect(provider.getProviderName()).toBe('ogx-agent-entity-provider');
   });
 
-  it('should emit Component entities for configured agents', async () => {
+  it('should emit AiResource entities for configured agents', async () => {
     const config: OgxEntityProviderConfig = {
       baseUrl: 'http://localhost:8321',
       agents: [
@@ -98,8 +98,8 @@ describe('OgxAgentEntityProvider', () => {
     expect(mutation.entities).toHaveLength(1);
 
     const entity = mutation.entities[0].entity;
-    expect(entity.kind).toBe('Component');
-    expect(entity.spec.type).toBe('ai-agent');
+    expect(entity.kind).toBe('AiResource');
+    expect(entity.spec.type).toBe('agent');
     expect(entity.spec.lifecycle).toBe('production');
     expect(entity.spec.owner).toBe('user:default/admin');
     expect(entity.metadata.title).toBe('Code Assistant');
@@ -153,7 +153,7 @@ describe('OgxAgentEntityProvider', () => {
     const entity = mutation.entities[0].entity;
 
     expect(entity.spec.dependsOn).toEqual([
-      'component:default/ogx-agent-code-assistant',
+      'airesource:default/ogx-agent-code-assistant',
     ]);
   });
 

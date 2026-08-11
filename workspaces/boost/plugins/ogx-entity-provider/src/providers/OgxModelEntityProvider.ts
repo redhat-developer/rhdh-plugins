@@ -39,7 +39,9 @@ const PROVIDER_ID = 'ogx-model-entity-provider';
 
 /**
  * Entity provider that polls the OGX /v1/models endpoint and emits
- * AI models as Backstage catalog entities with kind: Resource, spec.type: ai-model.
+ * a single AiModelServerAPI catalog entity with kind: AiModelServerAPI,
+ * spec.type: ai-model-server, aggregating all discovered models into
+ * spec.models.available[].
  *
  * Implements the two-layer polling model: refreshes upstream on a configurable
  * interval (default 60s), caching the result. When Backstage's catalog
@@ -52,7 +54,7 @@ export class OgxModelEntityProvider implements EntityProvider {
   private readonly logger: LoggerService;
   private readonly scheduleFn: () => Promise<void>;
   private connection?: EntityProviderConnection;
-  private cachedEntities: Entity[] = [];
+  private cachedEntity: Entity | undefined;
 
   constructor(options: {
     config: OgxEntityProviderConfig;
@@ -74,7 +76,7 @@ export class OgxModelEntityProvider implements EntityProvider {
   }
 
   /**
-   * Fetch models from the OGX API and convert to catalog entities.
+   * Fetch models from the OGX API and convert to a single server entity.
    */
   async run(): Promise<void> {
     if (!this.connection) {
@@ -82,15 +84,16 @@ export class OgxModelEntityProvider implements EntityProvider {
     }
 
     this.logger.info(
-      `Refreshing model entities from OGX at ${this.config.baseUrl}`,
+      `Refreshing model server entity from OGX at ${this.config.baseUrl}`,
     );
 
     try {
       const models = await this.fetchModels();
-      this.cachedEntities = models.map(model => this.modelToEntity(model));
+      this.cachedEntity =
+        models.length > 0 ? this.modelsToServerEntity(models) : undefined;
 
       this.logger.info(
-        `Fetched ${this.cachedEntities.length} model entities from OGX`,
+        `Fetched ${models.length} models from OGX, emitting ${this.cachedEntity ? 1 : 0} server entity`,
       );
     } catch (error) {
       this.logger.error(
@@ -101,10 +104,9 @@ export class OgxModelEntityProvider implements EntityProvider {
 
     await this.connection.applyMutation({
       type: 'full',
-      entities: this.cachedEntities.map(entity => ({
-        entity,
-        locationKey: PROVIDER_ID,
-      })),
+      entities: this.cachedEntity
+        ? [{ entity: this.cachedEntity, locationKey: PROVIDER_ID }]
+        : [],
     });
   }
 
@@ -142,34 +144,38 @@ export class OgxModelEntityProvider implements EntityProvider {
   }
 
   /**
-   * Convert an OGX model entry into a Backstage Resource entity.
+   * Convert a list of OGX model entries into a single AiModelServerAPI entity.
    */
-  private modelToEntity(model: OgxModelEntry): Entity {
-    const entityName = sanitizeEntityName(`ogx-model-${model.id}`);
+  private modelsToServerEntity(models: OgxModelEntry[]): Entity {
+    const entityName = sanitizeEntityName('ogx-model-server');
+    const modelNames = models.map(m => m.id);
+    const firstOwner = models[0]?.owned_by;
 
     return {
       apiVersion: 'backstage.io/v1alpha1',
-      kind: 'Resource',
+      kind: 'AiModelServerAPI',
       metadata: {
         name: entityName,
-        title: model.id,
-        description: `OGX model: ${model.id}`,
+        title: 'OGX Model Server',
+        description: `OGX model server at ${this.config.baseUrl} serving ${modelNames.length} models`,
         annotations: {
           [ANNOTATION_LOCATION]: `${PROVIDER_ID}:${entityName}`,
           [ANNOTATION_ORIGIN_LOCATION]: `${PROVIDER_ID}:${entityName}`,
-          'boost.redhat.com/model-id': model.id,
-          ...(model.owned_by && {
-            'boost.redhat.com/model-owned-by': model.owned_by,
-          }),
         },
         labels: {
           'boost.redhat.com/provider': 'ogx',
         },
       },
       spec: {
-        type: 'ai-model',
+        type: 'ai-model-server',
+        serverType: 'openai-v1',
+        serverUrl: this.config.baseUrl,
+        models: {
+          discoverable: true,
+          available: modelNames,
+        },
         lifecycle: 'production',
-        owner: mapOwner(model.owned_by),
+        owner: mapOwner(firstOwner),
       },
     };
   }

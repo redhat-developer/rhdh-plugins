@@ -37,10 +37,10 @@ const DEFAULT_AGENT_REFRESH_SECONDS = 300;
 /**
  * Catalog backend module that registers OGX entity providers.
  *
- * Independently deployable as an RHDH dynamic plugin — emits AI models
- * (kind: Resource, spec.type: ai-model) and agents (kind: Component,
- * spec.type: ai-agent) as Backstage catalog entities without requiring
- * the full boost plugin.
+ * Independently deployable as an RHDH dynamic plugin — emits a model
+ * server entity (kind: AiModelServerAPI, spec.type: ai-model-server)
+ * and agents (kind: AiResource, spec.type: agent) as Backstage catalog
+ * entities without requiring the full boost plugin.
  *
  * Configuration (app-config.yaml):
  * ```yaml

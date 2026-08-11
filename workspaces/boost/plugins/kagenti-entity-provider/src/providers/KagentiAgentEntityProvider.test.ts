@@ -106,8 +106,8 @@ describe('KagentiAgentEntityProvider', () => {
     expect(mutation.entities).toHaveLength(1);
 
     const entity = mutation.entities[0].entity;
-    expect(entity.kind).toBe('Component');
-    expect(entity.spec.type).toBe('ai-agent');
+    expect(entity.kind).toBe('AiResource');
+    expect(entity.spec.type).toBe('agent');
     expect(entity.spec.lifecycle).toBe('production');
     expect(entity.spec.owner).toBe('user:default/admin');
     expect(entity.metadata.title).toBe('Test Agent');

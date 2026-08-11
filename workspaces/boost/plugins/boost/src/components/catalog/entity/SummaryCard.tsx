@@ -20,14 +20,22 @@ import { Card, CardBody, CardHeader, Flex, Text } from '@backstage/ui';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { getSpecField } from '../../../utils/entityHelpers';
 
+function getModelsAvailable(entity: { spec?: unknown }): string[] {
+  const spec = entity.spec as Record<string, unknown> | undefined;
+  const models = spec?.models as Record<string, unknown> | undefined;
+  const available = models?.available;
+  return Array.isArray(available) ? (available as string[]) : [];
+}
+
 export const SummaryCard = () => {
   const { entity } = useEntity();
   const { t } = useTranslation();
 
   const description = entity.metadata.description ?? '';
   const rationale = getSpecField(entity, 'rationale');
+  const modelsAvailable = getModelsAvailable(entity);
 
-  if (!description && !rationale) return null;
+  if (!description && !rationale && modelsAvailable.length === 0) return null;
 
   return (
     <Card>
@@ -41,6 +49,22 @@ export const SummaryCard = () => {
             <Text variant="body-medium" color="secondary">
               {rationale}
             </Text>
+          )}
+          {modelsAvailable.length > 0 && (
+            <Flex direction="column" gap="2">
+              <Text variant="title-small">
+                {`Available Models (${modelsAvailable.length})`}
+              </Text>
+              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <Flex direction="column" gap="1">
+                  {modelsAvailable.map(model => (
+                    <Text key={model} variant="body-medium">
+                      {model}
+                    </Text>
+                  ))}
+                </Flex>
+              </div>
+            </Flex>
           )}
         </Flex>
       </CardBody>

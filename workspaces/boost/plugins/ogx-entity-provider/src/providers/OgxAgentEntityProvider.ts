@@ -47,8 +47,8 @@ export const ANNOTATION_BOOST_LIFECYCLE_STAGE =
 
 /**
  * Entity provider that reads configured agents from YAML/admin config
- * and emits them as Backstage catalog entities with kind: Component,
- * spec.type: ai-agent.
+ * and emits them as Backstage catalog entities with kind: AiResource,
+ * spec.type: agent.
  *
  * Unlike the model provider which polls an API, agent configurations
  * come from app-config.yaml and are read once at init time.
@@ -106,7 +106,7 @@ export class OgxAgentEntityProvider implements EntityProvider {
   }
 
   /**
-   * Convert an OGX agent config into a Backstage Component entity.
+   * Convert an OGX agent config into a Backstage AiResource entity.
    */
   private agentToEntity(agent: OgxAgentConfig): Entity {
     const entityName = sanitizeEntityName(`ogx-agent-${agent.id}`);
@@ -129,14 +129,14 @@ export class OgxAgentEntityProvider implements EntityProvider {
     if (agent.handoffTargets) {
       for (const target of agent.handoffTargets) {
         dependsOn.push(
-          `component:default/${sanitizeEntityName(`ogx-agent-${target}`)}`,
+          `airesource:default/${sanitizeEntityName(`ogx-agent-${target}`)}`,
         );
       }
     }
 
     return {
       apiVersion: 'backstage.io/v1alpha1',
-      kind: 'Component',
+      kind: 'AiResource',
       metadata: {
         name: entityName,
         title: agent.name,
@@ -147,7 +147,7 @@ export class OgxAgentEntityProvider implements EntityProvider {
         },
       },
       spec: {
-        type: 'ai-agent',
+        type: 'agent',
         lifecycle: mapLifecycleStage(agent.lifecycleStage),
         owner: mapOwner(agent.createdBy),
         ...(dependsOn.length > 0 && { dependsOn }),
