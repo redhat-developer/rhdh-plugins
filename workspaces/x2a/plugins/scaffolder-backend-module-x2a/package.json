@@ -1,5 +1,5 @@
 {
-  "name": "@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a",
+  "name": "@red-hat-developer-hub/backstage-plugin-x2a-scaffolder-module",
   "version": "1.0.0",
   "license": "Apache-2.0",
   "description": "The x2a module for @backstage/plugin-scaffolder-backend",
