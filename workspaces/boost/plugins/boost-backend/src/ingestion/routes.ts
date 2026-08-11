@@ -18,7 +18,11 @@ import { Router } from 'express';
 import type {
   HttpAuthService,
   LoggerService,
+  PermissionsService,
 } from '@backstage/backend-plugin-api';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
+import { boostAdminPermission } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import { NotAllowedError } from '@backstage/errors';
 import type { HealthStatusService } from './HealthStatusService';
 
 /**
@@ -29,6 +33,8 @@ import type { HealthStatusService } from './HealthStatusService';
 export interface IngestionHealthRoutesOptions {
   /** The health status service. */
   healthService: HealthStatusService;
+  /** The Backstage permissions service. */
+  permissions: PermissionsService;
   /** The Backstage HTTP auth service for extracting credentials. */
   httpAuth: HttpAuthService;
   /** The Backstage logger service. */
@@ -41,21 +47,31 @@ export interface IngestionHealthRoutesOptions {
  * Routes:
  * - GET /ingestion-health — list connector health statuses
  *
- * RBAC gating via `ai-catalog.admin` is deferred to Issue 26 (#4064).
+ * Requires `boostAdminPermission` authorization.
  *
  * @public
  */
 export function createIngestionHealthRoutes(
   options: IngestionHealthRoutesOptions,
 ): Router {
-  const { healthService, httpAuth, logger } = options;
+  const { healthService, permissions, httpAuth, logger } = options;
   const router = Router();
 
   // GET /ingestion-health — list connector health statuses (task 2.2)
   router.get('/ingestion-health', async (req, res, next) => {
     try {
-      // Extract credentials for structured logging (task 2.6)
+      // Extract credentials for authorization and structured logging
       const credentials = await httpAuth.credentials(req);
+
+      // Enforce admin permission (matches kagenti/routes.ts pattern)
+      const [decision] = await permissions.authorize(
+        [{ permission: boostAdminPermission }],
+        { credentials },
+      );
+      if (decision.result !== AuthorizeResult.ALLOW) {
+        throw new NotAllowedError('Missing required boost admin permission');
+      }
+
       const principal = credentials.principal as
         | { userEntityRef?: string }
         | undefined;
@@ -64,9 +80,7 @@ export function createIngestionHealthRoutes(
       // Parse query parameters (task 2.4)
       const includeDisabled = req.query.includeDisabled === 'true';
 
-      logger.info(
-        `Ingestion health request by ${userRef}${includeDisabled ? ' (includeDisabled=true)' : ''}`,
-      );
+      logger.debug('Ingestion health request', { userRef, includeDisabled });
 
       // Get health statuses
       const statuses = await healthService.getHealthStatuses(includeDisabled);

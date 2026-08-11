@@ -420,7 +420,7 @@ export class HealthStatusService {
 export interface HealthStatusServiceOptions {
   configReader: ConnectorConfigReader;
   logger: LoggerService;
-  repository: SyncAttemptsRepository;
+  repository: SyncAttemptsStore;
 }
 
 // @public
@@ -428,6 +428,7 @@ export interface IngestionHealthRoutesOptions {
   healthService: HealthStatusService;
   httpAuth: HttpAuthService;
   logger: LoggerService;
+  permissions: PermissionsService;
 }
 
 // @public
@@ -562,8 +563,8 @@ export interface SkillsRoutesOptions {
 }
 
 // @public
-export class SyncAttemptsRepository {
-  constructor(options: SyncAttemptsRepositoryOptions);
+export class SyncAttemptsStore {
+  constructor(options: SyncAttemptsStoreOptions);
   cleanupOldAttempts(
     connectorId: string,
     retentionLimit: number,
@@ -591,7 +592,7 @@ export class SyncAttemptsRepository {
 }
 
 // @public
-export interface SyncAttemptsRepositoryOptions {
+export interface SyncAttemptsStoreOptions {
   database: DatabaseService;
   logger: LoggerService;
 }

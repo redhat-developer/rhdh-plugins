@@ -84,6 +84,32 @@ ai-catalog:
         timeout: { minutes: 15 }
 
 # --------------------------------------------------------------------------
+# Ingestion Health Configuration
+# --------------------------------------------------------------------------
+# Config root: boost.ingestion
+# Controls sync attempt retention and health status computation.
+
+# boost:
+#   ingestion:
+#     healthRetention:
+#       # Maximum sync attempts retained per connector (default: 100).
+#       # Older records beyond this limit are cleaned up daily.
+#       maxAttemptsPerConnector: 100
+#
+# Per-connector runtime enable/disable flag:
+# Under each ai-catalog.providers.<connectorId> section, add an
+# `enabled` field (default: true) to control whether the connector
+# is registered at startup. A separate runtime-enabled flag can be
+# toggled via admin config without restarting.
+#
+# Example:
+#   ai-catalog:
+#     providers:
+#       rhoai:
+#         mcpCatalog:
+#           enabled: true    # startup-time registration (default: true)
+
+# --------------------------------------------------------------------------
 # Air-Gapped Deployment Variant
 # --------------------------------------------------------------------------
 # Use this variant when the RHDH instance has no internet access.

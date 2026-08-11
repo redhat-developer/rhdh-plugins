@@ -83,7 +83,9 @@ const NETWORK_PATTERNS: ErrorPattern[] = [
       /UNABLE_TO_VERIFY_LEAF_SIGNATURE/i.test(msg) ||
       /self\s+signed\s+certificate/i.test(msg) ||
       /ERR_TLS/i.test(msg) ||
-      /certificate/i.test(msg),
+      /(?:ssl|tls|x509|ca).*certificate|certificate.*(?:expired|chain|verify|untrusted)/i.test(
+        msg,
+      ),
     guidance:
       'TLS/SSL certificate verification failed. Verify certificate chain or configure connector to trust custom CA certificates.',
   },

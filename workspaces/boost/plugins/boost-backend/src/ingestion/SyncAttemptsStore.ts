@@ -46,11 +46,11 @@ interface SyncAttemptRow {
 // ---------------------------------------------------------------------------
 
 /**
- * Options for creating a {@link SyncAttemptsRepository}.
+ * Options for creating a {@link SyncAttemptsStore}.
  *
  * @public
  */
-export interface SyncAttemptsRepositoryOptions {
+export interface SyncAttemptsStoreOptions {
   /** The Backstage database service. */
   database: DatabaseService;
   /** The Backstage logger service. */
@@ -70,13 +70,13 @@ export interface SyncAttemptsRepositoryOptions {
  *
  * @public
  */
-export class SyncAttemptsRepository {
+export class SyncAttemptsStore {
   private readonly logger: LoggerService;
   private knexPromise: Promise<Knex> | undefined;
   private readonly database: DatabaseService;
 
-  constructor(options: SyncAttemptsRepositoryOptions) {
-    this.logger = options.logger.child({ service: 'SyncAttemptsRepository' });
+  constructor(options: SyncAttemptsStoreOptions) {
+    this.logger = options.logger.child({ service: 'SyncAttemptsStore' });
     this.database = options.database;
   }
 
@@ -87,7 +87,7 @@ export class SyncAttemptsRepository {
     if (!this.knexPromise) {
       this.knexPromise = (async () => {
         const knex = await this.database.getClient();
-        await this.ensureTables(knex);
+        await this.ensureTable(knex);
         return knex;
       })().catch(err => {
         this.knexPromise = undefined;
@@ -100,7 +100,7 @@ export class SyncAttemptsRepository {
   /**
    * Ensure the sync attempts table and indexes exist.
    */
-  private async ensureTables(knex: Knex): Promise<void> {
+  private async ensureTable(knex: Knex): Promise<void> {
     if (!(await knex.schema.hasTable(TABLE_NAME))) {
       await knex.schema.createTable(TABLE_NAME, table => {
         table.string('id').primary().notNullable();
@@ -187,7 +187,12 @@ export class SyncAttemptsRepository {
     const created = await knex<SyncAttemptRow>(TABLE_NAME)
       .where({ id: attempt.id })
       .first();
-    return this.rowToRecord(created!);
+    if (!created) {
+      throw new Error(
+        `Failed to read back inserted sync attempt: ${attempt.id}`,
+      );
+    }
+    return this.rowToRecord(created);
   }
 
   /**
@@ -227,11 +232,13 @@ export class SyncAttemptsRepository {
     }
     const knex = await this.getDb();
 
-    // Fetch all recent attempts for the given connector IDs.
-    // We over-fetch and trim per connector to avoid N+1 queries.
+    // Fetch recent attempts for the given connector IDs.
+    // We over-fetch and trim per connector to avoid N+1 queries,
+    // but cap total rows to prevent unbounded reads.
     const rows = await knex<SyncAttemptRow>(TABLE_NAME)
       .whereIn('connector_id', connectorIds)
       .orderBy('timestamp', 'desc')
+      .limit(connectorIds.length * limit)
       .select();
 
     const result = new Map<string, SyncAttemptRecord[]>();

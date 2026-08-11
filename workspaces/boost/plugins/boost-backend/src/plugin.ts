@@ -52,7 +52,7 @@ import { RateLimiter } from './chat/RateLimiter';
 import { BackendApprovalStore } from './approval/BackendApprovalStore';
 import { DocumentSyncService } from './documents/DocumentSyncService';
 import { createSkillsRoutes } from './skills/routes';
-import { SyncAttemptsRepository } from './ingestion/SyncAttemptsRepository';
+import { SyncAttemptsStore } from './ingestion/SyncAttemptsStore';
 import { ConnectorConfigReader } from './ingestion/ConnectorConfigReader';
 import { HealthStatusService } from './ingestion/HealthStatusService';
 import { createIngestionHealthRoutes } from './ingestion/routes';
@@ -246,7 +246,7 @@ export const boostPlugin = createBackendPlugin({
         });
 
         // Initialize ingestion health services (issue 5 of 29)
-        const syncAttemptsRepository = new SyncAttemptsRepository({
+        const syncAttemptsRepository = new SyncAttemptsStore({
           database,
           logger,
         });
@@ -396,6 +396,7 @@ export const boostPlugin = createBackendPlugin({
         // Ingestion health routes (issue 5 of 29)
         const ingestionHealthRoutes = createIngestionHealthRoutes({
           healthService: healthStatusService,
+          permissions: _permissions,
           httpAuth,
           logger,
         });

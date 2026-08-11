@@ -22,7 +22,7 @@ import type {
   ErrorSummary,
   SyncMetrics,
 } from '@red-hat-developer-hub/backstage-plugin-boost-common';
-import type { SyncAttemptsRepository } from './SyncAttemptsRepository';
+import type { SyncAttemptsStore } from './SyncAttemptsStore';
 import type {
   ConnectorConfigReader,
   ConnectorCandidate,
@@ -39,7 +39,7 @@ import type {
  */
 export interface HealthStatusServiceOptions {
   /** The sync attempts repository. */
-  repository: SyncAttemptsRepository;
+  repository: SyncAttemptsStore;
   /** The connector config reader. */
   configReader: ConnectorConfigReader;
   /** The Backstage logger service. */
@@ -60,7 +60,7 @@ const STATUS_WINDOW = 3;
  * @public
  */
 export class HealthStatusService {
-  private readonly repository: SyncAttemptsRepository;
+  private readonly repository: SyncAttemptsStore;
   private readonly configReader: ConnectorConfigReader;
   private readonly logger: LoggerService;
 

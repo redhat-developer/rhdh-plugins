@@ -19,7 +19,9 @@ import express from 'express';
 import type {
   HttpAuthService,
   LoggerService,
+  PermissionsService,
 } from '@backstage/backend-plugin-api';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import type { ConnectorHealthStatus } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { createIngestionHealthRoutes } from './routes';
 import type { HealthStatusService } from './HealthStatusService';
@@ -44,6 +46,15 @@ function createMockHttpAuth(): HttpAuthService {
       principal: { userEntityRef: 'user:default/testuser' },
     }),
     issueUserCookie: jest.fn(),
+  };
+}
+
+function createMockPermissions(
+  result: AuthorizeResult = AuthorizeResult.ALLOW,
+): PermissionsService {
+  return {
+    authorize: jest.fn().mockResolvedValue([{ result }]),
+    authorizeConditional: jest.fn().mockResolvedValue([{ result }]),
   };
 }
 
@@ -72,6 +83,7 @@ interface TestApp {
 async function createTestApp(options: {
   healthService?: Partial<HealthStatusService>;
   httpAuth?: HttpAuthService;
+  permissions?: PermissionsService;
 }): Promise<TestApp> {
   const app = express();
   app.use(express.json());
@@ -83,12 +95,16 @@ async function createTestApp(options: {
 
   const router = createIngestionHealthRoutes({
     healthService,
+    permissions: options.permissions ?? createMockPermissions(),
     httpAuth: options.httpAuth ?? createMockHttpAuth(),
     logger: createMockLogger(),
   });
   app.use(router);
 
-  // Error handler
+  // Error handler — map Backstage error types to HTTP status codes
+  const errorStatusMap: Record<string, number> = {
+    NotAllowedError: 403,
+  };
   app.use(
     (
       err: Error,
@@ -96,7 +112,8 @@ async function createTestApp(options: {
       res: express.Response,
       _next: express.NextFunction,
     ) => {
-      res.status(500).json({ error: err.message });
+      const statusCode = errorStatusMap[err.name] ?? 500;
+      res.status(statusCode).json({ error: err.message });
     },
   );
 
@@ -232,6 +249,22 @@ describe('ingestion health routes', () => {
 
       const res = await fetchJson(testApp.url, '/ingestion-health');
       expect(res.status).toBe(500);
+    });
+
+    it('returns 403 when permission is denied', async () => {
+      const permissions = createMockPermissions(AuthorizeResult.DENY);
+      testApp = await createTestApp({ permissions });
+
+      const res = await fetchJson(testApp.url, '/ingestion-health');
+      expect(res.status).toBe(403);
+    });
+
+    it('calls permissions.authorize with boostAdminPermission', async () => {
+      const permissions = createMockPermissions();
+      testApp = await createTestApp({ permissions });
+
+      await fetchJson(testApp.url, '/ingestion-health');
+      expect(permissions.authorize).toHaveBeenCalledTimes(1);
     });
   });
 });

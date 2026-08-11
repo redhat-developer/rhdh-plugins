@@ -120,6 +120,22 @@ describe('ErrorClassifier', () => {
       expect(result.errorType).toBe('network');
       expect(result.diagnosticGuidance).toContain('certificate');
     });
+
+    it('classifies TLS certificate expired', () => {
+      const result = ErrorClassifier.classify(
+        new Error('TLS certificate expired'),
+      );
+      expect(result.errorType).toBe('network');
+    });
+
+    it('does not misclassify client certificate auth as network', () => {
+      const result = ErrorClassifier.classify(
+        new Error('Client certificate authentication required'),
+      );
+      // Should NOT be classified as network — the bare "certificate"
+      // keyword is no longer a catch-all.
+      expect(result.errorType).not.toBe('network');
+    });
   });
 
   describe('rate limit classification', () => {

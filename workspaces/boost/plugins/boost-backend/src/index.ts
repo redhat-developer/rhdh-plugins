@@ -85,12 +85,12 @@ export {
 export { createSkillsRoutes, type SkillsRoutesOptions } from './skills';
 export {
   ErrorClassifier,
-  SyncAttemptsRepository,
+  SyncAttemptsStore,
   ConnectorConfigReader,
   HealthStatusService,
   createIngestionHealthRoutes,
   type ClassifyOptions,
-  type SyncAttemptsRepositoryOptions,
+  type SyncAttemptsStoreOptions,
   type ConnectorConfigReaderOptions,
   type ConnectorCandidate,
   type HealthStatusServiceOptions,

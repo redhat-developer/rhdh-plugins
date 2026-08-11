@@ -16,9 +16,9 @@
 
 export { ErrorClassifier, type ClassifyOptions } from './ErrorClassifier';
 export {
-  SyncAttemptsRepository,
-  type SyncAttemptsRepositoryOptions,
-} from './SyncAttemptsRepository';
+  SyncAttemptsStore,
+  type SyncAttemptsStoreOptions,
+} from './SyncAttemptsStore';
 export {
   ConnectorConfigReader,
   type ConnectorConfigReaderOptions,

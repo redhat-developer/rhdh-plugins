@@ -18,7 +18,7 @@ import type {
   DatabaseService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
-import { SyncAttemptsRepository } from './SyncAttemptsRepository';
+import { SyncAttemptsStore } from './SyncAttemptsStore';
 
 function createMockLogger(): LoggerService {
   return {
@@ -211,8 +211,8 @@ function createMockKnex() {
   return { knex, rows };
 }
 
-describe('SyncAttemptsRepository', () => {
-  let repo: SyncAttemptsRepository;
+describe('SyncAttemptsStore', () => {
+  let repo: SyncAttemptsStore;
   let mock: ReturnType<typeof createMockKnex>;
 
   beforeEach(() => {
@@ -220,7 +220,7 @@ describe('SyncAttemptsRepository', () => {
     const database: DatabaseService = {
       getClient: jest.fn().mockResolvedValue(mock.knex),
     };
-    repo = new SyncAttemptsRepository({
+    repo = new SyncAttemptsStore({
       database,
       logger: createMockLogger(),
     });
@@ -312,6 +312,78 @@ describe('SyncAttemptsRepository', () => {
 
       const attempts = await repo.getLatestAttempts('github', 3);
       expect(attempts).toHaveLength(3);
+    });
+  });
+
+  describe('getLatestAttemptsForAll', () => {
+    it('returns map of connector ID to attempts', async () => {
+      await repo.insertSyncAttempt({
+        id: 'sa-1',
+        connectorId: 'github',
+        outcome: 'success',
+      });
+      mock.rows[0].timestamp = '2026-08-10T10:00:00Z';
+
+      await repo.insertSyncAttempt({
+        id: 'sa-2',
+        connectorId: 'jira',
+        outcome: 'failure',
+      });
+      mock.rows[1].timestamp = '2026-08-10T11:00:00Z';
+
+      const result = await repo.getLatestAttemptsForAll(['github', 'jira'], 3);
+      expect(result.size).toBe(2);
+      expect(result.get('github')).toHaveLength(1);
+      expect(result.get('jira')).toHaveLength(1);
+      expect(result.get('github')![0].id).toBe('sa-1');
+      expect(result.get('jira')![0].id).toBe('sa-2');
+    });
+
+    it('returns empty map for empty connector list', async () => {
+      const result = await repo.getLatestAttemptsForAll([], 3);
+      expect(result.size).toBe(0);
+    });
+
+    it('limits results per connector', async () => {
+      for (let i = 0; i < 5; i++) {
+        await repo.insertSyncAttempt({
+          id: `sa-${i}`,
+          connectorId: 'github',
+          outcome: 'success',
+        });
+        mock.rows[i].timestamp = `2026-08-10T${10 + i}:00:00Z`;
+      }
+
+      const result = await repo.getLatestAttemptsForAll(['github'], 2);
+      expect(result.get('github')).toHaveLength(2);
+    });
+  });
+
+  describe('cleanupOldAttempts', () => {
+    it('deletes rows beyond retention limit', async () => {
+      for (let i = 0; i < 5; i++) {
+        await repo.insertSyncAttempt({
+          id: `sa-${i}`,
+          connectorId: 'github',
+          outcome: 'success',
+        });
+        mock.rows[i].timestamp = `2026-08-10T${10 + i}:00:00Z`;
+      }
+
+      const deleted = await repo.cleanupOldAttempts('github', 3);
+      expect(deleted).toBe(2);
+      expect(mock.rows).toHaveLength(3);
+    });
+
+    it('returns 0 when under retention limit', async () => {
+      await repo.insertSyncAttempt({
+        id: 'sa-1',
+        connectorId: 'github',
+        outcome: 'success',
+      });
+
+      const deleted = await repo.cleanupOldAttempts('github', 5);
+      expect(deleted).toBe(0);
     });
   });
 

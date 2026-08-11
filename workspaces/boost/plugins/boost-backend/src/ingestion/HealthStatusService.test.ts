@@ -17,7 +17,7 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { SyncAttemptRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { HealthStatusService } from './HealthStatusService';
-import type { SyncAttemptsRepository } from './SyncAttemptsRepository';
+import type { SyncAttemptsStore } from './SyncAttemptsStore';
 import type { ConnectorConfigReader } from './ConnectorConfigReader';
 import type { ConnectorCandidate } from './ConnectorConfigReader';
 
@@ -115,7 +115,7 @@ describe('HealthStatusService', () => {
     let service: HealthStatusService;
     let mockRepo: jest.Mocked<
       Pick<
-        SyncAttemptsRepository,
+        SyncAttemptsStore,
         'getLatestAttemptsForAll' | 'getDistinctConnectorIds'
       >
     >;
@@ -132,7 +132,7 @@ describe('HealthStatusService', () => {
         listCandidates: jest.fn().mockReturnValue([]),
       };
       service = new HealthStatusService({
-        repository: mockRepo as unknown as SyncAttemptsRepository,
+        repository: mockRepo as unknown as SyncAttemptsStore,
         configReader: mockConfigReader as unknown as ConnectorConfigReader,
         logger: createMockLogger(),
       });
