@@ -213,6 +213,13 @@ describe('ErrorClassifier', () => {
       );
       expect(result.errorType).toBe('schema');
     });
+
+    it('does not classify network errors as schema just because they mention graphql', () => {
+      const result = ErrorClassifier.classify(
+        new Error('failed calling graphql gateway: ECONNREFUSED'),
+      );
+      expect(result.errorType).toBe('network');
+    });
   });
 
   describe('unknown error fallback', () => {

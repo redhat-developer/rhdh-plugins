@@ -138,8 +138,7 @@ const SCHEMA_PATTERNS: ErrorPattern[] = [
     type: 'schema',
     test: msg =>
       /cannot\s+query\s+field/i.test(msg) ||
-      /field\s+'[^']+'\s+doesn'?t\s+exist\s+on\s+type/i.test(msg) ||
-      /graphql/i.test(msg),
+      /field\s+'[^']+'\s+doesn'?t\s+exist\s+on\s+type/i.test(msg),
     guidance:
       'GraphQL query schema mismatch. Upstream GraphQL schema may have changed. Review connector GraphQL queries against current API schema.',
   },

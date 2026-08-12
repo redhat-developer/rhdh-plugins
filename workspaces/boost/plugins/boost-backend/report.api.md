@@ -570,6 +570,9 @@ export class SyncAttemptsStore {
     retentionLimit: number,
   ): Promise<number>;
   getDistinctConnectorIds(): Promise<string[]>;
+  getLastSuccessfulAttempt(
+    connectorId: string,
+  ): Promise<SyncAttemptRecord | null>;
   getLatestAttempts(
     connectorId: string,
     limit?: number,

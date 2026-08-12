@@ -116,7 +116,9 @@ describe('HealthStatusService', () => {
     let mockRepo: jest.Mocked<
       Pick<
         SyncAttemptsStore,
-        'getLatestAttemptsForAll' | 'getDistinctConnectorIds'
+        | 'getLatestAttemptsForAll'
+        | 'getDistinctConnectorIds'
+        | 'getLastSuccessfulAttempt'
       >
     >;
     let mockConfigReader: jest.Mocked<
@@ -127,6 +129,7 @@ describe('HealthStatusService', () => {
       mockRepo = {
         getLatestAttemptsForAll: jest.fn().mockResolvedValue(new Map()),
         getDistinctConnectorIds: jest.fn().mockResolvedValue([]),
+        getLastSuccessfulAttempt: jest.fn().mockResolvedValue(null),
       };
       mockConfigReader = {
         listCandidates: jest.fn().mockReturnValue([]),
@@ -257,6 +260,7 @@ describe('HealthStatusService', () => {
       mockRepo.getLatestAttemptsForAll.mockResolvedValue(
         new Map([['github', attempts]]),
       );
+      mockRepo.getLastSuccessfulAttempt.mockResolvedValue(attempts[1]);
 
       const result = await service.getHealthStatuses();
       expect(result).toHaveLength(1);
@@ -266,10 +270,13 @@ describe('HealthStatusService', () => {
       expect(gh.lastSuccessfulSync).toBe('2026-08-10T11:00:00Z');
       expect(gh.errorSummary).not.toBeNull();
       expect(gh.errorSummary!.errorType).toBe('auth');
+      expect(gh.errorSummary!.diagnosticGuidance).toContain(
+        'service account credentials',
+      );
       expect(gh.metrics.assetsAdded).toBe(0); // From latest (failed) attempt
     });
 
-    it('returns null errorSummary when last attempt succeeded', async () => {
+    it('returns null errorSummary when all attempts succeeded', async () => {
       const candidates: ConnectorCandidate[] = [
         {
           connectorId: 'github',
@@ -292,10 +299,107 @@ describe('HealthStatusService', () => {
       mockRepo.getLatestAttemptsForAll.mockResolvedValue(
         new Map([['github', attempts]]),
       );
+      mockRepo.getLastSuccessfulAttempt.mockResolvedValue(attempts[0]);
 
       const result = await service.getHealthStatuses();
       expect(result[0].errorSummary).toBeNull();
       expect(result[0].metrics.assetsAdded).toBe(10);
+    });
+
+    it('includes errorSummary for degraded when latest attempt succeeded', async () => {
+      const candidates: ConnectorCandidate[] = [
+        {
+          connectorId: 'github',
+          connectorType: 'github',
+          startupEnabled: true,
+          runtimeEnabled: true,
+        },
+      ];
+      mockConfigReader.listCandidates.mockReturnValue(candidates);
+
+      const attempts = [
+        makeAttempt({
+          connectorId: 'github',
+          outcome: 'success',
+          timestamp: '2026-08-10T12:00:00Z',
+          assetsAdded: 2,
+        }),
+        makeAttempt({
+          connectorId: 'github',
+          outcome: 'failure',
+          errorType: 'network',
+          errorMessage: 'ECONNREFUSED',
+          timestamp: '2026-08-10T11:00:00Z',
+        }),
+        makeAttempt({
+          connectorId: 'github',
+          outcome: 'success',
+          timestamp: '2026-08-10T10:00:00Z',
+        }),
+      ];
+      mockRepo.getLatestAttemptsForAll.mockResolvedValue(
+        new Map([['github', attempts]]),
+      );
+      mockRepo.getLastSuccessfulAttempt.mockResolvedValue(attempts[0]);
+
+      const result = await service.getHealthStatuses();
+      expect(result[0].status).toBe('degraded');
+      expect(result[0].errorSummary).not.toBeNull();
+      expect(result[0].errorSummary!.errorType).toBe('network');
+      expect(result[0].errorSummary!.errorMessage).toBe('ECONNREFUSED');
+      expect(result[0].errorSummary!.diagnosticGuidance).toContain(
+        'Network connectivity',
+      );
+    });
+
+    it('uses last successful sync outside the status window', async () => {
+      const candidates: ConnectorCandidate[] = [
+        {
+          connectorId: 'github',
+          connectorType: 'github',
+          startupEnabled: true,
+          runtimeEnabled: true,
+        },
+      ];
+      mockConfigReader.listCandidates.mockReturnValue(candidates);
+
+      const recentFailures = [
+        makeAttempt({
+          connectorId: 'github',
+          outcome: 'failure',
+          errorType: 'auth',
+          errorMessage: '401 Unauthorized',
+          timestamp: '2026-08-10T14:00:00Z',
+        }),
+        makeAttempt({
+          connectorId: 'github',
+          outcome: 'failure',
+          errorType: 'auth',
+          errorMessage: '401 Unauthorized',
+          timestamp: '2026-08-10T13:00:00Z',
+        }),
+        makeAttempt({
+          connectorId: 'github',
+          outcome: 'failure',
+          errorType: 'auth',
+          errorMessage: '401 Unauthorized',
+          timestamp: '2026-08-10T12:00:00Z',
+        }),
+      ];
+      const olderSuccess = makeAttempt({
+        connectorId: 'github',
+        outcome: 'success',
+        timestamp: '2026-08-09T10:00:00Z',
+      });
+
+      mockRepo.getLatestAttemptsForAll.mockResolvedValue(
+        new Map([['github', recentFailures]]),
+      );
+      mockRepo.getLastSuccessfulAttempt.mockResolvedValue(olderSuccess);
+
+      const result = await service.getHealthStatuses();
+      expect(result[0].status).toBe('failing');
+      expect(result[0].lastSuccessfulSync).toBe('2026-08-09T10:00:00Z');
     });
   });
 });

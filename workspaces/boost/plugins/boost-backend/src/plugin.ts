@@ -134,6 +134,7 @@ export const boostPlugin = createBackendPlugin({
         httpAuth: coreServices.httpAuth,
         permissions: coreServices.permissions,
         permissionsRegistry: coreServices.permissionsRegistry,
+        scheduler: coreServices.scheduler,
       },
       async init({
         logger,
@@ -144,6 +145,7 @@ export const boostPlugin = createBackendPlugin({
         httpAuth,
         permissions: _permissions,
         permissionsRegistry,
+        scheduler,
       }) {
         logger.info('Initializing boost backend plugin');
 
@@ -246,7 +248,7 @@ export const boostPlugin = createBackendPlugin({
         });
 
         // Initialize ingestion health services (issue 5 of 29)
-        const syncAttemptsRepository = new SyncAttemptsStore({
+        const syncAttemptsStore = new SyncAttemptsStore({
           database,
           logger,
         });
@@ -257,7 +259,7 @@ export const boostPlugin = createBackendPlugin({
         });
 
         const healthStatusService = new HealthStatusService({
-          repository: syncAttemptsRepository,
+          repository: syncAttemptsStore,
           configReader: connectorConfigReader,
           logger,
         });
@@ -269,13 +271,12 @@ export const boostPlugin = createBackendPlugin({
             'boost.ingestion.healthRetention.maxAttemptsPerConnector',
           ) ?? 100;
 
-        // Schedule daily cleanup (best-effort, non-blocking)
         const runCleanup = async () => {
           try {
             const connectorIds =
-              await syncAttemptsRepository.getDistinctConnectorIds();
+              await syncAttemptsStore.getDistinctConnectorIds();
             for (const connectorId of connectorIds) {
-              await syncAttemptsRepository.cleanupOldAttempts(
+              await syncAttemptsStore.cleanupOldAttempts(
                 connectorId,
                 retentionLimit,
               );
@@ -291,17 +292,12 @@ export const boostPlugin = createBackendPlugin({
           }
         };
 
-        // Run cleanup once on startup, then daily (24h interval)
-        const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000;
-        void runCleanup();
-        const cleanupTimer = setInterval(
-          () => void runCleanup(),
-          CLEANUP_INTERVAL_MS,
-        );
-        // Unref so the timer doesn't prevent process exit
-        if (typeof cleanupTimer === 'object' && 'unref' in cleanupTimer) {
-          cleanupTimer.unref();
-        }
+        await scheduler.scheduleTask({
+          id: 'boost-sync-attempts-retention-cleanup',
+          frequency: { days: 1 },
+          timeout: { minutes: 10 },
+          fn: runCleanup,
+        });
 
         // Register all boost permissions with the framework
         permissionsRegistry.addPermissions([...boostPermissions]);

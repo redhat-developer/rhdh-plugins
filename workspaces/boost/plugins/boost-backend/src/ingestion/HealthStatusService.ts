@@ -20,6 +20,7 @@ import type {
   HealthStatus,
   SyncAttemptRecord,
   ErrorSummary,
+  ErrorType,
   SyncMetrics,
 } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { SyncAttemptsStore } from './SyncAttemptsStore';
@@ -27,6 +28,7 @@ import type {
   ConnectorConfigReader,
   ConnectorCandidate,
 } from './ConnectorConfigReader';
+import { ErrorClassifier } from './ErrorClassifier';
 
 // ---------------------------------------------------------------------------
 // Options
@@ -52,6 +54,14 @@ export interface HealthStatusServiceOptions {
 
 /** Number of recent attempts used for status derivation. */
 const STATUS_WINDOW = 3;
+
+const ERROR_TYPES: ReadonlySet<string> = new Set([
+  'auth',
+  'network',
+  'schema',
+  'rate-limit',
+  'unknown',
+]);
 
 /**
  * Service for deriving connector health status from sync attempt
@@ -91,18 +101,26 @@ export class HealthStatusService {
       return [];
     }
 
-    // Step 3: Fetch sync attempts for all connectors
+    // Step 3: Fetch sync attempts and last successes for all connectors
     const connectorIds = filtered.map(c => c.connectorId);
-    const attemptsMap = await this.repository.getLatestAttemptsForAll(
-      connectorIds,
-      STATUS_WINDOW,
-    );
+    const [attemptsMap, lastSuccessEntries] = await Promise.all([
+      this.repository.getLatestAttemptsForAll(connectorIds, STATUS_WINDOW),
+      Promise.all(
+        connectorIds.map(async id => {
+          const lastSuccess =
+            await this.repository.getLastSuccessfulAttempt(id);
+          return [id, lastSuccess] as const;
+        }),
+      ),
+    ]);
+    const lastSuccessMap = new Map(lastSuccessEntries);
 
     // Step 4: Build health status for each connector
     const results: ConnectorHealthStatus[] = [];
     for (const candidate of filtered) {
       const attempts = attemptsMap.get(candidate.connectorId) ?? [];
-      results.push(this.buildHealthStatus(candidate, attempts));
+      const lastSuccess = lastSuccessMap.get(candidate.connectorId) ?? null;
+      results.push(this.buildHealthStatus(candidate, attempts, lastSuccess));
     }
 
     this.logger.debug(`Computed health for ${results.length} connector(s)`);
@@ -146,23 +164,19 @@ export class HealthStatusService {
   private buildHealthStatus(
     candidate: ConnectorCandidate,
     attempts: SyncAttemptRecord[],
+    lastSuccess: SyncAttemptRecord | null,
   ): ConnectorHealthStatus {
     const status = HealthStatusService.deriveStatus(attempts);
 
     // Find timestamps
     const lastAttempt = attempts[0] ?? null;
-    const lastSuccess = attempts.find(a => a.outcome === 'success') ?? null;
 
-    // Build error summary from most recent failure
+    // Build error summary from most recent failure in the status window
+    // (including degraded cases where the latest attempt succeeded).
     let errorSummary: ErrorSummary | null = null;
-    if (lastAttempt && lastAttempt.outcome === 'failure') {
-      errorSummary = {
-        errorType:
-          (lastAttempt.errorType as ErrorSummary['errorType']) ?? 'unknown',
-        errorMessage: lastAttempt.errorMessage ?? 'Unknown error',
-        diagnosticGuidance:
-          'Check connector logs for detailed error trace and stack trace.',
-      };
+    const lastFailure = attempts.find(a => a.outcome === 'failure') ?? null;
+    if (lastFailure) {
+      errorSummary = this.buildErrorSummary(candidate, lastFailure);
     }
 
     // Build metrics from most recent attempt
@@ -183,6 +197,35 @@ export class HealthStatusService {
       lastSuccessfulSync: lastSuccess?.timestamp ?? null,
       errorSummary,
       metrics,
+    };
+  }
+
+  /**
+   * Build an error summary using ErrorClassifier for actionable guidance.
+   */
+  private buildErrorSummary(
+    candidate: ConnectorCandidate,
+    failure: SyncAttemptRecord,
+  ): ErrorSummary {
+    const errorMessage = failure.errorMessage ?? 'Unknown error';
+    const classified = ErrorClassifier.classify(errorMessage, {
+      connectorType: candidate.connectorType,
+    });
+
+    const storedType = failure.errorType;
+    let errorType: ErrorType;
+    if (classified.errorType !== 'unknown') {
+      errorType = classified.errorType;
+    } else if (storedType && ERROR_TYPES.has(storedType)) {
+      errorType = storedType as ErrorType;
+    } else {
+      errorType = classified.errorType;
+    }
+
+    return {
+      errorType,
+      errorMessage,
+      diagnosticGuidance: classified.diagnosticGuidance,
     };
   }
 }

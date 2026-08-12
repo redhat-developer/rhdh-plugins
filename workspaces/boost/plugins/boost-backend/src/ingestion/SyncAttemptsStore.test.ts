@@ -93,11 +93,8 @@ function createMockKnex() {
         return builder;
       }),
       first: jest.fn(async () => {
-        const results = rows.filter(row =>
-          Object.entries(filters).every(
-            ([k, v]) => (row as Record<string, unknown>)[k] === v,
-          ),
-        );
+        let results = applyFilters();
+        results = applySort(results);
         return results[0] || undefined;
       }),
       select: jest.fn((...selectArgs: unknown[]) => {
@@ -356,6 +353,79 @@ describe('SyncAttemptsStore', () => {
 
       const result = await repo.getLatestAttemptsForAll(['github'], 2);
       expect(result.get('github')).toHaveLength(2);
+    });
+
+    it('does not starve quieter connectors when another is busy', async () => {
+      // Many recent github attempts would fill a naive global LIMIT window.
+      for (let i = 0; i < 10; i++) {
+        await repo.insertSyncAttempt({
+          id: `gh-${i}`,
+          connectorId: 'github',
+          outcome: 'success',
+        });
+        mock.rows[i].timestamp = `2026-08-10T${10 + i}:00:00Z`;
+      }
+
+      await repo.insertSyncAttempt({
+        id: 'jira-1',
+        connectorId: 'jira',
+        outcome: 'failure',
+        errorType: 'auth',
+        errorMessage: '401 Unauthorized',
+      });
+      mock.rows[10].timestamp = '2026-08-09T09:00:00Z';
+
+      const result = await repo.getLatestAttemptsForAll(['github', 'jira'], 3);
+      expect(result.get('github')).toHaveLength(3);
+      expect(result.get('jira')).toHaveLength(1);
+      expect(result.get('jira')![0].id).toBe('jira-1');
+    });
+  });
+
+  describe('getLastSuccessfulAttempt', () => {
+    it('returns the latest success even when recent attempts failed', async () => {
+      await repo.insertSyncAttempt({
+        id: 'sa-success',
+        connectorId: 'github',
+        outcome: 'success',
+      });
+      mock.rows[0].timestamp = '2026-08-10T10:00:00Z';
+
+      await repo.insertSyncAttempt({
+        id: 'sa-fail-1',
+        connectorId: 'github',
+        outcome: 'failure',
+        errorType: 'network',
+        errorMessage: 'ECONNREFUSED',
+      });
+      mock.rows[1].timestamp = '2026-08-10T11:00:00Z';
+
+      await repo.insertSyncAttempt({
+        id: 'sa-fail-2',
+        connectorId: 'github',
+        outcome: 'failure',
+        errorType: 'network',
+        errorMessage: 'ETIMEDOUT',
+      });
+      mock.rows[2].timestamp = '2026-08-10T12:00:00Z';
+
+      const result = await repo.getLastSuccessfulAttempt('github');
+      expect(result).not.toBeNull();
+      expect(result!.id).toBe('sa-success');
+      expect(result!.timestamp).toBe('2026-08-10T10:00:00Z');
+    });
+
+    it('returns null when no successful attempts exist', async () => {
+      await repo.insertSyncAttempt({
+        id: 'sa-fail',
+        connectorId: 'github',
+        outcome: 'failure',
+        errorType: 'auth',
+        errorMessage: '401 Unauthorized',
+      });
+
+      const result = await repo.getLastSuccessfulAttempt('github');
+      expect(result).toBeNull();
     });
   });
 

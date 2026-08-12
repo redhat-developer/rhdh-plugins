@@ -219,6 +219,9 @@ export class SyncAttemptsStore {
   /**
    * Get the latest sync attempts for all connectors at once.
    *
+   * Uses per-connector queries so a busy connector cannot starve
+   * quieter ones via a global ORDER BY + LIMIT window.
+   *
    * @param connectorIds - The connector IDs to query.
    * @param limit - Maximum number of attempts per connector (default 3).
    * @returns Map of connector ID → attempts (newest first).
@@ -230,28 +233,32 @@ export class SyncAttemptsStore {
     if (connectorIds.length === 0) {
       return new Map();
     }
+
+    const entries = await Promise.all(
+      connectorIds.map(async id => {
+        const attempts = await this.getLatestAttempts(id, limit);
+        return [id, attempts] as const;
+      }),
+    );
+
+    return new Map(entries);
+  }
+
+  /**
+   * Get the most recent successful sync attempt for a connector.
+   *
+   * @param connectorId - The connector to query.
+   * @returns The latest successful attempt, or null if none exist.
+   */
+  async getLastSuccessfulAttempt(
+    connectorId: string,
+  ): Promise<SyncAttemptRecord | null> {
     const knex = await this.getDb();
-
-    // Fetch recent attempts for the given connector IDs.
-    // We over-fetch and trim per connector to avoid N+1 queries,
-    // but cap total rows to prevent unbounded reads.
-    const rows = await knex<SyncAttemptRow>(TABLE_NAME)
-      .whereIn('connector_id', connectorIds)
+    const row = await knex<SyncAttemptRow>(TABLE_NAME)
+      .where({ connector_id: connectorId, outcome: 'success' })
       .orderBy('timestamp', 'desc')
-      .limit(connectorIds.length * limit)
-      .select();
-
-    const result = new Map<string, SyncAttemptRecord[]>();
-    for (const id of connectorIds) {
-      result.set(id, []);
-    }
-    for (const row of rows) {
-      const arr = result.get(row.connector_id);
-      if (arr && arr.length < limit) {
-        arr.push(this.rowToRecord(row));
-      }
-    }
-    return result;
+      .first();
+    return row ? this.rowToRecord(row) : null;
   }
 
   /**
