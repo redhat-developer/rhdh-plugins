@@ -30,6 +30,7 @@ For `@red-hat-developer-hub/backstage-plugin-orchestrator`, the `./alpha` subpat
 **Migration for dynamic plugin configurations:**
 
 Legacy exports require `module: Legacy` — they are not available on the default module.
+OFS deployments must also load form-widgets via `pluginModule: Legacy` so RHDH registers the OFS `BackstagePlugin` (PluginRoot is now NFS).
 
 ```yaml
 dynamicPlugins:
@@ -40,4 +41,6 @@ dynamicPlugins:
         - path: /orchestrator
           importName: OrchestratorPage
           module: Legacy
+    red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets:
+      pluginModule: Legacy
 ```

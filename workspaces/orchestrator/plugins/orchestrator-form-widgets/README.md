@@ -31,8 +31,17 @@ const app = createApp({
 
 ### Dynamic (for RHDH production)
 
-For RHDH production deployments, it is expected that the plugin is exported as a dynamic plugin using RHDH CLI and loaded among the other dynamic frontend plugins.
-No explicit configuration is needed for NFS. Legacy OFS Scalprum consumers should use `module: Legacy`.
+For RHDH production deployments, export this plugin as a dynamic plugin and load it with the other dynamic frontend plugins.
+
+- **NFS / app-next:** no OFS Scalprum config is required (`PluginRoot` is the NFS plugin).
+- **OFS / legacy app:** set `pluginModule: Legacy` so RHDH registers the OFS `BackstagePlugin` (and its form API factory):
+
+```yaml
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets:
+      pluginModule: Legacy
+```
 
 ## `http-workflow-dev-server` - HTTP server for dynamic widgets development
 

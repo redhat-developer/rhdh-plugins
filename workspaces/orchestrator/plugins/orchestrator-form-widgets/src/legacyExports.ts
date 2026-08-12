@@ -18,3 +18,5 @@ export {
   orchestratorFormWidgetsPlugin,
   orchestratorFormApiFactory,
 } from './plugin';
+
+export { FormWidgetsApi } from './FormWidgetsApi';
