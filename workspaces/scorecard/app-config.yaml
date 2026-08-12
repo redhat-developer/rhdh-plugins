@@ -467,6 +467,12 @@ scorecard:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
+    codeCoverage:
+      coverageReport:
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
     filecheck:
       fileExistence:
         options:
