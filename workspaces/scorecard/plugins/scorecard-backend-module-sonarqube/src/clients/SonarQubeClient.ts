@@ -107,14 +107,29 @@ export class SonarQubeClient {
     projectKey: string,
     instanceName?: string,
   ): Promise<number> {
-    this.logger.debug(`Fetching open issues count for project ${projectKey}`);
-    const data = await this.fetchApi(
-      `/api/issues/search?componentKeys=${encodeURIComponent(
-        projectKey,
-      )}&statuses=OPEN,CONFIRMED,REOPENED&ps=1`,
-      instanceName,
-    );
-    return data.total;
+      this.logger.debug(`Fetching open issues count for project ${projectKey}`);
+
+      // Additional check to ensure the project is accessible
+      try {
+        await this.fetchApi(
+          `/api/components/show?component=${encodeURIComponent(projectKey)}`,
+          instanceName,
+        );
+      }
+      catch {
+        throw new Error(
+          `SonarQube project '${projectKey}' is not accessible or the project key is missing or invalid`,
+        );
+      }
+
+      const data = await this.fetchApi(
+        `/api/issues/search?componentKeys=${encodeURIComponent(
+          projectKey,
+        )}&statuses=OPEN,CONFIRMED,REOPENED&ps=1`,
+        instanceName,
+      );    
+  
+      return data.paging?.total ?? data.total ?? 0;
   }
 
   async getMeasures(

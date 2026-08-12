@@ -83,19 +83,87 @@ describe('SonarQubeClient', () => {
   });
 
   describe('getOpenIssuesCount', () => {
-    it('returns the total count of open issues', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ total: 42 }),
-      });
+    it('returns the total count of open issues after verifying project access', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ component: { key: 'my-project' } }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            total: 42,
+            paging: { pageIndex: 1, pageSize: 1, total: 42 },
+          }),
+        });
 
       const result = await client.getOpenIssuesCount('my-project');
 
       expect(result).toBe(42);
-      expect(mockFetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        1,
+        'https://sonarcloud.io/api/components/show?component=my-project',
+        expect.any(Object),
+      );
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        2,
         'https://sonarcloud.io/api/issues/search?componentKeys=my-project&statuses=OPEN,CONFIRMED,REOPENED&ps=1',
         expect.any(Object),
       );
+    });
+
+    it('throws when project access check fails and does not search issues', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
+      await expect(client.getOpenIssuesCount('my-project')).rejects.toThrow(
+        "SonarQube project 'my-project' is not accessible or the project key is missing or invalid",
+      );
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://sonarcloud.io/api/components/show?component=my-project',
+        expect.any(Object),
+      );
+    });
+
+    it('propagates API errors from issues search after access check succeeds', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ component: { key: 'my-project' } }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 503,
+          statusText: 'Service Unavailable',
+        });
+
+      await expect(client.getOpenIssuesCount('my-project')).rejects.toThrow(
+        /SonarQube API error: 503 Service Unavailable/,
+      );
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+
+    it('returns 0 when the project is accessible and has no open issues', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ component: { key: 'my-project' } }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            total: 0,
+            paging: { pageIndex: 1, pageSize: 1, total: 0 },
+          }),
+        });
+
+      const result = await client.getOpenIssuesCount('my-project');
+
+      expect(result).toBe(0);
     });
   });
 
