@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import { ScorecardCollectorsService } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { Collector } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import {
+  ScorecardCollectorsService,
+  Collector,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 export function buildMockCollectorsService(options: {
   collectors: Collector[];

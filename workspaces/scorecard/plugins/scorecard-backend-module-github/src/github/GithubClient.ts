@@ -185,7 +185,7 @@ export class GithubClient {
           break;
         }
 
-        if (!deployment || !deployment.databaseId || !deployment.commitOid) {
+        if (!deployment?.databaseId || !deployment?.commitOid) {
           continue;
         }
 

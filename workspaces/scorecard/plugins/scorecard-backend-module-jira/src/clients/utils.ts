@@ -65,7 +65,7 @@ function parseDateTime(value: string): Date {
   const normalizedValue = normalizeTimezone(value);
   const parsedDate = new Date(normalizedValue);
   if (Number.isNaN(parsedDate.getTime())) {
-    throw new Error(`Invalid datetime "${value}"`);
+    throw new TypeError(`Invalid datetime "${value}"`);
   }
   return parsedDate;
 }
