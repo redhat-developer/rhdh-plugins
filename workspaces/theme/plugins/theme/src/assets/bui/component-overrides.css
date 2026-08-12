@@ -83,6 +83,15 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
     border-radius: var(--bui-radius-full);
     font-weight: var(--bui-font-weight-regular);
     padding: 8px 24px;
+    transition-duration: var(
+      --pf-t--global--motion--duration--fade--default,
+      200ms
+    );
+    transition-timing-function: var(
+      --pf-t--global--motion--timing-function--accelerate,
+      cubic-bezier(0.4, 0, 0.7, 0.2)
+    );
+    transition-property: color, background, border-color;
   }
   .bui-Button:active {
     background-size: 100% 100%;
@@ -248,29 +257,29 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   }
 
   /*
-   * Header nav item is aliged with tabs https://www.patternfly.org/components/tabs
+   * Align Header nav and Tabs to https://www.patternfly.org/components/tabs
    */
-  .bui-HeaderNavList {
-    border-bottom: 1px solid var(--bui-border-1);
-  }
-  .bui-HeaderNavActive {
-    bottom: 1px;
-    height: 3px;
-    --bui-fg-primary: var(--bui-redhat-theme-brand-accent);
-  }
-
-  /*
-   * Align Tabs to https://www.patternfly.org/components/tabs
-   */
+  .bui-HeaderNavList,
   .bui-TabList {
     border-bottom: 1px solid var(--bui-border-1);
   }
+  .bui-HeaderNavItem,
   .bui-Tab {
-    margin-block: var(--bui-space-1);
+    height: auto;
+    margin: var(--bui-space-1);
+    padding: var(--bui-space-3) var(--bui-space-2);
   }
+  .bui-Tab[data-disabled] {
+    color: var(--bui-fg-disabled);
+    cursor: not-allowed;
+  }
+  .bui-HeaderNavActive,
   .bui-TabActive {
     bottom: 1px;
     height: 3px;
+    box-shadow:
+      -0.5em 0 0 0 var(--bui-redhat-theme-brand-accent),
+      0.5em 0 0 0 var(--bui-redhat-theme-brand-accent);
     --bui-fg-primary: var(--bui-redhat-theme-brand-accent);
   }
 
@@ -329,18 +338,77 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
 
   /*
    * Align form controls to https://www.patternfly.org/components/forms/form-control
-   * Add visible borders to match PatternFly input styling.
    */
   .bui-Input,
   .bui-PasswordFieldInputWrapper,
   .bui-SearchFieldInputWrapper,
+  .bui-SearchAutocomplete,
   .bui-ComboboxInput,
   .bui-DatePickerGroup {
-    border: 1px solid var(--bui-border-1);
+    border: 1px solid var(--bui-border-2);
+    border-radius: var(--bui-radius-2);
+    background-color: var(
+      --pf-t--global--background--color--control--default,
+      var(--bui-bg-neutral-1)
+    );
+  }
+  .bui-Input,
+  .bui-PasswordFieldInput {
+    padding-block: var(--bui-space-2);
+    padding-inline-end: var(--bui-space-4);
+  }
+  .bui-Input:not([data-icon]),
+  .bui-PasswordFieldInput:not([data-icon]) {
+    padding-inline-start: var(--bui-space-4);
+  }
+  .bui-Input[data-focused],
+  .bui-PasswordFieldInput[data-focused] {
+    box-shadow: none;
+    outline: 2px solid var(--bui-bg-solid);
+    outline-offset: -6px;
+  }
+  .bui-PasswordFieldInputWrapper:has([data-focused]),
+  .bui-SearchFieldInputWrapper:has([data-focused]),
+  .bui-SearchAutocomplete:has([data-focused]),
+  .bui-ComboboxInput[data-focused],
+  .bui-DatePickerGroup[data-focused] {
+    border-color: var(--bui-bg-solid);
+    box-shadow: none;
+  }
+  .bui-SearchFieldInputWrapper:has([data-focused]),
+  .bui-SearchAutocomplete:has([data-focused]),
+  .bui-ComboboxInput[data-focused],
+  .bui-DatePickerGroup[data-focused] {
+    outline: 2px solid var(--bui-bg-solid);
+    outline-offset: -6px;
+  }
+  .bui-Input[data-invalid],
+  .bui-PasswordFieldInputWrapper:has([data-invalid]),
+  .bui-SearchFieldInputWrapper:has([data-invalid]),
+  .bui-SearchAutocomplete:has([data-invalid]),
+  .bui-ComboboxInput[data-invalid] {
+    border-color: var(--bui-border-danger);
+  }
+  .bui-Input[readonly],
+  .bui-PasswordFieldInput[readonly] {
+    background-color: var(--bui-redhat-theme-readonly-bg);
+    border-color: var(--bui-redhat-theme-readonly-border);
+  }
+  .bui-Input[data-disabled],
+  .bui-PasswordFieldInputWrapper:has([data-disabled]),
+  .bui-SearchFieldInputWrapper:has([data-disabled]),
+  .bui-SearchAutocomplete:has([data-disabled]),
+  .bui-ComboboxInput[data-disabled] {
+    background-color: var(--bui-bg-solid-disabled);
+    color: var(--bui-fg-solid-disabled);
   }
   .bui-SelectTrigger {
-    border: 1px solid var(--bui-border-1);
+    border: 1px solid var(--bui-border-2);
     border-radius: var(--bui-radius-2);
+    background-color: var(
+      --pf-t--global--background--color--control--default,
+      var(--bui-bg-neutral-1)
+    );
   }
 
   /*
@@ -446,6 +514,40 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
       fill: var(--bui-black);
     }
   }
+
+  /*
+   * Align Switch to https://www.patternfly.org/components/switch
+   */
+  .bui-SwitchIndicator {
+    --switch-indicator-bg: var(
+      --pf-t--global--background--color--control--default,
+      var(--bui-bg-neutral-1)
+    );
+    width: calc(var(--bui-font-size-2) * 2.5);
+    height: calc(var(--bui-font-size-2) * 1.5);
+    border: 1px solid var(--bui-border-2);
+    border-radius: calc(var(--bui-font-size-2) * 1.5);
+    &:before {
+      width: calc(var(--bui-font-size-2) - 2px);
+      height: calc(var(--bui-font-size-2) - 2px);
+      margin: calc(var(--bui-font-size-2) * 0.2 + 1px);
+      background: var(--bui-fg-secondary);
+    }
+  }
+  .bui-Switch[data-selected] .bui-SwitchIndicator {
+    border-color: transparent;
+    &:before {
+      background: var(--bui-accent-fg);
+      transform: translateX(calc(100% + 2px));
+    }
+  }
+  .bui-Switch[data-disabled] .bui-SwitchIndicator {
+    border-color: transparent;
+    background: var(--bui-bg-solid-disabled);
+    &:before {
+      background: var(--bui-fg-solid-disabled);
+    }
+  }
 }
 
 body[data-theme-name='light'][data-theme-mode='light'],
@@ -467,4 +569,3 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
     color: var(--bui-white);
   }
 }
-
