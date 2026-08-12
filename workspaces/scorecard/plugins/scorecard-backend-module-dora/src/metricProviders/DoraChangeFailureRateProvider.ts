@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
-import type { Entity } from '@backstage/catalog-model';
+import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
   type ScorecardCollectorsService,
@@ -41,26 +42,31 @@ import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 type DoraChangeFailureRateProviderOptions = {
   collectorsService: ScorecardCollectorsService;
   config: DoraChangeFailureRateConfig;
+  logger: LoggerService;
 };
 
 export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
   private readonly collectorsService: ScorecardCollectorsService;
   private readonly config: DoraChangeFailureRateConfig;
+  private readonly logger: LoggerService;
 
   private constructor(options: DoraChangeFailureRateProviderOptions) {
     this.collectorsService = options.collectorsService;
     this.config = options.config;
+    this.logger = options.logger;
   }
 
   static fromConfig(
     config: Config,
     options: {
       collectorsService: ScorecardCollectorsService;
+      logger: LoggerService;
     },
   ): DoraChangeFailureRateProvider {
     return new DoraChangeFailureRateProvider({
       collectorsService: options.collectorsService,
       config: parseDoraChangeFailureRateConfig(config),
+      logger: options.logger,
     });
   }
 
@@ -162,6 +168,15 @@ export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
         nextDeployment.createdAt,
       ).getTime();
       if (nextDeploymentCreatedAt <= deploymentCreatedAt) {
+        this.logger.warn(
+          `Skipping deployment interval ${deployment.id}..${
+            nextDeployment.id
+          } for ${stringifyEntityRef(
+            entity,
+          )} while calculating ${this.getProviderId()}: non-increasing createdAt (deployment=${
+            deployment.createdAt
+          }, nextDeployment=${nextDeployment.createdAt})`,
+        );
         continue;
       }
 

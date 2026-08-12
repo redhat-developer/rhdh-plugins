@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { mockServices } from '@backstage/backend-test-utils';
 import { ConfigReader } from '@backstage/config';
 import { DoraChangeFailureRateProvider } from './DoraChangeFailureRateProvider';
 import {
@@ -28,6 +29,8 @@ import {
 } from '../constants';
 import { DEFAULT_DORA_CHANGE_FAILURE_RATE_THRESHOLDS } from './DoraConfig';
 
+const mockLogger = mockServices.logger.mock();
+
 describe('DoraChangeFailureRateProvider', () => {
   let deploymentsCollector: ReturnType<typeof buildMockDeploymentsCollector>;
   let incidentsCollector: ReturnType<typeof buildMockIncidentsCollector>;
@@ -38,6 +41,7 @@ describe('DoraChangeFailureRateProvider', () => {
   let provider: DoraChangeFailureRateProvider;
 
   beforeEach(() => {
+    jest.clearAllMocks();
     deploymentsCollector = buildMockDeploymentsCollector({
       deployments: [
         {
@@ -72,6 +76,7 @@ describe('DoraChangeFailureRateProvider', () => {
     }));
     provider = DoraChangeFailureRateProvider.fromConfig(new ConfigReader({}), {
       collectorsService,
+      logger: mockLogger,
     });
   });
 
@@ -170,6 +175,7 @@ describe('DoraChangeFailureRateProvider', () => {
         }),
         {
           collectorsService: customCollectorsService,
+          logger: mockLogger,
         },
       );
 
@@ -321,6 +327,7 @@ describe('DoraChangeFailureRateProvider', () => {
         }),
         {
           collectorsService,
+          logger: mockLogger,
         },
       );
 
@@ -428,6 +435,12 @@ describe('DoraChangeFailureRateProvider', () => {
 
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
         /no evaluable deployment intervals/,
+      );
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Skipping deployment interval 100..101'),
+      );
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('non-increasing createdAt'),
       );
     });
   });

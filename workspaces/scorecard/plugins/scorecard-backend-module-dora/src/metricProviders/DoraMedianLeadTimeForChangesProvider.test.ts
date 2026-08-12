@@ -399,6 +399,34 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       );
     });
 
+    it('should skip pull requests with negative lead time and warn', async () => {
+      jest.mocked(deploymentsCollector.collect).mockResolvedValueOnce({
+        deployments,
+      });
+      jest.mocked(deploymentPullRequestsCollector.collect).mockResolvedValue({
+        pullRequests: [
+          {
+            id: '999',
+            firstCommitAt: '2026-06-09T12:00:00.000Z', // after sha-current deployment
+          },
+          {
+            id: '124',
+            firstCommitAt: '2026-06-07T12:00:00.000Z', // 24h lead time
+          },
+        ],
+      });
+
+      const results = await provider.calculateMetrics(mockEntity);
+
+      expect(results.get('dora.medianLeadTimeForChanges')).toBe(24);
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Skipping pull request 999'),
+      );
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('negative lead time'),
+      );
+    });
+
     it('should throw when all deployment intervals fail to collect pull requests', async () => {
       jest
         .mocked(deploymentPullRequestsCollector.collect)

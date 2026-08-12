@@ -52,6 +52,7 @@ export const scorecardModuleDora = createBackendModule({
           }),
           DoraChangeFailureRateProvider.fromConfig(config, {
             collectorsService,
+            logger,
           }),
         );
       },

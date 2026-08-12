@@ -185,6 +185,15 @@ export class DoraMedianLeadTimeForChangesProvider
           pullRequest.firstCommitAt,
         ).getTime();
         if (deployedAtTimestamp < firstCommitAtTimestamp) {
+          this.logger.warn(
+            `Skipping pull request ${pullRequest.id} for deployment ${
+              deployment.id
+            } (${stringifyEntityRef(
+              entity,
+            )}) while calculating ${this.getProviderId()}: negative lead time (deployedAt=${
+              deployment.createdAt
+            }, firstCommitAt=${pullRequest.firstCommitAt})`,
+          );
           continue;
         }
         leadTimeHours.push(
