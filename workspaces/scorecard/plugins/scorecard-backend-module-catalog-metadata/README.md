@@ -104,11 +104,11 @@ scorecard:
 
 This produces metric `catalogMetadata.lifecycle` with three possible statuses:
 
-| Field state | Status |
-| --- | --- |
-| Value is `prod`, `stage`, `test`, or `dev` | `ok` |
-| Value exists but is not in the whitelist | `invalid` |
-| Field is missing, null, or empty | `missed` |
+| Field state                                | Status    |
+| ------------------------------------------ | --------- |
+| Value is `prod`, `stage`, `test`, or `dev` | `ok`      |
+| Value exists but is not in the whitelist   | `invalid` |
+| Field is missing, null, or empty           | `missed`  |
 
 ### Example 3: Multiple checks with different entity kinds
 
@@ -292,14 +292,14 @@ Fields are resolved using dotted path notation on the entity object. For example
 
 Each field value is evaluated against the check's status mapping to produce a status string:
 
-| Field state | Status mapping key | Default status |
-| --- | --- | --- |
-| Field exists with a non-empty value, no value match | `exists` | `found` |
-| Field exists, value matches an entry in `values` | `values.<value>` | _(per value)_ |
-| Field resolves to `null` or `undefined` | `empty` | `missed` |
-| Field resolves to an empty string (`""`) | `emptyString` | `missed` |
-| Field resolves to an empty array (`[]`) | `emptyArray` | `missed` |
-| Field path does not resolve on the entity | `missed` | `missed` |
+| Field state                                         | Status mapping key | Default status |
+| --------------------------------------------------- | ------------------ | -------------- |
+| Field exists with a non-empty value, no value match | `exists`           | `found`        |
+| Field exists, value matches an entry in `values`    | `values.<value>`   | _(per value)_  |
+| Field resolves to `null` or `undefined`             | `empty`            | `missed`       |
+| Field resolves to an empty string (`""`)            | `emptyString`      | `missed`       |
+| Field resolves to an empty array (`[]`)             | `emptyArray`       | `missed`       |
+| Field path does not resolve on the entity           | `missed`           | `missed`       |
 
 ### Three-Tier Status Mapping Merge
 
@@ -317,12 +317,12 @@ The `values` maps are deep-merged: hardcoded defaults (empty), then options-leve
 
 The module automatically generates threshold rules from each check's resolved status mapping. Each distinct status string becomes a threshold rule with a numeric code. Well-known status strings get default colors and icons:
 
-| Status string | Color | Icon |
-| --- | --- | --- |
-| `found`, `ok`, `success`, `valid` | success (green) | `scorecardSuccessStatusIcon` |
-| `missed`, `invalid`, `error`, `failed` | error (red) | `scorecardErrorStatusIcon` |
-| `warning` | warning (yellow) | `scorecardWarningStatusIcon` |
-| _(any other)_ | warning (yellow) | `scorecardWarningStatusIcon` |
+| Status string                          | Color            | Icon                         |
+| -------------------------------------- | ---------------- | ---------------------------- |
+| `found`, `ok`, `success`, `valid`      | success (green)  | `scorecardSuccessStatusIcon` |
+| `missed`, `invalid`, `error`, `failed` | error (red)      | `scorecardErrorStatusIcon`   |
+| `warning`                              | warning (yellow) | `scorecardWarningStatusIcon` |
+| _(any other)_                          | warning (yellow) | `scorecardWarningStatusIcon` |
 
 You can override the auto-generated thresholds using per-metric threshold configuration (see Example 6).
 
