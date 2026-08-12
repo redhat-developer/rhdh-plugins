@@ -205,43 +205,79 @@ body[data-theme-name='light-customized'][data-theme-mode='light'] {
 
   /* Foreground colors */
   --bui-fg-primary: var(--bui-black);
-  --bui-fg-secondary: oklch(0% 0 0 / 50%);
-  --bui-fg-disabled: oklch(0% 0 0 / 28%);
+  --bui-fg-secondary: var(
+    --pf-t--global--text--color--subtle,
+    #4d4d4d
+  ); /* PF gray-60 */
+  --bui-fg-disabled: var(
+    --pf-t--global--text--color--disabled,
+    #a3a3a3
+  ); /* PF gray-40 */
   --bui-fg-solid: var(--bui-white);
   --bui-fg-solid-disabled: var(
     --pf-t--global--text--color--on-disabled,
-    #4d4d4d
-  );
+    #707070
+  ); /* PF gray-50 */
 
-  /* Foreground Statuses */
-  --bui-fg-danger-on-bg: #991919;
-  --bui-fg-warning-on-bg: #92310a;
-  --bui-fg-success-on-bg: #116932;
-  --bui-fg-info-on-bg: #173da6;
-  --bui-fg-danger: #ec3b18;
-  --bui-fg-warning: #ef7a32;
-  --bui-fg-success: #1aaf4f;
-  --bui-fg-info: #0d74ce;
+  /* Foreground Statuses — used as icon/border accent on status backgrounds */
+  --bui-fg-danger-on-bg: var(
+    --pf-t--global--color--status--danger--default,
+    #b1380b
+  ); /* PF red-orange-60 */
+  --bui-fg-warning-on-bg: var(
+    --pf-t--global--color--status--warning--default,
+    #dca614
+  ); /* PF yellow-40 */
+  --bui-fg-success-on-bg: var(
+    --pf-t--global--color--status--success--default,
+    #3d7317
+  ); /* PF green-60 */
+  --bui-fg-info-on-bg: var(
+    --pf-t--global--color--status--info--default,
+    #5e40be
+  ); /* PF purple-50 */
+  --bui-fg-danger: var(
+    --pf-t--global--color--status--danger--default,
+    #b1380b
+  ); /* PF red-orange-60 */
+  --bui-fg-warning: var(
+    --pf-t--global--color--status--warning--default,
+    #dca614
+  ); /* PF yellow-40 */
+  --bui-fg-success: var(
+    --pf-t--global--color--status--success--default,
+    #3d7317
+  ); /* PF green-60 */
+  --bui-fg-info: var(
+    --pf-t--global--color--status--info--default,
+    #5e40be
+  ); /* PF purple-50 */
 
   /* Border colors */
-  --bui-border-1: #d5d5d5;
-  --bui-border-2: #bababa;
+  --bui-border-1: var(
+    --pf-t--global--border--color--default,
+    #c7c7c7
+  ); /* PF gray-30 */
+  --bui-border-2: var(
+    --pf-t--global--border--color--control--default,
+    #a3a3a3
+  ); /* PF gray-40 */
   --bui-border-info: var(
     --pf-t--global--border--color--status--info--default,
     #5e40be
-  );
+  ); /* PF purple-50 */
   --bui-border-danger: var(
     --pf-t--global--border--color--status--danger--default,
     #b1380b
-  );
+  ); /* PF red-orange-60 */
   --bui-border-warning: var(
     --pf-t--global--border--color--status--warning--default,
-    #ffcc17
-  );
+    #dca614
+  ); /* PF yellow-40 */
   --bui-border-success: var(
     --pf-t--global--border--color--status--success--default,
     #3d7317
-  );
+  ); /* PF green-60 */
 
   /* Accent colors (used by Switch and other interactive components) */
   --bui-accent-bg: var(--bui-bg-solid);
@@ -257,7 +293,7 @@ body[data-theme-name='light-customized'][data-theme-mode='light'] {
   --bui-redhat-theme-brand-accent: var(--bui-bg-solid);
 
   /* Special colors */
-  --bui-ring: #1f5493;
+  --bui-ring: var(--bui-bg-solid);
   --bui-scrollbar: #a0a0a03b;
   --bui-scrollbar-thumb: #a0a0a0;
 
@@ -273,21 +309,25 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   --bui-black: #151515;
   --bui-white: #ffffff;
 
-  /* Solid background colors */
-  --bui-bg-solid: var(--pf-t--global--icon--color--brand--default, #b9dafc);
-  --bui-bg-solid-hover: var(--pf-t--global--icon--color--brand--hover, #e0f0ff);
+  /* Solid background colors — dark brand uses lighter blue for contrast on dark bg */
+  --bui-bg-solid: var(
+    --pf-t--global--icon--color--brand--default,
+    #92c5f9
+  ); /* PF dark brand = blue-30 */
+  --bui-bg-solid-hover: var(
+    --pf-t--global--icon--color--brand--hover,
+    #b9dafc
+  ); /* PF dark = blue-20 */
   --bui-bg-solid-pressed: var(
     --pf-t--global--icon--color--brand--clicked,
-    #e0f0ff
+    #b9dafc
   );
   --bui-bg-solid-disabled: var(
     --pf-t--global--background--color--disabled--default,
     #a3a3a3
-  );
+  ); /* PF dark gray-40 */
 
   /* Neutral background colors */
-  /* --bui-bg-app: #f8f8f8; */
-
   --bui-bg-neutral-1: oklch(100% 0 0 / 10%);
   --bui-bg-neutral-1-hover: oklch(100% 0 0 / 14%);
   --bui-bg-neutral-1-pressed: oklch(100% 0 0 / 20%);
@@ -308,7 +348,7 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   --bui-bg-neutral-4-pressed: oklch(100% 0 0 / 20%);
   --bui-bg-neutral-4-disabled: oklch(100% 0 0 / 8%);
 
-  /* Status background colors */
+  /* Status background colors — BUI uses tinted backgrounds for alerts */
   --bui-bg-danger: #ffe2e2;
   --bui-bg-warning: #ffedd5;
   --bui-bg-success: #dcfce7;
@@ -316,43 +356,79 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
 
   /* Foreground colors */
   --bui-fg-primary: var(--bui-white);
-  --bui-fg-secondary: oklch(100% 0 0 / 50%);
-  --bui-fg-disabled: oklch(100% 0 0 / 28%);
-  --bui-fg-solid: #101821;
+  --bui-fg-secondary: var(
+    --pf-t--global--text--color--subtle,
+    #c7c7c7
+  ); /* PF dark = gray-30 */
+  --bui-fg-disabled: var(
+    --pf-t--global--text--color--disabled,
+    #707070
+  ); /* PF dark = gray-50 */
+  --bui-fg-solid: #151515;
   --bui-fg-solid-disabled: var(
     --pf-t--global--text--color--on-disabled,
     #383838
-  );
+  ); /* PF dark = gray-70 */
 
-  /* Foreground Statuses */
-  --bui-fg-danger-on-bg: #991919;
-  --bui-fg-warning-on-bg: #92310a;
-  --bui-fg-success-on-bg: #116932;
-  --bui-fg-info-on-bg: #173da6;
-  --bui-fg-danger: #ec3b18;
-  --bui-fg-warning: #ef7a32;
-  --bui-fg-success: #1aaf4f;
-  --bui-fg-info: #0d74ce;
+  /* Foreground Statuses — dark mode uses lighter status colors for contrast */
+  --bui-fg-danger-on-bg: var(
+    --pf-t--global--color--status--danger--default,
+    #f0561d
+  ); /* PF dark = red-orange-50 */
+  --bui-fg-warning-on-bg: var(
+    --pf-t--global--color--status--warning--default,
+    #ffcc17
+  ); /* PF dark = yellow-30 */
+  --bui-fg-success-on-bg: var(
+    --pf-t--global--color--status--success--default,
+    #87bb62
+  ); /* PF dark = green-40 */
+  --bui-fg-info-on-bg: var(
+    --pf-t--global--color--status--info--default,
+    #b6a6e9
+  ); /* PF dark = purple-30 */
+  --bui-fg-danger: var(
+    --pf-t--global--color--status--danger--default,
+    #f0561d
+  ); /* PF dark = red-orange-50 */
+  --bui-fg-warning: var(
+    --pf-t--global--color--status--warning--default,
+    #ffcc17
+  ); /* PF dark = yellow-30 */
+  --bui-fg-success: var(
+    --pf-t--global--color--status--success--default,
+    #87bb62
+  ); /* PF dark = green-40 */
+  --bui-fg-info: var(
+    --pf-t--global--color--status--info--default,
+    #b6a6e9
+  ); /* PF dark = purple-30 */
 
   /* Border colors */
-  --bui-border-1: #d5d5d5;
-  --bui-border-2: #bababa;
+  --bui-border-1: var(
+    --pf-t--global--border--color--default,
+    #4d4d4d
+  ); /* PF dark = gray-60 */
+  --bui-border-2: var(
+    --pf-t--global--border--color--control--default,
+    #a3a3a3
+  ); /* PF dark = gray-40 */
   --bui-border-info: var(
     --pf-t--global--border--color--status--info--default,
-    #5e40be
-  );
+    #b6a6e9
+  ); /* PF dark = purple-30 */
   --bui-border-danger: var(
     --pf-t--global--border--color--status--danger--default,
-    #b1380b
-  );
+    #f0561d
+  ); /* PF dark = red-orange-50 */
   --bui-border-warning: var(
     --pf-t--global--border--color--status--warning--default,
     #ffcc17
-  );
+  ); /* PF dark = yellow-30 */
   --bui-border-success: var(
     --pf-t--global--border--color--status--success--default,
-    #3d7317
-  );
+    #87bb62
+  ); /* PF dark = green-40 */
 
   /* Accent colors (used by Switch and other interactive components) */
   --bui-accent-bg: var(--bui-bg-solid);
@@ -364,7 +440,7 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   --bui-redhat-theme-brand-accent: var(--bui-bg-solid);
 
   /* Special colors */
-  --bui-ring: #1f5493;
+  --bui-ring: var(--bui-bg-solid);
   --bui-scrollbar: #a0a0a03b;
   --bui-scrollbar-thumb: #a0a0a0;
 
