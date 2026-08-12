@@ -8,36 +8,35 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
 
   /*
    * Align Accordion to https://www.patternfly.org/components/accordion
-   *
-   * Remove the padding from the accordion and put it on the button and
-   * panel to increase the click size -- and align it visually with PatternFly
    */
+  .bui-AccordionGroup {
+    gap: var(--bui-space-1);
+  }
   .bui-Accordion {
     padding: 0;
+    border-radius: var(--bui-radius-2);
   }
   .bui-AccordionTriggerButton {
-    border-top-left-radius: var(--bui-radius-3);
-    border-top-right-radius: var(--bui-radius-3);
-    padding: var(--bui-space-3);
+    border-radius: var(--bui-radius-2);
+    padding: var(--bui-space-2) var(--bui-space-4);
+    transition: background-color 100ms ease;
+    &:hover,
+    &:focus {
+      background-color: var(--bui-bg-neutral-2);
+    }
+  }
+  .bui-AccordionTriggerTitle {
+    font-size: var(--bui-font-size-3);
+    font-weight: var(--bui-font-weight-regular);
+  }
+  .bui-Accordion[data-expanded='true'] .bui-AccordionTriggerTitle {
+    font-weight: var(--bui-font-weight-bold);
   }
   .bui-Accordion[data-expanded='true'] > .bui-AccordionPanel {
-    margin: var(--bui-space-3);
-    margin-top: 0px;
-    padding: var(--bui-space-3);
-  }
-
-  .bui-Accordion[data-expanded='true'][data-bg='neutral-1'] {
-    background-color: var(--bui-bg-neutral-2);
-  }
-  .bui-AccordionTriggerButton:hover,
-  .bui-AccordionTriggerButton:focus {
-    background-color: var(--bui-bg-neutral-3);
-  }
-  .bui-Accordion[data-expanded='true'][data-bg='neutral-1']
-    > .bui-AccordionPanel {
-    background-color: var(--bui-bg-neutral-1);
-    /* padding: var(--bui-space-2); */
-    border-radius: var(--bui-radius-3);
+    margin: 0 var(--bui-space-4) var(--bui-space-4);
+    padding: var(--bui-space-2);
+    border-radius: var(--bui-radius-2);
+    background-color: var(--bui-redhat-theme-bg-primary);
   }
 
   /*
@@ -294,9 +293,32 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
    * Aligned ToggleButton to PatternFly ToggleGroup https://www.patternfly.org/components/toggle-group
    */
   .bui-ToggleButton {
-    border: 1px solid var(--bui-border-1);
-    font-weight: var(--bui-font-weight-normal);
-    padding: var(--bui-space-4) var(--bui-space-4);
+    border: 1px solid var(--bui-border-2);
+    background-color: var(
+      --pf-t--global--background--color--control--default,
+      var(--bui-bg-neutral-1)
+    );
+    color: var(--bui-fg-primary);
+    font-weight: var(--bui-font-weight-regular);
+    height: auto;
+    padding: var(--bui-space-2) var(--bui-space-4);
+  }
+  .bui-ToggleButton:not([data-selected])[data-hovered] {
+    background-color: var(--bui-redhat-theme-brand-subtle);
+    border-color: var(--bui-redhat-theme-brand-subtle-border);
+  }
+  .bui-ToggleButton[data-selected],
+  .bui-ToggleButton[data-pressed] {
+    background-color: var(--bui-redhat-theme-brand-subtle);
+    color: var(--bui-fg-primary);
+    border-color: var(--bui-redhat-theme-brand-subtle-border);
+    box-shadow: inset 0 0 0 1px var(--bui-redhat-theme-brand-subtle-border);
+  }
+  .bui-ToggleButton[data-disabled] {
+    background-color: var(--bui-bg-solid-disabled);
+    color: var(--bui-fg-solid-disabled);
+    border-color: var(--bui-border-2);
+    box-shadow: none;
   }
 
   /*
@@ -316,8 +338,29 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   .bui-HeaderTitle {
     font-family: var(--bui-redhat-theme-font-heading);
   }
+  /*
+   * Align PluginHeader to PF component-groups PageHeader
+   * https://www.patternfly.org/extensions/component-groups/page-header
+   */
+  .bui-PluginHeader {
+    padding-block: var(--bui-space-4) 0;
+    padding-inline: var(--bui-space-6);
+  }
+  .bui-PluginHeaderToolbar {
+    border-bottom: none;
+    padding-bottom: var(--bui-space-4);
+  }
   .bui-PluginHeaderToolbarName {
     font-family: var(--bui-redhat-theme-font-heading);
+    font-size: var(--bui-font-size-6);
+    font-weight: var(--bui-font-weight-bold);
+    line-height: 1.3;
+    & .bui-Link,
+    & .bui-Text {
+      font-size: inherit;
+      font-weight: inherit;
+      font-family: inherit;
+    }
   }
 
   /*
@@ -398,17 +441,88 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   .bui-PasswordFieldInputWrapper:has([data-disabled]),
   .bui-SearchFieldInputWrapper:has([data-disabled]),
   .bui-SearchAutocomplete:has([data-disabled]),
-  .bui-ComboboxInput[data-disabled] {
+  .bui-ComboboxInput[data-disabled],
+  .bui-SelectTrigger[disabled] {
     background-color: var(--bui-bg-solid-disabled);
     color: var(--bui-fg-solid-disabled);
+    & * {
+      color: inherit;
+    }
+  }
+
+  /*
+   * Align Select and Combobox to PatternFly MenuToggle
+   * https://www.patternfly.org/components/menus/menu-toggle
+   */
+  .bui-SelectTrigger,
+  .bui-ComboboxInput {
+    transition-property: color, background-color, border-width, border-color;
+    transition-duration: 100ms;
+    transition-timing-function: ease;
   }
   .bui-SelectTrigger {
     border: 1px solid var(--bui-border-2);
     border-radius: var(--bui-radius-2);
-    background-color: var(
-      --pf-t--global--background--color--control--default,
-      var(--bui-bg-neutral-1)
-    );
+    background-color: var(--bui-redhat-theme-bg-floating);
+    padding: var(--bui-space-2) var(--bui-space-4);
+  }
+  .bui-SelectPopover,
+  .bui-ComboboxPopover {
+    border-radius: var(--bui-radius-3);
+    &,
+    & .bui-Popover,
+    & .bui-PopoverContent {
+      background: var(--bui-redhat-theme-bg-floating);
+    }
+    & .bui-Popover {
+      margin: 0;
+      border: 1px solid var(--bui-border-1);
+    }
+    & .bui-PopoverContent {
+      padding: var(--bui-space-1);
+    }
+  }
+  .bui-SelectItem:has(> .bui-SelectItemIndicator),
+  .bui-ComboboxItem:has(> .bui-ComboboxItemIndicator) {
+    grid-template-areas: 'text icon';
+    grid-template-columns: 1fr 1rem;
+  }
+  .bui-SelectItem {
+    padding: var(--bui-space-2) var(--bui-space-4);
+    border-radius: var(--bui-radius-2);
+  }
+  .bui-SelectItem[data-focused] {
+    background-color: var(--bui-bg-neutral-2);
+  }
+  .bui-SelectTrigger:hover,
+  .bui-ComboboxInput:hover {
+    border-color: var(--bui-bg-solid);
+  }
+  .bui-Select[data-focused] .bui-SelectTrigger {
+    border-color: var(--bui-bg-solid);
+    border-width: 2px;
+    padding: calc(var(--bui-space-2) - 1px) calc(var(--bui-space-4) - 1px);
+  }
+  .bui-ComboboxInput[data-focused] {
+    border-width: 2px;
+  }
+
+  /*
+   * Align Table to https://www.patternfly.org/components/table
+   */
+  .bui-TableHead {
+    padding: var(--bui-space-4);
+    font-size: var(--bui-font-size-2);
+    font-weight: var(--bui-font-weight-bold);
+  }
+  .bui-TableCell {
+    padding: var(--bui-space-4);
+  }
+  .bui-TableHeader {
+    border-bottom: 1px solid var(--bui-border-1);
+  }
+  .bui-TableRow {
+    border-bottom: 1px solid var(--bui-border-1);
   }
 
   /*
@@ -424,6 +538,7 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   .bui-MenuPopover {
     border-radius: var(--bui-radius-3);
     padding: var(--bui-space-1);
+    background-color: var(--bui-redhat-theme-bg-floating);
   }
   .bui-MenuItem {
     border-radius: var(--bui-radius-2);
