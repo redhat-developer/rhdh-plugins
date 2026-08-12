@@ -860,6 +860,82 @@ export const jiraEntitiesDrillDownNoDataResponse = {
   },
 };
 
+// Code coverage scorecard responses — 8 metrics matching CodeCoverageMetricProvider
+export const codeCoverageScorecardResponse = [
+  sonarqubeNumberMetric(
+    'codeCoverage.linePercentage',
+    'Code coverage (Lines)',
+    'Percentage of lines covered by tests.',
+    80,
+    [
+      { key: 'success', expression: '>80' },
+      { key: 'warning', expression: '50-80' },
+      { key: 'error', expression: '<50' },
+    ],
+    'warning',
+  ),
+  sonarqubeNumberMetric(
+    'codeCoverage.lineAvailable',
+    'Code coverage - Tracked lines of code',
+    'Total number of lines tracked for code coverage.',
+    200,
+    [],
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'codeCoverage.lineCovered',
+    'Code coverage - Covered lines of code',
+    'Number of lines covered by tests.',
+    160,
+    [],
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'codeCoverage.lineMissed',
+    'Code coverage - Missed lines of code',
+    'Number of lines not covered by tests.',
+    40,
+    [],
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'codeCoverage.branchPercentage',
+    'Code coverage (Branches)',
+    'Percentage of branches covered by tests.',
+    70,
+    [
+      { key: 'success', expression: '>80' },
+      { key: 'warning', expression: '50-80' },
+      { key: 'error', expression: '<50' },
+    ],
+    'warning',
+  ),
+  sonarqubeNumberMetric(
+    'codeCoverage.branchAvailable',
+    'Code coverage - Tracked branches',
+    'Total number of branches tracked for code coverage.',
+    50,
+    [],
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'codeCoverage.branchCovered',
+    'Code coverage - Covered branches',
+    'Number of branches covered by tests.',
+    35,
+    [],
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'codeCoverage.branchMissed',
+    'Code coverage - Missed branches',
+    'Number of branches not covered by tests.',
+    15,
+    [],
+    'success',
+  ),
+];
+
 export const fileCheckScorecardResponse = [
   {
     id: 'filecheck.readme',
