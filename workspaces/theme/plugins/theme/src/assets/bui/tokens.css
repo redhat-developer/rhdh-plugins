@@ -296,6 +296,17 @@ body[data-theme-name='light-customized'][data-theme-mode='light'] {
   --bui-redhat-theme-readonly-bg: #f2f2f2;
   --bui-redhat-theme-readonly-border: #c7c7c7;
 
+  /* Primary background — PF background-color-primary-default */
+  --bui-redhat-theme-bg-primary: #ffffff; /* PF white */
+
+  /* Floating background — PF background-color-floating-default (menus, popovers) */
+  --bui-redhat-theme-bg-floating: #ffffff; /* PF white */
+
+  /* Brand subtle — used by ToggleButton selected/hover states */
+  --bui-redhat-theme-brand-subtle: #e0f0ff; /* PF blue-10 */
+  --bui-redhat-theme-brand-subtle-hover: #b9dafc; /* PF blue-20 */
+  --bui-redhat-theme-brand-subtle-border: #4394e5; /* PF blue-40 */
+
   /* Special colors */
   --bui-ring: var(--bui-bg-solid);
   --bui-scrollbar: #a0a0a03b;
@@ -446,6 +457,17 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   /* Readonly form control colors — PF dark: gray-80 bg, gray-60 border */
   --bui-redhat-theme-readonly-bg: #292929;
   --bui-redhat-theme-readonly-border: #4d4d4d;
+
+  /* Primary background — PF dark: gray-80 */
+  --bui-redhat-theme-bg-primary: #292929;
+
+  /* Floating background — PF dark: gray-70 */
+  --bui-redhat-theme-bg-floating: #383838;
+
+  /* Brand subtle — PF dark: blue-70, blue-60, blue-30 */
+  --bui-redhat-theme-brand-subtle: #003366; /* PF blue-70 */
+  --bui-redhat-theme-brand-subtle-hover: #004d99; /* PF blue-60 */
+  --bui-redhat-theme-brand-subtle-border: #92c5f9; /* PF blue-30 */
 
   /* Special colors */
   --bui-ring: var(--bui-bg-solid);
