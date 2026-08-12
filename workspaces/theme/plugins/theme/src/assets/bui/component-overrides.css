@@ -5,6 +5,7 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   /*
    * Override some Backstage UI component styles to match the PatternFly design.
    */
+  background-color: var(--bui-redhat-theme-page-inset-bg);
 
   /*
    * Align Accordion to https://www.patternfly.org/components/accordion
@@ -661,6 +662,69 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
     background: var(--bui-bg-solid-disabled);
     &:before {
       background: var(--bui-fg-solid-disabled);
+    }
+  }
+
+  /*
+   * BUI elements inside BackstageSidebarPage should use the page background
+   * so they blend with the content area rather than the shell background.
+   */
+  [class*='BackstageSidebarPage-root']:has(> nav):not(
+      :has([class*='BackstagePage-root-'])
+    ) {
+    background-color: var(--bui-redhat-theme-bg-primary);
+
+    /* Right edge page inset corners */
+    max-width: 100%;
+    box-sizing: border-box;
+    height: 100vh;
+    border-width: var(--bui-redhat-theme-page-inset)
+      var(--bui-redhat-theme-page-inset) var(--bui-redhat-theme-page-inset) 0;
+    border-style: solid;
+    border-color: var(--bui-redhat-theme-page-inset-bg);
+    clip-path: xywh(
+      0 var(--bui-redhat-theme-page-inset)
+        calc(100% - var(--bui-redhat-theme-page-inset))
+        calc(100% - 2 * var(--bui-redhat-theme-page-inset)) round 0 1rem 1rem 0
+    );
+
+    /*
+     * A terrible hack for the left edge page inset corners
+     * Very difficult to get "inside border radius", so instead we use two overlapping
+     * borders, one with border radius.
+     *
+     * To prevent content overlap a clip-path is used.
+     */
+    &:before,
+    &:after {
+      content: '';
+      display: absolute;
+      width: 100%;
+      height: calc(100% - var(--bui-redhat-theme-page-inset) * 2);
+      top: 0;
+      margin: calc(var(--bui-redhat-theme-page-inset)) 0;
+      position: fixed;
+      clip-path: polygon(
+        0% 100%,
+        0% 1em,
+        1em 0%,
+        0% 0%,
+        0% calc(100% - 1em),
+        1em 100%
+      );
+    }
+
+    &:before {
+      border-left: var(--bui-redhat-theme-page-inset) solid
+        var(--bui-redhat-theme-page-inset-bg);
+      z-index: 0;
+    }
+
+    &:after {
+      border-left: var(--bui-redhat-theme-page-inset) solid
+        var(--bui-redhat-theme-bg-primary);
+      border-radius: 1em;
+      z-index: 1;
     }
   }
 }

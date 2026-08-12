@@ -302,6 +302,10 @@ body[data-theme-name='light-customized'][data-theme-mode='light'] {
   /* Floating background — PF background-color-floating-default (menus, popovers) */
   --bui-redhat-theme-bg-floating: #ffffff; /* PF white */
 
+  /* Page inset — the shell background behind the rounded content well */
+  --bui-redhat-theme-page-inset: 1.5rem;
+  --bui-redhat-theme-page-inset-bg: #f2f2f2;
+
   /* Brand subtle — used by ToggleButton selected/hover states */
   --bui-redhat-theme-brand-subtle: #e0f0ff; /* PF blue-10 */
   --bui-redhat-theme-brand-subtle-hover: #b9dafc; /* PF blue-20 */
@@ -463,6 +467,10 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
 
   /* Floating background — PF dark: gray-70 */
   --bui-redhat-theme-bg-floating: #383838;
+
+  /* Page inset — dark shell background */
+  --bui-redhat-theme-page-inset: 1.5rem;
+  --bui-redhat-theme-page-inset-bg: #151515;
 
   /* Brand subtle — PF dark: blue-70, blue-60, blue-30 */
   --bui-redhat-theme-brand-subtle: #003366; /* PF blue-70 */
