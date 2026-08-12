@@ -111,6 +111,23 @@ export async function mockApiTextResponse(
   });
 }
 
+const CODE_COVERAGE_SCORECARD_API_ROUTE =
+  '**/api/scorecard/metrics/catalog/Component/default/code-coverage-scorecard-only';
+
+export async function mockCodeCoverageScorecardResponse(
+  page: Page,
+  responseData: object,
+  status = 200,
+) {
+  await page.route(CODE_COVERAGE_SCORECARD_API_ROUTE, async route => {
+    await route.fulfill({
+      status,
+      contentType: 'application/json',
+      body: JSON.stringify(responseData),
+    });
+  });
+}
+
 const SONARQUBE_SCORECARD_API_ROUTE =
   '**/api/scorecard/metrics/catalog/Component/default/sonarqube-scorecard-only';
 
