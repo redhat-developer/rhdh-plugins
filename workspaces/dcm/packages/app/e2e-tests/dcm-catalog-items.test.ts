@@ -37,6 +37,7 @@ test.describe('DCM Catalog Items & Instances @dcm', () => {
 
     await dcm.verifyColumnHeader('Display name');
     await dcm.verifyColumnHeader('API version');
+    await dcm.verifyColumnHeader('Service type');
 
     await dcm.verifyCellContent('Pet Clinic');
   });

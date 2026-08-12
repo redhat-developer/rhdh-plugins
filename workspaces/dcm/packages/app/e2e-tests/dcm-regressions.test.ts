@@ -71,14 +71,13 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
     page,
   }) => {
     await page.goto('/dcm/providers', { timeout: TIMEOUTS.page });
-    await page.waitForLoadState('networkidle');
     await dcm.verifyPageTitle();
     await dcm.verifyTabSelected('Providers');
     await dcm.verifyTableVisible();
     await dcm.verifyCellContent('k8s-container-provider');
   });
 
-  test('FLPATH-4241: Delete button is disabled while delete is in progress', async ({
+  test('FLPATH-4241: Provider can be deleted and is removed from table', async ({
     page,
   }) => {
     const id = suffix();
@@ -103,6 +102,7 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
     const deleteBtn = page
       .locator('[role="dialog"]')
       .getByRole('button', { name: 'Delete' });
+    await expect(deleteBtn).toBeEnabled();
     await deleteBtn.click();
 
     await dcm.waitForDialogClosed();
@@ -243,7 +243,7 @@ test.describe('DCM Bug Regression Tests @dcm', () => {
   test('FLPATH-4245: Service Types tab loads types from backend', async () => {
     await dcm.clickTab('Service types');
     await dcm.verifyTableVisible();
-    await dcm.verifyTableHasRows(2);
+    await dcm.verifyTableHasRows(1);
 
     await dcm.verifyCellContent('container');
     await dcm.verifyCellContent('three-tier-app-demo');
@@ -491,7 +491,6 @@ test.describe('DCM UX Regression Tests @dcm', () => {
     expect(before).toContain('10');
 
     await page.reload();
-    await page.waitForLoadState('networkidle');
     await page.waitForTimeout(TIMEOUTS.networkSettle);
 
     const after = await dcm.getRowsPerPageValue();

@@ -138,7 +138,6 @@ test.describe('DCM Plugin Smoke Tests @dcm', () => {
     page,
   }) => {
     await page.goto('/dcm/service-specs', { timeout: TIMEOUTS.page });
-    await page.waitForLoadState('networkidle');
     await dcm.verifyPageTitle();
     const errorAlert = page.locator('[class*="MuiAlert-standardError"]');
     await expect(errorAlert).toHaveCount(0);

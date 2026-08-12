@@ -62,7 +62,7 @@ export class DcmPage {
 
   async navigateToDataCenter() {
     await this.page.goto('/dcm', { timeout: TIMEOUTS.page });
-    await this.page.waitForLoadState('networkidle');
+    await this.verifyPageTitle();
   }
 
   async clickDataCenterNavBarItem() {
@@ -83,7 +83,7 @@ export class DcmPage {
 
   async clickTab(tabName: DcmTab) {
     await this.page.getByRole('tab', { name: tabName }).click();
-    await this.page.waitForLoadState('networkidle');
+    await this.verifyTabSelected(tabName);
   }
 
   async verifyTabVisible(tabName: DcmTab) {
@@ -152,7 +152,10 @@ export class DcmPage {
   }
 
   async clearSearch() {
-    const clearBtn = this.page.getByRole('button', { name: /clear/i });
+    const searchInput = this.page.getByRole('textbox', { name: 'Search' });
+    const clearBtn = searchInput
+      .locator('..')
+      .getByRole('button', { name: /clear search/i });
     if (
       await clearBtn
         .first()
@@ -161,7 +164,6 @@ export class DcmPage {
     ) {
       await clearBtn.first().click();
     } else {
-      const searchInput = this.page.getByRole('textbox', { name: 'Search' });
       await searchInput.fill('');
     }
   }
@@ -352,7 +354,6 @@ export class DcmPage {
       .locator('[class*="MuiAlert-standardSuccess"]')
       .first()
       .or(this.page.locator('[class*="MuiAlert-filledSuccess"]').first())
-      .or(this.page.locator('[class*="MuiSnackbar"]').first())
       .or(
         this.page
           .locator('[role="alert"]')
@@ -369,7 +370,6 @@ export class DcmPage {
       .locator('[role="dialog"], [class*="MuiDrawer"]')
       .getByRole('button', { name: buttonLabel });
     await btn.click();
-    await this.page.waitForLoadState('networkidle');
   }
 
   async confirmDelete() {
@@ -393,7 +393,6 @@ export class DcmPage {
   }
 
   async waitForTableRefresh() {
-    await this.page.waitForLoadState('networkidle');
     await this.page.waitForTimeout(TIMEOUTS.networkSettle);
   }
 
