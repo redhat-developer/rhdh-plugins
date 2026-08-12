@@ -292,6 +292,10 @@ body[data-theme-name='light-customized'][data-theme-mode='light'] {
    */
   --bui-redhat-theme-brand-accent: var(--bui-bg-solid);
 
+  /* Readonly form control colors — PF gray-10 bg, gray-30 border */
+  --bui-redhat-theme-readonly-bg: #f2f2f2;
+  --bui-redhat-theme-readonly-border: #c7c7c7;
+
   /* Special colors */
   --bui-ring: var(--bui-bg-solid);
   --bui-scrollbar: #a0a0a03b;
@@ -439,6 +443,10 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
 
   --bui-redhat-theme-brand-accent: var(--bui-bg-solid);
 
+  /* Readonly form control colors — PF dark: gray-80 bg, gray-60 border */
+  --bui-redhat-theme-readonly-bg: #292929;
+  --bui-redhat-theme-readonly-border: #4d4d4d;
+
   /* Special colors */
   --bui-ring: var(--bui-bg-solid);
   --bui-scrollbar: #a0a0a03b;
@@ -454,23 +462,11 @@ body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
  * Felt theme overrides for the customized variants.
  */
 body[data-theme-name='light-customized'][data-theme-mode='light'] {
-  /* felt: control & plain-action radii → pill */
-  --bui-radius-2: var(
-    --pf-t--global--border--radius--pill,
-    9999px
-  );
-
   /* Brand accent → red (buttons stay blue via --bui-bg-solid) */
   --bui-redhat-theme-brand-accent: #ee0000;
 }
 
 body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
-  /* felt: control & plain-action radii → pill */
-  --bui-radius-2: var(
-    --pf-t--global--border--radius--pill,
-    9999px
-  );
-
-  /* Brand accent → lighter red for dark backgrounds */
-  --bui-redhat-theme-brand-accent: #f56e6e;
+  /* Brand accent → red */
+  --bui-redhat-theme-brand-accent: #ee0000;
 }

@@ -64,6 +64,10 @@ import {
   Slider,
   SubmenuTrigger,
   Switch,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanel,
   TagGroup,
   Tag,
   Text,
@@ -340,6 +344,10 @@ const CheckboxGroupExample = () => (
         <Checkbox value="b">Option B</Checkbox>
         <Checkbox value="c">Option C</Checkbox>
       </CheckboxGroup>
+      <CheckboxGroup label="Disabled" isDisabled defaultValue={['a']}>
+        <Checkbox value="a">Option A</Checkbox>
+        <Checkbox value="b">Option B</Checkbox>
+      </CheckboxGroup>
     </Flex>
   </Section>
 );
@@ -357,6 +365,12 @@ const ComboboxExample = () => (
           { id: 'mono', label: 'Monospace' },
           { id: 'cursive', label: 'Cursive' },
         ]}
+      />
+      <Combobox
+        name="font-disabled"
+        label="Disabled"
+        isDisabled
+        options={[{ id: 'sans', label: 'Sans-serif' }]}
       />
       <Combobox
         name="font-sections"
@@ -388,10 +402,12 @@ const DatePickerExample = () => (
       <Flex gap="4">
         <DatePicker label="Small date" size="small" />
         <DatePicker label="Medium date" size="medium" />
+        <DatePicker label="Disabled" isDisabled />
       </Flex>
       <Flex gap="4">
         <DateRangePicker label="Small range" size="small" />
         <DateRangePicker label="Medium range" size="medium" />
+        <DateRangePicker label="Disabled" isDisabled />
       </Flex>
     </Flex>
   </Section>
@@ -585,6 +601,7 @@ const NumberFieldExample = () => (
       minValue={0}
       maxValue={59}
     />
+    <NumberField label="Disabled" isDisabled defaultValue={5} />
   </Section>
 );
 
@@ -599,6 +616,7 @@ const PasswordFieldExample = () => (
         icon={<LockIcon fontSize="small" />}
         description="Must be at least 8 characters"
       />
+      <PasswordField label="Disabled" name="password-disabled" isDisabled />
     </Flex>
   </Section>
 );
@@ -642,6 +660,10 @@ const RadioGroupExample = () => (
         <Radio value="react">React</Radio>
         <Radio value="vue">Vue</Radio>
         <Radio value="angular">Angular</Radio>
+      </RadioGroup>
+      <RadioGroup label="Disabled" isDisabled defaultValue="a">
+        <Radio value="a">Option A</Radio>
+        <Radio value="b">Option B</Radio>
       </RadioGroup>
     </Flex>
   </Section>
@@ -694,6 +716,7 @@ const SearchFieldExample = () => (
       <SearchField aria-label="Search" size="medium" />
       <SearchField label="With Label" description="Enter a search term" />
       <SearchField aria-label="Collapsible" size="small" startCollapsed />
+      <SearchField aria-label="Disabled" isDisabled />
     </Flex>
   </Section>
 );
@@ -721,6 +744,12 @@ const SelectExample = () => (
           { id: 'python', label: 'Python' },
           { id: 'go', label: 'Go' },
         ]}
+      />
+      <Select
+        name="disabled"
+        label="Disabled"
+        isDisabled
+        options={[{ id: 'a', label: 'Option A' }]}
       />
       <Select
         name="grouped"
@@ -779,6 +808,7 @@ const SliderExample = () => (
         step={5}
         defaultValue={20}
       />
+      <Slider label="Disabled" isDisabled defaultValue={30} />
     </Flex>
   </Section>
 );
@@ -789,7 +819,37 @@ const SwitchExample = () => (
       <Switch label="Default" />
       <Switch label="Selected" defaultSelected />
       <Switch label="Disabled" isDisabled />
+      <Switch label="Disabled Selected" isDisabled isSelected />
       <Switch label="Read Only" isSelected isReadOnly />
+    </Flex>
+  </Section>
+);
+
+const TabsExample = () => (
+  <Section title="Tabs">
+    <Flex direction="column" gap="6">
+      <Tabs defaultSelectedKey="overview">
+        <TabList>
+          <Tab id="overview">Overview</Tab>
+          <Tab id="details">Details</Tab>
+          <Tab id="activity">Activity</Tab>
+          <Tab id="disabled" isDisabled>
+            Disabled
+          </Tab>
+        </TabList>
+        <TabPanel id="overview">
+          <Text>Overview content goes here.</Text>
+        </TabPanel>
+        <TabPanel id="details">
+          <Text>Details content goes here.</Text>
+        </TabPanel>
+        <TabPanel id="activity">
+          <Text>Activity content goes here.</Text>
+        </TabPanel>
+        <TabPanel id="disabled">
+          <Text>Disabled content.</Text>
+        </TabPanel>
+      </Tabs>
     </Flex>
   </Section>
 );
@@ -815,6 +875,10 @@ const TagGroupExample = () => (
         <Tag icon={<AccountCircleIcon fontSize="small" />}>User</Tag>
         <Tag icon={<VisibilityIcon fontSize="small" />}>Visible</Tag>
         <Tag icon={<FavoriteIcon fontSize="small" />}>Favorite</Tag>
+      </TagGroup>
+      <TagGroup>
+        <Tag isDisabled>Disabled</Tag>
+        <Tag isDisabled>Also Disabled</Tag>
       </TagGroup>
     </Flex>
   </Section>
@@ -866,6 +930,13 @@ const TextFieldExample = () => (
         description="A helpful description"
         name="text-desc"
       />
+      <TextField label="Disabled" name="text-disabled" isDisabled />
+      <TextField
+        label="Read Only"
+        name="text-readonly"
+        isReadOnly
+        defaultValue="Read only value"
+      />
     </Flex>
   </Section>
 );
@@ -904,6 +975,10 @@ const ToggleButtonExample = () => {
             <ToggleButton id="frontend">Frontend</ToggleButton>
             <ToggleButton id="backend">Backend</ToggleButton>
             <ToggleButton id="platform">Platform</ToggleButton>
+          </ToggleButtonGroup>
+          <ToggleButtonGroup selectionMode="single" isDisabled>
+            <ToggleButton id="a">Disabled A</ToggleButton>
+            <ToggleButton id="b">Disabled B</ToggleButton>
           </ToggleButtonGroup>
         </Flex>
       </Flex>
@@ -980,6 +1055,7 @@ export const OtherExample = () => {
       <SkeletonExample />
       <SliderExample />
       <SwitchExample />
+      <TabsExample />
       <TagGroupExample />
       <TextExample />
       <TextFieldExample />
