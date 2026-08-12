@@ -51,7 +51,9 @@ test.describe('Metric Group Cards', () => {
     await catalogPage.openCatalog();
     await catalogPage.openComponent('sonarqube-scorecard-only');
     await page.getByText('Scorecard', { exact: true }).click();
-    await expect(page.getByLabel('Security Vulnerabilities')).toBeVisible({
+    await expect(
+      scorecardPage.getGroupCard('Security Vulnerabilities'),
+    ).toBeVisible({
       timeout: 15000,
     });
   });
@@ -62,7 +64,7 @@ test.describe('Metric Group Cards', () => {
 
   test('Verify group cards render with titles, descriptions, and bucket tiles', async ({}, testInfo) => {
     const securityCard = scorecardPage.getGroupCard('Security Vulnerabilities');
-    await expect(page.getByLabel('Security Vulnerabilities')).toBeVisible();
+    await expect(securityCard).toBeVisible();
     await expect(
       securityCard.getByText('Track security issues across your repositories'),
     ).toBeVisible();
@@ -71,7 +73,7 @@ test.describe('Metric Group Cards', () => {
     ).toContainText('1');
 
     const codeQualityCard = scorecardPage.getGroupCard('Code Quality');
-    await expect(page.getByLabel('Code Quality')).toBeVisible();
+    await expect(codeQualityCard).toBeVisible();
     await expect(
       codeQualityCard.getByText('Code quality and maintainability metrics'),
     ).toBeVisible();
@@ -80,7 +82,7 @@ test.describe('Metric Group Cards', () => {
     ).toContainText('3');
 
     const coverageCard = scorecardPage.getGroupCard('SonarQube Coverage');
-    await expect(page.getByLabel('SonarQube Coverage')).toBeVisible();
+    await expect(coverageCard).toBeVisible();
     await expect(
       coverageCard.getByText('SonarQube coverage metrics'),
     ).toBeVisible();
@@ -197,9 +199,13 @@ test.describe('Metric Group Cards', () => {
       });
     }
 
-    await expect(page.getByLabel('Security Vulnerabilities')).toBeVisible();
-    await expect(page.getByLabel('Code Quality')).toBeVisible();
-    await expect(page.getByLabel('SonarQube Coverage')).toBeVisible();
+    await expect(
+      scorecardPage.getGroupCard('Security Vulnerabilities'),
+    ).toBeVisible();
+    await expect(scorecardPage.getGroupCard('Code Quality')).toBeVisible();
+    await expect(
+      scorecardPage.getGroupCard('SonarQube Coverage'),
+    ).toBeVisible();
 
     await runAccessibilityTests(page, testInfo);
   });
@@ -210,7 +216,7 @@ test.describe('Metric Group Cards', () => {
     await catalogPage.openComponent('sonarqube-scorecard-only');
     await page.getByText('Scorecard', { exact: true }).click();
 
-    await expect(page.getByLabel('Code Quality')).toBeVisible({
+    await expect(scorecardPage.getGroupCard('Code Quality')).toBeVisible({
       timeout: 10000,
     });
   });
