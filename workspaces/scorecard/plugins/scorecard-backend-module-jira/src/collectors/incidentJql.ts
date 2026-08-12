@@ -21,7 +21,6 @@ import {
 } from '../annotations';
 import {
   joinJqlClauses,
-  sanitizeValue,
   toJiraDateTime,
   validateJQLValue,
 } from '../clients/utils';
@@ -61,5 +60,5 @@ function resolveIncidentIssueType(
     inputIssueType ||
     DEFAULT_INCIDENT_ISSUE_TYPE;
 
-  return validateJQLValue(sanitizeValue(issueType), 'type');
+  return validateJQLValue(issueType, 'type');
 }

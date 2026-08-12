@@ -16,7 +16,6 @@
 
 import {
   joinJqlClauses,
-  sanitizeValue,
   toIsoDateTime,
   toJiraDateTime,
   validateIdentifier,
@@ -45,12 +44,6 @@ describe('utils', () => {
 
     it('should return valid identifier', () => {
       expect(validateIdentifier('TEST', 'jira/project-key')).toBe('TEST');
-    });
-  });
-
-  describe('sanitizeValue', () => {
-    it('should sanitize value', () => {
-      expect(sanitizeValue('T"EST\\123')).toBe('T\\"EST\\\\123');
     });
   });
 

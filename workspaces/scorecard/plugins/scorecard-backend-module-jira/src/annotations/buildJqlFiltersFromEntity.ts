@@ -15,11 +15,7 @@
  */
 
 import type { Entity } from '@backstage/catalog-model';
-import {
-  sanitizeValue,
-  validateIdentifier,
-  validateJQLValue,
-} from '../clients/utils';
+import { validateIdentifier, validateJQLValue } from '../clients/utils';
 import type { JiraFilterAnnotations, JiraJqlFilters } from './types';
 
 /**
@@ -55,7 +51,7 @@ export function buildJqlFiltersFromEntity(
 
   const filters: JiraJqlFilters = {
     project: `project = "${validateJQLValue(
-      sanitizeValue(projectValue),
+      projectValue,
       projectAnnotationKey,
     )}"`,
   };
@@ -64,7 +60,7 @@ export function buildJqlFiltersFromEntity(
     const component = annotations[filterAnnotations.component];
     if (component) {
       filters.component = `component = "${validateJQLValue(
-        sanitizeValue(component),
+        component,
         filterAnnotations.component,
       )}"`;
     }
@@ -74,7 +70,7 @@ export function buildJqlFiltersFromEntity(
     const label = annotations[filterAnnotations.label];
     if (label) {
       filters.label = `labels = "${validateJQLValue(
-        sanitizeValue(label),
+        label,
         filterAnnotations.label,
       )}"`;
     }
@@ -84,7 +80,7 @@ export function buildJqlFiltersFromEntity(
     const team = annotations[filterAnnotations.team];
     if (team) {
       filters.team = `team = ${validateIdentifier(
-        sanitizeValue(team),
+        team,
         filterAnnotations.team,
       )}`;
     }

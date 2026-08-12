@@ -32,10 +32,6 @@ export function validateIdentifier(value: string, fieldName: string): string {
   return value;
 }
 
-export function sanitizeValue(value: string): string {
-  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-}
-
 export function joinJqlClauses(
   clauses: Array<string | undefined | null>,
 ): string {
