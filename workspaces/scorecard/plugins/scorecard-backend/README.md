@@ -94,13 +94,14 @@ For more information about schedule configuration options, see the [Metric Colle
 
 The following metric providers are available:
 
-| Provider       | Metric ID         | Title                       | Description                                                                                                                     | Type    |
-| -------------- | ----------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| **GitHub**     | `github.openPRs`  | GitHub open PRs             | Count of open Pull Requests in GitHub                                                                                           | number  |
-| **Filecheck**  | `filecheck.*`     | File Checks                 | Checks whether specific files (e.g., `README.md`, `LICENSE`, `CODEOWNERS`) exist in a repository.                               | boolean |
-| **Jira**       | `jira.openIssues` | Jira open issues            | The number of opened issues in Jira                                                                                             | number  |
-| **OpenSSF**    | `openssf.*`       | OpenSSF Security Scorecards | 18 security metrics from OpenSSF Scorecards (e.g., `openssf.codeReview`, `openssf.maintained`). Each returns a score from 0-10. | number  |
-| **Dependabot** | `dependabot.*`    | Dependabot Alerts           | Critical, High, Medium and Low CVE Alerts                                                                                       | number  |
+| Provider       | Metric ID                                                                                                       | Title                       | Description                                                                                                                     | Type    |
+| -------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| **GitHub**     | `github.openPRs`                                                                                                | GitHub open PRs             | Count of open Pull Requests in GitHub                                                                                           | number  |
+| **Filecheck**  | `filecheck.*`                                                                                                   | File Checks                 | Checks whether specific files (e.g., `README.md`, `LICENSE`, `CODEOWNERS`) exist in a repository.                               | boolean |
+| **Jira**       | `jira.openIssues`                                                                                               | Jira open issues            | The number of opened issues in Jira                                                                                             | number  |
+| **OpenSSF**    | `openssf.*`                                                                                                     | OpenSSF Security Scorecards | 18 security metrics from OpenSSF Scorecards (e.g., `openssf.codeReview`, `openssf.maintained`). Each returns a score from 0-10. | number  |
+| **Dependabot** | `dependabot.*`                                                                                                  | Dependabot Alerts           | Critical, High, Medium and Low CVE Alerts                                                                                       | number  |
+| **DORA**       | `dora.deploymentFrequency`, `dora.medianLeadTimeForChanges`, `dora.meanTimeToRestore`, `dora.changeFailureRate` | DORA Metrics                | Software delivery performance metrics based on DORA (DevOps Research and Assessment)                                            | number  |
 
 To use these providers, install the corresponding backend modules:
 
@@ -109,6 +110,7 @@ To use these providers, install the corresponding backend modules:
 - OpenSSF: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf`](../scorecard-backend-module-openssf/README.md)
 - Dependabot: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot`](../scorecard-backend-module-dependabot/README.md)
 - Filecheck: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck`](../scorecard-backend-module-filecheck/README.md)
+- DORA: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora`](../scorecard-backend-module-dora/README.md)
 
 ### Disabling Metrics
 

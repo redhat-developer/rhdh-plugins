@@ -50,7 +50,7 @@ Configure thresholds via:
 
 ## Collectors
 
-DORA module uses [**collectors**](../scorecard-backend/docs/collectors.md) – reusable components designed to gather data from various datasources, such as Jira or GitHub. You can create your custom data collector to tailor data collection for your specific setup.
+DORA module uses [**collectors**](../../../scorecard-backend/docs/collectors.md) – reusable components designed to gather data from various datasources, such as Jira or GitHub. You can create your custom data collector to tailor data collection for your specific setup.
 
 This metric requires [deployments collector](#deployments-collector).
 
