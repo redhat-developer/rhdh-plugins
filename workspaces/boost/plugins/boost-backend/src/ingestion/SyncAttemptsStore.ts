@@ -62,7 +62,7 @@ export interface SyncAttemptsStoreOptions {
 // ---------------------------------------------------------------------------
 
 /**
- * Database-backed repository for sync attempt records.
+ * Database-backed store for sync attempt records.
  *
  * Manages the `boost_sync_attempts` table following the established
  * store pattern used by {@link ConversationStore} and
@@ -84,16 +84,14 @@ export class SyncAttemptsStore {
    * Get the Knex instance, creating tables on first access.
    */
   private async getDb(): Promise<Knex> {
-    if (!this.knexPromise) {
-      this.knexPromise = (async () => {
-        const knex = await this.database.getClient();
-        await this.ensureTable(knex);
-        return knex;
-      })().catch(err => {
-        this.knexPromise = undefined;
-        throw err;
-      });
-    }
+    this.knexPromise ??= (async () => {
+      const knex = await this.database.getClient();
+      await this.ensureTable(knex);
+      return knex;
+    })().catch(err => {
+      this.knexPromise = undefined;
+      throw err;
+    });
     return this.knexPromise;
   }
 

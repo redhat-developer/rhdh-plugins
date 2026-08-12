@@ -108,7 +108,7 @@ export const boostAiProviderServiceFactory = createServiceFactory({
  * Provides:
  * - `boostProviderExtensionPoint` for provider module registration
  * - Default service factory for `boostAiProviderServiceRef`
- * - Permission registration for all 23 boost permissions
+ * - Permission registration for all 24 boost permissions
  * - Security mode validation and enforcement
  * - Health check endpoint
  *
@@ -259,7 +259,7 @@ export const boostPlugin = createBackendPlugin({
         });
 
         const healthStatusService = new HealthStatusService({
-          repository: syncAttemptsStore,
+          store: syncAttemptsStore,
           configReader: connectorConfigReader,
           logger,
         });

@@ -15,13 +15,47 @@
  */
 
 import { ErrorClassifier } from './ErrorClassifier';
+import type { ErrorType } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 
 describe('ErrorClassifier', () => {
+  describe('guidanceFor', () => {
+    it.each([
+      { errorType: 'auth' as ErrorType, fragment: 'credentials' },
+      { errorType: 'network' as ErrorType, fragment: 'connectivity' },
+      { errorType: 'schema' as ErrorType, fragment: 'schema' },
+      { errorType: 'rate-limit' as ErrorType, fragment: 'rate limit' },
+      { errorType: 'unknown' as ErrorType, fragment: 'logs' },
+    ])(
+      'returns non-empty $errorType guidance mentioning $fragment',
+      ({ errorType, fragment }) => {
+        const guidance = ErrorClassifier.guidanceFor(errorType);
+        expect(guidance.length).toBeGreaterThan(0);
+        expect(guidance.toLowerCase()).toContain(fragment.toLowerCase());
+      },
+    );
+  });
+
   describe('auth failure classification', () => {
-    it('classifies 401 Unauthorized', () => {
-      const result = ErrorClassifier.classify(new Error('401 Unauthorized'));
+    it.each([
+      {
+        name: '401 Unauthorized',
+        error: new Error('401 Unauthorized'),
+        guidance: 'credentials',
+      },
+      {
+        name: '403 Forbidden',
+        error: new Error('403 Forbidden'),
+        guidance: 'permissions',
+      },
+      {
+        name: 'OAuth token expired',
+        error: new Error('OAuth token expired'),
+        guidance: 'OAuth',
+      },
+    ])('classifies $name', ({ error, guidance }) => {
+      const result = ErrorClassifier.classify(error);
       expect(result.errorType).toBe('auth');
-      expect(result.diagnosticGuidance).toContain('credentials');
+      expect(result.diagnosticGuidance).toContain(guidance);
     });
 
     it('classifies 401 status code from object', () => {
@@ -32,12 +66,6 @@ describe('ErrorClassifier', () => {
       expect(result.errorType).toBe('auth');
     });
 
-    it('classifies 403 Forbidden', () => {
-      const result = ErrorClassifier.classify(new Error('403 Forbidden'));
-      expect(result.errorType).toBe('auth');
-      expect(result.diagnosticGuidance).toContain('permissions');
-    });
-
     it('classifies insufficient scopes', () => {
       const result = ErrorClassifier.classify(
         new Error('Insufficient scopes for this endpoint'),
@@ -46,85 +74,50 @@ describe('ErrorClassifier', () => {
       expect(result.diagnosticGuidance).toContain('permissions');
     });
 
-    it('classifies invalid API token', () => {
-      const result = ErrorClassifier.classify(
-        new Error('Invalid API token provided'),
-      );
-      expect(result.errorType).toBe('auth');
-    });
-
-    it('classifies OAuth token expired', () => {
-      const result = ErrorClassifier.classify(new Error('OAuth token expired'));
-      expect(result.errorType).toBe('auth');
-      expect(result.diagnosticGuidance).toContain('OAuth');
-    });
-
-    it('classifies access token expired', () => {
-      const result = ErrorClassifier.classify(
-        new Error('Access token expired'),
-      );
-      expect(result.errorType).toBe('auth');
-    });
-
-    it('classifies refresh token invalid', () => {
-      const result = ErrorClassifier.classify(
-        new Error('Refresh token invalid'),
-      );
+    it.each([
+      'Invalid API token provided',
+      'Access token expired',
+      'Refresh token invalid',
+    ])('classifies auth message: %s', message => {
+      const result = ErrorClassifier.classify(new Error(message));
       expect(result.errorType).toBe('auth');
     });
   });
 
   describe('network failure classification', () => {
-    it('classifies ECONNREFUSED', () => {
-      const result = ErrorClassifier.classify(
-        new Error('connect ECONNREFUSED 127.0.0.1:443'),
-      );
+    it.each([
+      {
+        name: 'ECONNREFUSED',
+        message: 'connect ECONNREFUSED 127.0.0.1:443',
+        guidance: 'connectivity',
+      },
+      {
+        name: 'ENOTFOUND (DNS)',
+        message: 'getaddrinfo ENOTFOUND api.example.com',
+        guidance: 'DNS',
+      },
+      {
+        name: 'TLS certificate error',
+        message: 'UNABLE_TO_VERIFY_LEAF_SIGNATURE',
+        guidance: 'TLS',
+      },
+      {
+        name: 'self-signed certificate',
+        message: 'self signed certificate in certificate chain',
+        guidance: 'certificate',
+      },
+    ])('classifies $name', ({ message, guidance }) => {
+      const result = ErrorClassifier.classify(new Error(message));
       expect(result.errorType).toBe('network');
-      expect(result.diagnosticGuidance).toContain('connectivity');
+      expect(result.diagnosticGuidance).toContain(guidance);
     });
 
-    it('classifies ETIMEDOUT', () => {
-      const result = ErrorClassifier.classify(
-        new Error('connect ETIMEDOUT 10.0.0.1:443'),
-      );
-      expect(result.errorType).toBe('network');
-    });
-
-    it('classifies ENOTFOUND (DNS)', () => {
-      const result = ErrorClassifier.classify(
-        new Error('getaddrinfo ENOTFOUND api.example.com'),
-      );
-      expect(result.errorType).toBe('network');
-      expect(result.diagnosticGuidance).toContain('DNS');
-    });
-
-    it('classifies DNS lookup failed', () => {
-      const result = ErrorClassifier.classify(
-        new Error('DNS lookup failed for api.example.com'),
-      );
-      expect(result.errorType).toBe('network');
-    });
-
-    it('classifies TLS certificate error', () => {
-      const result = ErrorClassifier.classify(
-        new Error('UNABLE_TO_VERIFY_LEAF_SIGNATURE'),
-      );
-      expect(result.errorType).toBe('network');
-      expect(result.diagnosticGuidance).toContain('TLS');
-    });
-
-    it('classifies self-signed certificate', () => {
-      const result = ErrorClassifier.classify(
-        new Error('self signed certificate in certificate chain'),
-      );
-      expect(result.errorType).toBe('network');
-      expect(result.diagnosticGuidance).toContain('certificate');
-    });
-
-    it('classifies TLS certificate expired', () => {
-      const result = ErrorClassifier.classify(
-        new Error('TLS certificate expired'),
-      );
+    it.each([
+      'connect ETIMEDOUT 10.0.0.1:443',
+      'DNS lookup failed for api.example.com',
+      'TLS certificate expired',
+    ])('classifies network message: %s', message => {
+      const result = ErrorClassifier.classify(new Error(message));
       expect(result.errorType).toBe('network');
     });
 
@@ -148,22 +141,12 @@ describe('ErrorClassifier', () => {
       expect(result.diagnosticGuidance).toContain('rate limit');
     });
 
-    it('classifies 429 Too Many Requests in message', () => {
-      const result = ErrorClassifier.classify(
-        new Error('429 Too Many Requests'),
-      );
-      expect(result.errorType).toBe('rate-limit');
-    });
-
-    it('classifies rate limit exceeded', () => {
-      const result = ErrorClassifier.classify(new Error('Rate limit exceeded'));
-      expect(result.errorType).toBe('rate-limit');
-    });
-
-    it('classifies X-RateLimit-Remaining: 0', () => {
-      const result = ErrorClassifier.classify(
-        new Error('X-RateLimit-Remaining: 0'),
-      );
+    it.each([
+      '429 Too Many Requests',
+      'Rate limit exceeded',
+      'X-RateLimit-Remaining: 0',
+    ])('classifies rate-limit message: %s', message => {
+      const result = ErrorClassifier.classify(new Error(message));
       expect(result.errorType).toBe('rate-limit');
     });
 
@@ -185,17 +168,12 @@ describe('ErrorClassifier', () => {
       expect(result.diagnosticGuidance).toContain('parse');
     });
 
-    it('classifies SyntaxError: JSON.parse', () => {
-      const result = ErrorClassifier.classify(
-        new Error('SyntaxError: JSON.parse: unexpected character'),
-      );
-      expect(result.errorType).toBe('schema');
-    });
-
-    it('classifies unexpected field', () => {
-      const result = ErrorClassifier.classify(
-        new Error("Unexpected field 'x' in response"),
-      );
+    it.each([
+      'SyntaxError: JSON.parse: unexpected character',
+      "Unexpected field 'x' in response",
+      "Cannot query field 'foo' on type 'Query'",
+    ])('classifies schema message: %s', message => {
+      const result = ErrorClassifier.classify(new Error(message));
       expect(result.errorType).toBe('schema');
     });
 
@@ -205,13 +183,6 @@ describe('ErrorClassifier', () => {
       );
       expect(result.errorType).toBe('schema');
       expect(result.diagnosticGuidance).toContain('GraphQL');
-    });
-
-    it('classifies Cannot query field', () => {
-      const result = ErrorClassifier.classify(
-        new Error("Cannot query field 'foo' on type 'Query'"),
-      );
-      expect(result.errorType).toBe('schema');
     });
 
     it('does not classify network errors as schema just because they mention graphql', () => {
@@ -248,32 +219,38 @@ describe('ErrorClassifier', () => {
   });
 
   describe('connector-specific classification', () => {
-    it('classifies GitHub secondary rate limit', () => {
-      const result = ErrorClassifier.classify(
-        new Error('You have exceeded a secondary rate limit'),
-        { connectorType: 'github' },
-      );
-      expect(result.errorType).toBe('rate-limit');
-      expect(result.diagnosticGuidance).toContain('Secondary');
-    });
-
-    it('classifies Jira Cloud auth error', () => {
-      const result = ErrorClassifier.classify(
-        new Error('Client must be authenticated to perform this action'),
-        { connectorType: 'jira' },
-      );
-      expect(result.errorType).toBe('auth');
-      expect(result.diagnosticGuidance).toContain('Jira');
-    });
-
-    it('classifies GitLab PAT error', () => {
-      const result = ErrorClassifier.classify(
-        new Error('Personal access token has expired'),
-        { connectorType: 'gitlab' },
-      );
-      expect(result.errorType).toBe('auth');
-      expect(result.diagnosticGuidance).toContain('GitLab');
-    });
+    it.each([
+      {
+        name: 'GitHub secondary rate limit',
+        message: 'You have exceeded a secondary rate limit',
+        connectorType: 'github',
+        errorType: 'rate-limit',
+        guidance: 'Secondary',
+      },
+      {
+        name: 'Jira Cloud auth error',
+        message: 'Client must be authenticated to perform this action',
+        connectorType: 'jira',
+        errorType: 'auth',
+        guidance: 'Jira',
+      },
+      {
+        name: 'GitLab PAT error',
+        message: 'Personal access token has expired',
+        connectorType: 'gitlab',
+        errorType: 'auth',
+        guidance: 'GitLab',
+      },
+    ])(
+      'classifies $name',
+      ({ message, connectorType, errorType, guidance }) => {
+        const result = ErrorClassifier.classify(new Error(message), {
+          connectorType,
+        });
+        expect(result.errorType).toBe(errorType);
+        expect(result.diagnosticGuidance).toContain(guidance);
+      },
+    );
 
     it('falls back to base classification for unknown connector', () => {
       const result = ErrorClassifier.classify(new Error('401 Unauthorized'), {

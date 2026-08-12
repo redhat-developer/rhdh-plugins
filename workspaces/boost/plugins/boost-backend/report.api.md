@@ -14,6 +14,7 @@ import type { ConversationMessage } from '@red-hat-developer-hub/backstage-plugi
 import type { ConversationSummary } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { DatabaseService } from '@backstage/backend-plugin-api';
 import type { ErrorSummary } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { ErrorType } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { FeedbackRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { HealthStatus } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { HttpAuthService } from '@backstage/backend-plugin-api';
@@ -118,7 +119,7 @@ export interface BackendApprovalStoreOptions {
 }
 
 // @public
-export const BOOST_CONFIG_SCHEMA_VERSION = 2;
+export const BOOST_CONFIG_SCHEMA_VERSION = 3;
 
 // @public
 export const boostAiProviderServiceFactory: ServiceFactory<
@@ -214,6 +215,11 @@ export const boostConfigFields: {
     readonly configScope: ConfigScope;
     readonly description: string;
     readonly sensitive: true;
+  };
+  readonly 'boost.ingestion.healthRetention.maxAttemptsPerConnector': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
   };
 };
 
@@ -405,6 +411,7 @@ export interface DocumentSyncServiceOptions {
 // @public
 export class ErrorClassifier {
   static classify(error: unknown, options?: ClassifyOptions): ErrorSummary;
+  static guidanceFor(errorType: ErrorType): string;
 }
 
 // @public
@@ -420,7 +427,7 @@ export class HealthStatusService {
 export interface HealthStatusServiceOptions {
   configReader: ConnectorConfigReader;
   logger: LoggerService;
-  repository: SyncAttemptsStore;
+  store: SyncAttemptsStore;
 }
 
 // @public

@@ -40,8 +40,8 @@ import { ErrorClassifier } from './ErrorClassifier';
  * @public
  */
 export interface HealthStatusServiceOptions {
-  /** The sync attempts repository. */
-  repository: SyncAttemptsStore;
+  /** The sync attempts store. */
+  store: SyncAttemptsStore;
   /** The connector config reader. */
   configReader: ConnectorConfigReader;
   /** The Backstage logger service. */
@@ -70,12 +70,12 @@ const ERROR_TYPES: ReadonlySet<string> = new Set([
  * @public
  */
 export class HealthStatusService {
-  private readonly repository: SyncAttemptsStore;
+  private readonly store: SyncAttemptsStore;
   private readonly configReader: ConnectorConfigReader;
   private readonly logger: LoggerService;
 
   constructor(options: HealthStatusServiceOptions) {
-    this.repository = options.repository;
+    this.store = options.store;
     this.configReader = options.configReader;
     this.logger = options.logger.child({ service: 'HealthStatusService' });
   }
@@ -104,11 +104,10 @@ export class HealthStatusService {
     // Step 3: Fetch sync attempts and last successes for all connectors
     const connectorIds = filtered.map(c => c.connectorId);
     const [attemptsMap, lastSuccessEntries] = await Promise.all([
-      this.repository.getLatestAttemptsForAll(connectorIds, STATUS_WINDOW),
+      this.store.getLatestAttemptsForAll(connectorIds, STATUS_WINDOW),
       Promise.all(
         connectorIds.map(async id => {
-          const lastSuccess =
-            await this.repository.getLastSuccessfulAttempt(id);
+          const lastSuccess = await this.store.getLastSuccessfulAttempt(id);
           return [id, lastSuccess] as const;
         }),
       ),
@@ -212,20 +211,22 @@ export class HealthStatusService {
       connectorType: candidate.connectorType,
     });
 
+    // Prefer the type stored at write time (may have used status codes).
     const storedType = failure.errorType;
-    let errorType: ErrorType;
-    if (classified.errorType !== 'unknown') {
-      errorType = classified.errorType;
-    } else if (storedType && ERROR_TYPES.has(storedType)) {
-      errorType = storedType as ErrorType;
-    } else {
-      errorType = classified.errorType;
-    }
+    const errorType: ErrorType =
+      storedType && ERROR_TYPES.has(storedType)
+        ? (storedType as ErrorType)
+        : classified.errorType;
+
+    const diagnosticGuidance =
+      classified.errorType === errorType
+        ? classified.diagnosticGuidance
+        : ErrorClassifier.guidanceFor(errorType);
 
     return {
       errorType,
       errorMessage,
-      diagnosticGuidance: classified.diagnosticGuidance,
+      diagnosticGuidance,
     };
   }
 }

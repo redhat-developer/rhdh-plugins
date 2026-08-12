@@ -259,12 +259,15 @@ describe('ingestion health routes', () => {
       expect(res.status).toBe(403);
     });
 
-    it('calls permissions.authorize with boostAdminPermission', async () => {
+    it('calls permissions.authorize with aiCatalogAdminPermission', async () => {
       const permissions = createMockPermissions();
       testApp = await createTestApp({ permissions });
 
       await fetchJson(testApp.url, '/ingestion-health');
       expect(permissions.authorize).toHaveBeenCalledTimes(1);
+      const authorizeArg = (permissions.authorize as jest.Mock).mock
+        .calls[0][0];
+      expect(authorizeArg[0].permission.name).toBe('ai-catalog.admin');
     });
   });
 });

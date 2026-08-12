@@ -29,6 +29,9 @@ export interface AgentRecord {
 }
 
 // @public
+export const aiCatalogAdminPermission: BasicPermission;
+
+// @public
 export interface ApprovalRequest {
   args: string;
   conversationId: string;
@@ -183,6 +186,7 @@ export const boostPermissions: readonly [
   ResourcePermission<'boost-tool'>,
   ResourcePermission<'boost-tool'>,
   ResourcePermission<'boost-tool'>,
+  BasicPermission,
   BasicPermission,
   BasicPermission,
   BasicPermission,

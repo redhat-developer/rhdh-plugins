@@ -21,7 +21,7 @@ import type {
   PermissionsService,
 } from '@backstage/backend-plugin-api';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
-import { boostAdminPermission } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import { aiCatalogAdminPermission } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { NotAllowedError } from '@backstage/errors';
 import type { HealthStatusService } from './HealthStatusService';
 
@@ -47,7 +47,7 @@ export interface IngestionHealthRoutesOptions {
  * Routes:
  * - GET /ingestion-health — list connector health statuses
  *
- * Requires `boostAdminPermission` authorization.
+ * Requires `aiCatalogAdminPermission` authorization.
  *
  * @public
  */
@@ -63,13 +63,15 @@ export function createIngestionHealthRoutes(
       // Extract credentials for authorization and structured logging
       const credentials = await httpAuth.credentials(req);
 
-      // Enforce admin permission (matches kagenti/routes.ts pattern)
+      // Enforce AI Catalog admin permission (openspec health-status-api)
       const [decision] = await permissions.authorize(
-        [{ permission: boostAdminPermission }],
+        [{ permission: aiCatalogAdminPermission }],
         { credentials },
       );
       if (decision.result !== AuthorizeResult.ALLOW) {
-        throw new NotAllowedError('Missing required boost admin permission');
+        throw new NotAllowedError(
+          'Insufficient permissions to view ingestion health',
+        );
       }
 
       const principal = credentials.principal as

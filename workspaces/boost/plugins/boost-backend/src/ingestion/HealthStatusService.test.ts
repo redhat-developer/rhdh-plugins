@@ -17,6 +17,7 @@
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { SyncAttemptRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { HealthStatusService } from './HealthStatusService';
+import { ErrorClassifier } from './ErrorClassifier';
 import type { SyncAttemptsStore } from './SyncAttemptsStore';
 import type { ConnectorConfigReader } from './ConnectorConfigReader';
 import type { ConnectorCandidate } from './ConnectorConfigReader';
@@ -135,7 +136,7 @@ describe('HealthStatusService', () => {
         listCandidates: jest.fn().mockReturnValue([]),
       };
       service = new HealthStatusService({
-        repository: mockRepo as unknown as SyncAttemptsStore,
+        store: mockRepo as unknown as SyncAttemptsStore,
         configReader: mockConfigReader as unknown as ConnectorConfigReader,
         logger: createMockLogger(),
       });
@@ -400,6 +401,42 @@ describe('HealthStatusService', () => {
       const result = await service.getHealthStatuses();
       expect(result[0].status).toBe('failing');
       expect(result[0].lastSuccessfulSync).toBe('2026-08-09T10:00:00Z');
+    });
+
+    it('prefers stored errorType over reclassification from message alone', async () => {
+      const candidates: ConnectorCandidate[] = [
+        {
+          connectorId: 'github',
+          connectorType: 'github',
+          startupEnabled: true,
+          runtimeEnabled: true,
+        },
+      ];
+      mockConfigReader.listCandidates.mockReturnValue(candidates);
+
+      // Ambiguous message that could reclassify differently; stored type wins.
+      const attempts = [
+        makeAttempt({
+          connectorId: 'github',
+          outcome: 'failure',
+          errorType: 'auth',
+          errorMessage: 'Request failed for upstream service',
+          timestamp: '2026-08-10T14:00:00Z',
+        }),
+      ];
+      mockRepo.getLatestAttemptsForAll.mockResolvedValue(
+        new Map([['github', attempts]]),
+      );
+
+      const result = await service.getHealthStatuses();
+      expect(result[0].errorSummary).not.toBeNull();
+      expect(result[0].errorSummary!.errorType).toBe('auth');
+      expect(result[0].errorSummary!.errorMessage).toBe(
+        'Request failed for upstream service',
+      );
+      expect(result[0].errorSummary!.diagnosticGuidance).toBe(
+        ErrorClassifier.guidanceFor('auth'),
+      );
     });
   });
 });

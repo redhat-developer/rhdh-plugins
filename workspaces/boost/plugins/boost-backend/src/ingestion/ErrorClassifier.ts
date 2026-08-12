@@ -197,6 +197,22 @@ const CONNECTOR_SPECIFIC_PATTERNS: Record<string, ErrorPattern[]> = {
 };
 
 // ---------------------------------------------------------------------------
+// Default guidance (when type is known but message reclassification differs)
+// ---------------------------------------------------------------------------
+
+const DEFAULT_GUIDANCE: Record<ErrorType, string> = {
+  auth: 'Check service account credentials in connector config. Verify API token is valid and has required permissions.',
+  network:
+    'Network connectivity issue. Verify DNS resolution, firewall rules, and external service availability. In air-gapped clusters, disable connectors for unreachable external services.',
+  schema:
+    'API response schema mismatch. This may indicate an upstream API version change. Check connector logs for expected vs actual schema and consider updating the connector.',
+  'rate-limit':
+    'API rate limit exceeded. Connector will retry on next scheduled sync. Consider increasing sync interval or requesting higher rate limits from service provider.',
+  unknown:
+    'Unknown error occurred. Check connector logs for detailed error trace and stack trace.',
+};
+
+// ---------------------------------------------------------------------------
 // Classifier
 // ---------------------------------------------------------------------------
 
@@ -259,6 +275,19 @@ function extractStatusCode(error: unknown): number | undefined {
  */
 export class ErrorClassifier {
   /**
+   * Return canonical diagnostic guidance for an error type.
+   *
+   * Used when a stored `errorType` is preferred over message
+   * reclassification so type and guidance stay aligned.
+   *
+   * @param errorType - The error category.
+   * @returns Actionable guidance for that category.
+   */
+  static guidanceFor(errorType: ErrorType): string {
+    return DEFAULT_GUIDANCE[errorType];
+  }
+
+  /**
    * Classify an error into a category with diagnostic guidance.
    *
    * @param error - The error to classify (Error, string, or object
@@ -310,8 +339,7 @@ export class ErrorClassifier {
     return {
       errorType: 'unknown',
       errorMessage: message,
-      diagnosticGuidance:
-        'Unknown error occurred. Check connector logs for detailed error trace and stack trace.',
+      diagnosticGuidance: ErrorClassifier.guidanceFor('unknown'),
     };
   }
 }
