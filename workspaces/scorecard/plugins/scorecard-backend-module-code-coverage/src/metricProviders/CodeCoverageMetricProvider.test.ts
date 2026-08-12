@@ -182,6 +182,32 @@ describe('CodeCoverageMetricProvider', () => {
       );
     });
 
+    it('throws when a field value is null within a section', async () => {
+      const reportNullField: CodeCoverageReport = {
+        aggregate: {
+          line: {
+            available: 5,
+            covered: 4,
+            missed: 1,
+            percentage: null,
+          } as unknown as CodeCoverageReport['aggregate']['line'],
+          branch: { available: 10, covered: 7, missed: 3, percentage: 70 },
+        },
+        entity: {
+          kind: 'Component',
+          name: 'my-service',
+          namespace: 'default',
+        },
+        files: [],
+      };
+      mockGetReport.mockResolvedValue(reportNullField);
+      const provider = createProvider();
+
+      await expect(provider.calculateMetrics(entity())).rejects.toThrow(
+        'missing line.percentage data',
+      );
+    });
+
     it('propagates errors when getReport fails', async () => {
       mockGetReport.mockRejectedValueOnce(
         new Error('code-coverage unavailable'),
