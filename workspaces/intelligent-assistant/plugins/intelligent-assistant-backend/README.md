@@ -448,6 +448,7 @@ When enabled, Notebooks exposes the following REST API endpoints:
   - `PUT /intelligent-assistant/notebooks/v1/sessions/:sessionId/documents` - Upload or update a document (multipart/form-data)
   - `GET /intelligent-assistant/notebooks/v1/sessions/:sessionId/documents` - List all documents in a session
   - `GET /intelligent-assistant/notebooks/v1/sessions/:sessionId/documents/:documentId/status` - Get document processing status
+  - `PATCH /intelligent-assistant/notebooks/v1/sessions/:sessionId/documents/:documentId` - Rename a document (JSON body: `{ "title": "new name" }`)
   - `DELETE /intelligent-assistant/notebooks/v1/sessions/:sessionId/documents/:documentId` - Delete a document
 
 - **Queries**:

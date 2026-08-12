@@ -94,6 +94,50 @@ test.describe('Intelligent assistant notebooks', () => {
     await notebooks.expectNotebookEditorUploadResourceButtonVisible();
   });
 
+  test('document sidebar: rename document via click', async ({}, testInfo) => {
+    const { absolutePath, fileName } = localeNotebookUpload1Path(
+      testInfo.project.name,
+    );
+
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+
+    const baseName = fileName.replace(/\.[^.]+$/, '');
+    const ext = fileName.slice(baseName.length);
+    const newBaseName = `${baseName}-renamed`;
+    const newFileName = `${newBaseName}${ext}`;
+
+    await notebooks.renameDocumentInlineViaClick(fileName, newBaseName);
+    await notebooks.expectDocumentFileListedInSidebar(newFileName);
+
+    await notebooks.deleteFirstListedDocumentFromSidebarOverflowMenu();
+  });
+
+  test('document sidebar: rename document via kebab menu', async ({}, testInfo) => {
+    const { absolutePath, fileName } = localeNotebookUpload1Path(
+      testInfo.project.name,
+    );
+
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+
+    const baseName = fileName.replace(/\.[^.]+$/, '');
+    const ext = fileName.slice(baseName.length);
+    const newBaseName = `${baseName}-kebab`;
+    const newFileName = `${newBaseName}${ext}`;
+
+    await notebooks.renameDocumentViaKebabMenu(fileName, newBaseName);
+    await notebooks.expectDocumentFileListedInSidebar(newFileName);
+
+    await notebooks.deleteFirstListedDocumentFromSidebarOverflowMenu();
+  });
+
   test('upload modal: eleven files rejected at cap', async () => {
     await notebooks.clickOpenUploadDocumentModal();
     const uploadModal = notebooks.uploadDocumentModal();

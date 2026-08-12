@@ -94,6 +94,11 @@ backend.add(
 );
 backend.add(
   import(
+    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-code-coverage'
+  ),
+);
+backend.add(
+  import(
     '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora'
   ),
 );

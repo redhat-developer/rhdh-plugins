@@ -87,7 +87,7 @@ backend.add(import('@backstage/plugin-signals-backend'));
 backend.add(import('@red-hat-developer-hub/backstage-plugin-x2a-backend'));
 
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a'),
+  import('@red-hat-developer-hub/backstage-plugin-x2a-scaffolder-module'),
 );
 
 // MCP server + x2a MCP tools

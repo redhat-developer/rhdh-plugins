@@ -31,7 +31,11 @@ export const BUITestPage = () => {
     <>
       <Header
         title="Backstage UI Tests"
-        customActions={<UserSettingsThemeToggle />}
+        customActions={
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+            <UserSettingsThemeToggle />
+          </ul>
+        }
         tabs={[
           {
             id: 'form-components',

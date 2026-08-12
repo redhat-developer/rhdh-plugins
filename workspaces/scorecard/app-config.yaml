@@ -22,6 +22,33 @@ app:
             - kind: api # e.g. any API entity
             - type: service # e.g. Component or System with spec.type: service
 
+    # Grid layout – enabled with metric grouping
+    - scorecard-layout:scorecard/scorecard-entity-layout-grid:
+        disabled: false
+        config:
+          groups:
+            security-vulnerabilities:
+              title: Security Vulnerabilities
+              description: Track security issues across your repositories
+              metrics:
+                - sonarqube.securityRating
+
+            code-quality:
+              title: Code Quality
+              description: Code quality and maintainability metrics
+              metrics:
+                - sonarqube.qualityGate
+                - sonarqube.codeCoverage
+                - sonarqube.maintainabilityRating
+
+            sonarqube-coverage:
+              title: SonarQube Coverage
+              description: SonarQube coverage metrics
+              metrics:
+                - sonarqube.openIssues
+                - sonarqube.securityHotspots
+                - sonarqube.securityRating
+
     - home-page-layout:home/dynamic-homepage-layout:
         config:
           customizable: true

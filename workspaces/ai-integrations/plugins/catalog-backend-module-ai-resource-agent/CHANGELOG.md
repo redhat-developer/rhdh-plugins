@@ -1,0 +1,30 @@
+# @red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent
+
+## 0.2.1
+
+### Patch Changes
+
+- 8bf7bc3: Add AiModelServerAPI kind (`spec.type: ai-model-server`) in a dedicated
+  catalog-model package with types, JSON schema, KindValidator, type guard,
+  and CatalogModelLayer registration. Uses a dedicated kind to avoid
+  colliding with the upstream API kind; the schema mirrors
+  backstage/backstage#34476 exactly. The backend module registers the
+  AiModelServerAPI kind with the catalog via `catalogModelExtensionPoint`.
+
+  The model catalog entity provider now emits a single AiModelServerAPI
+  entity per model server instead of separate Component, Resource, and API
+  entities. Model names are collected into `spec.models.available`.
+
+## 0.2.0
+
+### Minor Changes
+
+- 51a6bc2: Add AiResource agent typed schema (`spec.type: agent`) in a dedicated
+  catalog-model package with types, JSON schema, KindValidator, type guard,
+  and CatalogModelLayer registration. The backend module registers the agent
+  specType with the catalog via `catalogModelExtensionPoint`.
+
+### Patch Changes
+
+- Updated dependencies [51a6bc2]
+  - @red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@0.2.0
