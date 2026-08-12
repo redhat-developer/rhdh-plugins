@@ -25,7 +25,7 @@ import { getRepositoryInformationFromEntity } from '../github/utils';
 import {
   DeploymentResult,
   deploymentsSchema,
-} from './schemas/deploymentsSchemas';
+} from './schemas/deploymentSchemas';
 
 export class GithubDeploymentsCollector
   implements

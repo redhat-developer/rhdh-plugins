@@ -27,7 +27,7 @@ import { buildIncidentJql } from './incidentJql';
 import {
   incidentsCollectorInputSchema,
   incidentsCollectorOutputSchema,
-} from './schemas/incidentsSchemas';
+} from './schemas/incidentSchemas';
 
 const { PROJECT_KEY } = ScorecardJiraAnnotations;
 
