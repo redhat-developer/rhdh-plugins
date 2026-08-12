@@ -125,66 +125,117 @@ export class DocumentService {
   }
 
   /**
-   * Upsert a document - create if it doesn't exist, update if it does
+   * Upsert a document - create if it doesn't exist, update if it does.
+   * Also used for rename-only operations when fileType/fileId are omitted.
    * @param sessionId - Vector store ID
    * @param title - Original document title
-   * @param fileType - Document source type (text, pdf, url, etc.)
-   * @param fileId - File ID from Files API
-   * @param newTitle - New title for rename operation (optional)
+   * @param opts - Optional parameters for upload or rename
+   * @param opts.fileType - Document source type (derived from existing file when omitted)
+   * @param opts.fileId - File ID from Files API (derived from existing file when omitted)
+   * @param opts.newTitle - New title for rename operation
    * @returns Upsert result with document ID and status
+   * @throws NotFoundError if fileId is omitted and document does not exist
    * @throws ConflictError if newTitle conflicts with existing document
    */
   async upsertDocument(
     sessionId: string,
     title: string,
-    fileType: string,
-    fileId: string,
-    newTitle?: string,
+    opts?: {
+      fileType?: string;
+      fileId?: string;
+      newTitle?: string;
+    },
   ): Promise<UpsertResult> {
-    // Find existing file by document_id
+    const { fileType, fileId, newTitle } = opts || {};
     const existingFile = await this.findFileByTitle(sessionId, title);
+
+    // Rename-only mode: no fileId means we must have an existing file
+    let resolvedFileId: string;
+    let resolvedFileType: string;
+    if (fileId) {
+      resolvedFileId = fileId;
+      resolvedFileType = fileType || 'unknown';
+    } else {
+      if (!existingFile) {
+        throw new NotFoundError(`Document not found: ${title}`);
+      }
+      resolvedFileId = existingFile.id;
+      resolvedFileType =
+        fileType ||
+        (existingFile.attributes?.source_type as string) ||
+        'unknown';
+    }
+
     const createdAt =
       (existingFile?.attributes?.created_at as string) ||
       new Date().toISOString();
 
     if (newTitle && title !== newTitle) {
-      // Check for title conflicts when renaming
       const conflictingFile = await this.findFileByTitle(sessionId, newTitle);
-
       if (conflictingFile) {
         throw new ConflictError(
           `A resource with the title "${newTitle || title}" already exists in this session`,
         );
       }
     }
+
     if (existingFile) {
       await this.deleteDocument(sessionId, title);
     }
 
-    const vectorStoreFile = await this.client.vectorStores.files.create(
-      sessionId,
-      {
-        file_id: fileId,
-        chunking_strategy: this.chunkingStrategy,
-        attributes: {
-          title: newTitle || title,
-          source_type: fileType,
-          created_at: createdAt,
-          updated_at: new Date().toISOString(),
-        },
-      },
-    );
-
-    this.logger.info(
-      `Document "${newTitle || title}" (ID: ${title}) upload started with file ${fileId}`,
-    );
-
-    return {
-      document_id: newTitle || title,
-      file_id: fileId,
-      replaced: false,
-      status: vectorStoreFile.status,
+    // Preserve existing attributes, override with known fields
+    const baseAttrs = existingFile?.attributes || {};
+    const attributes = {
+      ...baseAttrs,
+      title: newTitle || title,
+      source_type: resolvedFileType,
+      created_at: createdAt,
+      updated_at: new Date().toISOString(),
     };
+
+    try {
+      const vectorStoreFile = await this.client.vectorStores.files.create(
+        sessionId,
+        {
+          file_id: resolvedFileId,
+          chunking_strategy: this.chunkingStrategy,
+          attributes,
+        },
+      );
+
+      this.logger.info(
+        `Document "${newTitle || title}" (ID: ${title}) upsert started with file ${resolvedFileId}`,
+      );
+
+      return {
+        document_id: newTitle || title,
+        file_id: resolvedFileId,
+        replaced: !!existingFile,
+        status: vectorStoreFile.status,
+      };
+    } catch (error) {
+      // Rollback: restore original entry if delete succeeded but create failed
+      if (existingFile) {
+        this.logger.error(
+          `Failed to re-create vector store entry after delete for "${title}". Attempting rollback.`,
+        );
+        try {
+          await this.client.vectorStores.files.create(sessionId, {
+            file_id: existingFile.id,
+            chunking_strategy: this.chunkingStrategy,
+            attributes: existingFile.attributes || {},
+          });
+          this.logger.info(
+            `Rollback succeeded: restored "${title}" in session ${sessionId}`,
+          );
+        } catch (rollbackError) {
+          this.logger.error(
+            `Rollback failed: document "${title}" (file ${existingFile.id}) is orphaned in session ${sessionId}`,
+          );
+        }
+      }
+      throw error;
+    }
   }
 
   /**
@@ -233,10 +284,9 @@ export class DocumentService {
       return [];
     }
 
-    // Map files to SessionDocument format
+    // Map files to SessionDocument format, sorted by original upload time
     const documents = filesResponse.data
       .filter((file: any) => {
-        // Apply file type filter if provided
         if (fileTypeFilter && file.attributes?.source_type !== fileTypeFilter) {
           return false;
         }
@@ -251,6 +301,11 @@ export class DocumentService {
           created_at: attrs.created_at,
           updated_at: attrs.updated_at,
         };
+      })
+      .sort((a: SessionDocument, b: SessionDocument) => {
+        const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return timeA - timeB;
       });
 
     this.logger.info(
@@ -260,7 +315,9 @@ export class DocumentService {
   }
 
   /**
-   * Delete a document from the vector store and Files API
+   * Remove a document's vector store entry.
+   * Note: the underlying file in the Files API is intentionally preserved
+   * so it can be re-associated (e.g., during rename/upsert).
    * @param sessionId - Vector store ID
    * @param documentTitle - Document title to delete
    * @throws NotFoundError if document not found

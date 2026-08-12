@@ -1,5 +1,27 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 5.11.0
+
+### Minor Changes
+
+- f48dfb4: Add conditional RBAC policy support for orchestrator workflows using the `IS_ALLOWED_WORKFLOW_ID` rule. Dynamic workflow-specific permissions (`orchestrator.workflow.<workflowId>` and `orchestrator.workflow.use.<workflowId>`) are deprecated and will be removed in the next release.
+
+  Migrate from deprecated dynamic permissions to conditional policies. See `docs/MIGRATION-CONDITIONAL-POLICIES.md`.
+
+### Patch Changes
+
+- e5788bb: Reduce NFS Module Federation sync size by lazy-loading heavy dependencies.
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+- e3fb07a: Export translations module as default for NFS auto-discovery
+- Updated dependencies [f48dfb4]
+- Updated dependencies [c74276c]
+- Updated dependencies [e0d0986]
+- Updated dependencies [8966faf]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.9.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.9.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.10.1
+
 ## 5.10.0
 
 ### Minor Changes

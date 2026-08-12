@@ -123,6 +123,28 @@ Every feature ships with tests. Integration tests use real database and cache ba
 - WCAG 2.1 AA accessibility
 - Feature flags via `boost.features.*` in `app-config.yaml`
 
+## Build & verify
+
+| Task                | Command                              |
+| ------------------- | ------------------------------------ |
+| Full build          | `yarn build:all`                     |
+| Type-check          | `yarn tsc:full`                      |
+| Lint                | `yarn lint:all`                      |
+| Test                | `CI=true yarn test --watchAll=false` |
+| API reports         | `yarn build:api-reports`             |
+| OpenSpec validation | `yarn openspec:validate`             |
+
+**After modifying any file that affects the public API surface** (including
+`translations/ref.ts`, exported types, or API routes), run
+`yarn build:api-reports` and commit the updated `report.api.md`.
+
+## Import conventions
+
+- **Icons**: use `@remixicon/react` (e.g., `RiCheckLine`, `RiDownload2Line`).
+  Do NOT use `@mui/icons-material` — the plugin migrated in PR #3929.
+- **Entity type comparisons**: always normalize with `.toLowerCase()` before
+  comparing `spec.type` values (see `isAiAsset.ts`, `categoryMeta.ts`).
+
 ## What not to do
 
 - Do not reference the `workspaces/augment/` codebase for implementation patterns — boost is a clean-room build
