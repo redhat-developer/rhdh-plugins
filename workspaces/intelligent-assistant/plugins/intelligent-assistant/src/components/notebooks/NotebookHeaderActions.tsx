@@ -15,7 +15,7 @@
  */
 
 import { Button as PFButton, Tooltip } from '@patternfly/react-core';
-import { PlusCircleIcon, TimesIcon } from '@patternfly/react-icons';
+import { AddCircleOIcon, TimesIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { SidebarCollapseIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
@@ -41,7 +41,7 @@ export const NotebookHeaderActions = ({
 }: NotebookHeaderActionsProps) => {
   const { t } = useTranslation();
 
-  const iconStyle = { width: '18px', height: '18px' };
+  const iconStyle = { width: 16, height: 16 };
 
   return (
     <div className={className}>
@@ -71,7 +71,12 @@ export const NotebookHeaderActions = ({
           size="sm"
           isDisabled={uploadsInProgress || uploadModalOpen}
         >
-          <PlusCircleIcon style={iconStyle} />
+          <AddCircleOIcon
+            style={{
+              ...iconStyle,
+              color: 'var(--pf-t--global--color--brand--default)',
+            }}
+          />
         </PFButton>
       </Tooltip>
       <Tooltip

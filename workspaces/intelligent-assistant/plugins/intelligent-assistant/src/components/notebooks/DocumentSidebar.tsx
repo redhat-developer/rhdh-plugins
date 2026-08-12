@@ -27,7 +27,7 @@ import {
   TextInput,
   Tooltip,
 } from '@patternfly/react-core';
-import { EllipsisVIcon, PlusCircleIcon } from '@patternfly/react-icons';
+import { AddCircleOIcon, EllipsisVIcon } from '@patternfly/react-icons';
 
 import { NOTEBOOK_MAX_FILES } from '../../const';
 import { useInlineEdit } from '../../hooks/notebooks/useInlineEdit';
@@ -252,7 +252,7 @@ export const DocumentSidebar = ({
               <Button
                 variant="link"
                 className={classes.addButton}
-                icon={<PlusCircleIcon />}
+                icon={<AddCircleOIcon />}
                 isDisabled
               >
                 {t('notebook.view.documents.add')}
@@ -263,7 +263,7 @@ export const DocumentSidebar = ({
           <Button
             variant="link"
             className={classes.addButton}
-            icon={<PlusCircleIcon />}
+            icon={<AddCircleOIcon />}
             onClick={onAddDocument}
           >
             {t('notebook.view.documents.add')}

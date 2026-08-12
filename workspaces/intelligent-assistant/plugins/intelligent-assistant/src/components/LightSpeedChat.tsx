@@ -1415,6 +1415,7 @@ export const LightspeedChat = ({
     (_: MouseEvent | undefined, selectedItem: string | number | undefined) => {
       if (!isFullscreenMode) {
         setIsMcpSettingsOpen(false);
+        setIsChatHistoryDrawerOpen(false);
       }
       setNewChatCreated(false);
       const newConvId = String(selectedItem);
