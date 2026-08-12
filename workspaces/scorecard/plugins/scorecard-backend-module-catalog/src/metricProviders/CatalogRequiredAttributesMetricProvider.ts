@@ -23,10 +23,10 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import {
-  type CatalogMetadataConfig,
+  type CatalogRequiredAttributesConfig,
   type StatusMapping,
-  parseCatalogMetadataConfig,
-} from './CatalogMetadataConfig';
+  parseCatalogRequiredAttributesConfig,
+} from './CatalogRequiredAttributesConfig';
 
 /** Sentinel for a field path that does not resolve. */
 const NOT_FOUND = Symbol('NOT_FOUND');
@@ -200,17 +200,21 @@ function getDefaultIcon(status: string): string {
   }
 }
 
-export class CatalogMetadataMetricProvider implements MetricProvider<'number'> {
-  private readonly catalogMetadataConfig: CatalogMetadataConfig;
+export class CatalogRequiredAttributesMetricProvider
+  implements MetricProvider<'number'>
+{
+  private readonly catalogRequiredAttributesConfig: CatalogRequiredAttributesConfig;
   private readonly statusCodeMappings: Map<
     string,
     { statusToCode: Map<string, number>; thresholds: ThresholdConfig }
   >;
 
-  constructor(catalogMetadataConfig: CatalogMetadataConfig) {
-    this.catalogMetadataConfig = catalogMetadataConfig;
+  constructor(
+    catalogRequiredAttributesConfig: CatalogRequiredAttributesConfig,
+  ) {
+    this.catalogRequiredAttributesConfig = catalogRequiredAttributesConfig;
     this.statusCodeMappings = new Map();
-    for (const check of catalogMetadataConfig.checks) {
+    for (const check of catalogRequiredAttributesConfig.checks) {
       this.statusCodeMappings.set(
         check.metric.id,
         buildStatusCodeMapping(check.statusMapping),
@@ -219,18 +223,18 @@ export class CatalogMetadataMetricProvider implements MetricProvider<'number'> {
   }
 
   getProviderDatasourceId(): string {
-    return 'catalogMetadata';
+    return 'catalog';
   }
 
   getProviderId(): string {
-    return 'catalogMetadata.requiredAttributes';
+    return 'catalog.requiredAttributes';
   }
 
   getMetrics(): Metric<'number'>[] {
-    return this.catalogMetadataConfig.checks.map(check => {
+    return this.catalogRequiredAttributesConfig.checks.map(check => {
       const mapping = this.statusCodeMappings.get(check.metric.id)!;
       return {
-        id: `catalogMetadata.${check.metric.id}`,
+        id: `catalog.${check.metric.id}`,
         title: check.metric.title,
         description: check.metric.description,
         type: 'number' as const,
@@ -246,7 +250,7 @@ export class CatalogMetadataMetricProvider implements MetricProvider<'number'> {
     const kinds = new Set<string>();
     let allHaveKind = true;
 
-    for (const check of this.catalogMetadataConfig.checks) {
+    for (const check of this.catalogRequiredAttributesConfig.checks) {
       const kindValue = check.filter.kind;
       if (kindValue) {
         kinds.add(kindValue.toLowerCase());
@@ -269,7 +273,7 @@ export class CatalogMetadataMetricProvider implements MetricProvider<'number'> {
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const results = new Map<string, number>();
 
-    for (const check of this.catalogMetadataConfig.checks) {
+    for (const check of this.catalogRequiredAttributesConfig.checks) {
       // Apply per-check filter
       if (!entityMatchesFilter(entity, check.filter)) {
         continue;
@@ -284,7 +288,7 @@ export class CatalogMetadataMetricProvider implements MetricProvider<'number'> {
       const mapping = this.statusCodeMappings.get(check.metric.id)!;
       const code = mapping.statusToCode.get(status);
       if (code !== undefined) {
-        results.set(`catalogMetadata.${check.metric.id}`, code);
+        results.set(`catalog.${check.metric.id}`, code);
       }
     }
 
@@ -293,15 +297,18 @@ export class CatalogMetadataMetricProvider implements MetricProvider<'number'> {
 }
 
 /**
- * Creates a CatalogMetadataMetricProvider from root Backstage config.
+ * Creates a CatalogRequiredAttributesMetricProvider from root Backstage config.
  * Returns undefined if no checks are configured.
  */
-export function createCatalogMetadataMetricProvider(
+export function createCatalogRequiredAttributesMetricProvider(
   config: Config,
-): CatalogMetadataMetricProvider | undefined {
-  const catalogMetadataConfig = parseCatalogMetadataConfig(config);
-  if (!catalogMetadataConfig) {
+): CatalogRequiredAttributesMetricProvider | undefined {
+  const catalogRequiredAttributesConfig =
+    parseCatalogRequiredAttributesConfig(config);
+  if (!catalogRequiredAttributesConfig) {
     return undefined;
   }
-  return new CatalogMetadataMetricProvider(catalogMetadataConfig);
+  return new CatalogRequiredAttributesMetricProvider(
+    catalogRequiredAttributesConfig,
+  );
 }

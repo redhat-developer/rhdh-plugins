@@ -1,5 +1,5 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog-metadata': patch
+'@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog': patch
 ---
 
-Add catalog-metadata backend module for the scorecard plugin.
+Add catalog backend module for the scorecard plugin.

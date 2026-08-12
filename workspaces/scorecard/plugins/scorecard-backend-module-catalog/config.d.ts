@@ -22,10 +22,10 @@ export interface Config {
   scorecard?: {
     /** Metric providers calculate one or more metrics on a schedule. */
     metricProviders?: {
-      /** Catalog metadata check configuration */
-      catalogMetadata?: {
+      /** Catalog check configuration */
+      catalog?: {
         requiredAttributes?: {
-          /** How often catalogMetadata.requiredAttributes metrics will be calculated */
+          /** How often catalog.requiredAttributes metrics will be calculated */
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
           /** How catalog metadata metric values are categorized */
           thresholds?: ThresholdConfig;
@@ -35,7 +35,7 @@ export interface Config {
             checks?: Array<{
               /** Metric definition */
               metric: {
-                /** Metric identifier suffix (used as catalogMetadata.<id>) */
+                /** Metric identifier suffix (used as catalog.<id>) */
                 id: string;
                 /** Human-readable title */
                 title: string;

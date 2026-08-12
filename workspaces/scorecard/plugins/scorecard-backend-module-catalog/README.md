@@ -1,6 +1,6 @@
-# Scorecard Backend Module for Catalog Metadata
+# Scorecard Backend Module for Catalog
 
-This is an extension module to the `backstage-plugin-scorecard-backend` plugin. It provides configurable catalog entity metadata checks, evaluating entity fields (e.g., `metadata.title`, `spec.lifecycle`) against configurable rules and mapping field states to status strings via a three-tier status mapping merge (check-level > options-level > hardcoded defaults).
+This is an extension module to the `backstage-plugin-scorecard-backend` plugin. It provides configurable catalog entity checks, evaluating entity fields (e.g., `metadata.title`, `spec.lifecycle`) against configurable rules and mapping field states to status strings via a three-tier status mapping merge (check-level > options-level > hardcoded defaults).
 
 The module supports:
 
@@ -20,7 +20,7 @@ To install this backend module:
 
 ```bash
 # From your root directory
-yarn workspace backend add @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog-metadata
+yarn workspace backend add @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog
 ```
 
 ```ts
@@ -34,11 +34,11 @@ backend.add(
   import('@red-hat-developer-hub/backstage-plugin-scorecard-backend'),
 );
 
-// Install the Catalog Metadata module
+// Install the Catalog module
 /* highlight-add-next-line */
 backend.add(
   import(
-    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog-metadata'
+    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog'
   ),
 );
 
@@ -47,7 +47,7 @@ backend.start();
 
 ## Configuration
 
-All checks are defined under `scorecard.metricProviders.catalogMetadata.requiredAttributes.options.checks` in your `app-config.yaml`. Each check specifies a metric definition, an entity filter, a dotted field path to evaluate, and an optional status mapping override.
+All checks are defined under `scorecard.metricProviders.catalog.requiredAttributes.options.checks` in your `app-config.yaml`. Each check specifies a metric definition, an entity filter, a dotted field path to evaluate, and an optional status mapping override.
 
 If no checks are configured, the module has no effect.
 
@@ -59,7 +59,7 @@ The simplest use case — verify that a field exists and is non-empty. Uses the 
 # app-config.yaml
 scorecard:
   metricProviders:
-    catalogMetadata:
+    catalog:
       requiredAttributes:
         options:
           checks:
@@ -72,7 +72,7 @@ scorecard:
               field: metadata.title
 ```
 
-This produces a single metric `catalogMetadata.title` that reports `found` when the entity has a non-empty `metadata.title`, or `missed` when it is absent, null, or empty.
+This produces a single metric `catalog.title` that reports `found` when the entity has a non-empty `metadata.title`, or `missed` when it is absent, null, or empty.
 
 ### Example 2: Value whitelist check
 
@@ -82,7 +82,7 @@ Verify that a field contains one of a set of accepted values. Values not in the 
 # app-config.yaml
 scorecard:
   metricProviders:
-    catalogMetadata:
+    catalog:
       requiredAttributes:
         options:
           checks:
@@ -102,7 +102,7 @@ scorecard:
                   dev: ok
 ```
 
-This produces metric `catalogMetadata.lifecycle` with three possible statuses:
+This produces metric `catalog.lifecycle` with three possible statuses:
 
 | Field state                                | Status    |
 | ------------------------------------------ | --------- |
@@ -118,7 +118,7 @@ Define multiple checks targeting different entity kinds. The module aggregates k
 # app-config.yaml
 scorecard:
   metricProviders:
-    catalogMetadata:
+    catalog:
       requiredAttributes:
         options:
           checks:
@@ -147,7 +147,7 @@ scorecard:
               field: spec.owner
 ```
 
-This produces three metrics: `catalogMetadata.title`, `catalogMetadata.owner`, and `catalogMetadata.templateOwner`. The module automatically queries only Component and Template entities from the catalog.
+This produces three metrics: `catalog.title`, `catalog.owner`, and `catalog.templateOwner`. The module automatically queries only Component and Template entities from the catalog.
 
 ### Example 4: Options-level status mapping defaults
 
@@ -157,7 +157,7 @@ Set default status strings for all checks at the options level. Individual check
 # app-config.yaml
 scorecard:
   metricProviders:
-    catalogMetadata:
+    catalog:
       requiredAttributes:
         options:
           statusMapping:
@@ -197,7 +197,7 @@ Filter by multiple entity fields. All filter conditions must match (AND logic). 
 # app-config.yaml
 scorecard:
   metricProviders:
-    catalogMetadata:
+    catalog:
       requiredAttributes:
         options:
           checks:
@@ -221,7 +221,7 @@ A comprehensive example combining schedule configuration, options-level defaults
 # app-config.yaml
 scorecard:
   metricProviders:
-    catalogMetadata:
+    catalog:
       requiredAttributes:
         schedule:
           frequency:
@@ -328,14 +328,14 @@ You can override the auto-generated thresholds using per-metric threshold config
 
 ## Available Metrics
 
-### Catalog metadata check (`catalogMetadata.<id>`)
+### Catalog check (`catalog.<id>`)
 
 Each configured check produces one numeric metric.
 
-- **Metric ID**: `catalogMetadata.<id>` (where `<id>` is the `metric.id` from the check config)
-- **Provider ID**: `catalogMetadata.requiredAttributes`
+- **Metric ID**: `catalog.<id>` (where `<id>` is the `metric.id` from the check config)
+- **Provider ID**: `catalog.requiredAttributes`
 - **Type**: Number (numeric code mapped to a status string via threshold rules)
-- **Datasource**: `catalogMetadata`
+- **Datasource**: `catalog`
 
 ## Schedule Configuration
 
@@ -344,7 +344,7 @@ The Scorecard plugin uses Backstage's built-in scheduler service to automaticall
 ```yaml
 scorecard:
   metricProviders:
-    catalogMetadata:
+    catalog:
       requiredAttributes:
         schedule:
           frequency:

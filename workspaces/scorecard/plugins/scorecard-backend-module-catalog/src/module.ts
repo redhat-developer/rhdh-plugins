@@ -18,11 +18,11 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { createCatalogMetadataMetricProvider } from './metricProviders/CatalogMetadataMetricProvider';
+import { createCatalogRequiredAttributesMetricProvider } from './metricProviders/CatalogRequiredAttributesMetricProvider';
 
-export const scorecardModuleCatalogMetadata = createBackendModule({
+export const scorecardModuleCatalog = createBackendModule({
   pluginId: 'scorecard',
-  moduleId: 'catalog-metadata',
+  moduleId: 'catalog',
   register(reg) {
     reg.registerInit({
       deps: {
@@ -30,7 +30,7 @@ export const scorecardModuleCatalogMetadata = createBackendModule({
         metrics: scorecardMetricsExtensionPoint,
       },
       async init({ config, metrics }) {
-        const provider = createCatalogMetadataMetricProvider(config);
+        const provider = createCatalogRequiredAttributesMetricProvider(config);
         if (provider) {
           metrics.addMetricProvider(provider);
         }

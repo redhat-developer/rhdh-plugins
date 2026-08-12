@@ -49,9 +49,9 @@ export type CheckConfig = {
 };
 
 /**
- * Parsed configuration for the catalog-metadata metric provider.
+ * Parsed configuration for the catalog required attributes metric provider.
  */
-export type CatalogMetadataConfig = {
+export type CatalogRequiredAttributesConfig = {
   checks: CheckConfig[];
 };
 
@@ -155,14 +155,14 @@ function readStatusMapping(config: Config): Partial<StatusMapping> | undefined {
 }
 
 /**
- * Parses the catalog-metadata configuration from the root Backstage config.
+ * Parses the catalog required attributes configuration from the root Backstage config.
  * Returns undefined if no checks are configured.
  */
-export function parseCatalogMetadataConfig(
+export function parseCatalogRequiredAttributesConfig(
   config: Config,
-): CatalogMetadataConfig | undefined {
+): CatalogRequiredAttributesConfig | undefined {
   const optionsConfig = config.getOptionalConfig(
-    'scorecard.metricProviders.catalogMetadata.requiredAttributes.options',
+    'scorecard.metricProviders.catalog.requiredAttributes.options',
   );
 
   if (!optionsConfig) {

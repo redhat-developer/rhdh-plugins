@@ -19,13 +19,13 @@ import type { Entity } from '@backstage/catalog-model';
 import {
   mergeStatusMappings,
   DEFAULT_STATUS_MAPPING,
-} from './CatalogMetadataConfig';
+} from './CatalogRequiredAttributesConfig';
 import {
-  createCatalogMetadataMetricProvider,
+  createCatalogRequiredAttributesMetricProvider,
   resolveFieldPath,
   evaluateFieldStatus,
   entityMatchesFilter,
-} from './CatalogMetadataMetricProvider';
+} from './CatalogRequiredAttributesMetricProvider';
 
 // ── helpers ────────────────────────────────────────────────────────────
 
@@ -33,7 +33,7 @@ function buildConfig(checks: object[], optionsStatusMapping?: object) {
   return {
     scorecard: {
       metricProviders: {
-        catalogMetadata: {
+        catalog: {
           requiredAttributes: {
             options: {
               checks,
@@ -378,16 +378,18 @@ describe('mergeStatusMappings', () => {
   });
 });
 
-// ── createCatalogMetadataMetricProvider ────────────────────────────────
+// ── createCatalogRequiredAttributesMetricProvider ────────────────────────────────
 
-describe('createCatalogMetadataMetricProvider', () => {
+describe('createCatalogRequiredAttributesMetricProvider', () => {
   it('should return undefined when no config is provided', () => {
-    const provider = createCatalogMetadataMetricProvider(new ConfigReader({}));
+    const provider = createCatalogRequiredAttributesMetricProvider(
+      new ConfigReader({}),
+    );
     expect(provider).toBeUndefined();
   });
 
   it('should return undefined when checks array is empty', () => {
-    const provider = createCatalogMetadataMetricProvider(
+    const provider = createCatalogRequiredAttributesMetricProvider(
       new ConfigReader(buildConfig([])),
     );
     expect(provider).toBeUndefined();
@@ -395,50 +397,46 @@ describe('createCatalogMetadataMetricProvider', () => {
 
   it('should create provider with a single check', () => {
     const config = new ConfigReader(buildConfig([titleCheck()]));
-    const provider = createCatalogMetadataMetricProvider(config);
+    const provider = createCatalogRequiredAttributesMetricProvider(config);
 
     expect(provider).toBeDefined();
-    expect(provider?.getMetrics().map(m => m.id)).toEqual([
-      'catalogMetadata.title',
-    ]);
+    expect(provider?.getMetrics().map(m => m.id)).toEqual(['catalog.title']);
   });
 
   it('should create provider with multiple checks', () => {
     const config = new ConfigReader(
       buildConfig([titleCheck(), lifecycleCheck()]),
     );
-    const provider = createCatalogMetadataMetricProvider(config);
+    const provider = createCatalogRequiredAttributesMetricProvider(config);
 
     expect(provider).toBeDefined();
     expect(provider?.getMetrics().map(m => m.id)).toEqual([
-      'catalogMetadata.title',
-      'catalogMetadata.lifecycle',
+      'catalog.title',
+      'catalog.lifecycle',
     ]);
   });
 });
 
 // ── provider methods ───────────────────────────────────────────────────
 
-describe('CatalogMetadataMetricProvider', () => {
+describe('CatalogRequiredAttributesMetricProvider', () => {
   describe('provider identification', () => {
-    const provider = createCatalogMetadataMetricProvider(
+    const provider = createCatalogRequiredAttributesMetricProvider(
       new ConfigReader(buildConfig([titleCheck()])),
     );
 
     it('should return correct provider ID', () => {
-      expect(provider?.getProviderId()).toBe(
-        'catalogMetadata.requiredAttributes',
-      );
+      expect(provider?.getProviderId()).toBe('catalog.requiredAttributes');
     });
 
     it('should return correct datasource ID', () => {
-      expect(provider?.getProviderDatasourceId()).toBe('catalogMetadata');
+      expect(provider?.getProviderDatasourceId()).toBe('catalog');
     });
   });
 
   describe('getMetrics', () => {
     it('should return metrics with correct type', () => {
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(buildConfig([titleCheck()])),
       );
       const metrics = provider?.getMetrics();
@@ -450,7 +448,7 @@ describe('CatalogMetadataMetricProvider', () => {
     });
 
     it('should generate threshold rules from status mapping', () => {
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(buildConfig([titleCheck()])),
       );
       const metrics = provider?.getMetrics();
@@ -464,7 +462,7 @@ describe('CatalogMetadataMetricProvider', () => {
     });
 
     it('should generate threshold rules for value-specific mapping', () => {
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(buildConfig([lifecycleCheck()])),
       );
       const metrics = provider?.getMetrics();
@@ -477,12 +475,12 @@ describe('CatalogMetadataMetricProvider', () => {
     });
 
     it('should include metric metadata', () => {
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(buildConfig([titleCheck()])),
       );
       const metric = provider?.getMetrics()[0];
 
-      expect(metric?.id).toBe('catalogMetadata.title');
+      expect(metric?.id).toBe('catalog.title');
       expect(metric?.title).toBe('Title is required');
       expect(metric?.description).toBe('The metadata.title should be defined.');
     });
@@ -490,7 +488,7 @@ describe('CatalogMetadataMetricProvider', () => {
 
   describe('getCatalogFilter', () => {
     it('should return kind filter when all checks share the same kind', () => {
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(
           buildConfig([
             titleCheck({ filter: { kind: 'Component' } }),
@@ -504,7 +502,7 @@ describe('CatalogMetadataMetricProvider', () => {
     });
 
     it('should return multi-kind filter for different kinds', () => {
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(
           buildConfig([
             titleCheck({ filter: { kind: 'Component' } }),
@@ -530,7 +528,7 @@ describe('CatalogMetadataMetricProvider', () => {
     });
 
     it('should return empty filter when any check has no kind filter', () => {
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(
           buildConfig([
             titleCheck({ filter: { kind: 'Component' } }),
@@ -548,20 +546,20 @@ describe('CatalogMetadataMetricProvider', () => {
 
   describe('calculateMetrics', () => {
     it('should return "found" status code for existing field', async () => {
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(buildConfig([titleCheck()])),
       );
       const result = await provider?.calculateMetrics(componentEntity);
 
       // The metric value is a numeric code mapping to "found"
       const metrics = provider?.getMetrics();
-      const titleMetric = metrics?.find(m => m.id === 'catalogMetadata.title');
+      const titleMetric = metrics?.find(m => m.id === 'catalog.title');
       const foundRule = titleMetric?.thresholds.rules.find(
         r => r.key === 'found',
       );
       const expectedCode = Number(foundRule?.expression.replace('==', ''));
 
-      expect(result?.get('catalogMetadata.title')).toBe(expectedCode);
+      expect(result?.get('catalog.title')).toBe(expectedCode);
     });
 
     it('should return "missed" status code for missing field', async () => {
@@ -571,44 +569,44 @@ describe('CatalogMetadataMetricProvider', () => {
         metadata: { name: 'no-title-component' },
         spec: { type: 'service', lifecycle: 'prod', owner: 'team-a' },
       };
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(buildConfig([titleCheck()])),
       );
       const result = await provider?.calculateMetrics(entityWithoutTitle);
 
       const metrics = provider?.getMetrics();
-      const titleMetric = metrics?.find(m => m.id === 'catalogMetadata.title');
+      const titleMetric = metrics?.find(m => m.id === 'catalog.title');
       const missedRule = titleMetric?.thresholds.rules.find(
         r => r.key === 'missed',
       );
       const expectedCode = Number(missedRule?.expression.replace('==', ''));
 
-      expect(result?.get('catalogMetadata.title')).toBe(expectedCode);
+      expect(result?.get('catalog.title')).toBe(expectedCode);
     });
 
     it('should skip checks for non-matching entities', async () => {
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(
           buildConfig([titleCheck({ filter: { kind: 'Component' } })]),
         ),
       );
       const result = await provider?.calculateMetrics(templateEntity);
 
-      expect(result?.has('catalogMetadata.title')).toBe(false);
+      expect(result?.has('catalog.title')).toBe(false);
     });
 
     it('should return "ok" for valid lifecycle value', async () => {
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(buildConfig([lifecycleCheck()])),
       );
       const result = await provider?.calculateMetrics(componentEntity);
 
       const metrics = provider?.getMetrics();
-      const lcMetric = metrics?.find(m => m.id === 'catalogMetadata.lifecycle');
+      const lcMetric = metrics?.find(m => m.id === 'catalog.lifecycle');
       const okRule = lcMetric?.thresholds.rules.find(r => r.key === 'ok');
       const expectedCode = Number(okRule?.expression.replace('==', ''));
 
-      expect(result?.get('catalogMetadata.lifecycle')).toBe(expectedCode);
+      expect(result?.get('catalog.lifecycle')).toBe(expectedCode);
     });
 
     it('should return "invalid" for unknown lifecycle value', async () => {
@@ -616,19 +614,19 @@ describe('CatalogMetadataMetricProvider', () => {
         ...componentEntity,
         spec: { ...componentEntity.spec, lifecycle: 'experimental' },
       };
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(buildConfig([lifecycleCheck()])),
       );
       const result = await provider?.calculateMetrics(entity);
 
       const metrics = provider?.getMetrics();
-      const lcMetric = metrics?.find(m => m.id === 'catalogMetadata.lifecycle');
+      const lcMetric = metrics?.find(m => m.id === 'catalog.lifecycle');
       const invalidRule = lcMetric?.thresholds.rules.find(
         r => r.key === 'invalid',
       );
       const expectedCode = Number(invalidRule?.expression.replace('==', ''));
 
-      expect(result?.get('catalogMetadata.lifecycle')).toBe(expectedCode);
+      expect(result?.get('catalog.lifecycle')).toBe(expectedCode);
     });
 
     it('should return "missed" for missing lifecycle value', async () => {
@@ -636,19 +634,19 @@ describe('CatalogMetadataMetricProvider', () => {
         ...componentEntity,
         spec: { type: 'service', owner: 'team-a' },
       };
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(buildConfig([lifecycleCheck()])),
       );
       const result = await provider?.calculateMetrics(entity);
 
       const metrics = provider?.getMetrics();
-      const lcMetric = metrics?.find(m => m.id === 'catalogMetadata.lifecycle');
+      const lcMetric = metrics?.find(m => m.id === 'catalog.lifecycle');
       const missedRule = lcMetric?.thresholds.rules.find(
         r => r.key === 'missed',
       );
       const expectedCode = Number(missedRule?.expression.replace('==', ''));
 
-      expect(result?.get('catalogMetadata.lifecycle')).toBe(expectedCode);
+      expect(result?.get('catalog.lifecycle')).toBe(expectedCode);
     });
 
     it('should handle empty string field with default mapping', async () => {
@@ -656,20 +654,20 @@ describe('CatalogMetadataMetricProvider', () => {
         ...componentEntity,
         metadata: { ...componentEntity.metadata, title: '' },
       };
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(buildConfig([titleCheck()])),
       );
       const result = await provider?.calculateMetrics(entity);
 
       // Default mapping: emptyString → 'missed'
       const metrics = provider?.getMetrics();
-      const titleMetric = metrics?.find(m => m.id === 'catalogMetadata.title');
+      const titleMetric = metrics?.find(m => m.id === 'catalog.title');
       const missedRule = titleMetric?.thresholds.rules.find(
         r => r.key === 'missed',
       );
       const expectedCode = Number(missedRule?.expression.replace('==', ''));
 
-      expect(result?.get('catalogMetadata.title')).toBe(expectedCode);
+      expect(result?.get('catalog.title')).toBe(expectedCode);
     });
 
     it('should handle empty array field with default mapping', async () => {
@@ -677,7 +675,7 @@ describe('CatalogMetadataMetricProvider', () => {
         ...componentEntity,
         metadata: { ...componentEntity.metadata, tags: [] },
       };
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(
           buildConfig([
             titleCheck({
@@ -694,23 +692,23 @@ describe('CatalogMetadataMetricProvider', () => {
       const result = await provider?.calculateMetrics(entity);
 
       const metrics = provider?.getMetrics();
-      const tagsMetric = metrics?.find(m => m.id === 'catalogMetadata.tags');
+      const tagsMetric = metrics?.find(m => m.id === 'catalog.tags');
       const missedRule = tagsMetric?.thresholds.rules.find(
         r => r.key === 'missed',
       );
       const expectedCode = Number(missedRule?.expression.replace('==', ''));
 
-      expect(result?.get('catalogMetadata.tags')).toBe(expectedCode);
+      expect(result?.get('catalog.tags')).toBe(expectedCode);
     });
 
     it('should handle multiple checks on the same entity', async () => {
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(buildConfig([titleCheck(), lifecycleCheck()])),
       );
       const result = await provider?.calculateMetrics(componentEntity);
 
-      expect(result?.has('catalogMetadata.title')).toBe(true);
-      expect(result?.has('catalogMetadata.lifecycle')).toBe(true);
+      expect(result?.has('catalog.title')).toBe(true);
+      expect(result?.has('catalog.lifecycle')).toBe(true);
     });
 
     it('should apply options-level status mapping to all checks', async () => {
@@ -723,10 +721,10 @@ describe('CatalogMetadataMetricProvider', () => {
           empty: 'absent',
         }),
       );
-      const provider = createCatalogMetadataMetricProvider(config);
+      const provider = createCatalogRequiredAttributesMetricProvider(config);
       const metrics = provider?.getMetrics();
 
-      const titleMetric = metrics?.find(m => m.id === 'catalogMetadata.title');
+      const titleMetric = metrics?.find(m => m.id === 'catalog.title');
       const keys = titleMetric?.thresholds.rules.map(r => r.key);
       expect(keys).toContain('present');
       expect(keys).toContain('absent');
@@ -747,25 +745,25 @@ describe('CatalogMetadataMetricProvider', () => {
           },
         ),
       );
-      const provider = createCatalogMetadataMetricProvider(config);
+      const provider = createCatalogRequiredAttributesMetricProvider(config);
       const metrics = provider?.getMetrics();
 
-      const titleMetric = metrics?.find(m => m.id === 'catalogMetadata.title');
+      const titleMetric = metrics?.find(m => m.id === 'catalog.title');
       const keys = titleMetric?.thresholds.rules.map(r => r.key);
       expect(keys).toContain('check-present');
       expect(keys).not.toContain('options-present');
     });
 
     it('should apply check filter with empty filter matching all entities', async () => {
-      const provider = createCatalogMetadataMetricProvider(
+      const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(buildConfig([titleCheck({ filter: {} })])),
       );
 
       const componentResult = await provider?.calculateMetrics(componentEntity);
-      expect(componentResult?.has('catalogMetadata.title')).toBe(true);
+      expect(componentResult?.has('catalog.title')).toBe(true);
 
       const templateResult = await provider?.calculateMetrics(templateEntity);
-      expect(templateResult?.has('catalogMetadata.title')).toBe(true);
+      expect(templateResult?.has('catalog.title')).toBe(true);
     });
   });
 });

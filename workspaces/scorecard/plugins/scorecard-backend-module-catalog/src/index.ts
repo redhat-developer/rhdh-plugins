@@ -15,9 +15,9 @@
  */
 
 /**
- * The catalog-metadata backend module for the scorecard plugin.
+ * The catalog backend module for the scorecard plugin.
  *
  * @packageDocumentation
  */
 
-export { scorecardModuleCatalogMetadata as default } from './module';
+export { scorecardModuleCatalog as default } from './module';

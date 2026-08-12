@@ -1,8 +1,8 @@
 {
-  "name": "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog-metadata",
+  "name": "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog",
   "version": "0.0.0",
   "license": "Apache-2.0",
-  "description": "The catalog-metadata backend module for the scorecard plugin.",
+  "description": "The catalog backend module for the scorecard plugin.",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "publishConfig": {
@@ -55,7 +55,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/redhat-developer/rhdh-plugins",
-    "directory": "workspaces/scorecard/plugins/scorecard-backend-module-catalog-metadata"
+    "directory": "workspaces/scorecard/plugins/scorecard-backend-module-catalog"
   },
   "keywords": [
     "backstage",
