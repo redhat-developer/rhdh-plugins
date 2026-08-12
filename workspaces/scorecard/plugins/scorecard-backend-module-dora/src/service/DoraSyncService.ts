@@ -15,11 +15,13 @@
  */
 
 import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { ScorecardCollectorsService } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import type { DoraDeploymentsStore } from '../database/DatabaseDoraDeployments';
 import type { DoraIncidentsStore } from '../database/DatabaseDoraIncidents';
 import type { DoraLastSyncStore } from '../database/DatabaseDoraLastSync';
 import type { DoraPullRequestsStore } from '../database/DatabaseDoraPullRequests';
+import { DORA_DEFAULT_STALE_AFTER_MS } from '../constants';
 import {
   deploymentsCollectorInputSchema,
   deploymentsCollectorOutputSchema,
@@ -33,7 +35,7 @@ import {
   deploymentPullRequestsCollectorOutputSchema,
 } from '../metricProviders/schemas/pullRequestSchemas';
 import type { WindowOptions, CollectorCallOptions } from './types';
-import { coalesceInFlight, laterOf } from './syncUtils';
+import { coalesceInFlight, isWithinStaleWindow, laterOf } from './syncUtils';
 
 /**
  * Collects new DORA source data via collectors and persists it.
@@ -68,6 +70,8 @@ export class DefaultDoraSyncService implements DoraSyncService {
     private readonly incidentsDb: DoraIncidentsStore,
     private readonly pullRequestsDb: DoraPullRequestsStore,
     private readonly lastSyncDb: DoraLastSyncStore,
+    private readonly logger: LoggerService,
+    private readonly staleAfterMs: number = DORA_DEFAULT_STALE_AFTER_MS,
   ) {}
 
   /**
@@ -97,6 +101,12 @@ export class DefaultDoraSyncService implements DoraSyncService {
       catalogEntityRef,
       collectorId,
     );
+    if (isWithinStaleWindow(lastSyncedAt, this.staleAfterMs)) {
+      this.logger.debug(
+        `Skipping DORA deployments refresh for collector "${collectorId}" on "${catalogEntityRef}" because data is fresh within staleAfterMs (${this.staleAfterMs} ms).`,
+      );
+      return;
+    }
     const syncFrom = laterOf(options.windowFrom, lastSyncedAt);
 
     const collected = await this.collectorsService.collect<
@@ -162,6 +172,12 @@ export class DefaultDoraSyncService implements DoraSyncService {
       catalogEntityRef,
       collectorId,
     );
+    if (isWithinStaleWindow(lastSyncedAt, this.staleAfterMs)) {
+      this.logger.debug(
+        `Skipping DORA incidents refresh for collector "${collectorId}" on "${catalogEntityRef}" because data is fresh within staleAfterMs (${this.staleAfterMs} ms).`,
+      );
+      return;
+    }
     const updatedSince = laterOf(options.windowFrom, lastSyncedAt);
 
     const collected = await this.collectorsService.collect<

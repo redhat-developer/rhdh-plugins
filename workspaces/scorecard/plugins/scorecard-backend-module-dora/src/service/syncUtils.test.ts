@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { coalesceInFlight, laterOf } from './syncUtils';
+import { coalesceInFlight, isWithinStaleWindow, laterOf } from './syncUtils';
 
 describe('laterOf', () => {
   const windowFrom = new Date('2026-06-01T00:00:00.000Z');
@@ -101,5 +101,27 @@ describe('coalesceInFlight', () => {
     );
     await expect(coalesceInFlight(inflight, 'key-a', run)).resolves.toBe('ok');
     expect(run).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('isWithinStaleWindow', () => {
+  it('returns false when no previous sync exists', () => {
+    expect(isWithinStaleWindow(undefined, 60_000)).toBe(false);
+  });
+
+  it('returns false when stale window is disabled', () => {
+    expect(isWithinStaleWindow(new Date(Date.now() - 30_000), 0)).toBe(false);
+  });
+
+  it('returns true when last sync is within staleAfter', () => {
+    expect(isWithinStaleWindow(new Date(Date.now() - 30_000), 60_000)).toBe(
+      true,
+    );
+  });
+
+  it('returns false when last sync is outside staleAfter', () => {
+    expect(isWithinStaleWindow(new Date(Date.now() - 180_000), 60_000)).toBe(
+      false,
+    );
   });
 });

@@ -22,6 +22,20 @@ export function laterOf(windowFrom: Date, watermark: Date | undefined): Date {
 }
 
 /**
+ * Returns true when last sync is still considered fresh and a refresh should be skipped.
+ */
+export function isWithinStaleWindow(
+  lastSyncedAt: Date | undefined,
+  staleAfterMs: number,
+): boolean {
+  if (!lastSyncedAt) {
+    return false;
+  }
+  const now = new Date();
+  return now.getTime() - lastSyncedAt.getTime() < staleAfterMs;
+}
+
+/**
  * Shares one in-flight promise per key so concurrent callers wait on the same work.
  */
 export function coalesceInFlight<T>(

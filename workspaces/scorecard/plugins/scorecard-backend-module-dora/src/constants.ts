@@ -21,5 +21,6 @@ export const DORA_DEFAULT_INCIDENTS_COLLECTOR_ID = 'jira:incidents';
 export const DORA_TIME_WINDOW_DAYS = 30;
 export const DORA_DEFAULT_PRODUCTION_ENVIRONMENTS = ['production'];
 export const DORA_DEFAULT_DATA_RETENTION_DAYS = 365;
+export const DORA_DEFAULT_STALE_AFTER_MS = 60_000;
 export const DORA_CLEANUP_EXPIRED_DATA_TASK_ID =
   'scorecard-dora:cleanup-expired-data' as const;

@@ -33,6 +33,7 @@ import { DoraMeanTimeToRestoreProvider } from './metricProviders/DoraMeanTimeToR
 import { DefaultDoraDataService } from './service/DoraDataService';
 import { DefaultDoraSyncService } from './service/DoraSyncService';
 import { CleanupExpiredDataTask } from './scheduler/CleanupExpiredDataTask';
+import { parseDoraStaleAfterMs } from './metricProviders/DoraConfig';
 
 export const scorecardModuleDora = createBackendModule({
   pluginId: 'scorecard',
@@ -69,6 +70,8 @@ export const scorecardModuleDora = createBackendModule({
           incidentsDb,
           pullRequestsDb,
           lastSyncDb,
+          logger,
+          parseDoraStaleAfterMs(config),
         );
         const doraDataService = new DefaultDoraDataService(
           deploymentsDb,

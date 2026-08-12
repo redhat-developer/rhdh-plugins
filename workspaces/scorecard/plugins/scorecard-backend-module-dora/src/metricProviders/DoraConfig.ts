@@ -26,6 +26,7 @@ import {
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
   DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+  DORA_DEFAULT_STALE_AFTER_MS,
 } from '../constants';
 import type { JsonValue } from '@backstage/types';
 
@@ -276,7 +277,23 @@ export function parseDoraChangeFailureRateConfig(
  */
 export function parseDoraDataRetentionDays(config: Config): number {
   return (
-    config.getOptionalNumber('dora.dataRetentionDays') ??
+    config.getOptionalNumber('scorecard.plugins.dora.dataRetentionDays') ??
     DORA_DEFAULT_DATA_RETENTION_DAYS
   );
+}
+
+/**
+ * Parses collector refresh staleness threshold in milliseconds.
+ * If last sync is within this window, collector refresh is skipped.
+ */
+export function parseDoraStaleAfterMs(config: Config): number {
+  const staleAfterMs =
+    config.getOptionalNumber('scorecard.plugins.dora.staleAfterMs') ??
+    DORA_DEFAULT_STALE_AFTER_MS;
+  if (staleAfterMs < 0) {
+    throw new Error(
+      'scorecard.plugins.dora.staleAfterMs must be greater than or equal to 0',
+    );
+  }
+  return staleAfterMs;
 }

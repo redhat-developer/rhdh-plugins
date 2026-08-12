@@ -161,3 +161,19 @@ DORA providers follow Scorecard scheduling settings under their metric keys:
 - `scorecard.metricProviders.dora.changeFailureRate.schedule`
 
 See [providers.md](../scorecard-backend/docs/providers.md#metric-collection-scheduling) for schedule schema and defaults.
+
+## Data retention and staleness
+
+Configure DORA module data retention and collector staleness behavior under
+`scorecard.plugins.dora`:
+
+```yaml
+scorecard:
+  plugins:
+    dora:
+      dataRetentionDays: 365
+      staleAfterMs: 60000
+```
+
+- `dataRetentionDays`: how long source rows are retained before cleanup.
+- `staleAfterMs`: freshness threshold in milliseconds for deployments and incidents; if the last sync is within this window, those collectors are not refreshed.

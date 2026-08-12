@@ -28,7 +28,9 @@ import {
   parseDoraDeploymentFrequencyConfig,
   parseDoraMeanTimeToRestoreConfig,
   parseDoraMedianLeadTimeForChangesConfig,
+  parseDoraStaleAfterMs,
 } from './DoraConfig';
+import { DORA_DEFAULT_STALE_AFTER_MS } from '../constants';
 
 describe('DoraConfig', () => {
   describe('parseDoraDeploymentFrequencyConfig', () => {
@@ -261,12 +263,58 @@ describe('DoraConfig', () => {
       expect(
         parseDoraDataRetentionDays(
           new ConfigReader({
-            dora: {
-              dataRetentionDays: 90,
+            scorecard: {
+              plugins: {
+                dora: {
+                  dataRetentionDays: 90,
+                },
+              },
             },
           }),
         ),
       ).toBe(90);
+    });
+  });
+
+  describe('parseDoraStaleAfterMs', () => {
+    it('returns default when unset', () => {
+      expect(parseDoraStaleAfterMs(new ConfigReader({}))).toBe(
+        DORA_DEFAULT_STALE_AFTER_MS,
+      );
+    });
+
+    it('returns configured staleAfterMs in milliseconds', () => {
+      expect(
+        parseDoraStaleAfterMs(
+          new ConfigReader({
+            scorecard: {
+              plugins: {
+                dora: {
+                  staleAfterMs: 60000,
+                },
+              },
+            },
+          }),
+        ),
+      ).toBe(60000);
+    });
+
+    it('throws when configured staleAfterMs is negative', () => {
+      expect(() =>
+        parseDoraStaleAfterMs(
+          new ConfigReader({
+            scorecard: {
+              plugins: {
+                dora: {
+                  staleAfterMs: -1,
+                },
+              },
+            },
+          }),
+        ),
+      ).toThrow(
+        'scorecard.plugins.dora.staleAfterMs must be greater than or equal to 0',
+      );
     });
   });
 });

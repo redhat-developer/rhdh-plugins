@@ -21,20 +21,30 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export interface Config {
-  /**
-   * Configuration for scorecard dora plugin.
-   */
-  dora?: {
-    /**
-     * Number of days to retain scorecard DORA source data (deployments, incidents,
-     * pull requests) in the database. Older data is cleaned up by the
-     * `scorecard-dora:cleanup-expired-data` task.
-     * @default 365
-     */
-    dataRetentionDays?: number;
-  };
-  /** Configuration for scorecard dora metric providers */
+  /** Configuration for scorecard dora plugin. */
   scorecard?: {
+    plugins?: {
+      /**
+       * Configuration for scorecard dora plugin.
+       */
+      dora?: {
+        /**
+         * Number of days to retain scorecard DORA source data (deployments, incidents,
+         * pull requests) in the database. Older data is cleaned up by the
+         * `scorecard-dora:cleanup-expired-data` task.
+         * @default 365
+         */
+        dataRetentionDays?: number;
+        /**
+         * Freshness threshold in milliseconds for DORA deployment and incident collector refresh.
+         * If last successful deployments or incidents sync for a collector is within this value,
+         * data refresh is skipped and existing database data is reused.
+         * Set to `0` to always refresh.
+         * @default 60000
+         */
+        staleAfterMs?: number;
+      };
+    };
     metricProviders?: {
       dora?: {
         deploymentFrequency?: {
