@@ -18,6 +18,11 @@ import { z } from 'zod';
 import { InputError } from '@backstage/errors';
 import type { Request, Response, NextFunction } from 'express';
 
+/** Maximum inclusive span between `from` and `to` for time-series queries. */
+export const MAX_TIME_SERIES_RANGE_DAYS = 365;
+const MAX_TIME_SERIES_RANGE_MS =
+  MAX_TIME_SERIES_RANGE_DAYS * 24 * 60 * 60 * 1000;
+
 export function validateTimeSeriesQueryParams(
   req: Request,
   _res: Response,
@@ -32,7 +37,16 @@ export function validateTimeSeriesQueryParams(
     .refine(data => new Date(data.from) <= new Date(data.to), {
       message: 'from must be less than or equal to to',
       path: ['from'],
-    });
+    })
+    .refine(
+      data =>
+        new Date(data.to).getTime() - new Date(data.from).getTime() <=
+        MAX_TIME_SERIES_RANGE_MS,
+      {
+        message: `time range must not exceed ${MAX_TIME_SERIES_RANGE_DAYS} days`,
+        path: ['to'],
+      },
+    );
 
   const parsed = schema.safeParse(req.query);
 

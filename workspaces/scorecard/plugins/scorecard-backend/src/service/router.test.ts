@@ -640,6 +640,18 @@ describe('createRouter', () => {
       expect(response.status).toBe(400);
       expect(response.body.error.name).toBe('InputError');
     });
+
+    it('should return 400 InputError when range exceeds 365 days', async () => {
+      const response = await request(app).get(
+        `${timeSeriesPath}?metricId=github.openPRs&from=2024-01-01T00:00:00.000Z&to=2025-01-01T00:00:00.001Z`,
+      );
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.name).toBe('InputError');
+      expect(response.body.error.message).toContain(
+        'time range must not exceed 365 days',
+      );
+    });
   });
 
   describe('GET /metrics/:metricId/catalog/aggregations', () => {

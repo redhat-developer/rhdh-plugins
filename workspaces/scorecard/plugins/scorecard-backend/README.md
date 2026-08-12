@@ -314,11 +314,11 @@ Returns daily time-series points for one metric on a catalog entity. Each point 
 
 #### Query Parameters
 
-| Parameter  | Type   | Required | Description                                       |
-| ---------- | ------ | -------- | ------------------------------------------------- |
-| `metricId` | string | Yes      | Metric ID (e.g., `github.openPRs`)                |
-| `from`     | string | Yes      | Inclusive range start (ISO-8601)                  |
-| `to`       | string | Yes      | Inclusive range end (ISO-8601); must be `>= from` |
+| Parameter  | Type   | Required | Description                                                          |
+| ---------- | ------ | -------- | -------------------------------------------------------------------- |
+| `metricId` | string | Yes      | Metric ID (e.g., `github.openPRs`)                                   |
+| `from`     | string | Yes      | Inclusive range start (ISO-8601)                                     |
+| `to`       | string | Yes      | Inclusive range end (ISO-8601); must be `>= from`; max span 365 days |
 
 #### Permissions
 

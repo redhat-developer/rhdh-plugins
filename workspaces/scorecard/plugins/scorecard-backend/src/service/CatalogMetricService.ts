@@ -27,6 +27,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { Entity } from '@backstage/catalog-model';
 import { normalizeOwnerRef } from '../utils/normalizeOwnerRef';
+import { formatUtcDate } from '../utils/formatUtcDate';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
   NotAllowedError,
@@ -235,7 +236,7 @@ export class CatalogMetricService {
       if (row.value === null || isMetricCalculationError(row)) {
         continue;
       }
-      const dayKey = new Date(row.timestamp).toISOString().slice(0, 10);
+      const dayKey = formatUtcDate(row.timestamp);
       const existing = latestByUtcDay.get(dayKey);
       // Postgres may return bigIncrements as strings; compare numerically.
       if (!existing || Number(row.id) > Number(existing.id)) {
@@ -244,13 +245,10 @@ export class CatalogMetricService {
     }
 
     const points: MetricTimeSeriesPoint[] = Array.from(latestByUtcDay.values())
-      .sort(
-        (a, b) =>
-          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-      )
+      .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
       .map(row => ({
         value: row.value as NonNullable<typeof row.value>,
-        timestamp: new Date(row.timestamp).toISOString(),
+        timestamp: row.timestamp.toISOString(),
       }));
 
     return {

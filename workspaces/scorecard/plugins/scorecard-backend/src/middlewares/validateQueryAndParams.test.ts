@@ -221,5 +221,34 @@ describe('Validators', () => {
 
       expect(next).toHaveBeenCalledTimes(1);
     });
+
+    it('should call next when range is exactly 365 days', () => {
+      const req = mockReq({
+        query: {
+          metricId: 'github.openPRs',
+          from: '2024-01-01T00:00:00.000Z',
+          to: '2024-12-31T00:00:00.000Z',
+        },
+      });
+
+      validateTimeSeriesQueryParams(req, res, next);
+
+      expect(next).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw InputError when range exceeds 365 days', () => {
+      const req = mockReq({
+        query: {
+          metricId: 'github.openPRs',
+          from: '2024-01-01T00:00:00.000Z',
+          to: '2025-01-01T00:00:00.001Z',
+        },
+      });
+
+      expect(() => validateTimeSeriesQueryParams(req, res, next)).toThrow(
+        /time range must not exceed 365 days/,
+      );
+      expect(next).not.toHaveBeenCalled();
+    });
   });
 });
