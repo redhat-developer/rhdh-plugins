@@ -24,6 +24,7 @@ import {
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import {
   type CatalogRequiredAttributesConfig,
+  type MetricConfig,
   type StatusMapping,
   parseCatalogRequiredAttributesConfig,
 } from './CatalogRequiredAttributesConfig';
@@ -203,7 +204,7 @@ function getDefaultIcon(status: string): string {
 export class CatalogRequiredAttributesMetricProvider
   implements MetricProvider<'number'>
 {
-  private readonly catalogRequiredAttributesConfig: CatalogRequiredAttributesConfig;
+  private readonly metricConfigs: MetricConfig[];
   private readonly statusCodeMappings: Map<
     string,
     { statusToCode: Map<string, number>; thresholds: ThresholdConfig }
@@ -212,12 +213,12 @@ export class CatalogRequiredAttributesMetricProvider
   constructor(
     catalogRequiredAttributesConfig: CatalogRequiredAttributesConfig,
   ) {
-    this.catalogRequiredAttributesConfig = catalogRequiredAttributesConfig;
+    this.metricConfigs = catalogRequiredAttributesConfig.metrics;
     this.statusCodeMappings = new Map();
-    for (const check of catalogRequiredAttributesConfig.checks) {
+    for (const metric of this.metricConfigs) {
       this.statusCodeMappings.set(
-        check.metric.id,
-        buildStatusCodeMapping(check.statusMapping),
+        metric.id,
+        buildStatusCodeMapping(metric.statusMapping),
       );
     }
   }
@@ -231,12 +232,12 @@ export class CatalogRequiredAttributesMetricProvider
   }
 
   getMetrics(): Metric<'number'>[] {
-    return this.catalogRequiredAttributesConfig.checks.map(check => {
-      const mapping = this.statusCodeMappings.get(check.metric.id)!;
+    return this.metricConfigs.map(metric => {
+      const mapping = this.statusCodeMappings.get(metric.id)!;
       return {
-        id: `catalog.${check.metric.id}`,
-        title: check.metric.title,
-        description: check.metric.description,
+        id: `catalog.${metric.id}`,
+        title: metric.title,
+        description: metric.description,
         type: 'number' as const,
         thresholds: mapping.thresholds,
       };
@@ -244,14 +245,14 @@ export class CatalogRequiredAttributesMetricProvider
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
-    // Aggregate kind filters from all checks for efficient catalog querying.
-    // If any check has no filter or does not filter by kind, return an
+    // Aggregate kind filters from all metrics for efficient catalog querying.
+    // If any metric has no filter or does not filter by kind, return an
     // empty filter (all entities).
     const kinds = new Set<string>();
     let allHaveKind = true;
 
-    for (const check of this.catalogRequiredAttributesConfig.checks) {
-      const kindValue = check.filter.kind;
+    for (const metric of this.metricConfigs) {
+      const kindValue = metric.filter.kind;
       if (kindValue) {
         kinds.add(kindValue.toLowerCase());
       } else {
@@ -266,29 +267,29 @@ export class CatalogRequiredAttributesMetricProvider
       return { kind: [...kinds] };
     }
 
-    // If not all checks filter by kind, return empty filter (all entities)
+    // If not all metrics filter by kind, return empty filter (all entities)
     return {};
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const results = new Map<string, number>();
 
-    for (const check of this.catalogRequiredAttributesConfig.checks) {
-      // Apply per-check filter
-      if (!entityMatchesFilter(entity, check.filter)) {
+    for (const metric of this.metricConfigs) {
+      // Apply per-metric filter
+      if (!entityMatchesFilter(entity, metric.filter)) {
         continue;
       }
 
       const status = evaluateFieldStatus(
         entity,
-        check.field,
-        check.statusMapping,
+        metric.field,
+        metric.statusMapping,
       );
 
-      const mapping = this.statusCodeMappings.get(check.metric.id)!;
+      const mapping = this.statusCodeMappings.get(metric.id)!;
       const code = mapping.statusToCode.get(status);
       if (code !== undefined) {
-        results.set(`catalog.${check.metric.id}`, code);
+        results.set(`catalog.${metric.id}`, code);
       }
     }
 
@@ -298,7 +299,7 @@ export class CatalogRequiredAttributesMetricProvider
 
 /**
  * Creates a CatalogRequiredAttributesMetricProvider from root Backstage config.
- * Returns undefined if no checks are configured.
+ * Returns undefined if no metrics are configured.
  */
 export function createCatalogRequiredAttributesMetricProvider(
   config: Config,

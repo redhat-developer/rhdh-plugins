@@ -31,42 +31,39 @@ export interface Config {
           thresholds?: ThresholdConfig;
           /** Provider-specific options */
           options?: {
-            /** List of attribute checks to run */
-            checks?: Array<{
-              /** Metric definition */
-              metric: {
-                /** Metric identifier suffix (used as catalog.<id>) */
-                id: string;
+            /** Metrics to evaluate — keys are metric IDs (used as catalog.<id>) */
+            metrics?: {
+              [metricId: string]: {
                 /** Human-readable title */
                 title: string;
                 /** Human-readable description */
                 description: string;
-              };
-              /** Entity filter — keys are dotted field paths, values are expected values */
-              filter: {
-                [fieldPath: string]: string;
-              };
-              /** Dotted field path to check on the entity (e.g. metadata.title, spec.lifecycle) */
-              field: string;
-              /** Per-check status mapping overrides */
-              statusMapping?: {
-                /** Status when field exists with a non-empty value not matched by values */
-                exists?: string;
-                /** Status when field resolves to null or undefined */
-                empty?: string;
-                /** Status when field resolves to an empty string */
-                emptyString?: string;
-                /** Status when field resolves to an empty array */
-                emptyArray?: string;
-                /** Status when the field path does not resolve */
-                missed?: string;
-                /** Status per specific field value */
-                values?: {
-                  [value: string]: string;
+                /** Entity filter — keys are dotted field paths, values are expected values */
+                filter: {
+                  [fieldPath: string]: string;
+                };
+                /** Dotted field path to check on the entity (e.g. metadata.title, spec.lifecycle) */
+                field: string;
+                /** Per-metric status mapping overrides */
+                statusMapping?: {
+                  /** Status when field exists with a non-empty value not matched by values */
+                  exists?: string;
+                  /** Status when field resolves to null or undefined */
+                  empty?: string;
+                  /** Status when field resolves to an empty string */
+                  emptyString?: string;
+                  /** Status when field resolves to an empty array */
+                  emptyArray?: string;
+                  /** Status when the field path does not resolve */
+                  missed?: string;
+                  /** Status per specific field value */
+                  values?: {
+                    [value: string]: string;
+                  };
                 };
               };
-            }>;
-            /** Options-level status mapping defaults for all checks */
+            };
+            /** Options-level status mapping defaults for all metrics */
             statusMapping?: {
               /** Status when field exists with a non-empty value not matched by values */
               exists?: string;

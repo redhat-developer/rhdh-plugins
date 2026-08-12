@@ -35,14 +35,12 @@ export type StatusMapping = {
 };
 
 /**
- * A single check configuration parsed from app-config.yaml.
+ * A single metric configuration parsed from app-config.yaml.
  */
-export type CheckConfig = {
-  metric: {
-    id: string;
-    title: string;
-    description: string;
-  };
+export type MetricConfig = {
+  id: string;
+  title: string;
+  description: string;
   filter: Record<string, string>;
   field: string;
   statusMapping: StatusMapping;
@@ -52,7 +50,7 @@ export type CheckConfig = {
  * Parsed configuration for the catalog required attributes metric provider.
  */
 export type CatalogRequiredAttributesConfig = {
-  checks: CheckConfig[];
+  metrics: MetricConfig[];
 };
 
 /** Hardcoded default status mapping as described in the issue. */
@@ -156,7 +154,7 @@ function readStatusMapping(config: Config): Partial<StatusMapping> | undefined {
 
 /**
  * Parses the catalog required attributes configuration from the root Backstage config.
- * Returns undefined if no checks are configured.
+ * Returns undefined if no metrics are configured.
  */
 export function parseCatalogRequiredAttributesConfig(
   config: Config,
@@ -169,9 +167,13 @@ export function parseCatalogRequiredAttributesConfig(
     return undefined;
   }
 
-  const checksConfigArray =
-    optionsConfig.getOptionalConfigArray('checks') ?? [];
-  if (checksConfigArray.length === 0) {
+  const metricsConfig = optionsConfig.getOptionalConfig('metrics');
+  if (!metricsConfig) {
+    return undefined;
+  }
+
+  const metricKeys = metricsConfig.keys();
+  if (metricKeys.length === 0) {
     return undefined;
   }
 
@@ -182,47 +184,44 @@ export function parseCatalogRequiredAttributesConfig(
     ? readStatusMapping(optionsStatusMappingConfig)
     : undefined;
 
-  const checks: CheckConfig[] = checksConfigArray.map((checkConfig, index) => {
-    // Read metric
-    const metricConfig = checkConfig.getConfig('metric');
-    const metric = {
-      id: metricConfig.getString('id'),
-      title: metricConfig.getString('title'),
-      description: metricConfig.getString('description'),
-    };
+  const metrics: MetricConfig[] = metricKeys.map(metricId => {
+    const metricConfig = metricsConfig.getConfig(metricId);
 
-    if (!metric.id) {
-      throw new Error(`Check at index ${index} has an empty metric id`);
+    if (!metricId) {
+      throw new Error(`Metric has an empty id (object key)`);
     }
 
+    const title = metricConfig.getString('title');
+    const description = metricConfig.getString('description');
+
     // Read filter
-    const filterConfig = checkConfig.getConfig('filter');
+    const filterConfig = metricConfig.getConfig('filter');
     const filter: Record<string, string> = {};
     for (const key of filterConfig.keys()) {
       filter[key] = filterConfig.getString(key);
     }
 
     // Read field
-    const field = checkConfig.getString('field');
+    const field = metricConfig.getString('field');
     if (!field) {
-      throw new Error(`Check '${metric.id}' has an empty field path`);
+      throw new Error(`Metric '${metricId}' has an empty field path`);
     }
 
-    // Read check-level status mapping
-    const checkStatusMappingConfig =
-      checkConfig.getOptionalConfig('statusMapping');
-    const checkStatusMapping = checkStatusMappingConfig
-      ? readStatusMapping(checkStatusMappingConfig)
+    // Read metric-level status mapping
+    const metricStatusMappingConfig =
+      metricConfig.getOptionalConfig('statusMapping');
+    const metricStatusMapping = metricStatusMappingConfig
+      ? readStatusMapping(metricStatusMappingConfig)
       : undefined;
 
-    // Merge status mappings: check > options > defaults
+    // Merge status mappings: metric > options > defaults
     const statusMapping = mergeStatusMappings(
-      checkStatusMapping,
+      metricStatusMapping,
       optionsStatusMapping,
     );
 
-    return { metric, filter, field, statusMapping };
+    return { id: metricId, title, description, filter, field, statusMapping };
   });
 
-  return { checks };
+  return { metrics };
 }

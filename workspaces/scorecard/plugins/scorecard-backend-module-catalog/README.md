@@ -1,12 +1,12 @@
 # Scorecard Backend Module for Catalog
 
-This is an extension module to the `backstage-plugin-scorecard-backend` plugin. It provides configurable catalog entity checks, evaluating entity fields (e.g., `metadata.title`, `spec.lifecycle`) against configurable rules and mapping field states to status strings via a three-tier status mapping merge (check-level > options-level > hardcoded defaults).
+This is an extension module to the `backstage-plugin-scorecard-backend` plugin. It provides configurable catalog entity metrics, evaluating entity fields (e.g., `metadata.title`, `spec.lifecycle`) against configurable rules and mapping field states to status strings via a three-tier status mapping merge (metric-level > options-level > hardcoded defaults).
 
 The module supports:
 
-- **Required attribute checks** — verify that a field exists and is non-empty
-- **Value whitelist checks** — verify that a field contains one of a set of accepted values
-- **Per-check entity filters** — scope each check to specific entity kinds or types
+- **Required attribute metrics** — verify that a field exists and is non-empty
+- **Value whitelist metrics** — verify that a field contains one of a set of accepted values
+- **Per-metric entity filters** — scope each metric to specific entity kinds or types
 - **Configurable status mapping** — control what status is reported for each field state (`exists`, `empty`, `emptyString`, `emptyArray`, `missed`) and for specific field values
 - **Automatic threshold rule generation** — threshold rules are derived from the status mappings, so you don't need to define them manually
 
@@ -47,11 +47,11 @@ backend.start();
 
 ## Configuration
 
-All checks are defined under `scorecard.metricProviders.catalog.requiredAttributes.options.checks` in your `app-config.yaml`. Each check specifies a metric definition, an entity filter, a dotted field path to evaluate, and an optional status mapping override.
+All metrics are defined under `scorecard.metricProviders.catalog.requiredAttributes.options.metrics` in your `app-config.yaml`. The `metrics` key is an object where each key is a metric ID and each value specifies an entity filter, a dotted field path to evaluate, and an optional status mapping override.
 
-If no checks are configured, the module has no effect.
+If no metrics are configured, the module has no effect.
 
-### Example 1: Required attribute check
+### Example 1: Required attribute metric
 
 The simplest use case — verify that a field exists and is non-empty. Uses the default status mapping where existing fields map to `found` and missing/empty fields map to `missed`.
 
@@ -62,11 +62,10 @@ scorecard:
     catalog:
       requiredAttributes:
         options:
-          checks:
-            - metric:
-                id: title
-                title: Title is required
-                description: Every component should have a human-readable title.
+          metrics:
+            title:
+              title: Title is required
+              description: Every component should have a human-readable title.
               filter:
                 kind: Component
               field: metadata.title
@@ -74,7 +73,7 @@ scorecard:
 
 This produces a single metric `catalog.title` that reports `found` when the entity has a non-empty `metadata.title`, or `missed` when it is absent, null, or empty.
 
-### Example 2: Value whitelist check
+### Example 2: Value whitelist metric
 
 Verify that a field contains one of a set of accepted values. Values not in the whitelist are reported with the `exists` status (here overridden to `invalid`).
 
@@ -85,11 +84,10 @@ scorecard:
     catalog:
       requiredAttributes:
         options:
-          checks:
-            - metric:
-                id: lifecycle
-                title: Lifecycle must be a known value
-                description: The spec.lifecycle field should be prod, stage, test, or dev.
+          metrics:
+            lifecycle:
+              title: Lifecycle must be a known value
+              description: The spec.lifecycle field should be prod, stage, test, or dev.
               filter:
                 kind: Component
               field: spec.lifecycle
@@ -110,9 +108,9 @@ This produces metric `catalog.lifecycle` with three possible statuses:
 | Value exists but is not in the whitelist   | `invalid` |
 | Field is missing, null, or empty           | `missed`  |
 
-### Example 3: Multiple checks with different entity kinds
+### Example 3: Multiple metrics with different entity kinds
 
-Define multiple checks targeting different entity kinds. The module aggregates kind filters for efficient catalog querying.
+Define multiple metrics targeting different entity kinds. The module aggregates kind filters for efficient catalog querying.
 
 ```yaml
 # app-config.yaml
@@ -121,27 +119,24 @@ scorecard:
     catalog:
       requiredAttributes:
         options:
-          checks:
-            - metric:
-                id: title
-                title: Title is required
-                description: Every component should have a human-readable title.
+          metrics:
+            title:
+              title: Title is required
+              description: Every component should have a human-readable title.
               filter:
                 kind: Component
               field: metadata.title
 
-            - metric:
-                id: owner
-                title: Owner is required
-                description: Every component should declare an owner.
+            owner:
+              title: Owner is required
+              description: Every component should declare an owner.
               filter:
                 kind: Component
               field: spec.owner
 
-            - metric:
-                id: templateOwner
-                title: Template owner is required
-                description: Every template should declare an owner.
+            templateOwner:
+              title: Template owner is required
+              description: Every template should declare an owner.
               filter:
                 kind: Template
               field: spec.owner
@@ -151,7 +146,7 @@ This produces three metrics: `catalog.title`, `catalog.owner`, and `catalog.temp
 
 ### Example 4: Options-level status mapping defaults
 
-Set default status strings for all checks at the options level. Individual checks can still override specific fields.
+Set default status strings for all metrics at the options level. Individual metrics can still override specific fields.
 
 ```yaml
 # app-config.yaml
@@ -166,20 +161,18 @@ scorecard:
             emptyString: absent
             emptyArray: absent
             missed: absent
-          checks:
-            - metric:
-                id: title
-                title: Title is required
-                description: The metadata.title should be defined.
+          metrics:
+            title:
+              title: Title is required
+              description: The metadata.title should be defined.
               filter:
                 kind: Component
               field: metadata.title
               # Inherits options-level mapping: present/absent
 
-            - metric:
-                id: tags
-                title: Tags are required
-                description: Components should have at least one tag.
+            tags:
+              title: Tags are required
+              description: Components should have at least one tag.
               filter:
                 kind: Component
               field: metadata.tags
@@ -189,7 +182,7 @@ scorecard:
                 # Overrides only emptyArray; other states inherit from options-level
 ```
 
-### Example 5: Check with multi-field entity filter
+### Example 5: Metric with multi-field entity filter
 
 Filter by multiple entity fields. All filter conditions must match (AND logic). Filter values are compared case-insensitively.
 
@@ -200,22 +193,21 @@ scorecard:
     catalog:
       requiredAttributes:
         options:
-          checks:
-            - metric:
-                id: serviceLifecycle
-                title: Service lifecycle is required
-                description: Service components should have a lifecycle set.
+          metrics:
+            serviceLifecycle:
+              title: Service lifecycle is required
+              description: Service components should have a lifecycle set.
               filter:
                 kind: Component
                 spec.type: service
               field: spec.lifecycle
 ```
 
-This check only runs against entities where `kind` is `Component` **and** `spec.type` is `service`.
+This metric only runs against entities where `kind` is `Component` **and** `spec.type` is `service`.
 
 ### Example 6: Full configuration with schedule and per-metric thresholds
 
-A comprehensive example combining schedule configuration, options-level defaults, multiple checks, and per-metric threshold overrides.
+A comprehensive example combining schedule configuration, options-level defaults, multiple metrics, and per-metric threshold overrides.
 
 ```yaml
 # app-config.yaml
@@ -235,19 +227,17 @@ scorecard:
           statusMapping:
             exists: found
             missed: missed
-          checks:
-            - metric:
-                id: title
-                title: Title is required
-                description: Every component should have a human-readable title.
+          metrics:
+            title:
+              title: Title is required
+              description: Every component should have a human-readable title.
               filter:
                 kind: Component
               field: metadata.title
 
-            - metric:
-                id: lifecycle
-                title: Lifecycle must be valid
-                description: The spec.lifecycle field should be one of the accepted values.
+            lifecycle:
+              title: Lifecycle must be valid
+              description: The spec.lifecycle field should be one of the accepted values.
               filter:
                 kind: Component
               field: spec.lifecycle
@@ -290,7 +280,7 @@ Fields are resolved using dotted path notation on the entity object. For example
 
 ### Status Evaluation
 
-Each field value is evaluated against the check's status mapping to produce a status string:
+Each field value is evaluated against the metric's status mapping to produce a status string:
 
 | Field state                                         | Status mapping key | Default status |
 | --------------------------------------------------- | ------------------ | -------------- |
@@ -305,17 +295,17 @@ Each field value is evaluated against the check's status mapping to produce a st
 
 Status mappings are resolved with the following priority:
 
-1. **Check-level** (`checks[].statusMapping`) — highest priority
+1. **Metric-level** (`metrics.<id>.statusMapping`) — highest priority
 2. **Options-level** (`options.statusMapping`) — middle priority
 3. **Hardcoded defaults** — lowest priority (see table above)
 
-Each field in the status mapping is resolved independently, so a check can override just `exists` while inheriting the options-level `missed` value.
+Each field in the status mapping is resolved independently, so a metric can override just `exists` while inheriting the options-level `missed` value.
 
-The `values` maps are deep-merged: hardcoded defaults (empty), then options-level values, then check-level values. A check-level entry for the same key wins over the options-level entry.
+The `values` maps are deep-merged: hardcoded defaults (empty), then options-level values, then metric-level values. A metric-level entry for the same key wins over the options-level entry.
 
 ### Automatic Threshold Generation
 
-The module automatically generates threshold rules from each check's resolved status mapping. Each distinct status string becomes a threshold rule with a numeric code. Well-known status strings get default colors and icons:
+The module automatically generates threshold rules from each metric's resolved status mapping. Each distinct status string becomes a threshold rule with a numeric code. Well-known status strings get default colors and icons:
 
 | Status string                          | Color            | Icon                         |
 | -------------------------------------- | ---------------- | ---------------------------- |
@@ -328,11 +318,11 @@ You can override the auto-generated thresholds using per-metric threshold config
 
 ## Available Metrics
 
-### Catalog check (`catalog.<id>`)
+### Catalog metric (`catalog.<id>`)
 
-Each configured check produces one numeric metric.
+Each configured metric produces one numeric metric.
 
-- **Metric ID**: `catalog.<id>` (where `<id>` is the `metric.id` from the check config)
+- **Metric ID**: `catalog.<id>` (where `<id>` is the key from the `metrics` object)
 - **Provider ID**: `catalog.requiredAttributes`
 - **Type**: Number (numeric code mapped to a status string via threshold rules)
 - **Datasource**: `catalog`
