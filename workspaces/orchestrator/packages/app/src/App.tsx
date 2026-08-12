@@ -19,8 +19,8 @@ import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
 import orchestratorPlugin, {
   orchestratorTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-orchestrator/alpha';
-import orchestratorFormWidgetsPlugin from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator';
+import orchestratorFormWidgetsPlugin from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 import { navModule } from './modules/nav';
 

@@ -53,7 +53,9 @@ function loadOrchestratorFEPluginConfig() {
     return {
       rootDirectory: 'dynamic-plugins-root',
       frontend: {
-        [widgetsPluginKey]: {},
+        [widgetsPluginKey]: {
+          pluginModule: 'Legacy',
+        },
         [pluginKey]: config.dynamicPlugins.frontend[pluginKey],
       },
     };

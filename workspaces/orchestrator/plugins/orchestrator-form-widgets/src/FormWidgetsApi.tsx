@@ -49,11 +49,17 @@ function LazyDecoratorContent({
   return <Content FormComponent={FormComponent} {...props} />;
 }
 
+/**
+ * Default Orchestrator form API implementation that supplies RJSF widgets.
+ *
+ * @public
+ */
 export class FormWidgetsApi implements OrchestratorFormApi {
   private contentPromise: Promise<
     typeof import('./FormDecoratorContent')
   > | null = null;
 
+  /** Returns the form decorator that injects the default RJSF widgets. */
   getFormDecorator: OrchestratorFormApi['getFormDecorator'] = () => {
     // eslint-disable-next-line no-console
     console.log('Using FormWidgetsApi by RHDH orchestrator-form-widgets.');
@@ -71,6 +77,7 @@ export class FormWidgetsApi implements OrchestratorFormApi {
       );
   };
 
+  /** Optional custom review component; undefined keeps the default review page. */
   getReviewComponent: OrchestratorFormApi['getReviewComponent'] = () => {
     // Return undefined to use the default review page
     // To use a custom review page, return your custom component here

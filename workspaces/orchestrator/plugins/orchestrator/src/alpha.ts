@@ -13,15 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import plugin from './alpha';
 
-describe('orchestrator-form-widgets alpha', () => {
-  it('should export a valid frontend plugin', () => {
-    expect(plugin).toBeDefined();
-    expect(plugin.$$type).toBe('@backstage/FrontendPlugin');
-  });
-
-  it('should have the correct plugin id', () => {
-    expect(plugin.id).toBe('orchestrator-form-widgets');
-  });
-});
+export * from './translations';
