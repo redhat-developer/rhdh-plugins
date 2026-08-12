@@ -1,5 +1,7 @@
 body[data-theme-name='light'][data-theme-mode='light'],
-body[data-theme-name='dark'][data-theme-mode='dark'] {
+body[data-theme-name='dark'][data-theme-mode='dark'],
+body[data-theme-name='light-customized'][data-theme-mode='light'],
+body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   /*
    * Override some Backstage UI component styles to match the PatternFly design.
    */
@@ -254,7 +256,7 @@ body[data-theme-name='dark'][data-theme-mode='dark'] {
   .bui-HeaderNavActive {
     bottom: 1px;
     height: 3px;
-    --bui-fg-primary: var(--bui-bg-solid);
+    --bui-fg-primary: var(--bui-redhat-theme-brand-accent);
   }
 
   /*
@@ -269,7 +271,7 @@ body[data-theme-name='dark'][data-theme-mode='dark'] {
   .bui-TabActive {
     bottom: 1px;
     height: 3px;
-    --bui-fg-primary: var(--bui-bg-solid);
+    --bui-fg-primary: var(--bui-redhat-theme-brand-accent);
   }
 
   /*
@@ -287,9 +289,167 @@ body[data-theme-name='dark'][data-theme-mode='dark'] {
     font-weight: var(--bui-font-weight-normal);
     padding: var(--bui-space-4) var(--bui-space-4);
   }
+
+  /*
+   * Use heading font family for title-level text
+   * PatternFly uses "Red Hat Display" for headings and "Red Hat Text" for body.
+   */
+  .bui-Text[data-variant='title-large'],
+  .bui-Text[data-variant='title-medium'],
+  .bui-Text[data-variant='title-small'],
+  .bui-Text[data-variant='title-x-small'] {
+    font-family: var(--bui-redhat-theme-font-heading);
+  }
+  .bui-DialogHeaderTitle {
+    font-family: var(--bui-redhat-theme-font-heading);
+    font-size: var(--bui-font-size-5);
+  }
+  .bui-HeaderTitle {
+    font-family: var(--bui-redhat-theme-font-heading);
+  }
+  .bui-PluginHeaderToolbarName {
+    font-family: var(--bui-redhat-theme-font-heading);
+  }
+
+  /*
+   * Align Avatar to https://www.patternfly.org/components/avatar
+   */
+  .bui-AvatarFallback {
+    font-weight: var(--bui-font-weight-bold);
+  }
+
+  /*
+   * Align Badge to https://www.patternfly.org/components/badge
+   */
+  .bui-Badge {
+    border-radius: var(--bui-radius-full);
+    font-weight: var(--bui-font-weight-bold);
+    min-width: 2rem;
+  }
+
+  /*
+   * Align form controls to https://www.patternfly.org/components/forms/form-control
+   * Add visible borders to match PatternFly input styling.
+   */
+  .bui-Input,
+  .bui-PasswordFieldInputWrapper,
+  .bui-SearchFieldInputWrapper,
+  .bui-ComboboxInput,
+  .bui-DatePickerGroup {
+    border: 1px solid var(--bui-border-1);
+  }
+  .bui-SelectTrigger {
+    border: 1px solid var(--bui-border-1);
+    border-radius: var(--bui-radius-2);
+  }
+
+  /*
+   * Align Link to https://www.patternfly.org/components/content (links)
+   */
+  .bui-Link {
+    text-decoration-style: dashed;
+  }
+
+  /*
+   * Align Menu to https://www.patternfly.org/components/menu
+   */
+  .bui-MenuPopover {
+    border-radius: var(--bui-radius-3);
+    padding: var(--bui-space-1);
+  }
+  .bui-MenuItem {
+    border-radius: var(--bui-radius-2);
+  }
+  .bui-MenuSectionHeader {
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: var(--bui-font-weight-bold);
+  }
+
+  /*
+   * Align Popover to https://www.patternfly.org/components/popover
+   */
+  .bui-Popover {
+    --popover-border-radius: var(--bui-radius-5);
+  }
+
+  /*
+   * Align Radio to https://www.patternfly.org/components/radio
+   */
+  .bui-Radio {
+    font-size: var(--bui-font-size-3);
+  }
+
+  /*
+   * Align Skeleton to https://www.patternfly.org/components/skeleton
+   * PatternFly uses a shimmer gradient animation instead of opacity pulse.
+   */
+  @keyframes bui-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  .bui-Skeleton {
+    animation: bui-shimmer 3s linear infinite 0.5s;
+    background-image: linear-gradient(
+      90deg,
+      var(--bui-bg-neutral-2) 0%,
+      var(--bui-bg-neutral-3) 50%,
+      var(--bui-bg-neutral-2) 100%
+    );
+    background-size: 200% 100%;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bui-Skeleton {
+      animation: none;
+    }
+  }
+
+  /*
+   * Align Slider to https://www.patternfly.org/components/slider
+   */
+  .bui-SliderThumb {
+    width: 16px;
+    height: 16px;
+  }
+  .bui-SliderTrack {
+    border-radius: var(--bui-radius-1);
+  }
+
+  /*
+   * Align Tooltip to https://www.patternfly.org/components/tooltip
+   * PatternFly tooltips use inverse (dark) background with light text.
+   */
+  .bui-Tooltip {
+    --tooltip-border-radius: var(--bui-radius-2);
+    background-color: var(--bui-black);
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    max-width: 300px;
+    font-size: var(--bui-font-size-2);
+    text-align: center;
+  }
+  .bui-TooltipContent {
+    color: var(--bui-white);
+  }
+  .bui-TooltipArrow svg {
+    use:nth-of-type(1) {
+      fill: var(--bui-black);
+    }
+    use:nth-of-type(2) {
+      fill: var(--bui-black);
+    }
+    path {
+      fill: var(--bui-black);
+    }
+  }
 }
 
-body[data-theme-name='light'][data-theme-mode='light'] {
+body[data-theme-name='light'][data-theme-mode='light'],
+body[data-theme-name='light-customized'][data-theme-mode='light'] {
   .bui-DialogContent {
     background-color: var(--pf-v6-c-modal-box--BackgroundColor, #ffffff);
   }
@@ -298,7 +458,8 @@ body[data-theme-name='light'][data-theme-mode='light'] {
   }
 }
 
-body[data-theme-name='dark'][data-theme-mode='dark'] {
+body[data-theme-name='dark'][data-theme-mode='dark'],
+body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   .bui-DialogContent {
     background-color: var(--pf-v6-c-modal-box--BackgroundColor, #383838);
   }
@@ -306,3 +467,4 @@ body[data-theme-name='dark'][data-theme-mode='dark'] {
     color: var(--bui-white);
   }
 }
+

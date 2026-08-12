@@ -1,5 +1,7 @@
 body[data-theme-name='light'][data-theme-mode='light'],
-body[data-theme-name='dark'][data-theme-mode='dark'] {
+body[data-theme-name='dark'][data-theme-mode='dark'],
+body[data-theme-name='light-customized'][data-theme-mode='light'],
+body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   /*
    * Override BUI tokens with PatternFly tokens. In this storybook and in ui-docs the fallback is always used.
    * These tokens are used here for documentation purposes to show how the BUI tokens map to PatternFly tokens.
@@ -117,7 +119,7 @@ body[data-theme-name='dark'][data-theme-mode='dark'] {
    * Spacing
    *
    * Use default BUI spacing tokens because they are matching mostly the PatternFly tokens.
-   * 
+   *
    * For example `--bui-space: 0.25rem` is same as `pf-t--global--spacer--xs: 0.25rem`
    */
 
@@ -154,7 +156,8 @@ body[data-theme-name='dark'][data-theme-mode='dark'] {
   ); /* default: 9999px */
 }
 
-body[data-theme-name='light'][data-theme-mode='light'] {
+body[data-theme-name='light'][data-theme-mode='light'],
+body[data-theme-name='light-customized'][data-theme-mode='light'] {
   /* Base Colors */
   --bui-black: #151515;
   --bui-white: #ffffff;
@@ -240,6 +243,19 @@ body[data-theme-name='light'][data-theme-mode='light'] {
     #3d7317
   );
 
+  /* Accent colors (used by Switch and other interactive components) */
+  --bui-accent-bg: var(--bui-bg-solid);
+  --bui-accent-bg-hover: var(--bui-bg-solid-hover);
+  --bui-accent-bg-disabled: var(--bui-bg-solid-disabled);
+  --bui-accent-fg: var(--bui-fg-solid);
+  --bui-accent-fg-disabled: var(--bui-fg-solid-disabled);
+
+  /*
+   * Brand accent for tab/nav indicators — separate from the button brand.
+   * Defaults to the brand color; felt variants override to red.
+   */
+  --bui-redhat-theme-brand-accent: var(--bui-bg-solid);
+
   /* Special colors */
   --bui-ring: #1f5493;
   --bui-scrollbar: #a0a0a03b;
@@ -251,7 +267,8 @@ body[data-theme-name='light'][data-theme-mode='light'] {
   --bui-animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-body[data-theme-name='dark'][data-theme-mode='dark'] {
+body[data-theme-name='dark'][data-theme-mode='dark'],
+body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
   /* Base Colors */
   --bui-black: #151515;
   --bui-white: #ffffff;
@@ -337,6 +354,15 @@ body[data-theme-name='dark'][data-theme-mode='dark'] {
     #3d7317
   );
 
+  /* Accent colors (used by Switch and other interactive components) */
+  --bui-accent-bg: var(--bui-bg-solid);
+  --bui-accent-bg-hover: var(--bui-bg-solid-hover);
+  --bui-accent-bg-disabled: var(--bui-bg-solid-disabled);
+  --bui-accent-fg: var(--bui-fg-solid);
+  --bui-accent-fg-disabled: var(--bui-fg-solid-disabled);
+
+  --bui-redhat-theme-brand-accent: var(--bui-bg-solid);
+
   /* Special colors */
   --bui-ring: #1f5493;
   --bui-scrollbar: #a0a0a03b;
@@ -346,4 +372,29 @@ body[data-theme-name='dark'][data-theme-mode='dark'] {
   --bui-shadow: rgba(0, 0, 0, 0.5) 0px 10px 20px 0px;
 
   --bui-animate-pulse: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/*
+ * Felt theme overrides for the customized variants.
+ */
+body[data-theme-name='light-customized'][data-theme-mode='light'] {
+  /* felt: control & plain-action radii → pill */
+  --bui-radius-2: var(
+    --pf-t--global--border--radius--pill,
+    9999px
+  );
+
+  /* Brand accent → red (buttons stay blue via --bui-bg-solid) */
+  --bui-redhat-theme-brand-accent: #ee0000;
+}
+
+body[data-theme-name='dark-customized'][data-theme-mode='dark'] {
+  /* felt: control & plain-action radii → pill */
+  --bui-radius-2: var(
+    --pf-t--global--border--radius--pill,
+    9999px
+  );
+
+  /* Brand accent → lighter red for dark backgrounds */
+  --bui-redhat-theme-brand-accent: #f56e6e;
 }
