@@ -805,6 +805,11 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             "& > [class*='bui-Container']:not([class*='bui-Header'])": {
               backgroundColor: general.mainSectionBackgroundColor,
             },
+            // When a BackstagePage-root is present, the MUI page already has
+            // its own header; hide the sibling BUI PluginHeader to avoid duplication.
+            "&:has([class*='BackstagePage-root']) > .bui-PluginHeader": {
+              display: 'none',
+            },
             // Settings and other pages render BackstageContent as <article>.
             // Grow it to fill the flex column so pageInset doesn't show as a band.
             '& > article, & > [class*="BackstageContent-root"]': {
