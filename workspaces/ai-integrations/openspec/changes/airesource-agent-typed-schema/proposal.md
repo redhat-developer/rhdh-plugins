@@ -9,7 +9,7 @@ Platform engineers need a first-class way to register AI agents in the Software 
 - Add a typed agent schema for `kind: AiResource` with `spec.type: agent` (TypeScript types / schema-style validation; no OpenAI Agents SDK package dependency).
 - Encode the decided field mapping (RHIDP-15866) in OpenSpec design; only agent-specific required field is non-empty `spec.instructions`.
 - Add example `catalog-info.yaml` and/or test fixtures covering a representative agent (required + optional fields).
-- Add agent-specific catalog processor validation in the agent backend module (`catalog-backend-module-ai-resource-agent`) via `AiResourceAgentProcessor` (RHIDP-15868): reject missing/invalid agent-specific fields with actionable errors. `AIResourceExtensionsProcessor` remains scope/OCI only.
+- Add agent-specific catalog processor validation in the agent backend module (`catalog-backend-module-ai-resource-agent`) via `AiResourceAgentProcessor` (RHIDP-15868): reject missing/invalid agent-specific fields with actionable errors. `AiResourceExtensionsProcessor` remains scope/OCI only.
 - Update in-repo OpenSpec/design docs for `AiResource` + agent ownership under RHDHPLAN-1507; remove “pending 1113” language for the agent type where it appears.
 - Add unit/schema and processor tests for accept/reject paths.
 - Align naming with upstream skill/rule style: singular `spec.type: agent` (not `agents`); correct sibling discovery examples accordingly.
