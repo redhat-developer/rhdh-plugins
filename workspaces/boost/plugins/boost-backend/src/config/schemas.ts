@@ -21,19 +21,35 @@ import { z } from 'zod';
 // ---------------------------------------------------------------------------
 
 /**
- * Pattern matching a single cron field (minute, hour, day-of-month,
- * month, day-of-week). Supports numbers, wildcards, ranges (1-5),
- * step values, and comma-separated lists.
+ * Pattern matching a single cron field token. Accepts wildcards
+ * (* and ?), integers and integer ranges (1, 1-5), step values
+ * (star-slash-5, 1-5/2), three-letter English month names
+ * (JAN-DEC) and weekday names (MON-SUN, case-insensitive), and
+ * comma-separated lists of any of the above.
+ *
+ * Extended specifiers (L, W, #) are intentionally unsupported
+ * because the backend scheduler uses a numeric-only cron parser.
  *
  * @internal
  */
-const CRON_FIELD_RE = /^(\*|\d+(-\d+)?)(\/\d+)?(,(\*|\d+(-\d+)?)(\/\d+)?)*$/;
+const CRON_TOKEN_RE = /^(\*|\?|\d+(-\d+)?|[a-zA-Z]{3}(-[a-zA-Z]{3})?)(\/\d+)?$/;
+
+/** Maximum value allowed per cron field position (0-indexed). @internal */
+const CRON_FIELD_MAX: readonly number[] = [59, 23, 31, 12, 7];
+
+/** Minimum value allowed per cron field position (0-indexed). @internal */
+const CRON_FIELD_MIN: readonly number[] = [0, 0, 1, 1, 0];
 
 /**
  * Validate that a string is a standard 5-field cron expression.
  *
+ * Accepts numeric values, `*`, `?`, ranges, step values, and
+ * three-letter English month/weekday names. Does **not** accept
+ * `L`, `W`, or `#` specifiers.
+ *
  * @param expr - The cron expression to validate.
- * @returns `true` if the expression has 5 valid fields.
+ * @returns `true` if the expression has 5 valid fields with values
+ *   within their allowed ranges.
  *
  * @internal
  */
@@ -42,7 +58,26 @@ export function isValidCronExpression(expr: string): boolean {
   if (fields.length !== 5) {
     return false;
   }
-  return fields.every(f => CRON_FIELD_RE.test(f));
+  return fields.every((field, idx) => {
+    // Each field may be a comma-separated list of tokens
+    const tokens = field.split(',');
+    return tokens.every(token => {
+      if (!CRON_TOKEN_RE.test(token)) {
+        return false;
+      }
+      // Strip optional step suffix (e.g. */5 -> *, 1-5/2 -> 1-5)
+      const base = token.split('/')[0];
+      // Wildcards and named values pass without range check
+      if (base === '*' || base === '?' || /[a-zA-Z]/.test(base)) {
+        return true;
+      }
+      // Validate numeric range bounds
+      const nums = base.split('-').map(Number);
+      const min = CRON_FIELD_MIN[idx];
+      const max = CRON_FIELD_MAX[idx];
+      return nums.every(n => !isNaN(n) && n >= min && n <= max);
+    });
+  });
 }
 
 /**
@@ -139,6 +174,7 @@ function connectorIntervalMs(label: string) {
   return {
     schema: z
       .number()
+      .int()
       .positive()
       .optional()
       .describe('Sync interval in milliseconds (default: 300000)'),
@@ -154,6 +190,7 @@ function connectorBatchSize(label: string) {
   return {
     schema: z
       .number()
+      .int()
       .positive()
       .optional()
       .describe('Number of items per sync batch (default: 100)'),
@@ -376,6 +413,7 @@ export const boostConfigFields = {
   'boost.connectors.jira.timeout.connectionMs': {
     schema: z
       .number()
+      .int()
       .positive()
       .optional()
       .describe('Connection timeout in milliseconds (default: 30000)'),

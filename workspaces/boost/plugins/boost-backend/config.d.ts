@@ -264,6 +264,19 @@ export interface Config {
          */
         batchSize?: number;
       };
+      /**
+       * Open index signature preserving backward compatibility.
+       * Allows arbitrary connector IDs beyond the three typed entries.
+       */
+      [connectorId: string]:
+        | {
+            /**
+             * Whether runtime syncing is enabled (default: true).
+             * @configScope db-overridable
+             */
+            enabled?: boolean;
+          }
+        | undefined;
     };
   };
 }

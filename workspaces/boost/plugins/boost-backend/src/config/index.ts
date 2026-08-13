@@ -28,7 +28,6 @@ export {
   validateConfigValue,
   isDbWritable,
   isSensitiveField,
-  isValidCronExpression,
   type BoostConfigKey,
   type ConfigScope,
   type ConfigFieldMeta,

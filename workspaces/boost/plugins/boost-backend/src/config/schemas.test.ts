@@ -184,6 +184,20 @@ describe('isValidCronExpression', () => {
     expect(isValidCronExpression('0,30 9-17 * * 1,3,5')).toBe(true);
   });
 
+  it('accepts ? wildcard and named values', () => {
+    expect(isValidCronExpression('0 0 ? * MON')).toBe(true);
+    expect(isValidCronExpression('0 9 * JAN-MAR *')).toBe(true);
+    expect(isValidCronExpression('0 0 ? * MON-FRI')).toBe(true);
+  });
+
+  it('rejects out-of-range numeric values', () => {
+    expect(isValidCronExpression('60 * * * *')).toBe(false);
+    expect(isValidCronExpression('* 24 * * *')).toBe(false);
+    expect(isValidCronExpression('* * 32 * *')).toBe(false);
+    expect(isValidCronExpression('* * * 13 *')).toBe(false);
+    expect(isValidCronExpression('* * * * 8')).toBe(false);
+  });
+
   it('rejects invalid cron expressions', () => {
     expect(isValidCronExpression('not-a-cron')).toBe(false);
     expect(isValidCronExpression('* * *')).toBe(false);
@@ -334,6 +348,30 @@ describe('connector config schemas', () => {
       expect(
         validateConfigValue('boost.connectors.github.batchSize', undefined),
       ).toBeUndefined();
+    });
+
+    it('rejects non-integer schedule.intervalMs', () => {
+      expect(() =>
+        validateConfigValue(
+          'boost.connectors.jira.schedule.intervalMs',
+          300000.5,
+        ),
+      ).toThrow(ZodError);
+    });
+
+    it('rejects non-integer batchSize', () => {
+      expect(() =>
+        validateConfigValue('boost.connectors.jira.batchSize', 99.9),
+      ).toThrow(ZodError);
+    });
+
+    it('rejects non-integer timeout.connectionMs', () => {
+      expect(() =>
+        validateConfigValue(
+          'boost.connectors.jira.timeout.connectionMs',
+          30000.1,
+        ),
+      ).toThrow(ZodError);
     });
   });
 
