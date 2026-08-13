@@ -70,7 +70,7 @@ export const selfServiceButtonExtension = GlobalHeaderComponentBlueprint.make({
   params: {
     title: 'Self-service',
     titleKey: 'create.title',
-    icon: 'addCircleOutline',
+    icon: 'add',
     link: '/create',
     priority: 90,
   },

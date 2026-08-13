@@ -21,8 +21,13 @@ import {
   createExtensionInput,
   createFrontendModule,
 } from '@backstage/frontend-plugin-api';
-import { AppRootWrapperBlueprint } from '@backstage/plugin-app-react';
+import {
+  AppRootWrapperBlueprint,
+  IconBundleBlueprint,
+} from '@backstage/plugin-app-react';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
+
+import { globalHeaderSystemIcons } from '../icons/globalHeaderSystemIcons';
 
 import { GlobalHeaderProvider } from './GlobalHeaderContext';
 import {
@@ -117,6 +122,13 @@ const globalHeaderExtension = AppRootWrapperBlueprint.makeWithOverrides({
   },
 });
 
+const globalHeaderIconsExtension = IconBundleBlueprint.make({
+  name: 'global-header-icons',
+  params: {
+    icons: globalHeaderSystemIcons,
+  },
+});
+
 /**
  * Frontend module that provides the global header system.
  * Registers a wrapper extension with input slots for toolbar components
@@ -130,5 +142,5 @@ const globalHeaderExtension = AppRootWrapperBlueprint.makeWithOverrides({
  */
 export const globalHeaderModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [globalHeaderExtension],
+  extensions: [globalHeaderIconsExtension, globalHeaderExtension],
 });
