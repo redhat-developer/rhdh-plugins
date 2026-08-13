@@ -81,10 +81,7 @@ export const MyProfileMenuItem = ({
         textDecoration: 'none',
       }}
     >
-      <MenuItemLinkContent
-        icon="account_circle"
-        label={t('profile.myProfile')}
-      />
+      <MenuItemLinkContent icon="account" label={t('profile.myProfile')} />
     </MenuItem>
   );
 };

@@ -270,7 +270,7 @@ export default createFrontendPlugin({
         target: 'help',
         title: 'FAQ',
         link: '/faq',
-        icon: 'help',
+        icon: 'quiz',
         priority: 50,
       },
     }),
