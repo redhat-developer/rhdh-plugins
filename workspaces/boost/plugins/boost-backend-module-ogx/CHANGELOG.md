@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [13a24d0]
+  - @red-hat-developer-hub/backstage-plugin-boost-common@0.2.0
+  - @red-hat-developer-hub/backstage-plugin-boost-node@0.1.4
+  - @red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit@0.1.3
+
 ## 0.2.0
 
 ### Minor Changes
