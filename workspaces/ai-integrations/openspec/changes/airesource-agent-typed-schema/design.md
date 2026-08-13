@@ -70,7 +70,7 @@ The “Research reference” column records where the catalog field was derived 
 | Research reference (SDK `AgentConfiguration`) | AiResource                       | Required | Notes                                                                                                                         |
 | --------------------------------------------- | -------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | `name`                                        | `metadata.name`                  | Yes      | No `spec.name`; optional `metadata.title` for display                                                                         |
-| `instructions`                                | `spec.instructions`              | Yes      | Non-empty string only (no function form in YAML)                                                                              |
+| `instructions`                                | `spec.instructions`              | No       | Optional string (no function form in YAML). Omit when the agent image/runtime already bakes in a default prompt.              |
 | `handoffDescription`                          | `spec.handoffDescription`        | No       | string                                                                                                                        |
 | `model`                                       | `spec.model`                     | No       | string model id                                                                                                               |
 | `handoffs`                                    | `spec.handoffs`                  | No       | `string[]`, opaque (no entity-ref format check)                                                                               |
@@ -108,7 +108,7 @@ The “Research reference” column records where the catalog field was derived 
 
 **Choice**: Provide at least one example (or fixture set) with a router-style agent (`handoffs` + `handoffDescription` on specialists) using only D3 fields—not Augment-only keys.
 
-**Rationale**: Exercises required `instructions` and optional handoff/`modelSettings` fields in a realistic catalog authoring scenario.
+**Rationale**: Exercises optional `instructions` and handoff/`modelSettings` fields in a realistic catalog authoring scenario.
 
 ### D8 — Correct plural type examples in sibling discovery OpenSpec
 

@@ -27,7 +27,7 @@ import { collectAgentErrors } from './collectAgentErrors';
  * AiResource entities with `spec.type: 'agent'`.
  *
  * Validates:
- * - `spec.instructions`: required, non-empty string
+ * - `spec.instructions`: optional; must be a string if present
  * - `spec.handoffs` / `spec.tools`: must be arrays if present
  * - `spec.resetToolChoice`: must be boolean if present
  * - `spec.modelSettings`: must be plain object if present

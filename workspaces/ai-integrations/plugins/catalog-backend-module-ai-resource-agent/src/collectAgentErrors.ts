@@ -34,16 +34,15 @@ export function collectAgentErrors(entity: Entity): string[] {
 
   const errors: string[] = [];
 
-  // Required: spec.instructions — non-empty string
-  const instructions = spec.instructions;
-  if (instructions === undefined || instructions === null) {
-    errors.push('spec.instructions is required for agent AiResource entities');
-  } else if (typeof instructions !== 'string') {
+  // Optional: spec.instructions — must be a string if present.
+  // Omitted when the agent image/runtime already bakes in a default prompt.
+  if (
+    spec.instructions !== undefined &&
+    typeof spec.instructions !== 'string'
+  ) {
     errors.push(
-      `spec.instructions must be a string; got ${typeLabel(instructions)}`,
+      `spec.instructions must be a string; got ${typeLabel(spec.instructions)}`,
     );
-  } else if (instructions === '') {
-    errors.push('spec.instructions must not be empty');
   }
 
   // Optional: spec.handoffs — must be an array if present

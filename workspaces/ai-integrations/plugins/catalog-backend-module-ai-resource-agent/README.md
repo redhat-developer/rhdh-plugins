@@ -27,7 +27,7 @@ Non-agent AiResource entities (`skill`, `rule`, `model`, …) are unaffected.
 
 | Field                     | Rule                                        |
 | ------------------------- | ------------------------------------------- |
-| `spec.instructions`       | Required, non-empty string                  |
+| `spec.instructions`       | Optional; must be a string if present       |
 | `spec.handoffs`           | Optional; must be an array if present       |
 | `spec.tools`              | Optional; must be an array if present       |
 | `spec.resetToolChoice`    | Optional; must be a boolean if present      |

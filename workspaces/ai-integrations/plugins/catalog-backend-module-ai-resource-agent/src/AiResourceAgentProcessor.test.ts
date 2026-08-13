@@ -94,27 +94,27 @@ describe('AiResourceAgentProcessor', () => {
       expect(result).toEqual(entity);
     });
 
-    it('should reject agent with missing instructions', async () => {
+    it('should accept agent with missing instructions', async () => {
       const entity = makeAiResource({
         type: 'agent',
         lifecycle: 'production',
         owner: 'team',
       });
 
-      await expect(
-        processor.preProcessEntity(entity, location, emit),
-      ).rejects.toThrow('spec.instructions');
+      const result = await processor.preProcessEntity(entity, location, emit);
+
+      expect(result).toEqual(entity);
     });
 
-    it('should reject agent with empty instructions', async () => {
+    it('should accept agent with empty instructions', async () => {
       const entity = makeAiResource({
         type: 'agent',
         instructions: '',
       });
 
-      await expect(
-        processor.preProcessEntity(entity, location, emit),
-      ).rejects.toThrow('spec.instructions');
+      const result = await processor.preProcessEntity(entity, location, emit);
+
+      expect(result).toEqual(entity);
     });
 
     it('should reject agent with wrong-type instructions', async () => {
@@ -178,6 +178,7 @@ describe('AiResourceAgentProcessor', () => {
     it('should report multiple agent errors together', async () => {
       const entity = makeAiResource({
         type: 'agent',
+        instructions: 42,
         handoffs: 'not-an-array',
       });
 
@@ -194,6 +195,7 @@ describe('AiResourceAgentProcessor', () => {
     it('should not expose internal class names in agent errors', async () => {
       const entity = makeAiResource({
         type: 'agent',
+        instructions: 42,
       });
 
       const error = await processor

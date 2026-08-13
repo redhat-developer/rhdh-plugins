@@ -74,30 +74,24 @@ describe('collectAgentErrors', () => {
     });
   });
 
-  describe('spec.instructions (required)', () => {
+  describe('spec.instructions (optional)', () => {
     it('accepts valid non-empty instructions', () => {
       const entity = makeAgent({ instructions: 'You are a helpful agent.' });
 
       expect(collectAgentErrors(entity)).toEqual([]);
     });
 
-    it('rejects missing instructions', () => {
+    it('accepts missing instructions', () => {
       const entity = makeAgent();
       delete (entity as any).spec.instructions;
 
-      const errors = collectAgentErrors(entity);
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('spec.instructions');
-      expect(errors[0]).toContain('required');
+      expect(collectAgentErrors(entity)).toEqual([]);
     });
 
-    it('rejects empty string instructions', () => {
+    it('accepts empty string instructions', () => {
       const entity = makeAgent({ instructions: '' });
 
-      const errors = collectAgentErrors(entity);
-      expect(errors).toHaveLength(1);
-      expect(errors[0]).toContain('spec.instructions');
-      expect(errors[0]).toContain('empty');
+      expect(collectAgentErrors(entity)).toEqual([]);
     });
 
     it('rejects null instructions', () => {
@@ -106,7 +100,7 @@ describe('collectAgentErrors', () => {
       const errors = collectAgentErrors(entity);
       expect(errors).toHaveLength(1);
       expect(errors[0]).toContain('spec.instructions');
-      expect(errors[0]).toContain('required');
+      expect(errors[0]).toContain('string');
     });
 
     it('rejects numeric instructions', () => {
@@ -378,10 +372,10 @@ describe('collectAgentErrors', () => {
 
   describe('error quality', () => {
     it('does not expose internal class names', () => {
-      const entity = makeAgent();
-      delete (entity as any).spec.instructions;
+      const entity = makeAgent({ instructions: 42 });
 
       const errors = collectAgentErrors(entity);
+      expect(errors.length).toBeGreaterThan(0);
       for (const err of errors) {
         expect(err).not.toMatch(/Processor/);
         expect(err).not.toMatch(/at\s+\w+\.\w+\s+\(/);
@@ -389,7 +383,7 @@ describe('collectAgentErrors', () => {
     });
 
     it('names the field path in the error', () => {
-      const entity = makeAgent({ instructions: '' });
+      const entity = makeAgent({ instructions: 42 });
 
       const errors = collectAgentErrors(entity);
       expect(errors[0]).toContain('spec.instructions');
