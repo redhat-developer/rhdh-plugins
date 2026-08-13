@@ -119,7 +119,7 @@ export interface BackendApprovalStoreOptions {
 }
 
 // @public
-export const BOOST_CONFIG_SCHEMA_VERSION = 3;
+export const BOOST_CONFIG_SCHEMA_VERSION = 4;
 
 // @public
 export const boostAiProviderServiceFactory: ServiceFactory<
@@ -217,6 +217,76 @@ export const boostConfigFields: {
     readonly sensitive: true;
   };
   readonly 'boost.ingestion.healthRetention.maxAttemptsPerConnector': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.jira.enabled': {
+    readonly schema: z.ZodOptional<z.ZodBoolean>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.jira.endpoint': {
+    readonly schema: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.jira.schedule.intervalMs': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.jira.schedule.cron': {
+    readonly schema: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.jira.batchSize': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.jira.timeout.connectionMs': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.github.enabled': {
+    readonly schema: z.ZodOptional<z.ZodBoolean>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.github.endpoint': {
+    readonly schema: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.github.schedule.intervalMs': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.github.batchSize': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.gitlab.enabled': {
+    readonly schema: z.ZodOptional<z.ZodBoolean>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.gitlab.endpoint': {
+    readonly schema: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.gitlab.schedule.intervalMs': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.gitlab.batchSize': {
     readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;

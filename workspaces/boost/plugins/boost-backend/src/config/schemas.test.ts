@@ -21,6 +21,7 @@ import {
   validateConfigValue,
   isDbWritable,
   isSensitiveField,
+  isValidCronExpression,
 } from './schemas';
 
 describe('boostConfigFields', () => {
@@ -171,5 +172,226 @@ describe('isSensitiveField', () => {
   it('returns false for non-sensitive fields', () => {
     expect(isSensitiveField('boost.model.baseUrl')).toBe(false);
     expect(isSensitiveField('boost.security.mode')).toBe(false);
+  });
+});
+
+describe('isValidCronExpression', () => {
+  it('accepts valid 5-field cron expressions', () => {
+    expect(isValidCronExpression('* * * * *')).toBe(true);
+    expect(isValidCronExpression('0 9 * * 1-5')).toBe(true);
+    expect(isValidCronExpression('*/5 * * * *')).toBe(true);
+    expect(isValidCronExpression('0 0 1 1 *')).toBe(true);
+    expect(isValidCronExpression('0,30 9-17 * * 1,3,5')).toBe(true);
+  });
+
+  it('rejects invalid cron expressions', () => {
+    expect(isValidCronExpression('not-a-cron')).toBe(false);
+    expect(isValidCronExpression('* * *')).toBe(false);
+    expect(isValidCronExpression('* * * * * *')).toBe(false);
+    expect(isValidCronExpression('')).toBe(false);
+  });
+});
+
+describe('connector config schemas', () => {
+  describe('field registration', () => {
+    it('registers all Jira connector fields', () => {
+      const keys = Object.keys(boostConfigFields);
+      expect(keys).toContain('boost.connectors.jira.enabled');
+      expect(keys).toContain('boost.connectors.jira.endpoint');
+      expect(keys).toContain('boost.connectors.jira.schedule.intervalMs');
+      expect(keys).toContain('boost.connectors.jira.schedule.cron');
+      expect(keys).toContain('boost.connectors.jira.batchSize');
+      expect(keys).toContain('boost.connectors.jira.timeout.connectionMs');
+    });
+
+    it('registers all GitHub connector fields', () => {
+      const keys = Object.keys(boostConfigFields);
+      expect(keys).toContain('boost.connectors.github.enabled');
+      expect(keys).toContain('boost.connectors.github.endpoint');
+      expect(keys).toContain('boost.connectors.github.schedule.intervalMs');
+      expect(keys).toContain('boost.connectors.github.batchSize');
+    });
+
+    it('registers all GitLab connector fields', () => {
+      const keys = Object.keys(boostConfigFields);
+      expect(keys).toContain('boost.connectors.gitlab.enabled');
+      expect(keys).toContain('boost.connectors.gitlab.endpoint');
+      expect(keys).toContain('boost.connectors.gitlab.schedule.intervalMs');
+      expect(keys).toContain('boost.connectors.gitlab.batchSize');
+    });
+
+    it('does not register Jira-only fields for GitHub', () => {
+      const keys = Object.keys(boostConfigFields);
+      expect(keys).not.toContain('boost.connectors.github.schedule.cron');
+      expect(keys).not.toContain(
+        'boost.connectors.github.timeout.connectionMs',
+      );
+    });
+
+    it('does not register Jira-only fields for GitLab', () => {
+      const keys = Object.keys(boostConfigFields);
+      expect(keys).not.toContain('boost.connectors.gitlab.schedule.cron');
+      expect(keys).not.toContain(
+        'boost.connectors.gitlab.timeout.connectionMs',
+      );
+    });
+
+    it('marks all connector fields as db-overridable', () => {
+      const connectorEntries = Object.entries(boostConfigFields).filter(
+        ([key]) => key.startsWith('boost.connectors.'),
+      );
+      expect(connectorEntries.length).toBeGreaterThan(0);
+      connectorEntries.forEach(([, field]) => {
+        expect(field.configScope).toBe('db-overridable');
+      });
+    });
+  });
+
+  describe('endpoint validation', () => {
+    const endpointKeys = [
+      'boost.connectors.jira.endpoint',
+      'boost.connectors.github.endpoint',
+      'boost.connectors.gitlab.endpoint',
+    ] as const;
+
+    it.each(endpointKeys)('%s accepts valid HTTPS URL', key => {
+      expect(validateConfigValue(key, 'https://example.com')).toBe(
+        'https://example.com',
+      );
+    });
+
+    it.each(endpointKeys)('%s rejects HTTP URL', key => {
+      expect(() => validateConfigValue(key, 'http://example.com')).toThrow(
+        ZodError,
+      );
+    });
+
+    it.each(endpointKeys)('%s rejects non-URL string', key => {
+      expect(() => validateConfigValue(key, 'not-a-url')).toThrow(ZodError);
+    });
+
+    it.each(endpointKeys)('%s accepts undefined', key => {
+      expect(validateConfigValue(key, undefined)).toBeUndefined();
+    });
+  });
+
+  describe('numeric field validation', () => {
+    it('accepts positive schedule.intervalMs', () => {
+      expect(
+        validateConfigValue(
+          'boost.connectors.jira.schedule.intervalMs',
+          300000,
+        ),
+      ).toBe(300000);
+    });
+
+    it('rejects negative schedule.intervalMs', () => {
+      expect(() =>
+        validateConfigValue('boost.connectors.jira.schedule.intervalMs', -1000),
+      ).toThrow(ZodError);
+    });
+
+    it('rejects zero schedule.intervalMs', () => {
+      expect(() =>
+        validateConfigValue('boost.connectors.jira.schedule.intervalMs', 0),
+      ).toThrow(ZodError);
+    });
+
+    it('accepts positive batchSize', () => {
+      expect(validateConfigValue('boost.connectors.jira.batchSize', 100)).toBe(
+        100,
+      );
+    });
+
+    it('rejects negative batchSize', () => {
+      expect(() =>
+        validateConfigValue('boost.connectors.jira.batchSize', -50),
+      ).toThrow(ZodError);
+    });
+
+    it('accepts positive timeout.connectionMs', () => {
+      expect(
+        validateConfigValue(
+          'boost.connectors.jira.timeout.connectionMs',
+          30000,
+        ),
+      ).toBe(30000);
+    });
+
+    it('rejects negative timeout.connectionMs', () => {
+      expect(() =>
+        validateConfigValue('boost.connectors.jira.timeout.connectionMs', -100),
+      ).toThrow(ZodError);
+    });
+
+    it('accepts undefined for optional numeric fields', () => {
+      expect(
+        validateConfigValue(
+          'boost.connectors.github.schedule.intervalMs',
+          undefined,
+        ),
+      ).toBeUndefined();
+      expect(
+        validateConfigValue('boost.connectors.github.batchSize', undefined),
+      ).toBeUndefined();
+    });
+  });
+
+  describe('cron expression validation', () => {
+    it('accepts valid cron expression for Jira schedule', () => {
+      expect(
+        validateConfigValue(
+          'boost.connectors.jira.schedule.cron',
+          '*/5 * * * *',
+        ),
+      ).toBe('*/5 * * * *');
+    });
+
+    it('rejects invalid cron expression for Jira schedule', () => {
+      expect(() =>
+        validateConfigValue(
+          'boost.connectors.jira.schedule.cron',
+          'not-a-cron',
+        ),
+      ).toThrow(ZodError);
+    });
+
+    it('accepts undefined for optional cron field', () => {
+      expect(
+        validateConfigValue('boost.connectors.jira.schedule.cron', undefined),
+      ).toBeUndefined();
+    });
+  });
+
+  describe('enabled field validation', () => {
+    const enabledKeys = [
+      'boost.connectors.jira.enabled',
+      'boost.connectors.github.enabled',
+      'boost.connectors.gitlab.enabled',
+    ] as const;
+
+    it.each(enabledKeys)('%s accepts boolean true', key => {
+      expect(validateConfigValue(key, true)).toBe(true);
+    });
+
+    it.each(enabledKeys)('%s accepts boolean false', key => {
+      expect(validateConfigValue(key, false)).toBe(false);
+    });
+
+    it.each(enabledKeys)('%s accepts undefined', key => {
+      expect(validateConfigValue(key, undefined)).toBeUndefined();
+    });
+  });
+
+  describe('isDbWritable for connector fields', () => {
+    it('returns true for all connector fields', () => {
+      const connectorKeys = Object.keys(boostConfigFields).filter(key =>
+        key.startsWith('boost.connectors.'),
+      ) as Array<keyof typeof boostConfigFields>;
+      expect(connectorKeys.length).toBeGreaterThan(0);
+      connectorKeys.forEach(key => {
+        expect(isDbWritable(key)).toBe(true);
+      });
+    });
   });
 });

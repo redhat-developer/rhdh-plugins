@@ -363,4 +363,228 @@ describe('RuntimeConfigResolver', () => {
       expect(value).toBe('https://yaml.example.com/api');
     });
   });
+
+  describe('connector config resolution', () => {
+    it('resolves connector enabled from YAML baseline when no DB override', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            jira: { enabled: true },
+          },
+        },
+      });
+
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      const value = await resolver.resolve('boost.connectors.jira.enabled');
+      expect(value).toBe(true);
+    });
+
+    it('DB override takes precedence for connector enabled', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            jira: { enabled: true },
+          },
+        },
+      });
+
+      const dbOverrides = new Map([['boost.connectors.jira.enabled', false]]);
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(dbOverrides),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      const value = await resolver.resolve('boost.connectors.jira.enabled');
+      expect(value).toBe(false);
+    });
+
+    it('resolves connector endpoint from YAML baseline', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            github: {
+              endpoint: 'https://api.github.com',
+            },
+          },
+        },
+      });
+
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      const value = await resolver.resolve('boost.connectors.github.endpoint');
+      expect(value).toBe('https://api.github.com');
+    });
+
+    it('resolves connector numeric fields from YAML baseline', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            jira: {
+              schedule: { intervalMs: 600000 },
+              batchSize: 50,
+              timeout: { connectionMs: 15000 },
+            },
+          },
+        },
+      });
+
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      expect(
+        await resolver.resolve('boost.connectors.jira.schedule.intervalMs'),
+      ).toBe(600000);
+      expect(await resolver.resolve('boost.connectors.jira.batchSize')).toBe(
+        50,
+      );
+      expect(
+        await resolver.resolve('boost.connectors.jira.timeout.connectionMs'),
+      ).toBe(15000);
+    });
+
+    it('returns undefined for unset connector fields', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      const value = await resolver.resolve('boost.connectors.jira.enabled');
+      expect(value).toBeUndefined();
+    });
+
+    it('caches connector config with 30s TTL', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            gitlab: { enabled: true },
+          },
+        },
+      });
+
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      await resolver.resolve('boost.connectors.gitlab.enabled');
+
+      expect(cache.set).toHaveBeenCalledWith(
+        'effective-config',
+        expect.any(Object),
+        { ttl: 30_000 },
+      );
+    });
+
+    it('immediate invalidation causes fresh resolve', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            jira: { enabled: true },
+          },
+        },
+      });
+
+      let dbOverrides = new Map<string, unknown>();
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockImplementation(async () => dbOverrides),
+        setOverride: jest.fn().mockImplementation(async () => {
+          dbOverrides = new Map([['boost.connectors.jira.enabled', false]]);
+        }),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      // Initial resolve: YAML baseline
+      let value = await resolver.resolve('boost.connectors.jira.enabled');
+      expect(value).toBe(true);
+
+      // Write DB override and invalidate
+      await resolver.set('boost.connectors.jira.enabled', false);
+
+      // Resolve again: should return DB override
+      value = await resolver.resolve('boost.connectors.jira.enabled');
+      expect(value).toBe(false);
+    });
+
+    it('resolves multiple connector types simultaneously', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            jira: { enabled: true, batchSize: 200 },
+            github: { enabled: false },
+            gitlab: { enabled: true },
+          },
+        },
+      });
+
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      const allConfig = await resolver.resolveAll();
+
+      expect(allConfig.get('boost.connectors.jira.enabled')).toBe(true);
+      expect(allConfig.get('boost.connectors.jira.batchSize')).toBe(200);
+      expect(allConfig.get('boost.connectors.github.enabled')).toBe(false);
+      expect(allConfig.get('boost.connectors.gitlab.enabled')).toBe(true);
+    });
+  });
 });
