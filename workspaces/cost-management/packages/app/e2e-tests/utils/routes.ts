@@ -18,18 +18,12 @@
  * Frontend / API route helpers for the cost-management plugin.
  *
  * Defaults match the current workspace (cost-management 1.3.x / 2.x):
- * - Local app shell mounts Optimizations at `/cost-management/optimizations`
- * - Live RHDH dynamic plugin uses the same paths
+ * - Local app shell and live RHDH dynamic plugin both use `/cost-management/*`
  *
  * Override via env vars when testing a non-standard mount.
  */
-const isLiveCluster = !!process.env.PLAYWRIGHT_URL;
-
 export const PLUGIN_ROUTE_BASE: string =
-  process.env.PLUGIN_ROUTE_BASE ??
-  (isLiveCluster
-    ? '/cost-management/optimizations'
-    : '/cost-management/optimizations');
+  process.env.PLUGIN_ROUTE_BASE ?? '/cost-management/optimizations';
 
 export const OPENSHIFT_ROUTE: string =
   process.env.OPENSHIFT_ROUTE_PATH ?? '/cost-management/openshift';
