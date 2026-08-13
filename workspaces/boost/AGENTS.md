@@ -46,7 +46,7 @@ When implementing an issue:
 
 ### Backstage-native services only
 
-Use Backstage `cacheService`, `permissions`, `httpAuth`, `configApi`, and `catalogApi`. Never build custom equivalents. All caches use `coreServices.cache` — no raw `Map<>` caches.
+Use Backstage `cacheService`, `permissions`, `httpAuth`, `configApi`, `catalogApi`, and `scheduler`. Never build custom equivalents. All caches use `coreServices.cache` — no raw `Map<>` caches. Scheduled or periodic tasks must use `coreServices.scheduler` (`SchedulerService`) — never raw `setInterval`, `setTimeout`, or cron libraries. `SchedulerService` provides distributed scheduling, lifecycle management, and proper shutdown handling.
 
 ### Provider isolation
 
@@ -152,6 +152,7 @@ Every feature ships with tests. Integration tests use real database and cache ba
 - Do not create raw `Map<>` caches — always use `coreServices.cache`
 - Do not add authorization checks outside `permissions.authorize()` / `permissions.authorizeConditional()`
 - Do not add provider ID string checks in the frontend
+- Do not use raw `setInterval`, `setTimeout`, or cron libraries for scheduled work — always use `coreServices.scheduler`
 
 ## Before committing
 
