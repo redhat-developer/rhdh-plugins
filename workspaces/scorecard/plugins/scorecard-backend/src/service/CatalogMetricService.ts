@@ -260,6 +260,7 @@ export class CatalogMetricService {
         title: metric.title,
         description: metric.description,
         type: metric.type,
+        unit: metric.unit,
         history: metric.history,
         defaultVisualization: metric.defaultVisualization,
       },

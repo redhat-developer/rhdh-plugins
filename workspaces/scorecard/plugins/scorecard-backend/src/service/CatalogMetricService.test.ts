@@ -496,6 +496,7 @@ describe('CatalogMetricService', () => {
           title: provider.getMetrics()[0].title,
           description: provider.getMetrics()[0].description,
           type: provider.getMetrics()[0].type,
+          unit: provider.getMetrics()[0].unit,
           history: provider.getMetrics()[0].history,
           defaultVisualization: provider.getMetrics()[0].defaultVisualization,
         },

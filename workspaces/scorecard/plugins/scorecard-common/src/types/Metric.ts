@@ -148,6 +148,7 @@ export type MetricTimeSeriesResponse = {
     title: string;
     description: string;
     type: MetricType;
+    unit?: string;
     history?: boolean;
     defaultVisualization?: MetricDefaultVisualization;
   };

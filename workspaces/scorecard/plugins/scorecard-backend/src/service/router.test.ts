@@ -514,6 +514,7 @@ describe('createRouter', () => {
         title: 'GitHub open PRs',
         description: 'The number of open pull requests.',
         type: 'number',
+        unit: undefined,
         history: true,
         defaultVisualization: 'value',
       },

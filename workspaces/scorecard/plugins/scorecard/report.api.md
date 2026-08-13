@@ -32,8 +32,8 @@ const _default: OverridableFrontendPlugin<
   {
     root: RouteRef<undefined>;
     drillDown: RouteRef<{
-      aggregationId: string;
       metricId: string;
+      aggregationId: string;
     }>;
   },
   {},
@@ -121,12 +121,8 @@ const _default: OverridableFrontendPlugin<
           >;
       inputs: {
         layouts: ExtensionInput<
-          | ConfigurableExtensionDataRef<string, 'scorecard.layout-title', {}>
-          | ConfigurableExtensionDataRef<
-              JSX_2.Element,
-              'core.reactElement',
-              {}
-            >,
+          | ConfigurableExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
+          | ConfigurableExtensionDataRef<string, 'scorecard.layout-title', {}>,
           {
             singleton: false;
             optional: true;
@@ -144,9 +140,9 @@ const _default: OverridableFrontendPlugin<
         defaultGroup?: [Error: `Use the 'group' param instead`];
         group?:
           | (
+              | 'development'
               | 'overview'
               | 'documentation'
-              | 'development'
               | 'deployment'
               | 'operation'
               | 'observability'
