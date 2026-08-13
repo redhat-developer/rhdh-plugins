@@ -64,6 +64,7 @@ Requires `scorecard.metric.read` permission. Additionally:
     title: string;
     description: string;
     type: 'number' | 'boolean';
+    unit?: string;
   };
   entities: EntityMetricDetail[];
   pagination: {

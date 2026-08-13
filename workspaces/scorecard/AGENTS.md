@@ -37,12 +37,12 @@ snake_case in the API layer only -- they are not metric IDs.
 
 ### DORA (4 metrics)
 
-| Metric ID                       | Type   | Source                                    |
-| ------------------------------- | ------ | ----------------------------------------- |
-| `dora.deploymentFrequency`      | number | `DoraDeploymentFrequencyProvider.ts`      |
-| `dora.medianLeadTimeForChanges` | number | `DoraMedianLeadTimeForChangesProvider.ts` |
-| `dora.meanTimeToRestore`        | number | `DoraMeanTimeToRestoreProvider.ts`        |
-| `dora.changeFailureRate`        | number | `DoraChangeFailureRateProvider.ts`        |
+| Metric ID                       | Type   | Unit    | Source                                    |
+| ------------------------------- | ------ | ------- | ----------------------------------------- |
+| `dora.deploymentFrequency`      | number | `/week` | `DoraDeploymentFrequencyProvider.ts`      |
+| `dora.medianLeadTimeForChanges` | number | `h`     | `DoraMedianLeadTimeForChangesProvider.ts` |
+| `dora.meanTimeToRestore`        | number | `h`     | `DoraMeanTimeToRestoreProvider.ts`        |
+| `dora.changeFailureRate`        | number | `%`     | `DoraChangeFailureRateProvider.ts`        |
 
 ### Dependabot (4 metrics)
 
