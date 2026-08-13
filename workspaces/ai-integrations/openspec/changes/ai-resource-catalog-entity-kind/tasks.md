@@ -12,13 +12,17 @@ Tracking note: schema/processor work originally landed against a `spec.location`
 - [ ] 1.6 Ensure AiResource validation errors are actionable and can report multiple errors in one response
 - [ ] 1.7 Add/update unit tests covering valid and invalid `spec.scope`, valid and invalid OCI source-location values (including bare `oci://…` without `url:`), and multi-error reporting
 
-## 2. Catalog Ingestion - OCI Processor
+## 2. Catalog Ingestion - OCI / Extensions Processor
 
-- [x] 2.1 Implement `AiResourceOciProcessor` as a `CatalogProcessor` with format-only validation and zero network calls _(initial `spec.location` version)_
-- [ ] 2.2 Retool `AiResourceOciProcessor` to validate OCI `backstage.io/source-location` targets instead of `spec.location.target`
-- [ ] 2.3 Ensure the OCI processor makes zero outbound HTTP or network calls
-- [ ] 2.4 Register/keep `AiResourceOciProcessor` in the catalog backend module under the updated contract
-- [ ] 2.5 Add/update unit tests covering valid `url:oci://…` annotations, malformed targets, missing/`url:`-prefix cases, and zero-network behavior
+OCI format validation originally lived in a standalone `AiResourceOciProcessor`
+and was later consolidated into `AiResourceExtensionsProcessor` (alongside
+`spec.scope`). Use that name going forward.
+
+- [x] 2.1 Implement OCI format-only validation with zero network calls _(initial `spec.location` version; historically `AiResourceOciProcessor`)_
+- [x] 2.2 Retool `AiResourceExtensionsProcessor` to validate OCI `backstage.io/source-location` targets instead of `spec.location.target`
+- [x] 2.3 Ensure OCI validation makes zero outbound HTTP or network calls
+- [x] 2.4 Register/keep `AiResourceExtensionsProcessor` in the catalog backend module under the updated contract
+- [x] 2.5 Add/update unit tests covering valid `url:oci://…` annotations, malformed targets, missing/`url:`-prefix cases, and zero-network behavior
 
 ## 3. Catalog Ingestion - Git Path & Registration
 
