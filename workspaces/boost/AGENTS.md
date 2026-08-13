@@ -70,6 +70,24 @@ Agents, tools, models, MCP servers, and vector stores are Backstage catalog enti
 
 ## Code conventions
 
+### Adding new config fields
+
+When introducing new `boost.*` configuration keys, complete all of
+the following steps. Omitting any step causes runtime validation
+failures or config-surface drift.
+
+1. Add TypeScript declarations in
+   `plugins/boost-backend/config.d.ts` with `@configScope` and
+   `@visibility` JSDoc annotations matching the field's scope
+2. Register the field in `src/config/schemas.ts` under
+   `boostConfigFields` with a Zod schema, `configScope`, and
+   `description`
+3. Bump `BOOST_CONFIG_SCHEMA_VERSION` in `src/config/schemas.ts`
+4. Add example usage in `examples/app-config.connectors.yaml` (or
+   the appropriate `app-config.*.yaml` example file)
+5. Run `yarn build:api-reports` and commit the updated
+   `report.api.md`
+
 ### Package structure
 
 | Package                        | Purpose                                                                                       |
