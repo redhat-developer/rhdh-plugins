@@ -52,7 +52,7 @@ export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
  *
  * @public
  */
-export const BOOST_CONFIG_SCHEMA_VERSION = 2;
+export const BOOST_CONFIG_SCHEMA_VERSION = 3;
 
 // ---------------------------------------------------------------------------
 // Individual field schemas with metadata
@@ -229,6 +229,21 @@ export const boostConfigFields = {
       'DevSpaces integration credentials (e.g. API token). Encrypted ' +
       'at rest in the admin config database using AES-256-GCM.',
     sensitive: true,
+  },
+
+  // -- Ingestion health retention --
+  'boost.ingestion.healthRetention.maxAttemptsPerConnector': {
+    schema: z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .describe('Max sync attempts retained per connector'),
+    configScope: 'yaml-only' as ConfigScope,
+    description:
+      'Maximum number of sync attempt records retained per connector ' +
+      'for ingestion health status. Older records are cleaned up daily. ' +
+      'Defaults to 100 when not set.',
   },
 } as const satisfies Record<string, ConfigFieldMeta>;
 
