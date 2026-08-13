@@ -494,6 +494,10 @@ export const NotebookView = ({
             });
           })
           .catch(() => {});
+      } else {
+        queryClient.invalidateQueries({
+          queryKey: ['notebooks', 'sessions'],
+        });
       }
     };
   }, [notebooksApi, sessionId, queryClient]);

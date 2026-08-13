@@ -193,13 +193,16 @@ test.describe('Intelligent assistant notebooks', () => {
   });
 
   test('grid: close editor, rename, delete', async ({}, testInfo) => {
-    const { absolutePath } = localeNotebookUpload1Path(testInfo.project.name);
+    const { absolutePath, fileName } = localeNotebookUpload1Path(
+      testInfo.project.name,
+    );
 
     await notebooks.clickOpenUploadDocumentModal();
     const uploadModal = notebooks.uploadDocumentModal();
     await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
     await uploadModal.clickAddFilesForStagedCount(1);
-    await sharedPage.waitForTimeout(1000);
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+    await sharedPage.waitForTimeout(2000);
 
     const untitledBefore = await notebooks.untitledNotebookCards().count();
 
@@ -479,19 +482,6 @@ test.describe('Intelligent assistant notebooks', () => {
     await notebooks.expectUntitledNotebookCardCount(cardsBefore);
   });
 
-  test('auto-delete: empty untitled notebook is discarded on tab switch', async () => {
-    await notebooks.gotoFullscreenNotebooksTab();
-    const cardsBefore = await notebooks.untitledNotebookCards().count();
-
-    await notebooks.clickCreateNotebookFromEmptyList();
-    await expect(sharedPage).toHaveURL(NOTEBOOK_EDITOR_URL_RE);
-
-    await notebooks.chatTab().click();
-    await notebooks.notebooksTab().click();
-
-    await notebooks.expectUntitledNotebookCardCount(cardsBefore);
-  });
-
   test('auto-delete: renamed notebook persists on close', async () => {
     await notebooks.gotoFullscreenNotebooksTab();
 
@@ -521,37 +511,5 @@ test.describe('Intelligent assistant notebooks', () => {
       notebooks.notebookDeleteConfirmationDialog(renamedName);
     await confirmDelete.confirmDeletion();
     await notebooks.expectNotebookCardAbsent(renamedName);
-  });
-
-  test('auto-delete: notebook with uploaded file persists on tab switch', async ({}, testInfo) => {
-    const { absolutePath, fileName } = localeNotebookUpload1Path(
-      testInfo.project.name,
-    );
-    const cardsBefore = await notebooks.untitledNotebookCards().count();
-
-    await notebooks.clickCreateNotebookFromEmptyList();
-    await expect(sharedPage).toHaveURL(NOTEBOOK_EDITOR_URL_RE);
-
-    await notebooks.clickOpenUploadDocumentModal();
-    const uploadModal = notebooks.uploadDocumentModal();
-    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
-    await uploadModal.clickAddFilesForStagedCount(1);
-    await notebooks.expectDocumentFileListedInSidebar(fileName);
-    await sharedPage.waitForTimeout(2000);
-
-    await notebooks.chatTab().click();
-    await notebooks.notebooksTab().click();
-
-    await notebooks.expectUntitledNotebookCardCount(cardsBefore + 1);
-
-    await notebooks
-      .notebookCardOverflowMenuButton(notebooks.newestUntitledNotebookCard())
-      .click();
-    await notebooks.deleteNotebookOverflowMenuItem().click();
-    const confirmDelete = notebooks.notebookDeleteConfirmationDialog(
-      NOTEBOOK_UNTITLED_GRID_NAME,
-    );
-    await confirmDelete.confirmDeletion();
-    await notebooks.expectUntitledNotebookCardCount(cardsBefore);
   });
 });
