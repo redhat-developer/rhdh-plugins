@@ -255,7 +255,7 @@ export class NotebookSurfacePage {
 
   /** Opens the overflow menu on the first sidebar document, chooses Delete document, and confirms the deletion. */
   async deleteFirstListedDocumentFromSidebarOverflowMenu(): Promise<void> {
-    await this.firstListedDocumentOverflowMenuToggle().click();
+    await this.firstListedDocumentOverflowMenuToggle().click({ force: true });
     await this.documentRowDeleteMenuItem().click();
     await expect(this.deleteDocumentConfirmDialog()).toBeVisible();
     await this.deleteDocumentConfirmButton().click();
@@ -294,7 +294,7 @@ export class NotebookSurfacePage {
     oldName: string,
     newName: string,
   ): Promise<void> {
-    await this.firstListedDocumentOverflowMenuToggle().click();
+    await this.firstListedDocumentOverflowMenuToggle().click({ force: true });
     await this.documentRowRenameMenuItem().click();
     const input = this.chatbotRegion().getByRole('textbox', {
       name: this.t['notebook.document.rename'],
