@@ -96,19 +96,21 @@ component_management:
   # Only workspaces that exist in this repository are included.
   # Note: workspaces with mixed support-level packages appear in multiple components.
   individual_components:
-    # Generally-Available Plugins — 5 workspace(s)
+    # Generally-Available Plugins — 6 workspace(s)
     - component_id: generally-available-plugins
       name: 'Generally-Available Plugins'
       paths:
         - workspaces/adoption-insights/
         - workspaces/global-header/
         - workspaces/homepage/
+        - workspaces/intelligent-assistant/
         - workspaces/orchestrator/
         - workspaces/quickstart/
-    # Tech-Preview Plugins — 4 workspace(s)
+    # Tech-Preview Plugins — 5 workspace(s)
     - component_id: tech-preview-plugins
       name: 'Tech-Preview Plugins'
       paths:
+        - workspaces/app-defaults/
         - workspaces/bulk-import/
         - workspaces/cost-management/
         - workspaces/extensions/
@@ -125,7 +127,7 @@ component_management:
       name: 'Dev-Preview Plugins'
       paths:
         - workspaces/ai-integrations/
-        - workspaces/app-defaults/
+        - workspaces/boost/
         - workspaces/konflux/
         - workspaces/mcp-integrations/
         - workspaces/scorecard/
@@ -160,12 +162,27 @@ flag_management:
     - name: e2e-adoption-insights
       paths:
         - workspaces/adoption-insights/
+    - name: e2e-app-defaults
+      paths:
+        - workspaces/app-defaults/
+    - name: e2e-bulk-import
+      paths:
+        - workspaces/bulk-import/
+    - name: e2e-extensions
+      paths:
+        - workspaces/extensions/
     - name: e2e-global-header
       paths:
         - workspaces/global-header/
     - name: e2e-homepage
       paths:
         - workspaces/homepage/
+    - name: e2e-intelligent-assistant
+      paths:
+        - workspaces/intelligent-assistant/
+    - name: e2e-orchestrator
+      paths:
+        - workspaces/orchestrator/
     - name: e2e-quickstart
       paths:
         - workspaces/quickstart/

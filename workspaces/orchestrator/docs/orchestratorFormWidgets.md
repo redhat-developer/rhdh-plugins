@@ -45,6 +45,11 @@ Implementation of the HTTP endpoints is out of the scope of this library, they a
     - [ActiveText Data Fetching](#activetext-data-fetching)
     - [Dynamic Text Templating](#dynamic-text-templating)
     - [ActiveText widget ui:props](#activetext-widget-uiprops)
+  - [Field-Level Validation](#field-level-validation)
+    - [Validation on Blur](#validation-on-blur)
+    - [Validation on Change](#validation-on-change)
+    - [Validation on Both Blur and Change](#validation-on-both-blur-and-change)
+    - [Dependent Field Group Validation](#dependent-field-group-validation)
   - [Content of `ui:props`](#content-of-uiprops)
     - [List of widget properties](#list-of-widget-properties)
       - [Specifics for templates in fetch:body, validate:body, fetch:headers or validate:headers](#specifics-for-templates-in-fetchbody-validatebody-fetchheaders-or-validateheaders)
@@ -254,7 +259,7 @@ If you want to keep the field empty until the user interacts with it, set `fetch
 
 In addition to the AJV validation handled by the RJSF form, an external service can be utilized through the `validate:*` properties via HTTP requests.
 
-If specified, external validation is triggered both upon form submission and when moving to the next step.
+If specified, external validation is triggered both upon form submission and when moving to the next step. Additionally, validation can be triggered on blur or change using the `ui:validateOn` annotation (see [Field-Level Validation](#field-level-validation)).
 
 The validation is considered successful if an HTTP 200 response is received.
 
@@ -543,6 +548,126 @@ The widget supports the following `ui:props` (for detailed information on each, 
 - `fetch:retry:backoff`: Backoff multiplier applied to the delay
 - `fetch:retry:statusCodes`: Optional list of status codes to retry
 
+## Field-Level Validation
+
+By default, validation (both AJV schema validation and async `validate:url` HTTP validation) runs only when the user clicks **Next** or **Submit**. The `ui:validateOn` annotation enables immediate per-field validation triggered by user interaction, without waiting for form submission.
+
+This feature is supported by the `ActiveTextInput`, `ActiveDropdown`, and `ActiveMultiSelect` widgets.
+
+### Validation on Blur
+
+Trigger validation when the user leaves a field (tabs out or clicks another field):
+
+```json
+{
+  "userId": {
+    "type": "string",
+    "title": "User ID",
+    "ui:widget": "ActiveTextInput",
+    "ui:validateOn": "blur",
+    "ui:props": {
+      "validate:url": "$${{backend.baseUrl}}/api/proxy/myservice/validate/user/$${{current.userId}}"
+    }
+  }
+}
+```
+
+### Validation on Change
+
+Trigger validation while the user types. The validation is **debounced** (1 second delay) to avoid excessive network calls:
+
+```json
+{
+  "email": {
+    "type": "string",
+    "title": "Email",
+    "ui:widget": "ActiveTextInput",
+    "ui:validateOn": "change",
+    "ui:props": {
+      "validate:url": "$${{backend.baseUrl}}/api/proxy/myservice/validate/email",
+      "validate:method": "POST",
+      "validate:body": {
+        "email": "$${{current.email}}"
+      }
+    }
+  }
+}
+```
+
+### Validation on Both Blur and Change
+
+Use a comma-separated value to trigger on both events:
+
+```json
+{
+  "hostname": {
+    "type": "string",
+    "title": "Hostname",
+    "ui:widget": "ActiveTextInput",
+    "ui:validateOn": "blur,change",
+    "ui:props": {
+      "validate:url": "$${{backend.baseUrl}}/api/proxy/myservice/validate/hostname/$${{current.hostname}}"
+    }
+  }
+}
+```
+
+### Dependent Field Group Validation
+
+Use `ui:validateGroup` to link dependent fields that should be validated together. When all fields in a group have values and any member triggers validation, all other group members are validated automatically.
+
+This is useful for fields like **namespace + cluster** where the validity of one depends on the value of the other.
+
+```json
+{
+  "namespace": {
+    "type": "string",
+    "title": "Namespace",
+    "ui:widget": "ActiveTextInput",
+    "ui:validateOn": "blur",
+    "ui:validateGroup": "ns-cluster",
+    "ui:props": {
+      "validate:url": "$${{backend.baseUrl}}/api/proxy/myservice/validate/namespace",
+      "validate:method": "POST",
+      "validate:body": {
+        "namespace": "$${{current.namespace}}",
+        "cluster": "$${{current.cluster}}"
+      }
+    }
+  },
+  "cluster": {
+    "type": "string",
+    "title": "Cluster",
+    "ui:widget": "ActiveTextInput",
+    "ui:validateOn": "blur",
+    "ui:validateGroup": "ns-cluster",
+    "ui:props": {
+      "validate:url": "$${{backend.baseUrl}}/api/proxy/myservice/validate/cluster",
+      "validate:method": "POST",
+      "validate:body": {
+        "namespace": "$${{current.namespace}}",
+        "cluster": "$${{current.cluster}}"
+      }
+    }
+  }
+}
+```
+
+**How group validation works:**
+
+1. The user fills in `namespace` and blurs the field — only `namespace` is validated (because `cluster` is still empty).
+2. The user fills in `cluster` and blurs the field — both `cluster` **and** `namespace` are validated, because all group members now have values.
+3. The group name (`"ns-cluster"` in this example) is arbitrary — it just needs to match across all fields in the group.
+
+**Key points:**
+
+| Property           | Location     | Values                                | Description                                                                                                         |
+| ------------------ | ------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `ui:validateOn`    | Field schema | `"blur"`, `"change"`, `"blur,change"` | When to trigger field-level validation. If omitted, validation runs only on Next/Submit.                            |
+| `ui:validateGroup` | Field schema | Any string (group name)               | Links fields for group validation. All fields with the same group name are validated together when all have values. |
+
+> **Note:** Fields without `ui:validateOn` continue to validate only on Next/Submit — this feature is fully backward compatible.
+
 ## Content of `ui:props`
 
 A list of particular widgets supported by each widget can be found in its description above.
@@ -574,7 +699,7 @@ Various selectors (like `fetch:response:*`) are processed by the [jsonata](https
 |    fetch:response:label     |                                                                                                                                                                                                           Special (well-known) case of the fetch:response:\[YOUR_KEY\] . Used i.e. by the ActiveDropdown to label the items.                                                                                                                                                                                                            |                                                                                                 |
 |    fetch:response:value     |                                                                                                                                                                                                   Like fetch:response:label, but gives i.e. ActiveDropdown item values (not visible to the user but actually used as the field value)                                                                                                                                                                                                   |                                                                                                 |
 | fetch:response:autocomplete |                                                                                                                                                                                              Special (well-known) case of the fetch:response:\[YOUR_KEY\] . Used for selecting list of strings for autocomplete feature (ActiveTextInput)                                                                                                                                                                                               |                                                                                                 |
-|        validate:url         |                                                                                                                                                                                                                            Like fetch:url but triggered for validation on form submit, form page transition                                                                                                                                                                                                                             |                                                                                                 |
+|        validate:url         |                                                                                                                                                       Like fetch:url but triggered for validation on form submit, form page transition. Can also be triggered on blur or change when `ui:validateOn` is set on the field (see [Field-Level Validation](#field-level-validation)).                                                                                                                                                       |                                                                                                 |
 |       validate:method       |                                                                                                                                                                                                                                                         Similar to fetch:method                                                                                                                                                                                                                                                         |                                                                                                 |
 |     validate:retrigger      |                                   An array similar to fetch:retrigger. Force revalidation of the field if a dependency is changed. In the most simple case when just the value of the particular field is listed (sort of \[“current.myField”\], the validation is triggered “on input”, i.e. when the user types a character in ActiveInputBox. The network calls are throttled. No matter if validate:retrigger is used, the validation happens at least on submit or transition to the next page.                                    |                                                                                                 |
 |        validate:body        |                                                                                                                                                                                                                                                          Similar to fetch:body                                                                                                                                                                                                                                                          |                                                                                                 |

@@ -6,12 +6,15 @@
 
 Customers adopting RHDH AI Catalog early need assurance that their catalog entities won't become a dead end when upstream Backstage entity kinds stabilize. A documented mapping from current RHDH annotations to draft upstream RFC entity kinds, plus a dry-run migration-readiness tool, provides that assurance without premature migration.
 
-This addresses the gap between RHDH's current AI Asset annotations (`rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, entity `spec.type` values like `ai-agent`, `mcp-server`) and the draft Backstage RFCs that propose upstream entity kinds:
+This addresses the gap between RHDH's current AI Asset annotations (`rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, entity `spec.type` values like `ai-agent`, `mcp-server`) and the evolving upstream Backstage entity kinds:
 
-- RFC #32062: `McpServer` entity kind
-- RFC #33060: `ai-model` and `ai-model-server` entity kinds
+- **MCP servers:** Upstream keeps `kind: API`, `spec.type: mcp-server` with structured `spec.remotes` (`McpServerApiEntity`, shipped in [backstage#34016](https://github.com/backstage/backstage/pull/34016)). No kind rename to `McpServer`. RFC [#32062](https://github.com/backstage/backstage/issues/32062) Option 3 confirmed.
+- **Model servers:** Candidate `kind: API`, `spec.type: ai-model-server` ([backstage#34476](https://github.com/backstage/backstage/pull/34476), open PR).
+- **Skills / rules:** `AiResource` kind shipped upstream (see [#33575](https://github.com/backstage/backstage/issues/33575) lineage).
+- **AI models:** No solid upstream kind yet.
+- **Agents:** Agent-kind ownership tracked separately; not attributed to RFC #32062.
 
-The mapping document and dry-run tool make the migration path transparent and measurable. Customers can enumerate their entities, see how they'd map to upstream kinds once RFCs finalize, and understand what transformations would be required — all without executing an actual migration.
+The mapping document and dry-run tool make the migration path transparent and measurable. Customers can enumerate their entities, see how they'd map to upstream kinds, and understand what field-level transformations would be required — all without executing an actual migration.
 
 ## What Boost Builds
 
@@ -22,9 +25,9 @@ A formal specification covering all RHDH AI Asset annotations and entity kinds:
 - `rhdh.io/ai-asset-category` values (agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server)
 - `rhdh.io/ai-asset-version` annotation format and normalization rules
 - `rhdh.io/ai-asset-source` annotation format
-- Entity kind + `spec.type` mapping table showing current state → proposed RFC kind
+- Entity kind + `spec.type` mapping table showing current state → upstream target kind
 
-Explicit mapping to draft RFCs #32062 and #33060, with confidence levels per mapping (high/medium/low based on RFC stability). Published in a location accessible to platform engineers alongside existing Boost specifications.
+Explicit mapping to upstream entity kinds with confidence levels per mapping (high/medium–high/medium–low/low based on upstream stability). Published in a location accessible to platform engineers alongside existing Boost specifications. Current-state source of truth: [ai-catalog-entity-model/design.md Decision 1](../ai-catalog-entity-model/design.md).
 
 The actual migration is explicitly framed as future work dependent on RFC finalization.
 
@@ -42,17 +45,19 @@ The tool is a scaffold — it establishes the structure for migration-readiness 
 
 ### Current RHDH AI Asset Entity Mapping
 
-| AI Asset     | Current Kind | Current spec.type | Target RFC Kind (draft)      | Confidence |
-| ------------ | ------------ | ----------------- | ---------------------------- | ---------- |
-| Agent        | Component    | ai-agent          | (no RFC yet)                 | Low        |
-| Skill        | AIResource   | skill             | (no RFC yet)                 | Low        |
-| MCP Server   | API          | mcp-server        | McpServer (RFC #32062)       | Medium     |
-| AI Model     | Resource     | ai-model          | ai-model (RFC #33060)        | Medium     |
-| Rule         | AIResource   | rule              | (no RFC yet)                 | Low        |
-| Skill Bundle | AIResource   | ai-skill-bundle   | (no RFC yet)                 | Low        |
-| Model Server | Resource     | ai-model-server   | ai-model-server (RFC #33060) | Medium     |
+> **Current-state source of truth:** [ai-catalog-entity-model/design.md Decision 1](../ai-catalog-entity-model/design.md). The [catalog-entities spec](../agent-creation-discovery/specs/catalog-entities/spec.md) is supplementary context, not a competing SoT for readiness.
 
-> **Note:** If the upstream Backstage API extension for capturing AI model servers ([backstage/backstage#34476](https://github.com/backstage/backstage/pull/34476)) becomes available, the Model Server mapping will pivot to use that upstream kind instead of the current `Resource` mapping.
+| AI Asset     | Current Kind | Current spec.type | Upstream Target (today)                                                                                 | Confidence  | Notes                                                                                                                                            |
+| ------------ | ------------ | ----------------- | ------------------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| MCP Server   | API          | mcp-server        | Same — `McpServerApiEntity` ([#34016](https://github.com/backstage/backstage/pull/34016), merged)       | High        | Kind already aligned. Field/module gaps: `spec.remotes` vs `spec.definition`, catalog-model AI module opt-in. Flag fallback `Resource` entities. |
+| Model Server | Resource     | ai-model-server   | Candidate `API` / `ai-model-server` ([#34476](https://github.com/backstage/backstage/pull/34476), open) | Medium/Low  | `Resource` → `API` kind change + field mapping. Hedge on open PR — **not** a new kind named `ai-model-server`.                                   |
+| AI Model     | Resource     | ai-model          | No solid upstream kind yet                                                                              | Low         | Explicit uncertainty. Continue using current mapping until upstream stabilizes.                                                                  |
+| Skill        | AIResource   | skill             | `AiResource` (shipped; [#33575](https://github.com/backstage/backstage/issues/33575) lineage)           | Medium–High | Kind/name alignment (`AIResource` → `AiResource` casing). Field alignment needed.                                                                |
+| Rule         | AIResource   | rule              | `AiResource` (shipped; [#33575](https://github.com/backstage/backstage/issues/33575) lineage)           | Medium–High | Kind/name alignment (`AIResource` → `AiResource` casing). Field alignment needed.                                                                |
+| Skill Bundle | AIResource   | ai-skill-bundle   | No upstream kind                                                                                        | Low         | Stay on current mapping; track future RFCs.                                                                                                      |
+| Agent        | Component    | ai-agent          | No upstream kind via RFC #32062 (that RFC is MCP-only)                                                  | Low         | Track agent-kind ownership under RHDHPLAN-1113. Do not attribute agent kind to RFC #32062.                                                       |
+
+> **Out of scope / TBD:** `vector-store` and `ai-tool` categories are not yet confirmed as AI-asset mapping rows. See [catalog-entities spec](../agent-creation-discovery/specs/catalog-entities/spec.md) for tracking.
 
 ## Impact
 

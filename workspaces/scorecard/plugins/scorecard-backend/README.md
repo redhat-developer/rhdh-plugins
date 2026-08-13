@@ -94,13 +94,14 @@ For more information about schedule configuration options, see the [Metric Colle
 
 The following metric providers are available:
 
-| Provider       | Metric ID         | Title                       | Description                                                                                                                     | Type    |
-| -------------- | ----------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| **GitHub**     | `github.openPRs`  | GitHub open PRs             | Count of open Pull Requests in GitHub                                                                                           | number  |
-| **Filecheck**  | `filecheck.*`     | File Checks                 | Checks whether specific files (e.g., `README.md`, `LICENSE`, `CODEOWNERS`) exist in a repository.                               | boolean |
-| **Jira**       | `jira.openIssues` | Jira open issues            | The number of opened issues in Jira                                                                                             | number  |
-| **OpenSSF**    | `openssf.*`       | OpenSSF Security Scorecards | 18 security metrics from OpenSSF Scorecards (e.g., `openssf.codeReview`, `openssf.maintained`). Each returns a score from 0-10. | number  |
-| **Dependabot** | `dependabot.*`    | Dependabot Alerts           | Critical, High, Medium and Low CVE Alerts                                                                                       | number  |
+| Provider       | Metric ID                                                                                                       | Title                       | Description                                                                                                                     | Type    |
+| -------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| **GitHub**     | `github.openPRs`                                                                                                | GitHub open PRs             | Count of open Pull Requests in GitHub                                                                                           | number  |
+| **Filecheck**  | `filecheck.*`                                                                                                   | File Checks                 | Checks whether specific files (e.g., `README.md`, `LICENSE`, `CODEOWNERS`) exist in a repository.                               | boolean |
+| **Jira**       | `jira.openIssues`                                                                                               | Jira open issues            | The number of opened issues in Jira                                                                                             | number  |
+| **OpenSSF**    | `openssf.*`                                                                                                     | OpenSSF Security Scorecards | 18 security metrics from OpenSSF Scorecards (e.g., `openssf.codeReview`, `openssf.maintained`). Each returns a score from 0-10. | number  |
+| **Dependabot** | `dependabot.*`                                                                                                  | Dependabot Alerts           | Critical, High, Medium and Low CVE Alerts                                                                                       | number  |
+| **DORA**       | `dora.deploymentFrequency`, `dora.medianLeadTimeForChanges`, `dora.meanTimeToRestore`, `dora.changeFailureRate` | DORA Metrics                | Software delivery performance metrics based on DORA (DevOps Research and Assessment)                                            | number  |
 
 To use these providers, install the corresponding backend modules:
 
@@ -109,10 +110,11 @@ To use these providers, install the corresponding backend modules:
 - OpenSSF: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf`](../scorecard-backend-module-openssf/README.md)
 - Dependabot: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot`](../scorecard-backend-module-dependabot/README.md)
 - Filecheck: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck`](../scorecard-backend-module-filecheck/README.md)
+- DORA: [`@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora`](../scorecard-backend-module-dora/README.md)
 
 ### Disabling Metrics
 
-Administrators can disable metric checks globally via app-config, and users can disable them for concrete entity via `scorecard.io/disabled-metrics` annotation. For more details, see [disabled-metrics-logic.md](./docs/disabled-metrics-logic.md).
+Administrators can disable metric checks globally via `scorecard.disabledMetrics`, and users can disable them per entity via the `scorecard.io/disabled-metrics` annotation. Whether that annotation is honored is controlled by `scorecard.entityAnnotations.enabled` (global switch for all scorecard entity annotations) and `scorecard.entityAnnotations.disabledMetrics` (`enabled` / `except`). For more details, see [disabled-metrics-logic.md](./docs/disabled-metrics-logic.md).
 
 ## Thresholds
 
@@ -120,7 +122,7 @@ Thresholds define conditions to assign metric values to specific visual categori
 
 - **Provider Defaults**: Metric providers define default thresholds
 - **App Configuration**: Override defaults through `app-config.yaml`
-- **Entity Annotations**: Override specific thresholds per entity using catalog annotations
+- **Entity Annotations**: Override specific thresholds per entity using catalog annotations, can be disabled or restricted per metric via `scorecard.entityAnnotations.enabled` and `scorecard.entityAnnotations.thresholds`, see [threshold entity annotations](./docs/thresholds.md#3-entity-annotation-overrides)
 
 Thresholds are evaluated in order, and the first matching rule determines the category. The plugin supports various operators for number metrics (`>`, `>=`, `<`, `<=`, `==`, `!=`, `-` (range)) and boolean metrics (`==`, `!=`). For **number** metrics, configurations loaded through validated paths must cover the **entire real line** when two or more rules are defined (no gaps between intervals).
 
@@ -296,6 +298,57 @@ Requires `scorecard.metric.read` permission and `catalog.entity.read` permission
 ```bash
 curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service?metricIds=github.openPRs" \
   -H "Authorization: Bearer <token>"
+```
+
+### `GET /metrics/catalog/:kind/:namespace/:name/time-series`
+
+Returns daily time-series points for one metric on a catalog entity. Each point is the latest successful sample (`MAX(id)`) for that UTC calendar day. Calculation failures and null values are omitted. Returns `200` with `points: []` when the entity and metric are authorized but no data exists in the range.
+
+#### Path Parameters
+
+| Parameter   | Type   | Required | Description                        |
+| ----------- | ------ | -------- | ---------------------------------- |
+| `kind`      | string | Yes      | Entity kind (e.g., `component`)    |
+| `namespace` | string | Yes      | Entity namespace (e.g., `default`) |
+| `name`      | string | Yes      | Entity name                        |
+
+#### Query Parameters
+
+| Parameter  | Type   | Required | Description                                                          |
+| ---------- | ------ | -------- | -------------------------------------------------------------------- |
+| `metricId` | string | Yes      | Metric ID (e.g., `github.openPRs`)                                   |
+| `from`     | string | Yes      | Inclusive range start (ISO-8601)                                     |
+| `to`       | string | Yes      | Inclusive range end (ISO-8601); must be `>= from`; max span 365 days |
+
+#### Permissions
+
+Requires `scorecard.metric.read` permission and `catalog.entity.read` permission for the specific entity.
+
+#### Example Request
+
+```bash
+curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service/time-series?metricId=github.openPRs&from=2026-04-01T00:00:00.000Z&to=2026-04-30T23:59:59.999Z" \
+  -H "Authorization: Bearer <token>"
+```
+
+#### Example Response
+
+```json
+{
+  "metricId": "github.openPRs",
+  "entityRef": "component:default/my-service",
+  "metadata": {
+    "title": "GitHub open PRs",
+    "description": "The number of open pull requests.",
+    "type": "number",
+    "history": true,
+    "defaultVisualization": "value"
+  },
+  "points": [
+    { "value": 8, "timestamp": "2026-04-27T23:10:00.000Z" },
+    { "value": 7, "timestamp": "2026-04-28T22:55:00.000Z" }
+  ]
+}
 ```
 
 ### `GET /aggregations/:aggregationId`

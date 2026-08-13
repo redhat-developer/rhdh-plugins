@@ -381,6 +381,18 @@ RHDH_CLI_VERSION=1.11.0 yarn enable-in-rhdh-repo
 
 The same `RHDH_CLI_VERSION` env var is honored by `scripts/build-dynamic-plugins.sh`.
 
+### Dynamic plugin image / catalog names
+
+OCI images and export folder names are derived from each package's npm name (scope + name flattened). The scaffolder module is published as `@red-hat-developer-hub/backstage-plugin-x2a-scaffolder-module`, which flattens to:
+
+`red-hat-developer-hub-backstage-plugin-x2a-scaffolder-module` (60 characters; within Backstage's 63-character `metadata.name` limit).
+
+When upgrading from the previous name (`…-scaffolder-backend-module-x2a`), update flightpath / RHDH install configs:
+
+- OCI image or folder: `…/red-hat-developer-hub-backstage-plugin-x2a-scaffolder-module`
+- Extensions `Package` `metadata.name` and any `dynamicArtifact` path that embeds the folder name
+- `dynamicPlugins` package refs that point at the old folder
+
 Seed config comes from `scripts/config-for-rhdh-repo.yaml`. Existing leaf values in `app-config.local.yaml` are preserved (defaults are applied only where missing).
 
 ## Additional Commands

@@ -362,6 +362,82 @@ function createNotebookLightspeedRouteHandler(page: Page) {
     return true;
   };
 
+  const fulfillDocumentRename = async (
+    route: Route,
+    sid: string,
+    encodedDocId: string,
+  ): Promise<boolean> => {
+    const docId = decodeURIComponent(encodedDocId);
+    const docs = docsFor(sid);
+    const existing = docs.get(docId);
+    if (!existing) {
+      await route.fulfill({
+        status: 404,
+        json: { status: 'error', error: 'Document not found' },
+      });
+      return true;
+    }
+
+    let body: { title?: string };
+    try {
+      body = route.request().postDataJSON();
+    } catch {
+      await route.fulfill({
+        status: 400,
+        json: { status: 'error', error: 'Invalid JSON body' },
+      });
+      return true;
+    }
+
+    const title = body?.title?.trim();
+    if (!title) {
+      await route.fulfill({
+        status: 400,
+        json: { status: 'error', error: 'title is required' },
+      });
+      return true;
+    }
+    if (title.length > 255) {
+      await route.fulfill({
+        status: 400,
+        json: {
+          status: 'error',
+          error: 'title must be 255 characters or less',
+        },
+      });
+      return true;
+    }
+
+    for (const [id, doc] of docs.entries()) {
+      if (id !== docId && (doc as Record<string, unknown>).title === title) {
+        await route.fulfill({
+          status: 409,
+          json: {
+            status: 'error',
+            error: `A document with the title "${title}" already exists`,
+          },
+        });
+        return true;
+      }
+    }
+
+    const now = new Date().toISOString();
+    const renamed = { ...existing, title, document_id: title, updated_at: now };
+    docs.delete(docId);
+    docs.set(title, renamed);
+    touchSessionAfterDocChange(sid, now);
+
+    await route.fulfill({
+      json: {
+        status: 'success',
+        document_id: title,
+        session_id: sid,
+        message: 'Document renamed successfully',
+      },
+    });
+    return true;
+  };
+
   const fulfillDocumentStatus = async (
     route: Route,
     method: string,
@@ -413,6 +489,9 @@ function createNotebookLightspeedRouteHandler(page: Page) {
       return fulfillDocumentStatus(route, method, sid, tail[2]);
     }
     if (tail.length === 3 && tail[1] === 'documents' && tail[2]) {
+      if (method === 'PATCH') {
+        return fulfillDocumentRename(route, sid, tail[2]);
+      }
       return fulfillDocumentDelete(route, method, sid, tail[2]);
     }
     return false;

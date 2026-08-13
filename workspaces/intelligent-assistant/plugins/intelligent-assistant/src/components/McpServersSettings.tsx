@@ -70,7 +70,8 @@ const useStyles = makeStyles(theme => ({
   root: {
     padding: 0,
     height: '100%',
-    minHeight: '100%',
+    minHeight: 0,
+    flex: 1,
     width: '100%',
     overflow: 'auto',
   },

@@ -30,6 +30,7 @@ import {
   boostToolResourcePermissions,
   boostAccessPermission,
   boostAdminPermission,
+  aiCatalogAdminPermission,
   boostAgentListPermission,
   boostAgentPromotePermission,
   boostToolPromotePermission,
@@ -165,11 +166,15 @@ describe('boost-common', () => {
     it('exports boost.admin permission', () => {
       expect(boostAdminPermission.name).toBe('boost.admin');
     });
+
+    it('exports ai-catalog.admin permission', () => {
+      expect(aiCatalogAdminPermission.name).toBe('ai-catalog.admin');
+    });
   });
 
   describe('combined permissions', () => {
-    it('includes all 23 permissions (16 resource + 5 functional + 2 gate)', () => {
-      expect(boostPermissions).toHaveLength(23);
+    it('includes all 24 permissions (16 resource + 5 functional + 3 gate)', () => {
+      expect(boostPermissions).toHaveLength(24);
     });
 
     it('all permission names are unique', () => {

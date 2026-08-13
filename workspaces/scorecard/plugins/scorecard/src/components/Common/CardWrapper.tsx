@@ -96,21 +96,23 @@ export const CardWrapper = ({
       >
         {description && (
           <Box sx={{ pb: 2, width: '100%', minWidth: 316 }}>
-            <Typography
-              variant="body2"
-              color="textSecondary"
-              sx={{
-                fontSize: '1rem',
-                fontWeight: 400,
-                display: '-webkit-box',
-                WebkitBoxOrient: 'vertical',
-                WebkitLineClamp: 2,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
-              {description}
-            </Typography>
+            <Tooltip title={description}>
+              <Typography
+                variant="body2"
+                color="textSecondary"
+                sx={{
+                  fontSize: '1rem',
+                  fontWeight: 400,
+                  display: '-webkit-box',
+                  WebkitBoxOrient: 'vertical',
+                  WebkitLineClamp: 2,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {description}
+              </Typography>
+            </Tooltip>
           </Box>
         )}
 

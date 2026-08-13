@@ -10,7 +10,6 @@ import { OAuthApi } from '@backstage/core-plugin-api';
 import { OpenIdConnectApi } from '@backstage/core-plugin-api';
 import { ProfileInfoApi } from '@backstage/core-plugin-api';
 import { SessionApi } from '@backstage/core-plugin-api';
-import { SignInPageProps } from '@backstage/core-plugin-api';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 
 // @alpha
@@ -39,9 +38,6 @@ export const pingfederateAuthApiRef: ApiRef<CustomAuthApiRefType>;
 
 // @alpha
 export const samlAuthApiRef: ApiRef<CustomAuthApiRefType>;
-
-// @alpha
-export function SignInPage(props: SignInPageProps): React.JSX.Element;
 
 // @alpha
 export const signInTranslationRef: TranslationRef<

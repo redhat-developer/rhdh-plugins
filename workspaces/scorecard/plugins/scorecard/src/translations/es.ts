@@ -97,6 +97,21 @@ const scorecardTranslationEs = createTranslationMessages({
       'Puntuación total {{total}}',
     'metric.drillDownCalculationFailures':
       'No se pudieron validar una o más entidades cuando se calculó esta métrica.',
+    'metric.dora.deploymentFrequency.description':
+      'Realiza un seguimiento de la frecuencia con la que el código se implementa correctamente en producción durante los últimos 30 días. Los mejores equipos implementan bajo demanda (varias veces al día).',
+    'metric.dora.deploymentFrequency.title':
+      'DORA - Frecuencia de implementación',
+    'metric.dora.medianLeadTimeForChanges.description':
+      'Mide el tiempo desde el commit del código hasta la implementación en producción durante los últimos 30 días. Los mejores equipos tienen un tiempo de entrega inferior a 24 horas.',
+    'metric.dora.medianLeadTimeForChanges.title':
+      'DORA - Tiempo medio de entrega de cambios',
+    'metric.dora.changeFailureRate.description':
+      'Supervisa el porcentaje de implementaciones que provocan un fallo en producción durante los últimos 30 días. Los mejores equipos mantienen una tasa de fallos de cambio inferior al 5 %.',
+    'metric.dora.changeFailureRate.title': 'DORA - Tasa de fallos de cambio',
+    'metric.dora.meanTimeToRestore.description':
+      'Realiza un seguimiento del tiempo medio para restaurar el servicio tras un incidente durante los últimos 30 días. Los mejores equipos restauran el servicio en menos de una hora.',
+    'metric.dora.meanTimeToRestore.title':
+      'DORA - Tiempo medio de restauración',
     'metric.filecheck.description':
       'Comprueba si el archivo {{name}} existe en el repositorio.',
     'metric.filecheck.title': 'Verificación de archivo: {{name}}',
@@ -173,10 +188,13 @@ const scorecardTranslationEs = createTranslationMessages({
     'permissionRequired.description':
       'Para ver el complemento de tarjetas de puntuación, comuníquese con su administrador para que le otorgue el permiso {{permission}}.',
     'permissionRequired.title': 'Permiso faltante',
+    'thresholds.elite': 'Élite',
     'thresholds.entities_one': '{{count}} entidad',
     'thresholds.entities_other': '{{count}} entidades',
     'thresholds.error': 'Error',
     'thresholds.exist': 'Existente',
+    'thresholds.low': 'Bajo',
+    'thresholds.medium': 'Medio',
     'thresholds.missing': 'Faltante',
     'thresholds.noEntities': 'No hay entidades en el estado {{category}}',
     'thresholds.success': 'Éxito',

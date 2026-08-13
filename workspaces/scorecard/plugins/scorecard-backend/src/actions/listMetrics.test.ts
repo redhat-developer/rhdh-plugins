@@ -42,12 +42,14 @@ describe('createListMetricsAction', () => {
         title: 'Open PRs',
         description: 'Number of open pull requests',
         type: 'number' as const,
+        defaultVisualization: 'sparkline' as const,
       },
       {
         id: 'sonarqube.coverage',
         title: 'Code Coverage',
         description: 'Test coverage percentage',
         type: 'number' as const,
+        defaultVisualization: 'value' as const,
       },
     ];
     (mockRegistry.listMetrics as jest.Mock).mockReturnValue(metrics);

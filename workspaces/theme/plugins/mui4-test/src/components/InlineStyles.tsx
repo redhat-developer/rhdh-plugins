@@ -21,7 +21,9 @@ import { makeStyles } from '@material-ui/core/styles';
 const useStyles = makeStyles(theme => ({
   withPadding: {
     padding: 32,
-    backgroundColor: 'gray',
+    // CSS 'gray' (#808080) fails WCAG AA with white label text (3.94:1).
+    backgroundColor: '#424242',
+    color: '#ffffff',
   },
   withSpacing: {
     padding: theme.spacing(4),
@@ -40,7 +42,7 @@ export const InlineStyles = () => {
         Default button with{' '}
         <code>
           {
-            "makeStyles({ withPadding: { padding: 32, backgroundColor: 'gray' }})"
+            "makeStyles({ withPadding: { padding: 32, backgroundColor: '#424242', color: '#ffffff' }})"
           }
         </code>
       </h1>
@@ -58,9 +60,17 @@ export const InlineStyles = () => {
 
       <h1>
         Default button with{' '}
-        <code>{"style={{ padding: 32, backgroundColor: 'gray' }}"}</code>
+        <code>
+          {
+            "style={{ padding: 32, backgroundColor: '#424242', color: '#ffffff' }}"
+          }
+        </code>
       </h1>
-      <Button style={{ padding: 32, backgroundColor: 'gray' }}>a button</Button>
+      <Button
+        style={{ padding: 32, backgroundColor: '#424242', color: '#ffffff' }}
+      >
+        a button
+      </Button>
     </InfoCard>
   );
 };
