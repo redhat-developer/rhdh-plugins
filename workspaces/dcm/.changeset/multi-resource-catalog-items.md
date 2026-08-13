@@ -1,6 +1,6 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-dcm-common': minor
-'@red-hat-developer-hub/backstage-plugin-dcm': minor
+'@red-hat-developer-hub/backstage-plugin-dcm-common': major
+'@red-hat-developer-hub/backstage-plugin-dcm': major
 ---
 
 Add multi-resource support for Catalog Items and Catalog Item Instances.

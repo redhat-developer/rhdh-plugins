@@ -99,6 +99,77 @@ const VALID_CATALOG_JSON = JSON.stringify({
   },
 });
 
+const SERVICE_TYPES = [
+  { service_type: 'vm', uid: 'st-vm', api_version: 'v1', spec: {} },
+  { service_type: 'postgres', uid: 'st-pg', api_version: 'v1', spec: {} },
+];
+
+function WrapperWithTypes(
+  props: Readonly<{
+    isEditMode?: boolean;
+  }>,
+) {
+  const [form, setForm] = useState<CatalogItemForm>(emptyCatalogItemForm());
+  return (
+    <CatalogItemWizardDialog
+      open
+      onClose={() => {}}
+      title="Test"
+      form={form}
+      setForm={setForm}
+      serviceTypes={SERVICE_TYPES}
+      onSubmit={() => {}}
+      submitLabel="Create"
+      submitting={false}
+      error={null}
+      isEditMode={props.isEditMode ?? false}
+    />
+  );
+}
+
+describe('CatalogItemWizardDialog – multi-resource wizard', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('can navigate to the Resources tab and add a resource', async () => {
+    render(<WrapperWithTypes />);
+
+    const resourcesTab = screen.getByRole('tab', { name: /resources/i });
+    await userEvent.click(resourcesTab);
+
+    const addBtn = await screen.findByRole('button', { name: /add resource/i });
+    await userEvent.click(addBtn);
+
+    // After adding, the resource card header shows the unnamed-resource placeholder.
+    // There will be at least one element (tab label + card heading), so use getAllByText.
+    await waitFor(() =>
+      expect(screen.getAllByText(/unnamed/i).length).toBeGreaterThan(0),
+    );
+  });
+
+  it('shows duplicate name error when two resources share the same name after submit attempt', async () => {
+    render(<WrapperWithTypes />);
+
+    const resourcesTab = screen.getByRole('tab', { name: /resources/i });
+    await userEvent.click(resourcesTab);
+
+    const addBtn = await screen.findByRole('button', { name: /add resource/i });
+    await userEvent.click(addBtn);
+    await userEvent.click(addBtn);
+
+    // Wait for both resource cards to render; each card has a "Resource name" textbox.
+    const nameInputs = await screen.findAllByRole('textbox');
+    // The first two textboxes on the Resources tab are the resource-name fields.
+    await userEvent.type(nameInputs[0], 'app');
+    await userEvent.type(nameInputs[1], 'app');
+
+    const nextBtn = screen.getByRole('button', { name: /next/i });
+    await userEvent.click(nextBtn);
+
+    const errors = await screen.findAllByText(/Resource name must be unique/i);
+    expect(errors.length).toBeGreaterThan(0);
+  });
+});
+
 describe('CatalogItemWizardDialog – file import error handling', () => {
   beforeEach(() => jest.clearAllMocks());
 

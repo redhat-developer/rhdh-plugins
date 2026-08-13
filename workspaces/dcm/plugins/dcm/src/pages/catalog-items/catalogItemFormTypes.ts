@@ -238,13 +238,6 @@ export function validateFieldRows(
           'Must be a JSON object \u2014 e.g. {"type":"integer"}',
         );
       } else if (typeof schemaResult === 'object') {
-        if (typeof schemaResult.required === 'boolean') {
-          rowErrors.validation_schema = m(
-            'validation.catalogItem.schemaRequiredNotBoolean',
-            '"required" must be an array of property names, not a boolean',
-          );
-        }
-
         schemaMin = pickNumericBound(schemaResult, 'minimum', 'min');
         schemaMax = pickNumericBound(schemaResult, 'maximum', 'max');
         if (
@@ -436,8 +429,8 @@ export function formToCatalogItem(f: CatalogItemForm): CatalogItem {
 
 /**
  * Converts an edit-mode form to a {@link CatalogItem} PATCH payload.
- * Omits immutable fields (`name`, `service_type`, `requires_resources`) per
- * resource, as the API does not allow changing them after creation.
+ * Includes `name` (as the resource identifier) and `service_type` per resource.
+ * Omits `requires_resources` as it is immutable after creation.
  */
 export function formToCatalogItemForUpdate(f: CatalogItemForm): CatalogItem {
   return {

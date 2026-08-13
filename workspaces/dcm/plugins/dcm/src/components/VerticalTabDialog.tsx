@@ -120,6 +120,8 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export type VerticalTabItem = {
+  /** Stable React key. Falls back to `label` when omitted. */
+  key?: string;
   label: string;
   content: React.ReactNode;
 };
@@ -223,7 +225,11 @@ export function VerticalTabDialog({
             textColor="primary"
           >
             {tabs.map(tab => (
-              <Tab key={tab.label} label={tab.label} className={classes.tab} />
+              <Tab
+                key={tab.key ?? tab.label}
+                label={tab.label}
+                className={classes.tab}
+              />
             ))}
           </Tabs>
         </Box>

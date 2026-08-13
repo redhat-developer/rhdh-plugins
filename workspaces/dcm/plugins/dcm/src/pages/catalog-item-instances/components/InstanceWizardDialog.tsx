@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Box,
   FormControl,
@@ -174,12 +174,14 @@ type ResourceValuesTabProps = Readonly<{
   resourceValues: ResourceUserValues;
   resourceIndex: number;
   setForm: React.Dispatch<React.SetStateAction<InstanceForm>>;
+  submitAttempted: boolean;
 }>;
 
 function ResourceValuesTab({
   resourceValues,
   resourceIndex,
   setForm,
+  submitAttempted,
 }: ResourceValuesTabProps) {
   const { t } = useTranslation();
   const [touchedMap, setTouchedMap] = useState<Record<number, boolean>>({});
@@ -187,6 +189,9 @@ function ResourceValuesTab({
     () => validateUserValues(resourceValues.values, t),
     [resourceValues.values, t],
   );
+  const effectiveTouchedMap: Record<number, boolean> = submitAttempted
+    ? Object.fromEntries(resourceValues.values.map((_, i) => [i, true]))
+    : touchedMap;
 
   if (resourceValues.values.length === 0) {
     return (
@@ -217,7 +222,7 @@ function ResourceValuesTab({
     <UserValueFields
       rows={resourceValues.values}
       errors={errors}
-      touchedMap={touchedMap}
+      touchedMap={effectiveTouchedMap}
       onValueChange={handleValueChange}
       onBlur={handleBlur}
     />
@@ -258,6 +263,15 @@ export function InstanceWizardDialog({
   /** True after the final submit button is pressed — all tabs show errors. */
   const [finalSubmitAttempted, setFinalSubmitAttempted] = useState(false);
   const [touched, setTouched] = useState<ScalarTouched>({});
+
+  useEffect(() => {
+    if (open) {
+      setActiveTab(0);
+      setTabsAttempted(new Set());
+      setFinalSubmitAttempted(false);
+      setTouched({});
+    }
+  }, [open]);
 
   const tabSubmitAttempted = (tabIndex: number) =>
     finalSubmitAttempted || tabsAttempted.has(tabIndex);
@@ -308,12 +322,14 @@ export function InstanceWizardDialog({
     };
 
     const resourceTabs = form.resource_values.map((rv, i) => ({
+      key: rv.resourceName,
       label: rv.resourceName,
       content: (
         <ResourceValuesTab
           resourceValues={rv}
           resourceIndex={i}
           setForm={setForm}
+          submitAttempted={tabSubmitAttempted(1 + i)}
         />
       ),
     }));

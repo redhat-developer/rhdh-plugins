@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useRef, useMemo, useState } from 'react';
+import { useRef, useEffect, useMemo, useState } from 'react';
 import {
   Box,
   Button,
@@ -284,16 +284,39 @@ function ResourcesTab({
   const updateResource = (index: number, patch: Partial<ResourceFormEntry>) => {
     setForm(prev => {
       const updated = [...prev.resources];
+      const oldName = updated[index].name.trim();
       updated[index] = { ...updated[index], ...patch };
+      const newName = patch.name !== undefined ? patch.name.trim() : oldName;
+      if (oldName && newName !== oldName) {
+        return {
+          ...prev,
+          resources: updated.map(r => ({
+            ...r,
+            requires_resources: r.requires_resources.map(dep =>
+              dep === oldName ? newName : dep,
+            ),
+          })),
+        };
+      }
       return { ...prev, resources: updated };
     });
   };
 
   const removeResource = (index: number) => {
-    setForm(prev => ({
-      ...prev,
-      resources: prev.resources.filter((_, i) => i !== index),
-    }));
+    setForm(prev => {
+      const removedName = prev.resources[index]?.name.trim();
+      const remaining = prev.resources.filter((_, i) => i !== index);
+      if (!removedName) return { ...prev, resources: remaining };
+      return {
+        ...prev,
+        resources: remaining.map(r => ({
+          ...r,
+          requires_resources: r.requires_resources.filter(
+            dep => dep !== removedName,
+          ),
+        })),
+      };
+    });
   };
 
   const addResource = () => {
@@ -547,6 +570,15 @@ export function CatalogItemWizardDialog({
     Partial<Record<'display_name' | 'api_version', boolean>>
   >({});
 
+  useEffect(() => {
+    if (open) {
+      setActiveTab(0);
+      setTabsAttempted(new Set());
+      setFinalSubmitAttempted(false);
+      setTouched({});
+    }
+  }, [open]);
+
   const tabSubmitAttempted = (tabIndex: number) =>
     finalSubmitAttempted || tabsAttempted.has(tabIndex);
 
@@ -639,6 +671,7 @@ export function CatalogItemWizardDialog({
     ];
 
     const resourceTabs = form.resources.map((r, i) => ({
+      key: r.id,
       label: r.name || t('catalogItems.wizard.unnamedResource'),
       content: (
         <ResourceFieldsTab
