@@ -42,9 +42,10 @@ Read-only CLI command that enumerates AI Asset catalog entities and reports migr
 **WHEN** the dry-run tool analyzes the entity  
 **THEN** the report lists all fields that would need transformation during actual migration:
 
-- Kind migration (e.g., `API` → `McpServer`)
-- `spec.type` remapping or removal
-- Custom field migrations if required by target RFC schema
+- Kind migration where applicable (e.g., `Resource` → `API` for model-server if [#34476](https://github.com/backstage/backstage/pull/34476) merges)
+- Kind/name casing alignment (e.g., `AIResource` → `AiResource` for skills/rules)
+- Field-level changes (e.g., adopt `spec.remotes` instead of `spec.definition` for MCP servers)
+- Module opt-in requirements (e.g., `@backstage/plugin-catalog-backend-module-ai-model`)
 - Annotation additions/removals
 
 ---
@@ -55,9 +56,10 @@ Read-only CLI command that enumerates AI Asset catalog entities and reports migr
 **WHEN** the dry-run tool generates a per-entity report  
 **THEN** each entity's report includes the confidence level from the mapping specification:
 
-- **High:** RFC schema stable, migration path clear
-- **Medium:** RFC active, schema may evolve
-- **Low:** No corresponding RFC yet, mapping speculative
+- **High:** Upstream kind shipped and stable, kind already aligned
+- **Medium–High:** Upstream kind shipped, field/name alignment work remains
+- **Medium/Low:** Upstream target proposed in an open PR, hedge accordingly
+- **Low:** No solid upstream kind yet, mapping speculative
 
 ---
 
@@ -87,11 +89,24 @@ Read-only CLI command that enumerates AI Asset catalog entities and reports migr
       "name": "my-mcp-server",
       "currentKind": "API",
       "currentSpecType": "mcp-server",
-      "targetKind": "McpServer",
-      "confidence": "medium",
+      "targetKind": "API",
+      "targetModel": "McpServerApiEntity",
+      "confidence": "high",
       "transformations": [
-        "Migrate kind: API → McpServer",
-        "Preserve spec.type as type field"
+        "Kind already aligned (API). No kind change required.",
+        "Adopt spec.remotes instead of spec.definition",
+        "Opt in to @backstage/plugin-catalog-backend-module-ai-model"
+      ]
+    },
+    {
+      "name": "my-skill",
+      "currentKind": "AIResource",
+      "currentSpecType": "skill",
+      "targetKind": "AiResource",
+      "confidence": "medium-high",
+      "transformations": [
+        "Kind/name casing alignment: AIResource → AiResource",
+        "Field alignment per upstream AiResource schema"
       ]
     }
   ]
@@ -112,15 +127,24 @@ Migration Readiness Report
 
 Entity: my-mcp-server
   Current: kind=API, spec.type=mcp-server
-  Target:  kind=McpServer (RFC #32062)
-  Confidence: Medium
+  Target:  kind=API (McpServerApiEntity, backstage#34016)
+  Confidence: High
   Transformations:
-    - Migrate kind: API → McpServer
-    - Preserve spec.type as type field
+    - Kind already aligned (API). No kind change required.
+    - Adopt spec.remotes instead of spec.definition
+    - Opt in to @backstage/plugin-catalog-backend-module-ai-model
+
+Entity: my-skill
+  Current: kind=AIResource, spec.type=skill
+  Target:  kind=AiResource (upstream shipped, #33575)
+  Confidence: Medium–High
+  Transformations:
+    - Kind/name casing alignment: AIResource → AiResource
+    - Field alignment per upstream AiResource schema
 
 ---
 This is a migration-readiness assessment.
-Actual migration is future work pending RFC finalization.
+Actual migration is future work pending upstream stabilization.
 ```
 
 ---

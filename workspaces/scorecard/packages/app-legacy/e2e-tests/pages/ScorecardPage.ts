@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { Page, expect } from '@playwright/test';
+import { Locator, Page, expect } from '@playwright/test';
 import { waitUntilApiCallSucceeds } from '../utils/apiUtils';
-import { ScorecardMessages } from '../utils/translationUtils';
+import { ScorecardMessages, evaluateMessage } from '../utils/translationUtils';
 
 export class ScorecardPage {
   readonly page: Page;
@@ -109,5 +109,59 @@ export class ScorecardPage {
     } catch {
       return false;
     }
+  }
+
+  // Metric Group Card helpers
+
+  getGroupCard(title: string): Locator {
+    return this.page
+      .locator('[role="article"]')
+      .filter({ hasText: title })
+      .first();
+  }
+
+  getBucketTile(
+    card: Locator,
+    thresholdKey: 'success' | 'warning' | 'error',
+  ): Locator {
+    return card
+      .locator('[role="button"]')
+      .filter({ hasText: this.translations.thresholds[thresholdKey] });
+  }
+
+  async openDataSourcesDialog(card: Locator): Promise<Locator> {
+    await card
+      .getByLabel(this.translations.metricGroupCard.menuAriaLabel)
+      .click();
+    await this.page
+      .getByText(this.translations.metricGroupCard.viewDataSources)
+      .click();
+    const dialog = this.page.locator('[role="dialog"]');
+    await expect(dialog).toBeVisible({ timeout: 5000 });
+    return dialog;
+  }
+
+  async closeDialog(dialog: Locator) {
+    await dialog.getByText(this.translations.dataSourcesDialog.close).click();
+  }
+
+  getDialogTitle(groupTitle: string): string {
+    return evaluateMessage(
+      this.translations.dataSourcesDialog.title,
+      groupTitle,
+    );
+  }
+
+  getFilterPill(
+    dialog: Locator,
+    thresholdKey: 'success' | 'warning' | 'error',
+  ): Locator {
+    return dialog
+      .locator('[role="button"][aria-pressed]')
+      .filter({ hasText: this.translations.thresholds[thresholdKey] });
+  }
+
+  getTableRows(dialog: Locator): Locator {
+    return dialog.locator('tbody [role="row"]');
   }
 }

@@ -14,10 +14,31 @@
  * limitations under the License.
  */
 
+import type { IdentityApi } from '@backstage/core-plugin-api';
+import { MockConfigApi } from '@backstage/test-utils';
+
+import {
+  bulkImportApiRef,
+  BulkImportBackendClient,
+} from './api/BulkImportBackendClient';
 import { bulkImportPlugin } from './plugin';
 
 describe('bulk-import', () => {
-  it('should export plugin', () => {
-    expect(bulkImportPlugin).toBeDefined();
+  it('registers bulkImportApiRef via the plugin API factory', () => {
+    const [apiFactory] = bulkImportPlugin.getApis();
+    expect(apiFactory.api).toBe(bulkImportApiRef);
+
+    const configApi = new MockConfigApi({
+      app: { baseUrl: 'http://localhost:3000' },
+    });
+    const identityApi = {
+      getBackstageIdentity: jest.fn(),
+      getProfileInfo: jest.fn(),
+      getCredentials: jest.fn(),
+      signOut: jest.fn(),
+    } as unknown as IdentityApi;
+
+    const api = apiFactory.factory({ configApi, identityApi });
+    expect(api).toBeInstanceOf(BulkImportBackendClient);
   });
 });

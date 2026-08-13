@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki
 
+## 1.4.1
+
+### Patch Changes
+
+- 82b31c8: Add module wiring tests, a local `dev/` harness, and contributor documentation.
+- Updated dependencies [f48dfb4]
+- Updated dependencies [c74276c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.9.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.4.1
+
 ## 1.4.0
 
 ### Minor Changes

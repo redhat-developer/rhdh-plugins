@@ -52,6 +52,10 @@ import { RateLimiter } from './chat/RateLimiter';
 import { BackendApprovalStore } from './approval/BackendApprovalStore';
 import { DocumentSyncService } from './documents/DocumentSyncService';
 import { createSkillsRoutes } from './skills/routes';
+import { SyncAttemptsStore } from './ingestion/SyncAttemptsStore';
+import { ConnectorConfigReader } from './ingestion/ConnectorConfigReader';
+import { HealthStatusService } from './ingestion/HealthStatusService';
+import { createIngestionHealthRoutes } from './ingestion/routes';
 
 /**
  * The ProviderManager instance shared between the plugin and the
@@ -104,7 +108,7 @@ export const boostAiProviderServiceFactory = createServiceFactory({
  * Provides:
  * - `boostProviderExtensionPoint` for provider module registration
  * - Default service factory for `boostAiProviderServiceRef`
- * - Permission registration for all 23 boost permissions
+ * - Permission registration for all 24 boost permissions
  * - Security mode validation and enforcement
  * - Health check endpoint
  *
@@ -130,6 +134,7 @@ export const boostPlugin = createBackendPlugin({
         httpAuth: coreServices.httpAuth,
         permissions: coreServices.permissions,
         permissionsRegistry: coreServices.permissionsRegistry,
+        scheduler: coreServices.scheduler,
       },
       async init({
         logger,
@@ -140,6 +145,7 @@ export const boostPlugin = createBackendPlugin({
         httpAuth,
         permissions: _permissions,
         permissionsRegistry,
+        scheduler,
       }) {
         logger.info('Initializing boost backend plugin');
 
@@ -241,6 +247,58 @@ export const boostPlugin = createBackendPlugin({
           logger,
         });
 
+        // Initialize ingestion health services (issue 5 of 29)
+        const syncAttemptsStore = new SyncAttemptsStore({
+          database,
+          logger,
+        });
+
+        const connectorConfigReader = new ConnectorConfigReader({
+          config,
+          logger,
+        });
+
+        const healthStatusService = new HealthStatusService({
+          store: syncAttemptsStore,
+          configReader: connectorConfigReader,
+          logger,
+        });
+
+        // Scheduled cleanup job for sync attempts (task 1.5)
+        // Runs retention enforcement for all connectors.
+        const retentionLimit =
+          config.getOptionalNumber(
+            'boost.ingestion.healthRetention.maxAttemptsPerConnector',
+          ) ?? 100;
+
+        const runCleanup = async () => {
+          try {
+            const connectorIds =
+              await syncAttemptsStore.getDistinctConnectorIds();
+            for (const connectorId of connectorIds) {
+              await syncAttemptsStore.cleanupOldAttempts(
+                connectorId,
+                retentionLimit,
+              );
+            }
+            logger.debug(
+              `Sync attempts retention cleanup completed for ${connectorIds.length} connector(s)`,
+            );
+          } catch (err) {
+            logger.error(
+              'Sync attempts retention cleanup failed',
+              err as Error,
+            );
+          }
+        };
+
+        await scheduler.scheduleTask({
+          id: 'boost-sync-attempts-retention-cleanup',
+          frequency: { days: 1 },
+          timeout: { minutes: 10 },
+          fn: runCleanup,
+        });
+
         // Register all boost permissions with the framework
         permissionsRegistry.addPermissions([...boostPermissions]);
         logger.info(`Registered ${boostPermissions.length} boost permissions`);
@@ -331,6 +389,15 @@ export const boostPlugin = createBackendPlugin({
         });
         router.use(skillsRoutes);
 
+        // Ingestion health routes (issue 5 of 29)
+        const ingestionHealthRoutes = createIngestionHealthRoutes({
+          healthService: healthStatusService,
+          permissions: _permissions,
+          httpAuth,
+          logger,
+        });
+        router.use(ingestionHealthRoutes);
+
         // Health check endpoint (always unauthenticated)
         router.get('/health', (_req, res) => {
           res.json({ status: 'ok' });
@@ -404,6 +471,10 @@ export const boostPlugin = createBackendPlugin({
         });
         httpRouter.addAuthPolicy({
           path: '/skills',
+          allow: 'user-cookie',
+        });
+        httpRouter.addAuthPolicy({
+          path: '/ingestion-health',
           allow: 'user-cookie',
         });
 

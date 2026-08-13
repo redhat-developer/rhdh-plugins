@@ -13,22 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  ModelCatalog,
-  Model,
-  ModelServer,
-  API,
-} from '@redhat-ai-dev/model-catalog-types';
-import {
-  Entity,
-  ComponentEntity,
-  ApiEntity,
-  ResourceEntity,
-  makeValidator,
-} from '@backstage/catalog-model';
+import { ModelCatalog } from '@redhat-ai-dev/model-catalog-types';
+import { Entity, makeValidator } from '@backstage/catalog-model';
 import { LoggerService } from '@backstage/backend-plugin-api';
+import type { AiModelServerApiEntity } from '@red-hat-developer-hub/backstage-plugin-catalog-model-ai-model-server';
 
-// Matches PropertyKeys.TechDocsKey in kserve-kubeflow-connector-backend; duplicated because @backstage/no-mixed-plugin-imports forbids backend-plugin-module → backend-plugin imports. Consider a common module if more constants need sharing.
 const TECHDOCS_KEY = 'techdocs';
 
 function isModelCatalog(o: any): o is ModelCatalog {
@@ -38,259 +27,110 @@ function isModelCatalog(o: any): o is ModelCatalog {
 export function ParseCatalogJSON(jsonStr: string): ModelCatalog {
   const modelCatalog: ModelCatalog = JSON.parse(jsonStr);
   if (isModelCatalog(modelCatalog)) {
-    // do something with now correctly typed object
     return modelCatalog;
   }
   throw new Error(`model catalog JSON in unexpected format: ${jsonStr}`);
 }
 
-// Generate the Backstage catalog entities that correspond to the given model catalog json object
-// Note: These entities will need to have their location and origin location annotations set before ingestion into the catalog
-// An optional logger parameter can be passed if you wish log output from the generator
 export function GenerateCatalogEntities(
   modelCatalog: ModelCatalog,
   svcUrl?: string,
   logger?: LoggerService,
 ): Entity[] {
-  // Generate the Resource entities for the Model(s)
-  let modelCatalogEntities: Entity[] = [];
-  const models: Model[] = modelCatalog.models;
-  modelCatalogEntities = modelCatalogEntities.concat(
-    GenerateModelResourceEntities(
-      models,
-      modelCatalog.modelServer,
-      logger,
-      svcUrl,
-    ),
-  );
-
-  // Generate the Model Server and Model Server APi entity, if present
-  if (modelCatalog.modelServer !== undefined) {
-    const modelServer = modelCatalog.modelServer;
-    modelCatalogEntities.push(
-      GenerateModelServerComponentEntity(
-        modelServer,
-        modelCatalog.models,
-        logger,
-      ),
+  if (!modelCatalog.modelServer) {
+    logger?.debug(
+      'ModelCatalog has no modelServer; skipping AiModelServerAPI generation',
     );
-
-    // If there's an exposed API present, generate that entity as well, and update the model server entity accordingly
-    if (modelServer.API !== undefined) {
-      const api: API = modelServer.API;
-      modelCatalogEntities.push(
-        GenerateModelServerAPI(api, modelServer, logger),
-      );
-    }
+    return [];
   }
 
-  return modelCatalogEntities;
-}
+  if (!modelCatalog.modelServer.API?.url) {
+    logger?.debug(
+      'ModelCatalog modelServer has no API url; skipping AiModelServerAPI generation',
+    );
+    return [];
+  }
 
-export function GenerateModelResourceEntities(
-  models: Model[],
-  modelServer?: ModelServer,
-  logger?: LoggerService,
-  svcUrl?: string,
-): ResourceEntity[] {
-  const modelResourceEntities: ResourceEntity[] = [];
-  models.forEach(model => {
-    const modelResourceEntity: ResourceEntity = {
-      apiVersion: 'backstage.io/v1beta1',
-      kind: 'Resource',
-      metadata: {
-        name: sanitizeMetadataName(model.name),
-        description: `${model.description}`,
-        tags: [],
-        links: [],
-      },
-      spec: {
-        owner: `user:${model.owner}`,
-        type: 'ai-model',
-      },
-    };
+  const modelServer = modelCatalog.modelServer;
+  const models = modelCatalog.models;
 
-    // Set optional parameters, if present
-    if (model.tags !== undefined) {
-      modelResourceEntity.metadata.tags = sanitizeTags(model.tags, logger);
-    }
-    if (model.artifactLocationURL !== undefined) {
-      modelResourceEntity.metadata.links?.push({
-        title: 'Artifact Location',
-        url: `${model.artifactLocationURL}`,
-      });
-    }
-    if (model.howToUseURL !== undefined) {
-      modelResourceEntity.metadata.links?.push({
-        title: 'How to use',
-        url: `${model.howToUseURL}`,
-      });
-    }
-    if (model.license !== undefined) {
-      modelResourceEntity.metadata.links?.push({
-        title: `License`,
-        url: `${model.license}`,
-      });
-    }
-    modelResourceEntity.spec.dependencyOf = [];
-    if (modelServer !== undefined) {
-      modelResourceEntity.spec.dependencyOf?.push(
-        `component:${modelServer.name}`,
-      );
-    }
+  const tags = sanitizeTags(modelServer.tags ?? [], logger);
+  if (modelServer.authentication === undefined || !modelServer.authentication) {
+    tags.push('auth-not-required');
+  } else {
+    tags.push('auth-required');
+  }
 
-    // Handle any annotations present on the model resource
-    if (model.annotations !== undefined) {
-      // Initialize annotations object if needed
-      if (modelResourceEntity.metadata.annotations === undefined) {
-        modelResourceEntity.metadata.annotations = {};
-      }
+  const links: Array<{ title: string; url: string }> = [];
+  if (modelServer.API) {
+    links.push({ title: 'API', url: modelServer.API.url });
+  }
+  if (modelServer.homepageURL) {
+    links.push({ title: 'Homepage', url: modelServer.homepageURL });
+  }
 
-      // Copy all annotations from model to resource entity
-      Object.keys(model.annotations).forEach(key => {
-        // Special handling for TechDocs annotation
-        if (key === TECHDOCS_KEY) {
-          let techdocsUrl: string = model.annotations![key];
-          techdocsUrl = techdocsUrl.trim();
-          if (techdocsUrl !== '') {
-            // Auto-set paths (from rhdh.io/catalog-source + rhdh.io/catalog-model) start with '/' and need
-            // the connector base URL prepended. Explicit rhdh.io/techdocs annotations are full URLs and used as-is.
-            if (svcUrl !== undefined && techdocsUrl.startsWith('/')) {
-              techdocsUrl = svcUrl + techdocsUrl;
-            }
-            modelResourceEntity.metadata.annotations![
-              'backstage.io/techdocs-ref'
-            ] = `url:${techdocsUrl}`;
-          }
-        } else {
-          // Copy all other annotations as-is
-          modelResourceEntity.metadata.annotations![key] =
-            model.annotations![key];
+  const annotations: Record<string, string> = {};
+
+  // Copy API annotations
+  if (modelServer.API?.annotations) {
+    Object.assign(annotations, modelServer.API.annotations);
+  }
+  // Copy model server annotations (overrides API on conflict)
+  if (modelServer.annotations) {
+    Object.assign(annotations, modelServer.annotations);
+  }
+
+  // Collect techdocs from models — use the first one found
+  for (const model of models) {
+    if (model.annotations?.[TECHDOCS_KEY]) {
+      let techdocsUrl = model.annotations[TECHDOCS_KEY].trim();
+      if (techdocsUrl !== '') {
+        if (svcUrl && techdocsUrl.startsWith('/')) {
+          techdocsUrl = svcUrl + techdocsUrl;
         }
-      });
-    }
-    modelResourceEntities.push(modelResourceEntity);
-  });
-
-  return modelResourceEntities;
-}
-
-export function GenerateModelServerComponentEntity(
-  modelServer: ModelServer,
-  models: Model[],
-  logger?: LoggerService,
-): ComponentEntity {
-  const modelServerComponent: ComponentEntity = {
-    apiVersion: 'backstage.io/v1beta1',
-    kind: 'Component',
-    metadata: {
-      name: sanitizeMetadataName(modelServer.name),
-      description: `${modelServer.description}`,
-      tags: [],
-      links: [],
-    },
-    spec: {
-      type: 'model-server',
-      lifecycle: `${modelServer.lifecycle}`,
-      owner: `user:${modelServer.owner}`,
-    },
-  };
-
-  // Add the models to the model server as dependants
-  modelServerComponent.spec.dependsOn = [];
-  models.forEach(model => {
-    modelServerComponent.spec.dependsOn?.push(`resource:${model.name}`);
-  });
-
-  // Configure optional parameters
-  // Set optional parameters, if present
-  if (modelServer.tags !== undefined) {
-    modelServerComponent.metadata.tags = sanitizeTags(modelServer.tags, logger);
-  }
-  // Add authentication tag
-  if (modelServer.authentication === undefined || !modelServer.authentication) {
-    modelServerComponent.metadata.tags?.push('auth-not-required');
-  } else {
-    modelServerComponent.metadata.tags?.push('auth-required');
-  }
-  modelServerComponent.metadata.links = [];
-  if (modelServer.API !== undefined) {
-    modelServerComponent.metadata.links.push({
-      title: `API`,
-      url: `${modelServer.API.url}`,
-    });
-    modelServerComponent.spec.providesApis = [modelServer.name];
-
-    // Copy annotations from API to component metadata if they exist
-    if (modelServer.API.annotations !== undefined) {
-      if (modelServerComponent.metadata.annotations === undefined) {
-        modelServerComponent.metadata.annotations = {};
+        annotations['backstage.io/techdocs-ref'] = `url:${techdocsUrl}`;
+        break;
       }
-      // Copy all key-value pairs from API annotations to component annotations
-      Object.keys(modelServer.API.annotations).forEach(key => {
-        modelServerComponent.metadata.annotations![key] =
-          modelServer.API!.annotations![key];
+    }
+  }
+
+  // Collect per-model artifact links
+  for (const model of models) {
+    if (model.artifactLocationURL) {
+      links.push({
+        title: `${model.name} artifact`,
+        url: model.artifactLocationURL,
       });
     }
   }
-  if (modelServer.homepageURL !== undefined) {
-    modelServerComponent.metadata.links.push({
-      title: 'Homepage',
-      url: `${modelServer.homepageURL}`,
-    });
-  }
 
-  // Copy annotations from modelServer to component metadata if they exist
-  if (modelServer.annotations !== undefined) {
-    if (modelServerComponent.metadata.annotations === undefined) {
-      modelServerComponent.metadata.annotations = {};
-    }
-    // Copy all key-value pairs from modelServer annotations to component annotations
-    Object.keys(modelServer.annotations).forEach(key => {
-      modelServerComponent.metadata.annotations![key] =
-        modelServer.annotations![key];
-    });
-  }
-
-  return modelServerComponent;
-}
-
-export function GenerateModelServerAPI(
-  api: API,
-  modelServer: ModelServer,
-  logger?: LoggerService,
-): ApiEntity {
-  const modelServerAPIEntity: ApiEntity = {
-    apiVersion: `backstage.io/v1beta1`,
-    kind: `API`,
+  const entity: AiModelServerApiEntity = {
+    apiVersion: 'backstage.io/v1alpha1',
+    kind: 'AiModelServerAPI',
     metadata: {
       name: sanitizeMetadataName(modelServer.name),
-      tags: [],
-      links: [
-        {
-          url: `${api.url}`,
-          title: `API`,
-        },
-      ],
+      description: modelServer.description,
+      tags,
+      links,
+      ...(Object.keys(annotations).length > 0 && { annotations }),
     },
     spec: {
-      type: `${api.type}`,
+      type: 'ai-model-server',
+      lifecycle: modelServer.lifecycle,
       owner: `user:${modelServer.owner}`,
-      lifecycle: `${modelServer.lifecycle}`,
-      definition: `${api.spec}`,
+      serverType: modelServer.API?.type ?? 'unknown',
+      serverUrl: modelServer.API?.url ?? '',
+      requiresApiKey: modelServer.authentication ?? false,
+      models: {
+        available: models.map(m => sanitizeMetadataName(m.name)),
+        ...(models.length > 0 && {
+          default: sanitizeMetadataName(models[0].name),
+        }),
+      },
     },
   };
 
-  if (api.tags !== undefined) {
-    modelServerAPIEntity.metadata.tags = sanitizeTags(api.tags, logger);
-  }
-  // Add authentication tag
-  if (modelServer.authentication === undefined || !modelServer.authentication) {
-    modelServerAPIEntity.metadata.tags?.push('auth-not-required');
-  } else {
-    modelServerAPIEntity.metadata.tags?.push('auth-required');
-  }
-  return modelServerAPIEntity;
+  return [entity];
 }
 
 function sanitizeMetadataName(modelName: string): string {
@@ -301,18 +141,15 @@ function sanitizeTags(tags: string[], logger?: LoggerService): string[] {
   const sanitizedTags: string[] = [];
   tags.forEach(tag => {
     let sanitizedTag: string = tag;
-    // Replace whitespace with empty character
     sanitizedTag = sanitizedTag.replace(/\s/g, '');
 
-    // Call the Backstage tag validator and check if the tag conforms
-    // If the tag is not valid, skip it
     if (!makeValidator().isValidTag(sanitizedTag)) {
       if (logger !== undefined) {
         logger.error(
           `invalid tag: ${sanitizedTag}. Tags are expected to be less than 63 characters and conform to: ^[a-z0-9:+#]+(\-[a-z0-9:+#]+)*$`,
         );
       }
-      return; /* in typescript a return in a foreach skips to the next iteration */
+      return;
     }
     sanitizedTags.push(sanitizedTag);
   });

@@ -4,8 +4,9 @@ Frontend plugin for the Workflow Orchestrator: run and manage workflows.
 
 ## Entry points
 
-- **`@red-hat-developer-hub/backstage-plugin-orchestrator`** — Legacy Backstage app (default export, `OrchestratorPage`, etc.).
-- **`@red-hat-developer-hub/backstage-plugin-orchestrator/alpha`** — New frontend system (NFS): plugin instance, pages, nav items, and translation module.
+- **`@red-hat-developer-hub/backstage-plugin-orchestrator`** — New frontend system (NFS): plugin instance, pages, entity content, and translation module.
+- **`@red-hat-developer-hub/backstage-plugin-orchestrator/legacy`** — Legacy Backstage app (OFS): `orchestratorPlugin`, `OrchestratorPage`, icons, catalog tab helpers.
+- **`@red-hat-developer-hub/backstage-plugin-orchestrator/alpha`** — Translations only (`orchestratorTranslations`, `orchestratorTranslationRef`).
 
 ## Development
 

@@ -32,15 +32,24 @@ const CONFIG = {
   catalog: {
     providers: {
       modelCatalog: {
-        development: {
-          baseUrl: 'http://localhost:9090',
-        },
+        development: {},
       },
     },
   },
 } as const;
 
 const fakeCatalog: ModelCatalog = {
+  modelServer: {
+    name: 'test-model-server',
+    description: 'Test model server',
+    lifecycle: 'production',
+    owner: 'example-user',
+    API: {
+      url: 'https://api.example.com',
+      type: 'openapi' as any,
+      spec: 'https://example.com/openapi.json',
+    },
+  },
   models: [
     {
       name: 'ibm-granite',

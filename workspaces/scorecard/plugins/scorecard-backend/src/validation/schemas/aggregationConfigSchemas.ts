@@ -19,16 +19,8 @@ import {
   aggregationTypes,
   scalarAggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-
-const thresholdsConfigSchema = z.object({
-  rules: z.array(
-    z.object({
-      key: z.string(),
-      expression: z.string(),
-      color: z.string().optional(),
-    }),
-  ),
-});
+import { aggregationThresholdsConfigSchema } from './aggregationThresholdsConfigSchema';
+import { aggregationFilterSchema } from './aggregationFilterSchema';
 
 const baseAggregationConfigSchema = z.object({
   id: z.string().min(1).max(128),
@@ -51,7 +43,7 @@ const weightedStatusScoreAggregationConfigSchema = z.object({
       .refine(scores => Object.keys(scores).length > 0, {
         message: 'options.statusScores must contain at least one weight value',
       }),
-    thresholds: thresholdsConfigSchema.optional(),
+    thresholds: aggregationThresholdsConfigSchema.optional(),
   }),
 });
 
@@ -61,9 +53,10 @@ function scalarAggregationConfigSchema(
   return z.object({
     ...baseAggregationConfigSchema.shape,
     type: z.literal(type),
+    filter: aggregationFilterSchema.optional(),
     options: z
       .strictObject({
-        thresholds: thresholdsConfigSchema.optional(),
+        thresholds: aggregationThresholdsConfigSchema.optional(),
       })
       .optional(),
   });

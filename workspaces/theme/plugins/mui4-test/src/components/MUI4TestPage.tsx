@@ -27,7 +27,9 @@ export const MUI4TestPage = () => {
   return (
     <Page themeId="tool">
       <Header title="MUI v4 Test Page">
-        <UserSettingsThemeToggle />
+        <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+          <UserSettingsThemeToggle />
+        </ul>
       </Header>
       <TabbedLayout>
         <TabbedLayout.Route path="/" title="Form components">

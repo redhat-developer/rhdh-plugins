@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend
 
+## 4.2.0
+
+### Minor Changes
+
+- e486f80: Implemented filter by `status` for scalar aggregation types (`sum`, `average`, `count`, `min`, `max`).
+
+### Patch Changes
+
+- Updated dependencies [e486f80]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.2.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.2.0
+
 ## 4.1.0
 
 ### Minor Changes

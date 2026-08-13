@@ -72,16 +72,32 @@ Agents, tools, models, MCP servers, and vector stores are Backstage catalog enti
 
 ### Package structure
 
-| Package                        | Purpose                                                              |
-| ------------------------------ | -------------------------------------------------------------------- |
-| `boost`                        | Chat UI, agent gallery, admin panels, composable routable extensions |
-| `boost-common`                 | Shared types, permissions (browser-safe, `common-library` role)      |
-| `boost-node`                   | `boostAiProviderServiceRef`, extension points (`node-library` role)  |
-| `boost-backend`                | Core routes, services, middleware, ProviderManager                   |
-| `boost-backend-module-ogx`     | OGX provider module                                                  |
-| `boost-backend-module-kagenti` | Kagenti provider module                                              |
-| `ogx-entity-provider`          | Independently deployable catalog entity provider                     |
-| `kagenti-entity-provider`      | Independently deployable catalog entity provider                     |
+| Package                        | Purpose                                                                                       |
+| ------------------------------ | --------------------------------------------------------------------------------------------- |
+| `boost`                        | Chat UI, agent gallery, admin panels, composable routable extensions                          |
+| `boost-common`                 | Shared types, permissions (browser-safe, `common-library` role)                               |
+| `boost-node`                   | `boostAiProviderServiceRef`, extension points (`node-library` role)                           |
+| `boost-connector-utils`        | Shared connector utils (`node-library` role) — CA bundle, fault isolation, startup validation |
+| `boost-backend`                | Core routes, services, middleware, ProviderManager                                            |
+| `boost-backend-module-ogx`     | OGX provider module                                                                           |
+| `boost-backend-module-kagenti` | Kagenti provider module                                                                       |
+| `ogx-entity-provider`          | Independently deployable catalog entity provider                                              |
+| `kagenti-entity-provider`      | Independently deployable catalog entity provider                                              |
+
+### ConfigReader `getOptionalString()` edge case
+
+Backstage's `ConfigReader` throws `TypeError` when the underlying config
+value is an empty string (e.g., from env var substitution like
+`${UNSET_ENV_VAR:-}`), rather than returning `undefined`. When reading
+config values that may come from environment variable substitution, use
+`safeGetOptionalString` from
+`@red-hat-developer-hub/backstage-plugin-boost-connector-utils`:
+
+```ts
+import { safeGetOptionalString } from '@red-hat-developer-hub/backstage-plugin-boost-connector-utils';
+
+const endpoint = safeGetOptionalString(config, 'endpoint');
+```
 
 ### Naming
 
@@ -107,6 +123,28 @@ Every feature ships with tests. Integration tests use real database and cache ba
 - WCAG 2.1 AA accessibility
 - Feature flags via `boost.features.*` in `app-config.yaml`
 
+## Build & verify
+
+| Task                | Command                              |
+| ------------------- | ------------------------------------ |
+| Full build          | `yarn build:all`                     |
+| Type-check          | `yarn tsc:full`                      |
+| Lint                | `yarn lint:all`                      |
+| Test                | `CI=true yarn test --watchAll=false` |
+| API reports         | `yarn build:api-reports`             |
+| OpenSpec validation | `yarn openspec:validate`             |
+
+**After modifying any file that affects the public API surface** (including
+`translations/ref.ts`, exported types, or API routes), run
+`yarn build:api-reports` and commit the updated `report.api.md`.
+
+## Import conventions
+
+- **Icons**: use `@remixicon/react` (e.g., `RiCheckLine`, `RiDownload2Line`).
+  Do NOT use `@mui/icons-material` — the plugin migrated in PR #3929.
+- **Entity type comparisons**: always normalize with `.toLowerCase()` before
+  comparing `spec.type` values (see `isAiAsset.ts`, `categoryMeta.ts`).
+
 ## What not to do
 
 - Do not reference the `workspaces/augment/` codebase for implementation patterns — boost is a clean-room build
@@ -114,6 +152,11 @@ Every feature ships with tests. Integration tests use real database and cache ba
 - Do not create raw `Map<>` caches — always use `coreServices.cache`
 - Do not add authorization checks outside `permissions.authorize()` / `permissions.authorizeConditional()`
 - Do not add provider ID string checks in the frontend
+
+## Before committing
+
+- Run `yarn prettier:check` from the workspace root. If it fails, run `yarn prettier:fix` and stage the corrected files.
+- If public exports or function signatures changed, run `yarn build:api-reports:only --ci`.
 
 ## Scripts directory
 

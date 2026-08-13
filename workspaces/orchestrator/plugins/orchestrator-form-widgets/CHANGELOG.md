@@ -1,5 +1,22 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 1.12.1
+
+### Patch Changes
+
+- f48dfb4: Add conditional RBAC policy support for orchestrator workflows using the `IS_ALLOWED_WORKFLOW_ID` rule. Dynamic workflow-specific permissions (`orchestrator.workflow.<workflowId>` and `orchestrator.workflow.use.<workflowId>`) are deprecated and will be removed in the next release.
+
+  Migrate from deprecated dynamic permissions to conditional policies. See `docs/MIGRATION-CONDITIONAL-POLICIES.md`.
+
+- e5788bb: Reduce NFS Module Federation sync size by lazy-loading heavy dependencies.
+- Updated dependencies [f48dfb4]
+- Updated dependencies [c74276c]
+- Updated dependencies [e0d0986]
+- Updated dependencies [8966faf]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.9.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.9.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.10.1
+
 ## 1.12.0
 
 ### Minor Changes

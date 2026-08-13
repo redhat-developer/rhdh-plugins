@@ -320,6 +320,20 @@ export const boostAdminPermission = createPermission({
   attributes: { action: 'update' },
 });
 
+/**
+ * AI Catalog admin permission for catalog-layer management actions
+ * (ingestion health, analytics, governance).
+ *
+ * Distinct from {@link boostAdminPermission}: `ai-catalog.*` covers
+ * catalog asset governance; `boost.*` covers agent/operational features.
+ *
+ * @public
+ */
+export const aiCatalogAdminPermission = createPermission({
+  name: 'ai-catalog.admin',
+  attributes: { action: 'update' },
+});
+
 // ---------------------------------------------------------------------------
 // Conditional rule names
 // ---------------------------------------------------------------------------
@@ -450,4 +464,5 @@ export const boostPermissions = [
   ...boostFunctionalPermissions,
   boostAccessPermission,
   boostAdminPermission,
+  aiCatalogAdminPermission,
 ] as const;

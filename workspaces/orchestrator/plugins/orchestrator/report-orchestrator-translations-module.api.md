@@ -5,7 +5,7 @@
 ```ts
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 
-// @alpha
+// @public
 const orchestratorTranslationsModule: FrontendModule;
 export default orchestratorTranslationsModule;
 

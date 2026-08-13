@@ -1,5 +1,17 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.9.0
+
+### Minor Changes
+
+- f48dfb4: Add conditional RBAC policy support for orchestrator workflows using the `IS_ALLOWED_WORKFLOW_ID` rule. Dynamic workflow-specific permissions (`orchestrator.workflow.<workflowId>` and `orchestrator.workflow.use.<workflowId>`) are deprecated and will be removed in the next release.
+
+  Migrate from deprecated dynamic permissions to conditional policies. See `docs/MIGRATION-CONDITIONAL-POLICIES.md`.
+
+### Patch Changes
+
+- c74276c: Expose the dedicated `orchestrator.rjsf-widgets` configuration namespace to form widget templates. Values in this namespace are public to the frontend and must not contain secrets.
+
 ## 3.8.0
 
 ### Minor Changes
