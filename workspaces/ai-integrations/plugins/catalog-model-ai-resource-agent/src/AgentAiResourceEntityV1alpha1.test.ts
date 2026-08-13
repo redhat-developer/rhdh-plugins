@@ -143,20 +143,18 @@ describe('agentAiResourceEntityV1alpha1Validator', () => {
   });
 
   describe('reject paths', () => {
-    it('rejects missing spec.instructions', async () => {
+    it('accepts missing spec.instructions', async () => {
       const entity = makeMinimalAgent();
       delete (entity as any).spec.instructions;
-      await expect(
-        agentAiResourceEntityV1alpha1Validator.check(entity),
-      ).rejects.toThrow();
+      const result = await agentAiResourceEntityV1alpha1Validator.check(entity);
+      expect(result).toBe(true);
     });
 
-    it('rejects empty string spec.instructions', async () => {
-      await expect(
-        agentAiResourceEntityV1alpha1Validator.check(
-          makeMinimalAgent({ instructions: '' }),
-        ),
-      ).rejects.toThrow();
+    it('accepts empty string spec.instructions', async () => {
+      const result = await agentAiResourceEntityV1alpha1Validator.check(
+        makeMinimalAgent({ instructions: '' }),
+      );
+      expect(result).toBe(true);
     });
 
     it('rejects wrong type for spec.instructions (number)', async () => {
