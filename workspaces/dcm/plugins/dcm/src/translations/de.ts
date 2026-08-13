@@ -47,6 +47,8 @@ const dcmTranslationDe: TranslationMessages<
     'common.rows': 'Zeilen',
     'common.previousPage': 'Zurück',
     'common.nextPage': 'Weiter',
+    'common.next': 'Weiter',
+    'common.back': 'Zurück',
     'deleteDialog.title': '{{resourceLabel}} l\u00f6schen',
     'deleteDialog.confirmButton': 'L\u00f6schen',
     'deleteDialog.cancelButton': 'Abbrechen',
@@ -156,11 +158,13 @@ const dcmTranslationDe: TranslationMessages<
     'catalogItems.deleteLabel': 'Katalogelement',
     'catalogItems.columns.displayName': 'Anzeigename',
     'catalogItems.columns.apiVersion': 'API-Version',
-    'catalogItems.columns.serviceType': 'Diensttyp',
+    'catalogItems.columns.resources': 'Ressourcen',
     'catalogItems.columns.fields': 'Felder',
     'catalogItems.columns.created': 'Erstellt',
     'catalogItems.fieldCount_one': '1 Feld',
     'catalogItems.fieldCount_other': '{{count}} Felder',
+    'catalogItems.resourceCount_one': '1 Ressource',
+    'catalogItems.resourceCount_other': '{{count}} Ressourcen',
     'catalogItems.form.importButton': 'Aus Datei importieren',
     'catalogItems.form.importTooltip':
       'Formular aus einer JSON- oder YAML-Katalogelementdefinition f\u00fcllen',
@@ -205,6 +209,24 @@ const dcmTranslationDe: TranslationMessages<
     'catalogItems.form.schemaMustBeObject':
       'Muss ein JSON-Objekt sein, kein Array oder primitiver Wert',
     'catalogItems.form.schemaInvalidJson': 'Ung\u00fcltige JSON-Syntax',
+    'catalogItems.wizard.tabOverview': '\u00dcbersicht',
+    'catalogItems.wizard.tabApi': 'API',
+    'catalogItems.wizard.tabResources': 'Ressourcen',
+    'catalogItems.wizard.resourcesDescription':
+      'F\u00fcgen Sie eine oder mehrere Ressourcen hinzu. Jede Ressource verweist auf einen Diensttyp und definiert ihre eigenen Feldkonfigurationen.',
+    'catalogItems.wizard.resourcesRequired':
+      'Mindestens eine Ressource ist erforderlich.',
+    'catalogItems.wizard.addResourceButton': 'Ressource hinzuf\u00fcgen',
+    'catalogItems.wizard.removeResource': 'Ressource entfernen',
+    'catalogItems.wizard.unnamedResource': '(unbenannt)',
+    'catalogItems.wizard.resourceNameLabel': 'Ressourcenname *',
+    'catalogItems.wizard.resourceNameHelper':
+      'Eindeutiger Bezeichner innerhalb dieses Katalogelements \u2014 z.\u00a0B. app, ordersDb',
+    'catalogItems.wizard.requiresResourcesLabel': 'Ben\u00f6tigte Ressourcen',
+    'catalogItems.wizard.requiresResourcesHelper':
+      'W\u00e4hlen Sie Ressourcen, die vor dieser bereitgestellt werden m\u00fcssen',
+    'catalogItems.wizard.apiVersionImmutable':
+      'Die API-Version kann nach der Erstellung nicht ge\u00e4ndert werden',
     'instances.emptyTitle': 'Keine Instanzen bereitgestellt',
     'instances.emptyDescription':
       'Katalogelement-Instanzen repr\u00e4sentieren bereitgestellte Dienste.',
@@ -226,7 +248,7 @@ const dcmTranslationDe: TranslationMessages<
     'instances.rehydrateDialogConfirm': 'Rehydrieren',
     'instances.columns.displayName': 'Anzeigename',
     'instances.columns.catalogItem': 'Katalogelement',
-    'instances.columns.resourceId': 'Ressourcen-ID',
+    'instances.columns.resourceIds': 'Ressourcen-IDs',
     'instances.columns.apiVersion': 'API-Version',
     'instances.columns.created': 'Erstellt',
     'instances.form.displayNameLabel': 'Anzeigename *',
@@ -246,6 +268,7 @@ const dcmTranslationDe: TranslationMessages<
       '(bearbeitbare Felder dieses Katalogelements)',
     'instances.form.noEditableFields':
       'Dieses Katalogelement hat keine bearbeitbaren Felder.',
+    'instances.wizard.tabOverview': '\u00dcbersicht',
     'resources.emptyTitle': 'Keine Ressourcen gefunden',
     'resources.emptyDescription':
       'Durch DCM bereitgestellte Diensttyp-Instanzen werden hier angezeigt.',
@@ -299,12 +322,22 @@ const dcmTranslationDe: TranslationMessages<
     'validation.catalogItem.apiVersionPattern':
       'Muss dem Muster v<Zahl>[alpha|beta][Zahl] folgen \u2014 z. B. v1, v1alpha1',
     'validation.catalogItem.serviceTypeRequired': 'Diensttyp ist erforderlich',
+    'validation.catalogItem.resourceNameRequired':
+      'Ressourcenname ist erforderlich',
+    'validation.catalogItem.resourceNameDuplicate':
+      'Der Ressourcenname muss innerhalb des Katalogelements eindeutig sein',
+    'validation.catalogItem.resourceNamePattern':
+      'Nur Buchstaben, Zahlen, Bindestriche und Unterstriche erlaubt (muss mit einem Buchstaben beginnen)',
+    'validation.catalogItem.resourcesRequired':
+      'Mindestens eine Ressource ist erforderlich',
     'validation.catalogItem.duplicatePath':
       'Doppelter Pfad \u2014 Pfade müssen eindeutig sein',
     'validation.catalogItem.invalidJson':
       'Ungültiges JSON \u2014 Syntax korrigieren oder einfachen Zeichenkettenwert verwenden',
     'validation.catalogItem.schemaMustBeObject':
       'Muss ein JSON-Objekt sein \u2014 z. B. {"type":"integer"}',
+    'validation.catalogItem.schemaRequiredNotBoolean':
+      '"required" muss ein Array von Eigenschaftsnamen sein, kein Boolean',
     'validation.catalogItem.schemaMinMaxConflict':
       'Minimum ({{min}}) darf das Maximum ({{max}}) nicht überschreiten',
     'validation.catalogItem.defaultBelowMin':
