@@ -106,6 +106,65 @@ export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
 export const BOOST_CONFIG_SCHEMA_VERSION = 4;
 
 // ---------------------------------------------------------------------------
+// Connector field factories — shared patterns for per-connector leaves
+// ---------------------------------------------------------------------------
+
+/** @internal */
+function connectorEnabled(label: string, id: string) {
+  return {
+    schema: z
+      .boolean()
+      .optional()
+      .describe('Whether runtime syncing is enabled (default: true)'),
+    configScope: 'db-overridable' as ConfigScope,
+    description:
+      `Whether ${label} connector runtime syncing is enabled. ` +
+      `Defaults to true when not set. Distinct from ` +
+      `ai-catalog.providers.${id}.enabled (startup registration).`,
+  } as const;
+}
+
+/** @internal */
+function connectorEndpoint(label: string, example: string) {
+  return {
+    schema: httpsUrlSchema.optional().describe(`${label} HTTPS endpoint URL`),
+    configScope: 'db-overridable' as ConfigScope,
+    description:
+      `HTTPS endpoint URL for the ${label} ` + `${example}. Must use HTTPS.`,
+  } as const;
+}
+
+/** @internal */
+function connectorIntervalMs(label: string) {
+  return {
+    schema: z
+      .number()
+      .positive()
+      .optional()
+      .describe('Sync interval in milliseconds (default: 300000)'),
+    configScope: 'db-overridable' as ConfigScope,
+    description:
+      `Interval in milliseconds between ${label} sync runs. ` +
+      `Defaults to 300000 (5 minutes) when not set.`,
+  } as const;
+}
+
+/** @internal */
+function connectorBatchSize(label: string) {
+  return {
+    schema: z
+      .number()
+      .positive()
+      .optional()
+      .describe('Number of items per sync batch (default: 100)'),
+    configScope: 'db-overridable' as ConfigScope,
+    description:
+      `Number of ${label} items to fetch per sync batch. ` +
+      `Defaults to 100 when not set.`,
+  } as const;
+}
+
+// ---------------------------------------------------------------------------
 // Individual field schemas with metadata
 // ---------------------------------------------------------------------------
 
@@ -298,37 +357,12 @@ export const boostConfigFields = {
   },
 
   // -- Connector config: Jira --
-  'boost.connectors.jira.enabled': {
-    schema: z
-      .boolean()
-      .optional()
-      .describe('Whether runtime syncing is enabled (default: true)'),
-    configScope: 'db-overridable' as ConfigScope,
-    description:
-      'Whether Jira connector runtime syncing is enabled. ' +
-      'Defaults to true when not set. Distinct from ' +
-      'ai-catalog.providers.jira.enabled (startup registration).',
-  },
-  'boost.connectors.jira.endpoint': {
-    schema: httpsUrlSchema
-      .optional()
-      .describe('Jira instance HTTPS endpoint URL'),
-    configScope: 'db-overridable' as ConfigScope,
-    description:
-      'HTTPS endpoint URL for the Jira instance ' +
-      '(e.g. https://jira.example.com). Must use HTTPS.',
-  },
-  'boost.connectors.jira.schedule.intervalMs': {
-    schema: z
-      .number()
-      .positive()
-      .optional()
-      .describe('Sync interval in milliseconds (default: 300000)'),
-    configScope: 'db-overridable' as ConfigScope,
-    description:
-      'Interval in milliseconds between Jira sync runs. ' +
-      'Defaults to 300000 (5 minutes) when not set.',
-  },
+  'boost.connectors.jira.enabled': connectorEnabled('Jira', 'jira'),
+  'boost.connectors.jira.endpoint': connectorEndpoint(
+    'Jira',
+    'instance (e.g. https://jira.example.com)',
+  ),
+  'boost.connectors.jira.schedule.intervalMs': connectorIntervalMs('Jira'),
   'boost.connectors.jira.schedule.cron': {
     schema: cronExpressionSchema
       .optional()
@@ -338,17 +372,7 @@ export const boostConfigFields = {
       'Standard 5-field cron expression for Jira sync schedule. ' +
       'When set, takes precedence over schedule.intervalMs.',
   },
-  'boost.connectors.jira.batchSize': {
-    schema: z
-      .number()
-      .positive()
-      .optional()
-      .describe('Number of items per sync batch (default: 100)'),
-    configScope: 'db-overridable' as ConfigScope,
-    description:
-      'Number of Jira items to fetch per sync batch. ' +
-      'Defaults to 100 when not set.',
-  },
+  'boost.connectors.jira.batchSize': connectorBatchSize('Jira'),
   'boost.connectors.jira.timeout.connectionMs': {
     schema: z
       .number()
@@ -362,88 +386,22 @@ export const boostConfigFields = {
   },
 
   // -- Connector config: GitHub --
-  'boost.connectors.github.enabled': {
-    schema: z
-      .boolean()
-      .optional()
-      .describe('Whether runtime syncing is enabled (default: true)'),
-    configScope: 'db-overridable' as ConfigScope,
-    description:
-      'Whether GitHub connector runtime syncing is enabled. ' +
-      'Defaults to true when not set. Distinct from ' +
-      'ai-catalog.providers.github.enabled (startup registration).',
-  },
-  'boost.connectors.github.endpoint': {
-    schema: httpsUrlSchema.optional().describe('GitHub API HTTPS endpoint URL'),
-    configScope: 'db-overridable' as ConfigScope,
-    description:
-      'HTTPS endpoint URL for the GitHub API ' +
-      '(e.g. https://api.github.com). Must use HTTPS.',
-  },
-  'boost.connectors.github.schedule.intervalMs': {
-    schema: z
-      .number()
-      .positive()
-      .optional()
-      .describe('Sync interval in milliseconds (default: 300000)'),
-    configScope: 'db-overridable' as ConfigScope,
-    description:
-      'Interval in milliseconds between GitHub sync runs. ' +
-      'Defaults to 300000 (5 minutes) when not set.',
-  },
-  'boost.connectors.github.batchSize': {
-    schema: z
-      .number()
-      .positive()
-      .optional()
-      .describe('Number of items per sync batch (default: 100)'),
-    configScope: 'db-overridable' as ConfigScope,
-    description:
-      'Number of GitHub items to fetch per sync batch. ' +
-      'Defaults to 100 when not set.',
-  },
+  'boost.connectors.github.enabled': connectorEnabled('GitHub', 'github'),
+  'boost.connectors.github.endpoint': connectorEndpoint(
+    'GitHub',
+    'API (e.g. https://api.github.com)',
+  ),
+  'boost.connectors.github.schedule.intervalMs': connectorIntervalMs('GitHub'),
+  'boost.connectors.github.batchSize': connectorBatchSize('GitHub'),
 
   // -- Connector config: GitLab --
-  'boost.connectors.gitlab.enabled': {
-    schema: z
-      .boolean()
-      .optional()
-      .describe('Whether runtime syncing is enabled (default: true)'),
-    configScope: 'db-overridable' as ConfigScope,
-    description:
-      'Whether GitLab connector runtime syncing is enabled. ' +
-      'Defaults to true when not set. Distinct from ' +
-      'ai-catalog.providers.gitlab.enabled (startup registration).',
-  },
-  'boost.connectors.gitlab.endpoint': {
-    schema: httpsUrlSchema.optional().describe('GitLab API HTTPS endpoint URL'),
-    configScope: 'db-overridable' as ConfigScope,
-    description:
-      'HTTPS endpoint URL for the GitLab API ' +
-      '(e.g. https://gitlab.example.com). Must use HTTPS.',
-  },
-  'boost.connectors.gitlab.schedule.intervalMs': {
-    schema: z
-      .number()
-      .positive()
-      .optional()
-      .describe('Sync interval in milliseconds (default: 300000)'),
-    configScope: 'db-overridable' as ConfigScope,
-    description:
-      'Interval in milliseconds between GitLab sync runs. ' +
-      'Defaults to 300000 (5 minutes) when not set.',
-  },
-  'boost.connectors.gitlab.batchSize': {
-    schema: z
-      .number()
-      .positive()
-      .optional()
-      .describe('Number of items per sync batch (default: 100)'),
-    configScope: 'db-overridable' as ConfigScope,
-    description:
-      'Number of GitLab items to fetch per sync batch. ' +
-      'Defaults to 100 when not set.',
-  },
+  'boost.connectors.gitlab.enabled': connectorEnabled('GitLab', 'gitlab'),
+  'boost.connectors.gitlab.endpoint': connectorEndpoint(
+    'GitLab',
+    'API (e.g. https://gitlab.example.com)',
+  ),
+  'boost.connectors.gitlab.schedule.intervalMs': connectorIntervalMs('GitLab'),
+  'boost.connectors.gitlab.batchSize': connectorBatchSize('GitLab'),
 } as const satisfies Record<string, ConfigFieldMeta>;
 
 /**
