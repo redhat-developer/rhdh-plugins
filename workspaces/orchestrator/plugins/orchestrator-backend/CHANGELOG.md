@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.12.1
+
+### Patch Changes
+
+- e0093e0: Remove unused `@janus-idp/backstage-plugin-audit-log-node` and `@janus-idp/cli` dependencies.
+
 ## 8.12.0
 
 ### Minor Changes
