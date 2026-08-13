@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions
 
+## 0.5.0
+
+### Minor Changes
+
+- 6ddfd98: Use the valid catalog kind spelling `AiResource` (not `AIResource`) in the
+  extensions processor, and rename public exports accordingly:
+  `AiResourceExtensionsProcessor` and `AiResourceScope`.
+
 ## 0.4.0
 
 ### Minor Changes
