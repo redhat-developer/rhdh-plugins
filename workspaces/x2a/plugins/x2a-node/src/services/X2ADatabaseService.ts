@@ -29,7 +29,6 @@ import type {
   Telemetry,
   ProjectsGet,
   RuleSnapshot,
-  AdversarialAgentSnapshot,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import {
@@ -213,6 +212,7 @@ export interface X2ADatabaseServiceApi {
 
   listAdversarialAgents(filters?: {
     phase?: string;
+    ids?: string[];
   }): Promise<AdversarialAgentEntity[]>;
 
   getAdversarialAgent(opts: {
@@ -228,13 +228,4 @@ export interface X2ADatabaseServiceApi {
   }): Promise<AdversarialAgentEntity | undefined>;
 
   deleteAdversarialAgent(opts: { id: string }): Promise<number>;
-
-  attachAdversarialAgentsToProject(args: {
-    projectId: string;
-    agentIds: string[];
-  }): Promise<void>;
-
-  getAdversarialAgentsForProject(args: {
-    projectId: string;
-  }): Promise<AdversarialAgentSnapshot[]>;
 }

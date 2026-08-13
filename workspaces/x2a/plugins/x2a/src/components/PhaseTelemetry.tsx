@@ -14,8 +14,19 @@
  * limitations under the License.
  */
 
-import { useMemo } from 'react';
-import { Box, Typography, makeStyles } from '@material-ui/core';
+import { useMemo, useState } from 'react';
+import {
+  Box,
+  Drawer,
+  Divider,
+  Grid,
+  IconButton,
+  Typography,
+  makeStyles,
+  useTheme,
+} from '@material-ui/core';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import CloseIcon from '@material-ui/icons/Close';
 import { Table, TableColumn } from '@backstage/core-components';
 import {
   AgentMetrics,
@@ -24,6 +35,7 @@ import {
 
 import { useTranslation } from '../hooks/useTranslation';
 import { formatDuration } from './tools';
+import { ItemField } from './ItemField';
 
 const useStyles = makeStyles(theme => ({
   toolCallList: {
@@ -39,13 +51,24 @@ const useStyles = makeStyles(theme => ({
   toolCallCount: {
     fontVariantNumeric: 'tabular-nums',
     minWidth: '2ch',
-    textAlign: 'right',
+    textAlign: 'right' as const,
     fontWeight: 600,
+  },
+  drawerPaper: {
+    width: 360,
+    padding: theme.spacing(2, 3),
+  },
+  drawerHeader: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing(2),
   },
 }));
 
 interface AgentRow extends AgentMetrics {
   id: string;
+  isAdversarial?: boolean;
 }
 
 const ToolCallsCell = ({
@@ -59,15 +82,12 @@ const ToolCallsCell = ({
     return <Typography variant="body2">-</Typography>;
   }
 
-  const sortedToolCalls = Object.entries(toolCalls).sort(
-    ([, countA], [, countB]) => countB - countA,
-  );
-
-  const maxDigits = String(sortedToolCalls[0][1]).length;
+  const sorted = Object.entries(toolCalls).sort(([, a], [, b]) => b - a);
+  const maxDigits = String(sorted[0][1]).length;
 
   return (
     <Box component="ul" className={classes.toolCallList}>
-      {sortedToolCalls.map(([tool, count]) => (
+      {sorted.map(([tool, count]) => (
         <li key={tool} className={classes.toolCallItem}>
           <Typography
             variant="body2"
@@ -83,44 +103,86 @@ const ToolCallsCell = ({
   );
 };
 
-export const PhaseTelemetry = ({ telemetry }: { telemetry?: Telemetry }) => {
+const AgentDetailPanel = ({ row }: { row: AgentRow }) => {
   const { t } = useTranslation();
 
-  const agentRows = useMemo((): AgentRow[] => {
-    if (!telemetry?.agents) {
-      return [];
-    }
+  return (
+    <Grid container spacing={2}>
+      <Grid item xs={12}>
+        <ItemField
+          label={t('modulePage.phases.telemetry.duration')}
+          value={formatDuration(t, row.durationSeconds)}
+        />
+      </Grid>
+      <Grid item xs={6}>
+        <ItemField
+          label={t('modulePage.phases.telemetry.inputTokens')}
+          value={row.inputTokens?.toLocaleString() ?? '-'}
+        />
+      </Grid>
+      <Grid item xs={6}>
+        <ItemField
+          label={t('modulePage.phases.telemetry.outputTokens')}
+          value={row.outputTokens?.toLocaleString() ?? '-'}
+        />
+      </Grid>
+      <Grid item xs={12}>
+        <ItemField
+          label={t('modulePage.phases.telemetry.toolCalls')}
+          value={<ToolCallsCell toolCalls={row.toolCalls} />}
+        />
+      </Grid>
+    </Grid>
+  );
+};
 
-    return Object.entries(telemetry.agents).map(([id, metrics]) => ({
-      id,
-      ...metrics,
-    }));
-  }, [telemetry]);
+export const PhaseTelemetry = ({
+  telemetry,
+  adversarialTelemetry,
+}: {
+  telemetry?: Telemetry;
+  adversarialTelemetry?: Telemetry;
+}) => {
+  const { t } = useTranslation();
+  const classes = useStyles();
+  const theme = useTheme();
+  const [selectedAgent, setSelectedAgent] = useState<AgentRow | null>(null);
+
+  const agentRows = useMemo((): AgentRow[] => {
+    const regular = telemetry?.agents
+      ? Object.entries(telemetry.agents).map(([id, metrics]) => ({
+          id,
+          ...metrics,
+          isAdversarial: false,
+        }))
+      : [];
+    const adversarial = adversarialTelemetry?.agents
+      ? Object.entries(adversarialTelemetry.agents).map(([id, metrics]) => ({
+          id: `adversarial-${id}`,
+          ...metrics,
+          isAdversarial: true,
+        }))
+      : [];
+    return [...regular, ...adversarial];
+  }, [telemetry, adversarialTelemetry]);
 
   const columns = useMemo((): TableColumn<AgentRow>[] => {
     return [
       {
         title: t('modulePage.phases.telemetry.agentName'),
-        field: 'name',
+        render: (row: AgentRow) => row.name,
       },
       {
         title: t('modulePage.phases.telemetry.duration'),
         render: (row: AgentRow) => formatDuration(t, row.durationSeconds),
-        align: 'right',
+        width: '120px',
       },
       {
-        title: t('modulePage.phases.telemetry.inputTokens'),
-        render: (row: AgentRow) => row.inputTokens?.toLocaleString() || '-',
+        title: '',
+        render: () => <ChevronRightIcon fontSize="small" color="action" />,
         align: 'right',
-      },
-      {
-        title: t('modulePage.phases.telemetry.outputTokens'),
-        render: (row: AgentRow) => row.outputTokens?.toLocaleString() || '-',
-        align: 'right',
-      },
-      {
-        title: t('modulePage.phases.telemetry.toolCalls'),
-        render: (row: AgentRow) => <ToolCallsCell toolCalls={row.toolCalls} />,
+        width: '40px',
+        sorting: false,
       },
     ];
   }, [t]);
@@ -134,15 +196,58 @@ export const PhaseTelemetry = ({ telemetry }: { telemetry?: Telemetry }) => {
   }
 
   return (
-    <Table<AgentRow>
-      options={{
-        paging: false,
-        toolbar: false,
-        padding: 'dense',
-        search: false,
-      }}
-      columns={columns}
-      data={agentRows}
-    />
+    <>
+      <Table<AgentRow>
+        options={{
+          paging: false,
+          toolbar: false,
+          padding: 'dense',
+          search: false,
+          rowStyle: (rowData: AgentRow) => ({
+            cursor: 'pointer',
+            backgroundColor:
+              selectedAgent?.id === rowData.id
+                ? theme.palette.action.selected
+                : undefined,
+          }),
+        }}
+        columns={columns}
+        data={agentRows}
+        onRowClick={(_event, rowData) => setSelectedAgent(rowData ?? null)}
+      />
+
+      <Drawer
+        anchor="right"
+        open={!!selectedAgent}
+        onClose={() => setSelectedAgent(null)}
+        classes={{ paper: classes.drawerPaper }}
+      >
+        {selectedAgent && (
+          <>
+            <Box className={classes.drawerHeader}>
+              <Box>
+                <Typography variant="h6">{selectedAgent.name}</Typography>
+                {selectedAgent.isAdversarial && (
+                  <Typography variant="caption" color="textSecondary">
+                    {t('modulePage.phases.adversarialAgentLabel')}
+                  </Typography>
+                )}
+              </Box>
+              <IconButton
+                size="small"
+                onClick={() => setSelectedAgent(null)}
+                aria-label="close"
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            <Divider />
+            <Box mt={2}>
+              <AgentDetailPanel row={selectedAgent} />
+            </Box>
+          </>
+        )}
+      </Drawer>
+    </>
   );
 };

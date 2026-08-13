@@ -13,12 +13,6 @@ import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public (undocumented)
-export const AdversarialAgentsPickerExtension: FieldExtensionComponent<
-  string[],
-  {}
->;
-
-// @public (undocumented)
 export const RepoAuthenticationExtension: FieldExtensionComponent<string, {}>;
 
 // @public (undocumented)
@@ -91,14 +85,6 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'projectPage.deleteConfirm.cancel': string;
     readonly 'projectPage.deleteConfirm.confirm': string;
     readonly 'projectTable.deleteError': string;
-    readonly 'createProjectPage.adversarialAgents.title': string;
-    readonly 'createProjectPage.adversarialAgents.loading': string;
-    readonly 'createProjectPage.adversarialAgents.placeholder': string;
-    readonly 'createProjectPage.adversarialAgents.selected': string;
-    readonly 'createProjectPage.adversarialAgents.tooltip': string;
-    readonly 'createProjectPage.adversarialAgents.subtitle': string;
-    readonly 'createProjectPage.adversarialAgents.noAgentsAvailable': string;
-    readonly 'createProjectPage.adversarialAgents.loadingError': string;
     readonly 'projectDetailsCard.title': string;
     readonly 'projectDetailsCard.name': string;
     readonly 'projectDetailsCard.dirName': string;
@@ -159,8 +145,14 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'modulePage.phases.rerunPublish': string;
     readonly 'modulePage.phases.runAdversarialReview': string;
     readonly 'modulePage.phases.adversarialReview': string;
-    readonly 'modulePage.phases.adversarialReviewInstructions': string;
-    readonly 'modulePage.phases.noAdversarialAgentsConfigured': string;
+    readonly 'modulePage.phases.adversarialNoRuns': string;
+    readonly 'modulePage.phases.adversarialAgentLabel': string;
+    readonly 'modulePage.phases.adversarialCriticalFindings': string;
+    readonly 'modulePage.phases.adversarialWarningFindings': string;
+    readonly 'modulePage.phases.adversarialAgents.title': string;
+    readonly 'modulePage.phases.adversarialAgents.placeholder': string;
+    readonly 'modulePage.phases.adversarialAgents.noAgentsAvailable': string;
+    readonly 'modulePage.phases.adversarialAgents.loadingError': string;
     readonly 'modulePage.phases.runError': string;
     readonly 'modulePage.phases.adversarialRunError': string;
     readonly 'modulePage.phases.cancelError': string;
@@ -178,6 +170,8 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'modulePage.phases.telemetry.inputTokens': string;
     readonly 'modulePage.phases.telemetry.outputTokens': string;
     readonly 'modulePage.phases.telemetry.toolCalls': string;
+    readonly 'modulePage.phases.telemetry.totalInputTokens': string;
+    readonly 'modulePage.phases.telemetry.totalOutputTokens': string;
     readonly 'retriggerInit.error': string;
     readonly 'retriggerInit.confirm.title': string;
     readonly 'retriggerInit.confirm.message': string;
@@ -275,6 +269,7 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'artifact.types.ansible_project': string;
     readonly 'artifact.types.project_metadata': string;
     readonly 'artifact.types.adversarial_report': string;
+    readonly 'artifact.types.adversarial_report_json': string;
     readonly 'scaffolder.rulesAcceptance.required': string;
     readonly 'scaffolder.rulesAcceptance.loadingRules': string;
     readonly 'scaffolder.rulesAcceptance.noRulesConfigured': string;

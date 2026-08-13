@@ -31,6 +31,10 @@ export interface ProjectsProjectIdAdversarialRunPostRequest {
    * UUID of the module to review
    */
   moduleId: string;
+  /**
+   * IDs of adversarial agents to run for this phase
+   */
+  agentIds: Array<string>;
   targetRepoAuth?: GitRepoAuth;
 }
 

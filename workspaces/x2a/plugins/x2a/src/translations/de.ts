@@ -207,6 +207,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.telemetry.inputTokens': 'Eingabe-Tokens',
     'modulePage.phases.telemetry.outputTokens': 'Ausgabe-Tokens',
     'modulePage.phases.telemetry.toolCalls': 'Anzahl der Werkzeugaufrufe',
+    'modulePage.phases.telemetry.totalInputTokens': 'Gesamte Eingabe-Tokens',
+    'modulePage.phases.telemetry.totalOutputTokens': 'Gesamte Ausgabe-Tokens',
     'modulePage.phases.resyncMigrationPlanInstructions':
       'Modulliste synchronisieren, um sie an den Migrationsplan anzupassen.',
     'time.duration.daysAndHours': '{{days}}T {{hours}}Std',
@@ -322,29 +324,23 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'rulesPage.dialog.cancel': 'Abbrechen',
     'rulesPage.dialog.createError': 'Fehler beim Erstellen der Regel',
     'rulesPage.dialog.updateError': 'Fehler beim Aktualisieren der Regel',
-    'createProjectPage.adversarialAgents.loading':
-      'Adversarielle Agenten werden geladen...',
-    'createProjectPage.adversarialAgents.title': 'Adversarielle Agenten',
-    'createProjectPage.adversarialAgents.subtitle':
-      'Wählen Sie KI-Agenten aus, um Migrationsergebnisse auf Sicherheitslücken, funktionale Lücken und Korrektheit zu überprüfen',
-    'createProjectPage.adversarialAgents.placeholder': 'Agenten auswählen…',
-    'createProjectPage.adversarialAgents.selected': 'ausgewählt',
-    'createProjectPage.adversarialAgents.noAgentsAvailable':
-      'Keine adversariellen Agenten verfügbar. Erstellen Sie Agenten auf der Seite für adversarielle Agenten.',
-    'createProjectPage.adversarialAgents.loadingError':
-      'Fehler beim Laden der adversariellen Agenten',
-    'createProjectPage.adversarialAgents.tooltip':
-      'Adversarielle Agenten überprüfen Migrationsergebnisse auf Sicherheitsprobleme, funktionale Lücken und Korrektheitsprobleme',
     'modulePage.phases.runAdversarialReview':
       'Adversarielle Überprüfung starten',
     'modulePage.phases.adversarialReview': 'Adversarielle Überprüfung',
-    'modulePage.phases.adversarialReviewInstructions':
-      'Konfigurierte adversarielle Agenten gegen die Phasenausgabe ausführen. Agenten schreiben einen Bericht in das Ziel-Repository.',
-    'modulePage.phases.noAdversarialAgentsConfigured':
-      'Für dieses Projekt sind keine adversariellen Agenten konfiguriert.',
+    'modulePage.phases.adversarialNoRuns': 'Noch keine Läufe',
+    'modulePage.phases.adversarialAgentLabel': 'adversariell',
+    'modulePage.phases.adversarialCriticalFindings': 'Kritische Befunde',
+    'modulePage.phases.adversarialWarningFindings': 'Warnungsbefunde',
+    'modulePage.phases.adversarialAgents.title': 'Adversarielle Agenten',
+    'modulePage.phases.adversarialAgents.placeholder': 'Agenten auswählen…',
+    'modulePage.phases.adversarialAgents.noAgentsAvailable':
+      'Keine adversariellen Agenten für diese Phase verfügbar. Erstellen Sie Agenten auf der Seite für adversarielle Agenten.',
+    'modulePage.phases.adversarialAgents.loadingError':
+      'Fehler beim Laden der adversariellen Agenten',
     'modulePage.phases.adversarialRunError':
       'Fehler beim Starten der adversariellen Überprüfung',
     'artifact.types.adversarial_report': 'Adversarieller Bericht',
+    'artifact.types.adversarial_report_json': 'Adversarieller Bericht (JSON)',
     'adversarialAgentsPage.title': 'Adversarielle Agenten',
     'adversarialAgentsPage.subtitle':
       'Verwalten Sie KI-Agenten, die Migrationsergebnisse auf Sicherheitslücken, funktionale Lücken und Korrektheitsprobleme überprüfen.',

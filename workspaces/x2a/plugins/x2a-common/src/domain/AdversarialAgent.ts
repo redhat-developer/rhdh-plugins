@@ -14,9 +14,16 @@
  * limitations under the License.
  */
 
-import type { AdversarialAgentSnapshot } from '../../client/src/schema/openapi';
-
 import { Phase } from './Phase';
+
+/** @public */
+export interface AdversarialAgentConfig {
+  id: string;
+  name: string;
+  prompt: string;
+  phases: string[];
+  critical: boolean;
+}
 
 /** @public */
 export class AdversarialAgentEntity {
@@ -110,7 +117,7 @@ export class AdversarialAgentEntity {
     );
   }
 
-  toSnapshot(): AdversarialAgentSnapshot {
+  toConfig(): AdversarialAgentConfig {
     return {
       id: this.id,
       name: this.name,

@@ -50,15 +50,15 @@ describe('ArtifactKind', () => {
 
     it('throws for an invalid type', () => {
       expect(() => ArtifactKind.from('invalid')).toThrow(
-        'Invalid artifact type: "invalid". Valid: migration_plan, module_migration_plan, migrated_sources, adversarial_report, project_metadata, ansible_project',
+        'Invalid artifact type: "invalid". Valid: migration_plan, module_migration_plan, migrated_sources, adversarial_report, adversarial_report_json, project_metadata, ansible_project',
       );
     });
   });
 
   describe('all', () => {
-    it('returns 6 kinds in defined order', () => {
+    it('returns 7 kinds in defined order', () => {
       const all = ArtifactKind.all();
-      expect(all).toHaveLength(6);
+      expect(all).toHaveLength(7);
       expect(all).toEqual([
         ArtifactKind.MIGRATION_PLAN,
         ArtifactKind.MODULE_MIGRATION_PLAN,
@@ -66,6 +66,7 @@ describe('ArtifactKind', () => {
         ArtifactKind.PROJECT_METADATA,
         ArtifactKind.ANSIBLE_PROJECT,
         ArtifactKind.ADVERSARIAL_REPORT,
+        ArtifactKind.ADVERSARIAL_REPORT_JSON,
       ]);
     });
   });
@@ -77,6 +78,7 @@ describe('ArtifactKind', () => {
         'module_migration_plan',
         'migrated_sources',
         'adversarial_report',
+        'adversarial_report_json',
         'project_metadata',
         'ansible_project',
       ]);

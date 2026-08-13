@@ -14,4 +14,3 @@
  */
 export * from './RepoAuthentication';
 export { RulesAcceptance, rulesAcceptanceValidation } from './RulesAcceptance';
-export { AdversarialAgentsPickerFieldExtension } from './AdversarialAgentsPickerFieldExtension';

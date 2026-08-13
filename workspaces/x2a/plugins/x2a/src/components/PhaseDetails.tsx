@@ -26,8 +26,11 @@ import {
 } from '@material-ui/core';
 import {
   Job,
+  JobStatus,
   MigrationPhase,
   ModulePhase,
+  Phase,
+  Telemetry,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useTranslation } from '../hooks/useTranslation';
@@ -73,7 +76,8 @@ const PhaseRunAction = ({
   const { t } = useTranslation();
   const classes = useStyles();
 
-  const previousRunSucceeded = phase?.status === 'success';
+  const previousRunSucceeded =
+    !!phase?.status && JobStatus.from(phase.status).isSuccess();
   if (!onRunPhase) {
     return null;
   }
@@ -82,12 +86,12 @@ const PhaseRunAction = ({
     if (phaseName === 'init') {
       return t('modulePage.phases.resyncMigrationPlanInstructions');
     }
-    if (phaseName === 'analyze') {
+    if (Phase.from(phaseName).isAnalyze()) {
       return previousRunSucceeded
         ? t('modulePage.phases.reanalyzeInstructions')
         : t('modulePage.phases.analyzeInstructions');
     }
-    if (phaseName === 'migrate') {
+    if (Phase.from(phaseName).isMigrate()) {
       return previousRunSucceeded
         ? t('modulePage.phases.remigrateInstructions')
         : t('modulePage.phases.migrateInstructions');
@@ -101,12 +105,12 @@ const PhaseRunAction = ({
   };
 
   const getActionText = () => {
-    if (phaseName === 'analyze') {
+    if (Phase.from(phaseName).isAnalyze()) {
       return previousRunSucceeded
         ? t('modulePage.phases.rerunAnalyze')
         : t('modulePage.phases.runAnalyze');
     }
-    if (phaseName === 'migrate') {
+    if (Phase.from(phaseName).isMigrate()) {
       return previousRunSucceeded
         ? t('modulePage.phases.rerunMigrate')
         : t('modulePage.phases.runMigrate');
@@ -169,8 +173,7 @@ export const PhaseDetails = (
     projectId: string;
     onRunPhase?: (phase: MigrationPhase) => void;
     onCancelPhase?: (phase: MigrationPhase) => void;
-    onRunAdversarial?: (phase: 'analyze' | 'migrate') => void;
-    hasAdversarialAgents?: boolean;
+    adversarialTelemetry?: Telemetry;
   } & OptionalModuleId,
 ) => {
   const { t } = useTranslation();
@@ -185,8 +188,7 @@ export const PhaseDetails = (
     phaseName,
     onRunPhase,
     onCancelPhase,
-    onRunAdversarial,
-    hasAdversarialAgents,
+    adversarialTelemetry,
   } = props;
   const moduleId = 'moduleId' in props ? props.moduleId : undefined;
 
@@ -209,6 +211,18 @@ export const PhaseDetails = (
       : undefined;
 
   const canRunPhase = phase?.status !== 'running';
+
+  const tokenTotals = useMemo(() => {
+    const all = [
+      ...Object.values(phase?.telemetry?.agents ?? {}),
+      ...Object.values(adversarialTelemetry?.agents ?? {}),
+    ];
+    if (all.length === 0) return undefined;
+    return {
+      inputTokens: all.reduce((s, a) => s + (a.inputTokens ?? 0), 0),
+      outputTokens: all.reduce((s, a) => s + (a.outputTokens ?? 0), 0),
+    };
+  }, [phase?.telemetry, adversarialTelemetry]);
 
   const fetchLog = useCallback(
     () =>
@@ -256,26 +270,6 @@ export const PhaseDetails = (
             onCancelPhase={onCancelPhase}
           />
         )}
-        {onRunAdversarial &&
-          (phaseName === 'analyze' || phaseName === 'migrate') &&
-          phase?.status === 'success' && (
-            <>
-              <Button
-                variant="outlined"
-                color="default"
-                size="small"
-                disabled={!canRunPhase || !hasAdversarialAgents}
-                onClick={() => onRunAdversarial(phaseName)}
-              >
-                {t('modulePage.phases.runAdversarialReview')}
-              </Button>
-              <Typography>
-                {hasAdversarialAgents
-                  ? t('modulePage.phases.adversarialReviewInstructions')
-                  : t('modulePage.phases.noAdversarialAgentsConfigured')}
-              </Typography>
-            </>
-          )}
       </Grid>
 
       <Grid item xs={2}>
@@ -368,15 +362,33 @@ export const PhaseDetails = (
         </Grid>
       )}
 
-      {phase?.telemetry && (
+      {(phase?.telemetry || adversarialTelemetry) && (
         <>
           <Grid item xs={12}>
-            <Typography variant="h6" gutterBottom>
-              {t('modulePage.phases.telemetry.title')}
-            </Typography>
+            <Grid container alignItems="baseline" spacing={2}>
+              <Grid item>
+                <Typography variant="h6">
+                  {t('modulePage.phases.telemetry.title')}
+                </Typography>
+              </Grid>
+              {tokenTotals && (
+                <Grid item>
+                  <Typography variant="body2" color="textSecondary">
+                    {tokenTotals.inputTokens.toLocaleString()}{' '}
+                    {t('modulePage.phases.telemetry.totalInputTokens')}
+                    {' · '}
+                    {tokenTotals.outputTokens.toLocaleString()}{' '}
+                    {t('modulePage.phases.telemetry.totalOutputTokens')}
+                  </Typography>
+                </Grid>
+              )}
+            </Grid>
           </Grid>
           <Grid item xs={12}>
-            <PhaseTelemetry telemetry={phase.telemetry} />
+            <PhaseTelemetry
+              telemetry={phase?.telemetry}
+              adversarialTelemetry={adversarialTelemetry}
+            />
           </Grid>
         </>
       )}

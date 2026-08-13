@@ -93,6 +93,20 @@ export class Phase {
     return this === Phase.INIT;
   }
 
+  isAnalyze(): boolean {
+    return this === Phase.ANALYZE;
+  }
+
+  isMigrate(): boolean {
+    return this === Phase.MIGRATE;
+  }
+
+  isAdversarial(): boolean {
+    return (
+      this === Phase.ADVERSARIAL_ANALYZE || this === Phase.ADVERSARIAL_MIGRATE
+    );
+  }
+
   equals(other: Phase): boolean {
     return this.value === other.value;
   }

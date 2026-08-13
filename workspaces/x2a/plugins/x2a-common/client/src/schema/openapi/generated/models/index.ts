@@ -16,7 +16,6 @@
 
 export * from '../models/AAPCredentials.model';
 export * from '../models/AdversarialAgent.model';
-export * from '../models/AdversarialAgentSnapshot.model';
 export * from '../models/AdversarialAgentsGet200Response.model';
 export * from '../models/AdversarialAgentsPostRequest.model';
 export * from '../models/AgentMetrics.model';

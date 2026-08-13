@@ -211,6 +211,8 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'modulePage.phases.telemetry.outputTokens': 'Token di output',
     'modulePage.phases.telemetry.toolCalls':
       'Conteggio delle chiamate agli strumenti',
+    'modulePage.phases.telemetry.totalInputTokens': 'Token di input totali',
+    'modulePage.phases.telemetry.totalOutputTokens': 'Token di output totali',
     'modulePage.phases.resyncMigrationPlanInstructions':
       "Sincronizza l'elenco dei moduli con il piano di migrazione.",
     'time.duration.daysAndHours': '{{days}}g {{hours}}h',
@@ -330,28 +332,22 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'rulesPage.dialog.cancel': 'Annulla',
     'rulesPage.dialog.createError': 'Errore nella creazione della regola',
     'rulesPage.dialog.updateError': "Errore nell'aggiornamento della regola",
-    'createProjectPage.adversarialAgents.loading':
-      'Caricamento degli agenti avversariali...',
-    'createProjectPage.adversarialAgents.title': 'Agenti Avversariali',
-    'createProjectPage.adversarialAgents.subtitle':
-      'Selezionare agenti IA per esaminare i risultati della migrazione in termini di sicurezza, lacune funzionali e correttezza',
-    'createProjectPage.adversarialAgents.placeholder': 'Scegliere gli agenti…',
-    'createProjectPage.adversarialAgents.selected': 'selezionato',
-    'createProjectPage.adversarialAgents.noAgentsAvailable':
-      'Nessun agente avversariale disponibile. Creare agenti nella pagina Agenti Avversariali.',
-    'createProjectPage.adversarialAgents.loadingError':
-      'Errore nel caricamento degli agenti avversariali',
-    'createProjectPage.adversarialAgents.tooltip':
-      'Gli agenti avversariali esaminano i risultati della migrazione per individuare problemi di sicurezza, lacune funzionali e problemi di correttezza',
     'modulePage.phases.runAdversarialReview': 'Esegui revisione avversariale',
     'modulePage.phases.adversarialReview': 'Revisione Avversariale',
-    'modulePage.phases.adversarialReviewInstructions':
-      'Eseguire gli agenti avversariali configurati sul risultato della fase. Gli agenti scriveranno un report nel repository di destinazione.',
-    'modulePage.phases.noAdversarialAgentsConfigured':
-      'Nessun agente avversariale è configurato per questo progetto.',
+    'modulePage.phases.adversarialNoRuns': 'Nessuna esecuzione ancora',
+    'modulePage.phases.adversarialAgentLabel': 'avversariale',
+    'modulePage.phases.adversarialCriticalFindings': 'Risultati Critici',
+    'modulePage.phases.adversarialWarningFindings': 'Risultati di Avviso',
+    'modulePage.phases.adversarialAgents.title': 'Agenti Avversariali',
+    'modulePage.phases.adversarialAgents.placeholder': 'Scegliere gli agenti…',
+    'modulePage.phases.adversarialAgents.noAgentsAvailable':
+      'Nessun agente avversariale disponibile per questa fase. Creare agenti nella pagina Agenti Avversariali.',
+    'modulePage.phases.adversarialAgents.loadingError':
+      'Errore nel caricamento degli agenti avversariali',
     'modulePage.phases.adversarialRunError':
       "Errore nell'avvio della revisione avversariale",
     'artifact.types.adversarial_report': 'Report Avversariale',
+    'artifact.types.adversarial_report_json': 'Report Avversariale (JSON)',
     'adversarialAgentsPage.title': 'Agenti Avversariali',
     'adversarialAgentsPage.subtitle':
       'Gestire gli agenti IA che esaminano i risultati della migrazione per individuare problemi di sicurezza, lacune funzionali e problemi di correttezza.',

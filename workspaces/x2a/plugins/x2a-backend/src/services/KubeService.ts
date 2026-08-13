@@ -41,6 +41,7 @@ import {
   type GitRepo,
   type JobCreateParams,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+import { Phase } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { stringifyError } from '../utils';
 import { makeK8sClient } from './makeK8sClient';
@@ -291,7 +292,7 @@ export class KubeService implements KubeServiceApi {
 
     // Step 2: Create the Kubernetes job
     // The adversarial agents ConfigMap is only relevant for adversarial phases
-    const isAdversarialPhase = params.phase.startsWith('adversarial-');
+    const isAdversarialPhase = Phase.from(params.phase).isAdversarial();
     const adversarialAgentsConfigMapName =
       isAdversarialPhase &&
       params.adversarialAgents &&

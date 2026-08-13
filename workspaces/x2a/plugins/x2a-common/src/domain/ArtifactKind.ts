@@ -27,6 +27,9 @@ export class ArtifactKind {
   static readonly PROJECT_METADATA = new ArtifactKind('project_metadata');
   static readonly ANSIBLE_PROJECT = new ArtifactKind('ansible_project');
   static readonly ADVERSARIAL_REPORT = new ArtifactKind('adversarial_report');
+  static readonly ADVERSARIAL_REPORT_JSON = new ArtifactKind(
+    'adversarial_report_json',
+  );
 
   private static readonly ALL = Object.freeze([
     ArtifactKind.MIGRATION_PLAN,
@@ -35,6 +38,7 @@ export class ArtifactKind {
     ArtifactKind.PROJECT_METADATA,
     ArtifactKind.ANSIBLE_PROJECT,
     ArtifactKind.ADVERSARIAL_REPORT,
+    ArtifactKind.ADVERSARIAL_REPORT_JSON,
   ]);
 
   private static readonly BY_VALUE = new Map<string, ArtifactKind>(
@@ -82,6 +86,10 @@ export class ArtifactKind {
 
   isAdversarialReport(): boolean {
     return this === ArtifactKind.ADVERSARIAL_REPORT;
+  }
+
+  isAdversarialReportJson(): boolean {
+    return this === ArtifactKind.ADVERSARIAL_REPORT_JSON;
   }
 
   equals(other: ArtifactKind): boolean {

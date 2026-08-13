@@ -17,8 +17,10 @@
 import { InfoCard } from '@backstage/core-components';
 import { makeStyles, Box, Tabs, Tab } from '@material-ui/core';
 import {
+  JobStatus,
   MigrationPhase,
   Module,
+  Phase,
   Project,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
@@ -26,7 +28,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { PhaseDetails } from '../PhaseDetails';
 import { PhaseStatusIcon } from '../PhaseStatus';
 import { hasPhasePrerequisites } from '../tools';
-import { AdversarialJobDetails } from './AdversarialJobDetails';
+import { AdversarialReviewSection } from './AdversarialReviewSection';
 
 const useStyles = makeStyles(theme => ({
   tabs: {
@@ -88,7 +90,7 @@ export const PhasesCard = ({
   handleTabChange: (event: React.ChangeEvent<{}>, newValue: number) => void;
   onRunPhase?: (phase: MigrationPhase) => void;
   onCancelPhase?: (phase: MigrationPhase) => void;
-  onRunAdversarial?: (phase: 'analyze' | 'migrate') => void;
+  onRunAdversarial?: (phase: 'analyze' | 'migrate', agentIds: string[]) => void;
 }) => {
   const { t } = useTranslation();
   const classes = useStyles();
@@ -98,7 +100,6 @@ export const PhasesCard = ({
   const publishPhase = module?.publish;
   const adversarialAnalyzePhase = module?.adversarialAnalyze;
   const adversarialMigratePhase = module?.adversarialMigrate;
-  const hasAdversarialAgents = (project?.adversarialAgents?.length ?? 0) > 0;
 
   return (
     <InfoCard title={t('modulePage.phases.title')} variant="gridItem">
@@ -157,22 +158,31 @@ export const PhasesCard = ({
           moduleId={moduleId}
           onRunPhase={onRunPhase}
           onCancelPhase={onCancelPhase}
-          onRunAdversarial={onRunAdversarial}
-          hasAdversarialAgents={hasAdversarialAgents}
+          adversarialTelemetry={adversarialAnalyzePhase?.telemetry}
         />
-        <AdversarialJobDetails
-          job={adversarialAnalyzePhase}
-          projectId={projectId}
-          moduleId={moduleId}
-          phaseName="adversarial-analyze"
-          targetRepoUrl={project?.targetRepoUrl || ''}
-          targetRepoBranch={project?.targetRepoBranch || ''}
-          onCancel={
-            onCancelPhase
-              ? () => onCancelPhase('adversarial-analyze')
-              : undefined
-          }
-        />
+        {onRunAdversarial && (
+          <Box mt={2}>
+            <AdversarialReviewSection
+              job={adversarialAnalyzePhase}
+              projectId={projectId}
+              moduleId={moduleId}
+              adversarialPhaseName={Phase.ADVERSARIAL_ANALYZE.value}
+              runPhase="analyze"
+              targetRepoUrl={project?.targetRepoUrl || ''}
+              targetRepoBranch={project?.targetRepoBranch || ''}
+              canRun={
+                !!analyzePhase?.status &&
+                JobStatus.from(analyzePhase.status).isSuccess()
+              }
+              onCancel={
+                onCancelPhase
+                  ? () => onCancelPhase(Phase.ADVERSARIAL_ANALYZE.value)
+                  : undefined
+              }
+              onRunAdversarial={onRunAdversarial}
+            />
+          </Box>
+        )}
       </Box>
       <Box className={activeTab === 1 ? classes.tabPanel : classes.hiddenPanel}>
         <PhaseDetails
@@ -182,22 +192,31 @@ export const PhasesCard = ({
           moduleId={moduleId}
           onRunPhase={onRunPhase}
           onCancelPhase={onCancelPhase}
-          onRunAdversarial={onRunAdversarial}
-          hasAdversarialAgents={hasAdversarialAgents}
+          adversarialTelemetry={adversarialMigratePhase?.telemetry}
         />
-        <AdversarialJobDetails
-          job={adversarialMigratePhase}
-          projectId={projectId}
-          moduleId={moduleId}
-          phaseName="adversarial-migrate"
-          targetRepoUrl={project?.targetRepoUrl || ''}
-          targetRepoBranch={project?.targetRepoBranch || ''}
-          onCancel={
-            onCancelPhase
-              ? () => onCancelPhase('adversarial-migrate')
-              : undefined
-          }
-        />
+        {onRunAdversarial && (
+          <Box mt={2}>
+            <AdversarialReviewSection
+              job={adversarialMigratePhase}
+              projectId={projectId}
+              moduleId={moduleId}
+              adversarialPhaseName={Phase.ADVERSARIAL_MIGRATE.value}
+              runPhase="migrate"
+              targetRepoUrl={project?.targetRepoUrl || ''}
+              targetRepoBranch={project?.targetRepoBranch || ''}
+              canRun={
+                !!migratePhase?.status &&
+                JobStatus.from(migratePhase.status).isSuccess()
+              }
+              onCancel={
+                onCancelPhase
+                  ? () => onCancelPhase(Phase.ADVERSARIAL_MIGRATE.value)
+                  : undefined
+              }
+              onRunAdversarial={onRunAdversarial}
+            />
+          </Box>
+        )}
       </Box>
       <Box className={activeTab === 2 ? classes.tabPanel : classes.hiddenPanel}>
         <PhaseDetails

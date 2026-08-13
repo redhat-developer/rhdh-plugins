@@ -25,7 +25,6 @@ import {
   repoAuthenticationValidation,
   RulesAcceptance,
   rulesAcceptanceValidation,
-  AdversarialAgentsPickerFieldExtension,
 } from './scaffolder';
 
 /** @public */
@@ -60,13 +59,5 @@ export const RulesAcceptanceExtension = x2APlugin.provide(
     component: RulesAcceptance,
     name: 'RulesAcceptance', // name used in ui:field in templates
     validation: rulesAcceptanceValidation,
-  }),
-);
-
-/** @public */
-export const AdversarialAgentsPickerExtension = x2APlugin.provide(
-  createScaffolderFieldExtension({
-    component: AdversarialAgentsPickerFieldExtension,
-    name: 'AdversarialAgentsPicker', // name used in ui:field in templates
   }),
 );

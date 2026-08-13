@@ -40,7 +40,6 @@ import {
   RuleEntity,
   type RuleSnapshot,
   AdversarialAgentEntity,
-  type AdversarialAgentSnapshot,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import {
   x2aDatabaseServiceRef,
@@ -684,19 +683,6 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
 
   async deleteAdversarialAgent(opts: { id: string }): Promise<number> {
     return this.#adversarialAgentOps.deleteAdversarialAgent(opts);
-  }
-
-  async attachAdversarialAgentsToProject(args: {
-    projectId: string;
-    agentIds: string[];
-  }): Promise<void> {
-    return this.#adversarialAgentOps.attachAdversarialAgentsToProject(args);
-  }
-
-  async getAdversarialAgentsForProject(args: {
-    projectId: string;
-  }): Promise<AdversarialAgentSnapshot[]> {
-    return this.#adversarialAgentOps.getAdversarialAgentsForProject(args);
   }
 }
 

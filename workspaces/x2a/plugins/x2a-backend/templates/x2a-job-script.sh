@@ -706,6 +706,7 @@ case "${PHASE}" in
 
     if [[ -f "/app/agent-adversarial-report.json" ]]; then
       cp "/app/agent-adversarial-report.json" "${REPORT_JSON_DEST}"
+      ARTIFACTS+=("adversarial_report_json:$(cat /app/agent-adversarial-report.json)")
     fi
 
     ARTIFACTS+=("adversarial_report:${PROJECT_DIR}/modules/${MODULE_NAME}/adversarial-report-${ACTUAL_PHASE}.md")

@@ -155,14 +155,6 @@ export const spec = {
                       "type": "string"
                     },
                     "description": "UUIDs of rules the project accepts (required rules auto-appended)"
-                  },
-                  "adversarialAgentIds": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "format": "uuid"
-                    },
-                    "description": "Optional list of agent IDs to enable for this project (snapshots will be stored)"
                   }
                 },
                 "required": [
@@ -1156,13 +1148,22 @@ export const spec = {
                     "type": "string",
                     "description": "UUID of the module to review"
                   },
+                  "agentIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "description": "IDs of adversarial agents to run for this phase"
+                  },
                   "targetRepoAuth": {
                     "$ref": "#/components/schemas/GitRepoAuth"
                   }
                 },
                 "required": [
                   "phase",
-                  "moduleId"
+                  "moduleId",
+                  "agentIds"
                 ]
               }
             }
@@ -1403,13 +1404,6 @@ export const spec = {
               "$ref": "#/components/schemas/RuleSnapshot"
             },
             "description": "Snapshot of rules accepted at project creation time"
-          },
-          "adversarialAgents": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/AdversarialAgentSnapshot"
-            },
-            "description": "Snapshot of adversarial agents selected at project creation time"
           }
         },
         "required": [
@@ -1657,7 +1651,8 @@ export const spec = {
           "migrated_sources",
           "project_metadata",
           "ansible_project",
-          "adversarial_report"
+          "adversarial_report",
+          "adversarial_report_json"
         ]
       },
       "Artifact": {
@@ -1860,42 +1855,6 @@ export const spec = {
           "id",
           "title",
           "description"
-        ]
-      },
-      "AdversarialAgentSnapshot": {
-        "type": "object",
-        "description": "Snapshot of an adversarial agent at the time it was selected for a project",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "UUID of the agent"
-          },
-          "name": {
-            "type": "string",
-            "description": "Name of the agent at selection time"
-          },
-          "prompt": {
-            "type": "string",
-            "description": "Prompt of the agent at selection time"
-          },
-          "phases": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Workflow phases the agent runs in"
-          },
-          "critical": {
-            "type": "boolean",
-            "description": "Whether this is a critical agent"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "prompt",
-          "phases",
-          "critical"
         ]
       },
       "AdversarialAgent": {

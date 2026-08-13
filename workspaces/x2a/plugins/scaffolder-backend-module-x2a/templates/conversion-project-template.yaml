@@ -181,7 +181,6 @@ spec:
       ui:order:
         - userPrompt
         - acceptedRuleIds
-        - adversarialAgentIds
       properties:
         userPrompt:
           title: User prompt
@@ -194,12 +193,6 @@ spec:
           title: Project rules
           type: string
           ui:field: RulesAcceptance
-        adversarialAgentIds:
-          title: Adversarial agents
-          type: array
-          items:
-            type: string
-          ui:field: AdversarialAgentsPicker
 
   steps:
     - id: createProject
@@ -218,7 +211,6 @@ spec:
         targetRepoBranch: ${{ parameters.targetRepoBranch }}
         userPrompt: ${{ parameters.userPrompt }}
         acceptedRuleIds: ${{ parameters.acceptedRuleIds }}
-        adversarialAgentIds: ${{ parameters.adversarialAgentIds }}
 
   # Outputs are displayed to the user after a successful execution of the template.
   output:

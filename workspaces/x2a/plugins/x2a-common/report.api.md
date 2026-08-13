@@ -28,6 +28,20 @@ export interface AdversarialAgent {
 }
 
 // @public (undocumented)
+export interface AdversarialAgentConfig {
+  // (undocumented)
+  critical: boolean;
+  // (undocumented)
+  id: string;
+  // (undocumented)
+  name: string;
+  // (undocumented)
+  phases: string[];
+  // (undocumented)
+  prompt: string;
+}
+
+// @public (undocumented)
 export class AdversarialAgentEntity {
   constructor(
     id: string,
@@ -60,7 +74,7 @@ export class AdversarialAgentEntity {
   // (undocumented)
   readonly prompt: string;
   // (undocumented)
-  toSnapshot(): AdversarialAgentSnapshot;
+  toConfig(): AdversarialAgentConfig;
   // (undocumented)
   toString(): string;
   // (undocumented)
@@ -105,15 +119,6 @@ export type AdversarialAgentsIdPut = {
   };
   body: AdversarialAgentsPostRequest;
 };
-
-// @public
-export interface AdversarialAgentSnapshot {
-  critical: boolean;
-  id: string;
-  name: string;
-  phases: Array<string>;
-  prompt: string;
-}
 
 // @public (undocumented)
 export type AdversarialAgentsPost = {
@@ -163,6 +168,8 @@ export class ArtifactKind {
   // (undocumented)
   static readonly ADVERSARIAL_REPORT: ArtifactKind;
   // (undocumented)
+  static readonly ADVERSARIAL_REPORT_JSON: ArtifactKind;
+  // (undocumented)
   static all(): readonly ArtifactKind[];
   // (undocumented)
   static readonly ANSIBLE_PROJECT: ArtifactKind;
@@ -172,6 +179,8 @@ export class ArtifactKind {
   static from(raw: string): ArtifactKind;
   // (undocumented)
   isAdversarialReport(): boolean;
+  // (undocumented)
+  isAdversarialReportJson(): boolean;
   // (undocumented)
   isAnsibleProject(): boolean;
   // (undocumented)
@@ -205,7 +214,8 @@ export type ArtifactType =
   | 'migrated_sources'
   | 'project_metadata'
   | 'ansible_project'
-  | 'adversarial_report';
+  | 'adversarial_report'
+  | 'adversarial_report_json';
 
 // @public
 export interface AuthToken {
@@ -559,6 +569,12 @@ export class Phase {
   // (undocumented)
   static readonly INIT: Phase;
   // (undocumented)
+  isAdversarial(): boolean;
+  // (undocumented)
+  isAnalyze(): boolean;
+  // (undocumented)
+  isMigrate(): boolean;
+  // (undocumented)
   isModulePhase(): boolean;
   // (undocumented)
   isProjectPhase(): boolean;
@@ -586,7 +602,6 @@ export const POLLING_INTERVAL_MS: number;
 // @public (undocumented)
 export interface Project {
   acceptedRules?: Array<RuleSnapshot>;
-  adversarialAgents?: Array<AdversarialAgentSnapshot>;
   createdAt: Date;
   description?: string;
   dirName?: string;
@@ -632,7 +647,6 @@ export type ProjectsPost = {
 // @public (undocumented)
 export interface ProjectsPostRequest {
   acceptedRuleIds?: Array<string>;
-  adversarialAgentIds?: Array<string>;
   description: string;
   name: string;
   ownedByGroup?: string;
@@ -658,6 +672,7 @@ export interface ProjectsProjectIdAdversarialRunPost202Response {
 
 // @public (undocumented)
 export interface ProjectsProjectIdAdversarialRunPostRequest {
+  agentIds: Array<string>;
   moduleId: string;
   phase: ProjectsProjectIdAdversarialRunPostRequestPhaseEnum;
   // (undocumented)
@@ -1082,6 +1097,7 @@ export const X2A_ARTIFACT_TYPE_VALUES: readonly [
   'module_migration_plan',
   'migrated_sources',
   'adversarial_report',
+  'adversarial_report_json',
   'project_metadata',
   'ansible_project',
 ];

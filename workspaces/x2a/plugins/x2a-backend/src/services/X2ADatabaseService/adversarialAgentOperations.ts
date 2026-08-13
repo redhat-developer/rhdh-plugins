@@ -17,11 +17,7 @@
 import { Knex } from 'knex';
 import crypto from 'node:crypto';
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { InputError } from '@backstage/errors';
-import {
-  AdversarialAgentEntity,
-  type AdversarialAgentSnapshot,
-} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { AdversarialAgentEntity } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 export class AdversarialAgentOperations {
   readonly #logger: LoggerService;
@@ -71,11 +67,18 @@ export class AdversarialAgentOperations {
 
   async listAdversarialAgents(filters?: {
     phase?: string;
+    ids?: string[];
   }): Promise<AdversarialAgentEntity[]> {
-    const rows = await this.#dbClient('adversarial_agents').orderBy(
+    let query = this.#dbClient('adversarial_agents').orderBy(
       'created_at',
       'asc',
     );
+
+    if (filters?.ids && filters.ids.length > 0) {
+      query = query.whereIn('id', filters.ids);
+    }
+
+    const rows = await query;
 
     return rows
       .map((row: Record<string, unknown>) => {
@@ -160,74 +163,5 @@ export class AdversarialAgentOperations {
     }
 
     return deletedCount;
-  }
-
-  async attachAdversarialAgentsToProject(args: {
-    projectId: string;
-    agentIds: string[];
-  }): Promise<void> {
-    const { projectId, agentIds } = args;
-
-    // Fetch explicitly requested agents
-    const requestedAgents =
-      agentIds.length > 0
-        ? await this.#dbClient('adversarial_agents').whereIn('id', agentIds)
-        : [];
-
-    // Validate all provided IDs exist
-    const foundIds = new Set(
-      requestedAgents.map((r: Record<string, unknown>) => r.id as string),
-    );
-    const missingIds = agentIds.filter(id => !foundIds.has(id));
-    if (missingIds.length > 0) {
-      throw new InputError(
-        `Adversarial agents not found: ${missingIds.join(', ')}`,
-      );
-    }
-
-    // Parse phases from JSON
-    const agents = requestedAgents.map((row: Record<string, unknown>) => {
-      const phases = JSON.parse(row.phases as string) as string[];
-      return {
-        ...(row as Record<string, unknown>),
-        phases,
-      };
-    });
-
-    const snapshots: AdversarialAgentSnapshot[] = agents.map(row =>
-      AdversarialAgentEntity.fromRow(row).toSnapshot(),
-    );
-
-    await this.#dbClient('projects')
-      .where('id', projectId)
-      .update({ adversarial_agents: JSON.stringify(snapshots) });
-
-    this.#logger.info(
-      `Attached ${snapshots.length} adversarial agent(s) to project ${projectId}`,
-    );
-  }
-
-  async getAdversarialAgentsForProject(args: {
-    projectId: string;
-  }): Promise<AdversarialAgentSnapshot[]> {
-    const row = await this.#dbClient('projects')
-      .where('id', args.projectId)
-      .select('adversarial_agents')
-      .first();
-
-    if (!row?.adversarial_agents) {
-      return [];
-    }
-
-    try {
-      return JSON.parse(
-        row.adversarial_agents as string,
-      ) as AdversarialAgentSnapshot[];
-    } catch {
-      this.#logger.warn(
-        `Failed to parse adversarial_agents JSON for project ${args.projectId}`,
-      );
-      return [];
-    }
   }
 }

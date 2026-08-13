@@ -49,21 +49,6 @@ export const x2aPluginMessages = {
   projectTable: {
     deleteError: 'Failed to delete project',
   },
-  createProjectPage: {
-    adversarialAgents: {
-      loading: 'Loading adversarial agents...',
-      title: 'Adversarial Agents',
-      subtitle:
-        'Select AI agents to review migration outputs for security, functional gaps, and correctness',
-      placeholder: 'Choose agents…',
-      selected: 'selected',
-      noAgentsAvailable:
-        'No adversarial agents available. Create agents in the Adversarial Agents page.',
-      loadingError: 'Failed to load adversarial agents',
-      tooltip:
-        'Adversarial agents review migration outputs for security issues, functional gaps, and correctness problems',
-    },
-  },
   projectDetailsCard: {
     title: 'Project Details',
     name: 'Name',
@@ -149,10 +134,17 @@ export const x2aPluginMessages = {
       cancel: 'Cancel',
       runAdversarialReview: 'Run Adversarial Review',
       adversarialReview: 'Adversarial Review',
-      adversarialReviewInstructions:
-        'Run configured adversarial agents against the phase output. Agents will write a report to the target repository.',
-      noAdversarialAgentsConfigured:
-        'No adversarial agents are configured for this project.',
+      adversarialNoRuns: 'No runs yet',
+      adversarialAgentLabel: 'adversarial',
+      adversarialCriticalFindings: 'Critical Findings',
+      adversarialWarningFindings: 'Warning Findings',
+      adversarialAgents: {
+        title: 'Adversarial Agents',
+        placeholder: 'Choose agents…',
+        noAgentsAvailable:
+          'No adversarial agents available for this phase. Create agents in the Adversarial Agents page.',
+        loadingError: 'Failed to load adversarial agents',
+      },
       runError: 'Failed to run phase for module',
       adversarialRunError: 'Failed to start adversarial review',
       cancelError: 'Failed to cancel phase for module',
@@ -171,6 +163,8 @@ export const x2aPluginMessages = {
         inputTokens: 'Input Tokens',
         outputTokens: 'Output Tokens',
         toolCalls: 'Count of tool calls',
+        totalInputTokens: 'Total Input Tokens',
+        totalOutputTokens: 'Total Output Tokens',
       },
     },
   },
@@ -343,6 +337,7 @@ export const x2aPluginMessages = {
       project_metadata: 'Project Metadata',
       ansible_project: 'AAP Project',
       adversarial_report: 'Adversarial Report',
+      adversarial_report_json: 'Adversarial Report (JSON)',
     },
   },
   time: {

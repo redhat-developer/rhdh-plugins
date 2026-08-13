@@ -150,7 +150,6 @@ export function registerProjectRoutes(
       sourceRepoBranch: z.string(),
       targetRepoBranch: z.string(),
       acceptedRuleIds: z.array(z.string()).optional(),
-      adversarialAgentIds: z.array(z.string().uuid()).optional(),
     });
 
     const parsedBody = projectCreateRequestSchema
@@ -190,22 +189,6 @@ export function registerProjectRoutes(
       }
     }
 
-    // Pre-validate adversarial agent IDs to avoid orphan projects on invalid input
-    if (requestBody.adversarialAgentIds?.length) {
-      const agentChecks = await Promise.all(
-        requestBody.adversarialAgentIds.map(async id => ({
-          id,
-          exists: !!(await x2aDatabase.getAdversarialAgent({ id })),
-        })),
-      );
-      const missingAgents = agentChecks.filter(a => !a.exists).map(a => a.id);
-      if (missingAgents.length) {
-        throw new InputError(
-          `Adversarial agents not found: ${missingAgents.join(', ')}`,
-        );
-      }
-    }
-
     // create project
     const newProject = await x2aDatabase.createProject(requestBody, {
       credentials: await httpAuth.credentials(req, { allow: ['user'] }),
@@ -216,17 +199,6 @@ export function registerProjectRoutes(
       projectId: newProject.id,
       ruleIds: requestBody.acceptedRuleIds ?? [],
     });
-
-    // Attach adversarial agents if provided (validates agent IDs exist)
-    if (
-      requestBody.adversarialAgentIds &&
-      requestBody.adversarialAgentIds.length > 0
-    ) {
-      await x2aDatabase.attachAdversarialAgentsToProject({
-        projectId: newProject.id,
-        agentIds: requestBody.adversarialAgentIds,
-      });
-    }
 
     // Include accepted rules in the response
     newProject.acceptedRules = await x2aDatabase.getAcceptedRulesForProject({
@@ -511,6 +483,7 @@ export function registerProjectRoutes(
       const adversarialRunSchema = z.object({
         phase: z.enum(['analyze', 'migrate']),
         moduleId: z.string().uuid(),
+        agentIds: z.array(z.string().uuid()).min(1),
         targetRepoAuth: z.object({ token: z.string() }).optional(),
       });
 
@@ -518,7 +491,7 @@ export function registerProjectRoutes(
       if (!parsedBody.success) {
         throw new InputError(`Invalid body ${endpoint}: ${parsedBody.error}`);
       }
-      const { phase, moduleId, targetRepoAuth } = parsedBody.data;
+      const { phase, moduleId, agentIds, targetRepoAuth } = parsedBody.data;
 
       const { project, userRef } = await useEnforceProjectPermissions({
         req,
@@ -532,13 +505,14 @@ export function registerProjectRoutes(
 
       assertProjectHasDirName(project);
 
-      const adversarialAgents = (
-        await x2aDatabase.getAdversarialAgentsForProject({ projectId })
-      ).filter(agent => agent.phases.includes(phase));
+      const adversarialAgents = await x2aDatabase.listAdversarialAgents({
+        ids: agentIds,
+        phase,
+      });
       if (adversarialAgents.length === 0) {
         return res.status(400).json({
           error: 'NoAdversarialAgents',
-          message: `No adversarial agents are configured for the ${phase} phase on this project`,
+          message: `None of the provided agent IDs are valid for the ${phase} phase`,
         });
       }
 
@@ -611,7 +585,7 @@ export function registerProjectRoutes(
         moduleName: module.name,
         sourceRepo: targetRepo,
         targetRepo,
-        adversarialAgents,
+        adversarialAgents: adversarialAgents.map(a => a.toConfig()),
       });
 
       await x2aDatabase.updateJob({

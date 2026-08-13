@@ -132,10 +132,10 @@ describe('AdversarialAgentEntity', () => {
     });
   });
 
-  describe('toSnapshot', () => {
-    it('returns a snapshot with all required fields', () => {
+  describe('toConfig', () => {
+    it('returns a config with all required fields', () => {
       const entity = makeEntity({ critical: true });
-      const snapshot = entity.toSnapshot();
+      const snapshot = entity.toConfig();
       expect(snapshot).toEqual({
         id: entity.id,
         name: entity.name,

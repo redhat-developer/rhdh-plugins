@@ -145,7 +145,7 @@ export const ModulePage = () => {
   );
 
   const handleRunAdversarial = useCallback(
-    async (phase: 'analyze' | 'migrate') => {
+    async (phase: 'analyze' | 'migrate', agentIds: string[]) => {
       if (!project) return;
       setError(undefined);
 
@@ -165,6 +165,7 @@ export const ModulePage = () => {
             body: {
               phase,
               moduleId,
+              agentIds,
               targetRepoAuth: { token: targetRepoAuthToken },
             },
           });

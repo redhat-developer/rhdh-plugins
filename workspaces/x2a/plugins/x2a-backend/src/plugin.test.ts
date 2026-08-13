@@ -169,12 +169,6 @@ const getX2aDatabaseServiceMock = (): typeof x2aDatabaseServiceRef.T => ({
   deleteAdversarialAgent: jest
     .fn()
     .mockRejectedValue(new NotAllowedError('mock error')),
-  attachAdversarialAgentsToProject: jest
-    .fn()
-    .mockRejectedValue(new NotAllowedError('mock error')),
-  getAdversarialAgentsForProject: jest
-    .fn()
-    .mockRejectedValue(new NotAllowedError('mock error')),
 });
 
 const getKubeServiceMock = () =>

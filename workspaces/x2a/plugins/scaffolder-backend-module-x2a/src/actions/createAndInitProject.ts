@@ -30,7 +30,6 @@ export type CreateAndInitProjectParams = {
   targetRepoToken: string;
   userPrompt?: string;
   acceptedRuleIds?: string[];
-  adversarialAgentIds?: string[];
   backstageToken?: string;
   hostProviderMap: Map<string, ScmProviderName>;
   logger: ActionLogger;
@@ -46,7 +45,6 @@ export const createAndInitProject = async (
     targetRepoToken,
     userPrompt,
     acceptedRuleIds,
-    adversarialAgentIds,
     backstageToken: token,
     logger,
   } = params;
@@ -60,7 +58,6 @@ export const createAndInitProject = async (
     sourceRepoBranch: row.sourceRepoBranch,
     targetRepoBranch: row.targetRepoBranch,
     acceptedRuleIds,
-    adversarialAgentIds,
   };
 
   logger.info(`Creating project "${row.name}" (${JSON.stringify(body)})`);

@@ -25,11 +25,13 @@ import { extractResponseError, isHttpSuccessResponse } from '../tools';
 interface AdversarialAgentsSelectorProps {
   selectedAgentIds: string[];
   onSelectionChange: (agentIds: string[]) => void;
+  phase?: 'analyze' | 'migrate';
 }
 
 export const AdversarialAgentsSelector = ({
   selectedAgentIds,
   onSelectionChange,
+  phase,
 }: AdversarialAgentsSelectorProps) => {
   const [agents, setAgents] = useState<AdversarialAgent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,11 +45,13 @@ export const AdversarialAgentsSelector = ({
       setLoading(true);
       setError(null);
       try {
-        const response = await client.adversarialAgentsGet({ query: {} });
+        const response = await client.adversarialAgentsGet({
+          query: phase ? { phase } : {},
+        });
         if (!isHttpSuccessResponse(response)) {
           const message = await extractResponseError(
             response,
-            t('createProjectPage.adversarialAgents.loadingError'),
+            t('modulePage.phases.adversarialAgents.loadingError'),
           );
           setError(message);
           return;
@@ -55,13 +59,13 @@ export const AdversarialAgentsSelector = ({
         const data = await response.json();
         setAgents(data.agents || []);
       } catch {
-        setError(t('createProjectPage.adversarialAgents.loadingError'));
+        setError(t('modulePage.phases.adversarialAgents.loadingError'));
       } finally {
         setLoading(false);
       }
     };
     fetchAgents();
-  }, [client, t]);
+  }, [client, t, phase]);
 
   if (error) {
     return <Alert severity="error">{error}</Alert>;
@@ -80,7 +84,7 @@ export const AdversarialAgentsSelector = ({
       onChange={(_event, newValue) => {
         onSelectionChange(newValue.map(a => a.id));
       }}
-      noOptionsText={t('createProjectPage.adversarialAgents.noAgentsAvailable')}
+      noOptionsText={t('modulePage.phases.adversarialAgents.noAgentsAvailable')}
       renderTags={(value, getTagProps) =>
         value.map((agent, index) => (
           <Chip
@@ -115,15 +119,14 @@ export const AdversarialAgentsSelector = ({
       renderInput={params => (
         <TextField
           {...params}
-          label={t('createProjectPage.adversarialAgents.title')}
+          label={t('modulePage.phases.adversarialAgents.title')}
           placeholder={
             selectedAgents.length === 0
-              ? t('createProjectPage.adversarialAgents.placeholder')
+              ? t('modulePage.phases.adversarialAgents.placeholder')
               : undefined
           }
           variant="outlined"
           size="small"
-          helperText={t('createProjectPage.adversarialAgents.subtitle')}
         />
       )}
     />

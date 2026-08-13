@@ -20,7 +20,7 @@ import type {
   Artifact,
   SourceTechnology,
   RuleSnapshot,
-  AdversarialAgentSnapshot,
+  AdversarialAgentConfig,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 /**
@@ -121,6 +121,6 @@ export interface JobCreateParams {
   targetRepo: GitRepo;
   aapCredentials?: AAPCredentials;
   acceptedRules?: RuleSnapshot[];
-  adversarialAgents?: AdversarialAgentSnapshot[];
+  adversarialAgents?: AdversarialAgentConfig[];
   refresh?: boolean;
 }
