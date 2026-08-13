@@ -24,17 +24,32 @@ const MASK = '••••••••';
  * .test() or .exec() directly. Prefer using redactText() instead.
  */
 export const SECRET_PATTERNS: RegExp[] = [
-  /ghp_[a-zA-Z0-9]{36,}/g,
-  /ghs_[a-zA-Z0-9]{36,}/g,
-  /gho_[a-zA-Z0-9]{36,}/g,
+  // GitHub tokens (classic PAT, server-to-server, OAuth, fine-grained, user-to-server, refresh)
+  /gh[pousr]_[a-zA-Z0-9]{36,}/g,
   /github_pat_[a-zA-Z0-9_]{22,}/g,
+  // GitLab PAT
   /glpat-[a-zA-Z0-9\-_]{20,}/g,
-  /sk-[a-zA-Z0-9]{32,}/g,
+  // OpenAI / Anthropic API keys
+  /sk-[a-zA-Z0-9-]{32,}/g,
+  // AWS access key IDs
   /AKIA[0-9A-Z]{16}/g,
-  /xoxb-[0-9]+-[A-Za-z0-9]+/g,
-  /xoxp-[0-9]+-[A-Za-z0-9]+/g,
+  // Slack tokens (app, bot, refresh, session, user)
+  /xox[abrsp]-[0-9]+-[A-Za-z0-9]+/g,
+  // Slack incoming webhooks
+  /https:\/\/hooks\.slack\.com\/services\/T[A-Za-z0-9]+\/B[A-Za-z0-9]+\/[A-Za-z0-9]+/g,
+  // npm access tokens
+  /npm_[A-Za-z0-9]{36,}/g,
+  // Google API keys
+  /AIza[A-Za-z0-9_-]{35}/g,
+  // Azure AD client secrets (v2 format: 3 chars + 7Q~ or 8Q~ + 31 chars)
+  /[\w~.-]{3}[78]Q~[\w~.-]{31}/g,
+  // JWTs
   /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]*/g,
+  // PEM private keys
   /-----BEGIN[A-Z ]*PRIVATE KEY-----[\s\S]*?-----END[A-Z ]*PRIVATE KEY-----/g,
+  // Basic auth in URIs (e.g. https://user:pass@host)
+  /\w+:\/\/[^/\s:]+:[^/\s@]+@[^/\s]+/g,
+  // Bearer tokens
   /Bearer\s+[A-Za-z0-9\-._~+/]{20,}=*/g,
 ];
 
@@ -72,12 +87,11 @@ export function isSensitiveElement(el: Element, doc: Document): boolean {
     return true;
   }
 
-  const ariaLabel = el.getAttribute('aria-label') || '';
-  if (
-    SENSITIVE_LABEL_PATTERN.test(ariaLabel) &&
-    !SAFE_LABEL_EXCLUSIONS.test(ariaLabel)
-  ) {
-    return true;
+  for (const attr of ['aria-label', 'name', 'title', 'placeholder']) {
+    const val = el.getAttribute(attr) || '';
+    if (SENSITIVE_LABEL_PATTERN.test(val) && !SAFE_LABEL_EXCLUSIONS.test(val)) {
+      return true;
+    }
   }
 
   const id = el.getAttribute('id');
@@ -106,13 +120,19 @@ export function isSensitiveElement(el: Element, doc: Document): boolean {
  */
 export function sanitizeClonedDom(clonedDoc: Document): void {
   // 1. Mask all sensitive inputs/textareas (password fields + label-detected)
+  // 2. Regex-scan all remaining input/textarea values for token patterns
   clonedDoc.querySelectorAll('input, textarea').forEach(el => {
     if (isSensitiveElement(el, clonedDoc)) {
       (el as HTMLInputElement).value = MASK;
+    } else {
+      const inp = el as HTMLInputElement;
+      if (inp.value) {
+        inp.value = redactText(inp.value);
+      }
     }
   });
 
-  // 2. Regex scan all text nodes for token patterns
+  // 3. Regex scan all text nodes for token patterns
   const walker = clonedDoc.createTreeWalker(
     clonedDoc.body,
     NodeFilter.SHOW_TEXT,
@@ -128,7 +148,7 @@ export function sanitizeClonedDom(clonedDoc: Document): void {
     node = walker.nextNode();
   }
 
-  // 3. Handle visibility-toggle secrets (e.g. Akeyless show/hide pattern)
+  // 4. Handle visibility-toggle secrets (e.g. Akeyless show/hide pattern)
   clonedDoc
     .querySelectorAll(
       '[aria-label*="Hide secret" i], [aria-label*="Hide value" i]',

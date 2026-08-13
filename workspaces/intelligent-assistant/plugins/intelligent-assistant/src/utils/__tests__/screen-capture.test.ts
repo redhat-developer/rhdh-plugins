@@ -29,22 +29,12 @@ const mockSanitize = sanitizeClonedDom as jest.MockedFunction<
   typeof sanitizeClonedDom
 >;
 
-function createMockCanvas(
-  width: number,
-  height: number,
-  webpSupport = true,
-): HTMLCanvasElement {
+function createMockCanvas(width: number, height: number): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   Object.defineProperty(canvas, 'width', { value: width, writable: true });
   Object.defineProperty(canvas, 'height', { value: height, writable: true });
 
   canvas.toDataURL = jest.fn((type?: string, quality?: unknown) => {
-    if (type === 'image/webp' && webpSupport) {
-      return `data:image/webp;base64,WEBP_${quality}_DATA`;
-    }
-    if (type === 'image/webp' && !webpSupport) {
-      return `data:image/png;base64,PNG_FALLBACK`;
-    }
     if (type === 'image/jpeg') {
       return `data:image/jpeg;base64,JPEG_${quality}_DATA`;
     }
@@ -84,9 +74,6 @@ describe('captureScreenshot', () => {
     }) as any;
     HTMLCanvasElement.prototype.toDataURL = jest.fn(
       (type?: string, quality?: unknown) => {
-        if (type === 'image/webp') {
-          return `data:image/webp;base64,SCALED_WEBP_${quality}_DATA`;
-        }
         if (type === 'image/jpeg') {
           return `data:image/jpeg;base64,SCALED_JPEG_${quality}_DATA`;
         }
@@ -102,26 +89,8 @@ describe('captureScreenshot', () => {
     delete (window as any).requestIdleCallback;
   });
 
-  it('should return WebP when browser supports it', async () => {
-    const mockCanvas = createMockCanvas(800, 600, true);
-    mockHtml2canvas.mockResolvedValue(mockCanvas);
-
-    const result = await captureScreenshot();
-
-    expect(result).toEqual(
-      expect.objectContaining({
-        success: true,
-        contentType: 'image/webp',
-        base64: 'WEBP_0.7_DATA',
-        width: 800,
-        height: 600,
-        captureTimeMs: expect.any(Number),
-      }),
-    );
-  });
-
-  it('should fall back to JPEG when WebP is not supported', async () => {
-    const mockCanvas = createMockCanvas(800, 600, false);
+  it('should return JPEG format', async () => {
+    const mockCanvas = createMockCanvas(800, 600);
     mockHtml2canvas.mockResolvedValue(mockCanvas);
 
     const result = await captureScreenshot();
@@ -131,6 +100,9 @@ describe('captureScreenshot', () => {
         success: true,
         contentType: 'image/jpeg',
         base64: 'JPEG_0.7_DATA',
+        width: 800,
+        height: 600,
+        captureTimeMs: expect.any(Number),
       }),
     );
   });
@@ -231,7 +203,7 @@ describe('captureScreenshot', () => {
   });
 
   it('should scale down canvas when width exceeds maxWidth', async () => {
-    const mockCanvas = createMockCanvas(2560, 1440, true);
+    const mockCanvas = createMockCanvas(2560, 1440);
     mockHtml2canvas.mockResolvedValue(mockCanvas);
 
     const result = await captureScreenshot({ maxWidth: 1280 });
@@ -241,13 +213,13 @@ describe('captureScreenshot', () => {
         success: true,
         width: 1280,
         height: 720,
-        contentType: 'image/webp',
+        contentType: 'image/jpeg',
       }),
     );
   });
 
   it('should not scale canvas when width is within maxWidth', async () => {
-    const mockCanvas = createMockCanvas(1024, 768, true);
+    const mockCanvas = createMockCanvas(1024, 768);
     mockHtml2canvas.mockResolvedValue(mockCanvas);
 
     const result = await captureScreenshot({ maxWidth: 1280 });
@@ -262,7 +234,7 @@ describe('captureScreenshot', () => {
   });
 
   it('should use custom quality parameter', async () => {
-    const mockCanvas = createMockCanvas(800, 600, true);
+    const mockCanvas = createMockCanvas(800, 600);
     mockHtml2canvas.mockResolvedValue(mockCanvas);
 
     const result = await captureScreenshot({ quality: 0.5 });
@@ -270,7 +242,7 @@ describe('captureScreenshot', () => {
     expect(result).toEqual(
       expect.objectContaining({
         success: true,
-        base64: 'WEBP_0.5_DATA',
+        base64: 'JPEG_0.5_DATA',
       }),
     );
   });
@@ -289,7 +261,7 @@ describe('captureScreenshot', () => {
   it('should use setTimeout fallback when requestIdleCallback is unavailable', async () => {
     delete (window as any).requestIdleCallback;
 
-    const mockCanvas = createMockCanvas(800, 600, true);
+    const mockCanvas = createMockCanvas(800, 600);
     mockHtml2canvas.mockResolvedValue(mockCanvas);
 
     const result = await captureScreenshot();
@@ -298,7 +270,7 @@ describe('captureScreenshot', () => {
   });
 
   it('should report captureTimeMs', async () => {
-    const mockCanvas = createMockCanvas(800, 600, true);
+    const mockCanvas = createMockCanvas(800, 600);
     mockHtml2canvas.mockResolvedValue(mockCanvas);
 
     const result = await captureScreenshot();

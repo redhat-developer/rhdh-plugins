@@ -358,8 +358,7 @@ describe('validateAttachmentsForModel', () => {
 
       expect(statusMock).toHaveBeenCalledWith(400);
       expect(jsonMock).toHaveBeenCalledWith({
-        error:
-          'Image attachment does not contain a valid image file (JPEG or WebP)',
+        error: 'Image attachment does not contain a valid JPEG file',
       });
       expect(mockNext).not.toHaveBeenCalled();
     });
@@ -381,86 +380,6 @@ describe('validateAttachmentsForModel', () => {
 
       expect(mockNext).toHaveBeenCalled();
       expect(statusMock).not.toHaveBeenCalled();
-    });
-
-    it('should accept image with valid WebP magic bytes', () => {
-      // WebP format: RIFF....WEBP
-      const webpBytes = Buffer.alloc(12);
-      webpBytes.write('RIFF', 0, 'ascii');
-      webpBytes.writeUInt32LE(0, 4); // file size placeholder
-      webpBytes.write('WEBP', 8, 'ascii');
-      const VALID_WEBP_B64 = webpBytes.toString('base64');
-
-      mockReq.body = {
-        model: 'gpt-4',
-        provider: 'openai',
-        attachments: [
-          {
-            attachment_type: 'image',
-            content_type: 'image/webp',
-            content: VALID_WEBP_B64,
-          },
-        ],
-      };
-
-      callValidate();
-
-      expect(mockNext).toHaveBeenCalled();
-      expect(statusMock).not.toHaveBeenCalled();
-    });
-
-    it('should accept WebP image with data URL prefix', () => {
-      const webpBytes = Buffer.alloc(12);
-      webpBytes.write('RIFF', 0, 'ascii');
-      webpBytes.writeUInt32LE(100, 4);
-      webpBytes.write('WEBP', 8, 'ascii');
-      const VALID_WEBP_B64 = webpBytes.toString('base64');
-
-      mockReq.body = {
-        model: 'gpt-4',
-        provider: 'openai',
-        attachments: [
-          {
-            attachment_type: 'image',
-            content_type: 'image/webp',
-            content: `data:image/webp;base64,${VALID_WEBP_B64}`,
-          },
-        ],
-      };
-
-      callValidate();
-
-      expect(mockNext).toHaveBeenCalled();
-      expect(statusMock).not.toHaveBeenCalled();
-    });
-
-    it('should reject PNG image (neither JPEG nor WebP)', () => {
-      // PNG magic bytes
-      const pngBytes = Buffer.from([
-        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
-      ]);
-      const PNG_B64 = pngBytes.toString('base64');
-
-      mockReq.body = {
-        model: 'gpt-4',
-        provider: 'openai',
-        attachments: [
-          {
-            attachment_type: 'image',
-            content_type: 'image/png',
-            content: PNG_B64,
-          },
-        ],
-      };
-
-      callValidate();
-
-      expect(statusMock).toHaveBeenCalledWith(400);
-      expect(jsonMock).toHaveBeenCalledWith({
-        error:
-          'Image attachment does not contain a valid image file (JPEG or WebP)',
-      });
-      expect(mockNext).not.toHaveBeenCalled();
     });
   });
 

@@ -1826,7 +1826,7 @@ describe('intelligent-assistant router tests', () => {
 
       expect(response.statusCode).toEqual(400);
       expect(response.body.error).toContain(
-        'This model does not support images',
+        'This model does not support JPEG images',
       );
     });
 

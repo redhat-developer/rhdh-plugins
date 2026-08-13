@@ -36,7 +36,7 @@ export interface CaptureResult {
   success: true;
   /** Base64-encoded image without the data URI prefix */
   base64: string;
-  /** MIME type: 'image/webp' or 'image/jpeg' */
+  /** MIME type: 'image/jpeg' */
   contentType: string;
   width: number;
   height: number;
@@ -91,18 +91,6 @@ function scaleCanvas(
   return scaledCanvas;
 }
 
-function negotiateFormat(
-  canvas: HTMLCanvasElement,
-  quality: number,
-): { dataUri: string; contentType: string } {
-  const webpDataUri = canvas.toDataURL('image/webp', quality);
-  if (webpDataUri.startsWith('data:image/webp')) {
-    return { dataUri: webpDataUri, contentType: 'image/webp' };
-  }
-  const jpegDataUri = canvas.toDataURL('image/jpeg', quality);
-  return { dataUri: jpegDataUri, contentType: 'image/jpeg' };
-}
-
 async function doCapture(
   options: Required<CaptureOptions>,
 ): Promise<CaptureResponse> {
@@ -143,17 +131,14 @@ async function doCapture(
   });
 
   const scaledCanvas = scaleCanvas(canvas, options.maxWidth);
-  const { dataUri, contentType } = negotiateFormat(
-    scaledCanvas,
-    options.quality,
-  );
+  const dataUri = scaledCanvas.toDataURL('image/jpeg', options.quality);
 
   const captureTimeMs = Math.round(window.performance.now() - start);
 
   return {
     success: true,
     base64: stripDataUriPrefix(dataUri),
-    contentType,
+    contentType: 'image/jpeg',
     width: scaledCanvas.width,
     height: scaledCanvas.height,
     captureTimeMs,
@@ -164,7 +149,7 @@ async function doCapture(
  * Captures a screenshot of the current RHDH viewport, excluding the
  * Lightspeed chat panel and redacting sensitive data.
  *
- * Uses WebP format when the browser supports it, falling back to JPEG.
+ * Outputs JPEG format.
  * Includes performance guardrails: visibility check, idle deferral, and timeout.
  */
 export async function captureScreenshot(
