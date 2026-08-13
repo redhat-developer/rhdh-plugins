@@ -88,6 +88,8 @@ failures or config-surface drift.
 5. Run `yarn build:api-reports` and commit the updated
    `report.api.md`
 
+When reviewing PRs that add or modify `boost.*` config keys, verify all five registration steps above were completed.
+
 ### Package structure
 
 | Package                        | Purpose                                                                                       |
