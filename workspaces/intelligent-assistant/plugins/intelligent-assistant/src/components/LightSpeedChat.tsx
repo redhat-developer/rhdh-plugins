@@ -111,6 +111,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
 import { ConversationSummary, NotebookSession } from '../types';
 import { getAttachments } from '../utils/attachment-utils';
+import { extractPageContext } from '../utils/dom-extractor';
 import {
   ChatbotFootnoteWithIcon,
   getCategorizeMessages,
@@ -660,6 +661,19 @@ export const LightspeedChat = ({
   const notebooksEnabled =
     configApi.getOptionalBoolean('intelligent-assistant.notebooks.enabled') ??
     false;
+  const screenContextEnabled =
+    configApi.getOptionalBoolean(
+      'intelligent-assistant.screen-context.enabled',
+    ) ?? false;
+  const domExtractionEnabled =
+    configApi.getOptionalBoolean(
+      'intelligent-assistant.screen-context.dom-extraction.enabled',
+    ) ?? true;
+  const domExtractionMaxChars =
+    configApi.getOptionalNumber(
+      'intelligent-assistant.screen-context.dom-extraction.maxChars',
+    ) ?? 8000;
+
   const notebooksRouteMatch = useMatch(`${LIGHTSPEED_PATH}/notebooks`);
   const notebookViewRouteMatch = useMatch(
     `${LIGHTSPEED_PATH}/notebooks/:notebookId`,
@@ -1136,7 +1150,22 @@ export const LightspeedChat = ({
         prompt: message.toString(),
       }),
     );
-    handleInputPrompt(message.toString(), getAttachments(fileContents));
+    const allAttachments = getAttachments(fileContents);
+
+    if (screenContextEnabled && domExtractionEnabled) {
+      const domContext = extractPageContext({
+        maxChars: domExtractionMaxChars,
+      });
+      if (domContext) {
+        allAttachments.push({
+          attachment_type: 'configuration',
+          content_type: 'text/plain',
+          content: domContext,
+        });
+      }
+    }
+
+    handleInputPrompt(message.toString(), allAttachments);
     setIsSendButtonDisabled(true);
     setFileContents([]);
     setDraftMessage('');
