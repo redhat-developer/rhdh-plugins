@@ -318,11 +318,11 @@ const useStyles = makeStyles(theme => ({
   },
   notebooksGridCompact: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(1, minmax(0, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
     gap: theme.spacing(2),
     width: '100%',
     maxWidth: '100%',
-    paddingBottom: theme.spacing(3),
+    paddingBottom: theme.spacing(6),
   },
   notebookCard: {
     borderRadius: theme.spacing(1.5),
@@ -857,6 +857,9 @@ export const LightspeedChat = ({
   const setDisplayModeFromHeader = useCallback(
     (mode: ChatbotDisplayMode) => {
       if (mode !== ChatbotDisplayMode.embedded) {
+        if (activeTab === 1 && activeNotebook?.session_id) {
+          setActiveNotebookId(activeNotebook.session_id);
+        }
         setDisplayMode(mode);
         return;
       }
@@ -871,7 +874,12 @@ export const LightspeedChat = ({
         setDisplayMode(mode);
       }
     },
-    [setDisplayMode, activeTab, activeNotebook?.session_id],
+    [
+      setDisplayMode,
+      activeTab,
+      activeNotebook?.session_id,
+      setActiveNotebookId,
+    ],
   );
 
   const handleCreateNotebook = useCallback(() => {

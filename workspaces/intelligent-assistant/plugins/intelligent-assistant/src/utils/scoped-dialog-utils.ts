@@ -39,7 +39,7 @@ export function getScopedDialogProps(isCompact: boolean): Partial<DialogProps> {
         marginRight: '40px !important',
         borderRadius: '12px !important',
         width: 'calc(100% - 80px) !important',
-        maxWidth: 'calc(100% - 80px) !important',
+        maxWidth: 'min(480px, calc(100% - 80px)) !important',
         maxHeight: 'calc(100% - 32px) !important',
         overflowX: 'hidden',
         overflowY: 'auto',

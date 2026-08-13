@@ -96,7 +96,7 @@ export const UploadResourceScreen = ({
             variant="secondary"
             className={classes.uploadButton}
             icon={<AddCircleOIcon />}
-            iconPosition="end"
+            iconPosition="start"
             onClick={onUploadClick}
           >
             {t('notebook.view.upload.action')}

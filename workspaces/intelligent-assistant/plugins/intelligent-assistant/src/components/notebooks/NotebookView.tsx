@@ -35,7 +35,7 @@ import {
   Tooltip,
   type AlertProps,
 } from '@patternfly/react-core';
-import { TimesIcon } from '@patternfly/react-icons';
+import { PaperPlaneIcon, PlusIcon, TimesIcon } from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { notebooksApiRef } from '../../api/notebooksApi';
@@ -248,9 +248,15 @@ const useStyles = makeStyles(theme => ({
   footer: {
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default) !important',
+    padding: '6px 0 6px !important',
+    margin: '0 !important',
+    gap: '0 !important',
     '&>.pf-chatbot__footer-container': {
       width: '95% !important',
       maxWidth: 'unset !important',
+      padding: '0 !important',
+      margin: '0 !important',
+      gap: '4px !important',
     },
     '& .pf-chatbot__message-bar': {
       backgroundColor:
@@ -258,11 +264,61 @@ const useStyles = makeStyles(theme => ({
           ? theme.palette.grey[100]
           : 'var(--pf-t--global--background--color--secondary--default)',
     },
-    '& .pf-chatbot__button--send, & .pf-chatbot__button--microphone': {
-      '--pf-v6-c-button--BorderRadius':
-        'var(--pf-t--global--border--radius--pill)',
-      borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
+    '& .pf-chatbot__button--stop, & .pf-chatbot__button--attach, & .pf-chatbot__button--send, & .pf-chatbot__button--microphone':
+      {
+        background: 'none !important',
+        backgroundColor: 'transparent !important',
+        boxShadow: 'none !important',
+        padding: '2px !important',
+        width: 'auto !important',
+        height: 'auto !important',
+        '& svg': {
+          width: 18,
+          height: 18,
+        },
+      },
+  },
+  messageBar: {
+    border: '1px solid var(--pf-t--global--border--color--default)',
+    borderRadius: 24,
+    '&::after': {
+      display: 'none',
     },
+    '& textarea': {
+      minHeight: '16px !important',
+      maxHeight: '40px !important',
+      padding: '10 px 6px 0 !important',
+      lineHeight: '1.2',
+    },
+    '& .pf-chatbot__message-bar-actions': {
+      padding: '0 2px 2px !important',
+      minHeight: 'unset !important',
+    },
+  },
+  disabledMessageBar: {
+    '& textarea': {
+      pointerEvents: 'none',
+      opacity: 0.5,
+    },
+    '& .pf-chatbot__button--send, & .pf-chatbot__button--microphone': {
+      opacity: '0.5 !important',
+    },
+  },
+  sendButtonDimmed: {
+    '& .pf-chatbot__button--send, & .pf-chatbot__button--send svg, & .pf-chatbot__button--send .pf-v6-c-button__icon':
+      {
+        opacity: '0.5 !important',
+        color: 'inherit !important',
+        transition: 'opacity 0.15s',
+      },
+  },
+  sendButtonActive: {
+    '& .pf-chatbot__button--send, & .pf-chatbot__button--send svg, & .pf-chatbot__button--send .pf-v6-c-button__icon':
+      {
+        opacity: '1 !important',
+        color: 'var(--pf-t--global--icon--color--regular) !important',
+        transition: 'opacity 0.15s',
+      },
   },
   chatContent: {
     minHeight: 0,
@@ -329,6 +385,7 @@ export const NotebookView = ({
     metadata?.conversation_id ?? TEMP_CONVERSATION_ID,
   );
   const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
+  const [hasInputText, setHasInputText] = useState(false);
   const [announcement, setAnnouncement] = useState<string | undefined>(
     undefined,
   );
@@ -767,23 +824,72 @@ export const NotebookView = ({
                     >
                       <div>
                         <MessageBar
-                          hasAttachButton={false}
-                          hasMicrophoneButton={false}
-                          hasStopButton={false}
-                          isSendButtonDisabled
+                          className={`${classes.messageBar} ${classes.disabledMessageBar}`}
                           isDisabled
+                          hasAttachButton
+                          attachButtonPosition="start"
+                          hasMicrophoneButton
+                          hasStopButton={false}
+                          alwayShowSendButton
+                          isSendButtonDisabled
                           onSendMessage={sendMessage}
+                          forceMultilineLayout
+                          buttonProps={{
+                            attach: {
+                              tooltipContent: t('notebook.view.documents.add'),
+                              icon: <PlusIcon />,
+                              props: {
+                                onClick: handleOpenUploadModal,
+                              },
+                            },
+                            send: {
+                              props: {
+                                icon: <PaperPlaneIcon />,
+                                isDisabled: true,
+                              },
+                            },
+                            microphone: {
+                              props: {
+                                isDisabled: true,
+                              },
+                            },
+                          }}
                           placeholder={t('notebook.view.input.placeholder')}
                         />
                       </div>
                     </Tooltip>
                   ) : (
                     <MessageBar
-                      hasAttachButton={false}
+                      className={`${classes.messageBar} ${hasInputText ? classes.sendButtonActive : classes.sendButtonDimmed}`}
+                      hasAttachButton
+                      attachButtonPosition="start"
                       hasMicrophoneButton
                       hasStopButton={false}
+                      alwayShowSendButton
                       isSendButtonDisabled={isSendButtonDisabled}
-                      onSendMessage={sendMessage}
+                      onSendMessage={msg => {
+                        sendMessage(msg);
+                        setHasInputText(false);
+                      }}
+                      onChange={(_e, val) =>
+                        setHasInputText(String(val).trim().length > 0)
+                      }
+                      forceMultilineLayout
+                      buttonProps={{
+                        attach: {
+                          tooltipContent: t('notebook.view.documents.add'),
+                          icon: <PlusIcon />,
+                          props: {
+                            onClick: handleOpenUploadModal,
+                          },
+                        },
+                        send: {
+                          tooltipContent: t('tooltip.send'),
+                          props: {
+                            icon: <PaperPlaneIcon />,
+                          },
+                        },
+                      }}
                       placeholder={t('notebook.view.input.placeholder')}
                     />
                   )}

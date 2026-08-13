@@ -24,7 +24,7 @@ export const notebookDialogStyles = (theme: Theme) =>
     },
     dialogPaperCompact: {
       borderRadius: 12,
-      maxWidth: '100%',
+      maxWidth: '300px',
     },
     dialogTitle: {
       display: 'flex',
