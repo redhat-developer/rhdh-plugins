@@ -66,6 +66,10 @@ export class NotebookSurfacePage {
     return this.page.getByRole('tab', { name: this.t['tabs.notebooks'] });
   }
 
+  chatTab(): Locator {
+    return this.page.getByRole('tab', { name: this.t['tabs.chat'] });
+  }
+
   myNotebooksHeading(): Locator {
     return this.page.getByRole('heading', { name: this.t['notebooks.title'] });
   }

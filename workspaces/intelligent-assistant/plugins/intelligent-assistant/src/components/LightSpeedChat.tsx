@@ -310,6 +310,7 @@ const useStyles = makeStyles(theme => ({
   notebookUpdated: {
     paddingBottom: theme.spacing(3),
     paddingTop: theme.spacing(2),
+    fontStyle: 'italic',
   },
   notebookTitle: {
     display: 'flex',
@@ -348,8 +349,8 @@ const useStyles = makeStyles(theme => ({
   notebookDropdownItem: {
     justifyContent: 'flex-start',
     textAlign: 'left',
-    paddingLeft: theme.spacing(1.5),
-    paddingRight: theme.spacing(1.5),
+    paddingLeft: theme.spacing(0.5),
+    paddingRight: theme.spacing(0.5),
   },
   footer: {
     '&.pf-chatbot__footer': {
@@ -816,6 +817,7 @@ export const LightspeedChat = ({
         refetchNotebooks();
       }
     } else {
+      setActiveNotebook(null);
       navigate(
         routeConversationId
           ? `${LIGHTSPEED_PATH}/conversation/${routeConversationId}`
@@ -856,9 +858,9 @@ export const LightspeedChat = ({
   }, [createNotebookMutation, navigate]);
 
   const handleCloseNotebook = useCallback(() => {
+    setActiveNotebook(null);
     navigate(`${LIGHTSPEED_PATH}/notebooks`);
-    refetchNotebooks();
-  }, [navigate, refetchNotebooks]);
+  }, [navigate]);
 
   const handleRemoveNotebookAlert = (key: React.Key) => {
     setNotebookAlerts(prevAlerts =>

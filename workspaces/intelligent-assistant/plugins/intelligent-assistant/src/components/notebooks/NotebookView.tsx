@@ -346,6 +346,13 @@ export const NotebookView = ({
   const [requestId, setRequestId] = useState('');
   const { mutate: stopConversation } = useStopConversation();
   const wasStoppedByUserRef = useRef(false);
+  const autoDeleteRef = useRef({
+    isUntitled: false,
+    isEmpty: true,
+    noPending: true,
+    noUploading: true,
+    noChat: true,
+  });
   const [announcement, setAnnouncement] = useState<string | undefined>(
     undefined,
   );
@@ -461,6 +468,36 @@ export const NotebookView = ({
   const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
   const [filesToAddToModal, setFilesToAddToModal] = useState<File[]>([]);
 
+  autoDeleteRef.current = {
+    isUntitled: notebookName === UNTITLED_NOTEBOOK_NAME,
+    isEmpty: documents.length === 0 && completedFileNames.size === 0,
+    noPending: !pendingUploads.length,
+    noUploading: !uploadingFileNames.length,
+    noChat: conversationId === TEMP_CONVERSATION_ID,
+  };
+
+  useEffect(() => {
+    return () => {
+      const currentNotebook = autoDeleteRef.current;
+      if (
+        currentNotebook.isUntitled &&
+        currentNotebook.isEmpty &&
+        currentNotebook.noPending &&
+        currentNotebook.noUploading &&
+        currentNotebook.noChat
+      ) {
+        notebooksApi
+          .deleteSession(sessionId)
+          .then(() => {
+            queryClient.invalidateQueries({
+              queryKey: ['notebooks', 'sessions'],
+            });
+          })
+          .catch(() => {});
+      }
+    };
+  }, [notebooksApi, sessionId, queryClient]);
+
   const handleRenameDocument = useCallback(
     async (documentId: string, newTitle: string) => {
       try {
@@ -517,23 +554,7 @@ export const NotebookView = ({
   const handleOpenUploadModal = () => setIsUploadModalOpen(true);
   const handleCloseUploadModal = () => setIsUploadModalOpen(false);
 
-  const handleCloseNotebook = async () => {
-    const isUntitled = notebookName === UNTITLED_NOTEBOOK_NAME;
-    const hasNoDocuments =
-      documents.length === 0 && completedFileNames.size === 0;
-    const hasNoPendingUploads = !pendingUploads.length;
-    const hasNoUploading = !uploadingFileNames.length;
-    const hasNoChat = conversationId === TEMP_CONVERSATION_ID;
-
-    if (
-      isUntitled &&
-      hasNoDocuments &&
-      hasNoPendingUploads &&
-      hasNoUploading &&
-      hasNoChat
-    ) {
-      await notebooksApi.deleteSession(sessionId).catch(() => {});
-    }
+  const handleCloseNotebook = () => {
     onClose();
   };
 
