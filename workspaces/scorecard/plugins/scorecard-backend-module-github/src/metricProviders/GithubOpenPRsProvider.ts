@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
@@ -28,8 +29,15 @@ import { getRepositoryInformationFromEntity } from '../github/utils';
 export class GithubOpenPRsProvider implements MetricProvider<'number'> {
   private readonly githubClient: GithubClient;
 
-  private constructor(config: Config) {
-    this.githubClient = new GithubClient(config);
+  private constructor(githubClient: GithubClient) {
+    this.githubClient = githubClient;
+  }
+
+  static fromConfig(
+    config: Config,
+    options: { logger: LoggerService },
+  ): GithubOpenPRsProvider {
+    return new GithubOpenPRsProvider(new GithubClient(config, options.logger));
   }
 
   getProviderDatasourceId(): string {
@@ -58,10 +66,6 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
     return {
       'metadata.annotations.github.com/project-slug': CATALOG_FILTER_EXISTS,
     };
-  }
-
-  static fromConfig(config: Config): GithubOpenPRsProvider {
-    return new GithubOpenPRsProvider(config);
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {

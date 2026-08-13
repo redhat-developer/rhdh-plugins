@@ -96,6 +96,20 @@ const scorecardTranslationDe = createTranslationMessages({
       'Gesamtpunktzahl {{total}}',
     'metric.drillDownCalculationFailures':
       'Bei der Berechnung dieser Kennzahl ist ein oder mehrere Fehler aufgetreten.',
+    'metric.dora.deploymentFrequency.description':
+      'Erfasst, wie oft Code in den letzten 30 Tagen erfolgreich in die Produktion bereitgestellt wurde. Elite-Performer stellen bei Bedarf bereit (mehrmals täglich).',
+    'metric.dora.deploymentFrequency.title': 'DORA - Bereitstellungshäufigkeit',
+    'metric.dora.medianLeadTimeForChanges.description':
+      'Misst die Zeit vom Code-Commit bis zur Produktionsbereitstellung über die letzten 30 Tage. Elite-Performer haben eine Vorlaufzeit von weniger als 24 Stunden.',
+    'metric.dora.medianLeadTimeForChanges.title':
+      'DORA - Mittlere Vorlaufzeit für Änderungen',
+    'metric.dora.changeFailureRate.description':
+      'Überwacht den Prozentsatz der Bereitstellungen, die in den letzten 30 Tagen einen Fehler in der Produktion verursachen. Elite-Performer halten die Änderungsfehlerrate unter 5 %.',
+    'metric.dora.changeFailureRate.title': 'DORA - Änderungsfehlerrate',
+    'metric.dora.meanTimeToRestore.description':
+      'Erfasst die durchschnittliche Zeit zur Wiederherstellung des Dienstes nach einem Vorfall über die letzten 30 Tage. Elite-Performer stellen den Dienst in weniger als einer Stunde wieder her.',
+    'metric.dora.meanTimeToRestore.title':
+      'DORA - Mittlere Zeit bis zur Wiederherstellung',
     'metric.filecheck.description':
       'Prüft, ob die Datei {{name}} im Repository existiert.',
     'metric.filecheck.title': 'Dateiprüfung: {{name}}',
@@ -167,10 +181,13 @@ const scorecardTranslationDe = createTranslationMessages({
     'permissionRequired.description':
       'Um das Scorecard-Plugin anzuzeigen, wenden Sie sich an Ihren Administrator, um die Berechtigung {{permission}} zu erteilen.',
     'permissionRequired.title': 'Fehlende Berechtigung',
+    'thresholds.elite': 'Elite',
     'thresholds.entities_one': '{{count}} Entität',
     'thresholds.entities_other': '{{count}} Entitäten',
     'thresholds.error': 'Fehler',
     'thresholds.exist': 'Existieren',
+    'thresholds.low': 'Niedrig',
+    'thresholds.medium': 'Mittel',
     'thresholds.missing': 'Fehlen',
     'thresholds.noEntities': 'Keine Entitäten im Zustand {{category}}',
     'thresholds.success': 'Erfolg',

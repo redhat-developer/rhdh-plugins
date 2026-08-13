@@ -22,6 +22,14 @@ import { ThresholdConfig, ThresholdResult } from './threshold';
 export type MetricType = 'number' | 'boolean';
 
 /**
+ * Default visualization for a metric on the entity scorecard.
+ * Omit / undefined means `'value'`.
+ *
+ * @public
+ */
+export type MetricDefaultVisualization = 'value' | 'sparkline';
+
+/**
  * @public
  */
 export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
@@ -40,6 +48,7 @@ export type Metric<T extends MetricType = MetricType> = {
   type: T;
   thresholds: ThresholdConfig;
   history?: boolean;
+  defaultVisualization?: MetricDefaultVisualization;
 };
 
 /**
@@ -53,6 +62,7 @@ export type MetricResult = {
     description: string;
     type: MetricType;
     history?: boolean;
+    defaultVisualization?: MetricDefaultVisualization;
   };
   result: {
     value: MetricValue | null;
@@ -111,4 +121,31 @@ export type EntityMetricDetailResponse = {
     isCapped: boolean;
   };
   entityHealth: ScorecardEntityHealthSummary;
+};
+
+/**
+ * A single sample in a metric time series (latest successful value for a UTC day).
+ * @public
+ */
+export type MetricTimeSeriesPoint = {
+  value: MetricValue;
+  /** ISO-8601 timestamp of the chosen sample */
+  timestamp: string;
+};
+
+/**
+ * Daily time-series response for one metric on one catalog entity.
+ * @public
+ */
+export type MetricTimeSeriesResponse = {
+  metricId: string;
+  entityRef: string;
+  points: MetricTimeSeriesPoint[];
+  metadata: {
+    title: string;
+    description: string;
+    type: MetricType;
+    history?: boolean;
+    defaultVisualization?: MetricDefaultVisualization;
+  };
 };

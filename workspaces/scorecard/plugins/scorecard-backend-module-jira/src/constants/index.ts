@@ -15,3 +15,5 @@
  */
 
 export * from './jiraOpenIssues';
+export * from './jiraIncidents';
+export * from './pagination';
