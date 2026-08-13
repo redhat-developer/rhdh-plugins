@@ -18,7 +18,7 @@ import { sanitizeClonedDom } from './sensitive-data-redactor';
 
 const DEFAULT_QUALITY = 0.7;
 const DEFAULT_MAX_WIDTH = 1280;
-const DEFAULT_TIMEOUT_MS = 3000;
+const DEFAULT_TIMEOUT_MS = 1000;
 const DEFAULT_EXCLUDE_SELECTOR = '[data-screen-capture-exclude]';
 
 export interface CaptureOptions {
