@@ -30,7 +30,7 @@ describe('readConfigMenuItems', () => {
           {
             target: 'help',
             title: 'Documentation',
-            icon: 'docs',
+            icon: 'article',
             link: 'https://docs.example.com',
             sectionLabel: 'Resources',
             sectionLink: '/resources',
@@ -48,7 +48,7 @@ describe('readConfigMenuItems', () => {
       type: 'data',
       title: 'Documentation',
       titleKey: undefined,
-      icon: 'docs',
+      icon: 'article',
       link: 'https://docs.example.com',
       sectionLabel: 'Resources',
       sectionLink: '/resources',
