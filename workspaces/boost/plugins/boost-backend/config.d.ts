@@ -156,5 +156,30 @@ export interface Config {
      * @visibility secret
      */
     encryptionSecret?: string;
+
+    /** Ingestion health and sync-attempt retention. */
+    ingestion?: {
+      healthRetention?: {
+        /**
+         * Maximum sync attempts retained per connector (default: 100).
+         * @configScope yaml-only
+         */
+        maxAttemptsPerConnector?: number;
+      };
+    };
+
+    /**
+     * Runtime connector sync settings (db-overridable via #4044).
+     * Distinct from `ai-catalog.providers.<id>.enabled` (startup registration).
+     */
+    connectors?: {
+      [connectorId: string]: {
+        /**
+         * Whether runtime syncing is enabled (default: true).
+         * @configScope db-overridable
+         */
+        enabled?: boolean;
+      };
+    };
   };
 }

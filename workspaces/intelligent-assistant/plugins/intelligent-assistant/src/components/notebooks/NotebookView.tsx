@@ -52,6 +52,7 @@ import {
   useDocumentStatusPolling,
   type PendingUpload,
 } from '../../hooks/notebooks/useDocumentStatusPolling';
+import { useRenameDocument } from '../../hooks/notebooks/useRenameDocument';
 import { useRenameNotebookWithAlert } from '../../hooks/notebooks/useRenameNotebookWithAlert';
 import { useUploadDocument } from '../../hooks/notebooks/useUploadDocument';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
@@ -360,6 +361,8 @@ export const NotebookView = ({
     setDeleteDocumentTarget({ id: documentId, name: documentId });
   }, []);
 
+  const { mutateAsync: renameDocument } = useRenameDocument();
+
   const onComplete = useCallback(
     (message: string) => {
       setIsSendButtonDisabled(false);
@@ -458,6 +461,25 @@ export const NotebookView = ({
   const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
   const [filesToAddToModal, setFilesToAddToModal] = useState<File[]>([]);
 
+  const handleRenameDocument = useCallback(
+    async (documentId: string, newTitle: string) => {
+      try {
+        await renameDocument({ sessionId, documentId, newTitle });
+      } catch {
+        setToastAlerts(prev => [
+          {
+            key: Date.now() + documentId,
+            title: (t as Function)('notebook.document.rename.error', {
+              documentName: documentId,
+            }) as string,
+            variant: 'danger',
+          },
+          ...prev,
+        ]);
+      }
+    },
+    [renameDocument, sessionId, t],
+  );
   const handleRenameNotebook = useRenameNotebookWithAlert({
     setAlerts: setToastAlerts,
     getNotebookName: () => notebookName,
@@ -671,6 +693,7 @@ export const NotebookView = ({
         onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
         onAddDocument={handleOpenUploadModal}
         onDeleteDocument={handleDeleteDocument}
+        onRenameDocument={handleRenameDocument}
         onRenameNotebook={newName => handleRenameNotebook(sessionId, newName)}
       />
     </DrawerPanelContent>

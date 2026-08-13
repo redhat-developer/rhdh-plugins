@@ -1,4 +1,12 @@
-# @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a
+# @red-hat-developer-hub/backstage-plugin-x2a-scaffolder-module
+
+## 2.0.0
+
+### Major Changes
+
+- c5e97e6: Rename package from `@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a` so the flattened dynamic-plugin / catalog name fits Backstage's 63-character `metadata.name` limit (FLPATH-4576).
+
+  Consumers must update OCI image / folder refs from `red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-x2a` to `red-hat-developer-hub-backstage-plugin-x2a-scaffolder-module`, and any Extensions `Package` `metadata.name` / `dynamicArtifact` paths accordingly.
 
 ## 1.0.0
 

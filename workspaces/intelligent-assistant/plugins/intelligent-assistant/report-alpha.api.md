@@ -108,6 +108,11 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'notebook.overwrite.modal.ignore': string;
     readonly 'notebook.overwrite.modal.action': string;
     readonly 'notebook.overwrite.modal.back': string;
+    readonly 'notebook.document.rename': string;
+    readonly 'notebook.document.rename.tooltip': string;
+    readonly 'notebook.document.rename.error': string;
+    readonly 'notebook.document.rename.conflict': string;
+    readonly 'notebook.document.rename.tooLong': string;
     readonly 'notebook.document.delete': string;
     readonly 'notebook.document.delete.title': string;
     readonly 'notebook.document.delete.description': string;

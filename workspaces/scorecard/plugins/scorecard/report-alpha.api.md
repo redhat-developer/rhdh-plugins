@@ -39,6 +39,14 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'errors.noDataFoundMessage': string;
     readonly 'errors.unsupportedAggregationType': string;
     readonly 'errors.authenticationErrorMessage': string;
+    readonly 'metric.dora.deploymentFrequency.title': string;
+    readonly 'metric.dora.deploymentFrequency.description': string;
+    readonly 'metric.dora.medianLeadTimeForChanges.title': string;
+    readonly 'metric.dora.medianLeadTimeForChanges.description': string;
+    readonly 'metric.dora.changeFailureRate.title': string;
+    readonly 'metric.dora.changeFailureRate.description': string;
+    readonly 'metric.dora.meanTimeToRestore.title': string;
+    readonly 'metric.dora.meanTimeToRestore.description': string;
     readonly 'metric.github.openPRs.title': string;
     readonly 'metric.github.openPRs.description': string;
     readonly 'metric.jira.openIssues.title': string;
@@ -85,6 +93,9 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'thresholds.success': string;
     readonly 'thresholds.warning': string;
     readonly 'thresholds.error': string;
+    readonly 'thresholds.elite': string;
+    readonly 'thresholds.medium': string;
+    readonly 'thresholds.low': string;
     readonly 'thresholds.exist': string;
     readonly 'thresholds.missing': string;
     readonly 'thresholds.noEntities': string;

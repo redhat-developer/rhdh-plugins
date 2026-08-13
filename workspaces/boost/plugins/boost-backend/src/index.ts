@@ -84,6 +84,19 @@ export {
 } from './documents';
 export { createSkillsRoutes, type SkillsRoutesOptions } from './skills';
 export {
+  ErrorClassifier,
+  SyncAttemptsStore,
+  ConnectorConfigReader,
+  HealthStatusService,
+  createIngestionHealthRoutes,
+  type ClassifyOptions,
+  type SyncAttemptsStoreOptions,
+  type ConnectorConfigReaderOptions,
+  type ConnectorCandidate,
+  type HealthStatusServiceOptions,
+  type IngestionHealthRoutesOptions,
+} from './ingestion';
+export {
   createChatRoutes,
   ConversationAgentCache,
   ConversationRegistry,

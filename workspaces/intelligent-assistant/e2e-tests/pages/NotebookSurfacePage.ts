@@ -225,8 +225,7 @@ export class NotebookSurfacePage {
   firstListedDocumentOverflowMenuToggle(): Locator {
     return this.chatbotRegion()
       .getByRole('button', {
-        name: this.t['notebook.document.delete'],
-        exact: true,
+        name: new RegExp(`^${this.t['aria.options.label']} `),
       })
       .first();
   }
@@ -256,6 +255,50 @@ export class NotebookSurfacePage {
     await this.documentRowDeleteMenuItem().click();
     await expect(this.deleteDocumentConfirmDialog()).toBeVisible();
     await this.deleteDocumentConfirmButton().click();
+  }
+
+  /** Locates a document filename element in the sidebar by its text. */
+  documentFileName(name: string): Locator {
+    return this.chatbotRegion().getByText(name, { exact: true }).first();
+  }
+
+  /** "Rename" menu item in the document kebab dropdown. */
+  documentRowRenameMenuItem(): Locator {
+    return this.page.getByRole('menuitem', {
+      name: this.t['notebook.document.rename'],
+      exact: true,
+    });
+  }
+
+  /** Clicks the filename, clears input, types new name, presses Enter. */
+  async renameDocumentInlineViaClick(
+    oldName: string,
+    newName: string,
+  ): Promise<void> {
+    await this.documentFileName(oldName).click();
+    const input = this.chatbotRegion().getByRole('textbox', {
+      name: this.t['notebook.document.rename'],
+    });
+    await expect(input).toBeVisible({ timeout: 5_000 });
+    await input.clear();
+    await input.fill(newName);
+    await input.press('Enter');
+  }
+
+  /** Clicks kebab on the document row, clicks Rename, clears input, types new name, presses Enter. */
+  async renameDocumentViaKebabMenu(
+    oldName: string,
+    newName: string,
+  ): Promise<void> {
+    await this.firstListedDocumentOverflowMenuToggle().click();
+    await this.documentRowRenameMenuItem().click();
+    const input = this.chatbotRegion().getByRole('textbox', {
+      name: this.t['notebook.document.rename'],
+    });
+    await expect(input).toBeVisible({ timeout: 5_000 });
+    await input.clear();
+    await input.fill(newName);
+    await input.press('Enter');
   }
 
   async expectDocumentFileListedInSidebar(fileName: string): Promise<void> {

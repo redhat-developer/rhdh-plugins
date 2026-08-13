@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-import type { Config } from '@backstage/config';
+import type { ConnectionStrategy } from '../strategies/ConnectionStrategy';
+import { mockServices } from '@backstage/backend-test-utils';
 import { JiraClient } from './base';
-import { ScorecardJiraAnnotations } from '../annotations';
-import { ConnectionStrategy } from '../strategies/ConnectionStrategy';
-import {
-  newEntityComponent,
-  newMockRootConfig,
-} from '../../__fixtures__/testUtils';
-
-const { PROJECT_KEY, COMPONENT, LABEL, TEAM, CUSTOM_FILTER } =
-  ScorecardJiraAnnotations;
+import type { JiraIssue, Method } from './types';
+import { JsonObject } from '@backstage/types';
+import z from 'zod';
 
 class TestJiraClient extends JiraClient {
-  getSearchEndpoint(): string {
+  getSearchCountEndpoint(): string {
     return '/search';
   }
 
@@ -42,30 +37,38 @@ class TestJiraClient extends JiraClient {
   getApiVersion(): number {
     return 3;
   }
+
+  public getIssues(_jql: string): Promise<JiraIssue[]> {
+    throw new Error('Method not implemented.');
+  }
+
+  public sendPaginatedRequest<TPage, TOut>(_options: {
+    url: string;
+    method: Method;
+    body?: JsonObject;
+    responseSchema: z.ZodType<TPage>;
+    mapper: (page: TPage) => TOut[];
+    fetchItemsLimit?: number;
+  }): Promise<TOut[]> {
+    throw new Error('Method not implemented.');
+  }
 }
 
 globalThis.fetch = jest.fn();
 
 describe('JiraClient', () => {
   let testJiraClient: TestJiraClient;
-  let mockRootConfig: Config;
   let mockConnectionStrategy: ConnectionStrategy;
+  const mockedLogger = mockServices.logger.mock();
 
   const mockMethod = 'GET';
   const mockURL = 'https://example.com/api';
   const mockResponse = { data: { total: 10 } };
 
   beforeEach(() => {
-    const options = {
-      mandatoryFilter: 'type = Task AND resolution = Resolved',
-      customFilter: 'assignee = testerUser',
-    };
-
-    mockRootConfig = newMockRootConfig({ options });
-
-    (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
+    (globalThis.fetch as jest.Mock).mockResolvedValue({
       ok: true,
-      json: jest.fn().mockResolvedValueOnce({ total: 10 }),
+      json: jest.fn().mockResolvedValue({ total: 10 }),
     });
 
     mockConnectionStrategy = {
@@ -74,10 +77,10 @@ describe('JiraClient', () => {
         .mockReturnValue('https://example.com/api/rest/api/3'),
       getAuthHeaders: jest
         .fn()
-        .mockResolvedValue({ Authorization: 'Basic Fds31dsF32' }),
+        .mockResolvedValue({ Authorization: 'Basic dummyToken' }),
     };
 
-    testJiraClient = new TestJiraClient(mockRootConfig, mockConnectionStrategy);
+    testJiraClient = new TestJiraClient(mockConnectionStrategy, mockedLogger);
   });
 
   afterEach(() => {
@@ -85,19 +88,12 @@ describe('JiraClient', () => {
   });
 
   describe('constructor', () => {
-    it('should create api version', () => {
+    it('should have api version', () => {
       expect((testJiraClient as any).getApiVersion()).toEqual(3);
     });
 
-    it('should create correct options', () => {
-      expect((testJiraClient as any).options).toEqual({
-        mandatoryFilter: 'type = Task AND resolution = Resolved',
-        customFilter: 'assignee = testerUser',
-      });
-    });
-
-    it('should create connection strategy', () => {
-      const client = new TestJiraClient(mockRootConfig, mockConnectionStrategy);
+    it('should have connection strategy', () => {
+      const client = new TestJiraClient(mockConnectionStrategy, mockedLogger);
 
       expect((client as any).connectionStrategy).toBe(mockConnectionStrategy);
     });
@@ -195,162 +191,6 @@ describe('JiraClient', () => {
     });
   });
 
-  describe('getFiltersFromEntity', () => {
-    it('should extract project filter correctly when entity has only "project key"', () => {
-      const entity = newEntityComponent({ [PROJECT_KEY]: 'TEST' });
-      const filters = (testJiraClient as any).getFiltersFromEntity(entity);
-
-      expect(filters).toEqual({
-        project: 'project = "TEST"',
-      });
-    });
-
-    it('should throw error for missing project key when entity is missing "project key"', () => {
-      const entity = newEntityComponent({});
-
-      expect(() =>
-        (testJiraClient as any).getFiltersFromEntity(entity),
-      ).toThrow(
-        "Missing required 'jira/project-key' annotation for entity 'mock-entity'",
-      );
-    });
-
-    it('should throw error for invalid "project key" when "project key" is invalid', () => {
-      const entity = newEntityComponent({ [PROJECT_KEY]: 'TEST$123' });
-
-      expect(() =>
-        (testJiraClient as any).getFiltersFromEntity(entity),
-      ).toThrow(
-        'jira/project-key contains invalid characters. Only alphanumeric, hyphens, spaces, and underscores are allowed.',
-      );
-    });
-
-    it('should extract all filters correctly when entity has all expected annotations', () => {
-      const entity = newEntityComponent({
-        [PROJECT_KEY]: 'TEST',
-        [COMPONENT]: 'backend',
-        [LABEL]: 'critical',
-        [TEAM]: '4316',
-        [CUSTOM_FILTER]: 'priority = High',
-      });
-
-      const filters = (testJiraClient as any).getFiltersFromEntity(entity);
-
-      expect(filters).toEqual({
-        project: 'project = "TEST"',
-        component: 'component = "backend"',
-        label: 'labels = "critical"',
-        team: 'team = 4316',
-        customFilter: 'priority = High',
-      });
-    });
-
-    it('should throw error for invalid "component" when "component" is invalid', () => {
-      const entity = newEntityComponent({
-        [PROJECT_KEY]: 'TEST',
-        [COMPONENT]: 'backend$123',
-      });
-
-      expect(() =>
-        (testJiraClient as any).getFiltersFromEntity(entity),
-      ).toThrow(
-        'jira/component contains invalid characters. Only alphanumeric, hyphens, spaces, and underscores are allowed.',
-      );
-    });
-
-    it('should throw error for invalid "label" when "label" is invalid', () => {
-      const entity = newEntityComponent({
-        [PROJECT_KEY]: 'TEST',
-        [LABEL]: 'critical$123',
-      });
-
-      expect(() =>
-        (testJiraClient as any).getFiltersFromEntity(entity),
-      ).toThrow(
-        'jira/label contains invalid characters. Only alphanumeric, hyphens, spaces, and underscores are allowed.',
-      );
-    });
-
-    it('should throw error for invalid "team" when "team" is invalid', () => {
-      const entity = newEntityComponent({
-        [PROJECT_KEY]: 'TEST',
-        [TEAM]: 'team-alpha$123',
-      });
-
-      expect(() =>
-        (testJiraClient as any).getFiltersFromEntity(entity),
-      ).toThrow(
-        'jira/team contains invalid characters. Only alphanumeric, hyphens, and underscores are allowed.',
-      );
-    });
-  });
-
-  describe('buildJqlFilters', () => {
-    it('should use provided mandatory filter when mandatory filter is provided in options', () => {
-      const filters = { project: 'project = "MOON"' };
-      const jql = (testJiraClient as any).buildJqlFilters(filters);
-      const jqlFilters = jql.split(' AND ');
-
-      expect(jqlFilters).toHaveLength(4);
-      expect(jqlFilters).toContain('(project = "MOON")');
-    });
-
-    it('should use default mandatory filter when mandatory filter is not provided in options', () => {
-      const config = newMockRootConfig({
-        options: {
-          mandatoryFilter: 'team = 4316',
-        },
-      });
-
-      testJiraClient = new TestJiraClient(config, mockConnectionStrategy);
-
-      const jql = (testJiraClient as any).buildJqlFilters({});
-      expect(jql).toBe('(team = 4316)');
-    });
-
-    it('should use provided annotation custom filter when custom filter is provided in annotation and options', () => {
-      const jql = (testJiraClient as any).buildJqlFilters({
-        customFilter: 'assignee = Automobile',
-      });
-      const jqlFilters = jql.split(' AND ');
-
-      expect(jqlFilters).toHaveLength(3);
-      expect(jqlFilters).toContain('(assignee = Automobile)');
-    });
-
-    it('should use provided annotation custom filter when custom filter is provided in annotation and not in options', () => {
-      const config = newMockRootConfig({
-        options: {
-          mandatoryFilter: 'resolution = Unresolved',
-        },
-      });
-      testJiraClient = new TestJiraClient(config, mockConnectionStrategy);
-
-      const jql = (testJiraClient as any).buildJqlFilters({
-        customFilter: 'assignee = Robot',
-      });
-      expect(jql).toBe('(assignee = Robot) AND (resolution = Unresolved)');
-    });
-
-    it('should use provided options custom filter when custom filter is provided in options and not in annotation', () => {
-      const jql = (testJiraClient as any).buildJqlFilters({});
-      const jqlFilters = jql.split(' AND ');
-
-      expect(jqlFilters).toHaveLength(3);
-      expect(jqlFilters).toContain('(assignee = testerUser)');
-    });
-
-    it('should not use any custom filters when custom filter is not provided in annotation and options', () => {
-      const config = newMockRootConfig();
-
-      const client = new TestJiraClient(config, mockConnectionStrategy);
-
-      const jql = (client as any).buildJqlFilters({});
-
-      expect(jql).toContain('(type = Bug AND resolution = Unresolved)');
-    });
-  });
-
   describe('getBaseUrl', () => {
     it('should return URL', async () => {
       const baseUrl = await (testJiraClient as any).getBaseUrl();
@@ -366,18 +206,36 @@ describe('JiraClient', () => {
   describe('getAuthHeaders', () => {
     it('should return auth header', async () => {
       const authHeaders = await (testJiraClient as any).getAuthHeaders();
-      expect(authHeaders).toEqual({ Authorization: 'Basic Fds31dsF32' });
+      expect(authHeaders).toEqual({ Authorization: 'Basic dummyToken' });
     });
   });
 
   describe('getCountOpenIssues', () => {
-    const mockEntity = newEntityComponent({ [PROJECT_KEY]: 'TEST' });
+    it('should request open issues count with jql and return extracted count', async () => {
+      jest
+        .spyOn(testJiraClient as any, 'extractIssueCountFromResponse')
+        .mockReturnValue(7);
+      (globalThis.fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValue({ count: 7 }),
+      });
 
-    it('should return count of open issues', async () => {
-      const count = await (testJiraClient as any).getCountOpenIssues(
-        mockEntity,
+      const count = await testJiraClient.getCountOpenIssues('project = "TEST"');
+
+      expect(count).toEqual(7);
+      expect(globalThis.fetch).toHaveBeenCalledWith(
+        'https://example.com/api/rest/api/3/search',
+        expect.objectContaining({
+          method: 'POST',
+          headers: expect.objectContaining({
+            Authorization: 'Basic dummyToken',
+          }),
+          body: JSON.stringify({ jql: 'project = "TEST"' }),
+        }),
       );
-      expect(count).toEqual(10);
+      expect(testJiraClient.extractIssueCountFromResponse).toHaveBeenCalledWith(
+        { count: 7 },
+      );
     });
   });
 });

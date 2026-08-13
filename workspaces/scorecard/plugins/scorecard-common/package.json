@@ -45,6 +45,7 @@
   "homepage": "https://red.ht/rhdh",
   "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues",
   "dependencies": {
-    "@backstage/plugin-permission-common": "^0.9.9"
+    "@backstage/plugin-permission-common": "^0.9.9",
+    "@backstage/types": "^1.2.2"
   }
 }

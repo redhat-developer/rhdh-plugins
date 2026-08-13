@@ -23,15 +23,20 @@ jest.mock('./utils', () => {
   return {
     ...actual,
     useGetExtraErrors: jest.fn(),
+    useGetExtraErrorsForField: jest.fn(),
   };
 });
 
 const mockedUseGetExtraErrors = utils.useGetExtraErrors as jest.Mock;
+const mockedUseGetExtraErrorsForField =
+  utils.useGetExtraErrorsForField as jest.Mock;
 
 describe('FormWidgetsApi', () => {
   beforeEach(() => {
     mockedUseGetExtraErrors.mockReset();
     mockedUseGetExtraErrors.mockReturnValue(jest.fn());
+    mockedUseGetExtraErrorsForField.mockReset();
+    mockedUseGetExtraErrorsForField.mockReturnValue(jest.fn());
   });
 
   it('returns undefined review component by default', () => {
@@ -80,6 +85,9 @@ describe('FormWidgetsApi', () => {
     );
     expect(receivedProps[0].customValidate).toEqual(expect.any(Function));
     expect(receivedProps[0].getExtraErrors).toEqual(expect.any(Function));
+    expect(receivedProps[0].getExtraErrorsForField).toEqual(
+      expect.any(Function),
+    );
     expect(receivedProps[0].formContext).toEqual(
       expect.objectContaining({
         formData: expect.any(Object),

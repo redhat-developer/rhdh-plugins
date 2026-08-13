@@ -117,6 +117,11 @@ export const intelligentAssistantMessages = {
   'notebook.overwrite.modal.ignore': 'Ignore duplicated files',
   'notebook.overwrite.modal.action': 'Upload ({{count}})',
   'notebook.overwrite.modal.back': 'Back',
+  'notebook.document.rename': 'Rename',
+  'notebook.document.rename.tooltip': 'Click to rename',
+  'notebook.document.rename.error': 'Failed to rename "{{documentName}}".',
+  'notebook.document.rename.conflict': 'Name already exists.',
+  'notebook.document.rename.tooLong': 'Name too long (max 255).',
   'notebook.document.delete': 'Delete',
   'notebook.document.delete.title': 'Remove resource?',
   'notebook.document.delete.description':

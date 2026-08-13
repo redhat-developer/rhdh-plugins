@@ -195,6 +195,12 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'modal.save': '保存',
     'modal.title.edit': '添付ファイルの編集',
     'modal.title.preview': '添付ファイルのプレビュー',
+    'notebook.document.rename': '名前の変更',
+    'notebook.document.rename.tooltip': 'クリックで名前を変更',
+    'notebook.document.rename.error':
+      '「{{documentName}}」の名前変更に失敗しました。',
+    'notebook.document.rename.conflict': '名前は既に存在します。',
+    'notebook.document.rename.tooLong': '名前が長すぎます（最大255）。',
     'notebook.document.delete': '削除',
     'notebook.document.delete.action': '削除',
     'notebook.document.delete.description':

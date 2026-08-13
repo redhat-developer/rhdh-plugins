@@ -201,6 +201,12 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'modal.save': 'Sauvegarder',
     'modal.title.edit': 'Modifier la pièce jointe',
     'modal.title.preview': 'Aperçu de la pièce jointe',
+    'notebook.document.rename': 'Renommer',
+    'notebook.document.rename.tooltip': 'Cliquez pour renommer',
+    'notebook.document.rename.error':
+      'Échec du renommage de "{{documentName}}".',
+    'notebook.document.rename.conflict': 'Le nom existe déjà.',
+    'notebook.document.rename.tooLong': 'Nom trop long (max 255).',
     'notebook.document.delete': 'Supprimer',
     'notebook.document.delete.action': 'Supprimer',
     'notebook.document.delete.description':
