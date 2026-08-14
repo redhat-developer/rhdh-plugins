@@ -16,6 +16,7 @@
 
 import { Router } from 'express';
 import type {
+  BackstageCredentials,
   HttpAuthService,
   LoggerService,
   PermissionsService,
@@ -124,6 +125,34 @@ export function stripTier2Fields(asset: AiCatalogAsset): AiCatalogAsset {
 }
 
 // ---------------------------------------------------------------------------
+// Admin fallback
+// ---------------------------------------------------------------------------
+
+/**
+ * Shared admin-fallback pattern used by both the list and detail handlers:
+ * if the Tier 1 read decision was DENY, check `ai-catalog.admin` before
+ * giving up. Throws `NotAllowedError` if neither is ALLOW.
+ *
+ * @internal
+ */
+async function assertReadableOrAdmin(
+  readResult: AuthorizeResult,
+  permissions: PermissionsService,
+  credentials: BackstageCredentials,
+): Promise<void> {
+  if (readResult !== AuthorizeResult.DENY) {
+    return;
+  }
+  const [adminDecision] = await permissions.authorize(
+    [{ permission: aiCatalogAdminPermission }],
+    { credentials },
+  );
+  if (adminDecision.result !== AuthorizeResult.ALLOW) {
+    throw new NotAllowedError('Unauthorized');
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Route factory
 // ---------------------------------------------------------------------------
 
@@ -158,16 +187,11 @@ export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router {
         { credentials },
       );
 
-      if (readDecision.result === AuthorizeResult.DENY) {
-        // Fall back to admin check
-        const [adminDecision] = await permissions.authorize(
-          [{ permission: aiCatalogAdminPermission }],
-          { credentials },
-        );
-        if (adminDecision.result !== AuthorizeResult.ALLOW) {
-          throw new NotAllowedError('Unauthorized');
-        }
-      }
+      await assertReadableOrAdmin(
+        readDecision.result,
+        permissions,
+        credentials,
+      );
 
       let assets = await assetLoader.list();
 
@@ -229,16 +253,11 @@ export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router {
         { credentials },
       );
 
-      if (readDecision.result === AuthorizeResult.DENY) {
-        // Fall back to admin check
-        const [adminDecision] = await permissions.authorize(
-          [{ permission: aiCatalogAdminPermission }],
-          { credentials },
-        );
-        if (adminDecision.result !== AuthorizeResult.ALLOW) {
-          throw new NotAllowedError('Unauthorized');
-        }
-      }
+      await assertReadableOrAdmin(
+        readDecision.result,
+        permissions,
+        credentials,
+      );
 
       const asset = await assetLoader.findById(id);
       if (!asset) {

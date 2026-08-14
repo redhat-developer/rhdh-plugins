@@ -56,6 +56,23 @@ export function buildAiAssetCatalogFilter(): Record<
   }));
 }
 
+/**
+ * Checks whether an entity's `kind`/`spec.type` combination is in the AI
+ * asset taxonomy ({@link AI_ASSET_SPEC_TYPES}). `list()` gets this for
+ * free from {@link buildAiAssetCatalogFilter}'s catalog-side filter, but
+ * `findById()`/`getEntityByRef()` can resolve *any* entity ref — this
+ * guard is what keeps it from mapping and returning non-AI entities.
+ *
+ * @internal
+ */
+export function isAiAsset(entity: Entity): boolean {
+  const specType = getStringSpecField(entity, 'type');
+  if (!specType) {
+    return false;
+  }
+  return Boolean(AI_ASSET_SPEC_TYPES[entity.kind.toLowerCase()]?.has(specType));
+}
+
 // ---------------------------------------------------------------------------
 // Entity → AiCatalogAsset mapping
 // ---------------------------------------------------------------------------
@@ -183,7 +200,13 @@ export class CatalogAssetLoader implements AiCatalogAssetLoader {
   async findById(id: string): Promise<AiCatalogAsset | undefined> {
     const credentials = await this.auth.getOwnServiceCredentials();
     const entity = await this.catalog.getEntityByRef(id, { credentials });
-    return entity ? entityToAiCatalogAsset(entity) : undefined;
+    // Unlike list() (filtered server-side via buildAiAssetCatalogFilter()),
+    // getEntityByRef() can resolve any entity ref — reject non-AI entities
+    // here so this loader never exposes catalog data outside the AI asset
+    // taxonomy, regardless of what ref a caller passes in.
+    return entity && isAiAsset(entity)
+      ? entityToAiCatalogAsset(entity)
+      : undefined;
   }
 }
 

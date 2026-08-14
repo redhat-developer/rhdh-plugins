@@ -22,6 +22,7 @@ import {
   createGetAiCatalogAssetResources,
   entityToAiCatalogAsset,
   entityToAiCatalogAssetResource,
+  isAiAsset,
 } from './CatalogAssetLoader';
 
 const auth = mockServices.auth();
@@ -117,6 +118,27 @@ describe('entityToAiCatalogAsset', () => {
   });
 });
 
+describe('isAiAsset', () => {
+  it('returns true for entities matching the AI asset kind/spec.type taxonomy', () => {
+    expect(isAiAsset(codeReviewSkill)).toBe(true);
+    expect(isAiAsset(graniteModel)).toBe(true);
+  });
+
+  it('returns false for entities outside the AI asset taxonomy', () => {
+    expect(isAiAsset(nonAiComponent)).toBe(false);
+  });
+
+  it('returns false when spec.type is missing', () => {
+    const entity: Entity = {
+      apiVersion: 'backstage.io/v1alpha1',
+      kind: 'Resource',
+      metadata: { name: 'no-spec-type' },
+      spec: {},
+    };
+    expect(isAiAsset(entity)).toBe(false);
+  });
+});
+
 describe('entityToAiCatalogAssetResource', () => {
   it('maps only annotations and namespace for rule evaluation', () => {
     const resource = entityToAiCatalogAssetResource(codeReviewSkill);
@@ -174,6 +196,14 @@ describe('CatalogAssetLoader', () => {
     it('returns undefined when the entity ref does not exist', async () => {
       const { loader } = makeLoader([codeReviewSkill]);
       const asset = await loader.findById('airesource:default/missing');
+      expect(asset).toBeUndefined();
+    });
+
+    it('returns undefined when the entity ref resolves to a non-AI entity', async () => {
+      const { loader } = makeLoader([nonAiComponent]);
+      const asset = await loader.findById(
+        'component:default/unrelated-service',
+      );
       expect(asset).toBeUndefined();
     });
   });
