@@ -15,7 +15,12 @@
  */
 
 import type { ReactNode } from 'react';
-import { AppTheme } from '@backstage/core-plugin-api';
+import {
+  AppTheme,
+  appThemeApiRef,
+  AppThemeApi,
+  useApi,
+} from '@backstage/core-plugin-api';
 import { UnifiedTheme, UnifiedThemeProvider } from '@backstage/theme';
 
 import {
@@ -89,3 +94,57 @@ export const createThemeProviderForThemeName = (
     const theme = useTheme(themeConfig);
     return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
   };
+
+const resolveActiveKey = (
+  activeId: string | undefined,
+  keys: string[],
+): string => {
+  if (activeId && keys.includes(activeId)) {
+    return activeId;
+  }
+  const prefersDark = activeId
+    ? activeId.includes('dark')
+    : window.matchMedia?.('(prefers-color-scheme: dark)')?.matches;
+  return prefersDark
+    ? (keys.find(n => n.includes('dark')) ?? keys[0])
+    : (keys.find(n => !n.includes('dark')) ?? keys[0]);
+};
+
+const useActiveThemeId = (): string | undefined => {
+  let appThemeApi: AppThemeApi | undefined;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    appThemeApi = useApi<AppThemeApi>(appThemeApiRef); // NOSONAR
+  } catch {
+    // appThemeApi may not be available during createApp initialization
+  }
+  return appThemeApi?.getActiveThemeId();
+};
+
+export type SharedThemeEntry = {
+  name?: string;
+  config?: ThemeConfig;
+  theme?: UnifiedTheme;
+};
+
+export const createSharedThemeProvider = (
+  entries: Record<string, SharedThemeEntry>,
+): AppTheme['Provider'] => {
+  const keys = Object.keys(entries);
+
+  function RHDHSharedThemeProvider({ children }: { children: ReactNode }) {
+    const activeId = useActiveThemeId();
+    const key = resolveActiveKey(activeId, keys);
+    const entry = entries[key];
+
+    // Always call hooks unconditionally (Rules of Hooks).
+    // For entries that don't need them the results are simply unused.
+    const configFromName = useThemeConfig(entry.name ?? key);
+    const resolvedConfig = entry.config ?? configFromName;
+    const themeFromHook = useTheme(resolvedConfig);
+
+    const theme = entry.theme ?? themeFromHook;
+    return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+  }
+  return RHDHSharedThemeProvider;
+};
