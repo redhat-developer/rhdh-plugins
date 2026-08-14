@@ -198,6 +198,58 @@ describe('isValidCronExpression', () => {
     expect(isValidCronExpression('* * * * 8')).toBe(false);
   });
 
+  it('rejects zero step divisor (division by zero)', () => {
+    expect(isValidCronExpression('*/0 * * * *')).toBe(false);
+    expect(isValidCronExpression('* */0 * * *')).toBe(false);
+    expect(isValidCronExpression('1-10/0 * * * *')).toBe(false);
+  });
+
+  it('accepts valid step divisors', () => {
+    expect(isValidCronExpression('*/1 * * * *')).toBe(true);
+    expect(isValidCronExpression('*/15 * * * *')).toBe(true);
+    expect(isValidCronExpression('0-30/5 * * * *')).toBe(true);
+  });
+
+  it('rejects arbitrary three-letter strings as month/weekday names', () => {
+    expect(isValidCronExpression('0 0 * XYZ *')).toBe(false);
+    expect(isValidCronExpression('0 0 * * ABC')).toBe(false);
+    expect(isValidCronExpression('0 0 * FOO *')).toBe(false);
+  });
+
+  it('rejects named tokens in wrong field position', () => {
+    // Month names in minute field
+    expect(isValidCronExpression('JAN * * * *')).toBe(false);
+    // Weekday names in month field
+    expect(isValidCronExpression('0 0 * MON *')).toBe(false);
+  });
+
+  it('accepts all valid month names (case-insensitive)', () => {
+    const months = [
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC',
+    ];
+    months.forEach(m => {
+      expect(isValidCronExpression(`0 0 * ${m} *`)).toBe(true);
+    });
+  });
+
+  it('accepts all valid weekday names', () => {
+    const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    days.forEach(d => {
+      expect(isValidCronExpression(`0 0 * * ${d}`)).toBe(true);
+    });
+  });
+
   it('rejects invalid cron expressions', () => {
     expect(isValidCronExpression('not-a-cron')).toBe(false);
     expect(isValidCronExpression('* * *')).toBe(false);
@@ -372,6 +424,54 @@ describe('connector config schemas', () => {
           30000.1,
         ),
       ).toThrow(ZodError);
+    });
+
+    it('rejects batchSize exceeding upper bound', () => {
+      expect(() =>
+        validateConfigValue('boost.connectors.jira.batchSize', 10001),
+      ).toThrow(ZodError);
+    });
+
+    it('accepts batchSize at upper bound', () => {
+      expect(
+        validateConfigValue('boost.connectors.jira.batchSize', 10000),
+      ).toBe(10000);
+    });
+
+    it('rejects intervalMs exceeding upper bound', () => {
+      expect(() =>
+        validateConfigValue(
+          'boost.connectors.jira.schedule.intervalMs',
+          86400001,
+        ),
+      ).toThrow(ZodError);
+    });
+
+    it('accepts intervalMs at upper bound', () => {
+      expect(
+        validateConfigValue(
+          'boost.connectors.jira.schedule.intervalMs',
+          86400000,
+        ),
+      ).toBe(86400000);
+    });
+
+    it('rejects timeout.connectionMs exceeding upper bound', () => {
+      expect(() =>
+        validateConfigValue(
+          'boost.connectors.jira.timeout.connectionMs',
+          300001,
+        ),
+      ).toThrow(ZodError);
+    });
+
+    it('accepts timeout.connectionMs at upper bound', () => {
+      expect(
+        validateConfigValue(
+          'boost.connectors.jira.timeout.connectionMs',
+          300000,
+        ),
+      ).toBe(300000);
     });
   });
 

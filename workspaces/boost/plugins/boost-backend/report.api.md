@@ -229,7 +229,7 @@ export const boostConfigFields: {
   readonly 'boost.connectors.jira.endpoint': {
     readonly schema: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
     readonly configScope: ConfigScope;
-    readonly description: string;
+    readonly description: `HTTPS endpoint URL for the ${string} ${string}. Must use HTTPS.`;
   };
   readonly 'boost.connectors.jira.schedule.intervalMs': {
     readonly schema: z.ZodOptional<z.ZodNumber>;
@@ -259,7 +259,7 @@ export const boostConfigFields: {
   readonly 'boost.connectors.github.endpoint': {
     readonly schema: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
     readonly configScope: ConfigScope;
-    readonly description: string;
+    readonly description: `HTTPS endpoint URL for the ${string} ${string}. Must use HTTPS.`;
   };
   readonly 'boost.connectors.github.schedule.intervalMs': {
     readonly schema: z.ZodOptional<z.ZodNumber>;
@@ -279,7 +279,7 @@ export const boostConfigFields: {
   readonly 'boost.connectors.gitlab.endpoint': {
     readonly schema: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
     readonly configScope: ConfigScope;
-    readonly description: string;
+    readonly description: `HTTPS endpoint URL for the ${string} ${string}. Must use HTTPS.`;
   };
   readonly 'boost.connectors.gitlab.schedule.intervalMs': {
     readonly schema: z.ZodOptional<z.ZodNumber>;

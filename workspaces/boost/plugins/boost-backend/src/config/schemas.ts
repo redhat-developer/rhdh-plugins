@@ -34,6 +34,33 @@ import { z } from 'zod';
  */
 const CRON_TOKEN_RE = /^(\*|\?|\d+(-\d+)?|[a-zA-Z]{3}(-[a-zA-Z]{3})?)(\/\d+)?$/;
 
+/** Known three-letter month names (case-insensitive). @internal */
+const CRON_MONTH_NAMES = new Set([
+  'JAN',
+  'FEB',
+  'MAR',
+  'APR',
+  'MAY',
+  'JUN',
+  'JUL',
+  'AUG',
+  'SEP',
+  'OCT',
+  'NOV',
+  'DEC',
+]);
+
+/** Known three-letter weekday names (case-insensitive). @internal */
+const CRON_WEEKDAY_NAMES = new Set([
+  'SUN',
+  'MON',
+  'TUE',
+  'WED',
+  'THU',
+  'FRI',
+  'SAT',
+]);
+
 /** Maximum value allowed per cron field position (0-indexed). @internal */
 const CRON_FIELD_MAX: readonly number[] = [59, 23, 31, 12, 7];
 
@@ -65,11 +92,22 @@ export function isValidCronExpression(expr: string): boolean {
       if (!CRON_TOKEN_RE.test(token)) {
         return false;
       }
-      // Strip optional step suffix (e.g. */5 -> *, 1-5/2 -> 1-5)
-      const base = token.split('/')[0];
-      // Wildcards and named values pass without range check
-      if (base === '*' || base === '?' || /[a-zA-Z]/.test(base)) {
+      // Split into base and optional step suffix (e.g. */5 -> [*, 5])
+      const [base, stepStr] = token.split('/');
+      // Validate step divisor when present — must be >= 1
+      if (stepStr !== undefined && Number(stepStr) < 1) {
+        return false;
+      }
+      // Wildcards pass without range check
+      if (base === '*' || base === '?') {
         return true;
+      }
+      // Validate named month/weekday tokens against known names
+      if (/[a-zA-Z]/.test(base)) {
+        const names = base.split('-').map(n => n.toUpperCase());
+        // Month names are valid in field 3 (month), weekday names in field 4 (day-of-week)
+        const allowed = idx === 3 ? CRON_MONTH_NAMES : CRON_WEEKDAY_NAMES;
+        return names.every(n => allowed.has(n));
       }
       // Validate numeric range bounds
       const nums = base.split('-').map(Number);
@@ -83,6 +121,13 @@ export function isValidCronExpression(expr: string): boolean {
 /**
  * Zod refinement for HTTPS URL validation. Accepts only `https://`
  * URLs to enforce secure transport for connector endpoints.
+ *
+ * **Security note:** This schema does not restrict hostname or IP range.
+ * Since connector endpoint fields are db-overridable, only trusted
+ * administrators should be granted write access. HTTPS enforcement
+ * blocks the most common cloud metadata SSRF vector (169.254.169.254
+ * does not support HTTPS). Deploy network-level egress controls for
+ * defense-in-depth.
  *
  * @internal
  */
@@ -164,8 +209,7 @@ function connectorEndpoint(label: string, example: string) {
   return {
     schema: httpsUrlSchema.optional().describe(`${label} HTTPS endpoint URL`),
     configScope: 'db-overridable' as ConfigScope,
-    description:
-      `HTTPS endpoint URL for the ${label} ` + `${example}. Must use HTTPS.`,
+    description: `HTTPS endpoint URL for the ${label} ${example}. Must use HTTPS.`,
   } as const;
 }
 
@@ -176,6 +220,7 @@ function connectorIntervalMs(label: string) {
       .number()
       .int()
       .positive()
+      .max(86400000, 'Interval must not exceed 24 hours (86400000 ms)')
       .optional()
       .describe('Sync interval in milliseconds (default: 300000)'),
     configScope: 'db-overridable' as ConfigScope,
@@ -192,6 +237,7 @@ function connectorBatchSize(label: string) {
       .number()
       .int()
       .positive()
+      .max(10000, 'Batch size must not exceed 10000')
       .optional()
       .describe('Number of items per sync batch (default: 100)'),
     configScope: 'db-overridable' as ConfigScope,
@@ -415,6 +461,7 @@ export const boostConfigFields = {
       .number()
       .int()
       .positive()
+      .max(300000, 'Timeout must not exceed 5 minutes (300000 ms)')
       .optional()
       .describe('Connection timeout in milliseconds (default: 30000)'),
     configScope: 'db-overridable' as ConfigScope,
