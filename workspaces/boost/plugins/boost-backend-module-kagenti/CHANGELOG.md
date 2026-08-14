@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti
 
+## 0.1.4
+
+### Patch Changes
+
+- Updated dependencies [238427a]
+  - @red-hat-developer-hub/backstage-plugin-boost-common@0.3.0
+  - @red-hat-developer-hub/backstage-plugin-boost-node@0.2.0
+
 ## 0.1.3
 
 ### Patch Changes
