@@ -145,14 +145,14 @@ Every feature ships with tests. Integration tests use real database and cache ba
 
 ## Build & verify
 
-| Task                | Command                              |
-| ------------------- | ------------------------------------ |
-| Full build          | `yarn build:all`                     |
-| Type-check          | `yarn tsc:full`                      |
-| Lint                | `yarn lint:all`                      |
-| Test                | `CI=true yarn test --watchAll=false` |
+| Task                | Command                                        |
+| ------------------- | ---------------------------------------------- |
+| Full build          | `yarn build:all`                               |
+| Type-check          | `yarn tsc:full`                                |
+| Lint                | `yarn lint:all`                                |
+| Test                | `CI=true yarn test --watchAll=false`           |
 | API reports         | `yarn tsc:full && yarn build:api-reports:only` |
-| OpenSpec validation | `yarn openspec:validate`             |
+| OpenSpec validation | `yarn openspec:validate`                       |
 
 **After modifying any file that affects the public API surface** (including
 `translations/ref.ts`, exported types, or API routes), run
