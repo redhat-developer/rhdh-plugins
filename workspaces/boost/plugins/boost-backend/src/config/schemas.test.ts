@@ -18,6 +18,8 @@ import { ZodError } from 'zod';
 import {
   boostConfigFields,
   BOOST_CONFIG_SCHEMA_VERSION,
+  CONNECTOR_SCHEMA_VERSION,
+  CONNECTOR_IDS,
   validateConfigValue,
   isDbWritable,
   isSensitiveField,
@@ -312,9 +314,11 @@ describe('connector config schemas', () => {
       );
     });
 
-    it('marks all connector fields as db-overridable', () => {
+    it('marks all non-metadata connector fields as db-overridable', () => {
       const connectorEntries = Object.entries(boostConfigFields).filter(
-        ([key]) => key.startsWith('boost.connectors.'),
+        ([key]) =>
+          key.startsWith('boost.connectors.') &&
+          !key.endsWith('.__schemaVersion'),
       );
       expect(connectorEntries.length).toBeGreaterThan(0);
       connectorEntries.forEach(([, field]) => {
@@ -541,5 +545,96 @@ describe('connector config schemas', () => {
         expect(isDbWritable(key)).toBe(true);
       });
     });
+  });
+
+  describe('__schemaVersion leaves', () => {
+    it('has CONNECTOR_SCHEMA_VERSION set to 1', () => {
+      expect(CONNECTOR_SCHEMA_VERSION).toBe(1);
+    });
+
+    it('exports CONNECTOR_IDS with jira, github, gitlab', () => {
+      expect(CONNECTOR_IDS).toEqual(['jira', 'github', 'gitlab']);
+    });
+
+    it.each(CONNECTOR_IDS)(
+      'registers __schemaVersion leaf for %s connector',
+      connectorId => {
+        const key = `boost.connectors.${connectorId}.__schemaVersion`;
+        expect(Object.keys(boostConfigFields)).toContain(key);
+      },
+    );
+
+    it.each(CONNECTOR_IDS)(
+      '__schemaVersion for %s has configScope db-only',
+      connectorId => {
+        const key =
+          `boost.connectors.${connectorId}.__schemaVersion` as keyof typeof boostConfigFields;
+        expect(boostConfigFields[key].configScope).toBe('db-only');
+      },
+    );
+
+    it.each(CONNECTOR_IDS)(
+      '__schemaVersion for %s is db-writable',
+      connectorId => {
+        const key =
+          `boost.connectors.${connectorId}.__schemaVersion` as keyof typeof boostConfigFields;
+        expect(isDbWritable(key)).toBe(true);
+      },
+    );
+
+    it.each(CONNECTOR_IDS)(
+      '__schemaVersion for %s accepts positive integer',
+      connectorId => {
+        const key =
+          `boost.connectors.${connectorId}.__schemaVersion` as keyof typeof boostConfigFields;
+        expect(validateConfigValue(key, 1)).toBe(1);
+        expect(validateConfigValue(key, 2)).toBe(2);
+      },
+    );
+
+    it.each(CONNECTOR_IDS)(
+      '__schemaVersion for %s accepts undefined',
+      connectorId => {
+        const key =
+          `boost.connectors.${connectorId}.__schemaVersion` as keyof typeof boostConfigFields;
+        expect(validateConfigValue(key, undefined)).toBeUndefined();
+      },
+    );
+
+    it.each(CONNECTOR_IDS)(
+      '__schemaVersion for %s rejects negative number',
+      connectorId => {
+        const key =
+          `boost.connectors.${connectorId}.__schemaVersion` as keyof typeof boostConfigFields;
+        expect(() => validateConfigValue(key, -1)).toThrow(ZodError);
+      },
+    );
+
+    it.each(CONNECTOR_IDS)(
+      '__schemaVersion for %s rejects zero',
+      connectorId => {
+        const key =
+          `boost.connectors.${connectorId}.__schemaVersion` as keyof typeof boostConfigFields;
+        expect(() => validateConfigValue(key, 0)).toThrow(ZodError);
+      },
+    );
+
+    it.each(CONNECTOR_IDS)(
+      '__schemaVersion for %s rejects non-integer',
+      connectorId => {
+        const key =
+          `boost.connectors.${connectorId}.__schemaVersion` as keyof typeof boostConfigFields;
+        expect(() => validateConfigValue(key, 1.5)).toThrow(ZodError);
+      },
+    );
+
+    it.each(CONNECTOR_IDS)(
+      '__schemaVersion for %s is not marked as sensitive',
+      connectorId => {
+        const key =
+          `boost.connectors.${connectorId}.__schemaVersion` as keyof typeof boostConfigFields;
+        expect(isSensitiveField(key)).toBe(false);
+      },
+    );
   });
 });

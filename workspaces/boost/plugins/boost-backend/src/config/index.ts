@@ -21,14 +21,19 @@ export {
 export {
   RuntimeConfigResolver,
   type RuntimeConfigResolverOptions,
+  type ConnectorMigrationFn,
+  type ConnectorMigrationRegistry,
 } from './RuntimeConfigResolver';
 export {
   boostConfigFields,
   BOOST_CONFIG_SCHEMA_VERSION,
+  CONNECTOR_SCHEMA_VERSION,
+  CONNECTOR_IDS,
   validateConfigValue,
   isDbWritable,
   isSensitiveField,
   type BoostConfigKey,
+  type ConnectorId,
   type ConfigScope,
   type ConfigFieldMeta,
 } from './schemas';

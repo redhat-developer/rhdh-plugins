@@ -176,6 +176,11 @@ export interface Config {
       /** Jira connector runtime configuration. */
       jira?: {
         /**
+         * Per-connector schema version (internal metadata).
+         * @configScope db-only
+         */
+        __schemaVersion?: number;
+        /**
          * Whether Jira runtime syncing is enabled (default: true).
          * @configScope db-overridable
          */
@@ -215,6 +220,11 @@ export interface Config {
       /** GitHub connector runtime configuration. */
       github?: {
         /**
+         * Per-connector schema version (internal metadata).
+         * @configScope db-only
+         */
+        __schemaVersion?: number;
+        /**
          * Whether GitHub runtime syncing is enabled (default: true).
          * @configScope db-overridable
          */
@@ -240,6 +250,11 @@ export interface Config {
       };
       /** GitLab connector runtime configuration. */
       gitlab?: {
+        /**
+         * Per-connector schema version (internal metadata).
+         * @configScope db-only
+         */
+        __schemaVersion?: number;
         /**
          * Whether GitLab runtime syncing is enabled (default: true).
          * @configScope db-overridable

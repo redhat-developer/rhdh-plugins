@@ -181,6 +181,30 @@ export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
  */
 export const BOOST_CONFIG_SCHEMA_VERSION = 4;
 
+/**
+ * Current per-connector schema version. Stored as the
+ * `boost.connectors.<id>.__schemaVersion` leaf (configScope: db-only)
+ * and bumped when connector field semantics change (renames, removals,
+ * type changes). Missing values are treated as v1.
+ *
+ * @public
+ */
+export const CONNECTOR_SCHEMA_VERSION = 1;
+
+/**
+ * Known connector identifiers that have registered config leaves.
+ *
+ * @public
+ */
+export const CONNECTOR_IDS = ['jira', 'github', 'gitlab'] as const;
+
+/**
+ * Union type of known connector identifiers.
+ *
+ * @public
+ */
+export type ConnectorId = (typeof CONNECTOR_IDS)[number];
+
 // ---------------------------------------------------------------------------
 // Connector field factories — shared patterns for per-connector leaves
 // ---------------------------------------------------------------------------
@@ -433,6 +457,44 @@ export const boostConfigFields = {
       'Maximum number of sync attempt records retained per connector ' +
       'for ingestion health status. Older records are cleaned up daily. ' +
       'Defaults to 100 when not set.',
+  },
+
+  // -- Connector schema version (db-only metadata) --
+  'boost.connectors.jira.__schemaVersion': {
+    schema: z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .describe('Connector config schema version (internal metadata)'),
+    configScope: 'db-only' as ConfigScope,
+    description:
+      'Per-connector schema version for Jira. Written during migration, ' +
+      'excluded from per-leaf Zod product validation. Missing → v1.',
+  },
+  'boost.connectors.github.__schemaVersion': {
+    schema: z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .describe('Connector config schema version (internal metadata)'),
+    configScope: 'db-only' as ConfigScope,
+    description:
+      'Per-connector schema version for GitHub. Written during migration, ' +
+      'excluded from per-leaf Zod product validation. Missing → v1.',
+  },
+  'boost.connectors.gitlab.__schemaVersion': {
+    schema: z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .describe('Connector config schema version (internal metadata)'),
+    configScope: 'db-only' as ConfigScope,
+    description:
+      'Per-connector schema version for GitLab. Written during migration, ' +
+      'excluded from per-leaf Zod product validation. Missing → v1.',
   },
 
   // -- Connector config: Jira --
