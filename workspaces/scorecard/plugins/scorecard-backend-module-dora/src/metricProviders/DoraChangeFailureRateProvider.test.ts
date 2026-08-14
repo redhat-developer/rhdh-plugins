@@ -18,13 +18,12 @@ import { ConfigReader } from '@backstage/config';
 import { mockServices } from '@backstage/backend-test-utils';
 import { DoraChangeFailureRateProvider } from './DoraChangeFailureRateProvider';
 import {
-  buildMockDoraServices,
   dbDeployment,
   dbIncident,
+  mockDoraDataService,
+  mockDoraSyncService,
   mockEntity,
 } from './__fixtures__';
-import type { DoraDataService } from '../service/DoraDataService';
-import type { DoraSyncService } from '../service/DoraSyncService';
 import {
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
@@ -33,40 +32,37 @@ import { DEFAULT_DORA_CHANGE_FAILURE_RATE_THRESHOLDS } from './DoraConfig';
 
 describe('DoraChangeFailureRateProvider', () => {
   const mockLogger = mockServices.logger.mock();
-  let doraSyncService: jest.Mocked<DoraSyncService>;
-  let doraDataService: jest.Mocked<DoraDataService>;
   let provider: DoraChangeFailureRateProvider;
 
   beforeEach(() => {
-    ({ doraSyncService, doraDataService } = buildMockDoraServices({
-      deployments: [
-        dbDeployment({
-          id: '100',
-          commitSha: 'sha-1',
-          environment: 'production',
-          createdAt: '2026-06-10T00:00:00.000Z',
-          result: 'success',
-        }),
-        dbDeployment({
-          id: '101',
-          commitSha: 'sha-2',
-          environment: 'production',
-          createdAt: '2026-06-11T00:00:00.000Z',
-          result: 'success',
-        }),
-      ],
-      incidents: [
-        dbIncident({
-          id: 'INC-1',
-          createdAt: '2026-06-10T12:00:00.000Z',
-          updatedAt: '2026-06-10T13:00:00.000Z',
-          resolutionAt: '2026-06-10T13:00:00.000Z',
-        }),
-      ],
-    }));
+    jest.clearAllMocks();
+    mockDoraDataService.readDeployments.mockResolvedValue([
+      dbDeployment({
+        id: '100',
+        commitSha: 'sha-1',
+        environment: 'production',
+        createdAt: '2026-06-10T00:00:00.000Z',
+        result: 'success',
+      }),
+      dbDeployment({
+        id: '101',
+        commitSha: 'sha-2',
+        environment: 'production',
+        createdAt: '2026-06-11T00:00:00.000Z',
+        result: 'success',
+      }),
+    ]);
+    mockDoraDataService.readIncidents.mockResolvedValue([
+      dbIncident({
+        id: 'INC-1',
+        createdAt: '2026-06-10T12:00:00.000Z',
+        updatedAt: '2026-06-10T13:00:00.000Z',
+        resolutionAt: '2026-06-10T13:00:00.000Z',
+      }),
+    ]);
     provider = DoraChangeFailureRateProvider.fromConfig(new ConfigReader({}), {
-      doraSyncService,
-      doraDataService,
+      doraSyncService: mockDoraSyncService,
+      doraDataService: mockDoraDataService,
       logger: mockLogger,
     });
   });
@@ -87,7 +83,7 @@ describe('DoraChangeFailureRateProvider', () => {
     it('should sync deployments and incidents with default collectors', async () => {
       await provider.calculateMetrics(mockEntity);
 
-      expect(doraSyncService.syncDeployments).toHaveBeenCalledWith(
+      expect(mockDoraSyncService.syncDeployments).toHaveBeenCalledWith(
         mockEntity,
         expect.objectContaining({
           collector: expect.objectContaining({
@@ -95,7 +91,7 @@ describe('DoraChangeFailureRateProvider', () => {
           }),
         }),
       );
-      expect(doraSyncService.syncIncidents).toHaveBeenCalledWith(
+      expect(mockDoraSyncService.syncIncidents).toHaveBeenCalledWith(
         mockEntity,
         expect.objectContaining({
           collector: expect.objectContaining({
@@ -108,33 +104,6 @@ describe('DoraChangeFailureRateProvider', () => {
     it('should use custom collectors and pass custom inputs', async () => {
       const customDeploymentsCollectorId = 'custom:deployments';
       const customIncidentsCollectorId = 'custom:incidents';
-      const { doraSyncService: sync, doraDataService: data } =
-        buildMockDoraServices({
-          deployments: [
-            dbDeployment({
-              id: '100',
-              commitSha: 'sha-1',
-              environment: 'production',
-              createdAt: '2026-06-10T00:00:00.000Z',
-              result: 'success',
-            }),
-            dbDeployment({
-              id: '101',
-              commitSha: 'sha-2',
-              environment: 'production',
-              createdAt: '2026-06-11T00:00:00.000Z',
-              result: 'success',
-            }),
-          ],
-          incidents: [
-            dbIncident({
-              id: 'INC-1',
-              createdAt: '2026-06-10T12:00:00.000Z',
-              updatedAt: '2026-06-10T12:00:00.000Z',
-              resolutionAt: null,
-            }),
-          ],
-        });
       const customProvider = DoraChangeFailureRateProvider.fromConfig(
         new ConfigReader({
           scorecard: {
@@ -164,15 +133,15 @@ describe('DoraChangeFailureRateProvider', () => {
           },
         }),
         {
-          doraSyncService: sync,
-          doraDataService: data,
+          doraSyncService: mockDoraSyncService,
+          doraDataService: mockDoraDataService,
           logger: mockLogger,
         },
       );
 
       await customProvider.calculateMetrics(mockEntity);
 
-      expect(sync.syncDeployments).toHaveBeenCalledWith(
+      expect(mockDoraSyncService.syncDeployments).toHaveBeenCalledWith(
         mockEntity,
         expect.objectContaining({
           collector: expect.objectContaining({
@@ -183,7 +152,7 @@ describe('DoraChangeFailureRateProvider', () => {
           }),
         }),
       );
-      expect(sync.syncIncidents).toHaveBeenCalledWith(
+      expect(mockDoraSyncService.syncIncidents).toHaveBeenCalledWith(
         mockEntity,
         expect.objectContaining({
           collector: expect.objectContaining({
@@ -197,7 +166,7 @@ describe('DoraChangeFailureRateProvider', () => {
     });
 
     it('should calculate change failure rate using incidents between successful deployments', async () => {
-      doraDataService.readDeployments.mockResolvedValueOnce([
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({
           id: '100',
           commitSha: 'sha-1',
@@ -220,7 +189,7 @@ describe('DoraChangeFailureRateProvider', () => {
           result: 'success',
         }),
       ]);
-      doraDataService.readIncidents.mockResolvedValueOnce([
+      mockDoraDataService.readIncidents.mockResolvedValueOnce([
         dbIncident({
           id: 'INC-1',
           createdAt: '2026-06-10T06:00:00.000Z', // for deployment 100
@@ -241,7 +210,7 @@ describe('DoraChangeFailureRateProvider', () => {
     });
 
     it('should throw when fewer than 2 successful production deployments are found', async () => {
-      doraDataService.readDeployments.mockResolvedValueOnce([
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({
           id: '100',
           commitSha: 'sha-1',
@@ -257,7 +226,7 @@ describe('DoraChangeFailureRateProvider', () => {
     });
 
     it('should throw when fewer than 2 successful deployments are found', async () => {
-      doraDataService.readDeployments.mockResolvedValueOnce([
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({
           id: '100',
           commitSha: 'sha-1',
@@ -280,7 +249,7 @@ describe('DoraChangeFailureRateProvider', () => {
     });
 
     it('should throw when fewer than two production deployments are found', async () => {
-      doraDataService.readDeployments.mockResolvedValueOnce([
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({
           id: '100',
           commitSha: 'sha-1',
@@ -303,7 +272,7 @@ describe('DoraChangeFailureRateProvider', () => {
     });
 
     it('should throw when all adjacent successful production deployments share createdAt', async () => {
-      doraDataService.readDeployments.mockResolvedValueOnce([
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({
           id: '100',
           commitSha: 'sha-1',

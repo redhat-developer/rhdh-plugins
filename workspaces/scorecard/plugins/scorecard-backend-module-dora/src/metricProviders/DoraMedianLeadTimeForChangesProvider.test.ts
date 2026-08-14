@@ -17,13 +17,12 @@
 import { ConfigReader } from '@backstage/config';
 import { mockServices } from '@backstage/backend-test-utils';
 import {
-  buildMockDoraServices,
   dbDeployment,
   dbPullRequest,
+  mockDoraDataService,
+  mockDoraSyncService,
   mockEntity,
 } from './__fixtures__';
-import type { DoraDataService } from '../service/DoraDataService';
-import type { DoraSyncService } from '../service/DoraSyncService';
 import { DoraMedianLeadTimeForChangesProvider } from './DoraMedianLeadTimeForChangesProvider';
 import {
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
@@ -62,20 +61,22 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
     }),
   ];
 
-  let doraSyncService: jest.Mocked<DoraSyncService>;
-  let doraDataService: jest.Mocked<DoraDataService>;
   let provider: DoraMedianLeadTimeForChangesProvider;
 
   beforeEach(() => {
-    ({ doraSyncService, doraDataService } = buildMockDoraServices({
-      deployments,
+    jest.clearAllMocks();
+    mockDoraSyncService.syncPullRequestsForDeployment.mockResolvedValue(
+      undefined,
+    );
+    mockDoraDataService.readDeployments.mockResolvedValue(deployments);
+    mockDoraDataService.readPullRequestsForDeployment.mockResolvedValue(
       pullRequests,
-    }));
+    );
     provider = DoraMedianLeadTimeForChangesProvider.fromConfig(
       new ConfigReader({}),
       {
-        doraSyncService,
-        doraDataService,
+        doraSyncService: mockDoraSyncService,
+        doraDataService: mockDoraDataService,
         logger: mockLogger,
       },
     );
@@ -97,7 +98,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
     it('should sync deployments and pull requests with default collectors', async () => {
       await provider.calculateMetrics(mockEntity);
 
-      expect(doraSyncService.syncDeployments).toHaveBeenCalledWith(
+      expect(mockDoraSyncService.syncDeployments).toHaveBeenCalledWith(
         mockEntity,
         expect.objectContaining({
           collector: expect.objectContaining({
@@ -107,7 +108,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
         }),
       );
       expect(
-        doraSyncService.syncPullRequestsForDeployment,
+        mockDoraSyncService.syncPullRequestsForDeployment,
       ).toHaveBeenCalledWith(
         mockEntity,
         expect.objectContaining({
@@ -125,12 +126,6 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       const customDeploymentsCollectorId = 'custom:deployments';
       const customDeploymentPullRequestsCollectorId =
         'custom:deploymentPullRequests';
-      const { doraSyncService: sync, doraDataService: data } =
-        buildMockDoraServices({
-          deployments,
-          pullRequests,
-        });
-
       const customProvider = DoraMedianLeadTimeForChangesProvider.fromConfig(
         new ConfigReader({
           scorecard: {
@@ -161,15 +156,15 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           },
         }),
         {
-          doraSyncService: sync,
-          doraDataService: data,
+          doraSyncService: mockDoraSyncService,
+          doraDataService: mockDoraDataService,
           logger: mockLogger,
         },
       );
 
       await customProvider.calculateMetrics(mockEntity);
 
-      expect(sync.syncDeployments).toHaveBeenCalledWith(
+      expect(mockDoraSyncService.syncDeployments).toHaveBeenCalledWith(
         mockEntity,
         expect.objectContaining({
           collector: expect.objectContaining({
@@ -181,7 +176,9 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           }),
         }),
       );
-      expect(sync.syncPullRequestsForDeployment).toHaveBeenCalledWith(
+      expect(
+        mockDoraSyncService.syncPullRequestsForDeployment,
+      ).toHaveBeenCalledWith(
         mockEntity,
         expect.objectContaining({
           collector: expect.objectContaining({
@@ -204,7 +201,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
     });
 
     it('should calculate median with multiple pull requests across multiple deployment ranges', async () => {
-      doraDataService.readDeployments.mockResolvedValueOnce([
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({
           id: '400',
           commitSha: 'sha-1',
@@ -227,7 +224,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           result: 'success',
         }),
       ]);
-      doraDataService.readPullRequestsForDeployment
+      mockDoraDataService.readPullRequestsForDeployment
         .mockResolvedValueOnce([
           dbPullRequest({
             id: '501',
@@ -252,10 +249,10 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
 
       expect(results.get('dora.medianLeadTimeForChanges')).toBe(12);
       expect(
-        doraSyncService.syncPullRequestsForDeployment,
+        mockDoraSyncService.syncPullRequestsForDeployment,
       ).toHaveBeenCalledTimes(2);
       expect(
-        doraSyncService.syncPullRequestsForDeployment,
+        mockDoraSyncService.syncPullRequestsForDeployment,
       ).toHaveBeenNthCalledWith(
         1,
         mockEntity,
@@ -266,7 +263,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
         }),
       );
       expect(
-        doraSyncService.syncPullRequestsForDeployment,
+        mockDoraSyncService.syncPullRequestsForDeployment,
       ).toHaveBeenNthCalledWith(
         2,
         mockEntity,
@@ -279,36 +276,33 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
     });
 
     it('should throw when fewer than 2 successful production deployments are found', async () => {
-      doraDataService.readDeployments.mockResolvedValueOnce([]);
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([]);
 
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
         /need at least 2 successful production deployments/,
       );
       expect(
-        doraSyncService.syncPullRequestsForDeployment,
+        mockDoraSyncService.syncPullRequestsForDeployment,
       ).not.toHaveBeenCalled();
     });
 
     it('should use configured productionEnvironments when filtering deployments', async () => {
-      const { doraSyncService: sync, doraDataService: data } =
-        buildMockDoraServices({
-          deployments: [
-            dbDeployment({
-              id: '400',
-              commitSha: 'sha-1',
-              environment: 'production',
-              createdAt: '2026-06-10T00:00:00.000Z',
-              result: 'success',
-            }),
-            dbDeployment({
-              id: '401',
-              commitSha: 'sha-2',
-              environment: 'prod',
-              createdAt: '2026-06-11T00:00:00.000Z',
-              result: 'success',
-            }),
-          ],
-        });
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([
+        dbDeployment({
+          id: '400',
+          commitSha: 'sha-1',
+          environment: 'production',
+          createdAt: '2026-06-10T00:00:00.000Z',
+          result: 'success',
+        }),
+        dbDeployment({
+          id: '401',
+          commitSha: 'sha-2',
+          environment: 'prod',
+          createdAt: '2026-06-11T00:00:00.000Z',
+          result: 'success',
+        }),
+      ]);
 
       const customProvider = DoraMedianLeadTimeForChangesProvider.fromConfig(
         new ConfigReader({
@@ -325,8 +319,8 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           },
         }),
         {
-          doraSyncService: sync,
-          doraDataService: data,
+          doraSyncService: mockDoraSyncService,
+          doraDataService: mockDoraDataService,
           logger: mockLogger,
         },
       );
@@ -337,7 +331,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
     });
 
     it('should throw when no pull requests with measurable lead time are found', async () => {
-      doraDataService.readPullRequestsForDeployment.mockResolvedValue([]);
+      mockDoraDataService.readPullRequestsForDeployment.mockResolvedValue([]);
 
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
         /no pull requests with a measurable lead time/,
@@ -345,43 +339,33 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
     });
 
     it('should skip deployment intervals when pull request sync fails and warn', async () => {
-      const { doraSyncService: sync, doraDataService: data } =
-        buildMockDoraServices({
-          deployments: [
-            dbDeployment({
-              id: '100',
-              commitSha: 'sha-1',
-              environment: 'production',
-              createdAt: '2026-06-10T00:00:00.000Z',
-              result: 'success',
-            }),
-            dbDeployment({
-              id: '101',
-              commitSha: 'sha-2',
-              environment: 'production',
-              createdAt: '2026-06-11T00:00:00.000Z',
-              result: 'success',
-            }),
-            dbDeployment({
-              id: '102',
-              commitSha: 'sha-3',
-              environment: 'production',
-              createdAt: '2026-06-12T00:00:00.000Z',
-              result: 'success',
-            }),
-          ],
-          pullRequests: [
-            dbPullRequest({
-              id: '503',
-              firstCommitAt: '2026-06-11T12:00:00.000Z', // 12h
-              deploymentId: '102',
-            }),
-          ],
-        });
-      sync.syncPullRequestsForDeployment
+      mockDoraDataService.readDeployments.mockResolvedValue([
+        dbDeployment({
+          id: '100',
+          commitSha: 'sha-1',
+          environment: 'production',
+          createdAt: '2026-06-10T00:00:00.000Z',
+          result: 'success',
+        }),
+        dbDeployment({
+          id: '101',
+          commitSha: 'sha-2',
+          environment: 'production',
+          createdAt: '2026-06-11T00:00:00.000Z',
+          result: 'success',
+        }),
+        dbDeployment({
+          id: '102',
+          commitSha: 'sha-3',
+          environment: 'production',
+          createdAt: '2026-06-12T00:00:00.000Z',
+          result: 'success',
+        }),
+      ]);
+      mockDoraSyncService.syncPullRequestsForDeployment
         .mockRejectedValueOnce(new Error('GitHub compare failed'))
         .mockResolvedValueOnce(undefined);
-      data.readPullRequestsForDeployment.mockResolvedValue([
+      mockDoraDataService.readPullRequestsForDeployment.mockResolvedValue([
         dbPullRequest({
           id: '503',
           firstCommitAt: '2026-06-11T12:00:00.000Z',
@@ -392,8 +376,8 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       const results = await DoraMedianLeadTimeForChangesProvider.fromConfig(
         new ConfigReader({}),
         {
-          doraSyncService: sync,
-          doraDataService: data,
+          doraSyncService: mockDoraSyncService,
+          doraDataService: mockDoraDataService,
           logger: mockLogger,
         },
       ).calculateMetrics(mockEntity);
@@ -411,7 +395,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
     });
 
     it('should skip pull requests with negative lead time and warn', async () => {
-      doraDataService.readPullRequestsForDeployment.mockResolvedValue([
+      mockDoraDataService.readPullRequestsForDeployment.mockResolvedValue([
         dbPullRequest({
           id: '999',
           firstCommitAt: '2026-06-09T12:00:00.000Z', // after sha-current deployment
@@ -436,7 +420,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
     });
 
     it('should throw when all deployment intervals fail to sync pull requests', async () => {
-      doraSyncService.syncPullRequestsForDeployment.mockRejectedValue(
+      mockDoraSyncService.syncPullRequestsForDeployment.mockRejectedValue(
         new Error('collector unavailable'),
       );
 

@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-export * from './mockCollectors';
-export * from './mockCollectorsService';
-export * from './mockDoraDataService';
-export * from './mockDoraStores';
-export * from './mockDoraSyncService';
-export * from './mockEntity';
+import type { DoraSyncService } from '../../service/DoraSyncService';
+
+export const mockDoraSyncService: jest.Mocked<DoraSyncService> = {
+  syncDeployments: jest.fn(),
+  syncIncidents: jest.fn(),
+  syncPullRequestsForDeployment: jest.fn(),
+};

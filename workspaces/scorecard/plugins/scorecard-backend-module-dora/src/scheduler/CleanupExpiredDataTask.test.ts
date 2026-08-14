@@ -14,56 +14,60 @@
  * limitations under the License.
  */
 
+import {
+  LoggerService,
+  SchedulerService,
+  SchedulerServiceTaskRunner,
+} from '@backstage/backend-plugin-api';
 import { mockServices } from '@backstage/backend-test-utils';
+import type { Config } from '@backstage/config';
 import { DORA_CLEANUP_EXPIRED_DATA_TASK_ID } from '../constants';
 import { parseDoraDataRetentionDays } from '../metricProviders/DoraConfig';
+import {
+  mockDoraDeploymentsStore,
+  mockDoraIncidentsStore,
+  mockDoraPullRequestsStore,
+} from '../metricProviders/__fixtures__';
 import { CleanupExpiredDataTask } from './CleanupExpiredDataTask';
-import { daysToMilliseconds } from './utils';
-
-jest.mock('./utils', () => ({
-  daysToMilliseconds: jest.fn((days: number) => days * 24 * 60 * 60 * 1000),
-}));
 
 jest.mock('../metricProviders/DoraConfig', () => ({
   parseDoraDataRetentionDays: jest.fn(),
 }));
 
 describe('CleanupExpiredDataTask', () => {
-  let mockScheduler: ReturnType<typeof mockServices.scheduler.mock>;
-  let mockLogger: ReturnType<typeof mockServices.logger.mock>;
-  let mockConfig: ReturnType<typeof mockServices.rootConfig.mock>;
-  let mockDeployments: { deleteOlderThan: jest.Mock };
-  let mockIncidents: { deleteOlderThan: jest.Mock };
-  let mockPullRequests: { deleteOlderThan: jest.Mock };
-  let mockTaskRunner: { run: jest.Mock };
+  let mockScheduler: jest.Mocked<SchedulerService>;
+  let mockLogger: jest.Mocked<LoggerService>;
+  let mockConfig: Config;
+  let mockTaskRunner: jest.Mocked<Pick<SchedulerServiceTaskRunner, 'run'>>;
   let task: CleanupExpiredDataTask;
 
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2024-01-15T12:00:00.000Z'));
+    jest.clearAllMocks();
 
     mockScheduler = mockServices.scheduler.mock();
     mockLogger = mockServices.logger.mock();
     mockConfig = mockServices.rootConfig.mock();
-    mockDeployments = { deleteOlderThan: jest.fn().mockResolvedValue(0) };
-    mockIncidents = { deleteOlderThan: jest.fn().mockResolvedValue(0) };
-    mockPullRequests = { deleteOlderThan: jest.fn().mockResolvedValue(0) };
+    mockDoraDeploymentsStore.deleteOlderThan.mockResolvedValue(0);
+    mockDoraIncidentsStore.deleteOlderThan.mockResolvedValue(0);
+    mockDoraPullRequestsStore.deleteOlderThan.mockResolvedValue(0);
 
     mockTaskRunner = {
       run: jest.fn().mockResolvedValue(undefined),
     };
 
     mockScheduler.createScheduledTaskRunner.mockReturnValue(
-      mockTaskRunner as any,
+      mockTaskRunner as SchedulerServiceTaskRunner,
     );
 
     task = new CleanupExpiredDataTask({
       scheduler: mockScheduler,
       logger: mockLogger,
       config: mockConfig,
-      deployments: mockDeployments as any,
-      incidents: mockIncidents as any,
-      pullRequests: mockPullRequests as any,
+      deployments: mockDoraDeploymentsStore,
+      incidents: mockDoraIncidentsStore,
+      pullRequests: mockDoraPullRequestsStore,
     });
   });
 
@@ -95,15 +99,14 @@ describe('CleanupExpiredDataTask', () => {
   });
 
   describe('cleanupExpiredData', () => {
-    const mockDaysToMilliseconds = daysToMilliseconds as jest.Mock;
     const mockParseDoraDataRetentionDays =
       parseDoraDataRetentionDays as jest.Mock;
 
     beforeEach(async () => {
       mockParseDoraDataRetentionDays.mockReturnValue(2);
-      mockDeployments.deleteOlderThan.mockResolvedValue(3);
-      mockIncidents.deleteOlderThan.mockResolvedValue(4);
-      mockPullRequests.deleteOlderThan.mockResolvedValue(5);
+      mockDoraDeploymentsStore.deleteOlderThan.mockResolvedValue(3);
+      mockDoraIncidentsStore.deleteOlderThan.mockResolvedValue(4);
+      mockDoraPullRequestsStore.deleteOlderThan.mockResolvedValue(5);
 
       await (task as any).cleanupExpiredData(mockLogger);
     });
@@ -112,19 +115,18 @@ describe('CleanupExpiredDataTask', () => {
       expect(mockParseDoraDataRetentionDays).toHaveBeenCalledWith(mockConfig);
     });
 
-    it('converts retention days to milliseconds', () => {
-      expect(mockDaysToMilliseconds).toHaveBeenCalledWith(2);
-    });
-
     it('deletes data older than the retention cutoff', () => {
+      // today is 2024-01-15T12:00:00.000Z, cutoff is 2 days
       const expectedDate = new Date('2024-01-13T12:00:00.000Z');
-      expect(mockPullRequests.deleteOlderThan).toHaveBeenCalledWith(
+      expect(mockDoraPullRequestsStore.deleteOlderThan).toHaveBeenCalledWith(
         expectedDate,
       );
-      expect(mockDeployments.deleteOlderThan).toHaveBeenCalledWith(
+      expect(mockDoraDeploymentsStore.deleteOlderThan).toHaveBeenCalledWith(
         expectedDate,
       );
-      expect(mockIncidents.deleteOlderThan).toHaveBeenCalledWith(expectedDate);
+      expect(mockDoraIncidentsStore.deleteOlderThan).toHaveBeenCalledWith(
+        expectedDate,
+      );
     });
 
     it('logs deleted counts', () => {

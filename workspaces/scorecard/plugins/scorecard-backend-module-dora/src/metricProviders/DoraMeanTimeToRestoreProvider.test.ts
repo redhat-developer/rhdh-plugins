@@ -17,32 +17,32 @@
 import { ConfigReader } from '@backstage/config';
 import { mockServices } from '@backstage/backend-test-utils';
 import { DoraMeanTimeToRestoreProvider } from './DoraMeanTimeToRestoreProvider';
-import { buildMockDoraServices, dbIncident, mockEntity } from './__fixtures__';
-import type { DoraDataService } from '../service/DoraDataService';
-import type { DoraSyncService } from '../service/DoraSyncService';
+import {
+  dbIncident,
+  mockDoraDataService,
+  mockDoraSyncService,
+  mockEntity,
+} from './__fixtures__';
 import { DORA_DEFAULT_INCIDENTS_COLLECTOR_ID } from '../constants';
 import { DEFAULT_DORA_MEAN_TIME_TO_RESTORE_THRESHOLDS } from './DoraConfig';
 
 describe('DoraMeanTimeToRestoreProvider', () => {
   const mockLogger = mockServices.logger.mock();
-  let doraSyncService: jest.Mocked<DoraSyncService>;
-  let doraDataService: jest.Mocked<DoraDataService>;
   let provider: DoraMeanTimeToRestoreProvider;
 
   beforeEach(() => {
-    ({ doraSyncService, doraDataService } = buildMockDoraServices({
-      incidents: [
-        dbIncident({
-          id: 'INC-1',
-          createdAt: '2026-06-10T10:00:00.000Z',
-          updatedAt: '2026-06-10T12:00:00.000Z',
-          resolutionAt: '2026-06-10T12:00:00.000Z',
-        }),
-      ],
-    }));
+    jest.clearAllMocks();
+    mockDoraDataService.readIncidents.mockResolvedValue([
+      dbIncident({
+        id: 'INC-1',
+        createdAt: '2026-06-10T10:00:00.000Z',
+        updatedAt: '2026-06-10T12:00:00.000Z',
+        resolutionAt: '2026-06-10T12:00:00.000Z',
+      }),
+    ]);
     provider = DoraMeanTimeToRestoreProvider.fromConfig(new ConfigReader({}), {
-      doraSyncService,
-      doraDataService,
+      doraSyncService: mockDoraSyncService,
+      doraDataService: mockDoraDataService,
       logger: mockLogger,
     });
   });
@@ -63,7 +63,7 @@ describe('DoraMeanTimeToRestoreProvider', () => {
     it('should sync and read with default collector when no config', async () => {
       await provider.calculateMetrics(mockEntity);
 
-      expect(doraSyncService.syncIncidents).toHaveBeenCalledWith(
+      expect(mockDoraSyncService.syncIncidents).toHaveBeenCalledWith(
         mockEntity,
         expect.objectContaining({
           collector: expect.objectContaining({
@@ -72,7 +72,7 @@ describe('DoraMeanTimeToRestoreProvider', () => {
           }),
         }),
       );
-      expect(doraDataService.readIncidents).toHaveBeenCalledWith(
+      expect(mockDoraDataService.readIncidents).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
           collector: expect.objectContaining({
@@ -84,17 +84,14 @@ describe('DoraMeanTimeToRestoreProvider', () => {
 
     it('should use custom collector and pass custom inputs', async () => {
       const customIncidentsCollectorId = 'custom:incidents';
-      const { doraSyncService: sync, doraDataService: data } =
-        buildMockDoraServices({
-          incidents: [
-            dbIncident({
-              id: 'INC-2',
-              createdAt: '2026-06-10T10:00:00.000Z',
-              updatedAt: '2026-06-10T12:00:00.000Z',
-              resolutionAt: '2026-06-10T12:00:00.000Z',
-            }),
-          ],
-        });
+      mockDoraDataService.readIncidents.mockResolvedValue([
+        dbIncident({
+          id: 'INC-2',
+          createdAt: '2026-06-10T10:00:00.000Z',
+          updatedAt: '2026-06-10T12:00:00.000Z',
+          resolutionAt: '2026-06-10T12:00:00.000Z',
+        }),
+      ]);
       const customProvider = DoraMeanTimeToRestoreProvider.fromConfig(
         new ConfigReader({
           scorecard: {
@@ -117,15 +114,15 @@ describe('DoraMeanTimeToRestoreProvider', () => {
           },
         }),
         {
-          doraSyncService: sync,
-          doraDataService: data,
+          doraSyncService: mockDoraSyncService,
+          doraDataService: mockDoraDataService,
           logger: mockLogger,
         },
       );
 
       await customProvider.calculateMetrics(mockEntity);
 
-      expect(sync.syncIncidents).toHaveBeenCalledWith(
+      expect(mockDoraSyncService.syncIncidents).toHaveBeenCalledWith(
         mockEntity,
         expect.objectContaining({
           collector: expect.objectContaining({
@@ -139,7 +136,7 @@ describe('DoraMeanTimeToRestoreProvider', () => {
     });
 
     it('should calculate mean time to restore in hours', async () => {
-      doraDataService.readIncidents.mockResolvedValueOnce([
+      mockDoraDataService.readIncidents.mockResolvedValueOnce([
         dbIncident({
           id: 'INC-1',
           createdAt: '2026-06-10T10:00:00.000Z',
@@ -166,7 +163,7 @@ describe('DoraMeanTimeToRestoreProvider', () => {
     });
 
     it('should throw when no resolved incidents are found', async () => {
-      doraDataService.readIncidents.mockResolvedValueOnce([
+      mockDoraDataService.readIncidents.mockResolvedValueOnce([
         dbIncident({
           id: 'INC-1',
           createdAt: '2026-06-10T10:00:00.000Z',
@@ -181,7 +178,7 @@ describe('DoraMeanTimeToRestoreProvider', () => {
     });
 
     it('should throw when no incidents are found', async () => {
-      doraDataService.readIncidents.mockResolvedValueOnce([]);
+      mockDoraDataService.readIncidents.mockResolvedValueOnce([]);
 
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
         'Unable to calculate mean time to restore: no resolved incidents with measurable recovery time were found',
@@ -189,7 +186,7 @@ describe('DoraMeanTimeToRestoreProvider', () => {
     });
 
     it('should throw when resolved incidents are invalid and none are measurable', async () => {
-      doraDataService.readIncidents.mockResolvedValueOnce([
+      mockDoraDataService.readIncidents.mockResolvedValueOnce([
         dbIncident({
           id: 'INC-1',
           createdAt: '2026-06-10T12:00:00.000Z',
@@ -207,7 +204,7 @@ describe('DoraMeanTimeToRestoreProvider', () => {
     });
 
     it('should skip invalid resolved incidents and calculate mean from the rest', async () => {
-      doraDataService.readIncidents.mockResolvedValueOnce([
+      mockDoraDataService.readIncidents.mockResolvedValueOnce([
         dbIncident({
           id: 'INC-1',
           createdAt: '2026-06-10T12:00:00.000Z',

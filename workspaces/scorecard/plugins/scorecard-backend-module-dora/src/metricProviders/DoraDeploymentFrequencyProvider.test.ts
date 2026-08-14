@@ -17,27 +17,25 @@
 import { ConfigReader } from '@backstage/config';
 import { DoraDeploymentFrequencyProvider } from './DoraDeploymentFrequencyProvider';
 import {
-  buildMockDoraServices,
   dbDeployment,
+  mockDoraDataService,
+  mockDoraSyncService,
   mockEntity,
 } from './__fixtures__';
-import type { DoraDataService } from '../service/DoraDataService';
-import type { DoraSyncService } from '../service/DoraSyncService';
 import { DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID } from '../constants';
 import { DEFAULT_DORA_DEPLOYMENT_FREQUENCY_THRESHOLDS } from './DoraConfig';
 
 describe('DoraDeploymentFrequencyProvider', () => {
-  let doraSyncService: jest.Mocked<DoraSyncService>;
-  let doraDataService: jest.Mocked<DoraDataService>;
   let provider: DoraDeploymentFrequencyProvider;
 
   beforeEach(() => {
-    ({ doraSyncService, doraDataService } = buildMockDoraServices());
+    jest.clearAllMocks();
+    mockDoraDataService.readDeployments.mockResolvedValue([]);
     provider = DoraDeploymentFrequencyProvider.fromConfig(
       new ConfigReader({}),
       {
-        doraSyncService,
-        doraDataService,
+        doraSyncService: mockDoraSyncService,
+        doraDataService: mockDoraDataService,
       },
     );
   });
@@ -58,7 +56,7 @@ describe('DoraDeploymentFrequencyProvider', () => {
     it('should sync and read with default collectors when no config', async () => {
       await provider.calculateMetrics(mockEntity);
 
-      expect(doraSyncService.syncDeployments).toHaveBeenCalledWith(
+      expect(mockDoraSyncService.syncDeployments).toHaveBeenCalledWith(
         mockEntity,
         expect.objectContaining({
           collector: expect.objectContaining({
@@ -67,7 +65,7 @@ describe('DoraDeploymentFrequencyProvider', () => {
           }),
         }),
       );
-      expect(doraDataService.readDeployments).toHaveBeenCalledWith(
+      expect(mockDoraDataService.readDeployments).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
           collector: expect.objectContaining({
@@ -79,8 +77,6 @@ describe('DoraDeploymentFrequencyProvider', () => {
 
     it('should use custom collectors and pass custom inputs', async () => {
       const customCollectorId = 'custom:deployments';
-      const { doraSyncService: sync, doraDataService: data } =
-        buildMockDoraServices();
 
       const customProvider = DoraDeploymentFrequencyProvider.fromConfig(
         new ConfigReader({
@@ -104,14 +100,14 @@ describe('DoraDeploymentFrequencyProvider', () => {
           },
         }),
         {
-          doraSyncService: sync,
-          doraDataService: data,
+          doraSyncService: mockDoraSyncService,
+          doraDataService: mockDoraDataService,
         },
       );
 
       await customProvider.calculateMetrics(mockEntity);
 
-      expect(sync.syncDeployments).toHaveBeenCalledWith(
+      expect(mockDoraSyncService.syncDeployments).toHaveBeenCalledWith(
         mockEntity,
         expect.objectContaining({
           collector: expect.objectContaining({
@@ -125,7 +121,7 @@ describe('DoraDeploymentFrequencyProvider', () => {
     });
 
     it('should calculate frequency for success result and production environment', async () => {
-      doraDataService.readDeployments.mockResolvedValueOnce([
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({
           id: '100',
           commitSha: 'sha-1',
@@ -168,7 +164,7 @@ describe('DoraDeploymentFrequencyProvider', () => {
     });
 
     it('returns 0 when no deployments are collected', async () => {
-      doraDataService.readDeployments.mockResolvedValueOnce([]);
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([]);
 
       const results = await provider.calculateMetrics(mockEntity);
 
@@ -176,32 +172,29 @@ describe('DoraDeploymentFrequencyProvider', () => {
     });
 
     it('should treat configured productionEnvironments as production', async () => {
-      const { doraSyncService: sync, doraDataService: data } =
-        buildMockDoraServices({
-          deployments: [
-            dbDeployment({
-              id: '100',
-              commitSha: 'sha-1',
-              environment: 'prod',
-              createdAt: '2026-06-01T10:00:00.000Z',
-              result: 'success',
-            }),
-            dbDeployment({
-              id: '101',
-              commitSha: 'sha-2',
-              environment: 'live',
-              createdAt: '2026-06-02T10:00:00.000Z',
-              result: 'success',
-            }),
-            dbDeployment({
-              id: '102',
-              commitSha: 'sha-3',
-              environment: 'production',
-              createdAt: '2026-06-03T10:00:00.000Z',
-              result: 'success',
-            }),
-          ],
-        });
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([
+        dbDeployment({
+          id: '100',
+          commitSha: 'sha-1',
+          environment: 'prod',
+          createdAt: '2026-06-01T10:00:00.000Z',
+          result: 'success',
+        }),
+        dbDeployment({
+          id: '101',
+          commitSha: 'sha-2',
+          environment: 'live',
+          createdAt: '2026-06-02T10:00:00.000Z',
+          result: 'success',
+        }),
+        dbDeployment({
+          id: '102',
+          commitSha: 'sha-3',
+          environment: 'production',
+          createdAt: '2026-06-03T10:00:00.000Z',
+          result: 'success',
+        }),
+      ]);
 
       const customProvider = DoraDeploymentFrequencyProvider.fromConfig(
         new ConfigReader({
@@ -218,8 +211,8 @@ describe('DoraDeploymentFrequencyProvider', () => {
           },
         }),
         {
-          doraSyncService: sync,
-          doraDataService: data,
+          doraSyncService: mockDoraSyncService,
+          doraDataService: mockDoraDataService,
         },
       );
 
