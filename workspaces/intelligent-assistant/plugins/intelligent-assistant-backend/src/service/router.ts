@@ -32,7 +32,7 @@ import {
   iaChatManagePermission,
   iaChatUsePermission,
   iaMcpManagePermission,
-  iaMcpReadPermission,
+  iaMcpUsePermission,
   iaNotebooksUsePermission,
   iaPermissions,
   iaSavedPromptsManagePermission,
@@ -319,7 +319,7 @@ export async function createRouter(
   router.get(
     '/mcp-servers',
     generalRateLimiter,
-    requirePermission(iaMcpReadPermission),
+    requirePermission(iaMcpUsePermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -360,7 +360,7 @@ export async function createRouter(
   router.post(
     '/mcp-servers/validate',
     generalRateLimiter,
-    requirePermission(iaMcpReadPermission),
+    requirePermission(iaMcpUsePermission),
     async (req, res) => {
       try {
         const { url, token } = req.body;

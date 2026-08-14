@@ -89,8 +89,8 @@ Update permission names in your `rbac-policy.csv`:
 | `lightspeed.chat.update`   | `intelligent-assistant.chat.manage`      |
 | `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use`    |
 |                            | `intelligent-assistant.notebooks.manage` |
-| `lightspeed.mcp.read`      | `intelligent-assistant.mcp.read`         |
-| `lightspeed.mcp.manage`    | `intelligent-assistant.mcp.manage`       |
+| `lightspeed.mcp.read`      | `mcp.tools.use`                          |
+| `lightspeed.mcp.manage`    | `mcp.tools.manage`                       |
 
 #### 5. OFS dynamic plugin configuration
 
@@ -342,8 +342,8 @@ p, role:default/team_a, intelligent-assistant.notebooks.use, use, allow
 p, role:default/team_a, intelligent-assistant.notebooks.manage, use, allow
 
 # Required for MCP server management (if configured)
-p, role:default/team_a, intelligent-assistant.mcp.read, read, allow
-p, role:default/team_a, intelligent-assistant.mcp.manage, update, allow
+p, role:default/team_a, mcp.tools.use, use, allow
+p, role:default/team_a, mcp.tools.manage, use, allow
 
 # Required for saved prompts
 p, role:default/team_a, intelligent-assistant.saved-prompts.manage, update, allow

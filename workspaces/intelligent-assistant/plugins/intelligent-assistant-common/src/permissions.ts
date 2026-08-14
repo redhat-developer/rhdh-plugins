@@ -40,24 +40,20 @@ export const iaChatManagePermission = createPermission({
   attributes: {},
 });
 
-/** This permission is used to list configured MCP servers
+/** This permission is used to use MCP tooling
  * @public
  */
-export const iaMcpReadPermission = createPermission({
-  name: 'intelligent-assistant.mcp.read',
-  attributes: {
-    action: 'read',
-  },
+export const iaMcpUsePermission = createPermission({
+  name: 'mcp.tools.use',
+  attributes: {},
 });
 
-/** This permission is used to add, update, delete, and validate MCP servers
+/** This permission is used to manage MCP tooling
  * @public
  */
 export const iaMcpManagePermission = createPermission({
-  name: 'intelligent-assistant.mcp.manage',
-  attributes: {
-    action: 'update',
-  },
+  name: 'mcp.tools.manage',
+  attributes: {},
 });
 
 /** This permission is used to access, create, and query intelligent-assistant notebooks
@@ -103,7 +99,7 @@ export const iaPermissions = [
   iaChatAccessPermission,
   iaChatManagePermission,
   iaChatUsePermission,
-  iaMcpReadPermission,
+  iaMcpUsePermission,
   iaMcpManagePermission,
   iaNotebooksManagePermission,
   iaNotebooksUsePermission,
