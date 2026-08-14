@@ -28,7 +28,7 @@ export interface CaptureOptions {
   excludeSelector?: string;
   /** Max output width in pixels for compression (default: 1280) */
   maxWidth?: number;
-  /** Maximum time allowed for capture in ms (default: 3000) */
+  /** Maximum time allowed for capture in ms (default: 1000) */
   timeoutMs?: number;
 }
 
