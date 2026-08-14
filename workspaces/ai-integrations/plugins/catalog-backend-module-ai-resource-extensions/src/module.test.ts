@@ -16,8 +16,11 @@
 
 import { startTestBackend } from '@backstage/backend-test-utils';
 import { Entity } from '@backstage/catalog-model';
-import { CatalogProcessor } from '@backstage/plugin-catalog-node';
-import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node';
+import {
+  CatalogProcessor,
+  CatalogProcessorCache,
+  catalogProcessingExtensionPoint,
+} from '@backstage/plugin-catalog-node';
 import { catalogModuleCatalogBackendModuleAiResourceExtensions } from './module';
 
 function makeAiResource(
@@ -38,6 +41,10 @@ function makeAiResource(
 describe('catalog-backend-module-ai-resource-extensions integration', () => {
   let registeredProcessors: CatalogProcessor[];
   const emit = jest.fn();
+  const mockCache: CatalogProcessorCache = {
+    get: jest.fn().mockResolvedValue(undefined),
+    set: jest.fn().mockResolvedValue(undefined),
+  };
 
   beforeAll(async () => {
     registeredProcessors = [];
@@ -100,6 +107,8 @@ describe('catalog-backend-module-ai-resource-extensions integration', () => {
         entity,
         ociLocation,
         emit,
+        ociLocation,
+        mockCache,
       );
 
       expect(result).toEqual(entity);
@@ -119,6 +128,8 @@ describe('catalog-backend-module-ai-resource-extensions integration', () => {
         entity,
         ociLocation,
         emit,
+        ociLocation,
+        mockCache,
       );
 
       expect(result).toEqual(entity);
@@ -133,7 +144,13 @@ describe('catalog-backend-module-ai-resource-extensions integration', () => {
       );
 
       await expect(
-        processor.preProcessEntity!(entity, ociLocation, emit),
+        processor.preProcessEntity!(
+          entity,
+          ociLocation,
+          emit,
+          ociLocation,
+          mockCache,
+        ),
       ).rejects.toThrow('not a valid OCI reference');
     });
 
@@ -146,7 +163,13 @@ describe('catalog-backend-module-ai-resource-extensions integration', () => {
       );
 
       await expect(
-        processor.preProcessEntity!(entity, ociLocation, emit),
+        processor.preProcessEntity!(
+          entity,
+          ociLocation,
+          emit,
+          ociLocation,
+          mockCache,
+        ),
       ).rejects.toThrow('url:oci://');
     });
 
@@ -159,7 +182,13 @@ describe('catalog-backend-module-ai-resource-extensions integration', () => {
       );
 
       await expect(
-        processor.preProcessEntity!(entity, ociLocation, emit),
+        processor.preProcessEntity!(
+          entity,
+          ociLocation,
+          emit,
+          ociLocation,
+          mockCache,
+        ),
       ).rejects.toThrow('not a valid OCI reference');
     });
 
@@ -179,6 +208,8 @@ describe('catalog-backend-module-ai-resource-extensions integration', () => {
         entity,
         ociLocation,
         emit,
+        ociLocation,
+        mockCache,
       );
 
       expect(result).toEqual(entity);
@@ -213,6 +244,8 @@ describe('catalog-backend-module-ai-resource-extensions integration', () => {
         entity,
         gitLocation,
         emit,
+        gitLocation,
+        mockCache,
       );
 
       expect(result).toEqual(entity);
@@ -238,6 +271,8 @@ describe('catalog-backend-module-ai-resource-extensions integration', () => {
         entity,
         gitLocation,
         emit,
+        gitLocation,
+        mockCache,
       );
 
       expect(result).toEqual(entity);
@@ -256,6 +291,8 @@ describe('catalog-backend-module-ai-resource-extensions integration', () => {
         entity,
         gitLocation,
         emit,
+        gitLocation,
+        mockCache,
       );
 
       expect(result).toEqual(entity);
@@ -292,7 +329,13 @@ describe('catalog-backend-module-ai-resource-extensions integration', () => {
         },
       };
 
-      const result = await processor.preProcessEntity!(entity, location, emit);
+      const result = await processor.preProcessEntity!(
+        entity,
+        location,
+        emit,
+        location,
+        mockCache,
+      );
 
       expect(result).toEqual(entity);
     });
@@ -316,7 +359,13 @@ describe('catalog-backend-module-ai-resource-extensions integration', () => {
         },
       };
 
-      const result = await processor.preProcessEntity!(entity, location, emit);
+      const result = await processor.preProcessEntity!(
+        entity,
+        location,
+        emit,
+        location,
+        mockCache,
+      );
 
       expect(result).toEqual(entity);
     });
@@ -340,7 +389,13 @@ describe('catalog-backend-module-ai-resource-extensions integration', () => {
       };
 
       await expect(
-        processor.preProcessEntity!(entity, location, emit),
+        processor.preProcessEntity!(
+          entity,
+          location,
+          emit,
+          location,
+          mockCache,
+        ),
       ).rejects.toThrow('url:oci://');
     });
 
@@ -356,7 +411,13 @@ describe('catalog-backend-module-ai-resource-extensions integration', () => {
         },
       };
 
-      const result = await processor.preProcessEntity!(entity, location, emit);
+      const result = await processor.preProcessEntity!(
+        entity,
+        location,
+        emit,
+        location,
+        mockCache,
+      );
 
       expect(result).toEqual(entity);
     });
