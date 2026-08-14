@@ -139,6 +139,29 @@ export class GithubApiService implements GitApiService {
     };
   }
 
+  /**
+   * Returns a short-lived GitHub App installation token for the given repo URL.
+   * Fails closed if only a classic PAT is available or no App installation exists.
+   * Used by orchestrator import mode so long-lived PATs are never forwarded to SonataFlow.
+   */
+  async getAppInstallationCredentials(
+    repoUrl: string,
+  ): Promise<{ token: string }> {
+    const creds = await this.githubCredentialsProvider.getCredentials({
+      url: repoUrl,
+    });
+    if (!creds?.token || creds.type !== 'app') {
+      throw new Error(
+        `Orchestrator import requires a GitHub App installation token for '${repoUrl}'. ` +
+          `Configure integrations.github with an App that has access to this repository; ` +
+          `classic personal access tokens are not forwarded in orchestrator mode.`,
+      );
+    }
+    return {
+      token: creds.token,
+    };
+  }
+
   async getRepositoryFromIntegrations(repoUrl: string): Promise<{
     repository?: GithubRepository;
     errors?: GithubFetchError[];
