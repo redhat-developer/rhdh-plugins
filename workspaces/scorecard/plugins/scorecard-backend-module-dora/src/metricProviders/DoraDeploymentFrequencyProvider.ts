@@ -78,6 +78,7 @@ export class DoraDeploymentFrequencyProvider
           'Tracks how often code is successfully deployed to production over the past 30 days. Elite performers deploy on demand (multiple times per day).',
         type: 'number',
         thresholds: DEFAULT_DORA_DEPLOYMENT_FREQUENCY_THRESHOLDS,
+        unit: '/week',
         history: true,
         defaultVisualization: 'sparkline',
       },

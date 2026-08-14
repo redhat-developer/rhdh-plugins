@@ -90,6 +90,7 @@ export class DoraMedianLeadTimeForChangesProvider
           'Measures the time from code commit to production deployment over the past 30 days. Elite performers have a lead time of less than 24 hours',
         type: 'number',
         thresholds: DEFAULT_DORA_MEDIAN_LEAD_TIME_THRESHOLDS,
+        unit: 'h',
         history: true,
         defaultVisualization: 'sparkline',
       },

@@ -32,10 +32,12 @@
   "dependencies": {
     "@backstage/backend-plugin-api": "^1.9.2",
     "@backstage/catalog-model": "^1.9.0",
+    "@backstage/plugin-catalog-common": "^1.1.10",
     "@backstage/plugin-catalog-node": "^2.2.2",
     "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent": "workspace:^"
   },
   "devDependencies": {
+    "@backstage/backend-test-utils": "^1.11.4",
     "@backstage/cli": "^0.36.3"
   },
   "files": [

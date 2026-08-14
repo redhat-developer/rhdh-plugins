@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-boost-backend
 
+## 0.2.0
+
+### Minor Changes
+
+- 13a24d0: Add ingestion health backend API, data model, and error classification. Introduces `GET /api/boost/ingestion-health` endpoint with per-connector health status derived from recent sync attempts, `SyncAttemptsStore` for tracking sync outcomes, `ErrorClassifier` for categorizing sync failures, and `ConnectorConfigReader` for config-based connector discovery.
+
+### Patch Changes
+
+- Updated dependencies [13a24d0]
+  - @red-hat-developer-hub/backstage-plugin-boost-common@0.2.0
+  - @red-hat-developer-hub/backstage-plugin-boost-node@0.1.4
+
 ## 0.1.4
 
 ### Patch Changes

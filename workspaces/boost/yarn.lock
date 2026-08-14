@@ -8831,6 +8831,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-boost-node": "workspace:^"
     "@red-hat-developer-hub/cli": "npm:^1.11.1"
     "@types/express": "npm:4.17.25"
+    cron: "npm:^3.0.0"
     express: "npm:^4.21.1"
     knex: "npm:^3.1.0"
     zod: "npm:^3.23.8"

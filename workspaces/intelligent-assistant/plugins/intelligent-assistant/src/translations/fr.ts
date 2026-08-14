@@ -237,7 +237,8 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'notebook.upload.modal.title': 'Ajouter une ressource au carnet',
     'notebook.view.close': 'Fermer le carnet',
     'notebook.view.documents.add': 'Ajouter',
-    'notebook.view.documents.count': '{{count}} Ressources',
+    'notebook.view.documents.count_one': '{{count}} Ressource',
+    'notebook.view.documents.count_other': '{{count}} Ressources',
     'notebook.view.documents.maxReached':
       'Maximum 10 ressources autorisées. Supprimez une ressource pour en charger une nouvelle.',
     'notebook.view.documents.uploading': 'Chargement de la ressource',
@@ -262,7 +263,8 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
       'Vous ne verrez plus ce carnet ici. Cela supprimera également l’activité associée comme les requêtes, réponses et retours depuis votre activité.',
     'notebooks.delete.title': 'Supprimer {{name}} ?',
     'notebooks.delete.toast': 'Carnet supprimé !',
-    'notebooks.documents': 'Ressources',
+    'notebooks.documents_one': '{{count}} Ressource',
+    'notebooks.documents_other': '{{count}} Ressources',
     'notebooks.empty.action': 'Créer un nouveau carnet',
     'notebooks.empty.description':
       'Créez un nouveau carnet pour organiser vos sources et générer des informations alimentées par l’IA.',

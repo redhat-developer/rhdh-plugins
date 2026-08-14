@@ -53,12 +53,12 @@ metadata:
 
 ## Available Metrics
 
-| Metric ID                       | Provider ID                     | Default thresholds                                     | Details                                                                           |
-| ------------------------------- | ------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| `dora.deploymentFrequency`      | `dora.deploymentFrequency`      | elite `>=7`, medium `1-7`, low `<1` (deployments/week) | [deployment-frequency.md](./docs/metrics/deployment-frequency.md)                 |
-| `dora.medianLeadTimeForChanges` | `dora.medianLeadTimeForChanges` | elite `<24`, medium `24-168`, low `>168` (hours)       | [median-lead-time-for-changes.md](./docs/metrics/median-lead-time-for-changes.md) |
-| `dora.meanTimeToRestore`        | `dora.meanTimeToRestore`        | elite `<1`, medium `1-24`, low `>24` (hours)           | [mean-time-to-restore.md](./docs/metrics/mean-time-to-restore.md)                 |
-| `dora.changeFailureRate`        | `dora.changeFailureRate`        | elite `<5`, medium `5-15`, low `>15` (%)               | [change-failure-rate.md](./docs/metrics/change-failure-rate.md)                   |
+| Metric ID                       | Provider ID                     | Unit    | Default thresholds                       | Details                                                                           |
+| ------------------------------- | ------------------------------- | ------- | ---------------------------------------- | --------------------------------------------------------------------------------- |
+| `dora.deploymentFrequency`      | `dora.deploymentFrequency`      | `/week` | elite `>=7`, medium `1-7`, low `<1`      | [deployment-frequency.md](./docs/metrics/deployment-frequency.md)                 |
+| `dora.medianLeadTimeForChanges` | `dora.medianLeadTimeForChanges` | `h`     | elite `<24`, medium `24-168`, low `>168` | [median-lead-time-for-changes.md](./docs/metrics/median-lead-time-for-changes.md) |
+| `dora.meanTimeToRestore`        | `dora.meanTimeToRestore`        | `h`     | elite `<1`, medium `1-24`, low `>24`     | [mean-time-to-restore.md](./docs/metrics/mean-time-to-restore.md)                 |
+| `dora.changeFailureRate`        | `dora.changeFailureRate`        | `%`     | elite `<5`, medium `5-15`, low `>15`     | [change-failure-rate.md](./docs/metrics/change-failure-rate.md)                   |
 
 ## Threshold customization
 

@@ -44,7 +44,7 @@ test.describe('Intelligent assistant notebooks', () => {
     const boot = await bootstrapLightspeedE2ePage(browser);
     sharedPage = boot.page;
     translations = boot.translations;
-    notebooks = new NotebookSurfacePage(sharedPage, translations);
+    notebooks = new NotebookSurfacePage(sharedPage, translations, boot.locale);
   });
 
   test('fullscreen list: header and empty state', async () => {

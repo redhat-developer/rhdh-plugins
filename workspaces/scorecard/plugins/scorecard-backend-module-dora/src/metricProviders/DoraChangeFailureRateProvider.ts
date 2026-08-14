@@ -87,6 +87,7 @@ export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
           'Monitors the percentage of deployments that cause a failure in production over the past 30 days. Elite performers maintain a change failure rate below 5%.',
         type: 'number',
         thresholds: DEFAULT_DORA_CHANGE_FAILURE_RATE_THRESHOLDS,
+        unit: '%',
         history: true,
         defaultVisualization: 'sparkline',
       },

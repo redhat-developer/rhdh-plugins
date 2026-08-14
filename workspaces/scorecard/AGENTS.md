@@ -37,12 +37,12 @@ snake_case in the API layer only -- they are not metric IDs.
 
 ### DORA (4 metrics)
 
-| Metric ID                       | Type   | Source                                    |
-| ------------------------------- | ------ | ----------------------------------------- |
-| `dora.deploymentFrequency`      | number | `DoraDeploymentFrequencyProvider.ts`      |
-| `dora.medianLeadTimeForChanges` | number | `DoraMedianLeadTimeForChangesProvider.ts` |
-| `dora.meanTimeToRestore`        | number | `DoraMeanTimeToRestoreProvider.ts`        |
-| `dora.changeFailureRate`        | number | `DoraChangeFailureRateProvider.ts`        |
+| Metric ID                       | Type   | Unit    | Source                                    |
+| ------------------------------- | ------ | ------- | ----------------------------------------- |
+| `dora.deploymentFrequency`      | number | `/week` | `DoraDeploymentFrequencyProvider.ts`      |
+| `dora.medianLeadTimeForChanges` | number | `h`     | `DoraMedianLeadTimeForChangesProvider.ts` |
+| `dora.meanTimeToRestore`        | number | `h`     | `DoraMeanTimeToRestoreProvider.ts`        |
+| `dora.changeFailureRate`        | number | `%`     | `DoraChangeFailureRateProvider.ts`        |
 
 ### Dependabot (4 metrics)
 
@@ -142,8 +142,9 @@ Every data source implements `MetricProvider<T extends MetricType>` from
   `app-config.yaml` under `scorecard.metricProviders.<providerId>`.
 - `getProviderDatasourceId()` — identifies the external data source.
 - `getMetrics()` — returns `Metric<T>[]`. Each `Metric` has an `id`,
-  `title`, `description`, `type` (`"number"` or `"boolean"`), and a
-  `thresholds` field providing the default `ThresholdConfig`.
+  `title`, `description`, `type` (`"number"` or `"boolean"`), a
+  `thresholds` field providing the default `ThresholdConfig`, and an
+  optional `unit` display suffix (e.g. `"h"`, `"%"`, `"/week"`).
 - `calculateMetrics(entity)` — computes metric values for a catalog
   entity. Returns `Map<string, MetricValue<T>>` keyed by metric ID.
 - `getCatalogFilter()` — returns the catalog entity filter that

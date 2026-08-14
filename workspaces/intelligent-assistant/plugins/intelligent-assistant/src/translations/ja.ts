@@ -231,7 +231,8 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebook.upload.modal.title': 'ノートブックにリソースを追加',
     'notebook.view.close': 'ノートブックを閉じる',
     'notebook.view.documents.add': '追加',
-    'notebook.view.documents.count': '{{count}} 件のリソース',
+    'notebook.view.documents.count_one': '{{count}} 件のリソース',
+    'notebook.view.documents.count_other': '{{count}} 件のリソース',
     'notebook.view.documents.maxReached':
       '最大10個のリソースが許可されています。新しいリソースをアップロードするには、リソースを削除してください。',
     'notebook.view.documents.uploading': 'リソースをアップロード中',
@@ -256,7 +257,8 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
       'このノートブックはここに表示されなくなります。アクティビティに関連するプロンプト、応答、フィードバックも削除されます。',
     'notebooks.delete.title': '{{name}} を削除しますか?',
     'notebooks.delete.toast': 'ノートブックを削除しました！',
-    'notebooks.documents': 'リソース',
+    'notebooks.documents_one': '{{count}} 件のリソース',
+    'notebooks.documents_other': '{{count}} 件のリソース',
     'notebooks.empty.action': '新しいノートブックを作成',
     'notebooks.empty.description':
       '新しいノートブックを作成してソースを整理し、AI による洞察を生成します。',

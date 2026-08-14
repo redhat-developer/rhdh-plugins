@@ -47,6 +47,7 @@ export type Metric<T extends MetricType = MetricType> = {
   description: string;
   type: T;
   thresholds: ThresholdConfig;
+  unit?: string;
   history?: boolean;
   defaultVisualization?: MetricDefaultVisualization;
 };
@@ -61,6 +62,7 @@ export type MetricResult = {
     title: string;
     description: string;
     type: MetricType;
+    unit?: string;
     history?: boolean;
     defaultVisualization?: MetricDefaultVisualization;
   };
@@ -111,6 +113,7 @@ export type EntityMetricDetailResponse = {
     title: string;
     description: string;
     type: MetricType;
+    unit?: string;
   };
   entities: EntityMetricDetail[];
   pagination: {
@@ -145,6 +148,7 @@ export type MetricTimeSeriesResponse = {
     title: string;
     description: string;
     type: MetricType;
+    unit?: string;
     history?: boolean;
     defaultVisualization?: MetricDefaultVisualization;
   };

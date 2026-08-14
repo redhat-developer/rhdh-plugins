@@ -16,17 +16,17 @@
 
 import { Entity } from '@backstage/catalog-model';
 import {
-  AIResourceExtensionsProcessor,
+  AiResourceExtensionsProcessor,
   VALID_AI_RESOURCE_SCOPES,
-} from './AIResourceExtensionsProcessor';
+} from './AiResourceExtensionsProcessor';
 
-function makeAIResource(
+function makeAiResource(
   spec: Entity['spec'] = {},
   annotations?: Record<string, string>,
 ): Entity {
   return {
     apiVersion: 'backstage.io/v1beta1',
-    kind: 'AIResource',
+    kind: 'AiResource',
     metadata: {
       name: 'test-resource',
       ...(annotations ? { annotations } : {}),
@@ -35,25 +35,25 @@ function makeAIResource(
   };
 }
 
-describe('AIResourceExtensionsProcessor', () => {
-  let processor: AIResourceExtensionsProcessor;
+describe('AiResourceExtensionsProcessor', () => {
+  let processor: AiResourceExtensionsProcessor;
   const location = { type: 'url', target: 'https://example.com' };
   const emit = jest.fn();
 
   beforeEach(() => {
-    processor = new AIResourceExtensionsProcessor();
+    processor = new AiResourceExtensionsProcessor();
     emit.mockClear();
   });
 
   it('should return processor name', () => {
-    expect(processor.getProcessorName()).toBe('AIResourceExtensionsProcessor');
+    expect(processor.getProcessorName()).toBe('AiResourceExtensionsProcessor');
   });
 
   describe('valid scope values', () => {
     it.each(VALID_AI_RESOURCE_SCOPES)(
       'should accept spec.scope: %s',
       async scope => {
-        const entity = makeAIResource({ scope });
+        const entity = makeAiResource({ scope });
 
         const result = await processor.preProcessEntity(entity, location, emit);
 
@@ -64,7 +64,7 @@ describe('AIResourceExtensionsProcessor', () => {
 
   describe('omitted scope', () => {
     it('should accept entity without spec.scope', async () => {
-      const entity = makeAIResource({});
+      const entity = makeAiResource({});
 
       const result = await processor.preProcessEntity(entity, location, emit);
 
@@ -72,7 +72,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should accept entity with undefined spec.scope', async () => {
-      const entity = makeAIResource({ scope: undefined });
+      const entity = makeAiResource({ scope: undefined });
 
       const result = await processor.preProcessEntity(entity, location, emit);
 
@@ -82,7 +82,7 @@ describe('AIResourceExtensionsProcessor', () => {
     it('should accept entity with no spec property', async () => {
       const entity: Entity = {
         apiVersion: 'backstage.io/v1beta1',
-        kind: 'AIResource',
+        kind: 'AiResource',
         metadata: { name: 'test-resource' },
       };
 
@@ -94,15 +94,15 @@ describe('AIResourceExtensionsProcessor', () => {
 
   describe('invalid scope', () => {
     it('should reject invalid spec.scope value', async () => {
-      const entity = makeAIResource({ scope: 'enterprise' });
+      const entity = makeAiResource({ scope: 'enterprise' });
 
       await expect(
         processor.preProcessEntity(entity, location, emit),
-      ).rejects.toThrow('Validation failed for AIResource entity');
+      ).rejects.toThrow('Validation failed for AiResource entity');
     });
 
     it('should include field path in error', async () => {
-      const entity = makeAIResource({ scope: 'enterprise' });
+      const entity = makeAiResource({ scope: 'enterprise' });
 
       await expect(
         processor.preProcessEntity(entity, location, emit),
@@ -110,7 +110,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should include received value in error', async () => {
-      const entity = makeAIResource({ scope: 'enterprise' });
+      const entity = makeAiResource({ scope: 'enterprise' });
 
       await expect(
         processor.preProcessEntity(entity, location, emit),
@@ -118,7 +118,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should include accepted values in error', async () => {
-      const entity = makeAIResource({ scope: 'enterprise' });
+      const entity = makeAiResource({ scope: 'enterprise' });
 
       await expect(
         processor.preProcessEntity(entity, location, emit),
@@ -126,7 +126,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should reject empty string scope', async () => {
-      const entity = makeAIResource({ scope: '' });
+      const entity = makeAiResource({ scope: '' });
 
       await expect(
         processor.preProcessEntity(entity, location, emit),
@@ -134,7 +134,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should reject numeric scope value', async () => {
-      const entity = makeAIResource({ scope: 42 });
+      const entity = makeAiResource({ scope: 42 });
 
       await expect(
         processor.preProcessEntity(entity, location, emit),
@@ -142,7 +142,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should reject null scope value', async () => {
-      const entity = makeAIResource({ scope: null });
+      const entity = makeAiResource({ scope: null });
 
       await expect(
         processor.preProcessEntity(entity, location, emit),
@@ -152,7 +152,7 @@ describe('AIResourceExtensionsProcessor', () => {
 
   describe('error quality', () => {
     it('should not expose internal class names in error', async () => {
-      const entity = makeAIResource({ scope: 'invalid' });
+      const entity = makeAiResource({ scope: 'invalid' });
 
       const error = await processor
         .preProcessEntity(entity, location, emit)
@@ -160,12 +160,12 @@ describe('AIResourceExtensionsProcessor', () => {
 
       expect(error).toBeInstanceOf(Error);
       expect((error as Error).message).not.toMatch(
-        /AIResourceExtensionsProcessor/,
+        /AiResourceExtensionsProcessor/,
       );
     });
 
     it('should not expose stack trace patterns in error message', async () => {
-      const entity = makeAIResource({ scope: 'invalid' });
+      const entity = makeAiResource({ scope: 'invalid' });
 
       const error = await processor
         .preProcessEntity(entity, location, emit)
@@ -178,7 +178,7 @@ describe('AIResourceExtensionsProcessor', () => {
 
   describe('OCI source-location validation', () => {
     it('should accept valid url:oci:// source-location', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         { scope: 'team' },
         {
           'backstage.io/source-location': 'url:oci://quay.io/org/skills:latest',
@@ -191,7 +191,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should accept valid url:oci:// with digest reference', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         {},
         {
           'backstage.io/source-location':
@@ -205,7 +205,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should accept valid url:oci:// with deeply nested path', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         {},
         {
           'backstage.io/source-location':
@@ -219,7 +219,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should reject bare oci:// without url: prefix', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         {},
         {
           'backstage.io/source-location': 'oci://quay.io/org/skills:latest',
@@ -232,7 +232,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should include bare oci:// value in error', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         {},
         {
           'backstage.io/source-location': 'oci://quay.io/org/skills:latest',
@@ -245,7 +245,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should reject bare oci:// with multiple leading spaces', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         {},
         {
           'backstage.io/source-location': '  oci://quay.io/org/skills:latest',
@@ -258,7 +258,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should reject malformed url:oci:// with empty target', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         {},
         {
           'backstage.io/source-location': 'url:oci://',
@@ -271,7 +271,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should reject url:oci:// with only registry (no repo)', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         {},
         {
           'backstage.io/source-location': 'url:oci://quay.io',
@@ -284,7 +284,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should reject url:oci:// with trailing slash', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         {},
         {
           'backstage.io/source-location': 'url:oci://quay.io/org/model/',
@@ -297,7 +297,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should reject url:oci:// with whitespace in target', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         {},
         {
           'backstage.io/source-location': 'url:oci:// quay.io/org/model:latest',
@@ -310,7 +310,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should validate url:oci:// target with whitespace after colon', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         {},
         {
           'backstage.io/source-location': 'url: oci://quay.io/org/model:latest',
@@ -324,7 +324,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should accept url:oci:// with trailing whitespace (trimmed by parseLocationRef)', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         {},
         {
           'backstage.io/source-location': 'url:oci://quay.io/org/model:latest ',
@@ -337,7 +337,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should validate url:oci:// with leading whitespace on annotation', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         {},
         {
           'backstage.io/source-location': ' url:oci://quay.io/org/model:latest',
@@ -351,7 +351,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should pass through non-OCI source-location (url:https://)', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         {},
         {
           'backstage.io/source-location':
@@ -365,7 +365,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should pass through entity without source-location annotation', async () => {
-      const entity = makeAIResource({});
+      const entity = makeAiResource({});
 
       const result = await processor.preProcessEntity(entity, location, emit);
 
@@ -375,7 +375,7 @@ describe('AIResourceExtensionsProcessor', () => {
     it('should pass through entity without any annotations', async () => {
       const entity: Entity = {
         apiVersion: 'backstage.io/v1beta1',
-        kind: 'AIResource',
+        kind: 'AiResource',
         metadata: { name: 'test-resource' },
         spec: { type: 'model' },
       };
@@ -386,7 +386,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should reference annotation name in error messages', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         {},
         {
           'backstage.io/source-location': 'url:oci://',
@@ -401,7 +401,7 @@ describe('AIResourceExtensionsProcessor', () => {
 
   describe('multiple extension errors reported together', () => {
     it('should report both scope and OCI errors in a single response', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         { scope: 'invalid' },
         {
           'backstage.io/source-location': 'oci://quay.io/myorg/skills:latest',
@@ -419,7 +419,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should include field path and value for scope error', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         { scope: 'invalid' },
         {
           'backstage.io/source-location': 'oci://quay.io/myorg/skills:latest',
@@ -436,7 +436,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should include annotation name and constraint for OCI error', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         { scope: 'invalid' },
         {
           'backstage.io/source-location': 'oci://quay.io/myorg/skills:latest',
@@ -452,7 +452,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should not expose internal class names in multi-error response', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         { scope: 'invalid' },
         {
           'backstage.io/source-location': 'oci://quay.io/myorg/skills:latest',
@@ -465,13 +465,13 @@ describe('AIResourceExtensionsProcessor', () => {
 
       expect(error).toBeInstanceOf(Error);
       expect((error as Error).message).not.toMatch(
-        /AIResourceExtensionsProcessor/,
+        /AiResourceExtensionsProcessor/,
       );
-      expect((error as Error).message).not.toMatch(/AIResourceOciProcessor/);
+      expect((error as Error).message).not.toMatch(/AiResourceOciProcessor/);
     });
 
     it('should not expose stack traces in multi-error response', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         { scope: 'invalid' },
         {
           'backstage.io/source-location': 'oci://quay.io/myorg/skills:latest',
@@ -487,7 +487,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should return single error when only scope is invalid', async () => {
-      const entity = makeAIResource({ scope: 'enterprise' });
+      const entity = makeAiResource({ scope: 'enterprise' });
 
       const error = await processor
         .preProcessEntity(entity, location, emit)
@@ -499,7 +499,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should return single error when only OCI annotation is invalid', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         { scope: 'organization' },
         {
           'backstage.io/source-location': 'oci://quay.io/myorg/skills:latest',
@@ -516,7 +516,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
 
     it('should pass valid entity without errors', async () => {
-      const entity = makeAIResource(
+      const entity = makeAiResource(
         { scope: 'team' },
         {
           'backstage.io/source-location':
@@ -530,7 +530,7 @@ describe('AIResourceExtensionsProcessor', () => {
     });
   });
 
-  describe('non-AIResource entities', () => {
+  describe('non-AiResource entities', () => {
     it('should pass through Component entities unchanged', async () => {
       const entity: Entity = {
         apiVersion: 'backstage.io/v1alpha1',
@@ -544,7 +544,7 @@ describe('AIResourceExtensionsProcessor', () => {
       expect(result).toEqual(entity);
     });
 
-    it('should not validate scope on non-AIResource kinds', async () => {
+    it('should not validate scope on non-AiResource kinds', async () => {
       const entity: Entity = {
         apiVersion: 'backstage.io/v1alpha1',
         kind: 'Resource',

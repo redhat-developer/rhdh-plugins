@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-boost-backend",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "license": "Apache-2.0",
   "description": "Backend plugin for the boost AI platform",
   "main": "src/index.ts",
@@ -40,6 +40,7 @@
     "@backstage/plugin-permission-node": "^0.11.1",
     "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-boost-node": "workspace:^",
+    "cron": "^3.0.0",
     "express": "^4.21.1",
     "knex": "^3.1.0",
     "zod": "^3.23.8"

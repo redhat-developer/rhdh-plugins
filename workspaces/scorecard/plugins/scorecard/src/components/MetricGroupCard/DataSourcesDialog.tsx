@@ -119,6 +119,7 @@ export const DataSourcesDialog = ({
             ? getLastUpdatedLabel(metric.result.timestamp, locale)
             : MISSING_EVALUATION_LABEL,
           thresholdExpression: matchedRule?.expression ?? null,
+          unit: metric.metadata.unit,
         };
       }),
     [metrics, t, locale],
