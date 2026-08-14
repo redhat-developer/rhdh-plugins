@@ -160,7 +160,7 @@ The `rhdh.io/ai-asset-version` annotation has documented normalization rules:
 
 **Why normalize:** External registries use inconsistent version schemes. Normalization enables sorting, comparison, and dependency resolution in the catalog UI.
 
-**Documented in SDK:** The SDK exports a `normalizeAIAssetVersion(sourceVersion: string): string` utility with test coverage for all normalization rules.
+**Documented in SDK:** The SDK exports a `normalizeAIAssetVersion(sourceVersion: string, options?: { entityRef?: string; warn?: (message: string) => void }): string` utility with test coverage for all normalization rules. The optional `options` parameter provides entity context for warning messages and a custom warning callback.
 
 ### Decision 7: Neo4j sync adapter interface
 
@@ -170,8 +170,7 @@ The SDK defines a TypeScript interface for Neo4j sync adapters (implementation i
 interface Neo4jSyncAdapter {
   createNode(
     entityRef: string,
-    category: AIAssetCategory,
-    metadata: Record<string, unknown>,
+    properties: Record<string, unknown>,
   ): Promise<void>;
 
   createRelationship(
@@ -183,7 +182,7 @@ interface Neo4jSyncAdapter {
 
   updateNode(
     entityRef: string,
-    metadata: Record<string, unknown>,
+    properties: Record<string, unknown>,
   ): Promise<void>;
 
   deleteNode(entityRef: string): Promise<void>;

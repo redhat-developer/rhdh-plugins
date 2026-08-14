@@ -110,7 +110,7 @@ describe('AIAssetValidator', () => {
         'rhdh.io/ai-asset-source': 'kagenti/default',
       });
       await expect(validator.validateEntityKind(entity)).rejects.toThrow(
-        'Invalid or missing rhdh.io/ai-asset-category annotation',
+        "Invalid rhdh.io/ai-asset-category value 'invalid-type'",
       );
     });
 

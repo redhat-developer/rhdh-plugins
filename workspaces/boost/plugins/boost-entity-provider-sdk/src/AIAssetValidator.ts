@@ -89,8 +89,8 @@ export class AIAssetValidator implements CatalogProcessor {
     const parsed = AIAssetCategorySchema.safeParse(category);
     if (!parsed.success) {
       throw new Error(
-        `Invalid or missing ${AI_ASSET_CATEGORY_ANNOTATION} annotation. ` +
-          `Allowed values: ${AI_ASSET_CATEGORIES.join(', ')}`,
+        `Invalid ${AI_ASSET_CATEGORY_ANNOTATION} value '${category}'. ` +
+          `Allowed: ${AI_ASSET_CATEGORIES.join(', ')}`,
       );
     }
 
