@@ -72,7 +72,7 @@ export function dbIncident(partial: {
 export function dbPullRequest(partial: {
   id: string;
   firstCommitAt: string | Date;
-  deploymentId?: string | null;
+  deploymentId: string;
   catalogEntityRef?: string;
   collectorId?: string;
   originalPrId?: string;
@@ -83,7 +83,7 @@ export function dbPullRequest(partial: {
     collectorId: partial.collectorId ?? 'github:deploymentPullRequests',
     originalPrId: partial.originalPrId ?? partial.id,
     firstCommitAt: asDate(partial.firstCommitAt),
-    deploymentId: partial.deploymentId ?? null,
+    deploymentId: partial.deploymentId,
   };
 }
 

@@ -57,7 +57,7 @@ export type DbDoraPullRequestCreate = {
   collectorId: string;
   originalPrId: string;
   firstCommitAt: Date;
-  deploymentId?: string | null;
+  deploymentId: string;
 };
 
 export type DbDoraPullRequest = {
@@ -66,5 +66,5 @@ export type DbDoraPullRequest = {
   collectorId: string;
   originalPrId: string;
   firstCommitAt: Date;
-  deploymentId: string | null;
+  deploymentId: string;
 };

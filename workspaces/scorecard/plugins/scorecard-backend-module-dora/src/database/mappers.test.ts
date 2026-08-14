@@ -186,17 +186,6 @@ describe('mappers', () => {
       });
     });
 
-    it('defaults missing deploymentId to null', () => {
-      expect(
-        toDoraPullRequestRow({
-          catalogEntityRef: 'component:default/service-a',
-          collectorId: 'github:deploymentPullRequests',
-          originalPrId: 'pr-1',
-          firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
-        }).deployment_id,
-      ).toBeNull();
-    });
-
     it('maps database row to camelCase including id', () => {
       expect(
         fromDoraPullRequestRow({
@@ -205,7 +194,7 @@ describe('mappers', () => {
           collector_id: 'github:deploymentPullRequests',
           original_pr_id: 'pr-1',
           first_commit_at: '2026-06-09T10:00:00.000Z',
-          deployment_id: null,
+          deployment_id: 'dep-row-1',
         }),
       ).toEqual({
         id: 'pr-row-1',
@@ -213,7 +202,7 @@ describe('mappers', () => {
         collectorId: 'github:deploymentPullRequests',
         originalPrId: 'pr-1',
         firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
-        deploymentId: null,
+        deploymentId: 'dep-row-1',
       });
     });
   });

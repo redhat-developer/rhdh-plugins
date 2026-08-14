@@ -69,7 +69,7 @@ exports.up = async function up(knex) {
       .references('id')
       .inTable('dora_deployments')
       .onDelete('CASCADE')
-      .nullable();
+      .notNullable();
 
     table.unique([
       'catalog_entity_ref',

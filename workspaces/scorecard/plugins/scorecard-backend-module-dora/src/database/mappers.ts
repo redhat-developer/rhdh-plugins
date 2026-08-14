@@ -49,7 +49,7 @@ export type DbDoraPullRequestRow = {
   collector_id: string;
   original_pr_id: string;
   first_commit_at: Date | string;
-  deployment_id: string | null;
+  deployment_id: string;
 };
 
 export function toDoraDeploymentRow(
@@ -112,7 +112,7 @@ export function toDoraPullRequestRow(
     collector_id: pullRequest.collectorId,
     original_pr_id: pullRequest.originalPrId,
     first_commit_at: pullRequest.firstCommitAt,
-    deployment_id: pullRequest.deploymentId ?? null,
+    deployment_id: pullRequest.deploymentId,
   };
 }
 
