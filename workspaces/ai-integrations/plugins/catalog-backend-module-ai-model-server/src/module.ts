@@ -15,16 +15,18 @@
  */
 
 import { createBackendModule } from '@backstage/backend-plugin-api';
-import type { CatalogModelSource } from '@backstage/catalog-model/alpha';
-import { catalogModelExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
-import { aiModelServerApiEntityModel } from '@red-hat-developer-hub/backstage-plugin-catalog-model-ai-model-server';
+import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node';
+
+import { AiModelServerApiProcessor } from './AiModelServerApiProcessor';
 
 /**
  * Registers the AiModelServerAPI kind in the catalog.
  *
- * Uses a dedicated kind to avoid colliding with the upstream API kind.
- * When backstage/backstage#34476 merges, this module can be replaced
- * by the upstream `@backstage/plugin-catalog-backend-module-ai-model`.
+ * Uses `addProcessor` so the catalog's built-in kind processor
+ * (`BuiltinKindsEntityProcessor`) remains active for standard kinds.
+ * The previous `addModelSource` approach caused the built-in processor
+ * to be replaced entirely, breaking validation of User, Group,
+ * Component, and other standard entity kinds.
  *
  * @public
  */
@@ -34,15 +36,10 @@ export const catalogModuleAiModelServer = createBackendModule({
   register(reg) {
     reg.registerInit({
       deps: {
-        model: catalogModelExtensionPoint,
+        catalog: catalogProcessingExtensionPoint,
       },
-      async init({ model }) {
-        const source: CatalogModelSource = {
-          async *read() {
-            yield { data: [{ layer: aiModelServerApiEntityModel }] };
-          },
-        };
-        model.addModelSource(source);
+      async init({ catalog }) {
+        catalog.addProcessor(new AiModelServerApiProcessor());
       },
     });
   },
