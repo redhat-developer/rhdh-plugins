@@ -52,10 +52,17 @@ describe('DatabaseDoraDeployments', () => {
           new Date('2026-06-30T00:00:00.000Z'),
         );
 
-        expect(rows).toHaveLength(1);
-        expect(rows[0].id).toEqual(expect.any(String));
-        expect(rows[0].originalDeploymentId).toBe('dep-1');
-        expect(rows[0].commitSha).toBe('sha-1');
+        expect(rows).toEqual([
+          {
+            id: expect.any(String),
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalDeploymentId: 'dep-1',
+            commitSha: 'sha-1',
+            environment: 'production',
+            createdAt: new Date('2026-06-01T10:00:00.000Z'),
+          },
+        ]);
       },
     );
 

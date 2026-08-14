@@ -52,10 +52,17 @@ describe('DatabaseDoraIncidents', () => {
           new Date('2026-06-30T00:00:00.000Z'),
         );
 
-        expect(rows).toHaveLength(1);
-        expect(rows[0].id).toEqual(expect.any(String));
-        expect(rows[0].originalIncidentId).toBe('INC-1');
-        expect(rows[0].resolutionAt).toBeNull();
+        expect(rows).toEqual([
+          {
+            id: expect.any(String),
+            catalogEntityRef: entityRef,
+            collectorId,
+            originalIncidentId: 'INC-1',
+            createdAt: new Date('2026-06-01T10:00:00.000Z'),
+            updatedAt: new Date('2026-06-01T10:00:00.000Z'),
+            resolutionAt: null,
+          },
+        ]);
       },
     );
 

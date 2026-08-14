@@ -75,10 +75,16 @@ describe('DatabaseDoraPullRequests', () => {
           deployment.id,
         );
 
-        expect(rows).toHaveLength(1);
-        expect(rows[0].id).toEqual(expect.any(String));
-        expect(rows[0].originalPrId).toBe('pr-1');
-        expect(rows[0].deploymentId).toBe(deployment.id);
+        expect(rows).toEqual([
+          {
+            id: expect.any(String),
+            catalogEntityRef: entityRef,
+            collectorId: prCollectorId,
+            originalPrId: 'pr-1',
+            firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
+            deploymentId: deployment.id,
+          },
+        ]);
       },
     );
 
