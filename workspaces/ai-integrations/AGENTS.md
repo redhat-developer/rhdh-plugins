@@ -12,6 +12,17 @@
 - Dev environment: `yarn dev`
 - Debug: `yarn dev:debug`
 
+## Pre-commit Validation
+
+Before committing, run `yarn tsc` in the workspace root to catch type errors.
+CI runs `yarn tsc:full` (non-incremental), so type failures will block the PR.
+
+Common pitfall: calling a method through an interface type (e.g.,
+`CatalogProcessor`) may require more arguments than the concrete class
+declares. Unit tests pass regardless because JavaScript ignores
+extra/missing arguments — only the TypeScript compiler catches the
+mismatch.
+
 ## Key Conventions
 
 - Follows standard Backstage plugin structure: frontend plugin, backend plugin, and common shared library
