@@ -28,6 +28,7 @@ import {
 import MuiTooltip from '@mui/material/Tooltip';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { formatWithMetricUnit } from '../../utils';
 import { MISSING_EVALUATION_LABEL } from './thresholdBucketUtils';
 import { StatusIcon } from './StatusIcon';
 
@@ -42,6 +43,7 @@ export interface SourceRow extends TableItem {
   statusColor: string;
   lastSynced: string;
   thresholdExpression: string | null;
+  unit?: string;
 }
 
 const HEADER_STYLE = {
@@ -230,7 +232,10 @@ export function buildColumnConfig(
             ? t('dataSourcesDialog.statusTooltip', {
                 value: item.value,
                 status: item.statusLabel,
-                expression: item.thresholdExpression,
+                expression: formatWithMetricUnit(
+                  item.thresholdExpression,
+                  item.unit,
+                ),
               } as any)
             : '';
         return <StatusCell item={item} tooltipText={tooltipText} />;

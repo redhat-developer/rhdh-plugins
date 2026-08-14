@@ -71,6 +71,8 @@ export class MyMetricProvider implements MetricProvider<'number'> {
         history: true,
         // Optional. Omit / undefined => 'value'. Use 'sparkline' when a time-series UI is intended.
         defaultVisualization: 'sparkline',
+        // Optional display unit shown next to threshold expressions in the UI
+        unit: 'h',
       },
     ];
   }

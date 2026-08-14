@@ -83,6 +83,7 @@ export class DoraMeanTimeToRestoreProvider implements MetricProvider<'number'> {
           'Tracks the average time to restore service after an incident over the past 30 days. Elite performers restore service in under one hour.',
         type: 'number',
         thresholds: DEFAULT_DORA_MEAN_TIME_TO_RESTORE_THRESHOLDS,
+        unit: 'h',
         history: true,
         defaultVisualization: 'sparkline',
       },

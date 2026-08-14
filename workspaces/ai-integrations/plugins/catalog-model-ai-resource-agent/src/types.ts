@@ -58,8 +58,11 @@ export interface AgentAiResourceEntityV1alpha1 extends Entity {
     owner: string;
     /** An entity reference to the system that the AI resource belongs to. */
     system?: string;
-    /** The agent's instructions (system prompt). Required, non-empty. */
-    instructions: string;
+    /**
+     * The agent's instructions (system prompt). Optional — omit when the
+     * agent image/runtime already provides a default prompt.
+     */
+    instructions?: string;
     /** A description used when this agent is listed as a handoff target. */
     handoffDescription?: string;
     /** The model identifier for this agent. */

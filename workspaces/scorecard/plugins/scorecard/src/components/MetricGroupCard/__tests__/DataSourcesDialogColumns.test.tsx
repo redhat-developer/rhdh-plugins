@@ -271,6 +271,7 @@ describe('buildColumnConfig', () => {
       statusIcon: 'scorecardErrorStatusIcon',
       statusColor: 'error.main',
       value: '12',
+      unit: undefined,
     });
 
     render(<>{statusCell!(row)}</>, { wrapper: TestWrapper });
@@ -280,8 +281,26 @@ describe('buildColumnConfig', () => {
       'data-icon',
       'scorecardErrorStatusIcon',
     );
-    expect(screen.getByTestId('tooltip').getAttribute('data-title')).toContain(
-      '12',
+    expect(screen.getByTestId('tooltip').getAttribute('data-title')).toBe(
+      'Value 12 matches threshold Error >7',
+    );
+  });
+
+  it('should append unit to threshold expressions in the status tooltip', () => {
+    const columns = buildColumnConfig(mockT as any);
+    const statusCell = columns.find(c => c.id === 'status')?.cell;
+    const row = createRow({
+      thresholdExpression: '<=10',
+      evaluationKey: 'success',
+      statusLabel: 'Success',
+      value: '5',
+      unit: 'h',
+    });
+
+    render(<>{statusCell!(row)}</>, { wrapper: TestWrapper });
+
+    expect(screen.getByTestId('tooltip').getAttribute('data-title')).toBe(
+      'Value 5 matches threshold Success <=10 h',
     );
   });
 

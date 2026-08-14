@@ -67,6 +67,7 @@ export class AggregatedMetricMapper {
   ): AggregationMetadata {
     const metadata: AggregationMetadata = {
       type: metric.type,
+      unit: metric.unit,
       history: metric.history,
       title: aggregationConfig.title,
       description: aggregationConfig.description,

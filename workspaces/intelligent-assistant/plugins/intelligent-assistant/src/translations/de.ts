@@ -238,7 +238,8 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebook.upload.modal.title': 'Ressource zum Notizbuch hinzufügen',
     'notebook.view.close': 'Notizbuch schließen',
     'notebook.view.documents.add': 'Hinzufügen',
-    'notebook.view.documents.count': '{{count}} Ressourcen',
+    'notebook.view.documents.count_one': '{{count}} Ressource',
+    'notebook.view.documents.count_other': '{{count}} Ressourcen',
     'notebook.view.documents.maxReached':
       'Maximal 10 Ressourcen sind erlaubt. Löschen Sie eine Ressource, um eine neue hochzuladen.',
     'notebook.view.documents.uploading': 'Ressource wird hochgeladen',
@@ -263,7 +264,8 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
       'Dieses Notizbuch wird hier nicht mehr angezeigt. Dadurch werden auch zugehörige Aktivitäten wie Eingaben, Antworten und Feedback aus Ihrer Aktivität gelöscht.',
     'notebooks.delete.title': '{{name}} löschen?',
     'notebooks.delete.toast': 'Notizbuch gelöscht!',
-    'notebooks.documents': 'Ressourcen',
+    'notebooks.documents_one': '{{count}} Ressource',
+    'notebooks.documents_other': '{{count}} Ressourcen',
     'notebooks.empty.action': 'Neues Notizbuch erstellen',
     'notebooks.empty.description':
       'Erstellen Sie ein neues Notizbuch, um Ihre Quellen zu organisieren und KI-gestützte Erkenntnisse zu gewinnen.',

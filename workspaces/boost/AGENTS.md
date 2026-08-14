@@ -46,7 +46,7 @@ When implementing an issue:
 
 ### Backstage-native services only
 
-Use Backstage `cacheService`, `permissions`, `httpAuth`, `configApi`, and `catalogApi`. Never build custom equivalents. All caches use `coreServices.cache` — no raw `Map<>` caches.
+Use Backstage `cacheService`, `permissions`, `httpAuth`, `configApi`, `catalogApi`, and `scheduler`. Never build custom equivalents. All caches use `coreServices.cache` — no raw `Map<>` caches. Scheduled or periodic tasks must use `coreServices.scheduler` (`SchedulerService`) — never raw `setInterval`, `setTimeout`, or cron libraries. `SchedulerService` provides distributed scheduling, lifecycle management, and proper shutdown handling.
 
 ### Provider isolation
 
@@ -69,6 +69,26 @@ Config validation uses Zod schemas as single source of truth. TypeScript types a
 Agents, tools, models, MCP servers, and vector stores are Backstage catalog entities — not in-memory caches. Entity providers emit standard catalog entities.
 
 ## Code conventions
+
+### Adding new config fields
+
+When introducing new `boost.*` configuration keys, complete all of
+the following steps. Omitting any step causes runtime validation
+failures or config-surface drift.
+
+1. Add TypeScript declarations in
+   `plugins/boost-backend/config.d.ts` with `@configScope` and
+   `@visibility` JSDoc annotations matching the field's scope
+2. Register the field in `src/config/schemas.ts` under
+   `boostConfigFields` with a Zod schema, `configScope`, and
+   `description`
+3. Bump `BOOST_CONFIG_SCHEMA_VERSION` in `src/config/schemas.ts`
+4. Add example usage in `examples/app-config.connectors.yaml` (or
+   the appropriate `app-config.*.yaml` example file)
+5. Run `yarn build:api-reports` and commit the updated
+   `report.api.md`
+
+When reviewing PRs that add or modify `boost.*` config keys, verify all five registration steps above were completed.
 
 ### Package structure
 
@@ -152,6 +172,7 @@ Every feature ships with tests. Integration tests use real database and cache ba
 - Do not create raw `Map<>` caches — always use `coreServices.cache`
 - Do not add authorization checks outside `permissions.authorize()` / `permissions.authorizeConditional()`
 - Do not add provider ID string checks in the frontend
+- Do not use raw `setInterval`, `setTimeout`, or cron libraries for scheduled work — always use `coreServices.scheduler`
 
 ## Before committing
 

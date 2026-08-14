@@ -50,7 +50,8 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'notebooks.empty.title': string;
     readonly 'notebooks.empty.description': string;
     readonly 'notebooks.empty.action': string;
-    readonly 'notebooks.documents': string;
+    readonly 'notebooks.documents_one': string;
+    readonly 'notebooks.documents_other': string;
     readonly 'notebooks.actions.rename': string;
     readonly 'notebooks.actions.delete': string;
     readonly 'notebooks.rename.inline.tooltip': string;
@@ -66,7 +67,8 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'notebooks.card.openAria': string;
     readonly 'notebook.view.title': string;
     readonly 'notebook.view.close': string;
-    readonly 'notebook.view.documents.count': string;
+    readonly 'notebook.view.documents.count_one': string;
+    readonly 'notebook.view.documents.count_other': string;
     readonly 'notebook.view.documents.add': string;
     readonly 'notebook.view.upload.heading': string;
     readonly 'notebook.view.upload.action': string;

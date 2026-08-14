@@ -165,6 +165,7 @@ export class CatalogMetricService {
             title: metric.title,
             description: metric.description,
             type: metric.type,
+            unit: metric.unit,
             history: metric.history,
             defaultVisualization: metric.defaultVisualization,
           },
@@ -259,6 +260,7 @@ export class CatalogMetricService {
         title: metric.title,
         description: metric.description,
         type: metric.type,
+        unit: metric.unit,
         history: metric.history,
         defaultVisualization: metric.defaultVisualization,
       },
@@ -365,6 +367,7 @@ export class CatalogMetricService {
           title: metric.title,
           description: metric.description,
           type: metric.type,
+          unit: metric.unit,
         },
         entities: [],
         pagination: {
@@ -436,6 +439,7 @@ export class CatalogMetricService {
           title: metric.title,
           description: metric.description,
           type: metric.type,
+          unit: metric.unit,
         },
         entities: [],
         pagination: {
@@ -468,6 +472,7 @@ export class CatalogMetricService {
           title: metric.title,
           description: metric.description,
           type: metric.type,
+          unit: metric.unit,
         },
         entities: [],
         pagination: {
@@ -508,6 +513,7 @@ export class CatalogMetricService {
         title: metric.title,
         description: metric.description,
         type: metric.type,
+        unit: metric.unit,
       },
       entities: enrichedEntities,
       pagination: {

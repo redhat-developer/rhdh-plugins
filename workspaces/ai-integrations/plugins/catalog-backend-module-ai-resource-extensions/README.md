@@ -1,17 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions
 
 A Backstage catalog backend module that validates RHDH-specific extension
-fields on AIResource entities.
+fields on AiResource entities.
 
 ## Validation
 
 The module registers a single catalog processor —
-`AIResourceExtensionsProcessor` — for `AIResource` entities.
-Non-AIResource entities pass through unchanged.
+`AiResourceExtensionsProcessor` — for `AiResource` entities.
+Non-AiResource entities pass through unchanged.
 
-### `AIResourceExtensionsProcessor`
+### `AiResourceExtensionsProcessor`
 
-Validates RHDH extension fields on `AIResource` entities. All constraint
+Validates RHDH extension fields on `AiResource` entities. All constraint
 violations are collected and reported in a single error rather than
 stopping at the first failure.
 
@@ -43,8 +43,8 @@ format rules and pass through without validation.
 
 ## Schema Fields
 
-An `AIResource` entity uses `apiVersion: backstage.io/v1beta1` and
-`kind: AIResource`. The following fields are relevant:
+An `AiResource` entity uses `apiVersion: backstage.io/v1beta1` and
+`kind: AiResource`. The following fields are relevant:
 
 | Field                          | Enforced by this module | Description                                                                                      |
 | ------------------------------ | ----------------------- | ------------------------------------------------------------------------------------------------ |
@@ -66,14 +66,14 @@ pass through without error.
 | `product`      | The AI asset is scoped to a specific product          |
 | `team`         | The AI asset is scoped to a specific team             |
 
-## Registering an AIResource Entity
+## Registering an AiResource Entity
 
-AIResource entities are registered through the standard RHDH catalog
-interfaces — no AIResource-specific registration flow is required.
+AiResource entities are registered through the standard RHDH catalog
+interfaces — no AiResource-specific registration flow is required.
 
 ### Git-backed entities
 
-1. Create a `catalog-info.yaml` with `kind: AIResource`.
+1. Create a `catalog-info.yaml` with `kind: AiResource`.
 2. Set `backstage.io/source-location` to the repository URL using the
    standard location-ref form (e.g. `url:https://github.com/my-org/my-repo`)
    so consumers can locate the source repository.
@@ -85,7 +85,7 @@ for a complete example.
 
 ### OCI-backed entities
 
-1. Create a `catalog-info.yaml` with `kind: AIResource`.
+1. Create a `catalog-info.yaml` with `kind: AiResource`.
 2. Set `backstage.io/source-location` to an OCI reference using the
    location-ref form `url:oci://…`
    (e.g. `url:oci://quay.io/my-org/my-model:latest`).
@@ -101,7 +101,7 @@ for a complete example.
 
 ## OCI Validation-Only Behavior
 
-The `AIResourceExtensionsProcessor` validates the `backstage.io/source-location`
+The `AiResourceExtensionsProcessor` validates the `backstage.io/source-location`
 annotation when the location-ref target uses the `oci://` scheme. It checks:
 
 - The annotation uses the `url:oci://…` location-ref form (not bare `oci://…`).
@@ -123,6 +123,6 @@ resolve when registry access is available.
 
 | Export                          | Description                                             |
 | ------------------------------- | ------------------------------------------------------- |
-| `AIResourceExtensionsProcessor` | `CatalogProcessor` for RHDH AIResource extension fields |
+| `AiResourceExtensionsProcessor` | `CatalogProcessor` for RHDH AiResource extension fields |
 | `VALID_AI_RESOURCE_SCOPES`      | Readonly tuple of accepted scope values                 |
-| `AIResourceScope`               | Type union of accepted scope values                     |
+| `AiResourceScope`               | Type union of accepted scope values                     |

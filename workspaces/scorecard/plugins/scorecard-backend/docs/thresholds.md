@@ -67,6 +67,8 @@ export class MyMetricProvider implements MetricProvider<'number'> {
         title: 'My Metric',
         description: 'Example metric.',
         type: 'number',
+        // Optional display unit shown next to threshold expressions in the UI
+        unit: 'h',
         thresholds: {
           rules: [
             { key: 'success', expression: '<10' },
