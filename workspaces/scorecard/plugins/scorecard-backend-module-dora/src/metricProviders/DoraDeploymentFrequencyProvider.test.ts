@@ -120,47 +120,30 @@ describe('DoraDeploymentFrequencyProvider', () => {
       );
     });
 
-    it('should calculate frequency for success result and production environment', async () => {
+    it('should calculate frequency for production environments only', async () => {
       mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({
           id: '100',
           commitSha: 'sha-1',
           environment: 'production',
           createdAt: '2026-06-01T10:00:00.000Z',
-          result: 'success',
         }),
         dbDeployment({
           id: '101',
           commitSha: 'sha-2',
-          environment: 'production',
-          createdAt: '2026-06-02T10:00:00.000Z',
-          result: 'failure',
+          createdAt: '2026-06-04T10:00:00.000Z',
         }),
         dbDeployment({
           id: '102',
           commitSha: 'sha-3',
-          environment: 'production',
-          createdAt: '2026-06-03T10:00:00.000Z',
-          result: '',
-        }),
-        dbDeployment({
-          id: '103',
-          commitSha: 'sha-2',
-          createdAt: '2026-06-04T10:00:00.000Z',
-          result: 'success',
-        }),
-        dbDeployment({
-          id: '104',
-          commitSha: 'sha-4',
           environment: 'development',
           createdAt: '2026-06-04T11:00:00.000Z',
-          result: 'success',
         }),
       ]);
 
       const results = await provider.calculateMetrics(mockEntity);
 
-      expect(results.get('dora.deploymentFrequency')).toBe(0.4667); // (2 successful deployments / 30 days) * 7
+      expect(results.get('dora.deploymentFrequency')).toBe(0.4667); // (2 production deployments / 30 days) * 7
     });
 
     it('returns 0 when no deployments are collected', async () => {
@@ -178,21 +161,18 @@ describe('DoraDeploymentFrequencyProvider', () => {
           commitSha: 'sha-1',
           environment: 'prod',
           createdAt: '2026-06-01T10:00:00.000Z',
-          result: 'success',
         }),
         dbDeployment({
           id: '101',
           commitSha: 'sha-2',
           environment: 'live',
           createdAt: '2026-06-02T10:00:00.000Z',
-          result: 'success',
         }),
         dbDeployment({
           id: '102',
           commitSha: 'sha-3',
           environment: 'production',
           createdAt: '2026-06-03T10:00:00.000Z',
-          result: 'success',
         }),
       ]);
 

@@ -28,7 +28,7 @@ import {
   type DoraChangeFailureRateConfig,
   parseDoraChangeFailureRateConfig,
 } from './DoraConfig';
-import { isSuccessfulProductionDeployment } from './utils/deploymentFilterUtils';
+import { isProductionEnvironment } from './utils/deploymentFilterUtils';
 
 type DoraChangeFailureRateProviderOptions = {
   doraSyncService: DoraSyncService;
@@ -129,16 +129,16 @@ export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
       }),
     ]);
 
-    const successfulProductionDeployments = deployments.filter(deployment =>
-      isSuccessfulProductionDeployment(
-        deployment,
+    const productionDeployments = deployments.filter(deployment =>
+      isProductionEnvironment(
+        deployment.environment,
         this.config.productionEnvironments,
       ),
     );
 
-    if (successfulProductionDeployments.length < 2) {
+    if (productionDeployments.length < 2) {
       throw new Error(
-        `Unable to calculate change failure rate: need at least 2 successful production deployments in the last ${DORA_TIME_WINDOW_DAYS} days, found ${successfulProductionDeployments.length}`,
+        `Unable to calculate change failure rate: need at least 2 successful production deployments in the last ${DORA_TIME_WINDOW_DAYS} days, found ${productionDeployments.length}`,
       );
     }
 
@@ -146,12 +146,11 @@ export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
     let evaluatedDeployments = 0;
     for (
       let deploymentIndex = 0;
-      deploymentIndex < successfulProductionDeployments.length - 1;
+      deploymentIndex < productionDeployments.length - 1;
       deploymentIndex++
     ) {
-      const deployment = successfulProductionDeployments[deploymentIndex];
-      const nextDeployment =
-        successfulProductionDeployments[deploymentIndex + 1];
+      const deployment = productionDeployments[deploymentIndex];
+      const nextDeployment = productionDeployments[deploymentIndex + 1];
       const deploymentCreatedAt = deployment.createdAt.getTime();
       const nextDeploymentCreatedAt = nextDeployment.createdAt.getTime();
       if (nextDeploymentCreatedAt <= deploymentCreatedAt) {

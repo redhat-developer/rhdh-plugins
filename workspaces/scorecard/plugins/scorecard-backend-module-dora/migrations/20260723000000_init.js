@@ -23,7 +23,6 @@ exports.up = async function up(knex) {
     table.string('commit_sha').notNullable();
     table.string('environment').nullable();
     table.dateTime('created_at', { precision: 0 }).notNullable();
-    table.string('result').notNullable();
 
     table.unique([
       'catalog_entity_ref',

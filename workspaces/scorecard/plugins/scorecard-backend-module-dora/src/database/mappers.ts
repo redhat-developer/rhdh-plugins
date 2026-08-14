@@ -31,7 +31,6 @@ export type DbDoraDeploymentRow = {
   commit_sha: string;
   environment: string | null;
   created_at: Date | string;
-  result: string;
 };
 
 export type DbDoraIncidentRow = {
@@ -63,7 +62,6 @@ export function toDoraDeploymentRow(
     commit_sha: deployment.commitSha,
     environment: deployment.environment ?? null,
     created_at: deployment.createdAt,
-    result: deployment.result,
   };
 }
 
@@ -78,7 +76,6 @@ export function fromDoraDeploymentRow(
     commitSha: row.commit_sha,
     environment: row.environment,
     createdAt: asDate(row.created_at),
-    result: row.result,
   };
 }
 

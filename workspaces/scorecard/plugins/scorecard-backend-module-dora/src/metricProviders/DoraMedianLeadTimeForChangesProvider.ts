@@ -29,7 +29,7 @@ import {
   type DoraMedianLeadTimeForChangesConfig,
 } from './DoraConfig';
 import { calculateMedian } from './utils/calculationUtils';
-import { isSuccessfulProductionDeployment } from './utils/deploymentFilterUtils';
+import { isProductionEnvironment } from './utils/deploymentFilterUtils';
 
 type DoraMedianLeadTimeForChangesProviderOptions = {
   doraSyncService: DoraSyncService;
@@ -121,8 +121,8 @@ export class DoraMedianLeadTimeForChangesProvider
         collector: this.config.deploymentsCollector,
       })
     ).filter(deployment =>
-      isSuccessfulProductionDeployment(
-        deployment,
+      isProductionEnvironment(
+        deployment.environment,
         this.config.productionEnvironments,
       ),
     );

@@ -62,7 +62,6 @@ describe('DefaultDoraDataService', () => {
             commitSha: 'sha-1',
             environment: 'production',
             createdAt: new Date('2026-06-10T10:00:00.000Z'),
-            result: 'success',
           },
         ]);
 
@@ -81,7 +80,6 @@ describe('DefaultDoraDataService', () => {
             commitSha: 'sha-1',
             environment: 'production',
             createdAt: new Date('2026-06-10T10:00:00.000Z'),
-            result: 'success',
           },
         ]);
       },
@@ -146,7 +144,6 @@ describe('DefaultDoraDataService', () => {
             commitSha: 'sha-1',
             environment: 'production',
             createdAt: new Date('2026-06-10T10:00:00.000Z'),
-            result: 'success',
           },
         ]);
         const [deployment] = await deploymentsDb.readByEntityCollectorAndWindow(

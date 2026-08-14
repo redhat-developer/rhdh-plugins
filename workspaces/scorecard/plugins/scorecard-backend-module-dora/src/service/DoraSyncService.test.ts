@@ -156,6 +156,80 @@ describe('DefaultDoraSyncService', () => {
   );
 
   it.each(databases.eachSupportedId())(
+    'persists only successful deployments - %p',
+    async databaseId => {
+      const { deployments, incidents, pullRequests, lastSync } =
+        await createTestDatabase(await databases.init(databaseId));
+
+      const deploymentsCollector = buildMockDeploymentsCollector({
+        deployments: [
+          {
+            id: '100',
+            commitSha: 'sha-success',
+            environment: 'production',
+            createdAt: '2026-06-10T00:00:00.000Z',
+            result: 'success',
+          },
+          {
+            id: '101',
+            commitSha: 'sha-failure',
+            environment: 'production',
+            createdAt: '2026-06-11T00:00:00.000Z',
+            result: 'failure',
+          },
+          {
+            id: '102',
+            commitSha: 'sha-empty',
+            environment: 'production',
+            createdAt: '2026-06-12T00:00:00.000Z',
+            result: '',
+          },
+        ],
+        collectorId: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+      });
+      const { collectorsService } = buildMockCollectorsService({
+        collectors: [deploymentsCollector],
+      });
+
+      const syncService = new DefaultDoraSyncService(
+        collectorsService,
+        deployments,
+        incidents,
+        pullRequests,
+        lastSync,
+        logger,
+      );
+      const dataService = new DefaultDoraDataService(
+        deployments,
+        incidents,
+        pullRequests,
+      );
+
+      await syncService.syncDeployments(mockEntity, {
+        windowFrom: new Date('2026-06-01T00:00:00.000Z'),
+        windowTo: new Date('2026-06-30T00:00:00.000Z'),
+        collector: {
+          id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+          input: {},
+        },
+      });
+
+      await expect(
+        dataService.readDeployments(stringifyEntityRef(mockEntity), {
+          windowFrom: new Date('2026-06-01T00:00:00.000Z'),
+          windowTo: new Date('2026-06-30T00:00:00.000Z'),
+          collector: { id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID },
+        }),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          originalDeploymentId: '100',
+          commitSha: 'sha-success',
+        }),
+      ]);
+    },
+  );
+
+  it.each(databases.eachSupportedId())(
     'coalesces concurrent deployment syncs for the same entity and collector - %p',
     async databaseId => {
       const { deployments, incidents, pullRequests, lastSync } =

@@ -56,7 +56,7 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
         'collector_id',
         'original_deployment_id',
       ])
-      .merge(['commit_sha', 'environment', 'created_at', 'result']);
+      .merge(['commit_sha', 'environment', 'created_at']);
   }
 
   async readByEntityCollectorAndWindow(

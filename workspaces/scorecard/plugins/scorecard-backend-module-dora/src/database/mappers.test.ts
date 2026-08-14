@@ -60,7 +60,6 @@ describe('mappers', () => {
         commitSha: 'sha-1',
         environment: 'production',
         createdAt,
-        result: 'success',
       };
 
       expect(toDoraDeploymentRow(create)).toEqual({
@@ -70,7 +69,6 @@ describe('mappers', () => {
         commit_sha: 'sha-1',
         environment: 'production',
         created_at: createdAt,
-        result: 'success',
       });
     });
 
@@ -82,7 +80,6 @@ describe('mappers', () => {
           originalDeploymentId: 'dep-1',
           commitSha: 'sha-1',
           createdAt: new Date('2026-06-10T10:00:00.000Z'),
-          result: 'success',
         }).environment,
       ).toBeNull();
     });
@@ -97,7 +94,6 @@ describe('mappers', () => {
           commit_sha: 'sha-1',
           environment: null,
           created_at: '2026-06-10T10:00:00.000Z',
-          result: 'success',
         }),
       ).toEqual({
         id: 'dep-row-1',
@@ -107,7 +103,6 @@ describe('mappers', () => {
         commitSha: 'sha-1',
         environment: null,
         createdAt: new Date('2026-06-10T10:00:00.000Z'),
-        result: 'success',
       });
     });
   });

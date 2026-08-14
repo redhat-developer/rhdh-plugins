@@ -31,7 +31,6 @@ export function dbDeployment(partial: {
   commitSha: string;
   environment?: string | null;
   createdAt: string | Date;
-  result: string;
   catalogEntityRef?: string;
   collectorId?: string;
   originalDeploymentId?: string;
@@ -44,7 +43,6 @@ export function dbDeployment(partial: {
     commitSha: partial.commitSha,
     environment: partial.environment ?? null,
     createdAt: asDate(partial.createdAt),
-    result: partial.result,
   };
 }
 

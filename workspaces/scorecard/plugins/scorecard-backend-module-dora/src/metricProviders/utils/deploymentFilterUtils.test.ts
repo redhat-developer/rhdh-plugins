@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  isProductionEnvironment,
-  isSuccessfulProductionDeployment,
-} from './deploymentFilterUtils';
+import { isProductionEnvironment } from './deploymentFilterUtils';
 
 describe('deploymentFilterUtils', () => {
   describe('isProductionEnvironment', () => {
@@ -33,29 +30,6 @@ describe('deploymentFilterUtils', () => {
       expect(isProductionEnvironment('staging', ['production', 'prod'])).toBe(
         false,
       );
-    });
-  });
-
-  describe('isSuccessfulProductionDeployment', () => {
-    it('requires success and a production environment', () => {
-      expect(
-        isSuccessfulProductionDeployment(
-          { result: 'success', environment: 'production' },
-          ['production'],
-        ),
-      ).toBe(true);
-      expect(
-        isSuccessfulProductionDeployment(
-          { result: 'failure', environment: 'production' },
-          ['production'],
-        ),
-      ).toBe(false);
-      expect(
-        isSuccessfulProductionDeployment(
-          { result: 'success', environment: 'development' },
-          ['production'],
-        ),
-      ).toBe(false);
     });
   });
 });

@@ -26,7 +26,7 @@ import {
   type DoraDeploymentFrequencyConfig,
   parseDoraDeploymentFrequencyConfig,
 } from './DoraConfig';
-import { isSuccessfulProductionDeployment } from './utils/deploymentFilterUtils';
+import { isProductionEnvironment } from './utils/deploymentFilterUtils';
 
 type DoraDeploymentFrequencyProviderOptions = {
   doraSyncService: DoraSyncService;
@@ -110,8 +110,8 @@ export class DoraDeploymentFrequencyProvider
         collector: this.config.deploymentsCollector,
       })
     ).filter(deployment =>
-      isSuccessfulProductionDeployment(
-        deployment,
+      isProductionEnvironment(
+        deployment.environment,
         this.config.productionEnvironments,
       ),
     );

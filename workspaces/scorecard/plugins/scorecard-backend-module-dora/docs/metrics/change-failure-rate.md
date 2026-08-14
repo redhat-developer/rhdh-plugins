@@ -94,6 +94,8 @@ Required output:
 
 - `deployments: Array<{ id: string; commitSha: string; environment?: string; createdAt: string; result: 'success' | 'failure' | '' }>`
 
+Only deployments with `result: 'success'` are included in the calculation.
+
 Ordering requirement:
 
 - `deployments` must be in ascending `createdAt` order (oldest to newest). Order is required because the metric processes adjacent deployment pairs chronologically.

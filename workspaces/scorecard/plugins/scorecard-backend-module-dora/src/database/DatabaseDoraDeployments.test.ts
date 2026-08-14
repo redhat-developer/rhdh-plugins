@@ -42,7 +42,6 @@ describe('DatabaseDoraDeployments', () => {
             commitSha: 'sha-1',
             environment: 'production',
             createdAt: new Date('2026-06-01T10:00:00.000Z'),
-            result: 'success',
           },
         ]);
 
@@ -77,7 +76,6 @@ describe('DatabaseDoraDeployments', () => {
             commitSha: 'sha-1',
             environment: 'production',
             createdAt: new Date('2026-06-10T10:00:00.000Z'),
-            result: 'success',
           },
         ]);
         // Conflict on (catalog_entity_ref, collector_id, original_deployment_id) for commitSha
@@ -89,7 +87,6 @@ describe('DatabaseDoraDeployments', () => {
             commitSha: 'sha-1-updated',
             environment: 'production',
             createdAt: new Date('2026-06-10T10:00:00.000Z'),
-            result: 'failure',
           },
         ]);
 
@@ -102,7 +99,6 @@ describe('DatabaseDoraDeployments', () => {
 
         expect(rows).toHaveLength(1);
         expect(rows[0].commitSha).toBe('sha-1-updated');
-        expect(rows[0].result).toBe('failure');
       },
     );
 
@@ -122,7 +118,6 @@ describe('DatabaseDoraDeployments', () => {
             commitSha: 'sha-1',
             environment: 'production',
             createdAt: new Date('2026-06-10T10:00:00.000Z'),
-            result: 'success',
           },
           {
             catalogEntityRef: entityRef,
@@ -131,7 +126,6 @@ describe('DatabaseDoraDeployments', () => {
             commitSha: 'sha-other',
             environment: 'production',
             createdAt: new Date('2026-06-20T10:00:00.000Z'),
-            result: 'success',
           },
         ]);
 
@@ -184,7 +178,6 @@ describe('DatabaseDoraDeployments', () => {
             commitSha: 'sha-before',
             environment: 'production',
             createdAt: new Date('2026-05-31T10:00:00.000Z'),
-            result: 'success',
           },
           {
             catalogEntityRef: entityRef,
@@ -193,7 +186,6 @@ describe('DatabaseDoraDeployments', () => {
             commitSha: 'sha-1',
             environment: 'production',
             createdAt: new Date('2026-06-01T10:00:00.000Z'),
-            result: 'success',
           },
           {
             catalogEntityRef: entityRef,
@@ -202,7 +194,6 @@ describe('DatabaseDoraDeployments', () => {
             commitSha: 'sha-2',
             environment: 'production',
             createdAt: new Date('2026-06-10T10:00:00.000Z'),
-            result: 'success',
           },
           {
             catalogEntityRef: entityRef,
@@ -211,7 +202,6 @@ describe('DatabaseDoraDeployments', () => {
             commitSha: 'sha-other',
             environment: 'production',
             createdAt: new Date('2026-06-15T10:00:00.000Z'),
-            result: 'success',
           },
         ]);
 
@@ -248,7 +238,6 @@ describe('DatabaseDoraDeployments', () => {
             commitSha: 'sha-old',
             environment: 'production',
             createdAt: new Date('2025-01-01T00:00:00.000Z'),
-            result: 'success',
           },
           {
             catalogEntityRef: entityRef,
@@ -257,7 +246,6 @@ describe('DatabaseDoraDeployments', () => {
             commitSha: 'sha-new',
             environment: 'production',
             createdAt: new Date('2026-06-10T00:00:00.000Z'),
-            result: 'success',
           },
         ]);
 

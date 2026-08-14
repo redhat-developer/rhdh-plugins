@@ -38,14 +38,12 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       commitSha: 'sha-previous',
       environment: 'production',
       createdAt: '2026-06-06T12:00:00.000Z',
-      result: 'success',
     }),
     dbDeployment({
       id: '101',
       commitSha: 'sha-current',
       environment: 'production',
       createdAt: '2026-06-08T12:00:00.000Z',
-      result: 'success',
     }),
   ];
   const pullRequests = [
@@ -207,21 +205,18 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           commitSha: 'sha-1',
           environment: 'production',
           createdAt: '2026-06-10T00:00:00.000Z',
-          result: 'success',
         }),
         dbDeployment({
           id: '401',
           commitSha: 'sha-2',
           environment: 'production',
           createdAt: '2026-06-11T00:00:00.000Z',
-          result: 'success',
         }),
         dbDeployment({
           id: '402',
           commitSha: 'sha-3',
           environment: 'production',
           createdAt: '2026-06-12T00:00:00.000Z',
-          result: 'success',
         }),
       ]);
       mockDoraDataService.readPullRequestsForDeployment
@@ -293,14 +288,12 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           commitSha: 'sha-1',
           environment: 'production',
           createdAt: '2026-06-10T00:00:00.000Z',
-          result: 'success',
         }),
         dbDeployment({
           id: '401',
           commitSha: 'sha-2',
           environment: 'prod',
           createdAt: '2026-06-11T00:00:00.000Z',
-          result: 'success',
         }),
       ]);
 
@@ -345,21 +338,18 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           commitSha: 'sha-1',
           environment: 'production',
           createdAt: '2026-06-10T00:00:00.000Z',
-          result: 'success',
         }),
         dbDeployment({
           id: '101',
           commitSha: 'sha-2',
           environment: 'production',
           createdAt: '2026-06-11T00:00:00.000Z',
-          result: 'success',
         }),
         dbDeployment({
           id: '102',
           commitSha: 'sha-3',
           environment: 'production',
           createdAt: '2026-06-12T00:00:00.000Z',
-          result: 'success',
         }),
       ]);
       mockDoraSyncService.syncPullRequestsForDeployment

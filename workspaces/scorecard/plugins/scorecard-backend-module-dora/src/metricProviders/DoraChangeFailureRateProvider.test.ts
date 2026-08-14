@@ -42,14 +42,12 @@ describe('DoraChangeFailureRateProvider', () => {
         commitSha: 'sha-1',
         environment: 'production',
         createdAt: '2026-06-10T00:00:00.000Z',
-        result: 'success',
       }),
       dbDeployment({
         id: '101',
         commitSha: 'sha-2',
         environment: 'production',
         createdAt: '2026-06-11T00:00:00.000Z',
-        result: 'success',
       }),
     ]);
     mockDoraDataService.readIncidents.mockResolvedValue([
@@ -172,21 +170,18 @@ describe('DoraChangeFailureRateProvider', () => {
           commitSha: 'sha-1',
           environment: 'production',
           createdAt: '2026-06-10T00:00:00.000Z',
-          result: 'success',
         }),
         dbDeployment({
           id: '101',
           commitSha: 'sha-2',
           environment: 'production',
           createdAt: '2026-06-11T00:00:00.000Z',
-          result: 'success',
         }),
         dbDeployment({
           id: '102',
           commitSha: 'sha-3',
           environment: 'production',
           createdAt: '2026-06-12T00:00:00.000Z',
-          result: 'success',
         }),
       ]);
       mockDoraDataService.readIncidents.mockResolvedValueOnce([
@@ -216,7 +211,6 @@ describe('DoraChangeFailureRateProvider', () => {
           commitSha: 'sha-1',
           environment: 'production',
           createdAt: '2026-06-10T00:00:00.000Z',
-          result: 'success',
         }),
       ]);
 
@@ -225,21 +219,19 @@ describe('DoraChangeFailureRateProvider', () => {
       );
     });
 
-    it('should throw when fewer than 2 successful deployments are found', async () => {
+    it('should throw when fewer than 2 production deployments are found among mixed environments', async () => {
       mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({
           id: '100',
           commitSha: 'sha-1',
           environment: 'production',
           createdAt: '2026-06-10T00:00:00.000Z',
-          result: 'success',
         }),
         dbDeployment({
           id: '101',
           commitSha: 'sha-2',
-          environment: 'production',
+          environment: 'development',
           createdAt: '2026-06-11T00:00:00.000Z',
-          result: 'failure',
         }),
       ]);
 
@@ -255,14 +247,12 @@ describe('DoraChangeFailureRateProvider', () => {
           commitSha: 'sha-1',
           environment: 'production',
           createdAt: '2026-06-10T00:00:00.000Z',
-          result: 'success',
         }),
         dbDeployment({
           id: '101',
           commitSha: 'sha-2',
           environment: 'demo-test',
           createdAt: '2026-06-11T00:00:00.000Z',
-          result: 'success',
         }),
       ]);
 
@@ -278,14 +268,12 @@ describe('DoraChangeFailureRateProvider', () => {
           commitSha: 'sha-1',
           environment: 'production',
           createdAt: '2026-06-10T00:00:00.000Z',
-          result: 'success',
         }),
         dbDeployment({
           id: '101',
           commitSha: 'sha-2',
           environment: 'production',
           createdAt: '2026-06-10T00:00:00.000Z',
-          result: 'success',
         }),
       ]);
 

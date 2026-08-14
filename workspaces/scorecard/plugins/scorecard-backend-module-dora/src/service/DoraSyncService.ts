@@ -127,15 +127,16 @@ export class DefaultDoraSyncService implements DoraSyncService {
     });
 
     await this.deploymentsDb.upsert(
-      collected.deployments.map(deployment => ({
-        catalogEntityRef,
-        collectorId,
-        originalDeploymentId: deployment.id,
-        commitSha: deployment.commitSha,
-        environment: deployment.environment ?? null,
-        createdAt: new Date(deployment.createdAt),
-        result: deployment.result,
-      })),
+      collected.deployments
+        .filter(deployment => deployment.result === 'success')
+        .map(deployment => ({
+          catalogEntityRef,
+          collectorId,
+          originalDeploymentId: deployment.id,
+          commitSha: deployment.commitSha,
+          environment: deployment.environment ?? null,
+          createdAt: new Date(deployment.createdAt),
+        })),
     );
 
     await this.lastSyncDb.setLastSyncedAt(

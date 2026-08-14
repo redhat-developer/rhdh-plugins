@@ -21,7 +21,6 @@ export type DbDoraDeploymentCreate = {
   commitSha: string;
   environment?: string | null;
   createdAt: Date;
-  result: string;
 };
 
 export type DbDoraDeployment = {
@@ -32,7 +31,6 @@ export type DbDoraDeployment = {
   commitSha: string;
   environment: string | null;
   createdAt: Date;
-  result: string;
 };
 
 export type DbDoraIncidentCreate = {

@@ -17,6 +17,8 @@
 /**
  * Missing/unknown environment is treated as production. Named environments must
  * match one of the configured production environment names (case-insensitive).
+ *
+ * Only successful deployments are persisted; callers filter by environment.
  */
 export function isProductionEnvironment(
   environment: string | null | undefined,
@@ -29,19 +31,5 @@ export function isProductionEnvironment(
   const normalizedEnvironment = environment.toLowerCase();
   return productionEnvironments.some(
     name => name.toLowerCase() === normalizedEnvironment,
-  );
-}
-
-export function isSuccessfulProductionDeployment(
-  deployment: { result: string; environment?: string | null },
-  productionEnvironments: string[],
-): boolean {
-  if (deployment.result !== 'success') {
-    return false;
-  }
-
-  return isProductionEnvironment(
-    deployment.environment,
-    productionEnvironments,
   );
 }
