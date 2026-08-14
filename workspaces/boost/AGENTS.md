@@ -150,6 +150,7 @@ Every feature ships with tests. Integration tests use real database and cache ba
 | Full build          | `yarn build:all`                               |
 | Type-check          | `yarn tsc:full`                                |
 | Lint                | `yarn lint:all`                                |
+| Prettier            | `yarn prettier:fix`                            |
 | Test                | `CI=true yarn test --watchAll=false`           |
 | API reports         | `yarn tsc:full && yarn build:api-reports:only` |
 | OpenSpec validation | `yarn openspec:validate`                       |
@@ -182,7 +183,7 @@ match CI. The `:only` command reads from the `dist-types` produced by
 
 ## Before committing
 
-- Run `yarn prettier:check` from the workspace root. If it fails, run `yarn prettier:fix` and stage the corrected files.
+- Run `yarn prettier:fix` from the workspace root and stage any reformatted files.
 - If public exports or function signatures changed, run `yarn build:api-reports:only --ci`.
 
 ## Scripts directory
