@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-boost-backend
 
+## 0.3.0
+
+### Minor Changes
+
+- e6c850f: Add connector config Zod schemas and RuntimeConfigResolver support for Jira, GitHub, and GitLab connectors. Registers flat leaf keys in `boostConfigFields` with `db-overridable` scope covering enabled, endpoint, schedule, batchSize, timeout, and cron fields. Bumps `BOOST_CONFIG_SCHEMA_VERSION` to 4.
+
 ## 0.2.0
 
 ### Minor Changes
