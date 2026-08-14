@@ -4,6 +4,16 @@
 
 ```ts
 import { BackendFeature } from '@backstage/backend-plugin-api';
+import { CatalogProcessor } from '@backstage/plugin-catalog-node';
+import { Entity } from '@backstage/catalog-model';
+
+// @public
+export class AiModelServerApiProcessor implements CatalogProcessor {
+  // (undocumented)
+  getProcessorName(): string;
+  // (undocumented)
+  validateEntityKind(entity: Entity): Promise<boolean>;
+}
 
 // @public
 const catalogModuleAiModelServer: BackendFeature;
