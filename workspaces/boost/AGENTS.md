@@ -85,8 +85,8 @@ failures or config-surface drift.
 3. Bump `BOOST_CONFIG_SCHEMA_VERSION` in `src/config/schemas.ts`
 4. Add example usage in `examples/app-config.connectors.yaml` (or
    the appropriate `app-config.*.yaml` example file)
-5. Run `yarn build:api-reports` and commit the updated
-   `report.api.md`
+5. Run `yarn tsc:full && yarn build:api-reports:only` and commit the
+   updated `report.api.md`
 
 When reviewing PRs that add or modify `boost.*` config keys, verify all five registration steps above were completed.
 
@@ -145,18 +145,24 @@ Every feature ships with tests. Integration tests use real database and cache ba
 
 ## Build & verify
 
-| Task                | Command                              |
-| ------------------- | ------------------------------------ |
-| Full build          | `yarn build:all`                     |
-| Type-check          | `yarn tsc:full`                      |
-| Lint                | `yarn lint:all`                      |
-| Test                | `CI=true yarn test --watchAll=false` |
-| API reports         | `yarn build:api-reports`             |
-| OpenSpec validation | `yarn openspec:validate`             |
+| Task                | Command                                        |
+| ------------------- | ---------------------------------------------- |
+| Full build          | `yarn build:all`                               |
+| Type-check          | `yarn tsc:full`                                |
+| Lint                | `yarn lint:all`                                |
+| Test                | `CI=true yarn test --watchAll=false`           |
+| API reports         | `yarn tsc:full && yarn build:api-reports:only` |
+| OpenSpec validation | `yarn openspec:validate`                       |
 
 **After modifying any file that affects the public API surface** (including
 `translations/ref.ts`, exported types, or API routes), run
-`yarn build:api-reports` and commit the updated `report.api.md`.
+`yarn tsc:full && yarn build:api-reports:only` and commit the updated
+`report.api.md`. Always use the two-step sequence (`tsc:full` then
+`build:api-reports:only`), not the all-in-one `build:api-reports:only`
+variant without the `:only` suffix — the all-in-one command performs its
+own TypeScript compilation with different member ordering that does not
+match CI. The `:only` command reads from the `dist-types` produced by
+`tsc:full`, which matches the CI pipeline.
 
 ## Import conventions
 
