@@ -15,7 +15,11 @@
  */
 
 export { createAiCatalogRoutes } from './routes';
-export type { AiCatalogAssetLoader, AiCatalogAsset } from './routes';
+export type {
+  AiCatalogAssetLoader,
+  AiCatalogAsset,
+  AiCatalogRoutesOptions,
+} from './routes';
 export { aiCatalogRules } from './rules';
 export type { AiCatalogAssetResource } from './rules';
 export {

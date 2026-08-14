@@ -86,7 +86,7 @@ export interface AiCatalogRoutesOptions {
 
 /**
  * Abstraction for loading AI catalog assets. In production this is
- * backed by the Backstage catalog via {@link CatalogAssetLoader}; the
+ * backed by the Backstage catalog via `CatalogAssetLoader`; the
  * interface allows injection for testing.
  *
  * @public

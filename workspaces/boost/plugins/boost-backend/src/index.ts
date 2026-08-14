@@ -110,3 +110,9 @@ export {
   type ConversationRoutesOptions,
   type RateLimiterOptions,
 } from './chat';
+export {
+  createAiCatalogRoutes,
+  type AiCatalogAssetLoader,
+  type AiCatalogAsset,
+  type AiCatalogRoutesOptions,
+} from './ai-catalog';

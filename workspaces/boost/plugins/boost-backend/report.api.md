@@ -86,6 +86,35 @@ export interface AgentRoutesOptions {
 }
 
 // @public
+export interface AiCatalogAsset {
+  category?: string;
+  config?: Record<string, unknown>;
+  connectionEndpoints?: Record<string, string>;
+  deploymentParameters?: Record<string, unknown>;
+  description?: string;
+  id: string;
+  lifecycleStage?: string;
+  name: string;
+  tags?: string[];
+  usageDocs?: string;
+  versionCount?: number;
+}
+
+// @public
+export interface AiCatalogAssetLoader {
+  findById(id: string): Promise<AiCatalogAsset | undefined>;
+  list(): Promise<AiCatalogAsset[]>;
+}
+
+// @public
+export interface AiCatalogRoutesOptions {
+  assetLoader: AiCatalogAssetLoader;
+  httpAuth: HttpAuthService;
+  logger: LoggerService;
+  permissions: PermissionsService;
+}
+
+// @public
 export function authorizeLifecycleAction(
   permission: Permission,
   _resourceLoader: ResourceLoader,
@@ -438,6 +467,9 @@ export function createAgentResourceLoader(): ResourceLoader;
 
 // @public
 export function createAgentRoutes(options: AgentRoutesOptions): Router;
+
+// @public
+export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router;
 
 // @public
 export function createChatRoutes(options: ChatRoutesOptions): Router;
