@@ -130,19 +130,29 @@ async function doCapture(
     },
   });
 
-  const scaledCanvas = scaleCanvas(canvas, options.maxWidth);
-  const dataUri = scaledCanvas.toDataURL('image/jpeg', options.quality);
+  let scaledCanvas: HTMLCanvasElement | undefined;
+  try {
+    scaledCanvas = scaleCanvas(canvas, options.maxWidth);
+    const dataUri = scaledCanvas.toDataURL('image/jpeg', options.quality);
 
-  const captureTimeMs = Math.round(window.performance.now() - start);
+    const captureTimeMs = Math.round(window.performance.now() - start);
 
-  return {
-    success: true,
-    base64: stripDataUriPrefix(dataUri),
-    contentType: 'image/jpeg',
-    width: scaledCanvas.width,
-    height: scaledCanvas.height,
-    captureTimeMs,
-  };
+    return {
+      success: true,
+      base64: stripDataUriPrefix(dataUri),
+      contentType: 'image/jpeg',
+      width: scaledCanvas.width,
+      height: scaledCanvas.height,
+      captureTimeMs,
+    };
+  } finally {
+    canvas.width = 0;
+    canvas.height = 0;
+    if (scaledCanvas && scaledCanvas !== canvas) {
+      scaledCanvas.width = 0;
+      scaledCanvas.height = 0;
+    }
+  }
 }
 
 /**
