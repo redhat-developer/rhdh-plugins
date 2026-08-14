@@ -8859,6 +8859,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk@workspace:plugins/boost-entity-provider-sdk":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk@workspace:plugins/boost-entity-provider-sdk"
+  dependencies:
+    "@backstage/catalog-model": "npm:^1.9.0"
+    "@backstage/cli": "npm:^0.36.3"
+    "@backstage/plugin-catalog-node": "npm:^2.2.2"
+    zod: "npm:^3.23.8"
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-boost-node@workspace:^, @red-hat-developer-hub/backstage-plugin-boost-node@workspace:plugins/boost-node":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-boost-node@workspace:plugins/boost-node"

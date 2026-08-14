@@ -10,7 +10,7 @@
 - [ ] 1.1 Define `rhdh.io/ai-asset-category` annotation constant and allowed values enum (`agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`) in SDK package (RHIDP-15255)
 - [ ] 1.2 Define `rhdh.io/ai-asset-version` annotation constant in SDK package (RHIDP-15255)
 - [ ] 1.3 Define `rhdh.io/ai-asset-source` annotation constant in SDK package (RHIDP-15255)
-- [ ] 1.4 Implement `normalizeAIAssetVersion(sourceVersion: string): string` utility with all four normalization rules (semver pass-through, date-based, commit hash, fallback) (RHIDP-15255)
+- [ ] 1.4 Implement `normalizeAIAssetVersion(sourceVersion: string, options?: { entityRef?: string; warn?: (message: string) => void }): string` utility with all four normalization rules (semver pass-through, date-based, commit hash, fallback) (RHIDP-15255)
 - [ ] 1.5 Add unit tests for `normalizeAIAssetVersion()` covering all normalization rules (RHIDP-15255)
 - [ ] 1.6 Implement CatalogProcessor validator rejecting entities with missing/invalid `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, or `rhdh.io/ai-asset-source` annotations — gated to entities carrying any `rhdh.io/ai-asset-*` annotation (RHIDP-15255)
 - [ ] 1.7 Add unit tests for CatalogProcessor validator covering valid and invalid annotation values (RHIDP-15255)

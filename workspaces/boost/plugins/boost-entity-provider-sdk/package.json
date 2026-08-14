@@ -1,8 +1,8 @@
 {
-  "name": "@red-hat-developer-hub/backstage-plugin-boost-toolscope",
-  "version": "0.1.2",
+  "name": "@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk",
+  "version": "0.1.0",
   "license": "Apache-2.0",
-  "description": "Standalone toolscope package with injectable cache interface for the boost AI platform",
+  "description": "SDK for AI asset entity providers — shared types, annotation constants, validation utilities, and adapter interfaces",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "publishConfig": {
@@ -14,7 +14,7 @@
   "backstage": {
     "role": "node-library",
     "pluginId": "boost",
-    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-toolscope",
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk",
     "pluginPackages": [
       "@red-hat-developer-hub/backstage-plugin-boost",
       "@red-hat-developer-hub/backstage-plugin-boost-backend",
@@ -26,6 +26,14 @@
       "@red-hat-developer-hub/backstage-plugin-boost-toolscope"
     ]
   },
+  "dependencies": {
+    "@backstage/catalog-model": "^1.9.0",
+    "@backstage/plugin-catalog-node": "^2.2.2",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.36.3"
+  },
   "sideEffects": false,
   "scripts": {
     "build": "backstage-cli package build",
@@ -35,16 +43,13 @@
     "prepack": "backstage-cli package prepack",
     "postpack": "backstage-cli package postpack"
   },
-  "devDependencies": {
-    "@backstage/cli": "^0.36.3"
-  },
   "files": [
     "dist"
   ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/redhat-developer/rhdh-plugins.git",
-    "directory": "workspaces/boost/plugins/boost-toolscope"
+    "directory": "workspaces/boost/plugins/boost-entity-provider-sdk"
   },
   "homepage": "https://red.ht/rhdh",
   "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues"
