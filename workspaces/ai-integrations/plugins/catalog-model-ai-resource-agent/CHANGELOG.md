@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent
 
+## 0.3.0
+
+### Minor Changes
+
+- 6ddfd98: Make `spec.instructions` optional on agent AiResource entities so agents
+  with a baked-in default prompt can be registered without a catalog-side
+  system prompt.
+
 ## 0.2.0
 
 ### Minor Changes
