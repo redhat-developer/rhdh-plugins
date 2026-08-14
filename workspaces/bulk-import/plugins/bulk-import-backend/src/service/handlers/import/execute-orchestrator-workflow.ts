@@ -82,7 +82,7 @@ export async function createWorkflowImportJobs(
 
       const authTokens: AuthToken[] = [];
       if (approvalTool === 'GIT') {
-        const creds = await githubApiService.getCredentials(
+        const creds = await githubApiService.getAppInstallationCredentials(
           repo.repository.url,
         );
         authTokens.push({ token: creds?.token, provider: 'github' });

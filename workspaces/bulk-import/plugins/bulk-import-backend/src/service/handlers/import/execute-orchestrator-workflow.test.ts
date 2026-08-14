@@ -67,7 +67,7 @@ describe('execute-orchestrator-workflow', () => {
     } as unknown as DiscoveryApi;
 
     mockGithubApiService = {
-      getCredentials: jest.fn(),
+      getAppInstallationCredentials: jest.fn(),
     } as unknown as GithubApiService;
 
     mockGitlabApiService = {
@@ -143,7 +143,9 @@ describe('execute-orchestrator-workflow', () => {
       const mockWorkflowId = 'workflow-instance-123';
       const mockToken = 'github-token-123';
 
-      (mockGithubApiService.getCredentials as jest.Mock).mockResolvedValue({
+      (
+        mockGithubApiService.getAppInstallationCredentials as jest.Mock
+      ).mockResolvedValue({
         token: mockToken,
       });
 
@@ -167,9 +169,9 @@ describe('execute-orchestrator-workflow', () => {
       });
 
       expect(result.statusCode).toBe(202);
-      expect(mockGithubApiService.getCredentials).toHaveBeenCalledWith(
-        'https://github.com/test-org/test-repo',
-      );
+      expect(
+        mockGithubApiService.getAppInstallationCredentials,
+      ).toHaveBeenCalledWith('https://github.com/test-org/test-repo');
       expect(mockOrchestratorApi.executeWorkflow).toHaveBeenCalledWith(
         'test-workflow-id',
         expect.objectContaining({
@@ -282,7 +284,9 @@ describe('execute-orchestrator-workflow', () => {
       const mockWorkflowId = 'workflow-instance-789';
       const mockToken = 'github-token-789';
 
-      (mockGithubApiService.getCredentials as jest.Mock).mockResolvedValue({
+      (
+        mockGithubApiService.getAppInstallationCredentials as jest.Mock
+      ).mockResolvedValue({
         token: mockToken,
       });
 
@@ -305,7 +309,9 @@ describe('execute-orchestrator-workflow', () => {
         gitlabApiService: mockGitlabApiService,
       });
 
-      expect(mockGithubApiService.getCredentials).toHaveBeenCalled();
+      expect(
+        mockGithubApiService.getAppInstallationCredentials,
+      ).toHaveBeenCalled();
       expect(mockGitlabApiService.getCredentials).not.toHaveBeenCalled();
     });
 
@@ -325,7 +331,9 @@ describe('execute-orchestrator-workflow', () => {
       const mockWorkflowId = 'workflow-instance-123';
       const mockRepositoryId = 123;
 
-      (mockGithubApiService.getCredentials as jest.Mock).mockResolvedValue({
+      (
+        mockGithubApiService.getAppInstallationCredentials as jest.Mock
+      ).mockResolvedValue({
         token: 'github-token',
       });
 
@@ -383,6 +391,11 @@ describe('execute-orchestrator-workflow', () => {
       ];
 
       const errorMessage = 'Failed to execute workflow';
+      (
+        mockGithubApiService.getAppInstallationCredentials as jest.Mock
+      ).mockResolvedValue({
+        token: 'github-token',
+      });
       mockOrchestratorApi.executeWorkflow.mockRejectedValue(
         new Error(errorMessage),
       );
@@ -404,6 +417,50 @@ describe('execute-orchestrator-workflow', () => {
         throw new Error('responseBody is undefined');
       }
       expect(responseBody).toHaveLength(1);
+      expect(responseBody[0].errors).toContain(errorMessage);
+    });
+
+    it('should fail closed when GitHub App installation credentials are unavailable', async () => {
+      const requestBody: ImportRequest[] = [
+        {
+          repository: {
+            url: 'https://github.com/test-org/test-repo',
+            name: 'test-repo',
+            organization: 'test-org',
+            defaultBranch: 'main',
+          },
+          approvalTool: 'GIT',
+        },
+      ];
+
+      const errorMessage =
+        "Orchestrator import requires a GitHub App installation token for 'https://github.com/test-org/test-repo'. " +
+        'Configure integrations.github with an App that has access to this repository; ' +
+        'classic personal access tokens are not forwarded in orchestrator mode.';
+
+      (
+        mockGithubApiService.getAppInstallationCredentials as jest.Mock
+      ).mockRejectedValue(new Error(errorMessage));
+
+      const result = await createWorkflowImportJobs({
+        orchestratorWorkflowId: 'test-workflow-id',
+        discovery: mockDiscovery,
+        token: 'auth-token',
+        requestBody,
+        orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
+        orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
+        githubApiService: mockGithubApiService,
+        gitlabApiService: mockGitlabApiService,
+      });
+
+      expect(result.statusCode).toBe(202);
+      expect(mockOrchestratorApi.executeWorkflow).not.toHaveBeenCalled();
+      const responseBody = result.responseBody;
+      if (!responseBody) {
+        throw new Error('responseBody is undefined');
+      }
+      expect(responseBody).toHaveLength(1);
+      expect(responseBody[0].status).toBe('WORKFLOW_ABORTED');
       expect(responseBody[0].errors).toContain(errorMessage);
     });
 
@@ -432,7 +489,7 @@ describe('execute-orchestrator-workflow', () => {
       const mockWorkflowId = 'workflow-instance-123';
       const errorMessage = 'Failed to execute workflow';
 
-      (mockGithubApiService.getCredentials as jest.Mock)
+      (mockGithubApiService.getAppInstallationCredentials as jest.Mock)
         .mockResolvedValueOnce({ token: 'token-1' })
         .mockResolvedValueOnce({ token: 'token-2' });
 
@@ -492,7 +549,9 @@ describe('execute-orchestrator-workflow', () => {
 
         const mockWorkflowId = `workflow-instance-${testCase.state}`;
 
-        (mockGithubApiService.getCredentials as jest.Mock).mockResolvedValue({
+        (
+          mockGithubApiService.getAppInstallationCredentials as jest.Mock
+        ).mockResolvedValue({
           token: 'github-token',
         });
 
@@ -548,7 +607,9 @@ describe('execute-orchestrator-workflow', () => {
       const mockWorkflowId1 = 'workflow-instance-1';
       const mockWorkflowId2 = 'workflow-instance-2';
 
-      (mockGithubApiService.getCredentials as jest.Mock).mockResolvedValue({
+      (
+        mockGithubApiService.getAppInstallationCredentials as jest.Mock
+      ).mockResolvedValue({
         token: 'github-token',
       });
 
@@ -591,7 +652,9 @@ describe('execute-orchestrator-workflow', () => {
       expect(responseBody).toHaveLength(2);
       expect(responseBody[0].workflow?.workflowId).toBe(mockWorkflowId1);
       expect(responseBody[1].workflow?.workflowId).toBe(mockWorkflowId2);
-      expect(mockGithubApiService.getCredentials).toHaveBeenCalledTimes(1);
+      expect(
+        mockGithubApiService.getAppInstallationCredentials,
+      ).toHaveBeenCalledTimes(1);
       expect(mockGitlabApiService.getCredentials).toHaveBeenCalledTimes(1);
     });
   });
