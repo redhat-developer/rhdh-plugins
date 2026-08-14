@@ -17,6 +17,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import type { LightspeedMessages } from '../utils/translations';
+import { substituteNotebookTemplate } from '../utils/notebookTranslation';
 import { openLightspeed } from '../utils/testHelper';
 
 import { NotebookAddDocumentModalPage } from './NotebookAddDocumentModalPage';
@@ -68,6 +69,10 @@ export class NotebookSurfacePage {
 
   notebooksTab(): Locator {
     return this.page.getByRole('tab', { name: this.t['tabs.notebooks'] });
+  }
+
+  chatTab(): Locator {
+    return this.page.getByRole('tab', { name: this.t['tabs.chat'] });
   }
 
   myNotebooksHeading(): Locator {
@@ -227,11 +232,21 @@ export class NotebookSurfacePage {
 
   /** Kebab on the first document row in the sidebar list. */
   firstListedDocumentOverflowMenuToggle(): Locator {
+    return this.chatbotRegion().locator('.doc-kebab').first();
+  }
+
+  /** First document filename in the sidebar (always visible, used as hover target). */
+  private firstDocumentFileName(): Locator {
     return this.chatbotRegion()
-      .getByRole('button', {
-        name: new RegExp(`^${this.t['aria.options.label']} `),
-      })
+      .locator('[title]')
+      .filter({ hasText: /.+\..+/ })
       .first();
+  }
+
+  /** Hovers the first document row then clicks its kebab menu toggle. */
+  private async hoverDocumentRowAndClickKebab(): Promise<void> {
+    await this.firstDocumentFileName().hover();
+    await this.firstListedDocumentOverflowMenuToggle().click();
   }
 
   documentRowDeleteMenuItem(): Locator {
@@ -255,7 +270,7 @@ export class NotebookSurfacePage {
 
   /** Opens the overflow menu on the first sidebar document, chooses Delete document, and confirms the deletion. */
   async deleteFirstListedDocumentFromSidebarOverflowMenu(): Promise<void> {
-    await this.firstListedDocumentOverflowMenuToggle().click();
+    await this.hoverDocumentRowAndClickKebab();
     await this.documentRowDeleteMenuItem().click();
     await expect(this.deleteDocumentConfirmDialog()).toBeVisible();
     await this.deleteDocumentConfirmButton().click();
@@ -294,7 +309,7 @@ export class NotebookSurfacePage {
     oldName: string,
     newName: string,
   ): Promise<void> {
-    await this.firstListedDocumentOverflowMenuToggle().click();
+    await this.hoverDocumentRowAndClickKebab();
     await this.documentRowRenameMenuItem().click();
     const input = this.chatbotRegion().getByRole('textbox', {
       name: this.t['notebook.document.rename'],

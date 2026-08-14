@@ -228,9 +228,7 @@ describe('DocumentSidebar', () => {
     it('should enter edit mode from kebab Rename action with base name', () => {
       render(<DocumentSidebar {...renameProps} />);
 
-      const kebab = screen.getByRole('button', {
-        name: /Options readme\.md/i,
-      });
+      const kebab = screen.getByLabelText(/Options readme\.md/i);
       fireEvent.click(kebab);
 
       const renameItem = screen.getByText('Rename');
