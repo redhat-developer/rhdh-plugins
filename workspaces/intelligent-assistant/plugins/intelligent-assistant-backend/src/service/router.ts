@@ -33,6 +33,7 @@ import {
   iaChatUsePermission,
   iaMcpManagePermission,
   iaMcpReadPermission,
+  iaNotebooksUsePermission,
   iaPermissions,
   iaSavedPromptsManagePermission,
   iaSkillsAccessPermission,
@@ -566,6 +567,7 @@ export async function createRouter(
   router.get(
     '/notebook-conversation-ids',
     generalRateLimiter,
+    requirePermission(iaNotebooksUsePermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);

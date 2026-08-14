@@ -21,6 +21,9 @@ export const iaMcpManagePermission: BasicPermission;
 export const iaMcpReadPermission: BasicPermission;
 
 // @public
+export const iaNotebooksManagePermission: BasicPermission;
+
+// @public
 export const iaNotebooksUsePermission: BasicPermission;
 
 // @public

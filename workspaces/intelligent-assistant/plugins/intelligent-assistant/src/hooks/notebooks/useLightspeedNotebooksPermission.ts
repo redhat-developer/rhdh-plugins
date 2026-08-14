@@ -26,5 +26,6 @@ export const useLightspeedNotebooksPermission = () => {
   return {
     loading: result.loading,
     allowed: result.allowed,
+    iaNotebooksUsePermissionName: iaNotebooksUsePermission.name,
   };
 };
