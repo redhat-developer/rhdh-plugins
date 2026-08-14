@@ -255,6 +255,7 @@ export const boostPlugin = createBackendPlugin({
 
         const connectorConfigReader = new ConnectorConfigReader({
           config,
+          resolver: runtimeConfigResolver,
           logger,
         });
 
