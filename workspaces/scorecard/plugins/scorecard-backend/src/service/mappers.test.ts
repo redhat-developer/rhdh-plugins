@@ -152,6 +152,7 @@ describe('AggregatedMetricMapper', () => {
         title: 'KPI title',
         description: 'KPI description',
         type: 'number',
+        unit: undefined,
         history: undefined,
         aggregationType: aggregationTypes.statusGrouped,
       });
@@ -172,6 +173,7 @@ describe('AggregatedMetricMapper', () => {
         title: 'Weighted KPI',
         description: 'Weighted KPI description',
         type: 'number',
+        unit: undefined,
         history: undefined,
         aggregationType: aggregationTypes.weightedStatusScore,
       });
@@ -202,6 +204,33 @@ describe('AggregatedMetricMapper', () => {
       );
 
       expect(result).not.toHaveProperty('filter');
+    });
+
+    it('should include unit and history when defined on the metric', () => {
+      const metricWithUnitAndHistory: Metric = {
+        ...mockMetric,
+        unit: 'h',
+        history: true,
+      };
+
+      const aggregationConfig = mockStatusGroupedAggregationConfig({
+        title: 'KPI title',
+        description: 'KPI description',
+      });
+
+      const result = AggregatedMetricMapper.toAggregationMetadata(
+        metricWithUnitAndHistory,
+        aggregationConfig,
+      );
+
+      expect(result).toEqual({
+        title: 'KPI title',
+        description: 'KPI description',
+        type: 'number',
+        unit: 'h',
+        history: true,
+        aggregationType: aggregationTypes.statusGrouped,
+      });
     });
   });
 
@@ -238,6 +267,7 @@ describe('AggregatedMetricMapper', () => {
           title: 'KPI',
           description: 'KPI desc',
           type: 'number',
+          unit: undefined,
           history: undefined,
           aggregationType: 'statusGrouped',
         },

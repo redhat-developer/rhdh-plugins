@@ -14,23 +14,16 @@
  * limitations under the License.
  */
 
-export {
-  getHeightForCenterLabel,
-  getYOffsetForCenterLabel,
-} from './chartLabelUtils';
-export {
-  SCORECARD_ENTITIES_TABLE_HEADERS,
-  SCORECARD_ERROR_STATE_COLOR,
-} from './constants';
-export { getLastUpdatedLabel } from './entityTableUtils';
-export { formatWithMetricUnit } from './formatMetricUnit';
-export {
-  getStatusConfig,
-  getTranslatedStatus,
-  resolveStatusColor,
-} from './statusUtils';
-export { getThresholdRuleColor, getThresholdRuleIcon } from './thresholdUtils';
-export {
-  resolveMetricTranslation,
-  extractPluginName,
-} from './translationUtils';
+/**
+ * Appends a metric display unit to a threshold expression or value.
+ * Units starting with `%` or `/` are concatenated without a leading space.
+ */
+export function formatWithMetricUnit(value: string, unit?: string): string {
+  if (!unit) {
+    return value;
+  }
+  if (unit.startsWith('%') || unit.startsWith('/')) {
+    return `${value}${unit}`;
+  }
+  return `${value} ${unit}`;
+}

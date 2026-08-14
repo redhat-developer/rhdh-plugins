@@ -480,6 +480,33 @@ describe('CatalogMetricService', () => {
       ).rejects.toThrow(NotAllowedError);
     });
 
+    it('should return metric metadata', async () => {
+      const metric = {
+        ...provider.getMetrics()[0],
+        unit: 'h',
+      };
+      mockedRegistry.getMetric.mockReturnValue(metric);
+      (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue([
+        metric,
+      ]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result.metadata).toEqual({
+        title: metric.title,
+        description: metric.description,
+        type: metric.type,
+        unit: metric.unit,
+        history: metric.history,
+        defaultVisualization: metric.defaultVisualization,
+      });
+    });
+
     it('should return empty points when no data in range', async () => {
       const result = await service.getEntityMetricTimeSeries(
         entityRef,
@@ -496,6 +523,7 @@ describe('CatalogMetricService', () => {
           title: provider.getMetrics()[0].title,
           description: provider.getMetrics()[0].description,
           type: provider.getMetrics()[0].type,
+          unit: provider.getMetrics()[0].unit,
           history: provider.getMetrics()[0].history,
           defaultVisualization: provider.getMetrics()[0].defaultVisualization,
         },
@@ -1479,6 +1507,7 @@ describe('CatalogMetricService', () => {
         title: provider.getMetrics()[0].title,
         description: provider.getMetrics()[0].description,
         type: provider.getMetrics()[0].type,
+        unit: provider.getMetrics()[0].unit,
       });
     });
   });
