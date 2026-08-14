@@ -17,9 +17,15 @@
 import {
   createPermissionResourceRef,
   createPermissionRule,
-  type PermissionRule,
 } from '@backstage/plugin-permission-node';
-import { z } from 'zod';
+// `@backstage/plugin-permission-node`'s `paramsSchema?: z.ZodSchema<TParams>`
+// is typed against `zod/v3` (it imports `{ z } from 'zod/v3'` internally for
+// v3/v4-peer interop — see its compiled `dist/index.d.ts`). Importing the
+// same subpath here keeps our schema types structurally identical to what
+// `createPermissionRule` expects, instead of the bare `zod` v4-classic
+// `ZodType` shape (which has a different `Internals` generic and would
+// otherwise fail to satisfy `paramsSchema`).
+import { z } from 'zod/v3';
 import { AI_CATALOG_ASSET_RESOURCE_TYPE } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 
 // ---------------------------------------------------------------------------
@@ -93,30 +99,25 @@ const isAiAssetCategoryParamsSchema: z.ZodType<IsAiAssetCategoryParams> =
  *
  * @internal
  */
-export const isAiAssetCategory = createPermissionRule({
+export const isAiAssetCategory = createPermissionRule<
+  typeof aiCatalogAssetPermissionResourceRef,
+  IsAiAssetCategoryParams
+>({
   name: 'isAiAssetCategory',
   description:
     'Matches AI assets by their category (ai-model, agent, skill, mcp-server, model-server)',
   resourceRef: aiCatalogAssetPermissionResourceRef,
   paramsSchema: isAiAssetCategoryParamsSchema,
-  apply: (
-    resource: AiCatalogAssetResource,
-    { category }: IsAiAssetCategoryParams,
-  ) => {
+  apply: (resource, { category }) => {
     const annotation =
       resource.metadata.annotations?.['rhdh.io/ai-asset-category'];
     return annotation === category;
   },
-  toQuery: ({ category }: IsAiAssetCategoryParams) => ({
-    key: 'rhdh.io/ai-asset-category',
+  toQuery: ({ category }) => ({
+    key: 'metadata.annotations.rhdh.io/ai-asset-category',
     values: [category],
   }),
-} as any) as unknown as PermissionRule<
-  AiCatalogAssetResource,
-  AiCatalogFilter,
-  typeof AI_CATALOG_ASSET_RESOURCE_TYPE,
-  IsAiAssetCategoryParams
->;
+});
 
 // ---------------------------------------------------------------------------
 // Rule: isFromConnector
@@ -136,30 +137,25 @@ const isFromConnectorParamsSchema: z.ZodType<IsFromConnectorParams> = z.object({
  *
  * @internal
  */
-export const isFromConnector = createPermissionRule({
+export const isFromConnector = createPermissionRule<
+  typeof aiCatalogAssetPermissionResourceRef,
+  IsFromConnectorParams
+>({
   name: 'isFromConnector',
   description:
     'Matches AI assets by their source connector (e.g., watsonx, internal-registry)',
   resourceRef: aiCatalogAssetPermissionResourceRef,
   paramsSchema: isFromConnectorParamsSchema,
-  apply: (
-    resource: AiCatalogAssetResource,
-    { connector }: IsFromConnectorParams,
-  ) => {
+  apply: (resource, { connector }) => {
     const annotation =
       resource.metadata.annotations?.['rhdh.io/ai-asset-source'];
     return annotation === connector;
   },
-  toQuery: ({ connector }: IsFromConnectorParams) => ({
-    key: 'rhdh.io/ai-asset-source',
+  toQuery: ({ connector }) => ({
+    key: 'metadata.annotations.rhdh.io/ai-asset-source',
     values: [connector],
   }),
-} as any) as unknown as PermissionRule<
-  AiCatalogAssetResource,
-  AiCatalogFilter,
-  typeof AI_CATALOG_ASSET_RESOURCE_TYPE,
-  IsFromConnectorParams
->;
+});
 
 // ---------------------------------------------------------------------------
 // Rule: isInTenant
@@ -180,13 +176,16 @@ const isInTenantParamsSchema: z.ZodType<IsInTenantParams> = z.object({
  *
  * @internal
  */
-export const isInTenant = createPermissionRule({
+export const isInTenant = createPermissionRule<
+  typeof aiCatalogAssetPermissionResourceRef,
+  IsInTenantParams
+>({
   name: 'isInTenant',
   description:
     'Matches AI assets by their tenant identity (namespace or annotation)',
   resourceRef: aiCatalogAssetPermissionResourceRef,
   paramsSchema: isInTenantParamsSchema,
-  apply: (resource: AiCatalogAssetResource, { tenant }: IsInTenantParams) => {
+  apply: (resource, { tenant }) => {
     // Check namespace first
     const namespace = resource.metadata.namespace ?? 'default';
     if (namespace === tenant) {
@@ -197,16 +196,13 @@ export const isInTenant = createPermissionRule({
       resource.metadata.annotations?.['rhdh.io/ai-asset-tenant'];
     return annotation === tenant;
   },
-  toQuery: ({ tenant }: IsInTenantParams) => ({
-    key: 'rhdh.io/ai-asset-tenant',
-    values: [tenant],
+  toQuery: ({ tenant }) => ({
+    anyOf: [
+      { key: 'metadata.namespace', values: [tenant] },
+      { key: 'metadata.annotations.rhdh.io/ai-asset-tenant', values: [tenant] },
+    ],
   }),
-} as any) as unknown as PermissionRule<
-  AiCatalogAssetResource,
-  AiCatalogFilter,
-  typeof AI_CATALOG_ASSET_RESOURCE_TYPE,
-  IsInTenantParams
->;
+});
 
 // ---------------------------------------------------------------------------
 // Exported rules collection

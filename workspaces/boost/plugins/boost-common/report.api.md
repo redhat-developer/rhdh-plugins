@@ -35,10 +35,10 @@ export const AI_CATALOG_ASSET_RESOURCE_TYPE = 'ai-catalog-asset';
 export const aiCatalogAdminPermission: BasicPermission;
 
 // @public
-export const aiCatalogAssetReadPermission: ResourcePermission<'ai-catalog-asset'>;
+export const aiCatalogAssetAccessPermission: ResourcePermission<'ai-catalog-asset'>;
 
 // @public
-export const aiCatalogAssetReadUsageDocsPermission: ResourcePermission<'ai-catalog-asset'>;
+export const aiCatalogAssetAccessUsageDocsPermission: ResourcePermission<'ai-catalog-asset'>;
 
 // @public
 export const aiCatalogPermissions: readonly [

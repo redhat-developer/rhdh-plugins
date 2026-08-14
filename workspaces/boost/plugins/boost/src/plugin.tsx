@@ -134,7 +134,7 @@ const versionListCard = EntityCardBlueprint.make({
 // ---------------------------------------------------------------------------
 // Entity Content Blueprint — Usage tab stub with isAiAsset filter
 // ---------------------------------------------------------------------------
-// TODO(RHDHPLAN-1508): Add permission check for ai-catalog.asset.read.usage-docs
+// TODO(RHDHPLAN-1508): Add permission check for ai-catalog.asset.access.usage-docs
 // when RBAC is implemented. Currently defaults to allow per design decision 7.
 const usageTab = EntityContentBlueprint.make({
   name: 'usage',

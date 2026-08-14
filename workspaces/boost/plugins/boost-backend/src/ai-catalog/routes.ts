@@ -26,8 +26,8 @@ import {
 } from '@backstage/plugin-permission-common';
 import { NotAllowedError, NotFoundError } from '@backstage/errors';
 import {
-  aiCatalogAssetReadPermission,
-  aiCatalogAssetReadUsageDocsPermission,
+  aiCatalogAssetAccessPermission,
+  aiCatalogAssetAccessUsageDocsPermission,
   aiCatalogAdminPermission,
   type AI_CATALOG_ASSET_RESOURCE_TYPE,
 } from '@red-hat-developer-hub/backstage-plugin-boost-common';
@@ -150,7 +150,7 @@ export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router {
       const [readDecision] = await permissions.authorizeConditional(
         [
           {
-            permission: aiCatalogAssetReadPermission as ResourcePermission<
+            permission: aiCatalogAssetAccessPermission as ResourcePermission<
               typeof AI_CATALOG_ASSET_RESOURCE_TYPE
             >,
           },
@@ -176,7 +176,7 @@ export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router {
         // production. For now, pass conditions to the response so
         // downstream consumers can apply them.
         logger.debug(
-          'ai-catalog.asset.read returned CONDITIONAL — conditions available for query filtering',
+          'ai-catalog.asset.access returned CONDITIONAL — conditions available for query filtering',
         );
       }
 
@@ -185,7 +185,7 @@ export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router {
         [
           {
             permission:
-              aiCatalogAssetReadUsageDocsPermission as ResourcePermission<
+              aiCatalogAssetAccessUsageDocsPermission as ResourcePermission<
                 typeof AI_CATALOG_ASSET_RESOURCE_TYPE
               >,
           },
@@ -213,7 +213,7 @@ export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router {
       const [readDecision] = await permissions.authorize(
         [
           {
-            permission: aiCatalogAssetReadPermission,
+            permission: aiCatalogAssetAccessPermission,
             resourceRef: id,
           },
         ],
@@ -240,7 +240,7 @@ export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router {
       const [tier2Decision] = await permissions.authorize(
         [
           {
-            permission: aiCatalogAssetReadUsageDocsPermission,
+            permission: aiCatalogAssetAccessUsageDocsPermission,
             resourceRef: id,
           },
         ],

@@ -21,6 +21,7 @@ import {
 } from '@backstage/backend-plugin-api';
 import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
+import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import {
   AI_CATALOG_ASSET_RESOURCE_TYPE,
@@ -59,6 +60,11 @@ import { ConnectorConfigReader } from './ingestion/ConnectorConfigReader';
 import { HealthStatusService } from './ingestion/HealthStatusService';
 import { createIngestionHealthRoutes } from './ingestion/routes';
 import { aiCatalogRules } from './ai-catalog/rules';
+import { createAiCatalogRoutes } from './ai-catalog/routes';
+import {
+  CatalogAssetLoader,
+  createGetAiCatalogAssetResources,
+} from './ai-catalog/CatalogAssetLoader';
 
 /**
  * The ProviderManager instance shared between the plugin and the
@@ -138,6 +144,8 @@ export const boostPlugin = createBackendPlugin({
         permissions: coreServices.permissions,
         permissionsRegistry: coreServices.permissionsRegistry,
         scheduler: coreServices.scheduler,
+        auth: coreServices.auth,
+        catalog: catalogServiceRef,
       },
       async init({
         logger,
@@ -149,6 +157,8 @@ export const boostPlugin = createBackendPlugin({
         permissions: _permissions,
         permissionsRegistry,
         scheduler,
+        auth,
+        catalog,
       }) {
         logger.info('Initializing boost backend plugin');
 
@@ -331,12 +341,29 @@ export const boostPlugin = createBackendPlugin({
 
         // AI Catalog permission integration router with conditional rules
         // (task 4.7: register isAiAssetCategory, isFromConnector, isInTenant)
+        // `getResources` resolves entity-ref resourceRefs to
+        // AiCatalogAssetResource instances via the catalog so that
+        // /apply-conditions can evaluate rules for non-batch authorize()
+        // calls (see PR #4185 review comment on plugin.ts).
         const aiCatalogPermissionRouter = createPermissionIntegrationRouter({
           resourceType: AI_CATALOG_ASSET_RESOURCE_TYPE,
           permissions: [...aiCatalogPermissions],
-          rules: Object.values(aiCatalogRules) as any,
+          rules: Object.values(aiCatalogRules),
+          getResources: createGetAiCatalogAssetResources(catalog, auth),
         });
         router.use(aiCatalogPermissionRouter);
+
+        // AI Catalog asset routes (graduated visibility: entity-level
+        // filtering on list, field-level filtering on detail), backed by
+        // the real Backstage catalog.
+        const aiCatalogAssetLoader = new CatalogAssetLoader(catalog, auth);
+        const aiCatalogRoutes = createAiCatalogRoutes({
+          permissions: _permissions,
+          httpAuth,
+          logger,
+          assetLoader: aiCatalogAssetLoader,
+        });
+        router.use(aiCatalogRoutes);
 
         // Agent lifecycle routes (tasks 3.1–3.7)
         const agentRoutes = createAgentRoutes({
@@ -488,6 +515,10 @@ export const boostPlugin = createBackendPlugin({
         });
         httpRouter.addAuthPolicy({
           path: '/ingestion-health',
+          allow: 'user-cookie',
+        });
+        httpRouter.addAuthPolicy({
+          path: '/ai-catalog',
           allow: 'user-cookie',
         });
 

@@ -351,10 +351,18 @@ export const aiCatalogAdminPermission = createPermission({
  * lifecycle stage, version count, tags). Resource-scoped to support
  * CONDITIONAL evaluation via RBAC conditional policies.
  *
+ * @remarks
+ * The permission name uses `access` rather than `read` per the naming
+ * convention decided across the 2.1 permission work (see
+ * {@link https://github.com/redhat-developer/rhdh-plugins/issues/4041 | issue #4041}).
+ * The `attributes.action` remains `'read'` since that is a fixed
+ * {@link @backstage/plugin-permission-common#PermissionAction | Backstage action enum}
+ * value, unrelated to the permission name.
+ *
  * @public
  */
-export const aiCatalogAssetReadPermission = createPermission({
-  name: 'ai-catalog.asset.read',
+export const aiCatalogAssetAccessPermission = createPermission({
+  name: 'ai-catalog.asset.access',
   attributes: { action: 'read' },
   resourceType: AI_CATALOG_ASSET_RESOURCE_TYPE,
 });
@@ -364,10 +372,14 @@ export const aiCatalogAssetReadPermission = createPermission({
  * endpoints, and configuration. Resource-scoped to support CONDITIONAL
  * evaluation via RBAC conditional policies.
  *
+ * @remarks
+ * See {@link aiCatalogAssetAccessPermission} for the `access`-vs-`read`
+ * naming rationale.
+ *
  * @public
  */
-export const aiCatalogAssetReadUsageDocsPermission = createPermission({
-  name: 'ai-catalog.asset.read.usage-docs',
+export const aiCatalogAssetAccessUsageDocsPermission = createPermission({
+  name: 'ai-catalog.asset.access.usage-docs',
   attributes: { action: 'read' },
   resourceType: AI_CATALOG_ASSET_RESOURCE_TYPE,
 });
@@ -378,8 +390,8 @@ export const aiCatalogAssetReadUsageDocsPermission = createPermission({
  * @public
  */
 export const aiCatalogPermissions = [
-  aiCatalogAssetReadPermission,
-  aiCatalogAssetReadUsageDocsPermission,
+  aiCatalogAssetAccessPermission,
+  aiCatalogAssetAccessUsageDocsPermission,
   aiCatalogAdminPermission,
 ] as const;
 
@@ -390,7 +402,7 @@ export const aiCatalogPermissions = [
  */
 export const aiCatalogResourcePermissions: ResourcePermission<
   typeof AI_CATALOG_ASSET_RESOURCE_TYPE
->[] = [aiCatalogAssetReadPermission, aiCatalogAssetReadUsageDocsPermission];
+>[] = [aiCatalogAssetAccessPermission, aiCatalogAssetAccessUsageDocsPermission];
 
 // ---------------------------------------------------------------------------
 // Conditional rule names

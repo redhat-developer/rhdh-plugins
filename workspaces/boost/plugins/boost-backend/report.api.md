@@ -152,9 +152,11 @@ export const boostConfigFields: {
     readonly description: string;
   };
   readonly 'boost.security.mode': {
-    readonly schema: z.ZodEnum<
-      ['development-only-no-auth', 'plugin-only', 'full']
-    >;
+    readonly schema: z.ZodEnum<{
+      full: 'full';
+      'development-only-no-auth': 'development-only-no-auth';
+      'plugin-only': 'plugin-only';
+    }>;
     readonly configScope: ConfigScope;
     readonly description: string;
   };
@@ -169,7 +171,12 @@ export const boostConfigFields: {
     readonly description: string;
   };
   readonly 'boost.agentApproval.mode': {
-    readonly schema: z.ZodOptional<z.ZodEnum<['built-in', 'sonataflow']>>;
+    readonly schema: z.ZodOptional<
+      z.ZodEnum<{
+        'built-in': 'built-in';
+        sonataflow: 'sonataflow';
+      }>
+    >;
     readonly configScope: ConfigScope;
     readonly description: string;
   };
@@ -227,7 +234,7 @@ export const boostConfigFields: {
     readonly description: string;
   };
   readonly 'boost.connectors.jira.endpoint': {
-    readonly schema: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
+    readonly schema: z.ZodOptional<z.ZodString>;
     readonly configScope: ConfigScope;
     readonly description: `HTTPS endpoint URL for the ${string} ${string}. Must use HTTPS.`;
   };
@@ -237,7 +244,7 @@ export const boostConfigFields: {
     readonly description: string;
   };
   readonly 'boost.connectors.jira.schedule.cron': {
-    readonly schema: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
+    readonly schema: z.ZodOptional<z.ZodString>;
     readonly configScope: ConfigScope;
     readonly description: string;
   };
@@ -257,7 +264,7 @@ export const boostConfigFields: {
     readonly description: string;
   };
   readonly 'boost.connectors.github.endpoint': {
-    readonly schema: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
+    readonly schema: z.ZodOptional<z.ZodString>;
     readonly configScope: ConfigScope;
     readonly description: `HTTPS endpoint URL for the ${string} ${string}. Must use HTTPS.`;
   };
@@ -277,7 +284,7 @@ export const boostConfigFields: {
     readonly description: string;
   };
   readonly 'boost.connectors.gitlab.endpoint': {
-    readonly schema: z.ZodOptional<z.ZodEffects<z.ZodString, string, string>>;
+    readonly schema: z.ZodOptional<z.ZodString>;
     readonly configScope: ConfigScope;
     readonly description: `HTTPS endpoint URL for the ${string} ${string}. Must use HTTPS.`;
   };

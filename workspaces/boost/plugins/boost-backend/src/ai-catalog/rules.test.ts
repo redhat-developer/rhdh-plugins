@@ -21,23 +21,6 @@ import type { AiCatalogAssetResource } from './rules';
 // Helpers
 // ---------------------------------------------------------------------------
 
-// The PermissionRule type uses NoInfer<TParams> which makes direct
-// calls fail type-checking when params default to `undefined`. These
-// wrappers provide typed access for tests while keeping the production
-// rule types unchanged.
-const categoryRule = isAiAssetCategory as {
-  apply(r: AiCatalogAssetResource, p: { category: string }): boolean;
-  toQuery(p: { category: string }): { key: string; values: string[] };
-};
-const connectorRule = isFromConnector as {
-  apply(r: AiCatalogAssetResource, p: { connector: string }): boolean;
-  toQuery(p: { connector: string }): { key: string; values: string[] };
-};
-const tenantRule = isInTenant as {
-  apply(r: AiCatalogAssetResource, p: { tenant: string }): boolean;
-  toQuery(p: { tenant: string }): { key: string; values: string[] };
-};
-
 function makeResource(
   overrides: Partial<AiCatalogAssetResource['metadata']> = {},
 ): AiCatalogAssetResource {
@@ -60,62 +43,66 @@ describe('isAiAssetCategory', () => {
       const resource = makeResource({
         annotations: { 'rhdh.io/ai-asset-category': 'ai-model' },
       });
-      expect(categoryRule.apply(resource, { category: 'ai-model' })).toBe(true);
+      expect(isAiAssetCategory.apply(resource, { category: 'ai-model' })).toBe(
+        true,
+      );
     });
 
     it('returns false when annotation does not match category', () => {
       const resource = makeResource({
         annotations: { 'rhdh.io/ai-asset-category': 'agent' },
       });
-      expect(categoryRule.apply(resource, { category: 'ai-model' })).toBe(
+      expect(isAiAssetCategory.apply(resource, { category: 'ai-model' })).toBe(
         false,
       );
     });
 
     it('returns false when annotation is missing', () => {
       const resource = makeResource({ annotations: {} });
-      expect(categoryRule.apply(resource, { category: 'ai-model' })).toBe(
+      expect(isAiAssetCategory.apply(resource, { category: 'ai-model' })).toBe(
         false,
       );
     });
 
     it('returns false when annotations object is undefined', () => {
       const resource = makeResource({ annotations: undefined });
-      expect(categoryRule.apply(resource, { category: 'skill' })).toBe(false);
+      expect(isAiAssetCategory.apply(resource, { category: 'skill' })).toBe(
+        false,
+      );
     });
 
     it('matches mcp-server category', () => {
       const resource = makeResource({
         annotations: { 'rhdh.io/ai-asset-category': 'mcp-server' },
       });
-      expect(categoryRule.apply(resource, { category: 'mcp-server' })).toBe(
-        true,
-      );
+      expect(
+        isAiAssetCategory.apply(resource, { category: 'mcp-server' }),
+      ).toBe(true);
     });
 
     it('matches model-server category', () => {
       const resource = makeResource({
         annotations: { 'rhdh.io/ai-asset-category': 'model-server' },
       });
-      expect(categoryRule.apply(resource, { category: 'model-server' })).toBe(
-        true,
-      );
+      expect(
+        isAiAssetCategory.apply(resource, { category: 'model-server' }),
+      ).toBe(true);
     });
   });
 
   describe('toQuery()', () => {
     it('generates catalog query predicate for annotation filter', () => {
-      const query = categoryRule.toQuery({ category: 'ai-model' });
+      const query = isAiAssetCategory.toQuery({ category: 'ai-model' });
       expect(query).toEqual({
-        key: 'rhdh.io/ai-asset-category',
+        key: 'metadata.annotations.rhdh.io/ai-asset-category',
         values: ['ai-model'],
       });
     });
 
     it('generates query for agent category', () => {
-      const query = categoryRule.toQuery({ category: 'agent' });
+      const query = isAiAssetCategory.toQuery({ category: 'agent' });
       expect(query).toEqual({
-        key: 'rhdh.io/ai-asset-category',
+        key: 'metadata.annotations.rhdh.io/ai-asset-category',
         values: ['agent'],
       });
     });
@@ -132,7 +119,7 @@ describe('isFromConnector', () => {
       const resource = makeResource({
         annotations: { 'rhdh.io/ai-asset-source': 'watsonx' },
       });
-      expect(connectorRule.apply(resource, { connector: 'watsonx' })).toBe(
+      expect(isFromConnector.apply(resource, { connector: 'watsonx' })).toBe(
         true,
       );
     });
@@ -141,21 +128,21 @@ describe('isFromConnector', () => {
       const resource = makeResource({
         annotations: { 'rhdh.io/ai-asset-source': 'internal-registry' },
       });
-      expect(connectorRule.apply(resource, { connector: 'watsonx' })).toBe(
+      expect(isFromConnector.apply(resource, { connector: 'watsonx' })).toBe(
         false,
       );
     });
 
     it('returns false when annotation is missing', () => {
       const resource = makeResource({ annotations: {} });
-      expect(connectorRule.apply(resource, { connector: 'watsonx' })).toBe(
+      expect(isFromConnector.apply(resource, { connector: 'watsonx' })).toBe(
         false,
       );
     });
 
     it('returns false when annotations object is undefined', () => {
       const resource = makeResource({ annotations: undefined });
-      expect(connectorRule.apply(resource, { connector: 'watsonx' })).toBe(
+      expect(isFromConnector.apply(resource, { connector: 'watsonx' })).toBe(
         false,
       );
     });
@@ -163,19 +150,19 @@ describe('isFromConnector', () => {
 
   describe('toQuery()', () => {
     it('generates catalog query predicate for annotation filter', () => {
-      const query = connectorRule.toQuery({ connector: 'watsonx' });
+      const query = isFromConnector.toQuery({ connector: 'watsonx' });
       expect(query).toEqual({
-        key: 'rhdh.io/ai-asset-source',
+        key: 'metadata.annotations.rhdh.io/ai-asset-source',
         values: ['watsonx'],
       });
     });
 
     it('generates query for internal-registry connector', () => {
-      const query = connectorRule.toQuery({
+      const query = isFromConnector.toQuery({
         connector: 'internal-registry',
       });
       expect(query).toEqual({
-        key: 'rhdh.io/ai-asset-source',
+        key: 'metadata.annotations.rhdh.io/ai-asset-source',
         values: ['internal-registry'],
       });
     });
@@ -190,7 +177,7 @@ describe('isInTenant', () => {
   describe('apply()', () => {
     it('returns true when namespace matches tenant', () => {
       const resource = makeResource({ namespace: 'team-alpha' });
-      expect(tenantRule.apply(resource, { tenant: 'team-alpha' })).toBe(true);
+      expect(isInTenant.apply(resource, { tenant: 'team-alpha' })).toBe(true);
     });
 
     it('returns true when tenant annotation matches', () => {
@@ -198,7 +185,7 @@ describe('isInTenant', () => {
         namespace: 'default',
         annotations: { 'rhdh.io/ai-asset-tenant': 'team-beta' },
       });
-      expect(tenantRule.apply(resource, { tenant: 'team-beta' })).toBe(true);
+      expect(isInTenant.apply(resource, { tenant: 'team-beta' })).toBe(true);
     });
 
     it('returns false when neither namespace nor annotation matches', () => {
@@ -206,7 +193,7 @@ describe('isInTenant', () => {
         namespace: 'team-alpha',
         annotations: { 'rhdh.io/ai-asset-tenant': 'team-beta' },
       });
-      expect(tenantRule.apply(resource, { tenant: 'team-gamma' })).toBe(false);
+      expect(isInTenant.apply(resource, { tenant: 'team-gamma' })).toBe(false);
     });
 
     it('returns false when annotation is missing and namespace does not match', () => {
@@ -214,12 +201,12 @@ describe('isInTenant', () => {
         namespace: 'team-alpha',
         annotations: {},
       });
-      expect(tenantRule.apply(resource, { tenant: 'team-beta' })).toBe(false);
+      expect(isInTenant.apply(resource, { tenant: 'team-beta' })).toBe(false);
     });
 
     it('matches default namespace when no namespace is set', () => {
       const resource = makeResource({ namespace: undefined });
-      expect(tenantRule.apply(resource, { tenant: 'default' })).toBe(true);
+      expect(isInTenant.apply(resource, { tenant: 'default' })).toBe(true);
     });
 
     it('prefers namespace over annotation when both match', () => {
@@ -228,7 +215,7 @@ describe('isInTenant', () => {
         annotations: { 'rhdh.io/ai-asset-tenant': 'team-alpha' },
       });
       // Both match — should return true
-      expect(tenantRule.apply(resource, { tenant: 'team-alpha' })).toBe(true);
+      expect(isInTenant.apply(resource, { tenant: 'team-alpha' })).toBe(true);
     });
 
     it('returns false when annotations object is undefined', () => {
@@ -236,24 +223,34 @@ describe('isInTenant', () => {
         namespace: 'other',
         annotations: undefined,
       });
-      expect(tenantRule.apply(resource, { tenant: 'team-alpha' })).toBe(false);
+      expect(isInTenant.apply(resource, { tenant: 'team-alpha' })).toBe(false);
     });
   });
 
   describe('toQuery()', () => {
-    it('generates catalog query predicate for tenant filter', () => {
-      const query = tenantRule.toQuery({ tenant: 'team-alpha' });
+    it('generates an anyOf of namespace + tenant annotation predicates', () => {
+      const query = isInTenant.toQuery({ tenant: 'team-alpha' });
       expect(query).toEqual({
-        key: 'rhdh.io/ai-asset-tenant',
-        values: ['team-alpha'],
+        anyOf: [
+          { key: 'metadata.namespace', values: ['team-alpha'] },
+          {
+            key: 'metadata.annotations.rhdh.io/ai-asset-tenant',
+            values: ['team-alpha'],
+          },
+        ],
       });
     });
 
     it('generates query for default tenant', () => {
-      const query = tenantRule.toQuery({ tenant: 'default' });
+      const query = isInTenant.toQuery({ tenant: 'default' });
       expect(query).toEqual({
-        key: 'rhdh.io/ai-asset-tenant',
-        values: ['default'],
+        anyOf: [
+          { key: 'metadata.namespace', values: ['default'] },
+          {
+            key: 'metadata.annotations.rhdh.io/ai-asset-tenant',
+            values: ['default'],
+          },
+        ],
       });
     });
   });

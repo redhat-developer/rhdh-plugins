@@ -37,8 +37,8 @@ import {
   boostKagentiAdminPermission,
   aiCatalogPermissions,
   aiCatalogResourcePermissions,
-  aiCatalogAssetReadPermission,
-  aiCatalogAssetReadUsageDocsPermission,
+  aiCatalogAssetAccessPermission,
+  aiCatalogAssetAccessUsageDocsPermission,
   aiCatalogAdminPermission,
 } from './index';
 
@@ -186,22 +186,24 @@ describe('boost-common', () => {
       expect(aiCatalogPermissions).toHaveLength(3);
     });
 
-    it('ai-catalog.asset.read is resource-scoped', () => {
-      expect(aiCatalogAssetReadPermission.name).toBe('ai-catalog.asset.read');
-      expect(aiCatalogAssetReadPermission.resourceType).toBe(
+    it('ai-catalog.asset.access is resource-scoped', () => {
+      expect(aiCatalogAssetAccessPermission.name).toBe(
+        'ai-catalog.asset.access',
+      );
+      expect(aiCatalogAssetAccessPermission.resourceType).toBe(
         AI_CATALOG_ASSET_RESOURCE_TYPE,
       );
-      expect(aiCatalogAssetReadPermission.attributes.action).toBe('read');
+      expect(aiCatalogAssetAccessPermission.attributes.action).toBe('read');
     });
 
-    it('ai-catalog.asset.read.usage-docs is resource-scoped', () => {
-      expect(aiCatalogAssetReadUsageDocsPermission.name).toBe(
-        'ai-catalog.asset.read.usage-docs',
+    it('ai-catalog.asset.access.usage-docs is resource-scoped', () => {
+      expect(aiCatalogAssetAccessUsageDocsPermission.name).toBe(
+        'ai-catalog.asset.access.usage-docs',
       );
-      expect(aiCatalogAssetReadUsageDocsPermission.resourceType).toBe(
+      expect(aiCatalogAssetAccessUsageDocsPermission.resourceType).toBe(
         AI_CATALOG_ASSET_RESOURCE_TYPE,
       );
-      expect(aiCatalogAssetReadUsageDocsPermission.attributes.action).toBe(
+      expect(aiCatalogAssetAccessUsageDocsPermission.attributes.action).toBe(
         'read',
       );
     });

@@ -191,15 +191,15 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4041
 **RHIDP Stories:** RHIDP-15271, RHIDP-15272, RHIDP-15306 (permission definitions), RHIDP-15312
 **Feature:** RHDHPLAN-1508 — Epic RHIDP-15270
 
-Define AI Catalog permission constants (`ai-catalog.asset.read`, `ai-catalog.asset.read.usage-docs`, `ai-catalog.admin`), implement graduated visibility backend enforcement (Tier 1 entity-level + Tier 2 field-level filtering), and implement conditional permission rules (`isAiAssetCategory`, `isFromConnector`, `isInTenant`) with `toQuery()` support. The default-deny config implementation is in Issue 20.
+Define AI Catalog permission constants (`ai-catalog.asset.access`, `ai-catalog.asset.access.usage-docs`, `ai-catalog.admin`), implement graduated visibility backend enforcement (Tier 1 entity-level + Tier 2 field-level filtering), and implement conditional permission rules (`isAiAssetCategory`, `isFromConnector`, `isInTenant`) with `toQuery()` support. The default-deny config implementation is in Issue 20.
 
 ### Tasks
 
 From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 1 (RHIDP-15271, RHIDP-15306):
 
 - 1.1 Define `AI_CATALOG_ASSET_RESOURCE_TYPE` constant in `boost-common/src/permissions.ts`
-- 1.2 Define `ai-catalog.asset.read` resource permission
-- 1.3 Define `ai-catalog.asset.read.usage-docs` resource permission
+- 1.2 Define `ai-catalog.asset.access` resource permission
+- 1.3 Define `ai-catalog.asset.access.usage-docs` resource permission
 - 1.4 Define `ai-catalog.admin` basic permission
 - 1.5 Export all permission constants and resource type
 - 1.6 Register all 3 permissions via `permissionsRegistry.addPermissions()`
@@ -1085,7 +1085,7 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4061
 **RHIDP Stories:** RHIDP-15310
 **Feature:** RHDHPLAN-1508 — Epic RHIDP-15270
 
-Implement backend skill filtering using batch `authorizeConditional()` for `ai-catalog.asset.read`, add `totalSkills`/`visibleSkills` fields to SkillBundle API response, ensure filtered-out skill references are not exposed, and implement frontend "N of M skills visible" count display with restricted-access placeholder for fully restricted bundles.
+Implement backend skill filtering using batch `authorizeConditional()` for `ai-catalog.asset.access`, add `totalSkills`/`visibleSkills` fields to SkillBundle API response, ensure filtered-out skill references are not exposed, and implement frontend "N of M skills visible" count display with restricted-access placeholder for fully restricted bundles.
 
 ### Tasks
 
@@ -1115,7 +1115,7 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4062
 **Feature:** RHDHPLAN-1508 — Epic RHIDP-15270
 **Cross-feature dependency:** RHIDP-15273 depends on RHIDP-15167 (RHDHPLAN-1509 — Entity page extensions). Graduated visibility wraps RHIDP-15167's entity page components with `RequirePermission` gating. Cannot gate what hasn't been built yet.
 
-Wrap Tier 2 sections in asset detail page with `<RequirePermission permission={aiCatalogAssetReadUsageDocsPermission}>`, create restricted-access placeholder for denied fields, implement filtered counts on asset list page, and add `usePermission` hook check for `ai-catalog.admin` to show/hide admin links.
+Wrap Tier 2 sections in asset detail page with `<RequirePermission permission={aiCatalogAssetAccessUsageDocsPermission}>`, create restricted-access placeholder for denied fields, implement filtered counts on asset list page, and add `usePermission` hook check for `ai-catalog.admin` to show/hide admin links.
 
 ### Tasks
 
