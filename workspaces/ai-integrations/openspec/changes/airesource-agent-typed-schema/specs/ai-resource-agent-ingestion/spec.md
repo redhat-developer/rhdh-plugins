@@ -6,13 +6,13 @@ When an AiResource entity declares `spec.type: agent`, the catalog processor MUS
 
 #### Scenario: Valid agent entity ingests
 
-- **WHEN** an AiResource entity with `spec.type: agent` and non-empty `spec.instructions` (and correctly typed optional agent fields, if present) is ingested
+- **WHEN** an AiResource entity with `spec.type: agent` (and correctly typed optional agent fields, if present) is ingested
 - **THEN** the catalog processor accepts it
 
-#### Scenario: Missing instructions rejected at ingestion
+#### Scenario: Missing instructions accepted at ingestion
 
-- **WHEN** an AiResource entity with `spec.type: agent` omits `spec.instructions` or sets it to an empty string
-- **THEN** the catalog processor rejects ingestion with an actionable error that names `spec.instructions`
+- **WHEN** an AiResource entity with `spec.type: agent` omits `spec.instructions`
+- **THEN** the catalog processor accepts the entity (agents may bake in a default prompt at runtime)
 
 #### Scenario: Wrong-type instructions rejected at ingestion
 
@@ -39,7 +39,7 @@ For `spec.type: agent`, the processor MUST accept `spec.handoffs` and `spec.tool
 
 ### Requirement: Actionable processor errors
 
-Agent validation errors MUST identify the field path, the problem (missing/empty/wrong type), and MUST NOT expose internal class names or stack traces to catalog authors.
+Agent validation errors MUST identify the field path, the problem (wrong type / invalid shape), and MUST NOT expose internal class names or stack traces to catalog authors.
 
 #### Scenario: Error names the field
 
@@ -61,7 +61,7 @@ AiResource entities that are not `spec.type: agent` MUST continue to follow exis
 
 ### Requirement: Processor automated tests
 
-Automated tests MUST cover processor accept and reject paths for agent entities, including missing `spec.instructions` and at least one invalid optional field shape.
+Automated tests MUST cover processor accept and reject paths for agent entities, including an agent that omits `spec.instructions` and at least one invalid optional field shape.
 
 #### Scenario: Accept path covered
 
@@ -70,5 +70,5 @@ Automated tests MUST cover processor accept and reject paths for agent entities,
 
 #### Scenario: Reject path covered
 
-- **WHEN** the processor test suite runs against an agent entity missing `spec.instructions`
+- **WHEN** the processor test suite runs against an agent entity with a wrong-type optional field (for example `spec.handoffs` as a non-array)
 - **THEN** the suite asserts a validation failure

@@ -107,14 +107,6 @@ export const NotebookCard = ({
     }
   };
 
-  const count = notebook.document_count ?? 0;
-  const getDocumentCountText = () => {
-    if (count === 0) return t('notebooks.documents.none');
-    if (count === 1) return t('notebooks.documents.one');
-    return (t as Function)('notebooks.documents.other', { count });
-  };
-  const documentCountText = getDocumentCountText();
-
   return (
     <Card
       className={classes.notebookCard}
@@ -220,7 +212,11 @@ export const NotebookCard = ({
       <CardBody className={classes.notebookCardBody}>
         <div>
           <div className={classes.notebookDocuments}>
-            <Typography variant="body2">{documentCountText}</Typography>
+            <Typography variant="body2">
+              {(t as Function)('notebooks.documents', {
+                count: notebook.document_count ?? 0,
+              })}
+            </Typography>
           </div>
           <div className={classes.notebookUpdated}>
             <Typography variant="caption">

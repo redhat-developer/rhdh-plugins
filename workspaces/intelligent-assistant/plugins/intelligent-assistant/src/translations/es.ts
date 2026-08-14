@@ -247,7 +247,8 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'notebook.upload.modal.title': 'Agregar recursos',
     'notebook.view.close': 'Cerrar cuaderno',
     'notebook.view.documents.add': 'Agregar',
-    'notebook.view.documents.count': '{{count}} Recursos',
+    'notebook.view.documents.count_one': '{{count}} Recurso',
+    'notebook.view.documents.count_other': '{{count}} Recursos',
     'notebook.view.documents.maxReached':
       'Se permiten un máximo de 10 recursos. Elimina un recurso para subir uno nuevo.',
     'notebook.view.documents.uploading': 'Subiendo recurso',
@@ -271,10 +272,8 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
       'Ya no verás este cuaderno aquí. Esto también eliminará actividad relacionada como solicitudes, respuestas y comentarios de tu actividad.',
     'notebooks.delete.title': '¿Eliminar {{name}}?',
     'notebooks.delete.toast': '¡Cuaderno eliminado!',
-    'notebooks.documents': 'Recursos',
-    'notebooks.documents.none': 'Sin recursos',
-    'notebooks.documents.one': '1 recurso',
-    'notebooks.documents.other': '{{count}} recursos',
+    'notebooks.documents_one': '{{count}} Recurso',
+    'notebooks.documents_other': '{{count}} Recursos',
     'notebooks.empty.action': 'Crear un cuaderno nuevo',
     'notebooks.empty.description':
       'Crea un nuevo cuaderno para organizar tus fuentes y generar información con IA.',

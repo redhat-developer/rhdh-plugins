@@ -23,7 +23,7 @@ import { LocationSpec } from '@backstage/plugin-catalog-common';
 import { collectOciErrors } from './collectOciErrors';
 
 /**
- * Valid values for spec.scope on AIResource entities.
+ * Valid values for spec.scope on AiResource entities.
  *
  * @public
  */
@@ -34,15 +34,15 @@ export const VALID_AI_RESOURCE_SCOPES = [
 ] as const;
 
 /**
- * Type for valid AIResource scope values.
+ * Type for valid AiResource scope values.
  *
  * @public
  */
-export type AIResourceScope = (typeof VALID_AI_RESOURCE_SCOPES)[number];
+export type AiResourceScope = (typeof VALID_AI_RESOURCE_SCOPES)[number];
 
 /**
  * A CatalogProcessor that validates RHDH-specific extension
- * fields on AIResource entities.
+ * fields on AiResource entities.
  *
  * Validates:
  * - `spec.scope`: optional field restricted to 'organization',
@@ -55,9 +55,9 @@ export type AIResourceScope = (typeof VALID_AI_RESOURCE_SCOPES)[number];
  *
  * @public
  */
-export class AIResourceExtensionsProcessor implements CatalogProcessor {
+export class AiResourceExtensionsProcessor implements CatalogProcessor {
   getProcessorName(): string {
-    return 'AIResourceExtensionsProcessor';
+    return 'AiResourceExtensionsProcessor';
   }
 
   async preProcessEntity(
@@ -65,7 +65,7 @@ export class AIResourceExtensionsProcessor implements CatalogProcessor {
     _location: LocationSpec,
     _emit: CatalogProcessorEmit,
   ): Promise<Entity> {
-    if (entity.kind !== 'AIResource') {
+    if (entity.kind !== 'AiResource') {
       return entity;
     }
 
@@ -74,7 +74,7 @@ export class AIResourceExtensionsProcessor implements CatalogProcessor {
     const scope = entity.spec?.scope;
     if (
       scope !== undefined &&
-      !VALID_AI_RESOURCE_SCOPES.includes(scope as AIResourceScope)
+      !VALID_AI_RESOURCE_SCOPES.includes(scope as AiResourceScope)
     ) {
       const accepted = VALID_AI_RESOURCE_SCOPES.map(v => `'${v}'`).join(', ');
       const sanitized = Array.from(String(scope))
@@ -90,7 +90,7 @@ export class AIResourceExtensionsProcessor implements CatalogProcessor {
 
     if (errors.length > 0) {
       throw new Error(
-        `Validation failed for AIResource entity: ${errors.join('; ')}`,
+        `Validation failed for AiResource entity: ${errors.join('; ')}`,
       );
     }
 

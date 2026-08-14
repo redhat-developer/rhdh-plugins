@@ -35,10 +35,8 @@ export const intelligentAssistantMessages = {
   'notebooks.empty.description':
     'Start a new notebook to organize your sources and generate AI-powered insights.',
   'notebooks.empty.action': 'Create a new notebook',
-  'notebooks.documents': 'Resources',
-  'notebooks.documents.none': 'No resources',
-  'notebooks.documents.one': '1 resource',
-  'notebooks.documents.other': '{{count}} resources',
+  'notebooks.documents_one': '{{count}} Resource',
+  'notebooks.documents_other': '{{count}} Resources',
   'notebooks.actions.rename': 'Rename',
   'notebooks.actions.delete': 'Delete',
   'notebooks.rename.inline.tooltip': 'Click to rename',
@@ -62,7 +60,8 @@ export const intelligentAssistantMessages = {
   // Notebook view
   'notebook.view.title': 'Untitled notebook',
   'notebook.view.close': 'Close notebook',
-  'notebook.view.documents.count': '{{count}} Resources',
+  'notebook.view.documents.count_one': '{{count}} Resource',
+  'notebook.view.documents.count_other': '{{count}} Resources',
   'notebook.view.documents.add': 'Add',
   'notebook.view.upload.heading': 'Add a resource to get started',
   'notebook.view.upload.action': 'Add a resource',

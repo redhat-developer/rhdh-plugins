@@ -21,7 +21,7 @@
  */
 export { catalogModuleCatalogBackendModuleAiResourceExtensions as default } from './module';
 export {
-  AIResourceExtensionsProcessor,
+  AiResourceExtensionsProcessor,
   VALID_AI_RESOURCE_SCOPES,
-} from './AIResourceExtensionsProcessor';
-export type { AIResourceScope } from './AIResourceExtensionsProcessor';
+} from './AiResourceExtensionsProcessor';
+export type { AiResourceScope } from './AiResourceExtensionsProcessor';

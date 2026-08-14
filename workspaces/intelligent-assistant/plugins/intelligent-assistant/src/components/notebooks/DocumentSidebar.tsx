@@ -388,9 +388,9 @@ export const DocumentSidebar = ({
 
       <div className={classes.documentsRow}>
         <Typography className={classes.documentCount}>
-          {t('notebook.view.documents.count', {
+          {(t as Function)('notebook.view.documents.count', {
             count: totalCount,
-          } as any)}
+          })}
         </Typography>
         {isAddDisabled ? (
           <Tooltip

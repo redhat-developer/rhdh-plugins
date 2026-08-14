@@ -73,6 +73,23 @@ describe('DocumentSidebar', () => {
     expect(screen.getByText('config.yaml')).toBeInTheDocument();
   });
 
+  it('should use singular form for single document count', () => {
+    const documents = [mockDocument('doc-1', 'readme.md')];
+    render(<DocumentSidebar {...defaultProps} documents={documents} />);
+
+    expect(screen.getByText('1 Resource')).toBeInTheDocument();
+  });
+
+  it('should use plural form for multiple document count', () => {
+    const documents = [
+      mockDocument('doc-1', 'readme.md'),
+      mockDocument('doc-2', 'config.yaml'),
+    ];
+    render(<DocumentSidebar {...defaultProps} documents={documents} />);
+
+    expect(screen.getByText('2 Resources')).toBeInTheDocument();
+  });
+
   it('should display FileTypeIcon badges for documents', () => {
     const documents = [mockDocument('doc-1', 'report.pdf')];
     render(<DocumentSidebar {...defaultProps} documents={documents} />);

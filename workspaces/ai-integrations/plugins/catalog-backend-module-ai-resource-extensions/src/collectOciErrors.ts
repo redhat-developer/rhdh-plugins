@@ -21,7 +21,7 @@ import {
 } from '@backstage/catalog-model';
 
 /**
- * Collects OCI-related validation errors for an AIResource entity
+ * Collects OCI-related validation errors for an AiResource entity
  * without throwing. Returns an array of error messages (empty if valid).
  *
  * Validates the `backstage.io/source-location` annotation when its
