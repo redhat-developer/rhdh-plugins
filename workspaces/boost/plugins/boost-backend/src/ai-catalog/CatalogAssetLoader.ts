@@ -69,6 +69,11 @@ function getStringSpecField(entity: Entity, field: string): string | undefined {
   return typeof value === 'string' ? value : undefined;
 }
 
+/** Runtime check that a value is a non-null plain object. */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 /**
  * Maps a Backstage catalog {@link @backstage/catalog-model#Entity} to the
  * `AiCatalogAsset` view model used by the AI catalog routes.
@@ -79,6 +84,10 @@ export function entityToAiCatalogAsset(entity: Entity): AiCatalogAsset {
   const remotes = getSpecField(entity, 'remotes') as
     | Array<{ type?: string; url?: string }>
     | undefined;
+  // When multiple remotes share the same `type`, the last entry wins
+  // (standard Object.fromEntries behavior).  This is acceptable because
+  // entity schemas treat `type` as a discriminator — duplicates indicate
+  // a malformed entity rather than intentional multi-URL support.
   const connectionEndpoints = remotes?.length
     ? Object.fromEntries(
         remotes
@@ -104,12 +113,17 @@ export function entityToAiCatalogAsset(entity: Entity): AiCatalogAsset {
       connectionEndpoints && Object.keys(connectionEndpoints).length > 0
         ? connectionEndpoints
         : undefined,
-    config: getSpecField(entity, 'config') as
-      | Record<string, unknown>
-      | undefined,
-    deploymentParameters: getSpecField(entity, 'deploymentParameters') as
-      | Record<string, unknown>
-      | undefined,
+    config: isPlainObject(getSpecField(entity, 'config'))
+      ? (getSpecField(entity, 'config') as Record<string, unknown>)
+      : undefined,
+    deploymentParameters: isPlainObject(
+      getSpecField(entity, 'deploymentParameters'),
+    )
+      ? (getSpecField(entity, 'deploymentParameters') as Record<
+          string,
+          unknown
+        >)
+      : undefined,
   };
 }
 
@@ -139,6 +153,15 @@ export function entityToAiCatalogAssetResource(
  * `AiCatalogAssetLoader` implementation backed by the Backstage software
  * catalog. Loads AI catalog assets (`AI_ASSET_SPEC_TYPES`) using the
  * plugin's own service credentials.
+ *
+ * @remarks
+ * Queries are performed with the plugin's own service credentials
+ * (`auth.getOwnServiceCredentials()`). This intentionally bypasses
+ * catalog-level RBAC so that the AI catalog's own permission layer
+ * (ai-catalog.asset.access / ai-catalog.asset.access.usage-docs) is the
+ * sole authorization gate. Without this, users whose catalog-level
+ * policies hide certain entity kinds would never see AI assets at all,
+ * regardless of their AI catalog permissions.
  *
  * @internal
  */

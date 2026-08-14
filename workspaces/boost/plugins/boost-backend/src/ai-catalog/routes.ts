@@ -41,7 +41,7 @@ import {
  * The actual entity shape will come from the catalog; this interface
  * defines the subset relevant to graduated visibility filtering.
  *
- * @internal
+ * @public
  */
 export interface AiCatalogAsset {
   /** Asset identifier. */
@@ -71,7 +71,7 @@ export interface AiCatalogAsset {
 /**
  * Options for creating AI catalog routes.
  *
- * @internal
+ * @public
  */
 export interface AiCatalogRoutesOptions {
   /** The Backstage permissions service. */
@@ -85,11 +85,11 @@ export interface AiCatalogRoutesOptions {
 }
 
 /**
- * Abstraction for loading AI catalog assets. In production this would
- * query the Backstage catalog; for now it's an interface that can be
- * injected for testing.
+ * Abstraction for loading AI catalog assets. In production this is
+ * backed by the Backstage catalog via {@link CatalogAssetLoader}; the
+ * interface allows injection for testing.
  *
- * @internal
+ * @public
  */
 export interface AiCatalogAssetLoader {
   /** Load a single asset by ID. Returns undefined if not found. */
@@ -135,7 +135,7 @@ export function stripTier2Fields(asset: AiCatalogAsset): AiCatalogAsset {
  * - GET /ai-catalog/assets       — list assets (entity-level filtering)
  * - GET /ai-catalog/assets/:id   — get asset detail (field-level filtering)
  *
- * @internal
+ * @public
  */
 export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router {
   const { permissions, httpAuth, logger, assetLoader } = options;
@@ -172,11 +172,14 @@ export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router {
       let assets = await assetLoader.list();
 
       if (readDecision.result === AuthorizeResult.CONDITIONAL) {
-        // Conditions would be applied as catalog query filters in
-        // production. For now, pass conditions to the response so
-        // downstream consumers can apply them.
+        // TODO: Apply CONDITIONAL filtering using createConditionTransformer()
+        // to convert the decision's conditions into catalog query predicates
+        // (via each rule's toQuery()), then pass those as catalog entity
+        // filters so only matching assets are returned.  Until then,
+        // CONDITIONAL is treated as ALLOW — the same deferral pattern used
+        // by the agent list endpoint (see agents/routes.ts).
         logger.debug(
-          'ai-catalog.asset.access returned CONDITIONAL — conditions available for query filtering',
+          'ai-catalog.asset.access returned CONDITIONAL — entity-level condition filtering not yet applied (treated as ALLOW)',
         );
       }
 
@@ -193,6 +196,12 @@ export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router {
         { credentials },
       );
 
+      // Tier 2 CONDITIONAL is intentionally treated as DENY (strip
+      // fields).  The graduated-visibility spec requires the conservative
+      // approach: sensitive details are only shown when the permission
+      // backend returns an explicit ALLOW.  This avoids leaking Tier 2
+      // data when conditional policies are in effect but their
+      // per-resource evaluation has not been performed.
       if (tier2Decision.result !== AuthorizeResult.ALLOW) {
         assets = assets.map(stripTier2Fields);
       }
@@ -236,7 +245,10 @@ export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router {
         throw new NotFoundError(`AI catalog asset "${id}" not found`);
       }
 
-      // Tier 2: check usage-docs access for field-level filtering (task 2.1)
+      // Tier 2: check usage-docs access for field-level filtering (task 2.1).
+      // Non-ALLOW results (DENY or CONDITIONAL) strip Tier 2 fields —
+      // see the batch Tier 2 comment on the list endpoint for the
+      // design rationale (conservative default per graduated-visibility spec).
       const [tier2Decision] = await permissions.authorize(
         [
           {
