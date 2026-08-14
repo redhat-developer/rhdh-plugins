@@ -32,6 +32,7 @@ export interface Config {
          * Number of days to retain scorecard DORA source data (deployments, incidents,
          * pull requests) in the database. Older data is cleaned up by the
          * `scorecard-dora:cleanup-expired-data` task.
+         * Must be greater than or equal to the DORA metric computation window (30 days).
          * @default 365
          */
         dataRetentionDays?: number;

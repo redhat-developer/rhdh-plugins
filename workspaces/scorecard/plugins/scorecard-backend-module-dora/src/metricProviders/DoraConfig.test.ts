@@ -21,6 +21,8 @@ import {
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
   DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+  DORA_DEFAULT_STALE_AFTER_MS,
+  DORA_TIME_WINDOW_DAYS,
 } from '../constants';
 import {
   parseDoraChangeFailureRateConfig,
@@ -30,7 +32,6 @@ import {
   parseDoraMedianLeadTimeForChangesConfig,
   parseDoraStaleAfterMs,
 } from './DoraConfig';
-import { DORA_DEFAULT_STALE_AFTER_MS } from '../constants';
 
 describe('DoraConfig', () => {
   describe('parseDoraDeploymentFrequencyConfig', () => {
@@ -273,6 +274,40 @@ describe('DoraConfig', () => {
           }),
         ),
       ).toBe(90);
+    });
+
+    it('throws when configured below the DORA metric window', () => {
+      expect(() =>
+        parseDoraDataRetentionDays(
+          new ConfigReader({
+            scorecard: {
+              plugins: {
+                dora: {
+                  dataRetentionDays: DORA_TIME_WINDOW_DAYS - 1,
+                },
+              },
+            },
+          }),
+        ),
+      ).toThrow(
+        `scorecard.plugins.dora.dataRetentionDays must be greater than or equal to ${DORA_TIME_WINDOW_DAYS}`,
+      );
+    });
+
+    it('allows retention equal to the DORA metric window', () => {
+      expect(
+        parseDoraDataRetentionDays(
+          new ConfigReader({
+            scorecard: {
+              plugins: {
+                dora: {
+                  dataRetentionDays: DORA_TIME_WINDOW_DAYS,
+                },
+              },
+            },
+          }),
+        ),
+      ).toBe(DORA_TIME_WINDOW_DAYS);
     });
   });
 

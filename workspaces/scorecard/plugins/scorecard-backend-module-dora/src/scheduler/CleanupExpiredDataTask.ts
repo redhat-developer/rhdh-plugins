@@ -19,28 +19,26 @@ import {
   SchedulerService,
   SchedulerServiceTaskScheduleDefinition,
 } from '@backstage/backend-plugin-api';
-import type { Config } from '@backstage/config';
 import { randomUUID } from 'node:crypto';
 import type { DoraDeploymentsStore } from '../database/DatabaseDoraDeployments';
 import type { DoraIncidentsStore } from '../database/DatabaseDoraIncidents';
 import type { DoraPullRequestsStore } from '../database/DatabaseDoraPullRequests';
-import { parseDoraDataRetentionDays } from '../metricProviders/DoraConfig';
 import { DORA_CLEANUP_EXPIRED_DATA_TASK_ID } from '../constants';
 import { daysToMilliseconds } from './utils';
 
 type Options = {
   scheduler: SchedulerService;
   logger: LoggerService;
-  config: Config;
+  dataRetentionDays: number;
   deployments: DoraDeploymentsStore;
   incidents: DoraIncidentsStore;
   pullRequests: DoraPullRequestsStore;
 };
 
 export class CleanupExpiredDataTask {
-  private readonly config: Config;
   private readonly logger: LoggerService;
   private readonly scheduler: SchedulerService;
+  private readonly dataRetentionDays: number;
   private readonly deployments: DoraDeploymentsStore;
   private readonly incidents: DoraIncidentsStore;
   private readonly pullRequests: DoraPullRequestsStore;
@@ -53,9 +51,9 @@ export class CleanupExpiredDataTask {
     };
 
   constructor(options: Options) {
-    this.config = options.config;
     this.logger = options.logger;
     this.scheduler = options.scheduler;
+    this.dataRetentionDays = options.dataRetentionDays;
     this.deployments = options.deployments;
     this.incidents = options.incidents;
     this.pullRequests = options.pullRequests;
@@ -84,9 +82,8 @@ export class CleanupExpiredDataTask {
   }
 
   private async cleanupExpiredData(logger: LoggerService): Promise<void> {
-    const dataRetentionDays = parseDoraDataRetentionDays(this.config);
     const olderThan = new Date(
-      Date.now() - daysToMilliseconds(dataRetentionDays),
+      Date.now() - daysToMilliseconds(this.dataRetentionDays),
     );
 
     const deletedPullRequests = await this.pullRequests.deleteOlderThan(
@@ -99,7 +96,7 @@ export class CleanupExpiredDataTask {
 
     logger.info(
       `Deleted ${deletedDeployments} deployments, ${deletedIncidents} incidents, ` +
-        `${deletedPullRequests} pull requests older than ${dataRetentionDays} days`,
+        `${deletedPullRequests} pull requests older than ${this.dataRetentionDays} days`,
     );
   }
 }

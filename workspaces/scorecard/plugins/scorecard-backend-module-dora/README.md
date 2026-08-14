@@ -175,5 +175,5 @@ scorecard:
       staleAfterMs: 60000
 ```
 
-- `dataRetentionDays`: how long source rows are retained before cleanup.
+- `dataRetentionDays`: how long source rows are retained before cleanup. Must be at least `30` (the DORA metric computation window).
 - `staleAfterMs`: freshness threshold in milliseconds for deployments and incidents; if the last sync is within this window, those collectors are not refreshed.
