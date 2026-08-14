@@ -164,7 +164,7 @@ export interface BackendApprovalStoreOptions {
 }
 
 // @public
-export const BOOST_CONFIG_SCHEMA_VERSION = 4;
+export const BOOST_CONFIG_SCHEMA_VERSION = 5;
 
 // @public
 export const BOOST_CONNECTOR_SCHEMA_VERSION = 1;
@@ -305,6 +305,7 @@ export const boostConfigFields: {
     readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;
+    readonly defaultValue: 300000;
   };
   readonly 'boost.connectors.jira.schedule.cron': {
     readonly schema: z.ZodOptional<z.ZodString>;
@@ -315,11 +316,13 @@ export const boostConfigFields: {
     readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;
+    readonly defaultValue: 100;
   };
   readonly 'boost.connectors.jira.timeout.connectionMs': {
     readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;
+    readonly defaultValue: 30000;
   };
   readonly 'boost.connectors.github.enabled': {
     readonly schema: z.ZodOptional<z.ZodBoolean>;
@@ -335,11 +338,13 @@ export const boostConfigFields: {
     readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;
+    readonly defaultValue: 300000;
   };
   readonly 'boost.connectors.github.batchSize': {
     readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;
+    readonly defaultValue: 100;
   };
   readonly 'boost.connectors.gitlab.enabled': {
     readonly schema: z.ZodOptional<z.ZodBoolean>;
@@ -355,11 +360,13 @@ export const boostConfigFields: {
     readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;
+    readonly defaultValue: 300000;
   };
   readonly 'boost.connectors.gitlab.batchSize': {
     readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;
+    readonly defaultValue: 100;
   };
 };
 
@@ -388,6 +395,7 @@ export interface ClassifyOptions {
 // @public
 export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
   configScope: ConfigScope;
+  defaultValue?: z.output<T>;
   description: string;
   schema: T;
   sensitive?: boolean;

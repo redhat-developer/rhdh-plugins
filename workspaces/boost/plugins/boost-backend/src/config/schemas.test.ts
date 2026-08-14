@@ -24,11 +24,12 @@ import {
   isDbWritable,
   isSensitiveField,
   isValidCronExpression,
+  getFieldDefault,
 } from './schemas';
 
 describe('boostConfigFields', () => {
-  it('has schema version 4', () => {
-    expect(BOOST_CONFIG_SCHEMA_VERSION).toBe(4);
+  it('has schema version 5', () => {
+    expect(BOOST_CONFIG_SCHEMA_VERSION).toBe(5);
   });
 
   it('has entries for all expected config keys', () => {
@@ -636,5 +637,51 @@ describe('connector config schemas', () => {
         expect(isSensitiveField(key)).toBe(false);
       },
     );
+  });
+
+  describe('getFieldDefault', () => {
+    it('returns 300000 for all schedule.intervalMs fields', () => {
+      expect(getFieldDefault('boost.connectors.jira.schedule.intervalMs')).toBe(
+        300000,
+      );
+      expect(
+        getFieldDefault('boost.connectors.github.schedule.intervalMs'),
+      ).toBe(300000);
+      expect(
+        getFieldDefault('boost.connectors.gitlab.schedule.intervalMs'),
+      ).toBe(300000);
+    });
+
+    it('returns 100 for all batchSize fields', () => {
+      expect(getFieldDefault('boost.connectors.jira.batchSize')).toBe(100);
+      expect(getFieldDefault('boost.connectors.github.batchSize')).toBe(100);
+      expect(getFieldDefault('boost.connectors.gitlab.batchSize')).toBe(100);
+    });
+
+    it('returns 30000 for Jira timeout.connectionMs', () => {
+      expect(
+        getFieldDefault('boost.connectors.jira.timeout.connectionMs'),
+      ).toBe(30000);
+    });
+
+    it('returns undefined for fields without defaults', () => {
+      expect(getFieldDefault('boost.connectors.jira.enabled')).toBeUndefined();
+      expect(getFieldDefault('boost.connectors.jira.endpoint')).toBeUndefined();
+      expect(
+        getFieldDefault('boost.connectors.jira.schedule.cron'),
+      ).toBeUndefined();
+      expect(getFieldDefault('boost.model.baseUrl')).toBeUndefined();
+    });
+
+    it('does not use Zod .default() on connector schemas', () => {
+      const connectorKeys = Object.keys(boostConfigFields).filter(key =>
+        key.startsWith('boost.connectors.'),
+      ) as Array<keyof typeof boostConfigFields>;
+      connectorKeys.forEach(key => {
+        // validateConfigValue(key, undefined) must still return
+        // undefined — Zod .default() would return the default instead
+        expect(validateConfigValue(key, undefined)).toBeUndefined();
+      });
+    });
   });
 });

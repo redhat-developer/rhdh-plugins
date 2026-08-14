@@ -25,6 +25,7 @@ import {
   boostConfigFields,
   BOOST_CONNECTOR_SCHEMA_VERSION,
   CONNECTOR_IDS,
+  getFieldDefault,
   isSensitiveField,
   type BoostConfigKey,
   type ConnectorId,
@@ -112,25 +113,42 @@ export class RuntimeConfigResolver {
   }
 
   /**
-   * Resolve a single config value. Checks DB override first, then
-   * YAML baseline. The merged result is cached for 30 seconds.
+   * Resolve a single config value. Precedence:
+   * 1. DB override (highest)
+   * 2. YAML baseline
+   * 3. Field default from schema metadata (lowest)
    *
    * @param key - The config field key.
-   * @returns The resolved value, or `undefined` if not set anywhere.
+   * @returns The resolved value, or `undefined` if not set anywhere
+   *   and no field default is defined.
    */
   async resolve(key: BoostConfigKey): Promise<unknown | undefined> {
     const effectiveConfig = await this.getEffectiveConfig();
-    return effectiveConfig.get(key);
+    const value = effectiveConfig.get(key);
+    if (value !== undefined) {
+      return value;
+    }
+    return getFieldDefault(key);
   }
 
   /**
    * Resolve all config values. Returns a map of key → resolved value
-   * with DB overrides taking precedence over YAML baseline.
+   * with precedence: DB override → YAML baseline → field default.
    *
    * @returns Map of all resolved config values.
    */
   async resolveAll(): Promise<Map<string, unknown>> {
-    return this.getEffectiveConfig();
+    const effective = await this.getEffectiveConfig();
+    // Layer 3: apply field defaults for keys not already set
+    for (const key of Object.keys(boostConfigFields) as BoostConfigKey[]) {
+      if (!effective.has(key)) {
+        const fieldDefault = getFieldDefault(key);
+        if (fieldDefault !== undefined) {
+          effective.set(key, fieldDefault);
+        }
+      }
+    }
+    return effective;
   }
 
   /**
