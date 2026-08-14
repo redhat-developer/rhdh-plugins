@@ -25,8 +25,8 @@ import {
 } from './schemas';
 
 describe('boostConfigFields', () => {
-  it('has a positive schema version', () => {
-    expect(BOOST_CONFIG_SCHEMA_VERSION).toBeGreaterThan(0);
+  it('has schema version 4', () => {
+    expect(BOOST_CONFIG_SCHEMA_VERSION).toBe(4);
   });
 
   it('has entries for all expected config keys', () => {
@@ -184,10 +184,14 @@ describe('isValidCronExpression', () => {
     expect(isValidCronExpression('0,30 9-17 * * 1,3,5')).toBe(true);
   });
 
-  it('accepts ? wildcard and named values', () => {
-    expect(isValidCronExpression('0 0 ? * MON')).toBe(true);
+  it('accepts named month and weekday values in correct fields', () => {
     expect(isValidCronExpression('0 9 * JAN-MAR *')).toBe(true);
-    expect(isValidCronExpression('0 0 ? * MON-FRI')).toBe(true);
+    expect(isValidCronExpression('0 0 * * MON-FRI')).toBe(true);
+  });
+
+  it('rejects ? wildcard (unsupported by SchedulerService CronTime)', () => {
+    expect(isValidCronExpression('0 0 ? * MON')).toBe(false);
+    expect(isValidCronExpression('0 0 ? * MON-FRI')).toBe(false);
   });
 
   it('rejects out-of-range numeric values', () => {
@@ -221,6 +225,12 @@ describe('isValidCronExpression', () => {
     expect(isValidCronExpression('JAN * * * *')).toBe(false);
     // Weekday names in month field
     expect(isValidCronExpression('0 0 * MON *')).toBe(false);
+    // Weekday names in minute / hour / day-of-month fields
+    expect(isValidCronExpression('SUN * * * *')).toBe(false);
+    expect(isValidCronExpression('0 MON * * *')).toBe(false);
+    expect(isValidCronExpression('0 0 MON * *')).toBe(false);
+    // Month name in day-of-week field
+    expect(isValidCronExpression('0 0 * * JAN')).toBe(false);
   });
 
   it('accepts all valid month names (case-insensitive)', () => {

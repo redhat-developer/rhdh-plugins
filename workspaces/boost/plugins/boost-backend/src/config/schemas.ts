@@ -14,25 +14,12 @@
  * limitations under the License.
  */
 
+import { CronTime } from 'cron';
 import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
 // Validation helpers
 // ---------------------------------------------------------------------------
-
-/**
- * Pattern matching a single cron field token. Accepts wildcards
- * (* and ?), integers and integer ranges (1, 1-5), step values
- * (star-slash-5, 1-5/2), three-letter English month names
- * (JAN-DEC) and weekday names (MON-SUN, case-insensitive), and
- * comma-separated lists of any of the above.
- *
- * Extended specifiers (L, W, #) are intentionally unsupported
- * because the backend scheduler uses a numeric-only cron parser.
- *
- * @internal
- */
-const CRON_TOKEN_RE = /^(\*|\?|\d+(-\d+)?|[a-zA-Z]{3}(-[a-zA-Z]{3})?)(\/\d+)?$/;
 
 /** Known three-letter month names (case-insensitive). @internal */
 const CRON_MONTH_NAMES = new Set([
@@ -61,61 +48,70 @@ const CRON_WEEKDAY_NAMES = new Set([
   'SAT',
 ]);
 
-/** Maximum value allowed per cron field position (0-indexed). @internal */
-const CRON_FIELD_MAX: readonly number[] = [59, 23, 31, 12, 7];
-
-/** Minimum value allowed per cron field position (0-indexed). @internal */
-const CRON_FIELD_MIN: readonly number[] = [0, 0, 1, 1, 0];
+/**
+ * Reject named month/weekday aliases outside their allowed field
+ * positions. `CronTime` accepts some misplaced aliases (e.g.
+ * `SUN * * * *`); this guard keeps admin-write errors clear.
+ *
+ * Month names are valid only in field 3; weekday names only in field 4.
+ *
+ * @internal
+ */
+function namedTokensInAllowedFields(fields: string[]): boolean {
+  return fields.every((field, idx) => {
+    const tokens = field.split(',');
+    return tokens.every(token => {
+      const base = token.split('/')[0];
+      if (!/[a-zA-Z]/.test(base)) {
+        return true;
+      }
+      const names = base.split('-').map(n => n.toUpperCase());
+      if (idx === 3) {
+        return names.every(n => CRON_MONTH_NAMES.has(n));
+      }
+      if (idx === 4) {
+        return names.every(n => CRON_WEEKDAY_NAMES.has(n));
+      }
+      return false;
+    });
+  });
+}
 
 /**
- * Validate that a string is a standard 5-field cron expression.
+ * Validate that a string is a standard 5-field cron expression
+ * accepted by Backstage `SchedulerService` (`cron.CronTime`).
  *
- * Accepts numeric values, `*`, `?`, ranges, step values, and
- * three-letter English month/weekday names. Does **not** accept
- * `L`, `W`, or `#` specifiers.
+ * Accepts numeric values, `*`, ranges, steps, and three-letter
+ * English month/weekday names in the correct fields. Does **not**
+ * accept `?`, `L`, `W`, or `#` (unsupported by `CronTime`).
+ *
+ * Validation is for config write-time checks only — scheduled work
+ * still runs via `coreServices.scheduler`, not the `cron` package.
  *
  * @param expr - The cron expression to validate.
- * @returns `true` if the expression has 5 valid fields with values
- *   within their allowed ranges.
+ * @returns `true` if the expression has 5 fields and is accepted by
+ *   `CronTime` with named tokens in the correct positions.
  *
  * @internal
  */
 export function isValidCronExpression(expr: string): boolean {
-  const fields = expr.trim().split(/\s+/);
+  const trimmed = expr.trim();
+  const fields = trimmed.split(/\s+/);
   if (fields.length !== 5) {
     return false;
   }
-  return fields.every((field, idx) => {
-    // Each field may be a comma-separated list of tokens
-    const tokens = field.split(',');
-    return tokens.every(token => {
-      if (!CRON_TOKEN_RE.test(token)) {
-        return false;
-      }
-      // Split into base and optional step suffix (e.g. */5 -> [*, 5])
-      const [base, stepStr] = token.split('/');
-      // Validate step divisor when present — must be >= 1
-      if (stepStr !== undefined && Number(stepStr) < 1) {
-        return false;
-      }
-      // Wildcards pass without range check
-      if (base === '*' || base === '?') {
-        return true;
-      }
-      // Validate named month/weekday tokens against known names
-      if (/[a-zA-Z]/.test(base)) {
-        const names = base.split('-').map(n => n.toUpperCase());
-        // Month names are valid in field 3 (month), weekday names in field 4 (day-of-week)
-        const allowed = idx === 3 ? CRON_MONTH_NAMES : CRON_WEEKDAY_NAMES;
-        return names.every(n => allowed.has(n));
-      }
-      // Validate numeric range bounds
-      const nums = base.split('-').map(Number);
-      const min = CRON_FIELD_MIN[idx];
-      const max = CRON_FIELD_MAX[idx];
-      return nums.every(n => !isNaN(n) && n >= min && n <= max);
-    });
-  });
+  if (!namedTokensInAllowedFields(fields)) {
+    return false;
+  }
+  try {
+    // Construction is the validation: CronTime throws on invalid input
+    // (same pattern as Backstage SchedulerService cadence checks).
+    // eslint-disable-next-line no-new -- side effect is intentional validation
+    new CronTime(trimmed);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
