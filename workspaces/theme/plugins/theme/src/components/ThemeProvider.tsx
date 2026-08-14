@@ -16,9 +16,9 @@
 
 import type { ReactNode } from 'react';
 import {
-  AppTheme,
+  type AppTheme,
   appThemeApiRef,
-  AppThemeApi,
+  type AppThemeApi,
   useApi,
 } from '@backstage/core-plugin-api';
 import { UnifiedTheme, UnifiedThemeProvider } from '@backstage/theme';
