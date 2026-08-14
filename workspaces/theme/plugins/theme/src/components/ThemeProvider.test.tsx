@@ -57,6 +57,13 @@ const mockAppThemeApi = (activeThemeId?: string) => {
   });
 };
 
+const createMockTheme = (secondaryColor: string) =>
+  ({
+    getTheme: () => ({
+      palette: { text: { secondary: secondaryColor } },
+    }),
+  }) as any;
+
 describe('createSharedThemeProvider', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -69,7 +76,6 @@ describe('createSharedThemeProvider', () => {
       'backstage-light': { theme: themes.light },
     });
 
-    // The return value is a single function, not one per entry
     expect(typeof provider).toBe('function');
     expect(provider.name).toBe('RHDHSharedThemeProvider');
   });
@@ -90,7 +96,26 @@ describe('createSharedThemeProvider', () => {
     expect(screen.getByText('Hello')).toBeInTheDocument();
   });
 
-  it('falls back to light theme when no explicit theme is selected and system prefers light', () => {
+  it('resolves the correct entry when activeId matches a key', () => {
+    mockAppThemeApi('dark');
+
+    const Provider = createSharedThemeProvider({
+      light: { theme: createMockTheme('#light-marker') },
+      dark: { theme: createMockTheme('#dark-marker') },
+    });
+
+    const { container } = render(
+      <Provider>
+        <span>content</span>
+      </Provider>,
+    );
+
+    const style = container.querySelector('style');
+    expect(style?.textContent).toContain('#dark-marker');
+    expect(style?.textContent).not.toContain('#light-marker');
+  });
+
+  it('resolves to light entry when system prefers light', () => {
     mockAppThemeApi(undefined);
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
@@ -98,17 +123,78 @@ describe('createSharedThemeProvider', () => {
     });
 
     const Provider = createSharedThemeProvider({
-      light: { name: 'light' },
-      dark: { name: 'dark' },
+      light: { theme: createMockTheme('#light-marker') },
+      dark: { theme: createMockTheme('#dark-marker') },
     });
 
-    render(
+    const { container } = render(
       <Provider>
         <span>Light fallback</span>
       </Provider>,
     );
 
-    expect(screen.getByText('Light fallback')).toBeInTheDocument();
+    const style = container.querySelector('style');
+    expect(style?.textContent).toContain('#light-marker');
+    expect(style?.textContent).not.toContain('#dark-marker');
+  });
+
+  it('resolves to dark entry when system prefers dark', () => {
+    mockAppThemeApi(undefined);
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: jest.fn().mockReturnValue({ matches: true }),
+    });
+
+    const Provider = createSharedThemeProvider({
+      light: { theme: createMockTheme('#light-marker') },
+      dark: { theme: createMockTheme('#dark-marker') },
+    });
+
+    const { container } = render(
+      <Provider>
+        <span>Dark fallback</span>
+      </Provider>,
+    );
+
+    const style = container.querySelector('style');
+    expect(style?.textContent).toContain('#dark-marker');
+    expect(style?.textContent).not.toContain('#light-marker');
+  });
+
+  it('falls back to dark entry for unknown activeId containing "dark"', () => {
+    mockAppThemeApi('custom-dark-theme');
+
+    const Provider = createSharedThemeProvider({
+      light: { theme: createMockTheme('#light-marker') },
+      dark: { theme: createMockTheme('#dark-marker') },
+    });
+
+    const { container } = render(
+      <Provider>
+        <span>content</span>
+      </Provider>,
+    );
+
+    const style = container.querySelector('style');
+    expect(style?.textContent).toContain('#dark-marker');
+  });
+
+  it('falls back to light entry for unknown activeId without "dark"', () => {
+    mockAppThemeApi('unknown-theme');
+
+    const Provider = createSharedThemeProvider({
+      light: { theme: createMockTheme('#light-marker') },
+      dark: { theme: createMockTheme('#dark-marker') },
+    });
+
+    const { container } = render(
+      <Provider>
+        <span>content</span>
+      </Provider>,
+    );
+
+    const style = container.querySelector('style');
+    expect(style?.textContent).toContain('#light-marker');
   });
 
   it('handles pre-built theme entries', () => {
