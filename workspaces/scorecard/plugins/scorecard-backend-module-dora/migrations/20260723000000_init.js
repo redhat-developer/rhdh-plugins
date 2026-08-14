@@ -22,7 +22,8 @@ exports.up = async function up(knex) {
     table.string('original_deployment_id').notNullable();
     table.string('commit_sha').notNullable();
     table.string('environment').nullable();
-    table.dateTime('created_at', { precision: 0 }).notNullable();
+    // Millisecond precision so same-second deployments stay distinct for CFR/lead time.
+    table.dateTime('created_at', { precision: 3 }).notNullable();
 
     table.unique([
       'catalog_entity_ref',
@@ -41,9 +42,9 @@ exports.up = async function up(knex) {
     table.string('catalog_entity_ref').notNullable();
     table.string('collector_id').notNullable();
     table.string('original_incident_id').notNullable();
-    table.dateTime('created_at', { precision: 0 }).notNullable();
-    table.dateTime('updated_at', { precision: 0 }).notNullable();
-    table.dateTime('resolution_at', { precision: 0 }).nullable();
+    table.dateTime('created_at', { precision: 3 }).notNullable();
+    table.dateTime('updated_at', { precision: 3 }).notNullable();
+    table.dateTime('resolution_at', { precision: 3 }).nullable();
 
     table.unique([
       'catalog_entity_ref',
@@ -62,7 +63,7 @@ exports.up = async function up(knex) {
     table.string('catalog_entity_ref').notNullable();
     table.string('collector_id').notNullable();
     table.string('original_pr_id').notNullable();
-    table.dateTime('first_commit_at', { precision: 0 }).notNullable();
+    table.dateTime('first_commit_at', { precision: 3 }).notNullable();
     table
       .string('deployment_id')
       .references('id')
@@ -86,7 +87,7 @@ exports.up = async function up(knex) {
   await knex.schema.createTable('dora_last_sync', table => {
     table.string('catalog_entity_ref').notNullable();
     table.string('collector_id').notNullable();
-    table.dateTime('last_synced_at', { precision: 0 }).notNullable();
+    table.dateTime('last_synced_at', { precision: 3 }).notNullable();
 
     table.primary(['catalog_entity_ref', 'collector_id']);
   });
