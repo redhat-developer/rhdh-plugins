@@ -182,9 +182,9 @@ export const boostConfigFields: {
   };
   readonly 'boost.security.mode': {
     readonly schema: z.ZodEnum<{
-      full: 'full';
       'development-only-no-auth': 'development-only-no-auth';
       'plugin-only': 'plugin-only';
+      full: 'full';
     }>;
     readonly configScope: ConfigScope;
     readonly description: string;
