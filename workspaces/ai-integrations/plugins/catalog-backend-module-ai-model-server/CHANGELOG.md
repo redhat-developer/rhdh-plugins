@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server
 
+## 0.3.0
+
+### Minor Changes
+
+- 0c396f8: switch ai-model-server and ai-resource-agent from catalog model layer's addModelSource to addProcessor
+
 ## 0.2.0
 
 ### Minor Changes
