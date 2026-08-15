@@ -22,6 +22,9 @@ import {
   BOOST_RULE_IS_OWNER,
   BOOST_RULE_IS_NOT_CREATOR,
   BOOST_RULE_HAS_LIFECYCLE_STAGE,
+  AI_CATALOG_RULE_IS_AI_ASSET_CATEGORY,
+  AI_CATALOG_RULE_IS_FROM_CONNECTOR,
+  AI_CATALOG_RULE_IS_IN_TENANT,
   boostAgentPermissions,
   boostToolPermissions,
   boostEntityPermissions,
@@ -82,6 +85,18 @@ describe('boost-common', () => {
 
     it('exports HAS_LIFECYCLE_STAGE rule name', () => {
       expect(BOOST_RULE_HAS_LIFECYCLE_STAGE).toBe('HAS_LIFECYCLE_STAGE');
+    });
+
+    it('exports isAiAssetCategory rule name', () => {
+      expect(AI_CATALOG_RULE_IS_AI_ASSET_CATEGORY).toBe('isAiAssetCategory');
+    });
+
+    it('exports isFromConnector rule name', () => {
+      expect(AI_CATALOG_RULE_IS_FROM_CONNECTOR).toBe('isFromConnector');
+    });
+
+    it('exports isInTenant rule name', () => {
+      expect(AI_CATALOG_RULE_IS_IN_TENANT).toBe('isInTenant');
     });
   });
 

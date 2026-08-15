@@ -32,6 +32,15 @@ export interface AgentRecord {
 export const AI_CATALOG_ASSET_RESOURCE_TYPE = 'ai-catalog-asset';
 
 // @public
+export const AI_CATALOG_RULE_IS_AI_ASSET_CATEGORY = 'isAiAssetCategory';
+
+// @public
+export const AI_CATALOG_RULE_IS_FROM_CONNECTOR = 'isFromConnector';
+
+// @public
+export const AI_CATALOG_RULE_IS_IN_TENANT = 'isInTenant';
+
+// @public
 export const aiCatalogAdminPermission: BasicPermission;
 
 // @public

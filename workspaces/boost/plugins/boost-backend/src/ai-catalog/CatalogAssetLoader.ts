@@ -70,7 +70,9 @@ export function isAiAsset(entity: Entity): boolean {
   if (!specType) {
     return false;
   }
-  return Boolean(AI_ASSET_SPEC_TYPES[entity.kind.toLowerCase()]?.has(specType));
+  return Boolean(
+    AI_ASSET_SPEC_TYPES[entity.kind.toLowerCase()]?.has(specType.toLowerCase()),
+  );
 }
 
 // ---------------------------------------------------------------------------

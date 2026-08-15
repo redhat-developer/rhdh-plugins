@@ -137,6 +137,16 @@ describe('isAiAsset', () => {
     };
     expect(isAiAsset(entity)).toBe(false);
   });
+
+  it('matches regardless of kind/spec.type casing', () => {
+    const entity: Entity = {
+      apiVersion: 'backstage.io/v1alpha1',
+      kind: 'Resource',
+      metadata: { name: 'mixed-case-model' },
+      spec: { type: 'AI-Model' },
+    };
+    expect(isAiAsset(entity)).toBe(true);
+  });
 });
 
 describe('entityToAiCatalogAssetResource', () => {

@@ -431,6 +431,30 @@ export const BOOST_RULE_IS_NOT_CREATOR = 'IS_NOT_CREATOR';
  */
 export const BOOST_RULE_HAS_LIFECYCLE_STAGE = 'HAS_LIFECYCLE_STAGE';
 
+/**
+ * Conditional rule: matches AI catalog assets by their category
+ * annotation (`rhdh.io/ai-asset-category`).
+ *
+ * @public
+ */
+export const AI_CATALOG_RULE_IS_AI_ASSET_CATEGORY = 'isAiAssetCategory';
+
+/**
+ * Conditional rule: matches AI catalog assets by their source connector
+ * annotation (`rhdh.io/ai-asset-source`).
+ *
+ * @public
+ */
+export const AI_CATALOG_RULE_IS_FROM_CONNECTOR = 'isFromConnector';
+
+/**
+ * Conditional rule: matches AI catalog assets by tenant identity
+ * (namespace or the `rhdh.io/ai-asset-tenant` annotation).
+ *
+ * @public
+ */
+export const AI_CATALOG_RULE_IS_IN_TENANT = 'isInTenant';
+
 // ---------------------------------------------------------------------------
 // Aggregated permission arrays
 // ---------------------------------------------------------------------------

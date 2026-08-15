@@ -193,18 +193,23 @@ export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router {
         credentials,
       );
 
-      let assets = await assetLoader.list();
-
+      // TODO: Apply CONDITIONAL filtering using createConditionTransformer()
+      // to convert the decision's conditions into catalog query predicates
+      // (via each rule's toQuery()), then pass those as catalog entity
+      // filters so only matching assets are returned. Until then,
+      // CONDITIONAL fails closed (empty list) rather than ALLOW (show
+      // everything) — consistent with the Tier 2 conservative default
+      // below, and safer than the agent list endpoint's ALLOW-style
+      // deferral: an empty list under-shows assets, while treating
+      // CONDITIONAL as ALLOW here would silently ignore a configured
+      // entity-level policy and over-show them.
+      let assets: AiCatalogAsset[] = [];
       if (readDecision.result === AuthorizeResult.CONDITIONAL) {
-        // TODO: Apply CONDITIONAL filtering using createConditionTransformer()
-        // to convert the decision's conditions into catalog query predicates
-        // (via each rule's toQuery()), then pass those as catalog entity
-        // filters so only matching assets are returned.  Until then,
-        // CONDITIONAL is treated as ALLOW — the same deferral pattern used
-        // by the agent list endpoint (see agents/routes.ts).
         logger.debug(
-          'ai-catalog.asset.access returned CONDITIONAL — entity-level condition filtering not yet applied (treated as ALLOW)',
+          'ai-catalog.asset.access returned CONDITIONAL — entity-level condition filtering not yet applied (failing closed, returning no assets)',
         );
+      } else {
+        assets = await assetLoader.list();
       }
 
       // Batch Tier 2 check — single authorizeConditional() call (task 2.3)

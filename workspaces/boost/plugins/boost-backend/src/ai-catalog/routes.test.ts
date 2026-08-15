@@ -331,6 +331,39 @@ describe('AI catalog routes', () => {
       expect(assets[0].deploymentParameters).toBeUndefined();
     });
 
+    it('returns no assets when entity-level (Tier 1) permission is CONDITIONAL (fails closed)', async () => {
+      const authorizeConditional = jest
+        .fn()
+        // First call: entity-level (Tier 1) → CONDITIONAL
+        .mockResolvedValueOnce([
+          {
+            result: AuthorizeResult.CONDITIONAL,
+            conditions: { rule: 'isInTenant', params: { tenantId: 'acme' } },
+          },
+        ])
+        // Second call: field-level (Tier 2) → ALLOW
+        .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]);
+
+      const assetLoader = createMockAssetLoader({
+        list: jest.fn().mockResolvedValue([fullAsset, minimalAsset]),
+      });
+      testApp = await createTestApp({
+        permissions: createMockPermissions({ authorizeConditional }),
+        assetLoader,
+      });
+
+      const { status, body } = await fetchJson(
+        testApp.url,
+        '/ai-catalog/assets',
+      );
+
+      expect(status).toBe(200);
+      // Entity-level condition filtering isn't implemented yet — CONDITIONAL
+      // fails closed (empty list) rather than showing every asset.
+      expect(body.assets).toEqual([]);
+      expect(assetLoader.list).not.toHaveBeenCalled();
+    });
+
     it('strips Tier 2 fields when Tier 2 permission is CONDITIONAL (conservative default)', async () => {
       const authorizeConditional = jest
         .fn()

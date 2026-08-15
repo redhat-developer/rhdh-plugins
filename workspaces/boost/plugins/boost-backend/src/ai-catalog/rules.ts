@@ -26,7 +26,12 @@ import {
 // `ZodType` shape (which has a different `Internals` generic and would
 // otherwise fail to satisfy `paramsSchema`).
 import { z } from 'zod/v3';
-import { AI_CATALOG_ASSET_RESOURCE_TYPE } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import {
+  AI_CATALOG_ASSET_RESOURCE_TYPE,
+  AI_CATALOG_RULE_IS_AI_ASSET_CATEGORY,
+  AI_CATALOG_RULE_IS_FROM_CONNECTOR,
+  AI_CATALOG_RULE_IS_IN_TENANT,
+} from '@red-hat-developer-hub/backstage-plugin-boost-common';
 
 // ---------------------------------------------------------------------------
 // Resource reference + filter types
@@ -103,7 +108,7 @@ export const isAiAssetCategory = createPermissionRule<
   typeof aiCatalogAssetPermissionResourceRef,
   IsAiAssetCategoryParams
 >({
-  name: 'isAiAssetCategory',
+  name: AI_CATALOG_RULE_IS_AI_ASSET_CATEGORY,
   description:
     'Matches AI assets by their category (ai-model, agent, skill, mcp-server, model-server)',
   resourceRef: aiCatalogAssetPermissionResourceRef,
@@ -141,7 +146,7 @@ export const isFromConnector = createPermissionRule<
   typeof aiCatalogAssetPermissionResourceRef,
   IsFromConnectorParams
 >({
-  name: 'isFromConnector',
+  name: AI_CATALOG_RULE_IS_FROM_CONNECTOR,
   description:
     'Matches AI assets by their source connector (e.g., watsonx, internal-registry)',
   resourceRef: aiCatalogAssetPermissionResourceRef,
@@ -180,7 +185,7 @@ export const isInTenant = createPermissionRule<
   typeof aiCatalogAssetPermissionResourceRef,
   IsInTenantParams
 >({
-  name: 'isInTenant',
+  name: AI_CATALOG_RULE_IS_IN_TENANT,
   description:
     'Matches AI assets by their tenant identity (namespace or annotation)',
   resourceRef: aiCatalogAssetPermissionResourceRef,
