@@ -3,7 +3,7 @@ kind: Component
 metadata:
   name: catalog-scorecard-without-title
   annotations:
-    scorecard.example: catalog-metadata
+    scorecard/example: catalog
 spec:
   type: service
   owner: group:development/guests

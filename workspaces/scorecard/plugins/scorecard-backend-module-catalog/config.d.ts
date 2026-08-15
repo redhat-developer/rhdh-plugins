@@ -31,6 +31,12 @@ export interface Config {
           thresholds?: ThresholdConfig;
           /** Provider-specific options */
           options?: {
+            /**
+             * Entity filter — scopes which catalog entities this provider evaluates.
+             * Passed directly to the catalog client query.
+             * @deepVisibility secret
+             */
+            filter: object;
             /** Metrics to evaluate — keys are metric IDs (used as catalog.<id>) */
             metrics?: {
               [metricId: string]: {
@@ -38,10 +44,6 @@ export interface Config {
                 title: string;
                 /** Human-readable description */
                 description: string;
-                /** Entity filter — keys are dotted field paths, values are expected values */
-                filter: {
-                  [fieldPath: string]: string;
-                };
                 /** Dotted field path to check on the entity (e.g. metadata.title, spec.lifecycle) */
                 field: string;
                 /** Per-metric status mapping overrides */

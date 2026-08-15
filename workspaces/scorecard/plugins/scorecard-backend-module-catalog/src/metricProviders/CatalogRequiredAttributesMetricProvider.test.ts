@@ -24,14 +24,13 @@ import {
   createCatalogRequiredAttributesMetricProvider,
   resolveFieldPath,
   evaluateFieldStatus,
-  entityMatchesFilter,
 } from './CatalogRequiredAttributesMetricProvider';
 
 // ── helpers ────────────────────────────────────────────────────────────
 
 function buildConfig(
   metrics: Record<string, object>,
-  optionsStatusMapping?: object,
+  optionsExtra?: { statusMapping?: object; filter?: object },
 ) {
   return {
     scorecard: {
@@ -39,9 +38,10 @@ function buildConfig(
         catalog: {
           requiredAttributes: {
             options: {
+              filter: optionsExtra?.filter ?? { kind: 'Component' },
               metrics,
-              ...(optionsStatusMapping
-                ? { statusMapping: optionsStatusMapping }
+              ...(optionsExtra?.statusMapping
+                ? { statusMapping: optionsExtra.statusMapping }
                 : {}),
             },
           },
@@ -55,7 +55,6 @@ function titleMetric(overrides?: object) {
   return {
     title: 'Title is required',
     description: 'The metadata.title should be defined.',
-    filter: { kind: 'Component' },
     field: 'metadata.title',
     ...overrides,
   };
@@ -66,7 +65,6 @@ function lifecycleMetric(overrides?: object) {
     title: 'lifecycle should be prod, stage, test or dev',
     description:
       'The spec.lifecycle field should be one of four accepted values.',
-    filter: { kind: 'Component' },
     field: 'spec.lifecycle',
     statusMapping: {
       exists: 'invalid',
@@ -281,55 +279,6 @@ describe('evaluateFieldStatus', () => {
   });
 });
 
-// ── entityMatchesFilter ────────────────────────────────────────────────
-
-describe('entityMatchesFilter', () => {
-  it('should match with an empty filter', () => {
-    expect(entityMatchesFilter(componentEntity, {})).toBe(true);
-  });
-
-  it('should match on kind (case-insensitive)', () => {
-    expect(entityMatchesFilter(componentEntity, { kind: 'Component' })).toBe(
-      true,
-    );
-    expect(entityMatchesFilter(componentEntity, { kind: 'component' })).toBe(
-      true,
-    );
-  });
-
-  it('should not match on wrong kind', () => {
-    expect(entityMatchesFilter(componentEntity, { kind: 'Template' })).toBe(
-      false,
-    );
-  });
-
-  it('should match on multiple filter fields', () => {
-    expect(
-      entityMatchesFilter(componentEntity, {
-        kind: 'Component',
-        'spec.type': 'service',
-      }),
-    ).toBe(true);
-  });
-
-  it('should not match when one filter field does not match', () => {
-    expect(
-      entityMatchesFilter(componentEntity, {
-        kind: 'Component',
-        'spec.type': 'website',
-      }),
-    ).toBe(false);
-  });
-
-  it('should not match when filter field path does not resolve', () => {
-    expect(
-      entityMatchesFilter(componentEntity, {
-        'spec.nonexistent': 'value',
-      }),
-    ).toBe(false);
-  });
-});
-
 // ── mergeStatusMappings ────────────────────────────────────────────────
 
 describe('mergeStatusMappings', () => {
@@ -487,58 +436,38 @@ describe('CatalogRequiredAttributesMetricProvider', () => {
   });
 
   describe('getCatalogFilter', () => {
-    it('should return kind filter when all metrics share the same kind', () => {
+    it('should return the options-level filter', () => {
       const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(
-          buildConfig({
-            title: titleMetric({ filter: { kind: 'Component' } }),
-            lifecycle: lifecycleMetric({ filter: { kind: 'Component' } }),
-          }),
+          buildConfig(
+            { title: titleMetric() },
+            { filter: { kind: 'Component' } },
+          ),
         ),
       );
       expect(provider?.getCatalogFilter()).toEqual({
-        kind: 'component',
+        kind: 'Component',
       });
     });
 
-    it('should return multi-kind filter for different kinds', () => {
+    it('should return multi-field filter', () => {
       const provider = createCatalogRequiredAttributesMetricProvider(
         new ConfigReader(
-          buildConfig({
-            title: titleMetric({ filter: { kind: 'Component' } }),
-            templateOwner: titleMetric({
-              title: 'Owner',
-              description: 'desc',
-              filter: { kind: 'Template' },
-              field: 'spec.owner',
-            }),
-          }),
+          buildConfig(
+            { title: titleMetric() },
+            {
+              filter: {
+                kind: 'Component',
+                'metadata.annotations.scorecard/example': 'catalog',
+              },
+            },
+          ),
         ),
       );
-      const catalogFilter = provider?.getCatalogFilter();
-      expect(catalogFilter?.kind).toBeDefined();
-      expect(
-        Array.isArray(catalogFilter?.kind)
-          ? (catalogFilter?.kind as string[]).sort()
-          : [],
-      ).toEqual(['component', 'template']);
-    });
-
-    it('should return empty filter when any metric has no kind filter', () => {
-      const provider = createCatalogRequiredAttributesMetricProvider(
-        new ConfigReader(
-          buildConfig({
-            title: titleMetric({ filter: { kind: 'Component' } }),
-            allTitle: titleMetric({
-              title: 'T',
-              description: 'D',
-              filter: {},
-              field: 'metadata.title',
-            }),
-          }),
-        ),
-      );
-      expect(provider?.getCatalogFilter()).toEqual({});
+      expect(provider?.getCatalogFilter()).toEqual({
+        kind: 'Component',
+        'metadata.annotations.scorecard/example': 'catalog',
+      });
     });
   });
 
@@ -578,19 +507,6 @@ describe('CatalogRequiredAttributesMetricProvider', () => {
       const expectedCode = Number(missedRule?.expression.replace('==', ''));
 
       expect(result?.get('catalog.title')).toBe(expectedCode);
-    });
-
-    it('should skip metrics for non-matching entities', async () => {
-      const provider = createCatalogRequiredAttributesMetricProvider(
-        new ConfigReader(
-          buildConfig({
-            title: titleMetric({ filter: { kind: 'Component' } }),
-          }),
-        ),
-      );
-      const result = await provider?.calculateMetrics(templateEntity);
-
-      expect(result?.has('catalog.title')).toBe(false);
     });
 
     it('should return "ok" for valid lifecycle value', async () => {
@@ -716,11 +632,13 @@ describe('CatalogRequiredAttributesMetricProvider', () => {
         buildConfig(
           { title: titleMetric() },
           {
-            exists: 'present',
-            missed: 'absent',
-            emptyString: 'absent',
-            emptyArray: 'absent',
-            empty: 'absent',
+            statusMapping: {
+              exists: 'present',
+              missed: 'absent',
+              emptyString: 'absent',
+              emptyArray: 'absent',
+              empty: 'absent',
+            },
           },
         ),
       );
@@ -744,7 +662,9 @@ describe('CatalogRequiredAttributesMetricProvider', () => {
             }),
           },
           {
-            exists: 'options-present',
+            statusMapping: {
+              exists: 'options-present',
+            },
           },
         ),
       );
@@ -755,18 +675,6 @@ describe('CatalogRequiredAttributesMetricProvider', () => {
       const keys = titleMet?.thresholds.rules.map(r => r.key);
       expect(keys).toContain('metric-present');
       expect(keys).not.toContain('options-present');
-    });
-
-    it('should apply metric filter with empty filter matching all entities', async () => {
-      const provider = createCatalogRequiredAttributesMetricProvider(
-        new ConfigReader(buildConfig({ title: titleMetric({ filter: {} }) })),
-      );
-
-      const componentResult = await provider?.calculateMetrics(componentEntity);
-      expect(componentResult?.has('catalog.title')).toBe(true);
-
-      const templateResult = await provider?.calculateMetrics(templateEntity);
-      expect(templateResult?.has('catalog.title')).toBe(true);
     });
   });
 });

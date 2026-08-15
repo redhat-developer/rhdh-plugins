@@ -23,7 +23,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import {
-  type CatalogRequiredAttributesConfig,
+  type CatalogRequiredAttributesOptions,
   type MetricConfig,
   type StatusMapping,
   parseCatalogRequiredAttributesConfig,
@@ -94,28 +94,6 @@ export function evaluateFieldStatus(
   }
 
   return statusMapping.exists;
-}
-
-/**
- * Returns whether an entity matches a check's filter.
- * An empty filter matches all entities.
- * Each key in the filter is a dotted field path; the entity's field
- * value (stringified) must equal the filter value (case-insensitive).
- */
-export function entityMatchesFilter(
-  entity: Entity,
-  filter: Record<string, string>,
-): boolean {
-  for (const [path, expected] of Object.entries(filter)) {
-    const value = resolveFieldPath(entity, path);
-    if (value === NOT_FOUND) {
-      return false;
-    }
-    if (String(value).toLowerCase() !== String(expected).toLowerCase()) {
-      return false;
-    }
-  }
-  return true;
 }
 
 /**
@@ -204,16 +182,16 @@ function getDefaultIcon(status: string): string {
 export class CatalogRequiredAttributesMetricProvider
   implements MetricProvider<'number'>
 {
+  private readonly filter: object;
   private readonly metricConfigs: MetricConfig[];
   private readonly statusCodeMappings: Map<
     string,
     { statusToCode: Map<string, number>; thresholds: ThresholdConfig }
   >;
 
-  constructor(
-    catalogRequiredAttributesConfig: CatalogRequiredAttributesConfig,
-  ) {
-    this.metricConfigs = catalogRequiredAttributesConfig.metrics;
+  constructor(options: CatalogRequiredAttributesOptions) {
+    this.filter = options.filter;
+    this.metricConfigs = options.metrics;
     this.statusCodeMappings = new Map();
     for (const metric of this.metricConfigs) {
       this.statusCodeMappings.set(
@@ -245,41 +223,13 @@ export class CatalogRequiredAttributesMetricProvider
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
-    // Aggregate kind filters from all metrics for efficient catalog querying.
-    // If any metric has no filter or does not filter by kind, return an
-    // empty filter (all entities).
-    const kinds = new Set<string>();
-    let allHaveKind = true;
-
-    for (const metric of this.metricConfigs) {
-      const kindValue = metric.filter.kind;
-      if (kindValue) {
-        kinds.add(kindValue.toLowerCase());
-      } else {
-        allHaveKind = false;
-      }
-    }
-
-    if (allHaveKind && kinds.size > 0) {
-      if (kinds.size === 1) {
-        return { kind: [...kinds][0] };
-      }
-      return { kind: [...kinds] };
-    }
-
-    // If not all metrics filter by kind, return empty filter (all entities)
-    return {};
+    return this.filter as Record<string, string | symbol | (string | symbol)[]>;
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const results = new Map<string, number>();
 
     for (const metric of this.metricConfigs) {
-      // Apply per-metric filter
-      if (!entityMatchesFilter(entity, metric.filter)) {
-        continue;
-      }
-
       const status = evaluateFieldStatus(
         entity,
         metric.field,
@@ -304,12 +254,9 @@ export class CatalogRequiredAttributesMetricProvider
 export function createCatalogRequiredAttributesMetricProvider(
   config: Config,
 ): CatalogRequiredAttributesMetricProvider | undefined {
-  const catalogRequiredAttributesConfig =
-    parseCatalogRequiredAttributesConfig(config);
-  if (!catalogRequiredAttributesConfig) {
+  const options = parseCatalogRequiredAttributesConfig(config);
+  if (!options) {
     return undefined;
   }
-  return new CatalogRequiredAttributesMetricProvider(
-    catalogRequiredAttributesConfig,
-  );
+  return new CatalogRequiredAttributesMetricProvider(options);
 }

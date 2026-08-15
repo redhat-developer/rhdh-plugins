@@ -8,7 +8,7 @@ spec:
   targets:
     - ./components/all-scorecards-service-different-owner.yaml
     - ./components/all-scorecards.yaml
-    - ./components/catalog-metadata-scorecard-with-title.yaml
+    - ./components/catalog-scorecard-with-title.yaml
     - ./components/catalog-scorecard-without-title.yaml
     - ./components/code-coverage-scorecard-only.yaml
     - ./components/dependabot-scorecard-only.yaml

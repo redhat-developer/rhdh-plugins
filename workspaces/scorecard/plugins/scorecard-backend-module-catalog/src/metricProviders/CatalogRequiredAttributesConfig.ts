@@ -41,15 +41,15 @@ export type MetricConfig = {
   id: string;
   title: string;
   description: string;
-  filter: Record<string, string>;
   field: string;
   statusMapping: StatusMapping;
 };
 
 /**
- * Parsed configuration for the catalog required attributes metric provider.
+ * Parsed options for the catalog required attributes metric provider.
  */
-export type CatalogRequiredAttributesConfig = {
+export type CatalogRequiredAttributesOptions = {
+  filter: object;
   metrics: MetricConfig[];
 };
 
@@ -158,7 +158,7 @@ function readStatusMapping(config: Config): Partial<StatusMapping> | undefined {
  */
 export function parseCatalogRequiredAttributesConfig(
   config: Config,
-): CatalogRequiredAttributesConfig | undefined {
+): CatalogRequiredAttributesOptions | undefined {
   const optionsConfig = config.getOptionalConfig(
     'scorecard.metricProviders.catalog.requiredAttributes.options',
   );
@@ -166,6 +166,9 @@ export function parseCatalogRequiredAttributesConfig(
   if (!optionsConfig) {
     return undefined;
   }
+
+  // Read the required filter from options level
+  const filter = optionsConfig.get('filter') as object;
 
   const metricsConfig = optionsConfig.getOptionalConfig('metrics');
   if (!metricsConfig) {
@@ -194,13 +197,6 @@ export function parseCatalogRequiredAttributesConfig(
     const title = metricConfig.getString('title');
     const description = metricConfig.getString('description');
 
-    // Read filter
-    const filterConfig = metricConfig.getConfig('filter');
-    const filter: Record<string, string> = {};
-    for (const key of filterConfig.keys()) {
-      filter[key] = filterConfig.getString(key);
-    }
-
     // Read field
     const field = metricConfig.getString('field');
     if (!field) {
@@ -220,8 +216,8 @@ export function parseCatalogRequiredAttributesConfig(
       optionsStatusMapping,
     );
 
-    return { id: metricId, title, description, filter, field, statusMapping };
+    return { id: metricId, title, description, field, statusMapping };
   });
 
-  return { metrics };
+  return { filter, metrics };
 }

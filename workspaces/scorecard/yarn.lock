@@ -9605,7 +9605,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog@workspace:plugins/scorecard-backend-module-catalog":
+"@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog@workspace:^, @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog@workspace:plugins/scorecard-backend-module-catalog":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog@workspace:plugins/scorecard-backend-module-catalog"
   dependencies:
@@ -15413,6 +15413,7 @@ __metadata:
     "@backstage/plugin-techdocs-backend": "npm:^2.2.1"
     "@modelcontextprotocol/sdk": "npm:^1.25.2"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-code-coverage": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck": "workspace:^"
