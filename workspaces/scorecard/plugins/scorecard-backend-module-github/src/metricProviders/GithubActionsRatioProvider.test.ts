@@ -54,7 +54,13 @@ describe('GithubActionsRatioProvider', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     provider = GithubActionsRatioProvider.fromConfig(new ConfigReader({}), {
-      logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn(), child: jest.fn() } as any,
+      logger: {
+        warn: jest.fn(),
+        info: jest.fn(),
+        error: jest.fn(),
+        debug: jest.fn(),
+        child: jest.fn(),
+      } as any,
     });
   });
 

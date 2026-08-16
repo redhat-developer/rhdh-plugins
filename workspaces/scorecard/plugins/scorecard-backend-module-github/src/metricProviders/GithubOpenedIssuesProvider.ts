@@ -65,7 +65,9 @@ export class GithubOpenedIssuesProvider implements MetricProvider<'number'> {
     config: Config,
     options: { logger: LoggerService },
   ): GithubOpenedIssuesProvider {
-    return new GithubOpenedIssuesProvider(new GithubClient(config, options.logger));
+    return new GithubOpenedIssuesProvider(
+      new GithubClient(config, options.logger),
+    );
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {

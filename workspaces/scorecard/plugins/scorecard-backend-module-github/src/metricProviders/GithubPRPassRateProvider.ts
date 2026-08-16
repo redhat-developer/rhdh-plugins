@@ -95,7 +95,9 @@ export class GithubPRPassRateProvider implements MetricProvider<'number'> {
     config: Config,
     options: { logger: LoggerService },
   ): GithubPRPassRateProvider {
-    return new GithubPRPassRateProvider(new GithubClient(config, options.logger));
+    return new GithubPRPassRateProvider(
+      new GithubClient(config, options.logger),
+    );
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
