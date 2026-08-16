@@ -90,6 +90,76 @@ failures or config-surface drift.
 
 When reviewing PRs that add or modify `boost.*` config keys, verify all five registration steps above were completed.
 
+### Entity provider schema contracts
+
+Entity providers must emit entities that satisfy the upstream kind
+module's schema validator. The `catalog-backend-module-ai-resource-agent`
+and `catalog-backend-module-ai-model-server` processors validate
+entities at ingestion time — missing required fields cause the entity
+to be rejected.
+
+Canonical schemas live in the `ai-integrations` workspace:
+
+- `plugins/catalog-model-ai-resource-agent/src/AiResource.v1alpha1.agent.schema.json`
+- `plugins/catalog-model-ai-model-server/src/API.v1alpha1.ai-model-server.schema.json`
+
+When in doubt, read those files — they are the single source of truth.
+
+#### AiResource / agent
+
+Schema-required fields (`spec`):
+
+- `type`: must be `'agent'`
+- `lifecycle`: non-empty string (e.g. `'production'`, `'experimental'`)
+- `owner`: entity reference string (e.g. `'ai-platform-team'`)
+
+Key optional fields — entity providers should populate these when the
+data is available, since they carry agent-specific semantics that the
+catalog UI and downstream consumers rely on:
+
+- `instructions`: string — the agent's system prompt. Omit only
+  when the agent image/runtime already provides a default prompt.
+  In practice most provider-emitted agents should include this
+  field, falling back to the agent's description or a
+  provider-prefixed placeholder if no explicit prompt is configured.
+- `handoffs`: string array — opaque references to other agents
+  this agent can hand off to. This is the upstream convention for
+  agent delegation targets; do **not** use `spec.dependsOn` for
+  agent handoffs (the AiResource agent schema does not register
+  `dependsOn` relation fields).
+- `handoffDescription`: string — description shown when this
+  agent appears as a handoff target in another agent's list.
+- `model`: string — model identifier for this agent.
+- `tools`: string array — opaque references to tools available
+  to this agent.
+- `modelSettings`: object with `temperature`, `maxTokens`,
+  `toolChoice` (closed schema, `additionalProperties: false`).
+
+The `AiResourceAgentProcessor` also validates type constraints on
+all optional fields at ingestion time via `preProcessEntity` (e.g.
+`handoffs` must be an array if present, `instructions` must be a
+string if present). See `collectAgentErrors.ts` in the
+`catalog-backend-module-ai-resource-agent` plugin.
+
+#### AiModelServerAPI / ai-model-server
+
+Schema-required fields (`spec`):
+
+- `type`: must be `'ai-model-server'`
+- `lifecycle`: non-empty string
+- `owner`: entity reference string
+- `serverType`: API contract type (e.g. `'openai-v1'`, `'anthropic'`)
+- `serverUrl`: base URL of the inference endpoint
+
+Key optional fields:
+
+- `models.available`: string array of model identifiers available
+  on this server
+- `models.default`: recommended default model identifier
+- `models.discoverable`: boolean — whether the server exposes a
+  model listing endpoint
+- `requiresApiKey`: boolean — whether consumers need an API key
+
 ### Package structure
 
 | Package                        | Purpose                                                                                       |
