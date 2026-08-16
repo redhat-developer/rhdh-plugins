@@ -9648,6 +9648,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog@workspace:^, @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog@workspace:plugins/scorecard-backend-module-catalog":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog@workspace:plugins/scorecard-backend-module-catalog"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.9.2"
+    "@backstage/backend-test-utils": "npm:^1.11.4"
+    "@backstage/catalog-model": "npm:^1.9.0"
+    "@backstage/cli": "npm:^0.36.3"
+    "@backstage/config": "npm:^1.3.8"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^"
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-code-coverage@workspace:^, @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-code-coverage@workspace:plugins/scorecard-backend-module-code-coverage":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-code-coverage@workspace:plugins/scorecard-backend-module-code-coverage"
@@ -15464,6 +15478,7 @@ __metadata:
     "@backstage/plugin-techdocs-backend": "npm:^2.2.1"
     "@modelcontextprotocol/sdk": "npm:^1.25.2"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-code-coverage": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora": "workspace:^"
