@@ -20,14 +20,50 @@ import { Card, CardBody, CardHeader, Flex, Text } from '@backstage/ui';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { getSpecField } from '../../../utils/entityHelpers';
 
+function getModelsAvailable(entity: { spec?: unknown }): string[] {
+  const spec = entity.spec as Record<string, unknown> | undefined;
+  const models = spec?.models as Record<string, unknown> | undefined;
+  const available = models?.available;
+  return Array.isArray(available) ? (available as string[]) : [];
+}
+
+function getBooleanSpecField(
+  entity: { spec?: unknown },
+  field: string,
+): boolean | undefined {
+  const spec = entity.spec as Record<string, unknown> | undefined;
+  const value = spec?.[field];
+  return typeof value === 'boolean' ? value : undefined;
+}
+
 export const SummaryCard = () => {
   const { entity } = useEntity();
   const { t } = useTranslation();
 
   const description = entity.metadata.description ?? '';
   const rationale = getSpecField(entity, 'rationale');
+  const modelsAvailable = getModelsAvailable(entity);
 
-  if (!description && !rationale) return null;
+  const isAgent = getSpecField(entity, 'type') === 'agent';
+  const instructions = isAgent
+    ? getSpecField(entity, 'instructions')
+    : undefined;
+  const handoffDescription = isAgent
+    ? getSpecField(entity, 'handoffDescription')
+    : undefined;
+  const enableRAG = isAgent
+    ? getBooleanSpecField(entity, 'enableRAG')
+    : undefined;
+
+  if (
+    !description &&
+    !rationale &&
+    modelsAvailable.length === 0 &&
+    !instructions &&
+    !handoffDescription &&
+    enableRAG === undefined
+  )
+    return null;
 
   return (
     <Card>
@@ -41,6 +77,48 @@ export const SummaryCard = () => {
             <Text variant="body-medium" color="secondary">
               {rationale}
             </Text>
+          )}
+          {modelsAvailable.length > 0 && (
+            <Flex direction="column" gap="2">
+              <Text variant="title-small">
+                {`${t('catalog.card.modelsAvailableTitle')} (${modelsAvailable.length})`}
+              </Text>
+              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                <Flex direction="column" gap="1">
+                  {modelsAvailable.map(model => (
+                    <Text key={model} variant="body-medium">
+                      {model}
+                    </Text>
+                  ))}
+                </Flex>
+              </div>
+            </Flex>
+          )}
+          {instructions && (
+            <Flex direction="column" gap="1">
+              <Text variant="title-small">
+                {t('catalog.card.instructionsTitle')}
+              </Text>
+              <Text variant="body-medium" style={{ whiteSpace: 'pre-wrap' }}>
+                {instructions}
+              </Text>
+            </Flex>
+          )}
+          {handoffDescription && (
+            <Flex direction="column" gap="1">
+              <Text variant="title-small">
+                {t('catalog.card.handoffDescriptionTitle')}
+              </Text>
+              <Text variant="body-medium">{handoffDescription}</Text>
+            </Flex>
+          )}
+          {enableRAG !== undefined && (
+            <Flex direction="column" gap="1">
+              <Text variant="title-small">
+                {t('catalog.card.ragEnabledLabel')}
+              </Text>
+              <Text variant="body-medium">{enableRAG ? 'Yes' : 'No'}</Text>
+            </Flex>
           )}
         </Flex>
       </CardBody>

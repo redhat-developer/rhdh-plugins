@@ -55,7 +55,7 @@ const mockEntities: Entity[] = [
   },
   {
     apiVersion: 'backstage.io/v1alpha1',
-    kind: 'Component',
+    kind: 'AiResource',
     metadata: {
       name: 'dev-assistant',
       title: 'Developer Assistant',
@@ -65,7 +65,7 @@ const mockEntities: Entity[] = [
       tags: ['agent'],
       annotations: {},
     },
-    spec: { type: 'ai-agent', lifecycle: 'experimental', owner: 'team-ai' },
+    spec: { type: 'agent', lifecycle: 'experimental', owner: 'team-ai' },
   },
 ];
 

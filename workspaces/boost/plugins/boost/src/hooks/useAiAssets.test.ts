@@ -44,14 +44,14 @@ const aiSkill: Entity = {
 
 const aiAgent: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
-  kind: 'Component',
+  kind: 'AiResource',
   metadata: {
     name: 'test-agent',
     namespace: 'default',
     description: 'A test agent',
     tags: ['agent'],
   },
-  spec: { type: 'ai-agent', lifecycle: 'experimental', owner: 'team-ml' },
+  spec: { type: 'agent', lifecycle: 'experimental', owner: 'team-ml' },
 };
 
 const nonAiComponent: Entity = {

@@ -37,10 +37,10 @@ const DEFAULT_AGENT_REFRESH_SECONDS = 300;
 /**
  * Catalog backend module that registers OGX entity providers.
  *
- * Independently deployable as an RHDH dynamic plugin — emits AI models
- * (kind: Resource, spec.type: ai-model) and agents (kind: Component,
- * spec.type: ai-agent) as Backstage catalog entities without requiring
- * the full boost plugin.
+ * Independently deployable as an RHDH dynamic plugin — emits a model
+ * server entity (kind: AiModelServerAPI, spec.type: ai-model-server)
+ * and agents (kind: AiResource, spec.type: agent) as Backstage catalog
+ * entities without requiring the full boost plugin.
  *
  * Configuration (app-config.yaml):
  * ```yaml
@@ -131,6 +131,8 @@ function readOgxEntityProviderConfig(
       agentRefreshIntervalSeconds: epConfig.getOptionalNumber(
         'agentRefreshIntervalSeconds',
       ),
+      defaultAgent: epConfig.getOptionalString('defaultAgent'),
+      maxAgentTurns: epConfig.getOptionalNumber('maxAgentTurns'),
       agents: readAgentConfigs(epConfig),
     };
   }
@@ -142,6 +144,8 @@ function readOgxEntityProviderConfig(
     return {
       baseUrl: providerConfig.getString('baseUrl'),
       apiKey: providerConfig.getOptionalString('apiKey'),
+      defaultAgent: providerConfig.getOptionalString('defaultAgent'),
+      maxAgentTurns: providerConfig.getOptionalNumber('maxAgentTurns'),
       agents: readAgentConfigs(providerConfig),
     };
   }
@@ -175,9 +179,14 @@ function readAgentConfigs(
     id: agentConfig.getString('id'),
     name: agentConfig.getString('name'),
     description: agentConfig.getOptionalString('description'),
+    instructions: agentConfig.getOptionalString('instructions'),
     model: agentConfig.getOptionalString('model'),
     tools: agentConfig.getOptionalStringArray('tools'),
-    handoffTargets: agentConfig.getOptionalStringArray('handoffTargets'),
+    handoffs: agentConfig.getOptionalStringArray('handoffs'),
+    handoffDescription: agentConfig.getOptionalString('handoffDescription'),
+    enableRAG: agentConfig.has('enableRAG')
+      ? String(agentConfig.getOptional('enableRAG')) === 'true'
+      : undefined,
     createdBy: agentConfig.getOptionalString('createdBy'),
     lifecycleStage: agentConfig.getOptionalString('lifecycleStage') as
       | 'draft'

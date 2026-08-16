@@ -44,6 +44,10 @@ export const boostMessages = {
       copied: 'Copied',
       copyAriaLabel: 'Copy command to clipboard',
       adoptionDownloadZip: 'Download ZIP',
+      modelsAvailableTitle: 'Available Models',
+      instructionsTitle: 'Instructions',
+      handoffDescriptionTitle: 'Handoff Description',
+      ragEnabledLabel: 'RAG Enabled',
     },
     table: {
       name: 'Name',
