@@ -59,13 +59,13 @@ export const createGetEntityMetricsAction = ({
               metadata: z.object({
                 title: z.string(),
                 description: z.string(),
-                type: z.enum(['number', 'boolean']),
+                type: z.enum(['number', 'boolean', 'string']),
                 unit: z.string().optional(),
                 history: z.boolean().optional(),
                 defaultVisualization: z.enum(['value', 'sparkline']).optional(),
               }),
               result: z.object({
-                value: z.union([z.number(), z.boolean(), z.null()]),
+                value: z.union([z.number(), z.boolean(), z.string(), z.null()]),
                 timestamp: z.string(),
                 thresholdResult: z.object({
                   definition: z.unknown().optional(),
