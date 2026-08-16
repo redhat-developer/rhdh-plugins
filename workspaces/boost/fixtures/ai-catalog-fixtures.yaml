@@ -176,30 +176,30 @@ spec:
 
 ---
 # ---------------------------------------------------------------------------
-# AiModelServerAPI / ai-model-server (commented out — kind not yet registered
-# in the boost dev catalog backend; requires ai-integrations kind module)
+# AiModelServerAPI / ai-model-server
 # ---------------------------------------------------------------------------
-# apiVersion: backstage.io/v1alpha1
-# kind: AiModelServerAPI
-# metadata:
-#   name: granite-model-server
-#   title: Granite Model Server
-#   description: Model server hosting IBM Granite models for code generation, completion, and explanation tasks.
-#   tags:
-#     - model-server
-#     - code-generation
-#     - ibm
-#   annotations:
-#     rhdh.io/ai-asset-category: model-server
-#     rhdh.io/ai-asset-version: '3.0.0'
-#     rhdh.io/ai-asset-source: model-registry
-# spec:
-#   type: ai-model-server
-#   lifecycle: production
-#   owner: team-ml-ops
-#   serverType: openai-v1
-#   serverUrl: https://models.example.com
-#   models:
-#     available:
-#       - ibm/granite-3.0-code
-#       - ibm/granite-3.0-instruct
+apiVersion: backstage.io/v1alpha1
+kind: AiModelServerAPI
+metadata:
+  name: granite-model-server
+  title: Granite Model Server
+  description: IBM Granite model server hosting code generation and instruction-following models.
+  tags:
+    - model-server
+    - code-generation
+    - ibm
+  annotations:
+    rhdh.io/ai-asset-category: model-server
+    rhdh.io/ai-asset-version: '3.0.0'
+    rhdh.io/ai-asset-source: model-registry
+spec:
+  type: ai-model-server
+  lifecycle: production
+  owner: team-ml-ops
+  serverType: openai-v1
+  serverUrl: https://granite.example.com/v1
+  models:
+    discoverable: true
+    available:
+      - granite-3-code
+      - granite-3-instruct

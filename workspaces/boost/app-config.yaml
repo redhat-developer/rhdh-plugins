@@ -56,11 +56,12 @@ catalog:
         - Template
         - API
         - AiResource
+        - AiModelServerAPI
   locations:
     - type: file
       target: ../../fixtures/ai-catalog-fixtures.yaml
       rules:
-        - allow: [AiResource, API, Component, Resource, Group]
+        - allow: [AiResource, AiModelServerAPI, API, Component, Resource, Group]
 
 boost:
   security:

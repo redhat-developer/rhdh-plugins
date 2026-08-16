@@ -8928,6 +8928,61 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server@npm:0.2.0"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.9.2"
+    "@backstage/catalog-model": "npm:^1.9.0"
+    "@backstage/plugin-catalog-node": "npm:^2.2.2"
+    "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-model-server": "npm:^0.2.0"
+  checksum: 10c0/8295fa69be72f0d4c2ae5a335bba87c8c7d7dd5916f05d41abbcb9586c831b892ab5e3a5ac5851ea87f09e607f934640e6301cbd19cd3c15043dfbf42cc1b279
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@npm:^0.2.1":
+  version: 0.2.1
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent@npm:0.2.1"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.9.2"
+    "@backstage/catalog-model": "npm:^1.9.0"
+    "@backstage/plugin-catalog-node": "npm:^2.2.2"
+    "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent": "npm:^0.2.0"
+  checksum: 10c0/3c40c507d2aa88eb819bd4d5836a30cc22cfb1e7938d2fff2f9860a864b45d81da4408b1ace9b9b7074f4b8736d3645f9d48db834cea031cb6c1463abf77d837
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions@npm:0.4.0"
+  dependencies:
+    "@backstage/backend-plugin-api": "npm:^1.9.2"
+    "@backstage/catalog-model": "npm:^1.9.0"
+    "@backstage/plugin-catalog-common": "npm:^1.1.10"
+    "@backstage/plugin-catalog-node": "npm:^2.2.2"
+  checksum: 10c0/874514e47e79e5d12d1ba1b27199df26aadde1f81fdccbee9fa07573f63c8bc73709213b164d375fb7de2087ec4b19183961b8db7928dc12af51ec11107c2d6b
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-model-server@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-model-server@npm:0.2.0"
+  dependencies:
+    "@backstage/catalog-model": "npm:^1.9.0"
+  checksum: 10c0/719249ed7a3c56e5db7aa2c570f1df37a99f7f02f7d4b750bc1bda08229fec8942acd61f1043f3aaf6aca734f993a652cb4989242886e00de95fac7156379ace
+  languageName: node
+  linkType: hard
+
+"@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@npm:0.2.0"
+  dependencies:
+    "@backstage/catalog-model": "npm:^1.9.0"
+    "@backstage/types": "npm:^1.2.2"
+  checksum: 10c0/2fba740e232a8ee8136b39cfdfb496bc96e909c14f9c71888c39e1f0af77cdf7cf7af8798ba516e1afe24ea5ecd7bdee94860b832f9b4a7cdeba517c21870e12
+  languageName: node
+  linkType: hard
+
 "@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider@workspace:^, @red-hat-developer-hub/backstage-plugin-kagenti-entity-provider@workspace:plugins/kagenti-entity-provider":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider@workspace:plugins/kagenti-entity-provider"
@@ -13107,6 +13162,9 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-boost-backend": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-boost-backend-module-ogx": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server": "npm:^0.2.0"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent": "npm:^0.2.1"
+    "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions": "npm:^0.4.0"
     "@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-ogx-entity-provider": "workspace:^"
     app: "link:../app"
