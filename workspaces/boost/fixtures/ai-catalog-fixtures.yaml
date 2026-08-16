@@ -169,6 +169,7 @@ spec:
   type: agent
   lifecycle: production
   owner: team-ai-platform
+  instructions: An AI agent that helps developers with code generation, debugging, architecture decisions, and documentation.
   location:
     type: git
     target: https://github.com/example/developer-assistant-agent

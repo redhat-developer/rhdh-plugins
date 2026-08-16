@@ -124,11 +124,11 @@ export class OgxAgentEntityProvider implements EntityProvider {
       annotations['boost.redhat.com/model'] = agent.model;
     }
 
-    // Build dependsOn relations for handoff targets
-    const dependsOn: string[] = [];
+    // Build handoffs for agent-to-agent delegation targets
+    const handoffs: string[] = [];
     if (agent.handoffTargets) {
       for (const target of agent.handoffTargets) {
-        dependsOn.push(
+        handoffs.push(
           `airesource:default/${sanitizeEntityName(`ogx-agent-${target}`)}`,
         );
       }
@@ -150,7 +150,8 @@ export class OgxAgentEntityProvider implements EntityProvider {
         type: 'agent',
         lifecycle: mapLifecycleStage(agent.lifecycleStage),
         owner: mapOwner(agent.createdBy),
-        ...(dependsOn.length > 0 && { dependsOn }),
+        instructions: agent.description ?? `OGX agent: ${agent.name}`,
+        ...(handoffs.length > 0 && { handoffs }),
       },
     };
   }

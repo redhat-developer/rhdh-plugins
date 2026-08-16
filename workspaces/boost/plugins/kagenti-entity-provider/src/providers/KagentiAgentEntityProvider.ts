@@ -206,6 +206,7 @@ export class KagentiAgentEntityProvider implements EntityProvider {
         type: 'agent',
         lifecycle: mapLifecycleStage(agent.lifecycleStage),
         owner: mapOwner(agent.createdBy),
+        instructions: agent.description ?? `Kagenti agent: ${agent.name}`,
       },
     };
   }

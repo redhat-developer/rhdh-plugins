@@ -110,6 +110,7 @@ describe('KagentiAgentEntityProvider', () => {
     expect(entity.spec.type).toBe('agent');
     expect(entity.spec.lifecycle).toBe('production');
     expect(entity.spec.owner).toBe('user:default/admin');
+    expect(entity.spec.instructions).toBe('A test agent');
     expect(entity.metadata.title).toBe('Test Agent');
     expect(
       entity.metadata.annotations['boost.redhat.com/lifecycle-stage'],

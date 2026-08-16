@@ -102,6 +102,7 @@ describe('OgxAgentEntityProvider', () => {
     expect(entity.spec.type).toBe('agent');
     expect(entity.spec.lifecycle).toBe('production');
     expect(entity.spec.owner).toBe('user:default/admin');
+    expect(entity.spec.instructions).toBe('Helps with code');
     expect(entity.metadata.title).toBe('Code Assistant');
     expect(entity.metadata.annotations['boost.redhat.com/model']).toBe(
       'meta-llama/Llama-3.1-8B-Instruct',
@@ -127,7 +128,7 @@ describe('OgxAgentEntityProvider', () => {
     expect(mutation.entities).toHaveLength(0);
   });
 
-  it('should include dependsOn for handoff targets', async () => {
+  it('should include handoffs for handoff targets', async () => {
     const config: OgxEntityProviderConfig = {
       baseUrl: 'http://localhost:8321',
       agents: [
@@ -152,7 +153,7 @@ describe('OgxAgentEntityProvider', () => {
       .calls[0][0];
     const entity = mutation.entities[0].entity;
 
-    expect(entity.spec.dependsOn).toEqual([
+    expect(entity.spec.handoffs).toEqual([
       'airesource:default/ogx-agent-code-assistant',
     ]);
   });

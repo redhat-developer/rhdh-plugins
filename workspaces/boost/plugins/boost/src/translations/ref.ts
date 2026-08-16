@@ -44,6 +44,7 @@ export const boostMessages = {
       copied: 'Copied',
       copyAriaLabel: 'Copy command to clipboard',
       adoptionDownloadZip: 'Download ZIP',
+      modelsAvailableTitle: 'Available Models',
     },
     table: {
       name: 'Name',

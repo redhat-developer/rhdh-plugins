@@ -53,7 +53,7 @@ export const SummaryCard = () => {
           {modelsAvailable.length > 0 && (
             <Flex direction="column" gap="2">
               <Text variant="title-small">
-                {`Available Models (${modelsAvailable.length})`}
+                {`${t('catalog.card.modelsAvailableTitle')} (${modelsAvailable.length})`}
               </Text>
               <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
                 <Flex direction="column" gap="1">
