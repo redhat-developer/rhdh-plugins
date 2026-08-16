@@ -65,7 +65,9 @@ export class GithubClosedPRsProvider implements MetricProvider<'number'> {
     config: Config,
     options: { logger: LoggerService },
   ): GithubClosedPRsProvider {
-    return new GithubClosedPRsProvider(new GithubClient(config, options.logger));
+    return new GithubClosedPRsProvider(
+      new GithubClient(config, options.logger),
+    );
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {

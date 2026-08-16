@@ -105,7 +105,9 @@ export class GithubActionsCountProvider implements MetricProvider<'number'> {
     config: Config,
     options: { logger: LoggerService },
   ): GithubActionsCountProvider {
-    return new GithubActionsCountProvider(new GithubClient(config, options.logger));
+    return new GithubActionsCountProvider(
+      new GithubClient(config, options.logger),
+    );
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {

@@ -103,7 +103,9 @@ export class GithubActionsRatioProvider implements MetricProvider<'number'> {
     config: Config,
     options: { logger: LoggerService },
   ): GithubActionsRatioProvider {
-    return new GithubActionsRatioProvider(new GithubClient(config, options.logger));
+    return new GithubActionsRatioProvider(
+      new GithubClient(config, options.logger),
+    );
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
