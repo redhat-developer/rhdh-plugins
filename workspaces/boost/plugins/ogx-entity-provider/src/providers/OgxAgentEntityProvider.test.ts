@@ -191,6 +191,47 @@ describe('OgxAgentEntityProvider', () => {
     expect(entity.metadata.description).toBe('Routes requests');
   });
 
+  it('should include handoffDescription and enableRAG on entity spec', async () => {
+    const config: OgxEntityProviderConfig = {
+      baseUrl: 'http://localhost:8321',
+      agents: [
+        {
+          id: 'legal',
+          name: 'Legal',
+          handoffDescription: 'Handles legal and compliance questions',
+          enableRAG: true,
+        },
+        {
+          id: 'support',
+          name: 'Support',
+          enableRAG: false,
+        },
+      ],
+    };
+
+    const provider = new OgxAgentEntityProvider({
+      config,
+      logger: mockServices.logger.mock(),
+      taskRunner,
+    });
+
+    await provider.connect(mockConnection);
+    await taskRunner.runAll();
+
+    const mutation = (mockConnection.applyMutation as jest.Mock).mock
+      .calls[0][0];
+
+    const legal = mutation.entities[0].entity;
+    expect(legal.spec.handoffDescription).toBe(
+      'Handles legal and compliance questions',
+    );
+    expect(legal.spec.enableRAG).toBe(true);
+
+    const support = mutation.entities[1].entity;
+    expect(support.spec.handoffDescription).toBeUndefined();
+    expect(support.spec.enableRAG).toBe(false);
+  });
+
   it('should map lifecycle stages correctly', async () => {
     const config: OgxEntityProviderConfig = {
       baseUrl: 'http://localhost:8321',

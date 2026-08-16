@@ -185,7 +185,7 @@ function readAgentConfigs(
     handoffs: agentConfig.getOptionalStringArray('handoffs'),
     handoffDescription: agentConfig.getOptionalString('handoffDescription'),
     enableRAG: agentConfig.has('enableRAG')
-      ? Boolean(agentConfig.getOptional('enableRAG'))
+      ? String(agentConfig.getOptional('enableRAG')) === 'true'
       : undefined,
     createdBy: agentConfig.getOptionalString('createdBy'),
     lifecycleStage: agentConfig.getOptionalString('lifecycleStage') as
