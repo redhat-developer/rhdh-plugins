@@ -131,6 +131,8 @@ function readOgxEntityProviderConfig(
       agentRefreshIntervalSeconds: epConfig.getOptionalNumber(
         'agentRefreshIntervalSeconds',
       ),
+      defaultAgent: epConfig.getOptionalString('defaultAgent'),
+      maxAgentTurns: epConfig.getOptionalNumber('maxAgentTurns'),
       agents: readAgentConfigs(epConfig),
     };
   }
@@ -142,6 +144,8 @@ function readOgxEntityProviderConfig(
     return {
       baseUrl: providerConfig.getString('baseUrl'),
       apiKey: providerConfig.getOptionalString('apiKey'),
+      defaultAgent: providerConfig.getOptionalString('defaultAgent'),
+      maxAgentTurns: providerConfig.getOptionalNumber('maxAgentTurns'),
       agents: readAgentConfigs(providerConfig),
     };
   }
@@ -175,9 +179,14 @@ function readAgentConfigs(
     id: agentConfig.getString('id'),
     name: agentConfig.getString('name'),
     description: agentConfig.getOptionalString('description'),
+    instructions: agentConfig.getOptionalString('instructions'),
     model: agentConfig.getOptionalString('model'),
     tools: agentConfig.getOptionalStringArray('tools'),
-    handoffTargets: agentConfig.getOptionalStringArray('handoffTargets'),
+    handoffs: agentConfig.getOptionalStringArray('handoffs'),
+    handoffDescription: agentConfig.getOptionalString('handoffDescription'),
+    enableRAG: agentConfig.has('enableRAG')
+      ? Boolean(agentConfig.getOptional('enableRAG'))
+      : undefined,
     createdBy: agentConfig.getOptionalString('createdBy'),
     lifecycleStage: agentConfig.getOptionalString('lifecycleStage') as
       | 'draft'

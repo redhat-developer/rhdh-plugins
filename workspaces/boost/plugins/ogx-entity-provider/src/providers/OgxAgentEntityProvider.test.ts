@@ -135,7 +135,7 @@ describe('OgxAgentEntityProvider', () => {
         {
           id: 'orchestrator',
           name: 'Orchestrator',
-          handoffTargets: ['code-assistant'],
+          handoffs: ['code-assistant'],
         },
       ],
     };
@@ -156,6 +156,39 @@ describe('OgxAgentEntityProvider', () => {
     expect(entity.spec.handoffs).toEqual([
       'airesource:default/ogx-agent-code-assistant',
     ]);
+  });
+
+  it('should prefer instructions over description for spec.instructions', async () => {
+    const config: OgxEntityProviderConfig = {
+      baseUrl: 'http://localhost:8321',
+      agents: [
+        {
+          id: 'router',
+          name: 'Router',
+          description: 'Routes requests',
+          instructions:
+            'You are a triage agent. Route to the appropriate specialist.',
+        },
+      ],
+    };
+
+    const provider = new OgxAgentEntityProvider({
+      config,
+      logger: mockServices.logger.mock(),
+      taskRunner,
+    });
+
+    await provider.connect(mockConnection);
+    await taskRunner.runAll();
+
+    const mutation = (mockConnection.applyMutation as jest.Mock).mock
+      .calls[0][0];
+    const entity = mutation.entities[0].entity;
+
+    expect(entity.spec.instructions).toBe(
+      'You are a triage agent. Route to the appropriate specialist.',
+    );
+    expect(entity.metadata.description).toBe('Routes requests');
   });
 
   it('should map lifecycle stages correctly', async () => {

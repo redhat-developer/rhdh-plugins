@@ -126,8 +126,8 @@ export class OgxAgentEntityProvider implements EntityProvider {
 
     // Build handoffs for agent-to-agent delegation targets
     const handoffs: string[] = [];
-    if (agent.handoffTargets) {
-      for (const target of agent.handoffTargets) {
+    if (agent.handoffs) {
+      for (const target of agent.handoffs) {
         handoffs.push(
           `airesource:default/${sanitizeEntityName(`ogx-agent-${target}`)}`,
         );
@@ -150,8 +150,13 @@ export class OgxAgentEntityProvider implements EntityProvider {
         type: 'agent',
         lifecycle: mapLifecycleStage(agent.lifecycleStage),
         owner: mapOwner(agent.createdBy),
-        instructions: agent.description ?? `OGX agent: ${agent.name}`,
+        instructions:
+          agent.instructions ?? agent.description ?? `OGX agent: ${agent.name}`,
         ...(handoffs.length > 0 && { handoffs }),
+        ...(agent.handoffDescription && {
+          handoffDescription: agent.handoffDescription,
+        }),
+        ...(agent.enableRAG !== undefined && { enableRAG: agent.enableRAG }),
       },
     };
   }
