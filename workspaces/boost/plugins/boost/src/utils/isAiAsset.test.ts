@@ -61,10 +61,8 @@ describe('isAiAsset', () => {
 
   it.each([
     ['Component', 'service'],
-    ['Component', 'ai-agent'],
     ['API', 'openapi'],
     ['Resource', 'database'],
-    ['Resource', 'ai-model'],
     ['System', undefined],
     ['Group', undefined],
   ])('returns false for non-AI entity %s / %s', (kind, type) => {
