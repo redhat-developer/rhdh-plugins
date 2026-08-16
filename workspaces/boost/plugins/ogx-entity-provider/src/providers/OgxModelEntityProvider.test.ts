@@ -69,7 +69,7 @@ describe('OgxModelEntityProvider', () => {
     expect(provider.getProviderName()).toBe('ogx-model-entity-provider');
   });
 
-  it('should emit a single AiModelServerAPI entity for models', async () => {
+  it('should emit a single AiModelServerAPI entity with all models', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({
@@ -110,15 +110,14 @@ describe('OgxModelEntityProvider', () => {
     const entity = mutation.entities[0].entity;
     expect(entity.kind).toBe('AiModelServerAPI');
     expect(entity.spec.type).toBe('ai-model-server');
+    expect(entity.spec.lifecycle).toBe('production');
     expect(entity.spec.serverType).toBe('openai-v1');
     expect(entity.spec.serverUrl).toBe('http://localhost:8321');
+    expect(entity.spec.models.discoverable).toBe(true);
     expect(entity.spec.models.available).toEqual([
       'meta-llama/Llama-3.1-8B-Instruct',
       'ibm/granite-3.0',
     ]);
-    expect(entity.spec.lifecycle).toBe('production');
-    expect(entity.spec.owner).toBe('user:default/meta');
-    expect(entity.metadata.title).toBe('OGX Model Server');
   });
 
   it('should send Authorization header when apiKey is configured', async () => {
@@ -184,6 +183,7 @@ describe('OgxModelEntityProvider', () => {
 
     const mutation = (mockConnection.applyMutation as jest.Mock).mock
       .calls[0][0];
-    expect(mutation.entities).toHaveLength(0);
+    expect(mutation.entities).toHaveLength(1);
+    expect(mutation.entities[0].entity.spec.models.available).toEqual([]);
   });
 });

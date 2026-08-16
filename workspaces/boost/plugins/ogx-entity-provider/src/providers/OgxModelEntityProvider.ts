@@ -39,9 +39,8 @@ const PROVIDER_ID = 'ogx-model-entity-provider';
 
 /**
  * Entity provider that polls the OGX /v1/models endpoint and emits
- * a single AiModelServerAPI catalog entity with kind: AiModelServerAPI,
- * spec.type: ai-model-server, aggregating all discovered models into
- * spec.models.available[].
+ * the OGX server as a single AiModelServerAPI entity with all discovered
+ * model names listed in spec.models.available.
  *
  * Implements the two-layer polling model: refreshes upstream on a configurable
  * interval (default 60s), caching the result. When Backstage's catalog
@@ -76,7 +75,7 @@ export class OgxModelEntityProvider implements EntityProvider {
   }
 
   /**
-   * Fetch models from the OGX API and convert to a single server entity.
+   * Fetch models from the OGX API and emit as a single AiModelServerAPI entity.
    */
   async run(): Promise<void> {
     if (!this.connection) {
@@ -89,11 +88,10 @@ export class OgxModelEntityProvider implements EntityProvider {
 
     try {
       const models = await this.fetchModels();
-      this.cachedEntity =
-        models.length > 0 ? this.modelsToServerEntity(models) : undefined;
+      this.cachedEntity = this.modelsToServerEntity(models);
 
       this.logger.info(
-        `Fetched ${models.length} models from OGX, emitting ${this.cachedEntity ? 1 : 0} server entity`,
+        `Built model server entity with ${models.length} models from OGX`,
       );
     } catch (error) {
       this.logger.error(
@@ -144,12 +142,12 @@ export class OgxModelEntityProvider implements EntityProvider {
   }
 
   /**
-   * Convert a list of OGX model entries into a single AiModelServerAPI entity.
+   * Convert the OGX server + its models into a single AiModelServerAPI entity.
    */
   private modelsToServerEntity(models: OgxModelEntry[]): Entity {
     const entityName = sanitizeEntityName('ogx-model-server');
     const modelNames = models.map(m => m.id);
-    const firstOwner = models[0]?.owned_by;
+    const firstOwner = models.find(m => m.owned_by)?.owned_by;
 
     return {
       apiVersion: 'backstage.io/v1alpha1',
@@ -168,14 +166,14 @@ export class OgxModelEntityProvider implements EntityProvider {
       },
       spec: {
         type: 'ai-model-server',
+        lifecycle: 'production',
+        owner: mapOwner(firstOwner),
         serverType: 'openai-v1',
         serverUrl: this.config.baseUrl,
         models: {
           discoverable: true,
           available: modelNames,
         },
-        lifecycle: 'production',
-        owner: mapOwner(firstOwner),
       },
     };
   }
