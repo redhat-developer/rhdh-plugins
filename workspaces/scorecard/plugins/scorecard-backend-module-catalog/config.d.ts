@@ -34,7 +34,6 @@ export interface Config {
             /**
              * Entity filter — scopes which catalog entities this provider evaluates.
              * Passed directly to the catalog client query.
-             * @deepVisibility secret
              */
             filter: object;
             /** Metrics to evaluate — keys are metric IDs (used as catalog.<id>) */
