@@ -57,7 +57,13 @@ describe('GithubActionsCountProvider', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     provider = GithubActionsCountProvider.fromConfig(new ConfigReader({}), {
-      logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn(), child: jest.fn() } as any,
+      logger: {
+        warn: jest.fn(),
+        info: jest.fn(),
+        error: jest.fn(),
+        debug: jest.fn(),
+        child: jest.fn(),
+      } as any,
     });
   });
 

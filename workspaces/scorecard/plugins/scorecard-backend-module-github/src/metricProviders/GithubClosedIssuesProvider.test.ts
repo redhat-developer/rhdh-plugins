@@ -34,7 +34,15 @@ describe('GithubClosedIssuesProvider', () => {
     it('should create provider with default thresholds on metric', () => {
       const provider = GithubClosedIssuesProvider.fromConfig(
         new ConfigReader({}),
-        { logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn(), child: jest.fn() } as any },
+        {
+          logger: {
+            warn: jest.fn(),
+            info: jest.fn(),
+            error: jest.fn(),
+            debug: jest.fn(),
+            child: jest.fn(),
+          } as any,
+        },
       );
       const metrics = provider.getMetrics();
       expect(metrics).toHaveLength(1);
@@ -54,7 +62,15 @@ describe('GithubClosedIssuesProvider', () => {
 
     beforeEach(() => {
       jest.clearAllMocks();
-      provider = GithubClosedIssuesProvider.fromConfig(new ConfigReader({}), { logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn(), child: jest.fn() } as any });
+      provider = GithubClosedIssuesProvider.fromConfig(new ConfigReader({}), {
+        logger: {
+          warn: jest.fn(),
+          info: jest.fn(),
+          error: jest.fn(),
+          debug: jest.fn(),
+          child: jest.fn(),
+        } as any,
+      });
     });
 
     it('should calculate metric', async () => {

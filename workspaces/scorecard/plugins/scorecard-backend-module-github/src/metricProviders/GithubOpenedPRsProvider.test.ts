@@ -32,7 +32,18 @@ jest.mock('../github/GithubClient');
 describe('GithubOpenedPRsProvider', () => {
   describe('fromConfig', () => {
     it('should create provider with default thresholds on metric', () => {
-      const provider = GithubOpenedPRsProvider.fromConfig(new ConfigReader({}), { logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn(), child: jest.fn() } as any });
+      const provider = GithubOpenedPRsProvider.fromConfig(
+        new ConfigReader({}),
+        {
+          logger: {
+            warn: jest.fn(),
+            info: jest.fn(),
+            error: jest.fn(),
+            debug: jest.fn(),
+            child: jest.fn(),
+          } as any,
+        },
+      );
       const metrics = provider.getMetrics();
       expect(metrics).toHaveLength(1);
       expect(metrics[0].thresholds).toEqual(INFORMATIONAL_NUMBER_THRESHOLD);
@@ -51,7 +62,15 @@ describe('GithubOpenedPRsProvider', () => {
 
     beforeEach(() => {
       jest.clearAllMocks();
-      provider = GithubOpenedPRsProvider.fromConfig(new ConfigReader({}), { logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn(), child: jest.fn() } as any });
+      provider = GithubOpenedPRsProvider.fromConfig(new ConfigReader({}), {
+        logger: {
+          warn: jest.fn(),
+          info: jest.fn(),
+          error: jest.fn(),
+          debug: jest.fn(),
+          child: jest.fn(),
+        } as any,
+      });
     });
 
     it('should calculate metric', async () => {

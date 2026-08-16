@@ -146,7 +146,9 @@ export class GithubPRLifecycleProvider implements MetricProvider<'number'> {
     config: Config,
     options: { logger: LoggerService },
   ): GithubPRLifecycleProvider {
-    return new GithubPRLifecycleProvider(new GithubClient(config, options.logger));
+    return new GithubPRLifecycleProvider(
+      new GithubClient(config, options.logger),
+    );
   }
 
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {

@@ -52,7 +52,15 @@ describe('GithubPRPassRateProvider', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    provider = GithubPRPassRateProvider.fromConfig(new ConfigReader({}), { logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn(), child: jest.fn() } as any });
+    provider = GithubPRPassRateProvider.fromConfig(new ConfigReader({}), {
+      logger: {
+        warn: jest.fn(),
+        info: jest.fn(),
+        error: jest.fn(),
+        debug: jest.fn(),
+        child: jest.fn(),
+      } as any,
+    });
   });
 
   it('should return all metrics with thresholds', () => {

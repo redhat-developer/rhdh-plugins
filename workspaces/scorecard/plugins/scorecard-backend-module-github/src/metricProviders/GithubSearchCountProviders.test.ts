@@ -59,7 +59,15 @@ describe('Search count providers', () => {
     it('should return provider metadata', () => {
       const provider = GithubOpenedIssuesProvider.fromConfig(
         new ConfigReader({}),
-        { logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn(), child: jest.fn() } as any },
+        {
+          logger: {
+            warn: jest.fn(),
+            info: jest.fn(),
+            error: jest.fn(),
+            debug: jest.fn(),
+            child: jest.fn(),
+          } as any,
+        },
       );
       expect(provider.getProviderId()).toBe('github.openedIssues');
       expect(provider.getProviderDatasourceId()).toBe('github');
@@ -72,7 +80,15 @@ describe('Search count providers', () => {
       mockedGithubClientInstance.getSearchCount.mockResolvedValue(5);
       const provider = GithubOpenedIssuesProvider.fromConfig(
         new ConfigReader({}),
-        { logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn(), child: jest.fn() } as any },
+        {
+          logger: {
+            warn: jest.fn(),
+            info: jest.fn(),
+            error: jest.fn(),
+            debug: jest.fn(),
+            child: jest.fn(),
+          } as any,
+        },
       );
 
       const results = await provider.calculateMetrics(mockEntity);
@@ -88,13 +104,35 @@ describe('Search count providers', () => {
 
   describe('GithubOpenedPRsProvider', () => {
     it('should return provider metadata', () => {
-      const provider = GithubOpenedPRsProvider.fromConfig(new ConfigReader({}), { logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn(), child: jest.fn() } as any });
+      const provider = GithubOpenedPRsProvider.fromConfig(
+        new ConfigReader({}),
+        {
+          logger: {
+            warn: jest.fn(),
+            info: jest.fn(),
+            error: jest.fn(),
+            debug: jest.fn(),
+            child: jest.fn(),
+          } as any,
+        },
+      );
       expect(provider.getProviderId()).toBe('github.openedPRs');
     });
 
     it('should calculate metric using search count', async () => {
       mockedGithubClientInstance.getSearchCount.mockResolvedValue(10);
-      const provider = GithubOpenedPRsProvider.fromConfig(new ConfigReader({}), { logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn(), child: jest.fn() } as any });
+      const provider = GithubOpenedPRsProvider.fromConfig(
+        new ConfigReader({}),
+        {
+          logger: {
+            warn: jest.fn(),
+            info: jest.fn(),
+            error: jest.fn(),
+            debug: jest.fn(),
+            child: jest.fn(),
+          } as any,
+        },
+      );
 
       const results = await provider.calculateMetrics(mockEntity);
 
@@ -111,7 +149,15 @@ describe('Search count providers', () => {
     it('should return provider metadata', () => {
       const provider = GithubClosedIssuesProvider.fromConfig(
         new ConfigReader({}),
-        { logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn(), child: jest.fn() } as any },
+        {
+          logger: {
+            warn: jest.fn(),
+            info: jest.fn(),
+            error: jest.fn(),
+            debug: jest.fn(),
+            child: jest.fn(),
+          } as any,
+        },
       );
       expect(provider.getProviderId()).toBe('github.closedIssues');
     });
@@ -120,7 +166,15 @@ describe('Search count providers', () => {
       mockedGithubClientInstance.getSearchCount.mockResolvedValue(3);
       const provider = GithubClosedIssuesProvider.fromConfig(
         new ConfigReader({}),
-        { logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn(), child: jest.fn() } as any },
+        {
+          logger: {
+            warn: jest.fn(),
+            info: jest.fn(),
+            error: jest.fn(),
+            debug: jest.fn(),
+            child: jest.fn(),
+          } as any,
+        },
       );
 
       const results = await provider.calculateMetrics(mockEntity);
@@ -136,13 +190,35 @@ describe('Search count providers', () => {
 
   describe('GithubClosedPRsProvider', () => {
     it('should return provider metadata', () => {
-      const provider = GithubClosedPRsProvider.fromConfig(new ConfigReader({}), { logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn(), child: jest.fn() } as any });
+      const provider = GithubClosedPRsProvider.fromConfig(
+        new ConfigReader({}),
+        {
+          logger: {
+            warn: jest.fn(),
+            info: jest.fn(),
+            error: jest.fn(),
+            debug: jest.fn(),
+            child: jest.fn(),
+          } as any,
+        },
+      );
       expect(provider.getProviderId()).toBe('github.closedPRs');
     });
 
     it('should calculate metric using search count', async () => {
       mockedGithubClientInstance.getSearchCount.mockResolvedValue(7);
-      const provider = GithubClosedPRsProvider.fromConfig(new ConfigReader({}), { logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn(), child: jest.fn() } as any });
+      const provider = GithubClosedPRsProvider.fromConfig(
+        new ConfigReader({}),
+        {
+          logger: {
+            warn: jest.fn(),
+            info: jest.fn(),
+            error: jest.fn(),
+            debug: jest.fn(),
+            child: jest.fn(),
+          } as any,
+        },
+      );
 
       const results = await provider.calculateMetrics(mockEntity);
 

@@ -52,7 +52,15 @@ describe('GithubPRLifecycleProvider', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    provider = GithubPRLifecycleProvider.fromConfig(new ConfigReader({}), { logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn(), debug: jest.fn(), child: jest.fn() } as any });
+    provider = GithubPRLifecycleProvider.fromConfig(new ConfigReader({}), {
+      logger: {
+        warn: jest.fn(),
+        info: jest.fn(),
+        error: jest.fn(),
+        debug: jest.fn(),
+        child: jest.fn(),
+      } as any,
+    });
   });
 
   it('should return all metrics with thresholds', () => {
