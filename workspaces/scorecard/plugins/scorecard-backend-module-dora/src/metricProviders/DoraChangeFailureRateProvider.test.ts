@@ -204,6 +204,57 @@ describe('DoraChangeFailureRateProvider', () => {
       expect(results.get('dora.changeFailureRate')).toBe(50); // 1 failed pair out of 2 pairs
     });
 
+    it('should return 0 when evaluated intervals have no incidents', async () => {
+      mockDoraDataService.readIncidents.mockResolvedValueOnce([]);
+
+      const results = await provider.calculateMetrics(mockEntity);
+
+      expect(results.get('dora.changeFailureRate')).toBe(0);
+    });
+
+    it('should attribute an incident after last successful production deployment to the following DORA interval', async () => {
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([
+        dbDeployment({
+          id: '100',
+          commitSha: 'sha-1',
+          environment: 'production',
+          createdAt: '2026-06-10T00:00:00.000Z',
+        }),
+        dbDeployment({
+          id: '101',
+          commitSha: 'sha-2',
+          environment: 'production',
+          createdAt: '2026-06-11T10:00:00.000Z',
+        }),
+        dbDeployment({
+          id: '102',
+          commitSha: 'sha-3',
+          environment: 'production',
+          createdAt: '2026-06-12T00:00:00.000Z',
+        }),
+      ]);
+      mockDoraDataService.readIncidents.mockResolvedValueOnce([
+        dbIncident({
+          id: 'INC-1',
+          // In interval [sha-1, sha-2)
+          createdAt: '2026-06-11T00:00:00.000Z',
+          updatedAt: '2026-06-11T00:00:00.000Z',
+          resolutionAt: null,
+        }),
+        dbIncident({
+          id: 'INC-2',
+          // After last successful deployment sha-3; not counted in this run
+          createdAt: '2026-06-13T00:00:00.000Z',
+          updatedAt: '2026-06-13T00:00:00.000Z',
+          resolutionAt: null,
+        }),
+      ]);
+
+      const results = await provider.calculateMetrics(mockEntity);
+
+      expect(results.get('dora.changeFailureRate')).toBe(50); // 1 of 2 intervals
+    });
+
     it('should throw when fewer than 2 successful production deployments are found', async () => {
       mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({
