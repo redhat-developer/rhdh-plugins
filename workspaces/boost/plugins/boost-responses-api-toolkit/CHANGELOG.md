@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [b6fc0d9]
+  - @red-hat-developer-hub/backstage-plugin-boost-common@0.4.0
+
 ## 0.2.0
 
 ### Minor Changes
