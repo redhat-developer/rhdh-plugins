@@ -161,7 +161,7 @@ export class OgxModelEntityProvider implements EntityProvider {
           [ANNOTATION_ORIGIN_LOCATION]: `${PROVIDER_ID}:${entityName}`,
         },
         labels: {
-          'boost.redhat.com/provider': 'ogx',
+          'ai-catalog.rhdh.com/provider': 'ogx',
         },
       },
       spec: {

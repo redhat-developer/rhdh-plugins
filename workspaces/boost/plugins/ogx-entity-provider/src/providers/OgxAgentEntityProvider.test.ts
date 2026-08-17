@@ -104,7 +104,7 @@ describe('OgxAgentEntityProvider', () => {
     expect(entity.spec.owner).toBe('user:default/admin');
     expect(entity.spec.instructions).toBe('Helps with code');
     expect(entity.metadata.title).toBe('Code Assistant');
-    expect(entity.metadata.annotations['boost.redhat.com/model']).toBe(
+    expect(entity.metadata.annotations['ai-catalog.rhdh.com/model']).toBe(
       'meta-llama/Llama-3.1-8B-Instruct',
     );
   });
