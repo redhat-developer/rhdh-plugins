@@ -31,8 +31,13 @@ const useStyles = makeStyles()(theme => ({
   root: {
     width: '100%',
     containerType: 'inline-size',
-    '& [class*="BackstageEmptyState-root"]': {
-      alignItems: 'center',
+    // Prefer MuiGrid selectors: in newer Backstage/JSS builds, EmptyState's
+    // `BackstageEmptyState-root` sheet name is not present on the DOM node
+    // (only hashed classes like `jss4-…`), so attribute selectors on that
+    // prefix never match. The outer EmptyState node is always a Grid container.
+    '& > [class*="MuiGrid-container"]': {
+      // EmptyState sets alignItems="flex-start" via a generated MuiGrid class.
+      alignItems: 'center !important',
       padding: theme.spacing(4),
     },
     '& [class*="MuiTypography-h5"]': {
@@ -44,19 +49,21 @@ const useStyles = makeStyles()(theme => ({
       color: theme.palette.text.secondary,
     },
     '@container (max-width: 899px)': {
-      '& [class*="BackstageEmptyState-root"]': {
+      '& > [class*="MuiGrid-container"]': {
         textAlign: 'center',
       },
-      '& [class*="MuiGrid-grid-md-6"]': {
+      '& > [class*="MuiGrid-container"] > [class*="MuiGrid-grid-md-6"]': {
         maxWidth: '100%',
         flexBasis: '100%',
       },
-      '& [class*="BackstageEmptyState-imageContainer"]': {
-        order: -1,
-        display: 'flex',
-        justifyContent: 'center',
-        marginBottom: theme.spacing(-4),
-      },
+      // Image column is the second md-6 item (text first, illustration second).
+      '& > [class*="MuiGrid-container"] > [class*="MuiGrid-grid-md-6"]:last-child':
+        {
+          order: -1,
+          display: 'flex',
+          justifyContent: 'center',
+          marginBottom: theme.spacing(-4),
+        },
     },
   },
   illustration: {
