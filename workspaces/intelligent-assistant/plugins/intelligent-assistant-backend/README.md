@@ -81,15 +81,16 @@ All nested keys (`servicePort`, `systemPrompt`, `prompts`, `mcpServers`, `notebo
 
 Update permission names in your `rbac-policy.csv`:
 
-| Before                     | After                                 |
-| -------------------------- | ------------------------------------- |
-| `lightspeed.chat.read`     | `intelligent-assistant.chat.access`   |
-| `lightspeed.chat.create`   | `intelligent-assistant.chat.use`      |
-| `lightspeed.chat.delete`   | `intelligent-assistant.chat.manage`   |
-| `lightspeed.chat.update`   | `intelligent-assistant.chat.manage`   |
-| `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use` |
-| `lightspeed.mcp.read`      | `intelligent-assistant.mcp.read`      |
-| `lightspeed.mcp.manage`    | `intelligent-assistant.mcp.manage`    |
+| Before                     | After                                    |
+| -------------------------- | ---------------------------------------- |
+| `lightspeed.chat.read`     | `intelligent-assistant.chat.access`      |
+| `lightspeed.chat.create`   | `intelligent-assistant.chat.use`         |
+| `lightspeed.chat.delete`   | `intelligent-assistant.chat.manage`      |
+| `lightspeed.chat.update`   | `intelligent-assistant.chat.manage`      |
+| `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use`    |
+|                            | `intelligent-assistant.notebooks.manage` |
+| `lightspeed.mcp.read`      | `mcp.tools.use`                          |
+| `lightspeed.mcp.manage`    | `mcp.tools.manage`                       |
 
 #### 5. OFS dynamic plugin configuration
 
@@ -337,11 +338,12 @@ p, role:default/team_a, intelligent-assistant.chat.use, use, allow
 p, role:default/team_a, intelligent-assistant.chat.manage, use, allow
 
 # Required for Notebooks feature (if enabled)
-p, role:default/team_a, intelligent-assistant.notebooks.use, update, allow
+p, role:default/team_a, intelligent-assistant.notebooks.use, use, allow
+p, role:default/team_a, intelligent-assistant.notebooks.manage, use, allow
 
 # Required for MCP server management (if configured)
-p, role:default/team_a, intelligent-assistant.mcp.read, read, allow
-p, role:default/team_a, intelligent-assistant.mcp.manage, update, allow
+p, role:default/team_a, mcp.tools.use, use, allow
+p, role:default/team_a, mcp.tools.manage, use, allow
 
 # Required for saved prompts
 p, role:default/team_a, intelligent-assistant.saved-prompts.manage, update, allow
@@ -448,6 +450,7 @@ When enabled, Notebooks exposes the following REST API endpoints:
   - `PUT /intelligent-assistant/notebooks/v1/sessions/:sessionId/documents` - Upload or update a document (multipart/form-data)
   - `GET /intelligent-assistant/notebooks/v1/sessions/:sessionId/documents` - List all documents in a session
   - `GET /intelligent-assistant/notebooks/v1/sessions/:sessionId/documents/:documentId/status` - Get document processing status
+  - `PATCH /intelligent-assistant/notebooks/v1/sessions/:sessionId/documents/:documentId` - Rename a document (JSON body: `{ "title": "new name" }`)
   - `DELETE /intelligent-assistant/notebooks/v1/sessions/:sessionId/documents/:documentId` - Delete a document
 
 - **Queries**:
@@ -456,16 +459,19 @@ When enabled, Notebooks exposes the following REST API endpoints:
 **Notes**:
 
 - All endpoints require authentication (user context is automatically provided by Backstage)
-- All `/v1/*` endpoints require the `intelligent-assistant.notebooks.use` permission
+- All `/v1/*` endpoints require notebooks permissions:
+  - `intelligent-assistant.notebooks.use` for list/read/create session, upload document, and query endpoints
+  - `intelligent-assistant.notebooks.manage` for update/delete session and document endpoints
 - Document endpoints verify session ownership before allowing operations
 - `documentId` in paths is the document title (URL-encoded for special characters)
 
 #### Permission Framework Support for Notebooks
 
-When RBAC is enabled, users need the following permission to use Notebooks:
+When RBAC is enabled, users need the following permissions to use Notebooks:
 
 ```CSV
-p, role:default/team_a, intelligent-assistant.notebooks.use, update, allow
+p, role:default/team_a, intelligent-assistant.notebooks.use, use, allow
+p, role:default/team_a, intelligent-assistant.notebooks.manage, use, allow
 
 g, user:default/<your-user-name>, role:default/team_a
 ```

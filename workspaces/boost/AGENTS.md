@@ -46,7 +46,7 @@ When implementing an issue:
 
 ### Backstage-native services only
 
-Use Backstage `cacheService`, `permissions`, `httpAuth`, `configApi`, and `catalogApi`. Never build custom equivalents. All caches use `coreServices.cache` — no raw `Map<>` caches.
+Use Backstage `cacheService`, `permissions`, `httpAuth`, `configApi`, `catalogApi`, and `scheduler`. Never build custom equivalents. All caches use `coreServices.cache` — no raw `Map<>` caches. Scheduled or periodic tasks must use `coreServices.scheduler` (`SchedulerService`) — never raw `setInterval`, `setTimeout`, or cron libraries. `SchedulerService` provides distributed scheduling, lifecycle management, and proper shutdown handling.
 
 ### Provider isolation
 
@@ -70,18 +70,54 @@ Agents, tools, models, MCP servers, and vector stores are Backstage catalog enti
 
 ## Code conventions
 
+### Adding new config fields
+
+When introducing new `boost.*` configuration keys, complete all of
+the following steps. Omitting any step causes runtime validation
+failures or config-surface drift.
+
+1. Add TypeScript declarations in
+   `plugins/boost-backend/config.d.ts` with `@configScope` and
+   `@visibility` JSDoc annotations matching the field's scope
+2. Register the field in `src/config/schemas.ts` under
+   `boostConfigFields` with a Zod schema, `configScope`, and
+   `description`
+3. Bump `BOOST_CONFIG_SCHEMA_VERSION` in `src/config/schemas.ts`
+4. Add example usage in `examples/app-config.connectors.yaml` (or
+   the appropriate `app-config.*.yaml` example file)
+5. Run `yarn tsc:full && yarn build:api-reports:only` and commit the
+   updated `report.api.md`
+
+When reviewing PRs that add or modify `boost.*` config keys, verify all five registration steps above were completed.
+
 ### Package structure
 
-| Package                        | Purpose                                                              |
-| ------------------------------ | -------------------------------------------------------------------- |
-| `boost`                        | Chat UI, agent gallery, admin panels, composable routable extensions |
-| `boost-common`                 | Shared types, permissions (browser-safe, `common-library` role)      |
-| `boost-node`                   | `boostAiProviderServiceRef`, extension points (`node-library` role)  |
-| `boost-backend`                | Core routes, services, middleware, ProviderManager                   |
-| `boost-backend-module-ogx`     | OGX provider module                                                  |
-| `boost-backend-module-kagenti` | Kagenti provider module                                              |
-| `ogx-entity-provider`          | Independently deployable catalog entity provider                     |
-| `kagenti-entity-provider`      | Independently deployable catalog entity provider                     |
+| Package                        | Purpose                                                                                       |
+| ------------------------------ | --------------------------------------------------------------------------------------------- |
+| `boost`                        | Chat UI, agent gallery, admin panels, composable routable extensions                          |
+| `boost-common`                 | Shared types, permissions (browser-safe, `common-library` role)                               |
+| `boost-node`                   | `boostAiProviderServiceRef`, extension points (`node-library` role)                           |
+| `boost-connector-utils`        | Shared connector utils (`node-library` role) — CA bundle, fault isolation, startup validation |
+| `boost-backend`                | Core routes, services, middleware, ProviderManager                                            |
+| `boost-backend-module-ogx`     | OGX provider module                                                                           |
+| `boost-backend-module-kagenti` | Kagenti provider module                                                                       |
+| `ogx-entity-provider`          | Independently deployable catalog entity provider                                              |
+| `kagenti-entity-provider`      | Independently deployable catalog entity provider                                              |
+
+### ConfigReader `getOptionalString()` edge case
+
+Backstage's `ConfigReader` throws `TypeError` when the underlying config
+value is an empty string (e.g., from env var substitution like
+`${UNSET_ENV_VAR:-}`), rather than returning `undefined`. When reading
+config values that may come from environment variable substitution, use
+`safeGetOptionalString` from
+`@red-hat-developer-hub/backstage-plugin-boost-connector-utils`:
+
+```ts
+import { safeGetOptionalString } from '@red-hat-developer-hub/backstage-plugin-boost-connector-utils';
+
+const endpoint = safeGetOptionalString(config, 'endpoint');
+```
 
 ### Naming
 
@@ -107,6 +143,35 @@ Every feature ships with tests. Integration tests use real database and cache ba
 - WCAG 2.1 AA accessibility
 - Feature flags via `boost.features.*` in `app-config.yaml`
 
+## Build & verify
+
+| Task                | Command                                        |
+| ------------------- | ---------------------------------------------- |
+| Full build          | `yarn build:all`                               |
+| Type-check          | `yarn tsc:full`                                |
+| Lint                | `yarn lint:all`                                |
+| Prettier            | `yarn prettier:fix`                            |
+| Test                | `CI=true yarn test --watchAll=false`           |
+| API reports         | `yarn tsc:full && yarn build:api-reports:only` |
+| OpenSpec validation | `yarn openspec:validate`                       |
+
+**After modifying any file that affects the public API surface** (including
+`translations/ref.ts`, exported types, or API routes), run
+`yarn tsc:full && yarn build:api-reports:only` and commit the updated
+`report.api.md`. Always use the two-step sequence (`tsc:full` then
+`build:api-reports:only`), not the all-in-one `build:api-reports:only`
+variant without the `:only` suffix — the all-in-one command performs its
+own TypeScript compilation with different member ordering that does not
+match CI. The `:only` command reads from the `dist-types` produced by
+`tsc:full`, which matches the CI pipeline.
+
+## Import conventions
+
+- **Icons**: use `@remixicon/react` (e.g., `RiCheckLine`, `RiDownload2Line`).
+  Do NOT use `@mui/icons-material` — the plugin migrated in PR #3929.
+- **Entity type comparisons**: always normalize with `.toLowerCase()` before
+  comparing `spec.type` values (see `isAiAsset.ts`, `categoryMeta.ts`).
+
 ## What not to do
 
 - Do not reference the `workspaces/augment/` codebase for implementation patterns — boost is a clean-room build
@@ -114,6 +179,12 @@ Every feature ships with tests. Integration tests use real database and cache ba
 - Do not create raw `Map<>` caches — always use `coreServices.cache`
 - Do not add authorization checks outside `permissions.authorize()` / `permissions.authorizeConditional()`
 - Do not add provider ID string checks in the frontend
+- Do not use raw `setInterval`, `setTimeout`, or cron libraries for scheduled work — always use `coreServices.scheduler`
+
+## Before committing
+
+- Run `yarn prettier:fix` from the workspace root and stage any reformatted files.
+- If public exports or function signatures changed, run `yarn build:api-reports:only --ci`.
 
 ## Scripts directory
 

@@ -18,13 +18,20 @@ The vocabulary includes `rule` and `skill-bundle` in addition to the original fi
 - **THEN** the entity MUST have `metadata.annotations['rhdh.io/ai-asset-category']` set to one of: `agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`
 - **AND** the CatalogProcessor validator accepts the entity
 
-#### Scenario: Missing or invalid category annotation rejected (AI entities only)
+#### Scenario: Missing category annotation rejected (AI entities only)
 
-- **WHEN** an entity is ingested that carries any `rhdh.io/ai-asset-*` annotation but has a missing or invalid `rhdh.io/ai-asset-category` value
+- **WHEN** an entity is ingested that carries any `rhdh.io/ai-asset-*` annotation but has no `rhdh.io/ai-asset-category` value
 - **THEN** the CatalogProcessor validator rejects the entity with error: `Invalid or missing rhdh.io/ai-asset-category annotation. Allowed values: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server`
 - **AND** the entity does NOT appear in the catalog
 - **AND** the error is logged with entity identifier and source registry
 - **AND** entities without any `rhdh.io/ai-asset-*` annotation are NOT affected by this validator
+
+#### Scenario: Invalid category annotation rejected with value shown (AI entities only)
+
+- **WHEN** an entity is ingested that carries any `rhdh.io/ai-asset-*` annotation and has an invalid `rhdh.io/ai-asset-category` value (e.g. `invalid-type`)
+- **THEN** the CatalogProcessor validator rejects the entity with error: `Invalid rhdh.io/ai-asset-category value 'invalid-type'. Allowed: agent, skill, rule, skill-bundle, mcp-server, ai-model, model-server`
+- **AND** the entity does NOT appear in the catalog
+- **AND** the error is logged with entity identifier and source registry
 
 #### Scenario: All entity providers populate category annotation (RHIDP-15255)
 
@@ -105,7 +112,7 @@ A documented mapping from custom annotations to upstream Backstage entity kinds 
 #### Scenario: Migration design document exists (RHIDP-15302)
 
 - **WHEN** the migration-readiness spec is reviewed
-- **THEN** it contains a mapping table: current kind + spec.type + annotation → target upstream kind (e.g., `AIResource` + `ai-agent` + `agent` → `AIAgent`)
+- **THEN** it contains a mapping table: current kind + spec.type + annotation → target upstream kind (e.g., `AIResource` + `skill` + `skill` → `AiResource` casing alignment)
 - **AND** it identifies consumer-facing changes during migration (e.g., catalog UI filters, queries, entity refs)
 - **AND** it documents the AIResource starting point per RHDHPLAN-1113 (resolved 2026-07-20)
 

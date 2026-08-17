@@ -67,6 +67,8 @@ export class MyMetricProvider implements MetricProvider<'number'> {
         title: 'My Metric',
         description: 'Example metric.',
         type: 'number',
+        // Optional display unit shown next to threshold expressions in the UI
+        unit: 'h',
         thresholds: {
           rules: [
             { key: 'success', expression: '<10' },
@@ -151,6 +153,40 @@ spec:
 
 You can only override existing threshold severity keys for the metric. This means you can not specify new custom severity keys in entity annotations, they must be first configured for the metric in app configuration or defined in the metric code.
 
+#### Controlling whether threshold annotations are honored
+
+Administrators can disable or restrict threshold customization via entity annotations in app-config under `scorecard.entityAnnotations` (same pattern as [disabled metrics](./disabled-metrics-logic.md)).
+
+```yaml
+scorecard:
+  entityAnnotations:
+    # Global switch: if false, all scorecard entity annotations are ignored
+    # Default: true.
+    enabled: true
+    thresholds:
+      # If false, threshold override annotations have no effect. Default: true.
+      enabled: true
+      # When thresholds.enabled is true: metric IDs listed here cannot have
+      # thresholds customized via entity annotations.
+      except:
+        - github.openPRs
+```
+
+| `entityAnnotations.enabled` | `entityAnnotations.thresholds.enabled` | `entityAnnotations.thresholds.except`       | Threshold annotations applied for `metricId`? |
+| --------------------------- | -------------------------------------- | ------------------------------------------- | --------------------------------------------- |
+| `false`                     | —                                      | —                                           | **No**                                        |
+| `true` (or unset)           | `false`                                | —                                           | **No**                                        |
+| `true` (or unset)           | `true` (or unset)                      | includes `metricId`                         | **No**                                        |
+| `true` (or unset)           | `true` (or unset)                      | unset / empty / does not include `metricId` | **Yes**                                       |
+
+`—`: means this setting is not consulted for that row.
+
+**Summary:**
+
+- `entityAnnotations.enabled = false` — All scorecard entity annotations are ignored, including threshold overrides.
+- `entityAnnotations.thresholds.enabled = false` — Users cannot customize thresholds via `scorecard.io/<metricId>.thresholds.rules.<key>` annotations. The `except` list is not used.
+- `entityAnnotations.thresholds.enabled = true` (or unset) — Users can customize thresholds via annotations. Metric IDs in `except` cannot be customized; others can.
+
 #### Annotation Format Reference
 
 Entity annotations use this format:
@@ -191,7 +227,9 @@ These thresholds are **not** per-entity metric rules. They apply to homepage agg
 
 - **YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**). Expressions are **number**-style and are evaluated against **`result.value`**, the aggregated scalar from the KPI (see [Entity Aggregation — Scalar result fields](./aggregation.md#scalar-result-fields)). The **first** matching rule wins; its **`color`** and **`key`** can be used by custom UIs that render scalar KPIs.
 
-- **Defaults:** If **`thresholds`** is omitted from app-config under **`options`**, **`ScalarAggregationStrategy`** applies **`DEFAULT_NUMBER_THRESHOLDS`** from scorecard-common when serving an aggregation and includes them on the API as **`result.thresholds`**.
+- **Defaults:** If **`thresholds`** is omitted from app-config under **`options`**, **`ScalarAggregationStrategy`** applies **`DEFAULT_NUMBER_THRESHOLDS`** from scorecard-common when serving an aggregation and includes them on the API as **`result.thresholds`**: **`<10`** → success, **`10-50`** → warning, **`>50`** → error.
+
+- **Scalar status filter:** The **`key`** values from metric threshold rules (provider defaults or app-config overrides at **`scorecard.metricProviders.<datasource>.<providerName>.metrics.<metricName>.thresholds`** / provider-level **`scorecard.metricProviders.<datasource>.<providerName>.thresholds`** — see [§1 Provider Default Thresholds](#1-provider-default-thresholds) and [§2 App Configuration Thresholds](#2-app-configuration-thresholds)) are the valid values for scalar KPI **`filter.status`**. Startup validation checks **`filter.status`** against those keys only (not per-entity annotation overrides). See [Entity Aggregation — Status filter (scalar types)](./aggregation.md#status-filter-scalar-types).
 
 - **Startup validation:** Invalid rules or expressions are caught when the backend plugin loads, together with the rest of **`scorecard.aggregationKPIs`**. Scalar KPI **`options.thresholds`** must also satisfy **joint full-line coverage** for number expressions when multiple rules apply (see [Joint coverage (number metrics)](#joint-coverage-number-metrics)). See [aggregation.md — Configuration validation](./aggregation.md#configuration-validation).
 
@@ -201,7 +239,7 @@ These thresholds are **not** per-entity metric rules. They apply to homepage agg
 
 Thresholds are applied with the following priority (highest to lowest):
 
-1. **Entity Annotations** (highest priority) - _merged_ with existing rules
+1. **Entity Annotations** (highest priority) - _merged_ with existing rules, when honored (see [Controlling whether threshold annotations are honored](#controlling-whether-threshold-annotations-are-honored))
 2. **App Configuration (metric)** - _completely replaces_ metric code defaults and provider app configuration
 3. **App Configuration (provider)** - _completely replaces_ metric code defaults
 4. **Metric code defaults** (lowest priority)
@@ -461,6 +499,6 @@ rules:
 
 ## Related documentation
 
-- [Entity Aggregation](./aggregation.md) — ownership, **`GET /aggregations/:aggregationId`**, **`statusGrouped`**, **`weightedStatusScore`**, and scalar types
+- [Entity Aggregation](./aggregation.md) — ownership, **`GET /aggregations/:aggregationId`**, **`statusGrouped`**, **`weightedStatusScore`**, scalar types, and **`filter.status`**
 - [Drill-down](./drill-down.md) — entity list for a metric (`metricId`, not KPI id)
 - [Scorecard backend README](../README.md) — install, RBAC, **`aggregationKPIs`** examples

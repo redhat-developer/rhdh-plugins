@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-intelligent-assistant",
-  "version": "3.2.0",
+  "version": "4.0.0",
   "main": "src/index.tsx",
   "types": "src/index.tsx",
   "license": "Apache-2.0",
@@ -84,7 +84,8 @@
     "@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.10",
     "@tanstack/react-query": "^5.59.15",
-    "monaco-editor": "^0.55.0",
+    "html2canvas-pro": "^1.5.0",
+    "monaco-editor": "^0.56.0",
     "react-dropzone": "^14.4.0",
     "react-use": "^17.2.4"
   },

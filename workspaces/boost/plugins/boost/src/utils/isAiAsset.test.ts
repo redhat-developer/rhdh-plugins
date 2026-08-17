@@ -30,9 +30,9 @@ describe('isAiAsset', () => {
   it.each([
     ['AiResource', 'skill'],
     ['AiResource', 'rule'],
+    ['AiResource', 'agent'],
+    ['AiModelServerAPI', 'ai-model-server'],
     ['API', 'mcp-server'],
-    ['Component', 'ai-agent'],
-    ['Resource', 'ai-model'],
     ['Resource', 'ai-tool'],
     ['Resource', 'vector-store'],
   ])('returns true for %s with spec.type %s', (kind, type) => {
@@ -47,7 +47,7 @@ describe('isAiAsset', () => {
   it('is case-insensitive for spec.type', () => {
     expect(isAiAsset(entity('AiResource', 'SKILL'))).toBe(true);
     expect(isAiAsset(entity('API', 'MCP-SERVER'))).toBe(true);
-    expect(isAiAsset(entity('Resource', 'Ai-Model'))).toBe(true);
+    expect(isAiAsset(entity('AiModelServerAPI', 'AI-MODEL-SERVER'))).toBe(true);
   });
 
   it('returns false for AiResource without spec.type', () => {

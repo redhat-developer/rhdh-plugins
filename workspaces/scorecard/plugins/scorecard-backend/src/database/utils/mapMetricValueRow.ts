@@ -16,6 +16,7 @@
 
 import type { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { DbMetricValue, DbMetricValueCreate } from '../types';
+import { parseTimestamp } from '../../utils/normalizeTimestamp';
 
 export type MetricValueRow = {
   catalog_entity_ref: string;
@@ -39,7 +40,7 @@ export type MetricValueRowWithId = MetricValueRow & {
   entity_namespace: string | null;
 };
 
-export type MetricValueCreateInput = Omit<
+export type DbMetricValueCreateInput = Omit<
   DbMetricValueCreate,
   'value' | 'errorMessage' | 'entityKind' | 'entityOwner' | 'entityNamespace'
 > & {
@@ -51,7 +52,7 @@ export type MetricValueCreateInput = Omit<
 };
 
 export function toMetricValueRow(
-  value: MetricValueCreateInput,
+  value: DbMetricValueCreateInput,
 ): MetricValueRow {
   return {
     catalog_entity_ref: value.catalogEntityRef,
@@ -72,7 +73,7 @@ export function fromMetricValueRow(row: MetricValueRowWithId): DbMetricValue {
     catalogEntityRef: row.catalog_entity_ref,
     metricId: row.metric_id,
     value: row.value,
-    timestamp: row.timestamp,
+    timestamp: parseTimestamp(row.timestamp),
     errorMessage: row.error_message,
     status: row.status,
     entityKind: row.entity_kind,

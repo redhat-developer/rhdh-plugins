@@ -26,6 +26,7 @@ describe('isMetricIdDisabled', () => {
     scorecardOverrides: {
       disabledMetrics?: string[];
       entityAnnotations?: {
+        enabled?: boolean;
         disabledMetrics?: { enabled?: boolean; except?: string[] };
       };
     } = {},
@@ -113,7 +114,23 @@ describe('isMetricIdDisabled', () => {
     expect(result).toBe(false);
   });
 
-  it('returns true, when entityOverride.disabledMetrics.enabled=true, users can override by annotations, and metric is not listed in exception list', () => {
+  it('returns false when entityAnnotations.enabled is false even if annotation lists the metric', () => {
+    const config = createConfig({
+      entityAnnotations: {
+        enabled: false,
+        disabledMetrics: {
+          enabled: true,
+        },
+      },
+    });
+
+    const entity = createEntity(metricId);
+    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
+
+    expect(result).toBe(false);
+  });
+
+  it('returns false when entityAnnotations.disabledMetrics.enabled is false, even if metric is not in except list', () => {
     const config = createConfig({
       entityAnnotations: {
         disabledMetrics: {
@@ -151,6 +168,38 @@ describe('isMetricIdDisabled', () => {
         disabledMetrics: {
           enabled: true,
           except: [],
+        },
+      },
+    });
+
+    const entity = createEntity(metricId);
+    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
+
+    expect(result).toBe(true);
+  });
+
+  it('returns false when entityAnnotations.enabled is true but disabledMetrics.enabled is false', () => {
+    const config = createConfig({
+      entityAnnotations: {
+        enabled: true,
+        disabledMetrics: {
+          enabled: false,
+        },
+      },
+    });
+
+    const entity = createEntity(metricId);
+    const result = isMetricIdDisabled(config, metricId, entity, mockLogger);
+
+    expect(result).toBe(false);
+  });
+
+  it('returns true when disabled by app-config even if also disabled by annotation', () => {
+    const config = createConfig({
+      disabledMetrics: [metricId],
+      entityAnnotations: {
+        disabledMetrics: {
+          enabled: true,
         },
       },
     });

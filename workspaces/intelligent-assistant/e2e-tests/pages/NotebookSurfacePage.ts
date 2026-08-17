@@ -17,6 +17,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 import type { LightspeedMessages } from '../utils/translations';
+import { substituteNotebookTemplate } from '../utils/notebookTranslation';
 import { openLightspeed } from '../utils/testHelper';
 
 import { NotebookAddDocumentModalPage } from './NotebookAddDocumentModalPage';
@@ -33,10 +34,15 @@ export const NOTEBOOK_UNTITLED_GRID_NAME = 'Untitled Notebook';
  * Same role as {@link ./LightspeedPage.ts}: shared locators/assertions keep specs short.
  */
 export class NotebookSurfacePage {
+  private readonly pluralRules: Intl.PluralRules;
+
   constructor(
     private readonly page: Page,
     private readonly t: LightspeedMessages,
-  ) {}
+    locale = 'en',
+  ) {
+    this.pluralRules = new Intl.PluralRules(locale);
+  }
 
   /**
    * Scoped to the fullscreen chatbot region that contains notebooks (list + notebook editor).
@@ -63,6 +69,10 @@ export class NotebookSurfacePage {
 
   notebooksTab(): Locator {
     return this.page.getByRole('tab', { name: this.t['tabs.notebooks'] });
+  }
+
+  chatTab(): Locator {
+    return this.page.getByRole('tab', { name: this.t['tabs.chat'] });
   }
 
   myNotebooksHeading(): Locator {
@@ -222,12 +232,21 @@ export class NotebookSurfacePage {
 
   /** Kebab on the first document row in the sidebar list. */
   firstListedDocumentOverflowMenuToggle(): Locator {
+    return this.chatbotRegion().locator('.doc-kebab').first();
+  }
+
+  /** First document filename in the sidebar (always visible, used as hover target). */
+  private firstDocumentFileName(): Locator {
     return this.chatbotRegion()
-      .getByRole('button', {
-        name: this.t['notebook.document.delete'],
-        exact: true,
-      })
+      .locator('[title]')
+      .filter({ hasText: /.+\..+/ })
       .first();
+  }
+
+  /** Hovers the first document row then clicks its kebab menu toggle. */
+  private async hoverDocumentRowAndClickKebab(): Promise<void> {
+    await this.firstDocumentFileName().hover();
+    await this.firstListedDocumentOverflowMenuToggle().click();
   }
 
   documentRowDeleteMenuItem(): Locator {
@@ -251,10 +270,54 @@ export class NotebookSurfacePage {
 
   /** Opens the overflow menu on the first sidebar document, chooses Delete document, and confirms the deletion. */
   async deleteFirstListedDocumentFromSidebarOverflowMenu(): Promise<void> {
-    await this.firstListedDocumentOverflowMenuToggle().click();
+    await this.hoverDocumentRowAndClickKebab();
     await this.documentRowDeleteMenuItem().click();
     await expect(this.deleteDocumentConfirmDialog()).toBeVisible();
     await this.deleteDocumentConfirmButton().click();
+  }
+
+  /** Locates a document filename element in the sidebar by its text. */
+  documentFileName(name: string): Locator {
+    return this.chatbotRegion().getByText(name, { exact: true }).first();
+  }
+
+  /** "Rename" menu item in the document kebab dropdown. */
+  documentRowRenameMenuItem(): Locator {
+    return this.page.getByRole('menuitem', {
+      name: this.t['notebook.document.rename'],
+      exact: true,
+    });
+  }
+
+  /** Clicks the filename, clears input, types new name, presses Enter. */
+  async renameDocumentInlineViaClick(
+    oldName: string,
+    newName: string,
+  ): Promise<void> {
+    await this.documentFileName(oldName).click();
+    const input = this.chatbotRegion().getByRole('textbox', {
+      name: this.t['notebook.document.rename'],
+    });
+    await expect(input).toBeVisible({ timeout: 5_000 });
+    await input.clear();
+    await input.fill(newName);
+    await input.press('Enter');
+  }
+
+  /** Clicks kebab on the document row, clicks Rename, clears input, types new name, presses Enter. */
+  async renameDocumentViaKebabMenu(
+    oldName: string,
+    newName: string,
+  ): Promise<void> {
+    await this.hoverDocumentRowAndClickKebab();
+    await this.documentRowRenameMenuItem().click();
+    const input = this.chatbotRegion().getByRole('textbox', {
+      name: this.t['notebook.document.rename'],
+    });
+    await expect(input).toBeVisible({ timeout: 5_000 });
+    await input.clear();
+    await input.fill(newName);
+    await input.press('Enter');
   }
 
   async expectDocumentFileListedInSidebar(fileName: string): Promise<void> {
@@ -342,11 +405,16 @@ export class NotebookSurfacePage {
   }
 
   /**
-   * Shown on each card as count + plural label (same pattern as NotebookCard.tsx:
-   * `{ document_count } { t('notebooks.documents') }`, not `notebook.view.documents.count`).
+   * Shown on each card as a pluralized count label (same pattern as NotebookCard.tsx:
+   * `t('notebooks.documents', { count })` with `_one`/`_other` suffixes).
    */
   formatNotebookCardDocumentsSummary(documentCount: number): string {
-    return `${documentCount} ${this.t['notebooks.documents']}`;
+    const category = this.pluralRules.select(documentCount);
+    const key =
+      category === 'one'
+        ? 'notebooks.documents_one'
+        : 'notebooks.documents_other';
+    return (this.t[key] as string).replace('{{count}}', String(documentCount));
   }
 
   async expectUntitledNotebookCardCount(expected: number): Promise<void> {

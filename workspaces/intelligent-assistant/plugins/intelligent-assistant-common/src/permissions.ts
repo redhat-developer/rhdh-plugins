@@ -40,34 +40,36 @@ export const iaChatManagePermission = createPermission({
   attributes: {},
 });
 
-/** This permission is used to list configured MCP servers
+/** This permission is used to use MCP tooling
  * @public
  */
-export const iaMcpReadPermission = createPermission({
-  name: 'intelligent-assistant.mcp.read',
-  attributes: {
-    action: 'read',
-  },
+export const iaMcpUsePermission = createPermission({
+  name: 'mcp.tools.use',
+  attributes: {},
 });
 
-/** This permission is used to add, update, delete, and validate MCP servers
+/** This permission is used to manage MCP tooling
  * @public
  */
 export const iaMcpManagePermission = createPermission({
-  name: 'intelligent-assistant.mcp.manage',
-  attributes: {
-    action: 'update',
-  },
+  name: 'mcp.tools.manage',
+  attributes: {},
 });
 
-/** This permission is used to access AI Notebooks features
+/** This permission is used to access, create, and query intelligent-assistant notebooks
  * @public
  */
 export const iaNotebooksUsePermission = createPermission({
   name: 'intelligent-assistant.notebooks.use',
-  attributes: {
-    action: 'update',
-  },
+  attributes: {},
+});
+
+/** This permission is used to update and delete intelligent-assistant notebooks
+ * @public
+ */
+export const iaNotebooksManagePermission = createPermission({
+  name: 'intelligent-assistant.notebooks.manage',
+  attributes: {},
 });
 
 /** This permission is used to list, create, and delete saved prompts and read saved-prompts config
@@ -80,6 +82,14 @@ export const iaSavedPromptsManagePermission = createPermission({
   },
 });
 
+/** This permission is used to view the list of configured skills
+ * @public
+ */
+export const iaSkillsAccessPermission = createPermission({
+  name: 'intelligent-assistant.skills.access',
+  attributes: {},
+});
+
 /**
  * List of all permissions on permission polices.
  *
@@ -89,8 +99,10 @@ export const iaPermissions = [
   iaChatAccessPermission,
   iaChatManagePermission,
   iaChatUsePermission,
-  iaMcpReadPermission,
+  iaMcpUsePermission,
   iaMcpManagePermission,
+  iaNotebooksManagePermission,
   iaNotebooksUsePermission,
   iaSavedPromptsManagePermission,
+  iaSkillsAccessPermission,
 ];

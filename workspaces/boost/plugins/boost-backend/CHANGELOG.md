@@ -1,5 +1,35 @@
 # @red-hat-developer-hub/backstage-plugin-boost-backend
 
+## 0.4.0
+
+### Minor Changes
+
+- 238427a: Entity-Provider SDK — Types, Interfaces, Annotation Validation
+
+### Patch Changes
+
+- Updated dependencies [238427a]
+  - @red-hat-developer-hub/backstage-plugin-boost-common@0.3.0
+  - @red-hat-developer-hub/backstage-plugin-boost-node@0.2.0
+
+## 0.3.0
+
+### Minor Changes
+
+- e6c850f: Add connector config Zod schemas and RuntimeConfigResolver support for Jira, GitHub, and GitLab connectors. Registers flat leaf keys in `boostConfigFields` with `db-overridable` scope covering enabled, endpoint, schedule, batchSize, timeout, and cron fields. Bumps `BOOST_CONFIG_SCHEMA_VERSION` to 4.
+
+## 0.2.0
+
+### Minor Changes
+
+- 13a24d0: Add ingestion health backend API, data model, and error classification. Introduces `GET /api/boost/ingestion-health` endpoint with per-connector health status derived from recent sync attempts, `SyncAttemptsStore` for tracking sync outcomes, `ErrorClassifier` for categorizing sync failures, and `ConnectorConfigReader` for config-based connector discovery.
+
+### Patch Changes
+
+- Updated dependencies [13a24d0]
+  - @red-hat-developer-hub/backstage-plugin-boost-common@0.2.0
+  - @red-hat-developer-hub/backstage-plugin-boost-node@0.1.4
+
 ## 0.1.4
 
 ### Patch Changes

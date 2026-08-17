@@ -19,24 +19,24 @@ import type { Entity } from '@backstage/catalog-model';
 /**
  * AI asset kind/type combinations from the entity model:
  *
- * | Category     | Kind        | spec.type      |
- * |------------- |------------ |--------------- |
- * | Skills       | AiResource  | skill          |
- * | Rules        | AiResource  | rule           |
- * | MCP Servers  | API         | mcp-server     |
- * | Agents       | Component   | ai-agent       |
- * | Models       | Resource    | ai-model       |
- * | Tools        | Resource    | ai-tool        |
- * | Vector Stores| Resource    | vector-store   |
+ * | Category       | Kind              | spec.type        |
+ * |--------------- |------------------ |----------------- |
+ * | Skills         | AiResource        | skill            |
+ * | Rules          | AiResource        | rule             |
+ * | Agents         | AiResource        | agent            |
+ * | Model Servers  | AiModelServerAPI  | ai-model-server  |
+ * | MCP Servers    | API               | mcp-server       |
+ * | Tools          | Resource          | ai-tool          |
+ * | Vector Stores  | Resource          | vector-store     |
  *
  * This map is the single source of truth used by `isAiAsset`
  * and `buildCatalogFilter`.
  */
 export const AI_ASSET_SPEC_TYPES: Record<string, Set<string>> = {
-  airesource: new Set(['skill', 'rule']),
+  airesource: new Set(['skill', 'rule', 'agent']),
+  aimodelserverapi: new Set(['ai-model-server']),
   api: new Set(['mcp-server']),
-  component: new Set(['ai-agent']),
-  resource: new Set(['ai-model', 'ai-tool', 'vector-store']),
+  resource: new Set(['ai-tool', 'vector-store']),
 };
 
 /**

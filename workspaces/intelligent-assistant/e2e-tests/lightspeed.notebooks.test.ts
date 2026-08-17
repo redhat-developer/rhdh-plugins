@@ -44,7 +44,7 @@ test.describe('Intelligent assistant notebooks', () => {
     const boot = await bootstrapLightspeedE2ePage(browser);
     sharedPage = boot.page;
     translations = boot.translations;
-    notebooks = new NotebookSurfacePage(sharedPage, translations);
+    notebooks = new NotebookSurfacePage(sharedPage, translations, boot.locale);
   });
 
   test('fullscreen list: header and empty state', async () => {
@@ -94,13 +94,57 @@ test.describe('Intelligent assistant notebooks', () => {
     await notebooks.expectNotebookEditorUploadResourceButtonVisible();
   });
 
+  test('document sidebar: rename document via click', async ({}, testInfo) => {
+    const { absolutePath, fileName } = localeNotebookUpload1Path(
+      testInfo.project.name,
+    );
+
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+
+    const baseName = fileName.replace(/\.[^.]+$/, '');
+    const ext = fileName.slice(baseName.length);
+    const newBaseName = `${baseName}-renamed`;
+    const newFileName = `${newBaseName}${ext}`;
+
+    await notebooks.renameDocumentInlineViaClick(fileName, newBaseName);
+    await notebooks.expectDocumentFileListedInSidebar(newFileName);
+
+    await notebooks.deleteFirstListedDocumentFromSidebarOverflowMenu();
+  });
+
+  test('document sidebar: rename document via kebab menu', async ({}, testInfo) => {
+    const { absolutePath, fileName } = localeNotebookUpload1Path(
+      testInfo.project.name,
+    );
+
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+
+    const baseName = fileName.replace(/\.[^.]+$/, '');
+    const ext = fileName.slice(baseName.length);
+    const newBaseName = `${baseName}-kebab`;
+    const newFileName = `${newBaseName}${ext}`;
+
+    await notebooks.renameDocumentViaKebabMenu(fileName, newBaseName);
+    await notebooks.expectDocumentFileListedInSidebar(newFileName);
+
+    await notebooks.deleteFirstListedDocumentFromSidebarOverflowMenu();
+  });
+
   test('upload modal: eleven files rejected at cap', async () => {
     await notebooks.clickOpenUploadDocumentModal();
     const uploadModal = notebooks.uploadDocumentModal();
     await uploadModal.selectFilesViaBrowsePicker(
       notebookElevenFileStagingPaths(),
     );
-    await expect(uploadModal.dialog().getByRole('alert')).toContainText(
+    await expect(uploadModal.errorAlert()).toContainText(
       substituteNotebookTemplate(
         translations['notebook.upload.error.tooManyFiles'],
         { max: NOTEBOOK_SESSION_MAX_DOCUMENTS },
@@ -115,7 +159,7 @@ test.describe('Intelligent assistant notebooks', () => {
     await uploadModal.selectFilesViaBrowsePicker([
       notebookUnsupportedTypeFixturePath(),
     ]);
-    await expect(uploadModal.dialog().getByRole('alert')).toContainText(
+    await expect(uploadModal.errorAlert()).toContainText(
       translations['notebook.upload.error.unsupportedType'],
     );
     await uploadModal.clickCancel();
@@ -136,19 +180,30 @@ test.describe('Intelligent assistant notebooks', () => {
     await notebooks.clickOpenUploadDocumentModal();
     uploadModal = notebooks.uploadDocumentModal();
     await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
 
     const overwriteModal = notebooks.notebookOverwriteConfirmModal();
     await overwriteModal.expectDialogVisible();
     await overwriteModal.expectListedOverwriteFile(fileName);
-    await overwriteModal.clickCancel();
-    await sharedPage.waitForTimeout(200);
+    await overwriteModal.clickBack();
     await uploadModal.clickCancel();
 
     await notebooks.deleteFirstListedDocumentFromSidebarOverflowMenu();
     await notebooks.expectNotebookEditorUploadResourceButtonVisible();
   });
 
-  test('grid: close editor, rename, delete', async () => {
+  test('grid: close editor, rename, delete', async ({}, testInfo) => {
+    const { absolutePath, fileName } = localeNotebookUpload1Path(
+      testInfo.project.name,
+    );
+
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+    await sharedPage.waitForTimeout(2000);
+
     const untitledBefore = await notebooks.untitledNotebookCards().count();
 
     await notebooks.clickCloseNotebookEditor();
@@ -157,7 +212,7 @@ test.describe('Intelligent assistant notebooks', () => {
     await expect(notebooks.newestUntitledNotebookCard()).toBeVisible();
 
     await notebooks.expectNotebookListShowsDocumentCountSummaryAndUpdatedToday(
-      0,
+      1,
     );
 
     await notebooks
@@ -188,8 +243,19 @@ test.describe('Intelligent assistant notebooks', () => {
     await notebooks.expectUntitledNotebookCardCount(untitledBefore);
   });
 
-  test('grid: click card title triggers inline rename', async () => {
+  test('grid: click card title triggers inline rename', async ({}, testInfo) => {
+    const { absolutePath, fileName } = localeNotebookUpload1Path(
+      testInfo.project.name,
+    );
+
     await notebooks.clickPrimaryNotebookCreate();
+
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+
     await notebooks.clickCloseNotebookEditor();
 
     const card = notebooks.newestUntitledNotebookCard();
@@ -215,8 +281,19 @@ test.describe('Intelligent assistant notebooks', () => {
     await notebooks.expectNotebookCardAbsent(newName);
   });
 
-  test('grid: Escape cancels inline rename', async () => {
+  test('grid: Escape cancels inline rename', async ({}, testInfo) => {
+    const { absolutePath, fileName } = localeNotebookUpload1Path(
+      testInfo.project.name,
+    );
+
     await notebooks.clickPrimaryNotebookCreate();
+
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+
     await notebooks.clickCloseNotebookEditor();
 
     const card = notebooks.newestUntitledNotebookCard();
@@ -245,8 +322,19 @@ test.describe('Intelligent assistant notebooks', () => {
     await confirmDelete.confirmDeletion();
   });
 
-  test('grid: blur saves inline rename', async () => {
+  test('grid: blur saves inline rename', async ({}, testInfo) => {
+    const { absolutePath, fileName } = localeNotebookUpload1Path(
+      testInfo.project.name,
+    );
+
     await notebooks.clickPrimaryNotebookCreate();
+
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+
     await notebooks.clickCloseNotebookEditor();
 
     const card = notebooks.newestUntitledNotebookCard();
@@ -273,8 +361,19 @@ test.describe('Intelligent assistant notebooks', () => {
     await notebooks.expectNotebookCardAbsent(newName);
   });
 
-  test('grid: empty or unchanged name cancels rename', async () => {
+  test('grid: empty or unchanged name cancels rename', async ({}, testInfo) => {
+    const { absolutePath, fileName } = localeNotebookUpload1Path(
+      testInfo.project.name,
+    );
+
     await notebooks.clickPrimaryNotebookCreate();
+
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+
     await notebooks.clickCloseNotebookEditor();
 
     const card = notebooks.newestUntitledNotebookCard();
@@ -338,5 +437,79 @@ test.describe('Intelligent assistant notebooks', () => {
     const confirmDelete = notebooks.notebookDeleteConfirmationDialog(newName);
     await confirmDelete.confirmDeletion();
     await notebooks.expectNotebookCardAbsent(newName);
+  });
+
+  test('auto-delete: empty untitled notebook is discarded on close', async () => {
+    await notebooks.gotoFullscreenNotebooksTab();
+    const cardsBefore = await notebooks.untitledNotebookCards().count();
+
+    await notebooks.clickCreateNotebookFromEmptyList();
+    await expect(sharedPage).toHaveURL(NOTEBOOK_EDITOR_URL_RE);
+
+    await notebooks.clickCloseNotebookEditor();
+
+    await notebooks.expectUntitledNotebookCardCount(cardsBefore);
+  });
+
+  test('auto-delete: notebook with uploaded file persists on close', async ({}, testInfo) => {
+    const { absolutePath, fileName } = localeNotebookUpload1Path(
+      testInfo.project.name,
+    );
+    const cardsBefore = await notebooks.untitledNotebookCards().count();
+
+    await notebooks.clickCreateNotebookFromEmptyList();
+    await expect(sharedPage).toHaveURL(NOTEBOOK_EDITOR_URL_RE);
+
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+    await sharedPage.waitForTimeout(2000);
+
+    await notebooks.clickCloseNotebookEditor();
+
+    await notebooks.expectUntitledNotebookCardCount(cardsBefore + 1);
+
+    await notebooks
+      .notebookCardOverflowMenuButton(notebooks.newestUntitledNotebookCard())
+      .click();
+    await notebooks.deleteNotebookOverflowMenuItem().click();
+    const confirmDelete = notebooks.notebookDeleteConfirmationDialog(
+      NOTEBOOK_UNTITLED_GRID_NAME,
+    );
+    await confirmDelete.confirmDeletion();
+    await notebooks.expectUntitledNotebookCardCount(cardsBefore);
+  });
+
+  test('auto-delete: renamed notebook persists on close', async () => {
+    await notebooks.gotoFullscreenNotebooksTab();
+
+    await notebooks.clickCreateNotebookFromEmptyList();
+    await expect(sharedPage).toHaveURL(NOTEBOOK_EDITOR_URL_RE);
+
+    await notebooks.clickSidebarTitle();
+    const sidebarInput = notebooks.inlineRenameInput();
+    await expect(sidebarInput).toBeVisible();
+    const renamedName = 'Renamed Persists';
+    await sidebarInput.fill(renamedName);
+    await sidebarInput.press('Enter');
+
+    await notebooks.clickCloseNotebookEditor();
+
+    await expect(
+      notebooks.notebookCardByDisplayedName(renamedName),
+    ).toBeVisible();
+
+    await notebooks
+      .notebookCardOverflowMenuButton(
+        notebooks.notebookCardByDisplayedName(renamedName),
+      )
+      .click();
+    await notebooks.deleteNotebookOverflowMenuItem().click();
+    const confirmDelete =
+      notebooks.notebookDeleteConfirmationDialog(renamedName);
+    await confirmDelete.confirmDeletion();
+    await notebooks.expectNotebookCardAbsent(renamedName);
   });
 });

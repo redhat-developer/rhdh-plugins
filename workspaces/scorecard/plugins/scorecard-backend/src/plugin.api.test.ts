@@ -221,6 +221,35 @@ describe('scorecard plugin (startTestBackend)', () => {
     });
   });
 
+  describe('GET /api/scorecard/metrics/catalog/:kind/:namespace/:name/time-series', () => {
+    it('returns an empty time series for an existing entity with no stored samples', async () => {
+      const res = await request(server).get(
+        '/api/scorecard/metrics/catalog/component/default/my-service/time-series?metricId=github.openPRs&from=2024-01-01T00:00:00.000Z&to=2024-01-31T23:59:59.000Z',
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual(
+        expect.objectContaining({
+          metricId: 'github.openPRs',
+          entityRef: 'component:default/my-service',
+          points: [],
+          metadata: expect.objectContaining({
+            title: 'GitHub Open PRs',
+            type: 'number',
+          }),
+        }),
+      );
+    });
+
+    it('returns 404 when entity does not exist in the catalog', async () => {
+      const res = await request(server).get(
+        '/api/scorecard/metrics/catalog/component/default/non-existent/time-series?metricId=github.openPRs&from=2024-01-01T00:00:00.000Z&to=2024-01-31T23:59:59.000Z',
+      );
+
+      expect(res.status).toBe(404);
+    });
+  });
+
   describe('GET /api/scorecard/aggregations/:aggregationId', () => {
     it('returns aggregated metrics for an authenticated user with owned entities', async () => {
       const res = await request(server).get(

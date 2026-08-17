@@ -24,7 +24,7 @@ import { ScalarAggregationStrategy } from './ScalarAggregationStrategy';
 import * as aggregationUtils from '../../../utils/aggregation/isScalarAggregationConfig';
 import { AggregatedMetricMapper } from '../../mappers';
 import { mockScalarAggregationResult } from '../../../../__fixtures__/mockAggregatedMetricResult';
-import { mockFirstThresholds } from '../../../../__fixtures__/mockThresholds';
+import { mockHigherIsBetterThresholds } from '../../../../__fixtures__/mockThresholds';
 import { mockGithubOpenPrsMetric } from '../../../../__fixtures__/mockMetric';
 
 jest.mock('../../../utils/aggregation/isScalarAggregationConfig');
@@ -36,7 +36,7 @@ describe('ScalarAggregationStrategy', () => {
     id: 'totalOpenPrs',
     metricId: metric.id,
     options: {
-      thresholds: mockFirstThresholds,
+      thresholds: mockHigherIsBetterThresholds,
     },
   });
 
@@ -96,7 +96,7 @@ describe('ScalarAggregationStrategy', () => {
       strategy.aggregate({
         metric,
         entityRefs,
-        thresholds: mockFirstThresholds,
+        thresholds: mockHigherIsBetterThresholds,
         aggregationConfig,
       }),
     ).rejects.toThrow(/Expected a scalar aggregation config/);
@@ -119,7 +119,7 @@ describe('ScalarAggregationStrategy', () => {
     await strategy.aggregate({
       metric,
       entityRefs,
-      thresholds: mockFirstThresholds,
+      thresholds: mockHigherIsBetterThresholds,
       aggregationConfig: defaultAggregationConfig,
     });
 
@@ -134,7 +134,7 @@ describe('ScalarAggregationStrategy', () => {
     await strategy.aggregate({
       metric,
       entityRefs,
-      thresholds: mockFirstThresholds,
+      thresholds: mockHigherIsBetterThresholds,
       aggregationConfig,
     });
 
@@ -142,6 +142,32 @@ describe('ScalarAggregationStrategy', () => {
       entityRefs,
       metric.id,
       'sum',
+      undefined,
+    );
+  });
+
+  it('should forward filter.status to the scalar loader', async () => {
+    const filteredConfig = mockScalarAggregationConfig(aggregationTypes.sum, {
+      id: 'totalCriticalPrs',
+      metricId: metric.id,
+      filter: { status: 'error' },
+      options: {
+        thresholds: mockHigherIsBetterThresholds,
+      },
+    });
+
+    await strategy.aggregate({
+      metric,
+      entityRefs,
+      thresholds: mockHigherIsBetterThresholds,
+      aggregationConfig: filteredConfig,
+    });
+
+    expect(loader.loadScalarMetricByEntityRefs).toHaveBeenCalledWith(
+      entityRefs,
+      metric.id,
+      'sum',
+      { status: 'error' },
     );
   });
 
@@ -149,13 +175,13 @@ describe('ScalarAggregationStrategy', () => {
     await strategy.aggregate({
       metric,
       entityRefs,
-      thresholds: mockFirstThresholds,
+      thresholds: mockHigherIsBetterThresholds,
       aggregationConfig,
     });
 
     expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
       metric,
-      { ...loadedScalarMetric, thresholds: mockFirstThresholds },
+      { ...loadedScalarMetric, thresholds: mockHigherIsBetterThresholds },
       aggregationConfig,
     );
   });
@@ -164,7 +190,7 @@ describe('ScalarAggregationStrategy', () => {
     const result = await strategy.aggregate({
       metric,
       entityRefs,
-      thresholds: mockFirstThresholds,
+      thresholds: mockHigherIsBetterThresholds,
       aggregationConfig,
     });
     expect(result).toEqual({

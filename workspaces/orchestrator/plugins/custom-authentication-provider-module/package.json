@@ -39,9 +39,7 @@
     "lint:fix": "backstage-cli package lint --fix",
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
-    "clean-dynamic-sources": "yarn clean && rm -Rf node_modules",
-    "export-dynamic": "janus-cli package export-dynamic-plugin",
-    "export-dynamic:clean": "run export-dynamic --clean"
+    "clean-dynamic-sources": "yarn clean && rm -Rf node_modules"
   },
   "dependencies": {
     "@backstage/core-app-api": "^1.20.3",
@@ -54,7 +52,6 @@
   },
   "devDependencies": {
     "@backstage/cli": "^0.36.3",
-    "@janus-idp/cli": "3.7.0",
     "@types/react": "^18.0.0",
     "prettier": "3.9.6",
     "react-router": "^6.30.4",

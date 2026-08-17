@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
+import { useEffect, useMemo, useState } from 'react';
+
 import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
-import Alert from '@mui/material/Alert';
-import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import { Alert, Button } from '@patternfly/react-core';
+import { ExclamationTriangleIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { getScopedDialogProps } from '../../utils/scoped-dialog-utils';
@@ -38,19 +39,53 @@ const useStyles = makeStyles(theme => ({
     lineHeight: '1.375rem',
     letterSpacing: '-0.25px',
   },
+  closeButton: {
+    color: theme.palette.text.primary,
+  },
+  dialogContent: {
+    padding: '0 24px 24px',
+  },
+  dialogContentCompact: {
+    padding: '0 16px 16px',
+  },
+  warningAlert: {
+    '--pf-v6-c-alert--PaddingBlockEnd': '0',
+    marginBottom: theme.spacing(2),
+    '& .pf-v6-c-alert__title': {
+      marginTop: 0,
+    },
+  },
+  radioGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1),
+    marginBottom: theme.spacing(2),
+    '& label': {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(1),
+      cursor: 'pointer',
+      fontSize: '0.875rem',
+    },
+    '& input[type="radio"]': {
+      cursor: 'pointer',
+    },
+  },
   fileList: {
     margin: 0,
     padding: 0,
     listStyle: 'none',
+    maxHeight: 300,
+    overflowY: 'auto',
   },
   fileItem: {
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
-    padding: `${theme.spacing(2)}px 0`,
-    borderBottom:
-      '1px solid var(--pf-t--global--border--color--default, #c7c7c7)',
-    cursor: 'pointer',
+    padding: `${theme.spacing(1.5)}px ${theme.spacing(1.5)}px`,
+    border: '1px solid var(--pf-t--global--border--color--default)',
+    borderRadius: 8,
+    marginBottom: theme.spacing(1),
   },
   fileItemCompact: {
     display: 'flex',
@@ -69,18 +104,15 @@ const useStyles = makeStyles(theme => ({
     fontSize: '0.875rem',
     lineHeight: '1.25rem',
   },
-  fileNameCompact: {
-    flex: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    fontSize: '0.8125rem',
-    lineHeight: '1.125rem',
+  warningIcon: {
+    color: 'var(--pf-t--global--color--status--warning--default)',
+    fontSize: '1rem',
+    flexShrink: 0,
   },
   dialogActions: {
-    justifyContent: 'left',
-    padding: theme.spacing(2.5),
+    display: 'flex',
+    justifyContent: 'flex-start',
+    padding: '16px 24px',
     gap: theme.spacing(1),
   },
   dialogActionsCompact: {
@@ -88,43 +120,15 @@ const useStyles = makeStyles(theme => ({
     padding: '12px 16px !important',
     gap: theme.spacing(1),
   },
-  overwriteButton: {
-    textTransform: 'none',
-    borderRadius: 999,
-  },
-  overwriteButtonCompact: {
-    textTransform: 'none',
-    borderRadius: 999,
-    fontSize: '0.8125rem',
-    padding: '4px 16px',
-  },
-  cancelButton: {
-    textTransform: 'none',
-    borderRadius: 999,
-  },
-  cancelButtonCompact: {
-    textTransform: 'none',
-    borderRadius: 999,
-    fontSize: '0.8125rem',
-    padding: '4px 16px',
-  },
-  warningAlert: {
-    borderRadius: '6px',
-  },
-  warningAlertCompact: {
-    borderRadius: '6px',
-    fontSize: '0.8125rem',
-    '& .MuiAlert-icon': {
-      fontSize: '1.125rem',
-    },
-  },
 }));
 
 type OverwriteConfirmModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
-  fileNames: string[];
+  onConfirm: (filesToUpload: File[]) => void;
+  onBack: () => void;
+  allFiles: File[];
+  duplicateFileNames: string[];
   isCompact?: boolean;
 };
 
@@ -132,18 +136,46 @@ export const OverwriteConfirmModal = ({
   isOpen,
   onClose,
   onConfirm,
-  fileNames,
+  onBack,
+  allFiles,
+  duplicateFileNames,
   isCompact = false,
 }: OverwriteConfirmModalProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
+  const [duplicateAction, setDuplicateAction] = useState<'replace' | 'ignore'>(
+    'replace',
+  );
+
+  useEffect(() => {
+    if (isOpen) setDuplicateAction('replace');
+  }, [isOpen]);
+
+  const duplicateSet = useMemo(
+    () => new Set(duplicateFileNames),
+    [duplicateFileNames],
+  );
+  const newFiles = allFiles.filter(f => !duplicateSet.has(f.name));
+  const duplicateFiles = allFiles.filter(f => duplicateSet.has(f.name));
+
+  const filesToUpload = duplicateAction === 'replace' ? allFiles : newFiles;
+
+  const handleConfirm = () => {
+    onConfirm(filesToUpload);
+    setDuplicateAction('replace');
+  };
+
+  const handleClose = () => {
+    setDuplicateAction('replace');
+    onClose();
+  };
 
   const scopedProps = getScopedDialogProps(isCompact);
 
   return (
     <Dialog
       open={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       aria-labelledby="overwrite-confirm-modal-title"
       {...scopedProps}
       PaperProps={{
@@ -158,11 +190,15 @@ export const OverwriteConfirmModal = ({
           component="h2"
           className={isCompact ? classes.titleTextCompact : classes.titleText}
         >
-          {t('notebook.overwrite.modal.title')}
+          {(t as Function)(
+            duplicateFiles.length === 1
+              ? 'notebook.overwrite.modal.title.one'
+              : 'notebook.overwrite.modal.title.other',
+          )}
         </Typography>
         <IconButton
           aria-label={t('common.close')}
-          onClick={onClose}
+          onClick={handleClose}
           className={classes.closeButton}
           size="small"
         >
@@ -176,60 +212,72 @@ export const OverwriteConfirmModal = ({
         }
       >
         <Alert
-          severity="warning"
-          className={
-            isCompact ? classes.warningAlertCompact : classes.warningAlert
-          }
-        >
-          {t('notebook.overwrite.modal.description')}
-        </Alert>
+          variant="warning"
+          isInline
+          title={(t as Function)(
+            duplicateFiles.length === 1
+              ? 'notebook.overwrite.modal.description.one'
+              : 'notebook.overwrite.modal.description.other',
+            {
+              duplicateCount: duplicateFiles.length,
+              newCount: newFiles.length,
+            },
+          )}
+          className={classes.warningAlert}
+        />
+
+        <div className={classes.radioGroup}>
+          <label>
+            <input
+              type="radio"
+              name="duplicate-action"
+              checked={duplicateAction === 'replace'}
+              onChange={() => setDuplicateAction('replace')}
+            />
+            {t('notebook.overwrite.modal.replace')}
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="duplicate-action"
+              checked={duplicateAction === 'ignore'}
+              onChange={() => setDuplicateAction('ignore')}
+            />
+            {t('notebook.overwrite.modal.ignore')}
+          </label>
+        </div>
 
         <ul className={classes.fileList}>
-          {fileNames.map(name => (
-            <li
-              key={name}
-              className={isCompact ? classes.fileItemCompact : classes.fileItem}
-            >
-              <FileTypeIcon fileName={name} />
-              <Typography
-                className={
-                  isCompact ? classes.fileNameCompact : classes.fileName
-                }
-              >
-                {name}
-              </Typography>
+          {allFiles.map(file => (
+            <li key={file.name} className={isCompact ? classes.fileItemCompact : classes.fileItem}>
+              <FileTypeIcon fileName={file.name} />
+              <Typography className={classes.fileName}>{file.name}</Typography>
+              {duplicateSet.has(file.name) && (
+                <ExclamationTriangleIcon className={classes.warningIcon} />
+              )}
             </li>
           ))}
         </ul>
       </DialogContent>
 
-      <DialogActions
+      <div
         className={
           isCompact ? classes.dialogActionsCompact : classes.dialogActions
         }
       >
         <Button
-          variant="contained"
-          color="error"
-          className={
-            isCompact ? classes.overwriteButtonCompact : classes.overwriteButton
-          }
-          onClick={onConfirm}
-          size={isCompact ? 'small' : 'medium'}
+          variant="primary"
+          onClick={handleConfirm}
+          isDisabled={filesToUpload.length === 0}
         >
-          {t('notebook.overwrite.modal.action')}
+          {(t as Function)('notebook.overwrite.modal.action', {
+            count: filesToUpload.length,
+          })}
         </Button>
-        <Button
-          variant="outlined"
-          className={
-            isCompact ? classes.cancelButtonCompact : classes.cancelButton
-          }
-          onClick={onClose}
-          size={isCompact ? 'small' : 'medium'}
-        >
-          {t('common.cancel')}
+        <Button variant="link" onClick={onBack}>
+          {t('notebook.overwrite.modal.back')}
         </Button>
-      </DialogActions>
+      </div>
     </Dialog>
   );
 };

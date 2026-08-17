@@ -28,6 +28,10 @@ commit any generated files.
 - **API reports** — if public exports or function signatures changed, run
   `yarn build:api-reports:only --ci` (and `yarn fix` if package metadata
   moved).
+- **Type check** — if TypeScript files were added or modified, run `yarn tsc`
+  in the workspace root. CI runs `yarn tsc:full` (non-incremental) and will
+  reject type errors that unit tests miss (JavaScript ignores argument count
+  mismatches that TypeScript catches).
 - **Prettier** — run `yarn prettier:check` (or `yarn prettier:fix` when that
   script exists).
 - **Dedupe** — if the lockfile changed, run `yarn dedupe`.

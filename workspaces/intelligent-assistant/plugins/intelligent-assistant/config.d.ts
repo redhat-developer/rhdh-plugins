@@ -68,5 +68,32 @@ export interface Config {
         provider_id: string;
       };
     };
+    /**
+     * Configuration for Screen Context (deep context awareness)
+     * @visibility frontend
+     */
+    'screen-context'?: {
+      /**
+       * Enable/disable the Screen Context feature.
+       * When enabled, the assistant can capture the user's current RHDH screen
+       * to provide context-aware responses.
+       * @default false
+       * @visibility frontend
+       */
+      enabled?: boolean;
+      /**
+       * Screenshot capture configuration
+       * @visibility frontend
+       */
+      screenshots?: {
+        /**
+         * Enable/disable screenshot capture within Screen Context.
+         * Admin can disable screenshots org-wide while keeping DOM text context.
+         * @default true
+         * @visibility frontend
+         */
+        enabled?: boolean;
+      };
+    };
   };
 }

@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 8.0.2
+
+### Patch Changes
+
+- 6ea9977: Document contributor guides for local development and CI bump-trust testing, and link them from the package READMEs.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@8.0.2
+
 ## 8.0.1
 
 ### Patch Changes

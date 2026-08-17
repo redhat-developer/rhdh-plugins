@@ -246,6 +246,21 @@ export const lcsHandlers: HttpHandler[] = [
     return HttpResponse.json(mockModelRes);
   }),
 
+  http.get(`${LOCAL_LCS_ADDR}/v1/skills`, () => {
+    return HttpResponse.json({
+      skills: [
+        {
+          name: 'rhdh-dynamic-plugins',
+          description: 'Guidance for RHDH dynamic plugin development',
+        },
+        {
+          name: 'coding-standards',
+          description: 'Organization coding standards and best practices',
+        },
+      ],
+    });
+  }),
+
   // LCS MCP server list — returns registered servers so the backend can
   // resolve URLs for validation without requiring url in app-config.
   http.get(`${LOCAL_LCS_ADDR}/v1/mcp-servers`, () => {

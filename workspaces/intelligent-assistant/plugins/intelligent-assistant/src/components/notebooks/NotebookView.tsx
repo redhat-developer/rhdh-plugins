@@ -35,7 +35,7 @@ import {
   Tooltip,
   type AlertProps,
 } from '@patternfly/react-core';
-import { PaperPlaneIcon, PlusIcon, TimesIcon } from '@patternfly/react-icons';
+import { PlusIcon, TimesIcon } from '@patternfly/react-icons';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { notebooksApiRef } from '../../api/notebooksApi';
@@ -49,13 +49,17 @@ import {
   useDocumentStatusPolling,
   type PendingUpload,
 } from '../../hooks/notebooks/useDocumentStatusPolling';
+import { useRenameDocument } from '../../hooks/notebooks/useRenameDocument';
 import { useRenameNotebookWithAlert } from '../../hooks/notebooks/useRenameNotebookWithAlert';
+import { useUploadDocument } from '../../hooks/notebooks/useUploadDocument';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { CreateMessageVariables } from '../../hooks/useCreateCoversationMessage';
 import { useNotebookWelcomePrompts } from '../../hooks/useNotebookWelcomePrompts';
+import { useStopConversation } from '../../hooks/useStopConversation';
 import { useTranslation } from '../../hooks/useTranslation';
 import { NotebookSessionMetadata, SessionDocument } from '../../types';
 import { ChatbotFootnoteWithIcon } from '../../utils/lightspeed-chatbox-utils';
+import { runFileUploads } from '../../utils/notebook-upload-runner';
 import { LightspeedChatBox } from '../LightspeedChatBox';
 import { ToastAlertGroup } from '../ToastAlertGroup';
 import { AddDocumentModal } from './AddDocumentModal';
@@ -266,21 +270,15 @@ const useStyles = makeStyles(theme => ({
     },
     '& .pf-chatbot__button--stop, & .pf-chatbot__button--attach, & .pf-chatbot__button--send, & .pf-chatbot__button--microphone':
       {
-        background: 'none !important',
-        backgroundColor: 'transparent !important',
-        boxShadow: 'none !important',
-        padding: '2px !important',
-        width: 'auto !important',
-        height: 'auto !important',
-        '& svg': {
-          width: 18,
-          height: 18,
-        },
+        '--pf-v6-c-button--BorderRadius':
+          'var(--pf-t--global--border--radius--pill)',
+        borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
       },
   },
   messageBar: {
     border: '1px solid var(--pf-t--global--border--color--default)',
     borderRadius: 24,
+    padding: theme.spacing(0.5),
     '&::after': {
       display: 'none',
     },
@@ -295,30 +293,19 @@ const useStyles = makeStyles(theme => ({
       minHeight: 'unset !important',
     },
   },
-  disabledMessageBar: {
-    '& textarea': {
-      pointerEvents: 'none',
-      opacity: 0.5,
+  addResourceButton: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    padding: 4,
+    display: 'inline-flex',
+    alignItems: 'center',
+    color: 'inherit',
+    '&:focus-visible': {
+      outline: '2px solid var(--pf-t--global--border--color--brand--default)',
+      outlineOffset: 2,
     },
-    '& .pf-chatbot__button--send, & .pf-chatbot__button--microphone': {
-      opacity: '0.5 !important',
-    },
-  },
-  sendButtonDimmed: {
-    '& .pf-chatbot__button--send, & .pf-chatbot__button--send svg, & .pf-chatbot__button--send .pf-v6-c-button__icon':
-      {
-        opacity: '0.5 !important',
-        color: 'inherit !important',
-        transition: 'opacity 0.15s',
-      },
-  },
-  sendButtonActive: {
-    '& .pf-chatbot__button--send, & .pf-chatbot__button--send svg, & .pf-chatbot__button--send .pf-v6-c-button__icon':
-      {
-        opacity: '1 !important',
-        color: 'var(--pf-t--global--icon--color--regular) !important',
-        transition: 'opacity 0.15s',
-      },
+    marginLeft: theme.spacing(2),
   },
   chatContent: {
     minHeight: 0,
@@ -385,7 +372,16 @@ export const NotebookView = ({
     metadata?.conversation_id ?? TEMP_CONVERSATION_ID,
   );
   const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
-  const [hasInputText, setHasInputText] = useState(false);
+  const [requestId, setRequestId] = useState('');
+  const { mutate: stopConversation } = useStopConversation();
+  const wasStoppedByUserRef = useRef(false);
+  const autoDeleteRef = useRef({
+    isUntitled: false,
+    isEmpty: true,
+    noPending: true,
+    noUploading: true,
+    noChat: true,
+  });
   const [announcement, setAnnouncement] = useState<string | undefined>(
     undefined,
   );
@@ -401,10 +397,15 @@ export const NotebookView = ({
     setDeleteDocumentTarget({ id: documentId, name: documentId });
   }, []);
 
+  const { mutateAsync: renameDocument } = useRenameDocument();
+
   const onComplete = useCallback(
     (message: string) => {
       setIsSendButtonDisabled(false);
-      setAnnouncement(`Message from Bot: ${message}`);
+      if (!wasStoppedByUserRef.current) {
+        setAnnouncement(`Message from Bot: ${message}`);
+      }
+      wasStoppedByUserRef.current = false;
       queryClient.invalidateQueries({
         queryKey: ['conversationMessages', conversationId],
       });
@@ -426,6 +427,10 @@ export const NotebookView = ({
     [notebookCreateMessage, sessionId],
   );
 
+  const onRequestIdReady = useCallback((rid: string) => {
+    setRequestId(rid);
+  }, []);
+
   const { conversationMessages, handleInputPrompt, scrollToBottomRef } =
     useConversationMessages(
       conversationId,
@@ -436,6 +441,7 @@ export const NotebookView = ({
       onComplete,
       onStart,
       createMessageAdapter,
+      onRequestIdReady,
     );
 
   const [messages, setMessages] =
@@ -447,6 +453,7 @@ export const NotebookView = ({
 
   const sendMessage = useCallback(
     (message: string | number) => {
+      wasStoppedByUserRef.current = false;
       setAnnouncement(
         t('conversation.announcement.userMessage' as any, {
           prompt: message.toString(),
@@ -458,11 +465,23 @@ export const NotebookView = ({
     [handleInputPrompt, t],
   );
 
+  const handleStopButton = useCallback(() => {
+    wasStoppedByUserRef.current = true;
+    if (requestId) {
+      stopConversation(requestId);
+      setRequestId('');
+    }
+    setIsSendButtonDisabled(false);
+    setAnnouncement(t('conversation.announcement.responseStopped'));
+  }, [requestId, stopConversation, t]);
+
   const notebookPrompts = useNotebookWelcomePrompts();
   const welcomePrompts = notebookPrompts.map(title => ({
     title,
     onClick: () => sendMessage(title),
   }));
+
+  const uploadMutation = useUploadDocument();
 
   const [uploadingFileNames, setUploadingFileNames] = useState<string[]>([]);
   const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
@@ -472,9 +491,63 @@ export const NotebookView = ({
     new Set(),
   );
   const [filesToOverwrite, setFilesToOverwrite] = useState<File[]>([]);
+  const [allFilesForOverwrite, setAllFilesForOverwrite] = useState<File[]>([]);
   const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
   const [filesToAddToModal, setFilesToAddToModal] = useState<File[]>([]);
 
+  autoDeleteRef.current = {
+    isUntitled: notebookName === UNTITLED_NOTEBOOK_NAME,
+    isEmpty: documents.length === 0 && completedFileNames.size === 0,
+    noPending: !pendingUploads.length,
+    noUploading: !uploadingFileNames.length,
+    noChat: conversationId === TEMP_CONVERSATION_ID,
+  };
+
+  useEffect(() => {
+    return () => {
+      const currentNotebook = autoDeleteRef.current;
+      if (
+        currentNotebook.isUntitled &&
+        currentNotebook.isEmpty &&
+        currentNotebook.noPending &&
+        currentNotebook.noUploading &&
+        currentNotebook.noChat
+      ) {
+        notebooksApi
+          .deleteSession(sessionId)
+          .then(() => {
+            queryClient.invalidateQueries({
+              queryKey: ['notebooks', 'sessions'],
+            });
+          })
+          .catch(() => {});
+      } else {
+        queryClient.invalidateQueries({
+          queryKey: ['notebooks', 'sessions'],
+        });
+      }
+    };
+  }, [notebooksApi, sessionId, queryClient]);
+
+  const handleRenameDocument = useCallback(
+    async (documentId: string, newTitle: string) => {
+      try {
+        await renameDocument({ sessionId, documentId, newTitle });
+      } catch {
+        setToastAlerts(prev => [
+          {
+            key: Date.now() + documentId,
+            title: (t as Function)('notebook.document.rename.error', {
+              documentName: documentId,
+            }) as string,
+            variant: 'danger',
+          },
+          ...prev,
+        ]);
+      }
+    },
+    [renameDocument, sessionId, t],
+  );
   const handleRenameNotebook = useRenameNotebookWithAlert({
     setAlerts: setToastAlerts,
     getNotebookName: () => notebookName,
@@ -512,6 +585,10 @@ export const NotebookView = ({
   const handleOpenUploadModal = () => onUploadModalOpenChange(true);
   const handleCloseUploadModal = () => onUploadModalOpenChange(false);
 
+  const handleCloseNotebook = () => {
+    onClose();
+  };
+
   const handleFilesUploading = (files: File[]) => {
     setUploadingFileNames(prev => {
       const newNames = files
@@ -546,28 +623,43 @@ export const NotebookView = ({
     ]);
   };
 
-  const handleDuplicatesFound = (files: File[]) => {
-    setFilesToOverwrite(files);
+  const handleDuplicatesFound = (duplicateFiles: File[], allFiles: File[]) => {
+    setFilesToOverwrite(duplicateFiles);
+    setAllFilesForOverwrite(allFiles);
+    onUploadModalOpenChange(false);
     setIsOverwriteModalOpen(true);
   };
 
-  const handleOverwriteConfirm = () => {
-    const files = filesToOverwrite;
+  const handleOverwriteConfirm = (filesToUpload: File[]) => {
     setIsOverwriteModalOpen(false);
     setFilesToOverwrite([]);
+    setAllFilesForOverwrite([]);
 
-    if (files.length === 0) return;
+    if (filesToUpload.length === 0) return;
 
-    setFilesToAddToModal(files);
+    runFileUploads(uploadMutation, sessionId, filesToUpload, {
+      onUploading: handleFilesUploading,
+      onStarted: handleUploadStarted,
+      onFailed: handleUploadFailed,
+    });
   };
 
   const handleFilesAddedToModal = () => {
     setFilesToAddToModal([]);
   };
 
+  const handleOverwriteBack = () => {
+    setIsOverwriteModalOpen(false);
+    setFilesToAddToModal(allFilesForOverwrite);
+    setFilesToOverwrite([]);
+    setAllFilesForOverwrite([]);
+    onUploadModalOpenChange(true);
+  };
+
   const handleOverwriteCancel = () => {
     setIsOverwriteModalOpen(false);
     setFilesToOverwrite([]);
+    setAllFilesForOverwrite([]);
   };
 
   const pollingResults = useDocumentStatusPolling(sessionId, pendingUploads);
@@ -657,6 +749,7 @@ export const NotebookView = ({
         onToggleCollapse={() => onSidebarCollapsedChange(!sidebarCollapsed)}
         onAddDocument={handleOpenUploadModal}
         onDeleteDocument={handleDeleteDocument}
+        onRenameDocument={handleRenameDocument}
         onRenameNotebook={newName => handleRenameNotebook(sessionId, newName)}
       />
     </DrawerPanelContent>
@@ -801,7 +894,7 @@ export const NotebookView = ({
                     <Button
                       variant="link"
                       className={classes.closeButton}
-                      onClick={onClose}
+                      onClick={handleCloseNotebook}
                       icon={<TimesIcon />}
                       iconPosition="end"
                     >
@@ -817,82 +910,70 @@ export const NotebookView = ({
                   renderNotebookDisclaimerAlert()}
 
                 <ChatbotFooter className={classes.footer}>
-                  {hasNoDocuments ? (
-                    <Tooltip
-                      content={t('notebook.view.input.disabledTooltip')}
-                      position="top"
-                    >
-                      <div>
-                        <MessageBar
-                          className={`${classes.messageBar} ${classes.disabledMessageBar}`}
-                          isDisabled
-                          hasAttachButton
-                          attachButtonPosition="start"
-                          hasMicrophoneButton
-                          hasStopButton={false}
-                          alwayShowSendButton
-                          isSendButtonDisabled
-                          onSendMessage={sendMessage}
-                          forceMultilineLayout
-                          buttonProps={{
-                            attach: {
-                              tooltipContent: t('notebook.view.documents.add'),
-                              icon: <PlusIcon />,
-                              props: {
-                                onClick: handleOpenUploadModal,
+                  {(() => {
+                    const addResourceAction = (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenUploadModal()}
+                        aria-label={t('notebook.view.documents.add')}
+                        className={classes.addResourceButton}
+                      >
+                        <PlusIcon style={{ width: 16, height: 16 }} />
+                      </button>
+                    );
+                    return hasNoDocuments ? (
+                      <Tooltip
+                        content={t('notebook.view.input.disabledTooltip')}
+                        position="top"
+                      >
+                        <div>
+                          <MessageBar
+                            className={classes.messageBar}
+                            hasAttachButton={false}
+                            hasMicrophoneButton={false}
+                            hasStopButton={false}
+                            isSendButtonDisabled
+                            isDisabled
+                            onSendMessage={sendMessage}
+                            placeholder={t('notebook.view.input.placeholder')}
+                            forceMultilineLayout
+                            additionalActions={addResourceAction}
+                            buttonProps={{
+                              send: {
+                                tooltipContent: t('tooltip.send'),
                               },
+                            }}
+                          />
+                        </div>
+                      </Tooltip>
+                    ) : (
+                      <MessageBar
+                        className={classes.messageBar}
+                        hasAttachButton={false}
+                        hasMicrophoneButton
+                        hasStopButton={isSendButtonDisabled}
+                        handleStopButton={
+                          isSendButtonDisabled ? handleStopButton : undefined
+                        }
+                        isSendButtonDisabled={isSendButtonDisabled}
+                        onSendMessage={sendMessage}
+                        placeholder={t('notebook.view.input.placeholder')}
+                        forceMultilineLayout
+                        additionalActions={addResourceAction}
+                        buttonProps={{
+                          microphone: {
+                            tooltipContent: {
+                              active: t('tooltip.microphone.active'),
+                              inactive: t('tooltip.microphone.inactive'),
                             },
-                            send: {
-                              props: {
-                                icon: <PaperPlaneIcon />,
-                                isDisabled: true,
-                              },
-                            },
-                            microphone: {
-                              props: {
-                                isDisabled: true,
-                              },
-                            },
-                          }}
-                          placeholder={t('notebook.view.input.placeholder')}
-                        />
-                      </div>
-                    </Tooltip>
-                  ) : (
-                    <MessageBar
-                      className={`${classes.messageBar} ${hasInputText ? classes.sendButtonActive : classes.sendButtonDimmed}`}
-                      hasAttachButton
-                      attachButtonPosition="start"
-                      hasMicrophoneButton
-                      hasStopButton={false}
-                      alwayShowSendButton
-                      isSendButtonDisabled={isSendButtonDisabled}
-                      onSendMessage={msg => {
-                        sendMessage(msg);
-                        setHasInputText(false);
-                      }}
-                      onChange={(_e, val) =>
-                        setHasInputText(String(val).trim().length > 0)
-                      }
-                      forceMultilineLayout
-                      buttonProps={{
-                        attach: {
-                          tooltipContent: t('notebook.view.documents.add'),
-                          icon: <PlusIcon />,
-                          props: {
-                            onClick: handleOpenUploadModal,
                           },
-                        },
-                        send: {
-                          tooltipContent: t('tooltip.send'),
-                          props: {
-                            icon: <PaperPlaneIcon />,
+                          send: {
+                            tooltipContent: t('tooltip.send'),
                           },
-                        },
-                      }}
-                      placeholder={t('notebook.view.input.placeholder')}
-                    />
-                  )}
+                        }}
+                      />
+                    );
+                  })()}
                   <ChatbotFootnoteWithIcon label={t('footer.accuracy.label')} />
                 </ChatbotFooter>
               </div>
@@ -920,7 +1001,9 @@ export const NotebookView = ({
         isOpen={isOverwriteModalOpen}
         onClose={handleOverwriteCancel}
         onConfirm={handleOverwriteConfirm}
-        fileNames={filesToOverwrite.map(f => f.name)}
+        onBack={handleOverwriteBack}
+        allFiles={allFilesForOverwrite}
+        duplicateFileNames={filesToOverwrite.map(f => f.name)}
         isCompact={isCompact}
       />
 

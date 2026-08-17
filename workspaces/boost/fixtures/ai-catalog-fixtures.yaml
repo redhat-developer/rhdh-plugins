@@ -83,7 +83,7 @@ spec:
   categories:
     - code-quality
   agents:
-    - component:default/developer-assistant
+    - airesource:default/developer-assistant
   location:
     type: git
     target: https://github.com/example/code-review-skill
@@ -149,10 +149,10 @@ spec:
 
 ---
 # ---------------------------------------------------------------------------
-# Component / ai-agent
+# AiResource / agent
 # ---------------------------------------------------------------------------
 apiVersion: backstage.io/v1alpha1
-kind: Component
+kind: AiResource
 metadata:
   name: developer-assistant
   title: Developer Assistant Agent
@@ -166,81 +166,40 @@ metadata:
     rhdh.io/ai-asset-version: '3.1.0'
     rhdh.io/ai-asset-source: internal
 spec:
-  type: ai-agent
+  type: agent
   lifecycle: production
   owner: team-ai-platform
+  instructions: An AI agent that helps developers with code generation, debugging, architecture decisions, and documentation.
   location:
     type: git
     target: https://github.com/example/developer-assistant-agent
 
 ---
 # ---------------------------------------------------------------------------
-# Resource / ai-model
+# AiModelServerAPI / ai-model-server
 # ---------------------------------------------------------------------------
 apiVersion: backstage.io/v1alpha1
-kind: Resource
+kind: AiModelServerAPI
 metadata:
-  name: granite-3-code
-  title: Granite 3 Code
-  description: IBM Granite 3 code model optimized for code generation, completion, and explanation tasks.
+  name: granite-model-server
+  title: Granite Model Server
+  description: IBM Granite model server hosting code generation and instruction-following models.
   tags:
-    - model
+    - model-server
     - code-generation
     - ibm
   annotations:
-    rhdh.io/ai-asset-category: model
+    rhdh.io/ai-asset-category: model-server
     rhdh.io/ai-asset-version: '3.0.0'
     rhdh.io/ai-asset-source: model-registry
 spec:
-  type: ai-model
+  type: ai-model-server
   lifecycle: production
   owner: team-ml-ops
-  remotes:
-    - url: oci://registry.example.com/models/granite-3-code:latest
-      type: oci
-
----
-# ---------------------------------------------------------------------------
-# Resource / ai-tool
-# ---------------------------------------------------------------------------
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: web-search-tool
-  title: Web Search Tool
-  description: A tool that performs web searches and returns structured results for AI agent consumption.
-  tags:
-    - tool
-    - search
-    - web
-  annotations:
-    rhdh.io/ai-asset-category: tool
-    rhdh.io/ai-asset-version: '1.0.0'
-    rhdh.io/ai-asset-source: kagenti
-spec:
-  type: ai-tool
-  lifecycle: experimental
-  owner: team-integrations
-
----
-# ---------------------------------------------------------------------------
-# Resource / vector-store
-# ---------------------------------------------------------------------------
-apiVersion: backstage.io/v1alpha1
-kind: Resource
-metadata:
-  name: docs-vector-store
-  title: Documentation Vector Store
-  description: Vector store containing embeddings of internal documentation, runbooks, and knowledge base articles.
-  tags:
-    - vector-store
-    - documentation
-    - rag
-  annotations:
-    rhdh.io/ai-asset-category: vector-store
-    rhdh.io/ai-asset-version: '1.1.0'
-    rhdh.io/ai-asset-source: internal
-spec:
-  type: vector-store
-  lifecycle: production
-  owner: team-ai-platform
+  serverType: openai-v1
+  serverUrl: https://granite.example.com/v1
+  models:
+    discoverable: true
+    available:
+      - granite-3-code
+      - granite-3-instruct

@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-app-auth
 
+## 0.2.0
+
+### Minor Changes
+
+- 04e09fb: **BREAKING**: `SignInPage` is no longer exported from `@red-hat-developer-hub/backstage-plugin-app-auth/alpha`. Use `appAuthModule` (or the package default export); the page loads through `SignInPageBlueprint` with a dynamic `import()`.
+
+  Replaces `import appPlugin from '@backstage/plugin-app'` + extension override with `SignInPageBlueprint` from `@backstage/plugin-app-react` so the NFS alpha Module Federation sync chunk no longer pulls the full `@backstage/plugin-app` tree (AppRoot, `@backstage/ui`, framer-motion, markdown, MUI v4).
+
+## 0.1.1
+
+### Patch Changes
+
+- 7f30033: Pin `electron-to-chromium` to `1.5.349` via Yarn resolutions so hermetic Konflux/Hermeto builds do not float to freshly published versions that 404 on the cluster npm proxy.
+
 ## 0.1.0
 
 ### Minor Changes

@@ -21,11 +21,12 @@ import {
   validateConfigValue,
   isDbWritable,
   isSensitiveField,
+  isValidCronExpression,
 } from './schemas';
 
 describe('boostConfigFields', () => {
-  it('has a positive schema version', () => {
-    expect(BOOST_CONFIG_SCHEMA_VERSION).toBeGreaterThan(0);
+  it('has schema version 4', () => {
+    expect(BOOST_CONFIG_SCHEMA_VERSION).toBe(4);
   });
 
   it('has entries for all expected config keys', () => {
@@ -171,5 +172,374 @@ describe('isSensitiveField', () => {
   it('returns false for non-sensitive fields', () => {
     expect(isSensitiveField('boost.model.baseUrl')).toBe(false);
     expect(isSensitiveField('boost.security.mode')).toBe(false);
+  });
+});
+
+describe('isValidCronExpression', () => {
+  it('accepts valid 5-field cron expressions', () => {
+    expect(isValidCronExpression('* * * * *')).toBe(true);
+    expect(isValidCronExpression('0 9 * * 1-5')).toBe(true);
+    expect(isValidCronExpression('*/5 * * * *')).toBe(true);
+    expect(isValidCronExpression('0 0 1 1 *')).toBe(true);
+    expect(isValidCronExpression('0,30 9-17 * * 1,3,5')).toBe(true);
+  });
+
+  it('accepts named month and weekday values in correct fields', () => {
+    expect(isValidCronExpression('0 9 * JAN-MAR *')).toBe(true);
+    expect(isValidCronExpression('0 0 * * MON-FRI')).toBe(true);
+  });
+
+  it('rejects ? wildcard (unsupported by SchedulerService CronTime)', () => {
+    expect(isValidCronExpression('0 0 ? * MON')).toBe(false);
+    expect(isValidCronExpression('0 0 ? * MON-FRI')).toBe(false);
+  });
+
+  it('rejects out-of-range numeric values', () => {
+    expect(isValidCronExpression('60 * * * *')).toBe(false);
+    expect(isValidCronExpression('* 24 * * *')).toBe(false);
+    expect(isValidCronExpression('* * 32 * *')).toBe(false);
+    expect(isValidCronExpression('* * * 13 *')).toBe(false);
+    expect(isValidCronExpression('* * * * 8')).toBe(false);
+  });
+
+  it('rejects zero step divisor (division by zero)', () => {
+    expect(isValidCronExpression('*/0 * * * *')).toBe(false);
+    expect(isValidCronExpression('* */0 * * *')).toBe(false);
+    expect(isValidCronExpression('1-10/0 * * * *')).toBe(false);
+  });
+
+  it('accepts valid step divisors', () => {
+    expect(isValidCronExpression('*/1 * * * *')).toBe(true);
+    expect(isValidCronExpression('*/15 * * * *')).toBe(true);
+    expect(isValidCronExpression('0-30/5 * * * *')).toBe(true);
+  });
+
+  it('rejects arbitrary three-letter strings as month/weekday names', () => {
+    expect(isValidCronExpression('0 0 * XYZ *')).toBe(false);
+    expect(isValidCronExpression('0 0 * * ABC')).toBe(false);
+    expect(isValidCronExpression('0 0 * FOO *')).toBe(false);
+  });
+
+  it('rejects named tokens in wrong field position', () => {
+    // Month names in minute field
+    expect(isValidCronExpression('JAN * * * *')).toBe(false);
+    // Weekday names in month field
+    expect(isValidCronExpression('0 0 * MON *')).toBe(false);
+    // Weekday names in minute / hour / day-of-month fields
+    expect(isValidCronExpression('SUN * * * *')).toBe(false);
+    expect(isValidCronExpression('0 MON * * *')).toBe(false);
+    expect(isValidCronExpression('0 0 MON * *')).toBe(false);
+    // Month name in day-of-week field
+    expect(isValidCronExpression('0 0 * * JAN')).toBe(false);
+  });
+
+  it('accepts all valid month names (case-insensitive)', () => {
+    const months = [
+      'JAN',
+      'FEB',
+      'MAR',
+      'APR',
+      'MAY',
+      'JUN',
+      'JUL',
+      'AUG',
+      'SEP',
+      'OCT',
+      'NOV',
+      'DEC',
+    ];
+    months.forEach(m => {
+      expect(isValidCronExpression(`0 0 * ${m} *`)).toBe(true);
+    });
+  });
+
+  it('accepts all valid weekday names', () => {
+    const days = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+    days.forEach(d => {
+      expect(isValidCronExpression(`0 0 * * ${d}`)).toBe(true);
+    });
+  });
+
+  it('rejects invalid cron expressions', () => {
+    expect(isValidCronExpression('not-a-cron')).toBe(false);
+    expect(isValidCronExpression('* * *')).toBe(false);
+    expect(isValidCronExpression('* * * * * *')).toBe(false);
+    expect(isValidCronExpression('')).toBe(false);
+  });
+});
+
+describe('connector config schemas', () => {
+  describe('field registration', () => {
+    it('registers all Jira connector fields', () => {
+      const keys = Object.keys(boostConfigFields);
+      expect(keys).toContain('boost.connectors.jira.enabled');
+      expect(keys).toContain('boost.connectors.jira.endpoint');
+      expect(keys).toContain('boost.connectors.jira.schedule.intervalMs');
+      expect(keys).toContain('boost.connectors.jira.schedule.cron');
+      expect(keys).toContain('boost.connectors.jira.batchSize');
+      expect(keys).toContain('boost.connectors.jira.timeout.connectionMs');
+    });
+
+    it('registers all GitHub connector fields', () => {
+      const keys = Object.keys(boostConfigFields);
+      expect(keys).toContain('boost.connectors.github.enabled');
+      expect(keys).toContain('boost.connectors.github.endpoint');
+      expect(keys).toContain('boost.connectors.github.schedule.intervalMs');
+      expect(keys).toContain('boost.connectors.github.batchSize');
+    });
+
+    it('registers all GitLab connector fields', () => {
+      const keys = Object.keys(boostConfigFields);
+      expect(keys).toContain('boost.connectors.gitlab.enabled');
+      expect(keys).toContain('boost.connectors.gitlab.endpoint');
+      expect(keys).toContain('boost.connectors.gitlab.schedule.intervalMs');
+      expect(keys).toContain('boost.connectors.gitlab.batchSize');
+    });
+
+    it('does not register Jira-only fields for GitHub', () => {
+      const keys = Object.keys(boostConfigFields);
+      expect(keys).not.toContain('boost.connectors.github.schedule.cron');
+      expect(keys).not.toContain(
+        'boost.connectors.github.timeout.connectionMs',
+      );
+    });
+
+    it('does not register Jira-only fields for GitLab', () => {
+      const keys = Object.keys(boostConfigFields);
+      expect(keys).not.toContain('boost.connectors.gitlab.schedule.cron');
+      expect(keys).not.toContain(
+        'boost.connectors.gitlab.timeout.connectionMs',
+      );
+    });
+
+    it('marks all connector fields as db-overridable', () => {
+      const connectorEntries = Object.entries(boostConfigFields).filter(
+        ([key]) => key.startsWith('boost.connectors.'),
+      );
+      expect(connectorEntries.length).toBeGreaterThan(0);
+      connectorEntries.forEach(([, field]) => {
+        expect(field.configScope).toBe('db-overridable');
+      });
+    });
+  });
+
+  describe('endpoint validation', () => {
+    const endpointKeys = [
+      'boost.connectors.jira.endpoint',
+      'boost.connectors.github.endpoint',
+      'boost.connectors.gitlab.endpoint',
+    ] as const;
+
+    it.each(endpointKeys)('%s accepts valid HTTPS URL', key => {
+      expect(validateConfigValue(key, 'https://example.com')).toBe(
+        'https://example.com',
+      );
+    });
+
+    it.each(endpointKeys)('%s rejects HTTP URL', key => {
+      expect(() => validateConfigValue(key, 'http://example.com')).toThrow(
+        ZodError,
+      );
+    });
+
+    it.each(endpointKeys)('%s rejects non-URL string', key => {
+      expect(() => validateConfigValue(key, 'not-a-url')).toThrow(ZodError);
+    });
+
+    it.each(endpointKeys)('%s accepts undefined', key => {
+      expect(validateConfigValue(key, undefined)).toBeUndefined();
+    });
+  });
+
+  describe('numeric field validation', () => {
+    it('accepts positive schedule.intervalMs', () => {
+      expect(
+        validateConfigValue(
+          'boost.connectors.jira.schedule.intervalMs',
+          300000,
+        ),
+      ).toBe(300000);
+    });
+
+    it('rejects negative schedule.intervalMs', () => {
+      expect(() =>
+        validateConfigValue('boost.connectors.jira.schedule.intervalMs', -1000),
+      ).toThrow(ZodError);
+    });
+
+    it('rejects zero schedule.intervalMs', () => {
+      expect(() =>
+        validateConfigValue('boost.connectors.jira.schedule.intervalMs', 0),
+      ).toThrow(ZodError);
+    });
+
+    it('accepts positive batchSize', () => {
+      expect(validateConfigValue('boost.connectors.jira.batchSize', 100)).toBe(
+        100,
+      );
+    });
+
+    it('rejects negative batchSize', () => {
+      expect(() =>
+        validateConfigValue('boost.connectors.jira.batchSize', -50),
+      ).toThrow(ZodError);
+    });
+
+    it('accepts positive timeout.connectionMs', () => {
+      expect(
+        validateConfigValue(
+          'boost.connectors.jira.timeout.connectionMs',
+          30000,
+        ),
+      ).toBe(30000);
+    });
+
+    it('rejects negative timeout.connectionMs', () => {
+      expect(() =>
+        validateConfigValue('boost.connectors.jira.timeout.connectionMs', -100),
+      ).toThrow(ZodError);
+    });
+
+    it('accepts undefined for optional numeric fields', () => {
+      expect(
+        validateConfigValue(
+          'boost.connectors.github.schedule.intervalMs',
+          undefined,
+        ),
+      ).toBeUndefined();
+      expect(
+        validateConfigValue('boost.connectors.github.batchSize', undefined),
+      ).toBeUndefined();
+    });
+
+    it('rejects non-integer schedule.intervalMs', () => {
+      expect(() =>
+        validateConfigValue(
+          'boost.connectors.jira.schedule.intervalMs',
+          300000.5,
+        ),
+      ).toThrow(ZodError);
+    });
+
+    it('rejects non-integer batchSize', () => {
+      expect(() =>
+        validateConfigValue('boost.connectors.jira.batchSize', 99.9),
+      ).toThrow(ZodError);
+    });
+
+    it('rejects non-integer timeout.connectionMs', () => {
+      expect(() =>
+        validateConfigValue(
+          'boost.connectors.jira.timeout.connectionMs',
+          30000.1,
+        ),
+      ).toThrow(ZodError);
+    });
+
+    it('rejects batchSize exceeding upper bound', () => {
+      expect(() =>
+        validateConfigValue('boost.connectors.jira.batchSize', 10001),
+      ).toThrow(ZodError);
+    });
+
+    it('accepts batchSize at upper bound', () => {
+      expect(
+        validateConfigValue('boost.connectors.jira.batchSize', 10000),
+      ).toBe(10000);
+    });
+
+    it('rejects intervalMs exceeding upper bound', () => {
+      expect(() =>
+        validateConfigValue(
+          'boost.connectors.jira.schedule.intervalMs',
+          86400001,
+        ),
+      ).toThrow(ZodError);
+    });
+
+    it('accepts intervalMs at upper bound', () => {
+      expect(
+        validateConfigValue(
+          'boost.connectors.jira.schedule.intervalMs',
+          86400000,
+        ),
+      ).toBe(86400000);
+    });
+
+    it('rejects timeout.connectionMs exceeding upper bound', () => {
+      expect(() =>
+        validateConfigValue(
+          'boost.connectors.jira.timeout.connectionMs',
+          300001,
+        ),
+      ).toThrow(ZodError);
+    });
+
+    it('accepts timeout.connectionMs at upper bound', () => {
+      expect(
+        validateConfigValue(
+          'boost.connectors.jira.timeout.connectionMs',
+          300000,
+        ),
+      ).toBe(300000);
+    });
+  });
+
+  describe('cron expression validation', () => {
+    it('accepts valid cron expression for Jira schedule', () => {
+      expect(
+        validateConfigValue(
+          'boost.connectors.jira.schedule.cron',
+          '*/5 * * * *',
+        ),
+      ).toBe('*/5 * * * *');
+    });
+
+    it('rejects invalid cron expression for Jira schedule', () => {
+      expect(() =>
+        validateConfigValue(
+          'boost.connectors.jira.schedule.cron',
+          'not-a-cron',
+        ),
+      ).toThrow(ZodError);
+    });
+
+    it('accepts undefined for optional cron field', () => {
+      expect(
+        validateConfigValue('boost.connectors.jira.schedule.cron', undefined),
+      ).toBeUndefined();
+    });
+  });
+
+  describe('enabled field validation', () => {
+    const enabledKeys = [
+      'boost.connectors.jira.enabled',
+      'boost.connectors.github.enabled',
+      'boost.connectors.gitlab.enabled',
+    ] as const;
+
+    it.each(enabledKeys)('%s accepts boolean true', key => {
+      expect(validateConfigValue(key, true)).toBe(true);
+    });
+
+    it.each(enabledKeys)('%s accepts boolean false', key => {
+      expect(validateConfigValue(key, false)).toBe(false);
+    });
+
+    it.each(enabledKeys)('%s accepts undefined', key => {
+      expect(validateConfigValue(key, undefined)).toBeUndefined();
+    });
+  });
+
+  describe('isDbWritable for connector fields', () => {
+    it('returns true for all connector fields', () => {
+      const connectorKeys = Object.keys(boostConfigFields).filter(key =>
+        key.startsWith('boost.connectors.'),
+      ) as Array<keyof typeof boostConfigFields>;
+      expect(connectorKeys.length).toBeGreaterThan(0);
+      connectorKeys.forEach(key => {
+        expect(isDbWritable(key)).toBe(true);
+      });
+    });
   });
 });

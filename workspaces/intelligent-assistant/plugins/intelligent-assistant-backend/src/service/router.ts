@@ -32,9 +32,11 @@ import {
   iaChatManagePermission,
   iaChatUsePermission,
   iaMcpManagePermission,
-  iaMcpReadPermission,
+  iaMcpUsePermission,
+  iaNotebooksUsePermission,
   iaPermissions,
   iaSavedPromptsManagePermission,
+  iaSkillsAccessPermission,
 } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import { Readable } from 'node:stream';
@@ -317,7 +319,7 @@ export async function createRouter(
   router.get(
     '/mcp-servers',
     generalRateLimiter,
-    requirePermission(iaMcpReadPermission),
+    requirePermission(iaMcpUsePermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -358,7 +360,7 @@ export async function createRouter(
   router.post(
     '/mcp-servers/validate',
     generalRateLimiter,
-    requirePermission(iaMcpReadPermission),
+    requirePermission(iaMcpUsePermission),
     async (req, res) => {
       try {
         const { url, token } = req.body;
@@ -565,6 +567,7 @@ export async function createRouter(
   router.get(
     '/notebook-conversation-ids',
     generalRateLimiter,
+    requirePermission(iaNotebooksUsePermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -656,6 +659,13 @@ export async function createRouter(
     '/v1/saved-prompts/:prompt_id',
     generalRateLimiter,
     requirePermission(iaSavedPromptsManagePermission),
+    apiProxy,
+  );
+
+  router.get(
+    '/v1/skills',
+    generalRateLimiter,
+    requirePermission(iaSkillsAccessPermission),
     apiProxy,
   );
 
@@ -796,7 +806,6 @@ export async function createRouter(
       try {
         const { userEntityRef, credentials } = getIdentity(request);
         logger.info(`/v1/query receives call from user: ${userEntityRef}`);
-
         if (request.body.attachments?.length) {
           logger.info(
             `/v1/query includes ${request.body.attachments.length} attachment(s): ${request.body.attachments.map((a: { attachment_type: string }) => a.attachment_type).join(', ')}`,

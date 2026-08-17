@@ -336,7 +336,7 @@ const useStyles = makeStyles(theme => ({
     },
   },
   notebookCardHeader: {
-    padding: theme.spacing(2),
+    padding: theme.spacing(3),
     paddingBottom: 0,
     alignItems: 'center',
   },
@@ -345,17 +345,16 @@ const useStyles = makeStyles(theme => ({
     marginTop: theme.spacing(1),
   },
   notebookCardBody: {
-    padding: theme.spacing(2),
-    paddingTop: theme.spacing(1.5),
+    padding: theme.spacing(3),
+    paddingTop: theme.spacing(2),
   },
   notebookDocuments: {
     paddingTop: theme.spacing(1),
-    paddingLeft: theme.spacing(2),
   },
   notebookUpdated: {
-    paddingBottom: theme.spacing(5),
-    paddingLeft: theme.spacing(2),
+    paddingBottom: theme.spacing(3),
     paddingTop: theme.spacing(2),
+    fontStyle: 'italic',
   },
   notebookTitle: {
     display: 'flex',
@@ -394,8 +393,8 @@ const useStyles = makeStyles(theme => ({
   notebookDropdownItem: {
     justifyContent: 'flex-start',
     textAlign: 'left',
-    paddingLeft: theme.spacing(1.5),
-    paddingRight: theme.spacing(1.5),
+    paddingLeft: theme.spacing(0.5),
+    paddingRight: theme.spacing(0.5),
   },
   footer: {
     '&.pf-chatbot__footer': {
@@ -483,35 +482,41 @@ const useStyles = makeStyles(theme => ({
   settingsFlat: {
     height: '100%',
     width: '100%',
+    flex: 1,
+    minHeight: 0,
     '&.pf-chatbot__settings-form-container': {
-      background:
-        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      background: 'var(--pf-t--global--background--color--floating--default)',
       padding: 0,
       margin: 0,
-      minHeight: '100%',
+      minHeight: 0,
+      flex: 1,
       display: 'flex',
       flexDirection: 'column',
+      justifyContent: 'flex-start',
       width: '100%',
       maxWidth: 'none',
+      overflow: 'hidden',
+      border: 'none',
     },
     '& .pf-chatbot__settings-form': {
       margin: 0,
       padding: 0,
-      background:
-        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
-      minHeight: '100%',
+      background: 'var(--pf-t--global--background--color--floating--default)',
+      minHeight: 0,
+      flex: 1,
       display: 'flex',
       flexDirection: 'column',
       width: '100%',
       maxWidth: 'none',
+      border: 'none',
     },
     '& .pf-chatbot__settings-form-row': {
-      background:
-        'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
-      border: 0,
+      background: 'var(--pf-t--global--background--color--floating--default)',
+      border: 'none',
       margin: 0,
       padding: 0,
-      minHeight: '100%',
+      minHeight: 0,
+      flex: 1,
       display: 'flex',
       flexDirection: 'column',
       width: '100%',
@@ -546,7 +551,7 @@ const useStyles = makeStyles(theme => ({
     minWidth: 0,
     borderLeft: `1px solid ${theme.palette.divider}`,
     backgroundColor:
-      'var(--pf-v6-c-table--BackgroundColor, var(--pf-t--global--background--color--primary--default))',
+      'var(--pf-t--global--background--color--floating--default)',
     display: 'flex',
     flexDirection: 'column',
     minHeight: 0,
@@ -730,8 +735,11 @@ export const LightspeedChat = ({
     }
     return 0;
   });
-  const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
-    useLightspeedNotebooksPermission();
+  const {
+    allowed: hasNotebooksAccess,
+    loading: notebooksPermissionLoading,
+    iaNotebooksUsePermissionName,
+  } = useLightspeedNotebooksPermission();
   const notebooksPermissionResolved =
     !notebooksPermissionLoading && hasNotebooksAccess;
 
@@ -2301,7 +2309,7 @@ export const LightspeedChat = ({
           !hasNotebooksAccess && (
             <PermissionRequiredState
               subject={t('permission.subject.notebooks')}
-              permissions={['intelligent-assistant.notebooks.use']}
+              permissions={[iaNotebooksUsePermissionName]}
               action={
                 <Button
                   variant="outlined"

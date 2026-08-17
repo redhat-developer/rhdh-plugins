@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-orchestrator
 
+## 1.7.2
+
+### Patch Changes
+
+- e0093e0: Remove unused `@janus-idp/backstage-plugin-audit-log-node` and `@janus-idp/cli` dependencies.
+
+## 1.7.1
+
+### Patch Changes
+
+- 82b31c8: Add module wiring tests, a local `dev/` harness, and contributor documentation.
+- Updated dependencies [f48dfb4]
+- Updated dependencies [c74276c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.9.0
+
 ## 1.7.0
 
 ### Minor Changes

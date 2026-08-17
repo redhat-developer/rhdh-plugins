@@ -1,10 +1,10 @@
-# Design: AIResource Catalog Entity Kind
+# Design: AiResource Catalog Entity Kind
 
 ## Canonical Touchpoints
 
-- RHDHPLAN-1113 — [Agentic] Agents & Skills (AIResource Kinds) in the RHDH Catalog (DP)
-- RHIDP-13942 — AIResource: Catalog ingestion (OCI processor + git annotation path)
-- RHIDP-15739 — Align OCI AIResource support with upstream source-location (`url:oci://…`); remove `spec.location`
+- RHDHPLAN-1113 — [Agentic] Agents & Skills (AiResource Kinds) in the RHDH Catalog (DP)
+- RHIDP-13942 — AiResource: Catalog ingestion (OCI processor + git annotation path)
+- RHIDP-15739 — Align OCI AiResource support with upstream source-location (`url:oci://…`); remove `spec.location`
 
 ## Context
 
@@ -29,7 +29,7 @@ The design must keep OCI ingest air-gap safe: validate the reference and index t
 
 **Goals:**
 
-- Implement the upstream-aligned `AIResource` / `AiResource` kind in this workspace
+- Implement the upstream-aligned `AiResource` kind in this workspace
 - Use `backstage.io/source-location` as the canonical content location
 - Validate OCI source-location values in location-ref form `url:oci://…`
 - Reuse existing catalog behavior for registering entity YAML from git/HTTPS/`file`
@@ -48,7 +48,7 @@ The design must keep OCI ingest air-gap safe: validate the reference and index t
 
 ## Decisions
 
-### D1 - Use upstream `AiResource` / `AIResource`, not `AIContext`
+### D1 - Use upstream `AiResource`, not `AIContext`
 
 **Choice**: Implement the upstream `AiResource` entity kind rather than maintaining the older `AIContext` naming.
 
@@ -58,7 +58,7 @@ The design must keep OCI ingest air-gap safe: validate the reference and index t
 
 **Choice**: Do not use an RHDH `spec.location` struct. Git/HTTPS and OCI content references both use `metadata.annotations["backstage.io/source-location"]`.
 
-**Rationale**: Matches upstream AIResource design and Backstage feedback. Keeps OCI skill support compatible with future consumers that resolve content via `UrlReader` against the source-location target.
+**Rationale**: Matches upstream AiResource design and Backstage feedback. Keeps OCI skill support compatible with future consumers that resolve content via `UrlReader` against the source-location target.
 
 ### D3 - OCI uses location-ref form `url:oci://…`
 
@@ -76,11 +76,11 @@ Backstage `parseLocationRef` splits on the first `:`, yielding `{ type: 'url', t
 
 ### D4 - Reuse standard catalog registration for entity YAML
 
-**Choice**: Entity descriptors are always fetched from normal catalog locations (`url` / `file` / git). No catalog location type `oci` and no OCI `UrlReader` are required to **register** OCI-referenced AIResources.
+**Choice**: Entity descriptors are always fetched from normal catalog locations (`url` / `file` / git). No catalog location type `oci` and no OCI `UrlReader` are required to **register** OCI-referenced AiResources.
 
 **Rationale**: Registration indexes metadata. Fetching skill content from a registry is a separate, later capability.
 
-**Verification**: Git/HTTPS-sourced AIResource ingestion via the existing `UrlReaderProcessor` and `backstage.io/source-location` annotation was verified in RHIDP-14557 (happy path, missing source-location warning, and standard catalog registration). That establishes the git skill path; OCI does not need a UrlReader for registration.
+**Verification**: Git/HTTPS-sourced AiResource ingestion via the existing `UrlReaderProcessor` and `backstage.io/source-location` annotation was verified in RHIDP-14557 (happy path, missing source-location warning, and standard catalog registration). That establishes the git skill path; OCI does not need a UrlReader for registration.
 
 ### D5 - OCI ingestion performs format validation only
 
@@ -102,15 +102,15 @@ Backstage `parseLocationRef` splits on the first `:`, yielding `{ type: 'url', t
 
 ### D8 - Use the standard entity page
 
-**Choice**: Render AIResource entities through the existing `EntityPage` layout rather than creating a dedicated page.
+**Choice**: Render AiResource entities through the existing `EntityPage` layout rather than creating a dedicated page.
 
 **Rationale**: The standard entity page already provides metadata rendering, relationships, and TechDocs integration. A custom AI catalog frontend is deferred to a future release.
 
 ### D9 - Discovery uses standard catalog APIs
 
-**Choice**: AIResource entities participate in the existing entity list, by-name lookup, filter, and full-text search APIs.
+**Choice**: AiResource entities participate in the existing entity list, by-name lookup, filter, and full-text search APIs.
 
-**Rationale**: AIResource should behave like any other first-class catalog kind rather than requiring special endpoints.
+**Rationale**: AiResource should behave like any other first-class catalog kind rather than requiring special endpoints.
 
 ### D10 - Deferred: OCI UrlReader
 
@@ -118,13 +118,13 @@ Backstage `parseLocationRef` splits on the first `:`, yielding `{ type: 'url', t
 
 **Rationale**: A UrlReader is only needed when a consumer must fetch content (or catalog YAML) from `oci://…`. Registration and format validation do not require it. When added later, it registers via `urlReaderFactoriesServiceRef` with `predicate: (url) => url.protocol === 'oci:'`.
 
-**Symmetry with git**: The existing Backstage URL readers already cover git/HTTPS skill sources; RHIDP-14557 confirmed that path for AIResource. Deferring an OCI UrlReader is therefore an intentional gap versus the verified git reader path, not an unverified assumption that “no reader is needed for either.”
+**Symmetry with git**: The existing Backstage URL readers already cover git/HTTPS skill sources; RHIDP-14557 confirmed that path for AiResource. Deferring an OCI UrlReader is therefore an intentional gap versus the verified git reader path, not an unverified assumption that “no reader is needed for either.”
 
 ## Risks / Trade-offs
 
 | Risk                                              | Mitigation                                                                                     |
 | ------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Upstream AIResource evolves further               | Keep the design aligned to upstream annotations; limit RHDH-specific additions to `spec.scope` |
+| Upstream AiResource evolves further               | Keep the design aligned to upstream annotations; limit RHDH-specific additions to `spec.scope` |
 | Wrong location-ref form (`oci://` without `url:`) | Validate `url:` prefix + `oci://` target; document examples clearly                            |
 | Users expect OCI content inspection               | Document clearly that ingestion indexes metadata only and performs no registry I/O             |
 | Stale `spec.location` examples confuse agents     | Remove `spec.location` from schema, processor, docs, examples, and OpenSpec                    |

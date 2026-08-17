@@ -199,6 +199,12 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'modal.save': 'Salva',
     'modal.title.edit': 'Modifica allegato',
     'modal.title.preview': 'Anteprima allegato',
+    'notebook.document.rename': 'Rinomina',
+    'notebook.document.rename.tooltip': 'Clicca per rinominare',
+    'notebook.document.rename.error':
+      'Impossibile rinominare "{{documentName}}".',
+    'notebook.document.rename.conflict': 'Il nome esiste già.',
+    'notebook.document.rename.tooLong': 'Nome troppo lungo (max 255).',
     'notebook.document.delete': 'Elimina',
     'notebook.document.delete.action': 'Rimuovi',
     'notebook.document.delete.description':
@@ -206,10 +212,19 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'notebook.document.delete.success':
       '«{{documentName}}» rimosso con successo.',
     'notebook.document.delete.title': 'Rimuovere la risorsa?',
-    'notebook.overwrite.modal.action': 'Sovrascrivi',
+    'notebook.overwrite.modal.action': 'Carica ({{count}})',
+    'notebook.overwrite.modal.back': 'Indietro',
     'notebook.overwrite.modal.description':
-      'I seguenti file esistono già in questo quaderno. Vuoi sovrascriverli con le nuove versioni?',
-    'notebook.overwrite.modal.title': 'Sovrascrivere i file?',
+      '{{duplicateCount}} file esistono già in questo quaderno. {{newCount}} nuove risorse verranno aggiunte comunque.',
+    'notebook.overwrite.modal.ignore': 'Ignora file duplicati',
+    'notebook.overwrite.modal.replace': 'Sostituisci file esistenti',
+    'notebook.overwrite.modal.title': 'Il file esiste già',
+    'notebook.overwrite.modal.title.one': 'Il file esiste già',
+    'notebook.overwrite.modal.title.other': 'I file esistono già',
+    'notebook.overwrite.modal.description.one':
+      '{{duplicateCount}} file esiste già in questo quaderno. {{newCount}} nuove risorse verranno aggiunte comunque.',
+    'notebook.overwrite.modal.description.other':
+      '{{duplicateCount}} file esistono già in questo quaderno. {{newCount}} nuove risorse verranno aggiunte comunque.',
     'notebook.upload.error.fileTooLarge':
       'Errore di caricamento: la dimensione del file supera il limite di 25 MB.',
     'notebook.upload.error.tooManyFiles':
@@ -218,18 +233,24 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
       'Errore di caricamento: trovati tipi di file non supportati. Caricare solo tipi di file supportati.',
     'notebook.upload.failed': 'Caricamento di "{{fileName}}" non riuscito.',
     'notebook.upload.modal.addButton': 'Aggiungi ({{count}})',
+    'notebook.upload.modal.addButtonEmpty': 'Aggiungi',
     'notebook.upload.modal.browseButton': 'Carica',
-    'notebook.upload.modal.dragDropTitle': 'Trascina e rilascia i file qui',
+    'notebook.upload.modal.dragDropTitle':
+      'Trascina e rilascia i file qui o fai clic per sfogliare',
     'notebook.upload.modal.infoText':
       'Tipi di file accettati: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.maxFileSize':
+      'La dimensione massima del file è 25 MB.',
+    'notebook.upload.modal.supportedFormats': 'Formati supportati:',
     'notebook.upload.modal.removeFile': 'Rimuovi {{fileName}}',
     'notebook.upload.modal.selectedFiles':
       '{{count}} di {{max}} file selezionati',
     'notebook.upload.modal.separator': 'o',
-    'notebook.upload.modal.title': 'Aggiungi una risorsa al quaderno',
+    'notebook.upload.modal.title': 'Aggiungi risorse',
     'notebook.view.close': 'Chiudi quaderno',
     'notebook.view.documents.add': 'Aggiungi',
-    'notebook.view.documents.count': '{{count}} Risorse',
+    'notebook.view.documents.count_one': '{{count}} Risorsa',
+    'notebook.view.documents.count_other': '{{count}} Risorse',
     'notebook.view.documents.maxReached':
       'Sono consentite al massimo 10 risorse. Elimina una risorsa per caricarne una nuova.',
     'notebook.view.documents.uploading': 'Caricamento risorsa',
@@ -241,11 +262,11 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'notebook.view.sidebar.expand': 'Espandi barra laterale',
     'notebook.view.sidebar.resize': 'Ridimensiona barra laterale',
     'notebook.view.title': 'Quaderno senza titolo',
-    'notebook.view.upload.action': 'Carica una risorsa',
+    'notebook.view.upload.action': 'Aggiungi una risorsa',
     'notebook.view.processing.description':
       'I tuoi file sono in fase di indicizzazione. Potrai iniziare a fare domande una volta completata l’elaborazione.',
     'notebook.view.processing.heading': 'Elaborazione delle risorse...',
-    'notebook.view.upload.heading': 'Carica una risorsa per iniziare',
+    'notebook.view.upload.heading': 'Aggiungi una risorsa per iniziare',
     'notebooks.actions.delete': 'Elimina',
     'notebooks.actions.rename': 'Rinomina',
     'notebooks.card.openAria': 'Apri il taccuino {{name}}',
@@ -254,7 +275,8 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
       'Non vedrai più questo quaderno qui. Questo eliminerà anche le attività correlate come prompt, risposte e feedback dalla tua attività.',
     'notebooks.delete.title': 'Eliminare {{name}}?',
     'notebooks.delete.toast': 'Quaderno eliminato!',
-    'notebooks.documents': 'Risorse',
+    'notebooks.documents_one': '{{count}} Risorsa',
+    'notebooks.documents_other': '{{count}} Risorse',
     'notebooks.empty.action': 'Crea un nuovo quaderno',
     'notebooks.empty.description':
       'Crea un nuovo quaderno per organizzare le tue fonti e generare insight basati su IA.',
