@@ -82,7 +82,10 @@ failures or config-surface drift.
 2. Register the field in `src/config/schemas.ts` under
    `boostConfigFields` with a Zod schema, `configScope`, and
    `description`
-3. Bump `BOOST_CONFIG_SCHEMA_VERSION` in `src/config/schemas.ts`
+3. Bump `BOOST_CONFIG_SCHEMA_VERSION` in `src/config/schemas.ts`.
+   Per-connector `__schemaVersion` leaves (`configScope: db-only`) are
+   the versioning machinery itself and do not require bumping this
+   constant.
 4. Add example usage in `examples/app-config.connectors.yaml` (or
    the appropriate `app-config.*.yaml` example file)
 5. Run `yarn tsc:full && yarn build:api-reports:only` and commit the

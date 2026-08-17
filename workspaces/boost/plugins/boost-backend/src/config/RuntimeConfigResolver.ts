@@ -204,8 +204,17 @@ export class RuntimeConfigResolver {
       }
     }
 
-    // Invalidate cache after migrations may have changed DB values
-    await this.invalidate();
+    // Invalidate cache after migrations may have changed DB values.
+    // Preserve a connector migration error if invalidation also fails.
+    try {
+      await this.invalidate();
+    } catch (invalidateError) {
+      this.logger.error(
+        'Failed to invalidate config cache after connector schema migration',
+        invalidateError as Error,
+      );
+      firstError ??= invalidateError;
+    }
 
     if (firstError) {
       throw firstError;

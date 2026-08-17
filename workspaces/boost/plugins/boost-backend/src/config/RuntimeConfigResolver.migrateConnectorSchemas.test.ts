@@ -190,4 +190,38 @@ describe('migrateConnectorSchemas (BOOST_CONNECTOR_SCHEMA_VERSION=2)', () => {
     );
     expect(cache.delete).toHaveBeenCalledWith('effective-config');
   });
+
+  it('rethrows the migration error when cache invalidation also fails', async () => {
+    const migrationFn = jest.fn(async (connectorId: ConnectorId) => {
+      if (connectorId === 'jira') {
+        throw new Error('jira migration failed');
+      }
+    });
+    const migrations: ConnectorMigrationRegistry = new Map([[1, migrationFn]]);
+
+    cache.delete = jest
+      .fn()
+      .mockRejectedValue(new Error('cache delete failed'));
+
+    const adminConfigService = {
+      getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      getOverride: jest.fn().mockResolvedValue(1),
+      setOverride: jest.fn().mockResolvedValue(undefined),
+    } as unknown as AdminConfigService;
+
+    const resolver = new RuntimeConfigResolver({
+      cache,
+      config: createMockConfig(),
+      adminConfigService,
+      logger,
+    });
+
+    await expect(resolver.migrateConnectorSchemas(migrations)).rejects.toThrow(
+      'jira migration failed',
+    );
+    expect(logger.error).toHaveBeenCalledWith(
+      'Failed to invalidate config cache after connector schema migration',
+      expect.any(Error),
+    );
+  });
 });
