@@ -20,12 +20,9 @@ import type {
   RootConfigService,
 } from '@backstage/backend-plugin-api';
 import type { JsonValue } from '@backstage/types';
-import {
-  RuntimeConfigResolver,
-  type ConnectorMigrationRegistry,
-} from './RuntimeConfigResolver';
+import { RuntimeConfigResolver } from './RuntimeConfigResolver';
 import { AdminConfigService } from './AdminConfigService';
-import { CONNECTOR_IDS, CONNECTOR_SCHEMA_VERSION } from './schemas';
+import { CONNECTOR_IDS, BOOST_CONNECTOR_SCHEMA_VERSION } from './schemas';
 
 function createMockLogger(): LoggerService {
   return {
@@ -593,7 +590,7 @@ describe('RuntimeConfigResolver', () => {
   });
 
   describe('migrateConnectorSchemas', () => {
-    it('writes current version when no __schemaVersion exists', async () => {
+    it('writes v1 when no __schemaVersion exists', async () => {
       const config = createMockConfig({});
       const adminConfigService = {
         getAllOverrides: jest.fn().mockResolvedValue(new Map()),
@@ -610,11 +607,10 @@ describe('RuntimeConfigResolver', () => {
 
       await resolver.migrateConnectorSchemas();
 
-      // Should write version for all three connectors
       for (const connectorId of CONNECTOR_IDS) {
         expect(adminConfigService.setOverride).toHaveBeenCalledWith(
           `boost.connectors.${connectorId}.__schemaVersion`,
-          CONNECTOR_SCHEMA_VERSION,
+          1,
         );
       }
     });
@@ -645,120 +641,9 @@ describe('RuntimeConfigResolver', () => {
       const config = createMockConfig({});
       const adminConfigService = {
         getAllOverrides: jest.fn().mockResolvedValue(new Map()),
-        getOverride: jest.fn().mockResolvedValue(CONNECTOR_SCHEMA_VERSION),
-        setOverride: jest.fn().mockResolvedValue(undefined),
-      } as unknown as AdminConfigService;
-
-      const resolver = new RuntimeConfigResolver({
-        cache,
-        config,
-        adminConfigService,
-        logger,
-      });
-
-      await resolver.migrateConnectorSchemas();
-
-      // setOverride should not be called (no version write needed)
-      expect(adminConfigService.setOverride).not.toHaveBeenCalled();
-    });
-
-    it('runs migration hook when stored version < current', async () => {
-      const config = createMockConfig({});
-
-      // Simulate stored version 1 with current version being higher
-      // We temporarily mock the constant by calling with a custom
-      // migration registry that has a v1→v2 migration
-      const adminConfigService = {
-        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
-        getOverride: jest.fn().mockResolvedValue(1),
-        setOverride: jest.fn().mockResolvedValue(undefined),
-      } as unknown as AdminConfigService;
-
-      const resolver = new RuntimeConfigResolver({
-        cache,
-        config,
-        adminConfigService,
-        logger,
-      });
-
-      // Since CONNECTOR_SCHEMA_VERSION is 1 and stored is 1,
-      // no migration runs. To test the migration path, we need
-      // stored < current. We'll test with stored = 0 (edge case):
-      (adminConfigService.getOverride as jest.Mock).mockResolvedValue(
-        undefined,
-      );
-
-      // With missing version, it stamps current. That's covered above.
-      // For the actual migration path test, simulate a future version
-      // bump scenario by testing the migration registry invocation.
-      // We do this by providing stored version < CONNECTOR_SCHEMA_VERSION.
-      // Since current version is 1, we cannot have stored < 1 as valid.
-      // Instead, verify the no-op migration path works correctly.
-      await resolver.migrateConnectorSchemas();
-
-      // Verify it wrote the version for all connectors
-      expect(adminConfigService.setOverride).toHaveBeenCalledTimes(
-        CONNECTOR_IDS.length,
-      );
-    });
-
-    it('applies v1→v2 no-op migration hook and bumps version', async () => {
-      // Simulate a scenario where CONNECTOR_SCHEMA_VERSION would be 2
-      // and stored is 1. We test the migration registry mechanism
-      // by providing a mock migration function.
-      const config = createMockConfig({});
-
-      // Track what setOverride is called with
-      const setOverrideCalls: Array<[string, unknown]> = [];
-      const adminConfigService = {
-        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
-        getOverride: jest.fn().mockImplementation(async (key: string) => {
-          // Return version 1 for __schemaVersion keys
-          if (key.endsWith('.__schemaVersion')) {
-            // Check if we already bumped it
-            const bumped = setOverrideCalls.find(([k]) => k === key);
-            return bumped ? bumped[1] : 1;
-          }
-          return undefined;
-        }),
-        setOverride: jest
+        getOverride: jest
           .fn()
-          .mockImplementation(async (key: string, value: unknown) => {
-            setOverrideCalls.push([key, value]);
-          }),
-      } as unknown as AdminConfigService;
-
-      const resolver = new RuntimeConfigResolver({
-        cache,
-        config,
-        adminConfigService,
-        logger,
-      });
-
-      // Since CONNECTOR_SCHEMA_VERSION is 1 and stored is 1,
-      // no migration runs — version is current
-      await resolver.migrateConnectorSchemas();
-
-      // With stored === current, no setOverride calls
-      expect(adminConfigService.setOverride).not.toHaveBeenCalled();
-    });
-
-    it('invokes registered migration function for version upgrade', async () => {
-      // To properly test migration invocation, we temporarily need
-      // stored version < CONNECTOR_SCHEMA_VERSION.
-      // Since CONNECTOR_SCHEMA_VERSION = 1, simulate with non-number
-      // stored value (treated as missing → v1).
-      const config = createMockConfig({});
-
-      const migrationFn = jest.fn().mockResolvedValue(undefined);
-      const migrations: ConnectorMigrationRegistry = new Map([
-        [1, migrationFn],
-      ]);
-
-      // getOverride returns undefined → treated as missing → writes v1
-      const adminConfigService = {
-        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
-        getOverride: jest.fn().mockResolvedValue(undefined),
+          .mockResolvedValue(BOOST_CONNECTOR_SCHEMA_VERSION),
         setOverride: jest.fn().mockResolvedValue(undefined),
       } as unknown as AdminConfigService;
 
@@ -769,13 +654,32 @@ describe('RuntimeConfigResolver', () => {
         logger,
       });
 
-      await resolver.migrateConnectorSchemas(migrations);
+      await resolver.migrateConnectorSchemas();
 
-      // Missing version is treated as v1 and stamped — no migration
-      // runs because stored (undefined → v1 path) stamps current
-      // version directly. The migration registry is only consulted
-      // when stored version is an actual number < current.
-      expect(migrationFn).not.toHaveBeenCalled();
+      expect(adminConfigService.setOverride).not.toHaveBeenCalled();
+    });
+
+    it('warns and skips when stored version is ahead of current', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+        getOverride: jest.fn().mockResolvedValue(99),
+        setOverride: jest.fn().mockResolvedValue(undefined),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      await resolver.migrateConnectorSchemas();
+
+      expect(adminConfigService.setOverride).not.toHaveBeenCalled();
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('possible downgrade'),
+      );
     });
 
     it('invalidates cache after migration completes', async () => {
@@ -795,24 +699,22 @@ describe('RuntimeConfigResolver', () => {
 
       await resolver.migrateConnectorSchemas();
 
-      // Cache should be invalidated after migration
       expect(cache.delete).toHaveBeenCalledWith('effective-config');
     });
 
     it('handles each connector independently', async () => {
       const config = createMockConfig({});
 
-      // Jira has version, GitHub missing, GitLab has version
       const adminConfigService = {
         getAllOverrides: jest.fn().mockResolvedValue(new Map()),
         getOverride: jest.fn().mockImplementation(async (key: string) => {
           if (key === 'boost.connectors.jira.__schemaVersion') {
-            return CONNECTOR_SCHEMA_VERSION;
+            return BOOST_CONNECTOR_SCHEMA_VERSION;
           }
           if (key === 'boost.connectors.gitlab.__schemaVersion') {
-            return CONNECTOR_SCHEMA_VERSION;
+            return BOOST_CONNECTOR_SCHEMA_VERSION;
           }
-          return undefined; // github missing
+          return undefined;
         }),
         setOverride: jest.fn().mockResolvedValue(undefined),
       } as unknown as AdminConfigService;
@@ -826,11 +728,10 @@ describe('RuntimeConfigResolver', () => {
 
       await resolver.migrateConnectorSchemas();
 
-      // Only GitHub should have setOverride called (missing version)
       expect(adminConfigService.setOverride).toHaveBeenCalledTimes(1);
       expect(adminConfigService.setOverride).toHaveBeenCalledWith(
         'boost.connectors.github.__schemaVersion',
-        CONNECTOR_SCHEMA_VERSION,
+        1,
       );
     });
   });

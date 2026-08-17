@@ -176,11 +176,6 @@ export interface Config {
       /** Jira connector runtime configuration. */
       jira?: {
         /**
-         * Per-connector schema version (internal metadata).
-         * @configScope db-only
-         */
-        __schemaVersion?: number;
-        /**
          * Whether Jira runtime syncing is enabled (default: true).
          * @configScope db-overridable
          */
@@ -216,14 +211,14 @@ export interface Config {
            */
           connectionMs?: number;
         };
-      };
-      /** GitHub connector runtime configuration. */
-      github?: {
         /**
          * Per-connector schema version (internal metadata).
          * @configScope db-only
          */
         __schemaVersion?: number;
+      };
+      /** GitHub connector runtime configuration. */
+      github?: {
         /**
          * Whether GitHub runtime syncing is enabled (default: true).
          * @configScope db-overridable
@@ -247,14 +242,14 @@ export interface Config {
          * @configScope db-overridable
          */
         batchSize?: number;
-      };
-      /** GitLab connector runtime configuration. */
-      gitlab?: {
         /**
          * Per-connector schema version (internal metadata).
          * @configScope db-only
          */
         __schemaVersion?: number;
+      };
+      /** GitLab connector runtime configuration. */
+      gitlab?: {
         /**
          * Whether GitLab runtime syncing is enabled (default: true).
          * @configScope db-overridable
@@ -278,6 +273,11 @@ export interface Config {
          * @configScope db-overridable
          */
         batchSize?: number;
+        /**
+         * Per-connector schema version (internal metadata).
+         * @configScope db-only
+         */
+        __schemaVersion?: number;
       };
       /**
        * Open index signature preserving backward compatibility.

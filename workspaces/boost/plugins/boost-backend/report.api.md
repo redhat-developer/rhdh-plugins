@@ -122,6 +122,9 @@ export interface BackendApprovalStoreOptions {
 export const BOOST_CONFIG_SCHEMA_VERSION = 4;
 
 // @public
+export const BOOST_CONNECTOR_SCHEMA_VERSION = 1;
+
+// @public
 export const boostAiProviderServiceFactory: ServiceFactory<
   AgenticProvider,
   'plugin',
@@ -343,9 +346,6 @@ export type ConfigScope = 'yaml-only' | 'db-overridable' | 'db-only';
 
 // @public
 export const CONNECTOR_IDS: readonly ['jira', 'github', 'gitlab'];
-
-// @public
-export const CONNECTOR_SCHEMA_VERSION = 1;
 
 // @public
 export interface ConnectorCandidate {

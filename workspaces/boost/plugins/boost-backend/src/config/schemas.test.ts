@@ -18,7 +18,7 @@ import { ZodError } from 'zod';
 import {
   boostConfigFields,
   BOOST_CONFIG_SCHEMA_VERSION,
-  CONNECTOR_SCHEMA_VERSION,
+  BOOST_CONNECTOR_SCHEMA_VERSION,
   CONNECTOR_IDS,
   validateConfigValue,
   isDbWritable,
@@ -548,8 +548,8 @@ describe('connector config schemas', () => {
   });
 
   describe('__schemaVersion leaves', () => {
-    it('has CONNECTOR_SCHEMA_VERSION set to 1', () => {
-      expect(CONNECTOR_SCHEMA_VERSION).toBe(1);
+    it('has BOOST_CONNECTOR_SCHEMA_VERSION set to 1', () => {
+      expect(BOOST_CONNECTOR_SCHEMA_VERSION).toBe(1);
     });
 
     it('exports CONNECTOR_IDS with jira, github, gitlab', () => {

@@ -86,7 +86,7 @@
 ## 8. Documentation (P2)
 
 - [ ] 8.1 Document `RuntimeConfigResolver` extension for connector config in architecture docs
-- [ ] 8.2 Document `configScope` annotations and their meaning (`yaml-only`, `db-overridable`). Note: runtime operational state lives in the health store (`boost_sync_attempts` table), not the config resolver.
+- [ ] 8.2 Document `configScope` annotations and their meaning (`yaml-only`, `db-overridable`, `db-only`). Note: runtime operational state lives in the health store (`boost_sync_attempts` table), not the config resolver. `__schemaVersion` is `db-only` internal metadata.
 - [ ] 8.3 Document connector config admin UI usage (how to toggle, change endpoint/schedule)
 - [ ] 8.4 Document propagation latency: 30s TTL + reconciliation interval
 - [ ] 8.5 Document credential rotation workflow and latency (≤60s kubelet + reconciliation interval)

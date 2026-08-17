@@ -27,7 +27,7 @@ export {
 export {
   boostConfigFields,
   BOOST_CONFIG_SCHEMA_VERSION,
-  CONNECTOR_SCHEMA_VERSION,
+  BOOST_CONNECTOR_SCHEMA_VERSION,
   CONNECTOR_IDS,
   validateConfigValue,
   isDbWritable,
