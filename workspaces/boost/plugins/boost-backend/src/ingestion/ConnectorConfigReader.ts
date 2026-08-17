@@ -38,8 +38,10 @@ export interface ConnectorCandidate {
   /** Whether the provider is registered at startup (`ai-catalog.providers.<id>.enabled`). */
   startupEnabled: boolean;
   /**
-   * Whether runtime syncing is enabled (`boost.connectors.<id>.enabled`).
-   * Defaults to `true` if the key is missing.
+   * Whether runtime syncing is enabled for this connector.
+   * Resolved via {@link RuntimeConfigResolver} for
+   * `boost.connectors.<id>.enabled` (YAML baseline + DB overrides).
+   * Defaults to `true` when unset in both layers.
    */
   runtimeEnabled: boolean;
 }
@@ -284,11 +286,10 @@ export class ConnectorConfigReader {
         }
         if (value !== undefined) {
           this.logger.warn(
-            `Unexpected type for ${key}: ${typeof value}; defaulting runtimeEnabled to true`,
+            `Unexpected type for ${key}: ${typeof value}; falling back to YAML`,
           );
         }
-        // undefined → key not set in either layer → default true
-        return true;
+        // undefined or unexpected type → fall through to YAML ConfigApi
       } catch (error) {
         this.logger.warn(
           `Failed to resolve runtime config for ${key}, falling back to YAML: ${error}`,

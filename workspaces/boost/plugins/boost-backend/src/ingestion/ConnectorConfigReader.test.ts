@@ -260,11 +260,16 @@ describe('ConnectorConfigReader', () => {
     );
   });
 
-  it('non-boolean resolver value warns and defaults runtimeEnabled to true', async () => {
+  it('non-boolean resolver value warns and falls back to YAML', async () => {
     const config = new ConfigReader({
       'ai-catalog': {
         providers: {
           github: { enabled: true },
+        },
+      },
+      boost: {
+        connectors: {
+          github: { enabled: false },
         },
       },
     });
@@ -281,7 +286,8 @@ describe('ConnectorConfigReader', () => {
     const candidates = await reader.listCandidates();
 
     expect(candidates).toHaveLength(1);
-    expect(candidates[0].runtimeEnabled).toBe(true);
+    // YAML says false — do not fail-open to true on unexpected type
+    expect(candidates[0].runtimeEnabled).toBe(false);
     expect(logger.warn).toHaveBeenCalledWith(
       expect.stringContaining(
         'Unexpected type for boost.connectors.github.enabled',
