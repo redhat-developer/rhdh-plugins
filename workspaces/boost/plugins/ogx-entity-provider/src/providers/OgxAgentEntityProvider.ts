@@ -38,12 +38,12 @@ import {
 const PROVIDER_ID = 'ogx-agent-entity-provider';
 
 /**
- * Annotation key for the boost lifecycle stage.
+ * Annotation key for the ai-catalog lifecycle stage.
  *
  * @internal
  */
-export const ANNOTATION_BOOST_LIFECYCLE_STAGE =
-  'boost.redhat.com/lifecycle-stage';
+export const ANNOTATION_AI_CATALOG_LIFECYCLE_STAGE =
+  'ai-catalog.rhdh.com/lifecycle-stage';
 
 /**
  * Entity provider that reads configured agents from YAML/admin config
@@ -117,11 +117,11 @@ export class OgxAgentEntityProvider implements EntityProvider {
     };
 
     if (agent.lifecycleStage) {
-      annotations[ANNOTATION_BOOST_LIFECYCLE_STAGE] = agent.lifecycleStage;
+      annotations[ANNOTATION_AI_CATALOG_LIFECYCLE_STAGE] = agent.lifecycleStage;
     }
 
     if (agent.model) {
-      annotations['boost.redhat.com/model'] = agent.model;
+      annotations['ai-catalog.rhdh.com/model'] = agent.model;
     }
 
     // Build handoffs for agent-to-agent delegation targets
@@ -143,7 +143,7 @@ export class OgxAgentEntityProvider implements EntityProvider {
         description: agent.description ?? `OGX agent: ${agent.name}`,
         annotations,
         labels: {
-          'boost.redhat.com/provider': 'ogx',
+          'ai-catalog.rhdh.com/provider': 'ogx',
         },
       },
       spec: {
