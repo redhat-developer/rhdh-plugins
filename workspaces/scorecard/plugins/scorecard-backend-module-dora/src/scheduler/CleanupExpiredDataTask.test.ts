@@ -24,7 +24,6 @@ import { DORA_CLEANUP_EXPIRED_DATA_TASK_ID } from '../constants';
 import {
   mockDoraDeploymentsStore,
   mockDoraIncidentsStore,
-  mockDoraPullRequestsStore,
 } from '../metricProviders/__fixtures__';
 import { CleanupExpiredDataTask } from './CleanupExpiredDataTask';
 
@@ -43,7 +42,6 @@ describe('CleanupExpiredDataTask', () => {
     mockLogger = mockServices.logger.mock();
     mockDoraDeploymentsStore.deleteOlderThan.mockResolvedValue(0);
     mockDoraIncidentsStore.deleteOlderThan.mockResolvedValue(0);
-    mockDoraPullRequestsStore.deleteOlderThan.mockResolvedValue(0);
 
     mockTaskRunner = {
       run: jest.fn().mockResolvedValue(undefined),
@@ -59,7 +57,6 @@ describe('CleanupExpiredDataTask', () => {
       dataRetentionDays: 30,
       deployments: mockDoraDeploymentsStore,
       incidents: mockDoraIncidentsStore,
-      pullRequests: mockDoraPullRequestsStore,
     });
   });
 
@@ -94,7 +91,6 @@ describe('CleanupExpiredDataTask', () => {
     beforeEach(async () => {
       mockDoraDeploymentsStore.deleteOlderThan.mockResolvedValue(3);
       mockDoraIncidentsStore.deleteOlderThan.mockResolvedValue(4);
-      mockDoraPullRequestsStore.deleteOlderThan.mockResolvedValue(5);
 
       await (task as any).cleanupExpiredData(mockLogger);
     });
@@ -102,9 +98,6 @@ describe('CleanupExpiredDataTask', () => {
     it('deletes data older than the retention cutoff', () => {
       // today is 2024-01-15T12:00:00.000Z, cutoff is 30 days
       const expectedDate = new Date('2023-12-16T12:00:00.000Z');
-      expect(mockDoraPullRequestsStore.deleteOlderThan).toHaveBeenCalledWith(
-        expectedDate,
-      );
       expect(mockDoraDeploymentsStore.deleteOlderThan).toHaveBeenCalledWith(
         expectedDate,
       );
@@ -115,7 +108,7 @@ describe('CleanupExpiredDataTask', () => {
 
     it('logs deleted counts', () => {
       expect(mockLogger.info).toHaveBeenCalledWith(
-        'Deleted 3 deployments, 4 incidents, 5 pull requests older than 30 days',
+        'Deleted 3 deployments and 4 incidents older than 30 days',
       );
     });
   });

@@ -110,7 +110,6 @@ export const scorecardModuleDora = createBackendModule({
           dataRetentionDays: parseDoraDataRetentionDays(config),
           deployments: deploymentsDb,
           incidents: incidentsDb,
-          pullRequests: pullRequestsDb,
         }).start();
       },
     });
