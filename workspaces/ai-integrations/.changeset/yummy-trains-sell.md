@@ -1,5 +1,0 @@
----
-'@red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend': patch
----
-
-address various typescript idioms left over from the conversion from golang
