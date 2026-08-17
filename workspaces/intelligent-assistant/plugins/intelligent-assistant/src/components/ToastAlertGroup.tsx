@@ -25,18 +25,9 @@ import {
   type AlertProps,
 } from '@patternfly/react-core';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
   toastAlertGroup: {
-    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
     '--pf-v6-c-alert-group--m-toast--ZIndex': '9999',
-  },
-  toastAlert: {
-    maxWidth: '350px',
-    '& .pf-v6-c-alert__title': {
-      margin: 0,
-    },
   },
 }));
 
@@ -65,7 +56,6 @@ export const ToastAlertGroup = ({
           key={key}
           variant={AlertVariant[variant ?? 'success']}
           title={title}
-          className={classes.toastAlert}
           timeout={2000}
           onTimeout={() => onRemoveAlert(key as React.Key)}
           actionClose={

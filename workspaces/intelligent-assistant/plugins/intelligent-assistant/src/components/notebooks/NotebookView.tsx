@@ -80,15 +80,15 @@ const useStyles = makeStyles(theme => ({
     overflow: 'hidden',
     backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
   },
+  drawerContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+  },
   drawerContainer: {
     flex: 1,
     minHeight: 0,
     minWidth: 0,
-    '& .pf-v6-c-drawer__content, & .pf-v5-c-drawer__content': {
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
-    },
     '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
       backgroundColor:
         'var(--pf-t--global--background--color--floating--default) !important',
@@ -252,15 +252,9 @@ const useStyles = makeStyles(theme => ({
   footer: {
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default) !important',
-    padding: '6px 0 6px !important',
-    margin: '0 !important',
-    gap: '0 !important',
     '&>.pf-chatbot__footer-container': {
       width: '95% !important',
       maxWidth: 'unset !important',
-      padding: '0 !important',
-      margin: '0 !important',
-      gap: '4px !important',
     },
     '& .pf-chatbot__message-bar': {
       backgroundColor:
@@ -268,44 +262,11 @@ const useStyles = makeStyles(theme => ({
           ? theme.palette.grey[100]
           : 'var(--pf-t--global--background--color--secondary--default)',
     },
-    '& .pf-chatbot__button--stop, & .pf-chatbot__button--attach, & .pf-chatbot__button--send, & .pf-chatbot__button--microphone':
-      {
-        '--pf-v6-c-button--BorderRadius':
-          'var(--pf-t--global--border--radius--pill)',
-        borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
-      },
-  },
-  messageBar: {
-    border: '1px solid var(--pf-t--global--border--color--default)',
-    borderRadius: 24,
-    padding: theme.spacing(0.5),
-    '&::after': {
-      display: 'none',
+    '& .pf-chatbot__button--send, & .pf-chatbot__button--microphone': {
+      '--pf-v6-c-button--BorderRadius':
+        'var(--pf-t--global--border--radius--pill)',
+      borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
     },
-    '& textarea': {
-      minHeight: '16px !important',
-      maxHeight: '40px !important',
-      padding: '10 px 6px 0 !important',
-      lineHeight: '1.2',
-    },
-    '& .pf-chatbot__message-bar-actions': {
-      padding: '0 2px 2px !important',
-      minHeight: 'unset !important',
-    },
-  },
-  addResourceButton: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    padding: 4,
-    display: 'inline-flex',
-    alignItems: 'center',
-    color: 'inherit',
-    '&:focus-visible': {
-      outline: '2px solid var(--pf-t--global--border--color--brand--default)',
-      outlineOffset: 2,
-    },
-    marginLeft: theme.spacing(2),
   },
   chatContent: {
     minHeight: 0,
@@ -843,6 +804,7 @@ export const NotebookView = ({
       >
         <DrawerContent
           panelContent={!sidebarCollapsed ? panelContent : undefined}
+          className={classes.drawerContent}
         >
           <DrawerContentBody className={classes.drawerContentBody}>
             <div className={classes.mainArea}>
@@ -912,14 +874,14 @@ export const NotebookView = ({
                 <ChatbotFooter className={classes.footer}>
                   {(() => {
                     const addResourceAction = (
-                      <button
-                        type="button"
-                        onClick={() => handleOpenUploadModal()}
+                      <Button
+                        variant="plain"
+                        onClick={handleOpenUploadModal}
                         aria-label={t('notebook.view.documents.add')}
-                        className={classes.addResourceButton}
+                        size="sm"
                       >
-                        <PlusIcon style={{ width: 16, height: 16 }} />
-                      </button>
+                        <PlusIcon />
+                      </Button>
                     );
                     return hasNoDocuments ? (
                       <Tooltip
@@ -928,7 +890,6 @@ export const NotebookView = ({
                       >
                         <div>
                           <MessageBar
-                            className={classes.messageBar}
                             hasAttachButton={false}
                             hasMicrophoneButton={false}
                             hasStopButton={false}
@@ -948,7 +909,6 @@ export const NotebookView = ({
                       </Tooltip>
                     ) : (
                       <MessageBar
-                        className={classes.messageBar}
                         hasAttachButton={false}
                         hasMicrophoneButton
                         hasStopButton={isSendButtonDisabled}

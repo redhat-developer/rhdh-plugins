@@ -207,17 +207,6 @@ const useStyles = makeStyles(theme => ({
       flexBasis: '100%',
     },
   },
-  headerNewChatButton: {
-    '&.pf-v6-c-button': {
-      color: 'var(--pf-t--global--color--brand--default)',
-      '&:hover': {
-        color: 'var(--pf-t--global--color--brand--hover)',
-      },
-      '&:disabled, &.pf-m-disabled': {
-        color: 'var(--pf-t--global--text--color--disabled)',
-      },
-    },
-  },
   notebookHeaderActions: {
     display: 'flex',
     alignItems: 'center',
@@ -2003,13 +1992,20 @@ export const LightspeedChat = ({
                   >
                     <PfButton
                       variant="plain"
-                      className={classes.headerNewChatButton}
                       onClick={onNewChat}
                       isDisabled={newChatCreated}
                       aria-label={t('tooltip.quickNewChat')}
                       size="sm"
                     >
-                      <PenIcon style={{ width: 18, height: 18 }} />
+                      <PenIcon
+                        style={{
+                          width: 18,
+                          height: 18,
+                          color: newChatCreated
+                            ? undefined
+                            : 'var(--pf-t--global--color--brand--default)',
+                        }}
+                      />
                     </PfButton>
                   </Tooltip>
                 )}
