@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Knex } from 'knex';
+import { type Knex } from 'knex';
 import { randomUUID } from 'node:crypto';
 import {
   fromDoraIncidentRow,

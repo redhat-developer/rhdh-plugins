@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Knex } from 'knex';
+import { type Knex } from 'knex';
 import { asDate } from './mappers';
 
 export interface DoraLastSyncStore {
