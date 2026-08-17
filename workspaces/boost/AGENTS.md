@@ -60,42 +60,6 @@ Frontend rendering decisions use `ProviderCapabilities` interface checks. Never 
 
 All authorization decisions use `permissions.authorize()` (single-resource endpoints) or `permissions.authorizeConditional()` (list endpoints with resource-scoped permissions) with fine-grained permissions (`boost.agent.*`, `boost.tool.*`, `boost.kagenti.admin`). No custom route-level authorization logic.
 
-### Registering permission resource types: use `permissionsRegistry`, not a second router
-
-`coreServices.permissionsRegistry` auto-mounts its own internal
-`createPermissionIntegrationRouter()` onto the plugin's `httpRouter` as
-part of its service factory, _before_ `init()` runs. Express matches
-mounted middleware in registration order and stops at the first
-handler that sends a response — so any additional, manually-created
-`createPermissionIntegrationRouter(...)` mounted later inside `init()`
-(e.g. `router.use(createPermissionIntegrationRouter({...}))`) is
-silently shadowed for the shared
-`/.well-known/backstage/permissions/*` paths and never receives a
-request. No error is thrown; it just doesn't work (discovered on PR
-#4185, where this made the `ai-catalog-asset` resource type's rules
-invisible to the RBAC UI and broke `/apply-conditions` for it).
-
-Register new resource types (and their rules/`getResources`) through
-the already-injected registry instead:
-
-```ts
-permissionsRegistry.addPermissions([...boostPermissions]);
-permissionsRegistry.addResourceType({
-  resourceRef: someResourcePermissionResourceRef,
-  permissions: [...someResourceScopedPermissions], // not the full *Permissions aggregate — that also includes non-resource-scoped basic permissions (e.g. an `*AdminPermission`), which don't belong in a resource type's permission list
-  rules: Object.values(someRules),
-  getResources: createGetSomeResources(catalog, auth),
-});
-```
-
-**When reviewing PRs that add a `createPermissionIntegrationRouter(...)`
-call or a new resource type**: trace whether the resulting router/path
-registration could be shadowed by an earlier-mounted one (including the
-framework's own auto-mounted `permissionsRegistry` router) — automated
-single-pass review (e.g. fullsend) reliably catches local,
-single-function defects but not this kind of whole-plugin,
-registration-order bug, so it needs a manual check.
-
 ### Schema-driven validation
 
 Config validation uses Zod schemas as single source of truth. TypeScript types are generated from Zod. No hand-written validators.
