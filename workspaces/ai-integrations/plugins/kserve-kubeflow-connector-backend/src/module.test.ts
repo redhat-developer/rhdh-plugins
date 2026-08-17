@@ -13,16 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-module.exports = {
-  presets: [
-    [
-      '@babel/preset-env',
-      {
-        targets: {
-          node: 'current',
-        },
-      },
-    ],
-    '@babel/preset-typescript',
-  ],
-};
+
+import { kserveKubeflowConnectorPlugin } from './plugin';
+
+describe('kserve-kubeflow-connector-backend', () => {
+  it('should export the plugin', () => {
+    expect(kserveKubeflowConnectorPlugin).toBeDefined();
+  });
+});
