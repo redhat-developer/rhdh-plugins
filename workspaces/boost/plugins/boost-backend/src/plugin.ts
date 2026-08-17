@@ -19,7 +19,7 @@ import {
   createBackendPlugin,
   createServiceFactory,
 } from '@backstage/backend-plugin-api';
-import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
+import { createConditionAuthorizer } from '@backstage/plugin-permission-node';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
@@ -344,6 +344,17 @@ export const boostPlugin = createBackendPlugin({
           getResources: createGetAiCatalogAssetResources(catalog, auth),
         });
 
+        // Authorizer for evaluating a CONDITIONAL (or any) decision
+        // against a single AiCatalogAssetResource in memory — used by
+        // the list endpoint to apply entity-level condition filtering.
+        // Must be constructed after addResourceType() above, since the
+        // ruleset is only populated once the resource type is registered.
+        const isAiCatalogAssetAuthorized = createConditionAuthorizer(
+          permissionsRegistry.getPermissionRuleset(
+            aiCatalogAssetPermissionResourceRef,
+          ),
+        );
+
         // Log registered providers
         const providers = providerManager.getRegisteredProviders();
         if (providers.length > 0) {
@@ -360,11 +371,21 @@ export const boostPlugin = createBackendPlugin({
         // Set up HTTP routes
         const router = Router();
 
-        // Permission integration router for Backstage permission framework discovery
-        const permissionIntegrationRouter = createPermissionIntegrationRouter({
-          permissions: [...boostPermissions],
-        });
-        router.use(permissionIntegrationRouter);
+        // NOTE: permission framework discovery (`/.well-known/backstage/
+        // permissions/*`) is already served by `coreServices.
+        // permissionsRegistry`'s own auto-mounted router — see
+        // `@backstage/backend-defaults`'s `permissionsRegistryServiceFactory`,
+        // which mounts `createPermissionIntegrationRouter()` onto this
+        // plugin's `httpRouter` as part of its service factory, before
+        // this init() body runs. A second, separately constructed
+        // `createPermissionIntegrationRouter({ permissions: [...] })`
+        // mounted here would be shadowed by that pre-mounted router (both
+        // register the same paths) and would never receive requests —
+        // this is the exact same bug class documented for the
+        // ai-catalog-asset resource type registration above (PR #4185
+        // review from mareklibra), found again here for the general
+        // `boostPermissions` set during the GA readiness audit and
+        // removed as dead code.
 
         // AI Catalog asset routes (graduated visibility: entity-level
         // filtering on list, field-level filtering on detail), backed by
@@ -375,6 +396,7 @@ export const boostPlugin = createBackendPlugin({
           httpAuth,
           logger,
           assetLoader: aiCatalogAssetLoader,
+          isResourceAuthorized: isAiCatalogAssetAuthorized,
         });
         router.use(aiCatalogRoutes);
 

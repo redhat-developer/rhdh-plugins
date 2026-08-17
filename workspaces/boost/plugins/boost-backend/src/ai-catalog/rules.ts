@@ -61,7 +61,12 @@ export type AiCatalogFilters =
 /**
  * Minimal AI catalog asset resource shape for permission rule evaluation.
  *
- * @internal
+ * Public because it appears in `AiCatalogAssetLoader.list()`'s options
+ * (see `routes.ts`) — callers filtering the list endpoint against a
+ * CONDITIONAL decision need this shape to build the `isAuthorized`
+ * predicate.
+ *
+ * @public
  */
 export interface AiCatalogAssetResource {
   metadata: {

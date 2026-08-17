@@ -139,13 +139,20 @@ export class CatalogAssetLoader implements AiCatalogAssetLoader {
     private readonly auth: AuthService,
   ) {}
 
-  async list(): Promise<AiCatalogAsset[]> {
+  async list(options?: {
+    isAuthorized?: (resource: AiCatalogAssetResource) => boolean;
+  }): Promise<AiCatalogAsset[]> {
     const credentials = await this.auth.getOwnServiceCredentials();
     const response = await this.catalog.getEntities(
       { filter: buildAiAssetCatalogFilter() },
       { credentials },
     );
-    return response.items.map(entityToAiCatalogAsset);
+    const entities = options?.isAuthorized
+      ? response.items.filter(entity =>
+          options.isAuthorized!(entityToAiCatalogAssetResource(entity)),
+        )
+      : response.items;
+    return entities.map(entityToAiCatalogAsset);
   }
 
   async findById(id: string): Promise<AiCatalogAsset | undefined> {

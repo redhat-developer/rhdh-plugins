@@ -27,6 +27,7 @@ import { Permission } from '@backstage/plugin-permission-common';
 import { PermissionCondition } from '@backstage/plugin-permission-common';
 import { PermissionCriteria } from '@backstage/plugin-permission-common';
 import type { PermissionsService } from '@backstage/backend-plugin-api';
+import { PolicyDecision } from '@backstage/plugin-permission-common';
 import type { ProviderDescriptor } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { Request as Request_2 } from 'express';
 import type { RequestHandler } from 'express';
@@ -103,13 +104,28 @@ export interface AiCatalogAsset {
 // @public
 export interface AiCatalogAssetLoader {
   findById(id: string): Promise<AiCatalogAsset | undefined>;
-  list(): Promise<AiCatalogAsset[]>;
+  list(options?: {
+    isAuthorized?: (resource: AiCatalogAssetResource) => boolean;
+  }): Promise<AiCatalogAsset[]>;
+}
+
+// @public
+export interface AiCatalogAssetResource {
+  // (undocumented)
+  metadata: {
+    annotations?: Record<string, string>;
+    namespace?: string;
+  };
 }
 
 // @public
 export interface AiCatalogRoutesOptions {
   assetLoader: AiCatalogAssetLoader;
   httpAuth: HttpAuthService;
+  isResourceAuthorized: (
+    decision: PolicyDecision,
+    resource: AiCatalogAssetResource,
+  ) => boolean;
   logger: LoggerService;
   permissions: PermissionsService;
 }

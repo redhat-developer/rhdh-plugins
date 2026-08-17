@@ -165,6 +165,25 @@ describe('CatalogAssetLoader', () => {
       const assets = await loader.list();
       expect(assets).toEqual([]);
     });
+
+    it('applies the isAuthorized predicate before mapping to AiCatalogAsset', async () => {
+      const { loader } = makeLoader([codeReviewSkill, graniteModel]);
+
+      const assets = await loader.list({
+        isAuthorized: resource => resource.metadata.namespace === 'team-alpha',
+      });
+
+      expect(assets).toHaveLength(1);
+      expect(assets[0].name).toBe('Code Review Skill');
+    });
+
+    it('returns no assets when isAuthorized denies everything', async () => {
+      const { loader } = makeLoader([codeReviewSkill, graniteModel]);
+
+      const assets = await loader.list({ isAuthorized: () => false });
+
+      expect(assets).toEqual([]);
+    });
   });
 
   describe('findById()', () => {

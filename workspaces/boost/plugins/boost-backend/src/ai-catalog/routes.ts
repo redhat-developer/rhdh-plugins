@@ -23,6 +23,7 @@ import type {
 } from '@backstage/backend-plugin-api';
 import {
   AuthorizeResult,
+  type PolicyDecision,
   type ResourcePermission,
 } from '@backstage/plugin-permission-common';
 import { NotAllowedError, NotFoundError } from '@backstage/errors';
@@ -32,6 +33,7 @@ import {
   aiCatalogAdminPermission,
   type AI_CATALOG_ASSET_RESOURCE_TYPE,
 } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { AiCatalogAssetResource } from './rules';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -83,6 +85,21 @@ export interface AiCatalogRoutesOptions {
   logger: LoggerService;
   /** Loads the full list of AI catalog assets. */
   assetLoader: AiCatalogAssetLoader;
+  /**
+   * Evaluates a policy decision (in particular a CONDITIONAL one) against
+   * a single resource in memory. Used to apply entity-level conditional
+   * filtering to the list endpoint without pushing conditions down into
+   * the catalog query language. Callers should build this by passing
+   * `permissionsRegistry.getPermissionRuleset(aiCatalogAssetPermissionResourceRef)`
+   * to `createConditionAuthorizer` from `@backstage/plugin-permission-node`
+   * — that helper already implements the full `allOf`/`anyOf`/`not`
+   * boolean algebra over each rule's `apply()`, so callers don't need to
+   * hand-roll condition-tree evaluation or catalog-filter translation.
+   */
+  isResourceAuthorized: (
+    decision: PolicyDecision,
+    resource: AiCatalogAssetResource,
+  ) => boolean;
 }
 
 /**
@@ -95,8 +112,15 @@ export interface AiCatalogRoutesOptions {
 export interface AiCatalogAssetLoader {
   /** Load a single asset by ID. Returns undefined if not found. */
   findById(id: string): Promise<AiCatalogAsset | undefined>;
-  /** Load all assets. */
-  list(): Promise<AiCatalogAsset[]>;
+  /**
+   * Load all assets. When `isAuthorized` is given, only assets for which
+   * it returns `true` (evaluated against the asset's
+   * {@link AiCatalogAssetResource} shape) are included — used to apply
+   * entity-level CONDITIONAL filtering.
+   */
+  list(options?: {
+    isAuthorized?: (resource: AiCatalogAssetResource) => boolean;
+  }): Promise<AiCatalogAsset[]>;
 }
 
 // ---------------------------------------------------------------------------
@@ -175,7 +199,8 @@ async function assertReadableOrAdmin(
  * @public
  */
 export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router {
-  const { permissions, httpAuth, logger, assetLoader } = options;
+  const { permissions, httpAuth, logger, assetLoader, isResourceAuthorized } =
+    options;
   const router = Router();
 
   // GET /ai-catalog/assets — list assets with entity-level filtering (task 2.2)
@@ -201,21 +226,28 @@ export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router {
         credentials,
       );
 
-      // TODO: Apply CONDITIONAL filtering using createConditionTransformer()
-      // to convert the decision's conditions into catalog query predicates
-      // (via each rule's toQuery()), then pass those as catalog entity
-      // filters so only matching assets are returned. Until then,
-      // CONDITIONAL fails closed (empty list) rather than ALLOW (show
-      // everything) — consistent with the Tier 2 conservative default
-      // below, and safer than the agent list endpoint's ALLOW-style
-      // deferral: an empty list under-shows assets, while treating
-      // CONDITIONAL as ALLOW here would silently ignore a configured
-      // entity-level policy and over-show them.
-      let assets: AiCatalogAsset[] = [];
+      // Entity-level CONDITIONAL filtering: evaluate the decision's
+      // condition tree (allOf/anyOf/not over isAiAssetCategory/
+      // isFromConnector/isInTenant) against each asset in memory via
+      // `isResourceAuthorized` (backed by
+      // `createConditionAuthorizer(permissionsRegistry.getPermissionRuleset(...))`
+      // — see `AiCatalogRoutesOptions.isResourceAuthorized`). This is
+      // deliberately an in-memory evaluation rather than a push-down of
+      // conditions into the catalog query language: each rule's own
+      // `apply()` already implements the correct per-resource semantics,
+      // so reusing it avoids a bespoke, error-prone translator from
+      // arbitrary allOf/anyOf/not condition trees into catalog filter
+      // syntax (see PR #4185 GA readiness audit — this replaced an
+      // earlier deferred "always fail closed" TODO).
+      let assets: AiCatalogAsset[];
       if (readDecision.result === AuthorizeResult.CONDITIONAL) {
         logger.debug(
-          'ai-catalog.asset.access returned CONDITIONAL — entity-level condition filtering not yet applied (failing closed, returning no assets)',
+          'ai-catalog.asset.access returned CONDITIONAL — applying entity-level condition filtering in memory',
         );
+        assets = await assetLoader.list({
+          isAuthorized: resource =>
+            isResourceAuthorized(readDecision, resource),
+        });
       } else {
         assets = await assetLoader.list();
       }

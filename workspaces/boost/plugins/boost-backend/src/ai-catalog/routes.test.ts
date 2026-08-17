@@ -16,14 +16,23 @@
 
 import http from 'http';
 import express from 'express';
-import { AuthorizeResult } from '@backstage/plugin-permission-common';
+import {
+  AuthorizeResult,
+  type PolicyDecision,
+} from '@backstage/plugin-permission-common';
 import type {
   HttpAuthService,
   LoggerService,
   PermissionsService,
 } from '@backstage/backend-plugin-api';
+import {
+  aiCatalogAssetAccessPermission,
+  aiCatalogAssetAccessUsageDocsPermission,
+  aiCatalogAdminPermission,
+} from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { createAiCatalogRoutes, stripTier2Fields } from './routes';
 import type { AiCatalogAsset, AiCatalogAssetLoader } from './routes';
+import type { AiCatalogAssetResource } from './rules';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -103,6 +112,10 @@ async function createTestApp(options: {
   permissions?: PermissionsService;
   httpAuth?: HttpAuthService;
   assetLoader?: AiCatalogAssetLoader;
+  isResourceAuthorized?: (
+    decision: PolicyDecision,
+    resource: AiCatalogAssetResource,
+  ) => boolean;
 }): Promise<TestApp> {
   const app = express();
   app.use(express.json());
@@ -111,6 +124,10 @@ async function createTestApp(options: {
     httpAuth: options.httpAuth ?? createMockHttpAuth(),
     logger: createMockLogger(),
     assetLoader: options.assetLoader ?? createMockAssetLoader(),
+    // Default: DENY everything under CONDITIONAL, matching the
+    // conservative default previously hard-coded before F1's fix — tests
+    // that need partial/full authorization override this explicitly.
+    isResourceAuthorized: options.isResourceAuthorized ?? (() => false),
   });
   app.use(router);
   // Error handler: map Backstage error names to HTTP status codes
@@ -331,25 +348,35 @@ describe('AI catalog routes', () => {
       expect(assets[0].deploymentParameters).toBeUndefined();
     });
 
-    it('returns no assets when entity-level (Tier 1) permission is CONDITIONAL (fails closed)', async () => {
+    it('returns no assets when entity-level (Tier 1) is CONDITIONAL and isResourceAuthorized denies all (fails closed)', async () => {
+      const conditionalDecision = {
+        result: AuthorizeResult.CONDITIONAL,
+        conditions: { rule: 'isInTenant', params: { tenant: 'acme' } },
+      } as const;
       const authorizeConditional = jest
         .fn()
         // First call: entity-level (Tier 1) → CONDITIONAL
-        .mockResolvedValueOnce([
-          {
-            result: AuthorizeResult.CONDITIONAL,
-            conditions: { rule: 'isInTenant', params: { tenantId: 'acme' } },
-          },
-        ])
+        .mockResolvedValueOnce([conditionalDecision])
         // Second call: field-level (Tier 2) → ALLOW
         .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]);
 
-      const assetLoader = createMockAssetLoader({
-        list: jest.fn().mockResolvedValue([fullAsset, minimalAsset]),
-      });
+      // Loader applies whatever `isAuthorized` predicate the route passes
+      // in — mirrors CatalogAssetLoader.list()'s real filtering behavior.
+      const list = jest
+        .fn()
+        .mockImplementation(
+          async (opts?: {
+            isAuthorized?: (r: AiCatalogAssetResource) => boolean;
+          }) =>
+            [fullAsset, minimalAsset].filter(() =>
+              opts?.isAuthorized ? opts.isAuthorized({ metadata: {} }) : true,
+            ),
+        );
+      const assetLoader = createMockAssetLoader({ list });
       testApp = await createTestApp({
         permissions: createMockPermissions({ authorizeConditional }),
         assetLoader,
+        isResourceAuthorized: () => false,
       });
 
       const { status, body } = await fetchJson(
@@ -358,10 +385,69 @@ describe('AI catalog routes', () => {
       );
 
       expect(status).toBe(200);
-      // Entity-level condition filtering isn't implemented yet — CONDITIONAL
-      // fails closed (empty list) rather than showing every asset.
       expect(body.assets).toEqual([]);
-      expect(assetLoader.list).not.toHaveBeenCalled();
+      expect(list).toHaveBeenCalledWith({ isAuthorized: expect.any(Function) });
+    });
+
+    it('returns only assets isResourceAuthorized allows when entity-level (Tier 1) is CONDITIONAL', async () => {
+      const conditionalDecision = {
+        result: AuthorizeResult.CONDITIONAL,
+        conditions: {
+          rule: 'isAiAssetCategory',
+          params: { category: 'ai-model' },
+        },
+      } as const;
+      const authorizeConditional = jest
+        .fn()
+        .mockResolvedValueOnce([conditionalDecision])
+        .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]);
+
+      // Simulates a real CatalogAssetLoader: only `fullAsset` (id contains
+      // "granite-model") is "authorized" by this fixture's predicate.
+      const list = jest
+        .fn()
+        .mockImplementation(
+          async (opts?: {
+            isAuthorized?: (r: AiCatalogAssetResource) => boolean;
+          }) =>
+            [fullAsset, minimalAsset].filter(asset =>
+              opts?.isAuthorized
+                ? opts.isAuthorized({
+                    metadata: {
+                      annotations: {
+                        'rhdh.io/ai-asset-category':
+                          asset === fullAsset ? 'ai-model' : 'skill',
+                      },
+                    },
+                  })
+                : true,
+            ),
+        );
+      const assetLoader = createMockAssetLoader({ list });
+
+      // Real isResourceAuthorized-shaped predicate: only category ai-model.
+      const isResourceAuthorized = (
+        _decision: PolicyDecision,
+        resource: AiCatalogAssetResource,
+      ) =>
+        resource.metadata.annotations?.['rhdh.io/ai-asset-category'] ===
+        'ai-model';
+
+      testApp = await createTestApp({
+        permissions: createMockPermissions({ authorizeConditional }),
+        assetLoader,
+        isResourceAuthorized,
+      });
+
+      const { status, body } = await fetchJson(
+        testApp.url,
+        '/ai-catalog/assets',
+      );
+
+      expect(status).toBe(200);
+      const assets = body.assets as AiCatalogAsset[];
+      expect(assets).toHaveLength(1);
+      expect(assets[0].name).toBe('Granite Model');
     });
 
     it('strips Tier 2 fields when Tier 2 permission is CONDITIONAL (conservative default)', async () => {
@@ -444,6 +530,32 @@ describe('AI catalog routes', () => {
       expect(status).toBe(200);
       const assets = body.assets as AiCatalogAsset[];
       expect(assets).toHaveLength(1);
+    });
+
+    it('checks exactly aiCatalogAssetAccessPermission then aiCatalogAssetAccessUsageDocsPermission via authorizeConditional', async () => {
+      const authorizeConditional = jest
+        .fn()
+        .mockResolvedValue([{ result: AuthorizeResult.ALLOW }]);
+      testApp = await createTestApp({
+        permissions: createMockPermissions({ authorizeConditional }),
+        assetLoader: createMockAssetLoader({
+          list: jest.fn().mockResolvedValue([fullAsset]),
+        }),
+      });
+
+      await fetchJson(testApp.url, '/ai-catalog/assets');
+
+      expect(authorizeConditional).toHaveBeenCalledTimes(2);
+      expect(authorizeConditional).toHaveBeenNthCalledWith(
+        1,
+        [{ permission: aiCatalogAssetAccessPermission }],
+        expect.anything(),
+      );
+      expect(authorizeConditional).toHaveBeenNthCalledWith(
+        2,
+        [{ permission: aiCatalogAssetAccessUsageDocsPermission }],
+        expect.anything(),
+      );
     });
   });
 
@@ -560,6 +672,71 @@ describe('AI catalog routes', () => {
       expect(status).toBe(200);
       expect((body as unknown as AiCatalogAsset).usageDocs).toBe(
         '# Usage\nCall the inference endpoint',
+      );
+    });
+
+    it('checks exactly aiCatalogAssetAccessPermission then aiCatalogAssetAccessUsageDocsPermission, both with the entity resourceRef, via authorize', async () => {
+      const authorize = jest
+        .fn()
+        .mockResolvedValue([{ result: AuthorizeResult.ALLOW }]);
+      testApp = await createTestApp({
+        permissions: createMockPermissions({ authorize }),
+        assetLoader: createMockAssetLoader({
+          findById: jest.fn().mockResolvedValue(fullAsset),
+        }),
+      });
+
+      await fetchJson(
+        testApp.url,
+        '/ai-catalog/assets/resource/default/granite-model',
+      );
+
+      const expectedResourceRef = 'resource:default/granite-model';
+      expect(authorize).toHaveBeenCalledTimes(2);
+      expect(authorize).toHaveBeenNthCalledWith(
+        1,
+        [
+          {
+            permission: aiCatalogAssetAccessPermission,
+            resourceRef: expectedResourceRef,
+          },
+        ],
+        expect.anything(),
+      );
+      expect(authorize).toHaveBeenNthCalledWith(
+        2,
+        [
+          {
+            permission: aiCatalogAssetAccessUsageDocsPermission,
+            resourceRef: expectedResourceRef,
+          },
+        ],
+        expect.anything(),
+      );
+    });
+
+    it('checks aiCatalogAdminPermission (no resourceRef) for the admin fallback', async () => {
+      const authorize = jest
+        .fn()
+        .mockResolvedValueOnce([{ result: AuthorizeResult.DENY }])
+        .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }])
+        .mockResolvedValueOnce([{ result: AuthorizeResult.ALLOW }]);
+      testApp = await createTestApp({
+        permissions: createMockPermissions({ authorize }),
+        assetLoader: createMockAssetLoader({
+          findById: jest.fn().mockResolvedValue(fullAsset),
+        }),
+      });
+
+      await fetchJson(
+        testApp.url,
+        '/ai-catalog/assets/resource/default/granite-model',
+      );
+
+      expect(authorize).toHaveBeenNthCalledWith(
+        2,
+        [{ permission: aiCatalogAdminPermission }],
+        expect.anything(),
       );
     });
   });

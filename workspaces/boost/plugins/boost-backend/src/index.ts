@@ -115,4 +115,5 @@ export {
   type AiCatalogAssetLoader,
   type AiCatalogAsset,
   type AiCatalogRoutesOptions,
+  type AiCatalogAssetResource,
 } from './ai-catalog';
