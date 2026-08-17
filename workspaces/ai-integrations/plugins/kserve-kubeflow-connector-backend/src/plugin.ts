@@ -205,9 +205,9 @@ export const kserveKubeflowConnectorPlugin = createBackendPlugin({
         }
 
         setupInformer(reconcilerConfig, logger).catch(error => {
-          logger.error('Failed to set up informer:', error);
+          logger.error('Failed to set up informer', error as Error);
         });
-        httpRouter.use(await createRouter());
+        httpRouter.use(await createRouter(logger));
       },
     });
   },

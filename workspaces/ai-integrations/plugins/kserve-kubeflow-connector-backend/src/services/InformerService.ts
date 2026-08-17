@@ -621,7 +621,7 @@ function registerInformerHandlers(
   });
 
   informer.on('error', (err: any) => {
-    logger.error('Informer error:', err);
+    logger.error('Informer error', err as Error);
     setTimeout(() => {
       informer.start();
     }, 5000);
@@ -686,7 +686,7 @@ export const setupInformer = async (
       `Catalog route discovered: ${config.catalogRoute ? 'yes' : 'no'}`,
     );
   } catch (error) {
-    logger.error('Error setting up catalog route:', error as Error);
+    logger.error('Error setting up catalog route', error as Error);
   }
 
   const listFn: k8s.ListPromise<InferenceService> = () =>

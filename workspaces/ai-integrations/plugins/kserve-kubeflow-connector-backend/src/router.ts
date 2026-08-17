@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import express from 'express';
 import Router from 'express-promise-router';
 import {
@@ -21,7 +22,9 @@ import {
   getModelCard,
 } from './services/InformerService';
 
-export async function createRouter(): Promise<express.Router> {
+export async function createRouter(
+  logger: LoggerService,
+): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
 
@@ -30,7 +33,7 @@ export async function createRouter(): Promise<express.Router> {
       const discoveryResponse = getDiscoveryUris();
       res.status(200).json(discoveryResponse);
     } catch (error) {
-      console.error('Error getting discovery URIs:', error);
+      logger.error('Error getting discovery URIs', error as Error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });
@@ -47,7 +50,7 @@ export async function createRouter(): Promise<express.Router> {
         res.status(404).json({ error: 'Not Found' });
       }
     } catch (error) {
-      console.error('Error getting model card:', error);
+      logger.error('Error getting model card', error as Error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });
@@ -62,7 +65,7 @@ export async function createRouter(): Promise<express.Router> {
         res.status(404).json({ error: 'Not Found' });
       }
     } catch (error) {
-      console.error('Error getting model catalog:', error);
+      logger.error('Error getting model catalog', error as Error);
       res.status(500).json({ error: 'Internal server error' });
     }
   });
