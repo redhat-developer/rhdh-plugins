@@ -601,11 +601,16 @@ export function isSensitiveField(key: BoostConfigKey): boolean {
  * default is defined.
  *
  * @param key - The config field key.
- * @returns The default value, or `undefined`.
+ * @returns The default value, typed to the field's schema output, or
+ *   `undefined`.
  *
  * @public
  */
-export function getFieldDefault(key: BoostConfigKey): unknown | undefined {
-  const field = boostConfigFields[key] as ConfigFieldMeta | undefined;
-  return field?.defaultValue;
+export function getFieldDefault<K extends BoostConfigKey>(
+  key: K,
+): z.output<(typeof boostConfigFields)[K]['schema']> | undefined {
+  const field = boostConfigFields[key] as ConfigFieldMeta;
+  return field.defaultValue as
+    | z.output<(typeof boostConfigFields)[K]['schema']>
+    | undefined;
 }

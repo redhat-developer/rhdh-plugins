@@ -135,11 +135,25 @@ export class RuntimeConfigResolver {
    * Resolve all config values. Returns a map of key → resolved value
    * with precedence: DB override → YAML baseline → field default.
    *
+   * The returned Map is a fresh snapshot for this call only (defaults
+   * are layered on top of a copy of the effective config and are never
+   * written back to the cache) — safe for callers to mutate or retain
+   * without affecting subsequent resolver calls.
+   *
+   * Note: the returned map does not indicate *which* layer a value
+   * came from — synthesized field defaults are indistinguishable from
+   * real DB overrides or YAML baseline values. Consumers that need to
+   * make that distinction (e.g. an admin UI showing "using default"
+   * vs. "explicitly set", see issue #4066) will need a separate
+   * mechanism (e.g. a per-key `source` tag) — not implemented here.
+   *
    * @returns Map of all resolved config values.
    */
   async resolveAll(): Promise<Map<string, unknown>> {
     const effective = await this.getEffectiveConfig();
-    // Layer 3: apply field defaults for keys not already set
+    // Layer 3: apply field defaults for keys not already set. `effective`
+    // is a fresh Map from getEffectiveConfig() (see method docs above),
+    // so mutating it here is safe and never leaks into the cache.
     for (const key of Object.keys(boostConfigFields) as BoostConfigKey[]) {
       if (!effective.has(key)) {
         const fieldDefault = getFieldDefault(key);
