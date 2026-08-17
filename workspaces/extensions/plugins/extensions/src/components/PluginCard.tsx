@@ -32,14 +32,18 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import {
   ExtensionsPlugin,
   ExtensionsPluginInstallStatus,
+  ExtensionsAnnotation,
 } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { rootRouteRef, pluginRouteRef } from '../routes';
 import { BadgeTriange } from './Badges';
-import { CatalogSourceBadge } from './CatalogSourceBadge';
 import { CategoryLinkButton } from './CategoryLinkButton';
 import { PluginIcon } from './PluginIcon';
 import { useTranslation } from '../hooks/useTranslation';
+import {
+  useCatalogSourceConfig,
+  getCatalogSourceLabel,
+} from '../hooks/useCatalogSourceConfig';
 
 export interface PluginCardSkeletonProps {
   animation?: 'pulse' | 'wave' | false;
@@ -127,6 +131,7 @@ export const PluginCard = ({ plugin }: { plugin: ExtensionsPlugin }) => {
   const [searchParams] = useSearchParams();
   const getIndexPath = useRouteRef(rootRouteRef);
   const getPluginPath = useRouteRef(pluginRouteRef);
+  const sourcesConfig = useCatalogSourceConfig();
 
   const pluginPath = `${getPluginPath({
     namespace: plugin.metadata.namespace!,
@@ -183,48 +188,70 @@ export const PluginCard = ({ plugin }: { plugin: ExtensionsPlugin }) => {
                 </Typography>
               </Tooltip>
 
-              <Stack
-                direction="row"
-                spacing={1}
-                alignItems="center"
-                justifyContent="space-between"
-              >
-                {plugin.spec?.authors ? (
-                  <Typography variant="subtitle2" sx={{ fontWeight: 'normal' }}>
-                    {plugin.spec.authors.map((author, index) => (
-                      <Fragment key={author.name}>
-                        {index > 0 ? t('common.comma') : t('common.by')}
-                        <Link
-                          key={author.name}
-                          to={withFilter('author', author.name)}
-                          color="primary"
-                          onClick={e => e.stopPropagation()}
-                        >
-                          {author.name}
-                        </Link>
-                      </Fragment>
-                    ))}
-                  </Typography>
-                ) : (
-                  <span />
-                )}
-                <CatalogSourceBadge plugin={plugin} />
-              </Stack>
+              <Typography variant="subtitle2" sx={{ fontWeight: 'normal' }}>
+                {plugin.spec?.authors?.map((author, index) => (
+                  <Fragment key={author.name}>
+                    {index > 0 ? t('common.comma') : t('common.by')}
+                    <span style={{ display: 'inline-flex' }}>
+                      <Link
+                        key={author.name}
+                        to={withFilter('author', author.name)}
+                        color="primary"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        {author.name}
+                      </Link>
+                    </span>
+                  </Fragment>
+                ))}
+                {(() => {
+                  const sourceKey =
+                    plugin.metadata?.annotations?.[
+                      ExtensionsAnnotation.CATALOG_SOURCE
+                    ];
+                  const sourceLabel = getCatalogSourceLabel(
+                    plugin,
+                    sourcesConfig,
+                  );
+                  if (!sourceLabel) return null;
+
+                  const authorNames = plugin.spec?.authors?.map(a => a.name);
+                  if (authorNames?.some(name => name === sourceLabel)) {
+                    return null;
+                  }
+
+                  const description =
+                    sourceKey && sourcesConfig[sourceKey]?.description;
+                  const label = (
+                    <span>
+                      {plugin.spec?.authors && ' / '}
+                      {sourceLabel}
+                    </span>
+                  );
+                  return description ? (
+                    <Tooltip title={description} arrow>
+                      {label}
+                    </Tooltip>
+                  ) : (
+                    label
+                  );
+                })()}
+              </Typography>
+
+              {plugin.spec?.categories && plugin.spec.categories.length > 0 ? (
+                <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+                  {plugin.spec.categories.map(category => (
+                    <CategoryLinkButton
+                      key={category}
+                      categoryName={category}
+                      to={withFilter('category', category)}
+                      onClick={e => e.stopPropagation()}
+                    />
+                  ))}
+                </Stack>
+              ) : null}
             </Stack>
           </Stack>
-
-          {plugin.spec?.categories && plugin.spec.categories.length > 0 ? (
-            <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.5 }}>
-              {plugin.spec.categories.map(category => (
-                <CategoryLinkButton
-                  key={category}
-                  categoryName={category}
-                  to={withFilter('category', category)}
-                  onClick={e => e.stopPropagation()}
-                />
-              ))}
-            </Stack>
-          ) : null}
 
           <Typography
             variant="subtitle2"

@@ -53,8 +53,8 @@ export const getCatalogSourceLabel = (
   plugin: ExtensionsPlugin,
   sourcesConfig: Record<string, CatalogSourceMeta>,
 ): string => {
-  const sourceKey =
+  const source =
     plugin.metadata?.annotations?.[ExtensionsAnnotation.CATALOG_SOURCE];
-  if (!sourceKey) return '';
-  return sourcesConfig[sourceKey]?.label ?? sourceKey;
+  if (!source) return '';
+  return sourcesConfig[source]?.label ?? source;
 };
