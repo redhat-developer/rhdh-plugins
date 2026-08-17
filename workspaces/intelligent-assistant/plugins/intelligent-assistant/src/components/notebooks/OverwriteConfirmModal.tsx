@@ -249,7 +249,10 @@ export const OverwriteConfirmModal = ({
 
         <ul className={classes.fileList}>
           {allFiles.map(file => (
-            <li key={file.name} className={isCompact ? classes.fileItemCompact : classes.fileItem}>
+            <li
+              key={file.name}
+              className={isCompact ? classes.fileItemCompact : classes.fileItem}
+            >
               <FileTypeIcon fileName={file.name} />
               <Typography className={classes.fileName}>{file.name}</Typography>
               {duplicateSet.has(file.name) && (

@@ -176,14 +176,8 @@ for (const mode of ['Overlay', 'Dock to window'] as const) {
       );
       await expect(dialog).toBeVisible({ timeout: 10_000 });
 
-      const browseButton = dialog.locator('button', {
-        hasText: translations['notebook.upload.modal.browseButton'],
-      });
-      const [fileChooser] = await Promise.all([
-        sharedPage.waitForEvent('filechooser'),
-        browseButton.click(),
-      ]);
-      await fileChooser.setFiles([absolutePath]);
+      const fileInput = dialog.locator('input[type="file"]');
+      await fileInput.setInputFiles([absolutePath]);
 
       const stagedCaption = translations['notebook.upload.modal.selectedFiles']
         .replace('{{count}}', '1')
@@ -227,7 +221,10 @@ for (const mode of ['Overlay', 'Dock to window'] as const) {
         .click();
 
       await expect(notebooks.myNotebooksHeading()).toBeVisible();
-      await expect(notebooks.newestUntitledNotebookCard()).toBeVisible();
+      // Empty notebooks (no uploaded documents) are auto-deleted on close
+      await expect(
+        notebooks.createNotebookFromEmptyStateButton(),
+      ).toBeVisible();
     });
 
     test('display mode switch preserves notebooks tab', async () => {
