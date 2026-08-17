@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { GenerateCatalogEntities } from './ModelCatalogGenerator';
+import {
+  GenerateCatalogEntities,
+  ParseCatalogJSON,
+} from './ModelCatalogGenerator';
 import { Entity } from '@backstage/catalog-model';
 import { ModelCatalog } from '@redhat-ai-dev/model-catalog-types';
 
@@ -365,5 +368,49 @@ describe('Model Catalog Generator', () => {
 
     const entities = GenerateCatalogEntities(modelCatalog);
     expect(entities[0].metadata.annotations).toBeUndefined();
+  });
+});
+
+describe('ParseCatalogJSON', () => {
+  it('should parse valid JSON with models field', () => {
+    const json = JSON.stringify({
+      models: [
+        {
+          name: 'test-model',
+          description: 'A test model',
+          lifecycle: 'production',
+          owner: 'owner',
+        },
+      ],
+    });
+    const result = ParseCatalogJSON(json);
+    expect(result.models).toHaveLength(1);
+    expect(result.models[0].name).toBe('test-model');
+  });
+
+  it('should parse valid JSON with modelServer field', () => {
+    const json = JSON.stringify({
+      models: [],
+      modelServer: {
+        name: 'test-server',
+        owner: 'owner',
+        description: 'A test server',
+        lifecycle: 'production',
+      },
+    });
+    const result = ParseCatalogJSON(json);
+    expect(result.modelServer).toBeDefined();
+    expect(result.modelServer?.name).toBe('test-server');
+  });
+
+  it('should throw on invalid JSON', () => {
+    expect(() => ParseCatalogJSON('not-json')).toThrow();
+  });
+
+  it('should throw when JSON has no models or modelServer', () => {
+    const json = JSON.stringify({ unrelated: 'data' });
+    expect(() => ParseCatalogJSON(json)).toThrow(
+      'model catalog JSON in unexpected format',
+    );
   });
 });
