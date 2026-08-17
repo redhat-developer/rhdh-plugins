@@ -221,6 +221,21 @@ export const boostConfigFields: {
     readonly configScope: ConfigScope;
     readonly description: string;
   };
+  readonly 'boost.connectors.jira.__schemaVersion': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.github.__schemaVersion': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.gitlab.__schemaVersion': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
   readonly 'boost.connectors.jira.enabled': {
     readonly schema: z.ZodOptional<z.ZodBoolean>;
     readonly configScope: ConfigScope;
@@ -327,6 +342,12 @@ export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
 export type ConfigScope = 'yaml-only' | 'db-overridable' | 'db-only';
 
 // @public
+export const CONNECTOR_IDS: readonly ['jira', 'github', 'gitlab'];
+
+// @public
+export const CONNECTOR_SCHEMA_VERSION = 1;
+
+// @public
 export interface ConnectorCandidate {
   connectorId: string;
   connectorType: string;
@@ -345,6 +366,18 @@ export interface ConnectorConfigReaderOptions {
   config: RootConfigService;
   logger: LoggerService;
 }
+
+// @public
+export type ConnectorId = (typeof CONNECTOR_IDS)[number];
+
+// @public
+export type ConnectorMigrationFn = (
+  connectorId: ConnectorId,
+  adminConfigService: AdminConfigService,
+) => Promise<void>;
+
+// @public
+export type ConnectorMigrationRegistry = Map<number, ConnectorMigrationFn>;
 
 // @public
 export class ConversationAgentCache {
@@ -616,6 +649,9 @@ export type ResourceLoader = (req: Request_2) => Promise<
 export class RuntimeConfigResolver {
   constructor(options: RuntimeConfigResolverOptions);
   invalidate(): Promise<void>;
+  migrateConnectorSchemas(
+    migrations?: ConnectorMigrationRegistry,
+  ): Promise<void>;
   resolve(key: BoostConfigKey): Promise<unknown | undefined>;
   resolveAll(): Promise<Map<string, unknown>>;
 }
