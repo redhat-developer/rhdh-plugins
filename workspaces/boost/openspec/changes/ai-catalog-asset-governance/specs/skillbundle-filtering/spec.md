@@ -2,7 +2,7 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-Backend read-time RBAC filtering for SkillBundle skill lists. When a SkillBundle contains skills that the requesting user cannot see (per `ai-catalog.asset.read`), those skills are filtered from the response and the UI displays an adjusted count with messaging.
+Backend read-time RBAC filtering for SkillBundle skill lists. When a SkillBundle contains skills that the requesting user cannot see (per `ai-catalog.asset.access`), those skills are filtered from the response and the UI displays an adjusted count with messaging.
 
 **Jira references:** RHIDP-15270, RHIDP-15273, RHIDP-15310
 
@@ -10,24 +10,24 @@ Backend read-time RBAC filtering for SkillBundle skill lists. When a SkillBundle
 
 ### Requirement: Backend Skill Filtering
 
-SkillBundle API responses MUST filter individual skills based on the requesting user's `ai-catalog.asset.read` permission.
+SkillBundle API responses MUST filter individual skills based on the requesting user's `ai-catalog.asset.access` permission.
 
 #### Scenario: Full access to all skills in a bundle
 
-- **WHEN** a user with unrestricted `ai-catalog.asset.read` (ALLOW) requests a SkillBundle detail
+- **WHEN** a user with unrestricted `ai-catalog.asset.access` (ALLOW) requests a SkillBundle detail
 - **THEN** all skills in the bundle are included in the response
 - **AND** the skill count matches the total skills in the bundle
 
 #### Scenario: Partial access with conditional filtering
 
-- **WHEN** a user with conditional `ai-catalog.asset.read` (category-scoped or connector-scoped) requests a SkillBundle detail
+- **WHEN** a user with conditional `ai-catalog.asset.access` (category-scoped or connector-scoped) requests a SkillBundle detail
 - **THEN** only skills matching the user's conditional policy are included in the response
 - **AND** the response includes `totalSkills` (full count) and `visibleSkills` (filtered count). Exposing the total count is an accepted trade-off: it reveals how many skills are hidden but not their identities. Deployers who need full opacity can use default-deny at the bundle level to hide the entire bundle.
 - **AND** skill references that were filtered out are not exposed in any form (no IDs, no names, no placeholders)
 
 #### Scenario: No access to bundle contents
 
-- **WHEN** a user without `ai-catalog.asset.read` for any skills in a SkillBundle requests the bundle
+- **WHEN** a user without `ai-catalog.asset.access` for any skills in a SkillBundle requests the bundle
 - **THEN** the bundle metadata is shown (if the user has read access to the bundle entity itself)
 - **AND** the skills list is empty
 - **AND** a message indicates the user lacks permission to view bundle contents
@@ -39,7 +39,7 @@ Skill filtering MUST use batch permission evaluation, not per-skill checks.
 #### Scenario: Batch authorizeConditional for skill list
 
 - **WHEN** a SkillBundle contains N skills
-- **THEN** the backend calls `permissions.authorizeConditional()` once for `ai-catalog.asset.read`
+- **THEN** the backend calls `permissions.authorizeConditional()` once for `ai-catalog.asset.access`
 - **AND** the CONDITIONAL result is applied to all skills using `applyConditions()` or equivalent batch evaluation
 - **AND** the backend does NOT make N individual `permissions.authorize()` calls
 

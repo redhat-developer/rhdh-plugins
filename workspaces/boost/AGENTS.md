@@ -124,7 +124,7 @@ const endpoint = safeGetOptionalString(config, 'endpoint');
 - Config namespace: `boost.*` (e.g., `boost.features.agentCreation`, `boost.security.mode`)
 - Permission names — two namespaces by design:
   - `boost.*` — application-layer agent/tool operations: `boost.agent.*`, `boost.tool.*`, `boost.kagenti.admin`, `boost.access`, `boost.admin`
-  - `ai-catalog.*` — catalog-layer RBAC for AI asset visibility and governance: `ai-catalog.asset.read`, `ai-catalog.asset.read.usage-docs`, `ai-catalog.admin`
+  - `ai-catalog.*` — catalog-layer RBAC for AI asset visibility and governance: `ai-catalog.asset.access`, `ai-catalog.asset.access.usage-docs`, `ai-catalog.admin` (uses `access` rather than `read` per issue #4041's naming decision; the underlying `attributes.action` stays `'read'`)
 - Config: `ai-catalog.rbac.*` for catalog RBAC config (e.g., `ai-catalog.rbac.defaultPolicy`)
 - Resource types: `boost-agent`, `boost-tool`, `ai-catalog-asset`
 - DB tables: `boost_admin_config`, `boost_sessions`, `boost_messages`, `boost_feedback`
@@ -169,8 +169,13 @@ match CI. The `:only` command reads from the `dist-types` produced by
 
 - **Icons**: use `@remixicon/react` (e.g., `RiCheckLine`, `RiDownload2Line`).
   Do NOT use `@mui/icons-material` — the plugin migrated in PR #3929.
-- **Entity type comparisons**: always normalize with `.toLowerCase()` before
-  comparing `spec.type` values (see `isAiAsset.ts`, `categoryMeta.ts`).
+- **Entity type comparisons**: always normalize with `.toLowerCase()` (or
+  `.toLocaleLowerCase('en-US')` in `boost-common`, per its lint rule) before
+  comparing `spec.type` values (see `boost-common/src/aiAssetTaxonomy.ts`,
+  `categoryMeta.ts`). The AI asset kind/`spec.type` taxonomy
+  (`AI_ASSET_SPEC_TYPES`, `isAiAsset`, `buildAiAssetCatalogFilter`) lives in
+  `boost-common` as the single source of truth for both `boost` and
+  `boost-backend` — do not re-duplicate it in either plugin.
 
 ## What not to do
 

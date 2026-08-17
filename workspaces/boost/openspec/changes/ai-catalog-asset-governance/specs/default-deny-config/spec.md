@@ -15,14 +15,14 @@ A configuration key MUST control the default visibility posture for newly ingest
 #### Scenario: Default-allow posture (Backstage standard)
 
 - **WHEN** `ai-catalog.rbac.defaultPolicy` is set to `allow` (or not configured)
-- **THEN** newly ingested AI assets are visible to all users with `ai-catalog.asset.read`
+- **THEN** newly ingested AI assets are visible to all users with `ai-catalog.asset.access`
 - **AND** no catch-all DENY rule is applied
 - **AND** this matches standard Backstage behavior where permissions not explicitly denied are allowed
 
 #### Scenario: Default-deny posture
 
 - **WHEN** `ai-catalog.rbac.defaultPolicy` is set to `deny`
-- **THEN** the `AICatalogRBACProvider` applies a catch-all DENY conditional rule for `ai-catalog.asset.read` on newly ingested entities
+- **THEN** the `AICatalogRBACProvider` applies a catch-all DENY conditional rule for `ai-catalog.asset.access` on newly ingested entities
 - **AND** deployers must explicitly grant access via RBAC policies (role-based or conditional) for users to see assets
 - **AND** `ai-catalog.admin` holders can always see all assets regardless of default posture
 

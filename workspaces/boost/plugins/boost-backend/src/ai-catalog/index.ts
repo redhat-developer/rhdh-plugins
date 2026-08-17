@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-/**
- * Common types and utilities for the boost plugin.
- *
- * @packageDocumentation
- */
-
-/**
- * The plugin ID for the boost plugin.
- *
- * @public
- */
-export const BOOST_PLUGIN_ID = 'boost';
-
-export * from './types';
-export * from './permissions';
-export * from './ingestion-health';
-export * from './aiAssetTaxonomy';
+export { createAiCatalogRoutes } from './routes';
+export type {
+  AiCatalogAssetLoader,
+  AiCatalogAsset,
+  AiCatalogRoutesOptions,
+} from './routes';
+export { aiCatalogRules } from './rules';
+export type { AiCatalogAssetResource } from './rules';
+export {
+  CatalogAssetLoader,
+  createGetAiCatalogAssetResources,
+  entityToAiCatalogAsset,
+} from './CatalogAssetLoader';

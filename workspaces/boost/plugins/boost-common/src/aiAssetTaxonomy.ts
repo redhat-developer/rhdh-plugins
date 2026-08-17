@@ -29,8 +29,12 @@ import type { Entity } from '@backstage/catalog-model';
  * | Tools          | Resource          | ai-tool          |
  * | Vector Stores  | Resource          | vector-store     |
  *
- * This map is the single source of truth used by `isAiAsset`
- * and `buildCatalogFilter`.
+ * This map is the single source of truth used by {@link isAiAsset} and
+ * {@link buildAiAssetCatalogFilter}, shared by both the `boost` frontend
+ * plugin and the `boost-backend` plugin so the AI asset taxonomy can never
+ * drift between the two.
+ *
+ * @public
  */
 export const AI_ASSET_SPEC_TYPES: Record<string, Set<string>> = {
   airesource: new Set(['skill', 'rule', 'agent']),
@@ -40,28 +44,37 @@ export const AI_ASSET_SPEC_TYPES: Record<string, Set<string>> = {
 };
 
 /**
- * Condition filter for NFS Blueprints — returns true for AI asset entities.
+ * Checks whether an entity's `kind`/`spec.type` combination is in the AI
+ * asset taxonomy ({@link AI_ASSET_SPEC_TYPES}). Both `kind` and `spec.type`
+ * are required and matched case-insensitively — AiResource entities without
+ * a `spec.type` are not considered AI assets.
  *
- * An entity is an AI asset if its kind is in AI_ASSET_SPEC_TYPES and its
- * spec.type matches one of the allowed types for that kind. Both kind and
- * spec.type are required — AiResource entities without a spec.type are
- * not considered AI assets (the catalog model requires spec.type for
- * concrete entity processing).
+ * @public
  */
 export function isAiAsset(entity: Entity): boolean {
-  const kind = entity.kind.toLowerCase();
+  const kind = entity.kind.toLocaleLowerCase('en-US');
   const specType = (entity.spec as Record<string, unknown> | undefined)
     ?.type as string | undefined;
-  if (!specType) return false;
+  if (!specType) {
+    return false;
+  }
   const allowed = AI_ASSET_SPEC_TYPES[kind];
-  return allowed !== undefined && allowed.has(specType.toLowerCase());
+  return (
+    allowed !== undefined && allowed.has(specType.toLocaleLowerCase('en-US'))
+  );
 }
 
 /**
- * Builds the static catalog filter for all AI asset kind/type pairs.
- * Returns an OR query (array of filter objects) for catalogApi.getEntities.
+ * Builds the catalog entity filter (OR across kind/spec.type pairs) used to
+ * select only AI catalog assets from the Backstage catalog, for use with
+ * `catalogApi.getEntities({ filter: buildAiAssetCatalogFilter() })`.
+ *
+ * @public
  */
-export function buildCatalogFilter(): Record<string, string | string[]>[] {
+export function buildAiAssetCatalogFilter(): Record<
+  string,
+  string | string[]
+>[] {
   return Object.entries(AI_ASSET_SPEC_TYPES).map(([kind, types]) => ({
     kind,
     'spec.type': [...types],
