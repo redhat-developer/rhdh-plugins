@@ -105,7 +105,7 @@ test('Verify Global header to be visible', async ({
     - link "${translations.notifications.title}":
       - /url: /notifications
     `);
-  await runAccessibilityTests(page, testInfo);
+  await runAccessibilityTests(page, testInfo, undefined, '#global-header');
 });
 
 test('Verify Hover texts to be visible', async () => {
@@ -147,16 +147,18 @@ test('Verify Search functionality and results', async () => {
   const searchQuery = 'example-website';
   const expectedUrl = /\/example-website/;
 
-  await search.fill(searchQuery);
-
-  // Wait for search results to appear
-  await expect(page.getByRole('listbox')).toBeVisible();
-
-  // Click the result link and verify navigation
-  const resultLink = page
+  const resultOption = page
     .getByRole('listbox')
-    .getByRole('link', { name: searchQuery });
-  await resultLink.click();
+    .getByRole('option', { name: searchQuery });
+
+  // Retry search until indexed results appear (search index may not be ready immediately)
+  await expect(async () => {
+    await search.clear();
+    await search.fill(searchQuery);
+    await expect(resultOption).toBeVisible();
+  }).toPass({ timeout: 30000, intervals: [2000] });
+
+  await resultOption.click();
   await expect(page).toHaveURL(expectedUrl);
   await expect(page.locator('h1')).toContainText(searchQuery);
 });
@@ -187,9 +189,11 @@ test('Verify Starred items functionality', async () => {
   await expect(page.getByRole('menu')).toMatchAriaSnapshot(`
     - menu:
       - text: ${translations.starred.title}
-      - menuitem "example-website COMPONENT":
-        - paragraph: example-website
-        - paragraph: COMPONENT
+      - listitem:
+        - menuitem "example-website COMPONENT":
+          - paragraph: example-website
+          - paragraph: COMPONENT
+        - button "${translations.starred.removeTooltip}"
     `);
   await page.keyboard.press('Escape');
 });

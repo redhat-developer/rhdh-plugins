@@ -29,6 +29,7 @@ const RedHatDeveloperHubSVG = ({
     viewBox="0 0 931.8 244"
     height={40}
     width={150}
+    aria-hidden="true"
   >
     <path
       fill="#e00"
