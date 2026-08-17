@@ -276,12 +276,15 @@ describe('InformerService', () => {
 
     it('should use K8S_TOKEN env var when available in loadFromDefault path', async () => {
       process.env.K8S_TOKEN = 'env-token-override';
-      const config: ReconcilerConfig = {};
+      try {
+        const config: ReconcilerConfig = {};
 
-      await setupInformer(config, logger);
+        await setupInformer(config, logger);
 
-      expect(config.serviceAccountToken).toBe('env-token-override');
-      delete process.env.K8S_TOKEN;
+        expect(config.serviceAccountToken).toBe('env-token-override');
+      } finally {
+        delete process.env.K8S_TOKEN;
+      }
     });
 
     it('should use token from getCurrentUser in loadFromDefault path', async () => {
