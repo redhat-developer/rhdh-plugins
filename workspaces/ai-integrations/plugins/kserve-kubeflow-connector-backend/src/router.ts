@@ -13,11 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// import { InputError } from '@backstage/errors';
-// import { z } from 'zod';
 import express from 'express';
 import Router from 'express-promise-router';
-// import { todoListServiceRef } from './services/TodoListService';
 import {
   getDiscoveryUris,
   getModelCatalog,
@@ -28,16 +25,6 @@ export async function createRouter(): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
 
-  // router.use('/', async (req, res, next) => {
-  //   console.log(`${req.method} ${req.originalUrl}`);
-  //   if ('/foo'.includes(req.path)) {
-  //     res.status(200);
-  //   } else {
-  //     return next();
-  //   }
-  // });
-
-  // List all model catalog URIs (matching Go handleCatalogDiscoveryGet, server.go lines 162-182)
   router.get('/list', async (_req, res) => {
     try {
       const discoveryResponse = getDiscoveryUris();

@@ -20,8 +20,9 @@ import {
   type ReconcilerConfig,
   type InferenceService,
   type DiscoveryResponse,
+  type ModelCatalog,
+  sanitizeName,
 } from './types';
-import { ModelCatalog } from './types';
 import { callBackstagePrinters as callKServeBackstagePrinters } from './KServe';
 import {
   setupCatalogRoute,
@@ -30,14 +31,10 @@ import {
   CATALOG_SOURCE_ANNOTATION,
 } from './Catalog';
 
-const inference_service_group = 'serving.kserve.io';
-const inference_service_version = 'v1beta1';
-const inference_service_plural = 'inferenceservices';
+const INFERENCE_SERVICE_GROUP = 'serving.kserve.io';
+const INFERENCE_SERVICE_VERSION = 'v1beta1';
+const INFERENCE_SERVICE_PLURAL = 'inferenceservices';
 
-// Re-export route constants for backwards compatibility
-export { route_group, route_version, route_plural } from './types';
-
-// Model card metadata interface (from server.go line 30-35)
 interface ModelCardMetadata {
   content: string;
   lastUpdateTimeSinceEpoch: string;
@@ -45,11 +42,9 @@ interface ModelCardMetadata {
   needToUpdate: boolean;
 }
 
-// Global model cards storage (from server.go line 23)
-// This stores model card content indexed by modelCardKey
+// Stores model card content indexed by modelCardKey
 const modelCards = new Map<string, ModelCardMetadata>();
 
-// Model catalog metadata interface
 interface ModelCatalogMetadata {
   catalogData: ModelCatalog;
   lastUpdateTimeSinceEpoch: string;
@@ -57,30 +52,13 @@ interface ModelCatalogMetadata {
   needToUpdate: boolean;
 }
 
-// Global model catalog storage
-// This stores model catalog data indexed by importKey
+// Stores model catalog data indexed by importKey
 const modelCatalog = new Map<string, ModelCatalogMetadata>();
 
-// Constants for condition types (matching Go constants from bridgerest package)
 const INF_SVC_IngressReady_CONDITION = 'IngressReady';
 const INF_SVC_PredictorReady_CONDITION = 'PredictorReady';
 const INF_SVC_Ready_CONDITION = 'Ready';
 
-// Types are imported from ./types to avoid circular dependencies
-// Re-export for backwards compatibility
-export type {
-  Route,
-  RouteIngress,
-  RouteStatus,
-  ReconcilerConfig,
-} from './types';
-
-// Helper function to sanitize names (matching Go util.SanitizeName)
-function sanitizeName(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9-]/g, '-');
-}
-
-// Helper function to build import key (matching Go util.BuildImportKeyAndURI)
 function buildImportKeyAndURI(
   namespace: string,
   name: string,
@@ -92,17 +70,16 @@ function buildImportKeyAndURI(
   return [importKey, uri];
 }
 
-// Helper function to get authentication status for an InferenceService
-// Converted from Go GetAuthentication method (kserve.go line 358-382)
 // When auth is configured, a service account is created whose name is prefixed with
 // the inference service's name, and with the inference service set as an owner reference
 async function getAuthentication(
   coreClient: k8s.CoreV1Api | undefined,
   namespace: string,
   inferenceServiceName: string,
+  logger: LoggerService,
 ): Promise<boolean> {
   if (!coreClient) {
-    console.log(
+    logger.debug(
       `getAuthentication: No coreClient available for ${namespace}/${inferenceServiceName}`,
     );
     return false;
@@ -110,103 +87,96 @@ async function getAuthentication(
 
   try {
     const response = await coreClient.listNamespacedServiceAccount(namespace);
-    const saList = response.body.items;
+    const found = response.body.items.some(sa =>
+      sa.metadata?.ownerReferences?.some(
+        ref =>
+          ref.kind === 'InferenceService' && ref.name === inferenceServiceName,
+      ),
+    );
 
-    for (const sa of saList) {
-      if (!sa.metadata?.ownerReferences) {
-        continue;
-      }
-
-      for (const ownerRef of sa.metadata.ownerReferences) {
-        if (
-          ownerRef.kind === 'InferenceService' &&
-          ownerRef.name === inferenceServiceName
-        ) {
-          console.log(
-            `getAuthentication: Found ServiceAccount ${sa.metadata.name} with InferenceService owner reference for ${namespace}/${inferenceServiceName}`,
-          );
-          return true;
-        }
-      }
+    if (found) {
+      logger.debug(
+        `getAuthentication: Found ServiceAccount with InferenceService owner reference for ${namespace}/${inferenceServiceName}`,
+      );
     }
+
+    return found;
   } catch (error) {
-    console.error(
-      `getAuthentication: Error listing ServiceAccounts for ${namespace}/${inferenceServiceName}:`,
-      error,
+    logger.error(
+      `getAuthentication: Error listing ServiceAccounts for ${namespace}/${inferenceServiceName}`,
+      error as Error,
     );
   }
 
   return false;
 }
 
-// Helper function to list InferenceServices from informer cache or API
 // First tries the informer cache, then falls back to API if cache is empty
 async function listInferenceServices(
   client: k8s.CustomObjectsApi,
+  logger: LoggerService,
   informer?: k8s.Informer<InferenceService> & k8s.ObjectCache<InferenceService>,
 ): Promise<InferenceService[]> {
-  // First try to get from informer cache
   if (informer) {
     const cachedList = informer.list() as InferenceService[];
-    if (cachedList && cachedList.length > 0) {
-      console.log(
+    if (cachedList?.length > 0) {
+      logger.debug(
         `listInferenceServices: Got ${cachedList.length} InferenceServices from informer cache`,
       );
       return cachedList;
     }
   }
 
-  // Fall back to API call
-  console.log(
+  logger.debug(
     'listInferenceServices: Informer cache empty, falling back to API',
   );
   try {
     const response = await client.listNamespacedCustomObject(
-      inference_service_group,
-      inference_service_version,
+      INFERENCE_SERVICE_GROUP,
+      INFERENCE_SERVICE_VERSION,
       '',
-      inference_service_plural,
+      INFERENCE_SERVICE_PLURAL,
     );
 
     const items = (response.body as any).items as InferenceService[];
-    console.log(
+    logger.debug(
       `listInferenceServices: Got ${
         items?.length || 0
       } InferenceServices from API`,
     );
     return items || [];
   } catch (error) {
-    console.error('listInferenceServices: Error listing from API:', error);
+    logger.error(
+      'listInferenceServices: Error listing from API',
+      error as Error,
+    );
     return [];
   }
 }
 
-// Helper function to check if InferenceService status is ready
-function isInferenceServiceReady(is: InferenceService): boolean {
+function isInferenceServiceReady(
+  is: InferenceService,
+  logger: LoggerService,
+): boolean {
+  const id = `${is.metadata.namespace}/${is.metadata.name}`;
+
   if (!is.status) {
-    console.log(
-      `InferenceService ${is.metadata.namespace}/${is.metadata.name} has no status`,
-    );
+    logger.debug(`InferenceService ${id} has no status`);
     return false;
   }
 
-  // Check if conditions exist
-  if (!is.status.conditions || is.status.conditions.length === 0) {
-    console.log(
-      `InferenceService ${is.metadata.namespace}/${is.metadata.name} has no conditions`,
-    );
+  if (!is.status.conditions?.length) {
+    logger.debug(`InferenceService ${id} has no conditions`);
     return false;
   }
 
-  // Check model status transition status
   if (is.status.modelStatus?.transitionStatus !== 'UpToDate') {
-    console.log(
-      `InferenceService ${is.metadata.namespace}/${is.metadata.name} transitionStatus is not UpToDate: ${is.status.modelStatus?.transitionStatus}`,
+    logger.debug(
+      `InferenceService ${id} transitionStatus is not UpToDate: ${is.status.modelStatus?.transitionStatus}`,
     );
     return false;
   }
 
-  // Check required conditions
   for (const condition of is.status.conditions) {
     if (
       condition.type === INF_SVC_IngressReady_CONDITION ||
@@ -214,70 +184,64 @@ function isInferenceServiceReady(is: InferenceService): boolean {
       condition.type === INF_SVC_Ready_CONDITION
     ) {
       if (condition.status !== 'True') {
-        console.log(
-          `InferenceService ${is.metadata.namespace}/${is.metadata.name} condition ${condition.type} is not True: ${condition.status}`,
+        logger.debug(
+          `InferenceService ${id} condition ${condition.type} is not True: ${condition.status}`,
         );
         return false;
       }
     }
   }
 
-  // Check URL exists
   if (!is.status.url && !is.status.address?.url) {
-    console.log(
-      `InferenceService ${is.metadata.namespace}/${is.metadata.name} has no URL`,
-    );
+    logger.debug(`InferenceService ${id} has no URL`);
     return false;
   }
 
   return true;
 }
 
-// Main reconciliation logic (converted from Go Reconcile method starting at line 366)
 async function reconcileInferenceService(
   is: InferenceService,
   config: ReconcilerConfig,
 ): Promise<void> {
   const namespace = is.metadata.namespace;
   const name = is.metadata.name;
+  const logger = config.logger!;
 
-  console.log(`Reconciling InferenceService: ${namespace}/${name}`);
+  logger.info(`Reconciling InferenceService: ${namespace}/${name}`);
 
-  // Wait for status to reach a functional, ready state
-  if (!isInferenceServiceReady(is)) {
-    console.log(
+  if (!isInferenceServiceReady(is, logger)) {
+    logger.debug(
       `InferenceService ${namespace}/${name} is not ready yet, will retry later`,
     );
     return;
   }
 
-  // Get authentication status by checking for ServiceAccount with InferenceService owner reference
   const authentication = await getAuthentication(
     config.coreClient,
     namespace,
     name,
+    logger,
   );
 
-  // Call backstage printers (equivalent to kserve.CallBackstagePrinters in Go)
-  console.log(`Calling backstage printers for ${namespace}/${name}`);
+  logger.debug(`Calling backstage printers for ${namespace}/${name}`);
   const catalogData = await callKServeBackstagePrinters(
     config.defaultOwner || 'default-owner',
     config.defaultLifecycle || 'production',
     is,
     authentication,
+    logger,
   );
-  console.log(
+  logger.debug(
     `Generated KServe catalog data with ${
       catalogData.models.length
     } models and ${catalogData.modelServer ? 1 : 0} model servers`,
   );
 
-  // Build import key
   const [importKey] = buildImportKeyAndURI(namespace, name);
-  console.log(`Built importKey: ${importKey}`);
+  logger.debug(`Built importKey: ${importKey}`);
 
-  // Process buffer and send to storage
-  console.log(
+  logger.debug(
     `Processing buffer for ${namespace}/${name} with importKey: ${importKey}`,
   );
 
@@ -294,19 +258,19 @@ async function reconcileInferenceService(
     modelCardKey,
     modelCard,
     catalogData,
+    logger,
   );
 
-  console.log(`Successfully reconciled InferenceService: ${namespace}/${name}`);
+  logger.info(`Successfully reconciled InferenceService: ${namespace}/${name}`);
 }
 
-// Helper function to obtain effect last update time
 function getLastUpdateTime(is: InferenceService): string {
   let lastUpdateTimeSinceEpoch = '';
-  if (is.status !== undefined && is.status.conditions !== undefined) {
-    const conditions = is.status.conditions;
+  const conditions = is.status?.conditions;
+  if (conditions) {
     for (const condition of conditions) {
-      if (condition.lastTransitionTime !== undefined) {
-        if (lastUpdateTimeSinceEpoch.length === 0) {
+      if (condition.lastTransitionTime) {
+        if (!lastUpdateTimeSinceEpoch) {
           lastUpdateTimeSinceEpoch = condition.lastTransitionTime;
           continue;
         }
@@ -321,31 +285,25 @@ function getLastUpdateTime(is: InferenceService): string {
   return lastUpdateTimeSinceEpoch;
 }
 
-// Helper function to fetch model card based on look up key annotations on the inference service
 async function fetchModelCardViaAnnotations(
   is: InferenceService,
   config: ReconcilerConfig,
 ): Promise<[string, string | undefined]> {
   let modelCardKey = '';
   let modelCard: string | undefined;
-  if (
-    is.metadata.annotations !== undefined &&
-    (config.catalogRoute !== undefined || config.catalogUrl !== undefined)
-  ) {
+  if (is.metadata.annotations && (config.catalogRoute || config.catalogUrl)) {
     const catalogSource = is.metadata.annotations[CATALOG_SOURCE_ANNOTATION];
     const catalogModel = is.metadata.annotations[CATALOG_MODEL_ANNOTATION];
-    if (catalogSource === undefined || catalogModel === undefined) {
+    if (!catalogSource || !catalogModel) {
       return [modelCardKey, modelCard];
     }
     modelCardKey = `${catalogSource}/${catalogModel}`;
-    let token = '';
-    if (config.serviceAccountToken !== undefined) {
-      token = config.serviceAccountToken;
-    }
+    const token = config.serviceAccountToken || '';
     const catalogClient = createCatalogClient(
       config.catalogRoute,
       token,
       config.catalogUrl,
+      config.logger,
     );
     try {
       modelCard = await catalogClient?.getModelCard(
@@ -353,35 +311,36 @@ async function fetchModelCardViaAnnotations(
         catalogModel,
       );
     } catch (error) {
-      console.error('fetchModelCardViaAnnotation: getModelCard error:', error);
+      config.logger?.error(
+        'fetchModelCardViaAnnotation: getModelCard error',
+        error as Error,
+      );
     }
   }
   return [modelCardKey, modelCard];
 }
 
-// Helper function to process buffer and send to storage (matching Go processBWriter)
 async function processModelCatalog(
   importKey: string,
   lastUpdateTimeSinceEpoch: string,
   modelCardKey: string,
   modelCard: string | undefined,
   catalogData: ModelCatalog,
+  logger: LoggerService,
 ): Promise<void> {
-  console.log(
+  logger.debug(
     `processModelCatalog - key: ${importKey}, epoch: ${lastUpdateTimeSinceEpoch}, modelCardKey: ${modelCardKey}`,
   );
-  console.log(
+  logger.debug(
     `processModelCatalog - catalogData has ${
       catalogData.models.length
     } models and ${catalogData.modelServer ? 1 : 0} model servers`,
   );
 
-  // Handle model catalog storage
-  if (importKey && importKey.length > 0) {
+  if (importKey) {
     const existingCatalog = modelCatalog.get(importKey);
 
     if (!existingCatalog) {
-      // Create new model catalog metadata entry
       const mcm: ModelCatalogMetadata = {
         catalogData: catalogData,
         lastUpdateTimeSinceEpoch: lastUpdateTimeSinceEpoch,
@@ -389,36 +348,31 @@ async function processModelCatalog(
         updateCount: 0,
       };
       modelCatalog.set(importKey, mcm);
-      console.log(
+      logger.debug(
         `processModelCatalog: Created new model catalog entry for key ${importKey}`,
       );
+    } else if (
+      existingCatalog.lastUpdateTimeSinceEpoch !== lastUpdateTimeSinceEpoch
+    ) {
+      existingCatalog.lastUpdateTimeSinceEpoch = lastUpdateTimeSinceEpoch;
+      existingCatalog.catalogData = catalogData;
+      existingCatalog.needToUpdate = true;
+      existingCatalog.updateCount = 0;
+      modelCatalog.set(importKey, existingCatalog);
+      logger.debug(
+        `processModelCatalog: Updated model catalog entry for key ${importKey} (timestamp changed)`,
+      );
     } else {
-      // Update existing model catalog metadata if timestamp changed
-      if (
-        existingCatalog.lastUpdateTimeSinceEpoch !== lastUpdateTimeSinceEpoch
-      ) {
-        existingCatalog.lastUpdateTimeSinceEpoch = lastUpdateTimeSinceEpoch;
-        existingCatalog.catalogData = catalogData;
-        existingCatalog.needToUpdate = true;
-        existingCatalog.updateCount = 0;
-        modelCatalog.set(importKey, existingCatalog);
-        console.log(
-          `processModelCatalog: Updated model catalog entry for key ${importKey} (timestamp changed)`,
-        );
-      } else {
-        console.log(
-          `processModelCatalog: Model catalog for key ${importKey} already up to date`,
-        );
-      }
+      logger.debug(
+        `processModelCatalog: Model catalog for key ${importKey} already up to date`,
+      );
     }
   }
 
-  // Handle model card storage (converted from server.go lines 219-234)
-  if (modelCardKey && modelCardKey.length > 0 && modelCard !== undefined) {
+  if (modelCardKey && modelCard !== undefined) {
     const existingMcm = modelCards.get(modelCardKey);
 
     if (!existingMcm) {
-      // Create new model card metadata entry
       const mcm: ModelCardMetadata = {
         content: modelCard || '',
         lastUpdateTimeSinceEpoch: lastUpdateTimeSinceEpoch,
@@ -426,77 +380,76 @@ async function processModelCatalog(
         updateCount: 0,
       };
       modelCards.set(modelCardKey, mcm);
-      console.log(
+      logger.debug(
         `processModelCatalog: Created new model card entry for key ${modelCardKey}`,
       );
+    } else if (
+      existingMcm.lastUpdateTimeSinceEpoch !== lastUpdateTimeSinceEpoch
+    ) {
+      existingMcm.lastUpdateTimeSinceEpoch = lastUpdateTimeSinceEpoch;
+      existingMcm.content = modelCard || existingMcm.content;
+      existingMcm.needToUpdate = true;
+      existingMcm.updateCount = 0;
+      modelCards.set(modelCardKey, existingMcm);
+      logger.debug(
+        `processModelCatalog: Updated model card entry for key ${modelCardKey} (timestamp changed)`,
+      );
     } else {
-      // Update existing model card metadata if timestamp changed
-      if (existingMcm.lastUpdateTimeSinceEpoch !== lastUpdateTimeSinceEpoch) {
-        existingMcm.lastUpdateTimeSinceEpoch = lastUpdateTimeSinceEpoch;
-        existingMcm.content = modelCard || existingMcm.content;
-        existingMcm.needToUpdate = true;
-        existingMcm.updateCount = 0;
-        modelCards.set(modelCardKey, existingMcm);
-        console.log(
-          `processModelCatalog: Updated model card entry for key ${modelCardKey} (timestamp changed)`,
-        );
-      } else {
-        console.log(
-          `processModelCatalog: Model card for key ${modelCardKey} already up to date`,
-        );
-      }
+      logger.debug(
+        `processModelCatalog: Model card for key ${modelCardKey} already up to date`,
+      );
     }
   }
 }
 
-// Main polling/sync function (converted from Go innerStart method starting at line 651)
-// This is called on delete events and during background polling to sync the current state.
-// Unlike the GoLang client-go informer, there is no re-list / re-sync functionality with
-// the javascript/typescript informer.
+// Called on delete events and during background polling to sync the current state.
+// Unlike the client-go informer, there is no re-list / re-sync with
+// the JavaScript/TypeScript informer.
 async function innerStart(
   client: k8s.CustomObjectsApi,
   config: ReconcilerConfig,
 ): Promise<void> {
-  console.log('innerStart: Beginning reconciliation sync');
+  const logger = config.logger!;
+  logger.debug('innerStart: Beginning reconciliation sync');
 
-  // Discover the catalog route for future catalog integration
   await setupCatalogRoute(config);
 
-  const keys: string[] = [];
+  const keys = new Set<string>();
 
-  // List all KServe InferenceServices
-  console.log('innerStart: Listing all KServe InferenceServices');
+  logger.debug('innerStart: Listing all KServe InferenceServices');
 
   try {
     const inferenceServices = await listInferenceServices(
       client,
+      logger,
       config.informer,
     );
-    console.log(
+    logger.debug(
       `innerStart: Found ${inferenceServices.length} KServe InferenceServices`,
     );
 
     for (const is of inferenceServices) {
-      // Build import key for KServe InferenceService
       const [importKey] = buildImportKeyAndURI(
         is.metadata.namespace,
         is.metadata.name,
       );
-      console.log(
+      logger.debug(
         `innerStart: Adding importKey ${importKey} for KServe InferenceService ${is.metadata.namespace}/${is.metadata.name}`,
       );
-      keys.push(importKey);
+      keys.add(importKey);
     }
   } catch (error) {
-    console.error('innerStart: Error listing KServe InferenceServices:', error);
+    logger.error(
+      'innerStart: Error listing KServe InferenceServices',
+      error as Error,
+    );
   }
 
   // Clean up stale entries from modelCatalog
-  // Remove any model catalog entries whose keys are no longer present in the current reconciliation
   const keysToDelete: string[] = [];
   for (const catalogKey of modelCatalog.keys()) {
-    if (!keys.includes(catalogKey)) {
-      console.log(
+    if (!keys.has(catalogKey)) {
+      logger.debug(
         `innerStart: Model catalog key ${catalogKey} no longer exists in current keys, marking for deletion`,
       );
       keysToDelete.push(catalogKey);
@@ -505,31 +458,24 @@ async function innerStart(
 
   for (const keyToDelete of keysToDelete) {
     modelCatalog.delete(keyToDelete);
-    console.log(
+    logger.debug(
       `innerStart: Deleted stale model catalog entry: ${keyToDelete}`,
     );
   }
 
   if (keysToDelete.length > 0) {
-    console.log(
+    logger.info(
       `innerStart: Cleaned up ${keysToDelete.length} stale model catalog entries`,
     );
   }
 
-  console.log('innerStart: Reconciliation sync complete');
+  logger.debug('innerStart: Reconciliation sync complete');
 }
 
-// Get discovery URIs from model catalog (matching Go handleCatalogDiscoveryGet, server.go lines 162-182)
-// Returns all URIs from modelCatalog that have valid catalog data
 export function getDiscoveryUris(): DiscoveryResponse {
   const uris: string[] = [];
 
-  // Iterate over model catalog entries
-  // Since we cannot delete handlers in some routing frameworks, when we delete a location,
-  // rather than removing from the map, we might set contents to null/undefined,
-  // so we check for that before deciding to include the URI
   for (const [uri, metadata] of modelCatalog.entries()) {
-    // Only include URIs where catalogData exists and is valid
     if (metadata.catalogData) {
       uris.push(uri);
     }
@@ -539,31 +485,17 @@ export function getDiscoveryUris(): DiscoveryResponse {
 }
 
 export function getModelCatalog(id: string): ModelCatalog | undefined {
-  const mcm = modelCatalog.get(id);
-  if (mcm) {
-    return mcm.catalogData;
-  }
-  return undefined;
+  return modelCatalog.get(id)?.catalogData;
 }
 
 export function getModelCard(id: string): string | undefined {
-  const mcm = modelCards.get(id);
-  if (mcm) {
-    return mcm?.content;
-  }
-  return undefined;
+  return modelCards.get(id)?.content;
 }
 
-export const setupInformer = async (
+function buildKubeConfig(
   config: ReconcilerConfig,
   logger: LoggerService,
-) => {
-  // Apply defaults for optional config fields
-  config.defaultLifecycle =
-    config.defaultLifecycle || process.env.LIFECYCLE || 'production';
-  config.defaultOwner =
-    config.defaultOwner || process.env.OWNER || 'default-owner';
-
+): k8s.KubeConfig {
   const kc = new k8s.KubeConfig();
   const clusterName = config.clusterName || 'target-cluster';
 
@@ -611,7 +543,6 @@ export const setupInformer = async (
     );
     kc.loadFromDefault();
 
-    // Extract token from kubeconfig for catalog API calls
     let k8sToken: string | undefined = '';
     const currentUser = kc.getCurrentUser();
     if (currentUser !== null) {
@@ -625,12 +556,118 @@ export const setupInformer = async (
         }
       }
     }
-    // K8S_TOKEN env var override for backward compatibility
-    if (process.env.K8S_TOKEN && process.env.K8S_TOKEN.length > 0) {
+    if (process.env.K8S_TOKEN) {
       k8sToken = process.env.K8S_TOKEN;
     }
     config.serviceAccountToken = k8sToken;
   }
+
+  return kc;
+}
+
+function registerInformerHandlers(
+  informer: k8s.Informer<InferenceService> & k8s.ObjectCache<InferenceService>,
+  client: k8s.CustomObjectsApi,
+  config: ReconcilerConfig,
+): void {
+  const logger = config.logger!;
+
+  informer.on('add', async (obj: InferenceService) => {
+    logger.debug(
+      `Added: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
+    );
+    try {
+      await reconcileInferenceService(obj, config);
+    } catch (error) {
+      logger.error(
+        `Error reconciling InferenceService ${obj.metadata.namespace}/${obj.metadata.name}`,
+        error as Error,
+      );
+    }
+  });
+
+  informer.on('update', async (obj: InferenceService) => {
+    logger.debug(
+      `Updated: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
+    );
+    try {
+      await reconcileInferenceService(obj, config);
+    } catch (error) {
+      logger.error(
+        `Error reconciling InferenceService ${obj.metadata.namespace}/${obj.metadata.name}`,
+        error as Error,
+      );
+    }
+  });
+
+  informer.on('delete', async (obj: InferenceService) => {
+    logger.debug(
+      `Deleted: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
+    );
+    try {
+      logger.debug(
+        `Initiating delete processing for ${obj.metadata.namespace}/${obj.metadata.name}`,
+      );
+      await innerStart(client, config);
+      logger.debug(
+        `Delete processing completed for ${obj.metadata.namespace}/${obj.metadata.name}`,
+      );
+    } catch (error) {
+      logger.error(
+        `Error during delete processing for ${obj.metadata.namespace}/${obj.metadata.name}`,
+        error as Error,
+      );
+    }
+  });
+
+  informer.on('error', (err: any) => {
+    logger.error('Informer error:', err);
+    setTimeout(() => {
+      informer.start();
+    }, 5000);
+  });
+}
+
+function startBackgroundPolling(
+  client: k8s.CustomObjectsApi,
+  config: ReconcilerConfig,
+  logger: LoggerService,
+): void {
+  const pollingInterval = parseInt(
+    process.env.POLLING_INTERVAL || '600000',
+    10,
+  );
+
+  if (pollingInterval > 0) {
+    logger.info(
+      `Starting background polling every ${pollingInterval / 1000} seconds`,
+    );
+    (config.informer as any).__pollingTimer = setInterval(async () => {
+      try {
+        logger.debug('Background polling: Calling innerStart');
+        await innerStart(client, config);
+      } catch (error) {
+        logger.error(
+          'Background polling: Error during innerStart',
+          error as Error,
+        );
+      }
+    }, pollingInterval);
+  }
+}
+
+export const setupInformer = async (
+  config: ReconcilerConfig,
+  logger: LoggerService,
+) => {
+  config.logger = logger;
+
+  config.defaultLifecycle =
+    config.defaultLifecycle || process.env.LIFECYCLE || 'production';
+  config.defaultOwner =
+    config.defaultOwner || process.env.OWNER || 'default-owner';
+
+  const kc = buildKubeConfig(config, logger);
 
   const client = kc.makeApiClient(k8s.CustomObjectsApi);
   const coreClient = kc.makeApiClient(k8s.CoreV1Api);
@@ -643,7 +680,6 @@ export const setupInformer = async (
     defaultOwner: config.defaultOwner,
   });
 
-  // Discover catalog route for future catalog integration
   try {
     await setupCatalogRoute(config);
     logger.info(
@@ -655,109 +691,26 @@ export const setupInformer = async (
 
   const listFn: k8s.ListPromise<InferenceService> = () =>
     client.listClusterCustomObject(
-      inference_service_group,
-      inference_service_version,
-      inference_service_plural,
+      INFERENCE_SERVICE_GROUP,
+      INFERENCE_SERVICE_VERSION,
+      INFERENCE_SERVICE_PLURAL,
     ) as any;
 
   config.informer = k8s.makeInformer(
     kc,
-    `/apis/${inference_service_group}/${inference_service_version}/${inference_service_plural}`,
+    `/apis/${INFERENCE_SERVICE_GROUP}/${INFERENCE_SERVICE_VERSION}/${INFERENCE_SERVICE_PLURAL}`,
     listFn,
   );
 
-  config.informer.on('add', async (obj: InferenceService) => {
-    console.log(
-      `Added: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
-    );
-
-    // Execute the reconciliation logic (converted from Go Reconcile method)
-    try {
-      await reconcileInferenceService(obj, config);
-    } catch (error) {
-      console.error(
-        `Error reconciling InferenceService ${obj.metadata.namespace}/${obj.metadata.name}:`,
-        error,
-      );
-    }
-  });
-
-  config.informer.on('update', async (obj: InferenceService) => {
-    console.log(
-      `Updated: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
-    );
-
-    // Execute the reconciliation logic for updates as well
-    try {
-      await reconcileInferenceService(obj, config);
-    } catch (error) {
-      console.error(
-        `Error reconciling InferenceService ${obj.metadata.namespace}/${obj.metadata.name}:`,
-        error,
-      );
-    }
-  });
-
-  config.informer.on('delete', async (obj: InferenceService) => {
-    console.log(
-      `Deleted: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
-    );
-
-    // Delete processing: Call innerStart to sync the current state (Go code line 339-351)
-    // This will update the current key set to reflect the deletion
-    try {
-      console.log(
-        `Initiating delete processing for ${obj.metadata.namespace}/${obj.metadata.name}`,
-      );
-      await innerStart(client, config);
-      console.log(
-        `Delete processing completed for ${obj.metadata.namespace}/${obj.metadata.name}`,
-      );
-    } catch (error) {
-      console.error(
-        `Error during delete processing for ${obj.metadata.namespace}/${obj.metadata.name}:`,
-        error,
-      );
-    }
-  });
-
-  config.informer.on('error', (err: any) => {
-    console.error('Informer error:', err);
-    // Restart informer after a delay
-    setTimeout(() => {
-      config.informer?.start();
-    }, 5000);
-  });
+  registerInformerHandlers(config.informer, client, config);
 
   logger.info('Starting informer for InferenceServices...');
   await config.informer.start();
   logger.info('Informer started.');
 
-  // Start background polling to supplement the informer
-  // since there is no re-list / re-sync in the typescript informer, unlike
-  // what you see with the GoLang client from k8s.
-  const pollingInterval = parseInt(
-    process.env.POLLING_INTERVAL || '600000',
-    10,
-  ); // Default 10 minutes
-
-  if (pollingInterval > 0) {
-    logger.info(
-      `Starting background polling every ${pollingInterval / 1000} seconds`,
-    );
-    // Store the timer in case we need to stop it later
-    (config.informer as any).__pollingTimer = setInterval(async () => {
-      try {
-        logger.debug('Background polling: Calling innerStart');
-        await innerStart(client, config);
-      } catch (error) {
-        logger.error(
-          'Background polling: Error during innerStart:',
-          error as Error,
-        );
-      }
-    }, pollingInterval);
-  }
+  // Background polling supplements the informer since there is no
+  // re-list / re-sync in the TypeScript informer.
+  startBackgroundPolling(client, config, logger);
 
   return config.informer;
 };
