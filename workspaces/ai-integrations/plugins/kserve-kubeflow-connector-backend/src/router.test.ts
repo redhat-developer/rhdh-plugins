@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import express from 'express';
 import request from 'supertest';
 import { createRouter } from './router';
@@ -39,11 +40,19 @@ const mockedGetModelCard = getModelCard as jest.MockedFunction<
   typeof getModelCard
 >;
 
+const mockLogger: LoggerService = {
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+  debug: jest.fn(),
+  child: jest.fn().mockReturnThis(),
+};
+
 describe('createRouter', () => {
   let app: express.Express;
 
   beforeAll(async () => {
-    const router = await createRouter();
+    const router = await createRouter(mockLogger);
     app = express();
     app.use(router);
   });
