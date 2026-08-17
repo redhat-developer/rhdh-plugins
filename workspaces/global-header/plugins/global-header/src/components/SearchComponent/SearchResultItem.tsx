@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import React from 'react';
 import { Link } from '@backstage/core-components';
 import ListItem from '@mui/material/ListItem';
 import Box from '@mui/material/Box';
@@ -28,6 +29,7 @@ interface SearchResultItemProps {
   query: SearchResultProps['query'];
   result: Result<SearchDocument> | undefined;
   renderProps: any;
+  noResultsText?: string;
 }
 
 export const SearchResultItem = ({
@@ -35,25 +37,32 @@ export const SearchResultItem = ({
   query,
   result,
   renderProps,
+  noResultsText,
 }: SearchResultItemProps) => {
-  const isNoResultsFound = option === 'No results found';
+  const isNoResultsFound = option === (noResultsText ?? 'No results found');
   const analytics = useAnalytics();
 
   return (
     <Box
-      component={isNoResultsFound ? 'div' : Link}
-      to={result?.document.location}
-      underline="none"
       sx={{ width: '100%', ...(isNoResultsFound ? {} : { cursor: 'pointer' }) }}
     >
       <ListItem
         {...renderProps}
+        {...(isNoResultsFound
+          ? {}
+          : {
+              component: Link,
+              to: result?.document.location,
+              underline: 'none',
+            })}
         sx={{ py: 1 }}
-        onClick={e => {
-          analytics.captureEvent('discover', result?.document.title ?? '', {
-            attributes: { to: result?.document.location ?? '#' },
-            value: result?.rank,
-          });
+        onClick={(e: React.MouseEvent) => {
+          if (!isNoResultsFound) {
+            analytics.captureEvent('discover', result?.document.title ?? '', {
+              attributes: { to: result?.document.location ?? '#' },
+              value: result?.rank,
+            });
+          }
           renderProps?.onClick?.(e);
         }}
       >
