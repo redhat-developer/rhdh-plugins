@@ -282,6 +282,11 @@ export class ConnectorConfigReader {
         if (typeof value === 'boolean') {
           return value;
         }
+        if (value !== undefined) {
+          this.logger.warn(
+            `Unexpected type for ${key}: ${typeof value}; defaulting runtimeEnabled to true`,
+          );
+        }
         // undefined → key not set in either layer → default true
         return true;
       } catch (error) {

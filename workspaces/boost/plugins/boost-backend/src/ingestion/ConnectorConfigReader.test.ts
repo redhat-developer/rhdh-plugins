@@ -96,21 +96,13 @@ describe('ConnectorConfigReader', () => {
     expect(candidates[0].connectorId).toBe('jira');
   });
 
-  it('honors boost.connectors.<id>.enabled for runtimeEnabled (YAML-only)', async () => {
-    // When resolver returns undefined (no DB override), YAML baseline
-    // from boost.connectors.<id>.enabled should surface via the
-    // resolver's YAML layer — here we simulate the resolver returning
-    // the YAML value.
+  it('honors resolver-returned values for runtimeEnabled', async () => {
+    // The mock map simulates RuntimeConfigResolver's merged result
+    // (YAML baseline + DB overrides), not a direct ConfigApi read.
     const config = new ConfigReader({
       'ai-catalog': {
         providers: {
           github: { enabled: true },
-          jira: { enabled: true },
-        },
-      },
-      boost: {
-        connectors: {
-          github: { enabled: false },
           jira: { enabled: true },
         },
       },
@@ -265,6 +257,70 @@ describe('ConnectorConfigReader', () => {
 
     expect(resolver.resolve).toHaveBeenCalledWith(
       'boost.connectors.github.enabled',
+    );
+  });
+
+  it('non-boolean resolver value warns and defaults runtimeEnabled to true', async () => {
+    const config = new ConfigReader({
+      'ai-catalog': {
+        providers: {
+          github: { enabled: true },
+        },
+      },
+    });
+
+    const resolver = createMockResolver(
+      new Map<string, unknown>([['boost.connectors.github.enabled', 'false']]),
+    );
+    const logger = createMockLogger();
+    const reader = new ConnectorConfigReader({
+      config,
+      resolver,
+      logger,
+    });
+    const candidates = await reader.listCandidates();
+
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].runtimeEnabled).toBe(true);
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'Unexpected type for boost.connectors.github.enabled',
+      ),
+    );
+  });
+
+  it('falls back to YAML ConfigApi when resolver.resolve rejects', async () => {
+    const config = new ConfigReader({
+      'ai-catalog': {
+        providers: {
+          github: { enabled: true },
+        },
+      },
+      boost: {
+        connectors: {
+          github: { enabled: false },
+        },
+      },
+    });
+
+    const resolver = createMockResolver();
+    (resolver.resolve as jest.Mock).mockRejectedValue(
+      new Error('cache unavailable'),
+    );
+    const logger = createMockLogger();
+    const reader = new ConnectorConfigReader({
+      config,
+      resolver,
+      logger,
+    });
+    const candidates = await reader.listCandidates();
+
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0].runtimeEnabled).toBe(false);
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'Failed to resolve runtime config for boost.connectors.github.enabled',
+      ),
     );
   });
 });
