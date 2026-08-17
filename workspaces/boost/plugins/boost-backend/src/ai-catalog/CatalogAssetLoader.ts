@@ -17,63 +17,12 @@
 import type { AuthService } from '@backstage/backend-plugin-api';
 import type { CatalogService } from '@backstage/plugin-catalog-node';
 import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
+import {
+  buildAiAssetCatalogFilter,
+  isAiAsset,
+} from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { AiCatalogAsset, AiCatalogAssetLoader } from './routes';
 import type { AiCatalogAssetResource } from './rules';
-
-// ---------------------------------------------------------------------------
-// AI asset kind/spec.type map
-// ---------------------------------------------------------------------------
-
-/**
- * AI asset kind/type combinations from the entity model. Mirrors
- * `AI_ASSET_SPEC_TYPES` in the `boost` frontend plugin
- * (`plugins/boost/src/utils/isAiAsset.ts`) — duplicated here because
- * backend code cannot import from the frontend package. Keep the two in
- * sync if the taxonomy changes.
- *
- * @internal
- */
-export const AI_ASSET_SPEC_TYPES: Record<string, Set<string>> = {
-  airesource: new Set(['skill', 'rule']),
-  api: new Set(['mcp-server']),
-  component: new Set(['ai-agent']),
-  resource: new Set(['ai-model', 'ai-tool', 'vector-store']),
-};
-
-/**
- * Builds the catalog entity filter (OR across kind/spec.type pairs) used
- * to select only AI catalog assets from the Backstage catalog.
- *
- * @internal
- */
-export function buildAiAssetCatalogFilter(): Record<
-  string,
-  string | string[]
->[] {
-  return Object.entries(AI_ASSET_SPEC_TYPES).map(([kind, types]) => ({
-    kind,
-    'spec.type': [...types],
-  }));
-}
-
-/**
- * Checks whether an entity's `kind`/`spec.type` combination is in the AI
- * asset taxonomy ({@link AI_ASSET_SPEC_TYPES}). `list()` gets this for
- * free from {@link buildAiAssetCatalogFilter}'s catalog-side filter, but
- * `findById()`/`getEntityByRef()` can resolve *any* entity ref — this
- * guard is what keeps it from mapping and returning non-AI entities.
- *
- * @internal
- */
-export function isAiAsset(entity: Entity): boolean {
-  const specType = getStringSpecField(entity, 'type');
-  if (!specType) {
-    return false;
-  }
-  return Boolean(
-    AI_ASSET_SPEC_TYPES[entity.kind.toLowerCase()]?.has(specType.toLowerCase()),
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Entity → AiCatalogAsset mapping

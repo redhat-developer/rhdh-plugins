@@ -24,10 +24,9 @@ import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import {
-  AI_CATALOG_ASSET_RESOURCE_TYPE,
   boostAdminPermission,
   boostPermissions,
-  aiCatalogPermissions,
+  aiCatalogResourcePermissions,
 } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import {
   boostAiProviderServiceRef,
@@ -59,7 +58,10 @@ import { SyncAttemptsStore } from './ingestion/SyncAttemptsStore';
 import { ConnectorConfigReader } from './ingestion/ConnectorConfigReader';
 import { HealthStatusService } from './ingestion/HealthStatusService';
 import { createIngestionHealthRoutes } from './ingestion/routes';
-import { aiCatalogRules } from './ai-catalog/rules';
+import {
+  aiCatalogAssetPermissionResourceRef,
+  aiCatalogRules,
+} from './ai-catalog/rules';
 import { createAiCatalogRoutes } from './ai-catalog/routes';
 import {
   CatalogAssetLoader,
@@ -313,9 +315,34 @@ export const boostPlugin = createBackendPlugin({
         });
 
         // Register all boost permissions with the framework
-        // (boostPermissions already includes aiCatalogPermissions)
+        // (boostPermissions already includes aiCatalogResourcePermissions
+        // and aiCatalogAdminPermission)
         permissionsRegistry.addPermissions([...boostPermissions]);
         logger.info(`Registered ${boostPermissions.length} boost permissions`);
+
+        // Register the AI Catalog resource type, its conditional rules
+        // (isAiAssetCategory, isFromConnector, isInTenant), and the
+        // getResources resolver via the injected permissionsRegistry.
+        // `coreServices.permissionsRegistry` auto-mounts its own
+        // `createPermissionIntegrationRouter()` onto this plugin's
+        // httpRouter as part of its service factory (see
+        // @backstage/backend-defaults `permissionsRegistryServiceFactory`),
+        // which happens before this init() body runs. A separately
+        // constructed `createPermissionIntegrationRouter({ resourceType,
+        // rules, getResources })` mounted later on this plugin's own
+        // router would be shadowed by that pre-mounted router (both
+        // register the same `/.well-known/backstage/permissions/*`
+        // paths) and would never receive requests — `getResources`
+        // resolves entity-ref resourceRefs to AiCatalogAssetResource
+        // instances so /apply-conditions can evaluate rules for
+        // non-batch authorize() calls (see PR #4185 review from
+        // mareklibra).
+        permissionsRegistry.addResourceType({
+          resourceRef: aiCatalogAssetPermissionResourceRef,
+          permissions: [...aiCatalogResourcePermissions],
+          rules: Object.values(aiCatalogRules),
+          getResources: createGetAiCatalogAssetResources(catalog, auth),
+        });
 
         // Log registered providers
         const providers = providerManager.getRegisteredProviders();
@@ -338,20 +365,6 @@ export const boostPlugin = createBackendPlugin({
           permissions: [...boostPermissions],
         });
         router.use(permissionIntegrationRouter);
-
-        // AI Catalog permission integration router with conditional rules
-        // (task 4.7: register isAiAssetCategory, isFromConnector, isInTenant)
-        // `getResources` resolves entity-ref resourceRefs to
-        // AiCatalogAssetResource instances via the catalog so that
-        // /apply-conditions can evaluate rules for non-batch authorize()
-        // calls (see PR #4185 review comment on plugin.ts).
-        const aiCatalogPermissionRouter = createPermissionIntegrationRouter({
-          resourceType: AI_CATALOG_ASSET_RESOURCE_TYPE,
-          permissions: [...aiCatalogPermissions],
-          rules: Object.values(aiCatalogRules),
-          getResources: createGetAiCatalogAssetResources(catalog, auth),
-        });
-        router.use(aiCatalogPermissionRouter);
 
         // AI Catalog asset routes (graduated visibility: entity-level
         // filtering on list, field-level filtering on detail), backed by

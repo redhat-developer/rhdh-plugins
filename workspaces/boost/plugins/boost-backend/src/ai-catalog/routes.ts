@@ -161,8 +161,16 @@ async function assertReadableOrAdmin(
  * graduated visibility (Tier 1 / Tier 2 field-level filtering).
  *
  * Routes:
- * - GET /ai-catalog/assets       — list assets (entity-level filtering)
- * - GET /ai-catalog/assets/:id   — get asset detail (field-level filtering)
+ * - GET /ai-catalog/assets                          — list assets (entity-level filtering)
+ * - GET /ai-catalog/assets/:kind/:namespace/:name    — get asset detail (field-level filtering)
+ *
+ * The detail route is split into three path segments (rather than a
+ * single `:id`) because asset ids are Backstage entity refs in the form
+ * `kind:namespace/name`, which contain both `:` and `/`. A single `:id`
+ * segment would require clients to percent-encode the whole ref (path
+ * separators aren't matched by a single Express path param), which is
+ * easy to miss; splitting on the ref's own natural boundaries avoids
+ * that entirely.
  *
  * @public
  */
@@ -241,58 +249,65 @@ export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router {
     }
   });
 
-  // GET /ai-catalog/assets/:id — get asset detail with field-level filtering (task 2.1)
-  router.get('/ai-catalog/assets/:id', async (req, res, next) => {
-    try {
-      const { id } = req.params;
-      const credentials = await httpAuth.credentials(req);
+  // GET /ai-catalog/assets/:kind/:namespace/:name — get asset detail with
+  // field-level filtering (task 2.1). See the route factory JSDoc above
+  // for why the id is split across three segments instead of one.
+  router.get(
+    '/ai-catalog/assets/:kind/:namespace/:name',
+    async (req, res, next) => {
+      try {
+        const { kind, namespace, name } = req.params;
+        const id = `${kind}:${namespace}/${name}`;
+        const credentials = await httpAuth.credentials(req);
 
-      // Tier 1: check basic read access
-      const [readDecision] = await permissions.authorize(
-        [
-          {
-            permission: aiCatalogAssetAccessPermission,
-            resourceRef: id,
-          },
-        ],
-        { credentials },
-      );
+        // Tier 1: check basic read access
+        const [readDecision] = await permissions.authorize(
+          [
+            {
+              permission: aiCatalogAssetAccessPermission,
+              resourceRef: id,
+            },
+          ],
+          { credentials },
+        );
 
-      await assertReadableOrAdmin(
-        readDecision.result,
-        permissions,
-        credentials,
-      );
+        await assertReadableOrAdmin(
+          readDecision.result,
+          permissions,
+          credentials,
+        );
 
-      const asset = await assetLoader.findById(id);
-      if (!asset) {
-        throw new NotFoundError(`AI catalog asset "${id}" not found`);
+        const asset = await assetLoader.findById(id);
+        if (!asset) {
+          throw new NotFoundError(`AI catalog asset "${id}" not found`);
+        }
+
+        // Tier 2: check usage-docs access for field-level filtering
+        // (task 2.1). Non-ALLOW results (DENY or CONDITIONAL) strip
+        // Tier 2 fields — see the batch Tier 2 comment on the list
+        // endpoint for the design rationale (conservative default per
+        // graduated-visibility spec).
+        const [tier2Decision] = await permissions.authorize(
+          [
+            {
+              permission: aiCatalogAssetAccessUsageDocsPermission,
+              resourceRef: id,
+            },
+          ],
+          { credentials },
+        );
+
+        if (tier2Decision.result !== AuthorizeResult.ALLOW) {
+          res.json(stripTier2Fields(asset));
+          return;
+        }
+
+        res.json(asset);
+      } catch (error) {
+        next(error);
       }
-
-      // Tier 2: check usage-docs access for field-level filtering (task 2.1).
-      // Non-ALLOW results (DENY or CONDITIONAL) strip Tier 2 fields —
-      // see the batch Tier 2 comment on the list endpoint for the
-      // design rationale (conservative default per graduated-visibility spec).
-      const [tier2Decision] = await permissions.authorize(
-        [
-          {
-            permission: aiCatalogAssetAccessUsageDocsPermission,
-            resourceRef: id,
-          },
-        ],
-        { credentials },
-      );
-
-      if (tier2Decision.result !== AuthorizeResult.ALLOW) {
-        res.json(stripTier2Fields(asset));
-        return;
-      }
-
-      res.json(asset);
-    } catch (error) {
-      next(error);
-    }
-  });
+    },
+  );
 
   return router;
 }

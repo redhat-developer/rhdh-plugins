@@ -15,7 +15,7 @@
  */
 
 import type { Entity } from '@backstage/catalog-model';
-import { isAiAsset } from './isAiAsset';
+import { buildAiAssetCatalogFilter, isAiAsset } from './aiAssetTaxonomy';
 
 function entity(kind: string, specType?: string): Entity {
   return {
@@ -67,5 +67,20 @@ describe('isAiAsset', () => {
     ['Group', undefined],
   ])('returns false for non-AI entity %s / %s', (kind, type) => {
     expect(isAiAsset(entity(kind, type))).toBe(false);
+  });
+});
+
+describe('buildAiAssetCatalogFilter', () => {
+  it('builds an OR filter covering every kind/spec.type pair in the taxonomy', () => {
+    const filter = buildAiAssetCatalogFilter();
+    expect(filter).toEqual(
+      expect.arrayContaining([
+        { kind: 'airesource', 'spec.type': ['skill', 'rule', 'agent'] },
+        { kind: 'aimodelserverapi', 'spec.type': ['ai-model-server'] },
+        { kind: 'api', 'spec.type': ['mcp-server'] },
+        { kind: 'resource', 'spec.type': ['ai-tool', 'vector-store'] },
+      ]),
+    );
+    expect(filter).toHaveLength(4);
   });
 });

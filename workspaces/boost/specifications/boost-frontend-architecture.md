@@ -68,8 +68,6 @@ plugins/boost/
       useAiAssets.ts            # Wraps catalogApiRef for AI asset queries
       useFeatureFlags.ts
       usePermissions.ts
-    utils/
-      isAiAsset.ts              # Entity condition filter for Blueprints
     components/
       catalog/                  # AI Catalog domain (RHDHPLAN-1509)
         AiCatalogPage.tsx       # Browse page

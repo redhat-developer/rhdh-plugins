@@ -22,7 +22,6 @@ import {
   createGetAiCatalogAssetResources,
   entityToAiCatalogAsset,
   entityToAiCatalogAssetResource,
-  isAiAsset,
 } from './CatalogAssetLoader';
 
 const auth = mockServices.auth();
@@ -51,17 +50,17 @@ const codeReviewSkill: Entity = {
 
 const graniteModel: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
-  kind: 'Resource',
+  kind: 'AiModelServerAPI',
   metadata: {
     name: 'granite-model',
     description: 'IBM Granite foundation model',
     annotations: {
-      'rhdh.io/ai-asset-category': 'ai-model',
+      'rhdh.io/ai-asset-category': 'ai-model-server',
       'rhdh.io/ai-asset-source': 'watsonx',
     },
   },
   spec: {
-    type: 'ai-model',
+    type: 'ai-model-server',
     remotes: [{ type: 'streamable-http', url: 'https://granite.example.com' }],
     config: { temperature: 0.7 },
     deploymentParameters: { replicas: 2 },
@@ -118,36 +117,10 @@ describe('entityToAiCatalogAsset', () => {
   });
 });
 
-describe('isAiAsset', () => {
-  it('returns true for entities matching the AI asset kind/spec.type taxonomy', () => {
-    expect(isAiAsset(codeReviewSkill)).toBe(true);
-    expect(isAiAsset(graniteModel)).toBe(true);
-  });
-
-  it('returns false for entities outside the AI asset taxonomy', () => {
-    expect(isAiAsset(nonAiComponent)).toBe(false);
-  });
-
-  it('returns false when spec.type is missing', () => {
-    const entity: Entity = {
-      apiVersion: 'backstage.io/v1alpha1',
-      kind: 'Resource',
-      metadata: { name: 'no-spec-type' },
-      spec: {},
-    };
-    expect(isAiAsset(entity)).toBe(false);
-  });
-
-  it('matches regardless of kind/spec.type casing', () => {
-    const entity: Entity = {
-      apiVersion: 'backstage.io/v1alpha1',
-      kind: 'Resource',
-      metadata: { name: 'mixed-case-model' },
-      spec: { type: 'AI-Model' },
-    };
-    expect(isAiAsset(entity)).toBe(true);
-  });
-});
+// `isAiAsset` itself (taxonomy matching, casing, missing spec.type) is now
+// owned and tested by `boost-common`'s `aiAssetTaxonomy.test.ts`; this file
+// only tests how `CatalogAssetLoader.findById()` uses it (see the "returns
+// undefined when the entity ref resolves to a non-AI entity" test below).
 
 describe('entityToAiCatalogAssetResource', () => {
   it('maps only annotations and namespace for rule evaluation', () => {
@@ -228,7 +201,7 @@ describe('createGetAiCatalogAssetResources', () => {
 
     const resources = await getResources([
       'airesource:team-alpha/code-review-skill',
-      'resource:default/granite-model',
+      'aimodelserverapi:default/granite-model',
     ]);
 
     expect(resources).toHaveLength(2);
@@ -244,7 +217,7 @@ describe('createGetAiCatalogAssetResources', () => {
 
     const resources = await getResources([
       'airesource:team-alpha/code-review-skill',
-      'resource:default/missing',
+      'aimodelserverapi:default/missing',
     ]);
 
     expect(resources).toHaveLength(2);

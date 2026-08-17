@@ -27,9 +27,11 @@
     ]
   },
   "dependencies": {
+    "@backstage/catalog-model": "^1.9.0",
     "@backstage/plugin-permission-common": "^0.9.9"
   },
   "peerDependencies": {
+    "@backstage/catalog-model": "^1.9.0",
     "@backstage/plugin-permission-common": "^0.9.9"
   },
   "sideEffects": false,

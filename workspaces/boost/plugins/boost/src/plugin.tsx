@@ -25,6 +25,7 @@ import {
   EntityCardBlueprint,
   EntityContentBlueprint,
 } from '@backstage/plugin-catalog-react/alpha';
+import { isAiAsset } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 
 import {
   AiCatalogFilterBlueprint,
@@ -38,7 +39,6 @@ import {
 } from './filters/builtInFilterDefinitions';
 import { rootRouteRef } from './routes';
 import { boostTranslations } from './translations';
-import { isAiAsset } from './utils/isAiAsset';
 
 // ---------------------------------------------------------------------------
 // Built-in filter extensions

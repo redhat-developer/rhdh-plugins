@@ -4,6 +4,7 @@
 
 ```ts
 import { BasicPermission } from '@backstage/plugin-permission-common';
+import type { Entity } from '@backstage/catalog-model';
 import { ResourcePermission } from '@backstage/plugin-permission-common';
 
 // @public
@@ -27,6 +28,9 @@ export interface AgentRecord {
   name: string;
   updatedAt: string;
 }
+
+// @public
+export const AI_ASSET_SPEC_TYPES: Record<string, Set<string>>;
 
 // @public
 export const AI_CATALOG_ASSET_RESOURCE_TYPE = 'ai-catalog-asset';
@@ -259,6 +263,12 @@ export const boostToolResourcePermissions: ResourcePermission<
 export const boostToolUnpublishPermission: ResourcePermission<'boost-tool'>;
 
 // @public
+export function buildAiAssetCatalogFilter(): Record<
+  string,
+  string | string[]
+>[];
+
+// @public
 export interface ChatOptions {
   userRef?: string;
 }
@@ -350,6 +360,9 @@ export type InputItem =
       url: string;
       mimeType?: string;
     };
+
+// @public
+export function isAiAsset(entity: Entity): boolean;
 
 // @public
 export type LifecycleStage = 'draft' | 'pending' | 'published' | 'archived';

@@ -448,20 +448,19 @@ describe('AI catalog routes', () => {
   });
 
   // -------------------------------------------------------------------------
-  // GET /ai-catalog/assets/:id
+  // GET /ai-catalog/assets/:kind/:namespace/:name
   // -------------------------------------------------------------------------
 
-  describe('GET /ai-catalog/assets/:id', () => {
+  describe('GET /ai-catalog/assets/:kind/:namespace/:name', () => {
     it('returns full asset (including Tier 2) when both permissions are ALLOW', async () => {
       const assetLoader = createMockAssetLoader({
         findById: jest.fn().mockResolvedValue(fullAsset),
       });
       testApp = await createTestApp({ assetLoader });
 
-      const encodedId = encodeURIComponent('resource:default/granite-model');
       const { status, body } = await fetchJson(
         testApp.url,
-        `/ai-catalog/assets/${encodedId}`,
+        '/ai-catalog/assets/resource/default/granite-model',
       );
 
       expect(status).toBe(200);
@@ -489,10 +488,9 @@ describe('AI catalog routes', () => {
         assetLoader,
       });
 
-      const encodedId = encodeURIComponent('resource:default/granite-model');
       const { status, body } = await fetchJson(
         testApp.url,
-        `/ai-catalog/assets/${encodedId}`,
+        '/ai-catalog/assets/resource/default/granite-model',
       );
 
       expect(status).toBe(200);
@@ -507,10 +505,9 @@ describe('AI catalog routes', () => {
       });
       testApp = await createTestApp({ assetLoader });
 
-      const encodedId = encodeURIComponent('resource:default/missing');
       const { status } = await fetchJson(
         testApp.url,
-        `/ai-catalog/assets/${encodedId}`,
+        '/ai-catalog/assets/resource/default/missing',
       );
 
       expect(status).toBe(404);
@@ -529,10 +526,9 @@ describe('AI catalog routes', () => {
         assetLoader,
       });
 
-      const encodedId = encodeURIComponent('resource:default/granite-model');
       const { status } = await fetchJson(
         testApp.url,
-        `/ai-catalog/assets/${encodedId}`,
+        '/ai-catalog/assets/resource/default/granite-model',
       );
 
       expect(status).toBe(403);
@@ -556,10 +552,9 @@ describe('AI catalog routes', () => {
         assetLoader,
       });
 
-      const encodedId = encodeURIComponent('resource:default/granite-model');
       const { status, body } = await fetchJson(
         testApp.url,
-        `/ai-catalog/assets/${encodedId}`,
+        '/ai-catalog/assets/resource/default/granite-model',
       );
 
       expect(status).toBe(200);

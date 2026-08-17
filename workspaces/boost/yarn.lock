@@ -8845,9 +8845,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-boost-common@workspace:plugins/boost-common"
   dependencies:
+    "@backstage/catalog-model": "npm:^1.9.0"
     "@backstage/cli": "npm:^0.36.3"
     "@backstage/plugin-permission-common": "npm:^0.9.9"
   peerDependencies:
+    "@backstage/catalog-model": ^1.9.0
     "@backstage/plugin-permission-common": ^0.9.9
   languageName: unknown
   linkType: soft
@@ -8915,6 +8917,7 @@ __metadata:
     "@backstage/plugin-catalog-react": "npm:^3.1.0"
     "@backstage/test-utils": "npm:^1.7.19"
     "@backstage/ui": "npm:^0.16.0"
+    "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^"
     "@remixicon/react": "npm:>=4.6.0 <4.9.0"
     "@testing-library/dom": "npm:^10.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
@@ -31224,7 +31227,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zod@npm:^3.23.8, zod@npm:^3.25.76":
+"zod@npm:^3.25.76":
   version: 3.25.76
   resolution: "zod@npm:3.25.76"
   checksum: 10c0/5718ec35e3c40b600316c5b4c5e4976f7fee68151bc8f8d90ec18a469be9571f072e1bbaace10f1e85cf8892ea12d90821b200e980ab46916a6166a4260a983c
