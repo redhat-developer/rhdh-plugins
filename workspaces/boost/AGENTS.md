@@ -93,6 +93,27 @@ failures or config-surface drift.
 
 When reviewing PRs that add or modify `boost.*` config keys, verify all five registration steps above were completed.
 
+### Migration patterns
+
+Connector schema migrations (`migrateConnectorSchemas` in
+`RuntimeConfigResolver`) follow these robustness requirements:
+
+- **Per-step version stamping:** After each successful migration step
+  (e.g., v1 to v2), stamp the new version immediately. This makes
+  migrations resumable — a failure at v2-to-v3 does not re-run v1-to-v2
+  on the next startup.
+- **Per-entity error isolation:** Wrap each connector's migration in
+  try/catch. A failure migrating one connector (e.g., jira) must not
+  prevent migration of others (github, gitlab). Accumulate the first
+  error and rethrow after all connectors are attempted.
+- **Preserve original errors:** When post-migration cleanup (e.g.,
+  cache invalidation) also fails, preserve the original migration
+  error. Use `firstError ??= cleanupError` so the root cause is not
+  masked.
+- **Missing version = v1:** Treat a missing `__schemaVersion` as v1
+  (the initial version), not as the current version. Write v1
+  explicitly and fall through to the migration loop.
+
 ### Package structure
 
 | Package                        | Purpose                                                                                       |
