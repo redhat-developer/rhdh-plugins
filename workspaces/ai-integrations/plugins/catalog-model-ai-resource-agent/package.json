@@ -1,0 +1,45 @@
+{
+  "name": "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent",
+  "version": "0.3.0",
+  "license": "Apache-2.0",
+  "description": "Catalog model types and validator for AiResource agent entities (spec.type: agent).",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.cjs.js",
+    "types": "dist/index.d.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/ai-integrations/plugins/catalog-model-ai-resource-agent"
+  },
+  "backstage": {
+    "role": "common-library",
+    "pluginId": "catalog-model-ai-resource-agent",
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent"
+    ]
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack"
+  },
+  "dependencies": {
+    "@backstage/catalog-model": "^1.9.0",
+    "@backstage/types": "^1.2.2"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.36.3"
+  },
+  "files": [
+    "dist"
+  ]
+}

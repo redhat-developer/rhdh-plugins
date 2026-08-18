@@ -17,52 +17,80 @@
 import {
   AggregatedMetric,
   AggregatedMetricResult,
+  AggregationMetadata,
   Metric,
-  ThresholdConfig,
+  AggregationResultByType,
+  ScalarAggregatedMetric,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DbAggregatedMetric } from '../database/types';
+import type { DbScalarAggregatedMetric } from '../database/types';
+import { ValidatedAggregationConfig } from '../validation/schemas/aggregationConfigSchemas';
+import { normalizeTimestamp } from '../utils/normalizeTimestamp';
 
 export class AggregatedMetricMapper {
   static toAggregatedMetric(
     aggregatedMetric?: DbAggregatedMetric,
   ): AggregatedMetric {
     const total = aggregatedMetric?.total ?? 0;
-    const timestamp = aggregatedMetric?.max_timestamp
-      ? new Date(aggregatedMetric.max_timestamp).toISOString()
-      : new Date().toISOString();
+    const timestamp = normalizeTimestamp(
+      aggregatedMetric?.maxTimestamp,
+    ).toISOString();
 
     return {
       values: aggregatedMetric?.statusCounts ?? {},
       total,
       timestamp,
+      entitiesConsidered: aggregatedMetric?.latestEntityCount ?? 0,
+      calculationErrorCount: aggregatedMetric?.calculationErrorCount ?? 0,
     };
+  }
+
+  static toScalarAggregatedMetric(
+    scalarMetric?: DbScalarAggregatedMetric,
+  ): ScalarAggregatedMetric {
+    const timestamp = normalizeTimestamp(
+      scalarMetric?.maxTimestamp,
+    ).toISOString();
+
+    return {
+      value: scalarMetric?.value ?? 0,
+      total: scalarMetric?.total ?? 0,
+      entitiesConsidered: scalarMetric?.latestEntityCount ?? 0,
+      calculationErrorCount: scalarMetric?.calculationErrorCount ?? 0,
+      timestamp,
+    };
+  }
+
+  static toAggregationMetadata(
+    metric: Metric,
+    aggregationConfig: ValidatedAggregationConfig,
+  ): AggregationMetadata {
+    const metadata: AggregationMetadata = {
+      type: metric.type,
+      unit: metric.unit,
+      history: metric.history,
+      title: aggregationConfig.title,
+      description: aggregationConfig.description,
+      aggregationType: aggregationConfig.type,
+    };
+
+    if ('filter' in aggregationConfig && aggregationConfig.filter) {
+      metadata.filter = aggregationConfig.filter;
+    }
+
+    return metadata;
   }
 
   static toAggregatedMetricResult(
     metric: Metric,
-    thresholds: ThresholdConfig,
-    aggregatedMetric: AggregatedMetric,
+    result: AggregationResultByType,
+    aggregationConfig: ValidatedAggregationConfig,
   ): AggregatedMetricResult {
-    // Build values in threshold rules order, filling missing ones with 0
-    const allStatusCountValues = thresholds.rules.map(rule => ({
-      name: rule.key,
-      count: aggregatedMetric.values[rule.key] ?? 0,
-    }));
-
     return {
       id: metric.id,
       status: 'success',
-      metadata: {
-        title: metric.title,
-        description: metric.description,
-        type: metric.type,
-        history: metric.history,
-      },
-      result: {
-        ...aggregatedMetric,
-        values: allStatusCountValues,
-        thresholds,
-      },
+      metadata: this.toAggregationMetadata(metric, aggregationConfig),
+      result,
     };
   }
 }

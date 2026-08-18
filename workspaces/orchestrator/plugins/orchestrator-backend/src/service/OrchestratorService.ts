@@ -134,13 +134,40 @@ export class OrchestratorService {
       targetEntity: args.targetEntity,
     });
 
-    return overviews?.map(overview => {
-      const updatedOverview = overview;
-      updatedOverview.isAvailable = this.workflowCacheService.isAvailable(
-        updatedOverview.workflowId,
-      );
-      return updatedOverview;
-    });
+    if (!overviews?.length) {
+      return overviews;
+    }
+
+    const serviceUrls = await this.dataIndexService.fetchWorkflowServiceUrls();
+
+    return Promise.all(
+      overviews.map(async overview => {
+        const updatedOverview = overview;
+        updatedOverview.isAvailable = this.workflowCacheService.isAvailable(
+          updatedOverview.workflowId,
+        );
+        if (!updatedOverview.isAvailable) {
+          updatedOverview.availability =
+            await this.sonataFlowService.pingWorkflowService({
+              definitionId: updatedOverview.workflowId,
+              serviceUrl: serviceUrls[updatedOverview.workflowId],
+            });
+        }
+        return updatedOverview;
+      }),
+    );
+  }
+
+  public async executeWorkflowAsCloudEvent(args: {
+    definitionId: string;
+    workflowSource: string;
+    workflowEventType: string;
+    contextAttribute: string;
+    inputData?: ProcessInstanceVariables;
+    authTokens?: Array<AuthToken>;
+    backstageToken?: string;
+  }) {
+    return await this.sonataFlowService.executeWorkflowAsCloudEvent(args);
   }
 
   public async executeWorkflow(args: {
@@ -171,7 +198,18 @@ export class OrchestratorService {
       this.workflowCacheService.isAvailable(definitionId);
     const overview =
       await this.sonataFlowService.fetchWorkflowOverview(definitionId);
-    if (overview) overview.isAvailable = isWorkflowAvailable; // workflow overview is avaiable but the workflow itself is not
+    if (overview) {
+      overview.isAvailable = isWorkflowAvailable; // workflow overview is avaiable but the workflow itself is not
+      if (!isWorkflowAvailable) {
+        overview.availability =
+          await this.sonataFlowService.pingWorkflowService({
+            definitionId,
+            serviceUrl: (
+              await this.dataIndexService.fetchWorkflowServiceUrls()
+            )[definitionId],
+          });
+      }
+    }
     return overview;
   }
 
@@ -199,6 +237,6 @@ export class OrchestratorService {
       definitionId,
       serviceUrl,
     });
-    return isServiceUp;
+    return isServiceUp.isAvailable;
   }
 }

@@ -57,6 +57,10 @@ export const dcmPlugin = createBackendPlugin({
           path: '/access',
           allow: 'user-cookie',
         });
+        httpRouter.addAuthPolicy({
+          path: '/proxy',
+          allow: 'user-cookie',
+        });
       },
     });
   },

@@ -1,5 +1,121 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 2.0.1
+
+### Patch Changes
+
+- c345ac9: Updated `@red-hat-developer-hub/backstage-plugin-global-header` dependency to `^2.0.0` and migrated imports from the deprecated `/alpha` subpath to the graduated main entry.
+
+## 2.0.0
+
+### Major Changes
+
+- 4576392: **Breaking:** Legacy (OFS) component exports have been removed from the main `./` entry point and are now exclusively available at the `./legacy` subpath. OFS consumers must update their imports:
+
+  ```diff
+  - import { QuickstartDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-quickstart';
+  + import { QuickstartDrawerProvider } from '@red-hat-developer-hub/backstage-plugin-quickstart/legacy';
+  ```
+
+### Patch Changes
+
+- 03fd5c6: Bump global-header to 1.21.5 so Quick start help menu items use the fixed GlobalHeaderMenuItem (no Fragment when `to` is absent), restoring click handling
+
+## 1.12.2
+
+### Patch Changes
+
+- 83d8a47: Removed unused `StylesProvider` and `createGenerateClassName` JSS wrapper from QuickstartDrawerProvider. Dropped `@mui/styles` dependency since JSS class-name isolation is no longer needed after the MUI5 migration.
+
+## 1.12.1
+
+### Patch Changes
+
+- 23c83cc: Fix accessibility violations (aria-progressbar-name, list, nested-interactive) and remove suppression flag from e2e accessibility tests.
+
+## 1.12.0
+
+### Minor Changes
+
+- 60460f4: Backstage version bump to v1.52.1
+
+## 1.11.1
+
+### Patch Changes
+
+- cf89b92: Fix scalprum `QuickstartPlugin` exposed module path from `./src/index.ts` to `./src/index.tsx`.
+
+## 1.11.0
+
+### Minor Changes
+
+- 033a0b5: Graduate the New Frontend System (NFS) plugin from the `./alpha` export to the primary `./` entry point. OFS (legacy) exports are now available at `./legacy`. Translations remain at `./alpha`.
+
+### Patch Changes
+
+- 6d0a82b: Bump `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.11` to fix broken `config.d.ts` in earlier versions.
+
+## 1.10.0
+
+### Minor Changes
+
+- 8479da8: Rebrand Lightspeed quickstart steps to Intelligent Assistant: replace custom SVG icon with PatternFly RhUiAiChatbotIcon, update all English and localized i18n strings, and add test coverage for the Lightspeed icon.
+
+## 1.9.7
+
+### Patch Changes
+
+- 88f7bb7: Replace Material UI v4 with MUI v5 and scope JSS class names to prevent style collisions.
+
+## 1.9.6
+
+### Patch Changes
+
+- 4c130c1: Fixed dynamic plugin export failure for the Lightspeed quickstart icon by inlining SVG assets as data URIs instead of file imports that are not emitted into the ESM `dist` output.
+
+## 1.9.5
+
+### Patch Changes
+
+- 4b07772: Translations updated for de/es/fr/it/ja
+
+## 1.9.4
+
+### Patch Changes
+
+- 498beb5: add react-router-dom in devDependencies
+- 6b8046b: Updated dependency `@red-hat-developer-hub/backstage-plugin-app-react` to `^0.0.5`.
+
+## 1.9.3
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+
+## 1.9.2
+
+### Patch Changes
+
+- 200133a: add Lightspeed intro to the quickstarts
+
+## 1.9.1
+
+### Patch Changes
+
+- 351d260: Added quick start menu item to help dropdown in global header
+
+## 1.9.0
+
+### Minor Changes
+
+- 0502c77: Added support for NFS
+
+## 1.8.5
+
+### Patch Changes
+
+- 14d6bcb: Localize the Quickstart help snackbar message.
+
 ## 1.8.4
 
 ### Patch Changes

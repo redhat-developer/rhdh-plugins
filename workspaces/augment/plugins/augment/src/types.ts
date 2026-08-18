@@ -45,6 +45,7 @@ export type {
   Workflow,
   QuickAction,
   PromptCard,
+  ChatAgentConfig,
   PromptGroup,
   ConversationSummary,
   ResponseUsage,
@@ -62,8 +63,14 @@ export type {
   StreamToolCompletedEvent,
   StreamToolFailedEvent,
   StreamToolApprovalEvent,
+  StreamBackendToolExecutingEvent,
   StreamRagResultsEvent,
   StreamCompletedEvent,
+  StreamAgentHandoffEvent,
+  StreamFormRequestEvent,
+  StreamAuthRequiredEvent,
+  StreamArtifactEvent,
+  StreamCitationEvent,
   StreamErrorEvent,
   AdminConfigKey,
   AdminConfigEntry,
@@ -105,6 +112,12 @@ export interface ProcessedMessage {
     fileId?: string;
     attributes?: Record<string, unknown>;
   }>;
+  /** Token usage reported by the inference server */
+  usage?: ResponseUsage;
+  /** Model's reasoning/thinking content */
+  reasoning?: string;
+  /** Display name of the agent that produced this response (multi-agent only) */
+  agentName?: string;
   /** ISO 8601 timestamp of when this message was created, if available */
   createdAt?: string;
 }
@@ -194,6 +207,19 @@ export interface Message {
   outputValidationError?: string;
   /** Structured reasoning summaries from the model's thought process */
   reasoningSummaries?: Array<{ id: string; text: string }>;
+  /** Artifacts generated during the response */
+  artifacts?: Array<{
+    artifactId: string;
+    name?: string;
+    description?: string;
+    content: string;
+  }>;
+  /** Citation references from the agent's response */
+  citations?: Array<{
+    title?: string;
+    url?: string;
+    snippet?: string;
+  }>;
 }
 
 /**
@@ -322,4 +348,8 @@ export interface ChatSessionSummary {
   conversationId: string | null;
   createdAt: string;
   updatedAt: string;
+  /** Model or agent identifier associated with this session (e.g. "namespace/agentName") */
+  model?: string;
+  /** Provider that created this session (e.g. "llamastack", "kagenti") */
+  providerId?: string;
 }

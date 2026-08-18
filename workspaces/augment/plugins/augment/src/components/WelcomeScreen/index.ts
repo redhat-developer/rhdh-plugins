@@ -14,3 +14,5 @@
  * limitations under the License.
  */
 export { WelcomeScreen } from './WelcomeScreen';
+export type { SelectedAgentInfo } from './WelcomeScreen';
+export { AgentCatalogDialog } from './AgentCatalogDialog';

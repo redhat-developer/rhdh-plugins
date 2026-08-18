@@ -10,6 +10,10 @@ ARTIFACTS=()
 PUSH_FAILED=""
 TERMINATED=false
 COMMIT_ID=""
+TARGET_BRANCH_IS_NEW=false
+
+# Path where x2a-convertor writes error details on failure
+export X2A_ERROR_FILE="/tmp/x2a-error.txt"
 
 # Report job result back to the backend.
 report_result() {
@@ -50,28 +54,233 @@ report_result() {
 }
 
 # Strip git tokens from files before committing to prevent secret leaks.
-# The x2a tool may embed SOURCE_REPO_TOKEN in generated files (e.g., Policyfile.lock.json)
-# when Chef resolves cookbook sources using authenticated URLs.
+# The x2a tool may embed SOURCE_REPO_TOKEN in generated files (e.g., Policyfile.lock.json).
 sanitize_secrets() {
   local dir="$1"
   echo "=== Sanitizing secrets from output files ==="
 
-  # Match GitHub PATs (ghp_, gho_, github_pat_) and generic token@host patterns in URLs
+  # Match credentials embedded in URLs: https://token@host or https://user:token@host
   local count=0
   while IFS= read -r -d '' file; do
-    if grep -qE 'https?://[^@/:[:space:]]+@' "$file" 2>/dev/null; then
-      # Strip token from URLs: https://ghp_xxx@github.com/... → https://github.com/...
-      sed -i 's|https\?://[^@/:[:space:]]*@|https://|g' "$file"
+    if grep -qE 'https?://[^@/[:space:]]+@' "$file" 2>/dev/null; then
+      # Strip credentials from URLs: https://user:token@host/... → https://host/...
+      sed -i 's|https\?://[^@/[:space:]]*@|https://|g' "$file"
       echo "  Sanitized: ${file#/workspace/target/}"
       count=$((count + 1))
     fi
-  done < <(find "$dir" -type f \( -name '*.json' -o -name '*.yaml' -o -name '*.yml' -o -name '*.lock' \) -print0 2>/dev/null)
+  done < <(find "$dir" -type f \( -name '*.json' -o -name '*.yaml' -o -name '*.yml' -o -name '*.lock' -o -name '*.md' \) -print0 2>/dev/null)
 
   if [ "$count" -eq 0 ]; then
     echo "  No secrets found in output files"
   else
     echo "  Sanitized ${count} file(s)"
   fi
+}
+
+# Run an x2a tool command with error reporting.
+# On failure, reads the error details file written by x2a-convertor and sets ERROR_MESSAGE.
+# On success, clears ERROR_MESSAGE.
+# Captured output is stored in X2A_OUTPUT for callers that need to parse it.
+# Usage: run_x2a uv run app.py <phase> [args...]
+run_x2a() {
+  rm -f "${X2A_ERROR_FILE}"
+
+  echo "Command: $*"
+
+  local tmpfile
+  tmpfile=$(mktemp)
+
+  set +e
+  "$@" 2>&1 | tee "${tmpfile}"
+  local rc=${PIPESTATUS[0]}
+  set -e
+
+  X2A_OUTPUT=$(cat "${tmpfile}")
+  rm -f "${tmpfile}"
+
+  if [ ${rc} -ne 0 ]; then
+    ERROR_MESSAGE="Unexpected error during ${PHASE} phase. See the job log for details."
+    if [ -f "${X2A_ERROR_FILE}" ]; then
+      ERROR_MESSAGE+=" Message: $(cat "${X2A_ERROR_FILE}")"
+    fi
+    exit ${rc}
+  fi
+
+  ERROR_MESSAGE=""
+}
+
+# Copy all new/modified files from the source directory to a destination.
+# Uses git to detect what the x2a tool created or changed, so we don't
+# hardcode file patterns and never miss output (e.g. .github/workflows/).
+#
+# Usage: copy_changed_files <source_dir> <dest_dir> [exclude_pattern ...]
+#   source_dir       — git repo where x2a wrote its output
+#   dest_dir         — where to copy the files
+#   exclude_pattern  — optional grep -E patterns for files to skip
+#                      (files we copied INTO source before running x2a)
+copy_changed_files() {
+  local source_dir="$1"
+  local dest_dir="$2"
+  shift 2
+  local exclude_patterns=("$@")
+
+  # Always exclude internal telemetry file
+  exclude_patterns+=('\.x2a-telemetry\.json$')
+
+  echo "=== Copying changed files to ${dest_dir}/ ==="
+
+  pushd "${source_dir}" > /dev/null
+
+  # Collect new (untracked) and modified files into a single list
+  local changed_files=()
+  while IFS= read -r file; do
+    [[ -z "$file" ]] && continue
+    changed_files+=("$file")
+  done < <(git ls-files --others --exclude-standard)
+
+  while IFS= read -r file; do
+    [[ -z "$file" ]] && continue
+    changed_files+=("$file")
+  done < <(git diff --name-only)
+
+  # Check for gitignored files that x2a created
+  local ignored_files=()
+  while IFS= read -r file; do
+    [[ -z "$file" ]] && continue
+    ignored_files+=("$file")
+  done < <(git ls-files --others --ignored --exclude-standard)
+
+  if [[ ${#ignored_files[@]} -gt 0 ]]; then
+    echo "  WARNING: ${#ignored_files[@]} file(s) created by x2a but blocked by .gitignore:"
+    for file in "${ignored_files[@]}"; do
+      echo "    - $file"
+    done
+  fi
+
+  if [[ ${#changed_files[@]} -eq 0 ]]; then
+    echo "  No changed files detected"
+    popd > /dev/null
+    return 0
+  fi
+
+  local copied=0
+  for file in "${changed_files[@]}"; do
+    # Apply exclude patterns
+    local skip=false
+    for pattern in "${exclude_patterns[@]}"; do
+      if echo "$file" | grep -qE "$pattern"; then
+        echo "  Skipping (excluded): $file"
+        skip=true
+        break
+      fi
+    done
+    if [[ "$skip" = true ]]; then
+      continue
+    fi
+
+    mkdir -p "${dest_dir}/$(dirname "$file")"
+    cp -v "${source_dir}/$file" "${dest_dir}/$file"
+    copied=$((copied + 1))
+  done
+
+  echo "  Copied ${copied} file(s)"
+
+  popd > /dev/null
+}
+
+# Authenticated git wrappers using credential helper.
+# Backstage provides tokens in format "username:password" where:
+# - GitHub:    "git:token"           (username is ignored, token is used)
+# - GitLab:    "oauth2:token"        (username oauth2, token is the actual token)
+# - Bitbucket: "x-token-auth:token"  (username x-token-auth, token is the actual token)
+git_source_repo() {
+  local username="${SOURCE_REPO_TOKEN%%:*}"
+  local password="${SOURCE_REPO_TOKEN#*:}"
+
+  git -c "credential.helper=!f() { test \"\$1\" = get && printf 'username=${username}\\npassword=${password}\\n'; }; f" "$@"
+}
+
+git_target_repo() {
+  local username="${TARGET_REPO_TOKEN%%:*}"
+  local password="${TARGET_REPO_TOKEN#*:}"
+
+  git -c "credential.helper=!f() { test \"\$1\" = get && printf 'username=${username}\\npassword=${password}\\n'; }; f" "$@"
+}
+
+# Build standardized commit message for x2a job phases.
+# Returns: Echoes the commit message to stdout
+build_commit_message() {
+  cat <<EOF
+x2a: ${PHASE} phase for ${MODULE_NAME:-project}
+
+Phase: ${PHASE}
+Project: ${PROJECT_ID}
+Module: ${MODULE_NAME:-N/A}
+Job: ${JOB_ID}
+
+Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
+EOF
+}
+
+# Commit and push changes to target repository.
+# Returns: Sets COMMIT_ID to the pushed commit SHA, or exits on push failure.
+git_commit_and_push() {
+  local commit_message="$1"
+  local fail_on_error="${2:-true}"  # Default: exit on push failure
+
+  if [ ! -d /workspace/target/.git ]; then
+    echo "ERROR: Target repository not initialized"
+    return 1
+  fi
+
+  cd /workspace/target
+
+  # Sanitize secrets from output files before committing
+  sanitize_secrets "${PROJECT_PATH:-/workspace/target}"
+
+  git add "${PROJECT_DIR}" 2>/dev/null || git add -A || true
+
+  # Check if there are changes to commit
+  if git diff --cached --quiet; then
+    echo "No changes to commit"
+    COMMIT_ID=$(git rev-parse HEAD 2>/dev/null || echo "")
+    return 0
+  fi
+
+  git commit -m "${commit_message}" || echo "Commit failed, but continuing"
+
+  # Push to remote
+  if [ "${TARGET_BRANCH_IS_NEW}" = "true" ]; then
+    echo "Pushing new branch '${TARGET_REPO_BRANCH}' to ${TARGET_REPO_URL}..."
+    if ! git_target_repo push -u origin "${TARGET_REPO_BRANCH}"; then
+      local error_msg="Failed to push new branch '${TARGET_REPO_BRANCH}' to ${TARGET_REPO_URL}"
+      echo "ERROR: ${error_msg}"
+      if [ "${fail_on_error}" = "true" ]; then
+        ERROR_MESSAGE="${error_msg}"
+        exit 1
+      else
+        PUSH_FAILED="${error_msg}"
+        return 1
+      fi
+    fi
+  else
+    echo "Pushing to existing branch '${TARGET_REPO_BRANCH}'..."
+    git_target_repo pull --rebase origin "${TARGET_REPO_BRANCH}" 2>/dev/null || true
+    if ! git_target_repo push origin "${TARGET_REPO_BRANCH}"; then
+      local error_msg="Failed to push to ${TARGET_REPO_URL} branch ${TARGET_REPO_BRANCH}"
+      echo "ERROR: ${error_msg}"
+      if [ "${fail_on_error}" = "true" ]; then
+        ERROR_MESSAGE="${error_msg}"
+        exit 1
+      else
+        PUSH_FAILED="${error_msg}"
+        return 1
+      fi
+    fi
+  fi
+
+  COMMIT_ID=$(git rev-parse HEAD 2>/dev/null || echo "")
+  echo "Successfully pushed commit: ${COMMIT_ID}"
 }
 
 # Cleanup trap: fires on every exit (success or failure).
@@ -82,27 +291,8 @@ cleanup() {
 
   # Always try to commit and push whatever is in the working directory
   if [ -d /workspace/target/.git ]; then
-    cd /workspace/target
-
-    # Sanitize secrets from output files before committing
-    sanitize_secrets "${PROJECT_PATH:-/workspace/target}"
-
-    git add "${PROJECT_DIR:-${PROJECT_ID}.${PROJECT_ABBREV}}" 2>/dev/null || git add -A || true
-    git commit -m "x2a: ${PHASE} phase for ${MODULE_NAME:-project}
-
-Phase: ${PHASE}
-Project: ${PROJECT_ID}
-Module: ${MODULE_NAME:-N/A}
-Job: ${JOB_ID}
-
-Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
-" || true
-    git pull --rebase origin "${TARGET_REPO_BRANCH}" 2>/dev/null || true
-    COMMIT_ID=$(git rev-parse HEAD 2>/dev/null || echo "")
-    if ! git push origin "${TARGET_REPO_BRANCH}"; then
-      PUSH_FAILED="Failed to push to ${TARGET_REPO_URL} branch ${TARGET_REPO_BRANCH}"
-      echo "ERROR: ${PUSH_FAILED}"
-    fi
+    local commit_msg=$(build_commit_message)
+    git_commit_and_push "${commit_msg}" false  # Don't exit on error in cleanup
   fi
 
   if [ "$TERMINATED" = true ]; then
@@ -119,23 +309,22 @@ Co-Authored-By: ${GIT_AUTHOR_NAME} <${GIT_AUTHOR_EMAIL}>
 git_clone_repos() {
   echo "=== Cloning source repository ==="
   ERROR_MESSAGE="Failed to clone source repository from ${SOURCE_REPO_URL}"
-  git clone --depth=1 --single-branch --branch="${SOURCE_REPO_BRANCH}" \
-    "https://${SOURCE_REPO_TOKEN}@${SOURCE_REPO_URL#https://}" \
-    /workspace/source
+  git_source_repo clone --depth=1 --single-branch \
+    --branch="${SOURCE_REPO_BRANCH}" "${SOURCE_REPO_URL}" /workspace/source
 
   echo "=== Cloning target repository ==="
-  local target_auth_url="https://${TARGET_REPO_TOKEN}@${TARGET_REPO_URL#https://}"
-
   ERROR_MESSAGE="Failed to clone target repository from ${TARGET_REPO_URL}"
-  if git clone --depth=1 --single-branch --branch="${TARGET_REPO_BRANCH}" \
-      "${target_auth_url}" /workspace/target 2>/dev/null; then
+  if git_target_repo clone --depth=1 --single-branch \
+      --branch="${TARGET_REPO_BRANCH}" "${TARGET_REPO_URL}" /workspace/target 2>/dev/null; then
     # Repo and branch exist — cloned successfully
-    :
-  elif git clone --depth=1 "${target_auth_url}" /workspace/target 2>/dev/null; then
+    TARGET_BRANCH_IS_NEW=false
+  elif git_target_repo clone --depth=1 \
+      "${TARGET_REPO_URL}" /workspace/target 2>/dev/null; then
     # Repo exists but branch doesn't — create target branch locally
     echo "Branch '${TARGET_REPO_BRANCH}' not found on remote, creating it"
     cd /workspace/target
     git checkout -b "${TARGET_REPO_BRANCH}"
+    TARGET_BRANCH_IS_NEW=true
   else
     # Repo doesn't exist or can't be accessed — init empty
     echo "Target repo doesn't exist, initializing empty repo"
@@ -143,7 +332,8 @@ git_clone_repos() {
     cd /workspace/target
     git init
     git checkout -b "${TARGET_REPO_BRANCH}"
-    git remote add origin "${target_auth_url}"
+    git remote add origin "${TARGET_REPO_URL}"
+    TARGET_BRANCH_IS_NEW=true
   fi
 
   ERROR_MESSAGE=""
@@ -162,7 +352,7 @@ trap 'TERMINATED=true' SIGTERM SIGINT
 # │   ├── [source code]    # Original Chef/Puppet/etc code
 # │   └── [x2a outputs]    # x2a tool writes here (migration-plan.md, etc)
 # └── target/              # Cloned target repo (output, committed to git)
-#     └── [PROJECT_ID].[PROJECT_ABBREV]/
+#     └── [SANITIZED_NAME]-[SHORT_UUID]/   # e.g. my-chef-migration-0d52e6
 #         ├── migration-plan.md
 #         └── modules/[MODULE_NAME]/
 #             ├── migration-plan-{module_name}.md
@@ -177,7 +367,6 @@ echo "=========================================="
 echo ""
 echo "Job Configuration:"
 echo "  Project ID:    ${PROJECT_ID}"
-echo "  Project Abbrev: ${PROJECT_ABBREV}"
 echo "  Module ID:     ${MODULE_ID:-N/A}"
 echo "  Module Name:   ${MODULE_NAME:-N/A}"
 echo "  Job ID:        ${JOB_ID}"
@@ -194,7 +383,8 @@ git_clone_repos
 # Define paths
 TARGET_BASE="/workspace/target"
 SOURCE_BASE="/workspace/source"
-PROJECT_DIR="${PROJECT_ID}.${PROJECT_ABBREV}"
+
+# PROJECT_DIR is pre-computed by the backend (sanitized name + short UUID)
 PROJECT_PATH="${TARGET_BASE}/${PROJECT_DIR}"
 
 # Create project directory in target
@@ -208,6 +398,14 @@ case "${PHASE}" in
     echo "Will read from:  ${SOURCE_BASE}"
     echo "Will write to:   ${PROJECT_PATH}/migration-plan.md"
     echo ""
+
+    # Copy accepted rules into the source directory so the x2a tool can find them
+    # Uses -rL to dereference ConfigMap symlinks into regular files
+    if [[ -n "${ACCEPTED_RULES_DIR:-}" ]] && [[ -d "${ACCEPTED_RULES_DIR}" ]]; then
+      echo "=== Copying accepted rules to source directory ==="
+      cp -rL "${ACCEPTED_RULES_DIR}" "${SOURCE_BASE}/x2a-rules"
+      ls -la "${SOURCE_BASE}/x2a-rules/"
+    fi
 
     # Check if x2a tool is available (required)
     if [ ! -d /app ] || [ ! -f /app/app.py ]; then
@@ -225,19 +423,28 @@ case "${PHASE}" in
     # Run the init command
     # Usage: app.py init [OPTIONS] USER_REQUIREMENTS
     #   --source-dir DIRECTORY  Source directory to analyze
-    USER_REQ="${USER_PROMPT:-Analyze the Chef cookbooks and create a migration plan}"
-    echo "Command: uv run app.py init --source-dir ${SOURCE_BASE} \"${USER_REQ}\""
-    ERROR_MESSAGE="Unexpected error during init phase. See the job log for details."
-    uv run app.py init --source-dir "${SOURCE_BASE}" "${USER_REQ}"
-    ERROR_MESSAGE=""
+    #   --refresh               Skip plan generation, only regenerate metadata
+    USER_REQ="${USER_PROMPT:-Analyze the source configuration and create a migration plan}"
+    INIT_ARGS=(--source-dir "${SOURCE_BASE}")
+    if [ "${INIT_REFRESH:-}" = "true" ]; then
+      INIT_ARGS+=(--refresh)
+      echo "Running in REFRESH mode (resync module list from existing plan)"
 
-    # Copy output to target location
-    # Note: x2a tool writes files to the source directory (--source-dir)
-    echo "Copying output to ${PROJECT_PATH}/"
-    cp -v "${SOURCE_BASE}/migration-plan.md" "${PROJECT_PATH}/"
-    # Copy any other generated files (like metadata)
-    cp -v "${SOURCE_BASE}"/*.json "${PROJECT_PATH}/" 2>/dev/null || true
-    cp -v "${SOURCE_BASE}"/*.yaml "${PROJECT_PATH}/" 2>/dev/null || true
+      # Copy existing migration plan from target repo so the x2a tool can find
+      # it in source-dir and skip plan regeneration.
+      if [ -f "${PROJECT_PATH}/migration-plan.md" ]; then
+        echo "Copying existing migration-plan.md from target to source for refresh..."
+        cp -v "${PROJECT_PATH}/migration-plan.md" "${SOURCE_BASE}/migration-plan.md"
+      else
+        echo "ERROR: REFRESH mode requires migration-plan.md in ${PROJECT_PATH}/ but the file was not found" >&2
+        exit 1
+      fi
+    fi
+    run_x2a uv run app.py init "${INIT_ARGS[@]}" "${USER_REQ}"
+
+    # Copy all files the x2a tool created/modified to the target project directory
+    # Exclude accepted rules we copied in before running x2a
+    copy_changed_files "${SOURCE_BASE}" "${PROJECT_PATH}" '^x2a-rules/'
 
     # Show what was created
     echo ""
@@ -277,6 +484,9 @@ case "${PHASE}" in
     echo "Copying migration-plan.md from target project directory to source root..."
     cp -v "${PROJECT_PATH}/migration-plan.md" "${SOURCE_BASE}/migration-plan.md"
 
+    # Copy agent files from init phase output back to source directory
+    cp -v "${PROJECT_PATH}/INPUT-AGENTS.md" "${SOURCE_BASE}/" 2>/dev/null || true
+
     # Check if x2a tool is available (required)
     if [ ! -d /app ] || [ ! -f /app/app.py ]; then
       ERROR_MESSAGE="/app/app.py not found - x2a tool is required"
@@ -290,17 +500,12 @@ case "${PHASE}" in
     echo "Working directory: $(pwd)"
 
     USER_REQ="${USER_PROMPT:-Analyze the module '${MODULE_NAME}' for migration to Ansible}"
-    echo "Command: uv run app.py analyze --source-dir ${SOURCE_BASE} \"${USER_REQ}\""
-    ERROR_MESSAGE="Unexpected error during analyze phase. See the job log for details."
-    uv run app.py analyze --source-dir "${SOURCE_BASE}" "${USER_REQ}"
-    ERROR_MESSAGE=""
+    run_x2a uv run app.py analyze --source-dir "${SOURCE_BASE}" "${USER_REQ}"
 
-    # Copy output to target location
-    # Note: x2a tool produces migration-plan-{module_name}.md (spaces replaced with underscores)
-    echo "Copying output to ${OUTPUT_DIR}/"
-    cp -v "${SOURCE_BASE}/migration-plan-${MODULE_NAME_SANITIZED}.md" "${OUTPUT_DIR}/"
-    cp -v "${SOURCE_BASE}"/*.json "${OUTPUT_DIR}/" 2>/dev/null || true
-    cp -v "${SOURCE_BASE}"/*.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
+    # Copy all files the x2a tool created/modified to the module output directory
+    # Exclude files we copied into source before running x2a
+    copy_changed_files "${SOURCE_BASE}" "${OUTPUT_DIR}" \
+      '^migration-plan\.md$'
 
     echo ""
     echo "=== Output directory contents ==="
@@ -334,6 +539,17 @@ case "${PHASE}" in
     echo "Copying migration-plan.md from target to source directory..."
     cp -v "${PROJECT_PATH}/migration-plan.md" "${SOURCE_BASE}/migration-plan.md"
 
+    # Copy agent files from init phase output back to source directory
+    cp -v "${PROJECT_PATH}/EXPORT-AGENTS.md" "${SOURCE_BASE}/" 2>/dev/null || true
+
+    # Copy migration-dependencies from target repo back to source dir.
+    # The analyze phase created this directory and committed it to the target repo.
+    # The migrate phase runs in a separate pod, so we need to restore it.
+    if [ -d "${OUTPUT_DIR}/migration-dependencies" ]; then
+      echo "Copying migration-dependencies from target to source directory..."
+      cp -rv "${OUTPUT_DIR}/migration-dependencies" "${SOURCE_BASE}/"
+    fi
+
     # Check if x2a tool is available (required)
     if [ ! -d /app ] || [ ! -f /app/app.py ]; then
       ERROR_MESSAGE="/app/app.py not found - x2a tool is required"
@@ -346,23 +562,23 @@ case "${PHASE}" in
     cd /app
     echo "Working directory: $(pwd)"
 
+    if [ -z "${SOURCE_TECHNOLOGY:-}" ]; then
+      echo "WARNING: SOURCE_TECHNOLOGY not set, defaulting to Chef"
+      SOURCE_TECHNOLOGY="Chef"
+    fi
+
     USER_REQ="${USER_PROMPT:-Migrate this module to Ansible}"
-    echo "Command: uv run app.py migrate --source-dir ${SOURCE_BASE} --source-technology Chef --high-level-migration-plan ${PROJECT_PATH}/migration-plan.md --module-migration-plan ${OUTPUT_DIR}/migration-plan-${MODULE_NAME_SANITIZED}.md \"${USER_REQ}\""
-    ERROR_MESSAGE="Unexpected error during migrate phase. See the job log for details."
-    uv run app.py migrate \
+    run_x2a uv run app.py migrate \
       --source-dir "${SOURCE_BASE}" \
-      --source-technology Chef \
+      --source-technology "${SOURCE_TECHNOLOGY}" \
       --high-level-migration-plan "${PROJECT_PATH}/migration-plan.md" \
       --module-migration-plan "${OUTPUT_DIR}/migration-plan-${MODULE_NAME_SANITIZED}.md" \
       "${USER_REQ}"
-    ERROR_MESSAGE=""
 
-    # Copy output to target location
-    # Note: x2a tool writes to ansible/roles/{module}/ in the source directory
-    echo "Copying output to ${OUTPUT_DIR}/"
-    cp -rv "${SOURCE_BASE}/ansible" "${OUTPUT_DIR}/" 2>/dev/null || true
-    cp -v "${SOURCE_BASE}"/*.json "${OUTPUT_DIR}/" 2>/dev/null || true
-    cp -v "${SOURCE_BASE}"/*.yaml "${OUTPUT_DIR}/" 2>/dev/null || true
+    # Copy all files the x2a tool created/modified to the module output directory
+    # Exclude files we copied into source before running x2a
+    copy_changed_files "${SOURCE_BASE}" "${OUTPUT_DIR}" \
+      '^migration-plan\.md$' '^migration-dependencies/'
 
     echo ""
     echo "=== Output directory contents ==="
@@ -397,15 +613,11 @@ case "${PHASE}" in
 
     # Step 1: publish-project — assemble Ansible project from migrated role
     echo "=== Step 1: Assembling Ansible project ==="
-    echo "Command: uv run app.py publish-project ${PROJECT_DIR} ${MODULE_NAME}"
-
     # publish-project reads from {project_id}/modules/{module_name}/ansible/roles/{module_name}/
     # and writes to {project_id}/ansible-project/
     # It operates relative to CWD, so we run from TARGET_BASE
     pushd "${TARGET_BASE}"
-    ERROR_MESSAGE="Unexpected error during publish phase (publish-project). See the job log for details."
-    uv run --project /app /app/app.py publish-project "${PROJECT_DIR}" "${MODULE_NAME}"
-    ERROR_MESSAGE=""
+    run_x2a uv run --project /app /app/app.py publish-project "${PROJECT_DIR}" "${MODULE_NAME}"
     popd
 
     # Verify ansible-project was created
@@ -419,20 +631,24 @@ case "${PHASE}" in
     echo "=== Ansible project contents ==="
     find "${ANSIBLE_PROJECT_DIR}" -type f | head -50
 
+    # Commit and push the Ansible project to git BEFORE calling publish-aap
+    # This ensures AAP syncs the latest commit with the new playbooks
+    echo ""
+    echo "=== Committing and pushing Ansible project to git ==="
+    commit_msg=$(build_commit_message)
+    git_commit_and_push "${commit_msg}"
+
     # Step 2: publish-aap — register with AAP and sync
     echo ""
     echo "=== Step 2: Publishing to AAP ==="
-    echo "Command: uv run app.py publish-aap --target-repo ${TARGET_REPO_URL} --target-branch ${TARGET_REPO_BRANCH} --project-id ${PROJECT_DIR}"
     cd /app
-    ERROR_MESSAGE="Unexpected error during publish phase (publish-aap). See the job log for details."
-    PUBLISH_OUTPUT=$(uv run app.py publish-aap \
+    run_x2a uv run app.py publish-aap \
       --target-repo "${TARGET_REPO_URL}" \
       --target-branch "${TARGET_REPO_BRANCH}" \
-      --project-id "${PROJECT_DIR}" 2>&1 | tee /dev/stderr)
-    ERROR_MESSAGE=""
+      --project-id "${PROJECT_DIR}"
 
-    # Parse AAP project ID from output and construct URL
-    AAP_PROJECT_ID=$(echo "${PUBLISH_OUTPUT}" | grep -oP 'ID: \K[0-9]+' | tail -1)
+    # Parse AAP project ID from captured output
+    AAP_PROJECT_ID=$(echo "${X2A_OUTPUT}" | grep -oP 'ID: \K[0-9]+' | tail -1)
     if [ -n "${AAP_PROJECT_ID}" ]; then
       ARTIFACTS+=("ansible_project:${AAP_CONTROLLER_URL}/execution/projects/${AAP_PROJECT_ID}/details")
     else

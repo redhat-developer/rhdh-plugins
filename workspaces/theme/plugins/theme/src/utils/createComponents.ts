@@ -22,6 +22,7 @@ import { type CSSObject } from '@mui/material/styles';
 
 import { ThemeConfig, ThemeConfigOptions, RHDHThemePalette } from '../types';
 import { redHatFontFaces, redHatFonts } from '../fonts';
+import { resolveNavigationSidebarColors } from './navigationSidebarColors';
 
 export type Component = {
   defaultProps?: unknown;
@@ -33,6 +34,7 @@ export type Components = UnifiedThemeOptions['components'] & {
   BackstageHeaderTabs?: Component;
   BackstageSidebar?: Component;
   BackstageSidebarItem?: Component;
+  BackstageSidebarSubmenuItem?: Component;
   BackstagePage?: Component;
   BackstageContent?: Component;
   BackstageContentHeader?: Component;
@@ -173,17 +175,18 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
   }
 
   // MUI AppBar
-  if (options.appBar !== 'mui') {
-    components.MuiAppBar = {
-      styleOverrides: {
-        root: {
+  components.MuiAppBar = {
+    styleOverrides: {
+      root: {
+        boxShadow: 'none',
+        ...(options.appBar !== 'mui' && {
           backgroundColor: general.appBarBackgroundColor,
           backgroundImage: general.appBarBackgroundImage,
           outline: 'none',
-        },
+        }),
       },
-    };
-  }
+    },
+  };
 
   // MUI buttons
   // Don't disableRipple for MuiButtonBase as it will affect all the buttons
@@ -616,16 +619,32 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
   }
 
   if (options.sidebars !== 'mui') {
+    const {
+      sidebarBackgroundColor,
+      sidebarItemInteractionBackgroundColor,
+      navigationItemColor,
+      navigationSelectedColor,
+    } = resolveNavigationSidebarColors(themeConfig);
+
     components.BackstageSidebar = {
       styleOverrides: {
         drawer: {
           gap: '0.25rem',
-          borderRight: `0.5rem solid ${general.sidebarBackgroundColor}`,
           paddingBottom: '1.5rem',
-          backgroundColor: general.sidebarBackgroundColor,
+          backgroundColor: sidebarBackgroundColor,
+          alignItems: 'stretch',
           '& hr': {
             backgroundColor: general.sidebarDividerColor,
           },
+          '#rhdh-sidebar-layout & a[aria-current="page"], & a[aria-current="page"]':
+            {
+              background: `${sidebarItemInteractionBackgroundColor} !important`,
+              backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
+              color: `${navigationSelectedColor} !important`,
+              '& .MuiTypography-root': {
+                color: 'inherit !important',
+              },
+            },
         },
       },
     };
@@ -633,11 +652,11 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       styleOverrides: {
         root: {
           borderRadius: '6px',
-          width: 'calc(100% - 0.5rem) !important',
+          width: 'calc(100% - 1rem) !important',
           marginLeft: '0.5rem !important',
           textDecorationLine: 'none',
           '&:hover, &:focus-visible': {
-            backgroundColor: general.sidebarItemSelectedBackgroundColor,
+            backgroundColor: sidebarItemInteractionBackgroundColor,
           },
         },
         label: {
@@ -646,15 +665,24 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           },
         },
         selected: {
-          backgroundColor: general.sidebarItemSelectedBackgroundColor,
+          backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
+          color: `${navigationSelectedColor} !important`,
+        },
+      },
+    };
+    components.BackstageSidebarSubmenuItem = {
+      styleOverrides: {
+        selected: {
+          background: `${sidebarItemInteractionBackgroundColor} !important`,
+          color: `${navigationSelectedColor} !important`,
         },
       },
     };
     components.MuiBottomNavigation = {
       styleOverrides: {
         root: {
-          backgroundColor: `${general.sidebarBackgroundColor} !important`,
-          borderColor: `${general.sidebarBackgroundColor} !important`,
+          backgroundColor: `${sidebarBackgroundColor} !important`,
+          borderColor: `${sidebarBackgroundColor} !important`,
         },
       },
     };
@@ -664,19 +692,19 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       },
       styleOverrides: {
         root: {
-          color: `${palette.text?.primary} !important`,
-          backgroundColor: `${general.sidebarBackgroundColor} !important`,
+          color: `${navigationItemColor} !important`,
+          backgroundColor: `${sidebarBackgroundColor} !important`,
           borderRadius: '6px',
           borderTop: '3px solid transparent !important', // default mui selected styling
           paddingTop: '6px !important', // default mui selected styling
           marginTop: '-1px !important', // default mui selected styling
           '&:hover, &:focus-visible': {
-            backgroundColor: `${general.sidebarItemSelectedBackgroundColor} !important`,
+            backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
           },
-        },
-        selected: {
-          backgroundColor: `${general.sidebarItemSelectedBackgroundColor} !important`,
-          color: `${palette.text?.primary} !important`,
+          '&.Mui-selected': {
+            backgroundColor: `${sidebarItemInteractionBackgroundColor} !important`,
+            color: `${navigationSelectedColor} !important`,
+          },
         },
       },
     };
@@ -685,7 +713,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         root: {
           // undocumented Backstage makeStyles
           "& [class*='makeStyles-overlay-']": {
-            backgroundColor: `${general.sidebarBackgroundColor} !important`,
+            backgroundColor: `${sidebarBackgroundColor} !important`,
           },
           '& hr': {
             backgroundColor: general.sidebarDividerColor,
@@ -726,9 +754,19 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     components.BackstageSidebarPage = {
       styleOverrides: {
         root: {
+          // Fill the viewport so short pages don't leave a gap below the shell.
+          // App root wrappers (e.g. ApplicationDrawer) can collapse to content
+          // height; without a min-height here the page-inset background stops
+          // early and body/html shows through (RHDHBUGS-3498).
+          minHeight: '100vh',
+          // Let BUI Container's flex: 1 grow into the remaining viewport below
+          // PluginHeader / Header slots (those slots set flex: none).
+          display: 'flex',
+          flexDirection: 'column',
           // Controls the page inset as in PF6 -- only in desktop view
           '@media (min-width: 600px)': {
-            backgroundColor: general.sidebarBackgroundColor,
+            backgroundColor:
+              general.pageInsetBackgroundColor ?? general.appBarBackgroundColor,
             // Prevents the main content from scrolling weird
             overflowY: 'auto',
             // Cancel out the spacing produced by the page inset border when
@@ -744,8 +782,33 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
               clipPath: 'rect(0 100% 100% 0 round 1rem)',
               // Emulate the PatternFly 6 page inset using a margin
               margin: general.pageInset,
+              // Fill the inset well so short pages use mainSectionBackgroundColor
+              // (#292929) instead of leaving a pageInset (#151515) band below content.
+              backgroundColor: general.mainSectionBackgroundColor,
+              minHeight: `calc(100vh - 2 * ${general.pageInset})`,
               // Prevent overflow in the main container due to the margin
               maxHeight: `calc(100vh - 2 * ${general.pageInset})`,
+            },
+            // NFS / BUI pages use Container instead of <main>. Match the content
+            // well color (same token as BackstageContent) and rely on flex: 1
+            // from BUI rather than 100vh so PluginHeader siblings are not overflowed.
+            "& > [class*='bui-Container']:not([class*='bui-Header'])": {
+              backgroundColor: general.mainSectionBackgroundColor,
+            },
+            // Settings and other pages render BackstageContent as <article>.
+            // Grow it to fill the flex column so pageInset doesn't show as a band.
+            '& > article, & > [class*="BackstageContent-root"]': {
+              flex: 1,
+              backgroundColor: general.mainSectionBackgroundColor,
+            },
+            // Prevent TechDocs double scrollbar: the page-inset max-height puts
+            // <main>'s scrollbar at the same position as the ToC sidebar scrollbar.
+            // Letting <main> expand moves the scroll to the parent root instead.
+            "& > main:has([data-testid='techdocs-native-shadowroot'])": {
+              height: 'auto !important',
+              maxHeight: 'none !important',
+              borderRadius: '1rem',
+              marginRight: '0.5rem',
             },
             // The Backstage suspense is an MUI LinearProgress that is not wrapped by
             // a `main`. We need to give it 100vh height to fill the page for the page

@@ -15,9 +15,22 @@
  */
 
 import { render, screen } from '@testing-library/react';
-import { SearchOption } from './SearchOption';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { Result, SearchDocument } from '@backstage/plugin-search-common';
+
+import {
+  MockTrans,
+  mockUseTranslation,
+} from '../../test-utils/mockTranslations';
+import { SearchOption } from './SearchOption';
+
+jest.mock('../../hooks/useTranslation', () => ({
+  useTranslation: mockUseTranslation,
+}));
+
+jest.mock('../../components/Trans', () => ({
+  Trans: MockTrans,
+}));
 
 jest.mock('./SearchResultItem', () => ({
   SearchResultItem: jest.fn(({ option }) => <div>{option}</div>),

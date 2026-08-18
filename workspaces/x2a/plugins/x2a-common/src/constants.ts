@@ -32,14 +32,14 @@ export const DEFAULT_PAGE_SORT = 'created_at';
 export const DEFAULT_PAGE_ORDER = 'desc';
 
 /**
- * Path to the default chef conversion project scaffolder template.
+ * Path to the default conversion project scaffolder template.
  *
  * This might be subject to exposing as a plugin configuration option in the future.
  *
  * @public
  */
-export const CREATE_CHEF_PROJECT_TEMPLATE_PATH =
-  '/create/templates/default/chef-conversion-project-template';
+export const CREATE_PROJECT_TEMPLATE_PATH =
+  '/create/templates/default/x2a-conversion-project-template';
 
 /**
  * Prefix for the scaffolder secret keys for the SCM provider tokens.
@@ -86,3 +86,29 @@ export const IN_MEMORY_SORT_WARN_THRESHOLD = 100;
  * @public
  */
 export const PROJECT_LIST_SORT_BY_STATUS_HARD_THRESHOLD = 500;
+
+/**
+ * URL hash for the project details page deep link that opens the init re-run confirmation flow.
+ *
+ * @public
+ */
+export const RUN_INIT_DEEP_LINK_HASH = '#runinit';
+
+/**
+ * URL hash for the project details page deep link that opens the bulk “run all
+ * eligible modules” confirmation (next phase where possible).
+ *
+ * @public
+ */
+export const RUN_NEXT_DEEP_LINK_HASH = '#runnext';
+
+/**
+ * Pattern for a valid Backstage entity reference, e.g.
+ * `user:default/my-name` or `group:default/team-a`.
+ *
+ * Namespace and name segments are restricted to lowercase alphanumerics,
+ * dashes, underscores, and dots to match the Backstage catalog conventions.
+ *
+ * @public
+ */
+export const ENTITY_REF_RE = /^(user|group):[a-z0-9_.-]+\/[a-z0-9_.-]+$/;

@@ -13,60 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useMemo } from 'react';
-
+import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@backstage/core-plugin-api';
-import useAsync from 'react-use/lib/useAsync';
 
 import { scorecardApiRef } from '../api';
 import { useTranslation } from './useTranslation';
+import { UseResponseData } from './types';
 import { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 interface UseAggregatedScorecardOptions {
-  metricId: string;
+  aggregationId: string;
+  enabled?: boolean;
 }
 
-export const useAggregatedScorecard = (
-  options: UseAggregatedScorecardOptions,
-) => {
+export const useAggregatedScorecard = ({
+  aggregationId,
+  enabled = true,
+}: UseAggregatedScorecardOptions): UseResponseData<AggregatedMetricResult> => {
+  const { t } = useTranslation();
   const scorecardApi = useApi(scorecardApiRef);
 
-  const { metricId } = options;
-  const { t } = useTranslation();
-
-  const { error, loading, value } = useAsync(async () => {
-    try {
-      const aggregatedScorecard = await scorecardApi.getAggregatedScorecard(
-        metricId,
-      );
-
-      if (
-        !aggregatedScorecard ||
-        Array.isArray(aggregatedScorecard) ||
-        typeof aggregatedScorecard !== 'object'
-      ) {
-        throw new Error(t('errors.invalidApiResponse'));
+  const { error, isLoading, data } = useQuery({
+    queryKey: ['aggregatedScorecard', aggregationId],
+    queryFn: async () => {
+      try {
+        return await scorecardApi.getAggregatedScorecard(aggregationId);
+      } catch (err) {
+        if (err instanceof Error) {
+          throw err;
+        }
+        throw new Error(
+          t('errors.fetchError' as any, {
+            error: String(err),
+          }),
+        );
       }
+    },
+    enabled: enabled,
+  });
 
-      return aggregatedScorecard;
-    } catch (err) {
-      if (err instanceof Error) {
-        throw err;
-      }
-      throw new Error(
-        t('errors.fetchError' as any, {
-          error: String(err),
-        }),
-      );
-    }
-  }, [scorecardApi]);
-
-  return useMemo(
-    () => ({
-      aggregatedScorecard: value as AggregatedMetricResult,
-      loadingData: loading,
-      error,
-    }),
-    [value, loading, error],
-  );
+  return {
+    data,
+    isLoading,
+    error: error ?? undefined,
+  };
 };

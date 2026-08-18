@@ -2,12 +2,12 @@ permission:
   enabled: false
 
 auth:
-  environment: production
+  environment: development
   providers:
     github:
-      production:
-        clientId: TODO
-        clientSecret: TODO
+      development:
+        clientId: ${GITHUB_CLIENT_ID}
+        clientSecret: ${GITHUB_CLIENT_SECRET}
         signIn:
           resolvers:
             - resolver: usernameMatchingUserEntityName
@@ -15,36 +15,89 @@ auth:
 catalog:
   locations:
     - type: file
-      target: ../../examples/all-scorecards.yaml
+      target: ../../examples/all-scorecards-location.yaml
       rules:
-        - allow:
-            [Component, System, API, Resource, Location, Template, User, Group]
+        - allow: [Component]
+    - type: file
+      target: ../../examples/orgs/guest.yaml
+      rules:
+        - allow: [User, Group]
     # TODO: Additional catalog entities for your user
 
-proxy:
-  '/jira/api':
-    target: ${JIRA_URL}
-    headers:
-      Authorization: ${JIRA_TOKEN}
-      Accept: 'application/json'
-      Content-Type: 'application/json'
-      X-Atlassian-Token: 'nocheck'
-      User-Agent: 'MY-UA-STRING'
+# ToDo: uncomment this when Jira Proxy is needed
+# proxy:
+#   '/jira/api':
+#     target: ${JIRA_URL}
+#     headers:
+#       Authorization: ${JIRA_TOKEN}
+#       Accept: 'application/json'
+#       Content-Type: 'application/json'
+#       X-Atlassian-Token: 'nocheck'
+#       User-Agent: 'MY-UA-STRING'
 
 integrations:
   github:
     - host: github.com
-      token: TODO
+      token: ${GITHUB_TOKEN}
 
 jira:
-  proxyPath: /jira/api
+  # ToDo: uncomment this when Jira Proxy is needed
+  # proxyPath: /jira/api
+
   product: cloud
   baseUrl: ${JIRA_URL}
   token: ${JIRA_TOKEN}
 
+  # ToDo: uncomment this when Jira Data Center is needed
+  # product: datacenter
+  # baseUrl: ${JIRA_DATA_CENTER_URL}
+  # token: ${JIRA_DATA_CENTER_TOKEN}
+
 scorecard:
-  plugins:
+  # Optional Scorecard overrides (aggregationKPIs defaults are in app-config.yaml).
+  aggregationKPIs:
+    openPrsWeightedKpi:
+      title: GitHub Open PRs (weighted health)
+      type: weightedStatusScore
+      description: Weighted health score for open PRs by threshold status across your entities.
+      metricId: github.openPRs
+      options:
+        statusScores:
+          success: 100
+          warning: 3
+          error: 0
+        thresholds:
+          rules:
+            - key: success
+              expression: '>=80'
+              color: '#6bb300' # green
+            - key: warning
+              expression: '51-80'
+              color: 'rgb(224, 189, 108)' # light orange
+            - key: error
+              expression: '<51'
+              color: '#be1ec7' # purple
+  metricProviders:
     jira:
-      open_issues:
-        options:
-          mandatoryFilter: Resolution = Unresolved
+      openIssues:
+        schedule:
+          frequency: { days: 1 }
+          timeout: { minutes: 2 }
+          initialDelay: { minutes: 1 }
+        # Optional — uncomment to narrow which Jira issues are counted (otherwise all open issues match the provider rules).
+        # options:
+        #   mandatoryFilter: type = Story
+        #   customFilter: priority = High
+    github:
+      openPRs:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<=20'
+              color: 'success.main'
+            - key: warning
+              expression: '20-50'
+              color: '#FFFF00'
+            - key: error
+              expression: '>50'
+              color: 'rgb(255, 0, 0)'

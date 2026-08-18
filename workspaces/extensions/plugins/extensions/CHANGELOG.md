@@ -1,5 +1,80 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 0.19.1
+
+### Patch Changes
+
+- 83d8a47: Removed unused `StylesProvider` and `createGenerateClassName` JSS wrapper from plugin router. Dropped `@mui/styles` dependency since JSS class-name isolation is no longer needed after the MUI5 migration.
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.19.1
+
+## 0.19.0
+
+### Minor Changes
+
+- 2636ed4: Replaced `disabled` field with `enabled` in plugin configuration
+- 90a1446: Backstage version bump to v1.52.1
+
+### Patch Changes
+
+- 493df1f: Fix accessibility violations (role-img-alt, aria-prohibited-attr, label) and remove suppression flag from e2e accessibility tests.
+- Updated dependencies [2636ed4]
+- Updated dependencies [90a1446]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.19.0
+
+## 0.18.1
+
+### Patch Changes
+
+- 6d0a82b: Bump `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.11` to fix broken `config.d.ts` in earlier versions.
+- e24f46f: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.0`.
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.18.1
+
+## 0.18.0
+
+### Minor Changes
+
+- 763507e: Removed the Plugin Certification Program. The `CERTIFIED_BY` annotation, certification badges, certified filter, and all related UI, translations, and metadata have been removed from the Extensions Catalog.
+- 53a5d1d: bump to 1.51.1
+
+### Patch Changes
+
+- 3ad2ec3: migrated MUIv4 references to MUIv5
+- Updated dependencies [763507e]
+- Updated dependencies [53a5d1d]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.18.0
+
+## 0.17.1
+
+### Patch Changes
+
+- f3da767: Fix pagination state reset when searching in the Installed Packages table, add localization support for pagination labels, fix table state being lost when opening package drawer, and fix author filter appearing cleared when clicking author link in plugin drawer.
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.17.1
+
+## 0.17.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-extensions-common@0.17.0
+
+## 0.16.1
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.16.1
+
+## 0.16.0
+
+### Minor Changes
+
+- 2820dc2: Backstage version bump to v1.49.2
+
+### Patch Changes
+
+- Updated dependencies [2820dc2]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.16.0
+
 ## 0.15.0
 
 ### Minor Changes

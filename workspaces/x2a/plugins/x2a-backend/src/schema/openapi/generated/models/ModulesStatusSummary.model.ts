@@ -50,4 +50,8 @@ export interface ModulesStatusSummary {
    * Number of modules in cancelled state (last job was cancelled by the user)
    */
   cancelled: number;
+  /**
+   * Number of soft-deleted modules (excluded from other counts)
+   */
+  removed: number;
 }

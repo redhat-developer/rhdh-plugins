@@ -59,6 +59,41 @@ extensions:
   directory: /path/to/custom/extensions
 ```
 
+### Multi-source catalog layout
+
+When the `install-dynamic-plugins` init container is configured with `EXTRA_CATALOG_INDEX_IMAGES`, it extracts additional catalog entities into subdirectories under `extra/`:
+
+```
+<extensionsDir>/
+  catalog-entities/                          # primary source
+    plugins/
+      plugin-a.yaml
+  extra/
+    community/                               # extra source "community"
+      catalog-entities/
+        plugins/
+          plugin-b.yaml
+    partner/                                 # extra source "partner"
+      catalog-entities/
+        plugins/
+          plugin-c.yaml
+```
+
+The provider reads all YAML files recursively from the extensions directory and automatically sets the `extensions.backstage.io/catalog-source` annotation on each entity based on where it was found:
+
+- Entities from the primary `catalog-entities/` tree get `catalog-source: "primary"`
+- Entities from `extra/<name>/catalog-entities/` get `catalog-source: "<name>"`
+
+This allows the Extensions UI to identify which catalog each plugin came from (e.g. Red Hat, Community, partner).
+
+### Collision behavior
+
+When multiple YAML sources define the same entity identity (`kind:namespace/name`), the provider handles collisions as follows:
+
+- If definitions are equivalent, it keeps the first definition and logs a warning.
+- If definitions conflict, it logs a warning and skips the conflicting definition.
+- Entities with the same `kind`/`name` but different namespaces are treated as distinct entities and are both ingested.
+
 ## Plugin configuration YAML Guide:
 
 This YAML file is used to add extensions plugin to the Software catalog in your backstage application.

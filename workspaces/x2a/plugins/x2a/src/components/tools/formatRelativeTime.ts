@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+
 import { TFuncX2A } from '../../hooks/useTranslation';
 
 const num2str = (n: number) => n.toString();
@@ -101,15 +103,31 @@ export const secondsBetween = (from: Date, to: Date): number => {
 };
 
 /**
+ * Returns the effective execution duration in seconds for a job,
+ * preferring telemetry timestamps (actual pod execution time) over
+ * the job-level timestamps which may aggregate multiple k8s pod retries.
+ */
+export const getEffectiveDurationSeconds = (job: Job): number | undefined => {
+  const start = job.telemetry?.startedAt ?? job.startedAt;
+  const end = job.telemetry?.endedAt ?? job.finishedAt;
+  if (!start || !end) return undefined;
+  return secondsBetween(start, end);
+};
+
+/**
  * Formats relative timing as a status string:
  * - No start time: "-"
  * - Running (no finish time): "Running for 2m 30s"
  * - Finished: "Finished 5m ago (took 15m 0s)"
+ *
+ * @param durationOverrideSeconds - if provided, overrides the "took" duration
+ *   (e.g. telemetry-based duration that excludes k8s pod restart time).
  */
 export const formatRelativeTime = (
   t: TFuncX2A,
   startedAt: Date | undefined,
   finishedAt: Date | undefined,
+  durationOverrideSeconds?: number,
 ): string => {
   if (!startedAt) {
     return t('time.jobTiming.noStartTime');
@@ -121,6 +139,8 @@ export const formatRelativeTime = (
   }
 
   const timeAgo = formatTimeAgo(t, finishedAt);
-  const duration = formatDuration(t, secondsBetween(startedAt, finishedAt));
+  const durationSec =
+    durationOverrideSeconds ?? secondsBetween(startedAt, finishedAt);
+  const duration = formatDuration(t, durationSec);
   return t('time.jobTiming.finished' as any, { timeAgo, duration });
 };

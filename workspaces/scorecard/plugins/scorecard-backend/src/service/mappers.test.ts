@@ -15,12 +15,21 @@
  */
 
 import { AggregatedMetricMapper } from './mappers';
-import { DbAggregatedMetric } from '../database/types';
 import {
+  DbAggregatedMetric,
+  DbScalarAggregatedMetric,
+} from '../database/types';
+import {
+  aggregationTypes,
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  mockScalarAggregationConfig,
+  mockStatusGroupedAggregationConfig,
+  mockWeightedStatusScoreAggregationConfig,
+} from '../../__fixtures__/mockAggregationConfig';
 
 describe('AggregatedMetricMapper', () => {
   const mockMetric: Metric = {
@@ -28,19 +37,22 @@ describe('AggregatedMetricMapper', () => {
     title: 'Test Metric',
     description: 'Test description',
     type: 'number',
+    thresholds: { rules: [] },
   };
 
   describe('toAggregatedMetric', () => {
     it('should map DbAggregatedMetric to AggregatedMetric', () => {
       const dbMetric: DbAggregatedMetric = {
-        metric_id: 'test.metric',
+        metricId: 'test.metric',
         total: 10,
-        max_timestamp: new Date('2024-01-15T10:00:00Z'),
+        maxTimestamp: new Date('2024-01-15T10:00:00Z'),
         statusCounts: {
           success: 5,
           warning: 3,
           error: 2,
         },
+        calculationErrorCount: 1,
+        latestEntityCount: 12,
       };
 
       const result = AggregatedMetricMapper.toAggregatedMetric(dbMetric);
@@ -53,6 +65,8 @@ describe('AggregatedMetricMapper', () => {
         },
         total: 10,
         timestamp: '2024-01-15T10:00:00.000Z',
+        entitiesConsidered: 12,
+        calculationErrorCount: 1,
       });
     });
 
@@ -63,189 +77,287 @@ describe('AggregatedMetricMapper', () => {
         values: {},
         total: 0,
         timestamp: expect.any(String),
+        entitiesConsidered: 0,
+        calculationErrorCount: 0,
       });
     });
 
     it('should handle empty statusCounts', () => {
       const dbMetric: DbAggregatedMetric = {
-        metric_id: 'test.metric',
+        metricId: 'test.metric',
         total: 0,
-        max_timestamp: new Date('2024-01-15T10:00:00Z'),
+        maxTimestamp: new Date('2024-01-15T10:00:00Z'),
         statusCounts: {},
+        calculationErrorCount: 0,
+        latestEntityCount: 0,
       };
 
       const result = AggregatedMetricMapper.toAggregatedMetric(dbMetric);
 
       expect(result.values).toEqual({});
       expect(result.total).toBe(0);
+      expect(result.entitiesConsidered).toBe(0);
+      expect(result.calculationErrorCount).toBe(0);
+    });
+  });
+
+  describe('toScalarAggregatedMetric', () => {
+    it('should map DbScalarAggregatedMetric to scalar aggregate', () => {
+      const dbMetric: DbScalarAggregatedMetric = {
+        metricId: 'test.metric',
+        value: 847,
+        total: 42,
+        latestEntityCount: 45,
+        calculationErrorCount: 3,
+        maxTimestamp: new Date('2024-01-15T10:00:00Z'),
+      };
+
+      const result = AggregatedMetricMapper.toScalarAggregatedMetric(dbMetric);
+
+      expect(result).toEqual({
+        value: 847,
+        total: 42,
+        entitiesConsidered: 45,
+        calculationErrorCount: 3,
+        timestamp: '2024-01-15T10:00:00.000Z',
+      });
+    });
+
+    it('should handle undefined input with defaults', () => {
+      const result = AggregatedMetricMapper.toScalarAggregatedMetric();
+
+      expect(result).toEqual({
+        value: 0,
+        total: 0,
+        entitiesConsidered: 0,
+        calculationErrorCount: 0,
+        timestamp: expect.any(String),
+      });
+    });
+  });
+
+  describe('toAggregationMetadata', () => {
+    it('should map to AggregationMetadata from metric and aggregationConfig', () => {
+      const aggregationConfig = mockStatusGroupedAggregationConfig({
+        title: 'KPI title',
+        description: 'KPI description',
+      });
+
+      const result = AggregatedMetricMapper.toAggregationMetadata(
+        mockMetric,
+        aggregationConfig,
+      );
+
+      expect(result).toEqual({
+        title: 'KPI title',
+        description: 'KPI description',
+        type: 'number',
+        unit: undefined,
+        history: undefined,
+        aggregationType: aggregationTypes.statusGrouped,
+      });
+    });
+
+    it('should use aggregationType from aggregationConfig', () => {
+      const aggregationConfig = mockWeightedStatusScoreAggregationConfig({
+        title: 'Weighted KPI',
+        description: 'Weighted KPI description',
+      });
+
+      const result = AggregatedMetricMapper.toAggregationMetadata(
+        mockMetric,
+        aggregationConfig,
+      );
+
+      expect(result).toEqual({
+        title: 'Weighted KPI',
+        description: 'Weighted KPI description',
+        type: 'number',
+        unit: undefined,
+        history: undefined,
+        aggregationType: aggregationTypes.weightedStatusScore,
+      });
+    });
+
+    it('should include filter in metadata for scalar KPI config', () => {
+      const aggregationConfig = mockScalarAggregationConfig(
+        aggregationTypes.sum,
+        {
+          filter: { status: 'error' },
+        },
+      );
+      const result = AggregatedMetricMapper.toAggregationMetadata(
+        mockMetric,
+        aggregationConfig,
+      );
+
+      expect(result.filter).toEqual({ status: 'error' });
+    });
+
+    it('should omit filter in metadata when scalar KPI config has no filter', () => {
+      const aggregationConfig = mockScalarAggregationConfig(
+        aggregationTypes.sum,
+      );
+      const result = AggregatedMetricMapper.toAggregationMetadata(
+        mockMetric,
+        aggregationConfig,
+      );
+
+      expect(result).not.toHaveProperty('filter');
+    });
+
+    it('should include unit and history when defined on the metric', () => {
+      const metricWithUnitAndHistory: Metric = {
+        ...mockMetric,
+        unit: 'h',
+        history: true,
+      };
+
+      const aggregationConfig = mockStatusGroupedAggregationConfig({
+        title: 'KPI title',
+        description: 'KPI description',
+      });
+
+      const result = AggregatedMetricMapper.toAggregationMetadata(
+        metricWithUnitAndHistory,
+        aggregationConfig,
+      );
+
+      expect(result).toEqual({
+        title: 'KPI title',
+        description: 'KPI description',
+        type: 'number',
+        unit: 'h',
+        history: true,
+        aggregationType: aggregationTypes.statusGrouped,
+      });
     });
   });
 
   describe('toAggregatedMetricResult', () => {
     const thresholds: ThresholdConfig = DEFAULT_NUMBER_THRESHOLDS;
 
-    it('should map to AggregatedMetricResult with all threshold keys present', () => {
-      const aggregatedMetric = {
-        values: {
-          success: 5,
-          warning: 3,
-          error: 2,
-        },
-        total: 10,
-        timestamp: '2024-01-15T10:00:00.000Z',
-      };
-
+    it('should wrap a statusGrouped-shaped result and aggregation metadata from config', () => {
+      const aggregationConfig = mockStatusGroupedAggregationConfig({
+        id: 'kpi-1',
+        title: 'KPI',
+        description: 'KPI desc',
+      });
       const result = AggregatedMetricMapper.toAggregatedMetricResult(
         mockMetric,
-        thresholds,
-        aggregatedMetric,
+        {
+          total: 3,
+          timestamp: '2024-01-15T10:00:00.000Z',
+          values: [
+            { name: 'success', count: 1, score: 0 },
+            { name: 'warning', count: 1, score: 0 },
+            { name: 'error', count: 1, score: 0 },
+          ],
+          calculationErrorCount: 0,
+          entitiesConsidered: 3,
+          thresholds,
+        },
+        aggregationConfig,
       );
 
       expect(result).toEqual({
         id: 'test.metric',
         status: 'success',
         metadata: {
-          title: 'Test Metric',
-          description: 'Test description',
+          title: 'KPI',
+          description: 'KPI desc',
           type: 'number',
+          unit: undefined,
           history: undefined,
+          aggregationType: 'statusGrouped',
         },
         result: {
-          ...aggregatedMetric,
+          total: 3,
+          timestamp: '2024-01-15T10:00:00.000Z',
           values: [
-            { name: 'success', count: 5 },
-            { name: 'warning', count: 3 },
-            { name: 'error', count: 2 },
+            { name: 'success', count: 1, score: 0 },
+            { name: 'warning', count: 1, score: 0 },
+            { name: 'error', count: 1, score: 0 },
           ],
+          calculationErrorCount: 0,
+          entitiesConsidered: 3,
           thresholds,
         },
       });
     });
 
-    it('should fill missing threshold keys with count 0', () => {
-      const aggregatedMetric = {
-        values: { success: 5 },
-        total: 5,
-        timestamp: '2024-01-15T10:00:00.000Z',
-      };
-
+    it('should wrap a weightedStatusScore-shaped result and aggregationType from config', () => {
+      const aggregationConfig = mockWeightedStatusScoreAggregationConfig({
+        id: 'weightedKpi',
+        title: 'Weighted Status Score KPI',
+        description: 'Weighted status score KPI',
+      });
       const result = AggregatedMetricMapper.toAggregatedMetricResult(
         mockMetric,
-        thresholds,
-        aggregatedMetric,
+        {
+          total: 10,
+          timestamp: '2024-01-15T10:00:00.000Z',
+          values: [
+            { name: 'success', count: 5, score: 100 },
+            { name: 'warning', count: 3, score: 50 },
+            { name: 'error', count: 2, score: 0 },
+          ],
+          thresholds,
+          weightedStatusScore: 50,
+          weightedStatusSum: 500,
+          weightedStatusMaxPossible: 1000,
+          aggregationChartDisplayColor: 'warning.main',
+        } as any,
+        aggregationConfig,
       );
 
-      expect(result.result.values).toEqual([
-        { name: 'success', count: 5 },
-        { name: 'warning', count: 0 },
-        { name: 'error', count: 0 },
-      ]);
-      expect(result.result.total).toBe(5);
+      expect(result.metadata.aggregationType).toBe(
+        aggregationTypes.weightedStatusScore,
+      );
+      expect((result.result as any).weightedStatusScore).toBe(50);
     });
 
-    it('should maintain threshold rules order', () => {
-      const aggregatedMetric = {
-        values: {
-          error: 2,
-          success: 5,
+    it('should include filter in metadata for scalar KPI result wrapper', () => {
+      const aggregationConfig = mockScalarAggregationConfig(
+        aggregationTypes.sum,
+        {
+          filter: { status: 'error' },
         },
-        total: 7,
-        timestamp: '2024-01-15T10:00:00.000Z',
-      };
-
+      );
       const result = AggregatedMetricMapper.toAggregatedMetricResult(
         mockMetric,
-        thresholds,
-        aggregatedMetric,
-      );
-
-      expect(result.result.values).toEqual([
-        { name: 'success', count: 5 },
-        { name: 'warning', count: 0 },
-        { name: 'error', count: 2 },
-      ]);
-    });
-
-    it('should handle custom threshold keys', () => {
-      const customThresholds: ThresholdConfig = {
-        rules: [
-          { key: 'critical', expression: '>100' },
-          { key: 'high', expression: '50-100' },
-          { key: 'warning', expression: '10-50' },
-          { key: 'low', expression: '<10' },
-        ],
-      };
-
-      const aggregatedMetric = {
-        values: {
-          critical: 1,
-          low: 8,
+        {
+          value: 30,
+          total: 2,
+          entitiesConsidered: 4,
+          calculationErrorCount: 1,
+          timestamp: '2024-01-15T10:00:00.000Z',
+          thresholds,
         },
-        total: 9,
-        timestamp: '2024-01-15T10:00:00.000Z',
-      };
-
-      const result = AggregatedMetricMapper.toAggregatedMetricResult(
-        mockMetric,
-        customThresholds,
-        aggregatedMetric,
+        aggregationConfig,
       );
 
-      expect(result.result.values).toEqual([
-        { name: 'critical', count: 1 },
-        { name: 'high', count: 0 },
-        { name: 'warning', count: 0 },
-        { name: 'low', count: 8 },
-      ]);
+      expect(result.metadata.filter).toEqual({ status: 'error' });
     });
 
-    it('should include color in thresholds when provided', () => {
-      const thresholdsWithColor: ThresholdConfig = {
-        rules: [
-          { key: 'success', expression: '<10', color: '#4caf50' },
-          { key: 'warning', expression: '10-50', color: 'warning.main' },
-          { key: 'error', expression: '>50' },
-        ],
-      };
-
-      const aggregatedMetric = {
-        values: { success: 5 },
-        total: 5,
-        timestamp: '2024-01-15T10:00:00.000Z',
-      };
-
+    it('should omit filter in metadata for scalar KPI result wrapper without filter', () => {
+      const aggregationConfig = mockScalarAggregationConfig(
+        aggregationTypes.sum,
+      );
       const result = AggregatedMetricMapper.toAggregatedMetricResult(
         mockMetric,
-        thresholdsWithColor,
-        aggregatedMetric,
+        {
+          value: 30,
+          total: 2,
+          entitiesConsidered: 4,
+          calculationErrorCount: 1,
+          timestamp: '2024-01-15T10:00:00.000Z',
+          thresholds,
+        },
+        aggregationConfig,
       );
 
-      expect(result.result.thresholds.rules).toEqual([
-        { key: 'success', expression: '<10', color: '#4caf50' },
-        { key: 'warning', expression: '10-50', color: 'warning.main' },
-        { key: 'error', expression: '>50' },
-      ]);
-    });
-
-    it('should handle empty values with all threshold keys filled as 0', () => {
-      const aggregatedMetric = {
-        values: {},
-        total: 0,
-        timestamp: '2024-01-15T10:00:00.000Z',
-      };
-
-      const result = AggregatedMetricMapper.toAggregatedMetricResult(
-        mockMetric,
-        thresholds,
-        aggregatedMetric,
-      );
-
-      expect(result.result.values).toEqual([
-        { name: 'success', count: 0 },
-        { name: 'warning', count: 0 },
-        { name: 'error', count: 0 },
-      ]);
-      expect(result.result.total).toBe(0);
+      expect(result.metadata).not.toHaveProperty('filter');
     });
   });
 });

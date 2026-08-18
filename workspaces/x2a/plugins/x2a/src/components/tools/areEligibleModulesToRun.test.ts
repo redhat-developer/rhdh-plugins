@@ -31,14 +31,13 @@ const migrationPlan = {
 
 const baseProject: Omit<Project, 'status'> = {
   id: '123',
-  abbreviation: 'TST',
   name: 'Test Project',
   sourceRepoUrl: 'https://example.com/source',
   targetRepoUrl: 'https://example.com/target',
   sourceRepoBranch: 'main',
   targetRepoBranch: 'main',
   createdAt: new Date('2024-01-01'),
-  createdBy: 'user:default/tester',
+  ownedBy: 'user:default/tester',
   migrationPlan,
 };
 
@@ -50,6 +49,7 @@ const zeroSummary: ModulesStatusSummary = {
   running: 0,
   error: 0,
   cancelled: 0,
+  removed: 0,
 };
 
 describe('areEligibleModulesToRun', () => {
@@ -179,6 +179,7 @@ describe('areEligibleModulesToRun', () => {
           running: 2,
           error: 2,
           cancelled: 0,
+          removed: 0,
         },
       },
     };

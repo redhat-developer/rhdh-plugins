@@ -18,7 +18,6 @@ const mockSetSecrets = jest.fn();
 const mockAuthenticate = jest.fn();
 
 jest.mock('@backstage/plugin-scaffolder-react', () => ({
-  ...jest.requireActual('@backstage/plugin-scaffolder-react'),
   useTemplateSecrets: () => ({
     secrets: {},
     setSecrets: mockSetSecrets,
@@ -63,19 +62,19 @@ function toDataUrl(csv: string): string {
 }
 
 const VALID_CSV = toDataUrl(
-  'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
-    'Project A,PA,https://github.com/org/repo-a,main,main',
+  'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
+    'Project A,https://github.com/org/repo-a,main,main',
 );
 
 const MIXED_CSV = toDataUrl(
-  'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch\n' +
-    'GH Project,GH,https://github.com/org/gh-repo,main,https://github.com/org/gh-target,main\n' +
-    'GL Project,GL,https://gitlab.com/org/gl-repo,main,https://gitlab.com/org/gl-target,main',
+  'name,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch\n' +
+    'GH Project,https://github.com/org/gh-repo,main,https://github.com/org/gh-target,main\n' +
+    'GL Project,https://gitlab.com/org/gl-repo,main,https://gitlab.com/org/gl-target,main',
 );
 
 const CROSS_PROVIDER_CSV = toDataUrl(
-  'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch\n' +
-    'Cross Project,CP,https://github.com/org/source,main,https://gitlab.com/org/target,main',
+  'name,sourceRepoUrl,sourceRepoBranch,targetRepoUrl,targetRepoBranch\n' +
+    'Cross Project,https://github.com/org/source,main,https://gitlab.com/org/target,main',
 );
 
 const flushAsync = () => new Promise(r => setTimeout(r, 0));
@@ -185,7 +184,7 @@ describe('RepoAuthentication', () => {
     });
 
     it('should show error for CSV missing required columns', async () => {
-      const invalidCsv = toDataUrl('name,abbreviation\nProject,PRJ');
+      const invalidCsv = toDataUrl('name,description\nProject,PRJ');
       await renderComponent({
         formContext: {
           formData: { csvContent: invalidCsv },
@@ -346,8 +345,8 @@ describe('RepoAuthentication', () => {
       });
 
       const newCsv = toDataUrl(
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
-          'New Project,NP,https://gitlab.com/org/new-repo,main,main',
+        'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
+          'New Project,https://gitlab.com/org/new-repo,main,main',
       );
 
       mockAuthenticate.mockResolvedValue([
@@ -978,8 +977,8 @@ describe('RepoAuthentication', () => {
       expect(screen.getByText('github')).toBeInTheDocument();
 
       const newCsv = toDataUrl(
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
-          'New Project,NP,https://gitlab.com/org/new-repo,main,main',
+        'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
+          'New Project,https://gitlab.com/org/new-repo,main,main',
       );
 
       mockAuthenticate.mockResolvedValue([
@@ -1115,8 +1114,8 @@ describe('RepoAuthentication', () => {
 
       // Now change CSV before the retry resolves
       const newCsv = toDataUrl(
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
-          'New Project,NP,https://gitlab.com/org/new-repo,main,main',
+        'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
+          'New Project,https://gitlab.com/org/new-repo,main,main',
       );
 
       mockAuthenticate.mockResolvedValue([
@@ -1401,8 +1400,8 @@ describe('RepoAuthentication', () => {
 
       // Auth is in-flight for first CSV. Change CSV now.
       const newCsv = toDataUrl(
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
-          'New Project,NP,https://gitlab.com/org/new-repo,main,main',
+        'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
+          'New Project,https://gitlab.com/org/new-repo,main,main',
       );
 
       mockAuthenticate.mockResolvedValue([
@@ -1640,10 +1639,10 @@ describe('RepoAuthentication', () => {
   describe('provider deduplication', () => {
     it('should call authenticate once per distinct provider even with multiple CSV rows', async () => {
       const multiRowSameProvider = toDataUrl(
-        'name,abbreviation,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
-          'Project A,PA,https://github.com/org/repo-a,main,main\n' +
-          'Project B,PB,https://github.com/org/repo-b,main,main\n' +
-          'Project C,PC,https://github.com/org/repo-c,main,main',
+        'name,sourceRepoUrl,sourceRepoBranch,targetRepoBranch\n' +
+          'Project A,https://github.com/org/repo-a,main,main\n' +
+          'Project B,https://github.com/org/repo-b,main,main\n' +
+          'Project C,https://github.com/org/repo-c,main,main',
       );
 
       await renderComponent({

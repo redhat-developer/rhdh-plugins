@@ -1,0 +1,65 @@
+/*
+ * Minimal CSS for the Workflow Editor.
+ * Scoped under .wf-editor to avoid leaking.
+ * Theme-aware CSS custom properties are set by EditorCanvas via JS.
+ */
+
+/* ── CSS custom properties (defaults for light mode, overridden by JS) ── */
+.wf-editor {
+  --wf-handle-bg: rgba(0, 0, 0, 0.35);
+  --wf-handle-border: rgba(255, 255, 255, 0.9);
+  --wf-canvas-dots: rgba(0, 0, 0, 0.06);
+}
+
+/* ── React Flow attribution ──────────────────────────────────── */
+.wf-editor .react-flow__attribution {
+  display: none;
+}
+
+/* ── Handles: hidden until node hover ────────────────────────── */
+.wf-editor .react-flow__handle {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.wf-editor .react-flow__node:hover .react-flow__handle {
+  opacity: 1;
+  background: var(--wf-handle-bg);
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--wf-handle-border);
+  border-radius: 50%;
+}
+
+/* ── Node selection: let BaseNode outline handle it ──────────── */
+.wf-editor .react-flow__node.selected {
+  box-shadow: none;
+}
+
+/* ── Standard-variant input fix ──────────────────────────────── */
+.wf-editor .MuiInput-underline::before {
+  border-bottom-width: 1px;
+}
+
+.wf-editor label.MuiInputLabel-root {
+  font-weight: 400;
+}
+
+/* ── Accordion sections in config panel ──────────────────────── */
+.wf-editor .MuiAccordion-root {
+  overflow: hidden;
+}
+
+.wf-editor .MuiAccordionSummary-root {
+  min-height: 36px;
+}
+
+/* ── Reduced motion ──────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .wf-editor .react-flow__handle,
+  .wf-editor .wf-node,
+  .wf-editor .react-flow__edge {
+    transition: none !important;
+    animation: none !important;
+  }
+}

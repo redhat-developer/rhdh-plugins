@@ -1,5 +1,92 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.9.0
+
+### Minor Changes
+
+- f48dfb4: Add conditional RBAC policy support for orchestrator workflows using the `IS_ALLOWED_WORKFLOW_ID` rule. Dynamic workflow-specific permissions (`orchestrator.workflow.<workflowId>` and `orchestrator.workflow.use.<workflowId>`) are deprecated and will be removed in the next release.
+
+  Migrate from deprecated dynamic permissions to conditional policies. See `docs/MIGRATION-CONDITIONAL-POLICIES.md`.
+
+### Patch Changes
+
+- c74276c: Expose the dedicated `orchestrator.rjsf-widgets` configuration namespace to form widget templates. Values in this namespace are public to the frontend and must not contain secrets.
+
+## 3.8.0
+
+### Minor Changes
+
+- 10f9b87: Backstage version bump to v1.52.0
+
+## 3.7.3
+
+### Patch Changes
+
+- eade824: update the header to be consistent with the code base.
+
+## 3.7.2
+
+### Patch Changes
+
+- b2307f3: The updated overview of a workflow will have the availability property if the isAvailable prop is false
+- e1a86f0: return total count as a parameter for the instances
+
+## 3.7.1
+
+### Patch Changes
+
+- 43e0722: add the average duration for a workflow run in the stats
+
+## 3.7.0
+
+### Minor Changes
+
+- bd80b86: Backstage version bump to v1.51.1
+
+### Patch Changes
+
+- bbcdc56: update the workflow overview api to include the success ratio for a worfklow. Also add the total runs(for the last 30 days) for each workflow
+
+## 3.6.4
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+
+## 3.6.3
+
+### Patch Changes
+
+- dfd28b3: fix: returns the version of the workflow in the overview and instance reponses
+
+## 3.6.2
+
+### Patch Changes
+
+- d85bf56: chore: add new config value for contentLengthLimit
+
+## 3.6.1
+
+### Patch Changes
+
+- 16d41c2: Add Run as Event when `orchestrator.kafka` is configured: send `isEvent` with execute input, redirect to workflow runs with a notice when the response id is `kafkaEvent`.
+
+## 3.6.0
+
+### Minor Changes
+
+- 2212e8d: Backstage version bump to v1.49.3
+
+### Patch Changes
+
+- 665a75c: fix: update axios for CVE-2026-40175
+
+## 3.5.3
+
+### Patch Changes
+
+- 5a9d9d8: Updated dependency `@openapitools/openapi-generator-cli` to `2.30.2`.
+
 ## 3.5.2
 
 ### Patch Changes

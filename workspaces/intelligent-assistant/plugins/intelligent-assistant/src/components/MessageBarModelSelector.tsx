@@ -1,0 +1,144 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { Ref, useEffect, useState } from 'react';
+
+import { makeStyles } from '@material-ui/core';
+import {
+  Dropdown,
+  DropdownItem,
+  DropdownList,
+  MenuToggle,
+  MenuToggleElement,
+  Tooltip,
+} from '@patternfly/react-core';
+import { AngleDownIcon } from '@patternfly/react-icons';
+
+import { useTranslation } from '../hooks/useTranslation';
+
+type MessageBarModelSelectorProps = {
+  selectedModel: string;
+  models: { label: string; value: string; provider: string }[];
+  onSelect: (model: string) => void;
+  disabled?: boolean;
+  disabledTooltip?: string;
+};
+
+const useStyles = makeStyles(theme => ({
+  selectorToggle: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+    color: theme.palette.text.secondary,
+    fontSize: 14,
+    fontWeight: 500,
+    cursor: 'pointer',
+    padding: '4px 8px',
+    borderRadius: 8,
+    border: 'none',
+    background: 'transparent',
+    '&:hover': {
+      backgroundColor: theme.palette.action.hover,
+    },
+    '&:disabled': {
+      cursor: 'not-allowed',
+      opacity: 0.5,
+    },
+  },
+  dropdown: {
+    '& ul, & li': {
+      padding: 0,
+      margin: 0,
+    },
+  },
+}));
+
+export const MessageBarModelSelector = ({
+  selectedModel,
+  models,
+  onSelect,
+  disabled = false,
+  disabledTooltip,
+}: MessageBarModelSelectorProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const classes = useStyles();
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    if (disabled) {
+      setIsOpen(false);
+    }
+  }, [disabled]);
+
+  const selectedModelLabel =
+    models.find(m => m.value === selectedModel)?.label ?? selectedModel;
+
+  const toggle = (toggleRef: Ref<MenuToggleElement>) => (
+    <MenuToggle
+      ref={toggleRef}
+      onClick={() => setIsOpen(!isOpen)}
+      isExpanded={isOpen}
+      isDisabled={disabled}
+      variant="plain"
+      className={classes.selectorToggle}
+      aria-label={t('aria.chatbotSelector')}
+    >
+      {selectedModelLabel}
+      <AngleDownIcon />
+    </MenuToggle>
+  );
+
+  const dropdown = (
+    <Dropdown
+      className={classes.dropdown}
+      isOpen={isOpen && !disabled}
+      onSelect={(_e, value) => {
+        if (disabled) return;
+        onSelect(value as string);
+        setIsOpen(false);
+      }}
+      onOpenChange={open => setIsOpen(open)}
+      popperProps={{ position: 'left' }}
+      shouldFocusToggleOnSelect
+      shouldFocusFirstItemOnOpen={false}
+      toggle={toggle}
+      isScrollable={models.length > 10}
+      maxMenuHeight={models.length > 10 ? '240px' : undefined}
+    >
+      <DropdownList>
+        {models.map(model => (
+          <DropdownItem
+            value={model.value}
+            key={model.value}
+            isSelected={selectedModel === model.value}
+          >
+            {model.label}
+          </DropdownItem>
+        ))}
+      </DropdownList>
+    </Dropdown>
+  );
+
+  if (disabled && disabledTooltip) {
+    return (
+      <Tooltip content={disabledTooltip}>
+        <span>{dropdown}</span>
+      </Tooltip>
+    );
+  }
+
+  return dropdown;
+};

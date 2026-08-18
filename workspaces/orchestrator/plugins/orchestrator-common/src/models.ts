@@ -74,6 +74,8 @@ export type ProcessInstanceVariables = Record<string, unknown>;
 
 export interface ProcessInstance {
   id: string;
+  /** Process definition version from the data index */
+  version?: string;
   processId: string;
   processName?: string;
   parentProcessInstanceId?: string;

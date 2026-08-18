@@ -92,8 +92,6 @@ describe('ProjectTable – expand & actions', () => {
       await waitFor(() => {
         expect(screen.getByText('Description')).toBeInTheDocument();
         expect(screen.getByText('Description 0')).toBeInTheDocument();
-        expect(screen.getByText('Abbreviation')).toBeInTheDocument();
-        expect(screen.getByText('P0')).toBeInTheDocument();
       });
     });
   });

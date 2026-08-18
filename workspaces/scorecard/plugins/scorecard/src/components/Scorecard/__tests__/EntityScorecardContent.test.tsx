@@ -17,6 +17,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { EntityScorecardContent } from '../EntityScorecardContent';
 import { mockScorecardSuccessData } from '../../../../__fixtures__/scorecardData';
+import { getStatusConfig } from '../../../utils';
+import { useScorecards } from '../../../hooks/useScorecards';
 
 // Mock the child components
 jest.mock('../../Common/NoScorecardsState', () => {
@@ -86,26 +88,29 @@ jest.mock('../../../hooks/useScorecards', () => ({
 
 jest.mock('../../../utils', () => ({
   getStatusConfig: jest.fn(),
+  resolveMetricTranslation: jest.fn(
+    (_t: any, _metricId: string, _field: string, fallback?: string) =>
+      fallback ?? `metric.${_metricId}.${_field}`,
+  ),
 }));
 
-// Get the mocked functions
-const { useScorecards } = require('../../../hooks/useScorecards');
-const { getStatusConfig } = require('../../../utils');
+const useScorecardsMock = useScorecards as jest.Mock;
+const getStatusConfigMock = getStatusConfig as jest.Mock;
 
 describe('EntityScorecardContent Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    getStatusConfig.mockReturnValue({
+    getStatusConfigMock.mockReturnValue({
       color: 'green',
       icon: 'CheckCircleIcon',
     });
   });
 
   it('should render loading state when data is loading', () => {
-    useScorecards.mockReturnValue({
-      scorecards: undefined,
-      loadingData: true,
+    useScorecardsMock.mockReturnValue({
+      data: undefined,
+      isLoading: true,
       error: undefined,
     });
 
@@ -115,13 +120,12 @@ describe('EntityScorecardContent Component', () => {
   });
 
   it('should render permission required state when user does not have permission', () => {
-    useScorecards.mockReturnValue({
-      scorecards: mockScorecardSuccessData,
-      loadingData: false,
-      error: {
-        message:
-          'Failed to fetch scorecards: 403 Forbidden. {"error":{"name":"NotAllowedError"}}',
-      },
+    useScorecardsMock.mockReturnValue({
+      data: mockScorecardSuccessData,
+      isLoading: false,
+      error: new Error(
+        'Failed to fetch scorecards: 403 Forbidden. {"error":{"name":"NotAllowedError"}}',
+      ),
     });
 
     render(<EntityScorecardContent />);
@@ -130,9 +134,9 @@ describe('EntityScorecardContent Component', () => {
   });
 
   it('should render empty state when data has no metrics', async () => {
-    useScorecards.mockReturnValue({
-      scorecards: [],
-      loadingData: false,
+    useScorecardsMock.mockReturnValue({
+      data: [],
+      isLoading: false,
       error: undefined,
     });
 
@@ -144,9 +148,9 @@ describe('EntityScorecardContent Component', () => {
   });
 
   it('should render scorecards when data is loaded successfully and user has permission', async () => {
-    useScorecards.mockReturnValue({
-      scorecards: mockScorecardSuccessData,
-      loadingData: false,
+    useScorecardsMock.mockReturnValue({
+      data: mockScorecardSuccessData,
+      isLoading: false,
       error: undefined,
     });
 
@@ -167,16 +171,16 @@ describe('EntityScorecardContent Component', () => {
   });
 
   it('should call getStatusConfig for each metric', () => {
-    useScorecards.mockReturnValue({
-      scorecards: mockScorecardSuccessData,
-      loadingData: false,
+    useScorecardsMock.mockReturnValue({
+      data: mockScorecardSuccessData,
+      isLoading: false,
       error: undefined,
     });
 
     render(<EntityScorecardContent />);
 
-    expect(getStatusConfig).toHaveBeenCalledTimes(2);
-    expect(getStatusConfig).toHaveBeenCalledWith({
+    expect(getStatusConfigMock).toHaveBeenCalledTimes(2);
+    expect(getStatusConfigMock).toHaveBeenCalledWith({
       evaluation: mockScorecardSuccessData[0].result.thresholdResult.evaluation,
       thresholdStatus:
         mockScorecardSuccessData[0].result.thresholdResult.status,
@@ -184,7 +188,7 @@ describe('EntityScorecardContent Component', () => {
       thresholdRules:
         mockScorecardSuccessData[0].result.thresholdResult.definition?.rules,
     });
-    expect(getStatusConfig).toHaveBeenCalledWith({
+    expect(getStatusConfigMock).toHaveBeenCalledWith({
       evaluation: mockScorecardSuccessData[1].result.thresholdResult.evaluation,
       thresholdStatus:
         mockScorecardSuccessData[1].result.thresholdResult.status,
@@ -198,7 +202,7 @@ describe('EntityScorecardContent Component', () => {
     const mockDataWithDifferentStatuses = [
       {
         ...mockScorecardSuccessData[0],
-        id: 'test_ideal',
+        id: 'testIdeal',
         result: {
           ...mockScorecardSuccessData[0].result,
           thresholdResult: {
@@ -213,7 +217,7 @@ describe('EntityScorecardContent Component', () => {
       },
       {
         ...mockScorecardSuccessData[1],
-        id: 'test_warning',
+        id: 'testWarning',
         result: {
           ...mockScorecardSuccessData[1].result,
           thresholdResult: {
@@ -228,7 +232,7 @@ describe('EntityScorecardContent Component', () => {
       },
       {
         ...mockScorecardSuccessData[0],
-        id: 'test_critical',
+        id: 'testCritical',
         metadata: {
           ...mockScorecardSuccessData[0].metadata,
           title: 'Critical Test',
@@ -248,9 +252,9 @@ describe('EntityScorecardContent Component', () => {
       },
     ];
 
-    useScorecards.mockReturnValue({
-      scorecards: mockDataWithDifferentStatuses,
-      loadingData: false,
+    useScorecardsMock.mockReturnValue({
+      data: mockDataWithDifferentStatuses,
+      isLoading: false,
       error: undefined,
     });
 
@@ -263,13 +267,13 @@ describe('EntityScorecardContent Component', () => {
   });
 
   it('should pass correct props to Scorecard component', () => {
-    useScorecards.mockReturnValue({
-      scorecards: [mockScorecardSuccessData[0]],
-      loadingData: false,
+    useScorecardsMock.mockReturnValue({
+      data: [mockScorecardSuccessData[0]],
+      isLoading: false,
       error: undefined,
     });
 
-    getStatusConfig.mockReturnValue({
+    getStatusConfigMock.mockReturnValue({
       color: 'red',
       icon: 'ErrorIcon',
     });
@@ -299,9 +303,9 @@ describe('EntityScorecardContent Component', () => {
       },
     ];
 
-    useScorecards.mockReturnValue({
-      scorecards: mockDataWithThresholdError,
-      loadingData: false,
+    useScorecardsMock.mockReturnValue({
+      data: mockDataWithThresholdError,
+      isLoading: false,
       error: undefined,
     });
 
@@ -328,9 +332,9 @@ describe('EntityScorecardContent Component', () => {
       },
     ];
 
-    useScorecards.mockReturnValue({
-      scorecards: mockDataWithMetricError,
-      loadingData: false,
+    useScorecardsMock.mockReturnValue({
+      data: mockDataWithMetricError,
+      isLoading: false,
       error: undefined,
     });
 

@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import type {
   LoggerService,
   RootConfigService,
 } from '@backstage/backend-plugin-api';
-import type { ResponsesApiClient } from '../ResponsesApiClient';
 import type {
   EvaluationConfig,
   ScoringFunctionInfo,
@@ -25,21 +25,15 @@ import type {
   EvaluationResult,
 } from '../../../types';
 import { toErrorMessage } from '../../../services/utils';
+import {
+  loadEvaluationConfig,
+  loadAvailableScoringFunctions,
+  getQualityLevel,
+} from './evaluationConfigLoader';
 
-/**
- * Accessor function that returns the current ResponsesApiClient.
- * Allows EvaluationService to always use the latest client managed by ClientManager.
- */
-export type EvalClientAccessor = () => ResponsesApiClient;
+export type { EvalClientAccessor } from './evaluationConfigLoader';
+import type { EvalClientAccessor } from './evaluationConfigLoader';
 
-/**
- * Evaluation Service - Scores AI responses using Llama Stack Scoring API
- *
- * Uses the Llama Stack Scoring API (POST /v1/scoring/score) with the correct
- * field names: input_query, generated_answer, expected_answer.
- *
- * Uses ResponsesApiClient (via accessor) for all HTTP communication.
- */
 export class EvaluationService {
   private readonly logger: LoggerService;
   private readonly config: RootConfigService;
@@ -74,7 +68,7 @@ export class EvaluationService {
         return;
       }
 
-      this.evaluationConfig = this.loadEvaluationConfig();
+      this.evaluationConfig = loadEvaluationConfig(this.config, this.logger);
 
       if (!this.evaluationConfig?.enabled) {
         this.logger.info('Response evaluation is disabled');
@@ -90,7 +84,10 @@ export class EvaluationService {
         return;
       }
 
-      await this.loadAvailableScoringFunctions();
+      this.availableScoringFunctions = await loadAvailableScoringFunctions(
+        this.getClient,
+        this.logger,
+      );
 
       this.logger.info(
         `Evaluation service initialized with ${this.availableScoringFunctions.length} scoring function(s) available`,
@@ -104,64 +101,6 @@ export class EvaluationService {
     }
   }
 
-  private loadEvaluationConfig(): EvaluationConfig | null {
-    try {
-      const evalConfig = this.config.getOptionalConfig('augment.evaluation');
-      if (!evalConfig) {
-        return { enabled: false };
-      }
-
-      const onErrorValue = evalConfig.getOptionalString('onError');
-      const onError: 'skip' | 'fail' =
-        onErrorValue === 'fail' ? 'fail' : 'skip';
-
-      return {
-        enabled: evalConfig.getOptionalBoolean('enabled') ?? false,
-        scoringFunctions: evalConfig.getOptionalStringArray('scoringFunctions'),
-        minScoreThreshold:
-          evalConfig.getOptionalNumber('minScoreThreshold') ?? 0.7,
-        onError,
-      };
-    } catch (error) {
-      this.logger.debug('No evaluation configuration found');
-      return { enabled: false };
-    }
-  }
-
-  private async loadAvailableScoringFunctions(): Promise<void> {
-    try {
-      const client = this.getClient!();
-      const response = await client.request<
-        { data?: ScoringFunctionInfo[] } | ScoringFunctionInfo[]
-      >('/v1/scoring-functions', { method: 'GET' });
-
-      const functions = Array.isArray(response)
-        ? response
-        : response.data || [];
-      this.availableScoringFunctions = functions;
-
-      if (this.availableScoringFunctions.length > 0) {
-        this.logger.info(
-          `Scoring functions available: ${this.availableScoringFunctions
-            .map(s => s.identifier)
-            .join(', ')}`,
-        );
-      } else {
-        this.logger.debug(
-          'No scoring functions available on this Llama Stack server',
-        );
-      }
-    } catch (error) {
-      this.logger.warn(
-        `Could not load scoring functions: ${toErrorMessage(error)}`,
-      );
-      this.availableScoringFunctions = [];
-    }
-  }
-
-  /**
-   * Dynamic overrides from admin panel (EffectiveConfig).
-   */
   private dynamicOverrides?: {
     enabled?: boolean;
     scoringFunctions?: string[];
@@ -169,10 +108,6 @@ export class EvaluationService {
     onError?: 'skip' | 'fail';
   };
 
-  /**
-   * Apply dynamic overrides from EffectiveConfig.
-   * Called per-request by the orchestrator/provider.
-   */
   applyDynamicOverrides(overrides: {
     evaluationEnabled?: boolean;
     scoringFunctions?: string[];
@@ -228,14 +163,6 @@ export class EvaluationService {
     return this.getEffectiveThreshold();
   }
 
-  /**
-   * Score a response using the Llama Stack Scoring API.
-   *
-   * Uses the correct Llama Stack field names:
-   * - input_query: the user's question
-   * - generated_answer: the AI's response
-   * - expected_answer: (optional) ground-truth for accuracy scoring
-   */
   async scoreResponse(
     userInput: string,
     aiResponse: string,
@@ -328,7 +255,7 @@ export class EvaluationService {
         overallScore,
         scores,
         passedThreshold: overallScore >= threshold,
-        qualityLevel: this.getQualityLevel(overallScore),
+        qualityLevel: getQualityLevel(overallScore),
         evaluatedAt: new Date().toISOString(),
       };
 
@@ -367,14 +294,5 @@ export class EvaluationService {
       );
       return undefined;
     }
-  }
-
-  private getQualityLevel(
-    score: number,
-  ): 'excellent' | 'good' | 'fair' | 'poor' {
-    if (score >= 0.9) return 'excellent';
-    if (score >= 0.7) return 'good';
-    if (score >= 0.5) return 'fair';
-    return 'poor';
   }
 }

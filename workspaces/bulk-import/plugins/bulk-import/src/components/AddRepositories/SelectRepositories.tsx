@@ -52,7 +52,13 @@ export const SelectRepositories = ({
         data-testid="no-repositories"
       >
         {t('addRepositories.allRepositoriesAdded')}{' '}
-        <Link to="" onClick={() => onOrgRowSelected(orgData)}>
+        <Link
+          to=""
+          onClick={e => {
+            e.preventDefault();
+            onOrgRowSelected(orgData);
+          }}
+        >
           {t('common.view')}
         </Link>
       </Typography>
@@ -66,7 +72,13 @@ export const SelectRepositories = ({
     return (
       <Typography component="span" data-testid="select-repositories">
         {t('addRepositories.noSelection')}{' '}
-        <Link to="" onClick={() => onOrgRowSelected(orgData)}>
+        <Link
+          to=""
+          onClick={e => {
+            e.preventDefault();
+            onOrgRowSelected(orgData);
+          }}
+        >
           {t('common.select')}
         </Link>
       </Typography>
@@ -76,7 +88,13 @@ export const SelectRepositories = ({
     <Typography component="span" data-testid="edit-repositories">
       {Object.keys(orgData.selectedRepositories || [])?.length}/
       {(orgData?.totalReposInOrg || 0) - addedRepositoriesCount}{' '}
-      <Link onClick={() => onOrgRowSelected(orgData)} to="">
+      <Link
+        to=""
+        onClick={e => {
+          e.preventDefault();
+          onOrgRowSelected(orgData);
+        }}
+      >
         {t('common.edit')}
       </Link>
     </Typography>

@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { useState } from 'react';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -20,6 +21,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
@@ -32,55 +34,114 @@ export interface DocumentsTableProps {
   onDelete: (fileId: string) => void;
 }
 
-export const DocumentsTable = ({
+function DeleteCell({
+  doc,
+  isDeleting,
+  isConfirming,
+  onConfirmStart,
+  onConfirmCancel,
+  onDelete,
+}: {
+  doc: DocumentInfo;
+  isDeleting: boolean;
+  isConfirming: boolean;
+  onConfirmStart: () => void;
+  onConfirmCancel: () => void;
+  onDelete: () => void;
+}) {
+  if (isDeleting) {
+    return <CircularProgress size={20} />;
+  }
+  if (isConfirming) {
+    return (
+      <>
+        <Button
+          size="small"
+          color="error"
+          sx={{
+            textTransform: 'none',
+            minWidth: 0,
+            mr: 0.5,
+            fontSize: '0.75rem',
+          }}
+          onClick={onDelete}
+        >
+          Confirm
+        </Button>
+        <Button
+          size="small"
+          sx={{ textTransform: 'none', minWidth: 0, fontSize: '0.75rem' }}
+          onClick={onConfirmCancel}
+        >
+          Cancel
+        </Button>
+      </>
+    );
+  }
+  return (
+    <Tooltip title="Delete document">
+      <IconButton
+        size="small"
+        onClick={onConfirmStart}
+        aria-label={`Delete ${doc.fileName}`}
+      >
+        <DeleteIcon fontSize="small" />
+      </IconButton>
+    </Tooltip>
+  );
+}
+
+export function DocumentsTable({
   documents,
   deleteInProgress,
   onDelete,
-}: DocumentsTableProps) => (
-  <TableContainer>
-    <Table size="small">
-      <TableHead>
-        <TableRow>
-          <TableCell>File Name</TableCell>
-          <TableCell>Format</TableCell>
-          <TableCell>Size</TableCell>
-          <TableCell>Status</TableCell>
-          <TableCell align="right">Actions</TableCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {documents.map(doc => (
-          <TableRow key={doc.id}>
-            <TableCell>
-              <Typography variant="body2" noWrap sx={{ maxWidth: 250 }}>
-                {doc.fileName}
-              </Typography>
-            </TableCell>
-            <TableCell>{doc.format}</TableCell>
-            <TableCell>
-              {doc.fileSize > 0
-                ? `${(doc.fileSize / 1024).toFixed(1)} KB`
-                : '—'}
-            </TableCell>
-            <TableCell>{doc.status}</TableCell>
-            <TableCell align="right">
-              {deleteInProgress === doc.id ? (
-                <CircularProgress size={20} />
-              ) : (
-                <Tooltip title="Delete document">
-                  <IconButton
-                    size="small"
-                    onClick={() => onDelete(doc.id)}
-                    aria-label={`Delete ${doc.fileName}`}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </TableCell>
+}: DocumentsTableProps) {
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+
+  return (
+    <TableContainer>
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>File Name</TableCell>
+            <TableCell>Format</TableCell>
+            <TableCell>Size</TableCell>
+            <TableCell>Status</TableCell>
+            <TableCell align="right">Actions</TableCell>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  </TableContainer>
-);
+        </TableHead>
+        <TableBody>
+          {documents.map(doc => (
+            <TableRow key={doc.id}>
+              <TableCell>
+                <Typography variant="body2" noWrap sx={{ maxWidth: 250 }}>
+                  {doc.fileName}
+                </Typography>
+              </TableCell>
+              <TableCell>{doc.format}</TableCell>
+              <TableCell>
+                {doc.fileSize > 0
+                  ? `${(doc.fileSize / 1024).toFixed(1)} KB`
+                  : '—'}
+              </TableCell>
+              <TableCell>{doc.status}</TableCell>
+              <TableCell align="right">
+                <DeleteCell
+                  doc={doc}
+                  isDeleting={deleteInProgress === doc.id}
+                  isConfirming={confirmId === doc.id}
+                  onConfirmStart={() => setConfirmId(doc.id)}
+                  onConfirmCancel={() => setConfirmId(null)}
+                  onDelete={() => {
+                    setConfirmId(null);
+                    onDelete(doc.id);
+                  }}
+                />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}

@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-import type { CSSProperties } from 'react';
 import { Link as BackstageLink } from '@backstage/core-components';
 
-import Box from '@mui/material/Box';
 import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 
@@ -37,14 +35,13 @@ export interface HeaderIconButtonProps {
   size?: 'small' | 'medium' | 'large';
   ariaLabel?: string;
   to: string;
-  layout?: CSSProperties;
 }
 
-// Backstage Link automatically detects external links and emits analytic events.
 const Link = (props: any) => (
   <BackstageLink {...props} color="inherit" externalLinkIcon={false} />
 );
 
+/** @public */
 export const HeaderIconButton = ({
   title,
   titleKey,
@@ -54,7 +51,6 @@ export const HeaderIconButton = ({
   size = 'small',
   ariaLabel,
   to,
-  layout,
 }: HeaderIconButtonProps) => {
   const { t } = useTranslation();
   const displayTitle = translateWithFallback(t, titleKey, title);
@@ -66,20 +62,18 @@ export const HeaderIconButton = ({
   const linkProps = { to } as IconButtonProps;
 
   return (
-    <Box sx={layout}>
-      <Tooltip title={tooltip ?? displayTitle}>
-        <div>
-          <IconButton
-            LinkComponent={Link}
-            color={color}
-            size={size}
-            aria-label={ariaLabel ?? displayTitle}
-            {...linkProps} // to={to} isn't supported
-          >
-            <HeaderIcon icon={icon} size={size} />
-          </IconButton>
-        </div>
-      </Tooltip>
-    </Box>
+    <Tooltip title={tooltip ?? displayTitle}>
+      <div>
+        <IconButton
+          LinkComponent={Link}
+          color={color}
+          size={size}
+          aria-label={ariaLabel ?? displayTitle}
+          {...linkProps}
+        >
+          <HeaderIcon icon={icon} size={size} />
+        </IconButton>
+      </div>
+    </Tooltip>
   );
 };

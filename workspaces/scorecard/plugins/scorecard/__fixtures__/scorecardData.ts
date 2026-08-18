@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-import { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  AggregatedMetricResult,
+  DEFAULT_NUMBER_THRESHOLDS,
+  MetricResult,
+  aggregationTypes,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export const mockScorecardSuccessData = [
   {
-    id: 'github.open_prs',
+    id: 'github.openPRs',
     status: 'success' as const,
     metadata: {
       title: 'GitHub open PRs',
@@ -44,7 +49,7 @@ export const mockScorecardSuccessData = [
     },
   },
   {
-    id: 'jira.open_issues',
+    id: 'jira.openIssues',
     status: 'success' as const,
     metadata: {
       title: 'Jira open blocking tickets',
@@ -73,7 +78,7 @@ export const mockScorecardSuccessData = [
 
 export const mockScorecardErrorData = [
   {
-    id: 'github.open_issues',
+    id: 'github.openIssues',
     status: 'error' as const,
     metadata: {
       title: 'GitHub open Issues',
@@ -100,7 +105,7 @@ export const mockScorecardErrorData = [
     error: 'HttpError: API rate limit exceeded.',
   },
   {
-    id: 'sonar.security_issues',
+    id: 'sonar.securityIssues',
     status: 'success' as const,
     metadata: {
       title: 'Sonar number of security issues',
@@ -122,8 +127,59 @@ export const mockScorecardErrorData = [
         evaluation: 'warning',
         status: 'error' as const,
         error:
-          "ThresholdConfigFormatError: Invalid threshold annotation 'scorecard.io/sonar.security_issues.thresholds.rules.error: >- 50' in entity 'component:default/example-service': Invalid threshold expression: >- 50.",
+          "ThresholdConfigFormatError: Invalid threshold annotation 'scorecard.io/sonar.securityIssues.thresholds.rules.error: >- 50' in entity 'component:default/example-service': Invalid threshold expression: >- 50.",
       },
     },
   },
 ] as MetricResult[];
+
+export const mockAggregatedScorecardData = {
+  [aggregationTypes.statusGrouped]: {
+    id: 'github.openPRs',
+    status: 'success',
+    metadata: {
+      title: 'GitHub open PRs',
+      description:
+        'Current count of open Pull Requests for a given GitHub repository.',
+      type: 'number',
+      history: true,
+      aggregationType: aggregationTypes.statusGrouped,
+    },
+    result: {
+      values: [
+        { count: 11, name: 'success' },
+        { count: 14, name: 'warning' },
+        { count: 12, name: 'error' },
+      ],
+      total: 37,
+      timestamp: '2024-01-15T10:30:00Z',
+      thresholds: DEFAULT_NUMBER_THRESHOLDS,
+      entitiesConsidered: 37,
+      calculationErrorCount: 0,
+    },
+  } as AggregatedMetricResult,
+  [aggregationTypes.weightedStatusScore]: {
+    id: 'github.openPRs',
+    status: 'success',
+    metadata: {
+      title: 'GitHub open PRs',
+      description: 'Weighted health score for the Generative AI API group.',
+      type: 'number',
+      history: true,
+      aggregationType: aggregationTypes.weightedStatusScore,
+    },
+    result: {
+      values: [
+        { count: 5, name: 'success' },
+        { count: 2, name: 'warning' },
+        { count: 1, name: 'error' },
+      ],
+      total: 8,
+      timestamp: '2024-01-15T10:30:00Z',
+      thresholds: DEFAULT_NUMBER_THRESHOLDS,
+      weightedStatusScore: 75,
+      weightedStatusSum: 18,
+      weightedStatusMaxPossible: 24,
+    },
+  } as AggregatedMetricResult,
+};

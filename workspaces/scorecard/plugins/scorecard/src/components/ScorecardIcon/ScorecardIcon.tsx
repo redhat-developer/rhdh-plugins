@@ -16,7 +16,17 @@
 import { useApp } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
 import MuiIcon from '@mui/material/Icon';
+import type { SvgIconComponent } from '@mui/icons-material';
 import type { SxProps, Theme } from '@mui/material/styles';
+import ScorecardSuccessStatusIcon from '@mui/icons-material/CheckCircleOutline';
+import ScorecardWarningStatusIcon from '@mui/icons-material/WarningAmber';
+import ScorecardErrorStatusIcon from '@mui/icons-material/DangerousOutlined';
+
+const builtInIcons: Record<string, SvgIconComponent> = {
+  scorecardSuccessStatusIcon: ScorecardSuccessStatusIcon,
+  scorecardWarningStatusIcon: ScorecardWarningStatusIcon,
+  scorecardErrorStatusIcon: ScorecardErrorStatusIcon,
+};
 
 /**
  * @public
@@ -40,7 +50,7 @@ export const ScorecardIcon = ({
     return null;
   }
 
-  const SystemIcon = app.getSystemIcon(icon);
+  const SystemIcon = app.getSystemIcon(icon) ?? builtInIcons[icon];
   if (SystemIcon) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', ...sx }}>

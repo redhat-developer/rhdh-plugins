@@ -18,6 +18,8 @@ import type { JsonObject } from '@backstage/types';
 
 import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
 
 import { SubmitButton } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
@@ -27,9 +29,13 @@ import { useTranslation } from '../../hooks/useTranslation';
 const MissingSchemaNotice = ({
   isExecuting,
   handleExecute,
+  handleExecuteAsEvent,
+  executeAsEventLabel,
 }: {
   isExecuting: boolean;
   handleExecute: (parameters: JsonObject) => Promise<void>;
+  handleExecuteAsEvent?: (parameters: JsonObject) => Promise<void>;
+  executeAsEventLabel?: string;
 }) => {
   const { t } = useTranslation();
   return (
@@ -45,12 +51,33 @@ const MissingSchemaNotice = ({
         </Alert>
       </Grid>
       <Grid item xs={12}>
-        <SubmitButton
-          submitting={isExecuting}
-          handleClick={() => handleExecute({})}
+        <Box
+          sx={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 2,
+            alignItems: 'center',
+          }}
         >
-          Run
-        </SubmitButton>
+          <SubmitButton
+            submitting={isExecuting}
+            handleClick={() => handleExecute({})}
+          >
+            {t('common.run')}
+          </SubmitButton>
+          {handleExecuteAsEvent && executeAsEventLabel && (
+            <Button
+              variant="contained"
+              color="primary"
+              type="button"
+              onClick={() => handleExecuteAsEvent({})}
+              disabled={isExecuting}
+              disableRipple
+            >
+              {executeAsEventLabel}
+            </Button>
+          )}
+        </Box>
       </Grid>
     </Grid>
   );

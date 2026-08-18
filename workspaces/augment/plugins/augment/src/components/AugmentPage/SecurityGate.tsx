@@ -86,7 +86,7 @@ export function SecurityGate({
         </Typography>
         <Typography
           variant="body1"
-          color="textSecondary"
+          color="text.secondary"
           sx={{ mb: 3, textAlign: 'center' }}
         >
           {t('securityGate.configurationErrors', { appName: branding.appName })}
@@ -103,7 +103,7 @@ export function SecurityGate({
         </Box>
         <Typography
           variant="body2"
-          color="textSecondary"
+          color="text.secondary"
           sx={{ mt: 2, textAlign: 'center' }}
         >
           {t('securityGate.configurationHint')}
@@ -139,7 +139,7 @@ export function SecurityGate({
           </Typography>
           <Typography
             variant="body1"
-            color="textSecondary"
+            color="text.secondary"
             sx={{ maxWidth: 500 }}
           >
             {t('securityGate.accessDeniedMessage', {

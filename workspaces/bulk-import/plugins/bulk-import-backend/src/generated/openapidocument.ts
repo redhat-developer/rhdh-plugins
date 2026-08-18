@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-// GENERATED FILE. DO NOT EDIT.
 
 // eslint-disable
 // prettier-ignore
@@ -74,6 +73,37 @@ const OPENAPI = `
                 },
                 "example": {
                   "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scm-hosts": {
+      "get": {
+        "operationId": "findAllSCMHosts",
+        "summary": "Retrieve the SCM Integration hosts",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "tags": [
+          "Management"
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Integrations available to the Bulk Import plugin",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SCMHostList"
+                },
+                "examples": {
+                  "multipleRepos": {
+                    "$ref": "#/components/examples/scmHosts"
+                  }
                 }
               }
             }
@@ -183,6 +213,9 @@ const OPENAPI = `
           },
           {
             "$ref": "#/components/parameters/approvalToolParam"
+          },
+          {
+            "$ref": "#/components/parameters/xSCMTokensHeaderParam"
           }
         ],
         "responses": {
@@ -252,6 +285,9 @@ const OPENAPI = `
           },
           {
             "$ref": "#/components/parameters/approvalToolParam"
+          },
+          {
+            "$ref": "#/components/parameters/xSCMTokensHeaderParam"
           }
         ],
         "responses": {
@@ -992,6 +1028,16 @@ const OPENAPI = `
           "default": "v1"
         }
       },
+      "xSCMTokensHeaderParam": {
+        "in": "header",
+        "name": "x-scm-tokens",
+        "description": "Optional JSON-encoded map of SCM host URL to user authentication token. Used to fetch repositories on behalf of the user for each configured SCM host. The value must be a JSON string whose structure matches SCMTokenMap (keys are SCM base URLs, values are OAuth bearer tokens).\\n",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "example": "{\\"https://github.com\\":\\"ghp_xxx\\",\\"https://ghe.example.com\\":\\"ghe_yyy\\"}"
+        }
+      },
       "pagePerIntegrationQueryParam": {
         "in": "query",
         "name": "pagePerIntegration",
@@ -1097,6 +1143,36 @@ const OPENAPI = `
       }
     },
     "schemas": {
+      "SCMTokenMap": {
+        "title": "SCM Token Map",
+        "type": "object",
+        "description": "Map of SCM integration base URL to the user's OAuth access token for that host. Keys must match the base URLs returned by GET /scm-hosts (e.g. https://github.com or https://gitlab.corp.com). Values must be non-empty OAuth bearer tokens scoped to the minimum required access (read-only repository listing). Unknown keys are silently ignored by the server.\\n",
+        "additionalProperties": {
+          "type": "string"
+        },
+        "example": {
+          "https://github.com": "ghp_xxx",
+          "https://ghe.example.com": "ghe_yyy"
+        }
+      },
+      "SCMHostList": {
+        "title": "SCM Host List",
+        "type": "object",
+        "properties": {
+          "github": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gitlab": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
       "OrganizationList": {
         "title": "Organization List",
         "type": "object",
@@ -1556,6 +1632,18 @@ const OPENAPI = `
       }
     },
     "examples": {
+      "scmHosts": {
+        "summary": "Multiple scmHosts",
+        "value": {
+          "github": [
+            "https://github.com",
+            "https://ghe.example.com"
+          ],
+          "gitlab": [
+            "https://gitlab.com"
+          ]
+        }
+      },
       "multipleOrgs": {
         "summary": "Multiple organizations",
         "value": {

@@ -18,7 +18,7 @@ import { Knex } from 'knex';
 
 /**
  * Filter query by user permissions.
- * When canDoAll is false/undefined, restricts to rows where created_by matches
+ * When canDoAll is false/undefined, restricts to rows where owned_by matches
  * the user or any of the Backstage groups the user is a member of.
  */
 export function filterPermissions(
@@ -29,13 +29,13 @@ export function filterPermissions(
 ): void {
   if (!canDoAll) {
     const allowedCreators = [userEntityRef, ...groupsOfUser];
-    queryBuilder.whereIn('created_by', allowedCreators);
+    queryBuilder.whereIn('owned_by', allowedCreators);
   }
 }
 
 const SORT_COLUMN_MAP: Record<string, string> = {
   createdAt: 'created_at',
-  createdBy: 'created_by',
+  ownedBy: 'owned_by',
   finishedAt: 'finished_at',
   startedAt: 'started_at',
 };

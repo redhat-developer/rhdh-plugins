@@ -22,6 +22,7 @@ import {
   createService,
   defaultProjectRepoFields,
   LONG_TEST_TIMEOUT,
+  nonExistentId,
   supportedDatabaseIds,
   tearDownDatabases,
 } from '../../__testUtils__';
@@ -40,7 +41,6 @@ describe('X2ADatabaseService – projects', () => {
         const service = createService(client);
         const input = {
           name: 'Test Project',
-          abbreviation: 'TP',
           description: 'A test project description',
           ...defaultProjectRepoFields,
         };
@@ -49,13 +49,12 @@ describe('X2ADatabaseService – projects', () => {
 
         expect(project).toMatchObject({
           name: input.name,
-          abbreviation: input.abbreviation,
           description: input.description,
           sourceRepoUrl: input.sourceRepoUrl,
           targetRepoUrl: input.targetRepoUrl,
           sourceRepoBranch: input.sourceRepoBranch,
           targetRepoBranch: input.targetRepoBranch,
-          createdBy: 'user:default/mock',
+          ownedBy: 'user:default/mock',
         });
         expect(project.id).toBeDefined();
         expect(project.createdAt).toBeInstanceOf(Date);
@@ -63,8 +62,31 @@ describe('X2ADatabaseService – projects', () => {
         const row = await client('projects').where('id', project.id).first();
         expect(row).toBeDefined();
         expect(row.name).toBe(input.name);
-        expect(row.abbreviation).toBe(input.abbreviation);
-        expect(row.created_by).toBe('user:default/mock');
+        expect(row.owned_by).toBe('user:default/mock');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'computes and persists dirName at creation time - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'My Cool Project',
+            description: 'desc',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+
+        expect(project.dirName).toBeDefined();
+        expect(project.dirName).toMatch(/^my-cool-project-/);
+
+        const row = await client('projects').where('id', project.id).first();
+        expect(row.dir_name).toBe(project.dirName);
       },
       LONG_TEST_TIMEOUT,
     );
@@ -78,7 +100,6 @@ describe('X2ADatabaseService – projects', () => {
         const project1 = await service.createProject(
           {
             name: 'Project 1',
-            abbreviation: 'P1',
             description: 'First',
             ...defaultProjectRepoFields,
           },
@@ -87,7 +108,6 @@ describe('X2ADatabaseService – projects', () => {
         const project2 = await service.createProject(
           {
             name: 'Project 2',
-            abbreviation: 'P2',
             description: 'Second',
             ...defaultProjectRepoFields,
           },
@@ -101,7 +121,7 @@ describe('X2ADatabaseService – projects', () => {
     );
 
     it.each(supportedDatabaseIds)(
-      'sets createdBy from credentials - %p',
+      'sets ownedBy from credentials - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
@@ -111,20 +131,19 @@ describe('X2ADatabaseService – projects', () => {
         const project = await service.createProject(
           {
             name: 'Custom',
-            abbreviation: 'CUP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
           { credentials: customCredentials },
         );
-        expect(project.createdBy).toBe('user:default/custom-user');
+        expect(project.ownedBy).toBe('user:default/custom-user');
         const row = await client('projects').where('id', project.id).first();
-        expect(row.created_by).toBe('user:default/custom-user');
+        expect(row.owned_by).toBe('user:default/custom-user');
       },
     );
 
     it.each(supportedDatabaseIds)(
-      'sets createdBy from ownedByGroup when provided - %p',
+      'sets ownedBy from ownedByGroup when provided - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
@@ -132,16 +151,15 @@ describe('X2ADatabaseService – projects', () => {
         const project = await service.createProject(
           {
             name: 'Group-owned Project',
-            abbreviation: 'GOP',
             description: 'Owned by group',
             ownedByGroup: 'group:default/team-a',
             ...defaultProjectRepoFields,
           },
           { credentials },
         );
-        expect(project.createdBy).toBe('group:default/team-a');
+        expect(project.ownedBy).toBe('group:default/team-a');
         const row = await client('projects').where('id', project.id).first();
-        expect(row.created_by).toBe('group:default/team-a');
+        expect(row.owned_by).toBe('group:default/team-a');
       },
     );
 
@@ -154,16 +172,249 @@ describe('X2ADatabaseService – projects', () => {
         const project = await service.createProject(
           {
             name: 'User-owned Project',
-            abbreviation: 'UOP',
             description: 'Owned by user',
             ...defaultProjectRepoFields,
           },
           { credentials },
         );
-        expect(project.createdBy).toBe('user:default/jane');
+        expect(project.ownedBy).toBe('user:default/jane');
         const row = await client('projects').where('id', project.id).first();
-        expect(row.created_by).toBe('user:default/jane');
+        expect(row.owned_by).toBe('user:default/jane');
       },
+    );
+  });
+
+  describe('updateProject', () => {
+    it.each(supportedDatabaseIds)(
+      'updates name and persists to DB - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Original',
+            description: 'Original desc',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+
+        const updated = await service.updateProject(
+          { projectId: project.id },
+          { name: 'Updated' },
+          { credentials, groupsOfUser: [] },
+        );
+
+        expect(updated).toBeDefined();
+        expect(updated!.name).toBe('Updated');
+        expect(updated!.description).toBe('Original desc');
+
+        const row = await client('projects').where('id', project.id).first();
+        expect(row.name).toBe('Updated');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'updates description and persists to DB - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test',
+            description: 'Old',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+
+        const updated = await service.updateProject(
+          { projectId: project.id },
+          { description: 'New description' },
+          { credentials, groupsOfUser: [] },
+        );
+
+        expect(updated).toBeDefined();
+        expect(updated!.description).toBe('New description');
+        expect(updated!.name).toBe('Test');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'updates ownedBy and persists to DB - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+
+        const updated = await service.updateProject(
+          { projectId: project.id },
+          { ownedBy: 'group:default/team-x' },
+          { credentials, canWriteAll: true, groupsOfUser: [] },
+        );
+
+        expect(updated).toBeDefined();
+        expect(updated!.ownedBy).toBe('group:default/team-x');
+
+        const row = await client('projects').where('id', project.id).first();
+        expect(row.owned_by).toBe('group:default/team-x');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'updates multiple fields at once - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Old Name',
+            description: 'Old desc',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+
+        const updated = await service.updateProject(
+          { projectId: project.id },
+          {
+            name: 'New Name',
+            description: 'New desc',
+            ownedBy: 'user:default/other',
+          },
+          { credentials, canWriteAll: true, groupsOfUser: [] },
+        );
+
+        expect(updated).toBeDefined();
+        expect(updated!.name).toBe('New Name');
+        expect(updated!.description).toBe('New desc');
+        expect(updated!.ownedBy).toBe('user:default/other');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'returns undefined for non-existent project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+
+        const result = await service.updateProject(
+          { projectId: nonExistentId },
+          { name: 'Does not matter' },
+          { credentials, groupsOfUser: [] },
+        );
+
+        expect(result).toBeUndefined();
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'respects permission filtering - non-owner cannot update - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const cred1 = mockCredentials.user('user:default/user1');
+        const cred2 = mockCredentials.user('user:default/user2');
+
+        const project = await service.createProject(
+          {
+            name: 'User1 Project',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials: cred1 },
+        );
+
+        const result = await service.updateProject(
+          { projectId: project.id },
+          { name: 'Hijacked' },
+          { credentials: cred2, canWriteAll: false, groupsOfUser: [] },
+        );
+
+        expect(result).toBeUndefined();
+
+        const row = await client('projects').where('id', project.id).first();
+        expect(row.name).toBe('User1 Project');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'admin with canWriteAll can update any project - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const cred1 = mockCredentials.user('user:default/user1');
+        const adminCred = mockCredentials.user('user:default/admin');
+
+        const project = await service.createProject(
+          {
+            name: 'User1 Project',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials: cred1 },
+        );
+
+        const updated = await service.updateProject(
+          { projectId: project.id },
+          { name: 'Admin Updated' },
+          { credentials: adminCred, canWriteAll: true, groupsOfUser: [] },
+        );
+
+        expect(updated).toBeDefined();
+        expect(updated!.name).toBe('Admin Updated');
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'does not alter dir_name when project name is updated - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Original Name',
+            description: 'desc',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const originalDirName = project.dirName;
+        expect(originalDirName).toBeDefined();
+
+        const updated = await service.updateProject(
+          { projectId: project.id },
+          { name: 'Completely Different Name' },
+          { credentials, groupsOfUser: [] },
+        );
+
+        expect(updated).toBeDefined();
+        expect(updated!.name).toBe('Completely Different Name');
+        expect(updated!.dirName).toBe(originalDirName);
+
+        const row = await client('projects').where('id', project.id).first();
+        expect(row.dir_name).toBe(originalDirName);
+      },
+      LONG_TEST_TIMEOUT,
     );
   });
 
@@ -192,7 +443,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Project 1',
-            abbreviation: 'P1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -202,7 +452,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Project 2',
-            abbreviation: 'P2',
             description: 'D2',
             ...defaultProjectRepoFields,
           },
@@ -212,7 +461,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Project 3',
-            abbreviation: 'P3',
             description: 'D3',
             ...defaultProjectRepoFields,
           },
@@ -241,7 +489,6 @@ describe('X2ADatabaseService – projects', () => {
           await service.createProject(
             {
               name: `Project ${i}`,
-              abbreviation: `P${i}`,
               description: `D${i}`,
               ...defaultProjectRepoFields,
             },
@@ -288,7 +535,6 @@ describe('X2ADatabaseService – projects', () => {
           await service.createProject(
             {
               name: `Project ${i}`,
-              abbreviation: `P${i}`,
               description: `D${i}`,
               ...defaultProjectRepoFields,
             },
@@ -314,7 +560,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Zebra Project',
-            abbreviation: 'ZP',
             description: 'Z',
             ...defaultProjectRepoFields,
           },
@@ -324,7 +569,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Alpha Project',
-            abbreviation: 'AP',
             description: 'A',
             ...defaultProjectRepoFields,
           },
@@ -334,7 +578,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Beta Project',
-            abbreviation: 'BP',
             description: 'B',
             ...defaultProjectRepoFields,
           },
@@ -361,7 +604,7 @@ describe('X2ADatabaseService – projects', () => {
     );
 
     it.each(supportedDatabaseIds)(
-      'sorts by createdBy when canViewAll is true - %p',
+      'sorts by ownedBy when canViewAll is true - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
@@ -371,7 +614,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'P1',
-            abbreviation: 'P1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -381,7 +623,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'P2',
-            abbreviation: 'P2',
             description: 'D2',
             ...defaultProjectRepoFields,
           },
@@ -391,7 +632,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'P3',
-            abbreviation: 'P3',
             description: 'D3',
             ...defaultProjectRepoFields,
           },
@@ -399,18 +639,18 @@ describe('X2ADatabaseService – projects', () => {
         );
 
         const result = await service.listProjects(
-          { sort: 'createdBy', order: 'asc' },
+          { sort: 'ownedBy', order: 'asc' },
           { credentials: cred1, canViewAll: true, groupsOfUser: [] },
         );
         expect(result.projects).toHaveLength(3);
-        expect(result.projects[0].createdBy).toBe('user:default/user1');
-        expect(result.projects[1].createdBy).toBe('user:default/user2');
-        expect(result.projects[2].createdBy).toBe('user:default/user3');
+        expect(result.projects[0].ownedBy).toBe('user:default/user1');
+        expect(result.projects[1].ownedBy).toBe('user:default/user2');
+        expect(result.projects[2].ownedBy).toBe('user:default/user3');
       },
     );
 
     it.each(supportedDatabaseIds)(
-      'filters by createdBy when canViewAll is false - %p',
+      'filters by ownedBy when canViewAll is false - %p',
       async databaseId => {
         const { client } = await createDatabase(databaseId);
         const service = createService(client);
@@ -419,7 +659,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'U1P1',
-            abbreviation: 'U1P1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -429,7 +668,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'U1P2',
-            abbreviation: 'U1P2',
             description: 'D2',
             ...defaultProjectRepoFields,
           },
@@ -439,7 +677,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'U2P1',
-            abbreviation: 'U2P1',
             description: 'D3',
             ...defaultProjectRepoFields,
           },
@@ -449,7 +686,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'U2P2',
-            abbreviation: 'U2P2',
             description: 'D4',
             ...defaultProjectRepoFields,
           },
@@ -462,7 +698,7 @@ describe('X2ADatabaseService – projects', () => {
         );
         expect(user1Result.totalCount).toBe(2);
         expect(
-          user1Result.projects.every(p => p.createdBy === 'user:default/user1'),
+          user1Result.projects.every(p => p.ownedBy === 'user:default/user1'),
         ).toBe(true);
 
         const user2Result = await service.listProjects(
@@ -471,7 +707,7 @@ describe('X2ADatabaseService – projects', () => {
         );
         expect(user2Result.totalCount).toBe(2);
         expect(
-          user2Result.projects.every(p => p.createdBy === 'user:default/user2'),
+          user2Result.projects.every(p => p.ownedBy === 'user:default/user2'),
         ).toBe(true);
       },
     );
@@ -487,7 +723,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'User Project',
-            abbreviation: 'UP',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -499,14 +734,14 @@ describe('X2ADatabaseService – projects', () => {
         await client('projects').insert({
           id: groupProjectId,
           name: 'Group Project',
-          abbreviation: 'GP',
           description: 'Project created by group',
           source_repo_url: defaultProjectRepoFields.sourceRepoUrl,
           target_repo_url: defaultProjectRepoFields.targetRepoUrl,
           source_repo_branch: defaultProjectRepoFields.sourceRepoBranch,
           target_repo_branch: defaultProjectRepoFields.targetRepoBranch,
-          created_by: 'group:default/team-a',
+          owned_by: 'group:default/team-a',
           created_at: new Date(),
+          dir_name: 'group-project-11111111',
         });
 
         const result = await service.listProjects(
@@ -520,9 +755,9 @@ describe('X2ADatabaseService – projects', () => {
 
         expect(result.totalCount).toBe(2);
         expect(result.projects).toHaveLength(2);
-        const createdBys = result.projects.map(p => p.createdBy);
-        expect(createdBys).toContain('user:default/user1');
-        expect(createdBys).toContain('group:default/team-a');
+        const ownedBys = result.projects.map(p => p.ownedBy);
+        expect(ownedBys).toContain('user:default/user1');
+        expect(ownedBys).toContain('group:default/team-a');
       },
     );
 
@@ -537,7 +772,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'P1',
-            abbreviation: 'P1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -547,7 +781,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'P2',
-            abbreviation: 'P2',
             description: 'D2',
             ...defaultProjectRepoFields,
           },
@@ -557,7 +790,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'P3',
-            abbreviation: 'P3',
             description: 'D3',
             ...defaultProjectRepoFields,
           },
@@ -571,13 +803,13 @@ describe('X2ADatabaseService – projects', () => {
         expect(result.totalCount).toBe(3);
         expect(result.projects).toHaveLength(3);
         expect(
-          result.projects.some(p => p.createdBy === 'user:default/user1'),
+          result.projects.some(p => p.ownedBy === 'user:default/user1'),
         ).toBe(true);
         expect(
-          result.projects.some(p => p.createdBy === 'user:default/user2'),
+          result.projects.some(p => p.ownedBy === 'user:default/user2'),
         ).toBe(true);
         expect(
-          result.projects.some(p => p.createdBy === 'user:default/user3'),
+          result.projects.some(p => p.ownedBy === 'user:default/user3'),
         ).toBe(true);
       },
     );
@@ -592,7 +824,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'U1',
-            abbreviation: 'U1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -602,7 +833,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'U2',
-            abbreviation: 'U2',
             description: 'D2',
             ...defaultProjectRepoFields,
           },
@@ -614,7 +844,7 @@ describe('X2ADatabaseService – projects', () => {
           { credentials: cred1, groupsOfUser: [] },
         );
         expect(result.totalCount).toBe(1);
-        expect(result.projects[0].createdBy).toBe('user:default/user1');
+        expect(result.projects[0].ownedBy).toBe('user:default/user1');
       },
     );
 
@@ -629,7 +859,6 @@ describe('X2ADatabaseService – projects', () => {
           await service.createProject(
             {
               name: `User1 Project ${i}`,
-              abbreviation: `U1P${i}`,
               description: `D${i}`,
               ...defaultProjectRepoFields,
             },
@@ -641,7 +870,6 @@ describe('X2ADatabaseService – projects', () => {
           await service.createProject(
             {
               name: `User2 Project ${i}`,
-              abbreviation: `U2P${i}`,
               description: `D${i}`,
               ...defaultProjectRepoFields,
             },
@@ -657,7 +885,7 @@ describe('X2ADatabaseService – projects', () => {
         expect(page1.totalCount).toBe(5);
         expect(page1.projects).toHaveLength(2);
         expect(
-          page1.projects.every(p => p.createdBy === 'user:default/user1'),
+          page1.projects.every(p => p.ownedBy === 'user:default/user1'),
         ).toBe(true);
       },
     );
@@ -671,7 +899,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Project 1',
-            abbreviation: 'P1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -681,7 +908,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Project 2',
-            abbreviation: 'P2',
             description: 'D2',
             ...defaultProjectRepoFields,
           },
@@ -691,7 +917,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Project 3',
-            abbreviation: 'P3',
             description: 'D3',
             ...defaultProjectRepoFields,
           },
@@ -718,7 +943,6 @@ describe('X2ADatabaseService – projects', () => {
         await service.createProject(
           {
             name: 'Project 1',
-            abbreviation: 'P1',
             description: 'D1',
             ...defaultProjectRepoFields,
           },
@@ -743,7 +967,6 @@ describe('X2ADatabaseService – projects', () => {
         const project = await service.createProject(
           {
             name: 'Project with plan',
-            abbreviation: 'PWP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -778,13 +1001,11 @@ describe('X2ADatabaseService – projects', () => {
       async function makeProject(
         service: ReturnType<typeof createService>,
         name: string,
-        abbrev: string,
         initStatus?: 'success' | 'error' | 'running' | 'pending',
       ) {
         const project = await service.createProject(
           {
             name,
-            abbreviation: abbrev,
             description: name,
             ...defaultProjectRepoFields,
           },
@@ -861,9 +1082,9 @@ describe('X2ADatabaseService – projects', () => {
           const service = createService(client);
 
           // 'created' (no init), 'failed' (init error), 'initialized' (init success, 0 modules)
-          await makeProject(service, 'P-Created', 'PC');
-          await makeProject(service, 'P-Failed', 'PF', 'error');
-          await makeProject(service, 'P-Initialized', 'PI', 'success');
+          await makeProject(service, 'P-Created');
+          await makeProject(service, 'P-Failed', 'error');
+          await makeProject(service, 'P-Initialized', 'success');
 
           // Semantic order: created(0) < initialized(2) < failed(4)
           const asc = await service.listProjects(
@@ -895,8 +1116,8 @@ describe('X2ADatabaseService – projects', () => {
           const { client } = await createDatabase(databaseId);
           const service = createService(client);
 
-          await makeProject(service, 'P-Created', 'PC');
-          await makeProject(service, 'P-Initialized', 'PI', 'success');
+          await makeProject(service, 'P-Created');
+          await makeProject(service, 'P-Initialized', 'success');
 
           const result = await service.listProjects(
             { sort: 'status' },
@@ -919,12 +1140,7 @@ describe('X2ADatabaseService – projects', () => {
 
           // Both 'inProgress': init success, mixed modules, no errors
           // projLow: 1 finished + 1 waiting → finished = 50%
-          const projLow = await makeProject(
-            service,
-            'Low-Finished',
-            'LF',
-            'success',
-          );
+          const projLow = await makeProject(service, 'Low-Finished', 'success');
           await addModule(service, projLow.id, 'lf-m1', 'finished');
           await addModule(service, projLow.id, 'lf-m2', 'waiting');
 
@@ -932,7 +1148,6 @@ describe('X2ADatabaseService – projects', () => {
           const projHigh = await makeProject(
             service,
             'High-Finished',
-            'HF',
             'success',
           );
           await addModule(service, projHigh.id, 'hf-m1', 'finished');
@@ -970,12 +1185,7 @@ describe('X2ADatabaseService – projects', () => {
 
           // Both 'failed': init success, 0 finished, different error%
           // projLowErr: 1 error + 3 pending → error = 25%
-          const projLowErr = await makeProject(
-            service,
-            'Low-Error',
-            'LE',
-            'success',
-          );
+          const projLowErr = await makeProject(service, 'Low-Error', 'success');
           await addModule(service, projLowErr.id, 'le-m1', 'error');
           await addModule(service, projLowErr.id, 'le-m2', 'pending');
           await addModule(service, projLowErr.id, 'le-m3', 'pending');
@@ -985,7 +1195,6 @@ describe('X2ADatabaseService – projects', () => {
           const projHighErr = await makeProject(
             service,
             'High-Error',
-            'HE',
             'success',
           );
           await addModule(service, projHighErr.id, 'he-m1', 'error');
@@ -1022,13 +1231,13 @@ describe('X2ADatabaseService – projects', () => {
           const service = createService(client);
 
           // Project A: 1 finished + 1 error + 1 pending → finished = 1/3, error = 1/3
-          const projA = await makeProject(service, 'Frac-A', 'FA', 'success');
+          const projA = await makeProject(service, 'Frac-A', 'success');
           await addModule(service, projA.id, 'fa-m1', 'finished');
           await addModule(service, projA.id, 'fa-m2', 'error');
           await addModule(service, projA.id, 'fa-m3', 'pending');
 
           // Project B: 2 finished + 4 pending → finished = 2/6 = 1/3, error = 0
-          const projB = await makeProject(service, 'Frac-B', 'FB', 'success');
+          const projB = await makeProject(service, 'Frac-B', 'success');
           await addModule(service, projB.id, 'fb-m1', 'finished');
           await addModule(service, projB.id, 'fb-m2', 'finished');
           await addModule(service, projB.id, 'fb-m3', 'pending');
@@ -1061,12 +1270,12 @@ describe('X2ADatabaseService – projects', () => {
 
           // Both projects: 1 finished + 2 pending → finished = 1/3
           // All summary percentages are identical so the comparator returns 0.
-          const projA = await makeProject(service, 'Same-A', 'SA', 'success');
+          const projA = await makeProject(service, 'Same-A', 'success');
           await addModule(service, projA.id, 'sa-m1', 'finished');
           await addModule(service, projA.id, 'sa-m2', 'pending');
           await addModule(service, projA.id, 'sa-m3', 'pending');
 
-          const projB = await makeProject(service, 'Same-B', 'SB', 'success');
+          const projB = await makeProject(service, 'Same-B', 'success');
           await addModule(service, projB.id, 'sb-m1', 'finished');
           await addModule(service, projB.id, 'sb-m2', 'pending');
           await addModule(service, projB.id, 'sb-m3', 'pending');
@@ -1091,9 +1300,9 @@ describe('X2ADatabaseService – projects', () => {
           const service = createService(client);
 
           // Both 'initialized' with 0 modules: all percentages = 0
-          await makeProject(service, 'Init-A', 'IA', 'success');
+          await makeProject(service, 'Init-A', 'success');
           await delay(10);
-          await makeProject(service, 'Init-B', 'IB', 'success');
+          await makeProject(service, 'Init-B', 'success');
 
           const result = await service.listProjects(
             { sort: 'status', order: 'asc' },
@@ -1114,9 +1323,9 @@ describe('X2ADatabaseService – projects', () => {
           const { client } = await createDatabase(databaseId);
           const service = createService(client);
 
-          await makeProject(service, 'P-Created', 'PC');
-          await makeProject(service, 'P-Failed', 'PF', 'error');
-          await makeProject(service, 'P-Initialized', 'PI', 'success');
+          await makeProject(service, 'P-Created');
+          await makeProject(service, 'P-Failed', 'error');
+          await makeProject(service, 'P-Initialized', 'success');
 
           // Semantic asc: created(0), initialized(2), failed(4)
           const p0 = await service.listProjects(
@@ -1147,7 +1356,7 @@ describe('X2ADatabaseService – projects', () => {
           const { client } = await createDatabase(databaseId);
           const service = createService(client);
 
-          await makeProject(service, 'P-Only', 'PO');
+          await makeProject(service, 'P-Only');
 
           const result = await service.listProjects(
             { sort: 'status', order: 'asc', page: 5, pageSize: 10 },
@@ -1181,31 +1390,29 @@ describe('X2ADatabaseService – projects', () => {
           const service = createService(client);
 
           // created: no init job
-          await makeProject(service, 'P-Created', 'PCR');
+          await makeProject(service, 'P-Created');
 
           // initializing: init job running
-          await makeProject(service, 'P-Initializing', 'PIG', 'running');
+          await makeProject(service, 'P-Initializing', 'running');
 
           // initialized: init success, 0 modules
-          await makeProject(service, 'P-Initialized', 'PID', 'success');
+          await makeProject(service, 'P-Initialized', 'success');
 
           // inProgress: init success, 1 waiting module (beyond pending)
           const projInProgress = await makeProject(
             service,
             'P-InProgress',
-            'PIP',
             'success',
           );
           await addModule(service, projInProgress.id, 'ip-m1', 'waiting');
 
           // failed: init error
-          await makeProject(service, 'P-Failed', 'PFA', 'error');
+          await makeProject(service, 'P-Failed', 'error');
 
           // completed: init success, all modules finished
           const projCompleted = await makeProject(
             service,
             'P-Completed',
-            'PCO',
             'success',
           );
           await addModule(service, projCompleted.id, 'co-m1', 'finished');
@@ -1252,7 +1459,6 @@ describe('X2ADatabaseService – projects', () => {
           await service.createProject(
             {
               name: 'U1-Created',
-              abbreviation: 'U1C',
               description: 'U1 created',
               ...defaultProjectRepoFields,
             },
@@ -1261,7 +1467,6 @@ describe('X2ADatabaseService – projects', () => {
           const u1Init = await service.createProject(
             {
               name: 'U1-Initialized',
-              abbreviation: 'U1I',
               description: 'U1 initialized',
               ...defaultProjectRepoFields,
             },
@@ -1277,7 +1482,6 @@ describe('X2ADatabaseService – projects', () => {
           const u2Proj = await service.createProject(
             {
               name: 'U2-Failed',
-              abbreviation: 'U2F',
               description: 'U2 failed',
               ...defaultProjectRepoFields,
             },
@@ -1297,7 +1501,7 @@ describe('X2ADatabaseService – projects', () => {
           expect(result.totalCount).toBe(2);
           expect(result.projects).toHaveLength(2);
           expect(
-            result.projects.every(p => p.createdBy === 'user:default/user1'),
+            result.projects.every(p => p.ownedBy === 'user:default/user1'),
           ).toBe(true);
           // Semantic asc: created(0) < initialized(2)
           expect(result.projects.map(p => p.status?.state)).toEqual([

@@ -22,11 +22,11 @@ import {
 import express from 'express';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import type { ProjectsPostRequest } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { CallbackToken } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 import { Knex } from 'knex';
 
 import { createRouter } from '../router';
 import { registerCollectArtifactsRoutes } from '../router/collectArtifacts';
-import { SignatureValidator } from '../router/utils/SignatureValidator';
 import { X2ADatabaseService } from '../services/X2ADatabaseService';
 import { createService } from './testHelpers';
 
@@ -37,7 +37,6 @@ import { createService } from './testHelpers';
 export const mockInputProject: ProjectsPostRequest = {
   name: 'Mock Project',
   description: 'Mock Description',
-  abbreviation: 'MP',
   sourceRepoUrl: 'https://github.com/source/repo',
   targetRepoUrl: 'https://github.com/target/repo',
   sourceRepoBranch: 'main',
@@ -47,7 +46,6 @@ export const mockInputProject: ProjectsPostRequest = {
 export const mockProject2: ProjectsPostRequest = {
   name: 'Another Project',
   description: 'Another Description',
-  abbreviation: 'AP',
   sourceRepoUrl: 'https://github.com/source/repo2',
   targetRepoUrl: 'https://github.com/target/repo2',
   sourceRepoBranch: 'main',
@@ -136,6 +134,9 @@ export function getCatalogMock() {
     validateEntity: jest.fn().mockResolvedValue(undefined),
     analyzeLocation: jest.fn().mockResolvedValue(undefined),
     streamEntities: jest.fn().mockResolvedValue(undefined),
+    queryLocations: jest.fn().mockResolvedValue([]),
+    streamLocations: jest.fn().mockResolvedValue(undefined),
+    updateLocation: jest.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -211,16 +212,10 @@ export async function createApp(
     }),
     x2aDatabase,
     kubeService: {
-      createProjectSecret: jest.fn().mockResolvedValue(undefined),
-      getProjectSecret: jest.fn().mockResolvedValue(null),
-      deleteProjectSecret: jest.fn().mockResolvedValue(undefined),
-      createJobSecret: jest.fn().mockResolvedValue(undefined),
       createJob: jest.fn().mockResolvedValue({ k8sJobName: 'test-job' }),
-      getJobStatus: jest.fn().mockResolvedValue('pending'),
+      getJobStatus: jest.fn().mockResolvedValue({ status: 'pending' }),
       getJobLogs: jest.fn().mockResolvedValue(''),
       deleteJob: jest.fn().mockResolvedValue(undefined),
-      listJobsForProject: jest.fn().mockResolvedValue([]),
-      getPods: jest.fn().mockResolvedValue({ items: [] }),
       ...kubeServiceOverrides,
     },
   });
@@ -246,11 +241,15 @@ export interface MockRouterDeps {
     listProjects: jest.Mock;
     createProject: jest.Mock;
     getProject: jest.Mock;
+    updateProject: jest.Mock;
     deleteProject: jest.Mock;
     listModules: jest.Mock;
     createModule: jest.Mock;
     getModule: jest.Mock;
     deleteModule: jest.Mock;
+    softDeleteModule: jest.Mock;
+    restoreModule: jest.Mock;
+    updateModule: jest.Mock;
     listJobs: jest.Mock;
     listJobsForProject: jest.Mock;
     listJobsForModule: jest.Mock;
@@ -290,11 +289,15 @@ export function createMockRouterDeps(): MockRouterDeps {
       listProjects: jest.fn(),
       createProject: jest.fn(),
       getProject: jest.fn(),
+      updateProject: jest.fn(),
       deleteProject: jest.fn(),
       listModules: jest.fn().mockResolvedValue([]),
       createModule: jest.fn().mockResolvedValue({ id: 'mock-module-id' }),
       getModule: jest.fn(),
       deleteModule: jest.fn().mockResolvedValue(1),
+      softDeleteModule: jest.fn().mockResolvedValue(1),
+      restoreModule: jest.fn().mockResolvedValue(1),
+      updateModule: jest.fn().mockResolvedValue(1),
       listJobs: jest.fn(),
       listJobsForProject: jest.fn(),
       listJobsForModule: jest.fn(),
@@ -340,20 +343,19 @@ export interface CollectArtifactsTestApp {
   signRequestBody: (body: object, secret: string) => string;
 }
 
+function signRequestBody(body: object, secret: string): string {
+  const token = CallbackToken.from(secret);
+  const bodyBuffer = Buffer.from(JSON.stringify(body), 'utf-8');
+  return token.sign(bodyBuffer);
+}
+
 export function setupCollectArtifactsApp(): CollectArtifactsTestApp {
   const mockDeps = createMockRouterDeps();
-  const signatureValidator = new SignatureValidator();
   const app = express();
   const router = express.Router();
   registerCollectArtifactsRoutes(router, mockDeps as any);
   app.use(router);
   app.use(mockErrorHandler());
-
-  function signRequestBody(body: object, secret: string): string {
-    const bodyJson = JSON.stringify(body);
-    const bodyBuffer = Buffer.from(bodyJson, 'utf-8');
-    return signatureValidator.generateSignature(secret, bodyBuffer);
-  }
 
   return { app, mockDeps, signRequestBody };
 }

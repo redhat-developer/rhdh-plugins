@@ -88,7 +88,14 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     });
 
     if (!response.ok) {
-      throw new Error(response.statusText);
+      let message = response.statusText;
+      try {
+        const body = (await response.json()) as any;
+        if (body.error) message = body.error;
+      } catch {
+        // response may not be JSON
+      }
+      throw new Error(message);
     }
 
     // Get the response data
@@ -518,7 +525,14 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     });
 
     if (!response.ok) {
-      throw new Error(response.statusText);
+      let message = response.statusText;
+      try {
+        const body = (await response.json()) as any;
+        if (body.error) message = body.error;
+      } catch {
+        // response may not be JSON
+      }
+      throw new Error(message);
     }
 
     return {
@@ -544,7 +558,14 @@ export class CostManagementSlimClient implements CostManagementSlimApi {
     });
 
     if (!response.ok) {
-      throw new Error(response.statusText);
+      let message = response.statusText;
+      try {
+        const body = (await response.json()) as any;
+        if (body.error) message = body.error;
+      } catch {
+        // response may not be JSON
+      }
+      throw new Error(message);
     }
 
     return {

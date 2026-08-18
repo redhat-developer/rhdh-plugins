@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { makeStyles, Theme, Grid, Paper } from '@material-ui/core';
+import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
 
 import { CatalogSearchResultListItem } from '@backstage/plugin-catalog';
 import {
@@ -39,23 +41,7 @@ import {
 } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 
-const useStyles = makeStyles((theme: Theme) => ({
-  bar: {
-    padding: theme.spacing(1, 0),
-  },
-  filters: {
-    padding: theme.spacing(2),
-    marginTop: theme.spacing(2),
-  },
-  filter: {
-    '& + &': {
-      marginTop: theme.spacing(2.5),
-    },
-  },
-}));
-
 const SearchPage = () => {
-  const classes = useStyles();
   const { types } = useSearch();
   const catalogApi = useApi(catalogApiRef);
 
@@ -65,7 +51,7 @@ const SearchPage = () => {
       <Content>
         <Grid container direction="row">
           <Grid item xs={12}>
-            <Paper className={classes.bar}>
+            <Paper sx={{ py: 1, px: 0 }}>
               <SearchBar />
             </Paper>
           </Grid>
@@ -86,40 +72,39 @@ const SearchPage = () => {
                 },
               ]}
             />
-            <Paper className={classes.filters}>
-              {types.includes('techdocs') && (
-                <SearchFilter.Select
-                  className={classes.filter}
-                  label="Entity"
-                  name="name"
-                  values={async () => {
-                    // Return a list of entities which are documented.
-                    const { items } = await catalogApi.getEntities({
-                      fields: ['metadata.name'],
-                      filter: {
-                        'metadata.annotations.backstage.io/techdocs-ref':
-                          CATALOG_FILTER_EXISTS,
-                      },
-                    });
+            <Paper sx={{ p: 2, mt: 2 }}>
+              <Stack spacing={2.5}>
+                {types.includes('techdocs') && (
+                  <SearchFilter.Select
+                    label="Entity"
+                    name="name"
+                    values={async () => {
+                      // Return a list of entities which are documented.
+                      const { items } = await catalogApi.getEntities({
+                        fields: ['metadata.name'],
+                        filter: {
+                          'metadata.annotations.backstage.io/techdocs-ref':
+                            CATALOG_FILTER_EXISTS,
+                        },
+                      });
 
-                    const names = items.map(entity => entity.metadata.name);
-                    names.sort();
-                    return names;
-                  }}
+                      const names = items.map(entity => entity.metadata.name);
+                      names.sort();
+                      return names;
+                    }}
+                  />
+                )}
+                <SearchFilter.Select
+                  label="Kind"
+                  name="kind"
+                  values={['Component', 'Template']}
                 />
-              )}
-              <SearchFilter.Select
-                className={classes.filter}
-                label="Kind"
-                name="kind"
-                values={['Component', 'Template']}
-              />
-              <SearchFilter.Checkbox
-                className={classes.filter}
-                label="Lifecycle"
-                name="lifecycle"
-                values={['experimental', 'production']}
-              />
+                <SearchFilter.Checkbox
+                  label="Lifecycle"
+                  name="lifecycle"
+                  values={['experimental', 'production']}
+                />
+              </Stack>
             </Paper>
           </Grid>
           <Grid item xs={9}>

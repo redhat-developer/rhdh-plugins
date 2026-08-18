@@ -60,46 +60,115 @@ spec:
 
 ## Available Metrics
 
-### GitHub open PRs (`github.open_prs`)
+### GitHub open PRs (`github.openPRs`)
 
 This metric counts all pull requests that are currently in an "open" state for the repository specified in the entity's `github.com/project-slug` annotation.
 
-- **Metric ID**: `github.open_prs`
+- **Metric ID**: `github.openPRs`
+- **Metric Provider ID**: `github.openPRs`
 - **Type**: Number
 - **Datasource**: `github`
-- **Default thresholds**:
+- **Unit**: open pull requests (count)
 
-  ```yaml
-  # app-config.yaml
-  scorecard:
-    plugins:
-      github:
-        open_prs:
-          thresholds:
-            rules:
-              - key: error
-                expression: '>50'
-              - key: warning
-                expression: '10-50'
-              - key: success
-                expression: '<10'
-  ```
+## Collectors
+
+This module registers collectors to collect data from GitHub to be used by composite metric providers:
+
+- `scorecard-backend-module-dora`:
+
+  - `github:deployments`
+  - `github:deploymentWorkflowRuns`
+  - `github:deploymentPullRequests`
+
+### Collector contracts
+
+Collectors in Scorecard are schema-validated at runtime. Any custom collector replacing a GitHub collector must return data that conforms to the same contract expected by consumers.
+
+Required entity annotations for GitHub collectors:
+
+```yaml
+metadata:
+  annotations:
+    github.com/project-slug: myorg/my-service
+```
+
+`github:deployments`
+
+- **Input schema**
+  - `from: string` (ISO datetime)
+  - `to: string` (ISO datetime)
+- **Output schema**
+  - `deployments: Array<{ id: string; commitSha: string; environment?: string; createdAt: string; result: 'success' | 'failure' | '' }>`
+- **Annotation requirements**
+  - Requires `github.com/project-slug` on the entity
+- **Behavior**
+  - Records are returned in ascending `createdAt` order (oldest to newest)
+  - Client-side fetch cap: at most **1000** deployments are collected per request. Pagination stops once the cap is reached, the cap keeps the most recent in-window runs
+
+`github:deploymentWorkflowRuns`
+
+- **Input schema**
+  - `workflowName: string` (non-empty)
+  - `from: string` (ISO datetime)
+  - `to: string` (ISO datetime)
+- **Output schema**
+  - `deployments: Array<{ id: string; commitSha: string; environment?: string; createdAt: string; result: 'success' | 'failure' | '' }>`
+- **Annotation requirements**
+  - Requires `github.com/project-slug` on the entity
+- **Behavior**
+  - Records are returned in ascending `createdAt` order (oldest to newest)
+  - `workflowName` can match the workflow display name, the full workflow path (for example `.github/workflows/deploy.yml`), or a filename suffix (for example `deploy.yml`)
+  - Client-side fetch cap: at most **1000** workflow runs are collected per request. Pagination stops once the cap is reached, the cap keeps the most recent in-window runs
+
+`github:deploymentPullRequests`
+
+- **Input schema**
+  - `baseCommitSha: string` (non-empty)
+  - `headCommitSha: string` (non-empty)
+- **Output schema**
+  - `pullRequests: Array<{ id: string; firstCommitAt: string }>`
+- **Annotation requirements**
+  - Requires `github.com/project-slug` on the entity
+- **Behavior**
+  - The collector resolves commits between `baseCommitSha` and `headCommitSha`, collects associated pull requests for those commits, and de-duplicates pull requests by PR number.
+  - `firstCommitAt` is the timestamp of the first commit returned for that pull request (Pull requests with missing `firstCommitAt` are skipped)
+  - Client-side fetch cap: at most **1000** commits are fetched for the `baseCommitSha...headCommitSha` compare range. Pagination stops once the cap is reached
+
+For a complete collector implementation guide, see [collectors.md](../scorecard-backend/docs/collectors.md).
+
+## Default thresholds
+
+Default thresholds for `github.openPRs`:
+
+```yaml
+# app-config.yaml
+scorecard:
+  metricProviders:
+    github:
+      openPRs:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<10'
+            - key: warning
+              expression: '10-50'
+            - key: error
+              expression: '>50'
+```
+
+See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom thresholds configuration.
 
 ## Configuration
 
-### Threshold Configuration
-
-Thresholds define conditions that determine which category a metric value belongs to ( `error`, `warning`, or `success`). You can configure custom thresholds for the GitHub metrics. Check out detailed explanation of [threshold configuration](../scorecard-backend/docs/thresholds.md).
-
-## Schedule Configuration
+### Schedule Configuration
 
 The Scorecard plugin uses Backstage's built-in scheduler service to automatically collect metrics from all registered providers every hour by default. However, this configuration can be changed in the `app-config.yaml` file. Here is an example of how to do that:
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     github:
-      open_prs:
+      openPRs:
         schedule:
           frequency:
             cron: '0 6 * * *'
@@ -109,4 +178,4 @@ scorecard:
             seconds: 5
 ```
 
-The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157).
+The schedule configuration follows Backstage's `SchedulerServiceTaskScheduleDefinitionConfig` [schema](https://github.com/backstage/backstage/blob/master/packages/backend-plugin-api/src/services/definitions/SchedulerService.ts#L157). See [Metric Collection Scheduling](../scorecard-backend/docs/providers.md#metric-collection-scheduling) for custom schedule configuration.

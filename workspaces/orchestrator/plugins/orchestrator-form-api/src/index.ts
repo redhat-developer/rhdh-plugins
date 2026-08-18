@@ -22,4 +22,5 @@ export type {
   OrchestratorFormSchemaUpdater,
   SchemaChunksResponse,
   OrchestratorFormContextProps,
+  ReviewComponentProps,
 } from './api';

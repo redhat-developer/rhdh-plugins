@@ -1,5 +1,175 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.12.1
+
+### Patch Changes
+
+- e0093e0: Remove unused `@janus-idp/backstage-plugin-audit-log-node` and `@janus-idp/cli` dependencies.
+
+## 8.12.0
+
+### Minor Changes
+
+- f48dfb4: Add conditional RBAC policy support for orchestrator workflows using the `IS_ALLOWED_WORKFLOW_ID` rule. Dynamic workflow-specific permissions (`orchestrator.workflow.<workflowId>` and `orchestrator.workflow.use.<workflowId>`) are deprecated and will be removed in the next release.
+
+  Migrate from deprecated dynamic permissions to conditional policies. See `docs/MIGRATION-CONDITIONAL-POLICIES.md`.
+
+- 069a223: Add 5 Orchestrator MCP actions (`list-workflows`, `get-workflow-schema`, `execute-workflow`, `list-instances`, `get-instance`) so LLM/CLI clients can discover and run Orchestrator workflows through the Model Context Protocol. Each action enforces the existing Orchestrator RBAC permissions (`orchestrator.workflow`, `orchestrator.workflow.use`, `orchestrator.instanceAdminView`) with full fidelity, including conditional policies and instance ownership checks.
+
+### Patch Changes
+
+- 069a223: Fixed a crash ("Only user credentials are supported") when the `execute-workflow` MCP action, `list-instances` MCP action, or the `getInstances`/`getInstanceById`/`getWorkflowLogById` REST endpoints were called by a non-user caller, such as an MCP client authenticated via a static `backend.auth.externalAccess` token. These callers now fall back to a fixed system identity (`user:default/system`) for initiator/ownership purposes instead of crashing.
+- 82b31c8: Add module wiring tests, a local `dev/` harness, and contributor documentation.
+- 069a223: Bound the page size of the `list-workflows` and `list-instances` MCP actions (default 50, max 100, with `limit`/`offset` inputs) so they no longer fetch every visible workflow/instance in a single unbounded call. Also cache compiled Ajv validators in the `execute-workflow` action instead of recompiling the workflow's input schema on every invocation.
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+- Updated dependencies [f48dfb4]
+- Updated dependencies [c74276c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.9.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.4.1
+
+## 8.11.0
+
+### Minor Changes
+
+- 10f9b87: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- Updated dependencies [10f9b87]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.8.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.4.0
+
+## 8.10.3
+
+### Patch Changes
+
+- eade824: update the header to be consistent with the code base.
+- Updated dependencies [eade824]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.3.3
+
+## 8.10.2
+
+### Patch Changes
+
+- b2307f3: The updated overview of a workflow will have the availability property if the isAvailable prop is false
+- e1a86f0: return total count as a parameter for the instances
+- Updated dependencies [b2307f3]
+- Updated dependencies [e1a86f0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.3.2
+
+## 8.10.1
+
+### Patch Changes
+
+- 43e0722: add the average duration for a workflow run in the stats
+- 22f75ad: Fix workflow run stats on entity catalog workflow overview by querying instances with workflow definition ids and optional target entity filter.
+- 7c2f5d2: Updated dependency `prettier` to `3.8.4`.
+- Updated dependencies [43e0722]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.3.1
+
+## 8.10.0
+
+### Minor Changes
+
+- bd80b86: Backstage version bump to v1.51.1
+
+### Patch Changes
+
+- d908e3e: Fix an issue where filtering workflow runs by status or date could show an error instead of results.
+- bbcdc56: update the workflow overview api to include the success ratio for a worfklow. Also add the total runs(for the last 30 days) for each workflow
+- a6cd70c: Add the ability to send nested filters with the same field
+- Updated dependencies [bbcdc56]
+- Updated dependencies [bd80b86]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.3.0
+
+## 8.9.5
+
+### Patch Changes
+
+- 06ac2d0: Fix an issue where filtering workflow runs by status or date could show an error instead of results.
+
+## 8.9.4
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.4
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.2.4
+
+## 8.9.3
+
+### Patch Changes
+
+- 46d0a50: fix: input data added to the cloudevent should be one level deep and not be inputData.workflowData
+- 46d0a50: fix: workflow start state might also be in the start.stateName variable when compiled
+
+## 8.9.2
+
+### Patch Changes
+
+- dfd28b3: fix: returns the version of the workflow in the overview and instance reponses
+- Updated dependencies [dfd28b3]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.2.3
+
+## 8.9.1
+
+### Patch Changes
+
+- d85bf56: fix: add configurable bodyParser limit
+- Updated dependencies [d85bf56]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.2.2
+
+## 8.9.0
+
+### Minor Changes
+
+- 9ab62e3: feature: add the ability to trigger kafka based workflows from the plugin
+
+## 8.8.2
+
+### Patch Changes
+
+- f96e4f2: fix: updating lodash for cve fixes
+
+## 8.8.1
+
+### Patch Changes
+
+- Updated dependencies [16d41c2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.2.1
+
+## 8.8.0
+
+### Minor Changes
+
+- 2212e8d: Backstage version bump to v1.49.3
+
+### Patch Changes
+
+- Updated dependencies [665a75c]
+- Updated dependencies [2212e8d]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.2.0
+
+## 8.7.3
+
+### Patch Changes
+
+- 91013e2: - Update dependecy @urql/core to fix CVE-2026-3118
+  - Reworks the filter and query builder code to use query variables
+- Updated dependencies [5a9d9d8]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.1.3
+
 ## 8.7.2
 
 ### Patch Changes
@@ -30,6 +200,13 @@
 - Updated dependencies [3648a62]
   - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.0
   - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.1.0
+
+## 8.6.4
+
+### Patch Changes
+
+- 13159d3: - Update dependecy @urql/core to fix CVE-2026-3118
+  - Reworks the filter and query builder code to use query variables
 
 ## 8.6.3
 
@@ -117,6 +294,13 @@
 
 - Updated dependencies [fba1136]
   - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.2.0
+
+## 8.3.1
+
+### Patch Changes
+
+- 480bde1: - Update dependecy @urql/core to fix CVE-2026-3118
+  - Reworks the filter and query builder code to use query variables
 
 ## 8.3.0
 

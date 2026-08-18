@@ -8,14 +8,51 @@ Thresholds are evaluated in order and the **first matching** threshold rule is a
 
 - **`key`**: The threshold category (e.g., `success`, `warning`, `error`, or custom keys)
 - **`expression`**: The condition that determines if a metric value matches this threshold
-- **`color`** (optional): The color to display for this threshold in the UI (see [Threshold Colors](#threshold-colors))
-- **`icon`** (optional): The icon to display for this threshold in the UI (see [Threshold Icons](#threshold-icons))
+- **`color`** (optional for standard keys): The color to display for this threshold in the UI (see [Threshold Colors](#threshold-colors)). Standard keys (`success`, `warning`, `error`) use default colors when omitted; **custom keys in metric threshold config must specify `color` and `icon`** (see [Threshold Colors](#threshold-colors) and [Threshold Icons](#threshold-icons))
+- **`icon`** (optional for standard keys): The icon to display for this threshold in the UI (see [Threshold Icons](#threshold-icons)). Standard keys use default icons when omitted; **custom keys in metric threshold config must specify both `icon` and `color`**
+
+## Joint coverage (number metrics)
+
+For **number** metrics with **two or more** rules, validation requires that the **union** of all rule expressions covers the **entire real line** (from negative infinity to positive infinity). This matches how the backend evaluates values: numeric ranges use **inclusive** endpoints. Comparison operators keep their usual strict or non-strict boundaries.
+
+**Overlaps:** Overlapping intervals **do not** fail validation—the check only verifies that no **gap** remains. Rule **order** does not affect coverage. It only affects **which key wins** when more than one rule matches ([first-match semantics](#thresholdevaluator)).
+
+### How validation works
+
+For each rule, the validator parses the expression and maps it to one or more intervals on the real line:
+
+- **Range** syntax `min-max` → closed interval `[min, max]`.
+- **Comparisons** (`>`, `>=`, `<`, `<=`) → half-lines or bounded rays.
+- **`==`** → a single point.
+- **`!=`** → **two** intervals (everything except that point), which can help close gaps near a boundary without adding an extra rule.
+
+All intervals from every rule are merged (overlapping or touching intervals combine). The configuration **passes** only if the merged result is a single interval covering **(-∞, +∞)** with both ends included.
+
+### Gap detection and error messages
+
+If the merged union leaves any real number uncovered, validation throws `ThresholdConfigFormatError` with a message similar to:
+
+`Number threshold rules do not cover the entire real line. First uncovered region (approximately): …`
+
+The reported interval is an **approximate** description of the **first** gap found (for example `(10, 11)`, `(-∞, 10)`, or `(74, 75)`). Adjust boundaries so adjacent rules meet or overlap—for example use **`10-20`** instead of **`11-20`** next to **`'<10'`**, or **`10-75`** with **`>=75`** instead of **`10-74`** with **`>=75`**.
+
+**Gap example:** `success: '<10'`, `warning: '11-20'`, `error: '>20'` leaves **`10`** and **`(10, 11)`** uncovered. Prefer **`'<10'`**, **`'10-20'`**, **`'>20'`**, or widen ranges so neighbors touch (**`51-79`** with **`'<51'`** and **`'>=80'`**).
+
+### When full-line coverage is skipped
+
+Validation **does not** require full coverage when:
+
+- The metric type is not **number**, or
+- **`rules`** is empty, or
+- There is **at most one** rule (for example validating a single expression in isolation), or
+- **Every** rule is a numeric **`==`** expression (discrete metrics such as Sonar ratings **`==1`** … **`==5`**).
 
 ## Threshold Configuration Options
 
-### 1. Provider Default Thresholds
+### 1. Metric Default Thresholds
 
-Metric providers can define default thresholds that apply to all entities using that metric.
+Each metric returned by `getMetrics()` must include default `thresholds` that apply to all entities using that metric.
+Plugin `@red-hat-developer-hub/backstage-plugin-scorecard-common` provides pre-defined `DEFAULT_NUMBER_THRESHOLDS` which you can import and use on your metrics.
 
 **Example Provider Implementation:**
 
@@ -23,64 +60,69 @@ Metric providers can define default thresholds that apply to all entities using 
 export class MyMetricProvider implements MetricProvider<'number'> {
   ...
 
-  getMetricThresholds(): ThresholdConfig {
-    return {
-      rules: [
-        { key: 'success', expression: '<10' },
-        { key: 'warning', expression: '10-50' },
-        { key: 'error', expression: '>50' },
-      ],
-    };
+  getMetrics(): Metric<'number'>[] {
+    return [
+      {
+        id: 'myDatasource.myMetric',
+        title: 'My Metric',
+        description: 'Example metric.',
+        type: 'number',
+        // Optional display unit shown next to threshold expressions in the UI
+        unit: 'h',
+        thresholds: {
+          rules: [
+            { key: 'success', expression: '<10' },
+            { key: 'warning', expression: '10-50' },
+            { key: 'error', expression: '>50' },
+          ],
+        },
+      },
+    ];
   }
 }
 ```
 
 ### 2. App Configuration Thresholds
 
-You can override provider defaults through app configuration (`app-config.yaml`). Your metric provider needs to support configuration-based thresholds.
-Duplicated threshold keys are not allowed (throws `ConfigFormatError`).
+You can override metric defaults through app configuration (`app-config.yaml`). Thresholds may be set at two levels; the **most specific** level wins and completely replaces metric defaults:
 
-**Provider Implementation:**
+1. **Metric** (highest app-config priority): `scorecard.metricProviders.<datasource>.<providerName>.metrics.<metricName>.thresholds`
+2. **Provider**: `scorecard.metricProviders.<datasource>.<providerName>.thresholds`
 
-```typescript
-import {
-  MetricProvider,
-  validateThresholds,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+Keys under `metricProviders.<datasource>` are **local provider names** (no datasource prefix). Keys under `metrics` are **local metric names** (no datasource prefix). The full provider ID is `<datasource>.<providerName>` and metric ID is `<datasource>.<metricName>`.
 
-export class MyMetricProvider implements MetricProvider<'number'> {
-  private readonly thresholds: ThresholdConfig;
+Provider-level thresholds must be valid for every metric they apply to. Prefer provider-level thresholds for multi-metric providers (for example OpenSSF or Filecheck) when all metrics share the same rules.
 
-  private constructor(thresholds?: ThresholdConfig) {
-    // Use configured thresholds or fall back to defaults
-    this.thresholds = thresholds ?? this.getDefaultThresholds();
-  }
-
-  static fromConfig(config: Config): MyMetricProvider {
-    const configPath = 'scorecard.plugins.myDatasource.myMetric.thresholds';
-    const configuredThresholds = config.getOptional(configPath);
-
-    if (configuredThresholds) {
-      // validate threshold configuration is correct, throws ConfigFormatError if not
-      validateThresholds(configuredThresholds, 'number');
-    }
-
-    return new MyMetricProvider(configuredThresholds);
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
-  }
-}
-```
+Threshold configuration is validated in [validateThresholdsForMetric()](../../scorecard-node/src/utils/thresholds/validateThresholds.ts).
 
 **Example App Configuration:**
 
+**_Metric level:_**
+
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     myDatasource:
-      myMetric:
+      myProvider:
+        metrics:
+          myMetric:
+            thresholds:
+              rules:
+                - key: success
+                  expression: '<10'
+                - key: warning
+                  expression: '<=20'
+                - key: error
+                  expression: '>20'
+```
+
+**_Provider level:_**
+
+```yaml
+scorecard:
+  metricProviders:
+    myDatasource:
+      myProvider:
         thresholds:
           rules:
             - key: success
@@ -89,13 +131,11 @@ scorecard:
               expression: '<=20'
             - key: error
               expression: '>20'
-    myOtherDatasource:
-      myOtherMetric: ...
 ```
 
 ### 3. Entity Annotation Overrides
 
-Override thresholds for specific entities using annotations in the entity's metadata:
+Override thresholds for specific entities using annotations in the entity's metadata. Annotations use the **full metric ID**:
 
 ```yaml
 apiVersion: backstage.io/v1alpha1
@@ -104,47 +144,119 @@ metadata:
   name: my-service
   annotations:
     # Override specific threshold rules for this entity
-    scorecard.io/myDatasource.myMetric.thresholds.rules.warning: '10-15'
-    scorecard.io/myDatasource.myMetric.thresholds.rules.error: '>15'
+    scorecard.io/myMetricId.thresholds.rules.warning: '10-15'
+    scorecard.io/myMetricId.thresholds.rules.error: '>15'
     # success threshold will use the default config value
 spec:
   type: service
 ```
+
+You can only override existing threshold severity keys for the metric. This means you can not specify new custom severity keys in entity annotations, they must be first configured for the metric in app configuration or defined in the metric code.
+
+#### Controlling whether threshold annotations are honored
+
+Administrators can disable or restrict threshold customization via entity annotations in app-config under `scorecard.entityAnnotations` (same pattern as [disabled metrics](./disabled-metrics-logic.md)).
+
+```yaml
+scorecard:
+  entityAnnotations:
+    # Global switch: if false, all scorecard entity annotations are ignored
+    # Default: true.
+    enabled: true
+    thresholds:
+      # If false, threshold override annotations have no effect. Default: true.
+      enabled: true
+      # When thresholds.enabled is true: metric IDs listed here cannot have
+      # thresholds customized via entity annotations.
+      except:
+        - github.openPRs
+```
+
+| `entityAnnotations.enabled` | `entityAnnotations.thresholds.enabled` | `entityAnnotations.thresholds.except`       | Threshold annotations applied for `metricId`? |
+| --------------------------- | -------------------------------------- | ------------------------------------------- | --------------------------------------------- |
+| `false`                     | —                                      | —                                           | **No**                                        |
+| `true` (or unset)           | `false`                                | —                                           | **No**                                        |
+| `true` (or unset)           | `true` (or unset)                      | includes `metricId`                         | **No**                                        |
+| `true` (or unset)           | `true` (or unset)                      | unset / empty / does not include `metricId` | **Yes**                                       |
+
+`—`: means this setting is not consulted for that row.
+
+**Summary:**
+
+- `entityAnnotations.enabled = false` — All scorecard entity annotations are ignored, including threshold overrides.
+- `entityAnnotations.thresholds.enabled = false` — Users cannot customize thresholds via `scorecard.io/<metricId>.thresholds.rules.<key>` annotations. The `except` list is not used.
+- `entityAnnotations.thresholds.enabled = true` (or unset) — Users can customize thresholds via annotations. Metric IDs in `except` cannot be customized; others can.
 
 #### Annotation Format Reference
 
 Entity annotations use this format:
 
 ```yaml
-scorecard.io/{providerId}.thresholds.rules.{thresholdKey}: '{expression}'
+scorecard.io/{metricId}.thresholds.rules.{thresholdKey}: '{expression}'
 ```
 
 Where:
 
-- `{providerId}`: The metric provider ID (e.g., `github.open_prs`)
+- `{metricId}`: The full metric ID (e.g., `github.openPRs`, `filecheck.readme`)
 - `{thresholdKey}`: The threshold category (e.g., `success`, `warning`, `error`)
 - `{expression}`: The threshold expression (e.g., `>10`, `==true`, `5-15`)
+
+For **number** metrics, each overridden expression is validated in isolation first. If **any** rule was replaced from an annotation, the backend then validates the **merged** rule list for the same **joint full-line coverage** as app-config and metric defaults (see [Joint coverage (number metrics)](#joint-coverage-number-metrics)). If the union of all merged expressions leaves a gap, startup or merge-time evaluation throws **`ThresholdConfigFormatError`** with the usual message starting with `Number threshold rules do not cover the entire real line…` (this is **not** wrapped in the `Invalid threshold annotation '…'` prefix used for single-rule parse errors).
+
+**Counterexample:** Metric default rules partition the line (`'<10'`, `'10-20'`, `'>20'`). Overriding only warning to `'11-20'` leaves **`10`** and **`(10, 11)`** uncovered on the merged set—fix the override or adjacent rules so the union again covers **(-∞, +∞)**.
+
+### 4. Aggregation KPI result thresholds (`weightedStatusScore` type)
+
+These thresholds are **not** per-entity metric rules. They apply only to homepage aggregation KPIs where **`scorecard.aggregationKPIs.<aggregationId>.type`** is **`weightedStatusScore`**.
+
+- **Configuration path:** `scorecard.aggregationKPIs.<aggregationId>.options.thresholds`
+
+- **YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**, though icons are not used for the weightedStatusScore KPI donut). Custom keys in aggregation KPI thresholds **only require `color`** (not `icon`). Expressions are **number**-style and are evaluated against **`weightedStatusScore`**, the backend’s portfolio **percentage** in **`[0, 100]`** (one decimal; see [Entity Aggregation](./aggregation.md)). The **first** matching rule wins; its **`color`** is returned on the API as **`result.aggregationChartDisplayColor`**.
+
+- **Defaults:** If **`thresholds`** is omitted from app-config under **`options`**, it is not injected at config-parse time. **`WeightedStatusScoreAggregationStrategy`** applies **`DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS`** from [`src/constants/aggregationKPIs.ts`](../src/constants/aggregationKPIs.ts) when serving an aggregation: **`<30`** → error, **`30-79`** → warning, **`>=80`** → success (higher percentage = better). When that default path is used, the strategy logs at **info** that the built-in 0–100% scale is in effect.
+
+- **Startup validation:** Invalid rules or expressions are caught when the backend plugin loads, together with the rest of **`scorecard.aggregationKPIs`**. WeightedStatusScore KPI **`options.thresholds`** must also satisfy **joint full-line coverage** for number expressions (see [Joint coverage (number metrics)](#joint-coverage-number-metrics)), for example ensure ranges and comparison rules meet at boundaries (**`10-75`** with **`>=75`** and **`<10`**, not **`10-74`** with **`>=75`**, which would leave **`(74, 75)`** uncovered). See [aggregation.md — Configuration validation](./aggregation.md#configuration-validation).
+
+- **Further reading:** [Entity Aggregation](./aggregation.md) (`weightedStatusScore` algorithm, API, drill-down); [Scorecard backend README — Aggregation KPIs](../README.md#aggregation-kpis-homepage-and-get-aggregations) (full **`aggregationKPIs`** example including **`statusScores`**).
+
+### 5. Aggregation KPI result thresholds (scalar types)
+
+These thresholds are **not** per-entity metric rules. They apply to homepage aggregation KPIs where **`scorecard.aggregationKPIs.<aggregationId>.type`** is one of **`sum`**, **`average`**, **`max`**, **`min`**, or **`count`**.
+
+- **Configuration path:** `scorecard.aggregationKPIs.<aggregationId>.options.thresholds`
+
+- **YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**). Expressions are **number**-style and are evaluated against **`result.value`**, the aggregated scalar from the KPI (see [Entity Aggregation — Scalar result fields](./aggregation.md#scalar-result-fields)). The **first** matching rule wins; its **`color`** and **`key`** can be used by custom UIs that render scalar KPIs.
+
+- **Defaults:** If **`thresholds`** is omitted from app-config under **`options`**, **`ScalarAggregationStrategy`** applies **`DEFAULT_NUMBER_THRESHOLDS`** from scorecard-common when serving an aggregation and includes them on the API as **`result.thresholds`**: **`<10`** → success, **`10-50`** → warning, **`>50`** → error.
+
+- **Scalar status filter:** The **`key`** values from metric threshold rules (provider defaults or app-config overrides at **`scorecard.metricProviders.<datasource>.<providerName>.metrics.<metricName>.thresholds`** / provider-level **`scorecard.metricProviders.<datasource>.<providerName>.thresholds`** — see [§1 Provider Default Thresholds](#1-provider-default-thresholds) and [§2 App Configuration Thresholds](#2-app-configuration-thresholds)) are the valid values for scalar KPI **`filter.status`**. Startup validation checks **`filter.status`** against those keys only (not per-entity annotation overrides). See [Entity Aggregation — Status filter (scalar types)](./aggregation.md#status-filter-scalar-types).
+
+- **Startup validation:** Invalid rules or expressions are caught when the backend plugin loads, together with the rest of **`scorecard.aggregationKPIs`**. Scalar KPI **`options.thresholds`** must also satisfy **joint full-line coverage** for number expressions when multiple rules apply (see [Joint coverage (number metrics)](#joint-coverage-number-metrics)). See [aggregation.md — Configuration validation](./aggregation.md#configuration-validation).
+
+- **Further reading:** [Entity Aggregation](./aggregation.md) (scalar types, API response shape); [Scorecard backend README — Aggregation KPIs](../README.md#aggregation-kpis-homepage-and-get-aggregations) (scalar **`aggregationKPIs`** examples).
 
 ## Threshold Priority Order
 
 Thresholds are applied with the following priority (highest to lowest):
 
-1. **Entity Annotations** (highest priority) - _merged_ with existing rules
-2. **App Configuration** - _completely replaces_ provider defaults
-3. **Provider Defaults** (lowest priority)
+1. **Entity Annotations** (highest priority) - _merged_ with existing rules, when honored (see [Controlling whether threshold annotations are honored](#controlling-whether-threshold-annotations-are-honored))
+2. **App Configuration (metric)** - _completely replaces_ metric code defaults and provider app configuration
+3. **App Configuration (provider)** - _completely replaces_ metric code defaults
+4. **Metric code defaults** (lowest priority)
 
 **Merging Behavior:**
 
-- **App Configuration**: Completely replaces provider defaults (no merging), missing rules are not applied
+- **App Configuration**: The most specific of metric / provider / datasource completely replaces lower levels (no rule merging between those levels)
 - **Entity Annotations**: Merged with existing rules from `app-config` or defaults:
   - Rules with the same `key` are **replaced** by annotation values
-  - Missing rules fall back to app-config or provider defaults
+  - Missing rules fall back to app-config or metric defaults
+  - For **number** metrics, if at least one rule came from an annotation, the **merged** rules must still satisfy joint full-line coverage together (see [§3 Entity Annotation Overrides](#3-entity-annotation-overrides))
 
 **Example Priority Application:**
 
 ```typescript
-// 1. Provider defaults
-providerDefaults: [
+// 1. Metric defaults
+metricDefaults: [
   { key: 'success', expression: '<10' },
   { key: 'warning', expression: '10-50' },
   { key: 'error', expression: '>50' }
@@ -159,8 +271,8 @@ appConfig: [
 
 // 3. Entity annotation overrides (merged with app-config)
 annotations: {
-  'scorecard.io/myProviderId.thresholds.rules.warning': '10-25',
-  'scorecard.io/myProviderId.thresholds.rules.error': '>25',
+  'scorecard.io/myMetricId.thresholds.rules.warning': '10-25',
+  'scorecard.io/myMetricId.thresholds.rules.error': '>25',
 }
 
 // Final result (annotations merged with app-config)
@@ -190,18 +302,18 @@ finalRules: [
 
 ### Number Metric
 
-Supports operators: `>, >=, <, <=, ==, !=, -`.
+Supports operators: `>, >=, <, <=, ==, !=, -`. The **`!=`** operator matches every value except the given number; in coverage validation it contributes **two** intervals, which can help eliminate small gaps at boundaries when combined with other rules.
 
 Example:
 
 ```yaml
 rules:
-  - key: error
-    expression: '>100'
-  - key: warning
-    expression: '80-100' # between 80 and 100 (inclusive)
   - key: success
     expression: '<80'
+  - key: warning
+    expression: '80-100' # between 80 and 100 (inclusive)
+  - key: error
+    expression: '>100'
 ```
 
 ### Boolean Metric
@@ -232,7 +344,7 @@ Add a `color` property to any threshold rule:
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     myDatasource:
       myMetric:
         thresholds:
@@ -260,7 +372,7 @@ Example configuration:
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     myDatasource:
       myMetric:
         thresholds:
@@ -286,7 +398,7 @@ If no color is specified for a threshold rule, frontend will use these default c
 | warning  | `warning.main` (orange/yellow) |
 | error    | `error.main` (red)             |
 
-**Important:** Custom threshold keys (not `success`, `warning`, or `error`) **must** specify a `color` property. The configuration will fail validation if a custom key is used without a color. This requirement ensures that all thresholds can be properly visualized in the UI.
+**Important:** Custom threshold keys (not `success`, `warning`, or `error`) in **metric** threshold config **must** specify **both** a `color` and an `icon` property. The configuration will fail validation if a custom key is used without either. This requirement ensures that all thresholds can be properly visualized in the UI. (Aggregation KPI thresholds only require `color` for custom keys — see [§4 Aggregation KPI result thresholds](#4-aggregation-kpi-result-thresholds-weightedstatusscore-type).)
 
 ## Threshold Icons
 
@@ -298,7 +410,7 @@ Add an `icon` property to any threshold rule:
 
 ```yaml
 scorecard:
-  plugins:
+  metricProviders:
     myDatasource:
       myMetric:
         thresholds:
@@ -350,7 +462,7 @@ If no icon is specified for a threshold rule, the frontend uses default icons fo
 | warning  | `scorecardWarningStatusIcon` | WarningAmber         |
 | error    | `scorecardErrorStatusIcon`   | DangerousOutlined    |
 
-**Important:** Custom threshold keys (not `success`, `warning`, or `error`) **must** specify an `icon` property. The configuration will fail validation if a custom key is used without an icon. This requirement ensures that all thresholds can be properly visualized in the UI.
+**Important:** Custom threshold keys (not `success`, `warning`, or `error`) in **metric** threshold config **must** specify **both** an `icon` and a `color` property — see the [Threshold Colors](#threshold-colors) section. The configuration will fail validation if a custom key is used without either. This requirement ensures that all thresholds can be properly visualized in the UI.
 
 ## ThresholdEvaluator
 
@@ -361,7 +473,7 @@ The `ThresholdEvaluator` service processes threshold rules and determines which 
 1. **Order-dependent evaluation**: Rules are evaluated in the order they appear. If provider supports overriding defaults through [app configuration](#App-Configuration-Thresholds), you can change the evaluation order by specifying threshold keys in a different order. Entity annotations cannot alter the evaluation order, which is determined by either the [app configuration](#Provider-Default-Thresholds) or, if not specified, the [default provider configuration](#Provider-Default-Thresholds).
 2. **First-match wins**: Returns the first threshold rule whose condition the value satisfies
 3. **Type-safe**: Validates expressions against metric types
-4. **Error handling**: You should validate your expressions loaded from config in your custom providers using `validateThresholds` from `backstage-plugin-scorecard-node`. Invalid expressions will result in evaluation error.
+4. **Error handling**: Thresholds from providers and custom thresholds from configuration are validated on startup (using [validateThresholdsForMetric](../../scorecard-node/src/utils/thresholds/validateThresholds.ts) from `@red-hat-developer-hub/backstage-plugin-scorecard-node`). Threshold errors caused by invalid providers or invalid configuration cause startup failures. Annotation-based threshold errors are reported in the UI at evaluation time.
 
 ### Best Practices
 
@@ -381,6 +493,12 @@ rules:
     expression: '>30'
 ```
 
-### 2. Avoid Overlapping Ranges
+### 2. Overlaps vs gaps
 
-Ensure threshold ranges don't create gaps or unexpected behavior.
+**Joint coverage** allows overlapping intervals—only **gaps** cause validation to fail. Overlaps do affect **runtime** behavior: the **first** matching rule in list order wins ([Logical Ordering](#1-logical-ordering)). If overlaps are unintentional, reorder or narrow rules so the intended category matches first.
+
+## Related documentation
+
+- [Entity Aggregation](./aggregation.md) — ownership, **`GET /aggregations/:aggregationId`**, **`statusGrouped`**, **`weightedStatusScore`**, scalar types, and **`filter.status`**
+- [Drill-down](./drill-down.md) — entity list for a metric (`metricId`, not KPI id)
+- [Scorecard backend README](../README.md) — install, RBAC, **`aggregationKPIs`** examples

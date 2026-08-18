@@ -64,7 +64,7 @@ describe('PermissionRequiredState', () => {
     expect(readMoreLink).toBeInTheDocument();
     expect(readMoreLink).toHaveAttribute(
       'href',
-      'https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/adoption-insights/plugins/adoption-insights/README.md#permission-framework-support',
+      'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/html/adoption_insights_in_red_hat_developer_hub/assembly-adoption-insights#proc-customize-adoption-insights_title-adoption-insights',
     );
 
     // OpenInNewIcon

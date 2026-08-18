@@ -53,7 +53,7 @@ describe('extensions utils', () => {
       const content = applyContent(
         `plugins:
           - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
-            disabled: false
+            enabled: true
   `,
         'backstage-community-plugin-quay',
         packages,
@@ -62,7 +62,7 @@ describe('extensions utils', () => {
       expect(content).toEqual(
         `plugins:
   - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
-    disabled: false
+    enabled: true
     ${expectedPluginConfig}
 `,
       );
@@ -74,7 +74,7 @@ describe('extensions utils', () => {
       plugins:
         - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
           # some more comment
-          disabled: false
+          enabled: true
 `,
         'backstage-community-plugin-quay',
         packages,
@@ -85,7 +85,7 @@ describe('extensions utils', () => {
 plugins:
   - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
     # some more comment
-    disabled: false
+    enabled: true
     ${expectedPluginConfig}
 `,
       );
@@ -95,9 +95,9 @@ plugins:
       const content = applyContent(
         `plugins:
           - package: ./dynamic-plugins/dist/backstage-community-plugin-sonarcloud
-            disabled: false
+            enabled: true
           - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
-            disabled: false
+            enabled: true
   `,
         'backstage-community-plugin-quay',
         packages,
@@ -106,9 +106,9 @@ plugins:
       expect(content).toEqual(
         `plugins:
   - package: ./dynamic-plugins/dist/backstage-community-plugin-sonarcloud
-    disabled: false
+    enabled: true
   - package: ./dynamic-plugins/dist/backstage-community-plugin-quay
-    disabled: false
+    enabled: true
     ${expectedPluginConfig}
 `,
       );
@@ -125,7 +125,7 @@ plugins:
       expect(content).toContain(
         'package: ./dynamic-plugins/dist/backstage-community-plugin-quay',
       );
-      expect(content).toContain('disabled: false');
+      expect(content).toContain('enabled: true');
       expect(content).toContain('pluginConfig:');
       expect(content).toContain('catalog:');
     });
@@ -141,7 +141,7 @@ plugins:
       expect(content).toContain(
         'package: ./dynamic-plugins/dist/backstage-community-plugin-quay',
       );
-      expect(content).toContain('disabled: false');
+      expect(content).toContain('enabled: true');
       expect(content).toContain('pluginConfig:');
     });
   });

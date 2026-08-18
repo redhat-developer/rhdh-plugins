@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-import { Pair, parse, parseDocument, Scalar, YAMLSeq, stringify } from 'yaml';
+import {
+  Document,
+  isMap,
+  Pair,
+  parse,
+  parseDocument,
+  Scalar,
+  YAMLSeq,
+  stringify,
+} from 'yaml';
 import { JsonObject } from '@backstage/types';
 import { ExtensionsPluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
@@ -32,9 +41,9 @@ export enum ExtensionsStatus {
 
 export const DYNAMIC_PLUGIN_CONFIG_YAML = `plugins:
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import-backend-dynamic
-    disabled: false
+    enabled: true
   - package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-bulk-import
-    disabled: true`;
+    enabled: false`;
 
 export const EXTENSIONS_CONFIG_YAML = `extensions:
   installation:
@@ -90,7 +99,7 @@ export const applyContent = (
       plugins: [
         {
           package: packagePath,
-          disabled: false,
+          enabled: true,
           pluginConfig:
             typeof newContent === 'string' ? parse(newContent) : newContent,
         },
@@ -103,14 +112,17 @@ export const applyContent = (
 
   if (plugins instanceof YAMLSeq && Array.isArray(plugins?.items)) {
     let foundPackage = false;
-    (plugins?.items || []).forEach((plugin: any) => {
-      if (plugin instanceof Object) {
-        const pluginPackage = plugin.items?.find((i: Pair<Scalar, Scalar>) => {
-          return (
-            i.key.value === 'package' &&
-            i.value?.value === otherPackageNames[`${packageName}`]
-          );
-        });
+    (plugins?.items || []).forEach(plugin => {
+      if (isMap(plugin)) {
+        const pluginPackage = plugin.items?.find(
+          (i: Pair<unknown, unknown>) => {
+            const pair = i as Pair<Scalar, Scalar>;
+            return (
+              pair.key.value === 'package' &&
+              pair.value?.value === otherPackageNames[`${packageName}`]
+            );
+          },
+        );
         if (pluginPackage) {
           foundPackage = true;
           if (typeof newContent === 'string') {
@@ -125,9 +137,13 @@ export const applyContent = (
     if (!foundPackage) {
       const packagePath = otherPackageNames[packageName];
       if (packagePath) {
-        const newPlugin: any = {
+        const newPlugin: {
+          package: string;
+          enabled: boolean;
+          pluginConfig?: Document | JsonObject;
+        } = {
           package: packagePath,
-          disabled: false,
+          enabled: true,
         };
         if (typeof newContent === 'string') {
           newPlugin.pluginConfig = parseDocument(newContent);
@@ -140,9 +156,13 @@ export const applyContent = (
   } else {
     const packagePath = otherPackageNames[packageName];
     if (packagePath) {
-      const newPlugin: any = {
+      const newPlugin: {
+        package: string;
+        enabled: boolean;
+        pluginConfig?: Document | JsonObject;
+      } = {
         package: packagePath,
-        disabled: false,
+        enabled: true,
       };
       if (typeof newContent === 'string') {
         newPlugin.pluginConfig = parseDocument(newContent);
@@ -154,6 +174,22 @@ export const applyContent = (
   }
   return content.toString();
 };
+
+export function getPluginConfigResponseError(data: unknown) {
+  if (data && typeof data === 'object' && 'error' in data) {
+    return (data as { error?: { message?: string; reason?: ExtensionsStatus } })
+      .error;
+  }
+  return undefined;
+}
+
+export function apiErrorMessage(value: unknown) {
+  if (value && typeof value === 'object' && 'error' in value) {
+    const e = (value as { error?: { message?: string } }).error;
+    return e?.message;
+  }
+  return undefined;
+}
 
 export const getErrorMessage = (
   reason: ExtensionsStatus,

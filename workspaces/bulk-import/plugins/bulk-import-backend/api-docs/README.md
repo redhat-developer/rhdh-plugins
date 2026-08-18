@@ -19,7 +19,8 @@ All URIs are relative to *http://localhost:7007/api/bulk-import*
 *ImportApi* | [**findImportStatusByRepo**](Apis/ImportApi.md#findimportstatusbyrepo) | **GET** /import/by-repo | Get Import Status by repository |
 *ImportApi* | [**findOrchestratorImportStatusByRepo**](Apis/ImportApi.md#findorchestratorimportstatusbyrepo) | **GET** /orchestrator-import/by-repo | Get Import Status by repository |
 *ImportApi* | [**findTaskImportStatusByRepo**](Apis/ImportApi.md#findtaskimportstatusbyrepo) | **GET** /task-import/by-repo | Get Import Status by repository |
-| *ManagementApi* | [**ping**](Apis/ManagementApi.md#ping) | **GET** /ping | Check the health of the Bulk Import backend router |
+| *ManagementApi* | [**findAllSCMHosts**](Apis/ManagementApi.md#findallscmhosts) | **GET** /scm-hosts | Retrieve the SCM Integration hosts |
+*ManagementApi* | [**ping**](Apis/ManagementApi.md#ping) | **GET** /ping | Check the health of the Bulk Import backend router |
 | *OrganizationApi* | [**findAllOrganizations**](Apis/OrganizationApi.md#findallorganizations) | **GET** /organizations | Fetch Organizations accessible by Backstage Github Integrations |
 *OrganizationApi* | [**findRepositoriesByOrganization**](Apis/OrganizationApi.md#findrepositoriesbyorganization) | **GET** /organizations/{organizationName}/repositories | Fetch Repositories in the specified GitHub organization, provided it is accessible by any of the configured GitHub Integrations. |
 | *RepositoryApi* | [**findAllRepositories**](Apis/RepositoryApi.md#findallrepositories) | **GET** /repositories | Fetch Organization Repositories accessible by Backstage Github Integrations |
@@ -44,6 +45,7 @@ All URIs are relative to *http://localhost:7007/api/bulk-import*
  - [Repository](./Models/Repository.md)
  - [RepositoryList](./Models/RepositoryList.md)
  - [Repository_importStatus](./Models/Repository_importStatus.md)
+ - [SCMHostList](./Models/SCMHostList.md)
  - [ScaffolderTask](./Models/ScaffolderTask.md)
  - [Source](./Models/Source.md)
  - [SourceImport](./Models/SourceImport.md)

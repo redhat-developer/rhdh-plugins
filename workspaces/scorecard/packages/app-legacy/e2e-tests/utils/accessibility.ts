@@ -21,10 +21,24 @@ export async function runAccessibilityTests(
   page: Page,
   testInfo: TestInfo,
   attachName = 'accessibility-scan-results.json',
+  options?: {
+    includeSelectors?: string[];
+    disableRules?: string[];
+  },
 ) {
-  const accessibilityScanResults = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-    .analyze();
+  let axeBuilder = new AxeBuilder({ page }).withTags([
+    'wcag2a',
+    'wcag2aa',
+    'wcag21a',
+    'wcag21aa',
+  ]);
+  for (const selector of options?.includeSelectors ?? []) {
+    axeBuilder = axeBuilder.include(selector);
+  }
+  if (options?.disableRules?.length) {
+    axeBuilder = axeBuilder.disableRules(options.disableRules);
+  }
+  const accessibilityScanResults = await axeBuilder.analyze();
 
   await testInfo.attach(attachName, {
     body: JSON.stringify(accessibilityScanResults, null, 2),

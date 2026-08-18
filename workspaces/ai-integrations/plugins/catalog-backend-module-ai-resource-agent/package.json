@@ -1,0 +1,46 @@
+{
+  "name": "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent",
+  "version": "0.4.0",
+  "license": "Apache-2.0",
+  "description": "The ai-resource-agent backend module for the catalog plugin. Registers the agent specType for AiResource entities.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.cjs.js",
+    "types": "dist/index.d.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redhat-developer/rhdh-plugins",
+    "directory": "workspaces/ai-integrations/plugins/catalog-backend-module-ai-resource-agent"
+  },
+  "backstage": {
+    "role": "backend-plugin-module",
+    "pluginId": "catalog",
+    "pluginPackage": "@backstage/plugin-catalog-backend"
+  },
+  "scripts": {
+    "start": "backstage-cli package start",
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack"
+  },
+  "dependencies": {
+    "@backstage/backend-plugin-api": "^1.9.2",
+    "@backstage/catalog-model": "^1.9.0",
+    "@backstage/plugin-catalog-common": "^1.1.10",
+    "@backstage/plugin-catalog-node": "^2.2.2",
+    "@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent": "workspace:^"
+  },
+  "devDependencies": {
+    "@backstage/backend-test-utils": "^1.11.4",
+    "@backstage/cli": "^0.36.3"
+  },
+  "files": [
+    "dist"
+  ]
+}

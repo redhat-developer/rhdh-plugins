@@ -18,9 +18,12 @@ import { createApp } from '@backstage/frontend-defaults';
 
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 import {
+  homePageModule,
+  homepageTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-homepage/alpha';
+import scorecardPlugin, {
   scorecardTranslationsModule,
-  scorecardCatalogModule,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-scorecard';
 import { signInModule } from './modules/signIn';
 import { navModule } from './modules/nav';
 import { iconsModule } from './modules/icons';
@@ -31,7 +34,9 @@ import { iconsModule } from './modules/icons';
 const app = createApp({
   features: [
     rhdhThemeModule,
-    scorecardCatalogModule,
+    homePageModule,
+    homepageTranslationsModule,
+    scorecardPlugin,
     scorecardTranslationsModule,
     iconsModule,
     signInModule,

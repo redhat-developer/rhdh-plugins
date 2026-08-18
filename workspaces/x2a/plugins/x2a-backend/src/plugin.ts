@@ -20,7 +20,6 @@ import {
 import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
 import { createRouter } from './router';
-import { migrate } from './services/dbMigrate';
 import { kubeServiceRef } from './services/KubeService';
 
 /**
@@ -35,7 +34,6 @@ export const x2APlugin = createBackendPlugin({
       deps: {
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
-        database: coreServices.database,
         logger: coreServices.logger,
         discoveryApi: coreServices.discovery,
         catalog: catalogServiceRef,
@@ -52,12 +50,9 @@ export const x2APlugin = createBackendPlugin({
         discoveryApi,
         httpAuth,
         catalog,
-        database,
         kubeService,
         config,
       }) {
-        await migrate(database);
-
         httpRouter.addAuthPolicy({
           path: '/projects/:projectId/collectArtifacts',
           allow: 'unauthenticated',

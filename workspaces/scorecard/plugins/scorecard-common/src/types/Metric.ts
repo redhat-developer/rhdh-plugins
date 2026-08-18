@@ -22,6 +22,14 @@ import { ThresholdConfig, ThresholdResult } from './threshold';
 export type MetricType = 'number' | 'boolean';
 
 /**
+ * Default visualization for a metric on the entity scorecard.
+ * Omit / undefined means `'value'`.
+ *
+ * @public
+ */
+export type MetricDefaultVisualization = 'value' | 'sparkline';
+
+/**
  * @public
  */
 export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
@@ -33,20 +41,15 @@ export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
 /**
  * @public
  */
-export type AggregatedMetricValue = {
-  count: number;
-  name: string;
-};
-
-/**
- * @public
- */
 export type Metric<T extends MetricType = MetricType> = {
   id: string;
   title: string;
   description: string;
   type: T;
+  thresholds: ThresholdConfig;
+  unit?: string;
   history?: boolean;
+  defaultVisualization?: MetricDefaultVisualization;
 };
 
 /**
@@ -59,7 +62,9 @@ export type MetricResult = {
     title: string;
     description: string;
     type: MetricType;
+    unit?: string;
     history?: boolean;
+    defaultVisualization?: MetricDefaultVisualization;
   };
   result: {
     value: MetricValue | null;
@@ -67,34 +72,6 @@ export type MetricResult = {
     thresholdResult: ThresholdResult;
   };
   error?: string;
-};
-
-/**
- * @public
- */
-export type AggregatedMetric = {
-  /** Counts by status name */
-  values: Record<string, number>;
-  total: number;
-  timestamp: string;
-};
-
-/**
- * @public
- */
-export type AggregatedMetricResult = {
-  id: string;
-  status: 'success' | 'error';
-  metadata: {
-    title: string;
-    description: string;
-    type: MetricType;
-    history?: boolean;
-  };
-  result: Omit<AggregatedMetric, 'values'> & {
-    values: AggregatedMetricValue[];
-    thresholds: ThresholdConfig;
-  };
 };
 
 /**
@@ -113,6 +90,20 @@ export type EntityMetricDetail = {
 };
 
 /**
+ * Rollup for drill-down: counts over the same catalog-authorized rows as `EntityMetricDetailResponse.pagination`.
+ *
+ * @public
+ */
+export type ScorecardEntityHealthSummary = {
+  /** Same as `pagination.total`: entities the caller can read that matched the drill-down query window. */
+  totalEntities: number;
+  /** Latest stored row per entity is a metric **calculation** failure (`error_message` set and `value` null). */
+  calculationErrorCount: number;
+  /** True when the backend DB window was capped; totals may omit additional matching rows. */
+  countsArePartial: boolean;
+};
+
+/**
  * Paginated response for entity metrics drill-down
  * @public
  */
@@ -122,6 +113,7 @@ export type EntityMetricDetailResponse = {
     title: string;
     description: string;
     type: MetricType;
+    unit?: string;
   };
   entities: EntityMetricDetail[];
   pagination: {
@@ -130,5 +122,34 @@ export type EntityMetricDetailResponse = {
     total: number;
     totalPages: number;
     isCapped: boolean;
+  };
+  entityHealth: ScorecardEntityHealthSummary;
+};
+
+/**
+ * A single sample in a metric time series (latest successful value for a UTC day).
+ * @public
+ */
+export type MetricTimeSeriesPoint = {
+  value: MetricValue;
+  /** ISO-8601 timestamp of the chosen sample */
+  timestamp: string;
+};
+
+/**
+ * Daily time-series response for one metric on one catalog entity.
+ * @public
+ */
+export type MetricTimeSeriesResponse = {
+  metricId: string;
+  entityRef: string;
+  points: MetricTimeSeriesPoint[];
+  metadata: {
+    title: string;
+    description: string;
+    type: MetricType;
+    unit?: string;
+    history?: boolean;
+    defaultVisualization?: MetricDefaultVisualization;
   };
 };

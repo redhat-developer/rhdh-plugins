@@ -13,17 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Grid } from '@material-ui/core';
-import { Header, Page, Content } from '@backstage/core-components';
+import { Box, Grid } from '@material-ui/core';
+import { Header, Page, Content, LinkButton } from '@backstage/core-components';
+import { useRouteRef } from '@backstage/core-plugin-api';
+import { usePermission } from '@backstage/plugin-permission-react';
+import { x2aAdminWritePermission } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useTranslation } from '../../hooks/useTranslation';
+import { rulesRouteRef } from '../../routes';
 import { ProjectList } from '../ProjectList';
 
 export const Dashboard = () => {
   const { t } = useTranslation();
+  const rulesPath = useRouteRef(rulesRouteRef);
+  const { allowed: isAdmin, loading: permLoading } = usePermission({
+    permission: x2aAdminWritePermission,
+  });
 
   return (
     <Page themeId="tool">
-      <Header title={t('page.title')} subtitle={t('page.subtitle')} />
+      <Header title={t('page.title')} subtitle={t('page.subtitle')}>
+        {!permLoading && isAdmin && (
+          <Box display="flex" alignItems="center">
+            <LinkButton variant="outlined" color="default" to={rulesPath()}>
+              {t('rulesPage.manageRules')}
+            </LinkButton>
+          </Box>
+        )}
+      </Header>
 
       <Content>
         <Grid container spacing={3} direction="column">

@@ -37,6 +37,7 @@ export interface MenuItemConfig {
   subLabel?: string;
   subLabelKey?: string;
   link?: string;
+  onClick?: () => void;
 }
 
 export interface MenuSectionConfig {
@@ -110,15 +111,27 @@ export const MenuSection: FC<MenuSectionConfig> = ({
 
       {items.map(
         (
-          { icon, label, labelKey, subLabel, subLabelKey, link, Component },
+          {
+            icon,
+            label,
+            labelKey,
+            subLabel,
+            subLabelKey,
+            link,
+            onClick,
+            Component,
+          },
           index,
         ) => (
           <MenuItem
             key={`menu-item-${index.toString()}`}
             disableRipple
             disableTouchRipple
-            onClick={handleClose}
-            sx={{ py: 0.5 }}
+            onClick={() => {
+              onClick?.();
+              handleClose();
+            }}
+            sx={{ py: 0.5, color: 'inherit', textDecoration: 'none' }}
             component={link ? Link : Fragment}
             to={link}
           >

@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-dcm-backend",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -14,6 +14,7 @@
     "url": "https://github.com/redhat-developer/rhdh-plugins",
     "directory": "workspaces/dcm/plugins/dcm-backend"
   },
+  "configSchema": "config.d.ts",
   "backstage": {
     "role": "backend-plugin",
     "pluginId": "dcm",
@@ -38,7 +39,6 @@
     "@backstage/plugin-permission-common": "^0.8.4",
     "@backstage/plugin-permission-node": "^0.8.7",
     "@red-hat-developer-hub/backstage-plugin-dcm-common": "workspace:^",
-    "assert": "^2.1.0",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0"
   },

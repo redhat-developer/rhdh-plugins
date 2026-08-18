@@ -5,17 +5,121 @@ app:
   extensions:
     - api:app/app-language:
         config:
-          availableLanguages: ['en', 'de', 'fr']
+          availableLanguages: ['en', 'de', 'fr', 'it', 'es', 'ja']
           defaultLanguage: 'en'
+    - api:home/visits: true
+    - app-root-element:home/visit-listener: true
+    - page:home:
+        config:
+          path: /
 
     # Scorecard tab: entity shows tab if it matches any filter below.
-    - entity-content:catalog/entity-content-scorecard:
+    - entity-content:scorecard/entity-content-scorecard:
         config:
           allowedFilters:
             - kind: component # e.g. Component with spec.type: website
               type: website
             - kind: api # e.g. any API entity
             - type: service # e.g. Component or System with spec.type: service
+
+    # Grid layout – enabled with metric grouping
+    - scorecard-layout:scorecard/scorecard-entity-layout-grid:
+        disabled: false
+        config:
+          groups:
+            security-vulnerabilities:
+              title: Security Vulnerabilities
+              description: Track security issues across your repositories
+              metrics:
+                - sonarqube.securityRating
+
+            code-quality:
+              title: Code Quality
+              description: Code quality and maintainability metrics
+              metrics:
+                - sonarqube.qualityGate
+                - sonarqube.codeCoverage
+                - sonarqube.maintainabilityRating
+
+            sonarqube-coverage:
+              title: SonarQube Coverage
+              description: SonarQube coverage metrics
+              metrics:
+                - sonarqube.openIssues
+                - sonarqube.securityHotspots
+                - sonarqube.securityRating
+
+    - home-page-layout:home/dynamic-homepage-layout:
+        config:
+          customizable: true
+          widgetLayout:
+            AggregatedCardWithDeprecatedMetricId:
+              priority: 410
+              breakpoints:
+                xl: { w: 4, h: 6 }
+                lg: { w: 4, h: 6 }
+                md: { w: 4, h: 6 }
+                sm: { w: 4, h: 6 }
+                xs: { w: 4, h: 6 }
+                xxs: { w: 4, h: 6 }
+
+            AggregatedCardWithDefaultAggregation:
+              priority: 420
+              breakpoints:
+                xl: { w: 4, h: 6, x: 4 }
+                lg: { w: 4, h: 6, x: 4 }
+                md: { w: 4, h: 6, x: 4 }
+                sm: { w: 4, h: 6, x: 4 }
+                xs: { w: 4, h: 6, x: 4 }
+                xxs: { w: 4, h: 6, x: 4 }
+
+            AggregatedCardWithJiraOpenIssues:
+              priority: 430
+              breakpoints:
+                xl: { w: 4, h: 6 }
+                lg: { w: 4, h: 6 }
+                md: { w: 4, h: 6 }
+                sm: { w: 4, h: 6 }
+                xs: { w: 4, h: 6 }
+                xxs: { w: 4, h: 6 }
+
+            AggregatedCardWithGithubOpenPrs:
+              priority: 440
+              breakpoints:
+                xl: { w: 4, h: 6, x: 4 }
+                lg: { w: 4, h: 6, x: 4 }
+                md: { w: 4, h: 6, x: 4 }
+                sm: { w: 4, h: 6, x: 4 }
+                xs: { w: 4, h: 6, x: 4 }
+                xxs: { w: 4, h: 6, x: 4 }
+            AggregatedCardWithGithubFilecheckLicense:
+              priority: 450
+              breakpoints:
+                xl: { w: 4, h: 6 }
+                lg: { w: 4, h: 6 }
+                md: { w: 4, h: 6 }
+                sm: { w: 4, h: 6 }
+                xs: { w: 4, h: 6 }
+                xxs: { w: 4, h: 6 }
+            AggregatedCardWithGithubFilecheckCodeowners:
+              priority: 460
+              breakpoints:
+                xl: { w: 4, h: 6, x: 8 }
+                lg: { w: 4, h: 6, x: 8 }
+                md: { w: 4, h: 6, x: 8 }
+                sm: { w: 4, h: 6, x: 8 }
+                xs: { w: 4, h: 6, x: 8 }
+                xxs: { w: 4, h: 6, x: 8 }
+            AggregatedCardWithGithubOpenPrsWeighted:
+              priority: 470
+              breakpoints:
+                xl: { w: 4, h: 6, x: 8 }
+                lg: { w: 4, h: 6, x: 8 }
+                md: { w: 4, h: 6, x: 8 }
+                sm: { w: 4, h: 6, x: 8 }
+                xs: { w: 4, h: 6, x: 8 }
+                xxs: { w: 4, h: 6, x: 8 }
+
 organization:
   name: My Company
 
@@ -45,6 +149,17 @@ backend:
     client: better-sqlite3
     connection: ':memory:'
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
+
+  # Uncomment this when MCP Actions are needed
+  # actions:
+  #   pluginSources:
+  #     - 'scorecard'
+  # auth:
+  #   externalAccess:
+  #     - type: static
+  #       options:
+  #         token: ${MCP_TOKEN}
+  #         subject: mcp-clients
 
 integrations:
   github:
@@ -111,7 +226,10 @@ catalog:
       target: ../../examples/all-scorecards-location.yaml
       rules:
         - allow: [Component]
-
+    - type: file
+      target: ../../examples/orgs/guest.yaml
+      rules:
+        - allow: [User, Group]
     - type: url
       target: https://github.com/redhat-developer/rhdh/blob/main/catalog-entities/components/showcase.yaml
 
@@ -132,18 +250,217 @@ permission:
       users:
         - name: user:development/guest
 
+# SonarQube configuration (optional - defaults to https://sonarcloud.io, no auth for public projects)
+sonarqube:
+  baseUrl: https://sonarcloud.io
+  apiKey: ${SONARQUBE_TOKEN}
+  instances:
+    - name: internal
+      baseUrl: https://sonarcloud.io
+      apiKey: ${SONARQUBE_INTERNAL_KEY}
+      authType: Basic # optional, defaults to Basic
+    - name: cloud
+      baseUrl: https://sonarcloud.io
+
 # Scorecard development configuration
 scorecard:
-  plugins:
+  aggregationKPIs:
+    openPrsKpi:
+      title: GitHub Open PRs KPI
+      type: statusGrouped
+      description: This KPI provides information about GitHub open PRs grouped by status.
+      metricId: github.openPRs
+    openPrsWeightedKpi:
+      title: GitHub Open PRs KPI (weighted health)
+      type: weightedStatusScore
+      description: This KPI provides a weighted health score for open PRs by threshold status across your entities.
+      metricId: github.openPRs
+      options:
+        statusScores:
+          success: 100
+          warning: 40
+          error: 0
+        thresholds:
+          rules:
+            - key: success
+              expression: '>=80'
+              color: '#6bb300' # green
+            - key: warning
+              expression: '30-80'
+              color: 'rgb(224, 189, 108)' # light orange
+            - key: error
+              expression: '<30'
+              color: '#be1ec7' # purple
+    openIssuesKpi:
+      title: Jira Open Issues KPI
+      type: statusGrouped
+      description: This KPI provides information about Jira open issues grouped by status.
+      metricId: jira.openIssues
+    licenseFileExistsKpi:
+      title: License File Exists KPI
+      type: statusGrouped
+      description: This KPI provides information about whether the license file exists in the repository.
+      metricId: filecheck.license
+    totalCriticalPRs:
+      title: Total Critical PRs
+      description: This KPI provides a sum of open PRs for entities in error status.
+      type: sum
+      metricId: github.openPRs
+      filter:
+        status: error
+      options:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<30'
+              color: '#6bb300'
+            - key: warning
+              expression: '30-80'
+              color: 'rgb(224, 189, 108)'
+            - key: error
+              expression: '>80'
+              color: '#be1ec7'
+    avgOpenIssues:
+      title: Average Open Issues
+      description: This KPI provides a mean open issues count per entity.
+      type: average
+      metricId: jira.openIssues
+    entitiesWithOpenPrs:
+      title: Entities with Open PRs
+      description: This KPI provides a count of entities with a stored open-prs value.
+      type: count
+      metricId: github.openPRs
+    maxOpenPrs:
+      title: Maximum Open PRs
+      description: This KPI provides a maximum open PR count per entity.
+      type: max
+      metricId: github.openPRs
+    minOpenIssues:
+      title: Minimum Open Issues
+      description: This KPI provides a minimum open issues count per entity.
+      type: min
+      metricId: jira.openIssues
+
+  # Globally disabled metrics — these checks never run, regardless of entity annotations.
+  # disabledMetrics:
+  #   - openssf.packaging
+
+  # Control whether entity annotations can override scorecard behavior.
+  # entityAnnotations:
+  #   # Global switch: if false, all scorecard entity annotations are ignored. Default: true.
+  #   enabled: true
+  #   # Per-entity threshold override annotations (scorecard.io/<metricId>.thresholds.rules.<key>).
+  #   thresholds:
+  #     # If true (default), entities can customize thresholds via annotations
+  #     # for metrics not listed in `except`; if false, threshold annotations have no effect.
+  #     enabled: true
+  #     # Metric IDs listed here cannot have their thresholds customized via entity annotations.
+  #     except:
+  #       - github.openPRs
+  #   # Per-entity disabled-metrics annotation (scorecard.io/disabled-metrics).
+  #   disabledMetrics:
+  #     # If true (default), entities can disable metrics via annotation
+  #     # for metrics not listed in `except`; if false, the annotation has no effect.
+  #     enabled: true
+  #     # Entity annotations cannot disable metric IDs listed here
+  #     # (these checks always run unless mentioned in scorecard.disabledMetrics).
+  #     except:
+  #       - openssf.maintained
+
+  metricProviders:
     jira:
-      open_issues:
+      openIssues:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
-          initialDelay: { seconds: 5 }
+          initialDelay: { seconds: 10 }
     github:
-      open_prs:
+      openPRs:
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
-          initialDelay: { seconds: 5 }
+          initialDelay: { seconds: 10 }
+    catalog:
+      requiredAttributes:
+        options:
+          filter:
+            kind: Component
+            metadata.annotations.scorecard/example: catalog
+          metrics:
+            title:
+              title: Title is required
+              description: Every component should have a human-readable title.
+              field: metadata.title
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+    filecheck:
+      fileExistence:
+        options:
+          files:
+            license: 'LICENSE'
+            codeowners: 'CODEOWNERS'
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+    dora:
+      deploymentFrequency:
+        options:
+          collectors:
+            deployments:
+              id: github:deployments
+              # Uncomment the following to use workflow runs
+              # id: github:deploymentWorkflowRuns
+              # input:
+              #   workflowName: Create Test Deployment on PR Merge
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+      medianLeadTimeForChanges:
+        options:
+          collectors:
+            deployments:
+              id: github:deployments
+              # Uncomment the following to use workflow runs
+              # id: github:deploymentWorkflowRuns
+              # input:
+              #   workflowName: Create Test Deployment on PR Merge
+            deploymentPullRequests:
+              id: github:deploymentPullRequests
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+      changeFailureRate:
+        options:
+          collectors:
+            deployments:
+              id: github:deployments
+              # Uncomment the following to use workflow runs
+              # id: github:deploymentWorkflowRuns
+              # input:
+              #   workflowName: Create Test Deployment on PR Merge
+            incidents:
+              id: jira:incidents
+              # Optional: override default Incident issue type
+              # input:
+              #   issueType: ServiceIncident
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+      meanTimeToRestore:
+        options:
+          collectors:
+            incidents:
+              id: jira:incidents
+              # Optional: override default Incident issue type
+              # input:
+              #   issueType: ServiceIncident
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }

@@ -1,5 +1,91 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 0.9.1
+
+### Patch Changes
+
+- e3fb07a: Export translations module as default for NFS auto-discovery
+- d623d36: Refreshed `yarn.lock` to align resolved dependency versions.
+- Updated dependencies [d623d36]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.9.1
+
+## 0.9.0
+
+### Minor Changes
+
+- 8af2af2: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- f8f09d1: Fix four accessibility violations (aria-input-field-name, button-name, color-contrast, svg-img-alt) and remove suppression filter from e2e accessibility tests.
+- Updated dependencies [8af2af2]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.9.0
+
+## 0.8.4
+
+### Patch Changes
+
+- 6d0a82b: Bump `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.11` to fix broken `config.d.ts` in earlier versions.
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.8.4
+
+## 0.8.3
+
+### Patch Changes
+
+- fc1b00d: Expose the Alpha Scalprum module and `adoptionInsightsTranslations` for dynamic plugins, and register `translationResources` in `app-config.dynamic.yaml` for loading translations from the Alpha bundle.
+- f5e1232: Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.0`.
+- 2465411: Replace Material UI v4 imports with MUI v5
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.8.3
+
+## 0.8.2
+
+### Patch Changes
+
+- 4b07772: Translations updated for de/es/fr/it/ja
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.8.2
+
+## 0.8.1
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.8.1
+
+## 0.8.0
+
+### Minor Changes
+
+- 4526035: Backstage version bump to v1.49.3
+
+### Patch Changes
+
+- Updated dependencies [4526035]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.8.0
+
+## 0.7.1
+
+### Patch Changes
+
+- fcc50b6: The Adoption Insights "Missing Permission" page was linking to GitHub repository documentation. This has been updated to point to the official Red Hat Developer Hub product documentation instead.
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.7.1
+
+## 0.7.0
+
+### Minor Changes
+
+- b58b43d: Migrated Adoption Insights and Adoption Insights Analytics Module to New Frontend System
+- e3e959d: Use readable entity titles in Adoption Insights widgets
+- 0f66c7c: Backstage version bump to v1.47.3
+
+### Patch Changes
+
+- 5c82367: normalize event timestamps to UTC and fix frontend date parsing
+- f6d5102: Translation updated for German and Spanish
+- afd7a1e: Update translations for Adoption Insights.
+- Updated dependencies [0f66c7c]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.7.0
+
 ## 0.6.2
 
 ### Patch Changes

@@ -103,11 +103,11 @@ const CatalogInfoAction = ({ data }: { data: AddRepositoryData }) => {
         value?.status === RepositoryStatus.WAIT_PR_APPROVAL &&
         values.repositories[(value as ImportJobStatus)?.repository?.id];
 
-      if ((value as Response)?.statusText) {
+      if (value instanceof Response) {
         setOpenDrawer(false);
         setStatus({
-          title: (value as Response)?.statusText,
-          url: (value as Response)?.url,
+          title: value.statusText,
+          url: value.url,
         });
         removeQueryParams();
       } else if (shouldOpenPanel) {

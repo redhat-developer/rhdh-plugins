@@ -43,7 +43,12 @@ export const ThinkingIndicator = () => {
   const { branding } = useBranding();
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
+    <Box
+      role="status"
+      aria-busy="true"
+      aria-label="AI is thinking"
+      sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}
+    >
       <Box
         sx={{
           width: 32,
@@ -61,10 +66,11 @@ export const ThinkingIndicator = () => {
       </Box>
 
       <Box
+        aria-hidden="true"
         sx={{
           display: 'flex',
           alignItems: 'center',
-          gap: 0.8,
+          gap: 0.75,
           px: 2,
           py: 1.5,
           borderRadius: 2,

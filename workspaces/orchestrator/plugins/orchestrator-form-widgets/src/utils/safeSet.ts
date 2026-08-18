@@ -21,12 +21,14 @@ export const safeSet: (
   path: string,
   value: JsonValue,
 ) => void = (errors, path, value) => {
-  const steps = path.split('.', 2);
-  if (steps.length === 1) {
-    errors[steps[0]] = value;
+  const dot = path.indexOf('.');
+  if (dot === -1) {
+    errors[path] = value;
   } else {
-    const safeObject = (errors[steps[0]] ?? {}) as JsonObject;
-    errors[steps[0]] = safeObject;
-    safeSet(safeObject, steps[1], value);
+    const head = path.slice(0, dot);
+    const rest = path.slice(dot + 1);
+    const safeObject = (errors[head] ?? {}) as JsonObject;
+    errors[head] = safeObject;
+    safeSet(safeObject, rest, value);
   }
 };

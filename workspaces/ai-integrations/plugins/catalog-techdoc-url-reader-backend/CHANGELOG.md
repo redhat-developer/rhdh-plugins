@@ -1,5 +1,36 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend
 
+## 0.6.1
+
+### Patch Changes
+
+- f7984e7: add remaining unit tests needed for feature readiness
+
+## 0.6.0
+
+### Minor Changes
+
+- 56c40be: Integrate Backstage discovery and auth services for connector communication.
+
+  The model-catalog entity provider now resolves the connector base URL via the
+  discovery service and authenticates with backend-to-backend service tokens
+  instead of unauthenticated direct HTTP calls. The `fromConfig` factory method
+  accepts `discovery` and `auth` as additional required dependencies.
+
+  The techdoc URL reader adds bearer-token authentication when fetching model
+  cards and replaces hostname-based bridge URL matching with path-based matching
+  that uses the connector plugin ID.
+
+### Patch Changes
+
+- c2e3749: bump workspace to 1.52.0
+
+## 0.5.1
+
+### Patch Changes
+
+- 4418084: Upgrade workspace to Backstage 1.49.4
+
 ## 0.5.0
 
 ### Minor Changes

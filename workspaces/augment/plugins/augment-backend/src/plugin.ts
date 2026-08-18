@@ -96,6 +96,7 @@ export const augmentPlugin = createBackendPlugin({
         permissionsRegistry: coreServices.permissionsRegistry,
         scheduler: coreServices.scheduler,
         database: coreServices.database,
+        cache: coreServices.cache,
       },
       async init({
         logger,
@@ -106,6 +107,7 @@ export const augmentPlugin = createBackendPlugin({
         permissions,
         permissionsRegistry,
         database,
+        cache,
       }) {
         logger.info('Initializing Augment backend plugin');
 
@@ -135,7 +137,13 @@ export const augmentPlugin = createBackendPlugin({
         await adminConfig.initialize();
 
         // Create the provider factory options (shared across hot-swaps)
-        const providerOptions = { logger, config, database, adminConfig };
+        const providerOptions = {
+          logger,
+          config,
+          database,
+          adminConfig,
+          cache,
+        };
 
         // Factory function for creating providers by type
         const providerFactory = (type: ProviderType) =>
@@ -143,14 +151,16 @@ export const augmentPlugin = createBackendPlugin({
 
         // Create and initialize the initial provider
         const initialProvider = createProvider(providerOptions);
+        let initErrorMessage: string | undefined;
         try {
           await initialProvider.initialize();
           await initialProvider.postInitialize();
         } catch (initError) {
+          initErrorMessage = toErrorMessage(initError);
           logger.error(
-            `Provider initialization failed: ${toErrorMessage(
-              initError,
-            )}. The plugin will start but functionality may be limited.`,
+            `Provider initialization failed: ${initErrorMessage}. ` +
+              'The plugin will start but all provider routes will return 503 until the issue is resolved. ' +
+              'Check your augment.kagenti configuration in app-config.yaml.',
           );
         }
 
@@ -158,6 +168,7 @@ export const augmentPlugin = createBackendPlugin({
           initialProvider,
           providerFactory,
           logger,
+          initErrorMessage,
         );
 
         // Set up periodic document sync if configured and provider supports RAG
@@ -212,6 +223,30 @@ export const augmentPlugin = createBackendPlugin({
           );
         }
 
+        const DEFAULT_RETENTION_DAYS = 90;
+        const retentionDays =
+          config.getOptionalNumber('augment.sessions.retentionDays') ??
+          DEFAULT_RETENTION_DAYS;
+        if (sessions && retentionDays > 0) {
+          await scheduler.scheduleTask({
+            id: 'augment-session-retention',
+            frequency: { hours: 24 },
+            timeout: { minutes: 10 },
+            initialDelay: { minutes: 5 },
+            fn: async () => {
+              const purged = await sessions.purgeExpiredSessions(retentionDays);
+              if (purged > 0) {
+                logger.info(
+                  `Session retention: purged ${purged} session(s) older than ${retentionDays} days`,
+                );
+              }
+            },
+          });
+          logger.info(
+            `Session retention enabled: sessions older than ${retentionDays} day(s) will be purged daily`,
+          );
+        }
+
         // Register HTTP routes
         httpRouter.use(
           await createRouter({
@@ -223,6 +258,7 @@ export const augmentPlugin = createBackendPlugin({
             providerManager,
             sessions,
             adminConfig,
+            cache,
           }),
         );
 
@@ -249,12 +285,18 @@ export const augmentPlugin = createBackendPlugin({
           '/chat',
           '/chat/stream',
           '/chat/approve',
+          '/agents',
           '/sync',
           '/safety/status',
           '/evaluation/status',
           '/vector-stores',
           '/prompt-groups',
           '/admin',
+          '/kagenti',
+          '/scoring-functions',
+          '/scoring',
+          '/benchmarks',
+          '/datasets',
         ];
 
         for (const path of protectedPaths) {

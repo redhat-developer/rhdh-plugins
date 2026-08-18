@@ -29,6 +29,7 @@ import {
   PAGINATION_CONFIG,
   ClusterError,
   GroupVersionKind,
+  PipelineRunLabel,
 } from '@red-hat-developer-hub/backstage-plugin-konflux-common';
 
 import { Entity } from '@backstage/catalog-model';
@@ -606,9 +607,13 @@ export class KonfluxService {
     filters: Filters | undefined,
     labelSelector: string | undefined,
   ): K8sResourceCommonWithClusterInfo[] {
-    const needsInMemoryFiltering = !labelSelector;
+    const applicationHandledByLabelSelector =
+      labelSelector?.includes(PipelineRunLabel.APPLICATION) ?? false;
+    const fetchesAllApplications =
+      !combination.applications?.length ||
+      combination.applications.includes('*');
 
-    if (!needsInMemoryFiltering || !combination.applications?.length) {
+    if (applicationHandledByLabelSelector || fetchesAllApplications) {
       return items;
     }
 

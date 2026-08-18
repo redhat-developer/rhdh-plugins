@@ -1,5 +1,48 @@
 ## @red-hat-developer-hub/backstage-plugin-bulk-import-common [0.2.0](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.1.0...@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.2.0) (2024-07-25)
 
+## 8.0.2
+
+## 8.0.1
+
+### Patch Changes
+
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+
+## 8.0.0
+
+### Minor Changes
+
+- 02db099: Backstage version bump to v1.52.0
+
+## 7.3.7
+
+### Patch Changes
+
+- 7c2f5d2: Updated dependency `prettier` to `3.8.4`.
+
+## 7.3.6
+
+## 7.3.5
+
+## 7.3.4
+
+## 7.3.3
+
+## 7.3.2
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+
+## 7.3.1
+
+## 7.3.0
+
+### Minor Changes
+
+- 328508c: Backstage version bump to v1.49.3
+
 ## 7.2.1
 
 ## 7.2.0

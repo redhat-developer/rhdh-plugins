@@ -18,6 +18,7 @@ import {
   coreServices,
   createServiceFactory,
 } from '@backstage/backend-plugin-api';
+import { mockServices } from '@backstage/backend-test-utils';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
 import { Knex } from 'knex';
@@ -28,8 +29,205 @@ import { setupTest, startBackendServer } from '../../__fixtures__/testUtils';
 describe('router tests', () => {
   const useTestData = setupTest();
 
+  describe('x-scm-tokens middleware', () => {
+    it.each([
+      [
+        'GET /repositories',
+        (req: request.SuperTest<request.Test>) =>
+          req.get('/api/bulk-import/repositories'),
+      ],
+      [
+        'GET /organizations/:org/repositories',
+        (req: request.SuperTest<request.Test>) =>
+          req.get('/api/bulk-import/organizations/my-org-1/repositories'),
+      ],
+    ])(
+      '%s: returns 401 when X-SCM-Tokens header is absent',
+      async (
+        _endpoint: string,
+        reqHandler: (req: request.SuperTest<request.Test>) => request.Test,
+      ) => {
+        const { mockCatalogClient } = useTestData();
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await reqHandler(request(backendServer));
+        expect(response.status).toEqual(401);
+      },
+    );
+
+    it('does not persist X-SCM-Tokens values in auditor createEvent payloads', async () => {
+      const { mockCatalogClient } = useTestData();
+      const placeholderToken = 'gho_test_token_placeholder_not_a_secret';
+      const auditorMock = mockServices.auditor.mock();
+      const backendServer = await startBackendServer(
+        mockCatalogClient,
+        AuthorizeResult.ALLOW,
+        undefined,
+        undefined,
+        [auditorMock.factory],
+      );
+
+      const response = await request(backendServer)
+        .get('/api/bulk-import/repositories')
+        .set(
+          'X-SCM-Tokens',
+          JSON.stringify({ 'https://github.com': placeholderToken }),
+        );
+
+      expect(response.status).toEqual(200);
+      expect(auditorMock.createEvent).toHaveBeenCalled();
+
+      for (const [event] of auditorMock.createEvent.mock.calls) {
+        const headers = event.request?.headers as
+          Record<string, unknown> | undefined;
+        expect(headers?.['x-scm-tokens']).toBeUndefined();
+        expect(headers?.['X-SCM-Tokens']).toBeUndefined();
+
+        const serialized = JSON.stringify({
+          eventId: event.eventId,
+          meta: event.meta,
+          headers,
+        });
+        expect(serialized).not.toContain(placeholderToken);
+        expect(serialized).not.toContain('gho_');
+      }
+    });
+
+    it.each([
+      [
+        'GET /repositories',
+        (req: request.SuperTest<request.Test>, header: string) =>
+          req.get('/api/bulk-import/repositories').set('x-scm-tokens', header),
+      ],
+      [
+        'GET /organizations/:org/repositories',
+        (req: request.SuperTest<request.Test>, header: string) =>
+          req
+            .get('/api/bulk-import/organizations/my-org-1/repositories')
+            .set('x-scm-tokens', header),
+      ],
+    ])(
+      '%s: returns 400 when x-scm-tokens does not contain a valid JSON-encoded token map',
+      async (
+        _endpoint: string,
+        reqHandler: (
+          req: request.SuperTest<request.Test>,
+          header: string,
+        ) => request.Test,
+      ) => {
+        const { mockCatalogClient } = useTestData();
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const cases = [
+          'not-json',
+          '["array", "not", "object"]',
+          '{"host": 123}',
+          '{"host": ""}',
+        ];
+
+        for (const invalidHeader of cases) {
+          const response = await reqHandler(
+            request(backendServer),
+            invalidHeader,
+          );
+          expect(response.status).toEqual(400);
+        }
+      },
+    );
+
+    it.each([
+      [
+        'GET /repositories',
+        (req: request.SuperTest<request.Test>, header: string) =>
+          req.get('/api/bulk-import/repositories').set('x-scm-tokens', header),
+      ],
+      [
+        'GET /organizations/:org/repositories',
+        (req: request.SuperTest<request.Test>, header: string) =>
+          req
+            .get('/api/bulk-import/organizations/my-org-1/repositories')
+            .set('x-scm-tokens', header),
+      ],
+    ])(
+      '%s: ignores x-scm-tokens and returns 401 when header exceeds size limit',
+      async (
+        _endpoint: string,
+        reqHandler: (
+          req: request.SuperTest<request.Test>,
+          header: string,
+        ) => request.Test,
+      ) => {
+        const { mockCatalogClient } = useTestData();
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const oversizedHeader = JSON.stringify({
+          'https://github.com': 'a'.repeat(4097),
+        });
+
+        const response = await reqHandler(
+          request(backendServer),
+          oversizedHeader,
+        );
+        // Oversized header is silently discarded; the missing valid token then
+        // triggers the 401 guard added for compliance.
+        expect(response.status).toEqual(401);
+      },
+    );
+
+    it.each([
+      [
+        'GET /repositories',
+        (req: request.SuperTest<request.Test>, header: string) =>
+          req.get('/api/bulk-import/repositories').set('x-scm-tokens', header),
+      ],
+      [
+        'GET /organizations/:org/repositories',
+        (req: request.SuperTest<request.Test>, header: string) =>
+          req
+            .get('/api/bulk-import/organizations/my-org-1/repositories')
+            .set('x-scm-tokens', header),
+      ],
+    ])(
+      '%s: returns 200 and processes request when x-scm-tokens is a valid token map',
+      async (
+        _endpoint: string,
+        reqHandler: (
+          req: request.SuperTest<request.Test>,
+          header: string,
+        ) => request.Test,
+      ) => {
+        const { mockCatalogClient } = useTestData();
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const validHeader = JSON.stringify({
+          'https://github.com': 'gho_validUserToken',
+        });
+
+        const response = await reqHandler(request(backendServer), validHeader);
+        expect(response.status).toEqual(200);
+      },
+    );
+  });
+
   describe('permission framework denial', () => {
     it.each([
+      [
+        'GET /scm-hosts',
+        async (req: request.SuperTest<request.Test>) =>
+          req.get('/api/bulk-import/scm-hosts'),
+      ],
       [
         'GET /organizations',
         async (req: request.SuperTest<request.Test>) =>

@@ -27,6 +27,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 
 import { useOwnershipEntityRefs } from '../../../hooks/useOwnershipEntityRefs';
 import { useAggregatedScorecardEntities } from '../../../hooks/useAggregatedScorecardEntities';
+import { useAggregatedScorecard } from '../../../hooks/useAggregatedScorecard';
 import { useEntityMetadataMap } from '../../../hooks/useEntityMetadataMap';
 import { SCORECARD_ENTITIES_TABLE_HEADERS } from '../../../utils';
 import { useTranslation } from '../../../hooks/useTranslation';
@@ -39,12 +40,14 @@ import { EntitiesRow } from './EntitiesRow';
 
 interface EntitiesTableProps {
   metricId?: string;
+  aggregationId?: string;
   setMetricTitle: (title: string) => void;
   setMetricNotFound?: (notFound: boolean) => void;
 }
 
 export const EntitiesTable = ({
   metricId,
+  aggregationId,
   setMetricTitle,
   setMetricNotFound,
 }: EntitiesTableProps) => {
@@ -62,7 +65,11 @@ export const EntitiesTable = ({
 
   const { orderBy, order } = sortState;
 
-  const ownershipEntityRefs = useOwnershipEntityRefs();
+  const { ownershipEntityRefs, loading: ownershipLoading } =
+    useOwnershipEntityRefs();
+
+  // TODO: Remove metricId once we deprecate it. We need to keep it for backward compatibility.
+  const resolvedMetricId = aggregationId || metricId || '';
 
   const {
     aggregatedScorecardEntities,
@@ -75,16 +82,25 @@ export const EntitiesTable = ({
     ownershipEntityRefs,
     orderBy,
     order,
+    enabled: !ownershipLoading,
   });
 
-  const isNotFound = entitiesError?.message?.includes('NotFoundError');
-  if (isNotFound) {
-    setMetricNotFound?.(true);
-  }
+  const { data: aggregatedScorecard } = useAggregatedScorecard({
+    aggregationId: resolvedMetricId,
+    enabled: !!metricId && !ownershipLoading && !loadingDataEntities,
+  });
+
+  const thresholdRules = aggregatedScorecard?.result?.thresholds?.rules ?? [];
 
   useEffect(() => {
-    setMetricTitle(aggregatedScorecardEntities?.metricMetadata?.title ?? '');
-  }, [aggregatedScorecardEntities?.metricMetadata?.title, setMetricTitle]);
+    if (entitiesError?.message?.includes('NotFoundError')) {
+      setMetricNotFound?.(true);
+    }
+  }, [entitiesError, setMetricNotFound]);
+
+  useEffect(() => {
+    setMetricTitle(aggregatedScorecard?.metadata?.title ?? '');
+  }, [aggregatedScorecard?.metadata?.title, setMetricTitle]);
 
   const handleChangeRowsPerPage = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -114,13 +130,18 @@ export const EntitiesTable = ({
   const entities = aggregatedScorecardEntities?.entities ?? [];
 
   const total = aggregatedScorecardEntities?.pagination?.total ?? 0;
+  const calculationErrorCount =
+    aggregatedScorecardEntities?.entityHealth?.calculationErrorCount ?? 0;
   const entitiesTableTitle =
     total > 0
       ? t('entitiesPage.entitiesTable.titleWithCount', { count: total } as any)
       : t('entitiesPage.entitiesTable.title');
 
   return (
-    <EntitiesTableWrapper title={entitiesTableTitle} isError={!!entitiesError}>
+    <EntitiesTableWrapper
+      title={entitiesTableTitle}
+      showCalculationWarning={calculationErrorCount > 0}
+    >
       <Table sx={{ width: '100%', tableLayout: 'fixed' }}>
         <EntitiesTableHeader
           orderBy={orderBy}
@@ -129,18 +150,18 @@ export const EntitiesTable = ({
         />
 
         <TableBody>
-          {loadingDataEntities && (
+          {(ownershipLoading || loadingDataEntities) && (
             <TableRow key="entities-table-loading-row">
               <TableCell
                 colSpan={SCORECARD_ENTITIES_TABLE_HEADERS.length}
                 align="center"
               >
-                <CircularProgress />
+                <CircularProgress aria-label={t('common.loading')} />
               </TableCell>
             </TableRow>
           )}
 
-          {!loadingDataEntities && entitiesError && (
+          {!ownershipLoading && !loadingDataEntities && entitiesError && (
             <EntitiesTableStateRow
               colSpan={SCORECARD_ENTITIES_TABLE_HEADERS.length}
               error={entitiesError}
@@ -149,22 +170,27 @@ export const EntitiesTable = ({
             />
           )}
 
-          {!loadingDataEntities && !entitiesError && entities.length === 0 && (
-            <EntitiesTableStateRow
-              colSpan={SCORECARD_ENTITIES_TABLE_HEADERS.length}
-              metricId={metricId}
-              setMetricTitle={setMetricTitle}
-              noEntities={entities.length === 0}
-            />
-          )}
+          {!ownershipLoading &&
+            !loadingDataEntities &&
+            !entitiesError &&
+            entities.length === 0 && (
+              <EntitiesTableStateRow
+                colSpan={SCORECARD_ENTITIES_TABLE_HEADERS.length}
+                metricId={metricId}
+                setMetricTitle={setMetricTitle}
+                noEntities={entities.length === 0}
+              />
+            )}
 
-          {!loadingDataEntities &&
+          {!ownershipLoading &&
+            !loadingDataEntities &&
             entities.length > 0 &&
             entities.map((entity: EntityMetricDetail) => (
               <EntitiesRow
                 key={entity.entityRef}
                 entity={entity}
                 entityMetadataMap={entityMetadataMap}
+                thresholdRules={thresholdRules}
               />
             ))}
         </TableBody>

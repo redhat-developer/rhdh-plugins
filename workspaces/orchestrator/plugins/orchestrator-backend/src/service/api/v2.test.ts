@@ -30,14 +30,26 @@ import {
   WorkflowRunStatusDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { buildPagination, buildPaginationTmp } from '../../types/pagination';
+import {
+  buildPagination,
+  buildPaginationTmp,
+  Pagination,
+} from '../../types/pagination';
 import { OrchestratorService } from '../OrchestratorService';
 import { mapToWorkflowOverviewDTO } from './mapping/V2Mappings';
 import {
   generateProcessInstance,
+  generateProcessInstanceForEventType,
   generateProcessInstances,
   generateTestExecuteWorkflowResponse,
   generateTestWorkflowInfo,
+  generateTestWorkflowInfoForEventype,
+  generateTestWorkflowInfoForEventypeNoEventRef,
+  generateTestWorkflowInfoForEventypeNoStartStateForEventRef,
+  generateTestWorkflowInfoForEventypeNoStartStateNameStates,
+  generateTestWorkflowInfoForEventypeNoStartStates,
+  generateTestWorkflowInfoForEventypeWithNoCorrelationContextAttribute,
+  generateTestWorkflowInfoForEventypeWithStartStateName,
   generateTestWorkflowOverview,
   generateTestWorkflowOverviewList,
   generateWorkflowDefinition,
@@ -69,6 +81,7 @@ const createMockOrchestratorService = (): OrchestratorService => {
   mockOrchestratorService.fetchInstances = jest.fn();
   mockOrchestratorService.fetchInstance = jest.fn();
   mockOrchestratorService.executeWorkflow = jest.fn();
+  mockOrchestratorService.executeWorkflowAsCloudEvent = jest.fn();
   mockOrchestratorService.abortWorkflowInstance = jest.fn();
   mockOrchestratorService.pingWorkflowService = jest.fn();
   mockOrchestratorService.fetchWorkflowLogsByInstance = jest.fn();
@@ -242,9 +255,13 @@ describe('getWorkflowOverview', () => {
     // Act
     const result: WorkflowOverviewListResultDTO = await v2.getWorkflowsOverview(
       buildPaginationTmp(mockRequest.paginationInfo),
+      mockRequest.filters,
     );
 
     // Assert
+    expect(mockOrchestratorService.fetchWorkflowOverviews).toHaveBeenCalledWith(
+      expect.objectContaining({ filter: mockRequest.filters }),
+    );
     expect(result).toEqual({
       overviews: mockOverviewsV1.items.map((item: WorkflowOverview) =>
         mapToWorkflowOverviewDTO(item),
@@ -277,25 +294,16 @@ describe('getWorkflowOverviewById', () => {
     jest.clearAllMocks();
   });
 
-  it('0 items in workflow overview list', async () => {
+  it('not found - throws when overview is undefined', async () => {
     // Arrange
-    const mockOverviewsV1 = {
-      items: [],
-    };
     (
       mockOrchestratorService.fetchWorkflowOverview as jest.Mock
-    ).mockResolvedValue(mockOverviewsV1.items);
-    // Act
-    const overviewV2 = await v2.getWorkflowOverviewById('test_workflowId');
+    ).mockResolvedValue(undefined);
 
-    // Assert
-    expect(overviewV2).toBeDefined();
-    expect(overviewV2.workflowId).toBeUndefined();
-    expect(overviewV2.name).toBeUndefined();
-    expect(overviewV2.format).toBeUndefined();
-    expect(overviewV2.lastTriggeredMs).toBeUndefined();
-    expect(overviewV2.lastRunStatus).toBeUndefined();
-    expect(overviewV2.description).toBeUndefined();
+    // Act & Assert
+    await expect(v2.getWorkflowOverviewById('test_workflowId')).rejects.toThrow(
+      "Couldn't fetch workflow overview for test_workflowId",
+    );
   });
 
   it('1 item in workflow overview list', async () => {
@@ -397,6 +405,308 @@ describe('executeWorkflow', () => {
   });
 });
 
+describe('executeWorkflow as event type', () => {
+  beforeEach(async () => {
+    jest.clearAllMocks();
+  });
+  it('executes a given workflow: event type', async () => {
+    // Arrange
+    const correlationContextAttributeId = '12345';
+    const workflowInfo = generateTestWorkflowInfoForEventype();
+    const execResponse = generateTestExecuteWorkflowResponse(
+      correlationContextAttributeId,
+    );
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
+    (
+      mockOrchestratorService.pingWorkflowService as jest.Mock
+    ).mockResolvedValue(workflowInfo);
+
+    const processInstance = generateProcessInstanceForEventType(
+      1,
+      correlationContextAttributeId,
+    );
+
+    (mockOrchestratorService.fetchInstances as jest.Mock).mockResolvedValue([
+      processInstance,
+    ]);
+
+    (
+      mockOrchestratorService.executeWorkflowAsCloudEvent as jest.Mock
+    ).mockResolvedValue(execResponse);
+    const workflowData = {
+      customAttrib: 'My customAttrib',
+      isEvent: true,
+    };
+    // Act
+    const actualResultV2: ExecuteWorkflowResponseDTO = await v2.executeWorkflow(
+      {
+        inputData: workflowData,
+        targetEntity: 'someEntity',
+      },
+      workflowInfo.id,
+      'someUserEntity',
+      'someToken',
+    );
+
+    // Assert
+    expect(actualResultV2).toBeDefined();
+    expect(actualResultV2.id).toBeDefined();
+    expect(
+      mockOrchestratorService.executeWorkflowAsCloudEvent,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        definitionId: workflowInfo.id,
+        workflowEventType: 'lock-event',
+        workflowSource: 'local',
+        contextAttribute: 'lockid',
+        inputData: expect.objectContaining({
+          workflowdata: workflowData,
+          initiatorEntity: 'someUserEntity',
+          targetEntity: 'someEntity',
+        }),
+        backstageToken: 'someToken',
+      }),
+    );
+  });
+
+  it('throws when compiled start.stateName fixture cannot rewrite start', () => {
+    expect(() =>
+      generateTestWorkflowInfoForEventypeWithStartStateName('test_workflowId', {
+        id: 'test_workflowId',
+        source: 'id: lock-flow\nstart: somethingElse\n',
+      }),
+    ).toThrow(/Failed to rewrite start to start.stateName/);
+  });
+
+  it('executes a given workflow: event type with compiled start.stateName', async () => {
+    // Arrange
+    const correlationContextAttributeId = '12345';
+    const workflowInfo =
+      generateTestWorkflowInfoForEventypeWithStartStateName();
+    const execResponse = generateTestExecuteWorkflowResponse(
+      correlationContextAttributeId,
+    );
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
+    (
+      mockOrchestratorService.pingWorkflowService as jest.Mock
+    ).mockResolvedValue(workflowInfo);
+
+    const processInstance = generateProcessInstanceForEventType(
+      1,
+      correlationContextAttributeId,
+    );
+
+    (mockOrchestratorService.fetchInstances as jest.Mock).mockResolvedValue([
+      processInstance,
+    ]);
+
+    (
+      mockOrchestratorService.executeWorkflowAsCloudEvent as jest.Mock
+    ).mockResolvedValue(execResponse);
+    const workflowData = {
+      customAttrib: 'My customAttrib',
+      isEvent: true,
+    };
+    // Act
+    const actualResultV2: ExecuteWorkflowResponseDTO = await v2.executeWorkflow(
+      {
+        inputData: workflowData,
+        targetEntity: 'someEntity',
+      },
+      workflowInfo.id,
+      'someUserEntity',
+      'someToken',
+    );
+
+    // Assert
+    expect(actualResultV2).toBeDefined();
+    expect(actualResultV2.id).toBeDefined();
+    expect(
+      mockOrchestratorService.executeWorkflowAsCloudEvent,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        definitionId: workflowInfo.id,
+        workflowEventType: 'lock-event',
+        workflowSource: 'local',
+        contextAttribute: 'lockid',
+        inputData: expect.objectContaining({
+          workflowdata: workflowData,
+          initiatorEntity: 'someUserEntity',
+          targetEntity: 'someEntity',
+        }),
+        backstageToken: 'someToken',
+      }),
+    );
+  });
+
+  it('executes a given workflow: event type, no instance, not an error', async () => {
+    // Arrange
+    const correlationContextAttributeId = '12345';
+    const workflowInfo = generateTestWorkflowInfoForEventype();
+    const execResponse = generateTestExecuteWorkflowResponse(
+      correlationContextAttributeId,
+    );
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
+    (
+      mockOrchestratorService.pingWorkflowService as jest.Mock
+    ).mockResolvedValue(workflowInfo);
+
+    (mockOrchestratorService.fetchInstances as jest.Mock).mockResolvedValue([]);
+
+    (
+      mockOrchestratorService.executeWorkflowAsCloudEvent as jest.Mock
+    ).mockResolvedValue(execResponse);
+    const workflowData = {
+      customAttrib: 'My customAttrib',
+      isEvent: true,
+    };
+    // Act
+    const actualResultV2: ExecuteWorkflowResponseDTO = await v2.executeWorkflow(
+      {
+        inputData: workflowData,
+        targetEntity: 'someEntity',
+      },
+      workflowInfo.id,
+      'someUserEntity',
+      'someToken',
+    );
+
+    // Assert
+    expect(actualResultV2).toBeDefined();
+    expect(actualResultV2.id).toBeDefined();
+    expect(actualResultV2.id).toEqual('kafkaEvent');
+  }, 20000);
+
+  it('executes a given workflow: event type, no start state error', async () => {
+    // Arrange
+    const workflowInfo = generateTestWorkflowInfoForEventypeNoStartStates();
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
+
+    const workflowData = {
+      customAttrib: 'My customAttrib',
+      isEvent: true,
+    };
+    // Act & Assert
+    await expect(
+      v2.executeWorkflow(
+        { inputData: workflowData, targetEntity: 'someEntity' },
+        workflowInfo.id,
+        'someUserEntity',
+        'someToken',
+      ),
+    ).rejects.toThrow(
+      'Error executing workflow with id test_workflowId, No States that match the start state',
+    );
+  });
+
+  it('executes a given workflow: event type, no start.stateName error', async () => {
+    // Arrange
+    const workflowInfo =
+      generateTestWorkflowInfoForEventypeNoStartStateNameStates();
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
+
+    const workflowData = {
+      customAttrib: 'My customAttrib',
+      isEvent: true,
+    };
+    // Act & Assert
+    await expect(
+      v2.executeWorkflow(
+        { inputData: workflowData, targetEntity: 'someEntity' },
+        workflowInfo.id,
+        'someUserEntity',
+        'someToken',
+      ),
+    ).rejects.toThrow(
+      'Error executing workflow with id test_workflowId, No States that match the start state',
+    );
+  });
+
+  it('executes a given workflow: event type, no event ref error', async () => {
+    // Arrange
+    const workflowInfo = generateTestWorkflowInfoForEventypeNoEventRef();
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
+
+    const workflowData = {
+      customAttrib: 'My customAttrib',
+      isEvent: true,
+    };
+    // Act & Assert
+    await expect(
+      v2.executeWorkflow(
+        { inputData: workflowData, targetEntity: 'someEntity' },
+        workflowInfo.id,
+        'someUserEntity',
+        'someToken',
+      ),
+    ).rejects.toThrow(
+      'Error executing workflow with id test_workflowId, No event ref',
+    );
+  });
+
+  it('executes a given workflow: event type, no start event for event ref error', async () => {
+    // Arrange
+    const workflowInfo =
+      generateTestWorkflowInfoForEventypeNoStartStateForEventRef();
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
+
+    const workflowData = {
+      customAttrib: 'My customAttrib',
+      isEvent: true,
+    };
+    // Act & Assert
+    await expect(
+      v2.executeWorkflow(
+        { inputData: workflowData, targetEntity: 'someEntity' },
+        workflowInfo.id,
+        'someUserEntity',
+        'someToken',
+      ),
+    ).rejects.toThrow(
+      'Error executing workflow with id test_workflowId, No Events that match the start state eventRef',
+    );
+  });
+
+  it('executes a given workflow: event type, no correlation context attribute', async () => {
+    // Arrange
+    const workflowInfo =
+      generateTestWorkflowInfoForEventypeWithNoCorrelationContextAttribute();
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
+
+    const workflowData = {
+      customAttrib: 'My customAttrib',
+      isEvent: true,
+    };
+    // Act & Assert
+    await expect(
+      v2.executeWorkflow(
+        { inputData: workflowData, targetEntity: 'someEntity' },
+        workflowInfo.id,
+        'someUserEntity',
+        'someToken',
+      ),
+    ).rejects.toThrow(
+      'Error executing workflow with id test_workflowId, No correlation context attribute name found in event with event name lock-event',
+    );
+  });
+});
+
 describe('getInstances', () => {
   const mockRequest: any = {
     query: {},
@@ -454,6 +764,37 @@ describe('getInstances', () => {
     for (let i = 0; i < howmany; i++) {
       expect(processInstanceList.items?.[i].id).toEqual(processInstances[i].id);
     }
+    expect(processInstanceList.totalCount).toBe(howmany);
+  });
+
+  it('sets totalCount from unfiltered fetch when pagination returns a page subset', async () => {
+    const pageItems = generateProcessInstances(2);
+    const allItems = generateProcessInstances(10);
+    const pagedRequest: Pagination = { limit: 2, offset: 0 };
+
+    (mockOrchestratorService.fetchInstances as jest.Mock).mockImplementation(
+      (args: { pagination?: Pagination }) =>
+        Promise.resolve(args.pagination ? pageItems : allItems),
+    );
+
+    const result = await v2.getInstances(pagedRequest);
+
+    expect(mockOrchestratorService.fetchInstances).toHaveBeenCalledTimes(2);
+    expect(mockOrchestratorService.fetchInstances).toHaveBeenNthCalledWith(1, {
+      pagination: pagedRequest,
+      filter: undefined,
+      workflowIds: undefined,
+    });
+    expect(mockOrchestratorService.fetchInstances).toHaveBeenNthCalledWith(2, {
+      filter: undefined,
+      workflowIds: undefined,
+    });
+    expect(result.items).toHaveLength(2);
+    expect(result.totalCount).toBe(10);
+    expect(result.paginationInfo).toEqual({
+      pageSize: 2,
+      offset: 0,
+    });
   });
 });
 
@@ -525,6 +866,10 @@ describe('abortWorkflow', () => {
   it('aborts workflows', async () => {
     // Arrange
     const workflowId = 'testInstanceId';
+    const workflowInfo = generateTestWorkflowInfo();
+    (mockOrchestratorService.fetchWorkflowInfo as jest.Mock).mockResolvedValue(
+      workflowInfo,
+    );
     (
       mockOrchestratorService.abortWorkflowInstance as jest.Mock
     ).mockResolvedValue({} as any);

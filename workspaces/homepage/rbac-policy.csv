@@ -1,0 +1,3 @@
+g, user:development/guest, role:default/test-if-user-can-read-this-widget
+g, group:default/admins, role:default/test-if-user-can-read-this-widget
+g, group:default/developers, role:default/test-if-user-can-read-this-widget

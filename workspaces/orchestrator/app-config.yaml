@@ -24,8 +24,22 @@ backend:
         options:
           # notsecret
           # echo mycurlpasswd | base64
-          token: bXljdXJscGFzc3dkCg==
+          token: bXljdXJscGFzc3dkCg== # NOSONAR
           subject: my-external-feed
+      # Uncomment to let MCP clients (e.g. Cursor, Claude Code) authenticate
+      # against the Orchestrator MCP Actions below - see
+      # plugins/orchestrator-backend/README.md#mcp-actions
+      # - type: static
+      #   options:
+      #     token: ${MCP_TOKEN}
+      #     subject: mcp-clients
+  # Uncomment this when Orchestrator MCP Actions are needed (RHIDP-14041) -
+  # without this, actions registered via the Actions Registry are not
+  # exposed through @backstage/plugin-mcp-actions-backend, even though the
+  # plugin is wired in packages/backend/src/index.ts.
+  # actions:
+  #   pluginSources:
+  #     - 'orchestrator'
   listen:
     port: 7007
     # Uncomment the following host directive to bind to specific interfaces
@@ -114,6 +128,7 @@ auth:
 #   enabled: true
 #   rbac:
 #     policies-csv-file: ../../docs/rbac-policy.csv
+#     conditionalPoliciesFile: ../../docs/conditional-policies.yaml
 #     policyFileReload: true
 #     pluginsWithPermission:
 #       - orchestrator
@@ -158,14 +173,29 @@ catalog:
 dynamicPlugins:
   frontend: {}
 orchestrator:
+  # Uncomment to set the content length limit for the requests. Defaults to 102400 bytes (100kb)
+  # contentLengthLimit: 10mb
   # Uncomment and configure to use the log viewer
-  # workflowLogProvider:
-  #   loki:
-  #     baseUrl: http://localhost:3100
+  workflowLogProvider:
+    loki:
+      baseUrl: http://localhost:3100
+      token: secret-token
   # Uncomment if using a custom log stream selector
   # logStreamSelectors:
   #   - label: 'selector'
   #     value: 'value'
+  kafka:
+    # A logical identifier of an application.
+    # https://kafka.js.org/docs/configuration#client-id
+    clientId: orchestratorKafka
+    # logLevel override for the orchestrator kafka services. Defaults to INFO which is 4
+    # logLevel values based on KafkaJS values https://kafka.js.org/docs/configuration#logging
+    # logLevel: 5 // DEBUG
+    brokers:
+      - localhost:9092
+    # https://kafka.js.org/docs/producing#message-key
+    # Optional and will just default to an empty string
+    # messageKey: messageKey
   sonataFlowService:
     # uncomment the next line to use podman instead of docker
     # runtime: podman
@@ -175,9 +205,9 @@ orchestrator:
     # If you're using a MacBook with M-series chips, uncomment the line below to use ARM images.
     # To pull the image, you'll first need to authenticate with the registry.
     # For more information, visit: https://red.ht/410mMNU.
-    # container:  registry.redhat.io/openshift-serverless-1/logic-swf-devmode-rhel8:1.35.0
+    # container:  registry.redhat.io/openshift-serverless-1/logic-swf-devmode-rhel8:1.36.0
     # notsecret
-    notificationsBearerToken: bXljdXJscGFzc3dkCg==
+    notificationsBearerToken: bXljdXJscGFzc3dkCg== # NOSONAR
     notificationsUrl: http://host.docker.internal:7007
     # uncomment the next line if you are using podman:
     # notificationsUrl: http://host.containers.internal:7007

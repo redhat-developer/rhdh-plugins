@@ -44,7 +44,6 @@ import SearchIcon from '@material-ui/icons/Search';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import { CostManagementIconOutlined } from '@red-hat-developer-hub/plugin-cost-management';
-import { OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
 import { useRhdhTheme } from '../../hooks/useRhdhTheme';
 import { Administration } from '@backstage-community/plugin-rbac';
 
@@ -220,12 +219,6 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
               }`}
             />
           </CollapsibleSubmenu>
-
-          <SidebarItem
-            icon={OrchestratorIcon}
-            to="orchestrator"
-            text="Orchestrator"
-          />
         </SidebarGroup>
         <SidebarSpace />
         <SidebarDivider />

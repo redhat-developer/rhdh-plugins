@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 import { ConfigReader } from '@backstage/config';
-// import { NotFoundError } from '@backstage/errors';
+import { NotFoundError, NotModifiedError } from '@backstage/errors';
 import { mockServices } from '@backstage/backend-test-utils';
+import { ReadUrlResponseFactory } from '@backstage/backend-defaults/urlReader';
 import {
   ModeCatalogBridgeTechdocUrlReader,
   ModelCatalogBridgeUrlReaderServiceReadTreeResponse,
@@ -49,16 +50,24 @@ describe('readModelCatalogApiEntityConfigs', () => {
     expect(result).toEqual([]);
   });
 
-  it('should read multiple provider configs', () => {
+  it('should read cluster-nested provider configs', () => {
     const config = new ConfigReader({
       catalog: {
         providers: {
           modelCatalog: {
-            provider1: {
-              baseUrl: 'https://provider1.com:8080',
-            },
-            provider2: {
-              baseUrl: 'https://provider2.com:9000',
+            'kserve-kubeflow-connector': {
+              'cluster-1': {
+                name: 'my-k8s-cluster',
+                'kubeflow-model-catalog-url': 'https://provider1.com:8080',
+                'default-owner': 'team-alpha',
+                'default-lifecycle': 'production',
+              },
+              'cluster-2': {
+                name: 'another-cluster',
+                'kubeflow-model-catalog-url': 'https://provider2.com:9000',
+                'default-owner': 'team-beta',
+                'default-lifecycle': 'staging',
+              },
             },
           },
         },
@@ -67,14 +76,46 @@ describe('readModelCatalogApiEntityConfigs', () => {
     const result = readBridgeConfigs(config);
     expect(result).toEqual([
       {
-        id: 'provider1',
-        baseUrl: 'https://provider1.com:8080',
+        id: 'kserve-kubeflow-connector',
+        name: 'my-k8s-cluster',
+        kubeflowModelCatalogUrl: 'https://provider1.com:8080',
+        defaultOwner: 'team-alpha',
+        defaultLifecycle: 'production',
       },
       {
-        id: 'provider2',
-        baseUrl: 'https://provider2.com:9000',
+        id: 'kserve-kubeflow-connector',
+        name: 'another-cluster',
+        kubeflowModelCatalogUrl: 'https://provider2.com:9000',
+        defaultOwner: 'team-beta',
+        defaultLifecycle: 'staging',
       },
     ]);
+  });
+
+  it('should skip non-cluster keys like schedule', () => {
+    const config = new ConfigReader({
+      catalog: {
+        providers: {
+          modelCatalog: {
+            'kserve-kubeflow-connector': {
+              schedule: {
+                frequency: { minutes: 30 },
+                timeout: { minutes: 3 },
+              },
+              'cluster-1': {
+                name: 'my-cluster',
+                'kubeflow-model-catalog-url': 'https://example.com',
+                'default-owner': 'owner',
+                'default-lifecycle': 'production',
+              },
+            },
+          },
+        },
+      },
+    });
+    const result = readBridgeConfigs(config);
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('my-cluster');
   });
 });
 
@@ -97,7 +138,12 @@ describe('ModeCatalogBridgeTechdocUrlReader', () => {
           providers: {
             modelCatalog: {
               test: {
-                baseUrl: 'https://test.com:8080',
+                'cluster-1': {
+                  name: 'my-cluster',
+                  'kubeflow-model-catalog-url': 'https://test.com:8080',
+                  'default-owner': 'owner',
+                  'default-lifecycle': 'production',
+                },
               },
             },
           },
@@ -106,7 +152,9 @@ describe('ModeCatalogBridgeTechdocUrlReader', () => {
       // @ts-ignore
       expect(reader.bridgeConfigs).toHaveLength(1);
       // @ts-ignore
-      expect(reader.bridgeConfigs[0].baseUrl).toBe('https://test.com:8080');
+      expect(reader.bridgeConfigs[0].kubeflowModelCatalogUrl).toBe(
+        'https://test.com:8080',
+      );
     });
 
     it('should use backend workingDirectory from config', () => {
@@ -135,8 +183,23 @@ describe('ModeCatalogBridgeTechdocUrlReader', () => {
   });
 
   describe('bridgePredicate', () => {
-    it('should match default localhost URL', () => {
-      const reader = newReader({});
+    it('should match URL containing connector ID and modelcard', () => {
+      const reader = newReader({
+        catalog: {
+          providers: {
+            modelCatalog: {
+              test: {
+                'cluster-1': {
+                  name: 'my-cluster',
+                  'kubeflow-model-catalog-url': 'https://example.com',
+                  'default-owner': 'owner',
+                  'default-lifecycle': 'production',
+                },
+              },
+            },
+          },
+        },
+      });
       expect(
         reader.bridgePredicate(
           new URL('https://localhost:9090/modelcard/test'),
@@ -150,7 +213,12 @@ describe('ModeCatalogBridgeTechdocUrlReader', () => {
           providers: {
             modelCatalog: {
               test: {
-                baseUrl: 'https://test.com:8080',
+                'cluster-1': {
+                  name: 'my-cluster',
+                  'kubeflow-model-catalog-url': 'https://test.com:8080',
+                  'default-owner': 'owner',
+                  'default-lifecycle': 'production',
+                },
               },
             },
           },
@@ -191,6 +259,105 @@ describe('ModeCatalogBridgeTechdocUrlReader', () => {
       );
       // @ts-ignore
       expect(response.etag).toBe(etag);
+    });
+  });
+
+  describe('readUrl', () => {
+    const readerConfig = {
+      catalog: {
+        providers: {
+          modelCatalog: {
+            'kserve-kubeflow-connector': {
+              'cluster-1': {
+                name: 'my-cluster',
+                'kubeflow-model-catalog-url': 'https://example.com',
+                'default-owner': 'owner',
+                'default-lifecycle': 'production',
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const testUrl =
+      'http://localhost:7007/api/kserve-kubeflow-connector/modelcard/source1/modelA';
+
+    beforeEach(() => {
+      ModeCatalogBridgeTechdocUrlReader.auth = {
+        getPluginRequestToken: jest
+          .fn()
+          .mockResolvedValue({ token: 'test-token' }),
+        getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
+      } as any;
+    });
+
+    it('should return a response on success', async () => {
+      const reader = newReader(readerConfig);
+      const mockResponse = { ok: true, status: 200 };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse);
+      jest.spyOn(ReadUrlResponseFactory, 'fromResponse').mockResolvedValue({
+        buffer: async () => Buffer.from('markdown content'),
+        etag: 'test-etag',
+      } as any);
+
+      const result = await reader.readUrl(testUrl);
+      expect(result).toBeDefined();
+      expect(result.etag).toBe('test-etag');
+      expect(global.fetch).toHaveBeenCalledWith(
+        testUrl,
+        expect.objectContaining({
+          method: 'GET',
+          headers: { Authorization: 'Bearer test-token' },
+        }),
+      );
+    });
+
+    it('should throw Error when no matching bridge config', async () => {
+      const reader = newReader(readerConfig);
+      await expect(
+        reader.readUrl('http://localhost:7007/api/unknown-plugin/something'),
+      ).rejects.toThrow('No matching bridge config');
+    });
+
+    it('should throw NotFoundError on 404', async () => {
+      const reader = newReader(readerConfig);
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
+      await expect(reader.readUrl(testUrl)).rejects.toThrow(NotFoundError);
+    });
+
+    it('should throw NotModifiedError on 304', async () => {
+      const reader = newReader(readerConfig);
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 304,
+        statusText: 'Not Modified',
+      });
+
+      await expect(reader.readUrl(testUrl)).rejects.toThrow(NotModifiedError);
+    });
+
+    it('should throw Error on other non-ok status', async () => {
+      const reader = newReader(readerConfig);
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
+
+      await expect(reader.readUrl(testUrl)).rejects.toThrow('could not read');
+    });
+
+    it('should throw Error when fetch rejects', async () => {
+      const reader = newReader(readerConfig);
+      global.fetch = jest.fn().mockRejectedValue(new Error('network failure'));
+
+      await expect(reader.readUrl(testUrl)).rejects.toThrow('Unable to read');
     });
   });
 
@@ -238,7 +405,7 @@ describe('ModelCatalogBridgeUrlReaderServiceReadTreeResponse', () => {
   });
 
   describe('dir', () => {
-    it('should create temp dir and write files', async () => {
+    it('should create temp dir, write mkdocs.yml and docs files', async () => {
       const tmp = require('tmp');
       const tmpobj = tmp.fileSync();
       (fs.promises.mkdtemp as jest.Mock).mockResolvedValue(tmpobj.name);
@@ -255,6 +422,12 @@ describe('ModelCatalogBridgeUrlReaderServiceReadTreeResponse', () => {
       expect(fs.promises.mkdtemp).toHaveBeenCalledWith(
         path.join(workDir, 'backstage-'),
       );
+      // mkdocs.yml should be written at the root
+      expect(fs.promises.writeFile).toHaveBeenCalledWith(
+        path.join(tmpobj.name, 'mkdocs.yml'),
+        'site_name: Model Card\nnav:\n  - Home: index.md\n',
+      );
+      // docs/index.md should be written
       expect(fs.promises.writeFile).toHaveBeenCalledWith(
         path.join(tmpobj.name, 'docs', 'index.md'),
         await buffer,
@@ -275,6 +448,11 @@ describe('ModelCatalogBridgeUrlReaderServiceReadTreeResponse', () => {
       const resultDir = await response.dir({ targetDir });
 
       expect(fs.promises.mkdtemp).not.toHaveBeenCalled();
+      // mkdocs.yml at targetDir root
+      expect(fs.promises.writeFile).toHaveBeenCalledWith(
+        path.join(targetDir, 'mkdocs.yml'),
+        'site_name: Model Card\nnav:\n  - Home: index.md\n',
+      );
       expect(fs.promises.writeFile).toHaveBeenCalledWith(
         path.join(targetDir, 'docs', 'index.md'),
         await buffer,

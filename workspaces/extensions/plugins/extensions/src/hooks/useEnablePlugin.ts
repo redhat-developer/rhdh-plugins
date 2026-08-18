@@ -15,23 +15,22 @@
  */
 
 import { useMutation } from '@tanstack/react-query';
+
 import { useExtensionsApi } from './useExtensionsApi';
+
+type EnablePluginVariables = {
+  namespace: string;
+  name: string;
+  enabled: boolean;
+};
 
 export const useEnablePlugin = (isPackage: boolean) => {
   const extensionsApi = useExtensionsApi();
 
   return useMutation({
-    mutationFn: async ({
-      namespace,
-      name,
-      disabled,
-    }: {
-      namespace: string;
-      name: string;
-      disabled: boolean;
-    }) =>
+    mutationFn: async ({ namespace, name, enabled }: EnablePluginVariables) =>
       isPackage
-        ? await extensionsApi.disablePackage?.(namespace, name, disabled)
-        : await extensionsApi.disablePlugin?.(namespace, name, disabled),
+        ? await extensionsApi.enablePackage?.(namespace, name, enabled)
+        : await extensionsApi.enablePlugin?.(namespace, name, enabled),
   });
 };

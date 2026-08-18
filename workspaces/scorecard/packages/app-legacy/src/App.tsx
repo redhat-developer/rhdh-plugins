@@ -51,7 +51,6 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
-import { scorecardTranslations } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import {
@@ -60,7 +59,8 @@ import {
   ScorecardErrorStatusIcon,
   ScorecardSuccessStatusIcon,
   ScorecardWarningStatusIcon,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard';
+  scorecardTranslations,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard/legacy';
 
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
@@ -68,8 +68,8 @@ import {
   DynamicCustomizableHomePage,
   OnboardingSection,
   HomePageCardMountPoint,
-  homepageTranslations,
-} from '@red-hat-developer-hub/backstage-plugin-dynamic-home-page';
+} from '@red-hat-developer-hub/backstage-plugin-homepage';
+import { homepageTranslations } from '@red-hat-developer-hub/backstage-plugin-homepage/alpha';
 import { ComponentType } from 'react';
 
 const mountPoints: HomePageCardMountPoint[] = [
@@ -91,7 +91,72 @@ const mountPoints: HomePageCardMountPoint[] = [
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
-      id: 'scorecard-jira.open_issues',
+      id: 'scorecard-deprecated-metric-id',
+      title: 'Scorecard: With deprecated metricId property (Jira)',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
+      layouts: {
+        xl: { w: 4, h: 6 },
+        lg: { w: 4, h: 6 },
+        md: { w: 4, h: 6 },
+        sm: { w: 4, h: 6 },
+        xs: { w: 4, h: 6 },
+        xxs: { w: 4, h: 6 },
+      },
+      props: {
+        // The "metricId" represent deprecated logic and will be removed in the future
+        metricId: 'jira.openIssues',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-with-default-aggregation-config',
+      title: 'Scorecard: With default aggregation config (GitHub)',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
+      layouts: {
+        xl: { w: 4, h: 6 },
+        lg: { w: 4, h: 6 },
+        md: { w: 4, h: 6 },
+        sm: { w: 4, h: 6 },
+        xs: { w: 4, h: 6 },
+        xxs: { w: 4, h: 6 },
+      },
+      props: {
+        aggregationId: 'github.openPRs',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-openIssuesKpi',
       title: 'Scorecard: Jira open blocking tickets',
       // Supported card layout
       cardLayout: {
@@ -116,14 +181,14 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6 },
       },
       props: {
-        metricId: 'jira.open_issues',
+        aggregationId: 'openIssuesKpi',
       },
     },
   },
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
-      id: 'scorecard-github.open_prs',
+      id: 'scorecard-openPrsKpi',
       title: 'Scorecard: GitHub open PRs',
       // Supported card layout
       cardLayout: {
@@ -148,7 +213,99 @@ const mountPoints: HomePageCardMountPoint[] = [
         xxs: { w: 4, h: 6, x: 4 },
       },
       props: {
-        metricId: 'github.open_prs',
+        aggregationId: 'openPrsKpi',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-filecheck.license',
+      title: 'Scorecard: LICENSE file exists',
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      layouts: {
+        xl: { w: 4, h: 6 },
+        lg: { w: 4, h: 6 },
+        md: { w: 4, h: 6 },
+        sm: { w: 4, h: 6 },
+        xs: { w: 4, h: 6 },
+        xxs: { w: 4, h: 6 },
+      },
+      props: {
+        aggregationId: 'licenseFileExistsKpi',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-filecheck.codeowners',
+      title: 'Scorecard: CODEOWNERS file exists',
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      layouts: {
+        xl: { w: 4, h: 6, x: 4 },
+        lg: { w: 4, h: 6, x: 4 },
+        md: { w: 4, h: 6, x: 4 },
+        sm: { w: 4, h: 6, x: 4 },
+        xs: { w: 4, h: 6, x: 4 },
+        xxs: { w: 4, h: 6, x: 4 },
+      },
+      props: {
+        aggregationId: 'filecheck.codeowners',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-openPrsWeightedKpi',
+      title: 'Scorecard: GitHub open PRs (weighted health)',
+      // Supported card layout
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      // Default layout so that it is shown automatically
+      layouts: {
+        xl: { w: 4, h: 6, x: 4 },
+        lg: { w: 4, h: 6, x: 4 },
+        md: { w: 4, h: 6, x: 4 },
+        sm: { w: 4, h: 6, x: 4 },
+        xs: { w: 4, h: 6, x: 4 },
+        xxs: { w: 4, h: 6, x: 4 },
+      },
+      props: {
+        aggregationId: 'openPrsWeightedKpi',
       },
     },
   },
@@ -185,15 +342,25 @@ const mountPoints: HomePageCardMountPoint[] = [
             metricId: {
               title: 'Metric (Needs currently a page reload after change!)',
               type: 'string',
-              default: 'jira.open_issues',
-              enum: ['jira.open_issues', 'github.open_prs'],
+              default: 'jira.openIssues',
+              enum: [
+                'jira.openIssues',
+                'github.openPRs',
+                'filecheck.license',
+                'filecheck.codeowners',
+              ],
             },
           },
         },
         uiSchema: {
           metricId: {
             'ui:widget': 'RadioWidget',
-            'ui:enumNames': ['Jira Open Issues', 'GitHub Open PRs'],
+            'ui:enumNames': [
+              'Jira Open Issues',
+              'GitHub Open PRs',
+              'LICENSE file exists',
+              'CODEOWNERS file exists',
+            ],
           },
         },
       },
@@ -203,7 +370,8 @@ const mountPoints: HomePageCardMountPoint[] = [
     Component: ScorecardHomepageCard as ComponentType,
     config: {
       id: 'scorecard-no-metric-id',
-      title: 'Scorecard: No metric id (expected error)',
+      title:
+        'Scorecard: No aggregationId or metricId property (expected error)',
       // Supported card layout
       cardLayout: {
         width: {
@@ -333,7 +501,10 @@ const routes = (
         </ScalprumContext.Provider>
       }
     />
-    <Route path="/scorecard/metrics/:metricId" element={<ScorecardPage />} />
+    <Route
+      path="/scorecard/aggregations/:aggregationId/metrics/:metricId"
+      element={<ScorecardPage />}
+    />
     <Route path="/catalog" element={<CatalogIndexPage />} />
     <Route
       path="/catalog/:namespace/:kind/:name"

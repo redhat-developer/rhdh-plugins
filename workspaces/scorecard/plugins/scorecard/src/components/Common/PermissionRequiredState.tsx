@@ -50,7 +50,9 @@ const PermissionRequiredState = () => {
           <Typography
             sx={theme => ({
               fontSize: '1rem',
-              color: theme.palette.text.secondary,
+              // Use primary text color to satisfy WCAG AA contrast
+              // against the light panel background in NFS.
+              color: theme.palette.text.primary,
               mb: 3,
               lineHeight: 1.5,
             })}

@@ -27,7 +27,7 @@ export const useQueryFullTextSearch = (debounce?: number) => {
 
   const current = searchParams.get(fullTextSearchParam) ?? '';
 
-  const onChangeDebounceTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const onChangeDebounceTimeout = useRef<number | undefined>(undefined);
 
   const set = useCallback(
     (newValue: string) => {
@@ -49,7 +49,7 @@ export const useQueryFullTextSearch = (debounce?: number) => {
       const newValue = event.target.value;
       if (debounce && debounce > 0) {
         clearTimeout(onChangeDebounceTimeout.current);
-        onChangeDebounceTimeout.current = setTimeout(
+        onChangeDebounceTimeout.current = window.setTimeout(
           () => set(newValue),
           debounce,
         );

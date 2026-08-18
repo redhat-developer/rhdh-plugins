@@ -21,6 +21,7 @@ import { Client, OperationResult } from '@urql/core';
 import {
   FieldFilter,
   FieldFilterOperatorEnum,
+  fromWorkflowSource,
   LogicalFilter,
   NodeInstance,
   ProcessInstance,
@@ -31,6 +32,7 @@ import {
 
 import * as buildGrahQLFilterUtils from '../helpers/filterBuilder';
 import * as buildGrahQLQueryUtils from '../helpers/queryBuilder';
+import { FilterClause } from '../types/filterClause';
 import { Pagination } from '../types/pagination';
 import {
   mockProcessDefinitionArguments,
@@ -61,8 +63,22 @@ jest.mock('@urql/core', () => {
     Client: jest.fn().mockImplementation(() => ({
       query: jest.fn(),
     })),
+    // gql is used as a tagged template literal in DataIndexService methods;
+    // return the concatenated string so client.query receives a non-null value.
+    gql: (strings: TemplateStringsArray, ...values: any[]) =>
+      strings.reduce((acc, str, i) => acc + str + (values[i] ?? ''), ''),
   };
 });
+
+jest.mock(
+  '@red-hat-developer-hub/backstage-plugin-orchestrator-common',
+  () => ({
+    ...jest.requireActual(
+      '@red-hat-developer-hub/backstage-plugin-orchestrator-common',
+    ),
+    fromWorkflowSource: jest.fn(),
+  }),
+);
 
 const mockOperationResult = <T>(data: T, error?: any): OperationResult<T> => ({
   data,
@@ -85,11 +101,13 @@ const createQueryArgs = (
   queryBody: string,
   whereClause?: string,
   pagination?: Pagination,
+  filterCondition?: FilterClause,
 ) => ({
   type,
   queryBody,
   whereClause,
   pagination,
+  filterCondition,
 });
 
 describe('initInputArgs', () => {
@@ -171,7 +189,9 @@ describe('initInputArgs', () => {
 describe('fetchWorkflowInfos', () => {
   let loggerMock: LoggerService;
   let buildFilterConditionSpy: any;
-  let buildGraphQlQuerySpy: jest.SpyInstance;
+  let buildGraphQlQuerySpy: jest.Spied<
+    typeof buildGrahQLQueryUtils.buildGraphQlQuery
+  >;
   let dataIndexService: DataIndexService;
   let mockClient: jest.Mocked<Client>;
 
@@ -179,9 +199,6 @@ describe('fetchWorkflowInfos', () => {
   const queryBody =
     'id, name, version, type, endpoint, serviceUrl, source, metadata';
   const pagination = { limit: 10, offset: 0, order: 'ASC', sortField: 'name' };
-
-  const filterString =
-    'or: {name: {equal: "Hello World Workflow"}, id: {equal: "yamlgreet"}}';
 
   const helloWorldFilter = {
     field: 'name',
@@ -252,7 +269,10 @@ describe('fetchWorkflowInfos', () => {
     expect(mockClient.query).toHaveBeenCalled();
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {},
+        paginationInfo: {},
+      },
     );
   });
 
@@ -289,7 +309,10 @@ describe('fetchWorkflowInfos', () => {
     expect(mockClient.query).toHaveBeenCalled();
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {},
+        paginationInfo: {},
+      },
     );
   });
 
@@ -327,7 +350,15 @@ describe('fetchWorkflowInfos', () => {
     expect(mockClient.query).toHaveBeenCalledTimes(1);
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {
+          name: 'ASC',
+        },
+        paginationInfo: {
+          limit: 10,
+          offset: 0,
+        },
+      },
     );
     expect(buildFilterConditionSpy).not.toHaveBeenCalled();
   });
@@ -343,12 +374,6 @@ describe('fetchWorkflowInfos', () => {
       )
       .mockResolvedValueOnce(mockOperationResult(mockQueryResult));
 
-    const expectedQueryArgs = createQueryArgs(
-      'ProcessDefinitions',
-      queryBody,
-      filterString,
-    );
-
     // When
     const result = await dataIndexService.fetchWorkflowInfos({
       filter: logicalFilter,
@@ -358,30 +383,44 @@ describe('fetchWorkflowInfos', () => {
     expect(result).toBeDefined();
     expect(result).toStrictEqual(mockQueryResult.ProcessDefinitions);
 
-    expect(buildGraphQlQuerySpy).toHaveBeenCalledTimes(1);
-    expect(buildGraphQlQuerySpy).toHaveBeenCalledWith({
-      type: 'ProcessDefinitions',
-      queryBody,
-      whereClause: filterString,
-    });
     expect(buildFilterConditionSpy).toHaveBeenCalledTimes(1);
     expect(buildFilterConditionSpy).toHaveBeenCalledWith(
       mockProcessDefinitionIntrospection,
       'ProcessDefinition',
       logicalFilter,
     );
+
+    const createdFilter = buildFilterConditionSpy.mock.results[0].value;
+
+    expect(buildGraphQlQuerySpy).toHaveBeenCalledTimes(1);
+    expect(buildGraphQlQuerySpy).toHaveBeenCalledWith({
+      type: 'ProcessDefinitions',
+      queryBody,
+      whereClause: createdFilter.clause,
+      filterCondition: createdFilter,
+    });
+
+    const expectedQueryArgs = createQueryArgs(
+      'ProcessDefinitions',
+      queryBody,
+      createdFilter.clause,
+      undefined,
+      createdFilter,
+    );
+
+    const params = buildGrahQLQueryUtils.buildQueryParamVariable(
+      undefined,
+      createdFilter,
+    );
+
     expect(mockClient.query).toHaveBeenCalledTimes(2);
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      params,
     );
   });
 
   it('should fetch workflow infos with definitionIds and filter', async () => {
-    // Given
-    const whereClause = `and: [{id: {in: ${JSON.stringify(
-      definitionIds,
-    )}}}, {${filterString}}]`;
     // Given
     const mockQueryResult = {
       ProcessDefinitions: mockWfInfos,
@@ -392,12 +431,6 @@ describe('fetchWorkflowInfos', () => {
       )
       .mockResolvedValueOnce(mockOperationResult(mockQueryResult));
 
-    const expectedQueryArgs = createQueryArgs(
-      'ProcessDefinitions',
-      queryBody,
-      whereClause,
-    );
-
     // When
     const result = await dataIndexService.fetchWorkflowInfos({
       definitionIds,
@@ -405,6 +438,26 @@ describe('fetchWorkflowInfos', () => {
     });
 
     // Then
+    expect(buildFilterConditionSpy).toHaveBeenCalledTimes(1);
+    expect(buildFilterConditionSpy).toHaveBeenCalledWith(
+      mockProcessDefinitionIntrospection,
+      'ProcessDefinition',
+      logicalFilter,
+    );
+
+    const createdFilter = buildFilterConditionSpy.mock.results[0].value;
+
+    const whereClause = `and: [{id: {in: ${JSON.stringify(
+      definitionIds,
+    )}}}, {${createdFilter.clause}}]`;
+
+    const expectedQueryArgs = createQueryArgs(
+      'ProcessDefinitions',
+      queryBody,
+      whereClause,
+      undefined,
+      createdFilter,
+    );
 
     expect(buildGraphQlQuerySpy).toHaveBeenCalledTimes(1);
     expect(buildGraphQlQuerySpy).toHaveBeenCalledWith({
@@ -412,17 +465,18 @@ describe('fetchWorkflowInfos', () => {
       queryBody:
         'id, name, version, type, endpoint, serviceUrl, source, metadata',
       whereClause,
+      filterCondition: createdFilter,
     });
-    expect(buildFilterConditionSpy).toHaveBeenCalledTimes(1);
-    expect(buildFilterConditionSpy).toHaveBeenCalledWith(
-      mockProcessDefinitionIntrospection,
-      'ProcessDefinition',
-      logicalFilter,
+
+    const params = buildGrahQLQueryUtils.buildQueryParamVariable(
+      undefined,
+      createdFilter,
     );
+
     expect(mockClient.query).toHaveBeenCalledTimes(2);
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      params,
     );
     expect(result).toBeDefined();
     expect(result).toStrictEqual(mockQueryResult.ProcessDefinitions);
@@ -430,9 +484,7 @@ describe('fetchWorkflowInfos', () => {
 
   it('should fetch workflow infos with definitionIds, pagination, and filter', async () => {
     // Given
-    const whereClause = `and: [{id: {in: ${JSON.stringify(
-      definitionIds,
-    )}}}, {${filterString}}]`;
+
     // Given
     const mockQueryResult = {
       ProcessDefinitions: mockWfInfos,
@@ -443,12 +495,6 @@ describe('fetchWorkflowInfos', () => {
       )
       .mockResolvedValueOnce(mockOperationResult(mockQueryResult));
 
-    const expectedQueryArgs = createQueryArgs(
-      'ProcessDefinitions',
-      queryBody,
-      whereClause,
-      pagination,
-    );
     // When
     const result = await dataIndexService.fetchWorkflowInfos({
       definitionIds,
@@ -457,11 +503,36 @@ describe('fetchWorkflowInfos', () => {
     });
 
     // Then
+    expect(buildFilterConditionSpy).toHaveBeenCalledTimes(1);
+    expect(buildFilterConditionSpy).toHaveBeenCalledWith(
+      mockProcessDefinitionIntrospection,
+      'ProcessDefinition',
+      logicalFilter,
+    );
+
+    const createdFilter = buildFilterConditionSpy.mock.results[0].value;
+
+    const whereClause = `and: [{id: {in: ${JSON.stringify(
+      definitionIds,
+    )}}}, {${createdFilter.clause}}]`;
+
+    const expectedQueryArgs = createQueryArgs(
+      'ProcessDefinitions',
+      queryBody,
+      whereClause,
+      pagination,
+      createdFilter,
+    );
+
+    const params = buildGrahQLQueryUtils.buildQueryParamVariable(
+      pagination,
+      createdFilter,
+    );
 
     expect(mockClient.query).toHaveBeenCalledTimes(2);
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      params,
     );
     expect(buildGraphQlQuerySpy).toHaveBeenCalledTimes(2);
     expect(buildGraphQlQuerySpy).toHaveBeenCalledWith({
@@ -469,13 +540,9 @@ describe('fetchWorkflowInfos', () => {
       queryBody,
       whereClause,
       pagination,
+      filterCondition: createdFilter,
     });
-    expect(buildFilterConditionSpy).toHaveBeenCalledTimes(1);
-    expect(buildFilterConditionSpy).toHaveBeenCalledWith(
-      mockProcessDefinitionIntrospection,
-      'ProcessDefinition',
-      logicalFilter,
-    );
+
     expect(result).toBeDefined();
     expect(result).toStrictEqual(mockQueryResult.ProcessDefinitions);
   });
@@ -496,7 +563,7 @@ describe('fetchInstances', () => {
     definitionIds,
   )}`;
   const queryBody =
-    'id, processName, processId, state, start, end, nodes { id }, variables, executionSummary, parentProcessInstance {id, processName, businessKey}';
+    'id, version, processName, processId, state, start, end, nodes { id }, variables, executionSummary, parentProcessInstance {id, processName, businessKey}';
 
   const mockProcessInstances: ProcessInstance[] = [
     {
@@ -512,9 +579,6 @@ describe('fetchInstances', () => {
       nodes: [createNodeObject('C'), createNodeObject('D')],
     },
   ];
-
-  const filterString =
-    'or: {processId: {equal: "processId1"}, processName: {like: "processName%"}}';
 
   const procName1Filter: FieldFilter = {
     field: 'processName',
@@ -598,7 +662,10 @@ describe('fetchInstances', () => {
     expect(mockClient.query).toHaveBeenCalled();
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {},
+        paginationInfo: {},
+      },
     );
   });
 
@@ -632,7 +699,10 @@ describe('fetchInstances', () => {
     expect(mockClient.query).toHaveBeenCalled();
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {},
+        paginationInfo: {},
+      },
     );
     expect(result).toBeDefined();
     expect(result).toStrictEqual(mockQueryResult.ProcessInstances);
@@ -673,26 +743,48 @@ describe('fetchInstances', () => {
     expect(mockClient.query).toHaveBeenCalledTimes(1);
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      {
+        orderByInfo: {
+          name: 'ASC',
+        },
+        paginationInfo: {
+          limit: 10,
+          offset: 0,
+        },
+      },
     );
   });
 
   it('should fetch instances with only filter', async () => {
     // Given
-    const whereClause = `and: [{${processIdNotNullCondition}}, {${filterString}}]`;
+
     mockClient.query
       .mockResolvedValueOnce(mockOperationResult(mockProcessInstanceArguments))
       .mockResolvedValueOnce(mockOperationResult(mockQueryResult));
+
+    // When
+    const result = await dataIndexService.fetchInstances({
+      filter: logicalFilter,
+    });
+
+    expect(buildFilterConditionSpy).toHaveBeenCalledTimes(1);
+    expect(buildFilterConditionSpy).toHaveBeenCalledWith(
+      mockProcessInstanceIntrospection,
+      'ProcessInstance',
+      logicalFilter,
+    );
+
+    const createdFilter = buildFilterConditionSpy.mock.results[0].value;
+
+    const whereClause = `and: [{${processIdNotNullCondition}}, {${createdFilter.clause}}]`;
 
     const expectedQueryArgs = createQueryArgs(
       'ProcessInstances',
       queryBody,
       whereClause,
+      undefined,
+      createdFilter,
     );
-    // When
-    const result = await dataIndexService.fetchInstances({
-      filter: logicalFilter,
-    });
 
     // Then
     expect(result).toBeDefined();
@@ -702,31 +794,26 @@ describe('fetchInstances', () => {
       type: 'ProcessInstances',
       queryBody,
       whereClause,
+      filterCondition: createdFilter,
     });
-    expect(buildFilterConditionSpy).toHaveBeenCalledTimes(1);
-    expect(buildFilterConditionSpy).toHaveBeenCalledWith(
-      mockProcessInstanceIntrospection,
-      'ProcessInstance',
-      logicalFilter,
+
+    const params = buildGrahQLQueryUtils.buildQueryParamVariable(
+      undefined,
+      createdFilter,
     );
+
     expect(mockClient.query).toHaveBeenCalledTimes(2);
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      params,
     );
   });
 
   it('should fetch instances with definitionIds and filter', async () => {
     // Given
-    const whereClause = `and: [{${processIdNotNullCondition}}, {${processIdDefinitions}}}, {${filterString}}]`;
     mockClient.query
       .mockResolvedValueOnce(mockOperationResult(mockProcessInstanceArguments))
       .mockResolvedValueOnce(mockOperationResult(mockQueryResult));
-    const expectedQueryArgs = createQueryArgs(
-      'ProcessInstances',
-      queryBody,
-      whereClause,
-    );
     // When
     const result = await dataIndexService.fetchInstances({
       definitionIds,
@@ -734,22 +821,42 @@ describe('fetchInstances', () => {
     });
 
     // Then
-    expect(buildGraphQlQuerySpy).toHaveBeenCalledTimes(1);
-    expect(buildGraphQlQuerySpy).toHaveBeenCalledWith({
-      type: 'ProcessInstances',
-      queryBody,
-      whereClause,
-    });
     expect(buildFilterConditionSpy).toHaveBeenCalledTimes(1);
     expect(buildFilterConditionSpy).toHaveBeenCalledWith(
       mockProcessInstanceIntrospection,
       'ProcessInstance',
       logicalFilter,
     );
+
+    const createdFilter = buildFilterConditionSpy.mock.results[0].value;
+
+    const whereClause = `and: [{${processIdNotNullCondition}}, {${processIdDefinitions}}}, {${createdFilter.clause}}]`;
+
+    const expectedQueryArgs = createQueryArgs(
+      'ProcessInstances',
+      queryBody,
+      whereClause,
+      undefined,
+      createdFilter,
+    );
+
+    expect(buildGraphQlQuerySpy).toHaveBeenCalledTimes(1);
+    expect(buildGraphQlQuerySpy).toHaveBeenCalledWith({
+      type: 'ProcessInstances',
+      queryBody,
+      whereClause,
+      filterCondition: createdFilter,
+    });
+
+    const params = buildGrahQLQueryUtils.buildQueryParamVariable(
+      undefined,
+      createdFilter,
+    );
+
     expect(mockClient.query).toHaveBeenCalledTimes(2);
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      params,
     );
     expect(result).toBeDefined();
     expect(result).toStrictEqual(mockQueryResult.ProcessInstances);
@@ -757,16 +864,10 @@ describe('fetchInstances', () => {
 
   it('should fetch instances with definitionIds, pagination, and filter', async () => {
     // Given
-    const whereClause = `and: [{${processIdNotNullCondition}}, {${processIdDefinitions}}}, {${filterString}}]`;
     mockClient.query
       .mockResolvedValueOnce(mockOperationResult(mockProcessInstanceArguments))
       .mockResolvedValueOnce(mockOperationResult(mockQueryResult));
-    const expectedQueryArgs = createQueryArgs(
-      'ProcessInstances',
-      queryBody,
-      whereClause,
-      pagination,
-    );
+
     // When
     const result = await dataIndexService.fetchInstances({
       definitionIds,
@@ -775,23 +876,43 @@ describe('fetchInstances', () => {
     });
 
     // Then
-    expect(buildGraphQlQuerySpy).toHaveBeenCalledTimes(1);
-    expect(buildGraphQlQuerySpy).toHaveBeenCalledWith({
-      type: 'ProcessInstances',
-      queryBody,
-      whereClause,
-      pagination,
-    });
     expect(buildFilterConditionSpy).toHaveBeenCalledTimes(1);
     expect(buildFilterConditionSpy).toHaveBeenCalledWith(
       mockProcessInstanceIntrospection,
       'ProcessInstance',
       logicalFilter,
     );
+
+    const createdFilter = buildFilterConditionSpy.mock.results[0].value;
+
+    const whereClause = `and: [{${processIdNotNullCondition}}, {${processIdDefinitions}}}, {${createdFilter.clause}}]`;
+
+    const expectedQueryArgs = createQueryArgs(
+      'ProcessInstances',
+      queryBody,
+      whereClause,
+      pagination,
+      createdFilter,
+    );
+
+    expect(buildGraphQlQuerySpy).toHaveBeenCalledTimes(1);
+    expect(buildGraphQlQuerySpy).toHaveBeenCalledWith({
+      type: 'ProcessInstances',
+      queryBody,
+      whereClause,
+      pagination,
+      filterCondition: createdFilter,
+    });
+
+    const params = buildGrahQLQueryUtils.buildQueryParamVariable(
+      pagination,
+      createdFilter,
+    );
+
     expect(mockClient.query).toHaveBeenCalledTimes(2);
     expect(mockClient.query).toHaveBeenCalledWith(
       buildGrahQLQueryUtils.buildGraphQlQuery(expectedQueryArgs),
-      {},
+      params,
     );
     expect(result).toBeDefined();
     expect(result).toStrictEqual(mockQueryResult.ProcessInstances);
@@ -810,3 +931,475 @@ function createNodeObject(suffix: string): NodeInstance {
     retrigger: false,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Helpers shared across new describe blocks
+// ---------------------------------------------------------------------------
+
+function createMockSetup() {
+  const loggerMock: LoggerService = {
+    info: jest.fn(),
+    debug: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    child: jest.fn(),
+  };
+  const mockClient: jest.Mocked<Pick<Client, 'query'>> = { query: jest.fn() };
+  (Client as jest.Mock).mockImplementation(() => mockClient);
+  const dataIndexService = new DataIndexService('fakeUrl', loggerMock);
+  return { loggerMock, mockClient, dataIndexService };
+}
+
+// ---------------------------------------------------------------------------
+// fetchWorkflowInfo
+// ---------------------------------------------------------------------------
+
+describe('fetchWorkflowInfo', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns the first matching workflow info', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    const wfInfo: WorkflowInfo = { id: 'wf1', name: 'Workflow One' };
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ ProcessDefinitions: [wfInfo] }),
+    );
+
+    const result = await dataIndexService.fetchWorkflowInfo('wf1');
+
+    expect(result).toEqual(wfInfo);
+    expect(mockClient.query).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns undefined when no definition is found', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ ProcessDefinitions: [] }),
+    );
+
+    const result = await dataIndexService.fetchWorkflowInfo('unknown');
+
+    expect(result).toBeUndefined();
+  });
+
+  it('throws when the client returns an error', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    const error = new Error('GraphQL error');
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({} as any, error),
+    );
+
+    await expect(dataIndexService.fetchWorkflowInfo('wf1')).rejects.toThrow(
+      'GraphQL error',
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// fetchWorkflowServiceUrls
+// ---------------------------------------------------------------------------
+
+describe('fetchWorkflowServiceUrls', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns a record mapping definition ids to service urls, filtering missing urls', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({
+        ProcessDefinitions: [
+          { id: 'wf1', serviceUrl: 'http://svc1' },
+          { id: 'wf2', serviceUrl: 'http://svc2' },
+          { id: 'wf3' }, // no serviceUrl → filtered out
+        ],
+      }),
+    );
+
+    const result = await dataIndexService.fetchWorkflowServiceUrls();
+
+    expect(result).toEqual({ wf1: 'http://svc1', wf2: 'http://svc2' });
+  });
+
+  it('returns an empty record when no definitions have a service url', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ ProcessDefinitions: [] }),
+    );
+
+    const result = await dataIndexService.fetchWorkflowServiceUrls();
+
+    expect(result).toEqual({});
+  });
+
+  it('throws when the client returns an error', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    const error = new Error('Network error');
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({} as any, error),
+    );
+
+    await expect(dataIndexService.fetchWorkflowServiceUrls()).rejects.toThrow(
+      'Network error',
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// fetchWorkflowSource
+// ---------------------------------------------------------------------------
+
+describe('fetchWorkflowSource', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns the source string for the given definition id', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({
+        ProcessDefinitions: [{ id: 'wf1', source: 'yaml content here' }],
+      }),
+    );
+
+    const result = await dataIndexService.fetchWorkflowSource('wf1');
+
+    expect(result).toBe('yaml content here');
+  });
+
+  it('returns undefined when no definition is found', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ ProcessDefinitions: [] }),
+    );
+
+    const result = await dataIndexService.fetchWorkflowSource('unknown');
+
+    expect(result).toBeUndefined();
+  });
+
+  it('throws when the client returns an error', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    const error = new Error('GraphQL error');
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({} as any, error),
+    );
+
+    await expect(dataIndexService.fetchWorkflowSource('wf1')).rejects.toThrow(
+      'GraphQL error',
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// fetchInstanceVariables
+// ---------------------------------------------------------------------------
+
+describe('fetchInstanceVariables', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns the parsed variables for the given instance id', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    const variables = { greeting: 'hello', count: 3 };
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({
+        ProcessInstances: [{ variables }],
+      }),
+    );
+
+    const result = await dataIndexService.fetchInstanceVariables('inst1');
+
+    expect(result).toEqual(variables);
+  });
+
+  it('returns undefined when no instance is found', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ ProcessInstances: [] }),
+    );
+
+    const result = await dataIndexService.fetchInstanceVariables('missing');
+
+    expect(result).toBeUndefined();
+  });
+
+  it('throws when the client returns an error', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    const error = new Error('Query failed');
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({} as any, error),
+    );
+
+    await expect(
+      dataIndexService.fetchInstanceVariables('inst1'),
+    ).rejects.toThrow('Query failed');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// fetchDefinitionIdByInstanceId
+// ---------------------------------------------------------------------------
+
+describe('fetchDefinitionIdByInstanceId', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns the processId for the given instance id', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({
+        ProcessInstances: [{ processId: 'wf1' }],
+      }),
+    );
+
+    const result = await dataIndexService.fetchDefinitionIdByInstanceId('i1');
+
+    expect(result).toBe('wf1');
+  });
+
+  it('returns undefined when no instance is found', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ ProcessInstances: [] }),
+    );
+
+    const result =
+      await dataIndexService.fetchDefinitionIdByInstanceId('missing');
+
+    expect(result).toBeUndefined();
+  });
+
+  it('throws when the client returns an error', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    const error = new Error('Query error');
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({} as any, error),
+    );
+
+    await expect(
+      dataIndexService.fetchDefinitionIdByInstanceId('i1'),
+    ).rejects.toThrow('Query error');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// fetchDefinitionIdsFromInstances
+// ---------------------------------------------------------------------------
+
+describe('fetchDefinitionIdsFromInstances', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns distinct processIds from matching instances', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+
+    // First call: introspection for ProcessInstance argument types
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult(mockProcessInstanceArguments),
+    );
+    // Second call: actual data query
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({
+        ProcessInstances: [
+          { processId: 'wf1' },
+          { processId: 'wf1' }, // duplicate — should appear once
+          { processId: 'wf2' },
+        ],
+      }),
+    );
+
+    const result = await dataIndexService.fetchDefinitionIdsFromInstances({
+      targetEntity: 'component:default/my-service',
+    });
+
+    expect(result).toEqual(['wf1', 'wf2']);
+  });
+
+  it('returns an empty array when no instances match', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult(mockProcessInstanceArguments),
+    );
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ ProcessInstances: [] }),
+    );
+
+    const result = await dataIndexService.fetchDefinitionIdsFromInstances({
+      targetEntity: 'component:default/unknown',
+    });
+
+    expect(result).toEqual([]);
+  });
+
+  it('throws when the client returns an error on the data query', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult(mockProcessInstanceArguments),
+    );
+    const error = new Error('Data fetch error');
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({} as any, error),
+    );
+
+    await expect(
+      dataIndexService.fetchDefinitionIdsFromInstances({
+        targetEntity: 'component:default/my-service',
+      }),
+    ).rejects.toThrow('Data fetch error');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// fetchInstancesByDefinitionId
+// ---------------------------------------------------------------------------
+
+describe('fetchInstancesByDefinitionId', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns process instances for the given definition id', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    const instances: ProcessInstance[] = [
+      {
+        id: 'inst1',
+        processId: 'wf1',
+        nodes: [],
+        state: 'COMPLETED' as any,
+        start: '2024-01-01T00:00:00.000Z',
+        endpoint: '',
+      },
+    ];
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ ProcessInstances: instances }),
+    );
+
+    const result = await dataIndexService.fetchInstancesByDefinitionId({
+      definitionId: 'wf1',
+      limit: 10,
+      offset: 0,
+    });
+
+    expect(result).toEqual(instances);
+    expect(mockClient.query).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes targetEntity variable when provided', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ ProcessInstances: [] }),
+    );
+
+    await dataIndexService.fetchInstancesByDefinitionId({
+      definitionId: 'wf1',
+      limit: 5,
+      offset: 0,
+      targetEntity: 'component:default/my-svc',
+    });
+
+    const [, variables] = mockClient.query.mock.calls[0];
+    expect(variables).toMatchObject({
+      definitionId: 'wf1',
+      targetEntity: 'component:default/my-svc',
+    });
+  });
+
+  it('throws when the client returns an error', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    const error = new Error('Query error');
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({} as any, error),
+    );
+
+    await expect(
+      dataIndexService.fetchInstancesByDefinitionId({
+        definitionId: 'wf1',
+        limit: 10,
+        offset: 0,
+      }),
+    ).rejects.toThrow('Query error');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// fetchInstance
+// ---------------------------------------------------------------------------
+
+describe('fetchInstance', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest
+      .mocked(fromWorkflowSource)
+      .mockReturnValue({ id: 'wf1', description: 'Mocked description' } as any);
+  });
+
+  it('returns the process instance enriched with workflow description', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    const instance: ProcessInstance = {
+      id: 'inst1',
+      processId: 'wf1',
+      nodes: [createNodeObject('A')],
+      endpoint: '',
+    };
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ ProcessInstances: [instance] }),
+    );
+    jest
+      .spyOn(dataIndexService, 'fetchWorkflowInfo')
+      .mockResolvedValue({ id: 'wf1', source: 'id: wf1' });
+
+    const result = await dataIndexService.fetchInstance('inst1');
+
+    expect(result).toBeDefined();
+    expect(result!.id).toBe('inst1');
+    expect(result!.description).toBe('Mocked description');
+  });
+
+  it('returns undefined when no instance is found', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ ProcessInstances: [] }),
+    );
+
+    const result = await dataIndexService.fetchInstance('missing');
+
+    expect(result).toBeUndefined();
+  });
+
+  it('throws when the workflow source is missing', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    const instance: ProcessInstance = {
+      id: 'inst1',
+      processId: 'wf1',
+      nodes: [],
+      endpoint: '',
+    };
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({ ProcessInstances: [instance] }),
+    );
+    jest
+      .spyOn(dataIndexService, 'fetchWorkflowInfo')
+      .mockResolvedValue(undefined);
+
+    await expect(dataIndexService.fetchInstance('inst1')).rejects.toThrow(
+      'Workflow definition is required to fetch instance inst1',
+    );
+  });
+
+  it('throws when the client returns an error', async () => {
+    const { mockClient, dataIndexService } = createMockSetup();
+    const error = new Error('Client error');
+    mockClient.query.mockResolvedValueOnce(
+      mockOperationResult({} as any, error),
+    );
+
+    await expect(dataIndexService.fetchInstance('inst1')).rejects.toThrow(
+      'Client error',
+    );
+  });
+});

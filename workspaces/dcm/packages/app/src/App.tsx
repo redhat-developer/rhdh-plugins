@@ -50,14 +50,21 @@ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
 import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
 import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
-import { DcmPage } from '@red-hat-developer-hub/backstage-plugin-dcm';
+import {
+  DcmPage,
+  dcmTranslations,
+} from '@red-hat-developer-hub/backstage-plugin-dcm';
 import { useRhdhTheme } from './hooks/useRhdhTheme';
-import { RbacPage } from '@backstage-community/plugin-rbac';
 import '@patternfly/patternfly/patternfly.css';
 import '@patternfly/patternfly/patternfly-charts.css';
 
 const options: Parameters<typeof createApp>[0] = {
   apis,
+  __experimentalTranslations: {
+    defaultLanguage: 'en',
+    availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja'],
+    resources: [dcmTranslations],
+  },
   bindRoutes({ bind }) {
     bind(catalogPlugin.externalRoutes, {
       createComponent: scaffolderPlugin.routes.root,
@@ -122,8 +129,7 @@ const routes = (
     </Route>
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
-    <Route path="/dcm" element={<DcmPage />} />
-    <Route path="/rbac" element={<RbacPage />} />
+    <Route path="/dcm/*" element={<DcmPage />} />
   </FlatRoutes>
 );
 

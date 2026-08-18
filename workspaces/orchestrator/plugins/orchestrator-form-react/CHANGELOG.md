@@ -1,5 +1,189 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-react
 
+## 2.11.0
+
+### Minor Changes
+
+- a64f76d: Add field-level validation support via `ui:validateOn` and `ui:validateGroup` schema annotations. Fields can now trigger async validation on blur, change, or both without waiting for Next/Submit. Dependent fields sharing a `ui:validateGroup` are validated together once all group members have values.
+
+### Patch Changes
+
+- Updated dependencies [a64f76d]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.10.0
+
+## 2.10.1
+
+### Patch Changes
+
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+- Updated dependencies [f48dfb4]
+- Updated dependencies [c74276c]
+- Updated dependencies [e0d0986]
+- Updated dependencies [8966faf]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.9.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.9.1
+
+## 2.10.0
+
+### Minor Changes
+
+- 10f9b87: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- 5e0934d: Extract colocated helper modules for unit-test coverage of pure UI logic.
+- Updated dependencies [10f9b87]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.8.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.9.0
+
+## 2.9.3
+
+### Patch Changes
+
+- ea8563b: Enable backward navigation in multi-step workflow forms by clicking completed stepper steps, while keeping the current and future steps display-only.
+- Updated dependencies [eade824]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.3
+
+## 2.9.2
+
+### Patch Changes
+
+- 19f7643: Clear async validation errors when the user edits a workflow form field after clicking Next. Only the changed field's error is removed; other field errors remain until that field is edited or the step is validated again. Also handle empty or non-JSON validation responses without breaking the form.
+- Updated dependencies [b2307f3]
+- Updated dependencies [e1a86f0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.2
+
+## 2.9.1
+
+### Patch Changes
+
+- 7c2f5d2: Updated dependency `prettier` to `3.8.4`.
+- Updated dependencies [43e0722]
+- Updated dependencies [7c2f5d2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.1
+
+## 2.9.0
+
+### Minor Changes
+
+- bd80b86: Backstage version bump to v1.51.1
+
+### Patch Changes
+
+- 03ef10a: Hide wizard steps when conditional `ui:hidden` rules evaluate to true, and add `isNotEmptyList`/`notContains` operators for conditional hidden expressions.
+- a195695: Remove unnecessary gaps from conditionally hidden form fields.
+- 3f96765: Replace Material UI v4 imports with MUI v5 and scope JSS class names to prevent style collisions.
+- 611bd81: detect GitHub SAML SSO session expiry and prompt users to re-authorize
+- Updated dependencies [611bd81]
+- Updated dependencies [bbcdc56]
+- Updated dependencies [bd80b86]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.8.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.7.0
+
+## 2.8.5
+
+### Patch Changes
+
+- 06ac2d0: Hide wizard steps when conditional `ui:hidden` rules evaluate to true, and add `isNotEmptyList`/`notContains` operators for conditional hidden expressions.
+- 06ac2d0: Remove unnecessary gaps from conditionally hidden form fields.
+- 06ac2d0: detect GitHub SAML SSO session expiry and prompt users to re-authorize
+- Updated dependencies [06ac2d0]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.7.4
+
+## 2.8.4
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.4
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.7.3
+
+## 2.8.3
+
+### Patch Changes
+
+- Updated dependencies [dfd28b3]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.7.2
+
+## 2.8.2
+
+### Patch Changes
+
+- 652fac0: fix: avoid Review step crash when form data is empty (for example display-only `ActiveText` with no submitted values). `generateReviewTableData` returns `{}` instead of undefined, and `NestedReviewTable` handles missing data.
+- 4aec634: Fix multi-step workflow forms dropping or misplacing async validation errors and deep nested field paths.
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets: Fix safeSet deep paths and sequential async validation in getExtraErrors.
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react: Wrap extraErrors with the active step key so RJSF matches the root schema.
+
+- Updated dependencies [d85bf56]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.2
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.7.1
+
+## 2.8.1
+
+### Patch Changes
+
+- f96e4f2: fix: updating lodash for cve fixes
+
+## 2.8.0
+
+### Minor Changes
+
+- f45fe5a: Add custom review page API support
+
+  **Custom Review Page API:**
+  - Add `ReviewComponentProps` type to define props for custom review components
+  - Add optional `getReviewComponent()` method to `OrchestratorFormApi` interface
+  - Update `OrchestratorForm` to support custom review page components from plugins
+  - Add `CustomReviewPage` example component in orchestrator-form-widgets plugin (aligned with `ReviewStep`: `generateReviewTableData`, hidden-fields toggle, `NestedReviewTable`)
+  - Export `generateReviewTableData`, `schemaHasUiHiddenFields`, and `NestedReviewTable` from orchestrator-form-react for custom review implementations
+  - Falls back to default review page when `getReviewComponent()` returns `undefined`
+
+  **Documentation:**
+  - Update `extensibleForm.md` with custom review page implementation guide
+  - Add example showing how to implement and use custom review components
+
+### Patch Changes
+
+- 16d41c2: Add Run as Event when `orchestrator.kafka` is configured: send `isEvent` with execute input, redirect to workflow runs with a notice when the response id is `kafkaEvent`.
+- Updated dependencies [f45fe5a]
+- Updated dependencies [16d41c2]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.7.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.1
+
+## 2.7.0
+
+### Minor Changes
+
+- 2212e8d: Backstage version bump to v1.49.3
+
+### Patch Changes
+
+- Updated dependencies [665a75c]
+- Updated dependencies [2212e8d]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.6.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.6.0
+
+## 2.6.3
+
+### Patch Changes
+
+- 3d6415d: Avoid layout gaps for `ui:hidden` custom widgets by skipping grid items while
+  keeping hidden widgets mounted.
+- 64fd859: Include JSON Schema `default` values when computing initial form data so
+  template expressions can resolve defaults before widgets render.
+- 60aa6a6: Scope async validate:url calls to the active step in multi-step forms.
+- ac2cbf8: Fix `extractUiSchema` so `ui:*` directives on object schemas that define `properties` (for example `ui:hidden` on a `workflowParams` object) are copied into the generated UI schema.
+- Updated dependencies [5a9d9d8]
+- Updated dependencies [315239c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.5.3
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.5.3
+
 ## 2.6.2
 
 ### Patch Changes

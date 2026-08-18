@@ -1,5 +1,62 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog
 
+## 1.0.1
+
+### Patch Changes
+
+- f7984e7: add remaining unit tests needed for feature readiness
+
+## 1.0.0
+
+### Major Changes
+
+- 8bf7bc3: Add AiModelServerAPI kind (`spec.type: ai-model-server`) in a dedicated
+  catalog-model package with types, JSON schema, KindValidator, type guard,
+  and CatalogModelLayer registration. Uses a dedicated kind to avoid
+  colliding with the upstream API kind; the schema mirrors
+  backstage/backstage#34476 exactly. The backend module registers the
+  AiModelServerAPI kind with the catalog via `catalogModelExtensionPoint`.
+
+  The model catalog entity provider now emits a single AiModelServerAPI
+  entity per model server instead of separate Component, Resource, and API
+  entities. Model names are collected into `spec.models.available`.
+
+### Patch Changes
+
+- Updated dependencies [8bf7bc3]
+  - @red-hat-developer-hub/backstage-plugin-catalog-model-ai-model-server@0.2.0
+
+## 0.11.0
+
+### Minor Changes
+
+- 6c752b6: K8s credentials (url, serviceAccountToken, skipTLSVerify, caData) are now configurable via app-config.yaml, either directly or via kubernetesPluginRef. The `baseUrl` config field has been removed from model-catalog; the connector base URL is now resolved via Backstage's DiscoveryService.
+
+## 0.10.0
+
+### Minor Changes
+
+- 56c40be: Integrate Backstage discovery and auth services for connector communication.
+
+  The model-catalog entity provider now resolves the connector base URL via the
+  discovery service and authenticates with backend-to-backend service tokens
+  instead of unauthenticated direct HTTP calls. The `fromConfig` factory method
+  accepts `discovery` and `auth` as additional required dependencies.
+
+  The techdoc URL reader adds bearer-token authentication when fetching model
+  cards and replaces hostname-based bridge URL matching with path-based matching
+  that uses the connector plugin ID.
+
+### Patch Changes
+
+- c2e3749: bump workspace to 1.52.0
+
+## 0.9.1
+
+### Patch Changes
+
+- 4418084: Upgrade workspace to Backstage 1.49.4
+
 ## 0.9.0
 
 ### Minor Changes

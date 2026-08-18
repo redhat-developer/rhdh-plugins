@@ -1,59 +1,47 @@
-# example-backend
+# x2a backend
 
-This package is an EXAMPLE of a Backstage backend.
+Backstage backend for local development of the **x2a** workspace.
 
-The main purpose of this package is to provide a test bed for Backstage plugins
-that have a backend part. Feel free to experiment locally or within your fork by
-adding dependencies and routes to this backend, to try things out.
+This package wires together the x2a plugins and the standard Backstage
+infrastructure so you can run a fully functional backend on your machine.
 
-Our goal is to eventually amend the create-app flow of the CLI, such that a
-production ready version of a backend skeleton is made alongside the frontend
-app. Until then, feel free to experiment here!
+## x2a service factories
+
+The x2a plugins share service refs defined in
+`@red-hat-developer-hub/backstage-plugin-x2a-node` (the `x2a-node`
+node-library). Those refs carry **no `defaultFactory`**.
+
+The `x2a-backend` default export is a `createBackendFeatureLoader` that yields
+both the plugin and the matching service factories (`x2aDatabaseServiceFactory`,
+`kubeServiceFactory`). This means a single `backend.add(...)` call registers
+everything:
+
+```ts
+backend.add(import('@red-hat-developer-hub/backstage-plugin-x2a-backend'));
+```
+
+This design works in both local development and in RHDH dynamic plugin mode,
+because RHDH's dynamic plugin loader only reads the default export of each
+plugin package.
 
 ## Development
 
-To run the example backend, first go to the project root and run
+From the workspace root:
 
 ```bash
 yarn install
-```
-
-You should only need to do this once.
-
-After that, go to the `packages/backend` directory and run
-
-```bash
 yarn start
 ```
 
-If you want to override any configuration locally, for example adding any secrets,
-you can do so in `app-config.local.yaml`.
+Override secrets or local configuration in `app-config.local.yaml`.
+The backend starts on port **7007** by default.
 
-The backend starts up on port 7007 per default.
+## Populating the catalog
 
-## Populating The Catalog
-
-If you want to use the catalog functionality, you need to add so called
-locations to the backend. These are places where the backend can find some
-entity descriptor data to consume and serve. For more information, see
-[Software Catalog Overview - Adding Components to the Catalog](https://backstage.io/docs/features/software-catalog/#adding-components-to-the-catalog).
-
-To get started quickly, this template already includes some statically configured example locations
-in `app-config.yaml` under `catalog.locations`. You can remove and replace these locations as you
-like, and also override them for local development in `app-config.local.yaml`.
-
-## Authentication
-
-We chose [Passport](http://www.passportjs.org/) as authentication platform due
-to its comprehensive set of supported authentication
-[strategies](http://www.passportjs.org/packages/).
-
-Read more about the
-[auth-backend](https://github.com/backstage/backstage/blob/master/plugins/auth-backend/README.md)
-and
-[how to add a new provider](https://github.com/backstage/backstage/blob/master/docs/auth/add-auth-provider.md)
+Add location entries under `catalog.locations` in `app-config.yaml`.
+See [Adding Components to the Catalog](https://backstage.io/docs/features/software-catalog/#adding-components-to-the-catalog)
+for details.
 
 ## Documentation
 
-- [Backstage Readme](https://github.com/backstage/backstage/blob/master/README.md)
 - [Backstage Documentation](https://backstage.io/docs)

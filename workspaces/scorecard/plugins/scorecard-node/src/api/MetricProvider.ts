@@ -19,7 +19,6 @@ import {
   Metric,
   MetricType,
   MetricValue,
-  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 /**
@@ -38,25 +37,17 @@ export interface MetricProvider<T extends MetricType = MetricType> {
    */
   getProviderId(): string;
   /**
-   * Get the metric type for the metric provider
+   * Get all metrics this provider exposes.
+   * Each metric includes its own type and threshold configuration.
    * @public
    */
-  getMetricType(): T;
+  getMetrics(): Metric<T>[];
   /**
-   * Get the metric for the metric provider
+   * Calculate multiple metrics in a single call.
+   * Returns a map of metric ID to metric value.
    * @public
    */
-  getMetric(): Metric<T>;
-  /**
-   * Get the metric thresholds for the metric provider
-   * @public
-   */
-  getMetricThresholds(): ThresholdConfig;
-  /**
-   * Calculate the metric for the metric provider
-   * @public
-   */
-  calculateMetric(entity: Entity): Promise<MetricValue<T>>;
+  calculateMetrics(entity: Entity): Promise<Map<string, MetricValue<T>>>;
   /**
    * Get the catalog filter for the metric provider
    * @public

@@ -15,22 +15,14 @@
  */
 
 /**
- * Augment Theme System
+ * Augment Theme System — single import barrel.
  *
- * Exports:
- * - tokens: Design tokens (spacing, colors, typography)
- * - styles: Style utility functions (scrollbars, message bubbles, etc.)
- * - components: Component-specific style factories
- * - branding: Branding utilities and default config
+ * Components should import from this barrel:
+ *   import { typeScale, spacing, subtleBorder, ... } from '../../theme';
  */
 
 export * from './tokens';
 export * from './styles';
 export * from './components';
 export * from './branding';
-export {
-  getSharedMarkdownSx,
-  surfaceOverlay,
-  subtleBorder,
-  codeBlockBackground,
-} from './markdown';
+export { getSharedMarkdownSx, codeBlockBackground } from './markdown';

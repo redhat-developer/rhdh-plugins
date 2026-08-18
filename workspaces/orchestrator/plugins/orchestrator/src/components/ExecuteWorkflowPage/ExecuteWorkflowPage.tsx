@@ -45,15 +45,24 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-react';
 
 import { orchestratorApiRef } from '../../api';
+import { useKafkaEnabled } from '../../hooks/useKafkaEnabled';
 import { useOrchestratorAuth } from '../../hooks/useOrchestratorAuth';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   entityInstanceRouteRef,
+  entityWorkflowRouteRef,
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,
+  workflowRunsRouteRef,
 } from '../../routes';
-import { getErrorObject } from '../../utils/ErrorUtils';
+import {
+  extractSsoReauthorizeUrl,
+  getErrorObject,
+  isSamlSsoError,
+} from '../../utils/ErrorUtils';
+import { buildUrl } from '../../utils/UrlUtils';
 import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
+import { SamlSsoExpiredDialog } from '../ui/SamlSsoExpiredDialog';
 import MissingSchemaNotice from './MissingSchemaNotice';
 import { mergeQueryParamsIntoFormData } from './queryParamsToFormData';
 import { getSchemaUpdater } from './schemaUpdater';
@@ -68,10 +77,13 @@ export const ExecuteWorkflowPage = () => {
   const [isExecuting, setIsExecuting] = useState(false);
   const [updateError, setUpdateError] = useState<Error>();
   const [instanceId] = useQueryParamState<string>(QUERY_PARAM_INSTANCE_ID);
+  const kafkaEnabled = useKafkaEnabled();
 
   const navigate = useNavigate();
   const instanceLink = useRouteRef(workflowInstanceRouteRef);
   const entityInstanceLink = useRouteRef(entityInstanceRouteRef);
+  const entityWorkflowLink = useRouteRef(entityWorkflowRouteRef);
+  const workflowRunsLink = useRouteRef(workflowRunsRouteRef);
   const {
     value,
     loading,
@@ -116,18 +128,28 @@ export const ExecuteWorkflowPage = () => {
 
   const [kind, namespace, name] = targetEntity?.split(/[:\/]/) || [];
 
-  const handleExecute = useCallback(
-    async (parameters: JsonObject) => {
+  const executeWorkflow = useCallback(
+    async (parameters: JsonObject, isEvent: boolean) => {
       setUpdateError(undefined);
       try {
         setIsExecuting(true);
         const authTokens = await authenticate(authTokenDescriptors);
+        const executeParameters = isEvent
+          ? { ...parameters, isEvent: true }
+          : parameters;
         const response = await orchestratorApi.executeWorkflow({
           workflowId,
-          parameters,
+          parameters: executeParameters,
           authTokens,
           targetEntity: targetEntity ?? undefined,
         });
+        if (response.data.id === 'kafkaEvent') {
+          const redirectUrl = targetEntity
+            ? entityWorkflowLink({ namespace, kind, name, workflowId })
+            : workflowRunsLink({ workflowId });
+          navigate(buildUrl(redirectUrl, { eventTriggered: 'true' }));
+          return;
+        }
         const url = targetEntity
           ? entityInstanceLink({
               namespace,
@@ -153,10 +175,24 @@ export const ExecuteWorkflowPage = () => {
       authenticate,
       targetEntity,
       entityInstanceLink,
+      entityWorkflowLink,
+      workflowRunsLink,
       kind,
       namespace,
       name,
     ],
+  );
+  const handleExecute = useCallback(
+    async (parameters: JsonObject) => {
+      await executeWorkflow(parameters, false);
+    },
+    [executeWorkflow],
+  );
+  const handleExecuteAsEvent = useCallback(
+    async (parameters: JsonObject) => {
+      await executeWorkflow(parameters, true);
+    },
+    [executeWorkflow],
   );
 
   const error = responseError || workflowNameError;
@@ -173,11 +209,16 @@ export const ExecuteWorkflowPage = () => {
   } else {
     pageContent = (
       <Grid container spacing={2} direction="column" wrap="nowrap">
-        {updateError && (
+        {updateError && !isSamlSsoError(updateError) && (
           <Grid item>
             <ResponseErrorPanel error={updateError} />
           </Grid>
         )}
+        <SamlSsoExpiredDialog
+          open={!!updateError && isSamlSsoError(updateError)}
+          reauthorizeUrl={extractSsoReauthorizeUrl(updateError)}
+          onClose={() => setUpdateError(undefined)}
+        />
         <Grid item>
           <InfoCard title={t('run.title')}>
             {!!schema ? (
@@ -185,14 +226,28 @@ export const ExecuteWorkflowPage = () => {
                 schema={schema}
                 updateSchema={updateSchema}
                 handleExecute={handleExecute}
+                handleExecuteAsEvent={
+                  kafkaEnabled ? handleExecuteAsEvent : undefined
+                }
                 isExecuting={isExecuting}
                 initialFormData={initialFormData}
                 setAuthTokenDescriptors={setAuthTokenDescriptors}
+                onSamlSsoError={err => setUpdateError(err)}
                 t={t as unknown as TranslationFunction}
+                executeLabel={t('common.run')}
+                executeAsEventLabel={
+                  kafkaEnabled ? t('workflow.buttons.runAsEvent') : undefined
+                }
               />
             ) : (
               <MissingSchemaNotice
                 handleExecute={handleExecute}
+                handleExecuteAsEvent={
+                  kafkaEnabled ? handleExecuteAsEvent : undefined
+                }
+                executeAsEventLabel={
+                  kafkaEnabled ? t('workflow.buttons.runAsEvent') : undefined
+                }
                 isExecuting={isExecuting}
               />
             )}

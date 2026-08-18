@@ -1,0 +1,14 @@
+# @red-hat-developer-hub/backstage-plugin-app-auth
+
+RHDH sign-in page (multi-provider) and OIDC / Keycloak / PingFederate / Auth0 / SAML frontend OAuth2 APIs for the **new frontend system**, registered against `pluginId: 'app'`.
+
+## Usage
+
+- **Dynamic loading**: default export is a `FrontendModule` suitable for `@backstage/frontend-dynamic-feature-loader`.
+- **Static / alpha**: import from `@red-hat-developer-hub/backstage-plugin-app-auth/alpha` for `appAuthModule`, `signInTranslationRef`, and auth API refs. The sign-in page UI is registered by the module via `SignInPageBlueprint` and lazy-loaded — it is not a public alpha export.
+
+## Config
+
+Root `signInPage` (string or string[]) selects which providers appear; see `config.d.ts`. Provider ids include `oidc`, `keycloak`, and `pingfederate` (OIDC-backed; backend `auth.providers` keys must match).
+
+By default, sign-in page follows the top-level keys under `auth.providers`. Set root `signInPage` (string or string[]) to override the list or order; see `config.d.ts`.

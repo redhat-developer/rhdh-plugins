@@ -24,7 +24,7 @@ jest.mock('../kube-client');
 
 describe('client-factory', () => {
   let mockLogger: KonfluxLogger;
-  let mockError: jest.SpyInstance;
+  let mockError: jest.Spied<typeof mockLogger.error>;
   let mockKubeConfigClass: jest.MockedClass<typeof KubeConfig>;
 
   beforeEach(() => {

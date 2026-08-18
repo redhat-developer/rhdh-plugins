@@ -949,7 +949,9 @@ describe('KonfluxService', () => {
       mockDetermineClusterNamespaceCombinations.mockResolvedValue([
         combination,
       ]);
-      mockBuildLabelSelector.mockReturnValue('app=app1'); // label selector available
+      mockBuildLabelSelector.mockReturnValue(
+        'appstudio.openshift.io/application=app1',
+      ); // label selector includes application filter
       mockResourceFetcher.fetchFromSource.mockResolvedValue({
         items: [resource1],
         newPaginationState: {},

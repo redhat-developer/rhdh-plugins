@@ -18,12 +18,11 @@ import { Knex } from 'knex';
 import {
   coreServices,
   createServiceFactory,
-  createServiceRef,
   LoggerService,
   BackstageCredentials,
   BackstageUserPrincipal,
 } from '@backstage/backend-plugin-api';
-import { Expand } from '@backstage/types';
+import { DatabaseManager } from '@backstage/backend-defaults/database';
 import {
   Project,
   Module,
@@ -31,29 +30,57 @@ import {
   JobStatusEnum,
   MigrationPhase,
   Artifact,
+  ArtifactKind,
   Telemetry,
-  ProjectStatusState,
+  ProjectState,
   DEFAULT_PAGE_ORDER,
   DEFAULT_PAGE_SIZE,
   IN_MEMORY_SORT_WARN_THRESHOLD,
+  ProjectsGet,
+  RuleEntity,
+  type RuleSnapshot,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  x2aDatabaseServiceRef,
+  removeSensitiveFromJob,
+  calculateModuleStatus,
+  type X2ADatabaseServiceApi,
+  type CreateJobInput,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
-import { ProjectsGet } from '../../schema/openapi';
-
-import { JobOperations, CreateJobInput } from './jobOperations';
+import { JobOperations } from './jobOperations';
 import { ModuleOperations } from './moduleOperations';
 import { ProjectOperations } from './projectOperations';
+import { RuleOperations } from './ruleOperations';
 import { isNonDbSortField } from './queryHelpers';
-import { removeSensitiveFromJob } from '../../router/common';
 import { MAX_CONCURRENT_ENRICHMENT_JOBS } from '../constants';
+import { migrate } from '../dbMigrate';
 import { maxConcurrency } from '../../utils';
-import { calculateModuleStatus, calculateProjectStatus } from './status';
+import { calculateProjectStatus } from './projectStatus';
 
-export class X2ADatabaseService {
+function enrichModuleWithJobStatus(
+  module: Module,
+  lastJobs: {
+    analyze?: Job;
+    migrate?: Job;
+    publish?: Job;
+  },
+): Module {
+  const { status, errorDetails } = calculateModuleStatus(lastJobs);
+  return {
+    ...module,
+    ...lastJobs,
+    status: module.removedAt ? 'removed' : status,
+    errorDetails: module.removedAt ? undefined : errorDetails,
+  };
+}
+
+export class X2ADatabaseService implements X2ADatabaseServiceApi {
   readonly #logger: LoggerService;
   readonly #projectOps: ProjectOperations;
   readonly #moduleOps: ModuleOperations;
   readonly #jobOps: JobOperations;
+  readonly #ruleOps: RuleOperations;
 
   static create(options: { logger: LoggerService; dbClient: Knex }) {
     return new X2ADatabaseService(options.logger, options.dbClient);
@@ -64,6 +91,19 @@ export class X2ADatabaseService {
     this.#projectOps = new ProjectOperations(logger, dbClient);
     this.#moduleOps = new ModuleOperations(logger, dbClient);
     this.#jobOps = new JobOperations(logger, dbClient);
+    this.#ruleOps = new RuleOperations(logger, dbClient);
+  }
+
+  /**
+   * Attaches attemptCount and firstAttemptAt to a Job object (mutates in place).
+   */
+  private attachAttemptStats(
+    job: Job | undefined,
+    stats: { count: number; firstStartedAt: Date | undefined } | undefined,
+  ): void {
+    if (!job || !stats) return;
+    job.attemptCount = stats.count;
+    job.firstAttemptAt = stats.firstStartedAt;
   }
 
   /**
@@ -80,15 +120,23 @@ export class X2ADatabaseService {
     const lastInitJob = initJob[0];
 
     project.status = calculateProjectStatus(
-      await this.listModules({ projectId }),
+      await this.listModules({ projectId, includeRemoved: true }),
       lastInitJob,
     );
 
-    project.migrationPlan = lastInitJob?.artifacts?.find(
-      artifact => artifact.type === 'migration_plan',
+    project.migrationPlan = lastInitJob?.artifacts?.find(artifact =>
+      ArtifactKind.from(artifact.type).isMigrationPlan(),
     );
 
     project.initJob = removeSensitiveFromJob(lastInitJob);
+
+    if (project.initJob) {
+      const stats = await this.#jobOps.getPhaseAttemptStats({
+        projectId,
+        phase: 'init',
+      });
+      this.attachAttemptStats(project.initJob, stats);
+    }
   }
 
   // Projects (facade enriches basic objects when needed)
@@ -97,7 +145,6 @@ export class X2ADatabaseService {
     input: {
       name: string;
       ownedByGroup?: string;
-      abbreviation: string;
       description: string;
       sourceRepoUrl: string;
       targetRepoUrl: string;
@@ -110,19 +157,6 @@ export class X2ADatabaseService {
   ): Promise<Project> {
     return this.#projectOps.createProject(input, options);
   }
-
-  /**
-   * Semantic ordering for ProjectStatusState.
-   * Lower values appear first in ascending sort.
-   */
-  static readonly STATE_ORDER: Record<ProjectStatusState, number> = {
-    created: 0,
-    initializing: 1,
-    initialized: 2,
-    inProgress: 3,
-    failed: 4,
-    completed: 5,
-  };
 
   async listProjects(
     query: ProjectsGet['query'],
@@ -190,8 +224,7 @@ export class X2ADatabaseService {
       const sign = order === 'asc' ? 1 : -1;
 
       const stateRank = (p: Project): number =>
-        X2ADatabaseService.STATE_ORDER[p.status?.state as ProjectStatusState] ??
-        99;
+        p.status?.state ? ProjectState.from(p.status.state).ordinal : 99;
 
       result.projects.sort((a, b) => {
         // Primary: project-level state (created to completed).
@@ -253,6 +286,30 @@ export class X2ADatabaseService {
     return project;
   }
 
+  async updateProject(
+    { projectId }: { projectId: string },
+    input: {
+      name?: string;
+      ownedBy?: string;
+      description?: string;
+    },
+    options: {
+      credentials: BackstageCredentials<BackstageUserPrincipal>;
+      canWriteAll?: boolean;
+      groupsOfUser: string[];
+    },
+  ): Promise<Project | undefined> {
+    const project = await this.#projectOps.updateProject(
+      { projectId },
+      input,
+      options,
+    );
+    if (project) {
+      await this.enrichProject(project);
+    }
+    return project;
+  }
+
   async deleteProject(
     { projectId }: { projectId: string },
     options: {
@@ -270,6 +327,7 @@ export class X2ADatabaseService {
     name: string;
     sourcePath: string;
     projectId: string;
+    technology?: Module['technology'];
   }): Promise<Module> {
     return this.#moduleOps.createModule(module);
   }
@@ -310,20 +368,43 @@ export class X2ADatabaseService {
       module.migrate = removeSensitiveFromJob(lastMigrateJobsOfModule[0]);
       module.publish = removeSensitiveFromJob(lastPublishJobsOfModule[0]);
 
-      const { status, errorDetails } = calculateModuleStatus({
+      // Attach attempt stats per phase
+      const phases = ['analyze', 'migrate', 'publish'] as const;
+      await Promise.all(
+        phases.map(async phase => {
+          const job = module[phase];
+          if (job) {
+            const stats = await this.#jobOps.getPhaseAttemptStats({
+              projectId: module.projectId,
+              moduleId: id,
+              phase,
+            });
+            this.attachAttemptStats(job, stats);
+          }
+        }),
+      );
+
+      return enrichModuleWithJobStatus(module, {
         analyze: module.analyze,
         migrate: module.migrate,
         publish: module.publish,
       });
-      module.status = status;
-      module.errorDetails = errorDetails;
     }
 
     return module;
   }
 
-  async listModules({ projectId }: { projectId: string }): Promise<Module[]> {
-    const modules = await this.#moduleOps.listModules({ projectId });
+  async listModules({
+    projectId,
+    includeRemoved,
+  }: {
+    projectId: string;
+    includeRemoved?: boolean;
+  }): Promise<Module[]> {
+    const modules = await this.#moduleOps.listModules({
+      projectId,
+      includeRemoved,
+    });
     // TODO: This can be optimized by using a single query to list all jobs for all modules.
     const lastAnalyzeJobsOfModules = await Promise.all(
       modules.map(module =>
@@ -356,29 +437,55 @@ export class X2ADatabaseService {
       ),
     );
 
+    const attemptStatsMap = await this.#jobOps.batchPhaseAttemptStats({
+      projectId,
+    });
+
     const response: Array<Module> = modules.map((module, idxModule) => {
       const analyze = removeSensitiveFromJob(
         lastAnalyzeJobsOfModules[idxModule][0],
       );
-      const migrate = removeSensitiveFromJob(
+      const migrateJob = removeSensitiveFromJob(
         lastMigrateJobsOfModules[idxModule][0],
       );
       const publish = removeSensitiveFromJob(
         lastPublishJobsOfModules[idxModule][0],
       );
-      const lastJobs = { analyze, migrate, publish };
-      return {
-        ...module,
-        ...lastJobs,
-        ...calculateModuleStatus(lastJobs),
-      };
+
+      const moduleStats = attemptStatsMap.get(module.id);
+      this.attachAttemptStats(analyze, moduleStats?.get('analyze'));
+      this.attachAttemptStats(migrateJob, moduleStats?.get('migrate'));
+      this.attachAttemptStats(publish, moduleStats?.get('publish'));
+
+      const lastJobs = { analyze, migrate: migrateJob, publish };
+      return enrichModuleWithJobStatus(module, lastJobs);
     });
 
     return response;
   }
 
+  async updateModule({
+    id,
+    sourcePath,
+    technology,
+  }: {
+    id: string;
+    sourcePath?: string;
+    technology?: Module['technology'];
+  }): Promise<number> {
+    return this.#moduleOps.updateModule({ id, sourcePath, technology });
+  }
+
   async deleteModule({ id }: { id: string }): Promise<number> {
     return this.#moduleOps.deleteModule({ id });
+  }
+
+  async softDeleteModule({ id }: { id: string }): Promise<number> {
+    return this.#moduleOps.softDeleteModule({ id });
+  }
+
+  async restoreModule({ id }: { id: string }): Promise<number> {
+    return this.#moduleOps.restoreModule({ id });
   }
 
   // Jobs
@@ -457,24 +564,86 @@ export class X2ADatabaseService {
   async deleteJob({ id }: { id: string }): Promise<number> {
     return this.#jobOps.deleteJob({ id });
   }
+
+  // Rules
+
+  async createRule(input: {
+    title: string;
+    description: string;
+    required?: boolean;
+  }): Promise<RuleEntity> {
+    return this.#ruleOps.createRule(input);
+  }
+
+  async updateRule(args: {
+    id: string;
+    title: string;
+    description: string;
+    required: boolean;
+  }): Promise<RuleEntity | undefined> {
+    return this.#ruleOps.updateRule(args);
+  }
+
+  async getRule({ id }: { id: string }): Promise<RuleEntity | undefined> {
+    return this.#ruleOps.getRule({ id });
+  }
+
+  async listRules(): Promise<RuleEntity[]> {
+    return this.#ruleOps.listRules();
+  }
+
+  async deleteRule({ id }: { id: string }): Promise<number> {
+    return this.#ruleOps.deleteRule({ id });
+  }
+
+  async attachRulesToProject(args: {
+    projectId: string;
+    ruleIds: string[];
+  }): Promise<void> {
+    return this.#ruleOps.attachRulesToProject(args);
+  }
+
+  async getAcceptedRulesForProject(args: {
+    projectId: string;
+  }): Promise<RuleSnapshot[]> {
+    return this.#ruleOps.getAcceptedRulesForProject(args);
+  }
 }
 
-export const x2aDatabaseServiceRef = createServiceRef<
-  Expand<X2ADatabaseService>
->({
-  id: 'x2a-database',
-  defaultFactory: async service =>
-    createServiceFactory({
-      service,
-      deps: {
-        logger: coreServices.logger,
-        database: coreServices.database,
-      },
-      async factory(deps) {
-        return X2ADatabaseService.create({
-          ...deps,
-          dbClient: await deps.database.getClient(),
-        });
-      },
-    }),
+// Re-export the canonical service ref from x2a-node.
+// All plugins MUST use the same ref object so Backstage can wire deps.
+export { x2aDatabaseServiceRef } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
+
+/**
+ * Service factory for the X2A database service.
+ *
+ * Must be registered explicitly in the backend app via `backend.add(...)`.
+ * @public
+ */
+export const x2aDatabaseServiceFactory = createServiceFactory({
+  service: x2aDatabaseServiceRef,
+  deps: {
+    logger: coreServices.rootLogger,
+    config: coreServices.rootConfig,
+    lifecycle: coreServices.rootLifecycle,
+  },
+  async factory(deps) {
+    // coreServices.database is plugin-scoped, but this ref is root-scoped
+    // (shared across plugins). We construct DatabaseManager directly so the
+    // factory can be registered at root scope while still targeting the 'x2a'
+    // plugin database.
+    const dbManager = DatabaseManager.fromConfig(deps.config, {
+      rootLogger: deps.logger,
+      rootLifecycle: deps.lifecycle,
+    });
+    const database = dbManager.forPlugin('x2a', {
+      logger: deps.logger,
+      lifecycle: deps.lifecycle,
+    });
+    await migrate(database);
+    return X2ADatabaseService.create({
+      logger: deps.logger,
+      dbClient: await database.getClient(),
+    });
+  },
 });

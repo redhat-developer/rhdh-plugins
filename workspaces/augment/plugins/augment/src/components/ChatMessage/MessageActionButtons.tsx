@@ -22,24 +22,29 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import CheckIcon from '@mui/icons-material/Check';
 import type { Theme } from '@mui/material/styles';
 import { getActionButtonSx, getActionButtonsContainerSx } from './styles';
+import { MessageFeedback, type MessageFeedbackData } from './MessageFeedback';
 
 export interface MessageActionButtonsProps {
+  messageId: string;
   isHovered: boolean;
   copied: boolean;
   onCopy: () => void;
   onRegenerate?: () => void;
+  onFeedback?: (data: MessageFeedbackData) => void;
   isLastAssistantMessage?: boolean;
   theme: Theme;
 }
 
 /**
- * Copy, regenerate, and edit action buttons for AI messages
+ * Copy, regenerate, feedback, and edit action buttons for AI messages
  */
 export function MessageActionButtons({
+  messageId,
   isHovered,
   copied,
   onCopy,
   onRegenerate,
+  onFeedback,
   isLastAssistantMessage,
   theme,
 }: MessageActionButtonsProps) {
@@ -76,6 +81,12 @@ export function MessageActionButtons({
           </IconButton>
         </Tooltip>
       )}
+
+      <MessageFeedback
+        messageId={messageId}
+        theme={theme}
+        onSubmitFeedback={onFeedback}
+      />
     </Box>
   );
 }

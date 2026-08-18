@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { retryAsyncFunction } from './Helper';
+
+import {
+  ProcessInstance,
+  ProcessInstanceState,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
+import { getWorkflowRunStats, retryAsyncFunction } from './Helper';
 
 describe('retryAsyncFunction', () => {
   const successfulResponse = 'Success';
@@ -60,5 +66,67 @@ describe('retryAsyncFunction', () => {
 
     expect(result).toBe(successfulResponse);
     expect(asyncFns).toHaveBeenCalledTimes(4);
+  });
+});
+
+describe('getWorkflowRunStats', () => {
+  const createProcessInstance = (
+    overrides: Partial<ProcessInstance> &
+      Pick<ProcessInstance, 'id' | 'processId'>,
+  ): ProcessInstance => ({
+    endpoint: 'http://example.com',
+    nodes: [],
+    version: '1.0',
+    state: ProcessInstanceState.Completed,
+    ...overrides,
+  });
+
+  it('calculates averageTimeToComplete from instance start and end times', () => {
+    const tenMinutesMs = 10 * 60 * 1000;
+    const twentyMinutesMs = 20 * 60 * 1000;
+
+    const result = getWorkflowRunStats({
+      'workflow-a-1.0': [
+        createProcessInstance({
+          id: 'instance-1',
+          processId: 'workflow-a',
+          start: '2024-01-01T00:00:00.000Z',
+          end: '2024-01-01T00:10:00.000Z',
+        }),
+        createProcessInstance({
+          id: 'instance-2',
+          processId: 'workflow-a',
+          start: '2024-01-01T00:00:00.000Z',
+          end: '2024-01-01T00:20:00.000Z',
+        }),
+      ],
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0].averageTimeToComplete).toBe(
+      (tenMinutesMs + twentyMinutesMs) / 2,
+    );
+  });
+
+  it('treats instances without start or end as zero duration when calculating averageTimeToComplete', () => {
+    const tenMinutesMs = 10 * 60 * 1000;
+
+    const result = getWorkflowRunStats({
+      'workflow-a-1.0': [
+        createProcessInstance({
+          id: 'instance-1',
+          processId: 'workflow-a',
+          start: '2024-01-01T00:00:00.000Z',
+          end: '2024-01-01T00:10:00.000Z',
+        }),
+        createProcessInstance({
+          id: 'instance-2',
+          processId: 'workflow-a',
+          start: '2024-01-01T00:00:00.000Z',
+        }),
+      ],
+    });
+
+    expect(result[0].averageTimeToComplete).toBe(tenMinutesMs / 2);
   });
 });

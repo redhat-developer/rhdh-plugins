@@ -85,3 +85,5 @@ export { PipelineRunLabel } from './pipeline-runs';
 export { getApplicationFromResource } from './resources';
 
 export { getSubcomponentsWithFallback, getSubcomponentNames } from './entities';
+
+export { globToRegex, matchesApplicationPattern } from './patterns';

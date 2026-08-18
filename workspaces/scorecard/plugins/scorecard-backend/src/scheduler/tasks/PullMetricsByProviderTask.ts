@@ -17,7 +17,6 @@
 import { DatabaseMetricValues } from '../../database/DatabaseMetricValues';
 import {
   AuthService,
-  readSchedulerServiceTaskScheduleDefinitionFromConfig,
   SchedulerService,
   SchedulerServiceTaskScheduleDefinition,
   LoggerService,
@@ -25,15 +24,19 @@ import {
 import type { Config } from '@backstage/config';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { mergeEntityAndProviderThresholds } from '../../utils/mergeEntityAndProviderThresholds';
 import { isMetricIdDisabled } from '../../utils/metricUtils';
+import { randomUUID } from 'node:crypto';
 import { normalizeOwnerRef } from '../../utils/normalizeOwnerRef';
-import { v4 as uuid } from 'uuid';
+import { resolveScheduleFromConfig } from '../../utils/metricProviderConfigKeys';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { DbMetricValueCreate } from '../../database/types';
 import { SchedulerOptions, SchedulerTask } from '../types';
 import { ThresholdEvaluator } from '../../threshold/ThresholdEvaluator';
-import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  Metric,
+  MetricValue,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { ThresholdResolver } from '../../threshold/ThresholdResolver';
 
 type Options = Pick<
   SchedulerOptions,
@@ -44,6 +47,7 @@ type Options = Pick<
   | 'catalog'
   | 'auth'
   | 'thresholdEvaluator'
+  | 'thresholdResolver'
 >;
 
 export class PullMetricsByProviderTask implements SchedulerTask {
@@ -56,6 +60,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
   private readonly scheduler: SchedulerService;
   private readonly database: DatabaseMetricValues;
   private readonly thresholdEvaluator: ThresholdEvaluator;
+  private readonly thresholdResolver: ThresholdResolver;
 
   private static readonly CATALOG_BATCH_SIZE = 50;
 
@@ -76,11 +81,16 @@ export class PullMetricsByProviderTask implements SchedulerTask {
     this.scheduler = options.scheduler;
     this.database = options.database;
     this.thresholdEvaluator = options.thresholdEvaluator;
+    this.thresholdResolver = options.thresholdResolver;
   }
 
   async start(): Promise<void> {
-    const scheduleConfigPath = `scorecard.plugins.${this.providerId}.schedule`;
-    const schedule = this.getScheduleFromConfig(scheduleConfigPath);
+    const schedule =
+      resolveScheduleFromConfig(
+        this.config,
+        this.provider.getProviderDatasourceId(),
+        this.providerId,
+      ) ?? PullMetricsByProviderTask.DEFAULT_SCHEDULE;
 
     const taskRunner = this.scheduler.createScheduledTaskRunner(schedule);
 
@@ -90,7 +100,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
         const logger = this.logger.child({
           class: this.constructor.name,
           taskId: this.providerId,
-          taskInstanceId: uuid(),
+          taskInstanceId: randomUUID(),
         });
 
         try {
@@ -105,16 +115,6 @@ export class PullMetricsByProviderTask implements SchedulerTask {
     });
   }
 
-  private getScheduleFromConfig(
-    schedulePath: string,
-  ): SchedulerServiceTaskScheduleDefinition {
-    return this.config.has(schedulePath)
-      ? readSchedulerServiceTaskScheduleDefinitionFromConfig(
-          this.config.getConfig(schedulePath),
-        )
-      : PullMetricsByProviderTask.DEFAULT_SCHEDULE;
-  }
-
   private async pullProviderMetrics(
     provider: MetricProvider,
     logger: LoggerService,
@@ -124,7 +124,9 @@ export class PullMetricsByProviderTask implements SchedulerTask {
     let totalProcessed = 0;
     let cursor: string | undefined = undefined;
 
-    const metricType = provider.getMetricType();
+    const metrics = provider.getMetrics();
+    const metricsById = new Map<string, Metric>(metrics.map(m => [m.id, m]));
+    const metricIds = metrics.map(m => m.id);
 
     try {
       do {
@@ -141,67 +143,110 @@ export class PullMetricsByProviderTask implements SchedulerTask {
 
         const batchResults = await Promise.allSettled(
           entitiesResponse.items.map(async entity => {
-            let value: MetricValue | undefined;
+            const entityRef = stringifyEntityRef(entity);
+            const entityKind = normalizeField(entity.kind);
+            const entityNamespace = normalizeField(entity.metadata.namespace);
+            const entityOwner = normalizeOwnerRef(entity?.spec?.owner);
+
+            const enabledMetricIds = metricIds.filter(
+              metricId =>
+                !isMetricIdDisabled(this.config, metricId, entity, logger),
+            );
+
+            if (enabledMetricIds.length === 0) {
+              return undefined;
+            }
 
             try {
-              if (
-                isMetricIdDisabled(
-                  this.config,
-                  provider.getProviderId(),
-                  entity,
-                  logger,
-                )
-              ) {
-                return undefined;
-              }
+              const resultsMap = await provider.calculateMetrics(entity);
 
-              value = await provider.calculateMetric(entity);
+              return enabledMetricIds.map(metricId => {
+                if (!resultsMap.has(metricId)) {
+                  return {
+                    catalogEntityRef: entityRef,
+                    metricId,
+                    value: undefined,
+                    timestamp: new Date(),
+                    errorMessage: `calculateMetrics() did not return an entry for metric '${metricId}'`,
+                    entityKind,
+                    entityNamespace,
+                    entityOwner,
+                  } as DbMetricValueCreate;
+                }
 
-              const thresholds = mergeEntityAndProviderThresholds(
-                entity,
-                provider,
-              );
+                const value = resultsMap.get(metricId) as MetricValue;
+                const metric = metricsById.get(metricId)!;
 
-              const status = this.thresholdEvaluator.getFirstMatchingThreshold(
-                value,
-                metricType,
-                thresholds,
-              );
+                try {
+                  const thresholds =
+                    this.thresholdResolver.resolveEntityThresholds(
+                      entity,
+                      metric,
+                    );
 
-              return {
-                catalog_entity_ref: stringifyEntityRef(entity),
-                metric_id: this.providerId,
-                value,
-                timestamp: new Date(),
-                status,
-                entity_kind: normalizeField(entity.kind),
-                entity_namespace: normalizeField(entity.metadata.namespace),
-                entity_owner: normalizeOwnerRef(entity?.spec?.owner),
-              } as DbMetricValueCreate;
+                  const status =
+                    this.thresholdEvaluator.getFirstMatchingThreshold(
+                      value,
+                      metric.type,
+                      thresholds,
+                    );
+
+                  return {
+                    catalogEntityRef: entityRef,
+                    metricId,
+                    value,
+                    timestamp: new Date(),
+                    status,
+                    entityKind,
+                    entityNamespace,
+                    entityOwner,
+                  } as DbMetricValueCreate;
+                } catch (error) {
+                  return {
+                    catalogEntityRef: entityRef,
+                    metricId,
+                    value,
+                    timestamp: new Date(),
+                    errorMessage:
+                      error instanceof Error ? error.message : String(error),
+                    entityKind,
+                    entityNamespace,
+                    entityOwner,
+                  } as DbMetricValueCreate;
+                }
+              });
             } catch (error) {
-              // status is intentionally omitted — a calculation failure produces a NULL status
-              // in the database, which sorts last when sortBy=status is used
-              return {
-                catalog_entity_ref: stringifyEntityRef(entity),
-                metric_id: this.providerId,
-                value,
-                timestamp: new Date(),
-                error_message:
-                  error instanceof Error ? error.message : String(error),
-                entity_kind: normalizeField(entity.kind),
-                entity_namespace: normalizeField(entity.metadata.namespace),
-                entity_owner: normalizeOwnerRef(entity?.spec?.owner),
-              } as DbMetricValueCreate;
+              return enabledMetricIds.map(
+                metricId =>
+                  ({
+                    catalogEntityRef: entityRef,
+                    metricId,
+                    value: undefined,
+                    timestamp: new Date(),
+                    errorMessage:
+                      error instanceof Error ? error.message : String(error),
+                    entityKind,
+                    entityNamespace,
+                    entityOwner,
+                  } as DbMetricValueCreate),
+              );
             }
           }),
         ).then(promises =>
           promises.reduce((acc, curr) => {
             if (curr.status === 'fulfilled' && curr.value !== undefined) {
-              return [...acc, curr.value];
+              return [...acc, ...curr.value];
             }
             return acc;
           }, [] as DbMetricValueCreate[]),
         );
+
+        if (batchResults.length > 0) {
+          const errorCount = batchResults.filter(r => r.errorMessage).length;
+          logger.debug(
+            `Storing ${batchResults.length} metric values (${errorCount} errors)`,
+          );
+        }
 
         await this.database.createMetricValues(batchResults);
         totalProcessed += entitiesResponse.items.length;

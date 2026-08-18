@@ -25,11 +25,10 @@ import type {
   HttpAuthService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
-import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
 import { InputError } from '@backstage/errors';
+import type { CatalogService } from '@backstage/plugin-catalog-node';
 import type { PermissionEvaluator } from '@backstage/plugin-permission-common';
-import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 
 import { fullFormats } from 'ajv-formats/dist/formats';
 import express, { Router, type Request, type Response } from 'express';
@@ -39,8 +38,6 @@ import {
   type Context,
   type Request as OpenAPIRequest,
 } from 'openapi-backend';
-
-import { bulkImportPermission } from '@red-hat-developer-hub/backstage-plugin-bulk-import-common';
 
 import { CatalogHttpClient } from '../catalog/catalogHttpClient';
 import { CatalogInfoGenerator } from '../catalog/catalogInfoGenerator';
@@ -79,6 +76,7 @@ import {
   findAllRepositories,
   findRepositoriesByOrganization,
 } from './handlers/repository';
+import { findAllSCMHosts } from './handlers/scm/scm';
 
 /**
  * Router Options
@@ -92,13 +90,14 @@ export interface RouterOptions {
   discovery: DiscoveryService;
   httpAuth: HttpAuthService;
   auth: AuthService;
-  catalogApi: CatalogApi;
+  catalog: CatalogService;
   auditor: AuditorService;
   database: DatabaseService;
 }
 
 namespace Operations {
   export const PING = 'ping';
+  export const FIND_ALL_SCM_HOSTS = 'findAllSCMHosts';
   export const FIND_ALL_ORGANIZATIONS = 'findAllOrganizations';
   export const FIND_ALL_REPOSITORIES = 'findAllRepositories';
 
@@ -126,6 +125,42 @@ namespace Operations {
     'deleteOrchestratorImportByRepo';
 }
 
+const SCM_TOKENS_MAX_BYTES = 4096;
+
+const isValidTokenMap = (v: unknown): v is Record<string, string> =>
+  typeof v === 'object' &&
+  v !== null &&
+  Object.values(v).every(val => typeof val === 'string' && val.length > 0);
+
+function parseScmTokensHeader(
+  rawTokenHeader: string | undefined,
+  logger: LoggerService,
+): Record<string, string> | undefined {
+  let token: Record<string, string> | undefined;
+  if (!rawTokenHeader) return undefined;
+  if (rawTokenHeader.length > SCM_TOKENS_MAX_BYTES) {
+    logger.warn('x-scm-tokens header exceeds maximum allowed size; ignoring');
+    return undefined;
+  }
+  try {
+    token = JSON.parse(rawTokenHeader) as Record<string, string>;
+    if (typeof token !== 'object' || token === null || Array.isArray(token)) {
+      throw new Error('x-scm-tokens must be a JSON object');
+    }
+  } catch (e) {
+    throw new InputError(
+      `Invalid x-scm-tokens header: ${(e as Error).message}`,
+    );
+  }
+
+  if (!isValidTokenMap(token)) {
+    throw new InputError(
+      'Invalid x-scm-tokens header: all values must be non-empty strings',
+    );
+  }
+  return token;
+}
+
 /**
  * Router
  * @public
@@ -141,8 +176,8 @@ export async function createRouter(
     config,
     cache,
     discovery,
-    catalogApi,
-    auditor: auditor,
+    catalog,
+    auditor,
     database,
   } = options;
 
@@ -156,15 +191,15 @@ export async function createRouter(
     'orchestrator_repositories',
   );
   const orchestratorWorkflowDao = new OrchestratorWorkflowDao(knex);
-  // This should probably be sometype of object that holds all the scm API service objects
+  // GitHub and GitLab both implement the GitApiService interface; the router
+  // selects the appropriate service per request based on approvalTool.
   const githubApiService = new GithubApiService(logger, config, cache);
   const gitlabApiService = new GitlabApiService(logger, config, cache);
   const catalogHttpClient = new CatalogHttpClient({
     logger,
     config,
-    discovery,
     auth,
-    catalogApi,
+    catalog,
   });
   const catalogInfoGenerator = new CatalogInfoGenerator(
     logger,
@@ -212,6 +247,14 @@ export async function createRouter(
   );
 
   api.register(
+    Operations.FIND_ALL_SCM_HOSTS,
+    async (_c: Context, _req: Request, res: Response) => {
+      const result = await findAllSCMHosts(config);
+      return res.status(result.statusCode).json(result.responseBody);
+    },
+  );
+
+  api.register(
     Operations.FIND_ALL_ORGANIZATIONS,
     async (c: Context, _req: Request, res: Response) => {
       const q: Paths.FindAllOrganizations.QueryParameters = {
@@ -248,6 +291,17 @@ export async function createRouter(
       q.pagePerIntegration = stringToNumber(q.pagePerIntegration);
       q.sizePerIntegration = stringToNumber(q.sizePerIntegration);
       q.checkImportStatus = stringToBoolean(q.checkImportStatus);
+
+      const userTokens = res.locals.scmTokens as
+        Record<string, string> | undefined;
+
+      if (!userTokens || Object.keys(userTokens).length === 0) {
+        return res.status(401).json({
+          error:
+            'User SCM credentials are required to list repositories. Ensure the SCM OAuth integration is configured.',
+        });
+      }
+
       const response = await findAllRepositories(
         {
           logger,
@@ -261,7 +315,7 @@ export async function createRouter(
           checkStatus: q.checkImportStatus,
           pageNumber: q.pagePerIntegration,
           pageSize: q.sizePerIntegration,
-          approvalTool: q.approvalTool,
+          userTokens,
         },
       );
       const repos = response.responseBody?.repositories;
@@ -286,6 +340,17 @@ export async function createRouter(
       q.pagePerIntegration = stringToNumber(q.pagePerIntegration);
       q.sizePerIntegration = stringToNumber(q.sizePerIntegration);
       q.checkImportStatus = stringToBoolean(q.checkImportStatus);
+
+      const userTokens = res.locals.scmTokens as
+        Record<string, string> | undefined;
+
+      if (!userTokens || Object.keys(userTokens).length === 0) {
+        return res.status(401).json({
+          error:
+            'User SCM credentials are required to list repositories. Ensure the SCM OAuth integration is configured.',
+        });
+      }
+
       const response = await findRepositoriesByOrganization(
         {
           logger,
@@ -299,6 +364,7 @@ export async function createRouter(
         q.checkImportStatus,
         q.pagePerIntegration,
         q.sizePerIntegration,
+        userTokens,
       );
       const repos = response.responseBody?.repositories;
       return res.status(response.statusCode).json({
@@ -452,7 +518,6 @@ export async function createRouter(
           logger,
           config,
           auth,
-          catalogApi,
           gitlabApiService,
           githubApiService,
           catalogInfoGenerator,
@@ -673,20 +738,38 @@ export async function createRouter(
   const router = Router();
   router.use(express.json());
 
-  const permissionIntegrationRouter = createPermissionIntegrationRouter({
-    permissions: [bulkImportPermission],
+  // Strip x-scm-tokens from req.headers before the permission check and audit
+  // middleware run so that OAuth tokens are never captured in audit logs.
+  // The parsed map is stored in res.locals.scmTokens for handler use.
+  router.use((req, res, next) => {
+    const raw = req.headers['x-scm-tokens'];
+    const rawStr = Array.isArray(raw) ? raw[0] : raw;
+    delete req.headers['x-scm-tokens'];
+    if (rawStr) {
+      try {
+        res.locals.scmTokens = parseScmTokensHeader(rawStr, logger);
+      } catch (e) {
+        next(e);
+        return;
+      }
+    }
+    next();
   });
-  router.use(permissionIntegrationRouter);
 
   router.use(async (req, _res, next) => {
     if (req.path !== '/ping') {
-      await permissionCheck(
-        auditor,
-        api.matchOperation(req as OpenAPIRequest)?.operationId,
-        permissions,
-        httpAuth,
-        req,
-      ).catch(next);
+      try {
+        await permissionCheck(
+          auditor,
+          api.matchOperation(req as OpenAPIRequest)?.operationId,
+          permissions,
+          httpAuth,
+          req,
+        );
+      } catch (e) {
+        next(e);
+        return;
+      }
     }
     next();
   });
@@ -726,6 +809,10 @@ async function createAuditorEventByOperationId(
     case Operations.PING:
       auditorEvent = await auditCreateEvent(auditor, 'ping', req);
       break;
+    case Operations.FIND_ALL_SCM_HOSTS:
+      auditorEvent = await auditCreateEvent(auditor, 'scm-hosts-read', req);
+      break;
+
     case Operations.FIND_ALL_ORGANIZATIONS:
       auditorEvent = await auditCreateEvent(auditor, 'org-read', req, {
         queryType: req.query.search ? 'by-query' : 'all',

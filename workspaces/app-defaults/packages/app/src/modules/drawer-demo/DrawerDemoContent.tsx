@@ -15,6 +15,7 @@
  */
 
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { GlobalHeaderMenuItem } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
@@ -22,7 +23,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
-import CloseIcon from '@material-ui/icons/Close';
+import CloseIcon from '@mui/icons-material/Close';
 
 export const ChatDrawerContent = () => {
   const { closeDrawer } = useAppDrawer();
@@ -119,5 +120,26 @@ export const HelpDrawerContent = () => {
         </ListItem>
       </List>
     </Box>
+  );
+};
+
+export const HelpDrawerMenuItem = ({
+  handleClose,
+}: {
+  handleClose?: () => void;
+}) => {
+  const { toggleDrawer } = useAppDrawer();
+
+  const handleClick = () => {
+    toggleDrawer('demo-help');
+    handleClose?.();
+  };
+
+  return (
+    <GlobalHeaderMenuItem
+      title="Help"
+      icon="help_outline"
+      onClick={handleClick}
+    />
   );
 };

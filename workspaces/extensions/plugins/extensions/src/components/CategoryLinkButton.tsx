@@ -18,28 +18,27 @@ import type { MouseEvent } from 'react';
 
 import { LinkButton } from '@backstage/core-components';
 
+import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
-import { makeStyles } from '@material-ui/core';
+import { styled } from '@mui/material/styles';
 
 import { getCategoryTagDisplayInfo } from '../utils';
 
-const useStyles = makeStyles(() => ({
-  pluginCategoryLinkButton: {
-    fontWeight: 'normal',
-    padding: '2px 6px',
-    transition: 'border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-    '&:hover': {
-      borderColor: '#a3a3a3',
-      boxShadow: 'inset 0 0 0 1px #a3a3a3',
-    },
-    '&:focus-visible': {
-      borderColor: '#a3a3a3',
-      boxShadow: 'inset 0 0 0 1px #a3a3a3',
-      outline: '2px solid #06c',
-      outlineOffset: '2px',
-    },
+const StyledLinkButton = styled(LinkButton)({
+  fontWeight: 'normal',
+  padding: '2px 6px',
+  transition: 'border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+  '&:hover': {
+    borderColor: '#a3a3a3',
+    boxShadow: 'inset 0 0 0 1px #a3a3a3',
   },
-}));
+  '&:focus-visible': {
+    borderColor: '#a3a3a3',
+    boxShadow: 'inset 0 0 0 1px #a3a3a3',
+    outline: '2px solid #06c',
+    outlineOffset: '2px',
+  },
+});
 
 export interface CategoryLinkButtonProps {
   categoryName: string;
@@ -54,7 +53,6 @@ export const CategoryLinkButton = ({
   onClick,
   maxLength = 25,
 }: CategoryLinkButtonProps) => {
-  const classes = useStyles();
   const { displayName, tooltipTitle } = getCategoryTagDisplayInfo(
     categoryName,
     {
@@ -64,16 +62,11 @@ export const CategoryLinkButton = ({
 
   return (
     <Tooltip title={tooltipTitle} arrow>
-      <div style={{ display: 'inline-block', minHeight: '28px' }}>
-        <LinkButton
-          to={to}
-          variant="outlined"
-          className={classes.pluginCategoryLinkButton}
-          onClick={onClick}
-        >
+      <Box sx={{ display: 'inline-block', minHeight: '28px' }}>
+        <StyledLinkButton to={to} variant="outlined" onClick={onClick}>
           {displayName}
-        </LinkButton>
-      </div>
+        </StyledLinkButton>
+      </Box>
     </Tooltip>
   );
 };

@@ -32,6 +32,41 @@ export function validateIdentifier(value: string, fieldName: string): string {
   return value;
 }
 
-export function sanitizeValue(value: string): string {
-  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+export function joinJqlClauses(
+  clauses: Array<string | undefined | null>,
+): string {
+  return clauses
+    .filter((value): value is string => Boolean(value && value !== ''))
+    .map(value => `(${value})`)
+    .join(' AND ');
+}
+
+export function toJiraDateTime(value: string): string {
+  const parsedDate = parseDateTime(value);
+
+  const year = parsedDate.getUTCFullYear();
+  const month = String(parsedDate.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(parsedDate.getUTCDate()).padStart(2, '0');
+  const hours = String(parsedDate.getUTCHours()).padStart(2, '0');
+  const minutes = String(parsedDate.getUTCMinutes()).padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
+export function toIsoDateTime(value: string): string {
+  return parseDateTime(value).toISOString();
+}
+
+function parseDateTime(value: string): Date {
+  const normalizedValue = normalizeTimezone(value);
+  const parsedDate = new Date(normalizedValue);
+  if (Number.isNaN(parsedDate.getTime())) {
+    throw new TypeError(`Invalid datetime "${value}"`);
+  }
+  return parsedDate;
+}
+
+function normalizeTimezone(value: string): string {
+  // Jira can return offsets like +0530; normalize to +05:30 for strict ISO parsing.
+  return value.replace(/([+-]\d{2})(\d{2})$/, '$1:$2');
 }

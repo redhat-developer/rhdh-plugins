@@ -19,16 +19,15 @@ import { Link, StatusOK } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import Typography from '@mui/material/Typography';
-import * as jsyaml from 'js-yaml';
+import { loadAll } from 'js-yaml';
 import { get } from 'lodash';
-import * as yaml from 'yaml';
+import { stringify } from 'yaml';
 import * as yup from 'yup';
 
 import { WaitingForPR } from '../components/WaitingForPR';
 import {
   AddedRepositories,
   AddRepositoryData,
-  APITypes,
   ApprovalTool,
   CreateImportJobRepository,
   ErrorType,
@@ -49,6 +48,8 @@ import {
 } from '../types';
 import { getWorkflowStatusInfo } from './orchestratorStatus';
 import { getTaskStatusInfo } from './task-status';
+
+export { getApi } from './getApi';
 
 export const TaskLink = ({
   taskId,
@@ -521,7 +522,7 @@ export const prepareDataForSubmission = (
           organization: repo.orgName || '',
           defaultBranch: repo.defaultBranch || '',
         },
-        catalogInfoContent: yaml.stringify(
+        catalogInfoContent: stringify(
           repo.catalogInfoYaml?.prTemplate?.yaml,
           null,
           2,
@@ -539,23 +540,6 @@ export const prepareDataForSubmission = (
     },
     [],
   );
-
-export const getApi = (
-  backendUrl: string,
-  page: number,
-  size: number,
-  searchString: string,
-  approvalTool: string,
-  options?: APITypes,
-) => {
-  if (options?.fetchOrganizations) {
-    return `${backendUrl}/api/bulk-import/organizations?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}&approvalTool=${approvalTool}`;
-  }
-  if (options?.orgName) {
-    return `${backendUrl}/api/bulk-import/organizations/${options.orgName}/repositories?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}&approvalTool=${approvalTool}`;
-  }
-  return `${backendUrl}/api/bulk-import/repositories?pagePerIntegration=${page}&sizePerIntegration=${size}&search=${searchString}&approvalTool=${approvalTool}`;
-};
 
 export const getCustomisedErrorMessage = (
   status: (RepositoryStatus | string)[] | undefined,
@@ -628,7 +612,7 @@ export const evaluatePRTemplate = (
 ): { pullReqPreview: PullRequestPreview; isInvalidEntity: boolean } => {
   const gitProvider = isGithubJob(repositoryStatus) ? 'github' : 'gitlab';
   try {
-    const entity = jsyaml.loadAll(
+    const entity = loadAll(
       repositoryStatus[gitProvider]?.pullRequest.catalogInfoContent ?? '',
     )[0] as Entity;
     const isInvalid =

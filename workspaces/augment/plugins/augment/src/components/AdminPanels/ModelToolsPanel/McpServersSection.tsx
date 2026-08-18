@@ -164,7 +164,7 @@ export const McpServersSection = ({
           ) : (
             <Typography
               variant="body2"
-              color="textSecondary"
+              color="text.secondary"
               sx={{ mb: 1, fontStyle: 'italic' }}
             >
               No additional servers. Click &quot;Add Server&quot; to add one.

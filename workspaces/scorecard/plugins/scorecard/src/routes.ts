@@ -19,3 +19,8 @@ import { createRouteRef } from '@backstage/core-plugin-api';
 export const rootRouteRef = createRouteRef({
   id: 'scorecard',
 });
+
+export const scorecardDrillDownRouteRef = createRouteRef({
+  id: 'scorecard-drill-down',
+  params: ['aggregationId', 'metricId'],
+});

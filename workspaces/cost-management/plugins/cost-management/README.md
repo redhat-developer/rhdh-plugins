@@ -149,4 +149,4 @@ The procedure involves the following steps:
 
 - [License Apache 2.0](../../LICENSE.md)
 - [DCO](../../DCO.md)
-- Find more details in the [Resource Optimization back-end](../cost-mangament-backend/README.md) part of this plugin.
+- Find more details in the [Resource Optimization back-end](../cost-management-backend/README.md) part of this plugin.

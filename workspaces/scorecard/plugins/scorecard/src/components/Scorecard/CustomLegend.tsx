@@ -25,6 +25,8 @@ import { styled, useTheme } from '@mui/material/styles';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import {
+  formatWithMetricUnit,
+  getTranslatedStatus,
   getThresholdRuleColor,
   resolveStatusColor,
   SCORECARD_ERROR_STATE_COLOR,
@@ -52,10 +54,11 @@ const StyledLegendColorBox = styled(Box)<{ color: string }>(({ color }) => ({
 
 type CustomLegendProps = {
   thresholds?: ThresholdResult;
+  unit?: string;
 };
 
 const CustomLegend = (props: CustomLegendProps) => {
-  const { thresholds } = props;
+  const { thresholds, unit } = props;
   const theme = useTheme();
   const { t } = useTranslation();
 
@@ -93,14 +96,10 @@ const CustomLegend = (props: CustomLegendProps) => {
                 variant="body2"
                 sx={{ fontSize: '0.875rem', fontWeight: 400 }}
               >
-                {(() => {
-                  const translated = t(`thresholds.${ruleKey}` as any, {});
-                  // If translation returns the ruleKey itself, fallback to capitalized ruleKey
-                  return translated === `thresholds.${ruleKey}`
-                    ? ruleKey.charAt(0).toUpperCase() + ruleKey.slice(1)
-                    : translated;
-                })()}{' '}
-                {ruleExpression && `${ruleExpression}`}
+                {getTranslatedStatus(ruleKey, t)}
+                {ruleExpression &&
+                  !/^==(?:true|false)$/.test(ruleExpression) &&
+                  ` ${formatWithMetricUnit(ruleExpression, unit)}`}
               </Typography>
             </StyledLegendItem>
           );

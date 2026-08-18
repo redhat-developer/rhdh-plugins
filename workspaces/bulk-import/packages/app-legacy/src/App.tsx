@@ -50,9 +50,11 @@ import {
   OrchestratorPage,
   orchestratorTranslations,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
-import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
+import {
+  BulkImportPage,
+  bulkImportTranslations,
+} from '@red-hat-developer-hub/backstage-plugin-bulk-import/legacy';
 import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import { NotificationsPage } from '@backstage/plugin-notifications';
 import { SignalsDisplay } from '@backstage/plugin-signals';
 import { RbacPage } from '@backstage-community/plugin-rbac';
 import { Navigate, Route } from 'react-router-dom';
@@ -60,7 +62,6 @@ import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { Root } from './components/Root';
 import { searchPage } from './components/search/SearchPage';
-import { bulkImportTranslations } from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
 
 const app = createApp({
   apis,
@@ -146,7 +147,6 @@ const routes = (
     <Route path="/settings" element={<UserSettingsPage />} />
     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
     <Route path="/bulk-import/*" element={<BulkImportPage />} />
-    <Route path="/notifications" element={<NotificationsPage />} />
     <Route path="/orchestrator" element={<OrchestratorPage />} />
     <Route path="/rbac" element={<RbacPage />} />
   </FlatRoutes>

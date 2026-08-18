@@ -1,5 +1,23 @@
 # @red-hat-developer-hub/backstage-plugin-software-catalog-mcp-extras
 
+## 0.2.4
+
+### Patch Changes
+
+- dcf930d: Add missing MCP tool attribute annotations (`readOnly`, `destructive`, `idempotent`) to `fetch-template-metadata`, `query-catalog-entities`, and `analyze-techdocs-coverage` tools.
+
+## 0.2.3
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+
+## 0.2.2
+
+### Patch Changes
+
+- b337751: Upgrade workspace to Backstage 1.49.4
+
 ## 0.2.1
 
 ### Patch Changes

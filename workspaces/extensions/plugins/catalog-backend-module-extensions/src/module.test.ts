@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
+import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node';
 import { catalogModuleExtensions } from './module';
 import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import { dynamicPluginsFeatureLoader } from '@backstage/backend-dynamic-feature-service';

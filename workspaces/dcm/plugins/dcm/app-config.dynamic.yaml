@@ -1,0 +1,12 @@
+dynamicPlugins:
+  frontend:
+    red-hat-developer-hub.backstage-plugin-dcm:
+      dynamicRoutes:
+        - path: /dcm
+          importName: DcmPage
+          menuItem:
+            text: DCM
+      menuItems:
+        dcm:
+          title: DCM
+          priority: 100

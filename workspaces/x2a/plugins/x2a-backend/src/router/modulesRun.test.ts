@@ -330,6 +330,36 @@ describe('createRouter – modules (run & cancel)', () => {
       },
       LONG_TEST_TIMEOUT,
     );
+
+    it.each(supportedDatabaseIds)(
+      'should forward projectDirName from DB to kubeService.createJob - %p',
+      async databaseId => {
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
+        const project = await createTestProject(x2aDatabase);
+        const module = await createTestModule(x2aDatabase, project.id);
+
+        const mockCreateJob = jest
+          .fn()
+          .mockResolvedValue({ k8sJobName: 'k8s-job' });
+        const appWithMock = await createApp(client, undefined, undefined, {
+          createJob: mockCreateJob,
+        });
+
+        const response = await request(appWithMock)
+          .post(`/projects/${project.id}/modules/${module.id}/run`)
+          .send(runBody);
+
+        expect(response.status).toBe(200);
+        expect(mockCreateJob).toHaveBeenCalledTimes(1);
+        expect(mockCreateJob).toHaveBeenCalledWith(
+          expect.objectContaining({
+            projectDirName: project.dirName,
+          }),
+        );
+      },
+      LONG_TEST_TIMEOUT,
+    );
   });
 
   describe('POST /projects/:projectId/modules/:moduleId/cancel', () => {

@@ -19,6 +19,7 @@ Models/PullRequest.md
 Models/Repository.md
 Models/RepositoryList.md
 Models/Repository_importStatus.md
+Models/SCMHostList.md
 Models/ScaffolderTask.md
 Models/Source.md
 Models/SourceImport.md

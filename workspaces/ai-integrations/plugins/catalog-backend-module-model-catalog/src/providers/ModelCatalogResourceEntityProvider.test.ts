@@ -32,15 +32,24 @@ const CONFIG = {
   catalog: {
     providers: {
       modelCatalog: {
-        development: {
-          baseUrl: 'http://localhost:9090',
-        },
+        development: {},
       },
     },
   },
 } as const;
 
 const fakeCatalog: ModelCatalog = {
+  modelServer: {
+    name: 'test-model-server',
+    description: 'Test model server',
+    lifecycle: 'production',
+    owner: 'example-user',
+    API: {
+      url: 'https://api.example.com',
+      type: 'openapi' as any,
+      spec: 'https://example.com/openapi.json',
+    },
+  },
   models: [
     {
       name: 'ibm-granite',
@@ -96,6 +105,8 @@ describe('ModelCatalogResourceEntityProvider', () => {
       {
         config: mockServices.rootConfig({ data: CONFIG }),
         logger: mockServices.logger.mock(),
+        discovery: mockServices.discovery.mock(),
+        auth: mockServices.auth.mock(),
       },
       {
         schedule,
@@ -125,6 +136,15 @@ describe('ModelCatalogResourceEntityProvider', () => {
       {
         config: mockServices.rootConfig({ data: CONFIG }),
         logger: mockServices.logger.mock(),
+        discovery: mockServices.discovery.mock({
+          getBaseUrl: jest.fn().mockResolvedValue('http://localhost:9090'),
+        }),
+        auth: mockServices.auth.mock({
+          getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
+          getPluginRequestToken: jest
+            .fn()
+            .mockResolvedValue({ token: 'mock-token' }),
+        }),
       },
       {
         schedule,
@@ -149,6 +169,15 @@ describe('ModelCatalogResourceEntityProvider', () => {
       {
         config: mockServices.rootConfig({ data: CONFIG }),
         logger: mockServices.logger.mock(),
+        discovery: mockServices.discovery.mock({
+          getBaseUrl: jest.fn().mockResolvedValue('http://localhost:9090'),
+        }),
+        auth: mockServices.auth.mock({
+          getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
+          getPluginRequestToken: jest
+            .fn()
+            .mockResolvedValue({ token: 'mock-token' }),
+        }),
       },
       {
         schedule,

@@ -20,14 +20,33 @@ export interface Config {
     providers?: {
       modelCatalog?: {
         [key: string]: {
-          /**
-           * ModelCatalogConfig
-           */
-          baseUrl: string;
-          name?: string;
           system?: string;
           owner?: string;
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+          [clusterKey: string]:
+            | {
+                /** @visibility backend */
+                name?: string;
+                /** @visibility backend */
+                url?: string;
+                /** @visibility secret */
+                serviceAccountToken?: string;
+                /** @visibility backend */
+                skipTLSVerify?: boolean;
+                /** @visibility secret */
+                caData?: string;
+                /** @visibility backend */
+                kubernetesPluginRef?: string;
+                /** @visibility backend */
+                'kubeflow-model-catalog-url'?: string;
+                /** @visibility backend */
+                'default-owner'?: string;
+                /** @visibility backend */
+                'default-lifecycle'?: string;
+              }
+            | string
+            | SchedulerServiceTaskScheduleDefinitionConfig
+            | undefined;
         };
       };
     };

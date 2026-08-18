@@ -27,7 +27,7 @@ export const lightThemeOverrides: Partial<ThemeConfigPalette> = {
     main: '#0066CC',
   },
   navigation: {
-    background: '#222427',
+    background: '#f2f2f2',
     indicator: 'transparent',
     color: '#151515',
     selectedColor: '#151515',
@@ -35,12 +35,20 @@ export const lightThemeOverrides: Partial<ThemeConfigPalette> = {
       hoverBackground: '#ffffff',
     },
     submenu: {
-      background: '#222427',
+      background: '#FFF',
     },
   },
   text: {
     primary: '#151515',
-    secondary: '#757575',
+    // PatternFly --pf-v5-global--Color--200; AA on white and #f2f2f2 nav chrome
+    secondary: '#6A6E73',
+  },
+  // MUI defaults (#0288d1 / #ed6c02) fail WCAG AA on white (~3.1–3.9:1)
+  info: {
+    main: '#0066CC',
+  },
+  warning: {
+    main: '#C05600',
   },
   background: {
     default: '#FFFFFF',
@@ -49,6 +57,7 @@ export const lightThemeOverrides: Partial<ThemeConfigPalette> = {
   rhdh: {
     general: {
       pageInset: '1.5rem',
+      pageInsetBackgroundColor: '#f2f2f2',
 
       disabled: '#6A6E73',
       disabledBackground: '#D2D2D2',

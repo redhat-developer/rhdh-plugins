@@ -1,0 +1,110 @@
+# Codecov baseline coverage for redhat-developer/rhdh-plugins
+#
+# Feature umbrella: RHDHPLAN-851
+# Epic: RHIDP-11862 — Unit Test Coverage for RHDH Plugins Repository
+#
+# Runs the test suite for every workspace on push to main and uploads
+# coverage to Codecov. This establishes the per-workspace baselines that
+# Codecov uses to calculate coverage deltas in PRs (via carryforward).
+#
+# PR-level coverage is handled by the upload step in ci.yml; this
+# workflow only covers push events so the two never duplicate work.
+
+name: Coverage Baseline
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  list-workspaces:
+    name: Discover workspaces
+    runs-on: ubuntu-latest
+    outputs:
+      workspaces: ${{ steps.list.outputs.workspaces }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: List all workspaces
+        id: list
+        run: |
+          WORKSPACES=$(ls -d workspaces/*/ 2>/dev/null | sed 's|workspaces/||;s|/$||' | grep -v '^\.' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "workspaces=$WORKSPACES" >> "$GITHUB_OUTPUT"
+
+  coverage:
+    name: Coverage — ${{ matrix.workspace }}
+    runs-on: ubuntu-latest
+    needs: list-workspaces
+    strategy:
+      matrix:
+        workspace: ${{ fromJSON(needs.list-workspaces.outputs.workspaces) }}
+      fail-fast: false
+    defaults:
+      run:
+        working-directory: ./workspaces/${{ matrix.workspace }}
+
+    env:
+      CI: true
+      NODE_OPTIONS: --max-old-space-size=8192
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org/
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Install jest-junit reporter
+        env:
+          RUNNER_TEMP: ${{ runner.temp }}
+          WORKSPACE: ${{ matrix.workspace }}
+        run: |
+          npm install jest-junit@17.0.0 --ignore-scripts --prefix "$RUNNER_TEMP/jest-junit"
+          mkdir -p "$RUNNER_TEMP/test-results/$WORKSPACE"
+
+      - name: Run tests with coverage
+        id: tests
+        env:
+          JEST_JUNIT_OUTPUT_DIR: ${{ runner.temp }}/test-results/${{ matrix.workspace }}
+          JEST_JUNIT_CLASSNAME: '{filepath}'
+          JEST_JUNIT_UNIQUE_OUTPUT_NAME: 'true'
+          RUNNER_TEMP: ${{ runner.temp }}
+        run: yarn test:all --maxWorkers=3 --reporters=default --reporters="$RUNNER_TEMP/jest-junit/node_modules/jest-junit"
+
+      - name: Upload coverage to Codecov
+        if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6.0.2
+        with:
+          flags: ${{ matrix.workspace }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
+        uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
+        with:
+          flags: ${{ matrix.workspace }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ${{ runner.temp }}/test-results/${{ matrix.workspace }}
+          fail_ci_if_error: false

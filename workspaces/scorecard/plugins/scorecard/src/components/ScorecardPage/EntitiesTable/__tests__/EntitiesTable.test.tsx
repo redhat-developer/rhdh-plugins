@@ -121,6 +121,11 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 describe('EntitiesTable', () => {
   const defaultAggregatedData = {
     metricMetadata: { title: 'Open PRs' },
+    entityHealth: {
+      totalEntities: 2,
+      calculationErrorCount: 0,
+      countsArePartial: false,
+    },
     entities: [
       {
         entityRef: 'component:default/service-a',
@@ -133,12 +138,21 @@ describe('EntitiesTable', () => {
         metricValue: 12,
       },
     ],
-    pagination: { total: 2 },
+    pagination: {
+      page: 1,
+      pageSize: 10,
+      total: 2,
+      totalPages: 1,
+      isCapped: false,
+    },
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockUseOwnershipEntityRefs.mockReturnValue([]);
+    mockUseOwnershipEntityRefs.mockReturnValue({
+      ownershipEntityRefs: [],
+      loading: false,
+    });
     mockUseEntityMetadataMap.mockReturnValue({ entityMetadataMap: {} });
     mockUseAggregatedScorecardEntities.mockReturnValue({
       aggregatedScorecardEntities: defaultAggregatedData,
@@ -146,7 +160,7 @@ describe('EntitiesTable', () => {
       error: undefined,
     });
     mockUseAggregatedScorecard.mockReturnValue({
-      aggregatedScorecard: { metadata: { title: 'Open PRs' } },
+      data: { metadata: { title: 'Open PRs' } },
       loadingData: false,
       error: undefined,
     });
@@ -158,7 +172,7 @@ describe('EntitiesTable', () => {
     render(
       <TestWrapper>
         <EntitiesTable
-          metricId="github.open_prs"
+          metricId="github.openPRs"
           setMetricTitle={setMetricTitle}
         />
       </TestWrapper>,
@@ -172,7 +186,7 @@ describe('EntitiesTable', () => {
   it('should show title with count when total > 0', () => {
     render(
       <TestWrapper>
-        <EntitiesTable metricId="github.open_prs" setMetricTitle={jest.fn()} />
+        <EntitiesTable metricId="github.openPRs" setMetricTitle={jest.fn()} />
       </TestWrapper>,
     );
 
@@ -186,7 +200,18 @@ describe('EntitiesTable', () => {
       aggregatedScorecardEntities: {
         metricMetadata: {},
         entities: [],
-        pagination: { total: 0 },
+        pagination: {
+          page: 1,
+          pageSize: 10,
+          total: 0,
+          totalPages: 0,
+          isCapped: false,
+        },
+        entityHealth: {
+          totalEntities: 0,
+          calculationErrorCount: 0,
+          countsArePartial: false,
+        },
       },
       loadingData: false,
       error: undefined,
@@ -194,7 +219,7 @@ describe('EntitiesTable', () => {
 
     render(
       <TestWrapper>
-        <EntitiesTable metricId="github.open_prs" setMetricTitle={jest.fn()} />
+        <EntitiesTable metricId="github.openPRs" setMetricTitle={jest.fn()} />
       </TestWrapper>,
     );
 
@@ -210,7 +235,7 @@ describe('EntitiesTable', () => {
 
     render(
       <TestWrapper>
-        <EntitiesTable metricId="github.open_prs" setMetricTitle={jest.fn()} />
+        <EntitiesTable metricId="github.openPRs" setMetricTitle={jest.fn()} />
       </TestWrapper>,
     );
 
@@ -226,7 +251,7 @@ describe('EntitiesTable', () => {
 
     render(
       <TestWrapper>
-        <EntitiesTable metricId="github.open_prs" setMetricTitle={jest.fn()} />
+        <EntitiesTable metricId="github.openPRs" setMetricTitle={jest.fn()} />
       </TestWrapper>,
     );
 
@@ -239,7 +264,18 @@ describe('EntitiesTable', () => {
       aggregatedScorecardEntities: {
         metricMetadata: {},
         entities: [],
-        pagination: { total: 0 },
+        pagination: {
+          page: 1,
+          pageSize: 10,
+          total: 0,
+          totalPages: 0,
+          isCapped: false,
+        },
+        entityHealth: {
+          totalEntities: 0,
+          calculationErrorCount: 0,
+          countsArePartial: false,
+        },
       },
       loadingData: false,
       error: undefined,
@@ -247,7 +283,7 @@ describe('EntitiesTable', () => {
 
     render(
       <TestWrapper>
-        <EntitiesTable metricId="github.open_prs" setMetricTitle={jest.fn()} />
+        <EntitiesTable metricId="github.openPRs" setMetricTitle={jest.fn()} />
       </TestWrapper>,
     );
 
@@ -258,7 +294,7 @@ describe('EntitiesTable', () => {
   it('should render EntitiesRow for each entity when data is loaded', () => {
     render(
       <TestWrapper>
-        <EntitiesTable metricId="github.open_prs" setMetricTitle={jest.fn()} />
+        <EntitiesTable metricId="github.openPRs" setMetricTitle={jest.fn()} />
       </TestWrapper>,
     );
 
@@ -292,6 +328,7 @@ describe('EntitiesTable', () => {
         ownershipEntityRefs: [],
         orderBy: null,
         order: 'asc',
+        enabled: true,
       }),
     );
   });
@@ -302,7 +339,7 @@ describe('EntitiesTable', () => {
     render(
       <TestWrapper>
         <EntitiesTable
-          metricId="github.open_prs"
+          metricId="github.openPRs"
           setMetricTitle={setMetricTitle}
         />
       </TestWrapper>,

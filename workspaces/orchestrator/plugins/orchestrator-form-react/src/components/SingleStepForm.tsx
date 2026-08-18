@@ -32,6 +32,7 @@ type SingleStepFormProps = Pick<
   | 'formData'
   | 'setFormData'
   | 'setAuthTokenDescriptors'
+  | 'onSamlSsoError'
   | 'getIsChangedByUser'
   | 'setIsChangedByUser'
 >;

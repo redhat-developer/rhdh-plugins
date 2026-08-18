@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { mockServices } from '@backstage/backend-test-utils';
 import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import { GithubOpenPRsProvider } from './GithubOpenPRsProvider';
@@ -30,60 +31,20 @@ jest.mock('@backstage/catalog-model', () => ({
 jest.mock('../github/GithubClient');
 
 describe('GithubOpenPRsProvider', () => {
+  const mockedLogger = mockServices.logger.mock();
+
   describe('fromConfig', () => {
-    it('should create provider with default thresholds when no thresholds are configured', () => {
-      const provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}));
-
-      expect(provider.getMetricThresholds()).toEqual(DEFAULT_NUMBER_THRESHOLDS);
-    });
-
-    it('should create provider with custom thresholds when configured', () => {
-      const customThresholds = {
-        rules: [
-          { key: 'error', expression: '>100' },
-          { key: 'warning', expression: '50-100' },
-          { key: 'success', expression: '<50' },
-        ],
-      };
-
-      const configWithThresholds = new ConfigReader({
-        scorecard: {
-          plugins: {
-            github: {
-              open_prs: {
-                thresholds: customThresholds,
-              },
-            },
-          },
-        },
+    it('should create provider with default thresholds on metric', () => {
+      const provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}), {
+        logger: mockedLogger,
       });
-      const provider = GithubOpenPRsProvider.fromConfig(configWithThresholds);
-
-      expect(provider.getMetricThresholds()).toEqual(customThresholds);
-    });
-
-    it('should throw error when invalid custom thresholds', () => {
-      const invalidConfig = new ConfigReader({
-        scorecard: {
-          plugins: {
-            github: {
-              open_prs: {
-                thresholds: {
-                  rules: [{ key: 'error', expression: '>!100' }],
-                },
-              },
-            },
-          },
-        },
-      });
-
-      expect(() => GithubOpenPRsProvider.fromConfig(invalidConfig)).toThrow(
-        'Cannot parse "!100" as number from expression: ">!100"',
-      );
+      const metrics = provider.getMetrics();
+      expect(metrics).toHaveLength(1);
+      expect(metrics[0].thresholds).toEqual(DEFAULT_NUMBER_THRESHOLDS);
     });
   });
 
-  describe('calculateMetric', () => {
+  describe('calculateMetrics', () => {
     let provider: GithubOpenPRsProvider;
     const mockedGithubClient = GithubClient as jest.MockedClass<
       typeof GithubClient
@@ -95,7 +56,9 @@ describe('GithubOpenPRsProvider', () => {
 
     beforeEach(() => {
       jest.clearAllMocks();
-      provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}));
+      provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}), {
+        logger: mockedLogger,
+      });
     });
 
     it('should calculate metric', async () => {
@@ -111,9 +74,9 @@ describe('GithubOpenPRsProvider', () => {
         },
       };
 
-      const result = await provider.calculateMetric(mockEntity);
+      const results = await provider.calculateMetrics(mockEntity);
 
-      expect(result).toBe(42);
+      expect(results.get('github.openPRs')).toBe(42);
       expect(
         mockedGithubClientInstance.getOpenPullRequestsCount,
       ).toHaveBeenCalledWith('https://github.com/org/orgRepo/tree/main/', {

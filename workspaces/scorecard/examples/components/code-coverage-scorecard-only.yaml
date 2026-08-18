@@ -1,0 +1,12 @@
+---
+# Component with Code Coverage Scorecard only
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: code-coverage-scorecard-only
+  annotations:
+    backstage.io/code-coverage: enabled
+spec:
+  type: service
+  owner: group:development/guests
+  lifecycle: experimental

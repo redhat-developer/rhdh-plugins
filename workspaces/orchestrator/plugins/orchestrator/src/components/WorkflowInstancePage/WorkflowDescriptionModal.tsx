@@ -118,7 +118,14 @@ export const RefForwardingWorkflowDescriptionModal: ForwardRefRenderFunction<
       fullWidth
     >
       <DialogTitle>
-        <Box>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'baseline',
+            justifyContent: 'space-between',
+            gap: 1,
+          }}
+        >
           <Typography variant="h5">{workflow.name}</Typography>
           <IconButton
             className={classes.closeBtn}

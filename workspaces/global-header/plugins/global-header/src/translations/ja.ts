@@ -37,6 +37,8 @@ const globalHeaderTranslationJa = createTranslationMessages({
     'search.placeholder': '検索...',
     'search.noResults': '結果が見つかりません',
     'search.errorFetching': '結果の取得中にエラーが発生しました',
+    'search.allResults': 'すべての結果',
+    'search.clear': 'クリア',
     'applicationLauncher.tooltip': 'アプリケーションランチャー',
     'applicationLauncher.noLinksTitle':
       'アプリケーションリンクが設定されていません',
@@ -53,7 +55,7 @@ const globalHeaderTranslationJa = createTranslationMessages({
       'エンティティーの名前の横にある星のアイコンをクリックすると、すぐにアクセスできるように、ここに保存されます。',
     'notifications.title': '通知',
     'notifications.unsupportedDismissOption':
-      '終了オプション "{{option}}" はサポートされていません。現在サポートされているのは、"none"、"session"、または "localstorage" です!',
+      '非表示オプション "{{option}}" はサポートされていません。現在サポートされているのは、"none"、"session"、または "localstorage" です!',
     'create.title': 'セルフサービス',
     'create.registerComponent.title': 'コンポーネントの登録',
     'create.registerComponent.subtitle': 'カタログページへのインポート',

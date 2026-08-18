@@ -1,0 +1,27 @@
+---
+# Example: OCI-backed AiResource entity (skills pack)
+#
+# Upstream kind spelling is AiResource (see
+# @backstage/plugin-catalog-backend-module-ai-model). Asset content is
+# referenced via backstage.io/source-location. spec.location is retained
+# for current RHDH processor / RHIDP-14558 location-display checks.
+#
+# For additional OCI Skill-shaped examples (annotations, TechDocs,
+# dependsOn), see ai-resources-oci-skills.yaml.
+#
+# Register this file via the RHDH catalog URL registration UI
+# or include it in a catalog location for auto-discovery.
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
+metadata:
+  name: summarization-skills
+  description: Summarization prompt and skill pack published as an OCI artifact.
+  annotations:
+    backstage.io/source-location: url:oci://quay.io/my-org/summarization-skills:latest
+    rhdh.io/ai-asset-category: skill
+    rhdh.io/ai-asset-source: oci-skill-registry/default
+spec:
+  type: skill
+  lifecycle: experimental
+  owner: team-ml-platform
+  scope: team

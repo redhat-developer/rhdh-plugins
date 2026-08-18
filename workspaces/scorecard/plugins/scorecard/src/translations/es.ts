@@ -24,94 +24,181 @@ import { scorecardTranslationRef } from './ref';
 const scorecardTranslationEs = createTranslationMessages({
   ref: scorecardTranslationRef,
   messages: {
-    // Empty state translations
-    'emptyState.title': 'Aún no se agregaron tarjetas de puntuación',
+    'common.loading': 'Cargando',
+    'dataSourcesDialog.title': '{{title}} fuentes',
+    'dataSourcesDialog.close': 'Cerrar',
+    'dataSourcesDialog.unknownPlugin': 'Desconocido',
+    'dataSourcesDialog.statusTooltip':
+      'Valor {{value}} coincide con umbral {{status}} {{expression}}',
+    'dataSourcesDialog.columns.plugin': 'PLUGIN',
+    'dataSourcesDialog.columns.check': 'VERIFICACIÓN',
+    'dataSourcesDialog.columns.value': 'VALOR',
+    'dataSourcesDialog.columns.status': 'ESTADO',
+    'dataSourcesDialog.columns.lastSynced': 'ÚLTIMA SINCRONIZACIÓN',
+    'emptyState.altText': 'No hay tarjetas de puntuación',
+    'emptyState.button': 'Ver documentación',
     'emptyState.description':
       'Las tarjetas de puntuación ayudan a monitorear el estado del componente de un vistazo. Para comenzar, explore la documentación para obtener pautas de configuración.',
-    'emptyState.button': 'Ver documentación',
-    'emptyState.altText': 'No hay tarjetas de puntuación',
-
-    // Permission required translations
-    'permissionRequired.title': 'Permiso faltante',
-    'permissionRequired.description':
-      'Para ver el complemento de tarjetas de puntuación, comuníquese con su administrador para que le otorgue el permiso {{permission}}.',
-    'permissionRequired.button': 'Leer más',
-    'permissionRequired.altText': 'Permiso requerido',
-
-    // Not found state
-    'notFound.title': '404 No pudimos encontrar esa página',
-    'notFound.description':
-      'Intente agregar un archivo {{indexFile}} en la raíz del directorio de documentación de este repositorio.',
-    'notFound.readMore': 'Leer más',
-    'notFound.goBack': 'Volver',
-    'notFound.contactSupport': 'Contactar soporte',
-    'notFound.altText': 'Página no encontrada',
-
-    // Error messages
-    'errors.entityMissingProperties':
-      'Entidad a la que le faltan las propiedades requeridas para la búsqueda en la tarjeta de puntuación',
-    'errors.invalidApiResponse':
-      'Formato de respuesta no válido de la API de la tarjeta de puntuación',
-    'errors.fetchError':
-      'Error al extraer las tarjetas de puntuación: {{error}}',
-    'errors.metricDataUnavailable': 'Datos de métricas no disponibles',
-    'errors.invalidThresholds': 'Umbrales no válidos',
-    'errors.missingPermission': 'Permiso faltante',
-    'errors.noDataFound': 'No se encontraron datos',
-    'errors.authenticationError': 'Error de autenticación',
-    'errors.missingPermissionMessage':
-      'Para ver las métricas de la tarjeta de puntuación, su administrador debe otorgarle el permiso requerido.',
-    'errors.userNotFoundInCatalogMessage':
-      'Entidad de usuario no encontrada en el catálogo',
-    'errors.noDataFoundMessage':
-      'Para ver tus datos aquí, comprueba que tus entidades estén reportando valores relacionados con esta métrica.',
-    'errors.authenticationErrorMessage': 'Inicie sesión para ver sus datos.',
-    'errors.noMetricsFound':
-      'No se encontraron métricas para la ID de métrica especificada.',
-    'errors.multipleMetricsFound':
-      'Se encontraron múltiples métricas para la ID de métrica especificada. Se esperaba exactamente una.',
-
-    // Metric translations
-    'metric.github.open_prs.title': 'GitHub PRs abiertas',
-    'metric.github.open_prs.description':
-      'Recuento actual de Pull Requests abiertas para un repositorio de GitHub dado.',
-    'metric.jira.open_issues.title': 'Jira tickets bloqueantes abiertos',
-    'metric.jira.open_issues.description':
-      'Destaca el número de problemas críticos y bloqueantes que están actualmente abiertos en Jira.',
-    'metric.lastUpdated': 'Última actualización: {{timestamp}}',
-    'metric.lastUpdatedNotAvailable': 'Última actualización: No disponible',
-    'metric.someEntitiesNotReportingValues':
-      'Algunas entidades no están reportando valores relacionados con esta métrica.',
-
-    // Threshold translations
-    'thresholds.success': 'Éxito',
-    'thresholds.warning': 'Advertencia',
-    'thresholds.error': 'Error',
-    'thresholds.noEntities': 'No hay entidades en el estado {{category}}',
-    'thresholds.entities_one': '{{count}} entidad',
-    'thresholds.entities_other': '{{count}} entidades',
-
-    // Entities page translations
-    'entitiesPage.unknownMetric': 'Métrica desconocida',
-    'entitiesPage.noDataFound':
-      'Para ver tus datos aquí, comprueba que tus entidades estén reportando valores relacionados con esta métrica.',
-    'entitiesPage.missingPermission':
-      'Para ver las métricas de scorecard, tu administrador debe otorgarle el permiso requerido.',
-    'entitiesPage.metricProviderNotRegistered':
-      'Proveedor de métrica con ID {{metricId}} no registrado.',
-    'entitiesPage.entitiesTable.title': 'Entidades',
-    'entitiesPage.entitiesTable.unavailable': 'No disponible',
-    'entitiesPage.entitiesTable.titleWithCount': 'Entidades ({{count}})',
-    'entitiesPage.entitiesTable.header.status': 'Estado',
-    'entitiesPage.entitiesTable.header.value': 'Valor',
+    'emptyState.title': 'Aún no se agregaron tarjetas de puntuación',
+    'entitiesPage.entitiesTable.footer.allRows': 'Todas las filas',
+    'entitiesPage.entitiesTable.footer.of': 'de',
+    'entitiesPage.entitiesTable.footer.rows_one': '{{count}} fila',
+    'entitiesPage.entitiesTable.footer.rows_other': '{{count}} filas',
     'entitiesPage.entitiesTable.header.entity': 'Entidad',
-    'entitiesPage.entitiesTable.header.owner': 'Propietario',
     'entitiesPage.entitiesTable.header.kind': 'Tipo',
     'entitiesPage.entitiesTable.header.lastUpdated': 'Última actualización',
-    'entitiesPage.entitiesTable.footer.allRows': 'Todas las filas',
-    'entitiesPage.entitiesTable.footer.rows_one': '{{count}} fila',
-    'entitiesPage.entitiesTable.footer.rows_other': '{{count}} filas',
-    'entitiesPage.entitiesTable.footer.of': 'de',
+    'entitiesPage.entitiesTable.header.owner': 'Propietario',
+    'entitiesPage.entitiesTable.header.status': 'Estado',
+    'entitiesPage.entitiesTable.header.value': 'Valor',
+    'entitiesPage.entitiesTable.title': 'Entidades',
+    'entitiesPage.entitiesTable.titleWithCount': 'Entidades ({{count}})',
+    'entitiesPage.entitiesTable.unavailable': 'No disponible',
+    'entitiesPage.metricProviderNotRegistered':
+      'El proveedor de métricas con el ID {{metricId}} no está registrado.',
+    'entitiesPage.missingPermission':
+      'Para ver las métricas de la tarjeta de puntuación, su administrador debe otorgarle el permiso requerido.',
+    'entitiesPage.noDataFound':
+      'Para ver sus datos aquí, compruebe que sus entidades informen valores relacionados con esta métrica.',
+    'entitiesPage.unknownMetric': 'Métrica desconocida',
+    'errors.authenticationError': 'Error de autenticación',
+    'errors.authenticationErrorMessage': 'Inicie sesión para ver sus datos.',
+    'errors.entityMissingProperties':
+      'Entidad a la que le faltan las propiedades requeridas para la búsqueda en la tarjeta de puntuación',
+    'errors.fetchError':
+      'Error al extraer las tarjetas de puntuación: {{error}}',
+    'errors.invalidApiResponse':
+      'Formato de respuesta no válido de la API de la tarjeta de puntuación',
+    'errors.invalidThresholds': 'Umbrales no válidos',
+    'errors.metricDataUnavailable': 'Datos métricos no disponibles',
+    'errors.missingAggregationId':
+      'La tarjeta de puntuación está mal configurada; no se proporcionó la propiedad de ID de agregación (o ID de métrica)',
+    'errors.missingPermission': 'Permiso faltante',
+    'errors.missingPermissionMessage':
+      'Para ver las métricas de la tarjeta de puntuación, su administrador debe otorgarle el permiso requerido.',
+    'errors.noDataFound': 'No se encontraron datos',
+    'errors.noDataFoundMessage':
+      'Para ver sus datos aquí, compruebe que sus entidades informen valores relacionados con esta métrica.',
+    'errors.unsupportedAggregationType':
+      'Esta tarjeta de puntuación utiliza un tipo de agregación que no es compatible con esta versión del complemento.',
+    'errors.userNotFoundInCatalogMessage':
+      'No se encontró la entidad de usuario en el catálogo.',
+    'metric.weightedStatusScoreCenterTooltipMaxLabel':
+      'Puntuación máxima posible',
+    'metric.weightedStatusScoreCenterTooltipTotalLabel': 'Puntuación total',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_one':
+      '{{status}}: {{count}} entity, score: {{score}}',
+    'metric.weightedStatusScoreCenterTooltipBreakdownRow_other':
+      '{{status}}: {{count}} entities, score: {{score}}',
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_one':
+      '{{count}} entidad, cada una con {{score}}',
+    'metric.weightedStatusScoreLegendTooltipEntitiesEach_other':
+      '{{count}} entidades, cada una con {{score}}',
+    'metric.weightedStatusScoreLegendTooltipRowTotal':
+      'Puntuación total {{total}}',
+    'metric.drillDownCalculationFailures':
+      'No se pudieron validar una o más entidades cuando se calculó esta métrica.',
+    'metric.dora.deploymentFrequency.description':
+      'Realiza un seguimiento de la frecuencia con la que el código se implementa correctamente en producción durante los últimos 30 días. Los mejores equipos implementan bajo demanda (varias veces al día).',
+    'metric.dora.deploymentFrequency.title':
+      'DORA - Frecuencia de implementación',
+    'metric.dora.medianLeadTimeForChanges.description':
+      'Mide el tiempo desde el commit del código hasta la implementación en producción durante los últimos 30 días. Los mejores equipos tienen un tiempo de entrega inferior a 24 horas.',
+    'metric.dora.medianLeadTimeForChanges.title':
+      'DORA - Tiempo medio de entrega de cambios',
+    'metric.dora.changeFailureRate.description':
+      'Supervisa el porcentaje de implementaciones que provocan un fallo en producción durante los últimos 30 días. Los mejores equipos mantienen una tasa de fallos de cambio inferior al 5 %.',
+    'metric.dora.changeFailureRate.title': 'DORA - Tasa de fallos de cambio',
+    'metric.dora.meanTimeToRestore.description':
+      'Realiza un seguimiento del tiempo medio para restaurar el servicio tras un incidente durante los últimos 30 días. Los mejores equipos restauran el servicio en menos de una hora.',
+    'metric.dora.meanTimeToRestore.title':
+      'DORA - Tiempo medio de restauración',
+    'metric.filecheck.description':
+      'Comprueba si el archivo {{name}} existe en el repositorio.',
+    'metric.filecheck.title': 'Verificación de archivo: {{name}}',
+    'metric.github.openPRs.description':
+      'Recuento actual de solicitudes de extracción abiertas para un repositorio de GitHub determinado.',
+    'metric.github.openPRs.title': 'PR abiertas de GitHub',
+    'metric.homepageEntityCalculationHealth':
+      '{{healthy}} / {{total}} entidades sin errores de cálculo de métricas',
+    'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} entidades',
+    'metric.jira.openIssues.description':
+      'Destaca la cantidad de problemas críticos y bloqueantes que están abiertos actualmente en Jira.',
+    'metric.jira.openIssues.title': 'Tickets de bloqueo abiertos en Jira',
+    'metric.lastUpdated': 'Última actualización: {{timestamp}}',
+    'metric.lastUpdatedNotAvailable': 'Última actualización: no disponible',
+    'metric.someEntitiesNotReportingValues':
+      'Algunas entidades no informan valores relacionados con esta métrica.',
+    'metric.sonarqube.codeCoverage.description':
+      'Porcentaje general de cobertura de código en SonarQube.',
+    'metric.sonarqube.codeCoverage.title': 'Cobertura de código de SonarQube',
+    'metric.sonarqube.codeDuplications.description':
+      'Porcentaje de líneas duplicadas en SonarQube.',
+    'metric.sonarqube.codeDuplications.title':
+      'Duplicaciones de código de SonarQube',
+    'metric.sonarqube.maintainabilityIssues.description':
+      'Cantidad de code smells abiertos en SonarQube.',
+    'metric.sonarqube.maintainabilityIssues.title':
+      'Problemas de mantenibilidad de SonarQube',
+    'metric.sonarqube.maintainabilityRating.description':
+      'Calificación de mantenibilidad de SonarQube.',
+    'metric.sonarqube.maintainabilityRating.title':
+      'Calificación de mantenibilidad de SonarQube',
+    'metric.sonarqube.openIssues.description':
+      'Cantidad de problemas abiertos (ABIERTOS, CONFIRMADOS, REABIERTOS) en SonarQube.',
+    'metric.sonarqube.openIssues.title': 'Problemas abiertos de SonarQube',
+    'metric.sonarqube.qualityGate.description':
+      'Si el proyecto supera el control de calidad de SonarQube.',
+    'metric.sonarqube.qualityGate.title':
+      'Estado del control de calidad de SonarQube',
+    'metric.sonarqube.reliabilityIssues.description':
+      'Cantidad de errores abiertos en SonarQube.',
+    'metric.sonarqube.reliabilityIssues.title':
+      'Problemas de confiabilidad de SonarQube',
+    'metric.sonarqube.reliabilityRating.description':
+      'Calificación de confiabilidad de SonarQube.',
+    'metric.sonarqube.reliabilityRating.title':
+      'Calificación de confiabilidad de SonarQube',
+    'metric.sonarqube.securityHotspots.description':
+      'Cantidad de puntos críticos de seguridad que deben revisarse en SonarQube.',
+    'metric.sonarqube.securityHotspots.title':
+      'Puntos críticos de seguridad SonarQube',
+    'metric.sonarqube.securityIssues.description':
+      'Cantidad de vulnerabilidades de seguridad abiertas en SonarQube.',
+    'metric.sonarqube.securityIssues.title':
+      'Problemas de seguridad de SonarQube',
+    'metric.sonarqube.securityRating.description':
+      'Calificación de seguridad de SonarQube.',
+    'metric.sonarqube.securityRating.title':
+      'Calificación de seguridad de SonarQube',
+    'metric.sonarqube.securityReviewRating.description':
+      'Calificación de la revisión de seguridad de SonarQube.',
+    'metric.sonarqube.securityReviewRating.title':
+      'Calificación de la revisión de seguridad de SonarQube',
+    'metricGroupCard.menuAriaLabel': 'Más opciones',
+    'metricGroupCard.viewDataSources': 'Ver fuentes',
+    'notFound.altText': 'Pagina no encontrada',
+    'notFound.contactSupport': 'Comuníquese con Soporte',
+    'notFound.description':
+      'Intente agregar un archivo {{indexFile}} en la root del directorio docs de este repositorio.',
+    'notFound.goBack': 'Volver',
+    'notFound.readMore': 'Leer más',
+    'notFound.title': '404 No pudimos encontrar esa página',
+    'permissionRequired.altText': 'Permiso requerido',
+    'permissionRequired.button': 'Leer más',
+    'permissionRequired.description':
+      'Para ver el complemento de tarjetas de puntuación, comuníquese con su administrador para que le otorgue el permiso {{permission}}.',
+    'permissionRequired.title': 'Permiso faltante',
+    'thresholds.elite': 'Élite',
+    'thresholds.entities_one': '{{count}} entidad',
+    'thresholds.entities_other': '{{count}} entidades',
+    'thresholds.error': 'Error',
+    'thresholds.exist': 'Existente',
+    'thresholds.low': 'Bajo',
+    'thresholds.medium': 'Medio',
+    'thresholds.missing': 'Faltante',
+    'thresholds.noEntities': 'No hay entidades en el estado {{category}}',
+    'thresholds.success': 'Éxito',
+    'thresholds.warning': 'Advertencia',
   },
 });
 

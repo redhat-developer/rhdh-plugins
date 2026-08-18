@@ -74,6 +74,16 @@ backend.add(
 );
 backend.add(
   import(
+    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-catalog'
+  ),
+);
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck'
+  ),
+);
+backend.add(
+  import(
     '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-openssf'
   ),
 );
@@ -82,4 +92,20 @@ backend.add(
     '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dependabot'
   ),
 );
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-sonarqube'
+  ),
+);
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-code-coverage'
+  ),
+);
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora'
+  ),
+);
+backend.add(import('@backstage/plugin-mcp-actions-backend'));
 backend.start();

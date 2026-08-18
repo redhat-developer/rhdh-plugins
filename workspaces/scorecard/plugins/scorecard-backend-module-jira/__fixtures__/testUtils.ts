@@ -38,9 +38,9 @@ export function newEntityComponent(
 export function newThresholdsConfig(): ThresholdConfig {
   return {
     rules: [
-      { key: 'success', expression: '<3' },
-      { key: 'warning', expression: '11-32' },
-      { key: 'error', expression: '>33' },
+      { key: 'success', expression: '<5' },
+      { key: 'warning', expression: '5-25' },
+      { key: 'error', expression: '>25' },
     ],
   };
 }
@@ -66,7 +66,7 @@ export function newMockRootConfig({
 }: NewMockRootConfigProps = {}): Config {
   const jira = {
     baseUrl: 'https://example.com/api',
-    token: 'Fds31dsF32',
+    token: 'dummyToken',
     product: 'cloud',
     proxyPath: '/jira/api',
     ...jiraConfig,
@@ -76,9 +76,9 @@ export function newMockRootConfig({
     data: {
       jira,
       scorecard: {
-        plugins: {
+        metricProviders: {
           jira: {
-            open_issues: {
+            openIssues: {
               options,
               thresholds,
             },

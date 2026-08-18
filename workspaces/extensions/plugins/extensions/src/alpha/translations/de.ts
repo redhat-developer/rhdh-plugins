@@ -158,8 +158,12 @@ const extensionsTranslationDe = createTranslationMessages({
       'Das Paket kann in der Produktionsumgebung nicht verwaltet werden.',
     'installedPackages.table.tooltips.installationDisabled':
       'Das Paket kann nicht verwaltet werden, da die Plugin-Installation deaktiviert ist. Um dies zu aktivieren, fügen Sie die Erweiterungskonfiguration in Ihrer Konfigurationsdatei für dynamische Plugins hinzu oder ändern Sie sie.',
+    'installedPackages.table.tooltips.enableActionsTitle':
+      'Die Katalogentität fehlt',
     'installedPackages.table.tooltips.enableActions':
-      'Um Aktionen zu aktivieren, fügen Sie ein Katalogelement für dieses Paket hinzu',
+      'Um Aktionen zu aktivieren, fügen Sie ein Katalogelement für dieses Paket hinzu.',
+    'installedPackages.table.tooltips.enableActionsDocsLink':
+      'Dokumentation anzeigen',
     'installedPackages.table.tooltips.noDownloadPermissions':
       'Sie haben keine Berechtigung, die Konfiguration herunterzuladen. Wenden Sie sich an den Administrator, um Zugriff oder Unterstützung anzufordern.',
     'installedPackages.table.tooltips.noEditPermissions':
@@ -176,6 +180,9 @@ const extensionsTranslationDe = createTranslationMessages({
       'Keine Ergebnisse gefunden. Versuchen Sie es mit einem anderen Suchbegriff.',
     'installedPackages.table.emptyMessages.noRecords':
       'Keine Datensätze zum Anzeigen vorhanden',
+    'installedPackages.table.pagination.labelRowsPerPage': 'Zeilen',
+    'installedPackages.table.pagination.labelDisplayedRows':
+      '{from}-{to} von {count}',
     'actions.install': 'Installieren',
     'actions.view': 'Anzeigen',
     'actions.edit': 'Bearbeiten',
@@ -206,7 +213,6 @@ const extensionsTranslationDe = createTranslationMessages({
     'metadata.category': 'Kategorie',
     'metadata.versions': 'Versionen',
     'metadata.backstageCompatibility': 'Backstage-Kompatibilitätsversion',
-    'supportTypes.certifiedBy': 'Zertifiziert von {{value}} ({{count}})',
     'supportTypes.verifiedBy': 'Verifiziert von {{value}} ({{count}})',
     'supportTypes.customPlugins': 'Benutzerdefinierte Plugins ({{count}})',
     'collection.kubernetes': 'Kubernetes',
@@ -283,12 +289,9 @@ const extensionsTranslationDe = createTranslationMessages({
     'aria.collapseSection': 'Abschnitt reduzieren',
     'aria.sortBy': 'Sortieren nach {{field}}',
     'aria.filterBy': 'Filtern nach {{field}}',
-    'badges.certified': 'Zertifiziert',
-    'badges.certifiedBy': 'Zertifiziert von {{provider}}',
     'badges.verified': 'Verifiziert',
     'badges.verifiedBy': 'Verifiziert von {{provider}}',
     'badges.customPlugin': 'Benutzerdefiniertes Plugin',
-    'badges.stableAndSecured': 'Stabil und gesichert durch {{provider}}',
     'badges.generallyAvailable': 'Allgemein verfügbar (GA)',
     'badges.gaAndSupportedBy':
       'Allgemein verfügbar (GA) und unterstützt durch {{provider}}',

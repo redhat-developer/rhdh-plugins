@@ -18,7 +18,13 @@ import { Route, Routes } from 'react-router-dom';
 import { Dashboard } from './Dashboard';
 import { DownloadStaticPublicFile } from './DownloadStaticPublicFile';
 import { ModulePage } from './ModulePage';
-import { downloadRouteRef, moduleRouteRef, projectRouteRef } from '../routes';
+import { RulesPage } from './RulesPage';
+import {
+  downloadRouteRef,
+  moduleRouteRef,
+  projectRouteRef,
+  rulesRouteRef,
+} from '../routes';
 import { ProjectPage } from './ProjectPage';
 
 export const Router = () => {
@@ -31,6 +37,7 @@ export const Router = () => {
       />
       <Route path={moduleRouteRef.path} element={<ModulePage />} />
       <Route path={projectRouteRef.path} element={<ProjectPage />} />
+      <Route path={rulesRouteRef.path} element={<RulesPage />} />
       <Route path="/*" element={<Dashboard />} />
     </Routes>
   );

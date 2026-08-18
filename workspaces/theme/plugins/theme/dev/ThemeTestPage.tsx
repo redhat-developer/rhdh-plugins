@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import '@backstage/ui/css/styles.css';
 import Grid from '@mui/material/Grid';
 import { Header, Page, Content, InfoCard } from '@backstage/core-components';
 import { UserSettingsThemeToggle } from '@backstage/plugin-user-settings';
@@ -22,7 +21,9 @@ import { UserSettingsThemeToggle } from '@backstage/plugin-user-settings';
 export const ThemeTestPage = () => (
   <Page themeId="tool">
     <Header title="Theme Test Page">
-      <UserSettingsThemeToggle />
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+        <UserSettingsThemeToggle />
+      </ul>
     </Header>
     <Content>
       <Grid container>

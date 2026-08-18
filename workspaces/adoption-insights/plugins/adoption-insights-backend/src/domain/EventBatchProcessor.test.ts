@@ -21,7 +21,9 @@ import { EventDatabase } from '../database/event-database';
 import { Event } from '../models/Event';
 
 describe('EventBatchProcessor', () => {
-  let mockRetryOrStoreFailedEvent: jest.SpyInstance;
+  let mockRetryOrStoreFailedEvent: jest.Spied<
+    EventBatchProcessor['retryOrStoreFailedEvent']
+  >;
 
   const mockInsertEvents = jest.fn();
   const mockInsertFailedEvent = jest.fn();

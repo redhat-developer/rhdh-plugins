@@ -18,15 +18,25 @@ import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { BrowserRouter } from 'react-router-dom';
 
-import { ScorecardHomepageCardComponent } from '../ScorecardHomepageCardComponent';
+import { AggregatedMetricCard } from '../../AggregatedMetricCards/AggregatedMetricCard';
 import {
+  aggregationTypes,
   DEFAULT_NUMBER_THRESHOLDS,
   type AggregatedMetricResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-
 // --------------------
 // Mocks
 // --------------------
+
+jest.mock('@backstage/core-components', () => {
+  const actual = jest.requireActual('@backstage/core-components');
+  return {
+    ...actual,
+    ResponseErrorPanel: ({ error }: { error: Error }) => (
+      <div data-testid="response-error-panel">{error.message}</div>
+    ),
+  };
+});
 
 jest.mock('../../Common/CardWrapper', () => ({
   CardWrapper: ({
@@ -54,13 +64,15 @@ jest.mock('../ResponsivePieChart', () => ({
     legendContent,
     tooltipContent,
     pieData,
+    LabelContent,
   }: {
-    legendContent: (props: unknown) => React.ReactNode;
-    tooltipContent: (props: {
+    legendContent?: (props: unknown) => React.ReactNode;
+    tooltipContent?: (props: {
       active?: boolean;
       payload?: unknown[];
     }) => React.ReactNode;
     pieData: Array<{ name: string; value: number; color: string }>;
+    LabelContent?: (props: Record<string, unknown>) => React.ReactNode;
   }) => (
     <div data-testid="responsive-pie-chart">
       <div data-testid="pie-data-length">{pieData.length}</div>
@@ -73,9 +85,20 @@ jest.mock('../ResponsivePieChart', () => ({
           {data.name}: {data.value}
         </div>
       ))}
-      <div data-testid="legend">{legendContent({})}</div>
+      <div data-testid="weighted-status-score-pie-label-area">
+        <svg>
+          {typeof LabelContent === 'function' ? (
+            <LabelContent cx={100} cy={50} index={0} />
+          ) : null}
+        </svg>
+      </div>
+      {legendContent ? (
+        <div data-testid="legend">{legendContent({})}</div>
+      ) : null}
       <div data-testid="tooltip">
-        {tooltipContent({ active: true, payload: [] })}
+        {typeof tooltipContent === 'function'
+          ? tooltipContent({ active: true, payload: [] })
+          : null}
       </div>
     </div>
   ),
@@ -94,14 +117,20 @@ jest.mock('../../../hooks/useTranslation', () => ({
   useTranslation: () => ({
     t: (key: string, options?: any) => {
       switch (key) {
+        case 'metric.homepageEntityHealthRatio':
+          return '{{healthy}}/{{total}} entities';
         case 'thresholds.entities':
           return `${options?.count} entities`;
+        case 'metric.someEntitiesNotReportingValues':
+          return 'Some entities are not reporting values related to this metric.';
         case 'thresholds.noEntities':
           return `No entities in ${options?.category} state`;
         case 'thresholds.Test':
           return 'Test';
         case 'errors.missingPermissionMessage':
           return 'Missing permission';
+        case 'errors.unsupportedAggregationType':
+          return 'Unsupported aggregation type';
         default:
           return key;
       }
@@ -114,13 +143,14 @@ jest.mock('../../../hooks/useTranslation', () => ({
 // --------------------
 
 const mockScorecard: AggregatedMetricResult = {
-  id: 'github.open_prs',
+  id: 'github.openPRs',
   status: 'success',
   metadata: {
     title: 'GitHub open PRs',
     description: 'Open PRs',
     type: 'number',
     history: true,
+    aggregationType: aggregationTypes.statusGrouped,
   },
   result: {
     total: 37,
@@ -131,6 +161,32 @@ const mockScorecard: AggregatedMetricResult = {
     ],
     timestamp: '2024-01-01T00:00:00Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 37,
+    calculationErrorCount: 0,
+  },
+};
+
+const mockWeightedStatusScoreScorecard: AggregatedMetricResult = {
+  ...mockScorecard,
+  metadata: {
+    ...mockScorecard.metadata,
+    aggregationType: aggregationTypes.weightedStatusScore,
+  },
+  result: {
+    ...mockScorecard.result,
+    weightedStatusScore: 75,
+    weightedStatusSum: 18,
+    weightedStatusMaxPossible: 24,
+    aggregationChartDisplayColor: 'warning.main',
+  },
+};
+
+const mockUnsupportedAggregationScorecard: AggregatedMetricResult = {
+  ...mockScorecard,
+  metadata: {
+    ...mockScorecard.metadata,
+    aggregationType:
+      'futureStrategy' as AggregatedMetricResult['metadata']['aggregationType'],
   },
 };
 
@@ -154,11 +210,12 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 // Tests
 // --------------------
 
-describe('ScorecardHomepageCardComponent', () => {
+describe('AggregatedMetricCard (homepage scorecard)', () => {
   it('should render title, subheader, and description', () => {
     render(
-      <ScorecardHomepageCardComponent
+      <AggregatedMetricCard
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="GitHub open PRs"
         description="Current count of open Pull Requests"
       />,
@@ -176,10 +233,64 @@ describe('ScorecardHomepageCardComponent', () => {
     );
   });
 
+  it('should render ratio and warning affordance when calculation errors exist', () => {
+    const scorecardWithCalculationErrors: AggregatedMetricResult = {
+      ...mockScorecard,
+      result: {
+        ...mockScorecard.result,
+        entitiesConsidered: 45,
+        calculationErrorCount: 8,
+      },
+    };
+
+    render(
+      <AggregatedMetricCard
+        scorecard={scorecardWithCalculationErrors}
+        aggregationId={scorecardWithCalculationErrors.id}
+        cardTitle="GitHub open PRs"
+        description="desc"
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByTestId('card-subheader')).toHaveTextContent(
+      '37/45 entities',
+    );
+    expect(screen.queryByTestId('scorecard-homepage-card-warning')).toBeNull();
+  });
+
+  it('should infer ratio and warning from entitiesConsidered minus total when calculationErrorCount is missing', () => {
+    const scorecardWithImplicitCalculationErrors: AggregatedMetricResult = {
+      ...mockScorecard,
+      result: {
+        ...mockScorecard.result,
+        total: 4,
+        entitiesConsidered: 5,
+        calculationErrorCount: 0,
+      },
+    };
+
+    render(
+      <AggregatedMetricCard
+        scorecard={scorecardWithImplicitCalculationErrors}
+        aggregationId={scorecardWithImplicitCalculationErrors.id}
+        cardTitle="GitHub open PRs"
+        description="desc"
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByTestId('card-subheader')).toHaveTextContent(
+      '4/5 entities',
+    );
+    expect(screen.queryByTestId('scorecard-homepage-card-warning')).toBeNull();
+  });
+
   it('should render ResponsivePieChart', () => {
     render(
-      <ScorecardHomepageCardComponent
+      <AggregatedMetricCard
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="GitHub open PRs"
         description="desc"
       />,
@@ -191,8 +302,9 @@ describe('ScorecardHomepageCardComponent', () => {
 
   it('should pass correct colors for rings to ResponsivePieChart', () => {
     render(
-      <ScorecardHomepageCardComponent
+      <AggregatedMetricCard
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="Test"
         description="desc"
       />,
@@ -215,8 +327,9 @@ describe('ScorecardHomepageCardComponent', () => {
 
   it('should pass correct pie data length', () => {
     render(
-      <ScorecardHomepageCardComponent
+      <AggregatedMetricCard
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="GitHub open PRs"
         description="desc"
       />,
@@ -228,8 +341,9 @@ describe('ScorecardHomepageCardComponent', () => {
 
   it('should render CustomLegend and CustomTooltip', () => {
     render(
-      <ScorecardHomepageCardComponent
+      <AggregatedMetricCard
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="GitHub open PRs"
         description="desc"
       />,
@@ -247,12 +361,15 @@ describe('ScorecardHomepageCardComponent', () => {
         ...mockScorecard.result,
         values: [],
         total: 0,
+        entitiesConsidered: 0,
+        calculationErrorCount: 0,
       },
     };
 
     render(
-      <ScorecardHomepageCardComponent
+      <AggregatedMetricCard
         scorecard={emptyScorecard}
+        aggregationId={emptyScorecard.id}
         cardTitle="Empty"
         description="desc"
       />,
@@ -267,8 +384,9 @@ describe('ScorecardHomepageCardComponent', () => {
 
   it('should render chart container element', () => {
     const { container } = render(
-      <ScorecardHomepageCardComponent
+      <AggregatedMetricCard
         scorecard={mockScorecard}
+        aggregationId={mockScorecard.id}
         cardTitle="GitHub open PRs"
         description="desc"
       />,
@@ -286,12 +404,15 @@ describe('ScorecardHomepageCardComponent', () => {
       result: {
         ...mockScorecard.result,
         values: [],
+        entitiesConsidered: 37,
+        calculationErrorCount: 0,
       },
     };
 
     render(
-      <ScorecardHomepageCardComponent
+      <AggregatedMetricCard
         scorecard={scorecardWithoutValues}
+        aggregationId={scorecardWithoutValues.id}
         cardTitle="No Values"
         description="desc"
       />,
@@ -299,5 +420,45 @@ describe('ScorecardHomepageCardComponent', () => {
     );
 
     expect(screen.getByTestId('pie-data-length')).toHaveTextContent('0');
+  });
+
+  it('should render two donut slices and center percent for weightedStatusScore aggregation', () => {
+    render(
+      <AggregatedMetricCard
+        scorecard={mockWeightedStatusScoreScorecard}
+        aggregationId={mockWeightedStatusScoreScorecard.id}
+        cardTitle="Generative AI APIs"
+        description="Weighted health score for the group."
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByTestId('pie-data-length')).toHaveTextContent('2');
+    expect(
+      screen.getByTestId('pie-segment-weightedStatusScoreFill'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('pie-segment-weightedStatusScoreRemainder'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('weighted-status-score-card-center-percent'),
+    ).toHaveTextContent('75%');
+  });
+
+  it('should render error panel when aggregation type is not supported', () => {
+    render(
+      <AggregatedMetricCard
+        scorecard={mockUnsupportedAggregationScorecard}
+        aggregationId={mockUnsupportedAggregationScorecard.id}
+        cardTitle="Unknown KPI"
+        description="desc"
+        dataTestId="unsupported-agg-card"
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByTestId('response-error-panel')).toHaveTextContent(
+      'Unsupported aggregation type (futureStrategy)',
+    );
   });
 });

@@ -24,13 +24,15 @@ import {
 import {
   MigrationPhase,
   Artifact,
-  JobStatusEnum,
+  ArtifactKind,
+  JobStatus,
   Telemetry,
+  Phase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import { CallbackToken } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 import type { RouterDeps } from './types';
 import { executePhaseActions } from './phaseActions';
-import { SignatureValidator } from './utils/SignatureValidator';
 
 const agentMetricsSchema = z.object({
   name: z.string(),
@@ -53,13 +55,7 @@ const telemetrySchema = z.object({
 
 const artifactSchema = z.object({
   id: z.string(),
-  type: z.enum([
-    'migration_plan',
-    'module_migration_plan',
-    'migrated_sources',
-    'project_metadata',
-    'ansible_project',
-  ]),
+  type: z.enum(ArtifactKind.values() as [string, ...string[]]),
   value: z.string(),
 });
 
@@ -92,15 +88,12 @@ interface JobWithToken {
 }
 
 class AuthenticationHandler {
-  constructor(
-    private readonly validator: SignatureValidator,
-    private readonly logger: RouterDeps['logger'],
-  ) {}
+  constructor(private readonly logger: RouterDeps['logger']) {}
 
   validateSignature(
     rawBody: Buffer,
     providedSignature: string | undefined,
-    callbackToken: string,
+    callbackToken: CallbackToken,
     jobId: string,
   ): void {
     if (!providedSignature) {
@@ -108,11 +101,7 @@ class AuthenticationHandler {
       throw new AuthenticationError('Authentication failed');
     }
 
-    const isValid = this.validator.validateSignature(
-      callbackToken,
-      rawBody,
-      providedSignature,
-    );
+    const isValid = callbackToken.validateSignature(rawBody, providedSignature);
 
     if (!isValid) {
       this.logAuthFailure(
@@ -165,11 +154,11 @@ class RequestValidator {
     phase: MigrationPhase,
     moduleId: string | undefined,
   ): void {
-    if (phase === 'init' && moduleId) {
+    if (Phase.from(phase).isProjectPhase() && moduleId) {
       throw new InputError('moduleId must not be provided for init phase');
     }
 
-    if (phase !== 'init' && !moduleId) {
+    if (Phase.from(phase).isModulePhase() && !moduleId) {
       throw new InputError(`moduleId is required for ${phase} phase`);
     }
   }
@@ -211,7 +200,7 @@ class RequestValidator {
       );
     }
 
-    if (phase !== 'init' && job.moduleId !== moduleId) {
+    if (Phase.from(phase).isModulePhase() && job.moduleId !== moduleId) {
       throw new InputError(
         `Job moduleId mismatch: expected ${moduleId}, got ${job.moduleId}`,
       );
@@ -236,8 +225,7 @@ export function registerCollectArtifactsRoutes(
   deps: RouterDeps,
 ): void {
   const { x2aDatabase, kubeService, logger, config } = deps;
-  const signatureValidator = new SignatureValidator();
-  const authHandler = new AuthenticationHandler(signatureValidator, logger);
+  const authHandler = new AuthenticationHandler(logger);
   const requestValidator = new RequestValidator(logger);
   const maxJobAgeSeconds =
     config.getOptionalNumber('x2a.collectArtifacts.maxJobAgeSeconds') ??
@@ -285,6 +273,7 @@ export function registerCollectArtifactsRoutes(
           throw new AuthenticationError('Authentication failed');
         }
 
+        const callbackToken = CallbackToken.from(jobWithToken.callbackToken);
         const providedSignature = req.headers['x-callback-signature'] as
           | string
           | undefined;
@@ -292,7 +281,7 @@ export function registerCollectArtifactsRoutes(
         authHandler.validateSignature(
           rawBody,
           providedSignature,
-          jobWithToken.callbackToken,
+          callbackToken,
           validatedRequest.jobId,
         );
 
@@ -334,12 +323,13 @@ async function processJobCompletion(
   logger: RouterDeps['logger'],
   job: JobWithToken,
 ): Promise<{ message: string }> {
-  let status: JobStatusEnum =
-    validatedRequest.status === 'success' ? 'success' : 'error';
+  let jobStatus = JobStatus.from(
+    validatedRequest.status === 'success' ? 'success' : 'error',
+  );
   let errorDetails = validatedRequest.errorDetails || null;
 
-  if (status === 'success') {
-    status = await executePhaseActionsWithErrorHandling(
+  if (jobStatus.isSuccess()) {
+    jobStatus = await executePhaseActionsWithErrorHandling(
       phase,
       projectId,
       validatedRequest,
@@ -347,7 +337,7 @@ async function processJobCompletion(
       logger,
     );
 
-    if (status === 'error') {
+    if (jobStatus.isError()) {
       errorDetails = 'Phase actions failed';
     }
   }
@@ -356,7 +346,7 @@ async function processJobCompletion(
 
   await x2aDatabase.updateJob({
     id: validatedRequest.jobId,
-    status,
+    status: jobStatus.value,
     finishedAt: new Date(),
     errorDetails,
     log: logs,
@@ -374,7 +364,7 @@ async function executePhaseActionsWithErrorHandling(
   validatedRequest: CollectArtifactsRequestBody,
   x2aDatabase: RouterDeps['x2aDatabase'],
   logger: RouterDeps['logger'],
-): Promise<JobStatusEnum> {
+): Promise<JobStatus> {
   try {
     await executePhaseActions(phase, {
       projectId,
@@ -382,12 +372,12 @@ async function executePhaseActionsWithErrorHandling(
       x2aDatabase,
       logger,
     });
-    return 'success';
+    return JobStatus.SUCCESS;
   } catch (error) {
     logger.error(
       `Phase actions failed for job ${validatedRequest.jobId}: ${error instanceof Error ? error.message : String(error)}`,
     );
-    return 'error';
+    return JobStatus.ERROR;
   }
 }
 

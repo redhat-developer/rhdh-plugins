@@ -25,11 +25,16 @@ import {
   startBackendServer,
 } from '../../../../__fixtures__/testUtils';
 
+// Token header used across GitLab repo-listing tests.
+const GL_USER_TOKENS = JSON.stringify({
+  'https://gitlab.com': 'test-gl-token',
+});
+
 describe('repositories', () => {
   const useTestData = setupTest();
 
   describe('GET /repositories', () => {
-    it('returns 200 when repositories are fetched without errors', async () => {
+    it('returns 401 when X-SCM-Tokens header is absent', async () => {
       const { mockCatalogClient } = useTestData();
       const backendServer = await startBackendServer(
         mockCatalogClient,
@@ -39,6 +44,22 @@ describe('repositories', () => {
       const response = await request(backendServer)
         .get('/api/bulk-import/repositories')
         .query({ approvalTool: 'GITLAB' });
+
+      expect(response.status).toEqual(401);
+      expect(response.body).toHaveProperty('error');
+    });
+
+    it('returns 200 when repositories are fetched without errors', async () => {
+      const { mockCatalogClient } = useTestData();
+      const backendServer = await startBackendServer(
+        mockCatalogClient,
+        AuthorizeResult.ALLOW,
+      );
+
+      const response = await request(backendServer)
+        .get('/api/bulk-import/repositories')
+        .query({ approvalTool: 'GITLAB' })
+        .set('X-SCM-Tokens', GL_USER_TOKENS);
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
@@ -96,7 +117,8 @@ describe('repositories', () => {
 
       const response = await request(backendServer)
         .get('/api/bulk-import/repositories')
-        .query({ approvalTool: 'GITLAB' });
+        .query({ approvalTool: 'GITLAB' })
+        .set('X-SCM-Tokens', GL_USER_TOKENS);
 
       expect(response.status).toEqual(500);
       expect(response.body).toEqual({
@@ -104,9 +126,267 @@ describe('repositories', () => {
         errors: ['Gitlab Token auth did not succeed'],
       });
     });
+
+    describe('filtering repositories', () => {
+      it('returns all repos when no repos are imported yet', async () => {
+        const { mockCatalogClient } = useTestData();
+
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .query({ approvalTool: 'GITLAB' })
+          .set('X-SCM-Tokens', GL_USER_TOKENS);
+
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({
+          approvalTool: 'GITLAB',
+          errors: [],
+          repositories: [
+            {
+              defaultBranch: 'main',
+              errors: [],
+              id: 'saltypig1/dolbear',
+              lastUpdate: '2025-07-31T14:52:27.849Z',
+              name: 'dolbear',
+              organization: 'saltypig1',
+              url: 'http://localhost:8765/saltypig1/dolbear',
+            },
+            {
+              defaultBranch: 'main',
+              errors: [],
+              id: 'saltypig1/funtimes',
+              lastUpdate: '2025-08-15T15:03:44.927Z',
+              name: 'funtimes',
+              organization: 'saltypig1',
+              url: 'http://localhost:8765/saltypig1/funtimes',
+            },
+            {
+              defaultBranch: 'main',
+              errors: [],
+              id: 'saltypig1/swapi-node',
+              lastUpdate: '2025-07-31T14:54:57.289Z',
+              name: 'swapi-node',
+              organization: 'saltypig1',
+              url: 'http://localhost:8765/saltypig1/swapi-node',
+            },
+          ],
+          totalCount: 3,
+        });
+      });
+
+      it('returns empty array when there are no repos to be imported', async () => {
+        const { server, mockCatalogClient } = useTestData();
+
+        server.use(
+          rest.get(`${LOCAL_ADDR}/api/v4/projects`, (_, res, ctx) =>
+            res(ctx.status(200), ctx.json([])),
+          ),
+        );
+
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .query({ approvalTool: 'GITLAB' })
+          .set('X-SCM-Tokens', GL_USER_TOKENS);
+
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({
+          approvalTool: 'GITLAB',
+          errors: [],
+          repositories: [],
+          totalCount: 0,
+        });
+      });
+
+      it('returns filtered (not yet imported) repos when some repos are already imported', async () => {
+        const { mockCatalogClient } = useTestData();
+
+        mockCatalogClient.getLocations.mockResolvedValue({
+          items: [
+            {
+              id: 'imported-funtimes',
+              target:
+                'http://localhost:8765/saltypig1/funtimes/blob/main/catalog-info.yaml',
+              type: 'url',
+              entityRef: 'location:default/imported-funtimes',
+            },
+          ],
+        });
+
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .query({ approvalTool: 'GITLAB' })
+          .set('X-SCM-Tokens', GL_USER_TOKENS);
+
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({
+          approvalTool: 'GITLAB',
+          errors: [],
+          repositories: [
+            {
+              defaultBranch: 'main',
+              errors: [],
+              id: 'saltypig1/dolbear',
+              lastUpdate: '2025-07-31T14:52:27.849Z',
+              name: 'dolbear',
+              organization: 'saltypig1',
+              url: 'http://localhost:8765/saltypig1/dolbear',
+            },
+            {
+              defaultBranch: 'main',
+              errors: [],
+              id: 'saltypig1/swapi-node',
+              lastUpdate: '2025-07-31T14:54:57.289Z',
+              name: 'swapi-node',
+              organization: 'saltypig1',
+              url: 'http://localhost:8765/saltypig1/swapi-node',
+            },
+          ],
+          totalCount: 2,
+        });
+      });
+
+      it('returns empty array when all repos are already imported', async () => {
+        const { mockCatalogClient } = useTestData();
+
+        mockCatalogClient.getLocations.mockResolvedValue({
+          items: [
+            {
+              id: 'imported-dolbear',
+              target:
+                'http://localhost:8765/saltypig1/dolbear/blob/main/catalog-info.yaml',
+              type: 'url',
+              entityRef: 'location:default/imported-dolbear',
+            },
+            {
+              id: 'imported-funtimes',
+              target:
+                'http://localhost:8765/saltypig1/funtimes/blob/main/catalog-info.yaml',
+              type: 'url',
+              entityRef: 'location:default/imported-funtimes',
+            },
+            {
+              id: 'imported-swapi-node',
+              target:
+                'http://localhost:8765/saltypig1/swapi-node/blob/main/catalog-info.yaml',
+              type: 'url',
+              entityRef: 'location:default/imported-swapi-node',
+            },
+          ],
+        });
+
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .query({ approvalTool: 'GITLAB' })
+          .set('X-SCM-Tokens', GL_USER_TOKENS);
+
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({
+          approvalTool: 'GITLAB',
+          errors: [],
+          repositories: [],
+          totalCount: 0,
+        });
+      });
+
+      it('returns all repos even though a non-root catalog location exists', async () => {
+        const { mockCatalogClient } = useTestData();
+
+        mockCatalogClient.getLocations.mockResolvedValue({
+          items: [
+            {
+              id: 'imported-funtimes-nested',
+              target:
+                'http://localhost:8765/saltypig1/funtimes/blob/main/packages/backend/catalog-info.yaml',
+              type: 'url',
+              entityRef: 'location:default/imported-funtimes-nested',
+            },
+          ],
+        });
+
+        const backendServer = await startBackendServer(
+          mockCatalogClient,
+          AuthorizeResult.ALLOW,
+        );
+
+        const response = await request(backendServer)
+          .get('/api/bulk-import/repositories')
+          .query({ approvalTool: 'GITLAB' })
+          .set('X-SCM-Tokens', GL_USER_TOKENS);
+
+        expect(response.status).toEqual(200);
+        expect(response.body).toEqual({
+          approvalTool: 'GITLAB',
+          errors: [],
+          repositories: [
+            {
+              defaultBranch: 'main',
+              errors: [],
+              id: 'saltypig1/dolbear',
+              lastUpdate: '2025-07-31T14:52:27.849Z',
+              name: 'dolbear',
+              organization: 'saltypig1',
+              url: 'http://localhost:8765/saltypig1/dolbear',
+            },
+            {
+              defaultBranch: 'main',
+              errors: [],
+              id: 'saltypig1/funtimes',
+              lastUpdate: '2025-08-15T15:03:44.927Z',
+              name: 'funtimes',
+              organization: 'saltypig1',
+              url: 'http://localhost:8765/saltypig1/funtimes',
+            },
+            {
+              defaultBranch: 'main',
+              errors: [],
+              id: 'saltypig1/swapi-node',
+              lastUpdate: '2025-07-31T14:54:57.289Z',
+              name: 'swapi-node',
+              organization: 'saltypig1',
+              url: 'http://localhost:8765/saltypig1/swapi-node',
+            },
+          ],
+          totalCount: 3,
+        });
+      });
+    });
   });
 
   describe('GET /organizations/{org}/repositories', () => {
+    it('returns 401 when X-SCM-Tokens header is absent', async () => {
+      const { mockCatalogClient } = useTestData();
+      const backendServer = await startBackendServer(
+        mockCatalogClient,
+        AuthorizeResult.ALLOW,
+      );
+
+      const response = await request(backendServer)
+        .get('/api/bulk-import/organizations/my-ent-org-1/repositories')
+        .query({ approvalTool: 'GITLAB' });
+
+      expect(response.status).toEqual(401);
+      expect(response.body).toHaveProperty('error');
+    });
+
     it('returns 200 when repositories are fetched without errors', async () => {
       const { mockCatalogClient } = useTestData();
       const backendServer = await startBackendServer(
@@ -116,7 +396,8 @@ describe('repositories', () => {
 
       let response = await request(backendServer)
         .get('/api/bulk-import/organizations/my-ent-org-1/repositories')
-        .query({ approvalTool: 'GITLAB' });
+        .query({ approvalTool: 'GITLAB' })
+        .set('X-SCM-Tokens', GL_USER_TOKENS);
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
@@ -138,7 +419,8 @@ describe('repositories', () => {
 
       response = await request(backendServer)
         .get('/api/bulk-import/organizations/my-ent-org-2/repositories')
-        .query({ approvalTool: 'GITLAB' });
+        .query({ approvalTool: 'GITLAB' })
+        .set('X-SCM-Tokens', GL_USER_TOKENS);
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
@@ -169,7 +451,8 @@ describe('repositories', () => {
 
       response = await request(backendServer)
         .get('/api/bulk-import/organizations/my-ent-org--no-repos/repositories')
-        .query({ approvalTool: 'GITLAB' });
+        .query({ approvalTool: 'GITLAB' })
+        .set('X-SCM-Tokens', GL_USER_TOKENS);
 
       expect(response.status).toEqual(200);
       expect(response.body).toEqual({
@@ -201,7 +484,8 @@ describe('repositories', () => {
 
       const orgReposResp = await request(backendServer)
         .get('/api/bulk-import/organizations/some-org/repositories')
-        .query({ approvalTool: 'GITLAB' });
+        .query({ approvalTool: 'GITLAB' })
+        .set('X-SCM-Tokens', GL_USER_TOKENS);
 
       expect(orgReposResp.status).toEqual(500);
       expect(orgReposResp.body).toEqual({

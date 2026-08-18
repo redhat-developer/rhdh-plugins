@@ -35,6 +35,7 @@ import {
   resolveDropdownDefault,
   useProcessingState,
   useClearOnRetrigger,
+  evaluateFetchResponseSelectorTemplate,
 } from '../utils';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
@@ -61,7 +62,7 @@ export const ActiveDropdown: Widget<
   const { classes } = useStyles();
   const templateUnitEvaluator = useTemplateUnitEvaluator();
 
-  const { id, label, value, onChange, formContext } = props;
+  const { id, label, value, onChange, onBlur, formContext } = props;
   const formData = formContext?.formData;
   const isChangedByUser = !!formContext?.getIsChangedByUser(id);
   const setIsChangedByUser = formContext?.setIsChangedByUser;
@@ -100,7 +101,12 @@ export const ActiveDropdown: Widget<
     uiProps['fetch:retrigger'] as string[],
   );
 
-  const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
+  const { data, error, loading } = useFetch(
+    formData ?? {},
+    uiProps,
+    retrigger,
+    formContext?.onSamlSsoError,
+  );
 
   // Track the complete loading state (fetch + processing)
   const { completeLoading, wrapProcessing } = useProcessingState(
@@ -126,13 +132,36 @@ export const ActiveDropdown: Widget<
 
     const doItAsync = async () => {
       await wrapProcessing(async () => {
+        const fd = formData ?? {};
+        const resolvedLabelSelector =
+          await evaluateFetchResponseSelectorTemplate({
+            template: labelSelector,
+            key: 'fetch:response:label',
+            unitEvaluator: templateUnitEvaluator,
+            formData: fd,
+            responseData: data,
+            uiProps,
+          });
+        const resolvedValueSelector =
+          await evaluateFetchResponseSelectorTemplate({
+            template: valueSelector,
+            key: 'fetch:response:value',
+            unitEvaluator: templateUnitEvaluator,
+            formData: fd,
+            responseData: data,
+            uiProps,
+          });
         const selectedLabels = await applySelectorArray(
-          getSelectorContext(labelSelector),
-          labelSelector,
+          getSelectorContext(resolvedLabelSelector),
+          resolvedLabelSelector,
+          true,
+          true,
         );
         const selectedValues = await applySelectorArray(
-          getSelectorContext(valueSelector),
-          valueSelector,
+          getSelectorContext(resolvedValueSelector),
+          resolvedValueSelector,
+          true,
+          true,
         );
 
         if (selectedLabels.length !== selectedValues.length) {
@@ -148,7 +177,16 @@ export const ActiveDropdown: Widget<
     };
 
     doItAsync();
-  }, [labelSelector, valueSelector, data, formData, props.id, wrapProcessing]);
+  }, [
+    labelSelector,
+    valueSelector,
+    data,
+    formData,
+    uiProps,
+    templateUnitEvaluator,
+    props.id,
+    wrapProcessing,
+  ]);
 
   const handleChange = useCallback(
     (changed: string, isByUser: boolean) => {
@@ -270,6 +308,7 @@ export const ActiveDropdown: Widget<
         label={label}
         disabled={isReadOnly}
         onChange={event => handleChange(event.target.value as string, true)}
+        onBlur={() => onBlur?.(id, value)}
         MenuProps={{
           PaperProps: { sx: { maxHeight: '20rem' } },
         }}

@@ -26,7 +26,7 @@ The home page loads automatically a configuration like this, when no other confi
 ```yaml
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage
@@ -70,7 +70,7 @@ For an interactive homepage where users can add, remove, move, and resize cards:
 ```yaml
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       dynamicRoutes:
         - path: /
           importName: DynamicCustomizableHomePage
@@ -130,7 +130,7 @@ Each card can have a `layouts` definition and `props` that are depending on the 
 ```yaml
 dynamicPlugins:
   frontend:
-    red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+    red-hat-developer-hub.backstage-plugin-homepage:
       mountPoints:
         - mountPoint: home.page/cards
           importName: Headline

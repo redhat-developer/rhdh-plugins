@@ -6,8 +6,8 @@
     "node": "22 || 24"
   },
   "scripts": {
-    "dev": "NODE_OPTIONS=--no-node-snapshot ; yarn workspaces foreach -A --include @red-hat-developer-hub/backstage-plugin-x2a --include @red-hat-developer-hub/backstage-plugin-x2a-backend --parallel -v -i run start",
-    "start": "NODE_OPTIONS=--no-node-snapshot ; backstage-cli repo start",
+    "dev": "NODE_OPTIONS=--no-node-snapshot yarn workspaces foreach -A --include @red-hat-developer-hub/backstage-plugin-x2a --include @red-hat-developer-hub/backstage-plugin-x2a-backend --parallel -v -i run start",
+    "start": "NODE_OPTIONS=--no-node-snapshot backstage-cli repo start",
     "build:backend": "yarn workspace backend build",
     "build:all": "backstage-cli repo build --all",
     "build:api-reports": "yarn tsc:full; yarn build:api-reports:only",
@@ -17,18 +17,24 @@
     "openapi-generate": "cd plugins/x2a-backend && yarn openapi-generate",
     "tsc": "tsc",
     "tsc:full": "tsc --skipLibCheck true --incremental false",
-    "clean": "backstage-cli repo clean",
+    "clean": "backstage-cli repo clean && find plugins -mindepth 2 -maxdepth 2 -type d -name dist-dynamic -exec rm -rf {} +",
     "test": "backstage-cli repo test",
+    "test:pg": "CI=true backstage-cli repo test",
     "test:all": "yarn openapi-generate && yarn prettier:check && yarn lint:all && backstage-cli repo test --coverage",
-    "test:e2e": "echo Skipping until we have tests: playwright test",
-    "fix": "backstage-cli repo fix",
+    "test:all:pg": "yarn openapi-generate && yarn prettier:check && yarn lint:all && CI=true backstage-cli repo test --coverage",
+    "test:e2e": "yarn test:e2e:all",
+    "test:e2e:nfs": "APP_MODE=nfs playwright test",
+    "test:e2e:all": "yarn test:e2e:nfs",
+    "playwright": "bash -c 'if [[ $1 == test ]]; then echo \"Skipping test:e2e:all e2e tests (no real tests yet)\"; else npx playwright \"$@\"; fi' _",
+    "fix": "backstage-cli repo fix --publish",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
     "chores": "yarn prettier:fix && yarn lint:all --fix && yarn tsc:full && yarn build:api-reports && yarn test:all",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
-    "postinstall": "cd ../../ && yarn install"
+    "postinstall": "cd ../../ && yarn install",
+    "enable-in-rhdh-repo": "node scripts/export-to-rhdh-repo.js && node scripts/update-config-in-rhdh-repo.js"
   },
   "workspaces": {
     "packages": [
@@ -42,25 +48,42 @@
     "directory": "workspaces/x2a"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.34.5",
-    "@backstage/e2e-test-utils": "^0.1.1",
-    "@backstage/repo-tools": "^0.16.0",
+    "@backstage/cli": "0.36.0",
+    "@backstage/cli-defaults": "0.1.0",
+    "@backstage/e2e-test-utils": "^0.1.2",
+    "@backstage/repo-tools": "^0.17.0",
     "@changesets/cli": "^2.27.1",
-    "@playwright/test": "1.58.2",
+    "@jest/environment-jsdom-abstract": "30.3.0",
+    "@playwright/test": "1.60.0",
+    "@types/jest": "30.0.0",
+    "enquirer": "^2.4.1",
+    "jest": "30.3.0",
+    "jsdom": "27.4.0",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
     "prettier": "^3.7.4",
     "typescript": "^5.9.0"
   },
   "resolutions": {
+    "isolated-vm": "^6.0.1",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "lru-cache": "^8",
-    "@backstage/backend-defaults": "0.13.1",
-    "@backstage/backend-plugin-api": "1.5.0",
-    "@backstage-community/plugin-rbac-backend": "~7.4.0",
-    "@backstage/plugin-permission-react": "0.4.36",
-    "@backstage/plugin-auth-backend-module-gitlab-provider": "0.3.9"
+    "@backstage/frontend-plugin-api": "0.15.1",
+    "@backstage/frontend-defaults": "0.5.0",
+    "@backstage/frontend-app-api": "0.16.1",
+    "@backstage/plugin-app": "0.4.2",
+    "@backstage/plugin-app-react": "0.2.1",
+    "@backstage/core-compat-api": "0.5.9",
+    "@backstage/core-plugin-api": "1.12.4",
+    "@backstage/core-components": "0.18.8",
+    "@backstage/filter-predicates": "0.1.1",
+    "@backstage/plugin-catalog": "2.0.1",
+    "@backstage/plugin-catalog-react": "2.1.1",
+    "@backstage/plugin-scaffolder": "1.36.1",
+    "@backstage/plugin-scaffolder-react": "1.20.0",
+    "@backstage/plugin-user-settings": "0.9.1",
+    "zod@^3.25.76 || ^4.0.0": "3.25.76",
+    "zod@^3.25 || ^4.0": "3.25.76"
   },
   "prettier": "@backstage/cli/config/prettier",
   "lint-staged": {
@@ -74,7 +97,7 @@
   },
   "maintainers": [
     "@mareklibra",
-    "@elai-shalev",
-    "@eloycoto"
+    "@eloycoto",
+    "@yray-pixel"
   ]
 }

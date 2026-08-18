@@ -19,8 +19,6 @@ import type { MouseEvent } from 'react';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableRow from '@mui/material/TableRow';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { AddedRepositories, AddRepositoryData } from '../../types';
@@ -33,16 +31,15 @@ export const RepositoriesTableBody = ({
   ariaLabel,
   showOrganizations,
   rows,
-  emptyRows,
   onOrgRowSelected,
   onClick,
   selectedRepos,
   isDrawer,
   isApprovalToolGitlab = false,
+  loginRejected = false,
 }: {
   loading: boolean;
   ariaLabel: string;
-  emptyRows: number;
   rows: AddRepositoryData[];
   onOrgRowSelected: (org: AddRepositoryData) => void;
   onClick: (_event: MouseEvent, repo: AddRepositoryData) => void;
@@ -50,6 +47,7 @@ export const RepositoriesTableBody = ({
   isDrawer?: boolean;
   showOrganizations?: boolean;
   isApprovalToolGitlab?: boolean;
+  loginRejected?: boolean;
 }) => {
   const { t } = useTranslation();
   const isSelected = (id: string) => {
@@ -100,18 +98,25 @@ export const RepositoriesTableBody = ({
             />
           );
         })}
-        {emptyRows > 0 && (
-          <TableRow
-            style={{
-              height: 55 * emptyRows,
-            }}
-          >
-            <TableCell />
-          </TableRow>
-        )}
       </TableBody>
     );
   }
+
+  let emptyStateMessageKey:
+    | 'repositories.logInToViewProjects'
+    | 'repositories.logInToViewRepositories'
+    | 'repositories.noProjectsFound'
+    | 'repositories.noRecordsFound';
+  if (loginRejected) {
+    emptyStateMessageKey = isApprovalToolGitlab
+      ? 'repositories.logInToViewProjects'
+      : 'repositories.logInToViewRepositories';
+  } else if (isApprovalToolGitlab) {
+    emptyStateMessageKey = 'repositories.noProjectsFound';
+  } else {
+    emptyStateMessageKey = 'repositories.noRecordsFound';
+  }
+
   return (
     <tbody>
       <tr>
@@ -126,11 +131,7 @@ export const RepositoriesTableBody = ({
               justifyContent: 'center',
             }}
           >
-            {t(
-              isApprovalToolGitlab
-                ? 'repositories.noProjectsFound'
-                : 'repositories.noRecordsFound',
-            )}
+            {t(emptyStateMessageKey)}
           </Box>
         </td>
       </tr>

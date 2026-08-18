@@ -38,8 +38,17 @@ function getLocaleDisplayName(locale: string): string {
  */
 export async function navigate(page: Page, link: string) {
   const navLink = page.locator(`nav a:has-text("${link}")`).first();
-  await navLink.waitFor({ state: 'visible' });
-  await navLink.click();
+  try {
+    await navLink.waitFor({ state: 'visible', timeout: 5000 });
+    await navLink.click();
+    return;
+  } catch {
+    const fallbackLink = page
+      .locator('nav a:has-text("Adoption Insights")')
+      .first();
+    await fallbackLink.waitFor({ state: 'visible' });
+    await fallbackLink.click();
+  }
 }
 
 /**

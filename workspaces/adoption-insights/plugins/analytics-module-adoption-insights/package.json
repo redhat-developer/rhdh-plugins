@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights",
-  "version": "0.6.2",
+  "version": "0.9.1",
   "license": "Apache-2.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
@@ -34,7 +34,7 @@
   "backstage": {
     "role": "frontend-plugin-module",
     "pluginId": "app",
-    "pluginPackage": "@backstage/plugin-app-backend"
+    "pluginPackage": "@backstage/plugin-app"
   },
   "sideEffects": false,
   "scripts": {
@@ -47,23 +47,20 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@backstage/core-components": "^0.18.6",
-    "@backstage/core-plugin-api": "^1.12.2",
-    "@backstage/frontend-plugin-api": "^0.13.4",
-    "@backstage/theme": "^0.7.1",
-    "@material-ui/core": "^4.9.13",
-    "@material-ui/icons": "^4.9.1",
-    "@material-ui/lab": "^4.0.0-alpha.61",
+    "@backstage/core-components": "^0.18.11",
+    "@backstage/core-plugin-api": "^1.12.7",
+    "@backstage/frontend-plugin-api": "^0.17.2",
+    "@backstage/theme": "^0.7.3",
     "react-use": "^17.2.4"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.35.3",
-    "@backstage/core-app-api": "^1.19.4",
-    "@backstage/dev-utils": "^1.1.19",
-    "@backstage/test-utils": "^1.7.14",
+    "@backstage/cli": "^0.36.3",
+    "@backstage/core-app-api": "^1.20.2",
+    "@backstage/dev-utils": "^1.1.24",
+    "@backstage/test-utils": "^1.7.19",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.0.0",

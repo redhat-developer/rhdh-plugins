@@ -1,0 +1,66 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { InputError } from '@backstage/errors';
+import type { Config } from '@backstage/config';
+import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
+import { AGGREGATION_KPIS_CONFIG_PATH } from '../constants';
+import { ThresholdResolver } from '../threshold/ThresholdResolver';
+import { validateScalarAggregationConfig } from './validateScalarAggregationConfig';
+import { parseValidatedAggregationConfig } from '../utils/aggregation/parseValidatedAggregationConfig';
+import { buildAggregationConfig } from '../utils/aggregation/buildAggregationConfig';
+import { isScalarAggregationConfig } from '../utils/aggregation/isScalarAggregationConfig';
+
+export function validateAggregationConfig(options: {
+  rootConfig: Config;
+  registry: MetricProvidersRegistry;
+  thresholdResolver: ThresholdResolver;
+}): void {
+  const { rootConfig, registry, thresholdResolver } = options;
+
+  const aggregationKPIsConfig = rootConfig.getOptionalConfig(
+    AGGREGATION_KPIS_CONFIG_PATH,
+  );
+
+  if (!aggregationKPIsConfig) {
+    return;
+  }
+
+  for (const aggregationId of aggregationKPIsConfig.keys()) {
+    const config = aggregationKPIsConfig.getConfig(aggregationId);
+
+    const aggregationConfig = parseValidatedAggregationConfig(
+      buildAggregationConfig(aggregationId, {
+        config,
+      }),
+    );
+
+    if (!registry.hasProvider(aggregationConfig.metricId)) {
+      throw new InputError(
+        `Metric provider with ID '${aggregationConfig.metricId}' is not registered (${AGGREGATION_KPIS_CONFIG_PATH}.${aggregationId}).`,
+      );
+    }
+
+    if (isScalarAggregationConfig(aggregationConfig)) {
+      validateScalarAggregationConfig({
+        aggregationConfig,
+        aggregationId,
+        registry,
+        thresholdResolver,
+      });
+    }
+  }
+}

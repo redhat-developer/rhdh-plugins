@@ -24,9 +24,16 @@
  * This reducer is provider-agnostic — it only processes normalized events.
  */
 
-import type { ResponseUsage } from '@red-hat-developer-hub/backstage-plugin-augment-common';
+import type {
+  ResponseUsage,
+  StreamFormDescriptor,
+} from '@red-hat-developer-hub/backstage-plugin-augment-common';
 import { StreamingEvent } from '../../types';
-import { StreamingState, ToolCallState } from './StreamingMessage.types';
+import {
+  StreamingState,
+  ToolCallState,
+  ReasoningSpanInfo,
+} from './StreamingMessage.types';
 import {
   STREAMING_PHASES,
   EVENT_TYPES,
@@ -46,7 +53,60 @@ export function createInitialStreamingState(): StreamingState {
     text: '',
     completed: false,
     handoffs: [],
+    reasoningSpans: [],
   };
+}
+
+/**
+ * Snapshot current reasoning into a ReasoningSpanInfo if there is
+ * active reasoning content, then return the new reasoningSpans array.
+ */
+function snapshotReasoning(state: StreamingState): ReasoningSpanInfo[] {
+  if (!state.reasoning || !state.reasoningStartTime) {
+    return state.reasoningSpans;
+  }
+  const now = Date.now();
+  const durationMs = state.reasoningDuration
+    ? state.reasoningDuration * 1000
+    : now - state.reasoningStartTime;
+  return [
+    ...state.reasoningSpans,
+    {
+      agentName: state.currentAgent,
+      text: state.reasoning,
+      startedAt: state.reasoningStartTime,
+      endedAt: now,
+      durationMs,
+    },
+  ];
+}
+
+// =============================================================================
+// HELPERS
+// =============================================================================
+
+/**
+ * Find a tool call by ID, falling back to name-based matching on in-progress
+ * tools when the ID is synthetic (e.g. `tool-{timestamp}-{idx}`).
+ */
+function findToolCallMatch(
+  toolCalls: ToolCallState[],
+  callId: string,
+  name?: string,
+): ToolCallState | undefined {
+  const exact = toolCalls.find(tc => tc.id === callId);
+  if (exact) return exact;
+  if (name) {
+    return toolCalls.find(
+      tc =>
+        tc.status === TOOL_STATUS.IN_PROGRESS &&
+        tc.name === name &&
+        tc.id.startsWith('tool-'),
+    );
+  }
+  return toolCalls.find(
+    tc => tc.status === TOOL_STATUS.IN_PROGRESS && tc.id.startsWith('tool-'),
+  );
 }
 
 // =============================================================================
@@ -74,7 +134,11 @@ export function updateStreamingState(
   // Guard: once HITL approval is pending, only process stream lifecycle
   // and tool-data events. Discard text, reasoning, RAG, and discovery
   // events that would otherwise override the PENDING_APPROVAL phase.
-  if (state.phase === STREAMING_PHASES.PENDING_APPROVAL) {
+  if (
+    state.phase === STREAMING_PHASES.PENDING_APPROVAL ||
+    state.phase === STREAMING_PHASES.FORM_INPUT ||
+    state.phase === STREAMING_PHASES.AUTH_REQUIRED
+  ) {
     switch (event.type) {
       case EVENT_TYPES.STREAM_STARTED:
       case EVENT_TYPES.STREAM_COMPLETED:
@@ -83,6 +147,11 @@ export function updateStreamingState(
       case EVENT_TYPES.STREAM_TOOL_COMPLETED:
       case EVENT_TYPES.STREAM_TOOL_FAILED:
       case EVENT_TYPES.STREAM_TOOL_DELTA:
+      case EVENT_TYPES.STREAM_FORM_REQUEST:
+      case EVENT_TYPES.STREAM_AUTH_REQUIRED:
+      case EVENT_TYPES.STREAM_ARTIFACT:
+      case EVENT_TYPES.STREAM_CITATION:
+      case EVENT_TYPES.STREAM_AGENT_HANDOFF:
         break;
       default:
         return state;
@@ -107,6 +176,9 @@ export function updateStreamingState(
         reasoning: undefined,
         reasoningDuration: undefined,
         reasoningStartTime: undefined,
+        pendingApproval: undefined,
+        pendingForm: undefined,
+        pendingAuth: undefined,
       };
     }
 
@@ -120,6 +192,20 @@ export function updateStreamingState(
         completed.agentName && !state.currentAgent
           ? completed.agentName
           : state.currentAgent;
+
+      // Auto-close reasoning if provider never sent stream.reasoning.done
+      const autoReasoningDuration =
+        state.reasoningStartTime && !state.reasoningDuration
+          ? Math.round((Date.now() - state.reasoningStartTime) / 1000)
+          : state.reasoningDuration;
+
+      // Snapshot any remaining reasoning into the spans array
+      const stateWithDuration = {
+        ...state,
+        reasoningDuration: autoReasoningDuration,
+      };
+      const finalReasoningSpans = snapshotReasoning(stateWithDuration);
+
       if (state.phase === STREAMING_PHASES.PENDING_APPROVAL) {
         return {
           ...state,
@@ -127,6 +213,8 @@ export function updateStreamingState(
           usage: completed.usage || state.usage,
           currentAgent: agentFromCompleted,
           outputValidationError: completed.outputValidationError,
+          reasoningDuration: autoReasoningDuration,
+          reasoningSpans: finalReasoningSpans,
         };
       }
       return {
@@ -136,6 +224,8 @@ export function updateStreamingState(
         usage: completed.usage || state.usage,
         currentAgent: agentFromCompleted,
         outputValidationError: completed.outputValidationError,
+        reasoningDuration: autoReasoningDuration,
+        reasoningSpans: finalReasoningSpans,
       };
     }
 
@@ -148,6 +238,9 @@ export function updateStreamingState(
         completed: true,
         errorCode: errorEvent.code,
         text: state.text || `Error: ${errorMessage}`,
+        pendingApproval: undefined,
+        pendingForm: undefined,
+        pendingAuth: undefined,
       };
     }
 
@@ -158,6 +251,7 @@ export function updateStreamingState(
         ...state,
         phase: STREAMING_PHASES.GENERATING,
         text: state.text + ((event as { delta?: string }).delta || ''),
+        textStartedAt: state.textStartedAt || Date.now(),
       };
 
     case EVENT_TYPES.STREAM_TEXT_DONE:
@@ -213,13 +307,16 @@ export function updateStreamingState(
         serverLabel?: string;
         arguments?: string;
       };
+      const toolId =
+        started.callId || `tool-${Date.now()}-${state.toolCalls.length}`;
       const newTool: ToolCallState = {
-        id: started.callId || `tool-${Date.now()}`,
+        id: toolId,
         type: 'tool_call',
         name: started.name,
         status: TOOL_STATUS.IN_PROGRESS,
         serverLabel: started.serverLabel,
         arguments: started.arguments,
+        startedAt: Date.now(),
       };
       return {
         ...state,
@@ -231,11 +328,17 @@ export function updateStreamingState(
     case EVENT_TYPES.STREAM_TOOL_DELTA: {
       const delta = event as { callId?: string; delta?: string };
       if (!delta.callId || !delta.delta) return state;
+      const deltaMatch = findToolCallMatch(state.toolCalls, delta.callId);
+      if (!deltaMatch) return state;
       return {
         ...state,
         toolCalls: state.toolCalls.map(tc =>
-          tc.id === delta.callId
-            ? { ...tc, arguments: (tc.arguments || '') + delta.delta }
+          tc.id === deltaMatch.id
+            ? {
+                ...tc,
+                id: delta.callId!,
+                arguments: (tc.arguments || '') + delta.delta,
+              }
             : tc,
         ),
       };
@@ -251,17 +354,25 @@ export function updateStreamingState(
         error?: string;
       };
       if (!completed.callId) return state;
+      const completedMatch = findToolCallMatch(
+        state.toolCalls,
+        completed.callId,
+        completed.name,
+      );
+      if (!completedMatch) return state;
       return {
         ...state,
         toolCalls: state.toolCalls.map(tc =>
-          tc.id === completed.callId
+          tc.id === completedMatch.id
             ? {
                 ...tc,
+                id: completed.callId!,
                 status: TOOL_STATUS.COMPLETED,
                 name: completed.name || tc.name,
                 serverLabel: completed.serverLabel || tc.serverLabel,
                 arguments: completed.arguments || tc.arguments,
                 output: completed.output,
+                endedAt: Date.now(),
               }
             : tc,
         ),
@@ -275,15 +386,23 @@ export function updateStreamingState(
         error?: string;
       };
       if (!failed.callId) return state;
+      const failedMatch = findToolCallMatch(
+        state.toolCalls,
+        failed.callId,
+        failed.name,
+      );
+      if (!failedMatch) return state;
       return {
         ...state,
         toolCalls: state.toolCalls.map(tc =>
-          tc.id === failed.callId
+          tc.id === failedMatch.id
             ? {
                 ...tc,
+                id: failed.callId!,
                 status: TOOL_STATUS.FAILED,
                 name: failed.name || tc.name,
                 error: failed.error,
+                endedAt: Date.now(),
               }
             : tc,
         ),
@@ -391,6 +510,145 @@ export function updateStreamingState(
       };
     }
 
+    // ---- Form input request (A2A) ----
+
+    case EVENT_TYPES.STREAM_FORM_REQUEST: {
+      const formEvent = event as {
+        taskId?: string;
+        contextId?: string;
+        form?: StreamFormDescriptor;
+      };
+      return {
+        ...state,
+        phase: STREAMING_PHASES.FORM_INPUT,
+        pendingForm: {
+          taskId: formEvent.taskId,
+          contextId: formEvent.contextId,
+          form: formEvent.form || {},
+        },
+      };
+    }
+
+    // ---- Auth required (A2A) ----
+
+    case EVENT_TYPES.STREAM_AUTH_REQUIRED: {
+      const authEvent = event as {
+        taskId?: string;
+        authType?: 'oauth' | 'secret';
+        url?: string;
+        demands?: { secrets?: Array<{ name: string; description?: string }> };
+      };
+      return {
+        ...state,
+        phase: STREAMING_PHASES.AUTH_REQUIRED,
+        pendingAuth: {
+          taskId: authEvent.taskId,
+          authType: authEvent.authType || 'secret',
+          url: authEvent.url,
+          demands: authEvent.demands,
+        },
+      };
+    }
+
+    // ---- Artifact streaming (A2A) ----
+
+    case EVENT_TYPES.STREAM_ARTIFACT: {
+      const artifactEvent = event as {
+        artifactId?: string;
+        name?: string;
+        description?: string;
+        content?: string;
+        append?: boolean;
+        lastChunk?: boolean;
+      };
+      if (!artifactEvent.artifactId) return state;
+
+      const existing = state.artifacts || [];
+      const idx = existing.findIndex(
+        a => a.artifactId === artifactEvent.artifactId,
+      );
+
+      let updatedArtifacts;
+      if (idx >= 0 && artifactEvent.append) {
+        updatedArtifacts = existing.map((a, i) =>
+          i === idx
+            ? {
+                ...a,
+                content: a.content + (artifactEvent.content || ''),
+                lastChunk: artifactEvent.lastChunk,
+              }
+            : a,
+        );
+      } else if (idx >= 0) {
+        updatedArtifacts = existing.map((a, i) =>
+          i === idx
+            ? {
+                ...a,
+                content: artifactEvent.content || '',
+                name: artifactEvent.name || a.name,
+                description: artifactEvent.description || a.description,
+                lastChunk: artifactEvent.lastChunk,
+              }
+            : a,
+        );
+      } else {
+        updatedArtifacts = [
+          ...existing,
+          {
+            artifactId: artifactEvent.artifactId,
+            name: artifactEvent.name,
+            description: artifactEvent.description,
+            content: artifactEvent.content || '',
+            lastChunk: artifactEvent.lastChunk,
+          },
+        ];
+      }
+
+      return { ...state, artifacts: updatedArtifacts };
+    }
+
+    // ---- Citations (A2A) ----
+
+    case EVENT_TYPES.STREAM_CITATION: {
+      const citationEvent = event as {
+        citations?: Array<{
+          title?: string;
+          url?: string;
+          snippet?: string;
+        }>;
+      };
+      if (!citationEvent.citations?.length) return state;
+
+      const existingCitations = state.citations || [];
+      const existingRag = state.ragSources || [];
+      const seenKeys = new Set(
+        existingCitations.map(
+          (c, i) => c.url || c.title || c.snippet || `cite-${i}`,
+        ),
+      );
+
+      const newCitations = citationEvent.citations.filter(c => {
+        const key =
+          c.url || c.title || c.snippet || `cite-${existingCitations.length}`;
+        if (seenKeys.has(key)) return false;
+        seenKeys.add(key);
+        return true;
+      });
+
+      const newRagSources = newCitations.map(c => ({
+        filename: c.title || 'Citation',
+        text: c.snippet,
+        title: c.title,
+        sourceUrl: c.url,
+      }));
+
+      return {
+        ...state,
+        citations: [...existingCitations, ...newCitations],
+        ragSources: [...existingRag, ...newRagSources],
+      };
+    }
+
     // ---- Agent handoff (multi-agent) ----
 
     case EVENT_TYPES.STREAM_AGENT_HANDOFF: {
@@ -400,6 +658,10 @@ export function updateStreamingState(
         reason?: string;
       };
       if (!handoff.toAgent) return state;
+
+      // Preserve current reasoning before clearing
+      const preservedSpans = snapshotReasoning(state);
+
       return {
         ...state,
         currentAgent: handoff.toAgent,
@@ -409,8 +671,10 @@ export function updateStreamingState(
             from: handoff.fromAgent || '',
             to: handoff.toAgent,
             reason: handoff.reason,
+            timestamp: Date.now(),
           },
         ],
+        reasoningSpans: preservedSpans,
         reasoning: undefined,
         reasoningDuration: undefined,
         reasoningStartTime: undefined,

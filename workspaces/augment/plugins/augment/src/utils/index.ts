@@ -25,6 +25,8 @@ export {
 
 export { normalizeErrorMessage } from './errors';
 
+export { getErrorMessage } from './getErrorMessage';
+
 export { sanitizeResponseText } from './sanitize';
 
 export { formatResponseText, formatToolOutput } from './formatResponse';
@@ -37,6 +39,15 @@ export type { ToolSeverity } from './toolSeverity';
 export { stripToolPrefix } from './toolNameUtils';
 
 export { handleStreamError } from './streamErrorHandler';
+
+export { getAgentColor } from './agentColors';
+export type { AgentColor } from './agentColors';
+
+export { exportConversation } from './exportConversation';
+
+export { isAbortError } from './isAbortError';
+
+export { getPreviewSnippet } from './textPreview';
 
 export {
   findJsonBlocks,

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+import { FC } from 'react';
 import { useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -73,7 +73,7 @@ const DESCRIPTION_SX = {
   mt: 0.25,
 } as const;
 
-export const PromptCardItem: React.FC<PromptCardItemProps> = ({
+export const PromptCardItem: FC<PromptCardItemProps> = ({
   card,
   groupColor,
   isDark,

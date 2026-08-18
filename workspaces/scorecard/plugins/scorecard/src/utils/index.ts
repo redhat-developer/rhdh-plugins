@@ -23,5 +23,14 @@ export {
   SCORECARD_ERROR_STATE_COLOR,
 } from './constants';
 export { getLastUpdatedLabel } from './entityTableUtils';
-export { getStatusConfig, resolveStatusColor } from './statusUtils';
+export { formatWithMetricUnit } from './formatMetricUnit';
+export {
+  getStatusConfig,
+  getTranslatedStatus,
+  resolveStatusColor,
+} from './statusUtils';
 export { getThresholdRuleColor, getThresholdRuleIcon } from './thresholdUtils';
+export {
+  resolveMetricTranslation,
+  extractPluginName,
+} from './translationUtils';

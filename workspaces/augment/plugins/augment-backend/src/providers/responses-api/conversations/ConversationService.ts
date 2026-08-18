@@ -16,10 +16,7 @@
 import { LoggerService, DatabaseService } from '@backstage/backend-plugin-api';
 import { toErrorMessage } from '../../../services/utils';
 import { MAX_AUTO_REAPPROVALS } from '../../../constants';
-import {
-  ResponsesApiError,
-  type ResponsesApiClient,
-} from '../client/ResponsesApiClient';
+import type { ResponsesApiClient } from '../client/ResponsesApiClient';
 import { McpAuthService } from '../../llamastack/McpAuthService';
 import { MCPServerConfig } from '../../../types';
 import { ConversationRegistry } from './ConversationRegistry';
@@ -28,57 +25,27 @@ import {
   type ApprovalSafetyContext,
 } from '../tools/ApprovalContinuationExecutor';
 import {
-  mapRawItemsToConversationItems,
-  mapRawInputItemsToNormalized,
-  toConversationSummary,
-} from './ConversationHelpers';
-import {
   walkResponseChain as walkResponseChainFn,
   fetchResponsesFromApi as fetchResponsesFromApiFn,
 } from './ResponseChainWalker';
-import { getInputText, processConversationItems } from './MessageProcessor';
 import type {
   ConversationClientAccessor,
   ConversationListResult,
   ConversationDetails,
-  ConversationSummary,
   InputItemsResult,
   ConversationItemsResult,
   ProcessedMessage,
   ApprovalResult,
 } from './conversationTypes';
-
-/**
- * Extract raw items array from a Llama Stack conversation items response.
- * Handles multiple API response shapes:
- *  - `{ data: [...] }` (OpenAI standard list envelope)
- *  - `{ items: [...] }` (alternative envelope)
- *  - bare `[...]` (some Llama Stack builds return a raw array)
- */
-function extractItemsArray(
-  response: unknown,
-  logger: LoggerService,
-): Array<Record<string, unknown>> {
-  if (Array.isArray(response)) {
-    logger.debug('Conversation items returned as bare array — wrapping');
-    return response as Array<Record<string, unknown>>;
-  }
-  if (response && typeof response === 'object') {
-    const obj = response as Record<string, unknown>;
-    if (Array.isArray(obj.data))
-      return obj.data as Array<Record<string, unknown>>;
-    if (Array.isArray(obj.items)) {
-      logger.debug(
-        'Conversation items returned under "items" key instead of "data"',
-      );
-      return obj.items as Array<Record<string, unknown>>;
-    }
-  }
-  logger.warn(
-    `Unexpected conversation items response shape: ${typeof response}`,
-  );
-  return [];
-}
+import {
+  fetchConversation,
+  fetchConversationInputs,
+  fetchConversationItems,
+  fetchProcessedMessages,
+  enrichResponsesWithConversations,
+  deleteConversation as doDeleteConversation,
+  createConversation as doCreateConversation,
+} from './conversationFetcher';
 
 /**
  * Conversation Service
@@ -176,162 +143,28 @@ export class ConversationService {
     };
   }
 
-  /**
-   * Get a specific conversation by ID
-   * Uses GET /v1/responses/{response_id}
-   */
   async getConversation(
     responseId: string,
   ): Promise<ConversationDetails | null> {
-    this.logger.debug(`Getting conversation ${responseId}`);
-
-    try {
-      const response = await this.client.request<{
-        id: string;
-        model: string;
-        status: string;
-        created_at: number;
-        input: unknown; // Can be string or array
-        output: Array<{
-          type: string;
-          id?: string;
-          role?: string;
-          content?: Array<{ type: string; text: string }>;
-        }>;
-        previous_response_id?: string;
-      }>(`/v1/responses/${responseId}`, { method: 'GET' });
-
-      this.logger.info(
-        `Got conversation ${responseId}, input type: ${typeof response.input}, isArray: ${Array.isArray(
-          response.input,
-        )}, input length: ${
-          Array.isArray(response.input) ? response.input.length : 'n/a'
-        }, output items: ${response.output?.length || 0}`,
-      );
-
-      return {
-        id: response.id,
-        model: response.model,
-        status: response.status,
-        createdAt: new Date(response.created_at * 1000),
-        input: response.input,
-        output: response.output || [],
-        previousResponseId: response.previous_response_id,
-      };
-    } catch (error) {
-      const errorMsg = toErrorMessage(error);
-      // Check if this is a Llama Stack schema validation error (common with MCP tool calls)
-      if (errorMsg.includes('400') || errorMsg.includes('Bad Request')) {
-        this.logger.warn(
-          `Llama Stack schema validation error for ${responseId} - response may contain MCP tool calls that can't be serialized`,
-        );
-      } else {
-        this.logger.warn(
-          `Failed to get conversation ${responseId}: ${errorMsg}`,
-        );
-      }
-      return null;
-    }
+    return fetchConversation(this.client, responseId, this.logger);
   }
 
-  /**
-   * Get input items (conversation context) for a response
-   * Uses GET /v1/responses/{response_id}/input_items
-   */
   async getConversationInputs(responseId: string): Promise<InputItemsResult> {
-    this.logger.debug(`Getting input items for response ${responseId}`);
-
-    try {
-      const response = await this.client.request<{
-        data: Array<{
-          type: string;
-          id?: string;
-          role?: string;
-          content?: unknown; // Can be string, array, or other formats
-          status?: string;
-          call_id?: string;
-          output?: string;
-        }>;
-        has_more: boolean;
-      }>(`/v1/responses/${responseId}/input_items`, {
-        method: 'GET',
-      });
-
-      const normalizedItems = mapRawInputItemsToNormalized(
-        (response.data || []) as Array<Record<string, unknown>>,
-      );
-
-      this.logger.info(
-        `Got ${normalizedItems.length} input items for response ${responseId}`,
-      );
-
-      return {
-        items: normalizedItems,
-        hasMore: response.has_more || false,
-      };
-    } catch (error) {
-      const errorMsg = toErrorMessage(error);
-      // This endpoint may also fail with schema validation errors
-      if (errorMsg.includes('400') || errorMsg.includes('Bad Request')) {
-        this.logger.warn(
-          `Llama Stack schema validation error for input_items ${responseId} - conversation may contain MCP tool calls`,
-        );
-      } else {
-        this.logger.warn(
-          `Failed to get conversation inputs for ${responseId}: ${errorMsg}`,
-        );
-      }
-      return { items: [], hasMore: false };
-    }
+    return fetchConversationInputs(this.client, responseId, this.logger);
   }
 
-  /**
-   * Delete a conversation (response) from Llama Stack.
-   * Uses DELETE /v1/responses/{response_id}
-   *
-   * If a `conversationId` is provided, the Llama Stack conversation
-   * container is also deleted via DELETE /v1/conversations/{id}.
-   * Failure to delete the container is non-fatal — the response
-   * deletion is the critical operation.
-   */
   async deleteConversation(
     responseId: string,
     conversationId?: string,
   ): Promise<boolean> {
-    try {
-      await this.client.request(`/v1/responses/${responseId}`, {
-        method: 'DELETE',
-      });
-      this.logger.info(`Deleted response ${responseId}`);
-    } catch (error) {
-      this.logger.warn(
-        `Failed to delete response ${responseId}: ${toErrorMessage(error)}`,
-      );
-      return false;
-    }
-
-    if (conversationId) {
-      try {
-        await this.client.request(`/v1/conversations/${conversationId}`, {
-          method: 'DELETE',
-        });
-        this.logger.info(`Deleted conversation container ${conversationId}`);
-      } catch (error) {
-        this.logger.warn(
-          `Failed to delete conversation container ${conversationId} (non-fatal): ${toErrorMessage(
-            error,
-          )}`,
-        );
-      }
-    }
-
-    return true;
+    return doDeleteConversation(
+      this.client,
+      responseId,
+      conversationId,
+      this.logger,
+    );
   }
 
-  /**
-   * Delete only the Llama Stack conversation container (no response deletion).
-   * Used during session cleanup when we have a conversationId but no responseId.
-   */
   async deleteConversationContainer(conversationId: string): Promise<boolean> {
     try {
       await this.client.request(`/v1/conversations/${conversationId}`, {
@@ -348,107 +181,22 @@ export class ConversationService {
     }
   }
 
-  /**
-   * Create a new Llama Stack conversation container.
-   * Uses POST /v1/conversations
-   */
   async createConversation(): Promise<string> {
-    this.logger.info('Creating new Llama Stack conversation');
-
-    try {
-      const response = await this.client.request<{ id: string }>(
-        '/v1/conversations',
-        {
-          method: 'POST',
-          body: JSON.stringify({}),
-        },
-      );
-
-      this.logger.info(`Created conversation: ${response.id}`);
-      return response.id;
-    } catch (error) {
-      const errorMsg = toErrorMessage(error);
-      this.logger.error(`Failed to create conversation: ${errorMsg}`);
-      throw error;
-    }
+    return doCreateConversation(this.client, this.logger);
   }
 
-  /**
-   * Get all items for a Llama Stack conversation in chronological order.
-   * Uses GET /v1/conversations/{conversation_id}/items
-   */
   async getConversationItems(
     conversationId: string,
   ): Promise<ConversationItemsResult> {
-    this.logger.info(`Getting items for conversation ${conversationId}`);
-
-    try {
-      const response = await this.client.request<unknown>(
-        `/v1/conversations/${conversationId}/items?order=asc`,
-        { method: 'GET' },
-      );
-
-      const rawItems = extractItemsArray(response, this.logger);
-      const items = mapRawItemsToConversationItems(rawItems);
-
-      this.logger.info(
-        `Got ${items.length} items for conversation ${conversationId}`,
-      );
-      return { items };
-    } catch (error) {
-      if (error instanceof ResponsesApiError && error.statusCode === 404) {
-        this.logger.warn(
-          `Conversation ${conversationId} not found (404) — may have been garbage-collected`,
-        );
-        return { items: [] };
-      }
-      const errorMsg = toErrorMessage(error);
-      this.logger.warn(
-        `Failed to get conversation items for ${conversationId}: ${errorMsg}`,
-      );
-      throw error;
-    }
+    return fetchConversationItems(this.client, conversationId, this.logger);
   }
 
-  /**
-   * Get fully processed messages for a conversation, ready for frontend rendering.
-   *
-   * This mirrors the reference ai-virtual-agent's get_conversation_messages():
-   * 1. Fetches raw items via the Conversations API
-   * 2. Groups tool calls (mcp_call, file_search_call, web_search_call) with
-   *    the next assistant message
-   * 3. Extracts RAG sources from file_search_call results
-   * 4. Drops orphaned tool calls (before user messages or at the end)
-   * 5. Returns clean ProcessedMessage[] the frontend can render directly
-   */
   async getProcessedMessages(
     conversationId: string,
   ): Promise<ProcessedMessage[]> {
-    this.logger.info(
-      `Getting processed messages for conversation ${conversationId}`,
-    );
-
-    const { items } = await this.getConversationItems(conversationId);
-    const messages = processConversationItems(items, this.logger);
-
-    this.logger.info(
-      `Processed ${messages.length} messages for conversation ${conversationId}`,
-    );
-    return messages;
+    return fetchProcessedMessages(this.client, conversationId, this.logger);
   }
 
-  /**
-   * Walk the previous_response_id chain to reconstruct full conversation
-   * history. Used as a fallback for legacy responses that lack a
-   * conversationId. Returns messages in chronological order.
-   *
-   * Guards:
-   * - Max depth of 50 to prevent infinite loops.
-   * - Per-request timeout of 15 s — if the chain is very long and the
-   *   upstream server is slow, we return whatever we've collected so far
-   *   rather than hanging indefinitely.
-   * - Visited-set to break cycles (defensive against bad data).
-   */
   async walkResponseChain(
     responseId: string,
   ): Promise<Array<{ role: 'user' | 'assistant'; text: string }>> {
@@ -459,25 +207,6 @@ export class ConversationService {
     );
   }
 
-  // extractUserInputFromRaw is now in MessageProcessor.ts
-
-  /**
-   * Continue conversation after user approves/rejects a tool call (HITL).
-   *
-   * Sends a native `mcp_approval_response` input to the Llama Stack
-   * Responses API, which either executes the approved tool or records
-   * the rejection. The response is linked to the original conversation
-   * via `previous_response_id`.
-   *
-   * Llama Stack may return a *new* `mcp_approval_request` for the same
-   * tool due to an internal limitation: when the initial response uses
-   * `conversation`, the stored messages omit the assistant's tool-call,
-   * causing the LLM to regenerate it with slightly different arguments
-   * that don't match the original approval. When the user already
-   * approved the tool and the chained request is for the same tool, we
-   * automatically re-approve (up to `MAX_AUTO_REAPPROVALS`) to avoid
-   * surfacing a redundant dialog.
-   */
   async continueAfterApproval(
     responseId: string,
     approvalRequestId: string,
@@ -511,16 +240,6 @@ export class ConversationService {
     );
   }
 
-  /**
-   * Internal method to fetch conversations with a specific limit.
-   *
-   * Strategy:
-   * Llama Stack does NOT return `conversation` or `previous_response_id`
-   * in response listings, and we set `store: false` on subsequent turns,
-   * so each listed response already represents one unique conversation.
-   * We enrich each entry with conversationId from our in-memory registry
-   * so the frontend can load full history via the Conversations API.
-   */
   private async fetchConversationsWithLimit(
     limit: number,
     order: 'asc' | 'desc',
@@ -557,7 +276,6 @@ export class ConversationService {
     );
   }
 
-  /** Enrich API response items with conversationId from the registry */
   private async enrichResponsesWithConversations(
     items: Array<{
       id: string;
@@ -572,25 +290,7 @@ export class ConversationService {
       previous_response_id?: string;
       conversation?: string;
     }>,
-  ): Promise<ConversationSummary[]> {
-    const conversations: ConversationSummary[] = [];
-
-    for (const r of items) {
-      if (!r.id) continue;
-      const preview = getInputText(r.input) || 'Conversation';
-      const registryConvId = await this.registry.getConversationForResponse(
-        r.id,
-      );
-      const summary = toConversationSummary(
-        r,
-        preview,
-        r.conversation || registryConvId,
-      );
-      if (summary) conversations.push(summary);
-    }
-
-    return conversations;
+  ): Promise<import('./conversationTypes').ConversationSummary[]> {
+    return enrichResponsesWithConversations(items, this.registry);
   }
-
-  // getInputText and extractContentFromItem are now in MessageProcessor.ts
 }

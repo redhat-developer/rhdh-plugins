@@ -49,9 +49,8 @@ export const matches = (
   if ('not' in filters) {
     return !matches(plugin, filters.not);
   }
-  return (
-    Object.values(extensionRules)
-      .find(r => r.name === filters.rule)
-      ?.apply(plugin, filters.params as ExtensionParams) ?? false
-  );
+  const matchedRule = Object.values(extensionRules).find(
+    r => r.name === filters.rule,
+  ) as any;
+  return matchedRule?.apply(plugin, filters.params as ExtensionParams) ?? false;
 };

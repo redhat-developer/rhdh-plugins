@@ -15,7 +15,11 @@
  */
 
 import { LoggerService } from '@backstage/backend-plugin-api';
-import type { CoreV1Api, BatchV1Api } from '@kubernetes/client-node';
+import type {
+  CoreV1Api,
+  BatchV1Api,
+  KubeConfig,
+} from '@kubernetes/client-node';
 
 /**
  * Kubernetes API clients
@@ -23,7 +27,20 @@ import type { CoreV1Api, BatchV1Api } from '@kubernetes/client-node';
 export interface K8sClients {
   coreV1Api: CoreV1Api;
   batchV1Api: BatchV1Api;
+  /** Required for the `Log` helper (true streaming follow), which uses fetch + body.pipe. */
+  kubeConfig: KubeConfig;
 }
+
+const TLS_FIX_HINT =
+  `Trust the cluster CA with NODE_EXTRA_CA_CERTS. ${String.raw`For OpenShift: oc get configmap kube-root-ca.crt -n openshift-config -o jsonpath='{.data.ca\.crt}' > /tmp/cluster-ca.crt && `}export NODE_EXTRA_CA_CERTS=/tmp/cluster-ca.crt. ` +
+  `See the "TLS Certificate Handling" section in the workspace README for development-only alternatives.`;
+
+const TLS_ERROR_CODES = [
+  'UNABLE_TO_VERIFY_LEAF_SIGNATURE',
+  'DEPTH_ZERO_SELF_SIGNED_CERT',
+  'SELF_SIGNED_CERT_IN_CHAIN',
+  'ERR_TLS_CERT_ALTNAME_INVALID',
+];
 
 /**
  * TODO: Make this configurable, and allow for using kube secret inherited by service account
@@ -52,7 +69,6 @@ export const makeK8sClient = async (
         logger.info(`Setting KUBECONFIG to ${kubeconfigPath}`);
       }
     }
-
     kc.loadFromDefault();
     logger.info(
       `Loaded Kubernetes configuration from ${process.env.KUBECONFIG || 'default location'}`,
@@ -72,11 +88,17 @@ export const makeK8sClient = async (
     }
   }
 
+  const cluster = kc.getCurrentCluster();
+  if (cluster?.skipTLSVerify) {
+    logger.warn(`Kubeconfig has insecure-skip-tls-verify set. ${TLS_FIX_HINT}`);
+  }
+
   // Dynamic import of API classes to avoid ESM issues
   const { CoreV1Api, BatchV1Api } = await import('@kubernetes/client-node');
-  const clients = {
+  const clients: K8sClients = {
     coreV1Api: kc.makeApiClient(CoreV1Api),
     batchV1Api: kc.makeApiClient(BatchV1Api),
+    kubeConfig: kc,
   };
 
   // Test connection to the cluster. Fail fast...
@@ -85,8 +107,17 @@ export const makeK8sClient = async (
   );
   try {
     await clients.coreV1Api.listNamespacedPod({ namespace });
-  } catch (error) {
-    logger.error(`Failed to connect to namespace ${namespace}: ${error}`);
+  } catch (error: any) {
+    const errMsg = String(error?.message || error);
+    const isTlsError = TLS_ERROR_CODES.some(code => errMsg.includes(code));
+
+    if (isTlsError) {
+      logger.error(
+        `TLS certificate verification failed connecting to cluster "${cluster?.name}": ${errMsg}. ${TLS_FIX_HINT}`,
+      );
+    } else {
+      logger.error(`Failed to connect to namespace ${namespace}: ${error}`);
+    }
     throw new Error(
       `Failed to connect to namespace ${namespace}. Please ensure KUBECONFIG is set or running in a cluster.`,
     );

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 import type {
+  AuthService,
+  DiscoveryService,
   LoggerService,
   SchedulerService,
   SchedulerServiceTaskRunner,
@@ -25,7 +27,6 @@ import {
 import {
   ANNOTATION_LOCATION,
   ANNOTATION_ORIGIN_LOCATION,
-  Entity,
 } from '@backstage/catalog-model';
 
 import {
@@ -43,9 +44,10 @@ import { GenerateCatalogEntities } from '../clients/ModelCatalogGenerator';
  * @public
  */
 export class ModelCatalogResourceEntityProvider implements EntityProvider {
-  private readonly env: string;
-  private readonly baseUrl: string;
+  private readonly name: string;
   private readonly logger: LoggerService;
+  private readonly discovery: DiscoveryService;
+  private readonly auth: AuthService;
   private readonly scheduleFn: () => Promise<void>;
   private connection?: EntityProviderConnection;
 
@@ -57,12 +59,14 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
     deps: {
       config: Config;
       logger: LoggerService;
+      discovery: DiscoveryService;
+      auth: AuthService;
     },
     options:
       | { schedule: SchedulerServiceTaskRunner }
       | { scheduler: SchedulerService },
   ): ModelCatalogResourceEntityProvider[] {
-    const { config, logger } = deps;
+    const { config, logger, discovery, auth } = deps;
 
     const providerConfigs = readModelCatalogApiEntityConfigs(config);
 
@@ -83,6 +87,8 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
       return new ModelCatalogResourceEntityProvider(
         providerConfig,
         logger,
+        discovery,
+        auth,
         taskRunner,
       );
     });
@@ -91,10 +97,13 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
   private constructor(
     config: ModelCatalogConfig,
     logger: LoggerService,
+    discovery: DiscoveryService,
+    auth: AuthService,
     taskRunner: SchedulerServiceTaskRunner,
   ) {
-    this.env = config.id;
-    this.baseUrl = config.baseUrl;
+    this.name = config.id;
+    this.discovery = discovery;
+    this.auth = auth;
     this.logger = logger.child({
       target: this.getProviderName(),
     });
@@ -116,7 +125,7 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
             if (isError(error)) {
               // Ensure that we don't log any sensitive internal data:
               this.logger.error(
-                `Error while syncing resources from Model Catalog ${this.baseUrl}`,
+                `Error while syncing resources from Model Catalog ${this.name}`,
                 {
                   // Default Error properties:
                   name: error.name,
@@ -135,7 +144,7 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
 
   /** [2]: Model Catalog entity provider must have a unique name */
   getProviderName(): string {
-    return `ModelCatalogResourceEntityProvider:${this.env}`;
+    return `ModelCatalogResourceEntityProvider:${this.name}`;
   }
 
   /** [3]: Connect Backstage catalog engine to ModelCatalogEntityProvider */
@@ -150,26 +159,49 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
       throw new Error('Not initialized');
     }
     this.logger.info(
-      `Discovering ResourceEntities from Model Server ${this.baseUrl}`,
+      `Discovering AiModelServerAPI entities from Model Server ${this.name}`,
     );
 
     /** [5]: Fetch the model catalog keys from the bridge and fetch the corresponding catalog entries. */
-    let catalogKeys = await fetchModelCatalogKeys(this.baseUrl);
+    // the api docs for this method says to run it each time vs. once during init, as the URL can change
+    const url = await this.discovery.getBaseUrl(this.name);
+    const backendToken = await this.auth.getPluginRequestToken({
+      onBehalfOf: await this.auth.getOwnServiceCredentials(),
+      targetPluginId: this.name,
+    });
+    let catalogKeys: string[];
+    try {
+      catalogKeys = await fetchModelCatalogKeys(url, backendToken);
+    } catch (error) {
+      // 404 is expected during startup — the connector plugin hasn't
+      // registered its routes yet. The scheduler will retry.
+      if (isError(error) && error.message === 'Not Found') {
+        this.logger.debug(
+          `Connector plugin '${this.name}' not ready yet (404); will retry on next schedule`,
+        );
+        return;
+      }
+      throw error;
+    }
     // If no models are registered yet, the catalogKeys array may be null, so handle it by setting it to be an emptyList
     if (catalogKeys === null || catalogKeys === undefined) {
       catalogKeys = [];
     }
-    let entityList: Entity[] = [];
     this.logger.debug(`Found ${catalogKeys.length} model catalogs`);
     this.logger.debug(`Fetched ModelCatalog: ${JSON.stringify(catalogKeys)}`);
 
-    await Promise.all(
-      catalogKeys.map(async key => {
-        const catalog = await fetchModelCatalogFromKey(this.baseUrl, key);
-        const catalogEntities = GenerateCatalogEntities(catalog);
-        entityList = entityList.concat(catalogEntities);
-      }),
-    );
+    const entityList = (
+      await Promise.all(
+        catalogKeys.map(async key => {
+          const catalog = await fetchModelCatalogFromKey(
+            url,
+            key,
+            backendToken,
+          );
+          return GenerateCatalogEntities(catalog, url);
+        }),
+      )
+    ).flat();
 
     entityList.forEach(entity => {
       if (entity.metadata.annotations === undefined) {

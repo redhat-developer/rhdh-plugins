@@ -16,6 +16,8 @@
 
 import { LoggerService } from '@backstage/backend-plugin-api';
 
+import { CloudEvent, Kafka as KafkaCE } from 'cloudevents';
+import { Kafka } from 'kafkajs';
 import capitalize from 'lodash/capitalize';
 
 import {
@@ -25,20 +27,43 @@ import {
   fromWorkflowSource,
   ProcessInstanceStateValues,
   ProcessInstanceVariables,
+  WorkflowAvailabilityResponse,
   WorkflowDefinition,
   WorkflowExecutionResponse,
   WorkflowInfo,
   WorkflowOverview,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
+import { randomUUID } from 'node:crypto';
+
+import { OrchestratorKafkaServiceOptions } from '../types/kafka';
 import { Pagination } from '../types/pagination';
 import { DataIndexService } from './DataIndexService';
+import { getWorkflowRunStats, groupByProcessIdAndVersion } from './Helper';
 
 export class SonataFlowService {
+  private readonly orchestratorKafkaImpl?: Kafka;
+  private readonly orchestratorKafkaMessageKey?: string;
   constructor(
     private readonly dataIndexService: DataIndexService,
     private readonly logger: LoggerService,
-  ) {}
+    private readonly kafkaServiceOptions?: OrchestratorKafkaServiceOptions,
+  ) {
+    // If there are kafkaServiceOptions, then do the implemntation
+    if (this.kafkaServiceOptions) {
+      this.orchestratorKafkaMessageKey =
+        this.kafkaServiceOptions.messageKey ?? '';
+      this.logger.debug(
+        `creating orchestrator kafka implementation with options: clientId: ${this.kafkaServiceOptions.clientId} and brokers: ${JSON.stringify(this.kafkaServiceOptions.brokers)}`,
+      );
+      // It looks like that the community plugin just passes the whole options from the app-config to the kafkajs constructor
+      this.orchestratorKafkaImpl = new Kafka(this.kafkaServiceOptions);
+    }
+  }
+
+  getOrchestratorKafkaImpl() {
+    return this.orchestratorKafkaImpl;
+  }
 
   public async fetchWorkflowInfoOnService(args: {
     definitionId: string;
@@ -93,6 +118,66 @@ export class SonataFlowService {
     if (!workflowInfos?.length) {
       return [];
     }
+
+    const statsDefinitionIds = workflowInfos.map(info => info.id);
+    const instancesFilter: Filter | undefined = targetEntity
+      ? {
+          field: 'variables',
+          nested: {
+            operator: 'EQ',
+            field: 'targetEntity',
+            value: targetEntity,
+          },
+        }
+      : undefined;
+
+    // Fetch instances by workflow definition id. Do not reuse the overview
+    // filter here: entity overview passes `id IN [workflowIds]`, which applies
+    // to definitions but would match instance ids when querying instances.
+    const instances = await this.dataIndexService.fetchInstances({
+      definitionIds: statsDefinitionIds,
+      filter: instancesFilter,
+    });
+
+    // This will have all the workflows, so we need to group by workflow id
+    // and then we can get the success ratio for each workflow
+    // And also find the amount of runs for the 30 day window
+
+    // First we ned to group the data by processId and version
+    // Result will look something like this:
+    /**
+     * {
+     *  'workflowId-version': [processInstance1, processInstance2, ...],
+     *  'workflowId-version': [processInstance1, processInstance2, ...],
+     *  ...
+     * }
+     */
+    const groupedData = groupByProcessIdAndVersion(instances);
+
+    // Then we need to calculate the success rate for each processId and get the amount of runs for the last 30 days
+    // Result will look something like this:
+    /**
+      [
+        {
+          processIdVersion: 'quarkus-backend-1.0',
+          successCount: 1,
+          errorCount: 0,
+          totalCount: 1,
+          successRatio: 1,
+          runsLastMonth: 1
+        },
+        {
+          processIdVersion: 'random-success-or-error-1.0',
+          successCount: 1,
+          errorCount: 1,
+          totalCount: 2,
+          successRatio: 0.5833333333333334,
+          runsLastMonth: 12
+        }
+      ]
+     */
+    const worflowInstanceStats = getWorkflowRunStats(groupedData);
+
     const items = await Promise.all(
       workflowInfos
         .filter(info => info.source)
@@ -100,7 +185,108 @@ export class SonataFlowService {
           this.fetchWorkflowOverviewBySource(info.source!, targetEntity),
         ),
     );
-    return items.filter((item): item is WorkflowOverview => !!item);
+
+    return items
+      .filter((item): item is WorkflowOverview => !!item)
+      .map(overview => {
+        const stats = worflowInstanceStats.find(
+          stat =>
+            stat.processIdVersion ===
+            `${overview.workflowId}-${overview.version}`,
+        );
+        if (stats) {
+          overview.workflowRunStats = {
+            successRatio: stats.successRatio,
+            runsLastMonth: stats.runsLastMonth,
+            successCount: stats.successCount,
+            errorCount: stats.errorCount,
+            totalCount: stats.totalCount,
+            averageTimeToComplete: stats.averageTimeToComplete,
+          };
+        }
+        return overview;
+      });
+  }
+
+  public async executeWorkflowAsCloudEvent(args: {
+    definitionId: string;
+    workflowSource: string;
+    workflowEventType: string;
+    contextAttribute: string;
+    inputData?: ProcessInstanceVariables;
+    authTokens?: Array<AuthToken>;
+    backstageToken?: string;
+  }): Promise<WorkflowExecutionResponse | undefined> {
+    if (!this.orchestratorKafkaImpl) {
+      this.logger.error('No Orchestrator kafka implementation added');
+      throw new Error('No Orchestrator kafka implementation added');
+    }
+    const contextAttributeId = randomUUID();
+    // The data that needs to be part of the clouevent data is in the workflowdata key.
+    // We need to spread the workflowdata payload into the clouevent data,
+    // which is slighty different than a regular workflow execution.
+    // We also need to remove the isEvent value from the workflowdata payload.
+    const rawWorkflowdata = args.inputData?.workflowdata;
+    let workflowdataPayload: Record<string, unknown> = {};
+    if (
+      typeof rawWorkflowdata === 'object' &&
+      rawWorkflowdata !== null &&
+      !Array.isArray(rawWorkflowdata)
+    ) {
+      workflowdataPayload = {
+        ...(rawWorkflowdata as Record<string, unknown>),
+      };
+      if (workflowdataPayload.isEvent) {
+        delete workflowdataPayload.isEvent;
+      }
+    }
+    const triggeringCloudEvent = new CloudEvent({
+      datacontenttype: 'application/json',
+      type: args.workflowEventType,
+      source: args.workflowSource,
+      [args.contextAttribute]: contextAttributeId,
+      data: {
+        ...workflowdataPayload,
+        [args.contextAttribute]: contextAttributeId, // Need this to be able to correlate the workflow run somehow
+      },
+    });
+
+    // Put the CE in the format needed to send as a Kafka message
+    const lockEventBinding = KafkaCE.binary(triggeringCloudEvent);
+    // Create the message event that will be sent to the kafka topic
+    const messageEvent = {
+      key: this.orchestratorKafkaMessageKey,
+      value: JSON.stringify(KafkaCE.toEvent(lockEventBinding)),
+    };
+
+    const kfk = this.orchestratorKafkaImpl;
+    const producer = kfk.producer();
+    try {
+      // Connect the producer
+      await producer.connect();
+
+      // Send the message
+      await producer.send({
+        topic: args.workflowEventType,
+        messages: [messageEvent],
+      });
+    } catch (error) {
+      this.logger.error(
+        `Error with Kafka client connection. Options: clientId: ${this.kafkaServiceOptions?.clientId} and broker: ${JSON.stringify(this.kafkaServiceOptions?.brokers)}`,
+      );
+      throw new Error(
+        `Error with Kafka client with connection Options: clientId: ${this.kafkaServiceOptions?.clientId} and broker: ${JSON.stringify(this.kafkaServiceOptions?.brokers)}`,
+      );
+    } finally {
+      // Disconnect the producer
+      await producer.disconnect();
+    }
+
+    // Since sending to kafka doesn't return anything, send back the contextAttributeId here
+    // Then we will query the workflow instances to see if it showed up yet
+    return {
+      id: contextAttributeId,
+    };
   }
 
   public async executeWorkflow(args: {
@@ -258,7 +444,32 @@ export class SonataFlowService {
       this.logger.debug(`Workflow source not found: ${definitionId}`);
       return undefined;
     }
-    return await this.fetchWorkflowOverviewBySource(source);
+
+    // Can reuse the instances to get the stats
+    const instances = await this.dataIndexService.fetchInstances({
+      definitionIds: [definitionId],
+    });
+    const groupedData = groupByProcessIdAndVersion(instances);
+    const worflowInstanceStats = getWorkflowRunStats(groupedData);
+    const workflowOverview = await this.fetchWorkflowOverviewBySource(source);
+    if (workflowOverview) {
+      const stats = worflowInstanceStats.find(
+        stat =>
+          stat.processIdVersion ===
+          `${workflowOverview.workflowId}-${workflowOverview.version}`,
+      );
+      if (stats) {
+        workflowOverview.workflowRunStats = {
+          successRatio: stats.successRatio,
+          runsLastMonth: stats.runsLastMonth,
+          successCount: stats.successCount,
+          errorCount: stats.errorCount,
+          totalCount: stats.totalCount,
+          averageTimeToComplete: stats.averageTimeToComplete,
+        };
+      }
+    }
+    return workflowOverview;
   }
 
   private async fetchWorkflowOverviewBySource(
@@ -294,13 +505,14 @@ export class SonataFlowService {
       lastTriggeredMs: lastTriggered.getTime(),
       lastRunStatus,
       description: definition.description,
+      version: definition.version,
     };
   }
 
   public async pingWorkflowService(args: {
     definitionId: string;
     serviceUrl: string;
-  }): Promise<boolean> {
+  }): Promise<WorkflowAvailabilityResponse> {
     const urlToFetch = `${args.serviceUrl}/management/processes/${args.definitionId}`;
     let response: Response | undefined;
     try {
@@ -309,9 +521,19 @@ export class SonataFlowService {
       this.logger.error(
         `Failed to fetch from ${urlToFetch}: ${(error as Error).message}`,
       );
-      return false;
+      return {
+        isAvailable: false,
+        statusCode: 500,
+        urlToFetch,
+        reason: `Failed to fetch from ${urlToFetch}: ${(error as Error).message}`,
+      };
     }
-    return response.ok;
+    return {
+      isAvailable: response.ok,
+      statusCode: response.status || 500,
+      urlToFetch,
+      reason: response.statusText || 'Unknown reason',
+    };
   }
 
   private async handleWorkflowServiceResponse(

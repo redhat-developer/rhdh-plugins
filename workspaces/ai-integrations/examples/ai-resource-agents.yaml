@@ -1,0 +1,93 @@
+---
+# Example agent-shaped AiResource entities for local catalog verification.
+#
+# Shape follows the upstream skill/rule discriminated-type pattern from
+# @backstage/catalog-model alpha (kind: AiResource, spec.type: agent)
+# plus RHDH optional extensions (spec.scope for AiResourceExtensionsProcessor).
+#
+# Demonstrates a router + specialist multi-agent handoff pattern using only
+# the design D3 field set (no Augment-only keys).
+#
+# Register via app-config catalog.locations or the catalog import UI.
+
+# Router agent — triages support requests and hands off to specialists.
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
+metadata:
+  name: support-router-agent
+  title: Support Router Agent
+  description: >-
+    Routes incoming support requests to the appropriate specialist agent
+    based on topic classification.
+  tags:
+    - agent
+    - support
+    - router
+spec:
+  type: agent
+  lifecycle: production
+  owner: ai-platform-team
+  instructions: >-
+    You are a support router agent. Analyze incoming support requests and
+    delegate them to the appropriate specialist agent based on the topic.
+    Use the billing-specialist or technical-specialist handoffs.
+  handoffs:
+    - billing-specialist-agent
+    - technical-specialist-agent
+  modelSettings:
+    temperature: 0.2
+    maxTokens: 1024
+
+---
+# Specialist agent — handles billing support with a handoff description.
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
+metadata:
+  name: billing-specialist-agent
+  title: Billing Specialist Agent
+  description: Specialist agent for billing and account inquiries.
+  tags:
+    - agent
+    - support
+    - billing
+spec:
+  type: agent
+  lifecycle: production
+  owner: ai-platform-team
+  instructions: >-
+    You are a billing specialist agent. Handle billing inquiries, refund
+    requests, and account balance questions. Escalate complex billing
+    disputes to a human operator.
+  handoffDescription: Handles billing, refund, and account balance inquiries.
+  model: gpt-4o
+  tools:
+    - lookup-account
+    - process-refund
+  resetToolChoice: true
+
+---
+# Specialist agent — handles technical support with tool use behavior control.
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
+metadata:
+  name: technical-specialist-agent
+  title: Technical Specialist Agent
+  description: Specialist agent for technical troubleshooting and engineering inquiries.
+  tags:
+    - agent
+    - support
+    - technical
+spec:
+  type: agent
+  lifecycle: production
+  owner: ai-platform-team
+  instructions: >-
+    You are a technical specialist agent. Diagnose and resolve technical issues,
+    guide users through troubleshooting steps, and escalate unresolved issues to
+    the engineering team.
+  handoffDescription: Handles technical troubleshooting and engineering inquiries.
+  model: gpt-4o
+  tools:
+    - run-diagnostics
+    - search-knowledge-base
+  toolUseBehavior: run_llm_again

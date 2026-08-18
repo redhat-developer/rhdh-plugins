@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
-import useAsync from 'react-use/lib/useAsync';
+import { useCallback, useMemo, useState } from 'react';
 
 import { LogViewer, Progress } from '@backstage/core-components';
 import {
@@ -32,11 +31,14 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { useLogStream } from '../hooks/useLogStream';
 import { useClientService } from '../ClientService';
 import { ItemField } from './ItemField';
 import {
   canCancelPhase,
+  downloadLogFile,
   formatDuration,
+  getEffectiveDurationSeconds,
   humanizeDate,
   secondsBetween,
 } from './tools';
@@ -46,6 +48,12 @@ import { PhaseStatus } from './PhaseStatus';
 const useStyles = makeStyles(theme => ({
   buttonGroup: {
     gap: theme.spacing(1),
+  },
+  logViewerWrapper: {
+    height: 400,
+    '& a[role="row"]': {
+      userSelect: 'none',
+    },
   },
 }));
 
@@ -164,6 +172,7 @@ export const PhaseDetails = (
   } & OptionalModuleId,
 ) => {
   const { t } = useTranslation();
+  const classes = useStyles();
   const clientService = useClientService();
   const empty = t('module.phases.none');
   const [showLog, setShowLog] = useState(false);
@@ -171,38 +180,59 @@ export const PhaseDetails = (
   const { phase, projectId, phaseName, onRunPhase, onCancelPhase } = props;
   const moduleId = 'moduleId' in props ? props.moduleId : undefined;
 
+  const durationSeconds = phase
+    ? getEffectiveDurationSeconds(phase)
+    : undefined;
   const duration =
-    phase?.startedAt && phase?.finishedAt
-      ? formatDuration(t, secondsBetween(phase.startedAt, phase.finishedAt))
-      : empty;
+    durationSeconds === undefined ? empty : formatDuration(t, durationSeconds);
+
+  const attemptCount = phase?.attemptCount ?? (phase ? 1 : undefined);
+  const totalDuration =
+    attemptCount &&
+    attemptCount > 1 &&
+    phase?.firstAttemptAt &&
+    phase?.finishedAt
+      ? formatDuration(
+          t,
+          secondsBetween(phase.firstAttemptAt, phase.finishedAt),
+        )
+      : undefined;
 
   const canRunPhase = phase?.status !== 'running';
 
-  const {
-    value: logText,
-    loading: logLoading,
-    error: logError,
-  } = useAsync(async () => {
-    if (!showLog || !phase) {
-      return undefined;
-    }
+  const fetchLog = useCallback(
+    () =>
+      phaseName === 'init'
+        ? clientService.projectsProjectIdLogGet({
+            path: { projectId },
+            query: { streaming: true },
+          })
+        : clientService.projectsProjectIdModulesModuleIdLogGet({
+            path: { projectId, moduleId: moduleId as string },
+            query: { phase: phaseName as ModulePhase, streaming: true },
+          }),
+    [clientService, projectId, moduleId, phaseName],
+  );
 
-    if (phaseName === 'init') {
-      const response = await clientService.projectsProjectIdLogGet({
-        path: { projectId },
-        query: { streaming: false },
-      });
-      return await response.text();
-    }
+  const { logText, logStreamHasData, logLoading, logError } = useLogStream({
+    enabled: showLog && !!phase,
+    phaseId: phase?.id,
+    phaseStatus: phase?.status,
+    projectId,
+    moduleId,
+    phaseName,
+    fetchLog,
+  });
 
-    const response = await clientService.projectsProjectIdModulesModuleIdLogGet(
-      {
-        path: { projectId, moduleId: moduleId as string },
-        query: { phase: phaseName as ModulePhase, streaming: false },
-      },
-    );
-    return await response.text();
-  }, [showLog, phase?.id, projectId, moduleId]);
+  const logViewerText = useMemo((): string => {
+    if (logStreamHasData) {
+      return logText ?? '';
+    }
+    if (logLoading) {
+      return t('modulePage.phases.logWaitingForStream');
+    }
+    return logText || t('modulePage.phases.noLogsAvailable');
+  }, [logStreamHasData, logText, logLoading, t]);
 
   return (
     <Grid container direction="row" spacing={3}>
@@ -231,32 +261,48 @@ export const PhaseDetails = (
         />
       </Grid>
 
-      <Grid item xs={2}>
+      <Grid item xs={3}>
         <ItemField
           label={t('modulePage.phases.startedAt')}
           value={phase?.startedAt ? humanizeDate(phase.startedAt) : empty}
         />
       </Grid>
-      <Grid item xs={2}>
+      <Grid item xs={3}>
         <ItemField label={t('modulePage.phases.duration')} value={duration} />
       </Grid>
-      <Grid item xs={2}>
+      <Grid item xs={3}>
+        <ItemField
+          label={t('modulePage.phases.attempts')}
+          value={String(attemptCount ?? empty)}
+        />
+      </Grid>
+      <Grid item xs={3}>
+        <ItemField
+          label={t('modulePage.phases.totalElapsed')}
+          value={totalDuration || empty}
+        />
+      </Grid>
+
+      <Grid item xs={3}>
         <ItemField
           label={t('modulePage.phases.k8sJobName')}
           value={phase?.k8sJobName || empty}
         />
       </Grid>
-      <Grid item xs={2}>
+      <Grid item xs={3}>
         <ItemField
           label={t('modulePage.phases.id')}
           value={phase?.id || empty}
         />
       </Grid>
-      <Grid item xs={2}>
+      <Grid item xs={3}>
         <ItemField
           label={t('modulePage.phases.commitId')}
           value={phase?.commitId || empty}
         />
+      </Grid>
+      <Grid item xs={3}>
+        {/* space holder */}
       </Grid>
 
       {phase && (
@@ -280,9 +326,12 @@ export const PhaseDetails = (
             <Typography color="error">{logError.message}</Typography>
           )}
           {logText !== undefined && (
-            <div style={{ height: 400 }}>
+            <div className={classes.logViewerWrapper}>
               <LogViewer
-                text={logText || t('modulePage.phases.noLogsAvailable')}
+                text={logViewerText}
+                onDownloadLog={() =>
+                  downloadLogFile(logText || '', `${phaseName}-${projectId}`)
+                }
               />
             </div>
           )}

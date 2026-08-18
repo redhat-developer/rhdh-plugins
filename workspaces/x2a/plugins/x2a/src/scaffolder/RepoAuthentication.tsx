@@ -127,7 +127,13 @@ export const RepoAuthentication = ({
                   <TableCell>
                     <StatusIcon status={row.status}>
                       {row.error && (
-                        <span className={classes.errorText}>{row.error}</span>
+                        <Typography
+                          className={classes.errorText}
+                          component="span"
+                          variant="body2"
+                        >
+                          {row.error}
+                        </Typography>
                       )}
                     </StatusIcon>
                   </TableCell>

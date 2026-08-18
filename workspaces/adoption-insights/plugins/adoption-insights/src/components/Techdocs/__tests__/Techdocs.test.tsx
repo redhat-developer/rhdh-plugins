@@ -174,6 +174,6 @@ describe('Techdocs', () => {
 
   it('should apply correct styling to table rows', () => {
     const rows = screen.getAllByRole('row').slice(1);
-    expect(rows[0]).toHaveStyle({ backgroundColor: 'inherit' });
+    expect(rows[0].style.backgroundColor).toBe('');
   });
 });

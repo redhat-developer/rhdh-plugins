@@ -171,8 +171,7 @@ function coerceScalarValue(
   if (!itemSchema) return strParam;
 
   const enumValues = itemSchema.enum as
-    | (string | number | boolean)[]
-    | undefined;
+    (string | number | boolean)[] | undefined;
   const hasEnum =
     enumValues && Array.isArray(enumValues) && enumValues.length > 0;
 

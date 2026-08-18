@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { useCallback } from 'react';
-import type { Workflow, QuickAction, Message } from '../../types';
+import type { QuickAction, Message } from '../../types';
 
 export interface UseChatActionsParams {
   sendMessage: (text: string, msgs: Message[]) => void | Promise<void>;
@@ -26,7 +26,6 @@ export interface UseChatActionsParams {
 }
 
 export interface UseChatActionsReturn {
-  handleWorkflowSelect: (workflow: Workflow) => void;
   handleQuickActionSelect: (action: QuickAction) => void;
   handleRegenerate: () => void;
   handleEditMessage: (messageId: string, newText: string) => void;
@@ -42,15 +41,6 @@ export function useChatActions({
   inputValue,
   setInputValue,
 }: UseChatActionsParams): UseChatActionsReturn {
-  const handleWorkflowSelect = useCallback(
-    (workflow: Workflow) => {
-      if (workflow.steps.length > 0) {
-        void sendMessage(workflow.steps[0].prompt, messages);
-      }
-    },
-    [sendMessage, messages],
-  );
-
   const handleQuickActionSelect = useCallback(
     (action: QuickAction) => {
       void sendMessage(action.prompt, messages);
@@ -107,7 +97,6 @@ export function useChatActions({
   }, [cancelRequest]);
 
   return {
-    handleWorkflowSelect,
     handleQuickActionSelect,
     handleRegenerate,
     handleEditMessage,

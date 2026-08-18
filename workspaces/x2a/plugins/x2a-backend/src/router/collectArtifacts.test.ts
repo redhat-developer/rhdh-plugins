@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import request from 'supertest';
 import express from 'express';
 import type { Job } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
@@ -35,7 +35,7 @@ describe('collectArtifacts routes', () => {
   const jobId = randomUUID();
   const moduleId = randomUUID();
   const k8sJobName = 'test-k8s-job-123';
-  const callbackToken = randomUUID();
+  const callbackToken = randomBytes(32).toString('hex');
 
   beforeEach(() => {
     ({ app, mockDeps, signRequestBody } = setupCollectArtifactsApp());

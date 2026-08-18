@@ -1,5 +1,48 @@
 # @red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights
 
+## 0.9.1
+
+### Patch Changes
+
+- d623d36: Refreshed `yarn.lock` to align resolved dependency versions.
+
+## 0.9.0
+
+### Minor Changes
+
+- 8af2af2: Backstage version bump to v1.52.0
+
+## 0.8.4
+
+## 0.8.3
+
+### Patch Changes
+
+- 2465411: Replace Material UI v4 imports with MUI v5
+
+## 0.8.2
+
+## 0.8.1
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+
+## 0.8.0
+
+### Minor Changes
+
+- 4526035: Backstage version bump to v1.49.3
+
+## 0.7.1
+
+## 0.7.0
+
+### Minor Changes
+
+- b58b43d: Migrated Adoption Insights and Adoption Insights Analytics Module to New Frontend System
+- 0f66c7c: Backstage version bump to v1.47.3
+
 ## 0.6.2
 
 ## 0.6.1

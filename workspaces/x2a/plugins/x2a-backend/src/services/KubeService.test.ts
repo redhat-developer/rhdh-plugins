@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
+import { PassThrough } from 'node:stream';
 import { mockServices } from '@backstage/backend-test-utils';
-import { X2AConfig } from '../../config';
-import { KubeService } from './KubeService';
+import { X2AConfig } from './types';
+import { KubeService, choosePodForJobLogs } from './KubeService';
 
-// Mock the Kubernetes client
+const mockK8sLogFn = jest.fn();
+jest.mock('@kubernetes/client-node', () => ({
+  Log: jest.fn().mockImplementation(() => ({ log: mockK8sLogFn })),
+}));
+
 const mockCoreV1Api = {
   createNamespacedSecret: jest.fn(),
   readNamespacedSecret: jest.fn(),
-  replaceNamespacedSecret: jest.fn(),
   deleteNamespacedSecret: jest.fn(),
   listNamespacedPod: jest.fn(),
   readNamespacedPodLog: jest.fn(),
@@ -35,10 +39,15 @@ const mockBatchV1Api = {
   listNamespacedJob: jest.fn(),
 };
 
+const mockKubeConfig = {
+  getCurrentCluster: () => ({ server: 'https://mock.k8s.local' }),
+};
+
 jest.mock('./makeK8sClient', () => ({
   makeK8sClient: jest.fn(() => ({
     coreV1Api: mockCoreV1Api,
     batchV1Api: mockBatchV1Api,
+    kubeConfig: mockKubeConfig,
   })),
 }));
 
@@ -232,7 +241,7 @@ describe('KubeService', () => {
       jobId: 'job-123',
       projectId: 'proj-123',
       projectName: 'Test Project',
-      projectAbbrev: 'TP',
+      projectDirName: 'test-project-proj-1',
       phase: 'init' as const,
       user: 'user:default/test',
       callbackToken: 'callback-token-123', // NOSONAR
@@ -252,19 +261,9 @@ describe('KubeService', () => {
     beforeEach(() => {
       // Mock createProjectSecret and createJobSecret to succeed
       mockCoreV1Api.createNamespacedSecret.mockResolvedValue({});
-      // Mock readNamespacedSecret and replaceNamespacedSecret for ownerReference patching
-      mockCoreV1Api.readNamespacedSecret.mockResolvedValue({
-        apiVersion: 'v1',
-        kind: 'Secret',
-        metadata: {
-          name: 'x2a-job-secret-init-job-123',
-          namespace: 'test-namespace',
-        },
-      });
-      mockCoreV1Api.replaceNamespacedSecret.mockResolvedValue({});
     });
 
-    it('should create both project and job secrets before creating job', async () => {
+    it('should create project secret before job, and job secret after job with ownerReference', async () => {
       mockBatchV1Api.createNamespacedJob.mockResolvedValue({
         metadata: { name: 'job-x2a-init-abc123', uid: 'uid-123' },
       });
@@ -283,13 +282,21 @@ describe('KubeService', () => {
         }),
       );
 
-      // Should create job secret (Git credentials)
+      // Should create job secret (Git credentials) with ownerReference to the job
       expect(mockCoreV1Api.createNamespacedSecret).toHaveBeenCalledWith(
         expect.objectContaining({
           namespace: 'test-namespace',
           body: expect.objectContaining({
             metadata: expect.objectContaining({
               name: 'x2a-job-secret-init-job-123',
+              ownerReferences: [
+                expect.objectContaining({
+                  apiVersion: 'batch/v1',
+                  kind: 'Job',
+                  name: expect.stringMatching(/^job-x2a-init-/),
+                  uid: 'uid-123',
+                }),
+              ],
             }),
             stringData: expect.objectContaining({
               SOURCE_REPO_URL: 'https://github.com/org/source',
@@ -342,51 +349,64 @@ describe('KubeService', () => {
       expect(result.k8sJobName).toBeDefined();
     });
 
-    it('should set ownerReference on job secret after job creation', async () => {
+    it('should create job secret with ownerReference containing job uid', async () => {
       mockBatchV1Api.createNamespacedJob.mockResolvedValue({
         metadata: { name: 'job-x2a-init-abc123', uid: 'uid-456' },
       });
 
       await kubeService.createJob(params);
 
-      // Should read the job secret
-      expect(mockCoreV1Api.readNamespacedSecret).toHaveBeenCalledWith({
-        name: 'x2a-job-secret-init-job-123',
-        namespace: 'test-namespace',
-      });
-
-      // Should replace the secret with ownerReference set
-      expect(mockCoreV1Api.replaceNamespacedSecret).toHaveBeenCalled();
-      const replaceCall =
-        mockCoreV1Api.replaceNamespacedSecret.mock.calls[0][0];
-      expect(replaceCall.name).toBe('x2a-job-secret-init-job-123');
-      expect(replaceCall.namespace).toBe('test-namespace');
-      const ownerRefs = replaceCall.body.metadata.ownerReferences;
-      expect(ownerRefs).toHaveLength(1);
-      expect(ownerRefs[0]).toEqual(
-        expect.objectContaining({
-          apiVersion: 'batch/v1',
-          kind: 'Job',
-          uid: 'uid-456',
-          blockOwnerDeletion: true,
-        }),
+      // Job secret should be the second createNamespacedSecret call (after project secret)
+      const calls = mockCoreV1Api.createNamespacedSecret.mock.calls;
+      const jobSecretCall = calls.find(
+        (c: any) => c[0].body.metadata?.name === 'x2a-job-secret-init-job-123',
       );
-      expect(ownerRefs[0].name).toMatch(/^job-x2a-init-/);
+      expect(jobSecretCall).toBeDefined();
+
+      const ownerRefs = jobSecretCall![0].body.metadata.ownerReferences;
+      expect(ownerRefs).toHaveLength(1);
+      expect(ownerRefs[0]).toEqual({
+        apiVersion: 'batch/v1',
+        kind: 'Job',
+        name: expect.stringMatching(/^job-x2a-init-/),
+        uid: 'uid-456',
+      });
     });
 
-    it('should succeed even if ownerReference patching fails', async () => {
+    it('should delete job and throw if job secret creation fails', async () => {
       mockBatchV1Api.createNamespacedJob.mockResolvedValue({
         metadata: { name: 'job-x2a-init-abc123', uid: 'uid-456' },
       });
-      mockCoreV1Api.readNamespacedSecret.mockRejectedValue(
-        new Error('Secret read failed'),
+      mockBatchV1Api.deleteNamespacedJob.mockResolvedValue({});
+      // First call succeeds (project secret), second fails (job secret)
+      mockCoreV1Api.createNamespacedSecret
+        .mockResolvedValueOnce({})
+        .mockRejectedValueOnce(new Error('Secret creation failed'));
+
+      await expect(kubeService.createJob(params)).rejects.toThrow(
+        'Secret creation failed',
       );
 
-      const result = await kubeService.createJob(params);
+      // Should clean up the orphaned job
+      expect(mockBatchV1Api.deleteNamespacedJob).toHaveBeenCalledWith(
+        expect.objectContaining({
+          namespace: 'test-namespace',
+        }),
+      );
+    });
 
-      // Job creation should still succeed
-      expect(result.k8sJobName).toBeDefined();
-      expect(mockBatchV1Api.createNamespacedJob).toHaveBeenCalled();
+    it('should delete job and throw if created job has no UID', async () => {
+      mockBatchV1Api.createNamespacedJob.mockResolvedValue({
+        metadata: { name: 'job-x2a-init-abc123' },
+      });
+      mockBatchV1Api.deleteNamespacedJob.mockResolvedValue({});
+
+      await expect(kubeService.createJob(params)).rejects.toThrow(
+        /created without UID/,
+      );
+
+      // Should clean up the orphaned job
+      expect(mockBatchV1Api.deleteNamespacedJob).toHaveBeenCalled();
     });
   });
 
@@ -462,10 +482,25 @@ describe('KubeService', () => {
 
   describe('getJobLogs', () => {
     const jobName = 'job-x2a-init-abc123';
+    const runningPod = {
+      metadata: { name: 'job-x2a-init-abc123-pod' },
+      spec: { containers: [{ name: 'main' }] },
+      status: { phase: 'Running' as const },
+    };
+
+    beforeEach(() => {
+      mockK8sLogFn.mockImplementation(async (_ns, _pod, _c, stream) => {
+        (stream as PassThrough).end('ok');
+        return new globalThis.AbortController();
+      });
+    });
+    afterEach(() => {
+      mockK8sLogFn.mockReset();
+    });
 
     it('should retrieve logs from pod', async () => {
       mockCoreV1Api.listNamespacedPod.mockResolvedValue({
-        items: [{ metadata: { name: 'job-x2a-init-abc123-pod' } }],
+        items: [runningPod],
       });
       mockCoreV1Api.readNamespacedPodLog.mockResolvedValue('Job log output');
 
@@ -478,8 +513,10 @@ describe('KubeService', () => {
       expect(mockCoreV1Api.readNamespacedPodLog).toHaveBeenCalledWith({
         name: 'job-x2a-init-abc123-pod',
         namespace: 'test-namespace',
+        container: 'main',
         follow: false,
       });
+      expect(mockK8sLogFn).not.toHaveBeenCalled();
       expect(result).toBe('Job log output');
     });
 
@@ -491,20 +528,79 @@ describe('KubeService', () => {
       const result = await kubeService.getJobLogs(jobName);
 
       expect(result).toBe('');
+      expect(mockK8sLogFn).not.toHaveBeenCalled();
     });
 
-    it('should support streaming logs', async () => {
+    it('returns empty string for streaming when no pod exists yet (job scheduled, no list match)', async () => {
+      mockCoreV1Api.listNamespacedPod.mockResolvedValue({ items: [] });
+
+      const result = await kubeService.getJobLogs(jobName, true);
+
+      expect(result).toBe('');
+      expect(mockK8sLogFn).not.toHaveBeenCalled();
+    });
+
+    it('returns empty string for streaming when pod is still Pending (no log stream until Running)', async () => {
       mockCoreV1Api.listNamespacedPod.mockResolvedValue({
-        items: [{ metadata: { name: 'job-x2a-init-abc123-pod' } }],
+        items: [
+          {
+            metadata: { name: 'job-x2a-init-abc123-pod' },
+            spec: { containers: [{ name: 'main' }] },
+            status: { phase: 'Pending' },
+          },
+        ],
       });
-      mockCoreV1Api.readNamespacedPodLog.mockResolvedValue('Streaming logs');
 
+      const result = await kubeService.getJobLogs(jobName, true);
+
+      expect(result).toBe('');
+      expect(mockK8sLogFn).not.toHaveBeenCalled();
+    });
+
+    it('should use k8s Log (fetch stream) for follow logs, not buffered readNamespacedPodLog', async () => {
+      mockCoreV1Api.listNamespacedPod.mockResolvedValue({
+        items: [runningPod],
+      });
+      const result = await kubeService.getJobLogs(jobName, true);
+
+      expect(mockK8sLogFn).toHaveBeenCalledWith(
+        'test-namespace',
+        'job-x2a-init-abc123-pod',
+        'main',
+        expect.any(PassThrough),
+        { follow: true },
+      );
+      expect(mockCoreV1Api.readNamespacedPodLog).not.toHaveBeenCalled();
+      expect(result).toBeInstanceOf(PassThrough);
+    });
+
+    it('prefers the Running pod when Pending is listed first (K8s list order is not guaranteed)', async () => {
+      const pendingListedFirst = {
+        metadata: {
+          name: 'stale-pending',
+          creationTimestamp: '2024-01-01T12:05:00.000Z',
+        },
+        spec: { containers: [{ name: 'main' }] },
+        status: { phase: 'Pending' as const },
+      };
+      const actuallyRunning = {
+        metadata: {
+          name: 'workload-pod',
+          creationTimestamp: '2024-01-01T12:00:00.000Z',
+        },
+        spec: { containers: [{ name: 'main' }] },
+        status: { phase: 'Running' as const },
+      };
+      mockCoreV1Api.listNamespacedPod.mockResolvedValue({
+        items: [pendingListedFirst, actuallyRunning],
+      });
       await kubeService.getJobLogs(jobName, true);
-
-      expect(mockCoreV1Api.readNamespacedPodLog).toHaveBeenCalledWith(
-        expect.objectContaining({
-          follow: true,
-        }),
+      expect(mockK8sLogFn).toHaveBeenCalledWith(
+        'test-namespace',
+        'workload-pod',
+        'main',
+        expect.any(PassThrough),
+        { follow: true },
       );
     });
 
@@ -537,12 +633,28 @@ describe('KubeService', () => {
 
     it('should throw on K8s API errors (e.g. pod not ready, network failure)', async () => {
       mockCoreV1Api.listNamespacedPod.mockResolvedValue({
-        items: [{ metadata: { name: 'job-x2a-init-abc123-pod' } }],
+        items: [runningPod],
       });
       const apiError = new Error('AnError');
       mockCoreV1Api.readNamespacedPodLog.mockRejectedValue(apiError);
 
       await expect(kubeService.getJobLogs(jobName)).rejects.toThrow(apiError);
+      expect(mockK8sLogFn).not.toHaveBeenCalled();
+    });
+
+    it('should return empty when pod has no container spec', async () => {
+      mockCoreV1Api.listNamespacedPod.mockResolvedValue({
+        items: [
+          {
+            metadata: { name: 'job-x2a-init-abc123-pod' },
+            spec: { containers: [] },
+          },
+        ],
+      });
+
+      const result = await kubeService.getJobLogs(jobName, true);
+      expect(result).toBe('');
+      expect(mockK8sLogFn).not.toHaveBeenCalled();
     });
 
     it('should throw when listNamespacedPod fails', async () => {
@@ -669,5 +781,96 @@ describe('KubeService', () => {
       jest.dontMock('node:fs');
       jest.resetModules();
     });
+  });
+});
+
+describe('choosePodForJobLogs', () => {
+  function makePod(name: string, phase: string, creationTimestamp?: string) {
+    return {
+      metadata: {
+        name,
+        ...(creationTimestamp
+          ? { creationTimestamp: new Date(creationTimestamp) }
+          : {}),
+      },
+      spec: { containers: [{ name: 'main' }] },
+      status: { phase },
+    };
+  }
+
+  it('returns undefined for an empty list', () => {
+    expect(choosePodForJobLogs([])).toBeUndefined();
+  });
+
+  it('returns the only pod when list has a single Running pod', () => {
+    const pod = makePod('pod-1', 'Running');
+    expect(choosePodForJobLogs([pod])).toBe(pod);
+  });
+
+  it('returns the only pod when list has a single Pending pod', () => {
+    const pod = makePod('pod-1', 'Pending');
+    expect(choosePodForJobLogs([pod])).toBe(pod);
+  });
+
+  it('prefers Running over Pending regardless of list order', () => {
+    const pending = makePod('pending-pod', 'Pending', '2024-01-01T12:05:00Z');
+    const running = makePod('running-pod', 'Running', '2024-01-01T12:00:00Z');
+    expect(choosePodForJobLogs([pending, running])?.metadata?.name).toBe(
+      'running-pod',
+    );
+    expect(choosePodForJobLogs([running, pending])?.metadata?.name).toBe(
+      'running-pod',
+    );
+  });
+
+  it('prefers Running over Succeeded', () => {
+    const succeeded = makePod('done-pod', 'Succeeded', '2024-01-01T12:00:00Z');
+    const running = makePod('running-pod', 'Running', '2024-01-01T12:01:00Z');
+    expect(choosePodForJobLogs([succeeded, running])?.metadata?.name).toBe(
+      'running-pod',
+    );
+  });
+
+  it('prefers non-Pending over Pending when no Running pod exists', () => {
+    const pending = makePod('pending-pod', 'Pending', '2024-01-01T12:05:00Z');
+    const succeeded = makePod('done-pod', 'Succeeded', '2024-01-01T12:00:00Z');
+    expect(choosePodForJobLogs([pending, succeeded])?.metadata?.name).toBe(
+      'done-pod',
+    );
+  });
+
+  it('picks the newest Running pod when multiple Running pods exist', () => {
+    const older = makePod('old-running', 'Running', '2024-01-01T12:00:00Z');
+    const newer = makePod('new-running', 'Running', '2024-01-01T12:05:00Z');
+    expect(choosePodForJobLogs([older, newer])?.metadata?.name).toBe(
+      'new-running',
+    );
+  });
+
+  it('falls back to newest Pending when all pods are Pending', () => {
+    const older = makePod('old-pending', 'Pending', '2024-01-01T12:00:00Z');
+    const newer = makePod('new-pending', 'Pending', '2024-01-01T12:05:00Z');
+    expect(choosePodForJobLogs([older, newer])?.metadata?.name).toBe(
+      'new-pending',
+    );
+  });
+
+  it('handles pods without creationTimestamp (treats as epoch 0)', () => {
+    const noTs = makePod('no-ts-pod', 'Running');
+    const withTs = makePod('ts-pod', 'Running', '2024-01-01T12:00:00Z');
+    expect(choosePodForJobLogs([noTs, withTs])?.metadata?.name).toBe('ts-pod');
+  });
+
+  it('handles Failed pod (non-Pending, non-Running)', () => {
+    const failed = makePod('failed-pod', 'Failed', '2024-01-01T12:00:00Z');
+    const pending = makePod('pending-pod', 'Pending', '2024-01-01T12:01:00Z');
+    expect(choosePodForJobLogs([pending, failed])?.metadata?.name).toBe(
+      'failed-pod',
+    );
+  });
+
+  it('handles string creationTimestamp (e.g. raw JSON from some clients)', () => {
+    const pod = makePod('str-ts-pod', 'Running', '2024-06-15T10:00:00Z');
+    expect(choosePodForJobLogs([pod])?.metadata?.name).toBe('str-ts-pod');
   });
 });

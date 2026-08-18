@@ -46,7 +46,7 @@ import {
 } from '@material-ui/core';
 
 import {
-  CREATE_CHEF_PROJECT_TEMPLATE_PATH,
+  CREATE_PROJECT_TEMPLATE_PATH,
   Module,
   Project,
   PROJECT_LIST_SORT_BY_STATUS_HARD_THRESHOLD,
@@ -250,7 +250,9 @@ const useColumns = (
               threshold: String(PROJECT_LIST_SORT_BY_STATUS_HARD_THRESHOLD),
             })}
           >
-            <span>{t('table.columns.status')}</span>
+            <Typography component="span" variant="inherit">
+              {t('table.columns.status')}
+            </Typography>
           </Tooltip>
         ),
         field: 'status',
@@ -795,7 +797,7 @@ export const ProjectTable = ({
           <LinkButton
             variant="contained"
             color="primary"
-            to={CREATE_CHEF_PROJECT_TEMPLATE_PATH}
+            to={CREATE_PROJECT_TEMPLATE_PATH}
           >
             {t('common.newProject')}
           </LinkButton>

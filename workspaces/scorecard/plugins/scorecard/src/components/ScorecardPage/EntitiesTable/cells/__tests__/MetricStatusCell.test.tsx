@@ -33,7 +33,11 @@ describe('MetricStatusCell', () => {
   it('should render status text when status is provided', () => {
     render(
       <ThemeProvider theme={theme}>
-        <MetricStatusCell status="success" theme={theme} />
+        <MetricStatusCell
+          status="success"
+          theme={theme}
+          statusColor="success.main"
+        />
       </ThemeProvider>,
     );
 
@@ -43,7 +47,7 @@ describe('MetricStatusCell', () => {
   it('should render -- when status is empty string', () => {
     render(
       <ThemeProvider theme={theme}>
-        <MetricStatusCell status="" theme={theme} />
+        <MetricStatusCell status="" theme={theme} statusColor="" />
       </ThemeProvider>,
     );
 
@@ -53,7 +57,11 @@ describe('MetricStatusCell', () => {
   it('should render a colored indicator box', () => {
     const { container } = render(
       <ThemeProvider theme={theme}>
-        <MetricStatusCell status="success" theme={theme} />
+        <MetricStatusCell
+          status="success"
+          theme={theme}
+          statusColor="success.main"
+        />
       </ThemeProvider>,
     );
 
@@ -64,7 +72,11 @@ describe('MetricStatusCell', () => {
   it('should use theme fallback color when status has no palette key', () => {
     render(
       <ThemeProvider theme={theme}>
-        <MetricStatusCell status="customStatus" theme={theme} />
+        <MetricStatusCell
+          status="customStatus"
+          theme={theme}
+          statusColor="customStatus"
+        />
       </ThemeProvider>,
     );
 
@@ -74,7 +86,11 @@ describe('MetricStatusCell', () => {
   it('should render translated label for known threshold statuses', () => {
     const { rerender } = render(
       <ThemeProvider theme={theme}>
-        <MetricStatusCell status="warning" theme={theme} />
+        <MetricStatusCell
+          status="warning"
+          theme={theme}
+          statusColor="warning.main"
+        />
       </ThemeProvider>,
     );
 
@@ -82,7 +98,11 @@ describe('MetricStatusCell', () => {
 
     rerender(
       <ThemeProvider theme={theme}>
-        <MetricStatusCell status="error" theme={theme} />
+        <MetricStatusCell
+          status="error"
+          theme={theme}
+          statusColor="error.main"
+        />
       </ThemeProvider>,
     );
 
@@ -92,7 +112,11 @@ describe('MetricStatusCell', () => {
   it('should capitalise unknown status when no translation key matches', () => {
     render(
       <ThemeProvider theme={theme}>
-        <MetricStatusCell status="pending" theme={theme} />
+        <MetricStatusCell
+          status="pending"
+          theme={theme}
+          statusColor="pending.main"
+        />
       </ThemeProvider>,
     );
 

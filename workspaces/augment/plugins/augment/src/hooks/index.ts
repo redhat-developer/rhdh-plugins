@@ -43,6 +43,9 @@ export {
   type UseToolApprovalReturn,
 } from './useToolApproval';
 export { useAdminConfig } from './useAdminConfig';
+export { useChatAgentConfig } from './useChatAgentConfig';
+export { useChatToolConfig } from './useChatToolConfig';
+export { useTours } from './useTours';
 export { useEffectiveConfig } from './useEffectiveConfig';
 export { useGeneratePrompt } from './useGeneratePrompt';
 export { useModels, type ModelInfo } from './useModels';
@@ -73,3 +76,10 @@ export { useChatKeyboardShortcuts } from './useChatKeyboardShortcuts';
 export { useScrollToBottom } from './useScrollToBottom';
 export { useTranslation } from './useTranslation';
 export type { AugmentTranslationFunction } from './useTranslation';
+export { useAgentSelection } from './useAgentSelection';
+export { useInteractivePhases } from './useInteractivePhases';
+export {
+  useChatViewMode,
+  ChatViewModeProvider,
+  type ChatViewMode,
+} from './useChatViewMode';

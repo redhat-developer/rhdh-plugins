@@ -50,17 +50,12 @@ export const useEntitiesKonfluxConfig = ():
           const subcomponentName = e.metadata.name;
           clustersParsedYaml.forEach(clusterConfig => {
             // filter out invalid configs (missing required fields)
-            if (
-              clusterConfig.cluster &&
-              clusterConfig.namespace &&
-              clusterConfig.applications &&
-              clusterConfig.applications.length > 0
-            ) {
+            if (clusterConfig.cluster && clusterConfig.namespace) {
               subcomponentConfigs.push({
                 subcomponent: subcomponentName,
                 cluster: clusterConfig.cluster,
                 namespace: clusterConfig.namespace,
-                applications: clusterConfig.applications,
+                applications: clusterConfig.applications || [],
               });
             }
           });

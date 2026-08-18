@@ -6,7 +6,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-minor-presets(Konflux)"
       ],
-      "addLabels": ["team/rhdh", "konflux"]
+      "addLabels": ["konflux"]
     },
     {
       "description": "all Konflux patch updates",
@@ -14,7 +14,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-patch-presets(Konflux)"
       ],
-      "addLabels": ["team/rhdh", "konflux"]
+      "addLabels": ["konflux"]
     },
     {
       "description": "all Konflux dev dependency updates",
@@ -22,7 +22,7 @@
       "extends": [
         "github>redhat-developer/rhdh-plugins//.github/renovate-presets/base/rhdh-devdependency-presets(Konflux)"
       ],
-      "addLabels": ["team/rhdh", "konflux"]
+      "addLabels": ["konflux"]
     }
   ]
 }

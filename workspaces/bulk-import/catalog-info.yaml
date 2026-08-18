@@ -26,5 +26,4 @@ spec:
   type: backstage-plugin
   owner: rhdh-team
   lifecycle: active
-  system: rhdh
   subcomponentOf: rhdh-plugins

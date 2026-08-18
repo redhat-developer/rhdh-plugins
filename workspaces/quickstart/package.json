@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "engines": {
-    "node": "18 || 20"
+    "node": "22 || 24"
   },
   "scripts": {
     "start": "backstage-cli repo start",
@@ -23,7 +23,12 @@
     "prettier:fix": "prettier --write .",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install",
-    "test:e2e": "playwright test"
+    "test:e2e": "yarn test:e2e:all",
+    "test:e2e:legacy": "APP_MODE=legacy playwright test",
+    "test:e2e:nfs": "APP_MODE=nfs playwright test",
+    "test:e2e:all": "yarn test:e2e:legacy && yarn test:e2e:nfs",
+    "test:e2e:ci": "yarn test:e2e:all",
+    "playwright": "bash -c 'if [[ $@ == test ]]; then yarn test:e2e:all; else npx playwright \"$@\"; fi' _"
   },
   "workspaces": {
     "packages": [
@@ -37,23 +42,33 @@
     "directory": "workspaces/quickstart"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.36.0",
-    "@backstage/cli-defaults": "^0.1.0",
+    "@backstage/cli": "^0.36.3",
+    "@backstage/cli-defaults": "^0.1.3",
     "@backstage/e2e-test-utils": "^0.1.2",
-    "@backstage/repo-tools": "^0.17.0",
+    "@backstage/repo-tools": "^0.17.3",
     "@changesets/cli": "^2.27.1",
-    "@playwright/test": "1.58.2",
+    "@jest/environment-jsdom-abstract": "^30.3.0",
+    "@playwright/test": "1.61.1",
+    "@types/jest": "^30.0.0",
+    "@types/jsdom": "^27.0.0",
+    "jest": "^30.3.0",
+    "jsdom": "^27.1.0",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
     "prettier": "^2.3.2",
     "typescript": "~5.8.0"
   },
   "resolutions": {
+    "@backstage/frontend-plugin-api": "0.17.2",
+    "@backstage/plugin-catalog-react": "3.1.0",
+    "@backstage/plugin-permission-react": "0.5.2",
+    "@backstage/plugin-signals-react": "0.0.23",
+    "@backstage/ui": "0.16.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "refractor@npm:3.6.0/prismjs": "^1.30.0"
   },
-  "prettier": "@spotify/prettier-config",
+  "prettier": "@backstage/cli/config/prettier",
   "lint-staged": {
     "*.{js,jsx,ts,tsx,mjs,cjs}": [
       "eslint --fix",
@@ -62,8 +77,5 @@
     "*.{json,md}": [
       "prettier --write"
     ]
-  },
-  "dependencies": {
-    "playwright": "^1.56.1"
   }
 }

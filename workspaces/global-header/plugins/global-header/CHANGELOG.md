@@ -1,5 +1,114 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 2.0.0
+
+### Major Changes
+
+- fb73f2d: ### Breaking: Promote NFS plugin to stable, deprecate OFS
+
+  The New Frontend System (NFS) plugin has been promoted from `/alpha` to the
+  main package entry point. The Old Frontend System (OFS) plugin has moved to
+  `/legacy` and is deprecated — it will be removed in a future release.
+
+  #### What changed
+
+  - **Main entry point (`/`)** now exports the NFS plugin (`createFrontendPlugin`),
+    `globalHeaderModule` (AppRootWrapper), extension blueprints
+    (`GlobalHeaderComponentBlueprint`, `GlobalHeaderMenuItemBlueprint`), data refs,
+    context hooks, default toolbar/menu-item extensions, and building-block
+    components.
+  - **`/legacy`** now exports the OFS plugin (`createPlugin`), component
+    extensions (`GlobalHeader`, `CreateDropdown`, `ProfileDropdown`, etc.), and
+    legacy mount-point defaults. This entry point is **deprecated**.
+  - **`/alpha`** now only re-exports translations. All other
+    NFS exports that were previously here have moved to the main entry point.
+    Importing the plugin, module, blueprints, or components from `/alpha` will
+    no longer work — use the root import instead.
+  - Source layout restructured: NFS code moved from `src/alpha/` to `src/`;
+    OFS-only code moved into `src/legacy/`; shared components remain in
+    `src/components/`.
+
+  #### Migration steps
+
+  1. **NFS adopters** (using `@backstage/frontend-plugin-api`):
+     Change imports from `@red-hat-developer-hub/backstage-plugin-global-header/alpha`
+     to `@red-hat-developer-hub/backstage-plugin-global-header`.
+
+  2. **OFS adopters** (using `@backstage/core-plugin-api` with Scalprum/mount-points):
+     Change imports from `@red-hat-developer-hub/backstage-plugin-global-header`
+     to `@red-hat-developer-hub/backstage-plugin-global-header/legacy`.
+     Plan migration to the NFS plugin before OFS support is removed.
+
+  3. **Dynamic plugin users**: The Scalprum `exposedModules` entry points are
+     unchanged (`PluginRoot`, `Alpha`, `Legacy`, `GlobalHeaderModule`,
+     `GlobalHeaderTranslationsModule`), so no `app-config.yaml` changes are
+     needed.
+
+### Patch Changes
+
+- e3fb07a: Export translations module as default for NFS auto-discovery
+
+## 1.22.1
+
+### Patch Changes
+
+- 83d8a47: Removed unused `StylesProvider` and `createGenerateClassName` JSS wrapper from GlobalHeaderComponent and GlobalHeader. Dropped `@mui/styles` dependency since JSS class-name isolation is no longer needed after the MUI5 migration.
+
+## 1.22.0
+
+### Minor Changes
+
+- c0fcadf: Backstage version bump to v1.52.1
+
+## 1.21.7
+
+### Patch Changes
+
+- 6d0a82b: Bump `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.11` to fix broken `config.d.ts` in earlier versions.
+- 735441d: Updated dependency `@scalprum/react-core` to `0.11.3`.
+
+## 1.21.6
+
+### Patch Changes
+
+- 5ee4105: Replace Material UI v4 imports with MUI v5 and scope JSS class names to prevent style collisions.
+
+## 1.21.5
+
+### Patch Changes
+
+- 4b07772: Translations updated for de/es/fr/it/ja
+
+## 1.21.4
+
+### Patch Changes
+
+- 7cf6d61: Add missing translations for the global header search experience: localize the autocomplete "All results" link and the clear control tooltip/accessible label (`search.allResults`, `search.clear`), with locale strings for German, Spanish, French, Italian, and Japanese.
+
+## 1.21.3
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+
+## 1.21.2
+
+### Patch Changes
+
+- 4cabc3b: Fix help dropdown not closing when selecting Quick Start menu item.
+
+## 1.21.1
+
+### Patch Changes
+
+- 351d260: Fixed the css issue when drawer opens, fixed the validity check bug
+
+## 1.21.0
+
+### Minor Changes
+
+- a49a2cc: Added a new frontend system based header
+
 ## 1.20.3
 
 ### Patch Changes

@@ -23,14 +23,13 @@ import {
   getCatalogUrl,
 } from '../../../catalog/catalogUtils';
 import type { Components } from '../../../generated/openapi';
-import type { GithubApiService } from '../../../github';
-import { GitlabApiService } from '../../../gitlab';
+import { GitApiService } from '../../../scm/GitApiService';
 
 export async function getImportStatusFromLocations(
   deps: {
     logger: LoggerService;
     config: Config;
-    gitApiService: GithubApiService | GitlabApiService;
+    gitApiService: GitApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   repoUrl: string,
@@ -59,7 +58,7 @@ async function getImportStatusWithCheckerFn(
   deps: {
     logger: LoggerService;
     config: Config;
-    gitApiService: GithubApiService | GitlabApiService;
+    gitApiService: GitApiService;
     catalogHttpClient: CatalogHttpClient;
   },
   repoUrl: string,

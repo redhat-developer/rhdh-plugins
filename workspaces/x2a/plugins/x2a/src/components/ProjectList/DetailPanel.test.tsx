@@ -19,76 +19,138 @@ jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: mockUseTranslation,
 }));
 
-jest.mock('../ItemField', () => ({
-  ItemField: ({ label, value }: { label: string; value: React.ReactNode }) => (
-    <div data-testid={`field-${label}`}>{value}</div>
-  ),
+jest.mock('@backstage/core-plugin-api', () => ({
+  ...jest.requireActual('@backstage/core-plugin-api'),
+  useRouteRef: require('../../test-utils/mockRouteRef').mockUseRouteRef,
 }));
 
-jest.mock('../ModuleTable', () => ({
-  ModuleTable: ({ modules }: { modules: { name: string }[] }) => (
-    <div data-testid="module-table">
-      {modules.map(m => (
-        <span key={m.name}>{m.name}</span>
-      ))}
-    </div>
-  ),
+jest.mock('../../hooks/useProjectWriteAccess', () => ({
+  useProjectWriteAccess: () => ({
+    loading: false,
+    hasAnyWriteAccess: true,
+    canWriteProject: () => true,
+  }),
 }));
 
-jest.mock('../Artifacts', () => ({
-  ArtifactLink: () => null,
+jest.mock('../../hooks/useBulkRun', () => ({
+  useBulkRun: () => ({
+    runAllForProject: jest.fn(),
+    runAllGlobal: jest.fn(),
+  }),
 }));
 
-jest.mock('@backstage/core-components', () => ({
-  Progress: () => <div role="progressbar" />,
-  ResponseErrorPanel: ({ error }: { error: Error }) => (
-    <div role="alert">{error.message}</div>
-  ),
-}));
+import { render, screen, waitFor } from '@testing-library/react';
+import { ThemeProvider, createTheme } from '@material-ui/core/styles';
+import { MemoryRouter } from 'react-router-dom';
+import { TestApiProvider, mockApis, MockErrorApi } from '@backstage/test-utils';
 
-import { render, screen } from '@testing-library/react';
-import { Project } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  configApiRef,
+  discoveryApiRef,
+  fetchApiRef,
+  errorApiRef,
+} from '@backstage/core-plugin-api';
+import { translationApiRef } from '@backstage/core-plugin-api/alpha';
+// eslint-disable-next-line @backstage/no-undeclared-imports
+import { featureFlagsApiRef } from '@backstage/frontend-plugin-api';
+import {
+  Project,
+  Module,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { DetailPanel } from './DetailPanel';
 
 const mockProject: Project = {
   id: 'proj-1',
   name: 'Test Project',
-  abbreviation: 'TP',
   description: 'A test project',
+  dirName: 'test-project-proj-1',
   sourceRepoUrl: 'https://github.com/org/source',
   targetRepoUrl: 'https://github.com/org/target',
   sourceRepoBranch: 'main',
   targetRepoBranch: 'main',
   createdAt: new Date('2024-01-01T00:00:00Z'),
-  createdBy: 'user:default/test',
+  ownedBy: 'user:default/test',
 };
 
-const mockModules = [
-  { name: 'module-a', id: 'mod-a' },
-  { name: 'module-b', id: 'mod-b' },
+const mockModules: Module[] = [
+  {
+    id: 'mod-a',
+    name: 'module-a',
+    sourcePath: '/src/module-a',
+    projectId: 'proj-1',
+    status: 'pending',
+  },
+  {
+    id: 'mod-b',
+    name: 'module-b',
+    sourcePath: '/src/module-b',
+    projectId: 'proj-1',
+    status: 'pending',
+  },
 ];
 
-describe('DetailPanel', () => {
-  it('shows loading indicator when modulesLoading is true and no modules', () => {
-    render(
-      <DetailPanel
-        project={mockProject}
-        forceRefresh={jest.fn()}
-        modulesLoading
-      />,
-    );
+const theme = createTheme({
+  palette: {
+    status: {
+      ok: '#71CF88',
+      warning: '#FFB84D',
+      error: '#F84C55',
+      running: '#3E8635',
+      pending: '#6A6E73',
+      aborted: '#8F4700',
+    },
+  },
+} as any);
 
-    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+const testApis: [any, any][] = [
+  [configApiRef, mockApis.config({})],
+  [errorApiRef, new MockErrorApi()],
+  [translationApiRef, mockApis.translation()],
+  [
+    discoveryApiRef,
+    { getBaseUrl: jest.fn().mockResolvedValue('http://localhost') },
+  ],
+  [fetchApiRef, { fetch: jest.fn() }],
+  [
+    featureFlagsApiRef,
+    {
+      registerFlag: jest.fn(),
+      getRegisteredFlags: jest.fn().mockReturnValue([]),
+      isActive: jest.fn().mockReturnValue(false),
+      save: jest.fn(),
+    },
+  ],
+];
+
+function renderDetailPanel(
+  props: Partial<React.ComponentProps<typeof DetailPanel>> = {},
+) {
+  return render(
+    <ThemeProvider theme={theme}>
+      <MemoryRouter>
+        <TestApiProvider apis={testApis}>
+          <DetailPanel
+            project={mockProject}
+            forceRefresh={jest.fn()}
+            {...props}
+          />
+        </TestApiProvider>
+      </MemoryRouter>
+    </ThemeProvider>,
+  );
+}
+
+describe('DetailPanel', () => {
+  it('shows loading indicator when modulesLoading is true and no modules', async () => {
+    renderDetailPanel({ modulesLoading: true });
+
+    await waitFor(() => {
+      expect(screen.getByRole('progressbar')).toBeInTheDocument();
+    });
   });
 
   it('renders modules when provided', () => {
-    render(
-      <DetailPanel
-        project={mockProject}
-        forceRefresh={jest.fn()}
-        modules={mockModules as any}
-      />,
-    );
+    renderDetailPanel({ modules: mockModules });
 
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(screen.getByText('module-a')).toBeInTheDocument();
@@ -96,40 +158,24 @@ describe('DetailPanel', () => {
   });
 
   it('shows error panel when modulesError is provided', () => {
-    render(
-      <DetailPanel
-        project={mockProject}
-        forceRefresh={jest.fn()}
-        modulesError={new Error('Network error')}
-      />,
-    );
+    renderDetailPanel({ modulesError: new Error('Network error') });
 
-    expect(screen.getByText(/Network error/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Network error/).length).toBeGreaterThan(0);
   });
 
   it('shows "no modules" when modules is an empty array', () => {
-    render(
-      <DetailPanel
-        project={mockProject}
-        forceRefresh={jest.fn()}
-        modules={[]}
-      />,
-    );
+    renderDetailPanel({ modules: [] });
 
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
     expect(screen.getByText('No modules found yet...')).toBeInTheDocument();
   });
 
   it('renders project fields', () => {
-    render(
-      <DetailPanel
-        project={mockProject}
-        forceRefresh={jest.fn()}
-        modules={mockModules as any}
-      />,
-    );
+    renderDetailPanel({ modules: mockModules });
 
-    expect(screen.getByTestId('field-Abbreviation')).toBeInTheDocument();
-    expect(screen.getByTestId('field-Description')).toBeInTheDocument();
+    expect(screen.getByText('Description')).toBeInTheDocument();
+    expect(screen.getByText('A test project')).toBeInTheDocument();
+    expect(screen.getByText('Directory Name')).toBeInTheDocument();
+    expect(screen.getByText('test-project-proj-1')).toBeInTheDocument();
   });
 });

@@ -1,5 +1,35 @@
 # @red-hat-developer-hub/backstage-plugin-konflux-backend
 
+## 0.2.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-konflux-common@0.2.0
+
+## 0.1.8
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-konflux-common@0.1.8
+
+## 0.1.7
+
+### Patch Changes
+
+- 378b871: Bump Backstage dependencies from 1.45.2 to 1.49.4 to align with RHDH 1.10. Fix Latest Releases not shown when applications field is omitted or uses wildcard patterns.
+- Updated dependencies [378b871]
+  - @red-hat-developer-hub/backstage-plugin-konflux-common@0.1.7
+
+## 0.1.6
+
+### Patch Changes
+
+- dff3b21: Feat: add wildcard (_) and glob pattern support (e.g. my-app-_, \*-backend) for the applications field in konflux-ci.dev/clusters annotation.
+  Feat: allow omitting applications to fetch all applications from a namespace.
+  - @red-hat-developer-hub/backstage-plugin-konflux-common@0.1.6
+
 ## 0.1.5
 
 ### Patch Changes

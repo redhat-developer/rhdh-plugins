@@ -19,7 +19,7 @@ import { setupServer } from 'msw/node';
 import { OptimizationsClient } from './OptimizationsClient';
 import { DiscoveryApi } from '../../generated/types/discovery';
 import { GetRecommendationByIdRequest } from './types';
-import RecommendationMockResponse from './fixtures/recommendation-mock.json' assert { type: 'json' };
+import RecommendationMockResponse from './fixtures/recommendation-mock.json';
 
 function makePlotsDataPropertyPathWithTerm(
   term: 'short' | 'medium' | 'long',

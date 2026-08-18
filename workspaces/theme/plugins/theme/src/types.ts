@@ -21,6 +21,7 @@ export type BackstageThemePalette = UnifiedThemeOptions['palette'];
 export interface RHDHThemePalette {
   general: {
     pageInset: string;
+    pageInsetBackgroundColor: string;
 
     disabled: string;
     disabledBackground: string;

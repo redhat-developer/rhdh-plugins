@@ -21,13 +21,18 @@ import Router from 'express-promise-router';
 import type { RouterOptions } from './models/RouterOptions';
 import { getToken } from './routes/token';
 import { getAccess } from './routes/access';
+import { createDcmProxy } from './routes/proxy';
 
 export async function createRouter(
   options: RouterOptions,
 ): Promise<express.Router> {
   const router = Router();
 
-  router.use(express.json());
+  router.use(
+    express.json({
+      type: ['application/json', 'application/merge-patch+json'],
+    }),
+  );
 
   const permissionsIntegrationRouter = createPermissionIntegrationRouter({
     permissions: dcmPluginPermissions,
@@ -40,6 +45,8 @@ export async function createRouter(
 
   router.get('/token', getToken(options));
   router.get('/access', getAccess(options));
+
+  router.all('/proxy/*', createDcmProxy(options));
 
   return router;
 }

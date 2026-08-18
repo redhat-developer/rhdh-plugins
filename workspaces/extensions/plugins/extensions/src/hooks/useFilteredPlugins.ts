@@ -21,9 +21,16 @@ import { useQuery } from '@tanstack/react-query';
 import {
   GetEntitiesRequest,
   ExtensionsAnnotation,
+  ExtensionsPlugin,
 } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 
 import { useExtensionsApi } from './useExtensionsApi';
+
+export type FilteredPluginsData = {
+  items: ExtensionsPlugin[];
+  filteredItems: number;
+  totalItems: number;
+};
 
 const filteredPluginsRequest: GetEntitiesRequest = {
   orderFields: [
@@ -85,19 +92,12 @@ export const useFilteredPlugins = () => {
           });
         }
 
-        const showCertified = filters.includes('certified');
         const showCustom = filters.includes('custom');
         const supportLevels = filters
           .filter(filter => filter.startsWith('support-level='))
           .map(filter => filter.substring('support-level='.length));
-        if (showCertified || showCustom || supportLevels.length > 0) {
+        if (showCustom || supportLevels.length > 0) {
           plugins = plugins.filter(plugin => {
-            if (
-              showCertified &&
-              plugin.metadata?.annotations?.[ExtensionsAnnotation.CERTIFIED_BY]
-            ) {
-              return true;
-            }
             if (
               showCustom &&
               plugin.metadata?.annotations?.[

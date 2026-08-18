@@ -1,5 +1,24 @@
 # @red-hat-developer-hub/backstage-plugin-ai-experience
 
+## 0.5.5
+
+### Patch Changes
+
+- c2e3749: bump workspace to 1.52.0
+- d69d6d6: Replace Material UI v4 imports with MUI v5, add StylesProvider with createGenerateClassName seed prefix to prevent CSS collisions, and migrate makeStyles to sx prop.
+- Updated dependencies [c2e3749]
+  - @red-hat-developer-hub/backstage-plugin-ai-experience-backend@0.4.2
+  - @red-hat-developer-hub/backstage-plugin-ai-experience-common@0.4.2
+
+## 0.5.4
+
+### Patch Changes
+
+- 4418084: Upgrade workspace to Backstage 1.49.4
+- Updated dependencies [4418084]
+  - @red-hat-developer-hub/backstage-plugin-ai-experience-backend@0.4.1
+  - @red-hat-developer-hub/backstage-plugin-ai-experience-common@0.4.1
+
 ## 0.5.3
 
 ### Patch Changes

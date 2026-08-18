@@ -16,7 +16,6 @@
 
 import type { DocumentApiDeps } from './documentEndpoints';
 import {
-  listDocuments,
   syncDocuments,
   uploadDocument,
   deleteDocument,
@@ -51,30 +50,6 @@ describe('documentEndpoints', () => {
   }
 
   describe('Documents', () => {
-    describe('listDocuments', () => {
-      it('should fetch documents', async () => {
-        const deps = createDeps();
-        const mockDocs = [
-          {
-            id: 'file-1',
-            fileName: 'test.md',
-            format: 'text',
-            fileSize: 1024,
-            uploadedAt: '2025-01-15',
-            status: 'completed',
-          },
-        ];
-        (deps.fetchJson as jest.Mock).mockResolvedValue({
-          documents: mockDocs,
-        });
-
-        const result = await listDocuments(deps);
-
-        expect(deps.fetchJson).toHaveBeenCalledWith('/documents');
-        expect(result).toEqual(mockDocs);
-      });
-    });
-
     describe('syncDocuments', () => {
       it('should POST to sync and return result', async () => {
         const deps = createDeps();

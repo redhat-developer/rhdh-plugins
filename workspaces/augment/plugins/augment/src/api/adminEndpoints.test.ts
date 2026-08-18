@@ -381,7 +381,7 @@ describe('adminEndpoints', () => {
 
         const result = await getWorkflows(deps);
 
-        expect(deps.fetchJson).toHaveBeenCalledWith('/workflows');
+        expect(deps.fetchJson).toHaveBeenCalledWith('/guided-workflows');
         expect(result).toEqual(mockWorkflows);
       });
 

@@ -17,5 +17,4 @@ spec:
   type: backstage-plugin
   lifecycle: active
   owner: rhdh-ui-team
-  system: rhdh
   subcomponentOf: rhdh-plugins

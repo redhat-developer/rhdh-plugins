@@ -1,5 +1,76 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions
 
+## 0.19.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-extensions-common@0.19.1
+
+## 0.19.0
+
+### Minor Changes
+
+- 90a1446: Backstage version bump to v1.52.1
+
+### Patch Changes
+
+- Updated dependencies [2636ed4]
+- Updated dependencies [90a1446]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.19.0
+
+## 0.18.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-extensions-common@0.18.1
+
+## 0.18.0
+
+### Minor Changes
+
+- 53a5d1d: bump to 1.51.1
+
+### Patch Changes
+
+- Updated dependencies [763507e]
+- Updated dependencies [53a5d1d]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.18.0
+
+## 0.17.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-extensions-common@0.17.1
+
+## 0.17.0
+
+### Minor Changes
+
+- 12921b4: Enforce collision policy for duplicate entity identities
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-extensions-common@0.17.0
+
+## 0.16.1
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.16.1
+
+## 0.16.0
+
+### Minor Changes
+
+- 2820dc2: Backstage version bump to v1.49.2
+
+### Patch Changes
+
+- Updated dependencies [2820dc2]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.16.0
+
 ## 0.15.0
 
 ### Patch Changes

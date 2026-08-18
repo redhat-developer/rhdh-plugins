@@ -1,0 +1,49 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+const STATUS_GROUPED = 'statusGrouped' as const;
+const WEIGHTED_STATUS_SCORE = 'weightedStatusScore' as const;
+const SUM = 'sum' as const;
+const AVERAGE = 'average' as const;
+const MAX = 'max' as const;
+const MIN = 'min' as const;
+const COUNT = 'count' as const;
+
+/**
+ * Supported aggregation types
+ * @public
+ */
+export const aggregationTypes = Object.freeze({
+  statusGrouped: STATUS_GROUPED,
+  weightedStatusScore: WEIGHTED_STATUS_SCORE,
+  sum: SUM,
+  average: AVERAGE,
+  max: MAX,
+  min: MIN,
+  count: COUNT,
+});
+
+/**
+ * Scalar aggregation types that operate on raw metric values.
+ * @public
+ */
+export const scalarAggregationTypes = Object.freeze([
+  SUM,
+  AVERAGE,
+  MAX,
+  MIN,
+  COUNT,
+] as const);

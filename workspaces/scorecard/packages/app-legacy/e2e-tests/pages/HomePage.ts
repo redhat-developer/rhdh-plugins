@@ -15,13 +15,17 @@
  */
 
 import { Locator, Page, expect } from '@playwright/test';
+import { AGGREGATED_CARDS_WIDGET_TITLES } from '../constants/aggregations';
 import {
   ScorecardMessages,
   getEntityCount,
+  getHomepageEntityCalculationHealthText,
   getLastUpdatedLabel,
 } from '../utils/translationUtils';
 
 type ThresholdState = 'success' | 'warning' | 'error';
+const escapeRegex = (value: string) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 export class HomePage {
   readonly page: Page;
@@ -48,29 +52,44 @@ export class HomePage {
 
   async addCard(cardName: string) {
     await this.page.getByRole('button', { name: 'Add widget' }).click();
-    await this.page.getByRole('button', { name: cardName }).click();
+    await expect(
+      this.page.getByRole('heading', { name: 'Add new widget to dashboard' }),
+    ).toBeVisible();
+
+    let cardPattern: RegExp;
+    if (cardName === 'Onboarding section') {
+      cardPattern =
+        /Onboarding section|RhdhOnboardingSection|Red Hat Developer Hub - Onboarding/i;
+    } else if (cardName === 'Scorecard: GitHub open PRs') {
+      cardPattern = /Scorecard:\s*GitHub open PRs|ScorecardGithubHomepage/i;
+    } else if (cardName === 'Scorecard: Jira open blocking') {
+      cardPattern = /Scorecard:\s*Jira open blocking|ScorecardJiraHomepage/i;
+    } else if (
+      cardName === AGGREGATED_CARDS_WIDGET_TITLES.gitHubOpenPrsWeightedKpi
+    ) {
+      cardPattern =
+        /Scorecard:\s*GitHub open PRs \(weighted health\)|ScorecardGitHubOpenPrsWeightedKpi/i;
+    } else {
+      cardPattern = new RegExp(escapeRegex(cardName), 'i');
+    }
+
+    await this.page.getByRole('button', { name: cardPattern }).first().click();
   }
 
   async saveChanges() {
     await this.page.getByRole('button', { name: 'Save' }).click();
   }
 
-  async expectCardVisible(metricId: 'github.open_prs' | 'jira.open_issues') {
-    await expect(
-      this.page.getByText(this.translations.metric[metricId].title),
-    ).toBeVisible();
+  async expectCardVisible(instanceId: string) {
+    await expect(this.getCard(instanceId)).toBeVisible();
   }
 
-  async expectCardNotVisible(metricId: 'github.open_prs' | 'jira.open_issues') {
-    await expect(
-      this.page.getByText(this.translations.metric[metricId].title),
-    ).not.toBeVisible();
+  async expectCardNotVisible(instanceId: string) {
+    await expect(this.getCard(instanceId)).not.toBeVisible();
   }
 
-  getCard(metricId: 'github.open_prs' | 'jira.open_issues'): Locator {
-    return this.page
-      .locator('article')
-      .filter({ hasText: this.translations.metric[metricId].title });
+  getCard(instanceId: string): Locator {
+    return this.page.getByTestId(`scorecard-homepage-card-${instanceId}`);
   }
 
   async verifyThresholdTooltip(
@@ -80,7 +99,7 @@ export class HomePage {
     percentage: string,
   ) {
     const stateLabel = this.translations.thresholds[state];
-    await card.getByText(stateLabel, { exact: true }).hover();
+    await card.getByText(stateLabel, { exact: true }).first().hover();
     await expect(
       this.page.getByText(
         getEntityCount(this.translations, this.locale, entityCount),
@@ -92,27 +111,41 @@ export class HomePage {
     ).toBeVisible();
   }
 
-  async expectCardHasMissingPermission(
-    metricId: 'github.open_prs' | 'jira.open_issues',
-  ) {
-    const card = this.getCard(metricId);
+  async expectCardHasMissingPermission(instanceId: string) {
+    const card = this.getCard(instanceId);
     await expect(card).toContainText(
       this.translations.errors.missingPermission,
     );
   }
 
-  async expectCardHasNoDataFound(
-    metricId: 'github.open_prs' | 'jira.open_issues',
-  ) {
-    const card = this.getCard(metricId);
+  async expectCardHasNoDataFound(instanceId: string) {
+    const card = this.getCard(instanceId);
     await expect(card).toContainText(this.translations.errors.noDataFound);
   }
 
   async verifyLastUpdatedTooltip(card: Locator, formattedTimestamp: string) {
     const label = getLastUpdatedLabel(this.translations, formattedTimestamp);
-    const infoIcon = card.locator('[data-testid="InfoOutlinedIcon"]');
+    const infoIcon = card.getByTestId('scorecard-homepage-card-info');
     await expect(infoIcon).toBeVisible();
     await infoIcon.hover();
     await expect(this.page.getByText(label)).toBeVisible();
+  }
+
+  /**
+   * Clicks the homepage KPI drill-down link (healthy/total subheader) within a card.
+   * Defaults to 10/10 (plain “10 entities” link). Pass overrides when mock `result.total` differs.
+   */
+  async clickDrillDownLink(
+    card: Locator,
+    options?: { healthy?: string; total?: string },
+  ) {
+    const healthy = options?.healthy ?? '10';
+    const total = options?.total ?? '10';
+    const name = getHomepageEntityCalculationHealthText(
+      this.translations,
+      healthy,
+      total,
+    );
+    await card.getByRole('link', { name }).click();
   }
 }

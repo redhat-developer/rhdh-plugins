@@ -22,17 +22,23 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { AVAILABLE, UNAVAILABLE, VALUE_UNAVAILABLE } from '../constants';
+import { formatCompactCount } from '../utils/formatCompactCount';
 import DataFormatter from './DataFormatter';
 
 export interface FormattedWorkflowOverview {
   readonly id: string;
   readonly name: string;
+  readonly version: string;
   readonly lastTriggered: string;
   readonly lastRunStatus: string;
   readonly lastRunId: string;
   readonly description: string;
   readonly format: WorkflowFormatDTO;
   readonly availability?: string;
+  readonly availabilityDetails?: WorkflowOverviewDTO['availability'];
+  readonly runsLastMonth: string;
+  readonly successRatio?: number;
+  readonly successRatioDisplay: string;
 }
 
 const formatIsAvailable = (availability: boolean | undefined) => {
@@ -48,6 +54,24 @@ const formatLastRunStatus = (lastRunStatus: string | undefined) => {
   return VALUE_UNAVAILABLE;
 };
 
+const formatRunsLastMonth = (runsLastMonth: number | undefined) => {
+  if (runsLastMonth === undefined) {
+    return VALUE_UNAVAILABLE;
+  }
+  return formatCompactCount(runsLastMonth);
+};
+
+const formatSuccessRatioDisplay = (successRatio: number | undefined) => {
+  if (
+    successRatio === undefined ||
+    Number.isNaN(successRatio) ||
+    !Number.isFinite(successRatio)
+  ) {
+    return VALUE_UNAVAILABLE;
+  }
+  return `${Math.round(successRatio * 100)}%`;
+};
+
 const WorkflowOverviewFormatter: DataFormatter<
   WorkflowOverviewDTO,
   FormattedWorkflowOverview
@@ -56,6 +80,7 @@ const WorkflowOverviewFormatter: DataFormatter<
     return {
       id: data.workflowId,
       name: data.name ?? VALUE_UNAVAILABLE,
+      version: data.version ?? VALUE_UNAVAILABLE,
       lastTriggered: data.lastTriggeredMs
         ? DateTime.fromMillis(data.lastTriggeredMs).toLocaleString(
             DateTime.DATETIME_SHORT_WITH_SECONDS,
@@ -66,6 +91,12 @@ const WorkflowOverviewFormatter: DataFormatter<
       description: data.description ?? VALUE_UNAVAILABLE,
       format: data.format,
       availability: formatIsAvailable(data.isAvailable),
+      availabilityDetails: data.availability,
+      runsLastMonth: formatRunsLastMonth(data.workflowRunStats?.runsLastMonth),
+      successRatio: data.workflowRunStats?.successRatio,
+      successRatioDisplay: formatSuccessRatioDisplay(
+        data.workflowRunStats?.successRatio,
+      ),
     };
   },
 };

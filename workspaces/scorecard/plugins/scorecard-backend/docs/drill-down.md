@@ -4,7 +4,11 @@ The Scorecard plugin provides a drill-down endpoint that returns detailed entity
 
 ## Overview
 
-The drill-down endpoint (`/metrics/:metricId/catalog/aggregations/entities`) provides a detailed view of entities and their metric values. It allows managers and platform engineers to:
+High-level aggregation for homepage KPIs uses **`GET /aggregations/:aggregationId`** (see [aggregation.md](./aggregation.md)). Drill-down is **metric-scoped**: the endpoint **`/metrics/:metricId/catalog/aggregations/entities`** lists entities and values for a single **metric id** (not a KPI id).
+
+**Note:** If the homepage card uses a KPI key (for example **`openPrsWeightedKpi`**) with **`type: weightedStatusScore`**, drill-down still uses the KPI’s configured **`metricId`** (e.g. **`github.openPRs`**) in this path—not the KPI id. The same applies to **scalar** KPIs (`sum`, `average`, `max`, `min`, `count`): use the KPI’s **`metricId`**, not the KPI key.
+
+The drill-down endpoint provides a detailed view of entities and their metric values. It allows managers and platform engineers to:
 
 - See individual entities contributing to aggregated scores
 - Filter entities by status (success/warning/error), owner, kind, namespace, or entity ref substring
@@ -22,9 +26,9 @@ Returns a paginated list of entities with their metric values, enriched with cat
 
 #### Path Parameters
 
-| Parameter  | Type   | Required | Description                                    |
-| ---------- | ------ | -------- | ---------------------------------------------- |
-| `metricId` | string | Yes      | The ID of the metric (e.g., `github.open_prs`) |
+| Parameter  | Type   | Required | Description                                   |
+| ---------- | ------ | -------- | --------------------------------------------- |
+| `metricId` | string | Yes      | The ID of the metric (e.g., `github.openPRs`) |
 
 #### Query Parameters
 
@@ -60,6 +64,7 @@ Requires `scorecard.metric.read` permission. Additionally:
     title: string;
     description: string;
     type: 'number' | 'boolean';
+    unit?: string;
   };
   entities: EntityMetricDetail[];
   pagination: {
@@ -67,6 +72,12 @@ Requires `scorecard.metric.read` permission. Additionally:
     pageSize: number;
     total: number;
     totalPages: number;
+    isCapped: boolean;
+  };
+  entityHealth: {
+    totalEntities: number; // Same as pagination.total for this response
+    calculationErrorCount: number; // Latest row is a metric calculation failure (error_message set, value null)
+    countsArePartial: boolean; // True when the DB fetch window was capped
   };
 }
 
@@ -89,7 +100,7 @@ type EntityMetricDetail = {
 Get the first page of entities for a metric:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities?page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -98,7 +109,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
 Get only entities in error state:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?status=error&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities?status=error&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -107,14 +118,14 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
 Get entities owned by a specific team:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=group:default/platform&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities?owner=group:default/platform&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
 Get entities owned by multiple teams (repeat the `owner` parameter):
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=group:default/platform&owner=group:default/backend&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities?owner=group:default/platform&owner=group:default/backend&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -123,7 +134,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
 Get only Component entities:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?kind=Component&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities?kind=Component&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -132,7 +143,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
 Search for entities with "service" in their name:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?entityName=service&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities?entityName=service&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -141,7 +152,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
 Get entities in a specific namespace:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?namespace=staging&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities?namespace=staging&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -150,28 +161,28 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
 Sort by metric value (highest first):
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?sortBy=metricValue&sortOrder=desc&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities?sortBy=metricValue&sortOrder=desc&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
 Sort by entity name alphabetically:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?sortBy=entityName&sortOrder=asc&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities?sortBy=entityName&sortOrder=asc&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
 Sort by namespace alphabetically:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?sortBy=namespace&sortOrder=asc&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities?sortBy=namespace&sortOrder=asc&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
 Sort by status alphabetically to group entities by threshold result:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?sortBy=status&sortOrder=asc&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities?sortBy=status&sortOrder=asc&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -180,7 +191,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
 Get Component entities with errors for a specific team, sorted by metric value:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=group:default/platform&status=error&kind=Component&namespace=staging&sortBy=metricValue&sortOrder=desc&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities?owner=group:default/platform&status=error&kind=Component&namespace=staging&sortBy=metricValue&sortOrder=desc&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -188,7 +199,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/
 
 ```json
 {
-  "metricId": "github.open_prs",
+  "metricId": "github.openPRs",
   "metricMetadata": {
     "title": "Open Pull Requests",
     "description": "Number of open pull requests in GitHub",
@@ -409,7 +420,7 @@ When no entities match the filters:
 
 ```json
 {
-  "metricId": "github.open_prs",
+  "metricId": "github.openPRs",
   "metricMetadata": { ... },
   "entities": [],
   "pagination": {
@@ -438,7 +449,7 @@ The timestamp represents when the metric provider last successfully fetched and 
 A manager sees an aggregated scorecard showing 50 entities with errors. They drill down to see which specific services need attention:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?status=error&sortBy=metricValue&sortOrder=desc&page=1&pageSize=20" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities?status=error&sortBy=metricValue&sortOrder=desc&page=1&pageSize=20" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -449,7 +460,7 @@ This returns the 20 entities with the most severe issues (highest metric values 
 A team lead wants to see only their team's entities:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/jira.open_issues/catalog/aggregations/entities?owner=group:default/backend&sortBy=timestamp&sortOrder=asc" \
+curl -X GET "{{url}}/api/scorecard/metrics/jira.openIssues/catalog/aggregations/entities?owner=group:default/backend&sortBy=timestamp&sortOrder=asc" \
   -H "Authorization: Bearer <token>"
 ```
 
@@ -471,7 +482,7 @@ This returns API entities with security warnings, helping prioritize security im
 An engineer wants to see only their owned entities with issues. The frontend passes the user's `ownershipEntityRefs` (user ref + group memberships) as repeated `owner` params:
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/metrics/github.open_prs/catalog/aggregations/entities?owner=user:default/alice&owner=group:default/platform&page=1&pageSize=10" \
+curl -X GET "{{url}}/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities?owner=user:default/alice&owner=group:default/platform&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 ```
 

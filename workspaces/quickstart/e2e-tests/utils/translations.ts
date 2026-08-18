@@ -25,21 +25,21 @@ import quickstartTranslationJa from '../../plugins/quickstart/src/translations/j
 
 export type QuickstartMessages = typeof quickstartMessages;
 
-function transform(messages: typeof quickstartTranslationDe.messages) {
-  const result = Object.keys(messages).reduce((res, key) => {
+function transformFlatMessagesIntoTree(
+  flatMessages: typeof quickstartTranslationDe.messages,
+) {
+  const messages = {} as Record<string, any>;
+  for (const key of Object.keys(flatMessages)) {
     const path = key.split('.');
-    const lastIndex = path.length - 1;
-    path.reduce((acc: Record<string, string | {}>, currentPath, i) => {
-      acc[currentPath] =
-        lastIndex === i
-          ? (messages as Record<string, string>)[key]
-          : acc[currentPath] || {};
-      return acc[currentPath];
-    }, res);
-    return res;
-  }, {});
-
-  return result as QuickstartMessages;
+    let current = messages;
+    for (let i = 0; i < path.length - 1; i++) {
+      current[path[i]] = current[path[i]] || {};
+      current = current[path[i]] as Record<string, any>;
+    }
+    current[path[path.length - 1]] =
+      flatMessages[key as keyof typeof flatMessages];
+  }
+  return messages as QuickstartMessages;
 }
 
 export function getTranslations(locale: string) {
@@ -49,15 +49,15 @@ export function getTranslations(locale: string) {
     case 'en':
       return quickstartMessages;
     case 'fr':
-      return transform(quickstartTranslationFr.messages);
+      return transformFlatMessagesIntoTree(quickstartTranslationFr.messages);
     case 'de':
-      return transform(quickstartTranslationDe.messages);
+      return transformFlatMessagesIntoTree(quickstartTranslationDe.messages);
     case 'es':
-      return transform(quickstartTranslationEs.messages);
+      return transformFlatMessagesIntoTree(quickstartTranslationEs.messages);
     case 'it':
-      return transform(quickstartTranslationIt.messages);
+      return transformFlatMessagesIntoTree(quickstartTranslationIt.messages);
     case 'ja':
-      return transform(quickstartTranslationJa.messages);
+      return transformFlatMessagesIntoTree(quickstartTranslationJa.messages);
     default:
       return quickstartMessages;
   }

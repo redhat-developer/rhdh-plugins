@@ -2,32 +2,53 @@
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-global-header:
+      # NFS (New Frontend System) deployment requires these extensions in app-config.yaml:
+      # app:
+      #   extensions:
+      #     - app-root-wrapper:app/global-header
+      #     - translation:app/global-header-translations
+      #     - api:app/app-language:
+      #         config:
+      #           availableLanguages: ['en', 'de', 'es', 'fr', 'it', 'ja']
+      #           defaultLanguage: 'en'
+      # ------------------------------------------------------------
+
+      # OFS (Old Frontend System) deployment configuration:
+
+      # Note: Legacy/OFS exports are only available from `module: Legacy`.
+      # The default module (PluginRoot) is NFS-only.
       translationResources:
         - importName: globalHeaderTranslations
+          module: Legacy
           ref: globalHeaderTranslationRef
       mountPoints:
         - mountPoint: application/header
           importName: GlobalHeader
+          module: Legacy
           config:
             position: above-sidebar # above-main-content | above-sidebar
         - mountPoint: global.header/component
           importName: CompanyLogo
+          module: Legacy
           config:
             priority: 200
             props:
               to: '/'
         - mountPoint: global.header/component
           importName: SearchComponent
+          module: Legacy
           config:
             priority: 100
         - mountPoint: global.header/component
           importName: Spacer
+          module: Legacy
           config:
             priority: 99
             props:
               growFactor: 0
         - mountPoint: global.header/component
           importName: HeaderIconButton
+          module: Legacy
           config:
             priority: 90
             props:
@@ -37,16 +58,19 @@ dynamicPlugins:
               to: create
         - mountPoint: global.header/component
           importName: StarredDropdown
+          module: Legacy
           config:
             priority: 85
 
         - mountPoint: global.header/component
           importName: ApplicationLauncherDropdown
+          module: Legacy
           config:
             priority: 82
 
         - mountPoint: global.header/application-launcher
           importName: MenuItemLink
+          module: Legacy
           config:
             section: Documentation
             priority: 150
@@ -58,6 +82,7 @@ dynamicPlugins:
 
         - mountPoint: global.header/application-launcher
           importName: MenuItemLink
+          module: Legacy
           config:
             section: Developer Tools
             priority: 100
@@ -69,28 +94,34 @@ dynamicPlugins:
 
         - mountPoint: global.header/component
           importName: HelpDropdown
+          module: Legacy
           config:
             priority: 80
 
         - mountPoint: global.header/help
           importName: SupportButton
+          module: Legacy
           config:
             priority: 10
 
         - mountPoint: global.header/component
           importName: NotificationButton
+          module: Legacy
           config:
             priority: 70
         - mountPoint: global.header/component
           importName: Divider
+          module: Legacy
           config:
             priority: 50
         - mountPoint: global.header/component
           importName: ProfileDropdown
+          module: Legacy
           config:
             priority: 10
         - mountPoint: global.header/profile
           importName: MenuItemLink
+          module: Legacy
           config:
             priority: 100
             props:
@@ -100,6 +131,7 @@ dynamicPlugins:
               icon: manageAccounts
         - mountPoint: global.header/profile
           importName: MenuItemLink
+          module: Legacy
           config:
             priority: 90
             props:
@@ -109,5 +141,6 @@ dynamicPlugins:
               icon: account
         - mountPoint: global.header/profile
           importName: LogoutButton
+          module: Legacy
           config:
             priority: 10

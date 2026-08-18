@@ -91,7 +91,11 @@ export const TokenUsageBadge = ({ usage }: TokenUsageBadgeProps) => {
 
   return (
     <Tooltip
-      title={<span style={{ whiteSpace: 'pre-line' }}>{tooltipContent}</span>}
+      title={
+        <Box component="span" sx={{ whiteSpace: 'pre-line' }}>
+          {tooltipContent}
+        </Box>
+      }
       arrow
       placement="top"
     >

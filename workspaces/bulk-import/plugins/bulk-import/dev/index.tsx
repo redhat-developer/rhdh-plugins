@@ -44,15 +44,15 @@ import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { permissionApiRef } from '@backstage/plugin-permission-react';
 import { mockApis } from '@backstage/test-utils';
 
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
 import AutoIcon from '@mui/icons-material/BrightnessAuto';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
-import bulkImportPlugin, { bulkImportTranslationsModule } from '../src/alpha';
+import bulkImportPlugin, { bulkImportTranslationsModule } from '../src';
 import {
   bulkImportApiRef,
   mockBulkImportApi,
@@ -60,18 +60,9 @@ import {
   mockConfigApi,
 } from './mocks';
 
-const bulkImportDevModule = createFrontendModule({
-  pluginId: 'bulk-import',
+const appDevOverrides = createFrontendModule({
+  pluginId: 'app',
   extensions: [
-    ApiBlueprint.make({
-      name: 'bulk-import-mock',
-      params: defineParams =>
-        defineParams({
-          api: bulkImportApiRef,
-          deps: {},
-          factory: () => mockBulkImportApi,
-        }),
-    }),
     ApiBlueprint.make({
       name: 'config-mock',
       params: defineParams =>
@@ -97,6 +88,21 @@ const bulkImportDevModule = createFrontendModule({
           api: catalogApiRef,
           deps: {},
           factory: () => mockCatalogApi as any,
+        }),
+    }),
+  ],
+});
+
+const bulkImportDevModule = createFrontendModule({
+  pluginId: 'bulk-import',
+  extensions: [
+    ApiBlueprint.make({
+      name: 'bulk-import-mock',
+      params: defineParams =>
+        defineParams({
+          api: bulkImportApiRef,
+          deps: {},
+          factory: () => mockBulkImportApi,
         }),
     }),
   ],
@@ -216,6 +222,7 @@ const app = createApp({
     bulkImportPlugin,
     bulkImportTranslationsModule,
     bulkImportDevModule,
+    appDevOverrides,
     rhdhThemeModule,
     devNavModule,
   ],

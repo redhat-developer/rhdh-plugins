@@ -25,7 +25,9 @@ backend.add(import('@backstage/plugin-proxy-backend'));
 backend.add(import('@backstage/plugin-scaffolder-backend'));
 backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
 backend.add(import('@backstage/plugin-scaffolder-backend-module-gitlab'));
-backend.add(import('@backstage/plugin-scaffolder-backend-module-bitbucket'));
+backend.add(
+  import('@backstage/plugin-scaffolder-backend-module-bitbucket-cloud'),
+);
 
 backend.add(
   import('@backstage/plugin-scaffolder-backend-module-notifications'),
@@ -57,10 +59,6 @@ backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 backend.add(import('@backstage/plugin-permission-backend'));
 // See https://backstage.io/docs/permissions/getting-started for how to create your own permission policy
 
-// When upgrading to @backstage/backend-defaults@0.15.0, commit 27f9061 be aware of a breaking change that is
-// causing the plugin-rbac-backend to fail on FetchUrlReader instantiation.
-// Fixed by setting resolutions in the root/package.json
-// https://github.com/backstage/backstage/blob/master/packages/backend-defaults/CHANGELOG.md#0150
 backend.add(import('@backstage-community/plugin-rbac-backend'));
 // backend.add(
 //   import('@backstage/plugin-permission-backend-module-allow-all-policy'),
@@ -84,9 +82,16 @@ backend.add(import('@backstage/plugin-kubernetes-backend'));
 backend.add(import('@backstage/plugin-notifications-backend'));
 backend.add(import('@backstage/plugin-signals-backend'));
 
+// x2a-backend's default export is a feature loader that yields the plugin
+// together with service factories for the x2a-node canonical refs.
 backend.add(import('@red-hat-developer-hub/backstage-plugin-x2a-backend'));
 
 backend.add(
-  import('@red-hat-developer-hub/backstage-plugin-scaffolder-backend-module-x2a'),
+  import('@red-hat-developer-hub/backstage-plugin-x2a-scaffolder-module'),
 );
+
+// MCP server + x2a MCP tools
+backend.add(import('@backstage/plugin-mcp-actions-backend'));
+backend.add(import('@red-hat-developer-hub/backstage-plugin-x2a-mcp-extras'));
+
 backend.start();

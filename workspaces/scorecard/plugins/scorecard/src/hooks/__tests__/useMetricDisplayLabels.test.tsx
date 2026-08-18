@@ -28,7 +28,7 @@ describe('useMetricDisplayLabels', () => {
   const mockT = jest.fn();
 
   const metric = {
-    id: 'github.open_prs',
+    id: 'github.openPRs',
     title: 'GitHub open PRs',
     description:
       'Current count of open Pull Requests for a given GitHub repository.',
@@ -55,13 +55,13 @@ describe('useMetricDisplayLabels', () => {
 
   it('should return translated title and description when translation exists', () => {
     mockT.mockImplementation((key: string) => {
-      if (key === 'metric.github.open_prs.title') return 'Translated Title';
-      if (key === 'metric.github.open_prs.description')
+      if (key === 'metric.github.openPRs.title') return 'Translated Title';
+      if (key === 'metric.github.openPRs.description')
         return 'Translated Description';
       return key;
     });
 
-    const { result } = renderHook(() => useMetricDisplayLabels(metric as any));
+    const { result } = renderHook(() => useMetricDisplayLabels(metric));
 
     expect(result.current).toEqual({
       title: 'Translated Title',
@@ -72,7 +72,7 @@ describe('useMetricDisplayLabels', () => {
   it('should fall back to original values when translation does not exist', () => {
     mockT.mockImplementation((key: string) => key);
 
-    const { result } = renderHook(() => useMetricDisplayLabels(metric as any));
+    const { result } = renderHook(() => useMetricDisplayLabels(metric));
 
     expect(result.current).toEqual({
       title: 'GitHub open PRs',
@@ -83,16 +83,75 @@ describe('useMetricDisplayLabels', () => {
 
   it('should use translated title but original description when only title translation exists', () => {
     mockT.mockImplementation((key: string) => {
-      if (key === 'metric.github.open_prs.title') return 'Translated Title';
+      if (key === 'metric.github.openPRs.title') return 'Translated Title';
       return key;
     });
 
-    const { result } = renderHook(() => useMetricDisplayLabels(metric as any));
+    const { result } = renderHook(() => useMetricDisplayLabels(metric));
 
     expect(result.current).toEqual({
       title: 'Translated Title',
       description:
         'Current count of open Pull Requests for a given GitHub repository.',
+    });
+  });
+
+  describe('parent key cascading lookup', () => {
+    const fileCheckMetric = {
+      id: 'filecheck.readme',
+      title: 'GitHub File: README.md',
+      description: 'Checks if README.md exists in the repository.',
+    };
+
+    it('should resolve via parent key when exact key has no translation', () => {
+      mockT.mockImplementation((key: string, params?: { name?: string }) => {
+        if (key === 'metric.filecheck.title')
+          return `File Check: ${params?.name}`;
+        if (key === 'metric.filecheck.description')
+          return `Checks if ${params?.name} exists`;
+        return key;
+      });
+
+      const { result } = renderHook(() =>
+        useMetricDisplayLabels(fileCheckMetric),
+      );
+
+      expect(result.current).toEqual({
+        title: 'File Check: readme',
+        description: 'Checks if readme exists',
+      });
+    });
+
+    it('should prefer exact key over parent key', () => {
+      mockT.mockImplementation((key: string, params?: { name?: string }) => {
+        if (key === 'metric.filecheck.readme.title')
+          return 'Exact README Title';
+        if (key === 'metric.filecheck.title')
+          return `File Check: ${params?.name}`;
+        return key;
+      });
+
+      const { result } = renderHook(() =>
+        useMetricDisplayLabels(fileCheckMetric),
+      );
+
+      expect(result.current).toEqual({
+        title: 'Exact README Title',
+        description: 'Checks if README.md exists in the repository.',
+      });
+    });
+
+    it('should fall back to original values when neither exact nor parent key has translation', () => {
+      mockT.mockImplementation((key: string) => key);
+
+      const { result } = renderHook(() =>
+        useMetricDisplayLabels(fileCheckMetric),
+      );
+
+      expect(result.current).toEqual({
+        title: 'GitHub File: README.md',
+        description: 'Checks if README.md exists in the repository.',
+      });
     });
   });
 });

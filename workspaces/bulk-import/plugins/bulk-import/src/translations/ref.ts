@@ -45,6 +45,8 @@ export const bulkImportMessages = {
     importedEntitiesCount: 'Imported entities ({{count}})',
     noRecordsFound: 'No repositories available to import.',
     noProjectsFound: 'No projects available to import.',
+    logInToViewProjects: 'Log in to view projects',
+    logInToViewRepositories: 'Log in to view repositories',
     refresh: 'Refresh',
     import: 'Import',
     removing: 'Removing...',
@@ -220,7 +222,7 @@ export const bulkImportMessages = {
     pullRequestText: 'pull request',
     viewRepository: 'View repository',
     closeDrawer: 'Close the drawer',
-    keyValuePlaceholder: 'key1: value2; key2: value2',
+    keyValuePlaceholder: 'key1: value1; key2: value2',
     useSemicolonSeparator: 'Use semicolon to separate {{label}}',
     preview: 'Preview',
     pullRequest: {

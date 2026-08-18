@@ -1,5 +1,112 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.0.2
+
+### Patch Changes
+
+- 0f401be: Fixed empty space and background mismatch on short NFS pages: BackstageSidebarPage fills the viewport and becomes a column flex container so BUI Containers can grow, and content wells use mainSectionBackgroundColor to match the article/content area
+
+## 1.0.1
+
+### Patch Changes
+
+- f84bc9b: Made `app` optional in config schema to avoid requiring it when no branding is configured
+
+## 1.0.0
+
+### Major Changes
+
+- 1afcfdd: **BREAKING**: Graduated the New Frontend System (NFS) theme module to stable API.
+
+  The NFS theme module has been promoted from the `./alpha` subpath to the primary `.` entry point. The `./alpha` subpath has been removed.
+
+  Legacy (OFS) exports (`getThemes`, `getAllThemes`, `LogoFull`, `LogoIcon`, etc.) have been moved to the new `./legacy` subpath.
+
+  **Migration for NFS consumers (previously using `./alpha`):**
+
+  ```diff
+  - import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+  + import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
+  ```
+
+### Patch Changes
+
+- 10af16d: fix(theme): use MUI theme overrides for sidebar selected states instead of class name selectors
+
+  Replaced `class*=` CSS selectors with proper `styleOverrides.selected` on `BackstageSidebarItem` and `BackstageSidebarSubmenuItem`. The previous `class*=` approach failed in production where JSS minifies class names.
+
+## 0.15.0
+
+### Minor Changes
+
+- 22d09cd: Backstage version bump to v1.52.1
+
+## 0.14.11
+
+### Patch Changes
+
+- a3302ac: prevent overlapping scrollbars on TechDocs pages
+
+## 0.14.10
+
+### Patch Changes
+
+- 9342bf0: Inline ThemeConfig types in config.d.ts to avoid importing from the package entry point, which pulls in @mui/material types that crash ts-json-schema-generator on `typeof window.matchMedia`.
+
+## 0.14.9
+
+### Patch Changes
+
+- eed88f3: Fix broken `config.d.ts` import path: change `import { ThemeConfig } from './src'` to `'./'` so the published package resolves correctly during config schema validation.
+
+## 0.14.8
+
+### Patch Changes
+
+- 6a1b1f0: Replace Material UI v4 imports with MUI v5 and add workspace ESLint restrictions to prevent v4 regressions.
+
+## 0.14.7
+
+### Patch Changes
+
+- 4d80582: fix(RHDHBUGS-2291): use `&.Mui-selected` syntax for MuiBottomNavigationAction to resolve CSS specificity console warning
+
+## 0.14.6
+
+### Patch Changes
+
+- bb01e90: Removed the box shadow from the AppBar component
+
+## 0.14.5
+
+### Patch Changes
+
+- 82cc47d: Fixed the background color of myGroup sidebar submenu in light theme
+
+## 0.14.4
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+
+## 0.14.3
+
+### Patch Changes
+
+- 54b7c9e: style the active sidebar nav link (a[aria-current="page"]) so selected colors match the resolved navigation shell
+
+## 0.14.2
+
+### Patch Changes
+
+- ee1def6: Align the navigation sidebar with merged `palette.navigation` and `rhdh.general` colors, including submenu rows and selected/active `BackstageSidebarItem` states. Add `rhdh.general.pageInsetBackgroundColor` so the page inset shell can use its own color (defaults match the previous app bar fill; falls back to `appBarBackgroundColor` when unset). Main content area remains on `mainSectionBackgroundColor`.
+
+## 0.14.1
+
+### Patch Changes
+
+- 8d1eee2: Add missing font css reference so that the Red Hat font is used again.
+
 ## 0.14.0
 
 ### Minor Changes

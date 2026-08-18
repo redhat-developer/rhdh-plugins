@@ -14,39 +14,26 @@
  * limitations under the License.
  */
 
-import { AddedRepositoryColumnNameEnum, SortingOrderEnum } from '../types';
-import { IBulkImportRESTPathProvider } from './BulkImportBackendClient';
+import { BulkImportRESTPathProviderBase } from './BulkImportBackendClientBase';
 
-export class PRBulkImportBackendClientPathProvider implements IBulkImportRESTPathProvider {
+export class PRBulkImportBackendClientPathProvider extends BulkImportRESTPathProviderBase {
   getCreateImportJobsPath(dryRun?: boolean): string {
     return dryRun
       ? `/api/bulk-import/imports?dryRun=true`
       : `/api/bulk-import/imports`;
   }
 
-  getDeleteImportActionPath(
+  getImportActionPath(
     repo: string,
     defaultBranch: string,
-    approvalTool: string,
+    approvalTool?: string,
   ): string {
-    return `/api/bulk-import/import/by-repo?repo=${repo}&defaultBranch=${defaultBranch}&approvalTool=${approvalTool}`;
+    const params = new URLSearchParams({ repo, defaultBranch });
+    if (approvalTool) params.set('approvalTool', approvalTool);
+    return `/api/bulk-import/import/by-repo?${params.toString()}`;
   }
 
-  getGetImportActionPath(
-    repo: string,
-    defaultBranch: string,
-    approvalTool: string,
-  ): string {
-    return `/api/bulk-import/import/by-repo?repo=${repo}&defaultBranch=${defaultBranch}&approvalTool=${approvalTool}`;
-  }
-
-  getGetImportJobsPath(
-    page: number,
-    size: number,
-    searchString: string,
-    sortColumn: AddedRepositoryColumnNameEnum,
-    sortOrder: SortingOrderEnum,
-  ): string {
-    return `/api/bulk-import/imports?page=${page}&size=${size}&search=${searchString}&sortColumn=${sortColumn}&sortOrder=${sortOrder}`;
+  protected getImportJobsBasePath(): string {
+    return `/api/bulk-import/imports`;
   }
 }

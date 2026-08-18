@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
+import type { ComponentProps } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import { mockApis, MockErrorApi, TestApiProvider } from '@backstage/test-utils';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { errorApiRef } from '@backstage/core-plugin-api';
@@ -26,10 +33,11 @@ import { extensionsApiRef } from '../../api';
 import { dynamicPluginsInfoApiRef } from '../../api';
 import { InstalledPackagesTable } from './InstalledPackagesTable';
 import { useNodeEnvironment } from '../../hooks/useNodeEnvironment';
+import { useExtensionsConfiguration } from '../../hooks/useExtensionsConfiguration';
 
 jest.mock('@backstage/core-plugin-api', () => ({
   ...jest.requireActual('@backstage/core-plugin-api'),
-  useRouteRef: () => (params: any) =>
+  useRouteRef: () => (params: { namespace: string; name: string }) =>
     `/packages/${params.namespace}/${params.name}`,
 }));
 
@@ -37,17 +45,30 @@ jest.mock('../../hooks/useNodeEnvironment', () => ({
   useNodeEnvironment: jest.fn(),
 }));
 
+jest.mock('../../hooks/useExtensionsConfiguration', () => ({
+  useExtensionsConfiguration: jest.fn(),
+}));
+
 const useNodeEnvironmentMock = useNodeEnvironment as jest.Mock;
+const useExtensionsConfigurationMock = useExtensionsConfiguration as jest.Mock;
+
+type TestApiProviderApis = NonNullable<
+  ComponentProps<typeof TestApiProvider>['apis']
+>;
 
 describe('InstalledPackagesTable', () => {
-  const renderWithProviders = (apis: any) =>
+  const renderWithProviders = (
+    apis: ReadonlyArray<readonly [unknown, unknown]>,
+  ) =>
     render(
       <TestApiProvider
-        apis={[
-          ...apis,
-          [errorApiRef, new MockErrorApi()],
-          [translationApiRef, mockApis.translation()],
-        ]}
+        apis={
+          [
+            ...(apis as unknown as TestApiProviderApis),
+            [errorApiRef, new MockErrorApi()],
+            [translationApiRef, mockApis.translation()],
+          ] as TestApiProviderApis
+        }
       >
         <BrowserRouter>
           <QueryClientProvider client={queryClient}>
@@ -60,6 +81,12 @@ describe('InstalledPackagesTable', () => {
   beforeEach(() => {
     queryClient.clear();
     queryClient.setDefaultOptions({ queries: { retry: false } });
+    useNodeEnvironmentMock.mockReturnValue({
+      data: { nodeEnv: 'development' },
+    });
+    useExtensionsConfigurationMock.mockReturnValue({
+      data: { enabled: true },
+    });
   });
 
   it('renders rows for all dynamic-plugins-info entries and maps names when entity exists', async () => {
@@ -161,6 +188,54 @@ describe('InstalledPackagesTable', () => {
     const disabledButtons = screen.getAllByRole('button', { hidden: true });
     // There are three disabled action buttons rendered wrapped in span
     expect(disabledButtons.length).toBeGreaterThanOrEqual(3);
+  });
+
+  // RHDHBUGS-2289: loaded custom package without catalog entity
+  it('shows toggle ON and docs link in tooltip when catalog entity is missing', async () => {
+    const dynamicPlugins = [
+      {
+        name: '@acme/third-party-widget-dynamic',
+        version: '9.9.9',
+        role: 'frontend-plugin',
+        platform: 'web',
+      },
+    ];
+
+    const entities = { items: [], totalItems: 0, pageInfo: {} };
+
+    const apis = [
+      [
+        dynamicPluginsInfoApiRef,
+        { listLoadedPlugins: jest.fn().mockResolvedValue(dynamicPlugins) },
+      ],
+      [
+        extensionsApiRef,
+        { getPackages: jest.fn().mockResolvedValue(entities) },
+      ],
+    ] as const;
+
+    renderWithProviders(apis);
+
+    await waitFor(() =>
+      expect(screen.getByText('Installed packages (1)')).toBeInTheDocument(),
+    );
+
+    const toggle = screen.getByRole('checkbox');
+    expect(toggle).toBeChecked();
+
+    // Disabled controls don't receive pointer events; hover the custom Tooltip child.
+    const tooltipAnchor = toggle.closest('span') ?? toggle;
+    fireEvent.mouseOver(tooltipAnchor);
+    const tooltip = await screen.findByRole('tooltip');
+    expect(tooltip).toHaveTextContent(/the catalog-entity is missing/i);
+    expect(tooltip).toHaveTextContent(/to enable actions/i);
+    const docsLink = within(tooltip).getByRole('link', {
+      name: /view documentation/i,
+    });
+    expect(docsLink).toHaveAttribute(
+      'href',
+      expect.stringContaining('catalog-entities/extensions'),
+    );
   });
 
   it('disables actions in the production env', async () => {

@@ -49,6 +49,7 @@ export const darkThemeOverrides: Partial<ThemeConfigPalette> = {
   rhdh: {
     general: {
       pageInset: '1.5rem',
+      pageInsetBackgroundColor: '#151515',
 
       disabled: '#AAABAC',
       disabledBackground: '#444548',

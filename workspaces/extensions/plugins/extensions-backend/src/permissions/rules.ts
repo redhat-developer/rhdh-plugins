@@ -49,19 +49,24 @@ export type ExtensionParams = {
   pluginNames?: string[];
 };
 
+type HasPluginNameParams = Pick<ExtensionParams, 'pluginNames'>;
+type HasAnnotationParams = Pick<ExtensionParams, 'annotation' | 'value'>;
+
+const hasPluginNameParamsSchema: z.ZodType<HasPluginNameParams> = z.object({
+  pluginNames: z
+    .string()
+    .array()
+    .optional()
+    .describe('List of plugin names or titles to match on'),
+});
+
 const hasPluginName = createPermissionRule({
   name: 'HAS_NAME',
   description: 'Should allow users to install the plugin with specified name',
   resourceRef: extensionsPermissionResourceRef,
 
-  paramsSchema: z.object({
-    pluginNames: z
-      .string()
-      .array()
-      .optional()
-      .describe('List of plugin names or titles to match on'),
-  }),
-  apply: (plugin: ExtensionsPlugin, { pluginNames }) => {
+  paramsSchema: hasPluginNameParamsSchema,
+  apply: (plugin: ExtensionsPlugin, { pluginNames }: HasPluginNameParams) => {
     return pluginNames && pluginNames.length > 0
       ? pluginNames?.some(
           name =>
@@ -70,7 +75,15 @@ const hasPluginName = createPermissionRule({
         )
       : true;
   },
-  toQuery: ({ pluginNames }) => ({ key: 'name', values: pluginNames }),
+  toQuery: ({ pluginNames }: HasPluginNameParams) => ({
+    key: 'name',
+    values: pluginNames,
+  }),
+} as any);
+
+const hasAnnotationParamsSchema: z.ZodType<HasAnnotationParams> = z.object({
+  annotation: z.string().describe('Name of the annotation to match on'),
+  value: z.string().optional().describe('Value of the annotation to match on'),
 });
 
 const hasAnnotation = createPermissionRule({
@@ -78,22 +91,16 @@ const hasAnnotation = createPermissionRule({
   description:
     'Should allow users to install the plugin with specified annotation',
   resourceRef: extensionsPermissionResourceRef,
-  paramsSchema: z.object({
-    annotation: z.string().describe('Name of the annotation to match on'),
-    value: z
-      .string()
-      .optional()
-      .describe('Value of the annotation to match on'),
-  }),
-  apply: (plugin: ExtensionsPlugin, params: ExtensionParams) =>
+  paramsSchema: hasAnnotationParamsSchema,
+  apply: (plugin: ExtensionsPlugin, params: HasAnnotationParams) =>
     !!plugin.metadata.annotations?.hasOwnProperty(params.annotation) &&
     (params.value === undefined
       ? true
       : plugin.metadata.annotations?.[params.annotation] === params.value),
-  toQuery: ({ annotation, value }) => ({
+  toQuery: ({ annotation, value }: HasAnnotationParams) => ({
     key: annotation,
     values: value ? [value] : undefined,
   }),
-});
+} as any);
 
 export const rules = { hasPluginName, hasAnnotation };

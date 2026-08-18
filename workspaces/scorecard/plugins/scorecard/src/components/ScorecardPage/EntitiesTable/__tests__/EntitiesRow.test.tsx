@@ -58,6 +58,16 @@ jest.mock('../cells/EntityNameCell', () => ({
 
 jest.mock('../../../../utils', () => ({
   getLastUpdatedLabel: () => 'Last updated label',
+  getThresholdRuleColor: () => undefined,
+  SCORECARD_ERROR_STATE_COLOR: '#ccc',
+}));
+
+jest.mock('../../../../hooks/useAggregatedScorecard', () => ({
+  useAggregatedScorecard: jest.fn().mockReturnValue({
+    aggregatedScorecard: undefined,
+    loadingData: false,
+    error: undefined,
+  }),
 }));
 
 const theme = createTheme();
@@ -89,6 +99,7 @@ describe('EntitiesRow', () => {
         <EntitiesRow
           entity={defaultEntity}
           entityMetadataMap={defaultEntityMetadataMap}
+          thresholdRules={[]}
         />
       </TestWrapper>,
     );
@@ -117,6 +128,7 @@ describe('EntitiesRow', () => {
         <EntitiesRow
           entity={{ ...defaultEntity, metricValue: undefined }}
           entityMetadataMap={{}}
+          thresholdRules={[]}
         />
       </TestWrapper>,
     );
@@ -130,6 +142,7 @@ describe('EntitiesRow', () => {
         <EntitiesRow
           entity={{ ...defaultEntity, metricValue: 0 }}
           entityMetadataMap={{}}
+          thresholdRules={[]}
         />
       </TestWrapper>,
     );
@@ -143,6 +156,7 @@ describe('EntitiesRow', () => {
         <EntitiesRow
           entity={defaultEntity}
           entityMetadataMap={defaultEntityMetadataMap}
+          thresholdRules={[]}
         />
       </TestWrapper>,
     );

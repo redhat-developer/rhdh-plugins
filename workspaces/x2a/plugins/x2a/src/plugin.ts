@@ -20,7 +20,12 @@ import {
 import { createScaffolderFieldExtension } from '@backstage/plugin-scaffolder-react';
 
 import { rootRouteRef } from './routes';
-import { RepoAuthentication, repoAuthenticationValidation } from './scaffolder';
+import {
+  RepoAuthentication,
+  repoAuthenticationValidation,
+  RulesAcceptance,
+  rulesAcceptanceValidation,
+} from './scaffolder';
 
 /** @public */
 export const x2APlugin = createPlugin({
@@ -45,5 +50,14 @@ export const RepoAuthenticationExtension = x2APlugin.provide(
     component: RepoAuthentication,
     name: 'RepoAuthentication', // name used in ui:field in templates
     validation: repoAuthenticationValidation,
+  }),
+);
+
+/** @public */
+export const RulesAcceptanceExtension = x2APlugin.provide(
+  createScaffolderFieldExtension({
+    component: RulesAcceptance,
+    name: 'RulesAcceptance', // name used in ui:field in templates
+    validation: rulesAcceptanceValidation,
   }),
 );

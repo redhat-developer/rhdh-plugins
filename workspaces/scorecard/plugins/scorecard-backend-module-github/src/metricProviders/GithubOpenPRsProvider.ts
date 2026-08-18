@@ -14,28 +14,30 @@
  * limitations under the License.
  */
 
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { getEntitySourceLocation, type Entity } from '@backstage/catalog-model';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
-  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import {
-  getThresholdsFromConfig,
-  MetricProvider,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { GithubClient } from '../github/GithubClient';
 import { getRepositoryInformationFromEntity } from '../github/utils';
 
 export class GithubOpenPRsProvider implements MetricProvider<'number'> {
   private readonly githubClient: GithubClient;
-  private readonly thresholds: ThresholdConfig;
 
-  private constructor(config: Config, thresholds?: ThresholdConfig) {
-    this.githubClient = new GithubClient(config);
-    this.thresholds = thresholds ?? DEFAULT_NUMBER_THRESHOLDS;
+  private constructor(githubClient: GithubClient) {
+    this.githubClient = githubClient;
+  }
+
+  static fromConfig(
+    config: Config,
+    options: { logger: LoggerService },
+  ): GithubOpenPRsProvider {
+    return new GithubOpenPRsProvider(new GithubClient(config, options.logger));
   }
 
   getProviderDatasourceId(): string {
@@ -43,26 +45,21 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
   }
 
   getProviderId() {
-    return 'github.open_prs';
+    return 'github.openPRs';
   }
 
-  getMetricType(): 'number' {
-    return 'number';
-  }
-
-  getMetric(): Metric<'number'> {
-    return {
-      id: this.getProviderId(),
-      title: 'GitHub open PRs',
-      description:
-        'Current count of open Pull Requests for a given GitHub repository.',
-      type: this.getMetricType(),
-      history: true,
-    };
-  }
-
-  getMetricThresholds(): ThresholdConfig {
-    return this.thresholds;
+  getMetrics(): Metric<'number'>[] {
+    return [
+      {
+        id: this.getProviderId(),
+        title: 'GitHub open PRs',
+        description:
+          'Current count of open Pull Requests for a given GitHub repository.',
+        type: 'number',
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        history: true,
+      },
+    ];
   }
 
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]> {
@@ -71,17 +68,7 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
     };
   }
 
-  static fromConfig(config: Config): GithubOpenPRsProvider {
-    const thresholds = getThresholdsFromConfig(
-      config,
-      'scorecard.plugins.github.open_prs.thresholds',
-      'number',
-    );
-
-    return new GithubOpenPRsProvider(config, thresholds);
-  }
-
-  async calculateMetric(entity: Entity): Promise<number> {
+  async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const repository = getRepositoryInformationFromEntity(entity);
     const { target } = getEntitySourceLocation(entity);
 
@@ -90,6 +77,8 @@ export class GithubOpenPRsProvider implements MetricProvider<'number'> {
       repository,
     );
 
-    return result;
+    const results = new Map<string, number>();
+    results.set(this.getProviderId(), result);
+    return results;
   }
 }

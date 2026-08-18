@@ -20,7 +20,7 @@ import {
   fetchApiRef,
   createApiRef,
 } from '@backstage/core-plugin-api';
-import type { OpenIdConnectApi } from '@backstage/core-plugin-api';
+import type { OpenIdConnectApi, ApiRef } from '@backstage/core-plugin-api';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import {
@@ -30,9 +30,10 @@ import {
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useKonfluxConfig } from './useKonfluxConfig';
 
-export const oidcAuthApiRef = createApiRef<OpenIdConnectApi>({
-  id: 'internal.auth.oidc',
-});
+export const oidcAuthApiRef: ApiRef<OpenIdConnectApi> =
+  createApiRef<OpenIdConnectApi>({
+    id: 'internal.auth.oidc',
+  });
 
 export interface ResourcesResponse<
   TResource extends K8sResourceCommonWithClusterInfo,

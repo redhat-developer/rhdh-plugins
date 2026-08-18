@@ -19,6 +19,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import clsx from 'clsx';
@@ -43,6 +44,7 @@ import {
   useRetriggerEvaluate,
   useProcessingState,
   useClearOnRetrigger,
+  evaluateFetchResponseSelectorTemplate,
 } from '../utils';
 import { UiProps } from '../uiPropTypes';
 import { ErrorText } from './ErrorText';
@@ -68,7 +70,15 @@ export const ActiveMultiSelect: Widget<
 > = props => {
   const { classes } = useStyles();
   const templateUnitEvaluator = useTemplateUnitEvaluator();
-  const { id, name, label, value: rawValue, onChange, formContext } = props;
+  const {
+    id,
+    name,
+    label,
+    value: rawValue,
+    onChange,
+    onBlur,
+    formContext,
+  } = props;
   const value = rawValue as string[];
   const formData = formContext?.formData;
   const isChangedByUser = !!formContext?.getIsChangedByUser(id);
@@ -98,6 +108,7 @@ export const ActiveMultiSelect: Widget<
       : `Missing fetch:response:autocomplete selector for ${id}`,
   );
   const [inProgressItem, setInProgressItem] = useState<string>('');
+  const clearedByRetriggerRef = useRef(false);
 
   const [autocompleteOptions, setAutocompleteOptions] = useState<string[]>();
   const [mandatoryValues, setMandatoryValues] = useState<string[]>();
@@ -139,7 +150,12 @@ export const ActiveMultiSelect: Widget<
     uiProps['fetch:retrigger'] as string[],
   );
 
-  const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
+  const { data, error, loading } = useFetch(
+    formData ?? {},
+    uiProps,
+    retrigger,
+    formContext?.onSamlSsoError,
+  );
 
   // Track the complete loading state (fetch + processing)
   const { completeLoading, wrapProcessing } = useProcessingState(
@@ -149,6 +165,7 @@ export const ActiveMultiSelect: Widget<
   );
 
   const handleClear = useCallback(() => {
+    clearedByRetriggerRef.current = true;
     setInProgressItem('');
     onChange([]);
   }, [onChange]);
@@ -168,10 +185,20 @@ export const ActiveMultiSelect: Widget<
 
     const doItAsync = async () => {
       await wrapProcessing(async () => {
+        const fd = formData ?? {};
         if (autocompleteSelector) {
+          const resolvedAutocomplete =
+            await evaluateFetchResponseSelectorTemplate({
+              template: autocompleteSelector,
+              key: 'fetch:response:autocomplete',
+              unitEvaluator: templateUnitEvaluator,
+              formData: fd,
+              responseData: data,
+              uiProps,
+            });
           const autocompleteValues = await applySelectorArray(
             data,
-            autocompleteSelector,
+            resolvedAutocomplete,
             true,
             true,
           );
@@ -192,9 +219,19 @@ export const ActiveMultiSelect: Widget<
         if (!skipInitialValue && !isChangedByUser) {
           // set this just once, when the user has not touched the field
           if (defaultValueSelector) {
+            const resolvedDefault = await evaluateFetchResponseSelectorTemplate(
+              {
+                template: defaultValueSelector,
+                key: 'fetch:response:value',
+                unitEvaluator: templateUnitEvaluator,
+                formData: fd,
+                responseData: data,
+                uiProps,
+              },
+            );
             defaults = await applySelectorArray(
               data,
-              defaultValueSelector,
+              resolvedDefault,
               true,
               true,
             );
@@ -204,7 +241,17 @@ export const ActiveMultiSelect: Widget<
 
         let mandatory: string[] = [];
         if (mandatorySelector) {
-          mandatory = await applySelectorArray(data, mandatorySelector, true);
+          const resolvedMandatory = await evaluateFetchResponseSelectorTemplate(
+            {
+              template: mandatorySelector,
+              key: 'fetch:response:mandatory',
+              unitEvaluator: templateUnitEvaluator,
+              formData: fd,
+              responseData: data,
+              uiProps,
+            },
+          );
+          mandatory = await applySelectorArray(data, resolvedMandatory, true);
 
           // Only update if arrays differ (by item or count).
           const arraysAreEqual =
@@ -217,11 +264,21 @@ export const ActiveMultiSelect: Widget<
           }
         }
 
+        const shouldIgnoreCurrentValue =
+          clearOnRetrigger || clearedByRetriggerRef.current;
+        const valueForMerge = shouldIgnoreCurrentValue ? [] : value;
+
         if (
-          !mandatory.every(item => value.includes(item)) ||
-          !defaults.every(item => value.includes(item))
+          !mandatory.every(item => valueForMerge.includes(item)) ||
+          !defaults.every(item => valueForMerge.includes(item))
         ) {
-          onChange([...new Set([...mandatory, ...value, ...defaults])]);
+          const mergedValues = [
+            ...new Set([...mandatory, ...valueForMerge, ...defaults]),
+          ];
+          clearedByRetriggerRef.current = false;
+          onChange(mergedValues);
+        } else if (clearedByRetriggerRef.current) {
+          clearedByRetriggerRef.current = false;
         }
       });
     };
@@ -236,8 +293,12 @@ export const ActiveMultiSelect: Widget<
     isChangedByUser,
     skipInitialValue,
     data,
+    formData,
+    uiProps,
+    templateUnitEvaluator,
     props.id,
     value,
+    clearOnRetrigger,
     onChange,
     wrapProcessing,
   ]);
@@ -296,6 +357,7 @@ export const ActiveMultiSelect: Widget<
             freeSolo={allowNewItems}
             data-testid={`${id}-autocomplete`}
             disabled={isReadOnly}
+            onBlur={() => onBlur?.(id, value)}
             options={allOptions}
             isOptionEqualToValue={(option, selected) => option === selected}
             value={value}

@@ -77,11 +77,11 @@ export const useQueryTableOptions = <DataRow extends object>(
     [setSearchParams],
   );
 
-  const onSearchChangeDebounceTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const onSearchChangeDebounceTimeout = useRef<number | undefined>(undefined);
   const onSearchChange = useCallback(
     (newSearchText: string) => {
       clearTimeout(onSearchChangeDebounceTimeout.current);
-      onSearchChangeDebounceTimeout.current = setTimeout(() => {
+      onSearchChangeDebounceTimeout.current = window.setTimeout(() => {
         setSearchParams(params => {
           if (!newSearchText) {
             params.delete('searchText');

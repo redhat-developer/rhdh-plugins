@@ -1,0 +1,163 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+import { Page, Locator, FileChooser, expect, TestInfo } from '@playwright/test';
+import { LightspeedMessages } from './translations';
+import { runAccessibilityTests } from './accessibility';
+
+export const supportedFileTypes = ['.txt', '.yaml', '.json'];
+
+export async function triggerFileChooser(
+  page: Page,
+  buttonLocator: Locator,
+): Promise<FileChooser> {
+  const [fileChooser] = await Promise.all([
+    page.waitForEvent('filechooser'),
+    buttonLocator.click(),
+  ]);
+  return fileChooser;
+}
+
+export async function uploadFiles(
+  page: Page,
+  filePath: string[],
+  translations: LightspeedMessages,
+) {
+  // The attach button is now a dropdown toggle with a PlusIcon
+  // aria-label uses 'tooltip.attach' translation
+  const plusButton = page.getByRole('button', {
+    name: translations['tooltip.attach'],
+  });
+  await expect(plusButton).toBeVisible();
+
+  // Use the hidden file input directly - this bypasses the dropdown menu
+  // The input has the multiple attribute so it can accept multiple files
+  const fileInput = page.locator('input[data-testid="attachment-input"]');
+
+  // Clear the input first to ensure change event fires even for the same file
+  // This is necessary because browsers don't fire 'change' if the same file is selected again
+  await fileInput.evaluate((el: HTMLInputElement) => {
+    el.value = '';
+  });
+
+  await fileInput.setInputFiles(filePath);
+}
+
+export async function uploadAndAssertDuplicate(
+  page: Page,
+  filePath: string,
+  fileName: string,
+  translations: LightspeedMessages,
+  _testInfo: TestInfo,
+) {
+  // First, verify the initial upload was successful by checking the file button is visible
+  await expect(page.getByRole('button', { name: fileName })).toBeVisible();
+
+  // Upload the same file again to trigger duplicate detection
+  await uploadFiles(page, [filePath], translations);
+
+  // Assert the duplicate file error alert appears
+  await expect(
+    page.getByRole('heading', {
+      name: translations['chatbox.fileUpload.failed'],
+    }),
+  ).toBeVisible({ timeout: 10000 });
+  await expect(
+    page.getByText(translations['file.upload.error.alreadyExists']),
+  ).toBeVisible();
+}
+
+export async function validateSuccessfulUpload(
+  page: Page,
+  fileName: string,
+  translations: LightspeedMessages,
+  testInfo: TestInfo,
+) {
+  const trimmerFilename = fileName.split('.')[0];
+
+  await expect(page.getByRole('button', { name: fileName })).toBeVisible();
+
+  const spanWithText = page
+    .locator('span', { hasText: trimmerFilename })
+    .first();
+  await spanWithText.click();
+
+  const jsonStarter = page.locator('div', { hasText: /^\{$/ }).first();
+  await jsonStarter.waitFor();
+
+  await expect(page.getByRole('banner')).toContainText(
+    translations['modal.title.preview'],
+  );
+  await expect(
+    page.getByRole('button', { name: translations['modal.edit'] }),
+  ).toBeVisible();
+  await expect(
+    page
+      .getByRole('contentinfo')
+      .getByRole('button', { name: translations['modal.close'] }),
+  ).toBeVisible();
+
+  // Use evaluate to click buttons via JavaScript to bypass the iframe overlay
+  const editButton = page.getByRole('button', {
+    name: translations['modal.edit'],
+  });
+  await editButton.evaluate((el: HTMLElement) => el.click());
+  await runAccessibilityTests(page, testInfo);
+
+  await expect(
+    page.getByRole('button', { name: translations['modal.save'] }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: translations['modal.cancel'] }),
+  ).toBeVisible();
+
+  const saveButton = page.getByRole('button', {
+    name: translations['modal.save'],
+  });
+  await saveButton.evaluate((el: HTMLElement) => el.click());
+
+  const closeButton = page
+    .getByRole('contentinfo')
+    .getByRole('button', { name: translations['modal.close'] });
+  await closeButton.evaluate((el: HTMLElement) => el.click());
+}
+
+export async function validateFailedUpload(
+  page: Page,
+  translations: LightspeedMessages,
+) {
+  const alertHeader = page.getByText(translations['chatbox.fileUpload.failed']);
+  const alertText = page.getByText(
+    translations['file.upload.error.unsupportedType'],
+  );
+
+  await expect(alertHeader).toBeVisible();
+  await expect(alertText).toBeVisible();
+
+  // Use evaluate to click the button via JavaScript to bypass the iframe overlay
+  const closeButton = page.getByRole('button', { name: 'Close Danger alert' });
+  await closeButton.evaluate((el: HTMLElement) => el.click());
+  await expect(alertHeader).toBeHidden();
+  await expect(alertText).toBeHidden();
+}
+
+export async function assertVisibilityState(
+  state: 'visible' | 'hidden',
+  ...locators: Locator[]
+) {
+  for (const locator of locators) {
+    await expect(locator)[state === 'visible' ? 'toBeVisible' : 'toBeHidden']();
+  }
+}

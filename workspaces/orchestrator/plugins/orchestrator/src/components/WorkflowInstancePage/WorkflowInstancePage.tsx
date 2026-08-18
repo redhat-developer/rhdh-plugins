@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, type ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAsync } from 'react-use';
 
@@ -29,6 +29,7 @@ import {
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
 import { TranslationFunction } from '@backstage/core-plugin-api/alpha';
+import { usePermission } from '@backstage/plugin-permission-react';
 import { JsonObject } from '@backstage/types';
 
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
@@ -51,10 +52,9 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from 'tss-react/mui';
 
 import {
-  AuthTokenDescriptor,
-  isJsonObject,
+  capitalize,
   orchestratorWorkflowUsePermission,
-  orchestratorWorkflowUseSpecificPermission,
+  orchestratorWorkflowUseSpecificPermission, // @deprecated Remove in next release
   ProcessInstanceDTO,
   ProcessInstanceStatusDTO,
   QUERY_PARAM_INSTANCE_ID,
@@ -63,16 +63,20 @@ import {
 import { orchestratorApiRef } from '../../api';
 import { SHORT_REFRESH_INTERVAL } from '../../constants';
 import { useOrchestratorAuth } from '../../hooks/useOrchestratorAuth';
-import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import usePolling from '../../hooks/usePolling';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   entityInstanceRouteRef,
+  entityWorkflowRouteRef,
   executeWorkflowRouteRef,
   workflowInstanceRouteRef,
+  workflowRouteRef,
 } from '../../routes';
 import { orchestratorTranslationRef } from '../../translations';
-import { deepSearchObject } from '../../utils/deepSearchObject';
+import {
+  extractSsoReauthorizeUrl,
+  isSamlSsoError,
+} from '../../utils/ErrorUtils';
 import { isNonNullable } from '../../utils/TypeGuards';
 import { buildUrl } from '../../utils/UrlUtils';
 import { BaseOrchestratorPage } from '../ui/BaseOrchestratorPage';
@@ -82,6 +86,12 @@ import {
   isAccessDeniedError,
   PermissionDeniedPanel,
 } from '../ui/PermissionDeniedPanel';
+import { SamlSsoExpiredDialog } from '../ui/SamlSsoExpiredDialog';
+import {
+  getAuthTokenDescriptors,
+  isAbortableState,
+  isRerunnableState,
+} from './WorkflowInstancePage.helpers';
 import { WorkflowInstancePageContent } from './WorkflowInstancePageContent';
 
 const useStyles = makeStyles()(theme => ({
@@ -105,12 +115,24 @@ const useStyles = makeStyles()(theme => ({
       display: 'flex',
       flexDirection: 'column',
       '& li': {
+        display: 'flex',
+        alignItems: 'center',
+        gap: theme.spacing(1.5),
         padding: '6px 16px',
         justifyContent: 'left',
       },
     },
   },
 }));
+
+const withPermissionTooltip = (tooltipText: string, node: ReactElement) =>
+  tooltipText ? (
+    <Tooltip title={tooltipText}>
+      <span>{node}</span>
+    </Tooltip>
+  ) : (
+    node
+  );
 
 export type AbortConfirmationDialogActionsProps = {
   handleSubmit: () => void;
@@ -171,37 +193,6 @@ const AbortConfirmationDialogActions = (
   );
 };
 
-// For re-trigger, the wizard is not rendered, so there is no place where to instantiate the AuthRequester widget.
-// Let's parse the data input schema and try to find & interpret it.
-const getAuthTokenDescriptors = async (
-  dataInputSchema: JsonObject | undefined,
-): Promise<AuthTokenDescriptor[] | undefined> => {
-  if (!dataInputSchema) {
-    return undefined;
-  }
-
-  const authRequester = deepSearchObject(
-    dataInputSchema,
-    (obj: JsonObject): boolean => {
-      const uiWidget = obj['ui:widget'];
-      const uiProps = obj['ui:props'];
-
-      const authTokenDescriptors = isJsonObject(uiProps)
-        ? uiProps.authTokenDescriptors
-        : undefined;
-      return (
-        uiWidget === 'AuthRequester' && Array.isArray(authTokenDescriptors)
-      );
-    },
-  );
-  if (!authRequester) {
-    return undefined;
-  }
-
-  const uiProps = (authRequester as JsonObject)['ui:props'] as JsonObject;
-  return uiProps.authTokenDescriptors as AuthTokenDescriptor[];
-};
-
 // hack
 type LocalTranslationFunction =
   | TranslationFunction<typeof orchestratorTranslationRef.T>
@@ -215,13 +206,25 @@ export const WorkflowInstancePage = () => {
   const orchestratorApi = useApi(orchestratorApiRef);
   const { authenticate } = useOrchestratorAuth();
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
-  const { instanceId } = useRouteRefParams(workflowInstanceRouteRef);
-  const { kind, name, namespace } = useRouteRefParams(entityInstanceRouteRef);
+  const workflowPageLink = useRouteRef(workflowRouteRef);
+  const entityWorkflowPageLink = useRouteRef(entityWorkflowRouteRef);
+  const { instanceId: globalInstanceId } = useRouteRefParams(
+    workflowInstanceRouteRef,
+  );
+  const {
+    instanceId: entityInstanceId,
+    kind,
+    name,
+    namespace,
+    workflowId: routeWorkflowId,
+  } = useRouteRefParams(entityInstanceRouteRef);
+  const instanceId = globalInstanceId ?? entityInstanceId;
 
   let entityRef: string | undefined = undefined;
   if (kind && namespace && name) {
     entityRef = `${kind}:${namespace}/${name}`;
   }
+  const isEntityContext = !!(kind && namespace && name && routeWorkflowId);
   const [isAbortConfirmationDialogOpen, setIsAbortConfirmationDialogOpen] =
     useState(false);
 
@@ -232,6 +235,7 @@ export const WorkflowInstancePage = () => {
   const [isRetrigger, setIsRetrigger] = useState(false);
   const [isRetriggerSnackbarOpen, setIsRetriggerSnackbarOpen] = useState(false);
   const [retriggerError, setRetriggerError] = useState('');
+  const [samlSsoError, setSamlSsoError] = useState<Error | undefined>();
 
   const handleAbortBarClose = () => {
     setIsAbortSnackbarOpen(false);
@@ -261,14 +265,20 @@ export const WorkflowInstancePage = () => {
   );
 
   const workflowId = value?.processId;
-  const permittedToUse = usePermissionArrayDecision(
-    workflowId
-      ? [
-          orchestratorWorkflowUsePermission,
-          orchestratorWorkflowUseSpecificPermission(workflowId),
-        ]
-      : [orchestratorWorkflowUsePermission],
-  );
+
+  const { loading: loadingConditional, allowed: conditionalAllowed } =
+    usePermission({
+      permission: orchestratorWorkflowUsePermission,
+      resourceRef: workflowId,
+    });
+  // @deprecated Remove this legacy fallback block in next release
+  const { loading: loadingLegacy, allowed: legacyAllowed } = usePermission({
+    permission: orchestratorWorkflowUseSpecificPermission(workflowId ?? ''),
+  });
+  const permittedToUse = {
+    loading: loadingConditional || loadingLegacy,
+    allowed: conditionalAllowed || legacyAllowed,
+  };
 
   const { value: inputSchema, error: inputSchemaError } =
     useAsync(async (): Promise<JsonObject | undefined> => {
@@ -283,14 +293,8 @@ export const WorkflowInstancePage = () => {
       return res.data?.inputSchema;
     }, [orchestratorApi, workflowId]);
 
-  const canAbort =
-    value?.state === ProcessInstanceStatusDTO.Active ||
-    value?.state === ProcessInstanceStatusDTO.Error;
-
-  const canRerun =
-    value?.state === ProcessInstanceStatusDTO.Completed ||
-    value?.state === ProcessInstanceStatusDTO.Aborted ||
-    value?.state === ProcessInstanceStatusDTO.Error;
+  const canAbort = isAbortableState(value?.state);
+  const canRerun = isRerunnableState(value?.state);
 
   const toggleAbortConfirmationDialog = useCallback(() => {
     setIsAbortConfirmationDialogOpen(prev => !prev);
@@ -359,8 +363,17 @@ export const WorkflowInstancePage = () => {
           authTokens,
         );
         restart();
-      } catch (retriggerInstanceError) {
-        if (retriggerInstanceError.toString().includes('Failed Node ID')) {
+      } catch (retriggerInstanceError: any) {
+        const retriggerErr =
+          retriggerInstanceError instanceof globalThis.Error
+            ? retriggerInstanceError
+            : new globalThis.Error(String(retriggerInstanceError));
+        if (isSamlSsoError(retriggerErr)) {
+          setSamlSsoError(retriggerErr);
+          return;
+        } else if (
+          retriggerInstanceError.toString().includes('Failed Node ID')
+        ) {
           setRetriggerError(t('workflow.buttons.runFailedAgain'));
         } else {
           setRetriggerError(
@@ -395,9 +408,21 @@ export const WorkflowInstancePage = () => {
 
   const combinedError: Error | undefined = error || inputSchemaError;
 
-  const title = t('run.pageTitle', {
-    processName: value?.processName ?? '',
-  });
+  const workflowName = value?.processName
+    ? capitalize(value.processName)
+    : undefined;
+  const workflowIdForLink = routeWorkflowId ?? value?.processId;
+  let workflowParentLink: string | undefined;
+  if (workflowIdForLink && isEntityContext) {
+    workflowParentLink = entityWorkflowPageLink({
+      namespace,
+      kind,
+      name,
+      workflowId: workflowIdForLink,
+    });
+  } else if (workflowIdForLink) {
+    workflowParentLink = workflowPageLink({ workflowId: workflowIdForLink });
+  }
 
   // Check if this is a permission/access denied error
   const isPermissionError = isAccessDeniedError(combinedError);
@@ -420,8 +445,21 @@ export const WorkflowInstancePage = () => {
     return <ResponseErrorPanel error={combinedError} />;
   };
 
+  const showRerunMenu = value?.state === ProcessInstanceStatusDTO.Error;
+
+  const abortTooltipText = permittedToUse.allowed
+    ? ''
+    : t('tooltips.userNotAuthorizedAbort');
+  const runAgainTooltipText = permittedToUse.allowed
+    ? ''
+    : t('tooltips.userNotAuthorizedExecute');
+
   return (
-    <BaseOrchestratorPage title={title}>
+    <BaseOrchestratorPage
+      title={instanceId ?? ''}
+      type={workflowName}
+      typeLink={workflowParentLink}
+    >
       {loading ? <Progress /> : null}
       {renderError()}
       {!loading && isNonNullable(value) ? (
@@ -445,11 +483,9 @@ export const WorkflowInstancePage = () => {
             </InfoDialog>
             <Grid container item justifyContent="flex-end" spacing={1}>
               <Grid item>
-                {canAbort && (
-                  <Tooltip
-                    title={t('tooltips.userNotAuthorizedAbort')}
-                    disableHoverListener={permittedToUse.allowed}
-                  >
+                {canAbort &&
+                  withPermissionTooltip(
+                    abortTooltipText,
                     <Button
                       variant="outlined"
                       color="primary"
@@ -457,15 +493,12 @@ export const WorkflowInstancePage = () => {
                       onClick={toggleAbortConfirmationDialog}
                     >
                       {t('run.abort.button')}
-                    </Button>
-                  </Tooltip>
-                )}
+                    </Button>,
+                  )}
               </Grid>
               <Grid item>
-                <Tooltip
-                  title={t('tooltips.userNotAuthorizedExecute')}
-                  disableHoverListener={permittedToUse.allowed}
-                >
+                {withPermissionTooltip(
+                  runAgainTooltipText,
                   <Button
                     ref={anchorRef}
                     variant="contained"
@@ -474,16 +507,8 @@ export const WorkflowInstancePage = () => {
                       isRetrigger ? <CircularProgress size="1rem" /> : null
                     }
                     disabled={!permittedToUse.allowed || !canRerun}
-                    onClick={
-                      value?.state === ProcessInstanceStatusDTO.Error
-                        ? handleClick
-                        : handleRerun
-                    }
-                    endIcon={
-                      value?.state === ProcessInstanceStatusDTO.Error ? (
-                        <ArrowDropDown />
-                      ) : null
-                    }
+                    onClick={showRerunMenu ? handleClick : handleRerun}
+                    endIcon={showRerunMenu ? <ArrowDropDown /> : null}
                   >
                     {value.state === ProcessInstanceStatusDTO.Active ? (
                       <>
@@ -493,8 +518,8 @@ export const WorkflowInstancePage = () => {
                     ) : (
                       t('workflow.buttons.runAgain')
                     )}
-                  </Button>
-                </Tooltip>
+                  </Button>,
+                )}
 
                 <Menu
                   anchorEl={anchorRef.current}
@@ -512,7 +537,7 @@ export const WorkflowInstancePage = () => {
                 >
                   <MenuItem onClick={() => handleOptionClick('rerun')}>
                     <Start />
-                    Entire workflow
+                    {t('workflow.buttons.entireWorkflow')}
                   </MenuItem>
                   <MenuItem
                     onClick={() => handleOptionClick('retrigger')}
@@ -568,6 +593,11 @@ export const WorkflowInstancePage = () => {
             </Alert>
           </Snackbar>
           <WorkflowInstancePageContent instance={value} />
+          <SamlSsoExpiredDialog
+            open={!!samlSsoError}
+            reauthorizeUrl={extractSsoReauthorizeUrl(samlSsoError)}
+            onClose={() => setSamlSsoError(undefined)}
+          />
         </>
       ) : null}
     </BaseOrchestratorPage>

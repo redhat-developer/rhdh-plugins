@@ -27,7 +27,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'sidebar.x2a.title': 'Konversions Hub',
     'page.title': 'Konversions Hub',
     'page.subtitle':
-      'Starten und verfolgen Sie die asynchrone Umwandlung von Chef-Dateien in produktionsreife Ansible Playbooks.',
+      'Starten und verfolgen Sie die asynchrone Umwandlung von bestehender Automatisierung in produktionsreife Ansible Playbooks.',
     'table.columns.name': 'Name',
     'table.columns.status': 'Status',
     'table.columns.statusSortDisabledTooltip':
@@ -46,16 +46,31 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'initPhaseCard.title': 'Entdeckungsphase',
     'projectDetailsCard.title': 'Projektdetails',
     'projectDetailsCard.name': 'Name',
-    'projectDetailsCard.abbreviation': 'Abkürzung',
     'projectDetailsCard.status': 'Status',
-    'projectDetailsCard.createdBy': 'Eigentümer',
+    'projectDetailsCard.ownedBy': 'Eigentümer',
+    'projectDetailsCard.dirName': 'Verzeichnisname',
     'projectDetailsCard.description': 'Beschreibung',
     'projectDetailsCard.sourceRepo': 'Quell-Repository',
     'projectDetailsCard.targetRepo': 'Ziel-Repository',
+    'projectDetailsCard.edit': 'Bearbeiten',
+    'editProjectDialog.title': 'Projekt bearbeiten',
+    'editProjectDialog.cancel': 'Abbrechen',
+    'editProjectDialog.update': 'Aktualisieren',
+    'editProjectDialog.updateError': 'Fehler beim Aktualisieren des Projekts',
+    'editProjectDialog.ownerChangeWarningTitle':
+      'Eigentumsübertragung bestätigen',
+    'editProjectDialog.ownerChangeWarning':
+      'Das Ändern des Eigentümers kann dazu führen, dass Sie den Zugriff auf dieses Projekt verlieren, wenn Ihre Berechtigungen den neuen Eigentümer nicht abdecken. Ein Administrator kann den Zugriff bei Bedarf wiederherstellen.',
+    'editProjectDialog.ownerChangeConfirm': 'Eigentum übertragen',
+    'editProjectDialog.nameRequired': 'Name ist erforderlich',
+    'editProjectDialog.ownerFormatHint':
+      'Muss eine Backstage-Entitätsreferenz sein, z.B. user:default/name oder group:default/team',
     'projectModulesCard.title': 'Module ({{count}})',
     'projectModulesCard.noModules': 'Noch keine Module gefunden...',
     'projectModulesCard.toReview': 'überprüfen',
     'projectModulesCard.published': 'veröffentlicht',
+    'projectModulesCard.spinner':
+      'Erkennungsphase läuft und Modulliste wird aus dem Migrationsplan aktualisiert…',
     'projectPage.title': 'Projekt',
     'projectPage.actionsTooltip':
       'Klicken Sie, um das Menü für Projektaktionen zu öffnen',
@@ -69,8 +84,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'projectTable.deleteError': 'Fehler beim Löschen des Projekts',
     'project.description': 'Beschreibung',
     'project.id': 'ID',
-    'project.abbreviation': 'Abkürzung',
-    'project.createdBy': 'Eigentümer',
+    'project.ownedBy': 'Eigentümer',
+    'project.dirName': 'Verzeichnisname',
     'project.statuses.none': '-',
     'project.statuses.created': 'Erstellt',
     'project.statuses.initializing': 'Wird initialisiert',
@@ -82,7 +97,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'common.newProject': 'Neues Projekt',
     'emptyPage.noConversionInitiatedYet': 'Noch keine Konversion gestartet',
     'emptyPage.noConversionInitiatedYetDescription':
-      'Starten und verfolgen Sie die Konvertierung von Chef-Dateien in produktionsreife Ansible',
+      'Starten und verfolgen Sie die Konvertierung von bestehender Automatisierung in produktionsreife Ansible',
     'emptyPage.startFirstConversion': 'Erste Konversion starten',
     'emptyPage.notAllowedTitle': 'Zugriff verweigert',
     'emptyPage.notAllowedDescription':
@@ -99,6 +114,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'module.summary.running': 'Läuft',
     'module.summary.error': 'Fehler',
     'module.summary.cancelled': 'Abgebrochen',
+    'module.summary.removed': 'Entfernt',
     'module.summary.toReview_one':
       '{{count}} Modul mit zu überprüfenden Artefakten',
     'module.summary.toReview_other':
@@ -124,6 +140,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'module.statuses.success': 'Erfolg',
     'module.statuses.error': 'Fehler',
     'module.statuses.cancelled': 'Abgebrochen',
+    'module.statuses.removed': 'Entfernt',
     'artifact.types.migrated_sources': 'Migrierte Quellen',
     'artifact.types.project_metadata': 'Projektmetadaten',
     'artifact.types.ansible_project': 'AAP-Projekt',
@@ -155,7 +172,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Überprüfen Sie vor der Analyse zunächst den gesamten Projektmigrationsplan. Sein Inhalt bestimmt die Analyse des Moduls.',
     'modulePage.phases.runAnalyze': 'Modulmigrationsplan erstellen',
     'modulePage.phases.migrateInstructions':
-      'Überprüfen Sie vor der Migration den Modulmigrationsplan. Der Migrationsprozess konvertiert den Chef-Code basierend auf dem Plan in Ansible.',
+      'Überprüfen Sie vor der Migration den Modulmigrationsplan. Der Migrationsprozess konvertiert den Quellcode basierend auf dem Plan in Ansible.',
     'modulePage.phases.runMigrate': 'Modulquellen migrieren',
     'modulePage.phases.remigrateInstructions':
       'Die migrierten Quellen sind bereits vorhanden. Lösen Sie die Migration erneut aus, um den konvertierten Ansible-Code neu zu erstellen.',
@@ -172,10 +189,14 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Fehler beim Ausführen der Phase für das Modul',
     'modulePage.phases.cancelError':
       'Fehler beim Abbrechen der Phase für das Modul',
+    'modulePage.phases.attempts': 'Versuche',
+    'modulePage.phases.totalElapsed': 'Gesamtdauer',
     'modulePage.phases.commitId': 'Letzte Commit-ID',
     'modulePage.phases.viewLog': 'Log anzeigen',
     'modulePage.phases.hideLog': 'Log ausblenden',
     'modulePage.phases.noLogsAvailable': 'Noch keine Logs verfügbar...',
+    'modulePage.phases.logWaitingForStream':
+      'Warte auf Log-Ausgabe vom Cluster...',
     'modulePage.phases.telemetry.title': 'Telemetrie',
     'modulePage.phases.telemetry.noTelemetryAvailable':
       'Keine Telemetrie verfügbar',
@@ -237,10 +258,68 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'retriggerInit.confirm.userPromptPlaceholder':
       'Zusätzliche Anweisungen für die Konvertierung angeben…',
     'retriggerInit.confirm.confirmButton': 'Erneut auslösen',
+    'retriggerInit.firstTrigger.title': 'Init-Phase für „{{name}}" starten?',
+    'retriggerInit.firstTrigger.message':
+      'Nach der Bestätigung wird die Erkennungsphase für dieses Projekt gestartet. Möglicherweise werden Sie nach Ihren SCM-Tokens für Quelle und Ziel gefragt.',
+    'retriggerInit.firstTrigger.userPromptLabel':
+      'Benutzeranweisung (optional)',
+    'retriggerInit.firstTrigger.userPromptPlaceholder':
+      'Zusätzliche Anweisungen für die Konvertierung angeben…',
+    'retriggerInit.firstTrigger.confirmButton': 'Init-Phase starten',
     'retriggerInit.error':
       'Fehler beim erneuten Auslösen der Init-Phase für Projekt „{{name}}"',
     'retriggerInit.errorStart':
       'Fehler beim Starten der Projektinitialisierung',
+    'resyncMigrationPlan.action': 'Migrationsplan neu synchronisieren',
+    'resyncMigrationPlan.confirm.title':
+      'Migrationsplan für „{{name}}" neu synchronisieren?',
+    'resyncMigrationPlan.confirm.message':
+      'Der Migrationsplan wird aus dem Ziel-Repository neu eingelesen und die Modulliste entsprechend aktualisiert. Neue Module werden hinzugefügt und Module, die nicht mehr im Plan enthalten sind, werden als entfernt markiert. Wenn Sie das Dokument ändern, etwa ein Modul entfernen, achten Sie darauf, dass das Dokument schlüssig bleibt.',
+    'resyncMigrationPlan.confirm.warning':
+      'Als entfernt markierte Module behalten ihre Job-Historie, sind aber nicht mehr für neue Phasenläufe berechtigt. Diese Aktion kann für entfernte Module nicht rückgängig gemacht werden, es sei denn, sie werden dem Migrationsplan erneut hinzugefügt.',
+    'resyncMigrationPlan.confirm.confirmButton': 'Neu synchronisieren',
+    'resyncMigrationPlan.running':
+      'Modulliste wird vom Migrationsplan neu synchronisiert…',
+    'resyncMigrationPlan.error':
+      'Fehler bei der Neusynchronisierung des Migrationsplans für Projekt „{{name}}"',
+    'resyncMigrationPlan.errorStart':
+      'Fehler beim Starten der Migrationsplan-Neusynchronisierung',
+    'scaffolder.rulesAcceptance.loadingRules': 'Regeln werden geladen...',
+    'scaffolder.rulesAcceptance.noRulesConfigured':
+      'Keine Regeln konfiguriert.',
+    'scaffolder.rulesAcceptance.required': 'erforderlich',
+    'scaffolder.rulesAcceptance.fetchError': 'Fehler beim Laden der Regeln',
+    'rulesPage.title': 'Konvertierungsregeln',
+    'rulesPage.subtitle':
+      'Verwalten Sie Regeln, die Projekte bei der Erstellung akzeptieren müssen.',
+    'rulesPage.addRule': 'Regel hinzufügen',
+    'rulesPage.manageRules': 'Regeln verwalten',
+    'rulesPage.notAllowed':
+      'Sie haben keine Berechtigung, Regeln zu verwalten.',
+    'rulesPage.table.id': 'ID',
+    'rulesPage.table.title': 'Titel',
+    'rulesPage.table.description': 'Beschreibung',
+    'rulesPage.table.required': 'Erforderlich',
+    'rulesPage.table.optional': 'Optional',
+    'rulesPage.table.createdAt': 'Erstellt',
+    'rulesPage.table.editRule': 'Regel bearbeiten',
+    'rulesPage.table.deleteRule': 'Regel löschen',
+    'rulesPage.table.noRules': 'Noch keine Regeln definiert.',
+    'rulesPage.deleteConfirm.title': 'Regel „{{title}}" löschen?',
+    'rulesPage.deleteConfirm.message':
+      'Diese Regel wird dauerhaft gelöscht. Bestehende Projekte, die diese Regel bereits akzeptiert haben, sind nicht betroffen.',
+    'rulesPage.deleteConfirm.confirm': 'Löschen',
+    'rulesPage.deleteConfirm.cancel': 'Abbrechen',
+    'rulesPage.deleteConfirm.deleteError': 'Fehler beim Löschen der Regel',
+    'rulesPage.dialog.createTitle': 'Regel erstellen',
+    'rulesPage.dialog.editTitle': 'Regel bearbeiten',
+    'rulesPage.dialog.titleField': 'Titel',
+    'rulesPage.dialog.descriptionField': 'Beschreibung',
+    'rulesPage.dialog.requiredField': 'Für alle Projekte erforderlich',
+    'rulesPage.dialog.save': 'Speichern',
+    'rulesPage.dialog.cancel': 'Abbrechen',
+    'rulesPage.dialog.createError': 'Fehler beim Erstellen der Regel',
+    'rulesPage.dialog.updateError': 'Fehler beim Aktualisieren der Regel',
   },
 });
 

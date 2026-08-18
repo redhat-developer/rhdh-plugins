@@ -49,6 +49,9 @@ export interface LlamaStackVectorStoreResponse {
   name: string;
   status: string;
   created_at?: number;
+  metadata?: Record<string, string>;
+  usage_bytes?: number;
+  last_active_at?: number;
   file_counts: {
     total: number;
     completed: number;

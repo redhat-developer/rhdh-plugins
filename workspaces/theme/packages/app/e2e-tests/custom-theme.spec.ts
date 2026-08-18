@@ -42,7 +42,6 @@ test.describe('CustomTheme should be applied', () => {
       page,
       testInfo,
       'accessibility-scan-results.json',
-      { skipViolationsAssert: true },
     );
 
     for (const theme of themes) {
@@ -73,24 +72,22 @@ test.describe('CustomTheme should be applied', () => {
     };
     await page.locator('nav').getByRole('link', { name: 'BCC tests' }).click();
 
-    const themeNames = ['RHDH Dark (latest)', 'RHDH Light (latest)'];
+    const themeNames = ['Dark', 'Light'];
     for (const themeName of themeNames) {
-      await page.getByRole('button', { name: themeName }).click();
+      await page.getByRole('button', { name: themeName, exact: true }).click();
       for (const [tab, subTabs] of Object.entries(tabs)) {
         await page.locator('nav').getByRole('link', { name: tab }).click();
         await runAccessibilityTests(
           page,
           testInfo,
           `${themeName}-${tab}-accessibility`,
-          { skipViolationsAssert: true },
         );
         for (const subTab of subTabs) {
-          await page.getByRole('tab', { name: subTab }).click();
+          await page.getByText(subTab).click();
           await runAccessibilityTests(
             page,
             testInfo,
             `${themeName}-${tab}-${subTab}-accessibility`,
-            { skipViolationsAssert: true },
           );
         }
       }

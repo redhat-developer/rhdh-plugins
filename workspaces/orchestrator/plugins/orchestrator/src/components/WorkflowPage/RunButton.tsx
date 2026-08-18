@@ -17,6 +17,7 @@
 import { useNavigate } from 'react-router-dom';
 
 import { useRouteRef, useRouteRefParams } from '@backstage/core-plugin-api';
+import { usePermission } from '@backstage/plugin-permission-react';
 
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid';
@@ -28,9 +29,12 @@ import {
   orchestratorWorkflowUseSpecificPermission,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import { usePermissionArrayDecision } from '../../hooks/usePermissionArray';
 import { useTranslation } from '../../hooks/useTranslation';
-import { executeWorkflowRouteRef, workflowRouteRef } from '../../routes';
+import {
+  entityWorkflowRouteRef,
+  executeWorkflowRouteRef,
+  workflowRouteRef,
+} from '../../routes';
 
 export const RunButton = ({
   isAvailable,
@@ -40,32 +44,48 @@ export const RunButton = ({
   entityRef?: string;
 }) => {
   const { t } = useTranslation();
-  const { workflowId } = useRouteRefParams(workflowRouteRef);
+  const { workflowId: entityWorkflowId } = useRouteRefParams(
+    entityWorkflowRouteRef,
+  );
+  const { workflowId: scopedWorkflowId } = useRouteRefParams(workflowRouteRef);
+  const workflowId = entityWorkflowId ?? scopedWorkflowId;
   const navigate = useNavigate();
   const executeWorkflowLink = useRouteRef(executeWorkflowRouteRef);
+  const buildExecuteUrl = () => {
+    const baseUrl = executeWorkflowLink({ workflowId });
+    const params = new URLSearchParams();
+    if (entityRef) {
+      params.set('targetEntity', entityRef);
+    }
+    const query = params.toString();
+    return query ? `${baseUrl}?${query}` : baseUrl;
+  };
   const handleExecute = () => {
-    navigate(
-      entityRef
-        ? `${executeWorkflowLink({ workflowId })}?targetEntity=${entityRef}`
-        : executeWorkflowLink({ workflowId }),
-    );
+    navigate(buildExecuteUrl());
   };
 
-  const { loading: loadingPermission, allowed: canRun } =
-    usePermissionArrayDecision([
-      orchestratorWorkflowUsePermission,
-      orchestratorWorkflowUseSpecificPermission(workflowId),
-    ]);
+  const { loading: loadingConditional, allowed: conditionalAllowed } =
+    usePermission({
+      permission: orchestratorWorkflowUsePermission,
+      resourceRef: workflowId,
+    });
+  // @deprecated Remove this legacy fallback block in next release
+  const { loading: loadingLegacy, allowed: legacyAllowed } = usePermission({
+    permission: orchestratorWorkflowUseSpecificPermission(workflowId),
+  });
+
+  const loadingPermission = loadingConditional || loadingLegacy;
+  const canRun = conditionalAllowed || legacyAllowed;
 
   let tooltipText = '';
   if (!canRun) {
     tooltipText = t('workflow.messages.userNotAuthorizedExecute');
-  } else if (!isAvailable) {
-    tooltipText = t('workflow.messages.workflowDown');
+  } else if (isAvailable === false) {
+    tooltipText = t('workflow.unavailable.runTooltip');
   }
 
   return (
-    <Grid item container justifyContent="flex-end" xs={12} spacing={2}>
+    <Grid item container justifyContent="flex-end" xs={12}>
       <Grid item>
         {loadingPermission ? (
           <Skeleton variant="text" width="5rem" />
@@ -78,7 +98,7 @@ export const RunButton = ({
               variant="contained"
               color="primary"
               onClick={handleExecute}
-              disabled={!canRun}
+              disabled={!canRun || isAvailable === false}
             >
               {t('workflow.buttons.run')}
             </Button>

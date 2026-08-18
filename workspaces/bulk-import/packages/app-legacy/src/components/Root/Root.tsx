@@ -32,6 +32,7 @@ import {
   Settings as SidebarSettings,
   UserSettingsSignInAvatar,
 } from '@backstage/plugin-user-settings';
+import { Administration } from '@backstage-community/plugin-rbac';
 import CreateComponentIcon from '@mui/icons-material/AddCircleOutline';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import HomeIcon from '@mui/icons-material/Home';
@@ -39,38 +40,40 @@ import LibraryBooks from '@mui/icons-material/LibraryBooks';
 import MenuIcon from '@mui/icons-material/Menu';
 import GroupIcon from '@mui/icons-material/People';
 import SearchIcon from '@mui/icons-material/Search';
-import { makeStyles } from '@mui/styles';
-import { BulkImportSidebarItem } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
+import Box from '@mui/material/Box';
+import { BulkImportSidebarItem } from '@red-hat-developer-hub/backstage-plugin-bulk-import/legacy';
+import {
+  LogoFull,
+  LogoIcon,
+} from '@red-hat-developer-hub/backstage-plugin-theme';
 import { PropsWithChildren } from 'react';
-import LogoFull from './LogoFull';
-import LogoIcon from './LogoIcon';
-import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
-
-const useSidebarLogoStyles = makeStyles({
-  root: {
-    width: sidebarConfig.drawerWidthClosed,
-    height: 3 * sidebarConfig.logoHeight,
-    display: 'flex',
-    flexFlow: 'row nowrap',
-    alignItems: 'center',
-    marginBottom: -14,
-  },
-  link: {
-    width: sidebarConfig.drawerWidthClosed,
-    marginLeft: 24,
-  },
-});
 
 const SidebarLogo = () => {
-  const classes = useSidebarLogoStyles();
   const { isOpen } = useSidebarOpenState();
 
   return (
-    <div className={classes.root}>
-      <Link to="/" underline="none" className={classes.link} aria-label="Home">
+    <Box
+      sx={{
+        width: sidebarConfig.drawerWidthClosed,
+        height: 3 * sidebarConfig.logoHeight,
+        display: 'flex',
+        flexFlow: 'row nowrap',
+        alignItems: 'center',
+        mb: '-14px',
+      }}
+    >
+      <Link
+        to="/"
+        underline="none"
+        aria-label="Home"
+        style={{
+          width: sidebarConfig.drawerWidthClosed,
+          marginLeft: 24,
+        }}
+      >
         {isOpen ? <LogoFull /> : <LogoIcon />}
       </Link>
-    </div>
+    </Box>
   );
 };
 
@@ -104,6 +107,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
             text="Orchestrator"
           />
           <BulkImportSidebarItem />
+          <Administration />
 
           {/* End global nav */}
           <SidebarDivider />
@@ -118,7 +122,6 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
           icon={<UserSettingsSignInAvatar />}
           to="/settings"
         >
-          <NotificationsSidebarItem />
           <SidebarSettings />
         </SidebarGroup>
       </Sidebar>

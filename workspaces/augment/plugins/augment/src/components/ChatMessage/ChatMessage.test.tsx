@@ -21,6 +21,7 @@ import { TestApiProvider } from '@backstage/test-utils';
 import { ChatMessage } from './ChatMessage';
 import { augmentApiRef, type AugmentApi } from '../../api';
 import { Message } from '../../types';
+import { ChatViewModeProvider } from '../../hooks/useChatViewMode';
 
 const theme = createTheme();
 
@@ -41,11 +42,19 @@ const mockApi: Partial<AugmentApi> = {
 const renderChatMessage = (
   message: Message,
   props: { onRegenerate?: () => void } = {},
+  { devMode = false }: { devMode?: boolean } = {},
 ) => {
+  if (devMode) {
+    localStorage.setItem('augment:chat-view-mode', 'dev');
+  } else {
+    localStorage.removeItem('augment:chat-view-mode');
+  }
   return render(
     <TestApiProvider apis={[[augmentApiRef, mockApi as AugmentApi]]}>
       <ThemeProvider theme={theme}>
-        <ChatMessage message={message} {...props} />
+        <ChatViewModeProvider>
+          <ChatMessage message={message} {...props} />
+        </ChatViewModeProvider>
       </ThemeProvider>
     </TestApiProvider>,
   );
@@ -189,12 +198,12 @@ describe('ChatMessage', () => {
     };
 
     it('should display tool calls section when present', () => {
-      renderChatMessage(messageWithTools);
+      renderChatMessage(messageWithTools, {}, { devMode: true });
       expect(screen.getByText(/Used 1 tool/)).toBeInTheDocument();
     });
 
     it('should be collapsible', async () => {
-      renderChatMessage(messageWithTools);
+      renderChatMessage(messageWithTools, {}, { devMode: true });
 
       // Click to expand
       const expandButton = screen.getByRole('button', {
@@ -224,7 +233,7 @@ describe('ChatMessage', () => {
           },
         ],
       };
-      renderChatMessage(messageWithError);
+      renderChatMessage(messageWithError, {}, { devMode: true });
 
       const expandButton = screen.getByRole('button', {
         name: /expand tool calls/i,
@@ -247,12 +256,12 @@ describe('ChatMessage', () => {
     };
 
     it('should display sources section when present', () => {
-      renderChatMessage(messageWithSources);
+      renderChatMessage(messageWithSources, {}, { devMode: true });
       expect(screen.getByText(/2 sources from Vector RAG/)).toBeInTheDocument();
     });
 
     it('should be collapsible', async () => {
-      renderChatMessage(messageWithSources);
+      renderChatMessage(messageWithSources, {}, { devMode: true });
 
       // Click to expand
       const expandButton = screen.getByRole('button', {
@@ -314,7 +323,7 @@ describe('ChatMessage', () => {
           total_tokens: 3188,
         },
       };
-      renderChatMessage(messageWithUsage);
+      renderChatMessage(messageWithUsage, {}, { devMode: true });
       expect(screen.getByText('2,341 in')).toBeInTheDocument();
       expect(screen.getByText('847 out')).toBeInTheDocument();
     });
@@ -418,7 +427,7 @@ describe('ChatMessage', () => {
           },
         ],
       };
-      renderChatMessage(messageWithTools);
+      renderChatMessage(messageWithTools, {}, { devMode: true });
 
       const expandButton = screen.getByRole('button', {
         name: /expand tool calls/i,
@@ -444,7 +453,7 @@ describe('ChatMessage', () => {
           },
         ],
       };
-      renderChatMessage(messageWithTools);
+      renderChatMessage(messageWithTools, {}, { devMode: true });
 
       const expandButton = screen.getByRole('button', {
         name: /expand tool calls/i,

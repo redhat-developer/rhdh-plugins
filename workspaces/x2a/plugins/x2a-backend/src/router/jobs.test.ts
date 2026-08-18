@@ -220,6 +220,54 @@ describe('createRouter – jobs (log)', () => {
       );
 
       it(
+        'should return 200 with empty body when streaming and kube has no log data yet (e.g. no pod or Pending)',
+        async () => {
+          await createTestJob(x2aDatabase, {
+            projectId: project.id,
+            moduleId: null,
+            phase: 'init',
+            status: 'running',
+            k8sJobName: 'init-k8s-job',
+          });
+          const mockGetJobLogs = jest.fn().mockResolvedValue('');
+          const app = await createApp(client, undefined, undefined, {
+            getJobLogs: mockGetJobLogs,
+          });
+          const response = await request(app)
+            .get(`/projects/${project.id}/log?streaming=true`)
+            .send();
+          expect(response.status).toBe(200);
+          expect(response.type).toBe('text/plain');
+          expect(response.text).toBe('');
+          expect(mockGetJobLogs).toHaveBeenCalledWith('init-k8s-job', true);
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
+        'should not call getJobLogs for streaming when init job has no k8sJobName yet',
+        async () => {
+          await createTestJob(x2aDatabase, {
+            projectId: project.id,
+            moduleId: null,
+            phase: 'init',
+            status: 'pending',
+          });
+          const mockGetJobLogs = jest.fn();
+          const app = await createApp(client, undefined, undefined, {
+            getJobLogs: mockGetJobLogs,
+          });
+          const response = await request(app)
+            .get(`/projects/${project.id}/log?streaming=true`)
+            .send();
+          expect(response.status).toBe(200);
+          expect(response.text).toBe('');
+          expect(mockGetJobLogs).not.toHaveBeenCalled();
+        },
+        LONG_TEST_TIMEOUT,
+      );
+
+      it(
         'should return 404 when no init job found for project',
         async () => {
           const app = await createApp(client);

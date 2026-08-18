@@ -1,5 +1,282 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 4.2.0
+
+### Minor Changes
+
+- e486f80: Implemented filter by `status` for scalar aggregation types (`sum`, `average`, `count`, `min`, `max`).
+
+### Patch Changes
+
+- Updated dependencies [e486f80]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.2.0
+
+## 4.1.0
+
+### Minor Changes
+
+- 3af0fb2: This update introduces new scalar aggregation KPIs in the scorecard configuration, including:
+
+  - **`sum`**: Single numeric total of latest metric values across owned entities
+  - **`average`**: Mean of latest metric values across owned entities
+  - **`max`**: Maximum latest metric value across owned entities
+  - **`min`**: Minimum latest metric value across owned entities
+  - **`count`**: Number of entities with a non-null latest stored value
+
+### Patch Changes
+
+- Updated dependencies [3af0fb2]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.1.0
+
+## 4.0.0
+
+### Patch Changes
+
+- e9b1af3: Add scalprum config and default app configuration example
+- Updated dependencies [8c14679]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.0.0
+
+## 3.0.1
+
+### Patch Changes
+
+- e3fb07a: Export translations module as default for NFS auto-discovery
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.1
+
+## 3.0.0
+
+### Major Changes
+
+- f4b8bd4: **BREAKING**: Graduated the New Frontend System (NFS) scorecard plugin to the stable entry point and simplified NFS feature registration.
+
+  - NFS APIs move from `./alpha` to `.`; OFS APIs move to `./legacy` only (not re-exported from the main entry); translations remain at `./alpha`.
+  - `scorecardCatalogModule` and `scorecardHomeModule` are removed. Entity tab, layout, and homepage widgets are now provided by the default `scorecardPlugin`. Keep only `scorecardTranslationsModule` as a separate app module.
+  - Extension IDs move from the `catalog` / `home` namespaces to `scorecard` (for example `entity-content:catalog/entity-content-scorecard` → `entity-content:scorecard/entity-content-scorecard`). Update any `app.extensions` config accordingly. See the plugin README migration notes.
+
+- 6ea1575: **BREAKING**: Rename aggregation KPI type `average` to `weightedStatusScore`.
+
+  ### App config
+
+  - `scorecard.aggregationKPIs.*.type`: `average` → `weightedStatusScore`
+
+  ### `GET /aggregations/:aggregationId` API
+
+  - `metadata.aggregationType`: `average` → `weightedStatusScore`
+  - `result.averageScore` → `result.weightedStatusScore`
+  - `result.averageWeightedSum` → `result.weightedStatusSum`
+  - `result.averageMaxPossible` → `result.weightedStatusMaxPossible`
+
+  ### Frontend translations (`metric.*`)
+
+  Update any scorecard translation overrides that used the old `average*` keys:
+
+  - `metric.averageCenterTooltipTotalLabel` → `metric.weightedStatusScoreCenterTooltipTotalLabel`
+  - `metric.averageCenterTooltipMaxLabel` → `metric.weightedStatusScoreCenterTooltipMaxLabel`
+  - `metric.averageCenterTooltipBreakdownRow_one` / `_other` → `metric.weightedStatusScoreCenterTooltipBreakdownRow_one` / `_other`
+  - `metric.averageLegendTooltipEntitiesEach_one` / `_other` → `metric.weightedStatusScoreLegendTooltipEntitiesEach_one` / `_other`
+  - `metric.averageLegendTooltipRowTotal` → `metric.weightedStatusScoreLegendTooltipRowTotal`
+
+  The `averageLegendTooltip*` keys served the removed side-legend tooltip; the center donut tooltip uses the `weightedStatusScoreCenterTooltip*` keys (including per-status breakdown rows).
+
+  ### UI `data-testid` values
+
+  Update downstream e2e selectors that targeted the weighted-status-score card center label:
+
+  - `average-card-center-percent` → `weighted-status-score-card-center-percent`
+  - `average-card-center-percent-hit-area` → `weighted-status-score-card-center-percent-hit-area`
+
+- dfb90b7: **BREAKING**: Standardize all metric and provider IDs from `snake_case` to `lowerCamelCase`.
+
+  This aligns metric IDs with the naming convention used in `app-config.yaml` and the planned Scorecard design. For example, `github.open_prs` is now `github.openPRs`, `sonarqube.quality_gate` is now `sonarqube.qualityGate`, and `dependabot.alerts_critical` is now `dependabot.alertsCritical`.
+
+  If you reference metric IDs in your `app-config.yaml` (e.g., in `metricId` fields or plugin schedule config keys), update them to use `lowerCamelCase`.
+
+### Minor Changes
+
+- 50447ac: Backstage version bump to v1.52.0
+- f024236: Introduce a MetricGroupCard component that aggregates related metrics into threshold-based bucket tiles with a filterable data sources dialog. ScorecardEntityContentGridView to render grouped metrics as MetricGroupCards and ungrouped metrics as individual Scorecard cards using a Masonry layout. Add i18n keys across all supported locales and comprehensive unit tests for all new components.
+
+### Patch Changes
+
+- 83d8a47: Removed unused `ScorecardStylesProvider` component and `@mui/styles` dependency. JSS class-name isolation is no longer needed after the MUI5 migration.
+- 963c98c: optimized how scorecard homepage is loaded
+- Updated dependencies [50447ac]
+- Updated dependencies [6ea1575]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@3.0.0
+
+## 2.8.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.8.1
+
+## 2.8.0
+
+### Minor Changes
+
+- 71cfae4: Add blueprint architecture for grouped scorecard layouts
+
+  Implement blueprint pattern enabling platform engineers to configure grouped scorecard metrics via app-config.yaml. Layout extensions are auto-discovered through Backstage's New Frontend System (NFS).
+
+- 8c85bd4: Backstage version bump to v1.51.1
+
+### Patch Changes
+
+- Updated dependencies [8c85bd4]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.8.0
+
+## 2.7.9
+
+### Patch Changes
+
+- d86f9c6: Replace Material UI v4 imports with MUI v5 and scope JSS class names to prevent style collisions.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.9
+
+## 2.7.8
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.8
+
+## 2.7.7
+
+### Patch Changes
+
+- 8414dbe: Fixes severity threshold category translation for custom thresholds
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.7
+
+## 2.7.6
+
+### Patch Changes
+
+- 4b07772: Translations updated for de/es/fr/it/ja
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.6
+
+## 2.7.5
+
+### Patch Changes
+
+- 5115044: ### Threshold validation
+
+  Implemented threshold interval validation for Scorecard: joint coverage on the real line, gap detection and error messages, and overlap handling versus rule order (including aggregation KPI `options.thresholds` for `average`).
+
+  ### Aggregation
+
+  For **`type: average`** aggregations, **`result.averageScore`** returned by **`GET /aggregations/:aggregationId`** (and the same shape wherever it appears) is a **portfolio percentage in \[0, 100\]** with **one decimal place** — the same scale used for **`options.thresholds`** evaluation and the homepage donut.
+
+  Previously **`averageScore`** was a **normalized ratio in \[0, 1\]** (rounded to **three** decimal places). Any consumer that treated the old value as a fraction and multiplied by **100** for display, or compared it to thresholds on a 0–100 scale without converting, must **stop scaling**: use **`averageScore`** directly as the percentage. If you stored historical API payloads, recompute or re-fetch rather than assuming the old fractional scale.
+
+- 942a9ae: Fix average score card donut tooltip behavior and align pie chart tooltips
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.5
+
+## 2.7.4
+
+### Patch Changes
+
+- 8c129da: Fix default layout for `AggregatedCardWithGithubFilecheckLicense`, `AggregatedCardWithGithubFilecheckCodeowners` and `AggregatedCardWithGithubOpenPrsWeighted` homepage scorecard cards at the new frontend system (NFS)
+- 367195b: Fix drilldown page header showing raw provider title instead of the translated scorecard title
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.4
+
+## 2.7.3
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.3
+
+## 2.7.2
+
+### Patch Changes
+
+- 04e95fe: Add translations for new sonarqube module.
+- 04e95fe: Add tooltip to Scorecard header to show titles that are longer then one line
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.2
+
+## 2.7.1
+
+### Patch Changes
+
+- 91e724f: Expose scorecard entity calculation health on drill-down and aggregation APIs, and align the drill-down warning plus homepage subheader with those counts.
+- Updated dependencies [91e724f]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.1
+
+## 2.7.0
+
+### Minor Changes
+
+- bf72ffc: Adds `**average**` as an aggregation KPI type alongside `**statusGrouped**`, with configurable `**options.statusScores**` and optional `**options.thresholds**` (same shape as metric thresholds) for homepage donut coloring against `**averageScore × 100**`, with built-in defaults when omitted.
+
+### Patch Changes
+
+- Updated dependencies [bf72ffc]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.7.0
+
+## 2.6.0
+
+### Minor Changes
+
+- 4ecaacd: Add support for batch metric providers, allowing a single provider to handle multiple metrics efficiently. Introduce a new backend module for configurable file existence checks (filecheck.\*) that verify whether required files (like README, LICENSE, or CODEOWNERS) are present in a repository.
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@2.6.0
+
+## 2.5.2
+
+### Patch Changes
+
+- 501e099: Removed Backstage registration requirement for default Scorecard icons
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.5.2
+
+## 2.5.1
+
+### Patch Changes
+
+- f6f7bcf: add threshold-based status colors to entities table
+- 0fda0c7: fixed the scorecard-homepage-cards default layout for nfs
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.5.1
+
+## 2.5.0
+
+### Minor Changes
+
+- d706601: Backstage version bump to v1.49.3
+- 55226c2: Introduces custom threshold rule icons that can be configured in `app-config.yaml`.
+- f13f583: Adding scorecardHomepage and metric page extension, also added e2e support in nfs
+- 0d64361: Adds a Scorecard Entities page that allows users to drill down from aggregated scorecard KPIs to view the individual entities contributing to the overall score. The page displays entity-level metric values and status, enabling users to identify services impacting the metric and investigate issues more effectively.
+- 243ad0a: Aggregated scorecards now use **aggregation IDs** and dedicated HTTP routes. The old catalog-aggregations URL still works but is **deprecated** (not removed).
+
+  **Backend (`@red-hat-developer-hub/backstage-plugin-scorecard-backend`)**
+
+  - **Deprecated:** `GET /metrics/:metricId/catalog/aggregations` — responses are unchanged, but the handler emits [RFC 8594](https://datatracker.ietf.org/doc/html/rfc8594) `Deprecation` and `Link` headers (alternate successor: `GET .../aggregations/:aggregationId`) and logs a warning. Prefer **`GET /aggregations/:aggregationId`** for new integrations.
+  - **Added:** `GET /aggregations/:aggregationId` for aggregated results using configured aggregation.
+  - **Added:** `GET /aggregations/:aggregationId/metadata` for KPI titles, descriptions, and aggregation metadata consumed by the UI.
+
+  **Common (`@red-hat-developer-hub/backstage-plugin-scorecard-common`)**
+
+  - Types and constants aligned with the aggregation config and new API shapes.
+
+  **Frontend (`@red-hat-developer-hub/backstage-plugin-scorecard`)**
+
+  - Homepage and aggregated flows resolve cards via **`aggregationId`**, fetch metadata from the new endpoint, and keep localized threshold and error strings where translation keys exist.
+
+  **Action for adopters:** Configure aggregated scorecards with `aggregationId` values that match backend aggregation config, replace direct calls to `GET /metrics/:metricId/catalog/aggregations` with `GET /aggregations/:aggregationId` (and metadata if you need the same labels as the plugin UI).
+
+- 99aa8ff: Added support for the New Frontend System (NFS), including an alpha export for NFS apps and a new `app-next` package.
+
+### Patch Changes
+
+- 6bd7c38: Enable sorting for all other columns in entities table
+- ff005a3: add translation for the scorecard entities table status column
+- afd7a1e: Update translations for Scorecard.
+- 2667f70: Fix scorecard entity table column header Metric to Status
+- Updated dependencies [d706601]
+- Updated dependencies [55226c2]
+- Updated dependencies [243ad0a]
+- Updated dependencies [c83b206]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@2.5.0
+
 ## 2.4.0
 
 ### Minor Changes

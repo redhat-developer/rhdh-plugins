@@ -36,6 +36,8 @@ export const STREAMING_PHASES = {
   CALLING_TOOLS: 'calling_tools',
   EXECUTING_BACKEND_TOOLS: 'executing_backend_tools',
   PENDING_APPROVAL: 'pending_approval',
+  FORM_INPUT: 'form_input',
+  AUTH_REQUIRED: 'auth_required',
   GENERATING: 'generating',
   COMPLETED: 'completed',
 } as const;
@@ -64,6 +66,10 @@ export const EVENT_TYPES = {
   STREAM_BACKEND_TOOL_EXECUTING: 'stream.backend_tool.executing',
   STREAM_RAG_RESULTS: 'stream.rag.results',
   STREAM_AGENT_HANDOFF: 'stream.agent.handoff',
+  STREAM_FORM_REQUEST: 'stream.form.request',
+  STREAM_AUTH_REQUIRED: 'stream.auth.required',
+  STREAM_ARTIFACT: 'stream.artifact',
+  STREAM_CITATION: 'stream.citation',
   STREAM_COMPLETED: 'stream.completed',
   STREAM_ERROR: 'stream.error',
 } as const;
@@ -94,6 +100,8 @@ export const PHASE_LABELS: Record<string, string> = {
   [STREAMING_PHASES.CALLING_TOOLS]: 'Working',
   [STREAMING_PHASES.EXECUTING_BACKEND_TOOLS]: 'Working on it',
   [STREAMING_PHASES.PENDING_APPROVAL]: 'Waiting for your OK',
+  [STREAMING_PHASES.FORM_INPUT]: 'Needs your input',
+  [STREAMING_PHASES.AUTH_REQUIRED]: 'Authentication required',
   [STREAMING_PHASES.GENERATING]: 'Responding',
   [STREAMING_PHASES.COMPLETED]: 'Done',
 };
@@ -110,6 +118,8 @@ export const PHASE_MESSAGES: Record<string, string> = {
   [STREAMING_PHASES.CALLING_TOOLS]: 'Working...',
   [STREAMING_PHASES.EXECUTING_BACKEND_TOOLS]: 'Working on it...',
   [STREAMING_PHASES.PENDING_APPROVAL]: 'Waiting for your OK...',
+  [STREAMING_PHASES.FORM_INPUT]: 'Needs your input...',
+  [STREAMING_PHASES.AUTH_REQUIRED]: 'Authentication required...',
   [STREAMING_PHASES.GENERATING]: 'Responding...',
 };
 
@@ -134,6 +144,8 @@ export const PHASE_COLOR_KEYS: Record<string, BrandingColorKey> = {
   [STREAMING_PHASES.CALLING_TOOLS]: 'warningColor',
   [STREAMING_PHASES.EXECUTING_BACKEND_TOOLS]: 'warningColor',
   [STREAMING_PHASES.PENDING_APPROVAL]: 'errorColor',
+  [STREAMING_PHASES.FORM_INPUT]: 'warningColor',
+  [STREAMING_PHASES.AUTH_REQUIRED]: 'errorColor',
   [STREAMING_PHASES.GENERATING]: 'successColor',
   [STREAMING_PHASES.COMPLETED]: 'successColor',
 };

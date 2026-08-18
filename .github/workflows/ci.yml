@@ -21,13 +21,13 @@ jobs:
         run: echo "NUMBER_OF_COMMITS=$(($COMMITS + 1))" >> $GITHUB_ENV
 
       - name: Checkout base branch for diff purposes
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.event.pull_request.base.ref }}
           fetch-depth: 50 # TODO(awanlin): Temporary fix
 
       - name: Checkout head branch
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           # Needed for diff
           fetch-depth: ${{ env.NUMBER_OF_COMMITS }}
@@ -35,7 +35,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org/ # Needed for auth
 
       - name: Find changed workspaces
@@ -51,7 +51,7 @@ jobs:
     strategy:
       matrix:
         workspace: ${{ fromJSON(needs.find-changed-workspaces.outputs.workspaces) }}
-        node-version: [22.x]
+        node-version: [22, 24]
       fail-fast: false
     defaults:
       run:
@@ -63,11 +63,11 @@ jobs:
 
     steps:
       - name: Checkout main branch for tests purposes
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: main
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
 
@@ -111,6 +111,24 @@ jobs:
         if: ${{ steps.bcp.outputs.knip_reports == 'true' }}
         run: yarn build:knip-reports --ci
 
+      - name: read listDeprecations flag from bcp.json
+        id: bcpListDeprecations
+        run: |
+          echo "Checking for bcp.json in workspace: workspaces/${{ matrix.workspace }}"
+          if [ -f bcp.json ]; then
+            echo "Reading listDeprecations flag..."
+            LIST_DEPRECATIONS=$(jq -r '.["listDeprecations"]' bcp.json)
+            echo "listDeprecations value: $LIST_DEPRECATIONS"
+            echo "list_deprecations=$LIST_DEPRECATIONS" >> $GITHUB_OUTPUT
+          else
+            echo "bcp.json not found. Defaulting list_deprecations to false."
+            echo "list_deprecations=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: check list deprecations
+        if: ${{ steps.bcpListDeprecations.outputs.list_deprecations == 'true' }}
+        run: yarn backstage-cli repo list-deprecations
+
       - name: check api reports and generate API reference
         run: yarn build:api-reports:only --ci
 
@@ -123,8 +141,39 @@ jobs:
       - name: publish check
         run: yarn backstage-cli repo fix --check --publish
 
-      - name: test changed packages
-        run: yarn test:all --maxWorkers=3
+      - name: Install jest-junit reporter
+        env:
+          RUNNER_TEMP: ${{ runner.temp }}
+          WORKSPACE: ${{ matrix.workspace }}
+        run: |
+          npm install jest-junit@17.0.0 --ignore-scripts --prefix "$RUNNER_TEMP/jest-junit"
+          mkdir -p "$RUNNER_TEMP/test-results/$WORKSPACE"
+
+      - name: Test changed packages
+        id: tests
+        env:
+          JEST_JUNIT_OUTPUT_DIR: ${{ runner.temp }}/test-results/${{ matrix.workspace }}
+          JEST_JUNIT_CLASSNAME: '{filepath}'
+          JEST_JUNIT_UNIQUE_OUTPUT_NAME: 'true'
+          RUNNER_TEMP: ${{ runner.temp }}
+        run: yarn test:all --maxWorkers=3 --reporters=default --reporters="$RUNNER_TEMP/jest-junit/node_modules/jest-junit"
+
+      - name: Upload coverage to Codecov
+        if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6.0.2
+        with:
+          flags: ${{ matrix.workspace }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
+        uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1.2.1
+        with:
+          flags: ${{ matrix.workspace }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ${{ runner.temp }}/test-results/${{ matrix.workspace }}
+          fail_ci_if_error: false
 
       - name: install playwright
         if: ${{ hashFiles(format('workspaces/{0}/playwright.config.ts', matrix.workspace)) != '' }}
@@ -157,19 +206,23 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout head branch
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ github.event.workflow_run.head_branch }}
       - name: Setup node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22.x
+          node-version: 24
       - name: Install root dependencies
         run: yarn install --immutable
       - name: Verify lockfile duplicates
-        run: node scripts/ci/verify-lockfile-duplicates.js workspaces/${{ matrix.workspace }}/yarn.lock
+        env:
+          WORKSPACE: ${{ matrix.workspace }}
+        run: node scripts/ci/verify-lockfile-duplicates.js "workspaces/$WORKSPACE/yarn.lock"
       - name: Verify changesets
-        run: node scripts/ci/verify-changesets.js ${{ matrix.workspace }}
+        env:
+          WORKSPACE: ${{ matrix.workspace }}
+        run: node scripts/ci/verify-changesets.js "$WORKSPACE"
   result:
     if: ${{ always() }}
     name: check all required jobs

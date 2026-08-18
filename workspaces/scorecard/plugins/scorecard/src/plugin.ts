@@ -75,7 +75,7 @@ export const ScorecardHomepageCard = scorecardPlugin.provide(
     component: {
       lazy: () =>
         import('./components/ScorecardHomepageSection').then(
-          m => m.ScorecardHomepageCard,
+          m => m.ScorecardHomepageCardWithProvider,
         ),
     },
   }),
@@ -88,7 +88,8 @@ export const ScorecardHomepageCard = scorecardPlugin.provide(
 export const ScorecardPage = scorecardPlugin.provide(
   createRoutableExtension({
     name: 'ScorecardPage',
-    component: () => import('./pages/ScorecardPage').then(m => m.ScorecardPage),
+    component: () =>
+      import('./pages/ScorecardPage').then(m => m.ScorecardPageWithProvider),
     mountPoint: rootRouteRef,
   }),
 );

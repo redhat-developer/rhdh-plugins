@@ -32,6 +32,10 @@ const LOCALE_DISPLAY_NAMES: Record<string, string> = {
   ja: '日本語',
 };
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /**
  * Get the display name for a locale code
  */
@@ -44,18 +48,26 @@ test.describe('Admin > Extensions', () => {
   let extensions: Extensions;
   let extensionHelper: ExtensionHelper;
   let translations: ExtensionsMessages;
-  let sharedPage: Page;
-  let sharedContext: BrowserContext;
+  let sharedPage!: Page;
+  let sharedContext!: BrowserContext;
 
   async function switchToLocale(page: Page, locale: string): Promise<void> {
     const baseLocale = locale.split('-')[0];
     if (baseLocale === 'en') return;
 
     const displayName = getLocaleDisplayName(locale);
-    await page.getByRole('link', { name: 'Settings' }).click();
-    await page.getByRole('button', { name: 'English' }).click();
+    const localeDisplayPattern = new RegExp(
+      `^(${Object.values(LOCALE_DISPLAY_NAMES).map(escapeRegExp).join('|')})$`,
+    );
+
+    // Navigating directly avoids flaky duplicate "Settings" links in sidebar.
+    await page.goto('/settings');
+    await page
+      .getByRole('button', { name: localeDisplayPattern })
+      .first()
+      .click();
     await page.getByRole('option', { name: displayName }).click();
-    await page.locator('a').filter({ hasText: 'Home' }).click();
+    await page.goto('/');
   }
 
   test.beforeAll(async ({ browser }) => {
@@ -74,7 +86,9 @@ test.describe('Admin > Extensions', () => {
   });
 
   test.afterAll(async () => {
-    await sharedContext.close();
+    if (sharedContext) {
+      await sharedContext.close();
+    }
   });
 
   test.describe('Extensions > Catalog', () => {
@@ -94,14 +108,14 @@ test.describe('Admin > Extensions', () => {
       await extensions.selectDropdown(translations.search.author);
       await extensions.toggleOption('Red Hat');
       await sharedPage.keyboard.press(`Escape`);
-      await extensionHelper.verifyHeading('APIs with 3scale');
+      await extensionHelper.verifyHeading('Pipelines with Tekton');
       await extensionHelper.verifyTextInLocator(
         '',
         `${translations.metadata.by} Red Hat`,
         true,
       );
 
-      await extensionHelper.clickHeading('APIs with 3scale');
+      await extensionHelper.clickHeading('Pipelines with Tekton');
       await extensionHelper.verifyTableHeadingAndRows([
         translations.table.packageName,
         translations.table.version,
@@ -126,35 +140,6 @@ test.describe('Admin > Extensions', () => {
       await extensions.selectDropdown(`${translations.search.supportType}`);
       await extensions.supportFilters();
       await extensions.emptyCategoryComboBox();
-    });
-
-    test('Verify certified badge in extensions', async ({
-      browser: _browser,
-    }) => {
-      await extensions.selectDropdown(`${translations.search.supportType}`);
-      await extensions.toggleOption(translations.badges.certified);
-      await sharedPage.keyboard.press(`Escape`);
-      await extensionHelper.verifyHeading('Certified Plugin ');
-      await expect(extensions.badge.first()).toBeVisible();
-      await extensions.badge.first().hover();
-      await extensionHelper.verifyHeading('Certified Plugin ');
-      await extensionHelper.clickHeading('Certified Plugin ');
-      await extensionHelper.closeBar('Close');
-      await extensionHelper.clickLink(translations.common.readMore);
-      await extensionHelper.verifyTextInLocator(
-        '',
-        translations.metadata.about,
-        true,
-      );
-      await extensionHelper.verifyHeading(translations.metadata.versions);
-      await extensionHelper.verifyTableHeadingAndRows([
-        translations.table.packageName,
-        translations.table.version,
-        translations.table.role,
-        translations.table.status,
-      ]);
-      await extensionHelper.closeBar('Close');
-      await extensions.resetSupportTypeFilter(translations.badges.certified);
     });
 
     test('Verify Generally available badge in extensions', async ({

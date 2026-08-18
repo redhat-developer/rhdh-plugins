@@ -41,12 +41,12 @@ import MenuIcon from '@material-ui/icons/Menu';
 import SearchIcon from '@material-ui/icons/Search';
 import SecurityIcon from '@material-ui/icons/Security';
 import StorageIcon from '@material-ui/icons/Storage';
-import VpnKeyIcon from '@material-ui/icons/VpnKey';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import LogoFull from './LogoFull';
 import LogoIcon from './LogoIcon';
 import { useRhdhTheme } from '../../hooks/useRhdhTheme';
+import { usePatternFlyTheme } from '../../hooks/usePatternFlyTheme';
 
 /** Returns true when the theme palette is in dark mode (supports both MUI v4 type and v5 mode). */
 function isPaletteDark(palette: { type?: string; mode?: string }): boolean {
@@ -232,8 +232,8 @@ const SidebarLogo = () => {
 export const Root = ({ children }: PropsWithChildren<{}>) => {
   const classes = useSidebarItemStyles();
   const location = useLocation();
+  usePatternFlyTheme();
   const isDcmActive = location.pathname.startsWith('/dcm');
-  const isRbacActive = location.pathname.startsWith('/rbac');
 
   return (
     <SidebarPage>
@@ -270,16 +270,6 @@ export const Root = ({ children }: PropsWithChildren<{}>) => {
                 text="Data Center"
                 className={`${classes.submenuItem} ${
                   isDcmActive ? classes.submenuItemActive : classes.inactiveItem
-                }`}
-              />
-              <SidebarItem
-                icon={VpnKeyIcon}
-                to="/rbac"
-                text="RBAC"
-                className={`${classes.submenuItem} ${
-                  isRbacActive
-                    ? classes.submenuItemActive
-                    : classes.inactiveItem
                 }`}
               />
             </Box>

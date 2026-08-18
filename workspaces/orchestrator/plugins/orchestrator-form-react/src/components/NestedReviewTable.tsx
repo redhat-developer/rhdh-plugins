@@ -57,7 +57,13 @@ const useStyles = makeStyles()(theme => ({
   },
 }));
 
-interface NestedReviewTableProps {
+/**
+ * Props for `NestedReviewTable`.
+ *
+ * @public
+ */
+export interface NestedReviewTableProps {
+  /** Structured review payload (typically from `generateReviewTableData`). */
   data: JsonObject;
 }
 
@@ -108,13 +114,19 @@ const RenderNestedData: React.FC<{ data: JsonObject; classes: any }> = ({
   );
 };
 
+/**
+ * Renders nested review key/value sections (structure matches `generateReviewTableData` output).
+ *
+ * @public
+ */
 export const NestedReviewTable: React.FC<NestedReviewTableProps> = ({
   data,
 }) => {
   const { classes } = useStyles();
+  const safeData = data ?? {};
 
   // Group top-level sections
-  const sections: [string, JsonValue][] = Object.entries(data).filter(
+  const sections: [string, JsonValue][] = Object.entries(safeData).filter(
     ([_, value]) => value !== undefined,
   ) as [string, JsonValue][];
 

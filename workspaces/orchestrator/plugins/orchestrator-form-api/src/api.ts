@@ -46,6 +46,8 @@ export type OrchestratorFormContextProps = {
   setIsChangedByUser: (id: string, isChangedByUser: boolean) => void;
   handleFetchStarted?: () => void;
   handleFetchEnded?: () => void;
+  onSamlSsoError?: (error: Error) => void;
+  validatingFields?: ReadonlySet<string>;
 };
 
 /**
@@ -83,6 +85,11 @@ export type FormDecoratorProps = Pick<
     formData: JsonObject,
     uiSchema: OrchestratorFormContextProps['uiSchema'],
   ) => Promise<ErrorSchema<JsonObject>> | undefined;
+  getExtraErrorsForField?: (
+    formData: JsonObject,
+    fieldPath: string,
+    uiSchemaProperty: JsonObject,
+  ) => Promise<ErrorSchema<JsonObject>>;
 };
 
 /**
@@ -113,7 +120,33 @@ export type SchemaChunksResponse = {
  */
 export type OrchestratorFormSchemaUpdater = (
   chunks: SchemaChunksResponse,
+  scopeId?: string,
 ) => void;
+
+/**
+ * @public
+ * ReviewComponentProps
+ *
+ * Type definition for properties passed to a custom review page component.
+ */
+export type ReviewComponentProps = {
+  /** Whether the workflow execution is in progress */
+  busy: boolean;
+  /** The JSON Schema for the workflow form */
+  schema: JSONSchema7;
+  /** The form data to be reviewed before submission */
+  data: JsonObject;
+  /** Go back to the previous wizard step (same behavior as the default review page) */
+  handleBack: () => void;
+  /** Callback to execute the workflow */
+  handleExecute: () => void;
+  /** Label for the primary execute button (default review UI falls back to translated "Run") */
+  executeLabel?: string;
+  /** Optional second action to execute as an event-style (e.g. Kafka) workflow */
+  handleExecuteAsEvent?: () => void;
+  /** Label for the event execute control when `handleExecuteAsEvent` is set */
+  executeAsEventLabel?: string;
+};
 
 /**
  * @public
@@ -136,6 +169,14 @@ export interface OrchestratorFormApi {
    * return the form decorator
    */
   getFormDecorator(): OrchestratorFormDecorator;
+
+  /**
+   * @public
+   * getReviewComponent
+   * return a custom review page component to replace the default review step
+   * @returns A React component that accepts ReviewComponentProps, or undefined to use the default review page
+   */
+  getReviewComponent?(): React.ComponentType<ReviewComponentProps> | undefined;
 }
 
 /**

@@ -17,29 +17,27 @@
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { useTranslation } from './useTranslation';
+import { resolveMetricTranslation } from '../utils';
 
-export const useMetricDisplayLabels = (metric?: Metric) => {
+export const useMetricDisplayLabels = (
+  metric?: Pick<Metric, 'id' | 'title' | 'description'>,
+): {
+  title: string;
+  description: string;
+} => {
   const { t } = useTranslation();
 
   if (!metric) {
     return { title: '', description: '' };
   }
 
-  const { id, title: originalTitle, description: originalDescription } = metric;
-
-  const titleKey = `metric.${id}.title`;
-  const descriptionKey = `metric.${id}.description`;
-
-  const translatedTitle = t(titleKey as any, {});
-  const translatedDescription = t(descriptionKey as any, {});
-
-  const isTitleTranslated = translatedTitle !== titleKey;
-  const isDescriptionTranslated = translatedDescription !== descriptionKey;
-
   return {
-    title: isTitleTranslated ? translatedTitle : originalTitle,
-    description: isDescriptionTranslated
-      ? translatedDescription
-      : originalDescription,
+    title: resolveMetricTranslation(t, metric.id, 'title', metric.title),
+    description: resolveMetricTranslation(
+      t,
+      metric.id,
+      'description',
+      metric.description,
+    ),
   };
 };

@@ -47,7 +47,7 @@ describe('useScorecards', () => {
 
   const mockScorecardData: MetricResult[] = [
     {
-      id: 'github.pull_requests_open',
+      id: 'github.pullRequestsOpen',
       status: 'success',
       metadata: {
         title: 'GitHub open PRs',
@@ -73,7 +73,7 @@ describe('useScorecards', () => {
       },
     },
     {
-      id: 'jira.blocking_tickets',
+      id: 'jira.blockingTickets',
       status: 'success',
       metadata: {
         title: 'Jira blocking tickets',
@@ -117,8 +117,8 @@ describe('useScorecards', () => {
       const { result } = renderHook(() => useScorecards());
 
       expect(result.current).toEqual({
-        scorecards: mockScorecardData,
-        loadingData: false,
+        data: mockScorecardData,
+        isLoading: false,
         error: undefined,
       });
     });
@@ -135,9 +135,37 @@ describe('useScorecards', () => {
 
       expect(mockUseAsync).toHaveBeenCalledWith(expect.any(Function), [
         mockEntity,
+        undefined, // JSON.stringify(metricIds) when metricIds is omitted
         mockScorecardApi,
         expect.any(Function), // translation function
       ]);
+    });
+
+    it('should pass metricIds in useAsync deps and to getScorecards', async () => {
+      const metricIds = ['github.pullRequestsOpen', 'jira.blockingTickets'];
+      mockScorecardApi.getScorecards.mockResolvedValue(mockScorecardData);
+      mockUseAsync.mockImplementation(() => ({
+        loading: false,
+        error: undefined,
+        value: undefined,
+      }));
+
+      renderHook(() => useScorecards({ metricIds }));
+
+      expect(mockUseAsync).toHaveBeenCalledWith(expect.any(Function), [
+        mockEntity,
+        JSON.stringify(metricIds),
+        mockScorecardApi,
+        expect.any(Function),
+      ]);
+
+      const asyncFn = mockUseAsync.mock.calls[0][0] as () => Promise<unknown>;
+      await asyncFn();
+
+      expect(mockScorecardApi.getScorecards).toHaveBeenCalledWith({
+        entity: mockEntity,
+        metricIds,
+      });
     });
 
     it('should handle empty scorecard array', () => {
@@ -152,8 +180,8 @@ describe('useScorecards', () => {
       const { result } = renderHook(() => useScorecards());
 
       expect(result.current).toEqual({
-        scorecards: emptyData,
-        loadingData: false,
+        data: emptyData,
+        isLoading: false,
         error: undefined,
       });
     });
@@ -170,8 +198,8 @@ describe('useScorecards', () => {
       const { result } = renderHook(() => useScorecards());
 
       expect(result.current).toEqual({
-        scorecards: undefined,
-        loadingData: true,
+        data: undefined,
+        isLoading: true,
         error: undefined,
       });
     });
@@ -186,8 +214,8 @@ describe('useScorecards', () => {
 
       const { result, rerender } = renderHook(() => useScorecards());
 
-      expect(result.current.loadingData).toBe(true);
-      expect(result.current.scorecards).toBeUndefined();
+      expect(result.current.isLoading).toBe(true);
+      expect(result.current.data).toBeUndefined();
 
       // Second render - loaded
       mockUseAsync.mockReturnValueOnce({
@@ -198,8 +226,8 @@ describe('useScorecards', () => {
 
       rerender();
 
-      expect(result.current.loadingData).toBe(false);
-      expect(result.current.scorecards).toEqual(mockScorecardData);
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.data).toEqual(mockScorecardData);
     });
   });
 
@@ -227,8 +255,8 @@ describe('useScorecards', () => {
       const { result } = renderHook(() => useScorecards());
 
       expect(result.current).toEqual({
-        scorecards: undefined,
-        loadingData: false,
+        data: undefined,
+        isLoading: false,
         error,
       });
     });
@@ -255,8 +283,8 @@ describe('useScorecards', () => {
       const { result } = renderHook(() => useScorecards());
 
       expect(result.current).toEqual({
-        scorecards: undefined,
-        loadingData: false,
+        data: undefined,
+        isLoading: false,
         error,
       });
     });
@@ -284,8 +312,8 @@ describe('useScorecards', () => {
       const { result } = renderHook(() => useScorecards());
 
       expect(result.current).toEqual({
-        scorecards: undefined,
-        loadingData: false,
+        data: undefined,
+        isLoading: false,
         error,
       });
     });
@@ -304,8 +332,8 @@ describe('useScorecards', () => {
       const { result } = renderHook(() => useScorecards());
 
       expect(result.current).toEqual({
-        scorecards: undefined,
-        loadingData: false,
+        data: undefined,
+        isLoading: false,
         error: wrappedError,
       });
     });
@@ -323,8 +351,8 @@ describe('useScorecards', () => {
       const { result } = renderHook(() => useScorecards());
 
       expect(result.current).toEqual({
-        scorecards: undefined,
-        loadingData: false,
+        data: undefined,
+        isLoading: false,
         error,
       });
     });
@@ -342,8 +370,8 @@ describe('useScorecards', () => {
       const { result } = renderHook(() => useScorecards());
 
       expect(result.current).toEqual({
-        scorecards: undefined,
-        loadingData: false,
+        data: undefined,
+        isLoading: false,
         error,
       });
     });

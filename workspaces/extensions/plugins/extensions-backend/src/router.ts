@@ -55,6 +55,24 @@ import {
   DynamicPluginProvider,
 } from '@backstage/backend-dynamic-feature-service';
 
+/**
+ * Resolve the effective `enabled` value from a request body that may contain
+ * `enabled`, `disabled`, or both.  When both are present `enabled` wins.
+ * Throws InputError when neither field is a boolean.
+ */
+function resolveEnabledField(body: Record<string, unknown>): boolean {
+  if (body.enabled !== undefined) {
+    if (typeof body.enabled !== 'boolean') {
+      throw new InputError("'enabled' must be a boolean");
+    }
+    return body.enabled;
+  }
+  if (typeof body.disabled === 'boolean') {
+    return !body.disabled;
+  }
+  throw new InputError("'enabled' must be a present boolean");
+}
+
 export type ExtensionsRouterOptions = {
   httpAuth: HttpAuthService;
   extensionsApi: ExtensionsApi;
@@ -94,7 +112,7 @@ export async function createRouter(
   const permissionsIntegrationRouter = createPermissionIntegrationRouter({
     resourceType: RESOURCE_TYPE_EXTENSIONS_PLUGIN,
     permissions: extensionsPermissions,
-    rules: Object.values(extensionRules),
+    rules: Object.values(extensionRules) as any,
   });
   router.use(express.json());
   router.use(permissionsIntegrationRouter);
@@ -315,13 +333,10 @@ export async function createRouter(
         );
       }
 
-      const disabled = req.body.disabled;
-      if (typeof disabled !== 'boolean') {
-        throw new InputError("'disabled' must be present boolean");
-      }
-      installationDataService.setPackageDisabled(
+      const enabled = resolveEnabledField(req.body);
+      installationDataService.setPackageEnabled(
         extensionsPackage.spec.dynamicArtifact,
-        disabled,
+        enabled,
       );
       res.status(200).json({ status: 'OK' });
     },
@@ -451,11 +466,8 @@ export async function createRouter(
         req,
         extensionsPluginWritePermission,
       );
-      const disabled = req.body.disabled;
-      if (typeof disabled !== 'boolean') {
-        throw new InputError("'disabled' must be present boolean");
-      }
-      await installationDataService.setPluginDisabled(plugin, disabled);
+      const enabled = resolveEnabledField(req.body);
+      await installationDataService.setPluginEnabled(plugin, enabled);
       res.status(200).json({ status: 'OK' });
     },
   );

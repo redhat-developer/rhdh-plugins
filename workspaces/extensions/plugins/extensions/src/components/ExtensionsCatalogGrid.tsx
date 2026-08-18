@@ -15,6 +15,7 @@
  */
 
 import Typography from '@mui/material/Typography';
+
 import { useFilteredPlugins } from '../hooks/useFilteredPlugins';
 
 import { PluginCard, PluginCardGrid, PluginCardSkeleton } from './PluginCard';

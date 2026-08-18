@@ -24,7 +24,12 @@ plugins:
                 menuItem:
                   icon: orchestratorIcon
                   text: Orchestrator
+                  textKey: menuItem.orchestrator
                 path: /orchestrator
+            menuItems:
+              orchestrator:
+                parent: default.admin
+                icon: orchestratorIcon
             entityTabs:
               - path: /workflows
                 title: Workflows
@@ -49,7 +54,9 @@ plugins:
     pluginConfig:
       dynamicPlugins:
         frontend:
-          red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets: {}
+          # OFS: load BackstagePlugin from Legacy (PluginRoot is NFS after graduation)
+          red-hat-developer-hub.backstage-plugin-orchestrator-form-widgets:
+            pluginModule: Legacy
   - disabled: false
     package: oci://ghcr.io/redhat-developer/rhdh-plugin-export-overlays/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator:<tag>!red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-orchestrator
 ```

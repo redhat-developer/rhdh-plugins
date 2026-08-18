@@ -2,15 +2,15 @@ The Cost Management plugin protects its backend endpoints with the builtin permi
 
 The Cost Management plugin consists of two main sections, each with its own set of permissions:
 
-- **Optimizations**: Uses permissions starting with `ros.`
-- **OpenShift**: Uses permissions starting with `cost.`
+- **Optimizations**: Uses `ros.plugin` and `ros.apply` (dot) for plugin-level access, and `ros/CLUSTER` / `ros/CLUSTER/PROJECT` (slash) for cluster/project-level access
+- **OpenShift**: Uses `cost.plugin` (dot) for plugin-level access, and `cost/CLUSTER` / `cost/CLUSTER/PROJECT` (slash) for cluster/project-level access
 
 ### How it works
 
 When a frontend request arrives at `/api/cost-management/proxy/*`, the backend:
 
 1. Authenticates the user via Backstage `httpAuth`
-2. Evaluates the user's permissions against the `ros.*` or `cost.*` policy
+2. Evaluates the user's permissions against the `ros.*` / `ros/…` or `cost.*` / `cost/…` policies
 3. Determines the authorized list of clusters and projects
 4. Strips any client-supplied cluster/project filter parameters
 5. Injects the server-authorized filters before forwarding to the upstream API
@@ -62,7 +62,7 @@ The user is permitted to do an action if either the generic permission or the sp
 
 To get started with policies, we recommend defining roles and assigning them to groups or users in a dedicated CSV file.
 
-Here is an example policy file that includes permissions for both Optimizations (`ros.`) and OpenShift (`cost.`) sections of the Cost Management plugin:
+Here is an example policy file that includes permissions for both Optimizations (`ros.plugin`, `ros.apply`, `ros/…`) and OpenShift (`cost.plugin`, `cost/…`) sections of the Cost Management plugin:
 
 ```csv
 ####

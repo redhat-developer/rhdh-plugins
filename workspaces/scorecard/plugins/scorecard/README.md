@@ -2,12 +2,16 @@
 
 The Scorecard plugin provides a configurable framework to visualize Key Performance Indicators (KPIs) in Backstage. This frontend plugin integrates with the Scorecard backend to deliver Scorecards.
 
-The plugin supports both the **legacy** Backstage frontend and the **New Frontend System (NFS)**. Use the main package for legacy apps and the `/alpha` export for NFS apps. NFS supports only 1 module as of now (the catalog module that adds the Scorecard entity tab).
+The plugin supports both the **legacy** Backstage frontend and the **New Frontend System (NFS)**. NFS is the primary package entry point. OFS (legacy) exports are available only at `./legacy`. Translations remain available at `./alpha`.
+
+For NFS, register the default `scorecardPlugin` plus `scorecardTranslationsModule`. The plugin itself contributes the Scorecard page, entity tab, layout, and homepage widgets (no separate catalog/home modules).
+
 **Features:**
 
 - **Entity scorecard tab** — View scorecard metrics on catalog entity pages (components, websites, etc.).
-- **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues).
+- **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues). Supports **`statusGrouped`** (multi-slice pie) and **`weightedStatusScore`** (weighted health donut) KPI types configured under **`scorecard.aggregationKPIs`**. Scalar types (`sum`, `average`, `max`, `min`, `count`) are supported by the backend API but not yet rendered by the bundled homepage card (see [Homepage scorecard cards](#homepage-scorecard-cards)).
 - **Scorecard Entities page** — Drill down from an aggregated metric to see the list of entities contributing to that metric, with entity-level values and status, so you can identify services impacting the KPI and investigate issues.
+- **Metric group cards (grid layout)** — Group related metrics into cards with threshold bucket tiles, a filterable/sortable data sources dialog, and a Masonry grid layout. Enabled via app-config.yaml.
 
 ## Getting started
 
@@ -43,19 +47,18 @@ yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
    yarn workspace app add @red-hat-developer-hub/backstage-plugin-scorecard
    ```
 
-2. Register the plugin in `packages/app/src/App.tsx` using the **alpha** export:
+2. Register the plugin in `packages/app/src/App.tsx`:
 
    ```tsx
    // In packages/app/src/App.tsx
    import { createApp } from '@backstage/frontend-defaults';
-   import {
+   import scorecardPlugin, {
      scorecardTranslationsModule,
-     scorecardCatalogModule,
-   } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
+   } from '@red-hat-developer-hub/backstage-plugin-scorecard';
 
    const app = createApp({
      features: [
-       scorecardCatalogModule,
+       scorecardPlugin,
        scorecardTranslationsModule,
        // ... other plugins
      ],
@@ -69,7 +72,7 @@ yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-scorecard
    ```yaml
    app:
      extensions:
-       - entity-content:catalog/entity-content-scorecard:
+       - entity-content:scorecard/entity-content-scorecard:
            config:
              allowedFilters:
                - kind: component
@@ -120,21 +123,228 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
 
 5. Start the NFS app (e.g. `yarn start`), go to **Catalog**, open an entity. The **Scorecard** tab appears for entities that match your `allowedFilters` (or all entities if the extension config is omitted or empty).
 
+6. (Optional) Enable the **grid layout** with metric group cards. The grid layout extension is disabled by default. Enable it and define `groups` in `app-config.yaml` to organize metrics into themed cards:
+
+   ```yaml
+   app:
+     extensions:
+       - scorecard-layout:scorecard/scorecard-entity-layout-grid:
+           config:
+             groups:
+               codeQuality:
+                 title: 'Code Quality'
+                 description: 'SonarQube code quality metrics'
+                 metrics:
+                   - sonarqube.reliabilityIssues
+                   - sonarqube.codeCoverage
+                   - sonarqube.securityIssues
+               operations:
+                 title: 'Operations'
+                 metrics:
+                   - github.openPrs
+                   - jira.openIssues
+   ```
+
+   **Groups config schema:**
+
+   | Field         | Type       | Required | Description                                          |
+   | ------------- | ---------- | -------- | ---------------------------------------------------- |
+   | `title`       | `string`   | Yes      | Display title for the group card.                    |
+   | `description` | `string`   | No       | Optional description shown below the title.          |
+   | `metrics`     | `string[]` | Yes      | Ordered list of metric IDs to include in this group. |
+
+   **Behavior:**
+
+   - Metrics listed in `groups` are rendered as **MetricGroupCard** components. Each card shows threshold bucket tiles (e.g. Passing, Warning, Failing) with counts. Clicking a tile opens a **data sources dialog** pre-filtered to that status.
+   - The data sources dialog displays a sortable, filterable table with columns: Plugin, Check, Value, Status, and Last Synced. A threshold legend allows toggling visibility by status.
+   - Metrics **not** listed in any group are rendered as individual Scorecard cards below the group cards.
+   - All cards are arranged in a responsive **Masonry** grid (1 column on mobile, 2 on tablet, 3 on desktop).
+   - If `groups` is empty or omitted, the grid layout falls back to the default `EntityScorecardContent` view (individual cards for all metrics).
+   - When multiple layout extensions are enabled, the Scorecard tab renders a toggle to switch between them.
+
+7. (Optional) Enable homepage Scorecard widgets by configuring home page extensions in `app-config.yaml` (widgets are registered by `scorecardPlugin`):
+
+   ```yaml
+   app:
+     extensions:
+       - page:home:
+           config:
+             path: /
+       - api:home/visits: true
+       - app-root-element:home/visit-listener: true
+       - home-page-layout:home/dynamic-homepage-layout:
+           config:
+             customizable: true
+             widgetLayout:
+               AggregatedCardWithDeprecatedMetricId:
+                 priority: 410
+                 breakpoints:
+                   xl: { w: 4, h: 6 }
+                   lg: { w: 4, h: 6 }
+                   md: { w: 4, h: 6 }
+                   sm: { w: 4, h: 6 }
+                   xs: { w: 4, h: 6 }
+                   xxs: { w: 4, h: 6 }
+               AggregatedCardWithDefaultAggregation:
+                 priority: 420
+                 breakpoints:
+                   xl: { w: 4, h: 6, x: 4 }
+                   lg: { w: 4, h: 6, x: 4 }
+                   md: { w: 4, h: 6, x: 4 }
+                   sm: { w: 4, h: 6, x: 4 }
+                   xs: { w: 4, h: 6, x: 4 }
+                   xxs: { w: 4, h: 6, x: 4 }
+               AggregatedCardWithJiraOpenIssues:
+                 priority: 430
+                 breakpoints:
+                   xl: { w: 4, h: 6 }
+                   lg: { w: 4, h: 6 }
+                   md: { w: 4, h: 6 }
+                   sm: { w: 4, h: 6 }
+                   xs: { w: 4, h: 6 }
+                   xxs: { w: 4, h: 6 }
+               AggregatedCardWithGithubOpenPrs:
+                 priority: 440
+                 breakpoints:
+                   xl: { w: 4, h: 6, x: 4 }
+                   lg: { w: 4, h: 6, x: 4 }
+                   md: { w: 4, h: 6, x: 4 }
+                   sm: { w: 4, h: 6, x: 4 }
+                   xs: { w: 4, h: 6, x: 4 }
+                   xxs: { w: 4, h: 6, x: 4 }
+               AggregatedCardWithGithubFilecheckLicense:
+                 priority: 450
+                 breakpoints:
+                   xl: { w: 4, h: 6 }
+                   lg: { w: 4, h: 6 }
+                   md: { w: 4, h: 6 }
+                   sm: { w: 4, h: 6 }
+                   xs: { w: 4, h: 6 }
+                   xxs: { w: 4, h: 6 }
+               AggregatedCardWithGithubFilecheckCodeowners:
+                 priority: 460
+                 breakpoints:
+                   xl: { w: 4, h: 6, x: 8 }
+                   lg: { w: 4, h: 6, x: 8 }
+                   md: { w: 4, h: 6, x: 8 }
+                   sm: { w: 4, h: 6, x: 8 }
+                   xs: { w: 4, h: 6, x: 8 }
+                   xxs: { w: 4, h: 6, x: 8 }
+               AggregatedCardWithGithubOpenPrsWeighted:
+                 priority: 470
+                 breakpoints:
+                   xl: { w: 4, h: 6, x: 8 }
+                   lg: { w: 4, h: 6, x: 8 }
+                   md: { w: 4, h: 6, x: 8 }
+                   sm: { w: 4, h: 6, x: 8 }
+                   xs: { w: 4, h: 6, x: 8 }
+                   xxs: { w: 4, h: 6, x: 8 }
+   ```
+
+   The home module contributes seven widgets:
+
+   - `AggregatedCardWithDeprecatedMetricId` (title: **Scorecard: With deprecated metricId property (Jira)**)
+   - `AggregatedCardWithDefaultAggregation` (title: **Scorecard: With default aggregation config (GitHub)**)
+   - `AggregatedCardWithJiraOpenIssues` (title: **Scorecard: Jira open blocking tickets**)
+   - `AggregatedCardWithGithubOpenPrs` (title: **Scorecard: GitHub open PRs**)
+   - `AggregatedCardWithGithubFilecheckLicense` (title: **Scorecard: LICENSE file exists**)
+   - `AggregatedCardWithGithubFilecheckCodeowners` (title: **Scorecard: CODEOWNERS file exists**)
+   - `AggregatedCardWithGithubOpenPrsWeighted` (title: **Scorecard: GitHub open PRs (weighted health)**)
+
+   These widgets render the `ScorecardHomepageCard` component used in legacy apps, preconfigured with different aggregation/metric configurations.
+
 ##### Modules and extensions (NFS)
 
-The following modules and extensions are available from `@red-hat-developer-hub/backstage-plugin-scorecard/alpha` for NFS apps:
+The following modules and extensions are available from `@red-hat-developer-hub/backstage-plugin-scorecard` for NFS apps:
 
 **Modules**
 
-| Module                        | Description                                                                                                                                                            |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scorecardCatalogModule`      | Registers the Scorecard entity tab with the catalog plugin. Add to your app's `features`. Which entities show the tab is configured via `app.extensions` (see step 3). |
-| `scorecardTranslationsModule` | Registers Scorecard translations with the app. Add to your app's `features`.                                                                                           |
+| Module                        | Description                                                                  |
+| ----------------------------- | ---------------------------------------------------------------------------- |
+| `scorecardTranslationsModule` | Registers Scorecard translations with the app. Add to your app's `features`. |
 
-**Extensions**
+The default `scorecardPlugin` registers the Scorecard page, API, entity tab, layout, and homepage widgets.
 
-- `api:scorecard` — Scorecard API (provided by the plugin; auto-discovered when the plugin is installed).
-- `entity-content:catalog/entity-content-scorecard` — Scorecard tab on catalog entity pages. Configure with `allowedFilters` in `app.extensions` to limit by kind and optionally type.
+**Extension IDs**
+
+| Extension ID                                                       | Description                                                                                                                      |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `api:scorecard`                                                    | Scorecard API (auto-discovered when the plugin is installed).                                                                    |
+| `page:scorecard`                                                   | Scorecard entities / drill-down page.                                                                                            |
+| `entity-content:scorecard/entity-content-scorecard`                | Scorecard tab on catalog entity pages. Configure with `allowedFilters` in `app.extensions` to limit by kind and optionally type. |
+| `scorecard-layout:scorecard/scorecard-entity-layout-grid`          | Grid layout with metric group cards (disabled by default). Enable via `app.extensions` and define `groups` (see step 6).         |
+| `home-page-widget:scorecard/scorecard-deprecated-metric-id`        | Homepage widget using deprecated `metricId` (Jira open issues).                                                                  |
+| `home-page-widget:scorecard/scorecard-default-aggregation`         | Homepage widget using default aggregation (GitHub open PRs).                                                                     |
+| `home-page-widget:scorecard/scorecard-jira-open-issues`            | Homepage widget for Jira open blocking tickets.                                                                                  |
+| `home-page-widget:scorecard/scorecard-github-open-prs`             | Homepage widget for GitHub open PRs.                                                                                             |
+| `home-page-widget:scorecard/scorecard-github-filecheck-license`    | Homepage widget for file check "License".                                                                                        |
+| `home-page-widget:scorecard/scorecard-github-filecheck-codeowners` | Homepage widget for file check "Codeowners".                                                                                     |
+| `home-page-widget:scorecard/scorecard-github-open-prs-weighted`    | Homepage widget for weighted GitHub open PRs health.                                                                             |
+
+##### Migration notes (NFS graduation)
+
+If you previously imported Scorecard NFS APIs from `/alpha` and registered separate catalog/home modules, update as follows.
+
+**1. Features registration**
+
+```diff
+- import scorecardPlugin, {
+-   scorecardCatalogModule,
+-   scorecardHomeModule,
+-   scorecardTranslationsModule,
+- } from '@red-hat-developer-hub/backstage-plugin-scorecard/alpha';
++ import scorecardPlugin, {
++   scorecardTranslationsModule,
++ } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+
+  features: [
+    scorecardPlugin,
+-   scorecardCatalogModule,
+-   scorecardHomeModule,
+    scorecardTranslationsModule,
+  ]
+```
+
+`scorecardCatalogModule` and `scorecardHomeModule` are removed. Entity tab and homepage widgets are provided by `scorecardPlugin` directly.
+
+**2. `app.extensions` IDs**
+
+Extension IDs now use the `scorecard` plugin namespace (not `catalog` / `home`):
+
+| Old ID                                                        | New ID                                                             |
+| ------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `entity-content:catalog/entity-content-scorecard`             | `entity-content:scorecard/entity-content-scorecard`                |
+| `scorecard-layout:catalog/scorecard-entity-layout-grid`       | `scorecard-layout:scorecard/scorecard-entity-layout-grid`          |
+| `home-page-widget:home/scorecard-deprecated-metric-id`        | `home-page-widget:scorecard/scorecard-deprecated-metric-id`        |
+| `home-page-widget:home/scorecard-default-aggregation`         | `home-page-widget:scorecard/scorecard-default-aggregation`         |
+| `home-page-widget:home/scorecard-jira-open-issues`            | `home-page-widget:scorecard/scorecard-jira-open-issues`            |
+| `home-page-widget:home/scorecard-github-open-prs`             | `home-page-widget:scorecard/scorecard-github-open-prs`             |
+| `home-page-widget:home/scorecard-github-filecheck-license`    | `home-page-widget:scorecard/scorecard-github-filecheck-license`    |
+| `home-page-widget:home/scorecard-github-filecheck-codeowners` | `home-page-widget:scorecard/scorecard-github-filecheck-codeowners` |
+| `home-page-widget:home/scorecard-github-open-prs-weighted`    | `home-page-widget:scorecard/scorecard-github-open-prs-weighted`    |
+
+Example:
+
+```diff
+  app:
+    extensions:
+-     - entity-content:catalog/entity-content-scorecard:
++     - entity-content:scorecard/entity-content-scorecard:
+          config:
+            allowedFilters:
+              - kind: component
+```
+
+Homepage widget **layout** config under `home-page-layout:home/dynamic-homepage-layout` (widget names like `AggregatedCardWithGithubOpenPrs`) is unchanged; only the extension IDs above move namespaces.
+
+**3. Legacy (OFS) imports**
+
+OFS components, the OFS plugin, and status icons are available only from `./legacy` (not re-exported from the main entry):
+
+```diff
+- import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard';
++ import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard/legacy';
+```
 
 #### Legacy app
 
@@ -147,7 +357,7 @@ The following modules and extensions are available from `@red-hat-developer-hub/
 2. Add the Scorecard tab to the entity overview in `packages/app-legacy/src/components/catalog/EntityPage.tsx` (or your legacy app's equivalent):
 
    ```tsx
-   import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard';
+   import { EntityScorecardContent } from '@red-hat-developer-hub/backstage-plugin-scorecard/legacy';
 
    const scorecardRoute = (
      <EntityLayout.Route path="/scorecard" title="Scorecard">
@@ -189,7 +399,17 @@ The following modules and extensions are available from `@red-hat-developer-hub/
    );
    ```
 
-3. Optionally use `ScorecardHomepageCard` and `scorecardTranslations` from the main and alpha packages as needed.
+3. (Optional) Add Scorecard homepage cards to your home page:
+
+   ```tsx
+   import { ScorecardHomepageCard } from '@red-hat-developer-hub/backstage-plugin-scorecard/legacy';
+
+   // GitHub open PRs
+   <ScorecardHomepageCard metricId="github.openPRs" />
+
+   // Jira open issues
+   <ScorecardHomepageCard metricId="jira.openIssues" />
+   ```
 
 4. Ensure the frontend can reach the Scorecard backend by configuring discovery in `app-config.yaml` (see discovery snippet under [NFS](#nfs-new-frontend-system--app)).
 
@@ -223,6 +443,71 @@ permission:
 
 - **app (NFS):** Open your Backstage app, go to **Catalog**, open an entity. The **Scorecard** tab appears when the entity matches your `allowedFilters` in app-config (or for all entities if the extension config is omitted).
 - **app-legacy:** Open your Backstage app, go to the entity overview from the catalog, and open the **Scorecard** tab to view and analyze scorecard metrics.
+
+### Homepage scorecard cards
+
+The plugin exports **`ScorecardHomepageCard`** from `@red-hat-developer-hub/backstage-plugin-scorecard/legacy` (see [`plugin.ts`](./src/plugin.ts)) for use on customizable home pages (for example **Dynamic Home Page** mount points such as `home.page/cards`).
+
+#### Backend configuration
+
+Define KPI ids and optional labels under **`scorecard.aggregationKPIs`** so each card can call **`GET /aggregations/<aggregationId>`** with a stable id. See [Scorecard backend README — Aggregation KPIs](../scorecard-backend/README.md#aggregation-kpis-homepage-and-get-aggregations). If you omit a KPI entry, use the **metric id** as `aggregationId` (default status-grouped aggregation).
+
+Supported scorecard aggregation types (see [Entity Aggregation — Aggregation types](../scorecard-backend/docs/aggregation.md#aggregation-types)):
+
+- [`statusGrouped`](../scorecard-backend/docs/aggregation.md#status-grouped-type) — counts per status (pie chart).
+- [`weightedStatusScore`](../scorecard-backend/docs/aggregation.md#weighted-status-score-type) — weighted portfolio health percentage (donut); requires `options.statusScores`.
+- Scalar types ([`sum`](../scorecard-backend/docs/aggregation.md#sum-type), [`average`](../scorecard-backend/docs/aggregation.md#average-type), [`max`](../scorecard-backend/docs/aggregation.md#max-type), [`min`](../scorecard-backend/docs/aggregation.md#min-type), [`count`](../scorecard-backend/docs/aggregation.md#count-type)) — roll up latest numeric metric values; number metrics only. Optional [`filter.status`](../scorecard-backend/docs/aggregation.md#status-filter-scalar-types) limits the rollup to a threshold status.
+
+**Scalar KPI types** (`sum`, `average`, `max`, `min`, `count`) are fully supported by **`GET /aggregations/:aggregationId`**, including optional **`filter.status`** and **`options.thresholds`**. The bundled **`ScorecardHomepageCard`** / **`AggregatedMetricCard`** only renders **`statusGrouped`** and **`weightedStatusScore`**; scalar types show an unsupported-type error panel. Build a custom card to display **`result.value`** and classify it with **`result.thresholds`**.
+
+**Terminology:** Scalar **`average`** (mean of numeric metric values) is distinct from the former weighted KPI type also named `average`, which was renamed to **`weightedStatusScore`**. Update app-config **`type: average`** entries for weighted health scoring to **`type: weightedStatusScore`** and migrate API consumers from **`result.averageScore`** to **`result.weightedStatusScore`**.
+
+The NFS example widget **`AggregatedCardWithGithubOpenPrs`** uses **`aggregationId: maxOpenPrs`** (scalar **`max`** KPI). Uncomment and configure **`maxOpenPrs`** under **`scorecard.aggregationKPIs`** in app-config to exercise the API; expect the unsupported-type panel until scalar homepage UI is added.
+
+#### Card props
+
+The supported model is **a single `aggregationId` string** whose value is either:
+
+- a **KPI key** from **`scorecard.aggregationKPIs`** in app-config (custom title, description, type, backing metric), or
+- a **metric id** when you have no KPI row for that card (default **statusGrouped** aggregation and metric-defined metadata).
+
+| Prop                | Status       | Description                                                                                                                          |
+| ------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **`aggregationId`** | **Use this** | KPI id from **`scorecard.aggregationKPIs`** _or_ **metric id** for the default case. Sent to **`GET /aggregations/:aggregationId`**. |
+| **`metricId`**      | **Legacy**   | Default aggregated card metadata: resolved as **`aggregationId ?? metricId`**.                                                       |
+
+**Migrating**
+
+- **Homepage `props`:** set **`aggregationId`** to your KPI key or metric id - drop **`metricId`** when your plugin version no longer requires it.
+- **Custom HTTP clients:** replace **`GET .../metrics/<metricId>/catalog/aggregations`** with **`GET .../aggregations/<aggregationId>`** (same segment value when you used the metric id before). Deprecation **`Link`** headers point at the successor URL.
+- **User-editable home cards:** if your **`settings.schema`** still exposes **`metricId`**, plan to rename or replace it with **`aggregationId`** using the same KPI vs metric-id rules once the frontend supports it.
+
+Example (Dynamic Home Page–style mount point): register **`ScorecardHomepageCard`** and pass **`props.aggregationId`** (and **`metricId`** only if you still run an older card API):
+
+```tsx
+import { ScorecardHomepageCard } from '@red-hat-developer-hub/backstage-plugin-scorecard/legacy';
+import { ComponentType } from 'react';
+
+// Inside your home page cards config:
+{
+  Component: ScorecardHomepageCard as ComponentType,
+  config: {
+    id: 'scorecard-jira-open-issues',
+    title: 'Scorecard: Jira open issues',
+    layouts: { /* … */ },
+    props: {
+      aggregationId: 'openIssuesKpi',
+      // metricId: 'jira.openIssues', // legacy only; remove when only aggregationId is supported
+    },
+  },
+},
+```
+
+#### Default labels and translations
+
+- The API returns **title** and **description** in **`metadata`** (from **`aggregationKPIs`** or from the metric definition).
+- The homepage card applies **plugin translations** when keys exist for **`metric.<id>.title`** and **`metric.<id>.description`**, where **`<id>`** is the value passed into the translation hook (**`aggregationId ?? metricId`**). If no translation key matches, the UI shows the **metadata** strings from the API.
+- **Custom `title` / `description` in `aggregationKPIs`** are returned as-is from the backend; add matching translation keys for **`metric.<yourKpiId>.*`** if you want those strings localized.
 
 ## Adding Translations
 
@@ -266,6 +551,8 @@ Translation keys follow this pattern:
 - **Metric titles**: `metric.{metric-id}.title`
 - **Metric descriptions**: `metric.{metric-id}.description`
 
+Use the same pattern with a **KPI id** as `{metric-id}` when localizing **`aggregationKPIs`** titles (for example **`metric.openIssuesKpi.title`**).
+
 ### 3. Fallback Behavior
 
 If a translation key is not found, the plugin will automatically fall back to:
@@ -278,7 +565,7 @@ If a translation key is not found, the plugin will automatically fall back to:
 ```typescript
 // In ref.ts
 metric: {
-  'github.open_prs': {
+  'github.openPRs': {
     title: 'GitHub open PRs',
     description: 'Current count of open Pull Requests for a given GitHub repository',
   },

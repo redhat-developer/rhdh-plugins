@@ -14,4 +14,22 @@
  * limitations under the License.
  */
 
+import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
+import { augmentTranslationRef } from './ref';
+
+/**
+ * Translation Resource for the Augment plugin.
+ * @public
+ */
+export const augmentTranslationsResource = createTranslationResource({
+  ref: augmentTranslationRef,
+  translations: {
+    de: () => import('./de'),
+    es: () => import('./es'),
+    fr: () => import('./fr'),
+    it: () => import('./it'),
+    ja: () => import('./ja'),
+  },
+});
+
 export { augmentTranslationRef, augmentMessages } from './ref';

@@ -25,3 +25,29 @@ export const getErrorObject = (err: unknown): Error => {
   }
   return new Error('Unexpected error');
 };
+
+const SAML_SSO_INDICATORS = [
+  'saml sso session expired',
+  'x-github-sso',
+  're-authorize at:',
+  'saml session',
+  'saml re-authorization',
+  'organization saml enforcement',
+  'grant your oauth token access',
+  'saml enforcement',
+];
+
+export const isSamlSsoError = (error: Error | undefined): boolean => {
+  if (!error?.message) return false;
+  const message = error.message.toLowerCase();
+  if (!message.includes('github')) return false;
+  return SAML_SSO_INDICATORS.some(indicator => message.includes(indicator));
+};
+
+export const extractSsoReauthorizeUrl = (
+  error: Error | undefined,
+): string | undefined => {
+  if (!error?.message) return undefined;
+  const match = error.message.match(/Re-authorize at:\s*(\S+)/i);
+  return match?.[1];
+};

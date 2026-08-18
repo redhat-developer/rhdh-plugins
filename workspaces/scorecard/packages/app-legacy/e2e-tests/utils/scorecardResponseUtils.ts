@@ -13,11 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { DEFAULT_NUMBER_THRESHOLDS } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+// Inline default thresholds for e2e mocks (matches scorecard-common DEFAULT_NUMBER_THRESHOLDS)
+const DEFAULT_NUMBER_THRESHOLDS = {
+  rules: [
+    { key: 'success', expression: '<10' },
+    { key: 'warning', expression: '10-50' },
+    { key: 'error', expression: '>50' },
+  ],
+};
 
 export const customScorecardResponse = [
   {
-    id: 'github.open_prs',
+    id: 'github.openPRs',
     status: 'success',
     metadata: {
       title: 'GitHub open PRs',
@@ -43,7 +52,7 @@ export const customScorecardResponse = [
     },
   },
   {
-    id: 'jira.open_issues',
+    id: 'jira.openIssues',
     status: 'success',
     metadata: {
       title: 'Jira open blocking tickets',
@@ -73,7 +82,7 @@ export const customScorecardResponse = [
 export const emptyScorecardResponse = [];
 
 const jiraOpenIssues = {
-  id: 'jira.open_issues',
+  id: 'jira.openIssues',
   status: 'success',
   metadata: {
     title: 'Jira open blocking tickets',
@@ -111,7 +120,7 @@ const jiraOpenIssues = {
 export const unavailableMetricResponse = [
   jiraOpenIssues,
   {
-    id: 'github.open_prs',
+    id: 'github.openPRs',
     status: 'error',
     metadata: {
       title: 'GitHub open PRs',
@@ -151,7 +160,7 @@ export const unavailableMetricResponse = [
 export const invalidThresholdResponse = [
   jiraOpenIssues,
   {
-    id: 'github.open_prs',
+    id: 'github.openPRs',
     status: 'success',
     metadata: {
       title: 'GitHub open PRs',
@@ -166,15 +175,343 @@ export const invalidThresholdResponse = [
       thresholdResult: {
         status: 'error',
         error:
-          "ThresholdConfigFormatError: Invalid threshold annotation 'scorecard.io/github.open_prs.thresholds.rules.warning: 10--15' in entity 'component:default/all-scorecards-service': Invalid threshold expression: \"10--15\".",
+          "ThresholdConfigFormatError: Invalid threshold annotation 'scorecard.io/github.openPRs.thresholds.rules.warning: 10--15' in entity 'component:default/all-scorecards-service': Invalid threshold expression: \"10--15\".",
       },
     },
   },
 ];
 
-// Aggregated scorecard responses (15 GitHub entities, 10 Jira entities)
+export const notAllowedAggregationErrorBody = {
+  error: { name: 'NotAllowedError', message: 'Permission denied' },
+};
+
+export const openPrsKpiMetadataResponse = {
+  title: 'GitHub open PRs',
+  description:
+    'Current count of open Pull Requests for a given GitHub repository.',
+  type: 'number',
+  history: true,
+  aggregationType: 'statusGrouped',
+};
+
+export const openIssuesKpiMetadataResponse = {
+  title: 'Jira open blocking tickets',
+  description:
+    'Highlights the number of critical, blocking issues that are currently open in Jira.',
+  type: 'number',
+  history: true,
+  aggregationType: 'statusGrouped',
+};
+
+/** Matches `scorecard.aggregationKPIs.gitHubOpenPrsWeightedKpi` in app-config.yaml */
+export const openPrsWeightedKpiMetadataResponse = {
+  title: 'GitHub Open PRs (weighted health)',
+  description:
+    'Weighted health score for open PRs by threshold status across your entities.',
+  type: 'number',
+  history: true,
+  aggregationType: aggregationTypes.weightedStatusScore,
+};
+
+/**
+ * WeightedStatusScore KPI: 3×100 + 5×40 + 1×15 + 1×0 = 515 weighted sum; max 100×10 entities → 51.5% score.
+ * Includes `critical` as a non-threshold status name (no `thresholds.critical` copy).
+ * Colors align with aggregation KPI `options.thresholds` warning band (30–79%) in app-config.
+ */
+export const openPrsWeightedAggregatedResponse = {
+  id: 'github.openPRs',
+  status: 'success' as const,
+  metadata: {
+    ...openPrsWeightedKpiMetadataResponse,
+  },
+  result: {
+    values: [
+      { count: 3, name: 'success', score: 100 },
+      { count: 5, name: 'warning', score: 40 },
+      { count: 1, name: 'error', score: 15 },
+      { count: 1, name: 'critical', score: 0 },
+    ],
+    total: 10,
+    entitiesConsidered: 10,
+    calculationErrorCount: 0,
+    timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    weightedStatusScore: 51.5,
+    weightedStatusSum: 515,
+    weightedStatusMaxPossible: 1000,
+    aggregationChartDisplayColor: 'rgb(224, 189, 108)',
+  },
+};
+
+export const gitHubWeightedPartiallyAggregatedResponse = {
+  ...openPrsWeightedAggregatedResponse,
+  metadata: {
+    ...openPrsWeightedKpiMetadataResponse,
+  },
+  result: {
+    ...openPrsWeightedAggregatedResponse.result,
+    values: [
+      { count: 1, name: 'success', score: 100 },
+      { count: 4, name: 'warning', score: 40 },
+      { count: 0, name: 'error', score: 15 },
+      { count: 1, name: 'critical', score: 0 },
+    ],
+    total: 8,
+    entitiesConsidered: 6,
+    calculationErrorCount: 2,
+    weightedStatusScore: 46.7,
+    weightedStatusSum: 466.67,
+  },
+};
+
+export const emptyOpenPrsWeightedAggregatedResponse = {
+  id: 'github.openPRs',
+  status: 'success' as const,
+  metadata: {
+    ...openPrsWeightedKpiMetadataResponse,
+  },
+  result: {
+    total: 0,
+    values: [
+      { count: 0, name: 'success', score: 100 },
+      { count: 0, name: 'warning', score: 40 },
+      { count: 0, name: 'error', score: 0 },
+    ],
+    timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    weightedStatusScore: 0,
+    weightedStatusSum: 0,
+    weightedStatusMaxPossible: 0,
+    aggregationChartDisplayColor: '#6bb300',
+  },
+};
+
+/** Deliberately unknown `aggregationType` for UnsupportedAggregationType UI tests. */
+export const openPrsWeightedUnsupportedAggregationResponse = {
+  id: 'github.openPRs',
+  status: 'success' as const,
+  metadata: {
+    ...openPrsWeightedKpiMetadataResponse,
+    aggregationType: 'customUnknownAggregationKind',
+  },
+  result: openPrsWeightedAggregatedResponse.result,
+};
+
+// Aggregated scorecard mocks: 10 GitHub entities, 10 Jira entities (totals in `result`)
+/** Response for GET /api/scorecard/metrics?metricIds=jira.openIssues (metric metadata only). */
+export const jiraMetricMetadataResponse = {
+  metrics: [
+    {
+      id: 'jira.openIssues',
+      title: 'Jira open blocking tickets',
+      description:
+        'Highlights the number of issues that are currently open in Jira.',
+      type: 'number',
+      history: true,
+    },
+  ],
+};
+
+// SonarQube scorecard responses
+
+function sonarqubeNumberMetric(
+  id: string,
+  title: string,
+  description: string,
+  value: number,
+  thresholdRules: Array<{ key: string; expression: string }>,
+  evaluation: string,
+) {
+  return {
+    id,
+    status: 'success',
+    metadata: { title, description, type: 'number', history: true },
+    result: {
+      value,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: { rules: thresholdRules },
+        status: 'success',
+        evaluation,
+      },
+    },
+  };
+}
+
+const ratingRules = [
+  { key: 'a', expression: '<2' },
+  { key: 'b', expression: '2-3' },
+  { key: 'c', expression: '>3' },
+  { key: 'd', expression: '>3' },
+  { key: 'e', expression: '>3' },
+];
+
+const securityRules = [
+  { key: 'success', expression: '==0' },
+  { key: 'error', expression: '>=1' },
+];
+
+const issueRules = [
+  { key: 'success', expression: '<1' },
+  { key: 'warning', expression: '1-5' },
+  { key: 'error', expression: '>5' },
+];
+
+export const sonarqubeScorecardResponse = [
+  {
+    id: 'sonarqube.qualityGate',
+    status: 'success',
+    metadata: {
+      title: 'SonarQube Quality Gate Status',
+      description: 'Whether the project passes its SonarQube quality gate.',
+      type: 'boolean',
+      history: true,
+    },
+    result: {
+      value: true,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: {
+          rules: [
+            { key: 'success', expression: '==true' },
+            { key: 'error', expression: '==false' },
+          ],
+        },
+        status: 'success',
+        evaluation: 'success',
+      },
+    },
+  },
+  sonarqubeNumberMetric(
+    'sonarqube.openIssues',
+    'SonarQube Open Issues',
+    'Count of open issues (OPEN, CONFIRMED, REOPENED) in SonarQube.',
+    3,
+    [
+      { key: 'success', expression: '<1' },
+      { key: 'warning', expression: '1-10' },
+      { key: 'error', expression: '>10' },
+    ],
+    'warning',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.securityRating',
+    'SonarQube Security Rating',
+    'SonarQube security rating.',
+    1,
+    ratingRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.securityIssues',
+    'SonarQube Security Issues',
+    'Count of open security vulnerabilities in SonarQube.',
+    0,
+    securityRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.securityReviewRating',
+    'SonarQube Security Review Rating',
+    'SonarQube security review rating.',
+    1,
+    ratingRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.securityHotspots',
+    'SonarQube Security Hotspots',
+    'Count of security hotspots to review in SonarQube.',
+    2,
+    issueRules,
+    'warning',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.reliabilityRating',
+    'SonarQube Reliability Rating',
+    'SonarQube reliability rating.',
+    1,
+    ratingRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.reliabilityIssues',
+    'SonarQube Reliability Issues',
+    'Count of open bugs in SonarQube.',
+    0,
+    issueRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.maintainabilityRating',
+    'SonarQube Maintainability Rating',
+    'SonarQube maintainability rating.',
+    1,
+    ratingRules,
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.maintainabilityIssues',
+    'SonarQube Maintainability Issues',
+    'Count of open code smells in SonarQube.',
+    12,
+    [
+      { key: 'success', expression: '<10' },
+      { key: 'warning', expression: '10-50' },
+      { key: 'error', expression: '>50' },
+    ],
+    'warning',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.codeCoverage',
+    'SonarQube Code Coverage',
+    'Overall code coverage percentage in SonarQube.',
+    82.5,
+    [
+      { key: 'success', expression: '>80' },
+      { key: 'warning', expression: '50-80' },
+      { key: 'error', expression: '<50' },
+    ],
+    'success',
+  ),
+  sonarqubeNumberMetric(
+    'sonarqube.codeDuplications',
+    'SonarQube Code Duplications',
+    'Percentage of duplicated lines in SonarQube.',
+    3.2,
+    [
+      { key: 'success', expression: '<3' },
+      { key: 'warning', expression: '3-10' },
+      { key: 'error', expression: '>10' },
+    ],
+    'warning',
+  ),
+];
+
+export const sonarqubeFailedQualityGateResponse = [
+  {
+    ...sonarqubeScorecardResponse[0],
+    result: {
+      value: false,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: {
+          rules: [
+            { key: 'success', expression: '==true' },
+            { key: 'error', expression: '==false' },
+          ],
+        },
+        status: 'success',
+        evaluation: 'error',
+      },
+    },
+  },
+  ...sonarqubeScorecardResponse.slice(1),
+];
+
+// Aggregated scorecard mocks: 10 GitHub entities, 10 Jira entities (totals in `result`)
 export const githubAggregatedResponse = {
-  id: 'github.open_prs',
+  id: 'github.openPRs',
   status: 'success',
   metadata: {
     title: 'GitHub open PRs',
@@ -182,28 +519,68 @@ export const githubAggregatedResponse = {
       'Current count of open Pull Requests for a given GitHub repository.',
     type: 'number',
     history: true,
+    aggregationType: 'statusGrouped',
   },
   result: {
     values: [
-      { count: 5, name: 'success' },
-      { count: 7, name: 'warning' },
-      { count: 3, name: 'error' },
+      { count: 3, name: 'success' },
+      { count: 5, name: 'warning' },
+      { count: 2, name: 'error' },
     ],
-    total: 15,
+    total: 10,
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 10,
+    calculationErrorCount: 0,
+  },
+};
+
+export const githubCustomAggregatedResponse = {
+  ...githubAggregatedResponse,
+  metadata: {
+    ...githubAggregatedResponse.metadata,
+    title: 'GitHub Open PRs KPI',
+    description:
+      'This KPI provides information about GitHub Open PRs grouped by status',
+  },
+  result: {
+    ...githubAggregatedResponse.result,
+    values: [
+      { count: 2, name: 'success' },
+      { count: 1, name: 'warning' },
+      { count: 5, name: 'error' },
+    ],
+    total: 8,
+    timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 8,
+    calculationErrorCount: 0,
+  },
+};
+
+export const gitHubPartiallyAggregatedResponse = {
+  ...githubCustomAggregatedResponse,
+  result: {
+    ...githubCustomAggregatedResponse.result,
+    values: [
+      { count: 1, name: 'success' },
+      { count: 3, name: 'warning' },
+      { count: 1, name: 'error' },
+    ],
+    calculationErrorCount: 3,
   },
 };
 
 export const jiraAggregatedResponse = {
-  id: 'jira.open_issues',
+  id: 'jira.openIssues',
   status: 'success',
   metadata: {
     title: 'Jira open blocking tickets',
     description:
-      'Highlights the number of issues that are currently open in Jira.',
+      'Highlights the number of critical, blocking issues that are currently open in Jira.',
     type: 'number',
     history: true,
+    aggregationType: 'statusGrouped',
   },
   result: {
     values: [
@@ -214,11 +591,13 @@ export const jiraAggregatedResponse = {
     total: 10,
     timestamp: '2026-01-24T14:10:32.776Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 10,
+    calculationErrorCount: 0,
   },
 };
 
 export const emptyJiraAggregatedResponse = {
-  id: 'jira.open_issues',
+  id: 'jira.openIssues',
   status: 'success',
   metadata: {
     title: 'Jira open blocking tickets',
@@ -226,6 +605,7 @@ export const emptyJiraAggregatedResponse = {
       'Highlights the number of critical, blocking issues that are currently open in Jira.',
     type: 'number',
     history: true,
+    aggregationType: 'statusGrouped',
   },
   result: {
     total: 0,
@@ -236,11 +616,13 @@ export const emptyJiraAggregatedResponse = {
     ],
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 0,
+    calculationErrorCount: 0,
   },
 };
 
 export const emptyGithubAggregatedResponse = {
-  id: 'github.open_prs',
+  id: 'github.openPRs',
   status: 'success',
   metadata: {
     title: 'GitHub open PRs',
@@ -248,6 +630,7 @@ export const emptyGithubAggregatedResponse = {
       'Current count of open Pull Requests for a given GitHub repository.',
     type: 'number',
     history: true,
+    aggregationType: 'statusGrouped',
   },
   result: {
     total: 0,
@@ -258,5 +641,292 @@ export const emptyGithubAggregatedResponse = {
     ],
     timestamp: '2026-01-24T14:10:32.858Z',
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 0,
+    calculationErrorCount: 0,
   },
 };
+
+/** Mock response for GET .../api/scorecard/metrics/github.openPRs/catalog/aggregations/entities (10 entities, in sync with githubAggregatedResponse) */
+export const githubEntitiesDrillDownResponse = {
+  metricId: 'github.openPRs',
+  metricMetadata: {
+    title: 'GitHub open PRs',
+    description:
+      'Current count of open Pull Requests for a given GitHub repository.',
+    type: 'number',
+  },
+  entities: [
+    {
+      entityRef: 'component:default/all-scorecards-service',
+      entityNamespace: 'default',
+      entityName: 'all-scorecards-service',
+      entityKind: 'Component',
+      owner: 'user:development/guest',
+      metricValue: 46,
+      timestamp: '2026-03-12T08:09:29.732Z',
+      status: 'warning',
+    },
+    {
+      entityRef: 'component:default/red-hat-developer-hub',
+      entityNamespace: 'default',
+      entityName: 'red-hat-developer-hub',
+      entityKind: 'Component',
+      owner: 'group:default/red-hat',
+      metricValue: 50,
+      timestamp: '2026-03-12T08:09:29.663Z',
+      status: 'warning',
+    },
+    {
+      entityRef: 'component:default/github-scorecard-only-service',
+      entityNamespace: 'default',
+      entityName: 'github-scorecard-only-service',
+      entityKind: 'Component',
+      owner: 'group:development/guests',
+      metricValue: 46,
+      timestamp: '2026-03-12T08:09:29.652Z',
+      status: 'warning',
+    },
+    {
+      entityRef: 'component:default/all-scorecards-service-different-owner',
+      entityNamespace: 'default',
+      entityName: 'all-scorecards-service-different-owner',
+      entityKind: 'Component',
+      owner: 'group:default/rhdh-team',
+      metricValue: 46,
+      timestamp: '2026-03-12T08:09:29.630Z',
+      status: 'warning',
+    },
+    {
+      entityRef: 'component:default/backend-api',
+      entityNamespace: 'default',
+      entityName: 'backend-api',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: 12,
+      timestamp: '2026-03-12T07:00:00.000Z',
+      status: 'success',
+    },
+    {
+      entityRef: 'component:default/frontend-app',
+      entityNamespace: 'default',
+      entityName: 'frontend-app',
+      entityKind: 'Component',
+      owner: 'group:default/frontend',
+      metricValue: 28,
+      timestamp: '2026-03-12T06:45:00.000Z',
+      status: 'warning',
+    },
+    {
+      entityRef: 'component:default/auth-service',
+      entityNamespace: 'default',
+      entityName: 'auth-service',
+      entityKind: 'Component',
+      owner: 'group:default/security',
+      metricValue: 8,
+      timestamp: '2026-03-12T06:30:00.000Z',
+      status: 'success',
+    },
+    {
+      entityRef: 'component:default/notifications-service',
+      entityNamespace: 'default',
+      entityName: 'notifications-service',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: 95,
+      timestamp: '2026-03-12T06:15:00.000Z',
+      status: 'error',
+    },
+    {
+      entityRef: 'component:default/search-indexer',
+      entityNamespace: 'default',
+      entityName: 'search-indexer',
+      entityKind: 'Component',
+      owner: 'group:default/data',
+      metricValue: 22,
+      timestamp: '2026-03-12T06:00:00.000Z',
+      status: 'warning',
+    },
+    {
+      entityRef: 'component:default/payment-gateway',
+      entityNamespace: 'default',
+      entityName: 'payment-gateway',
+      entityKind: 'Component',
+      owner: 'group:default/finance',
+      metricValue: 3,
+      timestamp: '2026-03-12T05:45:00.000Z',
+      status: 'success',
+    },
+  ],
+  pagination: {
+    page: 1,
+    pageSize: 10,
+    total: 10,
+    totalPages: 1,
+    isCapped: false,
+  },
+  entityHealth: {
+    totalEntities: 10,
+    calculationErrorCount: 0,
+    countsArePartial: false,
+  },
+};
+
+/** Mock response for GET .../api/scorecard/metrics/jira.openIssues/catalog/aggregations/entities (in sync with jiraAggregatedResponse) */
+export const jiraEntitiesDrillDownResponse = {
+  metricId: 'jira.openIssues',
+  metricMetadata: {
+    title: 'Jira open blocking tickets',
+    description:
+      'Highlights the number of issues that are currently open in Jira.',
+    type: 'number',
+  },
+  entities: [
+    {
+      entityRef: 'component:default/platform-api',
+      entityNamespace: 'default',
+      entityName: 'platform-api',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: 15,
+      timestamp: '2026-03-12T08:00:00.000Z',
+      status: 'error',
+    },
+    {
+      entityRef: 'component:default/backend-svc',
+      entityNamespace: 'default',
+      entityName: 'backend-svc',
+      entityKind: 'Component',
+      owner: 'group:default/platform',
+      metricValue: 2,
+      timestamp: '2026-03-12T07:00:00.000Z',
+      status: 'success',
+    },
+    {
+      entityRef: 'component:default/frontend-svc',
+      entityNamespace: 'default',
+      entityName: 'frontend-svc',
+      entityKind: 'Component',
+      owner: 'group:default/frontend',
+      metricValue: 12,
+      timestamp: '2026-03-12T06:00:00.000Z',
+      status: 'warning',
+    },
+    {
+      entityRef: 'component:default/auth-svc',
+      entityNamespace: 'default',
+      entityName: 'auth-svc',
+      entityKind: 'Component',
+      owner: 'group:default/security',
+      metricValue: 8,
+      timestamp: '2026-03-12T05:00:00.000Z',
+      status: 'warning',
+    },
+  ],
+  pagination: {
+    page: 1,
+    pageSize: 10,
+    total: 4,
+    totalPages: 1,
+    isCapped: false,
+  },
+  entityHealth: {
+    totalEntities: 4,
+    calculationErrorCount: 0,
+    countsArePartial: false,
+  },
+};
+
+/** Mock response for Jira entities drill-down when aggregation has no data (empty list). */
+export const jiraEntitiesDrillDownNoDataResponse = {
+  metricId: 'jira.openIssues',
+  metricMetadata: {
+    title: 'Jira open blocking tickets',
+    description:
+      'Highlights the number of issues that are currently open in Jira.',
+    type: 'number',
+  },
+  entities: [],
+  pagination: {
+    page: 1,
+    pageSize: 5,
+    total: 0,
+    totalPages: 0,
+    isCapped: false,
+  },
+  entityHealth: {
+    totalEntities: 0,
+    calculationErrorCount: 0,
+    countsArePartial: false,
+  },
+};
+
+export const fileCheckScorecardResponse = [
+  {
+    id: 'filecheck.readme',
+    status: 'success',
+    metadata: {
+      title: 'GitHub File: README.md',
+      description: 'Checks if README.md exists in the repository.',
+      type: 'boolean',
+      history: true,
+    },
+    result: {
+      value: true,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: {
+          rules: [
+            {
+              key: 'exist',
+              expression: '==true',
+              color: 'success.main',
+              icon: 'scorecardSuccessStatusIcon',
+            },
+            {
+              key: 'missing',
+              expression: '==false',
+              color: 'error.main',
+              icon: 'scorecardErrorStatusIcon',
+            },
+          ],
+        },
+        status: 'success',
+        evaluation: 'exist',
+      },
+    },
+  },
+  {
+    id: 'filecheck.codeowners',
+    status: 'success',
+    metadata: {
+      title: 'GitHub File: CODEOWNERS',
+      description: 'Checks if CODEOWNERS exists in the repository.',
+      type: 'boolean',
+      history: true,
+    },
+    result: {
+      value: false,
+      timestamp: '2025-09-08T09:08:55.629Z',
+      thresholdResult: {
+        definition: {
+          rules: [
+            {
+              key: 'exist',
+              expression: '==true',
+              color: 'success.main',
+              icon: 'scorecardSuccessStatusIcon',
+            },
+            {
+              key: 'missing',
+              expression: '==false',
+              color: 'error.main',
+              icon: 'scorecardErrorStatusIcon',
+            },
+          ],
+        },
+        status: 'success',
+        evaluation: 'missing',
+      },
+    },
+  },
+];

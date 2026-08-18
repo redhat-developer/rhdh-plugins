@@ -1,0 +1,259 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import {
+  ErrorPanel,
+  SignInPage as CCSignInPage,
+  ProxiedSignInPage,
+  type SignInProviderConfig,
+} from '@backstage/core-components';
+import {
+  atlassianAuthApiRef,
+  bitbucketAuthApiRef,
+  bitbucketServerAuthApiRef,
+  configApiRef,
+  githubAuthApiRef,
+  gitlabAuthApiRef,
+  googleAuthApiRef,
+  microsoftAuthApiRef,
+  oktaAuthApiRef,
+  oneloginAuthApiRef,
+  useApi,
+  type SignInPageProps,
+} from '@backstage/core-plugin-api';
+import { useTranslationRef } from '@backstage/core-plugin-api/alpha';
+import Typography from '@mui/material/Typography';
+
+import {
+  auth0AuthApiRef,
+  keycloakAuthApiRef,
+  oidcAuthApiRef,
+  pingfederateAuthApiRef,
+  samlAuthApiRef,
+} from '../AuthApiRefs';
+import { signInTranslationRef } from '../translations/signIn';
+
+const DEFAULT_PROVIDER = 'github';
+
+const createProviders = (t: (key: string, params?: any) => string) =>
+  new Map<string, SignInProviderConfig | string>([
+    [
+      'auth0',
+      {
+        id: 'auth0-auth-provider',
+        title: t('signIn.providers.auth0.title'),
+        message: t('signIn.providers.auth0.message'),
+        apiRef: auth0AuthApiRef,
+      },
+    ],
+    [
+      'atlassian',
+      {
+        id: 'atlassian-auth-provider',
+        title: t('signIn.providers.atlassian.title'),
+        message: t('signIn.providers.atlassian.message'),
+        apiRef: atlassianAuthApiRef,
+      },
+    ],
+    [
+      'microsoft',
+      {
+        id: 'microsoft-auth-provider',
+        title: t('signIn.providers.microsoft.title'),
+        message: t('signIn.providers.microsoft.message'),
+        apiRef: microsoftAuthApiRef,
+      },
+    ],
+    ['azure-easyauth', 'azure-easyauth'],
+    [
+      'bitbucket',
+      {
+        id: 'bitbucket-auth-provider',
+        title: t('signIn.providers.bitbucket.title'),
+        message: t('signIn.providers.bitbucket.message'),
+        apiRef: bitbucketAuthApiRef,
+      },
+    ],
+    [
+      'bitbucketServer',
+      {
+        id: 'bitbucket-server-auth-provider',
+        title: t('signIn.providers.bitbucketServer.title'),
+        message: t('signIn.providers.bitbucketServer.message'),
+        apiRef: bitbucketServerAuthApiRef,
+      },
+    ],
+    ['cfaccess', 'cfaccess'],
+    [
+      'github',
+      {
+        id: 'github-auth-provider',
+        title: t('signIn.providers.github.title'),
+        message: t('signIn.providers.github.message'),
+        apiRef: githubAuthApiRef,
+      },
+    ],
+    [
+      'gitlab',
+      {
+        id: 'gitlab-auth-provider',
+        title: t('signIn.providers.gitlab.title'),
+        message: t('signIn.providers.gitlab.message'),
+        apiRef: gitlabAuthApiRef,
+      },
+    ],
+    [
+      'google',
+      {
+        id: 'google-auth-provider',
+        title: t('signIn.providers.google.title'),
+        message: t('signIn.providers.google.message'),
+        apiRef: googleAuthApiRef,
+      },
+    ],
+    ['gcp-iap', 'gcp-iap'],
+    [
+      'oidc',
+      {
+        id: 'oidc-auth-provider',
+        title: t('signIn.providers.oidc.title'),
+        message: t('signIn.providers.oidc.message'),
+        apiRef: oidcAuthApiRef,
+      },
+    ],
+    [
+      'keycloak',
+      {
+        id: 'keycloak-auth-provider',
+        title: t('signIn.providers.keycloak.title'),
+        message: t('signIn.providers.keycloak.message'),
+        apiRef: keycloakAuthApiRef,
+      },
+    ],
+    [
+      'pingfederate',
+      {
+        id: 'pingfederate-auth-provider',
+        title: t('signIn.providers.pingfederate.title'),
+        message: t('signIn.providers.pingfederate.message'),
+        apiRef: pingfederateAuthApiRef,
+      },
+    ],
+    [
+      'okta',
+      {
+        id: 'okta-auth-provider',
+        title: t('signIn.providers.okta.title'),
+        message: t('signIn.providers.okta.message'),
+        apiRef: oktaAuthApiRef,
+      },
+    ],
+    ['oauth2Proxy', 'oauth2Proxy'],
+    [
+      'onelogin',
+      {
+        id: 'onelogin-auth-provider',
+        title: t('signIn.providers.onelogin.title'),
+        message: t('signIn.providers.onelogin.message'),
+        apiRef: oneloginAuthApiRef,
+      },
+    ],
+    [
+      'saml',
+      {
+        id: 'saml-auth-provider',
+        title: t('signIn.providers.saml.title'),
+        message: t('signIn.providers.saml.message'),
+        apiRef: samlAuthApiRef,
+      },
+    ],
+  ]);
+
+/**
+ * RHDH multi-provider sign-in page (mirrors classic app `SignInPage` behavior for NFS).
+ *
+ * @alpha
+ */
+export function SignInPage(props: SignInPageProps): React.JSX.Element {
+  const configApi = useApi(configApiRef);
+  const { t } = useTranslationRef(signInTranslationRef);
+  const authEnvironment = configApi.getOptionalString('auth.environment');
+  if (!authEnvironment?.trim()) {
+    return (
+      <ErrorPanel
+        error={new Error(t('signIn.config.missingAuthEnvironment.error'))}
+        title={t('signIn.config.missingAuthEnvironment.panelTitle')}
+      >
+        <Typography variant="body2" component="div">
+          {t('signIn.config.missingAuthEnvironment.description', {
+            replace: {
+              authEnvKey: <code>auth.environment</code>,
+              devEnv: <code>development</code>,
+              prodEnv: <code>production</code>,
+            },
+          })}
+        </Typography>
+      </ErrorPanel>
+    );
+  }
+  const isDevEnv = authEnvironment === 'development';
+
+  const signInPage = configApi.getOptional<string | string[]>('signInPage');
+  let providerNames: string[];
+  if (signInPage === undefined) {
+    const fromAuth =
+      configApi
+        .getOptionalConfig('auth.providers')
+        ?.keys()
+        ?.filter(providerId => providerId !== 'guest') ?? [];
+    providerNames = fromAuth.length > 0 ? fromAuth : [DEFAULT_PROVIDER];
+  } else {
+    providerNames = Array.isArray(signInPage) ? signInPage : [signInPage];
+  }
+
+  const providers = createProviders(t);
+
+  const providerConfigs = providerNames
+    .map(name => providers.get(name))
+    .filter(
+      (config): config is SignInProviderConfig | string => config !== undefined,
+    );
+
+  if (providerConfigs.length === 0) {
+    const defaultProvider = providers.get(DEFAULT_PROVIDER);
+    if (defaultProvider) providerConfigs.push(defaultProvider);
+  }
+
+  if (providerConfigs.some(config => typeof config === 'string')) {
+    const proxiedProvider = providerConfigs.find(
+      config => typeof config === 'string',
+    ) as string;
+    return <ProxiedSignInPage {...props} provider={proxiedProvider} />;
+  }
+
+  const providerList = isDevEnv
+    ? ['guest' as const, ...(providerConfigs as SignInProviderConfig[])]
+    : (providerConfigs as SignInProviderConfig[]);
+
+  return (
+    <CCSignInPage
+      {...props}
+      title={t('signIn.page.title')}
+      align="center"
+      providers={providerList}
+    />
+  );
+}

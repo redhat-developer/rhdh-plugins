@@ -22,7 +22,6 @@ import AlertTitle from '@mui/material/AlertTitle';
 import Table from '@mui/material/Table';
 import TableContainer from '@mui/material/TableContainer';
 import TablePagination from '@mui/material/TablePagination';
-import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 
 import { useRepositories } from '../../hooks';
@@ -45,22 +44,20 @@ import { AddRepositoriesDrawer } from './AddRepositoriesDrawer';
 import { RepositoriesHeader } from './RepositoriesHeader';
 import { RepositoriesTableBody } from './RepositoriesTableBody';
 
-const useStyles = makeStyles(() => ({
-  repositoriesTableFixedColumns: {
-    '& th:nth-child(1), & td:nth-child(1)': {
-      width: '20%',
-    },
-    '& th:nth-child(2), & td:nth-child(2)': {
-      width: '30%',
-    },
-    '& th:nth-child(3), & td:nth-child(3)': {
-      width: '20%',
-    },
-    '& th:nth-child(4), & td:nth-child(4)': {
-      width: '30%',
-    },
+const repositoriesTableFixedColumnsSx = {
+  '& th:nth-child(1), & td:nth-child(1)': {
+    width: '20%',
   },
-}));
+  '& th:nth-child(2), & td:nth-child(2)': {
+    width: '30%',
+  },
+  '& th:nth-child(3), & td:nth-child(3)': {
+    width: '20%',
+  },
+  '& th:nth-child(4), & td:nth-child(4)': {
+    width: '30%',
+  },
+};
 
 export const RepositoriesTable = ({
   searchString,
@@ -79,7 +76,6 @@ export const RepositoriesTable = ({
   isApprovalToolGitlab?: boolean;
   updateSelectedReposInDrawer?: (repos: AddedRepositories) => void;
 }) => {
-  const classes = useStyles();
   const { t } = useTranslation();
   const { setFieldValue, values, setStatus } =
     useFormikContext<AddRepositoriesFormValues>();
@@ -92,12 +88,9 @@ export const RepositoriesTable = ({
   const [localPage, setLocalPage] = useState(0);
   const [drawerPage, setDrawerPage] = useState(0);
 
-  const { loading, data, error } = useRepositories({
+  const { loading, data, error, loginRejected } = useRepositories({
     showOrganizations,
     orgName: drawerOrganization,
-    page: (drawerOrganization ? drawerPage : localPage) + 1,
-    querySize: rowsPerPage,
-    searchString,
     approvalTool: values.approvalTool,
   });
 
@@ -135,12 +128,21 @@ export const RepositoriesTable = ({
       ? evaluateRowForRepo(tableData, values.repositories)
       : evaluateRowForOrg(tableData, values.repositories);
 
+    if (searchString) {
+      filteredRows = filteredRows?.filter(row => {
+        const targetToSearch = showOrganizations ? row.orgName : row.repoName;
+        return targetToSearch
+          ?.toLowerCase()
+          .includes(searchString.toLowerCase());
+      });
+    }
+
     filteredRows = [...(filteredRows || [])]?.sort(
       getComparator('asc', 'repoName'),
     );
 
     return filteredRows;
-  }, [tableData, values?.repositories, showOrganizations]);
+  }, [tableData, values?.repositories, showOrganizations, searchString]);
 
   const updateSelectedRepositories = useCallback(
     (newSelected: AddedRepositories) => {
@@ -153,14 +155,16 @@ export const RepositoriesTable = ({
   );
 
   const effectivePage = drawerOrganization ? drawerPage : page || 0;
-  // Avoid a layout jump when reaching the last page with empty rows.
-  const emptyRows =
-    effectivePage > 0 ? Math.max(0, rowsPerPage - tableData.length) : 0;
+
+  const paginatedData = useMemo(() => {
+    const startIndex = effectivePage * rowsPerPage;
+    return filteredData?.slice(startIndex, startIndex + rowsPerPage) || [];
+  }, [filteredData, effectivePage, rowsPerPage]);
 
   const handleClickAllForRepositoriesTable = (drawer?: boolean) => {
     let newSelectedRows: AddedRepositories = { ...selected };
 
-    const rowsEligibleForSelection = filteredData.filter(
+    const rowsEligibleForSelection = paginatedData.filter(
       r => !values.excludedRepositories[r.id],
     );
     const isAllSelected = rowsEligibleForSelection.every(
@@ -269,8 +273,8 @@ export const RepositoriesTable = ({
     [tableData, selected],
   );
   const selectedRepositoriesOnActivePage = useMemo(
-    () => filterSelectedRepositoriesOnActivePage(filteredData, selected),
-    [filteredData, selected],
+    () => filterSelectedRepositoriesOnActivePage(paginatedData, selected),
+    [paginatedData, selected],
   );
   const getRowCount = () => {
     if (drawerOrganization) {
@@ -309,10 +313,10 @@ export const RepositoriesTable = ({
           </div>
         )}
         <Table
-          style={{ minWidth: 750, height: '70%' }}
+          style={{ minWidth: 750 }}
           size="small"
           data-testid={ariaLabel()}
-          className={classes.repositoriesTableFixedColumns}
+          sx={repositoriesTableFixedColumnsSx}
         >
           <RepositoriesHeader
             numSelected={
@@ -330,19 +334,18 @@ export const RepositoriesTable = ({
           <RepositoriesTableBody
             loading={loading}
             ariaLabel={ariaLabel()}
-            rows={filteredData}
-            emptyRows={emptyRows}
+            rows={paginatedData}
             onOrgRowSelected={handleOrgRowSelected}
             onClick={handleClick}
             selectedRepos={selected}
             isDrawer={!!drawerOrganization}
             isApprovalToolGitlab={isApprovalToolGitlab}
             showOrganizations={showOrganizations}
+            loginRejected={loginRejected}
           />
         </Table>
         {!isOpen && tableData?.length > 0 && (
           <TablePagination
-            style={{ height: '30%' }}
             rowsPerPageOptions={[
               { value: 5, label: t('table.pagination.rows5') },
               { value: 10, label: t('table.pagination.rows10') },
@@ -351,11 +354,7 @@ export const RepositoriesTable = ({
               { value: 100, label: t('table.pagination.rows100') },
             ]}
             component="div"
-            count={
-              (showOrganizations
-                ? data?.totalOrganizations
-                : data?.totalRepositories) || 0
-            }
+            count={filteredData?.length || 0}
             rowsPerPage={rowsPerPage}
             page={effectivePage}
             onPageChange={handleChangePage}

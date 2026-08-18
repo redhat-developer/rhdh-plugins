@@ -49,13 +49,13 @@ jobs:
       needs_release: ${{ steps.release_check.outputs.needs_release }}
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ inputs.branch }}
       - name: Set up Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org/ # Needed for auth
 
       - name: Get yarn cache directory path
@@ -74,10 +74,14 @@ jobs:
         run: yarn install --immutable
 
       - name: Fetch previous commit for release check
-        run: git fetch origin '${{ github.event.before }}'
+        env:
+          COMMIT_SHA_BEFORE: ${{ github.event.before }}
+        run: git fetch origin "$COMMIT_SHA_BEFORE"
 
       - name: Fetch the commit that triggered the workflow (used by backstage/changesets-action)
-        run: git fetch origin ${{ github.sha }}
+        env:
+          COMMIT_SHA: ${{ github.sha }}
+        run: git fetch origin "$COMMIT_SHA"
         continue-on-error: true
 
       - name: Check if release
@@ -91,7 +95,7 @@ jobs:
 
       - name: Update Version Packages (${{ inputs.workspace }}) PR
         id: changesets-pr
-        if: steps.release_check.outputs.needs_release != 'true' || inputs.force_release != true
+        if: steps.release_check.outputs.needs_release != 'true' && inputs.force_release != true
         uses: backstage/changesets-action@a39baf18913e669734ffb00c2fd9900472cfa240 # v2.3.2
         with:
           title: Version Packages (${{ inputs.workspace }})
@@ -116,13 +120,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           ref: ${{ inputs.branch }}
       - name: Set up Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org/ # Needed for auth
 
       - name: Install root dependencies

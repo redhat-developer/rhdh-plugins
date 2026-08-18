@@ -21,6 +21,5 @@ metadata:
 spec:
   type: backstage-plugin
   lifecycle: active
-  owner: rhdh-team
-  system: rhdh
+  owner: rhdh-ui-team
   subcomponentOf: rhdh-plugins

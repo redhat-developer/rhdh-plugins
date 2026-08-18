@@ -76,7 +76,7 @@ describe('buildApprovalRequest', () => {
     }
   });
 
-  it('preserves non-MCP tools unchanged', () => {
+  it('preserves non-MCP tools (stripping type from function tools)', () => {
     const tools = [
       { type: 'mcp', server_url: 'https://mcp', require_approval: 'always' },
       { type: 'function', name: 'myFunc' },
@@ -89,7 +89,7 @@ describe('buildApprovalRequest', () => {
 
     const resultTools = result.tools as Array<Record<string, unknown>>;
     expect(resultTools[0].require_approval).toBe('never');
-    expect(resultTools[1]).toEqual({ type: 'function', name: 'myFunc' });
+    expect(resultTools[1]).toEqual({ name: 'myFunc' });
   });
 
   it('includes instructions when approved to guide re-execution', () => {

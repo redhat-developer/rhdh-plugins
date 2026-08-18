@@ -13,4 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+export { Router } from './Router';
 export { dcmPlugin, DcmPage } from './plugin';
+export {
+  catalogApiRef,
+  policyManagerApiRef,
+  providersApiRef,
+  resourcesApiRef,
+} from './apis';
+export { isDarkMode, useIsDarkMode } from './components/dcmTheme';
+export { RhdhLogoFull } from './components/RhdhLogoFull';
+export { RhdhLogoIcon } from './components/RhdhLogoIcon';
+export { dcmTranslations, dcmTranslationRef } from './translations';

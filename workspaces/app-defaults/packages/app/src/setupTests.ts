@@ -14,4 +14,7 @@
  * limitations under the License.
  */
 
+// Still needed when testEnvironment is not the default jsdom (Backstage only injects
+// cross-fetch for the stock jest-environment-jsdom).
+import 'cross-fetch/polyfill';
 import '@testing-library/jest-dom';

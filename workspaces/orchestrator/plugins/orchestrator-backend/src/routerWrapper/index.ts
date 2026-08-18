@@ -19,18 +19,19 @@ import type {
   DiscoveryService,
   HttpAuthService,
   LoggerService,
+  PermissionsRegistryService,
   PermissionsService,
   SchedulerService,
   UrlReaderService,
   UserInfoService,
 } from '@backstage/backend-plugin-api';
-import type { CatalogApi } from '@backstage/catalog-client';
 import type { Config } from '@backstage/config';
 
 import express from 'express';
 
 import { WorkflowLogsProvidersRegistry } from '../providers/WorkflowLogsProvidersRegistry';
 import { DevModeService } from '../service/DevModeService';
+import { PublicServices } from '../service/initPublicServices';
 import { createBackendRouter } from '../service/router';
 
 export interface RouterOptions {
@@ -38,13 +39,14 @@ export interface RouterOptions {
   logger: LoggerService;
   auditor: AuditorService;
   discovery: DiscoveryService;
-  catalogApi: CatalogApi;
   urlReader: UrlReaderService;
   scheduler: SchedulerService;
   permissions: PermissionsService;
+  permissionsRegistry: PermissionsRegistryService;
   httpAuth: HttpAuthService;
   userInfo: UserInfoService;
   workflowLogsProvidersRegistry: WorkflowLogsProvidersRegistry;
+  publicServices: PublicServices;
 }
 
 export async function createRouter(
@@ -70,12 +72,13 @@ export async function createRouter(
     logger: args.logger,
     auditor: args.auditor,
     discovery: args.discovery,
-    catalogApi: args.catalogApi,
     urlReader: args.urlReader,
     scheduler: args.scheduler,
     permissions: args.permissions,
+    permissionsRegistry: args.permissionsRegistry,
     httpAuth: args.httpAuth,
     userInfo: args.userInfo,
     workflowLogsProvidersRegistry: args.workflowLogsProvidersRegistry,
+    publicServices: args.publicServices,
   });
 }

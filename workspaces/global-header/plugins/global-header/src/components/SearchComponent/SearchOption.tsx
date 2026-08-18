@@ -23,6 +23,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { SearchResultItem } from './SearchResultItem';
 import { Result, SearchDocument } from '@backstage/plugin-search-common';
 import { SearchResultProps } from '@backstage/plugin-search-react';
+import { useTranslation } from '../../hooks/useTranslation';
 
 interface SearchOptionProps {
   option: string;
@@ -43,6 +44,8 @@ export const SearchOption = ({
   renderProps,
   searchLink,
 }: SearchOptionProps) => {
+  const { t } = useTranslation();
+
   if (option === query?.term && index === options.length - 1) {
     return (
       <Box key="all-results" id="all-results">
@@ -54,7 +57,9 @@ export const SearchOption = ({
             className="allResultsOption"
           >
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Typography sx={{ flexGrow: 1 }}>All results</Typography>
+              <Typography sx={{ flexGrow: 1 }}>
+                {t('search.allResults')}
+              </Typography>
               <ArrowForwardIcon fontSize="small" />
             </Box>
           </ListItem>

@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
+import { FC, ReactElement } from 'react';
+
 import CheckCircleOutlined from '@mui/icons-material/CheckCircleOutlined';
 import WarningAmberOutlined from '@mui/icons-material/WarningAmberOutlined';
 import Box from '@mui/material/Box';
 import Tooltip from '@mui/material/Tooltip';
 import { makeStyles } from 'tss-react/mui';
 
+import { WorkflowOverviewDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
 import { AVAILABLE, UNAVAILABLE } from '../../constants';
 import { useTranslation } from '../../hooks/useTranslation';
+import { hasWorkflowAvailabilityDetails } from '../../utils/workflowAvailability';
+import { WorkflowUnavailableTooltip } from './WorkflowUnavailableTooltip';
 
 const useStyles = makeStyles()(theme => ({
   warning: {
@@ -32,29 +38,47 @@ const useStyles = makeStyles()(theme => ({
   },
 }));
 
-export const WorkflowStatus = ({
-  availability,
-}: {
+export interface WorkflowStatusProps {
   availability: string | undefined | boolean;
+  availabilityDetails?: WorkflowOverviewDTO['availability'];
+  compact?: boolean;
+}
+
+export const WorkflowStatus: FC<WorkflowStatusProps> = ({
+  availability,
+  availabilityDetails,
+  compact = false,
 }) => {
   const { t } = useTranslation();
   const { classes } = useStyles();
+  const iconSizeProps = compact ? { fontSize: 'small' as const } : undefined;
+
   if (availability === AVAILABLE || availability === true) {
     return (
       <Box display="flex" alignItems="center">
-        <CheckCircleOutlined className={classes.success} />
+        <CheckCircleOutlined className={classes.success} {...iconSizeProps} />
         &nbsp; {t('workflow.status.available')}
       </Box>
     );
-  } else if (availability === UNAVAILABLE || availability === false) {
-    return (
-      <Tooltip title={t('tooltips.workflowDown')}>
-        <Box display="flex" alignItems="center">
-          <WarningAmberOutlined className={classes.warning} />
-          &nbsp; {t('workflow.status.unavailable')}
-        </Box>
-      </Tooltip>
+  }
+
+  if (availability === UNAVAILABLE || availability === false) {
+    const statusLabel = (
+      <Box display="flex" alignItems="center">
+        <WarningAmberOutlined className={classes.warning} {...iconSizeProps} />
+        &nbsp; {t('workflow.status.unavailable')}
+      </Box>
     );
+
+    if (hasWorkflowAvailabilityDetails(availabilityDetails)) {
+      return (
+        <WorkflowUnavailableTooltip availability={availabilityDetails}>
+          {statusLabel as ReactElement}
+        </WorkflowUnavailableTooltip>
+      );
+    }
+
+    return <Tooltip title={t('tooltips.workflowDown')}>{statusLabel}</Tooltip>;
   }
 
   return <>{availability}</>;

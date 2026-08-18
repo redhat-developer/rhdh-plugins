@@ -45,6 +45,10 @@ export function ChatScrollArea({
     <Box
       ref={scrollContainerRef}
       onScroll={onScroll}
+      role="log"
+      aria-label="Conversation messages"
+      aria-live="polite"
+      tabIndex={0}
       sx={{
         flex: 1,
         overflow: 'auto',

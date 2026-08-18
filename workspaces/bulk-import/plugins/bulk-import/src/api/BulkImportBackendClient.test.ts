@@ -40,6 +40,19 @@ import {
 
 const LOCAL_ADDR = 'https://localhost:7007';
 const handlers = [
+  rest.get(`${LOCAL_ADDR}/api/bulk-import/scm-hosts`, (req, res, ctx) => {
+    const test = req.headers.get('Content-Type');
+    if (test === 'application/json') {
+      return res(
+        ctx.status(200),
+        ctx.json({
+          github: ['https://github.com'],
+          gitlab: ['https://gitlab.com'],
+        }),
+      );
+    }
+    return res(ctx.status(404));
+  }),
   rest.get(`${LOCAL_ADDR}/api/bulk-import/repositories`, (req, res, ctx) => {
     const searchParam = req.url.searchParams.get('search');
     const test = req.headers.get('Content-Type');
@@ -59,7 +72,7 @@ const handlers = [
     return res(ctx.status(404));
   }),
   rest.get(
-    `${LOCAL_ADDR}/api/bulk-import/organizations/org/dessert/repositories`,
+    `${LOCAL_ADDR}/api/bulk-import/organizations/org%2Fdessert/repositories`,
     (req, res, ctx) => {
       const test = req.headers.get('Content-Type');
       const searchParam = req.url.searchParams.get('search');
@@ -228,6 +241,78 @@ describe('BulkImportBackendClient with open-pull-requests', () => {
     });
   });
 
+  describe('getSCMHosts', () => {
+    it('should retrieve SCM hosts successfully', async () => {
+      const hosts = await bulkImportApi.getSCMHosts();
+      expect(hosts).toEqual({
+        github: ['https://github.com'],
+        gitlab: ['https://gitlab.com'],
+      });
+    });
+
+    it('should return the response object when the server returns a non-200 status', async () => {
+      server.use(
+        rest.get(
+          `${LOCAL_ADDR}/api/bulk-import/scm-hosts`,
+          (_req, res, ctx) => {
+            return res(ctx.status(403));
+          },
+        ),
+      );
+
+      const response = await bulkImportApi.getSCMHosts();
+      expect(response).toBeInstanceOf(Response);
+      expect((response as Response).status).toBe(403);
+    });
+  });
+
+  describe('dataFetcher X-SCM-Tokens header', () => {
+    let fetchSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      fetchSpy = jest.spyOn(globalThis, 'fetch');
+    });
+
+    afterEach(() => {
+      fetchSpy.mockRestore();
+    });
+
+    it('should send the X-SCM-Tokens header when scmAuthTokens are provided', async () => {
+      const scmAuthTokens: Record<string, string> = {
+        'https://github.com': 'user-token-abc',
+      };
+      await bulkImportApi.dataFetcher(1, 2, '', ApprovalTool.Git, {
+        scmAuthTokens,
+      });
+
+      const calledHeaders = fetchSpy.mock.calls[0][1]?.headers as Record<
+        string,
+        string
+      >;
+      expect(calledHeaders['X-SCM-Tokens']).toBe(JSON.stringify(scmAuthTokens));
+    });
+
+    it('should not send the X-SCM-Tokens header when scmAuthTokens are not provided', async () => {
+      await bulkImportApi.dataFetcher(1, 2, '', ApprovalTool.Git);
+
+      const calledHeaders = fetchSpy.mock.calls[0][1]?.headers as Record<
+        string,
+        string
+      >;
+      expect(calledHeaders['X-SCM-Tokens']).toBeUndefined();
+    });
+
+    it('should not send X-SCM-Tokens when scmAuthTokens is an empty object', async () => {
+      await bulkImportApi.dataFetcher(1, 2, '', ApprovalTool.Git, {});
+
+      const calledHeaders = fetchSpy.mock.calls[0][1]?.headers as Record<
+        string,
+        string
+      >;
+      expect(calledHeaders['X-SCM-Tokens']).toBeUndefined();
+    });
+  });
+
   describe('getRepositories', () => {
     it('getRepositories should retrieve repositories successfully', async () => {
       const repositories = await bulkImportApi.dataFetcher(
@@ -263,7 +348,7 @@ describe('BulkImportBackendClient with open-pull-requests', () => {
 
       await expect(
         bulkImportApi.dataFetcher(1, 2, '', ApprovalTool.Git),
-      ).resolves.toEqual(expect.objectContaining([]));
+      ).resolves.toBeInstanceOf(Response);
     });
   });
 
@@ -342,7 +427,7 @@ describe('BulkImportBackendClient with open-pull-requests', () => {
         bulkImportApi.dataFetcher(1, 2, '', ApprovalTool.Git, {
           fetchOrganizations: true,
         }),
-      ).resolves.toEqual(expect.objectContaining([]));
+      ).resolves.toBeInstanceOf(Response);
     });
   });
 
@@ -374,6 +459,12 @@ describe('BulkImportBackendClient with open-pull-requests', () => {
     });
 
     it('getImportJobs should handle non-200/204 responses correctly', async () => {
+      server.use(
+        rest.get(`${LOCAL_ADDR}/api/bulk-import/imports`, (_req, res, ctx) => {
+          return res(ctx.status(404));
+        }),
+      );
+
       await expect(
         bulkImportApi.getImportJobs(
           1,
@@ -382,7 +473,7 @@ describe('BulkImportBackendClient with open-pull-requests', () => {
           AddedRepositoryColumnNameEnum.repoName,
           SortingOrderEnum.Asc,
         ),
-      ).resolves.toEqual(expect.objectContaining([]));
+      ).resolves.toBeInstanceOf(Response);
     });
   });
 

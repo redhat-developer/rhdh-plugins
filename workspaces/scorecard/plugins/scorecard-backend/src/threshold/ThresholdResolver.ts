@@ -1,0 +1,80 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import type { Config } from '@backstage/config';
+import type { Entity } from '@backstage/catalog-model';
+import type {
+  Metric,
+  ThresholdConfig,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  getThresholdsFromConfig,
+  type MetricProvider,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { areThresholdAnnotationOverridesAllowed } from './thresholdAnnotations';
+import { mergeEntityAndMetricThresholds } from '../utils/mergeEntityAndMetricThresholds';
+import { resolveThresholdsConfigPath } from '../utils/metricProviderConfigKeys';
+
+export class ThresholdResolver {
+  private readonly configuredThresholds = new Map<string, ThresholdConfig>(); // metricId: thresholds
+
+  constructor(private readonly config: Config, providers: MetricProvider[]) {
+    for (const provider of providers) {
+      this.setConfiguredThresholds(provider);
+    }
+  }
+
+  resolveMetricThresholds(metric: Metric): ThresholdConfig {
+    return this.configuredThresholds.get(metric.id) ?? metric.thresholds;
+  }
+
+  resolveEntityThresholds(entity: Entity, metric: Metric): ThresholdConfig {
+    if (!areThresholdAnnotationOverridesAllowed(this.config, metric.id)) {
+      return this.resolveMetricThresholds(metric);
+    }
+    return mergeEntityAndMetricThresholds(
+      entity,
+      metric,
+      this.resolveMetricThresholds(metric),
+    );
+  }
+
+  private setConfiguredThresholds(provider: MetricProvider): void {
+    const datasourceId = provider.getProviderDatasourceId();
+    const providerId = provider.getProviderId();
+
+    for (const metric of provider.getMetrics()) {
+      const thresholdsPath = resolveThresholdsConfigPath(
+        this.config,
+        datasourceId,
+        providerId,
+        metric.id,
+      );
+      if (!thresholdsPath) {
+        continue;
+      }
+
+      const thresholds = getThresholdsFromConfig(
+        this.config,
+        thresholdsPath,
+        metric.type,
+      );
+      if (thresholds) {
+        this.configuredThresholds.set(metric.id, thresholds);
+      }
+    }
+  }
+}

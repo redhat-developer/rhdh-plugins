@@ -29,6 +29,7 @@ import {
   useFetch,
   applySelectorObject,
   useProcessingState,
+  evaluateFetchResponseSelectorTemplate,
 } from '../utils';
 import { ErrorText } from './ErrorText';
 import { UiProps } from '../uiPropTypes';
@@ -62,7 +63,12 @@ export const SchemaUpdater: Widget<
     uiProps['fetch:retrigger'] as string[],
   );
 
-  const { data, error, loading } = useFetch(formData ?? {}, uiProps, retrigger);
+  const { data, error, loading } = useFetch(
+    formData ?? {},
+    uiProps,
+    retrigger,
+    formContext?.onSamlSsoError,
+  );
 
   // Track the complete loading state (fetch + processing)
   const { completeLoading, wrapProcessing } = useProcessingState(
@@ -86,10 +92,27 @@ export const SchemaUpdater: Widget<
         let typedData: SchemaChunksResponse =
           data as unknown as SchemaChunksResponse;
         if (valueSelector) {
-          typedData = (await applySelectorObject(
-            data,
-            valueSelector,
-          )) as unknown as SchemaChunksResponse;
+          const resolvedSelector = await evaluateFetchResponseSelectorTemplate({
+            template: valueSelector,
+            key: 'fetch:response:value',
+            unitEvaluator: templateUnitEvaluator,
+            formData: formData ?? {},
+            responseData: data,
+            uiProps,
+          });
+          if (resolvedSelector.trim()) {
+            try {
+              typedData = (await applySelectorObject(
+                data,
+                resolvedSelector,
+              )) as unknown as SchemaChunksResponse;
+            } catch (reason) {
+              setLocalError(
+                reason instanceof Error ? reason.message : String(reason),
+              );
+              return;
+            }
+          }
         }
 
         // validate received response before updating
@@ -104,7 +127,7 @@ export const SchemaUpdater: Widget<
         });
 
         try {
-          updateSchema(typedData);
+          updateSchema(typedData, props.id);
         } catch (err) {
           // eslint-disable-next-line no-console
           console.error('Error when updating schema', props.id, err);
@@ -115,7 +138,16 @@ export const SchemaUpdater: Widget<
       });
     };
     doItAsync();
-  }, [data, props.id, updateSchema, valueSelector, wrapProcessing]);
+  }, [
+    data,
+    formData,
+    props.id,
+    updateSchema,
+    valueSelector,
+    uiProps,
+    templateUnitEvaluator,
+    wrapProcessing,
+  ]);
 
   const shouldShowFetchError = uiProps['fetch:error:silent'] !== true;
   const displayError = localError ?? (shouldShowFetchError ? error : undefined);

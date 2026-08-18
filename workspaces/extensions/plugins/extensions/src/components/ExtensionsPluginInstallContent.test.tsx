@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 
 import { TestApiProvider } from '@backstage/test-utils';
@@ -51,11 +51,6 @@ jest.mock('../hooks/usePluginConfigurationPermissions', () => ({
   usePluginConfigurationPermissions: jest.fn(),
 }));
 
-jest.mock('./CodeEditorContext', () => ({
-  useCodeEditor: jest.fn(),
-  CodeEditorContextProvider: ({ children }: any) => children,
-}));
-
 jest.mock('../hooks/useExtensionsConfiguration', () => ({
   useExtensionsConfiguration: jest.fn(),
 }));
@@ -72,18 +67,26 @@ jest.mock('@backstage/core-plugin-api', () => {
   };
 });
 
-const mockCodeEditorSetValue = jest.fn();
+/** Stable editor API so `onLoaded` useCallback stays stable across re-renders; otherwise
+ *  CodeEditorCard's useEffect([onLoad]) re-runs every render and `onLoaded` clears
+ *  `installationError` right after a failed install. */
+let mockEditorContent = '';
+const mockCodeEditorSetValue = jest.fn((value: string) => {
+  mockEditorContent = value;
+});
+const mockCodeEditorApi = {
+  setValue: mockCodeEditorSetValue,
+  getValue: jest.fn(() => mockEditorContent),
+};
 
 jest.mock('./CodeEditorContext', () => ({
-  useCodeEditor: () => ({
-    setValue: mockCodeEditorSetValue,
-    getValue: jest.fn(),
-  }),
-  CodeEditorContextProvider: ({ children }: any) => children,
+  useCodeEditor: () => mockCodeEditorApi,
+  CodeEditorContextProvider: ({ children }: { children: ReactNode }) =>
+    children,
 }));
 
 jest.mock('./CodeEditorCard', () => ({
-  CodeEditorCard: ({ onLoad }: any) => {
+  CodeEditorCard: ({ onLoad }: { onLoad?: () => void }) => {
     useEffect(() => {
       onLoad?.();
     }, [onLoad]);
@@ -93,6 +96,7 @@ jest.mock('./CodeEditorCard', () => ({
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockEditorContent = '';
   usePluginConfigMock.mockReturnValue({
     isLoading: false,
     data: {},
@@ -112,6 +116,11 @@ beforeEach(() => {
       enabled: true,
     },
   });
+
+  // Default hook return so tests are isolated (order-safe) and destructuring never breaks.
+  useInstallPluginMock.mockReturnValue({
+    mutateAsync: jest.fn().mockResolvedValue({ status: 'OK' }),
+  });
 });
 
 describe('ExtensionsPluginInstallContent', () => {
@@ -123,7 +132,7 @@ describe('ExtensionsPluginInstallContent', () => {
   };
 
   const configYaml =
-    '- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions\n  disabled: false # DEBSMITA\n  pluginConfig:\n    dynamicPlugins:\n      frontend:\n        red-hat-developer-hub.backstage-plugin-extensions:\n          appIcons:\n            - name: extensions\n              importName: ExtensionsIcon\n          dynamicRoutes:\n            - path: /extensions/catalog\n              importName: DynamicExtensionsPluginRouter\n          mountPoints:\n            - mountPoint: internal.plugins/tab\n              importName: DynamicExtensionsPluginContent\n              config:\n                path: extensions\n                title: Catalog\n- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions-backend-dynamic\n  disabled: false\n';
+    '- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions\n  enabled: true # DEBSMITA\n  pluginConfig:\n    dynamicPlugins:\n      frontend:\n        red-hat-developer-hub.backstage-plugin-extensions:\n          appIcons:\n            - name: extensions\n              importName: ExtensionsIcon\n          dynamicRoutes:\n            - path: /extensions/catalog\n              importName: DynamicExtensionsPluginRouter\n          mountPoints:\n            - mountPoint: internal.plugins/tab\n              importName: DynamicExtensionsPluginContent\n              config:\n                path: extensions\n                title: Catalog\n- package: ./dynamic-plugins/dist/red-hat-developer-hub-backstage-plugin-extensions-backend-dynamic\n  enabled: true\n';
 
   const packages = [
     {
@@ -185,7 +194,7 @@ describe('ExtensionsPluginInstallContent', () => {
     expect(yamlString).toContain(
       'package: ./dynamic-plugins/dist/backstage-community-plugin-3scale-backend-dynamic',
     );
-    expect(yamlString).toContain('disabled: false');
+    expect(yamlString).toContain('enabled: true');
     expect(getByTestId('install')).toBeInTheDocument();
   });
 

@@ -16,8 +16,21 @@
 
 import { LoggerService } from '@backstage/backend-plugin-api';
 
+import {
+  Filter,
+  ProcessInstance,
+  ProcessInstanceState,
+  WorkflowInfo,
+} from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
+import { OrchestratorKafkaServiceOptions } from '../types/kafka';
 import { DataIndexService } from './DataIndexService';
 import { SonataFlowService } from './SonataFlowService';
+
+jest.mock('node:crypto', () => ({
+  ...jest.requireActual('node:crypto'),
+  randomUUID: () => '12345',
+}));
 
 describe('SonataFlowService', () => {
   let loggerMock: jest.Mocked<LoggerService>;
@@ -25,6 +38,17 @@ describe('SonataFlowService', () => {
   let sonataFlowService: SonataFlowService;
   const serviceUrl = 'http://example.com/workflows';
   const definitionId = 'workflow-123';
+
+  const createProcessInstance = (
+    overrides: Partial<ProcessInstance> &
+      Pick<ProcessInstance, 'id' | 'processId'>,
+  ): ProcessInstance => ({
+    endpoint: 'http://example.com',
+    nodes: [],
+    version: '1.0',
+    state: ProcessInstanceState.Completed,
+    ...overrides,
+  });
 
   const setupTest = (responseConfig: {
     ok: boolean;
@@ -155,6 +179,211 @@ describe('SonataFlowService', () => {
       );
     });
   });
+
+  describe('executeWorkflowAsCloudEvent', () => {
+    const runErrorTestAsCloudEventNoKafkaImplementation =
+      async (): Promise<void> => {
+        await sonataFlowService.executeWorkflowAsCloudEvent({
+          definitionId,
+          workflowSource: 'workflowSource',
+          workflowEventType: 'workflowEventType',
+          contextAttribute: 'contextAttribute',
+        });
+      };
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should return the an error when no orchestrator kafka config is implemented', async () => {
+      let result;
+      try {
+        await runErrorTestAsCloudEventNoKafkaImplementation();
+      } catch (error: any) {
+        result = error;
+      }
+
+      expect(result).toBeDefined();
+      expect(result.message).toEqual(
+        'No Orchestrator kafka implementation added',
+      );
+    });
+    it('should return the contextAttributeId on successful send', async () => {
+      const kafkaServiceOptionsMock: OrchestratorKafkaServiceOptions = {
+        clientId: 'kafkaClientId',
+        brokers: ['localhost:9091'],
+      };
+      const sonataFlowServiceWithKafka = new SonataFlowService(
+        dataIndexServiceMock,
+        loggerMock,
+        kafkaServiceOptionsMock,
+      );
+      const spy = jest
+        .spyOn(
+          sonataFlowServiceWithKafka.getOrchestratorKafkaImpl() as any,
+          'producer',
+        )
+        .mockImplementation(() => {
+          return {
+            connect: jest.fn(),
+            send: jest.fn(),
+            disconnect: jest.fn(),
+          };
+        });
+      const result =
+        await sonataFlowServiceWithKafka.executeWorkflowAsCloudEvent({
+          definitionId,
+          workflowSource: 'workflowSource',
+          workflowEventType: 'workflowEventType',
+          contextAttribute: 'lockid',
+        });
+      expect(spy).toHaveBeenCalled();
+      expect(result).toBeDefined();
+      expect(result?.id).toBeDefined();
+      expect(result?.id).toEqual('12345');
+    });
+
+    it('should pass data from workflowdata payload into the clouevent data', async () => {
+      const kafkaServiceOptionsMock: OrchestratorKafkaServiceOptions = {
+        clientId: 'kafkaClientId',
+        brokers: ['localhost:9091'],
+      };
+      const sonataFlowServiceWithKafka = new SonataFlowService(
+        dataIndexServiceMock,
+        loggerMock,
+        kafkaServiceOptionsMock,
+      );
+
+      const sendMock = jest.fn();
+
+      jest
+        .spyOn(
+          sonataFlowServiceWithKafka.getOrchestratorKafkaImpl() as any,
+          'producer',
+        )
+        .mockImplementation(() => ({
+          connect: jest.fn(),
+          send: sendMock,
+          disconnect: jest.fn(),
+        }));
+
+      const result =
+        await sonataFlowServiceWithKafka.executeWorkflowAsCloudEvent({
+          definitionId,
+          workflowSource: 'workflowSource',
+          workflowEventType: 'workflowEventType',
+          contextAttribute: 'lockid',
+          inputData: {
+            workflowdata: {
+              paramter1: '12345',
+              isEvent: true,
+            },
+          },
+        });
+
+      expect(sendMock).toHaveBeenCalled();
+
+      const { messages } = sendMock.mock.calls[0][0];
+      const parsed = JSON.parse(messages[0].value);
+
+      expect(parsed.data).toEqual({
+        paramter1: '12345',
+        lockid: '12345',
+      });
+
+      expect(parsed.isEvent).toBeUndefined();
+
+      expect(result).toBeDefined();
+      expect(result?.id).toBe('12345');
+    });
+
+    it('should use empty CE data when workflowdata is missing or non-object', async () => {
+      const kafkaServiceOptionsMock: OrchestratorKafkaServiceOptions = {
+        clientId: 'kafkaClientId',
+        brokers: ['localhost:9091'],
+      };
+      const sonataFlowServiceWithKafka = new SonataFlowService(
+        dataIndexServiceMock,
+        loggerMock,
+        kafkaServiceOptionsMock,
+      );
+
+      const sendMock = jest.fn();
+
+      jest
+        .spyOn(
+          sonataFlowServiceWithKafka.getOrchestratorKafkaImpl() as any,
+          'producer',
+        )
+        .mockImplementation(() => ({
+          connect: jest.fn(),
+          send: sendMock,
+          disconnect: jest.fn(),
+        }));
+
+      await sonataFlowServiceWithKafka.executeWorkflowAsCloudEvent({
+        definitionId,
+        workflowSource: 'workflowSource',
+        workflowEventType: 'workflowEventType',
+        contextAttribute: 'lockid',
+        inputData: {
+          workflowdata: 'not-an-object' as any,
+        },
+      });
+
+      expect(sendMock).toHaveBeenCalledTimes(1);
+
+      const { messages } = sendMock.mock.calls[0][0];
+      const parsed = JSON.parse(messages[0].value);
+
+      expect(parsed.data).toEqual({
+        lockid: '12345',
+      });
+      expect(parsed.data.workflowdata).toBeUndefined();
+    });
+
+    it('should error on a bad connection', async () => {
+      const kafkaServiceOptionsMock: OrchestratorKafkaServiceOptions = {
+        clientId: 'kafkaClientId',
+        brokers: ['localhost:9091'],
+      };
+      const sonataFlowServiceWithKafka = new SonataFlowService(
+        dataIndexServiceMock,
+        loggerMock,
+        kafkaServiceOptionsMock,
+      );
+      jest
+        .spyOn(
+          sonataFlowServiceWithKafka.getOrchestratorKafkaImpl() as any,
+          'producer',
+        )
+        .mockImplementation(() => {
+          return {
+            connect: jest
+              .fn()
+              .mockRejectedValue(new Error('Wrong Connection Info')),
+            send: jest.fn(),
+            disconnect: jest.fn(),
+          };
+        });
+      let result;
+      try {
+        result = await sonataFlowServiceWithKafka.executeWorkflowAsCloudEvent({
+          definitionId,
+          workflowSource: 'workflowSource',
+          workflowEventType: 'workflowEventType',
+          contextAttribute: 'lockid',
+        });
+      } catch (error: any) {
+        result = error;
+      }
+
+      expect(result).toBeDefined();
+      expect(result.message).toEqual(
+        'Error with Kafka client with connection Options: clientId: kafkaClientId and broker: ["localhost:9091"]',
+      );
+    });
+  });
+
   describe('executeWorkflow', () => {
     const inputData = { var1: 'value1' };
     const urlToFetch = 'http://example.com/workflows/workflow-123';
@@ -480,6 +709,492 @@ describe('SonataFlowService', () => {
       expect(loggerMock.error).toHaveBeenCalledWith(
         expect.stringContaining('Network Error'),
       );
+    });
+  });
+
+  describe('pingWorkflowService', () => {
+    const urlToFetch = `${serviceUrl}/management/processes/${definitionId}`;
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('returns available when the management endpoint responds ok', async () => {
+      setupTest({
+        ok: true,
+        status: 200,
+        statusText: 'OK',
+        json: {},
+      });
+
+      const result = await sonataFlowService.pingWorkflowService({
+        definitionId,
+        serviceUrl,
+      });
+
+      expect(fetch).toHaveBeenCalledWith(urlToFetch);
+      expect(result).toEqual({
+        isAvailable: true,
+        statusCode: 200,
+        urlToFetch,
+        reason: 'OK',
+      });
+    });
+
+    it('returns unavailable with status details when the management endpoint fails', async () => {
+      setupTest({
+        ok: false,
+        status: 503,
+        statusText: 'Service Unavailable',
+        json: {},
+      });
+
+      const result = await sonataFlowService.pingWorkflowService({
+        definitionId,
+        serviceUrl,
+      });
+
+      expect(result).toEqual({
+        isAvailable: false,
+        statusCode: 503,
+        urlToFetch,
+        reason: 'Service Unavailable',
+      });
+    });
+
+    it('returns unavailable with a default reason when status text is missing', async () => {
+      setupTest({
+        ok: false,
+        status: 500,
+        json: {},
+      });
+
+      const result = await sonataFlowService.pingWorkflowService({
+        definitionId,
+        serviceUrl,
+      });
+
+      expect(result).toEqual({
+        isAvailable: false,
+        statusCode: 500,
+        urlToFetch,
+        reason: 'Unknown reason',
+      });
+    });
+
+    it('returns unavailable when fetch throws an error', async () => {
+      const errorMessage = 'Network Error';
+      global.fetch = jest.fn().mockRejectedValue(new Error(errorMessage));
+
+      const result = await sonataFlowService.pingWorkflowService({
+        definitionId,
+        serviceUrl,
+      });
+
+      expect(result).toEqual({
+        isAvailable: false,
+        statusCode: 500,
+        urlToFetch,
+        reason: `Failed to fetch from ${urlToFetch}: ${errorMessage}`,
+      });
+      expect(loggerMock.error).toHaveBeenCalledWith(
+        `Failed to fetch from ${urlToFetch}: ${errorMessage}`,
+      );
+    });
+  });
+
+  describe('fetchWorkflowOverviews', () => {
+    const NOW = new Date('2024-06-01T12:00:00Z');
+    const WITHIN_30_DAYS = '2024-05-15T12:00:00Z';
+    const OUTSIDE_30_DAYS = '2024-04-01T12:00:00Z';
+
+    const workflowASource = JSON.stringify({
+      id: 'workflow-a',
+      specVersion: '0.8',
+      name: 'Workflow A',
+      version: '1.0',
+      start: 'startState',
+      states: [{ name: 'startState', type: 'inject', end: true }],
+    });
+
+    const workflowBSource = JSON.stringify({
+      id: 'workflow-b',
+      specVersion: '0.8',
+      name: 'Workflow B',
+      version: '2.0',
+      start: 'startState',
+      states: [{ name: 'startState', type: 'inject', end: true }],
+    });
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(NOW);
+      dataIndexServiceMock.fetchInstances = jest.fn();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('returns an empty array when no workflow infos are found', async () => {
+      dataIndexServiceMock.fetchWorkflowInfos = jest.fn().mockResolvedValue([]);
+
+      const result = await sonataFlowService.fetchWorkflowOverviews({});
+
+      expect(result).toEqual([]);
+      expect(dataIndexServiceMock.fetchInstances).not.toHaveBeenCalled();
+    });
+
+    it('attaches successRatio and runsLastMonth from grouped instance stats', async () => {
+      const workflowInfos: WorkflowInfo[] = [
+        { id: 'workflow-a', source: workflowASource },
+      ];
+
+      dataIndexServiceMock.fetchWorkflowInfos = jest
+        .fn()
+        .mockResolvedValue(workflowInfos);
+      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([
+        createProcessInstance({
+          id: 'instance-1',
+          processId: 'workflow-a',
+          version: '1.0',
+          state: ProcessInstanceState.Completed,
+          start: WITHIN_30_DAYS,
+        }),
+        createProcessInstance({
+          id: 'instance-2',
+          processId: 'workflow-a',
+          version: '1.0',
+          state: ProcessInstanceState.Completed,
+          start: WITHIN_30_DAYS,
+        }),
+        createProcessInstance({
+          id: 'instance-3',
+          processId: 'workflow-a',
+          version: '1.0',
+          state: ProcessInstanceState.Error,
+          start: WITHIN_30_DAYS,
+        }),
+        createProcessInstance({
+          id: 'instance-4',
+          processId: 'workflow-a',
+          version: '1.0',
+          state: ProcessInstanceState.Completed,
+          start: OUTSIDE_30_DAYS,
+        }),
+      ]);
+      dataIndexServiceMock.fetchInstancesByDefinitionId = jest
+        .fn()
+        .mockResolvedValue([]);
+
+      const result = await sonataFlowService.fetchWorkflowOverviews({});
+
+      expect(result).toHaveLength(1);
+      expect(result?.[0]).toMatchObject({
+        workflowId: 'workflow-a',
+        version: '1.0',
+        workflowRunStats: {
+          successRatio: 0.75,
+          runsLastMonth: 3,
+          successCount: 3,
+          errorCount: 1,
+          totalCount: 4,
+        },
+      });
+    });
+
+    it('calculates stats independently per workflow id and version', async () => {
+      const workflowInfos: WorkflowInfo[] = [
+        { id: 'workflow-a', source: workflowASource },
+        { id: 'workflow-b', source: workflowBSource },
+      ];
+
+      dataIndexServiceMock.fetchWorkflowInfos = jest
+        .fn()
+        .mockResolvedValue(workflowInfos);
+      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([
+        createProcessInstance({
+          id: 'a-1',
+          processId: 'workflow-a',
+          version: '1.0',
+          state: ProcessInstanceState.Completed,
+          start: WITHIN_30_DAYS,
+        }),
+        createProcessInstance({
+          id: 'a-2',
+          processId: 'workflow-a',
+          version: '1.0',
+          state: ProcessInstanceState.Error,
+          start: WITHIN_30_DAYS,
+        }),
+        createProcessInstance({
+          id: 'b-1',
+          processId: 'workflow-b',
+          version: '2.0',
+          state: ProcessInstanceState.Completed,
+          start: WITHIN_30_DAYS,
+        }),
+        createProcessInstance({
+          id: 'b-2',
+          processId: 'workflow-b',
+          version: '2.0',
+          state: ProcessInstanceState.Completed,
+          start: WITHIN_30_DAYS,
+        }),
+      ]);
+      dataIndexServiceMock.fetchInstancesByDefinitionId = jest
+        .fn()
+        .mockResolvedValue([]);
+
+      const result = await sonataFlowService.fetchWorkflowOverviews({});
+
+      expect(result).toHaveLength(2);
+      expect(result?.find(o => o.workflowId === 'workflow-a')).toMatchObject({
+        workflowRunStats: {
+          successRatio: 0.5,
+          runsLastMonth: 2,
+          successCount: 1,
+          errorCount: 1,
+          totalCount: 2,
+        },
+      });
+      expect(result?.find(o => o.workflowId === 'workflow-b')).toMatchObject({
+        workflowRunStats: {
+          successRatio: 1,
+          runsLastMonth: 2,
+          successCount: 2,
+          errorCount: 0,
+          totalCount: 2,
+        },
+      });
+    });
+
+    it('leaves stats undefined when no instances match the workflow', async () => {
+      const workflowInfos: WorkflowInfo[] = [
+        { id: 'workflow-a', source: workflowASource },
+      ];
+
+      dataIndexServiceMock.fetchWorkflowInfos = jest
+        .fn()
+        .mockResolvedValue(workflowInfos);
+      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([
+        createProcessInstance({
+          id: 'other-1',
+          processId: 'other-workflow',
+          version: '1.0',
+          start: WITHIN_30_DAYS,
+        }),
+      ]);
+      dataIndexServiceMock.fetchInstancesByDefinitionId = jest
+        .fn()
+        .mockResolvedValue([]);
+
+      const result = await sonataFlowService.fetchWorkflowOverviews({});
+
+      expect(result).toHaveLength(1);
+      expect(result?.[0].workflowRunStats).toBeUndefined();
+    });
+
+    it('excludes workflow infos without source', async () => {
+      const workflowInfos: WorkflowInfo[] = [
+        { id: 'workflow-a', source: workflowASource },
+        { id: 'workflow-without-source' },
+      ];
+
+      dataIndexServiceMock.fetchWorkflowInfos = jest
+        .fn()
+        .mockResolvedValue(workflowInfos);
+      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([]);
+      dataIndexServiceMock.fetchInstancesByDefinitionId = jest
+        .fn()
+        .mockResolvedValue([]);
+
+      const result = await sonataFlowService.fetchWorkflowOverviews({});
+
+      expect(result).toHaveLength(1);
+      expect(result?.[0].workflowId).toBe('workflow-a');
+    });
+
+    it('queries instance stats by workflow definition id for entity overview', async () => {
+      const helloWorldSource = JSON.stringify({
+        id: 'hello-world',
+        specVersion: '0.8',
+        name: 'Hello World Workflow',
+        version: '1.0',
+        start: 'startState',
+        states: [{ name: 'startState', type: 'inject', end: true }],
+      });
+      const workflowInfos: WorkflowInfo[] = [
+        { id: 'hello-world', source: helloWorldSource },
+      ];
+      const overviewFilter: Filter = {
+        field: 'id',
+        operator: 'IN',
+        value: ['hello-world'],
+      };
+      const targetEntity = 'component:default/my-component';
+
+      dataIndexServiceMock.fetchWorkflowInfos = jest
+        .fn()
+        .mockResolvedValue(workflowInfos);
+      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([
+        createProcessInstance({
+          id: 'instance-1',
+          processId: 'hello-world',
+          version: '1.0',
+          state: ProcessInstanceState.Completed,
+          start: WITHIN_30_DAYS,
+        }),
+      ]);
+      dataIndexServiceMock.fetchInstancesByDefinitionId = jest
+        .fn()
+        .mockResolvedValue([]);
+
+      const result = await sonataFlowService.fetchWorkflowOverviews({
+        filter: overviewFilter,
+        targetEntity,
+      });
+
+      expect(dataIndexServiceMock.fetchInstances).toHaveBeenCalledWith({
+        definitionIds: ['hello-world'],
+        filter: {
+          field: 'variables',
+          nested: {
+            operator: 'EQ',
+            field: 'targetEntity',
+            value: targetEntity,
+          },
+        },
+      });
+      expect(result?.[0].workflowRunStats).toMatchObject({
+        successRatio: 1,
+        runsLastMonth: 1,
+        successCount: 1,
+        errorCount: 0,
+        totalCount: 1,
+      });
+    });
+  });
+
+  describe('fetchWorkflowOverview', () => {
+    const NOW = new Date('2024-06-01T12:00:00Z');
+    const WITHIN_30_DAYS = '2024-05-15T12:00:00Z';
+    const OUTSIDE_30_DAYS = '2024-04-01T12:00:00Z';
+    const workflowDefinitionId = 'workflow-a';
+
+    const workflowSource = JSON.stringify({
+      id: workflowDefinitionId,
+      specVersion: '0.8',
+      name: 'Workflow A',
+      version: '1.0',
+      start: 'startState',
+      states: [{ name: 'startState', type: 'inject', end: true }],
+    });
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+      jest.setSystemTime(NOW);
+      dataIndexServiceMock.fetchWorkflowSource = jest.fn();
+      dataIndexServiceMock.fetchInstances = jest.fn();
+      dataIndexServiceMock.fetchInstancesByDefinitionId = jest
+        .fn()
+        .mockResolvedValue([]);
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('returns undefined when workflow source is not found', async () => {
+      dataIndexServiceMock.fetchWorkflowSource = jest
+        .fn()
+        .mockResolvedValue(undefined);
+
+      const result =
+        await sonataFlowService.fetchWorkflowOverview(workflowDefinitionId);
+
+      expect(result).toBeUndefined();
+      expect(dataIndexServiceMock.fetchWorkflowSource).toHaveBeenCalledWith(
+        workflowDefinitionId,
+      );
+      expect(dataIndexServiceMock.fetchInstances).not.toHaveBeenCalled();
+      expect(loggerMock.debug).toHaveBeenCalledWith(
+        `Workflow source not found: ${workflowDefinitionId}`,
+      );
+    });
+
+    it('fetches instances for the definition id and attaches workflowRunStats', async () => {
+      dataIndexServiceMock.fetchWorkflowSource = jest
+        .fn()
+        .mockResolvedValue(workflowSource);
+      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([
+        createProcessInstance({
+          id: 'instance-1',
+          processId: workflowDefinitionId,
+          version: '1.0',
+          state: ProcessInstanceState.Completed,
+          start: WITHIN_30_DAYS,
+        }),
+        createProcessInstance({
+          id: 'instance-2',
+          processId: workflowDefinitionId,
+          version: '1.0',
+          state: ProcessInstanceState.Completed,
+          start: WITHIN_30_DAYS,
+        }),
+        createProcessInstance({
+          id: 'instance-3',
+          processId: workflowDefinitionId,
+          version: '1.0',
+          state: ProcessInstanceState.Error,
+          start: WITHIN_30_DAYS,
+        }),
+        createProcessInstance({
+          id: 'instance-4',
+          processId: workflowDefinitionId,
+          version: '1.0',
+          state: ProcessInstanceState.Completed,
+          start: OUTSIDE_30_DAYS,
+        }),
+      ]);
+
+      const result =
+        await sonataFlowService.fetchWorkflowOverview(workflowDefinitionId);
+
+      expect(dataIndexServiceMock.fetchInstances).toHaveBeenCalledWith({
+        definitionIds: [workflowDefinitionId],
+      });
+      expect(result).toMatchObject({
+        workflowId: workflowDefinitionId,
+        version: '1.0',
+        workflowRunStats: {
+          successRatio: 0.75,
+          runsLastMonth: 3,
+          successCount: 3,
+          errorCount: 1,
+          totalCount: 4,
+        },
+      });
+    });
+
+    it('leaves workflowRunStats undefined when no instances match the workflow', async () => {
+      dataIndexServiceMock.fetchWorkflowSource = jest
+        .fn()
+        .mockResolvedValue(workflowSource);
+      dataIndexServiceMock.fetchInstances = jest.fn().mockResolvedValue([
+        createProcessInstance({
+          id: 'other-1',
+          processId: 'other-workflow',
+          version: '1.0',
+          start: WITHIN_30_DAYS,
+        }),
+      ]);
+
+      const result =
+        await sonataFlowService.fetchWorkflowOverview(workflowDefinitionId);
+
+      expect(result?.workflowId).toBe(workflowDefinitionId);
+      expect(result?.workflowRunStats).toBeUndefined();
     });
   });
 });

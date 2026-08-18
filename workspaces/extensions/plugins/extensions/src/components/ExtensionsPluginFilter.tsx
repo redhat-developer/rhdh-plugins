@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, type SyntheticEvent } from 'react';
 
 import { useSearchParams } from 'react-router-dom';
 
@@ -45,7 +45,7 @@ const CategoryFilter = () => {
   }, [categories]);
 
   const handleChange = useCallback(
-    (_e: any, value: CustomSelectItem[]) => {
+    (_e: SyntheticEvent, value: CustomSelectItem[]) => {
       const newSelection = value.map(v => v.value);
       filter.set(newSelection);
     },
@@ -78,7 +78,7 @@ const AuthorFilter = () => {
   }, [authors]);
 
   const handleChange = useCallback(
-    (_e: any, value: CustomSelectItem[]) => {
+    (_e: SyntheticEvent, value: CustomSelectItem[]) => {
       const newSelection = value.map(v => v.value);
       filter.set(newSelection);
     },
@@ -116,9 +116,6 @@ const SupportTypeFilter = () => {
   const selected = useMemo(() => {
     const selectedFilters = searchParams.getAll('filter');
     return items.filter(item => {
-      if (item.value === 'certified') {
-        return selectedFilters.includes('certified');
-      }
       if (item.value === 'custom') {
         return selectedFilters.includes('custom');
       }
@@ -148,9 +145,7 @@ const SupportTypeFilter = () => {
           params.forEach((value, key) => {
             if (
               key === 'filter' &&
-              (value === `certified` ||
-                value === `custom` ||
-                value.startsWith('support-level='))
+              (value === `custom` || value.startsWith('support-level='))
             ) {
               add();
             } else {

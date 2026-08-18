@@ -53,6 +53,7 @@ export const PluginIcon = ({
   return (
     <CardMedia
       image={icon}
+      title={plugin.metadata.title ?? plugin.metadata.name}
       sx={{
         width: size,
         height: size,

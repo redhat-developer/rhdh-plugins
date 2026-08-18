@@ -22,6 +22,7 @@ import CardContent from '@mui/material/CardContent';
 import Divider from '@mui/material/Divider';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import Tooltip from '@mui/material/Tooltip';
 
 interface CardWrapperProps extends HTMLProps<HTMLDivElement> {
   children: ReactNode;
@@ -33,6 +34,7 @@ interface CardWrapperProps extends HTMLProps<HTMLDivElement> {
   childrenHeight?: string | number;
   role?: string;
   info?: ReactNode;
+  dataTestId?: string;
 }
 
 export const CardWrapper = ({
@@ -45,6 +47,7 @@ export const CardWrapper = ({
   childrenHeight = '100%',
   role = 'article',
   info,
+  dataTestId,
 }: CardWrapperProps) => {
   return (
     <Card
@@ -56,10 +59,15 @@ export const CardWrapper = ({
         height: '100%',
       }}
       role={role}
+      data-testid={dataTestId}
     >
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
         <CardHeader
-          title={title}
+          title={
+            <Tooltip title={title}>
+              <div>{title}</div>
+            </Tooltip>
+          }
           subheader={subheader ?? undefined}
           sx={{
             '& .v5-MuiCardHeader-title, & .v5-MuiCardHeader-subheader': {
@@ -88,21 +96,23 @@ export const CardWrapper = ({
       >
         {description && (
           <Box sx={{ pb: 2, width: '100%', minWidth: 316 }}>
-            <Typography
-              variant="body2"
-              color="textSecondary"
-              sx={{
-                fontSize: '1rem',
-                fontWeight: 400,
-                display: '-webkit-box',
-                WebkitBoxOrient: 'vertical',
-                WebkitLineClamp: 2,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
-              {description}
-            </Typography>
+            <Tooltip title={description}>
+              <Typography
+                variant="body2"
+                color="textSecondary"
+                sx={{
+                  fontSize: '1rem',
+                  fontWeight: 400,
+                  display: '-webkit-box',
+                  WebkitBoxOrient: 'vertical',
+                  WebkitLineClamp: 2,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {description}
+              </Typography>
+            </Tooltip>
           </Box>
         )}
 

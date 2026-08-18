@@ -25,7 +25,7 @@ import {
 } from 'recharts';
 import type { PieData } from '../types';
 
-interface PieTooltipPayload {
+export interface PieTooltipPayload {
   name?: string;
   value?: number;
   payload?: {
@@ -53,8 +53,8 @@ interface PieTooltipContentProps {
 interface ResponsivePieChartProps {
   pieData: PieData[];
   LabelContent?: (props: PieLabelRenderProps) => React.ReactNode;
-  legendContent: (props: PieLegendContentProps) => React.ReactNode;
-  tooltipContent: (props: PieTooltipContentProps) => React.ReactNode;
+  legendContent?: (props: PieLegendContentProps) => React.ReactNode;
+  tooltipContent?: (props: PieTooltipContentProps) => React.ReactNode;
   isErrorState?: boolean;
   setIsInsidePieCircle?: (isInside: boolean) => void;
 }
@@ -67,6 +67,9 @@ export const ResponsivePieChart = ({
   isErrorState,
   setIsInsidePieCircle,
 }: ResponsivePieChartProps) => {
+  const isTooltipEnabled = Boolean(tooltipContent);
+  const pieCx = legendContent ? '30%' : '50%';
+
   return (
     <ResponsiveContainer style={{ outline: 'none' }}>
       <PieChart responsive>
@@ -74,7 +77,7 @@ export const ResponsivePieChart = ({
         {isErrorState && (
           <g>
             <circle
-              cx="30%"
+              cx={pieCx}
               cy="50%"
               r={90}
               fill="transparent"
@@ -95,14 +98,14 @@ export const ResponsivePieChart = ({
           data={pieData}
           dataKey="value"
           nameKey="name"
-          cx="30%"
+          cx={pieCx}
           cy="50%"
           innerRadius="78%"
           outerRadius="90%"
           startAngle={90}
           endAngle={-270}
           stroke="none"
-          cursor="pointer"
+          cursor={isTooltipEnabled ? 'pointer' : undefined}
           isAnimationActive={false}
           labelLine={false}
           label={LabelContent}
@@ -119,17 +122,19 @@ export const ResponsivePieChart = ({
           ))}
         </Pie>
 
-        <Legend
-          layout="vertical"
-          verticalAlign="middle"
-          wrapperStyle={{
-            position: 'absolute',
-            left: '60%',
-          }}
-          content={legendContent}
-        />
+        {legendContent ? (
+          <Legend
+            layout="vertical"
+            verticalAlign="middle"
+            wrapperStyle={{
+              position: 'absolute',
+              left: '60%',
+            }}
+            content={legendContent}
+          />
+        ) : null}
 
-        <Tooltip content={tooltipContent} />
+        <Tooltip content={isTooltipEnabled ? tooltipContent : () => null} />
       </PieChart>
     </ResponsiveContainer>
   );

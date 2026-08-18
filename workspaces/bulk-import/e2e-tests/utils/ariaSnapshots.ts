@@ -58,11 +58,11 @@ export function getPreviewSidebarSnapshots(t: BulkImportMessages) {
      */
     pullRequestDetails: `
     - heading "${prDetails}" [level=6]
-    - text: ${prTitleLabel}
+    - text: "${prTitleLabel}"
     - textbox "${prTitleLabel}":
       - /placeholder: ${t.previewFile.pullRequest.titlePlaceholder}
       - text: Add catalog-info.yaml config file
-    - text: ${prBodyLabel}
+    - text: "${prBodyLabel}"
     - textbox "${prBodyLabel}":
       - /placeholder: ${t.previewFile.pullRequest.bodyPlaceholder}
       - text: /This pull request adds a \\*\\*Backstage entity metadata file\\*\\* to this repository so that the component can be added to the \\[software catalog\\]\\(http:\\/\\/localhost:\\d+\\/catalog\\)\\. After this pull request is merged, the component will become available\\. For more information, read an \\[overview of the Backstage software catalog\\]\\(https:\\/\\/backstage\\.io\\/docs\\/features\\/software-catalog\\/\\)\\. View the import job in your app \\[here\\]\\(http:\\/\\/localhost:\\d+\\/bulk-import\\?repository=https:\\/\\/github\\.com\\/test-org\\/backend-service&defaultBranch=main\\)\\./
@@ -142,13 +142,13 @@ export function getPreviewSidebarSnapshots(t: BulkImportMessages) {
       - text: This pull request adds a
       - strong: Backstage entity metadata file
       - text: to this repository so that the component can be added to the
-      - link "software catalog":
+      - link "software catalog , Opens in a new window":
         - /url: /http:\\/\\/localhost:300\\d\\/catalog/
       - text: . After this pull request is merged, the component will become available. For more information, read an
-      - link "overview of the Backstage software catalog":
+      - link "overview of the Backstage software catalog , Opens in a new window":
         - /url: https://backstage.io/docs/features/software-catalog/
       - text: . View the import job in your app
-      - link "here":
+      - link "here , Opens in a new window":
         - /url: /http:\\/\\/localhost:300\\d\\/bulk-import\\?repository=https:\\/\\/github\\.com\\/test-org\\/backend-service&defaultBranch=main/
       - text: .
   `,

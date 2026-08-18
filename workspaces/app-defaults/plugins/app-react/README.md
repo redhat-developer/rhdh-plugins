@@ -28,10 +28,11 @@ export default createApp({
 });
 ```
 
-This registers two extensions:
-
-- `app-root-wrapper:app/drawer-provider` -- wraps the app with `AppDrawerProvider` context
-- `app-root-element:app/drawer` -- renders the `ApplicationDrawer` outside the app layout
+This registers a single wrapper extension (`app-root-wrapper:app/drawer`) that
+renders the `ApplicationDrawer` around the app content and accepts drawer
+content contributions via inputs. Drawer state is managed by a global singleton
+store, so `useAppDrawer()` works from anywhere in the React tree without a
+wrapping provider.
 
 ## Plugin Author Guide
 
@@ -138,13 +139,12 @@ function MyDrawerContent() {
 ### Main entry (`@red-hat-developer-hub/backstage-plugin-app-react`)
 
 - `useAppDrawer` -- hook to control drawers
-- `AppDrawerProvider` -- context provider (used by the module internally)
 - `ApplicationDrawer` -- drawer renderer component
 - `DrawerPanel` -- low-level MUI drawer wrapper
-- `AppDrawerContent` / `AppDrawerApi` types
+- `AppDrawerContent` / `AppDrawerApi` / `ApplicationDrawerProps` / `DrawerPanelProps` types
 
 ### Alpha entry (`@red-hat-developer-hub/backstage-plugin-app-react/alpha`)
 
 - `appDrawerContentDataRef` -- extension data ref
 - `AppDrawerContentBlueprint` -- blueprint for contributing drawers
-- `appDrawerModule` -- frontend module (registers provider + renderer)
+- `appDrawerModule` -- frontend module (registers the drawer wrapper extension)

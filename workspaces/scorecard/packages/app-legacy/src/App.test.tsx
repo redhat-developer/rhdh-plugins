@@ -16,6 +16,14 @@
 import { render, waitFor } from '@testing-library/react';
 import App from './App';
 
+jest.mock(
+  '@red-hat-developer-hub/backstage-plugin-homepage/alpha',
+  () => ({
+    homepageTranslations: {},
+  }),
+  { virtual: true },
+);
+
 describe('App', () => {
   it('should render', async () => {
     process.env = {

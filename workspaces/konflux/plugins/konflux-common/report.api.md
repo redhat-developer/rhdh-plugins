@@ -88,6 +88,9 @@ export function getSubcomponentsWithFallback(
 ): Entity[];
 
 // @public
+export const globToRegex: (pattern: string) => RegExp;
+
+// @public
 export type GroupVersionKind = GroupVersionKind_2;
 
 // @public (undocumented)
@@ -179,6 +182,12 @@ export interface KonfluxConfig {
 export const konfluxResourceModels: {
   [key: string]: GroupVersionKind_2;
 };
+
+// @public
+export const matchesApplicationPattern: (
+  name: string,
+  patterns: string[],
+) => boolean;
 
 // @public (undocumented)
 export enum ModelsPlural {

@@ -70,8 +70,8 @@ describe('CustomLegend', () => {
     expect(setActiveIndex).toHaveBeenCalledWith(0);
     expect(setTooltipPosition).toHaveBeenCalledWith(
       expect.objectContaining({
-        x: expect.any(Number),
-        y: expect.any(Number),
+        left: expect.any(Number),
+        top: expect.any(Number),
       }),
     );
   });
@@ -144,5 +144,31 @@ describe('CustomLegend', () => {
     expect(screen.getByTestId('legend-colorbox-error')).toHaveStyle(
       'background-color: #C9190B',
     );
+  });
+
+  it('should render two legend items for weightedStatusScore donut segment names with translation key fallback', () => {
+    const weightedStatusScorePieData = [
+      { name: 'weightedStatusScoreFill', value: 75, color: '#F0AB00' },
+      { name: 'weightedStatusScoreRemainder', value: 25, color: '#e0e0e0' },
+    ];
+
+    render(
+      <div data-chart-container>
+        <CustomLegend
+          pieData={weightedStatusScorePieData}
+          activeIndex={null}
+          setActiveIndex={jest.fn()}
+          setTooltipPosition={jest.fn()}
+        />
+      </div>,
+    );
+
+    expect(screen.getByText('WeightedStatusScoreFill')).toBeInTheDocument();
+    expect(
+      screen.getByText('WeightedStatusScoreRemainder'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('legend-colorbox-weightedStatusScoreFill'),
+    ).toHaveStyle('background-color: #F0AB00');
   });
 });

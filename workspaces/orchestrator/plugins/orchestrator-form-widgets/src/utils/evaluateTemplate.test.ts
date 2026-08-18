@@ -15,7 +15,11 @@
  */
 
 import { JsonValue } from '@backstage/types';
-import { evaluateTemplate, evaluateTemplateProps } from './evaluateTemplate';
+import {
+  evaluateFetchResponseSelectorTemplate,
+  evaluateTemplate,
+  evaluateTemplateProps,
+} from './evaluateTemplate';
 import get from 'lodash/get';
 
 const unitEvaluator: evaluateTemplateProps['unitEvaluator'] = async (
@@ -28,6 +32,21 @@ const unitEvaluator: evaluateTemplateProps['unitEvaluator'] = async (
 
   // Just a copy for testing purposes
   return Promise.resolve(get(formData, unit));
+};
+
+/** Matches useTemplateUnitEvaluator: `current.*` uses the path after the first segment. */
+const unitEvaluatorAsInWidgets: evaluateTemplateProps['unitEvaluator'] = async (
+  unit,
+  formData,
+) => {
+  if (!unit) {
+    throw new Error('Template unit can not be empty');
+  }
+  const dot = unit.indexOf('.');
+  if (dot > 0 && unit.substring(0, dot) === 'current') {
+    return get(formData, unit.substring(dot + 1));
+  }
+  return get(formData, unit);
 };
 
 describe('evaluate template', () => {
@@ -239,5 +258,68 @@ describe('evaluate template', () => {
         ).resolves.toStrictEqual(c.expected),
       ),
     );
+  });
+
+  it('evaluateFetchResponseSelectorTemplate interpolates $${{current…}} into a JSONata string', async () => {
+    await expect(
+      evaluateFetchResponseSelectorTemplate({
+        unitEvaluator: unitEvaluatorAsInWidgets,
+        key: 'fetch:response:value',
+        formData: {
+          step: {
+            xParams: {
+              selectedEnvironment: 'a',
+              provisionedEnvironments: 'a,b',
+            },
+          },
+        },
+        template:
+          "$${{current.step.xParams.selectedEnvironment}} in $split($${{current.step.xParams.provisionedEnvironments}}, ',') ? 'update' : 'create'",
+      }),
+    ).resolves.toBe("a in $split(a,b, ',') ? 'update' : 'create'");
+  });
+
+  it('evaluateFetchResponseSelectorTemplate stringifies numeric template results for JSONata', async () => {
+    await expect(
+      evaluateFetchResponseSelectorTemplate({
+        unitEvaluator: unitEvaluatorAsInWidgets,
+        key: 'fetch:response:value',
+        formData: { step: { sel: 1 } },
+        template: '$${{current.step.sel}}',
+      }),
+    ).resolves.toBe('1');
+  });
+
+  it('evaluateFetchResponseSelectorTemplate returns empty string for null template expansion', async () => {
+    await expect(
+      evaluateFetchResponseSelectorTemplate({
+        unitEvaluator: async () => null,
+        key: 'fetch:response:value',
+        formData: {},
+        template: '$${{x}}',
+      }),
+    ).resolves.toBe('');
+  });
+
+  it('evaluateFetchResponseSelectorTemplate returns empty string for solo object expansion', async () => {
+    await expect(
+      evaluateFetchResponseSelectorTemplate({
+        unitEvaluator: async () => ({ a: 1 }),
+        key: 'fetch:response:value',
+        formData: {},
+        template: '$${{x}}',
+      }),
+    ).resolves.toBe('');
+  });
+
+  it('evaluateFetchResponseSelectorTemplate returns empty string on malformed template', async () => {
+    await expect(
+      evaluateFetchResponseSelectorTemplate({
+        unitEvaluator: unitEvaluatorAsInWidgets,
+        key: 'fetch:response:value',
+        formData: {},
+        template: '$${{foo',
+      }),
+    ).resolves.toBe('');
   });
 });

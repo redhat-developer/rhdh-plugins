@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-import type { EntityMetricDetail } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type {
+  EntityMetricDetail,
+  ThresholdRule,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import TableRow from '@mui/material/TableRow';
 import TableCell from '@mui/material/TableCell';
 import { useTheme } from '@mui/material/styles';
 
-import { getLastUpdatedLabel } from '../../../utils';
+import {
+  getLastUpdatedLabel,
+  getThresholdRuleColor,
+  SCORECARD_ERROR_STATE_COLOR,
+} from '../../../utils';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { EntityMetadataMap } from '../../../components/types';
 import { useLanguage } from '../../../hooks/useLanguage';
@@ -32,13 +39,19 @@ import { EntityNameCell } from './cells/EntityNameCell';
 export const EntitiesRow = ({
   entity,
   entityMetadataMap,
+  thresholdRules,
 }: {
   entity: EntityMetricDetail;
   entityMetadataMap: EntityMetadataMap;
+  thresholdRules: ThresholdRule[];
 }) => {
   const theme = useTheme();
   const { t } = useTranslation();
   const locale = useLanguage();
+
+  const statusColor =
+    getThresholdRuleColor(thresholdRules, entity?.status ?? '') ??
+    SCORECARD_ERROR_STATE_COLOR;
 
   return (
     <TableRow
@@ -50,7 +63,11 @@ export const EntitiesRow = ({
       }}
     >
       <TableCell width="12%">
-        <MetricStatusCell status={entity?.status ?? undefined} theme={theme} />
+        <MetricStatusCell
+          status={entity?.status ?? undefined}
+          theme={theme}
+          statusColor={statusColor}
+        />
       </TableCell>
 
       <TableCell width="8%">

@@ -46,10 +46,7 @@ test.beforeAll(async ({ browser }) => {
   await switchToLocale(page, currentLocale);
   translations = getTranslations(baseLocale);
 
-  await page
-    .getByTestId('sidebar-root')
-    .getByRole('link', { name: 'Home' })
-    .click();
+  await page.locator('a').filter({ hasText: 'Home' }).first().click();
   await expect(page.locator('h1')).toContainText('My Company Catalog');
 });
 
@@ -67,7 +64,9 @@ function getHeaderElements() {
     search: page.getByRole('combobox', {
       name: translations.search.placeholder,
     }),
-    selfService: page.getByRole('button', { name: translations.create.title }),
+    selfService: globalHeader.getByRole('link', {
+      name: translations.create.title,
+    }),
     starredItems: page.getByRole('button', {
       name: translations.starred.title,
     }),
@@ -97,9 +96,9 @@ test('Verify Global header to be visible', async ({
   await expect(globalHeader).toMatchAriaSnapshot(`
     - link "Home":
       - img "Home logo"
-      - /url: /catalog
     - combobox "${translations.search.placeholder}"
-    - button "${translations.create.title}"
+    - link "${translations.create.title}":
+      - /url: /create
     - button "${translations.starred.title}"
     - button "${translations.applicationLauncher.tooltip}"
     - button "${translations.help.tooltip}"
@@ -165,17 +164,7 @@ test('Verify Search functionality and results', async () => {
 test('Verify Self-service functionality', async () => {
   const { selfService } = getHeaderElements();
   await selfService.click();
-  await expect(page.getByRole('menu')).toMatchAriaSnapshot(`
-    - menu:
-      - menuitem "${translations.create.templates.sectionTitle} ${translations.create.templates.allTemplates}":
-        - listitem: ${translations.create.templates.sectionTitle}
-      - menuitem "Example Node.js Template":
-        - paragraph: Example Node.js Template
-      - separator
-      - menuitem "${translations.create.registerComponent.title} ${translations.create.registerComponent.subtitle}":
-        - paragraph: ${translations.create.registerComponent.title}
-    `);
-  await page.keyboard.press('Escape');
+  await expect(page).toHaveURL(/\/create/);
 });
 
 test('Verify Starred items functionality', async () => {
@@ -188,6 +177,9 @@ test('Verify Starred items functionality', async () => {
     `);
   await page.keyboard.press('Escape');
 
+  // Navigate to a known entity page before starring
+  await page.goto('/catalog/default/component/example-website');
+  await page.waitForSelector('h1');
   await page.getByRole('button', { name: 'Add to favorites' }).click();
 
   await companyLogo.click();

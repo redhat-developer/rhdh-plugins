@@ -63,7 +63,7 @@ export const StringListEditor = ({
       {label && (
         <Typography
           variant="caption"
-          color="textSecondary"
+          color="text.secondary"
           sx={{ mb: 0.5, display: 'block' }}
         >
           {label}

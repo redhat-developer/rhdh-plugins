@@ -15,10 +15,9 @@
  */
 
 /**
- * New Frontend System extension APIs for the RHDH app drawer.
+ * New Frontend System extension APIs for the RHDH app shell.
  *
  * @packageDocumentation
  */
 
-export * from './extensions';
-export type * from './drawer';
+export * from './drawer';

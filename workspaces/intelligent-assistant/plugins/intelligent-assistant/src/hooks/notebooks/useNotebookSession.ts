@@ -1,0 +1,36 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { useApi } from '@backstage/core-plugin-api';
+
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+
+import { notebooksApiRef } from '../../api/notebooksApi';
+import { NotebookSession } from '../../types';
+
+export const useNotebookSession = (
+  sessionId?: string,
+): UseQueryResult<NotebookSession, Error> => {
+  const notebooksApi = useApi(notebooksApiRef);
+  return useQuery({
+    queryKey: ['notebooks', 'session', sessionId],
+    queryFn: async () => {
+      return await notebooksApi.getSession(sessionId!);
+    },
+    enabled: Boolean(sessionId),
+    staleTime: 1000 * 60,
+  });
+};

@@ -1,5 +1,81 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-backend
 
+## 0.9.1
+
+### Patch Changes
+
+- d623d36: Refreshed `yarn.lock` to align resolved dependency versions.
+- Updated dependencies [d623d36]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.9.1
+
+## 0.9.0
+
+### Minor Changes
+
+- 8af2af2: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- 0acb261: Updated dependency `json-2-csv` to `^5.5.11`.
+- Updated dependencies [8af2af2]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.9.0
+
+## 0.8.4
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.8.4
+
+## 0.8.3
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.8.3
+
+## 0.8.2
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.8.2
+
+## 0.8.1
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.8.1
+
+## 0.8.0
+
+### Minor Changes
+
+- 4526035: Backstage version bump to v1.49.3
+
+### Patch Changes
+
+- Updated dependencies [4526035]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.8.0
+
+## 0.7.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.7.1
+
+## 0.7.0
+
+### Minor Changes
+
+- 0f66c7c: Backstage version bump to v1.47.3
+
+### Patch Changes
+
+- 5c82367: normalize event timestamps to UTC and fix frontend date parsing
+- e2ae776: Add missing direct dependencies to package
+- Updated dependencies [0f66c7c]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@0.7.0
+
 ## 0.6.2
 
 ### Patch Changes

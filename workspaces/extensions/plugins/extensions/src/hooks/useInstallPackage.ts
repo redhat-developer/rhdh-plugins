@@ -15,7 +15,14 @@
  */
 
 import { useMutation } from '@tanstack/react-query';
+
 import { useExtensionsApi } from './useExtensionsApi';
+
+type InstallPackageVariables = {
+  namespace: string;
+  name: string;
+  configYaml: string;
+};
 
 export const useInstallPackage = () => {
   const extensionsApi = useExtensionsApi();
@@ -25,10 +32,7 @@ export const useInstallPackage = () => {
       namespace,
       name,
       configYaml,
-    }: {
-      namespace: string;
-      name: string;
-      configYaml: string;
-    }) => await extensionsApi.installPackage?.(namespace, name, configYaml),
+    }: InstallPackageVariables) =>
+      await extensionsApi.installPackage?.(namespace, name, configYaml),
   });
 };

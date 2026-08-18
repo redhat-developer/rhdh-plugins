@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { useApi } from '@backstage/core-plugin-api';
 
@@ -44,22 +45,34 @@ export const AddRepositoriesForm = ({
 }) => {
   const bulkImportApi = useApi(bulkImportApiRef);
   const queryClient = useQueryClient();
-  const { numberOfApprovalTools, gitlabConfigured } =
+  const [searchParams] = useSearchParams();
+  const { numberOfApprovalTools, gitlabConfigured, githubConfigured } =
     useNumberOfApprovalTools();
 
-  // Set default approval tool based on configuration
-  const getDefaultApprovalTool = () => {
+  // Get approval tool from URL or fallback to default based on configuration
+  const getInitialApprovalTool = useMemo(() => {
+    const urlApprovalTool = searchParams.get('approvalTool');
+
+    // Validate URL param against configured integrations
+    if (urlApprovalTool === ApprovalTool.Git && githubConfigured) {
+      return ApprovalTool.Git;
+    }
+    if (urlApprovalTool === ApprovalTool.Gitlab && gitlabConfigured) {
+      return ApprovalTool.Gitlab;
+    }
+
+    // Fallback to default based on configuration
     if (numberOfApprovalTools === 1) {
       return gitlabConfigured ? ApprovalTool.Gitlab : ApprovalTool.Git;
     }
     return ApprovalTool.Git; // Default to GitHub when both are configured
-  };
+  }, [searchParams, numberOfApprovalTools, gitlabConfigured, githubConfigured]);
 
   const initialValues: AddRepositoriesFormValues = {
     repositoryType: RepositorySelection.Repository,
     repositories: {},
     excludedRepositories: {},
-    approvalTool: getDefaultApprovalTool(),
+    approvalTool: getInitialApprovalTool,
   };
 
   const createImportJobs = (importOptions: {

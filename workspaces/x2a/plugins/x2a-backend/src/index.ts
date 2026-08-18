@@ -13,4 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { x2APlugin as default } from './plugin';
+import { createBackendFeatureLoader } from '@backstage/backend-plugin-api';
+import { x2APlugin } from './plugin';
+import { x2aDatabaseServiceFactory } from './services/X2ADatabaseService';
+import { kubeServiceFactory } from './services/KubeService';
+
+/**
+ * Default export: a feature loader that registers the x2a plugin together
+ * with the service factories for x2a-node's canonical service refs.
+ *
+ * Bundling them here ensures RHDH's dynamic plugin loader (which only
+ * reads the default export) picks up the factories alongside the plugin.
+ *
+ * @public
+ */
+export default createBackendFeatureLoader({
+  *loader() {
+    yield x2APlugin;
+    yield x2aDatabaseServiceFactory;
+    yield kubeServiceFactory;
+  },
+});
+
+export { x2APlugin } from './plugin';
+export { x2aDatabaseServiceRef } from './services/X2ADatabaseService';
+export { x2aDatabaseServiceFactory } from './services/X2ADatabaseService';
+export { kubeServiceRef } from './services/KubeService';
+export { kubeServiceFactory } from './services/KubeService';

@@ -4,6 +4,7 @@
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
 | **id** | **String** |  | [default to null] |
+| **version** | **String** | Process definition version | [optional] [default to null] |
 | **processId** | **String** |  | [default to null] |
 | **processName** | **String** |  | [optional] [default to null] |
 | **state** | [**ProcessInstanceStatusDTO**](ProcessInstanceStatusDTO.md) |  | [optional] [default to null] |

@@ -22,16 +22,19 @@ import type {
   RootConfigService,
 } from '@backstage/backend-plugin-api';
 import type { CatalogService } from '@backstage/plugin-catalog-node';
+import type {
+  X2ADatabaseServiceApi,
+  KubeServiceApi,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
-import { x2aDatabaseServiceRef } from '../services/X2ADatabaseService';
-import { kubeServiceRef } from '../services/KubeService';
+export type { ReconcileJobDeps } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
 export interface RouterDeps {
   httpAuth: HttpAuthService;
   discoveryApi: DiscoveryService;
   catalog: CatalogService;
-  x2aDatabase: typeof x2aDatabaseServiceRef.T;
-  kubeService: typeof kubeServiceRef.T;
+  x2aDatabase: X2ADatabaseServiceApi;
+  kubeService: KubeServiceApi;
   logger: LoggerService;
   permissionsSvc: PermissionsService;
   config: RootConfigService;

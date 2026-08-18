@@ -205,8 +205,10 @@ export const extensionsMessages = {
           'Package cannot be managed in the production environment.',
         installationDisabled:
           'Package cannot be managed because plugin installation is disabled. To enable it, add or modify the extensions configuration in your dynamic-plugins configuration file.',
+        enableActionsTitle: 'The catalog-entity is missing',
         enableActions:
-          'To enable actions, add a catalog entity for this package',
+          'To enable actions, add a catalog entity for this package.',
+        enableActionsDocsLink: 'View documentation',
         noDownloadPermissions:
           "You don't have permission to download the configuration. Contact your administrator to request access or assistance.",
         noEditPermissions:
@@ -221,6 +223,10 @@ export const extensionsMessages = {
       emptyMessages: {
         noResults: 'No results found. Try a different search term.',
         noRecords: 'No records to display',
+      },
+      pagination: {
+        labelRowsPerPage: 'rows',
+        labelDisplayedRows: '{from}-{to} of {count}',
       },
     },
   },
@@ -265,7 +271,6 @@ export const extensionsMessages = {
 
   // Support type filters
   supportTypes: {
-    certifiedBy: 'Certified by {{value}} ({{count}})',
     verifiedBy: 'Verified by {{value}} ({{count}})',
     customPlugins: 'Custom plugins ({{count}})',
   },
@@ -370,12 +375,9 @@ export const extensionsMessages = {
 
   // Badge labels and tooltips
   badges: {
-    certified: 'Certified',
-    certifiedBy: 'Certified by {{provider}}',
     verified: 'Verified',
     verifiedBy: 'Verified by {{provider}}',
     customPlugin: 'Custom plugin',
-    stableAndSecured: 'Stable and secured by {{provider}}',
     generallyAvailable: 'Generally available (GA)',
     gaAndSupportedBy: 'Generally available (GA) and supported by {{provider}}',
     gaAndSupported: 'Generally available (GA) and supported',

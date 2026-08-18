@@ -134,5 +134,10 @@ export const mockAggregatedScorecardEntitiesData = (
       totalPages: 1,
       isCapped: false,
     },
+    entityHealth: {
+      totalEntities: 8,
+      calculationErrorCount: 0,
+      countsArePartial: false,
+    },
   };
 };

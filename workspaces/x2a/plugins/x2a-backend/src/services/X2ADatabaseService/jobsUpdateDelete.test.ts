@@ -46,7 +46,6 @@ describe('X2ADatabaseService – jobs (update & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -98,7 +97,6 @@ describe('X2ADatabaseService – jobs (update & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -123,7 +121,6 @@ describe('X2ADatabaseService – jobs (update & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -165,7 +162,6 @@ describe('X2ADatabaseService – jobs (update & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -209,7 +205,6 @@ describe('X2ADatabaseService – jobs (update & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -246,7 +241,6 @@ describe('X2ADatabaseService – jobs (update & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -284,7 +278,6 @@ describe('X2ADatabaseService – jobs (update & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -324,7 +317,6 @@ describe('X2ADatabaseService – jobs (update & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -376,7 +368,6 @@ describe('X2ADatabaseService – jobs (update & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -413,7 +404,6 @@ describe('X2ADatabaseService – jobs (update & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -470,7 +460,6 @@ describe('X2ADatabaseService – jobs (update & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -503,7 +492,6 @@ describe('X2ADatabaseService – jobs (update & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -542,7 +530,6 @@ describe('X2ADatabaseService – jobs (update & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -590,7 +577,6 @@ describe('X2ADatabaseService – jobs (update & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },
@@ -663,7 +649,6 @@ describe('X2ADatabaseService – jobs (update & delete)', () => {
         const project = await service.createProject(
           {
             name: 'Test Project',
-            abbreviation: 'TP',
             description: 'D',
             ...defaultProjectRepoFields,
           },

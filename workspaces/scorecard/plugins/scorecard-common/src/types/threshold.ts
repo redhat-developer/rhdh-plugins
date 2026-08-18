@@ -55,7 +55,7 @@ export type ThresholdRule = {
 };
 
 /**
- * Threshold configuration
+ * Threshold configuration that categorizes metric values.
  * @public
  */
 export type ThresholdConfig = {
@@ -65,6 +65,15 @@ export type ThresholdConfig = {
    */
   rules: ThresholdRule[];
 };
+
+/**
+ * Threshold rule configuration for aggregation KPIs
+ * @public
+ */
+export type AggregationThresholdRule = Pick<
+  ThresholdRule,
+  'key' | 'expression' | 'color'
+>;
 
 /**
  * @public

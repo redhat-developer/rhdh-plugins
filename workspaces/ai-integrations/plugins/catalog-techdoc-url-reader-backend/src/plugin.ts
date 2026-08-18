@@ -32,6 +32,7 @@ import {
   UrlReaderServiceReadTreeResponseFile,
   UrlReaderServiceReadTreeResponseDirOptions,
   LoggerService,
+  AuthService,
 } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
 import { NotFoundError, NotModifiedError } from '@backstage/errors';
@@ -73,6 +74,16 @@ export class ModelCatalogBridgeUrlReaderServiceReadTreeResponse
         platformPath.join(this.workDir, 'backstage-'),
       ));
 
+    // Write a minimal mkdocs.yml that the TechDocs builder (mkdocs)
+    // requires at the project root.
+    const mkdocsPath = platformPath.join(dir, 'mkdocs.yml');
+    const mkdocsContent = 'site_name: Model Card\nnav:\n  - Home: index.md\n';
+    try {
+      await fs.promises.writeFile(mkdocsPath, mkdocsContent);
+    } catch (error) {
+      this.logger.error(`Error writing mkdocs.yml to ${mkdocsPath}:`, error);
+    }
+
     const subDir = platformPath.join(dir, 'docs');
     const filePath = platformPath.join(subDir, 'index.md');
     try {
@@ -89,7 +100,10 @@ export class ModelCatalogBridgeUrlReaderServiceReadTreeResponse
 
 export type BridgeConfig = {
   id: string;
-  baseUrl: string;
+  name: string;
+  kubeflowModelCatalogUrl: string;
+  defaultOwner: string;
+  defaultLifecycle: string;
 };
 
 export function readBridgeConfigs(config: Config): BridgeConfig[] {
@@ -97,12 +111,44 @@ export function readBridgeConfigs(config: Config): BridgeConfig[] {
   if (!configs) {
     return [];
   }
-  return configs.keys().map(id => readBridgeConfig(id, configs.getConfig(id)));
+  const result: BridgeConfig[] = [];
+  for (const connectorId of configs.keys()) {
+    const connectorConfig = configs.getConfig(connectorId);
+    for (const clusterKey of connectorConfig.keys()) {
+      const clusterConfig = connectorConfig.getOptionalConfig(clusterKey);
+      if (!clusterConfig) {
+        continue;
+      }
+      if (clusterConfig.has('frequency') || clusterConfig.has('timeout')) {
+        continue;
+      }
+      result.push(readBridgeConfig(connectorId, clusterConfig));
+    }
+  }
+  return result;
+}
+
+function safeGetOptionalString(config: Config, key: string): string {
+  try {
+    return config.getOptionalString(key) ?? '';
+  } catch {
+    // Backstage ConfigReader throws TypeError for empty-string values
+    // (e.g. from env var substitution like ${VAR:-}).
+    return '';
+  }
 }
 
 export function readBridgeConfig(id: string, config: Config): BridgeConfig {
-  const url = config.getString('baseUrl');
-  return { id, baseUrl: url };
+  return {
+    id,
+    name: safeGetOptionalString(config, 'name'),
+    kubeflowModelCatalogUrl: safeGetOptionalString(
+      config,
+      'kubeflow-model-catalog-url',
+    ),
+    defaultOwner: safeGetOptionalString(config, 'default-owner'),
+    defaultLifecycle: safeGetOptionalString(config, 'default-lifecycle'),
+  };
 }
 
 export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
@@ -110,11 +156,15 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
   private readonly logger: LoggerService;
   private readonly bridgeConfigs: BridgeConfig[];
 
+  // TODO we are limited in which core services can be passed into the ReaderFactory, so as a work around we
+  // define these globals that are set in the plugin init method; if we merge this plugin with the
+  // kserve-kubeflow-connector plugins, and bypass the need for plugin to plugin REST calls, we can
+  // bypass the need for the auth service.
+  static auth: AuthService;
+
   static factory: ReaderFactory = ({ config, logger }) => {
     const reader = new ModeCatalogBridgeTechdocUrlReader(config, logger);
-    const predicate = (url: URL) => reader.bridgePredicate(url);
-
-    return [{ reader, predicate }];
+    return [{ reader, predicate: reader.bridgePredicate }];
   };
 
   constructor(config: Config, logger: LoggerService) {
@@ -130,26 +180,18 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
     }
   }
 
-  bridgePredicate = (url: URL): boolean => {
+  private matchingBridgeConfig(url: URL): BridgeConfig | undefined {
     for (let index = 0; index < this.bridgeConfigs.length; index++) {
       const bc = this.bridgeConfigs[index];
-      const bcUrl = new URL(bc.baseUrl);
-      if (
-        url.hostname === bcUrl.hostname &&
-        url.port === bcUrl.port &&
-        url.pathname.startsWith('/modelcard')
-      ) {
-        return true;
+      if (url.pathname.includes('modelcard') && url.pathname.includes(bc.id)) {
+        return bc;
       }
     }
-    if (
-      url.hostname === 'localhost' &&
-      url.port === '9090' &&
-      url.pathname.startsWith('/modelcard')
-    ) {
-      return true;
-    }
-    return false;
+    return undefined;
+  }
+
+  bridgePredicate = (url: URL): boolean => {
+    return this.matchingBridgeConfig(url) !== undefined;
   };
 
   async readUrl(
@@ -157,9 +199,26 @@ export class ModeCatalogBridgeTechdocUrlReader implements UrlReaderService {
     options?: UrlReaderServiceReadUrlOptions,
   ): Promise<UrlReaderServiceReadUrlResponse> {
     this.logger.info(`ModelCatalogBridgeTechdocUrlReader.readUrl of ${url}`);
+    const parsedUrl = new URL(url);
+    const bc = this.matchingBridgeConfig(parsedUrl);
+    if (!bc) {
+      throw new Error(`No matching bridge config for ${url}`);
+    }
     let response: Response;
     try {
+      const token =
+        await ModeCatalogBridgeTechdocUrlReader.auth.getPluginRequestToken({
+          onBehalfOf:
+            await ModeCatalogBridgeTechdocUrlReader.auth.getOwnServiceCredentials(),
+          targetPluginId: bc.id,
+        });
+      const tok = token.token;
+      this.logger.info(`Using service-to-service token for ${url}`);
       response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${tok}`,
+        },
         signal: options?.signal as any,
       });
     } catch (e) {
@@ -258,11 +317,14 @@ export const catalogTechdocUrlReaderPlugin = createServiceFactory({
   service: urlReaderFactoriesServiceRef,
   deps: {
     logger: coreServices.logger,
+    auth: coreServices.auth,
   },
-  async factory({ logger }) {
+  async factory({ logger, auth }) {
     logger
       .child({ source: 'catalogTechdocUrlReaderPlugin"' })
       .info('Registering the model catalog bridge URL reader ');
+
+    ModeCatalogBridgeTechdocUrlReader.auth = auth;
 
     return ModeCatalogBridgeTechdocUrlReader.factory;
   },

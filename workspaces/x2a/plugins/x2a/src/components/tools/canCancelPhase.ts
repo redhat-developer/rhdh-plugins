@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { JobStatusEnum } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
+import {
+  JobStatus,
+  JobStatusEnum,
+} from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 export const canCancelPhase = (phaseStatus?: JobStatusEnum): boolean =>
-  phaseStatus === 'pending' || phaseStatus === 'running';
+  !!phaseStatus && JobStatus.from(phaseStatus).isActive();

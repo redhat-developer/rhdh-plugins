@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Pagination } from '../types/pagination';
+
+import { FilterClause } from '../types/filterClause';
+import { Pagination, PaginationQueryVariable } from '../types/pagination';
 
 export function buildGraphQlQuery(args: {
   type: 'ProcessDefinitions' | 'ProcessInstances' | 'Jobs';
   queryBody: string;
   whereClause?: string;
   pagination?: Pagination;
+  filterCondition?: FilterClause;
 }): string {
-  let query = `{${args.type}`;
+  const queryHeaderStart = 'query (';
+  const queryHeaderEnd = ')';
 
+  const queryHeaderPaginationOrderByParams = `$paginationInfo: Pagination, $orderByInfo: ${args.type.slice(0, -1)}OrderBy`;
+
+  const filterParams = args.filterCondition?.clauseVariable
+    ?.map(cl => {
+      return `$${cl.clauseVariableName}: ${cl.clauseVariableType}`;
+    })
+    .join(', ');
+
+  const params = [queryHeaderPaginationOrderByParams, filterParams]
+    .filter(Boolean)
+    .join(', ');
+
+  let query = `${queryHeaderStart}${params}${queryHeaderEnd}{${args.type}`;
   const whereClause = buildWhereClause(args.whereClause);
-  const paginationClause = buildPaginationClause(args.pagination);
 
-  if (whereClause || paginationClause) {
+  const paginationClause = 'pagination: $paginationInfo';
+  const orderByClause = 'orderBy: $orderByInfo';
+
+  if (whereClause || paginationClause || orderByClause) {
     query += ' (';
-    query += [whereClause, paginationClause].filter(Boolean).join(', ');
+    query += [whereClause, orderByClause, paginationClause]
+      .filter(Boolean)
+      .join(', ');
     query += ') ';
   }
 
@@ -41,29 +62,46 @@ function buildWhereClause(whereClause?: string): string {
   return whereClause ? `where: {${whereClause}}` : '';
 }
 
-function buildPaginationClause(pagination?: Pagination): string {
-  if (!pagination) return '';
+export function buildOrderByVariables(pagination?: Pagination): {
+  [key: string]: string;
+} {
+  const orderByVariable: { [key: string]: string } = {};
 
-  const parts = [];
-
-  if (pagination.sortField !== undefined) {
-    parts.push(
-      `orderBy: {${pagination.sortField}: ${
-        pagination.order !== undefined ? pagination.order?.toUpperCase() : 'ASC'
-      }}`,
-    );
+  if (pagination?.sortField !== undefined) {
+    orderByVariable[pagination.sortField] =
+      pagination.order?.toUpperCase() ?? 'ASC';
   }
 
-  const paginationParts = [];
-  if (pagination.limit !== undefined) {
-    paginationParts.push(`limit: ${pagination.limit}`);
-  }
-  if (pagination.offset !== undefined) {
-    paginationParts.push(`offset: ${pagination.offset}`);
-  }
-  if (paginationParts.length) {
-    parts.push(`pagination: {${paginationParts.join(', ')}}`);
+  return orderByVariable;
+}
+
+export function buildPaginationVariables(
+  pagination?: Pagination,
+): PaginationQueryVariable {
+  const paginationVariable: PaginationQueryVariable = {};
+
+  if (pagination?.limit !== undefined) {
+    paginationVariable.limit = pagination.limit;
   }
 
-  return parts.join(', ');
+  if (pagination?.offset !== undefined) {
+    paginationVariable.offset = pagination.offset;
+  }
+  return paginationVariable;
+}
+
+export function buildQueryParamVariable(
+  pagination?: Pagination,
+  filterCondition?: FilterClause,
+) {
+  const paramVariables: any = {
+    paginationInfo: buildPaginationVariables(pagination),
+    orderByInfo: buildOrderByVariables(pagination),
+  };
+
+  filterCondition?.clauseVariable?.forEach(p => {
+    paramVariables[p.clauseVariableName] = p.formattedValue;
+  });
+
+  return paramVariables;
 }

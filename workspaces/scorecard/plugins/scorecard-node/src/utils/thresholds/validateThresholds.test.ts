@@ -14,9 +14,15 @@
  * limitations under the License.
  */
 
-import { validateThresholds } from './validateThresholds';
+import {
+  validateThresholdsForMetric,
+  validateThresholdsForAggregation,
+} from './validateThresholds';
 import { ThresholdConfigFormatError } from '../../errors';
-import { ScorecardThresholdRuleColors } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import {
+  ScorecardThresholdRuleColors,
+  type ThresholdConfig,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 describe('validateThresholds', () => {
   describe('validateThresholds - valid configs', () => {
@@ -29,7 +35,9 @@ describe('validateThresholds', () => {
         ],
       };
 
-      expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
+      expect(() =>
+        validateThresholdsForMetric(validConfig, 'number'),
+      ).not.toThrow();
     });
 
     it('should validate valid threshold config with boolean metric', () => {
@@ -40,25 +48,31 @@ describe('validateThresholds', () => {
         ],
       };
 
-      expect(() => validateThresholds(validConfig, 'boolean')).not.toThrow();
+      expect(() =>
+        validateThresholdsForMetric(validConfig, 'boolean'),
+      ).not.toThrow();
     });
 
     it('should validate config with range expressions', () => {
       const validConfig = {
         rules: [
-          { key: 'error', expression: '80-100' },
-          { key: 'warning', expression: '50-79' },
-          { key: 'success', expression: '0-49' },
+          { key: 'error', expression: '>=80' },
+          { key: 'warning', expression: '50-80' },
+          { key: 'success', expression: '<=50' },
         ],
       };
 
-      expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
+      expect(() =>
+        validateThresholdsForMetric(validConfig, 'number'),
+      ).not.toThrow();
     });
 
     it('should validate config with empty rules array', () => {
       const validConfig = { rules: [] };
 
-      expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
+      expect(() =>
+        validateThresholdsForMetric(validConfig, 'number'),
+      ).not.toThrow();
     });
 
     it('should validate config with custom threshold keys, colors and icons', () => {
@@ -72,19 +86,19 @@ describe('validateThresholds', () => {
           },
           {
             key: 'high',
-            expression: '60-79',
+            expression: '60-80',
             color: '#ff9800',
             icon: '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="130"><rect width="300" height="100"x="10" y="10" /></svg>',
           },
           {
             key: 'medium',
-            expression: '40-59',
+            expression: '40-60',
             color: '#ffc107',
             icon: 'kind:component',
           },
           {
             key: 'low',
-            expression: '20-39',
+            expression: '20-40',
             color: '#4caf50',
             icon: 'https://raw.githubusercontent.com/redhat-developer/example/main/icons/scorecard-icon.svg',
           },
@@ -92,7 +106,9 @@ describe('validateThresholds', () => {
         ],
       };
 
-      expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
+      expect(() =>
+        validateThresholdsForMetric(validConfig, 'number'),
+      ).not.toThrow();
     });
 
     it('should validate standard keys without colors', () => {
@@ -104,7 +120,7 @@ describe('validateThresholds', () => {
         ],
       };
 
-      expect(() => validateThresholds(config, 'number')).not.toThrow();
+      expect(() => validateThresholdsForMetric(config, 'number')).not.toThrow();
     });
 
     it('should validate config with predefined color constants', () => {
@@ -128,7 +144,9 @@ describe('validateThresholds', () => {
         ],
       };
 
-      expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
+      expect(() =>
+        validateThresholdsForMetric(validConfig, 'number'),
+      ).not.toThrow();
     });
 
     it('should validate config with hex color', () => {
@@ -140,18 +158,90 @@ describe('validateThresholds', () => {
         ],
       };
 
-      expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
+      expect(() =>
+        validateThresholdsForMetric(validConfig, 'number'),
+      ).not.toThrow();
     });
 
     it('should validate config with RGB color', () => {
       const validConfig = {
         rules: [
           { key: 'warning', expression: '<5', color: 'rgb(255, 87, 51)' },
-          { key: 'error', expression: '<5', color: 'rgba(255, 87, 51, 0.5)' },
+          { key: 'error', expression: '>=5', color: 'rgba(255, 87, 51, 0.5)' },
         ],
       };
 
-      expect(() => validateThresholds(validConfig, 'number')).not.toThrow();
+      expect(() =>
+        validateThresholdsForMetric(validConfig, 'number'),
+      ).not.toThrow();
+    });
+
+    it('should reject number rules that leave a gap on the real line for metric', () => {
+      const gapConfig = {
+        rules: [
+          { key: 'success', expression: '<10' },
+          { key: 'warning', expression: '11-20' },
+          { key: 'error', expression: '>20' },
+        ],
+      };
+
+      expect(() => validateThresholdsForMetric(gapConfig, 'number')).toThrow(
+        ThresholdConfigFormatError,
+      );
+      expect(() => validateThresholdsForMetric(gapConfig, 'number')).toThrow(
+        /do not cover the entire real line/,
+      );
+    });
+
+    it('should throw error when threshold rules do not cover the entire real line for aggregation', () => {
+      const gapConfig = {
+        rules: [
+          { key: 'success', expression: '<10' },
+          { key: 'warning', expression: '11-20' },
+          { key: 'error', expression: '>20' },
+        ],
+      };
+      expect(() =>
+        validateThresholdsForAggregation(gapConfig, 'number'),
+      ).toThrow(ThresholdConfigFormatError);
+      expect(() =>
+        validateThresholdsForAggregation(gapConfig, 'number'),
+      ).toThrow(/do not cover the entire real line/);
+    });
+
+    it('should accept number rules that partition the real line for metrics and aggregation', () => {
+      const config = {
+        rules: [
+          { key: 'success', expression: '<10' },
+          { key: 'warning', expression: '10-20' },
+          { key: 'error', expression: '>20' },
+        ],
+      };
+
+      expect(() => validateThresholdsForMetric(config, 'number')).not.toThrow();
+      expect(() =>
+        validateThresholdsForAggregation(config, 'number'),
+      ).not.toThrow();
+    });
+
+    it('should not run interval coverage when there is only one number rule', () => {
+      expect(() =>
+        validateThresholdsForMetric(
+          { rules: [{ key: 'success', expression: '<10' }] },
+          'number',
+        ),
+      ).not.toThrow();
+    });
+
+    it('should accept discrete == number rules', () => {
+      const config = {
+        rules: [
+          { key: 'A', expression: '==1', color: '#111', icon: 'a' },
+          { key: 'B', expression: '==2', color: '#222', icon: 'b' },
+        ],
+      };
+
+      expect(() => validateThresholdsForMetric(config, 'number')).not.toThrow();
     });
   });
 
@@ -230,7 +320,7 @@ describe('validateThresholds', () => {
     ])(
       'should throw error for invalid config format: $config',
       ({ config, expectedError }) => {
-        expect(() => validateThresholds(config, 'number')).toThrow(
+        expect(() => validateThresholdsForMetric(config, 'number')).toThrow(
           new ThresholdConfigFormatError(expectedError),
         );
       },
@@ -245,12 +335,15 @@ describe('validateThresholds', () => {
         ],
       };
 
-      expect(() => validateThresholds(config, 'number')).toThrow(
+      expect(() => validateThresholdsForMetric(config, 'number')).toThrow(
         new ThresholdConfigFormatError(
           'Duplicate key detected for "error" with expression ">50"',
         ),
       );
     });
+
+    const customKeyRequiresColorAndIcon =
+      "Custom threshold key \"critical\" must specify a color and icon property. Only standard keys ('success', 'warning', 'error') have default colors and icons.";
 
     it('should throw error for custom threshold key without color', () => {
       const config = {
@@ -264,10 +357,8 @@ describe('validateThresholds', () => {
         ],
       };
 
-      expect(() => validateThresholds(config, 'number')).toThrow(
-        new ThresholdConfigFormatError(
-          "Custom threshold key \"critical\" must specify a color or icon property. Only standard keys ('success', 'warning', 'error') have default colors and icons.",
-        ),
+      expect(() => validateThresholdsForMetric(config, 'number')).toThrow(
+        new ThresholdConfigFormatError(customKeyRequiresColorAndIcon),
       );
     });
 
@@ -283,10 +374,8 @@ describe('validateThresholds', () => {
         ],
       };
 
-      expect(() => validateThresholds(config, 'number')).toThrow(
-        new ThresholdConfigFormatError(
-          "Custom threshold key \"critical\" must specify a color or icon property. Only standard keys ('success', 'warning', 'error') have default colors and icons.",
-        ),
+      expect(() => validateThresholdsForMetric(config, 'number')).toThrow(
+        new ThresholdConfigFormatError(customKeyRequiresColorAndIcon),
       );
     });
 
@@ -297,7 +386,12 @@ describe('validateThresholds', () => {
         ],
       };
 
-      expect(() => validateThresholds(config, 'number')).toThrow(
+      expect(() =>
+        validateThresholdsForMetric(
+          config as unknown as ThresholdConfig,
+          'number',
+        ),
+      ).toThrow(
         new ThresholdConfigFormatError(
           'Invalid icon format for rule "critical": icon must be a non-empty string',
         ),
@@ -311,7 +405,7 @@ describe('validateThresholds', () => {
         ],
       };
 
-      expect(() => validateThresholds(config, 'number')).toThrow(
+      expect(() => validateThresholdsForMetric(config, 'number')).toThrow(
         new ThresholdConfigFormatError(
           'Invalid icon format for rule "critical": icon must be a non-empty string',
         ),
@@ -372,10 +466,62 @@ describe('validateThresholds', () => {
     ])(
       'should throw error for invalid color: $description',
       ({ config, expectedError }) => {
-        expect(() => validateThresholds(config, 'number')).toThrow(
-          new ThresholdConfigFormatError(expectedError),
-        );
+        expect(() =>
+          validateThresholdsForMetric(
+            config as unknown as ThresholdConfig,
+            'number',
+          ),
+        ).toThrow(new ThresholdConfigFormatError(expectedError));
       },
     );
+  });
+
+  describe('validateThresholdsForAggregation', () => {
+    it('should accept aggregation KPI style rules with MUI palette colors on number metric', () => {
+      const aggregationStyleConfig = {
+        rules: [
+          { key: 'success', expression: '>=75', color: 'success.main' },
+          { key: 'warning', expression: '10-75', color: 'warning.main' },
+          { key: 'error', expression: '<10', color: 'error.main' },
+        ],
+      };
+
+      expect(() =>
+        validateThresholdsForAggregation(aggregationStyleConfig, 'number'),
+      ).not.toThrow();
+    });
+
+    it('should throw on invalid expression for number metric', () => {
+      const config = {
+        rules: [
+          {
+            key: 'success',
+            expression: '%%%invalid%%%',
+            color: 'success.main',
+          },
+        ],
+      };
+
+      expect(() => validateThresholdsForAggregation(config, 'number')).toThrow(
+        new ThresholdConfigFormatError(
+          'Invalid threshold expression: "%%%invalid%%%".',
+        ),
+      );
+    });
+
+    it('should throw an error for custom threshold key without color on aggregation', () => {
+      const config = {
+        rules: [
+          { key: 'success', expression: '<20' },
+          { key: 'critical', expression: '>=20' },
+        ],
+      };
+
+      expect(() => validateThresholdsForAggregation(config, 'number')).toThrow(
+        new ThresholdConfigFormatError(
+          "Custom threshold key \"critical\" must specify a color property. Only standard keys ('success', 'warning', 'error') have default colors.",
+        ),
+      );
+    });
   });
 });

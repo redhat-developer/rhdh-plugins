@@ -1,5 +1,174 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 8.0.2
+
+### Patch Changes
+
+- 6ea9977: Document contributor guides for local development and CI bump-trust testing, and link them from the package READMEs.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@8.0.2
+
+## 8.0.1
+
+### Patch Changes
+
+- e3fb07a: Export translations module as default for NFS auto-discovery
+- e0d0986: Updated dependency `prettier` to `3.9.6`.
+- 503c66e: Updated dependency `@openapitools/openapi-generator-cli` to `2.40.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.15.0`.
+- 8966faf: Updated dependency `prettier` to `3.9.5`.
+- Updated dependencies [e0d0986]
+- Updated dependencies [8966faf]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@8.0.1
+
+## 8.0.0
+
+### Major Changes
+
+- 6e61d04: **BREAKING**: Graduated the New Frontend System (NFS) bulk-import plugin to stable API.
+  The NFS plugin (`createFrontendPlugin`) has been promoted from the `./alpha` subpath to the primary `.` entry point. The `./alpha` subpath now only exports translations. Legacy (OFS) exports (`bulkImportPlugin`, `BulkImportPage`, `BulkImportSidebarItem`, `BulkImportIcon`) have been moved to the new `./legacy` subpath.
+
+  **Migration for NFS consumers (previously using `./alpha`):**
+
+  ```diff
+  - import bulkImportPlugin, { bulkImportTranslationsModule } from '@red-hat-developer-hub/backstage-plugin-bulk-import/alpha';
+  + import bulkImportPlugin, { bulkImportTranslationsModule } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
+  ```
+
+  **Migration for OFS consumers:**
+
+  ```diff
+  - import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import';
+  + import { BulkImportPage } from '@red-hat-developer-hub/backstage-plugin-bulk-import/legacy';
+  ```
+
+  **Migration for dynamic plugin configurations:**
+
+  Legacy exports require `module: Legacy` — they are not available on the default module.
+
+  ```yaml
+  dynamicPlugins:
+    frontend:
+      red-hat-developer-hub.backstage-plugin-bulk-import:
+        # Legacy exports require `module: Legacy`
+        dynamicRoutes:
+          - path: /bulk-import
+            importName: BulkImportPage
+            module: Legacy
+  ```
+
+### Minor Changes
+
+- 02db099: Backstage version bump to v1.52.0
+
+### Patch Changes
+
+- 83d8a47: Removed unused `StylesProvider` and `createGenerateClassName` JSS wrapper from plugin Router. Dropped `@mui/styles` dependency since JSS class-name isolation is no longer needed after the MUI5 migration.
+- 8eb345e: Updated dependency `js-yaml` to `^4.3.0`.
+- 4e7416a: optimize bulk-import
+- Updated dependencies [02db099]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@8.0.0
+
+## 7.3.7
+
+### Patch Changes
+
+- 6d0a82b: Bump `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.11` to fix broken `config.d.ts` in earlier versions.
+- 172d39f: Fixed approval tool selection resetting to GitHub when clicking Preview file by preventing unintended router navigation that stripped the approvalTool query parameter from the URL.
+- a85170e: Replace Material UI v4 imports with MUI v5 and migrate makeStyles to sx prop to prevent style collisions.
+- 7c2f5d2: Updated dependency `prettier` to `3.8.4`.
+- 259b76f: Updated dependency `@openapitools/openapi-generator-cli` to `2.39.0`.
+  Updated dependency `@playwright/test` to `1.61.0`.
+- Updated dependencies [7c2f5d2]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.7
+
+## 7.3.6
+
+### Patch Changes
+
+- 0c4bc08: Fixed French localization bug in the Preview PR side drawer where the title label displayed an unresolved `{{outil}}` placeholder instead of the translated tool name. Also improved French word order for the title, body, and details labels to use natural "Noun de {{tool}}" phrasing.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.6
+
+## 7.3.5
+
+### Patch Changes
+
+- 4b07772: Translations updated for de/es/fr/it/ja
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.5
+
+## 7.3.4
+
+### Patch Changes
+
+- f614da8: Fixed the add-repositories table staying in a loading state when the repository query was disabled after SCM token collection failed, and improved the experience when a user dismisses the SCM login prompt by showing a sign-in empty state instead of a configuration error.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.4
+
+## 7.3.3
+
+### Patch Changes
+
+- 9beb261: Scope JSS class names with a unique seed to prevent style collisions with
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.3
+
+## 7.3.2
+
+### Patch Changes
+
+- 5148408: Migrated to Jest 30 as required by @backstage/cli 0.36.0.
+- Updated dependencies [5148408]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.2
+
+## 7.3.1
+
+### Patch Changes
+
+- 4522d8c: - Fixed duplicate header in NFS app by adding `noHeader: true` to the PageBlueprint configuration
+  - Persist selected approval tool (GitHub/GitLab) in URL parameter to survive page refresh
+  - Fixed large empty space between table rows and pagination on the last page when rows is less than rows-per-page
+- ef36dbb: Corrected `dataFetcher` return type to include `Response` and replaced unsafe type casts with `instanceof` narrowing.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.1
+
+## 7.3.0
+
+### Minor Changes
+
+- a1ae6d2: ## On Behalf of User Access
+
+  This release introduces the ability for the Bulk Import plugin to fetch repository and organization listings **on behalf of the signed-in user**, using their OAuth credentials rather than relying solely on server-side integration credentials (GitHub App, PAT, or GitLab token).
+
+  ### What Changed
+
+  **Backend (`bulk-import-backend`)**
+  - Added a new `GET /api/bulk-import/scm-hosts` endpoint that returns the configured GitHub and GitLab integration host URLs as a `SCMHostList` object, enabling the frontend to discover which hosts to request OAuth tokens for.
+  - The `GET /repositories` and `GET /organizations/{organizationName}/repositories` endpoints now **require** the `x-scm-tokens` request header — a JSON map of SCM host base URL to user OAuth token. Requests that omit this header, or supply an empty or oversized header, are rejected with HTTP 401. This ensures repository listings are always scoped to the signed-in user's access and never fall back to server-wide integration credentials.
+  - The `x-scm-tokens` header is stripped from the request immediately upon receipt, before the permission check and before any audit event is created, so OAuth token values are never persisted in audit logs.
+  - When user tokens are provided for GitHub, the Octokit response cache is intentionally disabled to prevent cross-user ETag cache leakage. Server-side credential paths are not affected.
+  - Introduced a shared `GitApiService` interface and common SCM types (`SCMOrganization`, `SCMRepository`, `SCMFetchError`, etc.) to unify the GitHub and GitLab service implementations under a consistent contract.
+
+  **Frontend (`bulk-import`)**
+  - The plugin now has a **soft dependency** on `@backstage/integration-react`'s `ScmAuthApi`. If the API is registered in the application, the plugin automatically requests OAuth tokens for each configured SCM host and passes them to the backend to enable user-scoped repository listings.
+  - Added `getSCMHosts()` to the `BulkImportAPI` interface with a corresponding `GET /api/bulk-import/scm-hosts` client call, used to discover host URLs before requesting user tokens.
+  - User OAuth tokens are transmitted to the backend via the `X-SCM-Tokens` request header as a JSON-encoded map.
+  - If the SCM OAuth integration is not configured or token collection fails for all hosts, the repository list query is **blocked** on the frontend and the hook surfaces a descriptive error. This prevents the frontend from firing a request that will always be rejected with 401.
+
+  ### Required Configuration
+
+  The GitHub and/or GitLab OAuth provider must be configured in the Backstage application for repository listing to work. Deployments that previously relied on server-side credentials alone for the repository list view must add an SCM OAuth provider to continue using this feature.
+
+  If `ScmAuthApi` is not registered or tokens cannot be obtained for any configured SCM host, users will see an error prompting them to configure the SCM OAuth integration.
+
+- 328508c: Backstage version bump to v1.49.3
+
+### Patch Changes
+
+- 518943d: Updated dependency `@openapitools/openapi-generator-cli` to `2.31.1`.
+  Updated dependency `@playwright/test` to `1.59.1`.
+  Updated dependency `@red-hat-developer-hub/backstage-plugin-theme` to `^0.14.0`.
+- 8e0bb08: Updated dependency `@openapitools/openapi-generator-cli` to `2.30.2`.
+  Updated dependency `openapicmd` to `2.9.0`.
+  Updated dependency `@playwright/test` to `1.58.2`.
+- Updated dependencies [328508c]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.0
+
 ## 7.2.1
 
 ### Patch Changes
