@@ -45,7 +45,7 @@ export class CleanupExpiredDataTask {
 
   private static readonly CLEANUP_SCHEDULE: SchedulerServiceTaskScheduleDefinition =
     {
-      frequency: { minutes: 3 },
+      frequency: { days: 1 },
       timeout: { minutes: 2 },
       initialDelay: { seconds: 3 },
     };
