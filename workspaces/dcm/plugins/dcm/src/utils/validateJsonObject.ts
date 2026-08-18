@@ -14,20 +14,25 @@
  * limitations under the License.
  */
 
+/** Discriminated union returned by {@link validateJsonObject}. */
+export type JsonObjectResult =
+  | { status: 'empty' }
+  | { status: 'syntax' }
+  | { status: 'not_object' }
+  | { status: 'ok'; value: Record<string, unknown> };
+
 /**
  * Validates a raw JSON string as a JSON object (not an array or primitive).
  *
- * Returns:
- * - `''` if the string is empty / whitespace (valid — no schema set)
- * - `'syntax'` if the string is non-empty but not valid JSON
- * - `'object'` if it is valid JSON but not an object (`{}`)
- * - a parsed `Record<string, unknown>` when the string is a valid JSON object
+ * Returns a discriminated union:
+ * - `{ status: 'empty' }` — string is empty / whitespace (no schema set)
+ * - `{ status: 'syntax' }` — non-empty but not valid JSON
+ * - `{ status: 'not_object' }` — valid JSON but not a plain object
+ * - `{ status: 'ok'; value: Record<string, unknown> }` — valid JSON object
  */
-export function validateJsonObject(
-  raw: string,
-): '' | 'syntax' | 'object' | Record<string, unknown> {
+export function validateJsonObject(raw: string): JsonObjectResult {
   const trimmed = raw.trim();
-  if (!trimmed) return '';
+  if (!trimmed) return { status: 'empty' };
   try {
     const parsed: unknown = JSON.parse(trimmed);
     if (
@@ -35,10 +40,10 @@ export function validateJsonObject(
       parsed === null ||
       Array.isArray(parsed)
     ) {
-      return 'object';
+      return { status: 'not_object' };
     }
-    return parsed as Record<string, unknown>;
+    return { status: 'ok', value: parsed as Record<string, unknown> };
   } catch {
-    return 'syntax';
+    return { status: 'syntax' };
   }
 }

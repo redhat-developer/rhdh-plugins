@@ -101,10 +101,10 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-function validateSchemaJsonRaw(raw: string): 'object' | 'syntax' | '' {
+function validateSchemaJsonRaw(raw: string): 'not_object' | 'syntax' | '' {
   const result = validateJsonObject(raw);
-  if (result === '' || typeof result === 'object') return '';
-  return result;
+  if (result.status === 'empty' || result.status === 'ok') return '';
+  return result.status;
 }
 
 function prettyPrintIfValid(raw: string): string {
@@ -140,7 +140,7 @@ export function SchemaButton({
 
   const jsonErrorCode = useMemo(() => validateSchemaJsonRaw(draft), [draft]);
   let jsonError = '';
-  if (jsonErrorCode === 'object') {
+  if (jsonErrorCode === 'not_object') {
     jsonError = t('catalogItems.form.schemaMustBeObject');
   } else if (jsonErrorCode === 'syntax') {
     jsonError = t('catalogItems.form.schemaInvalidJson');

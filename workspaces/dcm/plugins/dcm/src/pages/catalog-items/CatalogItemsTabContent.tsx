@@ -64,6 +64,9 @@ export function CatalogItemsTabContent() {
   const [serviceTypesError, setServiceTypesError] = useState<string | null>(
     null,
   );
+  // Fetch service types once on mount for the create/edit-item dropdown.
+  // Hard-capped at 100 items — if the list grows large, replace with a
+  // search-backed select that filters server-side (TODO).
   useEffect(() => {
     catalogApi
       .listServiceTypes({ max_page_size: 100 })

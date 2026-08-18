@@ -87,7 +87,9 @@ export function CatalogItemInstancesTabContent() {
   const [rehydrateConfirmInst, setRehydrateConfirmInst] =
     useState<CatalogItemInstance | null>(null);
 
-  // Fetch catalog items once on mount; page navigation does not re-fetch.
+  // Fetch catalog items once on mount for the create-instance dropdown.
+  // Hard-capped at 100 items — if the catalog grows large, replace with a
+  // search-backed select that filters server-side (TODO).
   useEffect(() => {
     catalogApi
       .listCatalogItems({ max_page_size: 100 })

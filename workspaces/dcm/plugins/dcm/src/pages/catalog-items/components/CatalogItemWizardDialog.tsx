@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useRef, useEffect, useMemo, useState } from 'react';
+import { useRef, useMemo, useState } from 'react';
 import {
   Box,
   Button,
@@ -39,6 +39,7 @@ import { load as loadYaml } from 'js-yaml';
 import type { ServiceType } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { VerticalTabDialog } from '../../../components/VerticalTabDialog';
 import { useTranslation } from '../../../hooks/useTranslation';
+import { useWizardState } from '../../../hooks/useWizardState';
 import {
   emptyResourceFormEntry,
   hasValidFields,
@@ -561,26 +562,6 @@ export function CatalogItemWizardDialog({
   isEditMode,
 }: CatalogItemWizardDialogProps) {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState(0);
-  /** Tabs that have had "Next" clicked — their content shows validation errors. */
-  const [tabsAttempted, setTabsAttempted] = useState<Set<number>>(new Set());
-  /** True after the final submit button is pressed — all tabs show errors. */
-  const [finalSubmitAttempted, setFinalSubmitAttempted] = useState(false);
-  const [touched, setTouched] = useState<
-    Partial<Record<'display_name' | 'api_version', boolean>>
-  >({});
-
-  useEffect(() => {
-    if (open) {
-      setActiveTab(0);
-      setTabsAttempted(new Set());
-      setFinalSubmitAttempted(false);
-      setTouched({});
-    }
-  }, [open]);
-
-  const tabSubmitAttempted = (tabIndex: number) =>
-    finalSubmitAttempted || tabsAttempted.has(tabIndex);
 
   /** Returns whether a given tab's content is currently valid. */
   const isTabCurrentlyValid = (tabIndex: number): boolean => {
@@ -609,24 +590,27 @@ export function CatalogItemWizardDialog({
     }
   };
 
-  const handleClose = () => {
-    setActiveTab(0);
-    setTabsAttempted(new Set());
-    setFinalSubmitAttempted(false);
-    setTouched({});
-    onClose();
-  };
+  const {
+    activeTab,
+    setActiveTab,
+    finalSubmitAttempted,
+    touched,
+    setTouched,
+    tabSubmitAttempted,
+    handleBeforeNext,
+    handleClose: wizardHandleClose,
+    markFinalSubmit,
+  } = useWizardState<Record<'display_name' | 'api_version', boolean>>(
+    open,
+    isTabCurrentlyValid,
+  );
+
+  const handleClose = () => wizardHandleClose(onClose);
 
   const handleSubmit = () => {
-    setFinalSubmitAttempted(true);
+    markFinalSubmit();
     if (!isCatalogItemFormValid(form)) return;
     onSubmit();
-  };
-
-  /** Called by VerticalTabDialog when Next is clicked. */
-  const handleBeforeNext = (currentTab: number): boolean => {
-    setTabsAttempted(prev => new Set([...prev, currentTab]));
-    return isTabCurrentlyValid(currentTab);
   };
 
   const tabs = useMemo(() => {
@@ -685,16 +669,7 @@ export function CatalogItemWizardDialog({
 
     return [...staticTabs, ...resourceTabs];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    form,
-    setForm,
-    serviceTypes,
-    isEditMode,
-    tabsAttempted,
-    finalSubmitAttempted,
-    touched,
-    t,
-  ]);
+  }, [form, setForm, serviceTypes, isEditMode, tabSubmitAttempted, touched, t]);
 
   return (
     <VerticalTabDialog

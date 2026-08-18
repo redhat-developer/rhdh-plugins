@@ -348,8 +348,6 @@ const dcmTranslationIt: TranslationMessages<
       'JSON non valido \u2014 correggere la sintassi o usare un valore stringa semplice',
     'validation.catalogItem.schemaMustBeObject':
       'Deve essere un oggetto JSON \u2014 es. {"type":"integer"}',
-    'validation.catalogItem.schemaRequiredNotBoolean':
-      '"required" deve essere un array di nomi di propriet\u00e0, non un booleano',
     'validation.catalogItem.schemaMinMaxConflict':
       'Il minimo ({{min}}) non deve superare il massimo ({{max}})',
     'validation.catalogItem.defaultBelowMin':

@@ -227,19 +227,19 @@ export function validateFieldRows(
     let schemaMax: number | undefined;
     if (schemaTrimmed) {
       const schemaResult = validateJsonObject(schemaTrimmed);
-      if (schemaResult === 'syntax') {
+      if (schemaResult.status === 'syntax') {
         rowErrors.validation_schema = m(
           'validation.catalogItem.schemaInvalidJson',
           'Invalid JSON syntax',
         );
-      } else if (schemaResult === 'object') {
+      } else if (schemaResult.status === 'not_object') {
         rowErrors.validation_schema = m(
           'validation.catalogItem.schemaMustBeObject',
           'Must be a JSON object \u2014 e.g. {"type":"integer"}',
         );
-      } else if (typeof schemaResult === 'object') {
-        schemaMin = pickNumericBound(schemaResult, 'minimum', 'min');
-        schemaMax = pickNumericBound(schemaResult, 'maximum', 'max');
+      } else if (schemaResult.status === 'ok') {
+        schemaMin = pickNumericBound(schemaResult.value, 'minimum', 'min');
+        schemaMax = pickNumericBound(schemaResult.value, 'maximum', 'max');
         if (
           !rowErrors.validation_schema &&
           schemaMin !== undefined &&
@@ -384,8 +384,7 @@ function parseJsonObjectField(
   raw: string,
 ): Record<string, unknown> | undefined {
   const result = validateJsonObject(raw);
-  if (typeof result === 'object') return result;
-  return undefined;
+  return result.status === 'ok' ? result.value : undefined;
 }
 
 function buildFieldConfigs(fields: FieldRow[]): FieldConfiguration[] {
@@ -429,12 +428,15 @@ export function formToCatalogItem(f: CatalogItemForm): CatalogItem {
 
 /**
  * Converts an edit-mode form to a {@link CatalogItem} PATCH payload.
- * Includes `name` (as the resource identifier) and `service_type` per resource.
+ * Includes `name` (as the resource identifier), `service_type`, and `api_version`
+ * per resource. `api_version` is always sent to avoid backends that treat a
+ * missing key as "clear" rather than "don't touch".
  * Omits `requires_resources` as it is immutable after creation.
  */
 export function formToCatalogItemForUpdate(f: CatalogItemForm): CatalogItem {
   return {
     display_name: f.display_name.trim() || undefined,
+    api_version: f.api_version.trim() || undefined,
     spec: {
       resources: f.resources.map(r => ({
         name: r.name.trim(),

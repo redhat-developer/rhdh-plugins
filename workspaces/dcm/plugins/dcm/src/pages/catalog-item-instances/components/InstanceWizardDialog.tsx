@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   Box,
   FormControl,
@@ -26,10 +26,12 @@ import {
   TextField,
   Typography,
 } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import type { CatalogItem } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { VerticalTabDialog } from '../../../components/VerticalTabDialog';
 import { UserValueFields } from '../../../components/UserValueFields';
 import { useTranslation } from '../../../hooks/useTranslation';
+import { useWizardState } from '../../../hooks/useWizardState';
 import {
   buildResourceUserValues,
   isInstanceFormValid,
@@ -37,6 +39,12 @@ import {
   validateUserValues,
 } from '../instanceFormTypes';
 import type { InstanceForm, ResourceUserValues } from '../instanceFormTypes';
+
+const useStyles = makeStyles(theme => ({
+  catalogItemBadge: {
+    marginLeft: theme.spacing(1),
+  },
+}));
 
 // ─── Overview Tab ─────────────────────────────────────────────────────────────
 
@@ -60,6 +68,7 @@ function OverviewTab({
   setTouched,
   submitAttempted,
 }: OverviewTabProps) {
+  const classes = useStyles();
   const { t } = useTranslation();
   const errors = useMemo(() => validateInstanceForm(form, t), [form, t]);
 
@@ -127,7 +136,7 @@ function OverviewTab({
                 <Typography
                   variant="caption"
                   color="textSecondary"
-                  style={{ marginLeft: 8 }}
+                  className={classes.catalogItemBadge}
                 >
                   ({ci.spec.resources.map(r => r.service_type).join(', ')})
                 </Typography>
@@ -257,24 +266,6 @@ export function InstanceWizardDialog({
   error,
 }: InstanceWizardDialogProps) {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState(0);
-  /** Tabs that have had "Next" clicked — their content shows validation errors. */
-  const [tabsAttempted, setTabsAttempted] = useState<Set<number>>(new Set());
-  /** True after the final submit button is pressed — all tabs show errors. */
-  const [finalSubmitAttempted, setFinalSubmitAttempted] = useState(false);
-  const [touched, setTouched] = useState<ScalarTouched>({});
-
-  useEffect(() => {
-    if (open) {
-      setActiveTab(0);
-      setTabsAttempted(new Set());
-      setFinalSubmitAttempted(false);
-      setTouched({});
-    }
-  }, [open]);
-
-  const tabSubmitAttempted = (tabIndex: number) =>
-    finalSubmitAttempted || tabsAttempted.has(tabIndex);
 
   /** Returns whether a given tab's content is currently valid. */
   const isTabCurrentlyValid = (tabIndex: number): boolean => {
@@ -286,24 +277,24 @@ export function InstanceWizardDialog({
     return Object.keys(validateUserValues(rv.values)).length === 0;
   };
 
-  const handleClose = () => {
-    setActiveTab(0);
-    setTabsAttempted(new Set());
-    setFinalSubmitAttempted(false);
-    setTouched({});
-    onClose();
-  };
+  const {
+    activeTab,
+    setActiveTab,
+    finalSubmitAttempted,
+    touched,
+    setTouched,
+    tabSubmitAttempted,
+    handleBeforeNext,
+    handleClose: wizardHandleClose,
+    markFinalSubmit,
+  } = useWizardState<Record<ScalarField, boolean>>(open, isTabCurrentlyValid);
+
+  const handleClose = () => wizardHandleClose(onClose);
 
   const handleSubmit = () => {
-    setFinalSubmitAttempted(true);
+    markFinalSubmit();
     if (!isInstanceFormValid(form)) return;
     onSubmit();
-  };
-
-  /** Called by VerticalTabDialog when Next is clicked. */
-  const handleBeforeNext = (currentTab: number): boolean => {
-    setTabsAttempted(prev => new Set([...prev, currentTab]));
-    return isTabCurrentlyValid(currentTab);
   };
 
   const tabs = useMemo(() => {
@@ -336,15 +327,7 @@ export function InstanceWizardDialog({
 
     return [overviewTab, ...resourceTabs];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    form,
-    setForm,
-    catalogItems,
-    touched,
-    tabsAttempted,
-    finalSubmitAttempted,
-    t,
-  ]);
+  }, [form, setForm, catalogItems, touched, tabSubmitAttempted, t]);
 
   return (
     <VerticalTabDialog

@@ -357,8 +357,6 @@ const dcmTranslationFr: TranslationMessages<
       'JSON invalide \u2014 corrigez la syntaxe ou utilisez une valeur de cha\u00eene simple',
     'validation.catalogItem.schemaMustBeObject':
       'Doit \u00eatre un objet JSON \u2014 ex. {"type":"integer"}',
-    'validation.catalogItem.schemaRequiredNotBoolean':
-      '\u00ab required \u00bb doit \u00eatre un tableau de noms de propri\u00e9t\u00e9s, pas un bool\u00e9en',
     'validation.catalogItem.schemaMinMaxConflict':
       'Le minimum ({{min}}) ne doit pas d\u00e9passer le maximum ({{max}})',
     'validation.catalogItem.defaultBelowMin':

@@ -361,8 +361,6 @@ export const dcmMessages = {
         'Invalid JSON \u2014 fix the syntax or use a plain string value',
       schemaMustBeObject:
         'Must be a JSON object \u2014 e.g. {"type":"integer"}',
-      schemaRequiredNotBoolean:
-        '"required" must be an array of property names, not a boolean',
       schemaMinMaxConflict:
         'minimum ({{min}}) must not exceed maximum ({{max}})',
       defaultBelowMin:

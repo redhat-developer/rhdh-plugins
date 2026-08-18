@@ -336,8 +336,6 @@ const dcmTranslationDe: TranslationMessages<
       'Ungültiges JSON \u2014 Syntax korrigieren oder einfachen Zeichenkettenwert verwenden',
     'validation.catalogItem.schemaMustBeObject':
       'Muss ein JSON-Objekt sein \u2014 z. B. {"type":"integer"}',
-    'validation.catalogItem.schemaRequiredNotBoolean':
-      '"required" muss ein Array von Eigenschaftsnamen sein, kein Boolean',
     'validation.catalogItem.schemaMinMaxConflict':
       'Minimum ({{min}}) darf das Maximum ({{max}}) nicht überschreiten',
     'validation.catalogItem.defaultBelowMin':

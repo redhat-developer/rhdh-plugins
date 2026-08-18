@@ -349,8 +349,6 @@ const dcmTranslationEs: TranslationMessages<
       'JSON no v\u00e1lido \u2014 corrija la sintaxis o use un valor de cadena simple',
     'validation.catalogItem.schemaMustBeObject':
       'Debe ser un objeto JSON \u2014 p. ej. {"type":"integer"}',
-    'validation.catalogItem.schemaRequiredNotBoolean':
-      '"required" debe ser un array de nombres de propiedades, no un booleano',
     'validation.catalogItem.schemaMinMaxConflict':
       'El m\u00ednimo ({{min}}) no debe superar el m\u00e1ximo ({{max}})',
     'validation.catalogItem.defaultBelowMin':

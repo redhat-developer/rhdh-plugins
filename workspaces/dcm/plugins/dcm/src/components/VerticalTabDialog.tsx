@@ -58,14 +58,6 @@ const useStyles = makeStyles(theme => ({
     overflowY: 'auto',
     paddingTop: theme.spacing(2),
     paddingBottom: theme.spacing(2),
-    /**
-     * Hide MUI's built-in indicator — its height is set via inline JS and
-     * can drift from the tab's visible hover area. We draw a custom
-     * indicator via ::before on the selected tab instead.
-     */
-    '& .MuiTabs-indicator': {
-      display: 'none',
-    },
   },
   tab: {
     minWidth: 0,
@@ -223,6 +215,10 @@ export function VerticalTabDialog({
             onChange={(_e, v) => onTabChange(v)}
             indicatorColor="primary"
             textColor="primary"
+            // The built-in indicator is hidden because its height is set via
+            // inline JS and can drift from the tab's visible area. A custom
+            // ::before pseudo-element on the selected tab acts as the indicator.
+            TabIndicatorProps={{ style: { display: 'none' } }}
           >
             {tabs.map(tab => (
               <Tab
