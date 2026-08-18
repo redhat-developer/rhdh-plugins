@@ -88,7 +88,7 @@ string ids in `globalHeader.menuItems`, `globalHeader.components`, mount-point
 | `account`        | Profile / my account menu items       |
 | `add`            | Create / self-service toolbar actions |
 | `article`        | Wiki, documentation links             |
-| `bug_report`     | Issue tracker links                   |
+| `bugReport`      | Issue tracker links                   |
 | `dashboard`      | Dashboard or visualizer toolbar links |
 | `developerHub`   | App launcher / developer hub          |
 | `forum`          | Community forum links                 |
@@ -115,7 +115,7 @@ globalHeader:
       link: https://wiki.internal.example.com
     - target: app-launcher
       title: Issue Tracker
-      icon: bug_report
+      icon: bugReport
       link: https://issues.internal.example.com
     - target: help
       title: FAQ
