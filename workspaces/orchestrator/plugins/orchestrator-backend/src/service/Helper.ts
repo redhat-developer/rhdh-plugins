@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
-import type { Config } from '@backstage/config';
-
-import fs from 'fs-extra';
-
 import {
   ProcessInstance,
   ProcessInstanceState,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
-
-import os from 'os';
 
 export async function retryAsyncFunction<T>(args: {
   asyncFn: () => Promise<T | undefined>;
