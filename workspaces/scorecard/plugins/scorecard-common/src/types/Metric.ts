@@ -50,6 +50,11 @@ export type Metric<T extends MetricType = MetricType> = {
   unit?: string;
   history?: boolean;
   defaultVisualization?: MetricDefaultVisualization;
+  /**
+   * Collector IDs used to gather data for this metric, extracted from
+   * provider config at startup. Omitted when the metric does not use collectors.
+   */
+  collectorIds?: string[];
 };
 
 /**

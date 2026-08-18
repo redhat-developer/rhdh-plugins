@@ -17,6 +17,7 @@
 import type { Entity } from '@backstage/catalog-model';
 import { ConflictError, NotFoundError } from '@backstage/errors';
 import type { z } from 'zod';
+import type { CollectorMetadata } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { Collector, CollectorContract } from '../api';
 import type { ScorecardCollectorsService } from './scorecardCollectorsService';
 
@@ -55,6 +56,27 @@ export class DefaultScorecardCollectorsService
     }
 
     return this.collectors.has(collectorId);
+  }
+
+  getCollectorMetadata(collectorId: string): CollectorMetadata {
+    if (!this.collectors) {
+      throw new Error(`Scorecard collectors service has not been initialized`);
+    }
+    if (collectorId === '') {
+      throw new Error(`Collector ID cannot be empty`);
+    }
+
+    const collector = this.collectors.get(collectorId);
+    if (!collector) {
+      throw new NotFoundError(
+        `No collector registered for collector ID '${collectorId}'.`,
+      );
+    }
+
+    return {
+      id: collector.getCollectorId(),
+      description: collector.getCollectorDescription(),
+    };
   }
 
   async collect<

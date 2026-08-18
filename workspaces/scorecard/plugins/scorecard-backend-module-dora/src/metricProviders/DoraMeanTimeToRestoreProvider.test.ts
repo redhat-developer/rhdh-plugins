@@ -65,6 +65,9 @@ describe('DoraMeanTimeToRestoreProvider', () => {
       );
       expect(metrics[0].defaultVisualization).toBe('sparkline');
       expect(metrics[0].unit).toBe('h');
+      expect(metrics[0].collectorIds).toEqual([
+        DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+      ]);
     });
   });
 

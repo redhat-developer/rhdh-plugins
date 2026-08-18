@@ -102,6 +102,10 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       );
       expect(metrics[0].defaultVisualization).toBe('sparkline');
       expect(metrics[0].unit).toBe('h');
+      expect(metrics[0].collectorIds).toEqual([
+        DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+        DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+      ]);
     });
   });
 
