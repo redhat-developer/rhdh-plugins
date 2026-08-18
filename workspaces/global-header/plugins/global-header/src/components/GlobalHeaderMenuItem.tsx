@@ -58,7 +58,7 @@ export interface GlobalHeaderMenuItemProps {
  *   <GlobalHeaderMenuItem
  *     to="https://docs.example.com"
  *     title="Documentation"
- *     icon="menu_book"
+ *     icon="article"
  *     onClick={handleClose}
  *   />
  * );

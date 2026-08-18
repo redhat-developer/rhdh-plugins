@@ -24,7 +24,7 @@ import HubOutlined from '@mui/icons-material/HubOutlined';
 import LogoutOutlined from '@mui/icons-material/LogoutOutlined';
 import ManageAccountsOutlined from '@mui/icons-material/ManageAccountsOutlined';
 import QuizOutlined from '@mui/icons-material/QuizOutlined';
-import Support from '@mui/icons-material/Support';
+import SupportAgentOutlined from '@mui/icons-material/SupportAgentOutlined';
 
 /**
  * System icons registered for global-header via `IconBundleBlueprint`.
@@ -37,12 +37,12 @@ export const globalHeaderSystemIcons = {
   account: AccountCircleOutlined,
   add: AddCircleOutline,
   article: ArticleOutlined,
-  bug_report: BugReportOutlined,
+  bugReport: BugReportOutlined,
   dashboard: DashboardOutlined,
   developerHub: HubOutlined,
   forum: ForumOutlined,
   logout: LogoutOutlined,
   manageAccounts: ManageAccountsOutlined,
   quiz: QuizOutlined,
-  support: Support,
+  support: SupportAgentOutlined,
 } as const;
