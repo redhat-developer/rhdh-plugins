@@ -32,6 +32,22 @@ export type UiPropsWorkflowInputs = {
   objectExample: string;
 };
 
+export type NewComponentInputs = {
+  organizationName: string;
+  repositoryName: string;
+  description: string;
+  owner: string;
+  system: string;
+  port: string;
+};
+
+export type JavaMetadata = {
+  groupId: string;
+  artifactId: string;
+  javaPackageNamespace: string;
+  version: string;
+};
+
 type SampleRetryHits = {
   allProps: number;
   statusCodesNoMatch: number;
@@ -124,6 +140,74 @@ export class Orchestrator {
       .getByRole('textbox', { name: 'Object Type Example' })
       .fill(inputs.objectExample);
     await this.orchestratorHelper.clickButton(this.translations.common.next);
+  }
+
+  async fillNewComponentInputs(inputs: NewComponentInputs) {
+    await this.page
+      .getByRole('textbox', { name: 'Organization Name' })
+      .fill(inputs.organizationName);
+    await this.page
+      .getByRole('textbox', { name: 'Repository Name' })
+      .fill(inputs.repositoryName);
+    await this.page
+      .getByRole('textbox', { name: 'Description' })
+      .fill(inputs.description);
+    await this.page.getByRole('textbox', { name: 'Owner' }).fill(inputs.owner);
+    await this.page
+      .getByRole('textbox', { name: 'System' })
+      .fill(inputs.system);
+    await this.page.getByRole('spinbutton', { name: 'Port' }).fill(inputs.port);
+  }
+
+  async fillJavaMetadata(inputs: JavaMetadata) {
+    await this.page
+      .getByRole('textbox', { name: 'Group ID' })
+      .fill(inputs.groupId);
+    await this.page
+      .getByRole('textbox', { name: 'Artifact ID' })
+      .fill(inputs.artifactId);
+    await this.page
+      .getByRole('textbox', { name: 'Java Package Namespace' })
+      .fill(inputs.javaPackageNamespace);
+    await this.page
+      .getByRole('textbox', { name: 'Version' })
+      .fill(inputs.version);
+  }
+
+  async verifyNewComponentInputs(inputs: NewComponentInputs) {
+    await expect(
+      this.page.getByRole('textbox', { name: 'Organization Name' }),
+    ).toHaveValue(inputs.organizationName);
+    await expect(
+      this.page.getByRole('textbox', { name: 'Repository Name' }),
+    ).toHaveValue(inputs.repositoryName);
+    await expect(
+      this.page.getByRole('textbox', { name: 'Description' }),
+    ).toHaveValue(inputs.description);
+    await expect(this.page.getByRole('textbox', { name: 'Owner' })).toHaveValue(
+      inputs.owner,
+    );
+    await expect(
+      this.page.getByRole('textbox', { name: 'System' }),
+    ).toHaveValue(inputs.system);
+    await expect(
+      this.page.getByRole('spinbutton', { name: 'Port' }),
+    ).toHaveValue(inputs.port);
+  }
+
+  async verifyJavaMetadata(inputs: JavaMetadata) {
+    await expect(
+      this.page.getByRole('textbox', { name: 'Group ID' }),
+    ).toHaveValue(inputs.groupId);
+    await expect(
+      this.page.getByRole('textbox', { name: 'Artifact ID' }),
+    ).toHaveValue(inputs.artifactId);
+    await expect(
+      this.page.getByRole('textbox', { name: 'Java Package Namespace' }),
+    ).toHaveValue(inputs.javaPackageNamespace);
+    await expect(
+      this.page.getByRole('textbox', { name: 'Version' }),
+    ).toHaveValue(inputs.version);
   }
 
   async submitWorkflowRunFromReview() {
@@ -403,7 +487,9 @@ export class Orchestrator {
       }),
     ).toBeVisible();
     await expect(this.page.locator('pre').first()).toBeVisible();
-    await expect(this.page.getByRole('button', { name: 'Copy' })).toBeVisible();
+    await expect(
+      this.page.getByRole('button', { name: 'Copy' }).first(),
+    ).toBeVisible();
   }
 
   async verifyWorkflowRunsTabHeading(runsCount?: number) {
