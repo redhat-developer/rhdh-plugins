@@ -47,6 +47,7 @@
     "@backstage/plugin-search-backend-module-techdocs": "^0.4.12",
     "@backstage/plugin-search-backend-node": "^1.4.2",
     "@backstage/plugin-techdocs-backend": "^2.1.6",
+    "@red-hat-developer-hub/backstage-plugin-kubernetes-mcp-extras": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scaffolder-mcp-extras": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-software-catalog-mcp-extras": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-techdocs-mcp-extras": "workspace:^",
