@@ -21,6 +21,7 @@ import type { Config } from '@backstage/config';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { DORA_TIME_WINDOW_DAYS } from '../constants';
+import { daysToMilliseconds } from '../scheduler/utils';
 import type { DoraDataService } from '../service/DoraDataService';
 import type { DoraSyncService } from '../service/DoraSyncService';
 import {
@@ -99,8 +100,9 @@ export class DoraMeanTimeToRestoreProvider implements MetricProvider<'number'> {
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const results = new Map<string, number>();
     const to = new Date();
-    const from = new Date();
-    from.setDate(to.getDate() - DORA_TIME_WINDOW_DAYS);
+    const from = new Date(
+      to.getTime() - daysToMilliseconds(DORA_TIME_WINDOW_DAYS),
+    );
 
     await this.doraSyncService.syncIncidents(entity, {
       windowFrom: from,

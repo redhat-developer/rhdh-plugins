@@ -40,6 +40,10 @@ describe('DoraDeploymentFrequencyProvider', () => {
     );
   });
 
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   describe('fromConfig', () => {
     it('should create provider with default thresholds on metric', () => {
       const metrics = provider.getMetrics();
@@ -53,7 +57,7 @@ describe('DoraDeploymentFrequencyProvider', () => {
   });
 
   describe('calculateMetrics', () => {
-    it('should sync and read with default collectors when no config', async () => {
+    it('should use default collectors', async () => {
       await provider.calculateMetrics(mockEntity);
 
       expect(mockDoraSyncService.syncDeployments).toHaveBeenCalledWith(
@@ -117,6 +121,36 @@ describe('DoraDeploymentFrequencyProvider', () => {
             }),
           }),
         }),
+      );
+    });
+
+    it('should sync and read deployments with correct params', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-06-30T12:00:00.000Z'));
+      const windowTo = new Date('2026-06-30T12:00:00.000Z');
+      const windowFrom = new Date('2026-05-31T12:00:00.000Z');
+
+      await provider.calculateMetrics(mockEntity);
+
+      expect(mockDoraSyncService.syncDeployments).toHaveBeenCalledWith(
+        mockEntity,
+        {
+          windowFrom,
+          windowTo,
+          collector: expect.objectContaining({
+            id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+            input: {},
+          }),
+        },
+      );
+      expect(mockDoraDataService.readDeployments).toHaveBeenCalledWith(
+        'component:default/test-component',
+        {
+          windowFrom,
+          windowTo,
+          collector: expect.objectContaining({
+            id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+          }),
+        },
       );
     });
 

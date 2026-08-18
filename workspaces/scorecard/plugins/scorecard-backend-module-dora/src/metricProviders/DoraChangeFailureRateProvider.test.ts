@@ -65,6 +65,10 @@ describe('DoraChangeFailureRateProvider', () => {
     });
   });
 
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   describe('fromConfig', () => {
     it('should create provider with default thresholds on metric', () => {
       const metrics = provider.getMetrics();
@@ -78,7 +82,7 @@ describe('DoraChangeFailureRateProvider', () => {
   });
 
   describe('calculateMetrics', () => {
-    it('should sync deployments and incidents with default collectors', async () => {
+    it('should use default collectors', async () => {
       await provider.calculateMetrics(mockEntity);
 
       expect(mockDoraSyncService.syncDeployments).toHaveBeenCalledWith(
@@ -160,6 +164,55 @@ describe('DoraChangeFailureRateProvider', () => {
             }),
           }),
         }),
+      );
+    });
+
+    it('should sync and read deployments and incidents with correct params', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-06-30T12:00:00.000Z'));
+      const windowTo = new Date('2026-06-30T12:00:00.000Z');
+      const windowFrom = new Date('2026-05-31T12:00:00.000Z');
+
+      await provider.calculateMetrics(mockEntity);
+
+      expect(mockDoraSyncService.syncDeployments).toHaveBeenCalledWith(
+        mockEntity,
+        {
+          windowFrom,
+          windowTo,
+          collector: expect.objectContaining({
+            id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+          }),
+        },
+      );
+      expect(mockDoraSyncService.syncIncidents).toHaveBeenCalledWith(
+        mockEntity,
+        {
+          windowFrom,
+          windowTo,
+          collector: expect.objectContaining({
+            id: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+          }),
+        },
+      );
+      expect(mockDoraDataService.readDeployments).toHaveBeenCalledWith(
+        'component:default/test-component',
+        {
+          windowFrom,
+          windowTo,
+          collector: expect.objectContaining({
+            id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+          }),
+        },
+      );
+      expect(mockDoraDataService.readIncidents).toHaveBeenCalledWith(
+        'component:default/test-component',
+        {
+          windowFrom,
+          windowTo,
+          collector: expect.objectContaining({
+            id: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+          }),
+        },
       );
     });
 
