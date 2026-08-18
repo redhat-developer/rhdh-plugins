@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { TableColumn } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import {
@@ -33,16 +33,14 @@ import {
 import { makeStyles } from '@material-ui/core/styles';
 import AutorenewIcon from '@material-ui/icons/Autorenew';
 import DeleteIcon from '@material-ui/icons/Delete';
-import type {
-  CatalogItem,
-  CatalogItemInstance,
-} from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import type { CatalogItemInstance } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { extractApiError } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { catalogApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
 import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
+import { useInfiniteSelect } from '../../hooks/useInfiniteSelect';
 import { usePaginatedCrudTab } from '../../hooks/usePaginatedCrudTab';
 import { useTranslation } from '../../hooks/useTranslation';
 import emptyIllustration from '../../assets/environments-empty-state.png';
@@ -77,25 +75,23 @@ export function CatalogItemInstancesTabContent() {
   const catalogApi = useApi(catalogApiRef);
   const { t } = useTranslation();
 
-  const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([]);
-  const [catalogItemsError, setCatalogItemsError] = useState<string | null>(
-    null,
+  // Paginated catalog-item list for the create-instance dropdown.
+  // Loads the first 100 on mount; subsequent pages are appended as the user
+  // scrolls inside the dropdown menu (see InstanceWizardDialog).
+  const {
+    items: catalogItems,
+    loadingMore: loadingMoreCatalogItems,
+    error: catalogItemsError,
+    loadMore: loadMoreCatalogItems,
+  } = useInfiniteSelect((token?: string) =>
+    catalogApi.listCatalogItems({ max_page_size: 100, page_token: token }),
   );
+
   const [rehydratingId, setRehydratingId] = useState<string | null>(null);
   const [rehydrateError, setRehydrateError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [rehydrateConfirmInst, setRehydrateConfirmInst] =
     useState<CatalogItemInstance | null>(null);
-
-  // Fetch catalog items once on mount for the create-instance dropdown.
-  // Hard-capped at 100 items — if the catalog grows large, replace with a
-  // search-backed select that filters server-side (TODO).
-  useEffect(() => {
-    catalogApi
-      .listCatalogItems({ max_page_size: 100 })
-      .then(r => setCatalogItems(r.results ?? []))
-      .catch(err => setCatalogItemsError(extractApiError(err)));
-  }, [catalogApi]);
 
   const crud = usePaginatedCrudTab<CatalogItemInstance, InstanceForm>({
     loadFn: ({ pageToken, pageSize: ps }) =>
@@ -295,10 +291,7 @@ export function CatalogItemInstancesTabContent() {
         loadError={crud.loadError}
         onRetry={crud.reload}
         actionError={catalogItemsError ?? rehydrateError}
-        onDismissActionError={() => {
-          setCatalogItemsError(null);
-          setRehydrateError(null);
-        }}
+        onDismissActionError={() => setRehydrateError(null)}
         search={crud.search}
         onSearchChange={crud.handleSearchChange}
         cursorPagination={crud.cursorPagination}
@@ -317,6 +310,8 @@ export function CatalogItemInstancesTabContent() {
         form={crud.createForm}
         setForm={crud.setCreateForm}
         catalogItems={catalogItems}
+        onLoadMoreCatalogItems={loadMoreCatalogItems}
+        loadingMoreCatalogItems={loadingMoreCatalogItems}
         onSubmit={crud.handleCreateSubmit}
         submitLabel={t('instances.createButton')}
         submitting={crud.createSubmitting}

@@ -49,6 +49,7 @@ const dcmTranslationFr: TranslationMessages<
     'common.nextPage': 'Suivant',
     'common.next': 'Suivant',
     'common.back': 'Retour',
+    'common.loadingMore': 'Chargement\u2026',
     'deleteDialog.title': 'Supprimer {{resourceLabel}}',
     'deleteDialog.confirmButton': 'Supprimer',
     'deleteDialog.cancelButton': 'Annuler',

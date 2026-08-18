@@ -19,6 +19,7 @@ import {
   Box,
   Button,
   Chip,
+  CircularProgress,
   FormControl,
   FormHelperText,
   IconButton,
@@ -266,6 +267,8 @@ type ResourcesTabProps = Readonly<{
   form: CatalogItemForm;
   setForm: React.Dispatch<React.SetStateAction<CatalogItemForm>>;
   serviceTypes: ServiceType[];
+  onLoadMoreServiceTypes?: () => void;
+  loadingMoreServiceTypes?: boolean;
   submitAttempted: boolean;
   isEditMode: boolean;
 }>;
@@ -274,6 +277,8 @@ function ResourcesTab({
   form,
   setForm,
   serviceTypes,
+  onLoadMoreServiceTypes,
+  loadingMoreServiceTypes,
   submitAttempted,
   isEditMode,
 }: ResourcesTabProps) {
@@ -401,6 +406,20 @@ function ResourcesTab({
                     label={t('catalogItems.form.serviceTypeLabel')}
                   />
                 }
+                MenuProps={{
+                  MenuListProps: {
+                    onScroll: (e: React.UIEvent<HTMLUListElement>) => {
+                      if (!onLoadMoreServiceTypes) return;
+                      const el = e.currentTarget;
+                      if (
+                        el.scrollTop + el.clientHeight >=
+                        el.scrollHeight - 8
+                      ) {
+                        onLoadMoreServiceTypes();
+                      }
+                    },
+                  },
+                }}
               >
                 <MenuItem value="">
                   <em>None</em>
@@ -413,6 +432,14 @@ function ResourcesTab({
                     {st.service_type}
                   </MenuItem>
                 ))}
+                {loadingMoreServiceTypes && (
+                  <MenuItem disabled>
+                    <CircularProgress size={14} style={{ marginRight: 8 }} />
+                    <Typography variant="caption" color="textSecondary">
+                      {t('common.loadingMore')}
+                    </Typography>
+                  </MenuItem>
+                )}
               </Select>
               <FormHelperText>
                 {entryErrors.service_type ??
@@ -541,6 +568,9 @@ export type CatalogItemWizardDialogProps = Readonly<{
   form: CatalogItemForm;
   setForm: React.Dispatch<React.SetStateAction<CatalogItemForm>>;
   serviceTypes: ServiceType[];
+  /** Called when the user scrolls to the bottom of a service-type dropdown. */
+  onLoadMoreServiceTypes?: () => void;
+  loadingMoreServiceTypes?: boolean;
   onSubmit: () => void;
   submitLabel: string;
   submitting: boolean;
@@ -555,6 +585,8 @@ export function CatalogItemWizardDialog({
   form,
   setForm,
   serviceTypes,
+  onLoadMoreServiceTypes,
+  loadingMoreServiceTypes,
   onSubmit,
   submitLabel,
   submitting,
@@ -647,6 +679,8 @@ export function CatalogItemWizardDialog({
             form={form}
             setForm={setForm}
             serviceTypes={serviceTypes}
+            onLoadMoreServiceTypes={onLoadMoreServiceTypes}
+            loadingMoreServiceTypes={loadingMoreServiceTypes}
             submitAttempted={tabSubmitAttempted(2)}
             isEditMode={isEditMode}
           />
@@ -669,7 +703,17 @@ export function CatalogItemWizardDialog({
 
     return [...staticTabs, ...resourceTabs];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form, setForm, serviceTypes, isEditMode, tabSubmitAttempted, touched, t]);
+  }, [
+    form,
+    setForm,
+    serviceTypes,
+    onLoadMoreServiceTypes,
+    loadingMoreServiceTypes,
+    isEditMode,
+    tabSubmitAttempted,
+    touched,
+    t,
+  ]);
 
   return (
     <VerticalTabDialog

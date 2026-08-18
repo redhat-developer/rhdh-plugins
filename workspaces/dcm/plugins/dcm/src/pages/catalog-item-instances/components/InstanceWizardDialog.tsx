@@ -17,6 +17,7 @@
 import { useMemo, useState } from 'react';
 import {
   Box,
+  CircularProgress,
   FormControl,
   FormHelperText,
   InputLabel,
@@ -55,6 +56,8 @@ type OverviewTabProps = Readonly<{
   form: InstanceForm;
   setForm: React.Dispatch<React.SetStateAction<InstanceForm>>;
   catalogItems: CatalogItem[];
+  onLoadMoreCatalogItems?: () => void;
+  loadingMoreCatalogItems?: boolean;
   touched: ScalarTouched;
   setTouched: React.Dispatch<React.SetStateAction<ScalarTouched>>;
   submitAttempted: boolean;
@@ -64,6 +67,8 @@ function OverviewTab({
   form,
   setForm,
   catalogItems,
+  onLoadMoreCatalogItems,
+  loadingMoreCatalogItems,
   touched,
   setTouched,
   submitAttempted,
@@ -125,6 +130,17 @@ function OverviewTab({
               label={t('instances.form.catalogItemLabel')}
             />
           }
+          MenuProps={{
+            MenuListProps: {
+              onScroll: (e: React.UIEvent<HTMLUListElement>) => {
+                if (!onLoadMoreCatalogItems) return;
+                const el = e.currentTarget;
+                if (el.scrollTop + el.clientHeight >= el.scrollHeight - 8) {
+                  onLoadMoreCatalogItems();
+                }
+              },
+            },
+          }}
         >
           <MenuItem value="">
             <em>{t('instances.form.catalogItemSelect')}</em>
@@ -143,6 +159,14 @@ function OverviewTab({
               )}
             </MenuItem>
           ))}
+          {loadingMoreCatalogItems && (
+            <MenuItem disabled>
+              <CircularProgress size={14} style={{ marginRight: 8 }} />
+              <Typography variant="caption" color="textSecondary">
+                {t('common.loadingMore')}
+              </Typography>
+            </MenuItem>
+          )}
         </Select>
         <FormHelperText>
           {(() => {
@@ -247,6 +271,9 @@ export type InstanceWizardDialogProps = Readonly<{
   form: InstanceForm;
   setForm: React.Dispatch<React.SetStateAction<InstanceForm>>;
   catalogItems: CatalogItem[];
+  /** Called when the user scrolls to the bottom of the catalog-item dropdown. */
+  onLoadMoreCatalogItems?: () => void;
+  loadingMoreCatalogItems?: boolean;
   onSubmit: () => void;
   submitLabel: string;
   submitting: boolean;
@@ -260,6 +287,8 @@ export function InstanceWizardDialog({
   form,
   setForm,
   catalogItems,
+  onLoadMoreCatalogItems,
+  loadingMoreCatalogItems,
   onSubmit,
   submitLabel,
   submitting,
@@ -305,6 +334,8 @@ export function InstanceWizardDialog({
           form={form}
           setForm={setForm}
           catalogItems={catalogItems}
+          onLoadMoreCatalogItems={onLoadMoreCatalogItems}
+          loadingMoreCatalogItems={loadingMoreCatalogItems}
           touched={touched}
           setTouched={setTouched}
           submitAttempted={tabSubmitAttempted(0)}
@@ -327,7 +358,16 @@ export function InstanceWizardDialog({
 
     return [overviewTab, ...resourceTabs];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form, setForm, catalogItems, touched, tabSubmitAttempted, t]);
+  }, [
+    form,
+    setForm,
+    catalogItems,
+    onLoadMoreCatalogItems,
+    loadingMoreCatalogItems,
+    touched,
+    tabSubmitAttempted,
+    t,
+  ]);
 
   return (
     <VerticalTabDialog

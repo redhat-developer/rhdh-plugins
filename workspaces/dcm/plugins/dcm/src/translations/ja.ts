@@ -52,6 +52,7 @@ const dcmTranslationJa: TranslationMessages<
     'common.nextPage': '\u6b21\u3078',
     'common.next': '\u6b21\u3078',
     'common.back': '\u623b\u308b',
+    'common.loadingMore': '\u8aad\u307f\u8fbc\u307f\u4e2d\u2026',
     'deleteDialog.title': '{{resourceLabel}}\u3092\u524a\u9664',
     'deleteDialog.confirmButton': '\u524a\u9664',
     'deleteDialog.cancelButton': '\u30ad\u30e3\u30f3\u30bb\u30eb',

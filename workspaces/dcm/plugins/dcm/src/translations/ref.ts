@@ -53,6 +53,7 @@ export const dcmMessages = {
     nextPage: 'Next',
     next: 'Next',
     back: 'Back',
+    loadingMore: 'Loading more\u2026',
   },
   deleteDialog: {
     title: 'Delete {{resourceLabel}}',

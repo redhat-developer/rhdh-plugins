@@ -49,6 +49,7 @@ const dcmTranslationDe: TranslationMessages<
     'common.nextPage': 'Weiter',
     'common.next': 'Weiter',
     'common.back': 'Zurück',
+    'common.loadingMore': 'Weitere laden\u2026',
     'deleteDialog.title': '{{resourceLabel}} l\u00f6schen',
     'deleteDialog.confirmButton': 'L\u00f6schen',
     'deleteDialog.cancelButton': 'Abbrechen',

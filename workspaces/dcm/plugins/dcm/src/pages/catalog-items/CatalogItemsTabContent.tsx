@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { TableColumn } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import { Box, Chip, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import type {
-  CatalogItem,
-  ServiceType,
-} from '@red-hat-developer-hub/backstage-plugin-dcm-common';
-import { extractApiError } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import type { CatalogItem } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import { catalogApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmDeleteDialog } from '../../components/DcmDeleteDialog';
 import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { createEditDeleteColumn } from '../../components/dcmTabListHelpers';
 import { DcmEmptyCell, TruncatedText } from '../../components/TruncatedText';
+import { useInfiniteSelect } from '../../hooks/useInfiniteSelect';
 import { usePaginatedCrudTab } from '../../hooks/usePaginatedCrudTab';
 import { useTranslation } from '../../hooks/useTranslation';
 import emptyIllustration from '../../assets/environments-empty-state.png';
@@ -60,19 +57,17 @@ export function CatalogItemsTabContent() {
   const catalogApi = useApi(catalogApiRef);
   const { t } = useTranslation();
 
-  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
-  const [serviceTypesError, setServiceTypesError] = useState<string | null>(
-    null,
+  // Paginated service-type list for the create/edit-item dropdowns.
+  // Loads the first 100 on mount; subsequent pages are appended as the user
+  // scrolls inside the dropdown menu (see CatalogItemWizardDialog).
+  const {
+    items: serviceTypes,
+    loadingMore: loadingMoreServiceTypes,
+    error: serviceTypesError,
+    loadMore: loadMoreServiceTypes,
+  } = useInfiniteSelect((token?: string) =>
+    catalogApi.listServiceTypes({ max_page_size: 100, page_token: token }),
   );
-  // Fetch service types once on mount for the create/edit-item dropdown.
-  // Hard-capped at 100 items — if the list grows large, replace with a
-  // search-backed select that filters server-side (TODO).
-  useEffect(() => {
-    catalogApi
-      .listServiceTypes({ max_page_size: 100 })
-      .then(r => setServiceTypes(r.results ?? []))
-      .catch(err => setServiceTypesError(extractApiError(err)));
-  }, [catalogApi]);
 
   const crud = usePaginatedCrudTab<CatalogItem, CatalogItemForm>({
     loadFn: ({ pageToken, pageSize: ps }) =>
@@ -210,7 +205,6 @@ export function CatalogItemsTabContent() {
         loadError={crud.loadError}
         onRetry={crud.reload}
         actionError={serviceTypesError}
-        onDismissActionError={() => setServiceTypesError(null)}
         search={crud.search}
         onSearchChange={crud.handleSearchChange}
         cursorPagination={crud.cursorPagination}
@@ -229,6 +223,8 @@ export function CatalogItemsTabContent() {
         form={crud.createForm}
         setForm={crud.setCreateForm}
         serviceTypes={serviceTypes}
+        onLoadMoreServiceTypes={loadMoreServiceTypes}
+        loadingMoreServiceTypes={loadingMoreServiceTypes}
         onSubmit={crud.handleCreateSubmit}
         submitLabel={t('catalogItems.createButton')}
         submitting={crud.createSubmitting}
@@ -243,6 +239,8 @@ export function CatalogItemsTabContent() {
         form={crud.editForm}
         setForm={crud.setEditForm}
         serviceTypes={serviceTypes}
+        onLoadMoreServiceTypes={loadMoreServiceTypes}
+        loadingMoreServiceTypes={loadingMoreServiceTypes}
         onSubmit={crud.handleEditSubmit}
         submitLabel={t('catalogItems.saveButton')}
         submitting={crud.editSubmitting}
