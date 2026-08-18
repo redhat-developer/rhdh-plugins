@@ -81,7 +81,7 @@ describe('JiraIncidentsCollector', () => {
       await collector.collect({ entity: mockEntity, input });
 
       expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
-        '(project = "INC") AND (type = "Incident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59") AND (updated >= "2026-06-01 00:00")',
+        '(project = "INC") AND (type = "Incident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1780272000000)',
       );
     });
 
@@ -92,7 +92,7 @@ describe('JiraIncidentsCollector', () => {
       });
 
       expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
-        '(project = "INC") AND (type = "ServiceIncident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59") AND (updated >= "2026-06-01 00:00")',
+        '(project = "INC") AND (type = "ServiceIncident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1780272000000)',
       );
     });
 
@@ -107,7 +107,7 @@ describe('JiraIncidentsCollector', () => {
       });
 
       expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
-        '(project = "INC") AND (component = "Payments") AND (labels = "sev-1") AND (type = "Incident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59") AND (updated >= "2026-06-01 00:00")',
+        '(project = "INC") AND (component = "Payments") AND (labels = "sev-1") AND (type = "Incident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1780272000000)',
       );
     });
 
@@ -121,7 +121,7 @@ describe('JiraIncidentsCollector', () => {
       });
 
       expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
-        '(project = "INC") AND (component = "Payments") AND (type = "ServiceIncident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59") AND (updated >= "2026-06-01 00:00")',
+        '(project = "INC") AND (component = "Payments") AND (type = "ServiceIncident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1780272000000)',
       );
     });
 

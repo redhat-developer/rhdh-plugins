@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-export const OPEN_ISSUES_CONFIG_PATH =
-  'scorecard.metricProviders.jira.openIssues' as const;
+/**
+ * Jira integration configuration path
+ * @public
+ */
+export const JIRA_CONFIG_PATH = 'jira' as const;
 
-export const JIRA_MANDATORY_FILTER =
-  'type = Bug AND resolution = Unresolved' as const;
+export const DATA_CENTER_API_VERSION = 2 as const;
+
+export const CLOUD_API_VERSION = 3 as const;

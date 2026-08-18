@@ -16,15 +16,15 @@
 
 import type { JiraSearchIssue } from './schemas/jiraSearchIssue';
 import type { JiraIssue } from './types';
-import { toIsoDateTime } from './utils';
+import { jiraDateTimeToIso } from './utils';
 
 export function mapJiraIssues(issues: JiraSearchIssue[]): JiraIssue[] {
   return issues.map(issue => ({
     id: issue.id,
-    createdAt: toIsoDateTime(issue.fields.created),
-    updatedAt: toIsoDateTime(issue.fields.updated),
+    createdAt: jiraDateTimeToIso(issue.fields.created),
+    updatedAt: jiraDateTimeToIso(issue.fields.updated),
     resolutionAt: issue.fields.resolutiondate
-      ? toIsoDateTime(issue.fields.resolutiondate)
+      ? jiraDateTimeToIso(issue.fields.resolutiondate)
       : null,
   }));
 }

@@ -35,7 +35,7 @@ describe('buildIncidentJql', () => {
     const jql = buildIncidentJql(baseFilters, options, newEntityComponent());
 
     expect(jql).toBe(
-      '(project = "INC") AND (type = "Incident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59") AND (updated >= "2026-05-01 00:00")',
+      '(project = "INC") AND (type = "Incident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1777593600000)',
     );
   });
 
@@ -47,7 +47,7 @@ describe('buildIncidentJql', () => {
     );
 
     expect(jql).toBe(
-      '(project = "INC") AND (type = "ServiceIncident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59") AND (updated >= "2026-05-01 00:00")',
+      '(project = "INC") AND (type = "ServiceIncident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1777593600000)',
     );
   });
 
@@ -63,7 +63,7 @@ describe('buildIncidentJql', () => {
     );
 
     expect(jql).toBe(
-      '(project = "INC") AND (component = "Payments") AND (labels = "sev-1") AND (type = "Incident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59") AND (updated >= "2026-05-01 00:00")',
+      '(project = "INC") AND (component = "Payments") AND (labels = "sev-1") AND (type = "Incident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1777593600000)',
     );
   });
 
@@ -77,7 +77,7 @@ describe('buildIncidentJql', () => {
     );
 
     expect(jql).toBe(
-      '(project = "INC") AND (type = "ProductionIncident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59") AND (updated >= "2026-05-01 00:00")',
+      '(project = "INC") AND (type = "ProductionIncident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1777593600000)',
     );
     expect(jql).not.toContain('(type = "ServiceIncident")');
   });
@@ -92,7 +92,7 @@ describe('buildIncidentJql', () => {
     );
 
     expect(jql).toBe(
-      '(project = "INC") AND (type = "ProductionIncident") AND (created >= "2026-06-01 00:00") AND (created <= "2026-06-30 23:59") AND (updated >= "2026-05-01 00:00")',
+      '(project = "INC") AND (type = "ProductionIncident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1777593600000)',
     );
   });
 });
