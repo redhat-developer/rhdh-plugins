@@ -1,5 +1,81 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 4.0.0
+
+### Major Changes
+
+- adb65c9: Breaking changes to MCP permissions using behavior-linked vocabulary rather than CRUD-linked vocabulary:
+
+  | Before (Lightspeed)     | Before (Intelligent Assistant)     | After              |
+  | ----------------------- | ---------------------------------- | ------------------ |
+  | `lightspeed.mcp.read`   | `intelligent-assistant.mcp.read`   | `mcp.tools.use`    |
+  | `lightspeed.mcp.manage` | `intelligent-assistant.mcp.manage` | `mcp.tools.manage` |
+
+  Removed permission CRUD action attributes; RBAC entries for these permission sets now use the generic `use` action.
+
+  Permission variable renamed from `iaMcpReadPermission` to `iaMcpUsePermission`; `iaMcpManagePermission` keeps its name.
+
+  Plugin documentation and example RBAC policy CSV updated to reflect the new MCP permission names.
+
+- 0ed3adc: Breaking changes to the notebooks permissions model that uses behavior-linked vocabulary:
+
+  | Before (Lightspeed)        | Before (Intelligent Assistant)        | After                                    |
+  | -------------------------- | ------------------------------------- | ---------------------------------------- |
+  | `lightspeed.notebooks.use` | `intelligent-assistant.notebooks.use` | `intelligent-assistant.notebooks.use`    |
+  |                            |                                       | `intelligent-assistant.notebooks.manage` |
+  - `notebooks.use` covers list/read/create session, upload document, and query endpoints
+  - `notebooks.manage` covers update/delete session and document endpoints
+
+  Removed permission CRUD action attributes; RBAC entries for notebooks permission sets now use the generic `use` action.
+
+  Hard-coded permission names were replaced by constants from the permission entities.
+
+  Plugin documentation and example RBAC policy CSV updated to reflect the notebooks permission model.
+
+- f1dba9b: Breaking changes to the permissions model that uses behavior-linked vocabulary rather than CRUD-linked vocabulary:
+
+  | Before (Lightspeed)      | Before (Intelligent Assistant)      | After                               |
+  | ------------------------ | ----------------------------------- | ----------------------------------- |
+  | `lightspeed.chat.read`   | `intelligent-assistant.chat.read`   | `intelligent-assistant.chat.access` |
+  | `lightspeed.chat.create` | `intelligent-assistant.chat.create` | `intelligent-assistant.chat.use`    |
+  | `lightspeed.chat.delete` | `intelligent-assistant.chat.delete` | `intelligent-assistant.chat.manage` |
+  | `lightspeed.chat.update` | `intelligent-assistant.chat.update` | `intelligent-assistant.chat.manage` |
+
+  Changes are applied to `lightspeed` (Frontend), `lightspeed-backend`, and `lightspeed-common` plugins.
+
+  Removed permission CRUD action attributes, rbac entries for permission sets now to generic 'use' action, allows `intelligent-assistant.chat.manage` to combine the update and delete actions.
+
+  Any hard-coded permission names have been replaced by constants, source references permission names from the permission entities.
+
+  `Trans.test.tsx` component test unit has permission names to reflect Intelligent Assistant for RHDH.
+
+  Additionally, hard-coded permission names have been replaced by local constants with the new names set.
+
+  Plugin documentation changes to revise information to permissions model changes to Intelligent Assistant for RHDH.
+
+  Changed permission variable 'lightspeed' prefix to 'ia' to use Intelligent Assistant rebranding.
+
+  Changes to example RBAC policy CSV file to reflect Intelligent Assistant for RHDH.
+
+### Minor Changes
+
+- 4a8aa72: Replace modal-based notebook rename with inline double-click-to-edit rename on notebook cards and sidebar, and remove redundant PatternFly CSS overrides.
+- e996529: Add inline rename for notebook resources with click or kebab menu, optimistic updates with rollback, frontend conflict validation, and backend PATCH endpoint with rollback on failure
+- b2f8ea7: Add screenshot capture utility with sensitive data redaction and performance guardrails for deep context awareness
+
+### Patch Changes
+
+- fe5a58e: Improve notebook UI: enhance AddDocumentModal, OverwriteConfirmModal, NotebookCard, and NotebookView components with better UX text, document count formatting, and fix translation type errors
+- bb7a863: Fix singular/plural handling for notebook card and document sidebar resource count using i18next `_one`/`_other` suffix keys.
+- 549abd8: Fix MCP settings panel layout in docked and overlay modes to fill available space and remove gray borders
+- 82742f0: Unify notebook terminology from "document" to "resource" across all UI strings, translations, and backend messages.
+- e919230: bump monaco-editor to v0.56.0 to pick up dompurify update
+- Updated dependencies [3d1d7d7]
+- Updated dependencies [adb65c9]
+- Updated dependencies [0ed3adc]
+- Updated dependencies [f1dba9b]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.0.0
+
 ## 3.2.0
 
 ### Minor Changes

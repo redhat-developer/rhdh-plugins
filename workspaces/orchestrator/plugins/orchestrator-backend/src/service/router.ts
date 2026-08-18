@@ -23,9 +23,7 @@ import {
   PermissionsService,
   UserInfoService,
 } from '@backstage/backend-plugin-api';
-import { NotAllowedError } from '@backstage/errors';
 import {
-  AuthorizeResult,
   BasicPermission,
   PolicyDecision,
   ResourcePermission,
@@ -43,15 +41,10 @@ import { Request as HttpRequest } from 'express-serve-static-core';
 import { OpenAPIBackend, Request } from 'openapi-backend';
 
 import {
-  FieldFilter,
   Filter,
-  NestedFilter,
   openApiDocument,
-  orchestratorInstanceAdminViewPermission,
   orchestratorWorkflowPermission,
-  orchestratorWorkflowSpecificPermission, // @deprecated Remove in next release
   orchestratorWorkflowUsePermission,
-  orchestratorWorkflowUseSpecificPermission, // @deprecated Remove in next release
   WorkflowOverviewListResultDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -63,37 +56,18 @@ import { OrchestratorService } from './OrchestratorService';
 import {
   OrchestratorFilters,
   orchestratorWorkflowResourceRef,
-  WorkflowIdParam,
 } from './permission-rules';
+import * as workflowAuth from './workflowAuthorization';
 
 interface RouterApi {
   openApiBackend: OpenAPIBackend;
   v2: V2;
 }
 
-const matches = (
-  workflow: WorkflowIdParam,
-  filters?: OrchestratorFilters,
-): boolean => {
-  if (!filters) {
-    return true;
-  }
-
-  if ('allOf' in filters) {
-    return filters.allOf.every(filter => matches(workflow, filter));
-  }
-
-  if ('anyOf' in filters) {
-    return filters.anyOf.some(filter => matches(workflow, filter));
-  }
-
-  if ('not' in filters) {
-    return !matches(workflow, filters.not);
-  }
-
-  return filters.values.includes(workflow.workflowId);
-};
-
+// Thin, request-based adapters over the shared, credentials-based helpers in
+// `workflowAuthorization.ts`. Kept here (rather than inlined at every call
+// site below) so the ~10 `setupInternalRoutes` handlers don't need to change
+// at all — they keep resolving credentials implicitly via `httpAuth`.
 const authorize = async (
   request: HttpRequest,
   genericPermission:
@@ -102,78 +76,7 @@ const authorize = async (
   httpAuth: HttpAuthService,
 ): Promise<PolicyDecision> => {
   const credentials = await httpAuth.credentials(request);
-
-  if (genericPermission.type === 'resource') {
-    const decisions = await permissionsSvc.authorizeConditional(
-      [{ permission: genericPermission }],
-      { credentials },
-    );
-    return decisions[0];
-  }
-  const decision = (
-    await permissionsSvc.authorize([{ permission: genericPermission }], {
-      credentials,
-    })
-  )[0];
-  return decision;
-};
-
-// @deprecated Remove in next release — legacy dynamic permission fallback
-const legacyAuthorize = async (
-  request: HttpRequest,
-  specificPermission: BasicPermission,
-  permissionsSvc: PermissionsService,
-  httpAuth: HttpAuthService,
-  logger: LoggerService,
-): Promise<boolean> => {
-  const credentials = await httpAuth.credentials(request);
-  const [decision] = await permissionsSvc.authorize(
-    [{ permission: specificPermission }],
-    { credentials },
-  );
-  if (decision.result === AuthorizeResult.ALLOW) {
-    logger.warn(
-      `Dynamic permission "${specificPermission.name}" granted access. ` +
-        `This permission is deprecated. Migrate to conditional policies with IS_ALLOWED_WORKFLOW_ID rule.`,
-    );
-    return true;
-  }
-  return false;
-};
-
-// @deprecated Remove in next release — batched legacy fallback for list filtering
-const legacyAuthorizeBatch = async (
-  credentials: Awaited<ReturnType<HttpAuthService['credentials']>>,
-  workflowIds: string[],
-  specificPermissionFactory: (workflowId: string) => BasicPermission,
-  permissionsSvc: PermissionsService,
-  logger: LoggerService,
-): Promise<string[]> => {
-  if (workflowIds.length === 0) {
-    return [];
-  }
-
-  const specificWorkflowRequests = workflowIds.map(workflowId => ({
-    permission: specificPermissionFactory(workflowId),
-  }));
-
-  const decisions = await permissionsSvc.authorize(specificWorkflowRequests, {
-    credentials,
-  });
-
-  const legacyAllowed: string[] = [];
-  workflowIds.forEach((workflowId, idx) => {
-    if (decisions[idx]?.result === AuthorizeResult.ALLOW) {
-      const permission = specificPermissionFactory(workflowId);
-      logger.warn(
-        `Dynamic permission "${permission.name}" granted access. ` +
-          `This permission is deprecated. Migrate to conditional policies with IS_ALLOWED_WORKFLOW_ID rule.`,
-      );
-      legacyAllowed.push(workflowId);
-    }
-  });
-
-  return legacyAllowed;
+  return workflowAuth.authorize(credentials, genericPermission, permissionsSvc);
 };
 
 const isUserAuthorizedForInstanceAdminViewPermission = async (
@@ -182,12 +85,10 @@ const isUserAuthorizedForInstanceAdminViewPermission = async (
   httpAuth: HttpAuthService,
 ): Promise<boolean> => {
   const credentials = await httpAuth.credentials(request);
-  const [decision] = await permissionsSvc.authorize(
-    [{ permission: orchestratorInstanceAdminViewPermission }],
-    { credentials },
+  return workflowAuth.isUserAuthorizedForInstanceAdminViewPermission(
+    credentials,
+    permissionsSvc,
   );
-
-  return decision.result === AuthorizeResult.ALLOW;
 };
 
 const filterAuthorizedWorkflowIds = async (
@@ -199,39 +100,13 @@ const filterAuthorizedWorkflowIds = async (
   logger: LoggerService,
 ): Promise<string[]> => {
   const credentials = await httpAuth.credentials(request);
-  const [genericDecision] = await permissionsSvc.authorizeConditional(
-    [{ permission: orchestratorWorkflowPermission }],
-    { credentials },
+  return workflowAuth.filterAuthorizedWorkflowIds(
+    credentials,
+    permissionsSvc,
+    workflowIds,
+    conditionTransformer,
+    logger,
   );
-
-  if (genericDecision.result === AuthorizeResult.ALLOW) {
-    return workflowIds;
-  }
-
-  let conditionallyAllowed: string[] = [];
-  let remainingIds: string[] = workflowIds;
-
-  if (genericDecision.result === AuthorizeResult.CONDITIONAL) {
-    const filters = conditionTransformer(genericDecision.conditions);
-    conditionallyAllowed = workflowIds.filter(id =>
-      matches({ workflowId: id }, filters),
-    );
-    remainingIds = workflowIds.filter(id => !conditionallyAllowed.includes(id));
-  }
-
-  // @deprecated Remove this legacy fallback block in next release
-  if (remainingIds.length > 0) {
-    const legacyAllowed = await legacyAuthorizeBatch(
-      credentials,
-      remainingIds,
-      orchestratorWorkflowSpecificPermission,
-      permissionsSvc,
-      logger,
-    );
-    return [...conditionallyAllowed, ...legacyAllowed];
-  }
-
-  return conditionallyAllowed;
 };
 
 const filterAuthorizedWorkflows = async (
@@ -242,27 +117,14 @@ const filterAuthorizedWorkflows = async (
   conditionTransformer: ConditionTransformer<OrchestratorFilters>,
   logger: LoggerService,
 ): Promise<WorkflowOverviewListResultDTO> => {
-  if (!workflows.overviews) {
-    return workflows;
-  }
-
-  const authorizedWorkflowIds = await filterAuthorizedWorkflowIds(
-    request,
+  const credentials = await httpAuth.credentials(request);
+  return workflowAuth.filterAuthorizedWorkflows(
+    credentials,
     permissionsSvc,
-    httpAuth,
-    workflows.overviews.map(w => w.workflowId),
+    workflows,
     conditionTransformer,
     logger,
   );
-
-  const filtered = {
-    ...workflows,
-    overviews: workflows.overviews.filter(w =>
-      authorizedWorkflowIds.includes(w.workflowId),
-    ),
-  };
-
-  return filtered;
 };
 
 export async function createBackendRouter(
@@ -418,36 +280,20 @@ function setupInternalRoutes(
     genericPermission: ResourcePermission<'orchestrator-workflow'>,
     auditEvent: AuditorServiceEvent,
   ): Promise<void> {
-    if (decision.result === AuthorizeResult.ALLOW) {
-      return;
-    }
-
-    if (decision.result === AuthorizeResult.CONDITIONAL) {
-      const filters = conditionTransformer(decision.conditions);
-      if (matches({ workflowId }, filters)) {
-        return;
-      }
-    }
-
-    // @deprecated Remove this legacy fallback block in next release
-    const specificPermission =
-      genericPermission === orchestratorWorkflowPermission
-        ? orchestratorWorkflowSpecificPermission(workflowId)
-        : orchestratorWorkflowUseSpecificPermission(workflowId);
-
-    const legacyAllowed = await legacyAuthorize(
-      request,
-      specificPermission,
+    const credentials = await httpAuth.credentials(request);
+    const allowed = await workflowAuth.isWorkflowAccessAllowed(
+      credentials,
+      decision,
+      workflowId,
+      genericPermission,
+      conditionTransformer,
       permissions,
-      httpAuth,
       logger,
     );
 
-    if (legacyAllowed) {
-      return;
+    if (!allowed) {
+      manageDenyAuthorization(auditEvent);
     }
-
-    manageDenyAuthorization(auditEvent);
   }
 
   // v2
@@ -570,8 +416,10 @@ function setupInternalRoutes(
       const workflowId = c.request.params.workflowId as string;
       const credentials = await httpAuth.credentials(req);
       const token = req.headers.authorization?.split(' ')[1];
-      const initiatorEntity = (await userInfo.getUserInfo(credentials))
-        .userEntityRef;
+      const initiatorEntity = await workflowAuth.resolveInitiatorEntity(
+        credentials,
+        userInfo,
+      );
 
       const auditEvent = await auditor.createEvent({
         eventId: 'execute-workflow',
@@ -964,8 +812,10 @@ function setupInternalRoutes(
         }
 
         const credentials = await httpAuth.credentials(req);
-        const initiatorEntity = (await userInfo.getUserInfo(credentials))
-          .userEntityRef;
+        const initiatorEntity = await workflowAuth.resolveInitiatorEntity(
+          credentials,
+          userInfo,
+        );
         const isUserAuthorizedForInstanceAdminView: boolean = // This permission will let user see ALL instances (including ones others created)
           await isUserAuthorizedForInstanceAdminViewPermission(
             req,
@@ -975,30 +825,12 @@ function setupInternalRoutes(
 
         const requestFilters = getRequestFilters(req);
 
-        let filters = requestFilters;
-
-        if (!isUserAuthorizedForInstanceAdminView) {
-          const initiatorEntityFilter: FieldFilter = {
-            operator: 'EQ',
-            value: initiatorEntity,
-            field: 'initiatorEntity',
-          };
-
-          const nestedVariablesFilter: NestedFilter = {
-            field: 'variables',
-            nested: initiatorEntityFilter,
-          };
-
-          if (requestFilters === undefined) {
-            filters = nestedVariablesFilter;
-          } else {
-            // combine filters
-            filters = {
-              operator: 'AND',
-              filters: [nestedVariablesFilter, requestFilters],
-            };
-          }
-        }
+        const filters = isUserAuthorizedForInstanceAdminView
+          ? requestFilters
+          : workflowAuth.buildInstanceOwnershipFilter(
+              initiatorEntity,
+              requestFilters,
+            );
 
         const result = await routerApi.v2.getInstances(
           buildPagination(req),
@@ -1050,45 +882,13 @@ function setupInternalRoutes(
         );
 
         const credentials = await httpAuth.credentials(request);
-        const initiatorEntity = (await userInfo.getUserInfo(credentials))
-          .userEntityRef;
-        // Check if user is authorized to view all instances
-        const isUserAuthorizedForInstanceAdminView =
-          await isUserAuthorizedForInstanceAdminViewPermission(
-            request,
-            permissions,
-            httpAuth,
-          );
-
-        // If not an admin, enforce initiatorEntity check
-        if (!isUserAuthorizedForInstanceAdminView) {
-          const instanceInitiatorEntity = instance.initiatorEntity;
-
-          // If the instance has no initiatorEntity recorded, we cannot determine ownership.
-          // This can happen for:
-          // 1. Workflow instances created before the initiatorEntity feature was added
-          // 2. Workflow instances started externally (not through Backstage)
-          // 3. Workflows that transform/overwrite their input variables
-          if (!instanceInitiatorEntity) {
-            throw new NotAllowedError(
-              `Access denied for instance ${instanceId}. ` +
-                `You have permission to view workflow '${workflowId}', but this workflow run ` +
-                `does not have ownership information recorded. Since we cannot verify you ` +
-                `initiated this run, the 'orchestrator.instanceAdminView' permission is required. ` +
-                `Contact your administrator to grant this permission.`,
-            );
-          }
-
-          if (instanceInitiatorEntity !== initiatorEntity) {
-            throw new NotAllowedError(
-              `Access denied for instance ${instanceId}. ` +
-                `This workflow run was initiated by '${instanceInitiatorEntity}', not by you ('${initiatorEntity}'). ` +
-                `With 'orchestrator.workflow' or 'orchestrator.workflow.${workflowId}' permissions, ` +
-                `you can only view instances you created. To view all instances, you need the ` +
-                `'orchestrator.instanceAdminView' permission.`,
-            );
-          }
-        }
+        await workflowAuth.assertInstanceOwnership(
+          credentials,
+          permissions,
+          userInfo,
+          instance,
+          instanceId,
+        );
 
         auditEvent.success();
         res.status(200).json(instance);
@@ -1139,8 +939,10 @@ function setupInternalRoutes(
         );
 
         const credentials = await httpAuth.credentials(request);
-        const initiatorEntity = (await userInfo.getUserInfo(credentials))
-          .userEntityRef;
+        const initiatorEntity = await workflowAuth.resolveInitiatorEntity(
+          credentials,
+          userInfo,
+        );
         // Check if user is authorized to view all instances
         const isUserAuthorizedForInstanceAdminView =
           await isUserAuthorizedForInstanceAdminViewPermission(

@@ -15,6 +15,7 @@
  */
 
 import { Knex } from 'knex';
+import type { AggregationConfigFilter } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
   DbMetricValueCreate,
   DbMetricValue,
@@ -132,6 +133,7 @@ export class DatabaseMetricValues {
   private async readScalarAggregationByLatestIdsSubquery(
     latestIdsSubquery: Knex.QueryBuilder,
     aggregationFn: ScalarAggregationFn,
+    filter?: AggregationConfigFilter,
   ): Promise<ScalarAggregationRowResult> {
     const clientName: string =
       (this.dbClient as any).client?.config?.client ?? '';
@@ -150,6 +152,10 @@ export class DatabaseMetricValues {
       .whereIn('id', latestIdsSubquery)
       .whereRaw(`NOT ${DatabaseMetricValues.metricValueIsMissingExpr}`);
 
+    if (filter?.status && filter.status !== '') {
+      aggregateQuery.where('status', filter.status);
+    }
+
     const aggregateRow = await aggregateQuery
       .select(
         this.dbClient.raw(`${aggregateExpression} as value`),
@@ -165,11 +171,21 @@ export class DatabaseMetricValues {
     };
 
     if (aggregateRow) {
-      aggregateResult.value = Number(aggregateRow.value);
-      aggregateResult.total = Number(aggregateRow.total);
-      aggregateResult.maxTimestamp = normalizeTimestamp(
-        aggregateRow.max_timestamp,
-      );
+      const rawValue = Number(aggregateRow.value);
+      const rawTotal = Number(aggregateRow.total);
+      aggregateResult.value = Number.isFinite(rawValue) ? rawValue : 0;
+      aggregateResult.total = Number.isFinite(rawTotal) ? rawTotal : 0;
+      // MAX(timestamp) is null when no rows contribute (e.g. filter matches nothing).
+      // Keep epoch so mergeMaxTimestamp prefers the portfolio latest-row timestamp.
+      if (
+        aggregateResult.total > 0 &&
+        aggregateRow.max_timestamp !== null &&
+        aggregateRow.max_timestamp !== ''
+      ) {
+        aggregateResult.maxTimestamp = normalizeTimestamp(
+          aggregateRow.max_timestamp,
+        );
+      }
     }
 
     return {
@@ -208,6 +224,30 @@ export class DatabaseMetricValues {
           .where('catalog_entity_ref', catalogEntityRef)
           .groupBy('metric_id'),
       );
+
+    return (rows as MetricValueRowWithId[]).map(fromMetricValueRow);
+  }
+
+  /**
+   * Get metric values for a specific entity and metric within a timestamp range.
+   * Ordered by timestamp ascending, then id ascending.
+   */
+  async readEntityMetricValuesInRange(
+    catalogEntityRef: string,
+    metricId: string,
+    from: Date,
+    to: Date,
+  ): Promise<DbMetricValue[]> {
+    const rows = await this.dbClient(this.tableName)
+      .select('*')
+      .where('catalog_entity_ref', catalogEntityRef)
+      .where('metric_id', metricId)
+      .where('timestamp', '>=', from)
+      .where('timestamp', '<=', to)
+      .orderBy([
+        { column: 'timestamp', order: 'asc' },
+        { column: 'id', order: 'asc' },
+      ]);
 
     return (rows as MetricValueRowWithId[]).map(fromMetricValueRow);
   }
@@ -296,6 +336,7 @@ export class DatabaseMetricValues {
     catalogEntityRefs: string[],
     metricId: string,
     aggregationFn: ScalarAggregationFn,
+    filter?: AggregationConfigFilter,
   ): Promise<DbScalarAggregatedMetric | undefined> {
     if (catalogEntityRefs.length === 0) {
       return undefined;
@@ -319,6 +360,7 @@ export class DatabaseMetricValues {
     } = await this.readScalarAggregationByLatestIdsSubquery(
       latestIdsSubquery,
       aggregationFn,
+      filter,
     );
 
     const mergedMax = mergeMaxTimestamp(

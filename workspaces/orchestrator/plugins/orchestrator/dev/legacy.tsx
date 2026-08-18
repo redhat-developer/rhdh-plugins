@@ -18,7 +18,7 @@ import { createDevApp } from '@backstage/dev-utils';
 
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
-import { OrchestratorPage, orchestratorPlugin } from '../src';
+import { OrchestratorPage, orchestratorPlugin } from '../src/legacyExports';
 import { orchestratorTranslations } from '../src/translations';
 
 createDevApp()

@@ -4,6 +4,7 @@
 
 ```ts
 import { BasicPermission } from '@backstage/plugin-permission-common';
+import type { Entity } from '@backstage/catalog-model';
 import { ResourcePermission } from '@backstage/plugin-permission-common';
 
 // @public
@@ -27,6 +28,42 @@ export interface AgentRecord {
   name: string;
   updatedAt: string;
 }
+
+// @public
+export const AI_ASSET_SPEC_TYPES: Record<string, Set<string>>;
+
+// @public
+export const AI_CATALOG_ASSET_RESOURCE_TYPE = 'ai-catalog-asset';
+
+// @public
+export const AI_CATALOG_RULE_IS_AI_ASSET_CATEGORY = 'isAiAssetCategory';
+
+// @public
+export const AI_CATALOG_RULE_IS_FROM_CONNECTOR = 'isFromConnector';
+
+// @public
+export const AI_CATALOG_RULE_IS_IN_TENANT = 'isInTenant';
+
+// @public
+export const aiCatalogAdminPermission: BasicPermission;
+
+// @public
+export const aiCatalogAssetAccessPermission: ResourcePermission<'ai-catalog-asset'>;
+
+// @public
+export const aiCatalogAssetAccessUsageDocsPermission: ResourcePermission<'ai-catalog-asset'>;
+
+// @public
+export const aiCatalogPermissions: readonly [
+  ResourcePermission<'ai-catalog-asset'>,
+  ResourcePermission<'ai-catalog-asset'>,
+  BasicPermission,
+];
+
+// @public
+export const aiCatalogResourcePermissions: ResourcePermission<
+  typeof AI_CATALOG_ASSET_RESOURCE_TYPE
+>[];
 
 // @public
 export interface ApprovalRequest {
@@ -191,6 +228,9 @@ export const boostPermissions: readonly [
   BasicPermission,
   BasicPermission,
   BasicPermission,
+  ResourcePermission<'ai-catalog-asset'>,
+  ResourcePermission<'ai-catalog-asset'>,
+  BasicPermission,
 ];
 
 // @public
@@ -223,8 +263,26 @@ export const boostToolResourcePermissions: ResourcePermission<
 export const boostToolUnpublishPermission: ResourcePermission<'boost-tool'>;
 
 // @public
+export function buildAiAssetCatalogFilter(): Record<
+  string,
+  string | string[]
+>[];
+
+// @public
 export interface ChatOptions {
   userRef?: string;
+}
+
+// @public
+export interface ConnectorHealthStatus {
+  connectorId: string;
+  connectorType: string;
+  enabled: boolean;
+  errorSummary: ErrorSummary | null;
+  lastSuccessfulSync: string | null;
+  lastSyncAttempt: string | null;
+  metrics: SyncMetrics;
+  status: HealthStatus;
 }
 
 // @public
@@ -257,6 +315,21 @@ export interface ConversationSummary {
 }
 
 // @public
+export interface ErrorSummary {
+  diagnosticGuidance: string;
+  errorMessage: string;
+  errorType: ErrorType;
+}
+
+// @public
+export type ErrorType =
+  | 'auth'
+  | 'network'
+  | 'schema'
+  | 'rate-limit'
+  | 'unknown';
+
+// @public
 export interface FeedbackRecord {
   createdAt: string;
   createdBy: string;
@@ -266,6 +339,9 @@ export interface FeedbackRecord {
   sentiment: 'positive' | 'negative';
   sessionId: string;
 }
+
+// @public
+export type HealthStatus = 'healthy' | 'degraded' | 'failing' | 'unknown';
 
 // @public
 export type InputItem =
@@ -284,6 +360,9 @@ export type InputItem =
       url: string;
       mimeType?: string;
     };
+
+// @public
+export function isAiAsset(entity: Entity): boolean;
 
 // @public
 export type LifecycleStage = 'draft' | 'pending' | 'published' | 'archived';
@@ -428,6 +507,27 @@ export interface ProviderDescriptor {
   description?: string;
   id: string;
   name: string;
+}
+
+// @public
+export interface SyncAttemptRecord {
+  assetsAdded: number;
+  assetsRemoved: number;
+  assetsUpdated: number;
+  connectorId: string;
+  durationMs: number;
+  errorMessage: string | null;
+  errorType: string | null;
+  id: string;
+  outcome: 'success' | 'failure';
+  timestamp: string;
+}
+
+// @public
+export interface SyncMetrics {
+  assetsAdded: number;
+  assetsRemoved: number;
+  assetsUpdated: number;
 }
 
 // @public

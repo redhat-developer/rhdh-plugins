@@ -57,7 +57,7 @@ export const ActiveTextInput: Widget<
   const { classes } = useStyles();
   const templateUnitEvaluator = useTemplateUnitEvaluator();
 
-  const { id, label, value, onChange, formContext } = props;
+  const { id, label, value, onChange, onBlur, formContext } = props;
   const formData = formContext?.formData;
   const isChangedByUser = !!formContext?.getIsChangedByUser(id);
   const setIsChangedByUser = formContext?.setIsChangedByUser;
@@ -227,6 +227,7 @@ export const ActiveTextInput: Widget<
         {...params}
         data-testid={`${id}-textfield`}
         onChange={event => handleChange(event.target.value, true)}
+        onBlur={() => onBlur?.(id, value)}
         label={label}
         disabled={isReadOnly}
       />
@@ -267,6 +268,7 @@ export const ActiveTextInput: Widget<
         value={value ?? ''}
         data-testid={`${id}-textfield`}
         onChange={event => handleChange(event.target.value, true)}
+        onBlur={() => onBlur?.(id, value)}
         label={label}
         disabled={isReadOnly}
       />

@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-llamastack-entity-provider
 
+## 0.3.0
+
+### Minor Changes
+
+- 118559b: add test for entityHelpers.ts; rename entity annotations from boost.redhat.com to ai-catalog.rhdh.com
+
+  pivot ogx entity provider to employ our entity kind extensions AiModelServerAPI and AiResource ; this change was in a previously merged commit https://github.com/redhat-developer/rhdh-plugins/commit/887e675df7939b79648353ce9001dc9cc7ed09d3
+
 ## 0.2.0
 
 ### Minor Changes

@@ -15,7 +15,7 @@
 #   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-x2a-backend:<version>
 #   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-x2a-dcr:<version>
 #   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-x2a-mcp-extras:<version>
-#   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-x2a:<version>
+#   quay.io/x2ansible/red-hat-developer-hub-backstage-plugin-x2a-scaffolder-module:<version>
 #
 #   And optionally with custom tag if --tag is specified
 #
@@ -45,7 +45,7 @@ declare -A PLUGIN_IMAGES=(
   ["x2a-backend"]="red-hat-developer-hub-backstage-plugin-x2a-backend"
   ["x2a-dcr"]="red-hat-developer-hub-backstage-plugin-x2a-dcr"
   ["x2a-mcp-extras"]="red-hat-developer-hub-backstage-plugin-x2a-mcp-extras"
-  ["scaffolder-backend-module-x2a"]="red-hat-developer-hub-backstage-plugin-scaffolder-backend-module-x2a"
+  ["scaffolder-backend-module-x2a"]="red-hat-developer-hub-backstage-plugin-x2a-scaffolder-module"
 )
 
 # ---------------------------------------------------------------------------

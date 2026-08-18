@@ -2,6 +2,8 @@
 
 This is `bulk-import-backend` plugin which provides Rest API to bulk import catalog entities into the catalog
 
+For local development, tests, and Backstage bump smoke checks, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ## For administrators
 
 ### Installation and Configuration

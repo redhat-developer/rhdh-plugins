@@ -8,9 +8,13 @@ spec:
   targets:
     - ./components/all-scorecards-service-different-owner.yaml
     - ./components/all-scorecards.yaml
+    - ./components/catalog-scorecard-with-title.yaml
+    - ./components/catalog-scorecard-without-title.yaml
+    - ./components/code-coverage-scorecard-only.yaml
     - ./components/dependabot-scorecard-only.yaml
     - ./components/github-scorecard-only.yaml
     - ./components/jira-scorecard-only.yaml
     - ./components/no-scorecards.yaml
     - ./components/openssf-scorecard-only.yaml
     - ./components/sonarqube-scorecard-only.yaml
+    - ./components/dora-scorecard.yaml

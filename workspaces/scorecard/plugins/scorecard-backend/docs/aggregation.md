@@ -96,8 +96,9 @@ Shared behavior for all scalar types:
 1. **Latest row per entity:** Same scope as other aggregation KPIs — one row per owned catalog entity ref (the row with the highest `id` for that entity and metric).
 2. **Calculation failures excluded:** Rows where `error_message` is set and `value` is null are excluded from the aggregate (same rule as status-grouped aggregation).
 3. **SQL function:** `sum` → `SUM(value)`, `average` → `AVG(value)`, `max` → `MAX(value)`, `min` → `MIN(value)`, `count` → `COUNT(*)` over rows with a non-null value.
-4. **Metric type rules:** All scalar types require a **number** metric. Startup validation rejects scalar KPIs that target a boolean metric.
+4. **Metric type rules:** `sum`, `average`, `max`, and `min` require a **number** metric. `count` is also valid for boolean metrics. Startup validation rejects non-count scalar KPIs that target a boolean metric.
 5. **Optional result thresholds:** `options.thresholds` (number-style rules) can color or classify the aggregated **`value`**. When omitted, the API returns **`DEFAULT_NUMBER_THRESHOLDS`**. See [thresholds.md — Aggregation KPI result thresholds (scalar types)](./thresholds.md#5-aggregation-kpi-result-thresholds-scalar-types).
+6. **Optional status filter:** Top-level **`filter.status`** restricts which latest rows contribute to **`value`** / **`total`**. See [Status filter (scalar types)](#status-filter-scalar-types).
 
 ### Sum type
 
@@ -126,6 +127,14 @@ scorecard:
             - key: error
               expression: '>50'
               color: error.main
+    # Optional filter.status: only include entities whose metric status matches
+    totalCriticalBugs:
+      title: 'Total Critical Bugs'
+      description: 'Sum of open issues for entities in error status.'
+      type: sum
+      metricId: jira.openIssues
+      filter:
+        status: error
 ```
 
 ### Average type
@@ -204,6 +213,12 @@ scorecard:
 | **`min`**                 | Minimum latest metric value across owned entities                                                          | “Best-case / lowest value in the portfolio.”    |
 | **`count`**               | Number of entities with a non-null latest stored value                                                     | “How many entities have data for this metric.”  |
 
+### Status filter (scalar types)
+
+Scalar KPIs may include an optional top-level **`filter.status`** to restrict aggregation to latest rows whose threshold evaluation matches the given status key (for example `success`, `warning`, `error`, or any custom threshold key). On non-scalar types (`statusGrouped`, `weightedStatusScore`), **`filter`** is silently ignored.
+
+**Startup validation:** When **`filter.status`** is set, the backend validates at plugin load that the value is a **threshold rule key** for the KPI’s **`metricId`** (provider defaults plus app-config at **`scorecard.metricProviders.<datasource>.<providerName>.metrics.<metricName>.thresholds`** or provider-level **`scorecard.metricProviders.<datasource>.<providerName>.thresholds`** — for example `scorecard.metricProviders.jira.openIssues.metrics.openIssues.thresholds` when **`metricId`** is `jira.openIssues`). Keys are **case-sensitive** (`error` ≠ `Error`) and must be 1–64 characters. Invalid keys cause startup to fail with an error listing valid keys. Per-entity annotation threshold overrides are **not** considered (they apply at metric sync time only). See [thresholds.md — Scalar status filter](./thresholds.md#5-aggregation-kpi-result-thresholds-scalar-types).
+
 ## Configuration validation
 
 - **`scorecard.aggregationKPIs`** is validated when the backend plugin starts. Invalid entries cause startup to fail with an error so misconfiguration is caught early. Fix app-config and redeploy.
@@ -219,57 +234,80 @@ Use this endpoint for all new integrations.
 - **`aggregationId`** may be a key under **`scorecard.aggregationKPIs`** in app-config (see the [backend README](../README.md#aggregation-kpis-homepage-and-get-aggregations)), which supplies **title**, **description**, **type**, **metricId**, and type-specific **`options`** (for example **`options.statusScores`** for **`weightedStatusScore`**, or optional **`options.thresholds`** for scalar types and **`weightedStatusScore`**).
 - If there is **no** `scorecard.aggregationKPIs.<aggregationId>` block, the backend still responds successfully: it treats **`aggregationId` as the `metricId`** and uses the default **statusGrouped** strategy (same as calling **`/aggregations/<metricId>`** with a metric id). A **warning** is logged on the server so missing KPI config is visible in operator logs. To get a custom **title**, **`weightedStatusScore`** or **scalar** type, or other KPI options, you must add that block; a typo in the id falls through to this default and can look like “wrong” aggregation behavior in the UI, so check logs and app-config.
 
-The response shape includes **`id`**, **`status`**, **`metadata`** (title, description, type, aggregation type), and **`result`**. The shape of **`result`** depends on the aggregation type:
+The response shape includes **`id`**, **`status`**, **`metadata`** (title, description, type, unit, aggregation type, and **`filter`** when configured), and **`result`**. The shape of **`result`** depends on the aggregation type:
 
 - **`statusGrouped`**: counts per threshold rule, **`total`**, **`thresholds`**, **`entitiesConsidered`**, **`calculationErrorCount`**, **`timestamp`**.
 - **`weightedStatusScore`**: same as status-grouped, plus **`weightedStatusScore`** (portfolio percentage in \[0, 100\], one decimal), **`weightedStatusSum`**, **`weightedStatusMaxPossible`**, and **`aggregationChartDisplayColor`** (see backend README). The homepage card shows a donut gauge for this type instead of a multi-slice status pie.
-- **Scalar types** (`sum`, `average`, `max`, `min`, `count`): see [Scalar result fields](#scalar-result-fields) below.
+- **Scalar types** (`sum`, `average`, `max`, `min`, `count`): see [Scalar result fields](#scalar-result-fields) below. When **`filter.status`** is configured, **`metadata.filter`** is also returned.
 
 ### Scalar result fields
 
 When **`metadata.aggregationType`** is one of **`sum`**, **`average`**, **`max`**, **`min`**, or **`count`**, **`result`** is a scalar aggregation payload:
 
-| Field                       | Description                                                                                                                                                                                              |
-| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`value`**                 | Aggregated scalar from the configured SQL function (`sum`, `average`, `max`, `min`, or entity count for `count`) over latest non-null metric values. Evaluated by **`options.thresholds`** when present. |
-| **`total`**                 | Number of latest rows that contributed to **`value`** (non-null values; calculation failures excluded). For **`count`**, equals **`value`**.                                                             |
-| **`entitiesConsidered`**    | In-scope owned entities with **at least one** latest `metric_values` row for this metric (includes calculation-error rows).                                                                              |
-| **`calculationErrorCount`** | Among **`entitiesConsidered`**, how many latest rows are metric calculation failures (`error_message` set and `value` null).                                                                             |
-| **`timestamp`**             | ISO timestamp of the most recent among the latest rows in scope (same merge rule as other aggregation types).                                                                                            |
-| **`thresholds`**            | Number-style threshold rules for classifying **`value`**; from **`options.thresholds`** or **`DEFAULT_NUMBER_THRESHOLDS`** when omitted. First matching rule can drive custom UI coloring.               |
+| Field                       | Description                                                                                                                                                                    |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`value`**                 | Aggregated number from the KPI type (`sum` / `average` / `max` / `min` / `count`) over contributing latest non-null rows. Classified by **`options.thresholds`** when present. |
+| **`total`**                 | How many latest rows contributed to **`value`** (non-null, calculation failures excluded, optionally narrowed by **`filter.status`**). For **`count`**, equals **`value`**.    |
+| **`entitiesConsidered`**    | Owned entities in scope that have at least one latest row for this metric (includes calculation-error rows).                                                                   |
+| **`calculationErrorCount`** | Among **`entitiesConsidered`**, how many latest rows are metric calculation failures (`error_message` set and `value` null).                                                   |
+| **`timestamp`**             | Portfolio data freshness — ISO timestamp of the most recent latest row in scope (same merge rule as other aggregation types).                                                  |
+| **`thresholds`**            | Number-style rules for classifying **`value`**; from **`options.thresholds`** or **`DEFAULT_NUMBER_THRESHOLDS`** when omitted.                                                 |
 
-Example (truncated):
+Example scalar response with status filter:
 
 ```json
 {
-  "id": "totalOpenBugs",
+  "id": "jira.openIssues",
   "status": "success",
   "metadata": {
-    "title": "Total Open Bugs",
-    "description": "Sum of open issues across owned entities",
+    "title": "Total Critical Bugs",
+    "description": "Sum of open issues for entities in error status",
     "type": "number",
-    "aggregationType": "sum"
+    "aggregationType": "sum",
+    "filter": { "status": "error" }
   },
   "result": {
     "value": 42,
-    "total": 8,
+    "total": 10,
     "entitiesConsidered": 10,
-    "calculationErrorCount": 2,
-    "timestamp": "2026-07-15T10:00:00.000Z",
-    "thresholds": { "rules": [] }
+    "calculationErrorCount": 1,
+    "timestamp": "2026-02-17T10:30:00.000Z",
+    "thresholds": {
+      "rules": [
+        { "key": "success", "expression": "<100" },
+        { "key": "warning", "expression": "100-500" },
+        { "key": "error", "expression": ">500" }
+      ]
+    }
   }
 }
 ```
 
-**`entitiesConsidered`** (all types): count of in-scope owned entities that have **at least one** latest `metric_values` row for this metric. **`calculationErrorCount`**: how many of those latest rows are metric calculation failures (`error_message` set and `value` null), so the homepage ratio matches the population behind the drill-down table rather than the raw number of owned catalog refs. For scalar types, **`total`** is the number of rows that contributed to **`value`** (non-null latest values, calculation failures excluded).
-
-**“Without calculation errors” on the homepage:** `healthy = entitiesConsidered - calculationErrorCount` counts only among entities that already have a latest stored row for this metric. Owned entities with **no** row yet are omitted from **`entitiesConsidered`** (same as omitting them from the drill-down list until data exists).
+**“Without calculation errors” on the homepage:** `healthy = entitiesConsidered - calculationErrorCount` counts only among entities that already have a latest stored row for this metric. Owned entities with **no** row yet are omitted from **`entitiesConsidered`** (same as omitting them from the drill-down list until data exists). The homepage ratio matches the population behind the drill-down table rather than the raw number of owned catalog refs.
 
 **Partial totals:** The drill-down entities list can cap how many DB rows are considered and exposes **`entityHealth.countsArePartial`** when that cap applies. The aggregation path runs over the **full** list of owned catalog entity refs supplied to the query (there is no equivalent row cap), so **`entitiesConsidered`** / **`calculationErrorCount`** on **`GET /aggregations/:aggregationId`** are not marked partial in the same way.
 
+#### Interpreting scalar results
+
+Always read **`value`** together with **`total`**. When nothing contributed, SQL aggregates (`SUM` / `AVG` / `MIN` / `MAX`) return null over an empty set and the API coerces that to **`value: 0`** with **`total: 0`**. That shape means **no data**, not a real aggregate of zero — especially important for **`min`** / **`max`**, where a bare **`value: 0`** would otherwise look like a real extreme.
+
+| What you see                                | What it means                                                                                                                                                                                                |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`value: 0`**, **`total: 0`**              | Empty contribution set: no owned entities in scope, or **`filter.status`** matched no latest rows. Not an API error. For **`min`** / **`max`**, do **not** treat this as a real extreme of **`0`**.          |
+| **`value: 0`**, **`total: N`** (N > 0)      | Real zero aggregate over **N** contributing entities (for example **N** owned components in **`error`** status each with metric value **`0`** → **`min`** / **`sum`** / **`average`** can be **`0`**).       |
+| **`value: 42`**, **`total: 10`**            | Aggregate over 10 contributing rows (for example sum of open issues across 10 matching entities).                                                                                                            |
+| **`total`** vs **`entitiesConsidered`**     | **`total`** can be lower than **`entitiesConsidered`** when some latest rows are calculation failures and/or when **`filter.status`** excludes rows. Failures never contribute to **`value`** / **`total`**. |
+| **`count`** type                            | **`value`** always equals **`total`** (both are the count of contributing rows).                                                                                                                             |
+| **`timestamp`** when filter matches nothing | Still portfolio freshness from latest rows in scope — not “now”.                                                                                                                                             |
+
+**Worked example** — KPI type **`min`** on **`github.openPRs`** with **`filter.status: error`**:
+
+- Response **`{ "value": 0, "total": 5 }`** means you own 5 components currently in **`error`** status whose open-PR values contributed, and the minimum among them is **`0`**.
+- Response **`{ "value": 0, "total": 0 }`** means no **`error`**-status rows contributed — show “no data”, not “min is 0”.
+
 ### `GET /aggregations/:aggregationId/metadata`
 
-Same resolution as above, but returns only metadata fields (no aggregate counts). Useful for UIs that list KPIs without loading full aggregation data.
+Same resolution as above, but returns only metadata fields (no aggregate counts), including **`filter`** when configured on a scalar KPI. Useful for UIs that list KPIs without loading full aggregation data.
 
 #### Permissions and errors
 
@@ -281,7 +319,7 @@ Same resolution as above, but returns only metadata fields (no aggregate counts)
 
 #### Empty results
 
-When the user owns no relevant entities, the API returns an aggregation with **zero total** and zeroed bucket counts for distribution types, or **`value: 0`** with zeroed entity counts for scalar types (not an error).
+When the user owns no relevant entities, distribution types (**`statusGrouped`**, **`weightedStatusScore`**) return **zero total** and zeroed bucket counts (not an error). For scalar empty / filtered-empty handling — including why **`value: 0`** with **`total: 0`** is ambiguous for **`min`** / **`max`** — see [Interpreting scalar results](#interpreting-scalar-results).
 
 ### Drill-down vs aggregation id
 

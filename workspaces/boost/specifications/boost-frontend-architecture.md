@@ -68,8 +68,6 @@ plugins/boost/
       useAiAssets.ts            # Wraps catalogApiRef for AI asset queries
       useFeatureFlags.ts
       usePermissions.ts
-    utils/
-      isAiAsset.ts              # Entity condition filter for Blueprints
     components/
       catalog/                  # AI Catalog domain (RHDHPLAN-1509)
         AiCatalogPage.tsx       # Browse page
@@ -186,7 +184,7 @@ The frontend consumes 23 permissions from `boost-common`:
 | Infrastructure       | `boost.kagenti.admin`                                                                                                              |
 | Functional           | `boost.documents.manage`, `boost.mcp.manage`, `boost.config.manage`                                                                |
 
-For AI Catalog specifically, RHDHPLAN-1508 defines three additional permissions: `ai-catalog.asset.read`, `ai-catalog.asset.read.usage-docs`, and `ai-catalog.admin`. These are not yet in `boost-common` — they will be added as part of the RBAC feature (RHDHPLAN-1508).
+For AI Catalog specifically, RHDHPLAN-1508 defines three additional permissions: `ai-catalog.asset.access`, `ai-catalog.asset.access.usage-docs`, and `ai-catalog.admin`. These are defined in `boost-common/src/permissions.ts` and included in the `boostPermissions` aggregate (registered via `permissionsRegistry.addPermissions()`).
 
 ---
 
@@ -199,15 +197,15 @@ Backstage v1.51.0 introduced two AI-related additions via `@backstage/plugin-cat
 
 Boost's entity model (Decision 1 in the agent-creation-discovery design) uses upstream kinds where available and existing kinds as fallback:
 
-| Category      | Entity Kind  | `spec.type`    | Notes                                                                             |
-| ------------- | ------------ | -------------- | --------------------------------------------------------------------------------- |
-| Skills        | `AiResource` | `skill`        | Upstream. Has `disciplines`, `categories`, `agents`, `dependsOn`                  |
-| Rules         | `AiResource` | `rule`         | Upstream. Has `category` (required), `rationale` (required)                       |
-| MCP Servers   | `API`        | `mcp-server`   | Upstream. Has `spec.remotes` list                                                 |
-| Agents        | `Component`  | `ai-agent`     | Boost-defined. No upstream kind yet                                               |
-| Models        | `Resource`   | `ai-model`     | Boost-defined. RFC #33060 pending — may move to `API` with `ai-model-server` type |
-| Tools         | `Resource`   | `ai-tool`      | Boost-defined (Kagenti-specific)                                                  |
-| Vector Stores | `Resource`   | `vector-store` | Boost-defined                                                                     |
+| Category      | Entity Kind  | `spec.type`    | Notes                                                            |
+| ------------- | ------------ | -------------- | ---------------------------------------------------------------- |
+| Skills        | `AiResource` | `skill`        | Upstream. Has `disciplines`, `categories`, `agents`, `dependsOn` |
+| Rules         | `AiResource` | `rule`         | Upstream. Has `category` (required), `rationale` (required)      |
+| MCP Servers   | `API`        | `mcp-server`   | Upstream. Has `spec.remotes` list                                |
+| Agents        | `Component`  | `ai-agent`     | Boost-defined. No upstream kind yet                              |
+| Models        | `Resource`   | `ai-model`     | Boost-defined. No solid upstream kind yet                        |
+| Tools         | `Resource`   | `ai-tool`      | Boost-defined (Kagenti-specific)                                 |
+| Vector Stores | `Resource`   | `vector-store` | Boost-defined                                                    |
 
 Boost-defined entities carry `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, and `rhdh.io/ai-asset-source` annotations as an interim bridge (RHDHPLAN-1507). Custom `CatalogProcessor` validators support both current and future kinds during upstream transitions.
 
@@ -279,4 +277,4 @@ The AI Catalog is the first domain. Here is how future capabilities map to surfa
 - **Sample fixtures as contract**: Dev app uses `catalog-info.yaml` fixtures for all asset types — no dependency on backend entity providers being running
 - **Client-side pagination**: `getEntities` returns full dataset; client-side page slicing is sufficient for the 500-asset target at Dev Preview
 - **Default catalog search**: AI assets appear in RHDH global search via default catalog indexing; custom search collator with category labels is deferred
-- **RBAC graceful degradation**: Permission checks for `ai-catalog.asset.read.usage-docs` default to allow when the permission isn't registered (RHDHPLAN-1508 not yet built); content is shown, and enforcement activates automatically when RBAC lands
+- **RBAC graceful degradation**: Permission checks for `ai-catalog.asset.access.usage-docs` default to allow when the permission isn't registered (RHDHPLAN-1508 not yet built); content is shown, and enforcement activates automatically when RBAC lands

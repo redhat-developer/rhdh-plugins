@@ -95,6 +95,7 @@ const EntityScorecardContentInner = () => {
             value={metric.result?.value}
             metricType={metric.metadata.type}
             thresholds={metric.result?.thresholdResult}
+            unit={metric.metadata.unit}
             isMetricDataError={isMetricDataError}
             metricDataError={metric?.error}
             isThresholdError={isThresholdError}

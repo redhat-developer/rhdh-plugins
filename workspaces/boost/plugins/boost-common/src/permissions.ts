@@ -37,6 +37,14 @@ export const BOOST_AGENT_RESOURCE_TYPE = 'boost-agent';
  */
 export const BOOST_TOOL_RESOURCE_TYPE = 'boost-tool';
 
+/**
+ * Resource type for AI catalog assets (models, agents, skills, MCP servers,
+ * model servers).
+ *
+ * @public
+ */
+export const AI_CATALOG_ASSET_RESOURCE_TYPE = 'ai-catalog-asset';
+
 // ---------------------------------------------------------------------------
 // Agent permissions — 10 total (2 basic + 8 resource-scoped)
 // ---------------------------------------------------------------------------
@@ -320,6 +328,82 @@ export const boostAdminPermission = createPermission({
   attributes: { action: 'update' },
 });
 
+/**
+ * AI Catalog admin permission for catalog-layer management actions
+ * (ingestion health, analytics, governance).
+ *
+ * Distinct from {@link boostAdminPermission}: `ai-catalog.*` covers
+ * catalog asset governance; `boost.*` covers agent/operational features.
+ *
+ * @public
+ */
+export const aiCatalogAdminPermission = createPermission({
+  name: 'ai-catalog.admin',
+  attributes: { action: 'update' },
+});
+
+// ---------------------------------------------------------------------------
+// AI Catalog permissions — 3 total (2 resource-scoped + 1 basic)
+// ---------------------------------------------------------------------------
+
+/**
+ * Tier 1: basic discovery of AI catalog assets (name, description, category,
+ * lifecycle stage, version count, tags). Resource-scoped to support
+ * CONDITIONAL evaluation via RBAC conditional policies.
+ *
+ * @remarks
+ * The permission name uses `access` rather than `read` per the naming
+ * convention decided across the 2.1 permission work (see
+ * {@link https://github.com/redhat-developer/rhdh-plugins/issues/4041 | issue #4041}).
+ * The `attributes.action` remains `'read'` since that is a fixed
+ * {@link @backstage/plugin-permission-common#PermissionAction | Backstage action enum}
+ * value, unrelated to the permission name.
+ *
+ * @public
+ */
+export const aiCatalogAssetAccessPermission = createPermission({
+  name: 'ai-catalog.asset.access',
+  attributes: { action: 'read' },
+  resourceType: AI_CATALOG_ASSET_RESOURCE_TYPE,
+});
+
+/**
+ * Tier 2: sensitive details including usage documentation, connection
+ * endpoints, and configuration. Resource-scoped to support CONDITIONAL
+ * evaluation via RBAC conditional policies.
+ *
+ * @remarks
+ * See {@link aiCatalogAssetAccessPermission} for the `access`-vs-`read`
+ * naming rationale.
+ *
+ * @public
+ */
+export const aiCatalogAssetAccessUsageDocsPermission = createPermission({
+  name: 'ai-catalog.asset.access.usage-docs',
+  attributes: { action: 'read' },
+  resourceType: AI_CATALOG_ASSET_RESOURCE_TYPE,
+});
+
+/**
+ * All 3 AI Catalog permissions.
+ *
+ * @public
+ */
+export const aiCatalogPermissions = [
+  aiCatalogAssetAccessPermission,
+  aiCatalogAssetAccessUsageDocsPermission,
+  aiCatalogAdminPermission,
+] as const;
+
+/**
+ * AI Catalog resource permissions (those with resourceType `ai-catalog-asset`).
+ *
+ * @public
+ */
+export const aiCatalogResourcePermissions: ResourcePermission<
+  typeof AI_CATALOG_ASSET_RESOURCE_TYPE
+>[] = [aiCatalogAssetAccessPermission, aiCatalogAssetAccessUsageDocsPermission];
+
 // ---------------------------------------------------------------------------
 // Conditional rule names
 // ---------------------------------------------------------------------------
@@ -346,6 +430,30 @@ export const BOOST_RULE_IS_NOT_CREATOR = 'IS_NOT_CREATOR';
  * @public
  */
 export const BOOST_RULE_HAS_LIFECYCLE_STAGE = 'HAS_LIFECYCLE_STAGE';
+
+/**
+ * Conditional rule: matches AI catalog assets by their category
+ * annotation (`rhdh.io/ai-asset-category`).
+ *
+ * @public
+ */
+export const AI_CATALOG_RULE_IS_AI_ASSET_CATEGORY = 'isAiAssetCategory';
+
+/**
+ * Conditional rule: matches AI catalog assets by their source connector
+ * annotation (`rhdh.io/ai-asset-source`).
+ *
+ * @public
+ */
+export const AI_CATALOG_RULE_IS_FROM_CONNECTOR = 'isFromConnector';
+
+/**
+ * Conditional rule: matches AI catalog assets by tenant identity
+ * (namespace or the `rhdh.io/ai-asset-tenant` annotation).
+ *
+ * @public
+ */
+export const AI_CATALOG_RULE_IS_IN_TENANT = 'isInTenant';
 
 // ---------------------------------------------------------------------------
 // Aggregated permission arrays
@@ -450,4 +558,5 @@ export const boostPermissions = [
   ...boostFunctionalPermissions,
   boostAccessPermission,
   boostAdminPermission,
+  ...aiCatalogPermissions,
 ] as const;

@@ -23,9 +23,38 @@ import type { JsonValue } from '@backstage/types';
 import { AdminConfigService } from './AdminConfigService';
 import {
   boostConfigFields,
+  BOOST_CONNECTOR_SCHEMA_VERSION,
+  CONNECTOR_IDS,
   isSensitiveField,
   type BoostConfigKey,
+  type ConnectorId,
 } from './schemas';
+
+/**
+ * A migration function that transforms stored DB overrides for a
+ * connector from one schema version to the next. Receives the
+ * connector ID and the admin config service for reading/writing
+ * individual leaf values. Returns when the migration is complete.
+ *
+ * @public
+ */
+export type ConnectorMigrationFn = (
+  connectorId: ConnectorId,
+  adminConfigService: AdminConfigService,
+) => Promise<void>;
+
+/**
+ * Registry of connector schema migrations keyed by the **source**
+ * version they upgrade from. For example, a migration registered
+ * under key `1` upgrades v1 → v2.
+ *
+ * Migrations are applied sequentially: v1 → v2 → v3 etc. Each
+ * migration must leave the data valid under the next version's
+ * schema.
+ *
+ * @public
+ */
+export type ConnectorMigrationRegistry = Map<number, ConnectorMigrationFn>;
 
 /**
  * Cache key for the merged effective config.
@@ -136,6 +165,132 @@ export class RuntimeConfigResolver {
   async remove(key: BoostConfigKey): Promise<void> {
     await this.adminConfigService.removeOverride(key);
     await this.invalidate();
+  }
+
+  /**
+   * Run connector schema migrations on startup.
+   *
+   * For each known connector, reads the stored `__schemaVersion`
+   * leaf from the DB. If missing, writes v1 explicitly (pre-versioning
+   * data is treated as v1) and then applies any registered migrations
+   * up to `BOOST_CONNECTOR_SCHEMA_VERSION`. The stored version is
+   * stamped after each successful step so a later failure can resume.
+   *
+   * Migration functions must be idempotent: a function that throws
+   * after partial leaf writes will re-run on the next startup.
+   *
+   * A failure for one connector is logged and does not skip the
+   * remaining connectors; the first error is rethrown after all
+   * connectors have been attempted.
+   *
+   * @param migrations - Optional registry of version-keyed migration
+   *   functions. When omitted (or empty), only the version stamp is
+   *   written/bumped — no data transforms are applied.
+   */
+  async migrateConnectorSchemas(
+    migrations?: ConnectorMigrationRegistry,
+  ): Promise<void> {
+    let firstError: unknown;
+
+    for (const connectorId of CONNECTOR_IDS) {
+      try {
+        await this.migrateOneConnector(connectorId, migrations);
+      } catch (error) {
+        this.logger.error(
+          `Connector "${connectorId}" schema migration failed`,
+          error as Error,
+        );
+        firstError ??= error;
+      }
+    }
+
+    // Invalidate cache after migrations may have changed DB values.
+    // Preserve a connector migration error if invalidation also fails.
+    try {
+      await this.invalidate();
+    } catch (invalidateError) {
+      this.logger.error(
+        'Failed to invalidate config cache after connector schema migration',
+        invalidateError as Error,
+      );
+      firstError ??= invalidateError;
+    }
+
+    if (firstError) {
+      throw firstError;
+    }
+  }
+
+  /**
+   * Migrate a single connector's stored schema version.
+   *
+   * @internal
+   */
+  private async migrateOneConnector(
+    connectorId: ConnectorId,
+    migrations?: ConnectorMigrationRegistry,
+  ): Promise<void> {
+    const versionKey =
+      `boost.connectors.${connectorId}.__schemaVersion` as BoostConfigKey;
+
+    const stored = await this.adminConfigService.getOverride(versionKey);
+    let storedVersion = typeof stored === 'number' ? stored : undefined;
+
+    if (storedVersion === undefined) {
+      this.logger.info(
+        `Connector "${connectorId}" has no stored schema version — ` +
+          `treating as v1, writing v1`,
+      );
+      await this.adminConfigService.setOverride(versionKey, 1);
+      storedVersion = 1;
+    }
+
+    if (storedVersion > BOOST_CONNECTOR_SCHEMA_VERSION) {
+      this.logger.warn(
+        `Connector "${connectorId}" schema v${storedVersion} is ahead of ` +
+          `current v${BOOST_CONNECTOR_SCHEMA_VERSION} (possible downgrade) — ` +
+          `skipping migration`,
+      );
+      return;
+    }
+
+    if (storedVersion === BOOST_CONNECTOR_SCHEMA_VERSION) {
+      this.logger.debug(
+        `Connector "${connectorId}" schema v${storedVersion} is current`,
+      );
+      return;
+    }
+
+    this.logger.info(
+      `Connector "${connectorId}" schema v${storedVersion} → ` +
+        `v${BOOST_CONNECTOR_SCHEMA_VERSION}: running migrations`,
+    );
+
+    for (
+      let fromVersion = storedVersion;
+      fromVersion < BOOST_CONNECTOR_SCHEMA_VERSION;
+      fromVersion++
+    ) {
+      const migrationFn = migrations?.get(fromVersion);
+      if (migrationFn) {
+        await migrationFn(connectorId, this.adminConfigService);
+        this.logger.info(
+          `Connector "${connectorId}": migrated v${fromVersion} → ` +
+            `v${fromVersion + 1}`,
+        );
+      } else {
+        this.logger.debug(
+          `Connector "${connectorId}": no migration registered for ` +
+            `v${fromVersion} → v${fromVersion + 1} (no-op)`,
+        );
+      }
+      await this.adminConfigService.setOverride(versionKey, fromVersion + 1);
+    }
+
+    this.logger.info(
+      `Connector "${connectorId}" schema version bumped to ` +
+        `v${BOOST_CONNECTOR_SCHEMA_VERSION}`,
+    );
   }
 
   /**

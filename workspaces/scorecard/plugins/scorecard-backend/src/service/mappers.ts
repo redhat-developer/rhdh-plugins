@@ -24,15 +24,17 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DbAggregatedMetric } from '../database/types';
 import type { DbScalarAggregatedMetric } from '../database/types';
-import { toIsoTimestamp } from '../utils/toIsoTimestamp';
 import { ValidatedAggregationConfig } from '../validation/schemas/aggregationConfigSchemas';
+import { normalizeTimestamp } from '../utils/normalizeTimestamp';
 
 export class AggregatedMetricMapper {
   static toAggregatedMetric(
     aggregatedMetric?: DbAggregatedMetric,
   ): AggregatedMetric {
     const total = aggregatedMetric?.total ?? 0;
-    const timestamp = toIsoTimestamp(aggregatedMetric?.maxTimestamp);
+    const timestamp = normalizeTimestamp(
+      aggregatedMetric?.maxTimestamp,
+    ).toISOString();
 
     return {
       values: aggregatedMetric?.statusCounts ?? {},
@@ -46,7 +48,9 @@ export class AggregatedMetricMapper {
   static toScalarAggregatedMetric(
     scalarMetric?: DbScalarAggregatedMetric,
   ): ScalarAggregatedMetric {
-    const timestamp = toIsoTimestamp(scalarMetric?.maxTimestamp);
+    const timestamp = normalizeTimestamp(
+      scalarMetric?.maxTimestamp,
+    ).toISOString();
 
     return {
       value: scalarMetric?.value ?? 0,
@@ -61,13 +65,20 @@ export class AggregatedMetricMapper {
     metric: Metric,
     aggregationConfig: ValidatedAggregationConfig,
   ): AggregationMetadata {
-    return {
+    const metadata: AggregationMetadata = {
       type: metric.type,
+      unit: metric.unit,
       history: metric.history,
       title: aggregationConfig.title,
       description: aggregationConfig.description,
       aggregationType: aggregationConfig.type,
     };
+
+    if ('filter' in aggregationConfig && aggregationConfig.filter) {
+      metadata.filter = aggregationConfig.filter;
+    }
+
+    return metadata;
   }
 
   static toAggregatedMetricResult(

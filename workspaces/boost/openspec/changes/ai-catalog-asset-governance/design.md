@@ -26,7 +26,7 @@ This design covers the catalog-layer RBAC system. It is informed by:
 
 ## Goals
 
-- Define 3 AI Catalog permissions (`ai-catalog.asset.read`, `ai-catalog.asset.read.usage-docs`, `ai-catalog.admin`) using standard Backstage registration patterns
+- Define 3 AI Catalog permissions (`ai-catalog.asset.access`, `ai-catalog.asset.access.usage-docs`, `ai-catalog.admin`) using standard Backstage registration patterns
 - Implement two-tier graduated visibility with field-level filtering at the API layer
 - Support conditional policies scoped to asset category, source connector, and tenant
 - Implement version-level policy cascade via RBACProvider extension point
@@ -49,11 +49,11 @@ This design covers the catalog-layer RBAC system. It is informed by:
 
 Three permissions are defined using `createPermission` from `@backstage/plugin-permission-common`:
 
-| Permission                         | Action | Resource Type      | Purpose                                                  |
-| ---------------------------------- | ------ | ------------------ | -------------------------------------------------------- |
-| `ai-catalog.asset.read`            | read   | `ai-catalog-asset` | Tier 1: basic discovery (name, description, type, stage) |
-| `ai-catalog.asset.read.usage-docs` | read   | `ai-catalog-asset` | Tier 2: usage docs, connection endpoints, configuration  |
-| `ai-catalog.admin`                 | update | — (basic)          | Management: posture config, policy management, admin UI  |
+| Permission                           | Action | Resource Type      | Purpose                                                  |
+| ------------------------------------ | ------ | ------------------ | -------------------------------------------------------- |
+| `ai-catalog.asset.access`            | read   | `ai-catalog-asset` | Tier 1: basic discovery (name, description, type, stage) |
+| `ai-catalog.asset.access.usage-docs` | read   | `ai-catalog-asset` | Tier 2: usage docs, connection endpoints, configuration  |
+| `ai-catalog.admin`                   | update | — (basic)          | Management: posture config, policy management, admin UI  |
 
 Both read permissions are resource-based (`resourceType: 'ai-catalog-asset'`) to support CONDITIONAL evaluation — deployers can configure category-scoped, connector-scoped, or tenant-scoped visibility via RBAC conditional policies. `ai-catalog.admin` is a basic permission (binary ALLOW/DENY) because management actions are not scoped to individual assets.
 
@@ -61,7 +61,7 @@ This follows the same pattern as boost's `boost.agent.list` upgrade to resource-
 
 ### Decision 2: Field-level filtering at the API layer, not database layer
 
-Tier 2 fields (usage documentation, connection endpoints, configuration) are filtered at the API response layer, not the database query layer. The backend fetches the full entity, checks `ai-catalog.asset.read.usage-docs` for the requesting user, and omits Tier 2 fields if DENIED.
+Tier 2 fields (usage documentation, connection endpoints, configuration) are filtered at the API response layer, not the database query layer. The backend fetches the full entity, checks `ai-catalog.asset.access.usage-docs` for the requesting user, and omits Tier 2 fields if DENIED.
 
 **Why not database-level filtering?** Tier 2 filtering is field-level (omit specific fields from the response), not entity-level (omit entire entities). Database-level `toQuery()` is designed for entity-level filtering. Field-level filtering is simpler and more maintainable at the API layer.
 
@@ -81,7 +81,7 @@ This was recommended by the feasibility analysis over Option A (runtime catalog 
 
 ### Decision 4: Default-deny via conditional policies, not config toggle
 
-The `ai-catalog.rbac.defaultPolicy: allow|deny` config key is read at ingestion time. When set to `deny`, the `AICatalogRBACProvider` applies a catch-all DENY conditional rule for `ai-catalog.asset.read` on newly ingested entities. When set to `allow`, no catch-all rule is applied (standard Backstage behavior).
+The `ai-catalog.rbac.defaultPolicy: allow|deny` config key is read at ingestion time. When set to `deny`, the `AICatalogRBACProvider` applies a catch-all DENY conditional rule for `ai-catalog.asset.access` on newly ingested entities. When set to `allow`, no catch-all rule is applied (standard Backstage behavior).
 
 Per-category defaults use conditional rules scoped to `rhdh.io/ai-asset-category` annotation values. Per-connector defaults use conditional rules scoped to a source-connector annotation.
 

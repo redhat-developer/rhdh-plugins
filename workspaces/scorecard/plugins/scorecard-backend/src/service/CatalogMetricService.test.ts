@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { NotFoundError } from '@backstage/errors';
+import { NotAllowedError, NotFoundError } from '@backstage/errors';
 import { mockServices } from '@backstage/backend-test-utils';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import { CatalogMetricService } from './CatalogMetricService';
@@ -404,6 +404,7 @@ describe('CatalogMetricService', () => {
           description: provider.getMetrics()[0].description,
           type: provider.getMetrics()[0].type,
           history: provider.getMetrics()[0].history,
+          defaultVisualization: provider.getMetrics()[0].defaultVisualization,
         }),
       );
       expect(resultMetric.result).toEqual(
@@ -438,6 +439,202 @@ describe('CatalogMetricService', () => {
       expect(thresholdResult.status).toBe('error');
       expect(thresholdResult.error).toBe(
         'Unable to evaluate thresholds, metric value is missing',
+      );
+    });
+  });
+
+  describe('getEntityMetricTimeSeries', () => {
+    const from = new Date('2024-01-01T00:00:00.000Z');
+    const to = new Date('2024-01-03T23:59:59.000Z');
+    const entityRef = 'component:default/test-component';
+    const metricId = 'github.importantMetric';
+
+    beforeEach(() => {
+      (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue([
+        provider.getMetrics()[0],
+      ]);
+      mockedDatabase.readEntityMetricValuesInRange.mockResolvedValue([]);
+    });
+
+    it('should throw NotFoundError when entity is not found', async () => {
+      mockedCatalog.getEntityByRef.mockResolvedValue(undefined);
+
+      await expect(
+        service.getEntityMetricTimeSeries(entityRef, metricId, from, to),
+      ).rejects.toThrow(new NotFoundError(`Entity not found: ${entityRef}`));
+    });
+
+    it('should throw NotAllowedError when metric is not authorized', async () => {
+      (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue(
+        [],
+      );
+
+      await expect(
+        service.getEntityMetricTimeSeries(
+          entityRef,
+          metricId,
+          from,
+          to,
+          permissionsFilter,
+        ),
+      ).rejects.toThrow(NotAllowedError);
+    });
+
+    it('should return metric metadata', async () => {
+      const metric = {
+        ...provider.getMetrics()[0],
+        unit: 'h',
+      };
+      mockedRegistry.getMetric.mockReturnValue(metric);
+      (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue([
+        metric,
+      ]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result.metadata).toEqual({
+        title: metric.title,
+        description: metric.description,
+        type: metric.type,
+        unit: metric.unit,
+        history: metric.history,
+        defaultVisualization: metric.defaultVisualization,
+      });
+    });
+
+    it('should return empty points when no data in range', async () => {
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result).toEqual({
+        metricId,
+        entityRef,
+        points: [],
+        metadata: {
+          title: provider.getMetrics()[0].title,
+          description: provider.getMetrics()[0].description,
+          type: provider.getMetrics()[0].type,
+          unit: provider.getMetrics()[0].unit,
+          history: provider.getMetrics()[0].history,
+          defaultVisualization: provider.getMetrics()[0].defaultVisualization,
+        },
+      });
+      expect(mockedDatabase.readEntityMetricValuesInRange).toHaveBeenCalledWith(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+    });
+
+    it('should fold multiple samples on the same UTC day to the highest id', async () => {
+      mockedDatabase.readEntityMetricValuesInRange.mockResolvedValue([
+        {
+          id: 1,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: 8,
+          timestamp: new Date('2024-01-01T08:00:00.000Z'),
+          errorMessage: null,
+          status: 'success',
+        },
+        {
+          id: 3,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: 9,
+          timestamp: new Date('2024-01-01T20:00:00.000Z'),
+          errorMessage: null,
+          status: 'success',
+        },
+        {
+          id: 2,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: 7,
+          timestamp: new Date('2024-01-02T12:00:00.000Z'),
+          errorMessage: null,
+          status: 'success',
+        },
+      ] as DbMetricValue[]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result.points).toEqual([
+        { value: 9, timestamp: '2024-01-01T20:00:00.000Z' },
+        { value: 7, timestamp: '2024-01-02T12:00:00.000Z' },
+      ]);
+    });
+
+    it('should exclude null values and calculation errors from points', async () => {
+      mockedDatabase.readEntityMetricValuesInRange.mockResolvedValue([
+        {
+          id: 1,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: null,
+          timestamp: new Date('2024-01-01T10:00:00.000Z'),
+          errorMessage: 'Failed to calculate',
+          status: null,
+        },
+        {
+          id: 2,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: null,
+          timestamp: new Date('2024-01-02T10:00:00.000Z'),
+          errorMessage: null,
+          status: 'success',
+        },
+        {
+          id: 3,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: 5,
+          timestamp: new Date('2024-01-03T10:00:00.000Z'),
+          errorMessage: null,
+          status: 'success',
+        },
+      ] as DbMetricValue[]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result.points).toEqual([
+        { value: 5, timestamp: '2024-01-03T10:00:00.000Z' },
+      ]);
+    });
+
+    it('should pass permission filter to filterAuthorizedMetrics', async () => {
+      await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+        permissionsFilter,
+      );
+
+      expect(permissionUtils.filterAuthorizedMetrics).toHaveBeenCalledWith(
+        [provider.getMetrics()[0]],
+        permissionsFilter,
       );
     });
   });
@@ -618,7 +815,7 @@ describe('CatalogMetricService', () => {
         expect(result).toEqual({
           values: {},
           total: 0,
-          timestamp: '2024-01-15T12:00:00.000Z',
+          timestamp: '1970-01-01T00:00:00.000Z',
           entitiesConsidered: 0,
           calculationErrorCount: 0,
         });
@@ -1310,6 +1507,7 @@ describe('CatalogMetricService', () => {
         title: provider.getMetrics()[0].title,
         description: provider.getMetrics()[0].description,
         type: provider.getMetrics()[0].type,
+        unit: provider.getMetrics()[0].unit,
       });
     });
   });

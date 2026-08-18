@@ -8,11 +8,15 @@ import type { AgentRecord } from '@red-hat-developer-hub/backstage-plugin-boost-
 import type { ApprovalRequest } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { BackendFeature } from '@backstage/backend-plugin-api';
 import type { CacheService } from '@backstage/backend-plugin-api';
+import type { ConnectorHealthStatus } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { ConversationDetails } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { ConversationMessage } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { ConversationSummary } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { DatabaseService } from '@backstage/backend-plugin-api';
+import type { ErrorSummary } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { ErrorType } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { FeedbackRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
+import type { HealthStatus } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { HttpAuthService } from '@backstage/backend-plugin-api';
 import type { LifecycleStage } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { LoggerService } from '@backstage/backend-plugin-api';
@@ -23,12 +27,14 @@ import { Permission } from '@backstage/plugin-permission-common';
 import { PermissionCondition } from '@backstage/plugin-permission-common';
 import { PermissionCriteria } from '@backstage/plugin-permission-common';
 import type { PermissionsService } from '@backstage/backend-plugin-api';
+import { PolicyDecision } from '@backstage/plugin-permission-common';
 import type { ProviderDescriptor } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { Request as Request_2 } from 'express';
 import type { RequestHandler } from 'express';
 import type { RootConfigService } from '@backstage/backend-plugin-api';
 import { Router } from 'express';
 import { ServiceFactory } from '@backstage/backend-plugin-api';
+import type { SyncAttemptRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { ToolRecord } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import { z } from 'zod';
 
@@ -81,6 +87,50 @@ export interface AgentRoutesOptions {
 }
 
 // @public
+export interface AiCatalogAsset {
+  category?: string;
+  config?: Record<string, unknown>;
+  connectionEndpoints?: Record<string, string>;
+  deploymentParameters?: Record<string, unknown>;
+  description?: string;
+  id: string;
+  lifecycleStage?: string;
+  name: string;
+  tags?: string[];
+  usageDocs?: string;
+  versionCount?: number;
+}
+
+// @public
+export interface AiCatalogAssetLoader {
+  findById(id: string): Promise<AiCatalogAsset | undefined>;
+  list(options?: {
+    isAuthorized?: (resource: AiCatalogAssetResource) => boolean;
+  }): Promise<AiCatalogAsset[]>;
+}
+
+// @public
+export interface AiCatalogAssetResource {
+  // (undocumented)
+  metadata: {
+    annotations?: Record<string, string>;
+    namespace?: string;
+  };
+}
+
+// @public
+export interface AiCatalogRoutesOptions {
+  assetLoader: AiCatalogAssetLoader;
+  httpAuth: HttpAuthService;
+  isResourceAuthorized: (
+    decision: PolicyDecision,
+    resource: AiCatalogAssetResource,
+  ) => boolean;
+  logger: LoggerService;
+  permissions: PermissionsService;
+}
+
+// @public
 export function authorizeLifecycleAction(
   permission: Permission,
   _resourceLoader: ResourceLoader,
@@ -114,7 +164,10 @@ export interface BackendApprovalStoreOptions {
 }
 
 // @public
-export const BOOST_CONFIG_SCHEMA_VERSION = 2;
+export const BOOST_CONFIG_SCHEMA_VERSION = 4;
+
+// @public
+export const BOOST_CONNECTOR_SCHEMA_VERSION = 1;
 
 // @public
 export const boostAiProviderServiceFactory: ServiceFactory<
@@ -147,9 +200,11 @@ export const boostConfigFields: {
     readonly description: string;
   };
   readonly 'boost.security.mode': {
-    readonly schema: z.ZodEnum<
-      ['development-only-no-auth', 'plugin-only', 'full']
-    >;
+    readonly schema: z.ZodEnum<{
+      'development-only-no-auth': 'development-only-no-auth';
+      'plugin-only': 'plugin-only';
+      full: 'full';
+    }>;
     readonly configScope: ConfigScope;
     readonly description: string;
   };
@@ -164,7 +219,12 @@ export const boostConfigFields: {
     readonly description: string;
   };
   readonly 'boost.agentApproval.mode': {
-    readonly schema: z.ZodOptional<z.ZodEnum<['built-in', 'sonataflow']>>;
+    readonly schema: z.ZodOptional<
+      z.ZodEnum<{
+        'built-in': 'built-in';
+        sonataflow: 'sonataflow';
+      }>
+    >;
     readonly configScope: ConfigScope;
     readonly description: string;
   };
@@ -211,6 +271,96 @@ export const boostConfigFields: {
     readonly description: string;
     readonly sensitive: true;
   };
+  readonly 'boost.ingestion.healthRetention.maxAttemptsPerConnector': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.jira.__schemaVersion': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.github.__schemaVersion': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.gitlab.__schemaVersion': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.jira.enabled': {
+    readonly schema: z.ZodOptional<z.ZodBoolean>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.jira.endpoint': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: `HTTPS endpoint URL for the ${string} ${string}. Must use HTTPS.`;
+  };
+  readonly 'boost.connectors.jira.schedule.intervalMs': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.jira.schedule.cron': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.jira.batchSize': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.jira.timeout.connectionMs': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.github.enabled': {
+    readonly schema: z.ZodOptional<z.ZodBoolean>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.github.endpoint': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: `HTTPS endpoint URL for the ${string} ${string}. Must use HTTPS.`;
+  };
+  readonly 'boost.connectors.github.schedule.intervalMs': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.github.batchSize': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.gitlab.enabled': {
+    readonly schema: z.ZodOptional<z.ZodBoolean>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.gitlab.endpoint': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: `HTTPS endpoint URL for the ${string} ${string}. Must use HTTPS.`;
+  };
+  readonly 'boost.connectors.gitlab.schedule.intervalMs': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.gitlab.batchSize': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
 };
 
 // @public
@@ -231,6 +381,11 @@ export interface ChatRoutesOptions {
 }
 
 // @public
+export interface ClassifyOptions {
+  connectorType?: string;
+}
+
+// @public
 export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
   configScope: ConfigScope;
   description: string;
@@ -240,6 +395,41 @@ export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
 
 // @public
 export type ConfigScope = 'yaml-only' | 'db-overridable' | 'db-only';
+
+// @public
+export const CONNECTOR_IDS: readonly ['jira', 'github', 'gitlab'];
+
+// @public
+export interface ConnectorCandidate {
+  connectorId: string;
+  connectorType: string;
+  runtimeEnabled: boolean;
+  startupEnabled: boolean;
+}
+
+// @public
+export class ConnectorConfigReader {
+  constructor(options: ConnectorConfigReaderOptions);
+  listCandidates(): ConnectorCandidate[];
+}
+
+// @public
+export interface ConnectorConfigReaderOptions {
+  config: RootConfigService;
+  logger: LoggerService;
+}
+
+// @public
+export type ConnectorId = (typeof CONNECTOR_IDS)[number];
+
+// @public
+export type ConnectorMigrationFn = (
+  connectorId: ConnectorId,
+  adminConfigService: AdminConfigService,
+) => Promise<void>;
+
+// @public
+export type ConnectorMigrationRegistry = Map<number, ConnectorMigrationFn>;
 
 // @public
 export class ConversationAgentCache {
@@ -328,11 +518,19 @@ export function createAgentResourceLoader(): ResourceLoader;
 export function createAgentRoutes(options: AgentRoutesOptions): Router;
 
 // @public
+export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router;
+
+// @public
 export function createChatRoutes(options: ChatRoutesOptions): Router;
 
 // @public
 export function createConversationRoutes(
   options: ConversationRoutesOptions,
+): Router;
+
+// @public
+export function createIngestionHealthRoutes(
+  options: IngestionHealthRoutesOptions,
 ): Router;
 
 // @public
@@ -366,6 +564,36 @@ export class DocumentSyncService {
 export interface DocumentSyncServiceOptions {
   cache: CacheService;
   logger: LoggerService;
+}
+
+// @public
+export class ErrorClassifier {
+  static classify(error: unknown, options?: ClassifyOptions): ErrorSummary;
+  static guidanceFor(errorType: ErrorType): string;
+}
+
+// @public
+export class HealthStatusService {
+  constructor(options: HealthStatusServiceOptions);
+  static deriveStatus(attempts: SyncAttemptRecord[]): HealthStatus;
+  getHealthStatuses(
+    includeDisabled?: boolean,
+  ): Promise<ConnectorHealthStatus[]>;
+}
+
+// @public
+export interface HealthStatusServiceOptions {
+  configReader: ConnectorConfigReader;
+  logger: LoggerService;
+  store: SyncAttemptsStore;
+}
+
+// @public
+export interface IngestionHealthRoutesOptions {
+  healthService: HealthStatusService;
+  httpAuth: HttpAuthService;
+  logger: LoggerService;
+  permissions: PermissionsService;
 }
 
 // @public
@@ -476,6 +704,9 @@ export type ResourceLoader = (req: Request_2) => Promise<
 export class RuntimeConfigResolver {
   constructor(options: RuntimeConfigResolverOptions);
   invalidate(): Promise<void>;
+  migrateConnectorSchemas(
+    migrations?: ConnectorMigrationRegistry,
+  ): Promise<void>;
   resolve(key: BoostConfigKey): Promise<unknown | undefined>;
   resolveAll(): Promise<Map<string, unknown>>;
 }
@@ -497,6 +728,44 @@ export interface SkillsRoutesOptions {
   httpAuth: HttpAuthService;
   logger: LoggerService;
   permissions: PermissionsService;
+}
+
+// @public
+export class SyncAttemptsStore {
+  constructor(options: SyncAttemptsStoreOptions);
+  cleanupOldAttempts(
+    connectorId: string,
+    retentionLimit: number,
+  ): Promise<number>;
+  getDistinctConnectorIds(): Promise<string[]>;
+  getLastSuccessfulAttempt(
+    connectorId: string,
+  ): Promise<SyncAttemptRecord | null>;
+  getLatestAttempts(
+    connectorId: string,
+    limit?: number,
+  ): Promise<SyncAttemptRecord[]>;
+  getLatestAttemptsForAll(
+    connectorIds: string[],
+    limit?: number,
+  ): Promise<Map<string, SyncAttemptRecord[]>>;
+  insertSyncAttempt(attempt: {
+    id: string;
+    connectorId: string;
+    outcome: 'success' | 'failure';
+    errorType?: string | null;
+    errorMessage?: string | null;
+    assetsAdded?: number;
+    assetsUpdated?: number;
+    assetsRemoved?: number;
+    durationMs?: number;
+  }): Promise<SyncAttemptRecord>;
+}
+
+// @public
+export interface SyncAttemptsStoreOptions {
+  database: DatabaseService;
+  logger: LoggerService;
 }
 
 // @public

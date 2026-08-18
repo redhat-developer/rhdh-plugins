@@ -195,6 +195,12 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'modal.save': '保存',
     'modal.title.edit': '添付ファイルの編集',
     'modal.title.preview': '添付ファイルのプレビュー',
+    'notebook.document.rename': '名前の変更',
+    'notebook.document.rename.tooltip': 'クリックで名前を変更',
+    'notebook.document.rename.error':
+      '「{{documentName}}」の名前変更に失敗しました。',
+    'notebook.document.rename.conflict': '名前は既に存在します。',
+    'notebook.document.rename.tooLong': '名前が長すぎます（最大255）。',
     'notebook.document.delete': '削除',
     'notebook.document.delete.action': '削除',
     'notebook.document.delete.description':
@@ -202,10 +208,19 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebook.document.delete.success':
       '「{{documentName}}」が正常に削除されました。',
     'notebook.document.delete.title': 'リソースを削除しますか？',
-    'notebook.overwrite.modal.action': '上書き',
+    'notebook.overwrite.modal.action': 'アップロード ({{count}})',
+    'notebook.overwrite.modal.back': '戻る',
     'notebook.overwrite.modal.description':
-      '以下のファイルはこのノートブックに既に存在します。新しいバージョンで上書きしますか？',
-    'notebook.overwrite.modal.title': 'ファイルを上書きしますか？',
+      '{{duplicateCount}} 件のファイルがこのノートブックに既に存在します。{{newCount}} 件の新しいリソースはそのまま追加されます。',
+    'notebook.overwrite.modal.ignore': '重複ファイルを無視',
+    'notebook.overwrite.modal.replace': '既存のファイルを置換',
+    'notebook.overwrite.modal.title': 'ファイルが既に存在します',
+    'notebook.overwrite.modal.title.one': 'ファイルが既に存在します',
+    'notebook.overwrite.modal.title.other': 'ファイルが既に存在します',
+    'notebook.overwrite.modal.description.one':
+      '{{duplicateCount}} 件のファイルがこのノートブックに既に存在します。{{newCount}} 件の新しいリソースはそのまま追加されます。',
+    'notebook.overwrite.modal.description.other':
+      '{{duplicateCount}} 件のファイルがこのノートブックに既に存在します。{{newCount}} 件の新しいリソースはそのまま追加されます。',
     'notebook.upload.error.fileTooLarge':
       'アップロードエラー: ファイルサイズが 25 MB の制限を超えています。',
     'notebook.upload.error.tooManyFiles':
@@ -214,18 +229,23 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
       'アップロードエラー: サポートされていないファイル形式が見つかりました。サポートされているファイル形式のみをアップロードしてください。',
     'notebook.upload.failed': '「{{fileName}}」のアップロードに失敗しました。',
     'notebook.upload.modal.addButton': '追加 ({{count}})',
+    'notebook.upload.modal.addButtonEmpty': '追加',
     'notebook.upload.modal.browseButton': 'アップロード',
-    'notebook.upload.modal.dragDropTitle': 'ここにファイルをドラッグ&ドロップ',
+    'notebook.upload.modal.dragDropTitle':
+      'ここにファイルをドラッグ&ドロップ、またはクリックして参照',
     'notebook.upload.modal.infoText':
       '対応ファイル形式: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.maxFileSize': '最大ファイルサイズは 25 MB です。',
+    'notebook.upload.modal.supportedFormats': 'サポートされている形式:',
     'notebook.upload.modal.removeFile': '{{fileName}} を削除',
     'notebook.upload.modal.selectedFiles':
       '{{max}} 件中 {{count}} 件のファイルを選択',
     'notebook.upload.modal.separator': 'または',
-    'notebook.upload.modal.title': 'ノートブックにリソースを追加',
+    'notebook.upload.modal.title': 'リソースを追加',
     'notebook.view.close': 'ノートブックを閉じる',
     'notebook.view.documents.add': '追加',
-    'notebook.view.documents.count': '{{count}} 件のリソース',
+    'notebook.view.documents.count_one': '{{count}} 件のリソース',
+    'notebook.view.documents.count_other': '{{count}} 件のリソース',
     'notebook.view.documents.maxReached':
       '最大10個のリソースが許可されています。新しいリソースをアップロードするには、リソースを削除してください。',
     'notebook.view.documents.uploading': 'リソースをアップロード中',
@@ -236,12 +256,11 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebook.view.sidebar.expand': 'サイドバーを展開する',
     'notebook.view.sidebar.resize': 'サイドバーのサイズを変更する',
     'notebook.view.title': '無題のノートブック',
-    'notebook.view.upload.action': 'リソースをアップロード',
+    'notebook.view.upload.action': 'リソースを追加',
     'notebook.view.processing.description':
       'ファイルをインデックスしています。処理が完了すると質問を開始できます。',
     'notebook.view.processing.heading': 'リソースを処理中...',
-    'notebook.view.upload.heading':
-      'リソースをアップロードして開始してください',
+    'notebook.view.upload.heading': 'リソースを追加して開始してください',
     'notebooks.actions.delete': '削除',
     'notebooks.actions.rename': '名前の変更',
     'notebooks.card.openAria': 'ノートブック {{name}} を開く',
@@ -250,7 +269,8 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
       'このノートブックはここに表示されなくなります。アクティビティに関連するプロンプト、応答、フィードバックも削除されます。',
     'notebooks.delete.title': '{{name}} を削除しますか?',
     'notebooks.delete.toast': 'ノートブックを削除しました！',
-    'notebooks.documents': 'リソース',
+    'notebooks.documents_one': '{{count}} 件のリソース',
+    'notebooks.documents_other': '{{count}} 件のリソース',
     'notebooks.empty.action': '新しいノートブックを作成',
     'notebooks.empty.description':
       '新しいノートブックを作成してソースを整理し、AI による洞察を生成します。',

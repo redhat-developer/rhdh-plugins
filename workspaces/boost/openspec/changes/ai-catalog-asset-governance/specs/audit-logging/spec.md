@@ -31,7 +31,7 @@ Management actions on AI catalog RBAC configuration MUST emit audit events.
   - `actor`: the admin's user entity ref
   - `policyTarget`: the category or connector name
   - `policyType`: `category` | `connector`
-  - `permissionName`: the affected permission (e.g., `ai-catalog.asset.read`)
+  - `permissionName`: the affected permission (e.g., `ai-catalog.asset.access`)
 
 ### Requirement: Ingestion Sync Audit Events
 
@@ -74,7 +74,7 @@ AI Catalog audit events MUST NOT duplicate events already covered by the RBAC pl
 
 #### Scenario: RBAC plugin covers permission evaluation
 
-- **WHEN** a user's `ai-catalog.asset.read` permission is evaluated by the RBAC plugin
+- **WHEN** a user's `ai-catalog.asset.access` permission is evaluated by the RBAC plugin
 - **THEN** the RBAC plugin's `AuditorService` emits the evaluation event (approve/deny/conditional)
 - **AND** the AI Catalog does NOT emit a duplicate event
 - **AND** the AI Catalog only emits events for management actions and ingestion operations that the `AuditorService` does not cover

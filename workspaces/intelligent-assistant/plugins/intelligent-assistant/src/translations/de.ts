@@ -202,6 +202,12 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'modal.save': 'Speichern',
     'modal.title.edit': 'Anhang bearbeiten',
     'modal.title.preview': 'Anhang in der Vorschau anzeigen',
+    'notebook.document.rename': 'Umbenennen',
+    'notebook.document.rename.tooltip': 'Klicken zum Umbenennen',
+    'notebook.document.rename.error':
+      'Umbenennung von "{{documentName}}" fehlgeschlagen.',
+    'notebook.document.rename.conflict': 'Name existiert bereits.',
+    'notebook.document.rename.tooLong': 'Name zu lang (max 255).',
     'notebook.document.delete': 'Löschen',
     'notebook.document.delete.action': 'Entfernen',
     'notebook.document.delete.description':
@@ -209,10 +215,19 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebook.document.delete.success':
       '„{{documentName}}" wurde erfolgreich entfernt.',
     'notebook.document.delete.title': 'Ressource entfernen?',
-    'notebook.overwrite.modal.action': 'Überschreiben',
+    'notebook.overwrite.modal.action': 'Hochladen ({{count}})',
+    'notebook.overwrite.modal.back': 'Zurück',
     'notebook.overwrite.modal.description':
-      'Die folgenden Dateien existieren bereits in diesem Notizbuch. Möchten Sie sie mit den neuen Versionen überschreiben?',
-    'notebook.overwrite.modal.title': 'Dateien überschreiben?',
+      '{{duplicateCount}} Dateien existieren bereits in diesem Notizbuch. {{newCount}} neue Ressourcen werden trotzdem hinzugefügt.',
+    'notebook.overwrite.modal.ignore': 'Doppelte Dateien ignorieren',
+    'notebook.overwrite.modal.replace': 'Bestehende Dateien ersetzen',
+    'notebook.overwrite.modal.title': 'Datei existiert bereits',
+    'notebook.overwrite.modal.title.one': 'Datei existiert bereits',
+    'notebook.overwrite.modal.title.other': 'Dateien existieren bereits',
+    'notebook.overwrite.modal.description.one':
+      '{{duplicateCount}} Datei existiert bereits in diesem Notizbuch. {{newCount}} neue Ressourcen werden trotzdem hinzugefügt.',
+    'notebook.overwrite.modal.description.other':
+      '{{duplicateCount}} Dateien existieren bereits in diesem Notizbuch. {{newCount}} neue Ressourcen werden trotzdem hinzugefügt.',
     'notebook.upload.error.fileTooLarge':
       'Upload-Fehler: Dateigröße überschreitet das Limit von 25 MB.',
     'notebook.upload.error.tooManyFiles':
@@ -221,18 +236,23 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
       'Upload-Fehler: Nicht unterstützte Dateitypen gefunden. Bitte laden Sie nur unterstützte Dateitypen hoch.',
     'notebook.upload.failed': 'Hochladen von "{{fileName}}" fehlgeschlagen.',
     'notebook.upload.modal.addButton': 'Hinzufügen ({{count}})',
+    'notebook.upload.modal.addButtonEmpty': 'Hinzufügen',
     'notebook.upload.modal.browseButton': 'Hochladen',
-    'notebook.upload.modal.dragDropTitle': 'Dateien hierher ziehen und ablegen',
+    'notebook.upload.modal.dragDropTitle':
+      'Dateien hierher ziehen und ablegen oder zum Durchsuchen klicken',
     'notebook.upload.modal.infoText':
       'Akzeptierte Dateitypen: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.maxFileSize': 'Maximale Dateigröße beträgt 25 MB.',
+    'notebook.upload.modal.supportedFormats': 'Unterstützte Formate:',
     'notebook.upload.modal.removeFile': '{{fileName}} entfernen',
     'notebook.upload.modal.selectedFiles':
       '{{count}} von {{max}} Dateien ausgewählt',
     'notebook.upload.modal.separator': 'oder',
-    'notebook.upload.modal.title': 'Ressource zum Notizbuch hinzufügen',
+    'notebook.upload.modal.title': 'Ressourcen hinzufügen',
     'notebook.view.close': 'Notizbuch schließen',
     'notebook.view.documents.add': 'Hinzufügen',
-    'notebook.view.documents.count': '{{count}} Ressourcen',
+    'notebook.view.documents.count_one': '{{count}} Ressource',
+    'notebook.view.documents.count_other': '{{count}} Ressourcen',
     'notebook.view.documents.maxReached':
       'Maximal 10 Ressourcen sind erlaubt. Löschen Sie eine Ressource, um eine neue hochzuladen.',
     'notebook.view.documents.uploading': 'Ressource wird hochgeladen',
@@ -243,12 +263,12 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebook.view.sidebar.expand': 'Seitenleiste ausklappen',
     'notebook.view.sidebar.resize': 'Größe der Seitenleiste ändern',
     'notebook.view.title': 'Unbenanntes Notizbuch',
-    'notebook.view.upload.action': 'Ressource hochladen',
+    'notebook.view.upload.action': 'Ressource hinzufügen',
     'notebook.view.processing.description':
       'Ihre Dateien werden indexiert. Sie können Fragen stellen, sobald die Verarbeitung abgeschlossen ist.',
     'notebook.view.processing.heading': 'Ressourcen werden verarbeitet...',
     'notebook.view.upload.heading':
-      'Laden Sie eine Ressource hoch, um zu beginnen',
+      'Fügen Sie eine Ressource hinzu, um zu beginnen',
     'notebooks.actions.delete': 'Löschen',
     'notebooks.actions.rename': 'Umbenennen',
     'notebooks.card.openAria': 'Notizbuch {{name}} öffnen',
@@ -257,7 +277,8 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
       'Dieses Notizbuch wird hier nicht mehr angezeigt. Dadurch werden auch zugehörige Aktivitäten wie Eingaben, Antworten und Feedback aus Ihrer Aktivität gelöscht.',
     'notebooks.delete.title': '{{name}} löschen?',
     'notebooks.delete.toast': 'Notizbuch gelöscht!',
-    'notebooks.documents': 'Ressourcen',
+    'notebooks.documents_one': '{{count}} Ressource',
+    'notebooks.documents_other': '{{count}} Ressourcen',
     'notebooks.empty.action': 'Neues Notizbuch erstellen',
     'notebooks.empty.description':
       'Erstellen Sie ein neues Notizbuch, um Ihre Quellen zu organisieren und KI-gestützte Erkenntnisse zu gewinnen.',

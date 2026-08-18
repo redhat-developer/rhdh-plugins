@@ -39,7 +39,7 @@ const DEFAULT_TOOL_REFRESH_SECONDS = 300;
  * Catalog backend module that registers Kagenti entity providers.
  *
  * Independently deployable as an RHDH dynamic plugin — emits AI agents
- * (kind: Component, spec.type: ai-agent) and tools (kind: Resource,
+ * (kind: AiResource, spec.type: agent) and tools (kind: Resource,
  * spec.type: ai-tool) as Backstage catalog entities without requiring
  * the full boost plugin.
  *

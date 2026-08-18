@@ -34,6 +34,7 @@
     "@backstage/plugin-catalog-backend-module-gitlab": "^0.8.4",
     "@backstage/plugin-catalog-backend-module-logs": "^0.1.23",
     "@backstage/plugin-catalog-backend-module-scaffolder-entity-model": "^0.2.21",
+    "@backstage/plugin-mcp-actions-backend": "^0.1.14",
     "@backstage/plugin-notifications-backend": "^0.6.6",
     "@backstage/plugin-permission-backend": "^0.7.13",
     "@backstage/plugin-permission-backend-module-allow-all-policy": "^0.2.20",

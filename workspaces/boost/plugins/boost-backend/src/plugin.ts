@@ -19,12 +19,14 @@ import {
   createBackendPlugin,
   createServiceFactory,
 } from '@backstage/backend-plugin-api';
-import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
+import { createConditionAuthorizer } from '@backstage/plugin-permission-node';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
+import { catalogServiceRef } from '@backstage/plugin-catalog-node';
 import type { AgenticProvider } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import {
   boostAdminPermission,
   boostPermissions,
+  aiCatalogResourcePermissions,
 } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import {
   boostAiProviderServiceRef,
@@ -52,6 +54,19 @@ import { RateLimiter } from './chat/RateLimiter';
 import { BackendApprovalStore } from './approval/BackendApprovalStore';
 import { DocumentSyncService } from './documents/DocumentSyncService';
 import { createSkillsRoutes } from './skills/routes';
+import { SyncAttemptsStore } from './ingestion/SyncAttemptsStore';
+import { ConnectorConfigReader } from './ingestion/ConnectorConfigReader';
+import { HealthStatusService } from './ingestion/HealthStatusService';
+import { createIngestionHealthRoutes } from './ingestion/routes';
+import {
+  aiCatalogAssetPermissionResourceRef,
+  aiCatalogRules,
+} from './ai-catalog/rules';
+import { createAiCatalogRoutes } from './ai-catalog/routes';
+import {
+  CatalogAssetLoader,
+  createGetAiCatalogAssetResources,
+} from './ai-catalog/CatalogAssetLoader';
 
 /**
  * The ProviderManager instance shared between the plugin and the
@@ -104,7 +119,7 @@ export const boostAiProviderServiceFactory = createServiceFactory({
  * Provides:
  * - `boostProviderExtensionPoint` for provider module registration
  * - Default service factory for `boostAiProviderServiceRef`
- * - Permission registration for all 23 boost permissions
+ * - Permission registration for all 26 boost permissions
  * - Security mode validation and enforcement
  * - Health check endpoint
  *
@@ -130,6 +145,9 @@ export const boostPlugin = createBackendPlugin({
         httpAuth: coreServices.httpAuth,
         permissions: coreServices.permissions,
         permissionsRegistry: coreServices.permissionsRegistry,
+        scheduler: coreServices.scheduler,
+        auth: coreServices.auth,
+        catalog: catalogServiceRef,
       },
       async init({
         logger,
@@ -140,6 +158,9 @@ export const boostPlugin = createBackendPlugin({
         httpAuth,
         permissions: _permissions,
         permissionsRegistry,
+        scheduler,
+        auth,
+        catalog,
       }) {
         logger.info('Initializing boost backend plugin');
 
@@ -174,6 +195,8 @@ export const boostPlugin = createBackendPlugin({
           adminConfigService,
           logger,
         });
+
+        await runtimeConfigResolver.migrateConnectorSchemas();
 
         logger.info('Runtime configuration engine initialized');
 
@@ -241,9 +264,98 @@ export const boostPlugin = createBackendPlugin({
           logger,
         });
 
+        // Initialize ingestion health services (issue 5 of 29)
+        const syncAttemptsStore = new SyncAttemptsStore({
+          database,
+          logger,
+        });
+
+        const connectorConfigReader = new ConnectorConfigReader({
+          config,
+          logger,
+        });
+
+        const healthStatusService = new HealthStatusService({
+          store: syncAttemptsStore,
+          configReader: connectorConfigReader,
+          logger,
+        });
+
+        // Scheduled cleanup job for sync attempts (task 1.5)
+        // Runs retention enforcement for all connectors.
+        const retentionLimit =
+          config.getOptionalNumber(
+            'boost.ingestion.healthRetention.maxAttemptsPerConnector',
+          ) ?? 100;
+
+        const runCleanup = async () => {
+          try {
+            const connectorIds =
+              await syncAttemptsStore.getDistinctConnectorIds();
+            for (const connectorId of connectorIds) {
+              await syncAttemptsStore.cleanupOldAttempts(
+                connectorId,
+                retentionLimit,
+              );
+            }
+            logger.debug(
+              `Sync attempts retention cleanup completed for ${connectorIds.length} connector(s)`,
+            );
+          } catch (err) {
+            logger.error(
+              'Sync attempts retention cleanup failed',
+              err as Error,
+            );
+          }
+        };
+
+        await scheduler.scheduleTask({
+          id: 'boost-sync-attempts-retention-cleanup',
+          frequency: { days: 1 },
+          timeout: { minutes: 10 },
+          fn: runCleanup,
+        });
+
         // Register all boost permissions with the framework
+        // (boostPermissions already includes aiCatalogResourcePermissions
+        // and aiCatalogAdminPermission)
         permissionsRegistry.addPermissions([...boostPermissions]);
         logger.info(`Registered ${boostPermissions.length} boost permissions`);
+
+        // Register the AI Catalog resource type, its conditional rules
+        // (isAiAssetCategory, isFromConnector, isInTenant), and the
+        // getResources resolver via the injected permissionsRegistry.
+        // `coreServices.permissionsRegistry` auto-mounts its own
+        // `createPermissionIntegrationRouter()` onto this plugin's
+        // httpRouter as part of its service factory (see
+        // @backstage/backend-defaults `permissionsRegistryServiceFactory`),
+        // which happens before this init() body runs. A separately
+        // constructed `createPermissionIntegrationRouter({ resourceType,
+        // rules, getResources })` mounted later on this plugin's own
+        // router would be shadowed by that pre-mounted router (both
+        // register the same `/.well-known/backstage/permissions/*`
+        // paths) and would never receive requests — `getResources`
+        // resolves entity-ref resourceRefs to AiCatalogAssetResource
+        // instances so /apply-conditions can evaluate rules for
+        // non-batch authorize() calls (see PR #4185 review from
+        // mareklibra).
+        permissionsRegistry.addResourceType({
+          resourceRef: aiCatalogAssetPermissionResourceRef,
+          permissions: [...aiCatalogResourcePermissions],
+          rules: Object.values(aiCatalogRules),
+          getResources: createGetAiCatalogAssetResources(catalog, auth),
+        });
+
+        // Authorizer for evaluating a CONDITIONAL (or any) decision
+        // against a single AiCatalogAssetResource in memory — used by
+        // the list endpoint to apply entity-level condition filtering.
+        // Must be constructed after addResourceType() above, since the
+        // ruleset is only populated once the resource type is registered.
+        const isAiCatalogAssetAuthorized = createConditionAuthorizer(
+          permissionsRegistry.getPermissionRuleset(
+            aiCatalogAssetPermissionResourceRef,
+          ),
+        );
 
         // Log registered providers
         const providers = providerManager.getRegisteredProviders();
@@ -261,11 +373,34 @@ export const boostPlugin = createBackendPlugin({
         // Set up HTTP routes
         const router = Router();
 
-        // Permission integration router for Backstage permission framework discovery
-        const permissionIntegrationRouter = createPermissionIntegrationRouter({
-          permissions: [...boostPermissions],
+        // NOTE: permission framework discovery (`/.well-known/backstage/
+        // permissions/*`) is already served by `coreServices.
+        // permissionsRegistry`'s own auto-mounted router — see
+        // `@backstage/backend-defaults`'s `permissionsRegistryServiceFactory`,
+        // which mounts `createPermissionIntegrationRouter()` onto this
+        // plugin's `httpRouter` as part of its service factory, before
+        // this init() body runs. A second, separately constructed
+        // `createPermissionIntegrationRouter({ permissions: [...] })`
+        // mounted here would be shadowed by that pre-mounted router (both
+        // register the same paths) and would never receive requests —
+        // this is the exact same bug class documented for the
+        // ai-catalog-asset resource type registration above (PR #4185
+        // review from mareklibra), found again here for the general
+        // `boostPermissions` set during the GA readiness audit and
+        // removed as dead code.
+
+        // AI Catalog asset routes (graduated visibility: entity-level
+        // filtering on list, field-level filtering on detail), backed by
+        // the real Backstage catalog.
+        const aiCatalogAssetLoader = new CatalogAssetLoader(catalog, auth);
+        const aiCatalogRoutes = createAiCatalogRoutes({
+          permissions: _permissions,
+          httpAuth,
+          logger,
+          assetLoader: aiCatalogAssetLoader,
+          isResourceAuthorized: isAiCatalogAssetAuthorized,
         });
-        router.use(permissionIntegrationRouter);
+        router.use(aiCatalogRoutes);
 
         // Agent lifecycle routes (tasks 3.1–3.7)
         const agentRoutes = createAgentRoutes({
@@ -330,6 +465,15 @@ export const boostPlugin = createBackendPlugin({
           config,
         });
         router.use(skillsRoutes);
+
+        // Ingestion health routes (issue 5 of 29)
+        const ingestionHealthRoutes = createIngestionHealthRoutes({
+          healthService: healthStatusService,
+          permissions: _permissions,
+          httpAuth,
+          logger,
+        });
+        router.use(ingestionHealthRoutes);
 
         // Health check endpoint (always unauthenticated)
         router.get('/health', (_req, res) => {
@@ -404,6 +548,14 @@ export const boostPlugin = createBackendPlugin({
         });
         httpRouter.addAuthPolicy({
           path: '/skills',
+          allow: 'user-cookie',
+        });
+        httpRouter.addAuthPolicy({
+          path: '/ingestion-health',
+          allow: 'user-cookie',
+        });
+        httpRouter.addAuthPolicy({
+          path: '/ai-catalog',
           allow: 'user-cookie',
         });
 

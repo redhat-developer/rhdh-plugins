@@ -42,7 +42,6 @@ test.describe('CustomTheme should be applied', () => {
       page,
       testInfo,
       'accessibility-scan-results.json',
-      { skipViolationsAssert: true },
     );
 
     for (const theme of themes) {
@@ -86,7 +85,6 @@ test.describe('CustomTheme should be applied', () => {
           page,
           testInfo,
           `${themeName}-${tab}-accessibility`,
-          { skipViolationsAssert: true },
         );
         for (const subTab of subTabs) {
           await page
@@ -96,7 +94,6 @@ test.describe('CustomTheme should be applied', () => {
             page,
             testInfo,
             `${themeName}-${tab}-${subTab}-accessibility`,
-            { skipViolationsAssert: true },
           );
         }
       }

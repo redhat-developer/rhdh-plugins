@@ -13,20 +13,20 @@ Each connector has a Zod schema defining all configuration fields with `configSc
 #### Scenario: Jira connector config schema
 
 - **WHEN** Jira connector config schema is defined
-- **THEN** schema includes `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL string), `schedule.intervalMs` (number), `schedule.cron` (string), `batchSize` (number), `timeout.connectionMs` (number)
-- **AND** all fields are `configScope: db-overridable` (deployment-time fields like `tls.caFile`, `credentials.*`, and `namespace` live under `ai-catalog.providers.<id>.*` and are not part of this schema)
+- **THEN** schema includes `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL string), `schedule.intervalMs` (number), `schedule.cron` (string), `batchSize` (number), `timeout.connectionMs` (number), `__schemaVersion` (number, internal metadata)
+- **AND** all user-facing fields are `configScope: db-overridable`; `__schemaVersion` is `configScope: db-only` (deployment-time fields like `tls.caFile`, `credentials.*`, and `namespace` live under `ai-catalog.providers.<id>.*` and are not part of this schema)
 
 #### Scenario: GitHub connector config schema
 
 - **WHEN** GitHub connector config schema is defined
-- **THEN** schema includes `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL string), `schedule.intervalMs` (number), `batchSize` (number)
-- **AND** all fields are `configScope: db-overridable` (matching Jira pattern)
+- **THEN** schema includes `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL string), `schedule.intervalMs` (number), `batchSize` (number), `__schemaVersion` (number, internal metadata)
+- **AND** all user-facing fields are `configScope: db-overridable`; `__schemaVersion` is `configScope: db-only` (matching Jira pattern)
 
 #### Scenario: GitLab connector config schema
 
 - **WHEN** GitLab connector config schema is defined
-- **THEN** schema includes `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL string), `schedule.intervalMs` (number), `batchSize` (number)
-- **AND** all fields are `configScope: db-overridable` (matching Jira pattern)
+- **THEN** schema includes `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL string), `schedule.intervalMs` (number), `batchSize` (number), `__schemaVersion` (number, internal metadata)
+- **AND** all user-facing fields are `configScope: db-overridable`; `__schemaVersion` is `configScope: db-only` (matching Jira pattern)
 
 ### Requirement: RuntimeConfigResolver Integration
 
@@ -88,9 +88,20 @@ Connector config schemas support versioning for backward compatibility.
 
 #### Scenario: Schema migration on version mismatch
 
-- **WHEN** DB override has `schemaVersion: 1` and current schema is `schemaVersion: 2`
-- **THEN** `RuntimeConfigResolver` applies migration logic to upgrade old config
-- **AND** migrated config validates against current schema
+- **WHEN** stored `boost.connectors.<id>.__schemaVersion` is `1` and `BOOST_CONNECTOR_SCHEMA_VERSION` is `2`
+- **THEN** `RuntimeConfigResolver.migrateConnectorSchemas()` applies the migration registered under source version `1`
+- **AND** migrated config validates against the current schema
+- **AND** the stored `__schemaVersion` is stamped to `2` after the successful step
+
+#### Scenario: Future field rename or removal
+
+- **WHEN** a connector field is renamed, removed, or its value type changes
+- **THEN** `BOOST_CONNECTOR_SCHEMA_VERSION` is incremented
+- **AND** a migration function is registered on `ConnectorMigrationRegistry` keyed by the **source** version (key `1` upgrades v1 → v2)
+- **AND** `RuntimeConfigResolver.migrateConnectorSchemas()` runs on plugin startup after `validateStoredValues()`
+- **AND** a missing `__schemaVersion` is treated as v1 and written explicitly before intermediate migrations run
+- **AND** each successful migration step stamps the next version so a later failure can resume
+- **AND** migration functions must be idempotent (a function that throws after partial leaf writes will re-run)
 
 ### Requirement: Default Values
 

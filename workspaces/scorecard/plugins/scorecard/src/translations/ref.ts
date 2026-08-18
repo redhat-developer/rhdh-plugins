@@ -81,6 +81,26 @@ export const scorecardMessages = {
 
   // Metric translations
   metric: {
+    'dora.deploymentFrequency': {
+      title: 'DORA - Deployment Frequency',
+      description:
+        'Tracks how often code is successfully deployed to production over the past 30 days. Elite performers deploy on demand (multiple times per day).',
+    },
+    'dora.medianLeadTimeForChanges': {
+      title: 'DORA - Median Lead Time for Changes',
+      description:
+        'Measures the time from code commit to production deployment over the past 30 days. Elite performers have a lead time of less than 24 hours',
+    },
+    'dora.changeFailureRate': {
+      title: 'DORA - Change Failure Rate',
+      description:
+        'Monitors the percentage of deployments that cause a failure in production over the past 30 days. Elite performers maintain a change failure rate below 5%.',
+    },
+    'dora.meanTimeToRestore': {
+      title: 'DORA - Mean Time to Restore',
+      description:
+        'Tracks the average time to restore service after an incident over the past 30 days. Elite performers restore service in under one hour.',
+    },
     'github.openPRs': {
       title: 'GitHub open PRs',
       description:
@@ -171,6 +191,9 @@ export const scorecardMessages = {
     success: 'Success',
     warning: 'Warning',
     error: 'Error',
+    elite: 'Elite',
+    medium: 'Medium',
+    low: 'Low',
     exist: 'Exist',
     missing: 'Missing',
     noEntities: 'No entities in {{category}} state',

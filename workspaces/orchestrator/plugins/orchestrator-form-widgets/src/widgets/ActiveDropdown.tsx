@@ -62,7 +62,7 @@ export const ActiveDropdown: Widget<
   const { classes } = useStyles();
   const templateUnitEvaluator = useTemplateUnitEvaluator();
 
-  const { id, label, value, onChange, formContext } = props;
+  const { id, label, value, onChange, onBlur, formContext } = props;
   const formData = formContext?.formData;
   const isChangedByUser = !!formContext?.getIsChangedByUser(id);
   const setIsChangedByUser = formContext?.setIsChangedByUser;
@@ -308,6 +308,7 @@ export const ActiveDropdown: Widget<
         label={label}
         disabled={isReadOnly}
         onChange={event => handleChange(event.target.value as string, true)}
+        onBlur={() => onBlur?.(id, value)}
         MenuProps={{
           PaperProps: { sx: { maxHeight: '20rem' } },
         }}

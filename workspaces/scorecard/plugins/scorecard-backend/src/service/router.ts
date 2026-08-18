@@ -36,6 +36,7 @@ import {
 } from '../permissions/permissionUtils';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { validateMetricIdsQueryParams } from '../middlewares/validateMetricIdsQueryParams';
+import { validateTimeSeriesQueryParams } from '../middlewares/validateTimeSeriesQueryParams';
 import { getEntitiesOwnedByUser } from '../utils/getEntitiesOwnedByUser';
 import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
 import { AggregatedMetricMapper } from './mappers';
@@ -133,6 +134,34 @@ export async function createRouter({
         conditions,
       );
       res.json(results);
+    },
+  );
+
+  router.get(
+    '/metrics/catalog/:kind/:namespace/:name/time-series',
+    validateTimeSeriesQueryParams,
+    async (req, res) => {
+      const { metricId, from, to } = req.query;
+
+      const { conditions } = await authorizeConditional(
+        await httpAuth.credentials(req),
+        permissions,
+        scorecardMetricReadPermission,
+      );
+
+      const { kind, namespace, name } = req.params;
+      const entityRef = stringifyEntityRef({ kind, namespace, name });
+
+      await checkEntityAccess(entityRef, req, permissions, httpAuth);
+
+      const result = await catalogMetricService.getEntityMetricTimeSeries(
+        entityRef,
+        metricId as string,
+        new Date(from as string),
+        new Date(to as string),
+        conditions,
+      );
+      res.json(result);
     },
   );
 

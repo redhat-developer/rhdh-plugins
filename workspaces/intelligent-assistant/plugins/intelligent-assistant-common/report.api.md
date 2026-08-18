@@ -18,7 +18,10 @@ export const iaChatUsePermission: BasicPermission;
 export const iaMcpManagePermission: BasicPermission;
 
 // @public
-export const iaMcpReadPermission: BasicPermission;
+export const iaMcpUsePermission: BasicPermission;
+
+// @public
+export const iaNotebooksManagePermission: BasicPermission;
 
 // @public
 export const iaNotebooksUsePermission: BasicPermission;
@@ -28,6 +31,9 @@ export const iaPermissions: BasicPermission[];
 
 // @public
 export const iaSavedPromptsManagePermission: BasicPermission;
+
+// @public
+export const iaSkillsAccessPermission: BasicPermission;
 
 // @public
 export interface SavedPrompt {

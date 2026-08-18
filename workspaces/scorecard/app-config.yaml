@@ -22,6 +22,33 @@ app:
             - kind: api # e.g. any API entity
             - type: service # e.g. Component or System with spec.type: service
 
+    # Grid layout – enabled with metric grouping
+    - scorecard-layout:scorecard/scorecard-entity-layout-grid:
+        disabled: false
+        config:
+          groups:
+            security-vulnerabilities:
+              title: Security Vulnerabilities
+              description: Track security issues across your repositories
+              metrics:
+                - sonarqube.securityRating
+
+            code-quality:
+              title: Code Quality
+              description: Code quality and maintainability metrics
+              metrics:
+                - sonarqube.qualityGate
+                - sonarqube.codeCoverage
+                - sonarqube.maintainabilityRating
+
+            sonarqube-coverage:
+              title: SonarQube Coverage
+              description: SonarQube coverage metrics
+              metrics:
+                - sonarqube.openIssues
+                - sonarqube.securityHotspots
+                - sonarqube.securityRating
+
     - home-page-layout:home/dynamic-homepage-layout:
         config:
           customizable: true
@@ -241,12 +268,12 @@ scorecard:
     openPrsKpi:
       title: GitHub Open PRs KPI
       type: statusGrouped
-      description: This KPI is provide information about GitHub open PRs grouped by status.
+      description: This KPI provides information about GitHub open PRs grouped by status.
       metricId: github.openPRs
     openPrsWeightedKpi:
       title: GitHub Open PRs KPI (weighted health)
       type: weightedStatusScore
-      description: Weighted health score for open PRs by threshold status across your entities.
+      description: This KPI provides a weighted health score for open PRs by threshold status across your entities.
       metricId: github.openPRs
       options:
         statusScores:
@@ -267,47 +294,79 @@ scorecard:
     openIssuesKpi:
       title: Jira Open Issues KPI
       type: statusGrouped
-      description: This KPI is provide information about Jira open issues grouped by status.
+      description: This KPI provides information about Jira open issues grouped by status.
       metricId: jira.openIssues
     licenseFileExistsKpi:
       title: License File Exists KPI
       type: statusGrouped
-      description: This KPI is provide information about whether the license file exists in the repository.
+      description: This KPI provides information about whether the license file exists in the repository.
       metricId: filecheck.license
-    totalOpenPrs:
-      title: Total Open PRs
-      description: Sum of open PRs across owned entities
+    totalCriticalPRs:
+      title: Total Critical PRs
+      description: This KPI provides a sum of open PRs for entities in error status.
       type: sum
       metricId: github.openPRs
+      filter:
+        status: error
       options:
         thresholds:
           rules:
             - key: success
-              expression: '>=80'
-              color: '#6bb300' # green
+              expression: '<30'
+              color: '#6bb300'
             - key: warning
-              expression: '<80'
-              color: 'rgb(224, 189, 108)' # light orange
+              expression: '30-80'
+              color: 'rgb(224, 189, 108)'
+            - key: error
+              expression: '>80'
+              color: '#be1ec7'
     avgOpenIssues:
       title: Average Open Issues
-      description: Mean open issues count per entity
+      description: This KPI provides a mean open issues count per entity.
       type: average
       metricId: jira.openIssues
     entitiesWithOpenPrs:
       title: Entities with Open PRs
-      description: Count of entities with a stored open-prs value
+      description: This KPI provides a count of entities with a stored open-prs value.
       type: count
       metricId: github.openPRs
     maxOpenPrs:
       title: Maximum Open PRs
-      description: Maximum open PR count per entity
+      description: This KPI provides a maximum open PR count per entity.
       type: max
       metricId: github.openPRs
     minOpenIssues:
       title: Minimum Open Issues
-      description: Minimum open issues count per entity
+      description: This KPI provides a minimum open issues count per entity.
       type: min
       metricId: jira.openIssues
+
+  # Globally disabled metrics — these checks never run, regardless of entity annotations.
+  # disabledMetrics:
+  #   - openssf.packaging
+
+  # Control whether entity annotations can override scorecard behavior.
+  # entityAnnotations:
+  #   # Global switch: if false, all scorecard entity annotations are ignored. Default: true.
+  #   enabled: true
+  #   # Per-entity threshold override annotations (scorecard.io/<metricId>.thresholds.rules.<key>).
+  #   thresholds:
+  #     # If true (default), entities can customize thresholds via annotations
+  #     # for metrics not listed in `except`; if false, threshold annotations have no effect.
+  #     enabled: true
+  #     # Metric IDs listed here cannot have their thresholds customized via entity annotations.
+  #     except:
+  #       - github.openPRs
+  #   # Per-entity disabled-metrics annotation (scorecard.io/disabled-metrics).
+  #   disabledMetrics:
+  #     # If true (default), entities can disable metrics via annotation
+  #     # for metrics not listed in `except`; if false, the annotation has no effect.
+  #     enabled: true
+  #     # Entity annotations cannot disable metric IDs listed here
+  #     # (these checks always run unless mentioned in scorecard.disabledMetrics).
+  #     except:
+  #       - openssf.maintained
+
   metricProviders:
     jira:
       openIssues:
@@ -321,12 +380,86 @@ scorecard:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
+    catalog:
+      requiredAttributes:
+        options:
+          filter:
+            kind: Component
+            metadata.annotations.scorecard/example: catalog
+          metrics:
+            title:
+              title: Title is required
+              description: Every component should have a human-readable title.
+              field: metadata.title
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
     filecheck:
       fileExistence:
         options:
           files:
             license: 'LICENSE'
             codeowners: 'CODEOWNERS'
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+    dora:
+      deploymentFrequency:
+        options:
+          collectors:
+            deployments:
+              id: github:deployments
+              # Uncomment the following to use workflow runs
+              # id: github:deploymentWorkflowRuns
+              # input:
+              #   workflowName: Create Test Deployment on PR Merge
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+      medianLeadTimeForChanges:
+        options:
+          collectors:
+            deployments:
+              id: github:deployments
+              # Uncomment the following to use workflow runs
+              # id: github:deploymentWorkflowRuns
+              # input:
+              #   workflowName: Create Test Deployment on PR Merge
+            deploymentPullRequests:
+              id: github:deploymentPullRequests
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+      changeFailureRate:
+        options:
+          collectors:
+            deployments:
+              id: github:deployments
+              # Uncomment the following to use workflow runs
+              # id: github:deploymentWorkflowRuns
+              # input:
+              #   workflowName: Create Test Deployment on PR Merge
+            incidents:
+              id: jira:incidents
+              # Optional: override default Incident issue type
+              # input:
+              #   issueType: ServiceIncident
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
+      meanTimeToRestore:
+        options:
+          collectors:
+            incidents:
+              id: jira:incidents
+              # Optional: override default Incident issue type
+              # input:
+              #   issueType: ServiceIncident
         schedule:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }

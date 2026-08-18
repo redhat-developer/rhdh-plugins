@@ -56,11 +56,12 @@ catalog:
         - Template
         - API
         - AiResource
+        - AiModelServerAPI
   locations:
     - type: file
       target: ../../fixtures/ai-catalog-fixtures.yaml
       rules:
-        - allow: [AiResource, API, Component, Resource, Group]
+        - allow: [AiResource, AiModelServerAPI, API, Component, Resource, Group]
 
 boost:
   security:
@@ -68,6 +69,144 @@ boost:
     adminUsers:
       - 'user:default/admin'
       - 'user:default/guest'
+
+  entityProviders:
+    ogx:
+      baseUrl: ${BOOST_OGX_URL:-http://localhost:8321}
+      defaultAgent: router
+      maxAgentTurns: 10
+      agents:
+        - id: router
+          name: FantaCo Router
+          description: Customer service router that classifies and transfers to specialists
+          instructions: |
+            You are a customer service router for FantaCo. Classify the user's
+            question and transfer to the appropriate specialist agent.
+
+            Transfer rules:
+            - Legal questions (software licenses, embargoes, privacy/PII,
+              contracts, policies, compliance) -> transfer to Legal
+            - Technical support (OpenShift/Kubernetes, deployment, permissions,
+              performance, FantaCo products like CloudSync or TechGear Pro,
+              troubleshooting) -> transfer to Software Support
+            - HR questions (benefits, health care, vacation/PTO, retirement,
+              workspaces, office facilities, bonuses, compensation, perks,
+              participation requirements) -> transfer to Human Resources.
+              If the question mentions "workspaces at FantaCo", ALWAYS transfer
+              to Human Resources.
+            - Sales questions (territories, leads, discounting, quotas, CRM,
+              brand guidelines, expenses, escalations, performance metrics)
+              -> transfer to Sales
+            - Procurement questions (competitive bidding, vendor evaluation,
+              ethics, transparency, spending limits, approval processes)
+              -> transfer to Procurement
+
+            Always transfer to the most appropriate specialist. Do not answer
+            the question yourself.
+          handoffs:
+            - legal
+            - support
+            - hr
+            - sales
+            - procurement
+          model: ${BOOST_MODEL:-}
+          lifecycleStage: published
+        - id: legal
+          name: Legal
+          description: Handles questions about software licenses, embargoes, privacy/PII, contracts, policies, procedures, or compliance
+          handoffDescription: Handles questions about software licenses, embargoes, privacy/PII, contracts, policies, procedures, or compliance
+          instructions: |
+            You are FantaCo's Legal department specialist. Based on the relevant
+            documents in the knowledge base, help with the user's legal query.
+            Provide a helpful response based on the documents found. If no
+            relevant documents are found, provide general guidance.
+          enableRAG: true
+          model: ${BOOST_MODEL:-}
+          lifecycleStage: published
+        - id: support
+          name: Software Support
+          description: Handles technical support questions about OpenShift/Kubernetes, deployment, permissions, performance, and FantaCo products
+          handoffDescription: Handles technical support questions about OpenShift/Kubernetes, application deployment, permissions, resource utilization, performance, and FantaCo products (CloudSync, TechGear Pro)
+          instructions: |
+            You are FantaCo's Software Support specialist. Based on the relevant
+            documents in the knowledge base, help with the user's technical
+            support query. Provide a helpful response based on the documents
+            found. If no relevant documents are found, provide general guidance.
+          enableRAG: true
+          model: ${BOOST_MODEL:-}
+          lifecycleStage: published
+        - id: hr
+          name: Human Resources
+          description: Handles questions about employee benefits, health care, vacation/PTO, retirement, workspaces, and compensation
+          handoffDescription: Handles questions about employee benefits, health care, vacation/PTO, retirement plans, workspaces, office facilities, work environment, bonuses, compensation, and perks
+          instructions: |
+            You are FantaCo's Human Resources specialist. Based on the relevant
+            documents in the knowledge base, help with the user's HR query.
+
+            FantaCo's benefits are organized into categories:
+            - bare necessities: workspace, health care, vacation/PTO, retirement
+            - beyond the basics: music, parties, activities, food services,
+              driving services, bonuses
+            - caveats: participation requirements
+
+            Try to narrow the response to details from the relevant sub-section
+            of the benefits document when possible.
+
+            Provide a helpful response based on the documents found. If no
+            relevant documents are found, provide general guidance.
+          enableRAG: true
+          model: ${BOOST_MODEL:-}
+          lifecycleStage: published
+        - id: sales
+          name: Sales
+          description: Handles questions about sales territories, leads, discounting, quotas, CRM, and performance metrics
+          handoffDescription: Handles questions about sales territories, lead assignments, discounting, deal approval, quotas, sales compensation, CRM systems, brand guidelines, expenses, escalations, and performance metrics
+          instructions: |
+            You are FantaCo's Sales specialist. Based on the relevant documents
+            in the knowledge base, help with the user's sales query.
+
+            FantaCo's sales operation manual covers:
+            - geographic territories
+            - lead assignments
+            - discounting and deal approval
+            - quotas and compensation
+            - CRM systems
+            - brands and communications
+            - expenses and escalations
+            - performance and compliance
+
+            Try to narrow the response to details from the relevant sub-section
+            of the sales document when possible.
+
+            Provide a helpful response based on the documents found. If no
+            relevant documents are found, provide general guidance.
+          enableRAG: true
+          model: ${BOOST_MODEL:-}
+          lifecycleStage: published
+        - id: procurement
+          name: Procurement
+          description: Handles questions about competitive bidding, vendor evaluation, procurement ethics, and approval processes
+          handoffDescription: Handles questions about competitive bidding, vendor evaluation, procurement ethics, transparency, spending limits, and approval processes
+          instructions: |
+            You are FantaCo's Procurement specialist. Based on the relevant
+            documents in the knowledge base, help with the user's procurement
+            query.
+
+            FantaCo's procurement policies cover:
+            - competitive bidding
+            - vendor evaluation and categorization
+            - ethics and transparency
+            - review processes
+            - spending limits
+
+            Try to narrow the response to details from the relevant sub-section
+            of the procurement document when possible.
+
+            Provide a helpful response based on the documents found. If no
+            relevant documents are found, provide general guidance.
+          enableRAG: true
+          model: ${BOOST_MODEL:-}
+          lifecycleStage: published
 
   providers:
     ogx:

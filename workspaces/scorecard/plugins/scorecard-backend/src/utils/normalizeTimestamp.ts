@@ -20,8 +20,36 @@ export function normalizeTimestamp(timestamp?: unknown): Date {
   }
 
   if (typeof timestamp === 'number' || typeof timestamp === 'string') {
+    if (timestamp === '') {
+      return new Date(0);
+    }
     return new Date(timestamp);
   }
 
-  return new Date();
+  return new Date(0);
+}
+
+/**
+ * Parses a required timestamp from a DB value.
+ * Throws when the value is missing, empty, or not a valid date.
+ */
+export function parseTimestamp(timestamp: unknown): Date {
+  if (timestamp instanceof Date) {
+    return timestamp;
+  }
+
+  if (typeof timestamp === 'number' || typeof timestamp === 'string') {
+    if (timestamp === '') {
+      throw new Error('Invalid timestamp: empty string');
+    }
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) {
+      throw new Error(`Invalid timestamp: ${String(timestamp)}`);
+    }
+    return date;
+  }
+
+  throw new Error(
+    `Invalid timestamp: expected Date, number, or string, got ${typeof timestamp}`,
+  );
 }
