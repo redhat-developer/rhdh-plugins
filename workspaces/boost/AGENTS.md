@@ -93,6 +93,21 @@ failures or config-surface drift.
 
 When reviewing PRs that add or modify `boost.*` config keys, verify all five registration steps above were completed.
 
+### Wiring startup logic
+
+When adding a new initialization, migration, or validation method to
+`RuntimeConfigResolver`, `AdminConfigService`, or any plugin-scoped
+service:
+
+1. Implement the method with unit tests.
+2. Wire it into the corresponding `plugin.ts` module setup — verify
+   the method is actually called during startup.
+3. If the method must run before other initialization (e.g., migration
+   before config reads), place the call in the correct order within
+   the setup function.
+4. Confirm the plugin still starts cleanly by running the full test
+   suite.
+
 ### Migration patterns
 
 Connector schema migrations (`migrateConnectorSchemas` in
