@@ -14,21 +14,17 @@
  * limitations under the License.
  */
 
-import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import {
-  appDrawerExtension,
-  templateCardExtension,
-} from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { createExtensionDataRef } from '@backstage/frontend-plugin-api';
+
+import type { TemplateCardBadgeData } from '../types';
 
 /**
- * RHDH app module for `pluginId: 'app'`.
- * Provides the application drawer system and the extensible scaffolder
- * template card for dockable panel and template card action extensions.
- * Default-export this module for dynamic frontend loading.
+ * Extension data ref carrying a badge component from a plugin to the
+ * template card.
  *
  * @alpha
  */
-export const appDefaultsModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: [appDrawerExtension, templateCardExtension],
-});
+export const templateCardBadgeDataRef =
+  createExtensionDataRef<TemplateCardBadgeData>().with({
+    id: 'app.template-card-badge',
+  });

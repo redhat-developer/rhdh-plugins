@@ -16,24 +16,32 @@
 
 import { createApp } from '@backstage/frontend-defaults';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import scaffolderPlugin from '@backstage/plugin-scaffolder/alpha';
 import { appAuthModule } from '@red-hat-developer-hub/backstage-plugin-app-auth/alpha';
 import { appIntegrationsModule } from '@red-hat-developer-hub/backstage-plugin-app-integrations/alpha';
-import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import {
+  appDrawerModule,
+  templateCardModule,
+} from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
 import {
   globalHeaderModule,
   globalHeaderTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
 import { navModule } from './modules/nav';
 import { drawerDemoModule } from './modules/drawer-demo';
+import { templateCardDemoModule } from './modules/template-card-demo';
 
 export default createApp({
   features: [
     catalogPlugin,
+    scaffolderPlugin,
     navModule,
     appAuthModule,
     appIntegrationsModule,
     appDrawerModule,
     drawerDemoModule,
+    templateCardModule,
+    templateCardDemoModule,
     globalHeaderModule,
     globalHeaderTranslationsModule,
   ],
