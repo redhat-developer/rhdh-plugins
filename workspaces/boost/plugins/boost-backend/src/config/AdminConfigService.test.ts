@@ -338,6 +338,21 @@ describe('AdminConfigService', () => {
       expect(removed).toEqual([]);
     });
 
+    it('preserves __schemaVersion leaves (db-only metadata)', async () => {
+      // Write a __schemaVersion leaf via setOverride (which validates
+      // against the registered Zod schema and checks db-writability)
+      await service.setOverride('boost.connectors.jira.__schemaVersion', 1);
+
+      const removed = await service.validateStoredValues();
+      expect(removed).not.toContain('boost.connectors.jira.__schemaVersion');
+
+      // The value should still be readable
+      const value = await service.getOverride(
+        'boost.connectors.jira.__schemaVersion',
+      );
+      expect(value).toBe(1);
+    });
+
     it('removes values for unknown keys', async () => {
       // Insert directly into the mock rows
       mockKnex._rows.push({

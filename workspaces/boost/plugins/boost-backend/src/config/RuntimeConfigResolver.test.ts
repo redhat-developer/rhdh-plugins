@@ -22,6 +22,7 @@ import type {
 import type { JsonValue } from '@backstage/types';
 import { RuntimeConfigResolver } from './RuntimeConfigResolver';
 import { AdminConfigService } from './AdminConfigService';
+import { CONNECTOR_IDS, BOOST_CONNECTOR_SCHEMA_VERSION } from './schemas';
 
 function createMockLogger(): LoggerService {
   return {
@@ -585,6 +586,153 @@ describe('RuntimeConfigResolver', () => {
       expect(allConfig.get('boost.connectors.jira.batchSize')).toBe(200);
       expect(allConfig.get('boost.connectors.github.enabled')).toBe(false);
       expect(allConfig.get('boost.connectors.gitlab.enabled')).toBe(true);
+    });
+  });
+
+  describe('migrateConnectorSchemas', () => {
+    it('writes v1 when no __schemaVersion exists', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+        getOverride: jest.fn().mockResolvedValue(undefined),
+        setOverride: jest.fn().mockResolvedValue(undefined),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      await resolver.migrateConnectorSchemas();
+
+      for (const connectorId of CONNECTOR_IDS) {
+        expect(adminConfigService.setOverride).toHaveBeenCalledWith(
+          `boost.connectors.${connectorId}.__schemaVersion`,
+          1,
+        );
+      }
+    });
+
+    it('treats missing version as v1 (logged)', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+        getOverride: jest.fn().mockResolvedValue(undefined),
+        setOverride: jest.fn().mockResolvedValue(undefined),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      await resolver.migrateConnectorSchemas();
+
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining('treating as v1'),
+      );
+    });
+
+    it('skips migration when stored version equals current', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+        getOverride: jest
+          .fn()
+          .mockResolvedValue(BOOST_CONNECTOR_SCHEMA_VERSION),
+        setOverride: jest.fn().mockResolvedValue(undefined),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      await resolver.migrateConnectorSchemas();
+
+      expect(adminConfigService.setOverride).not.toHaveBeenCalled();
+    });
+
+    it('warns and skips when stored version is ahead of current', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+        getOverride: jest.fn().mockResolvedValue(99),
+        setOverride: jest.fn().mockResolvedValue(undefined),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      await resolver.migrateConnectorSchemas();
+
+      expect(adminConfigService.setOverride).not.toHaveBeenCalled();
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('possible downgrade'),
+      );
+    });
+
+    it('invalidates cache after migration completes', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+        getOverride: jest.fn().mockResolvedValue(undefined),
+        setOverride: jest.fn().mockResolvedValue(undefined),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      await resolver.migrateConnectorSchemas();
+
+      expect(cache.delete).toHaveBeenCalledWith('effective-config');
+    });
+
+    it('handles each connector independently', async () => {
+      const config = createMockConfig({});
+
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+        getOverride: jest.fn().mockImplementation(async (key: string) => {
+          if (key === 'boost.connectors.jira.__schemaVersion') {
+            return BOOST_CONNECTOR_SCHEMA_VERSION;
+          }
+          if (key === 'boost.connectors.gitlab.__schemaVersion') {
+            return BOOST_CONNECTOR_SCHEMA_VERSION;
+          }
+          return undefined;
+        }),
+        setOverride: jest.fn().mockResolvedValue(undefined),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      await resolver.migrateConnectorSchemas();
+
+      expect(adminConfigService.setOverride).toHaveBeenCalledTimes(1);
+      expect(adminConfigService.setOverride).toHaveBeenCalledWith(
+        'boost.connectors.github.__schemaVersion',
+        1,
+      );
     });
   });
 });

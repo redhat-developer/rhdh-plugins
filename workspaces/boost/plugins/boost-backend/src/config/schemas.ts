@@ -177,9 +177,37 @@ export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
  * Current schema version. Stored alongside DB values to detect
  * schema evolution on startup.
  *
+ * Per-connector `__schemaVersion` leaves (`configScope: db-only`) are
+ * the versioning machinery itself and do not require bumping this
+ * constant (AGENTS.md "Adding new config fields" step 3).
+ *
  * @public
  */
 export const BOOST_CONFIG_SCHEMA_VERSION = 4;
+
+/**
+ * Current per-connector schema version. Stored as the
+ * `boost.connectors.<id>.__schemaVersion` leaf (configScope: db-only)
+ * and bumped when connector field semantics change (renames, removals,
+ * type changes). Missing values are treated as v1.
+ *
+ * @public
+ */
+export const BOOST_CONNECTOR_SCHEMA_VERSION = 1;
+
+/**
+ * Known connector identifiers that have registered config leaves.
+ *
+ * @public
+ */
+export const CONNECTOR_IDS = ['jira', 'github', 'gitlab'] as const;
+
+/**
+ * Union type of known connector identifiers.
+ *
+ * @public
+ */
+export type ConnectorId = (typeof CONNECTOR_IDS)[number];
 
 // ---------------------------------------------------------------------------
 // Connector field factories — shared patterns for per-connector leaves
@@ -240,6 +268,22 @@ function connectorBatchSize(label: string) {
     description:
       `Number of ${label} items to fetch per sync batch. ` +
       `Defaults to 100 when not set.`,
+  } as const;
+}
+
+/** @internal */
+function connectorSchemaVersion(label: string) {
+  return {
+    schema: z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .describe('Connector config schema version (internal metadata)'),
+    configScope: 'db-only' as ConfigScope,
+    description:
+      `Per-connector schema version for ${label}. Written during migration, ` +
+      'excluded from per-leaf Zod product validation. Missing → v1.',
   } as const;
 }
 
@@ -434,6 +478,11 @@ export const boostConfigFields = {
       'for ingestion health status. Older records are cleaned up daily. ' +
       'Defaults to 100 when not set.',
   },
+
+  // -- Connector schema version (db-only metadata) --
+  'boost.connectors.jira.__schemaVersion': connectorSchemaVersion('Jira'),
+  'boost.connectors.github.__schemaVersion': connectorSchemaVersion('GitHub'),
+  'boost.connectors.gitlab.__schemaVersion': connectorSchemaVersion('GitLab'),
 
   // -- Connector config: Jira --
   'boost.connectors.jira.enabled': connectorEnabled('Jira', 'jira'),
