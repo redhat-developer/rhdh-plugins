@@ -61,19 +61,19 @@
 - [ ] 7.1 Define audit event types: `posture-changed`, `policy-created`, `policy-updated`, `policy-deleted` (RHIDP-15279)
 - [ ] 7.2 Define ingestion audit events: `sync-completed`, `sync-error`, `entity-created`, `entity-updated`, `entity-deleted` (RHIDP-15280)
 - [ ] 7.3 Implement audit event emitters using `LoggerService` with structured metadata
-- [ ] 7.4 Integrate audit events into posture change and policy CRUD flows in admin UI backend routes (RHIDP-15279)
+- [ ] 7.4 Integrate audit events into posture change and policy CRUD flows ~~in admin UI backend routes~~ (RHIDP-15279)
 - [ ] 7.5 Integrate audit events into entity provider sync cycle (RHIDP-15280)
 - [ ] 7.6 Verify events do not duplicate RBAC plugin `AuditorService` coverage
 
-## 8. RBAC Admin UI (P2) — RHIDP-15304, RHIDP-15307, RHIDP-15308, RHIDP-15309
+## 8. ~~RBAC Admin UI (P2) — RHIDP-15304, RHIDP-15307, RHIDP-15308, RHIDP-15309~~
 
-- [ ] 8.1 Create standalone page component at `/ai-catalog/admin/rbac` with `RequirePermission` gating (RHIDP-15307)
-- [ ] 8.2 Implement current policies view (fetch from RBAC REST API: `GET /api/permission/policies`, `GET /api/permission/roles`) (RHIDP-15307)
-- [ ] 8.3 Implement policy creation form (permission, decision, condition rule, parameters, role) (RHIDP-15308)
-- [ ] 8.4 Implement policy deletion with confirmation dialog and impact summary (RHIDP-15308)
-- [ ] 8.5 Implement default posture view and change controls with confirmation dialog (RHIDP-15309)
-- [ ] 8.6 Add sidebar navigation item with `usePermission` visibility gating (RHIDP-15307)
-- [ ] 8.7 Add error handling for RBAC REST API failures (user-friendly messages, no internal details exposed)
+- [ ] ~~8.1 Create standalone page component at `/ai-catalog/admin/rbac` with `RequirePermission` gating (RHIDP-15307)~~
+- [ ] ~~8.2 Implement current policies view (fetch from RBAC REST API: `GET /api/permission/policies`, `GET /api/permission/roles`) (RHIDP-15307)~~
+- [ ] ~~8.3 Implement policy creation form (permission, decision, condition rule, parameters, role) (RHIDP-15308)~~
+- [ ] ~~8.4 Implement policy deletion with confirmation dialog and impact summary (RHIDP-15308)~~
+- [ ] ~~8.5 Implement default posture view and change controls with confirmation dialog (RHIDP-15309)~~
+- [ ] ~~8.6 Add sidebar navigation item with `usePermission` visibility gating (RHIDP-15307)~~
+- [ ] ~~8.7 Add error handling for RBAC REST API failures (user-friendly messages, no internal details exposed)~~
 
 ## 9. SkillBundle Filtering (P1) — RHIDP-15310, RHIDP-15273
 
@@ -95,6 +95,6 @@
 - [ ] 10.6 Verify default-deny posture applies catch-all DENY to newly ingested assets
 - [ ] 10.7 Verify per-category and per-connector posture scoping
 - [ ] 10.8 Verify audit events emit for posture changes and ingestion sync
-- [ ] 10.9 Verify admin UI creates/deletes policies via RBAC REST API
+- [ ] ~~10.9 Verify admin UI creates/deletes policies via RBAC REST API~~
 - [ ] 10.10 Verify SkillBundle filtering shows correct visible/total counts
 - [ ] 10.11 Verify `ai-catalog.admin` holders bypass default-deny for all assets
