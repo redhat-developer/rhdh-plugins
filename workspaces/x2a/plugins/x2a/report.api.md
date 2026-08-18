@@ -313,6 +313,7 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'adversarialAgentsPage.dialog.promptField': string;
     readonly 'adversarialAgentsPage.dialog.promptPlaceholder': string;
     readonly 'adversarialAgentsPage.dialog.promptHelper': string;
+    readonly 'adversarialAgentsPage.dialog.promptCharacterCount': string;
     readonly 'adversarialAgentsPage.dialog.phasesField': string;
     readonly 'adversarialAgentsPage.dialog.phasesHelper': string;
     readonly 'adversarialAgentsPage.dialog.phaseAnalyze': string;

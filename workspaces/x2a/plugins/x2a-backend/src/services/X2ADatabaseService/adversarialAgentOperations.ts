@@ -120,35 +120,37 @@ export class AdversarialAgentOperations {
     phases: string[];
     critical: boolean;
   }): Promise<AdversarialAgentEntity | undefined> {
-    const now = new Date();
-
-    const updated = await this.#dbClient('adversarial_agents')
-      .where('id', opts.id)
-      .update({
-        name: opts.name,
-        prompt: opts.prompt,
-        phases: JSON.stringify(opts.phases),
-        critical: opts.critical,
-        updated_at: now,
-      });
-
-    if (updated === 0) {
+    const existing = await this.getAdversarialAgent({ id: opts.id });
+    if (!existing) {
       return undefined;
     }
 
-    this.#logger.info(`Updated adversarial agent: ${opts.id} "${opts.name}"`);
+    const entity = new AdversarialAgentEntity(
+      existing.id,
+      opts.name,
+      opts.prompt,
+      opts.phases,
+      opts.critical,
+      existing.createdBy,
+      existing.createdAt,
+      new Date(),
+    );
 
-    const row = await this.#dbClient('adversarial_agents')
-      .where('id', opts.id)
-      .first();
-    const phases =
-      typeof row.phases === 'string'
-        ? JSON.parse(row.phases as string)
-        : row.phases;
-    return AdversarialAgentEntity.fromRow({
-      ...(row as Record<string, unknown>),
-      phases,
-    });
+    await this.#dbClient('adversarial_agents')
+      .where('id', entity.id)
+      .update({
+        name: entity.name,
+        prompt: entity.prompt,
+        phases: JSON.stringify(entity.phases),
+        critical: entity.critical,
+        updated_at: entity.updatedAt,
+      });
+
+    this.#logger.info(
+      `Updated adversarial agent: ${entity.id} "${entity.name}"`,
+    );
+
+    return entity;
   }
 
   async deleteAdversarialAgent(opts: { id: string }): Promise<number> {

@@ -382,6 +382,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Beschreiben Sie, worauf dieser Agent achten soll...',
     'adversarialAgentsPage.dialog.promptHelper':
       'Geben Sie genau an, wonach gesucht werden soll und wie Ergebnisse gemeldet werden sollen (50–5000 Zeichen)',
+    'adversarialAgentsPage.dialog.promptCharacterCount':
+      '/5000 Zeichen (min. 50)',
     'adversarialAgentsPage.dialog.phasesField': 'Workflow-Phasen',
     'adversarialAgentsPage.dialog.phasesHelper':
       'Wählen Sie aus, in welchen Workflow-Phasen dieser Agent ausgeführt wird',

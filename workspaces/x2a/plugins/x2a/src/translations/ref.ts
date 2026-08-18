@@ -445,6 +445,7 @@ export const x2aPluginMessages = {
       promptPlaceholder: 'Describe what this agent should check for...',
       promptHelper:
         'Be specific about what to look for and how to report findings (50-5000 characters)',
+      promptCharacterCount: '/5000 characters (min 50)',
       phasesField: 'Workflow Phases',
       phasesHelper: 'Select which workflow phases this agent runs in',
       phaseAnalyze: 'Analyze',

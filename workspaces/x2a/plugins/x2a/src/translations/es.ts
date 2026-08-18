@@ -386,6 +386,8 @@ const x2aPluginTranslationEs = createTranslationMessages({
       'Describa qué debe verificar este agente...',
     'adversarialAgentsPage.dialog.promptHelper':
       'Sea específico sobre qué buscar y cómo reportar los hallazgos (50-5000 caracteres)',
+    'adversarialAgentsPage.dialog.promptCharacterCount':
+      '/5000 caracteres (mín. 50)',
     'adversarialAgentsPage.dialog.phasesField': 'Fases del flujo de trabajo',
     'adversarialAgentsPage.dialog.phasesHelper':
       'Seleccione en qué fases del flujo de trabajo se ejecuta este agente',

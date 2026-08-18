@@ -509,10 +509,13 @@ export function registerProjectRoutes(
         ids: agentIds,
         phase,
       });
-      if (adversarialAgents.length === 0) {
+      if (adversarialAgents.length !== agentIds.length) {
+        const foundIds = new Set(adversarialAgents.map(a => a.id));
+        const missingIds = agentIds.filter(id => !foundIds.has(id));
         return res.status(400).json({
-          error: 'NoAdversarialAgents',
-          message: `None of the provided agent IDs are valid for the ${phase} phase`,
+          error: 'AgentIdMismatch',
+          message: `Some agent IDs were not found or are not valid for the ${phase} phase`,
+          missingIds,
         });
       }
 

@@ -176,7 +176,7 @@ export const AgentDialog = ({
                 prompt.length > 0 &&
                 (prompt.length < 50 || prompt.length > 5000)
               }
-              helperText={`${prompt.length}/5000 characters (min 50)`}
+              helperText={`${prompt.length}${t('adversarialAgentsPage.dialog.promptCharacterCount')}`}
             />
           </Box>
 

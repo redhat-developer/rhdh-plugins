@@ -661,6 +661,7 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
 
   async listAdversarialAgents(filters?: {
     phase?: string;
+    ids?: string[];
   }): Promise<AdversarialAgentEntity[]> {
     return this.#adversarialAgentOps.listAdversarialAgents(filters);
   }

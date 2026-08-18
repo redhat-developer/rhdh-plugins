@@ -114,10 +114,6 @@ export async function up(knex: Knex): Promise<void> {
     table.index('updated_at');
     table.index('name');
   });
-
-  await knex.schema.alterTable('projects', table => {
-    table.text('adversarial_agents').nullable();
-  });
 }
 
 /**
@@ -127,10 +123,6 @@ export async function up(knex: Knex): Promise<void> {
  * @public
  */
 export async function down(knex: Knex): Promise<void> {
-  await knex.schema.alterTable('projects', table => {
-    table.dropColumn('adversarial_agents');
-  });
-
   await knex.schema.dropTable('adversarial_agents');
 
   const client = knex.client.config.client;

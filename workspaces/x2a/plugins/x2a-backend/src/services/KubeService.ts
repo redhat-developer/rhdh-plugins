@@ -543,24 +543,6 @@ export class KubeService implements KubeServiceApi {
   }
 
   /**
-   * Cleans up all resources for a job, including the job itself and associated ConfigMaps.
-   * This is a best-effort operation - if the job has ownerReferences, associated resources
-   * will be automatically garbage collected. This method provides explicit cleanup.
-   *
-   * @param jobId - The job UUID (used to identify associated ConfigMaps)
-   * @param k8sJobName - The Kubernetes job name
-   */
-  async cleanupJobResources(jobId: string, k8sJobName: string): Promise<void> {
-    this.#logger.info(`Cleaning up resources for job: ${jobId}`);
-
-    // Delete the job (this will trigger cascading deletion of owned resources
-    // including ConfigMaps due to ownerReferences)
-    await this.deleteJob(k8sJobName);
-
-    this.#logger.info(`Cleanup complete for job: ${jobId}`);
-  }
-
-  /**
    * Lists all jobs for a specific project
    */
   async listJobsForProject(projectId: string): Promise<V1Job[]> {
