@@ -3,22 +3,22 @@
 ## 1. AI Catalog Permission Definitions (P0) — RHIDP-15271, RHIDP-15306
 
 - [ ] 1.1 Define `AI_CATALOG_ASSET_RESOURCE_TYPE` constant in `boost-common/src/permissions.ts`
-- [ ] 1.2 Define `ai-catalog.asset.read` resource permission with `resourceType: 'ai-catalog-asset'` (RHIDP-15271)
-- [ ] 1.3 Define `ai-catalog.asset.read.usage-docs` resource permission with `resourceType: 'ai-catalog-asset'` (RHIDP-15272)
+- [ ] 1.2 Define `ai-catalog.asset.access` resource permission with `resourceType: 'ai-catalog-asset'` (RHIDP-15271)
+- [ ] 1.3 Define `ai-catalog.asset.access.usage-docs` resource permission with `resourceType: 'ai-catalog-asset'` (RHIDP-15272)
 - [ ] 1.4 Define `ai-catalog.admin` basic permission (action: update) (RHIDP-15306)
 - [ ] 1.5 Export all permission constants and resource type from `boost-common` package
 - [ ] 1.6 Register all 3 permissions via `permissionsRegistry.addPermissions()` in backend module
 
 ## 2. Graduated Visibility — Backend (P0) — RHIDP-15271, RHIDP-15272
 
-- [ ] 2.1 Implement Tier 2 field-level filtering in AI asset detail endpoint (omit usage-docs, connection endpoints, config when `ai-catalog.asset.read.usage-docs` is DENIED)
-- [ ] 2.2 Implement entity-level filtering on list endpoint using `authorizeConditional()` + `toQuery()` for `ai-catalog.asset.read`
+- [ ] 2.1 Implement Tier 2 field-level filtering in AI asset detail endpoint (omit usage-docs, connection endpoints, config when `ai-catalog.asset.access.usage-docs` is DENIED)
+- [ ] 2.2 Implement entity-level filtering on list endpoint using `authorizeConditional()` + `toQuery()` for `ai-catalog.asset.access`
 - [ ] 2.3 Implement batch `authorizeConditional()` for Tier 2 (single check, apply uniformly to response)
 - [ ] 2.4 Add unit tests for field-level filtering (Tier 1 only, Tier 2 included, no access)
 
 ## 3. Graduated Visibility — Frontend (P1) — RHIDP-15273
 
-- [ ] 3.1 Wrap Tier 2 sections in asset detail page with `<RequirePermission permission={aiCatalogAssetReadUsageDocsPermission}>`
+- [ ] 3.1 Wrap Tier 2 sections in asset detail page with `<RequirePermission permission={aiCatalogAssetAccessUsageDocsPermission}>`
 - [ ] 3.2 Create restricted-access placeholder component for denied Tier 2 sections
 - [ ] 3.3 Ensure asset list page displays filtered counts matching backend-filtered results
 - [ ] 3.4 Add `usePermission` hook check for `ai-catalog.admin` to show/hide admin links
@@ -77,7 +77,7 @@
 
 ## 9. SkillBundle Filtering (P1) — RHIDP-15310, RHIDP-15273
 
-- [ ] 9.1 Implement backend skill filtering using batch `authorizeConditional()` for `ai-catalog.asset.read`
+- [ ] 9.1 Implement backend skill filtering using batch `authorizeConditional()` for `ai-catalog.asset.access`
 - [ ] 9.2 Add `totalSkills` and `visibleSkills` fields to SkillBundle API response
 - [ ] 9.3 Ensure filtered-out skill references are not exposed (no IDs, names, or placeholders)
 - [ ] 9.4 Implement frontend "N of M skills visible" count display with tooltip

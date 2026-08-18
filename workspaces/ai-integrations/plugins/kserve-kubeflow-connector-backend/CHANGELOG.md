@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend
 
+## 0.1.2
+
+### Patch Changes
+
+- f7984e7: add remaining unit tests needed for feature readiness
+- f27d2cd: address various typescript idioms left over from the conversion from golang
+
 ## 0.1.1
 
 ### Patch Changes

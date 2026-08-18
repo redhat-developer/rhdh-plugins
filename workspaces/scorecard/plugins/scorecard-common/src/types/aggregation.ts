@@ -76,6 +76,7 @@ export type AggregationMetadata = {
   title: string;
   description: string;
   type: MetricType;
+  unit?: string;
   history?: boolean;
   aggregationType: AggregationType;
   filter?: AggregationConfigFilter;

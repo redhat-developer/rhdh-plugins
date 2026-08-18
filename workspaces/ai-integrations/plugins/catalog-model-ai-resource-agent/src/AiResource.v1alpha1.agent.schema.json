@@ -34,7 +34,7 @@
         },
         "spec": {
           "type": "object",
-          "required": ["type", "lifecycle", "owner", "instructions"],
+          "required": ["type", "lifecycle", "owner"],
           "properties": {
             "type": {
               "type": "string",
@@ -60,8 +60,7 @@
             },
             "instructions": {
               "type": "string",
-              "description": "The agent's instructions (system prompt). Must be a non-empty string.",
-              "minLength": 1
+              "description": "The agent's instructions (system prompt). Optional — omit when the agent image/runtime already provides a default prompt."
             },
             "handoffDescription": {
               "type": "string",

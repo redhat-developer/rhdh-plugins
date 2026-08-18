@@ -23,7 +23,7 @@ export interface AgentAiResourceEntityV1alpha1 extends Entity {
     lifecycle: string;
     owner: string;
     system?: string;
-    instructions: string;
+    instructions?: string;
     handoffDescription?: string;
     model?: string;
     handoffs?: string[];

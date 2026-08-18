@@ -47,15 +47,15 @@ const categoryMetaMap: Record<string, CategoryMeta> = {
     icon: RiServerLine,
     color: 'var(--boost-color-mcp-server, #38bdf8)',
   },
-  'ai-agent': {
+  agent: {
     label: 'Agents',
     icon: RiRobotLine,
     color: 'var(--boost-color-agent, #60a5fa)',
   },
-  'ai-model': {
-    label: 'Models',
-    icon: RiBrainLine,
-    color: 'var(--boost-color-model, #f472b6)',
+  'ai-model-server': {
+    label: 'Model Servers',
+    icon: RiServerLine,
+    color: 'var(--boost-color-model-server, #f472b6)',
   },
   'ai-tool': {
     label: 'Tools',

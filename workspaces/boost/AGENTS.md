@@ -46,7 +46,7 @@ When implementing an issue:
 
 ### Backstage-native services only
 
-Use Backstage `cacheService`, `permissions`, `httpAuth`, `configApi`, and `catalogApi`. Never build custom equivalents. All caches use `coreServices.cache` — no raw `Map<>` caches.
+Use Backstage `cacheService`, `permissions`, `httpAuth`, `configApi`, `catalogApi`, and `scheduler`. Never build custom equivalents. All caches use `coreServices.cache` — no raw `Map<>` caches. Scheduled or periodic tasks must use `coreServices.scheduler` (`SchedulerService`) — never raw `setInterval`, `setTimeout`, or cron libraries. `SchedulerService` provides distributed scheduling, lifecycle management, and proper shutdown handling.
 
 ### Provider isolation
 
@@ -69,6 +69,26 @@ Config validation uses Zod schemas as single source of truth. TypeScript types a
 Agents, tools, models, MCP servers, and vector stores are Backstage catalog entities — not in-memory caches. Entity providers emit standard catalog entities.
 
 ## Code conventions
+
+### Adding new config fields
+
+When introducing new `boost.*` configuration keys, complete all of
+the following steps. Omitting any step causes runtime validation
+failures or config-surface drift.
+
+1. Add TypeScript declarations in
+   `plugins/boost-backend/config.d.ts` with `@configScope` and
+   `@visibility` JSDoc annotations matching the field's scope
+2. Register the field in `src/config/schemas.ts` under
+   `boostConfigFields` with a Zod schema, `configScope`, and
+   `description`
+3. Bump `BOOST_CONFIG_SCHEMA_VERSION` in `src/config/schemas.ts`
+4. Add example usage in `examples/app-config.connectors.yaml` (or
+   the appropriate `app-config.*.yaml` example file)
+5. Run `yarn tsc:full && yarn build:api-reports:only` and commit the
+   updated `report.api.md`
+
+When reviewing PRs that add or modify `boost.*` config keys, verify all five registration steps above were completed.
 
 ### Package structure
 
@@ -104,7 +124,7 @@ const endpoint = safeGetOptionalString(config, 'endpoint');
 - Config namespace: `boost.*` (e.g., `boost.features.agentCreation`, `boost.security.mode`)
 - Permission names — two namespaces by design:
   - `boost.*` — application-layer agent/tool operations: `boost.agent.*`, `boost.tool.*`, `boost.kagenti.admin`, `boost.access`, `boost.admin`
-  - `ai-catalog.*` — catalog-layer RBAC for AI asset visibility and governance: `ai-catalog.asset.read`, `ai-catalog.asset.read.usage-docs`, `ai-catalog.admin`
+  - `ai-catalog.*` — catalog-layer RBAC for AI asset visibility and governance: `ai-catalog.asset.access`, `ai-catalog.asset.access.usage-docs`, `ai-catalog.admin` (uses `access` rather than `read` per issue #4041's naming decision; the underlying `attributes.action` stays `'read'`)
 - Config: `ai-catalog.rbac.*` for catalog RBAC config (e.g., `ai-catalog.rbac.defaultPolicy`)
 - Resource types: `boost-agent`, `boost-tool`, `ai-catalog-asset`
 - DB tables: `boost_admin_config`, `boost_sessions`, `boost_messages`, `boost_feedback`
@@ -125,25 +145,37 @@ Every feature ships with tests. Integration tests use real database and cache ba
 
 ## Build & verify
 
-| Task                | Command                              |
-| ------------------- | ------------------------------------ |
-| Full build          | `yarn build:all`                     |
-| Type-check          | `yarn tsc:full`                      |
-| Lint                | `yarn lint:all`                      |
-| Test                | `CI=true yarn test --watchAll=false` |
-| API reports         | `yarn build:api-reports`             |
-| OpenSpec validation | `yarn openspec:validate`             |
+| Task                | Command                                        |
+| ------------------- | ---------------------------------------------- |
+| Full build          | `yarn build:all`                               |
+| Type-check          | `yarn tsc:full`                                |
+| Lint                | `yarn lint:all`                                |
+| Prettier            | `yarn prettier:fix`                            |
+| Test                | `CI=true yarn test --watchAll=false`           |
+| API reports         | `yarn tsc:full && yarn build:api-reports:only` |
+| OpenSpec validation | `yarn openspec:validate`                       |
 
 **After modifying any file that affects the public API surface** (including
 `translations/ref.ts`, exported types, or API routes), run
-`yarn build:api-reports` and commit the updated `report.api.md`.
+`yarn tsc:full && yarn build:api-reports:only` and commit the updated
+`report.api.md`. Always use the two-step sequence (`tsc:full` then
+`build:api-reports:only`), not the all-in-one `build:api-reports:only`
+variant without the `:only` suffix — the all-in-one command performs its
+own TypeScript compilation with different member ordering that does not
+match CI. The `:only` command reads from the `dist-types` produced by
+`tsc:full`, which matches the CI pipeline.
 
 ## Import conventions
 
 - **Icons**: use `@remixicon/react` (e.g., `RiCheckLine`, `RiDownload2Line`).
   Do NOT use `@mui/icons-material` — the plugin migrated in PR #3929.
-- **Entity type comparisons**: always normalize with `.toLowerCase()` before
-  comparing `spec.type` values (see `isAiAsset.ts`, `categoryMeta.ts`).
+- **Entity type comparisons**: always normalize with `.toLowerCase()` (or
+  `.toLocaleLowerCase('en-US')` in `boost-common`, per its lint rule) before
+  comparing `spec.type` values (see `boost-common/src/aiAssetTaxonomy.ts`,
+  `categoryMeta.ts`). The AI asset kind/`spec.type` taxonomy
+  (`AI_ASSET_SPEC_TYPES`, `isAiAsset`, `buildAiAssetCatalogFilter`) lives in
+  `boost-common` as the single source of truth for both `boost` and
+  `boost-backend` — do not re-duplicate it in either plugin.
 
 ## What not to do
 
@@ -152,10 +184,11 @@ Every feature ships with tests. Integration tests use real database and cache ba
 - Do not create raw `Map<>` caches — always use `coreServices.cache`
 - Do not add authorization checks outside `permissions.authorize()` / `permissions.authorizeConditional()`
 - Do not add provider ID string checks in the frontend
+- Do not use raw `setInterval`, `setTimeout`, or cron libraries for scheduled work — always use `coreServices.scheduler`
 
 ## Before committing
 
-- Run `yarn prettier:check` from the workspace root. If it fails, run `yarn prettier:fix` and stage the corrected files.
+- Run `yarn prettier:fix` from the workspace root and stage any reformatted files.
 - If public exports or function signatures changed, run `yarn build:api-reports:only --ci`.
 
 ## Scripts directory

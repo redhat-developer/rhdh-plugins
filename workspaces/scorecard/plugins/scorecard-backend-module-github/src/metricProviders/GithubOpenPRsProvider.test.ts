@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { mockServices } from '@backstage/backend-test-utils';
 import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import { GithubOpenPRsProvider } from './GithubOpenPRsProvider';
@@ -30,9 +31,13 @@ jest.mock('@backstage/catalog-model', () => ({
 jest.mock('../github/GithubClient');
 
 describe('GithubOpenPRsProvider', () => {
+  const mockedLogger = mockServices.logger.mock();
+
   describe('fromConfig', () => {
     it('should create provider with default thresholds on metric', () => {
-      const provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}));
+      const provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}), {
+        logger: mockedLogger,
+      });
       const metrics = provider.getMetrics();
       expect(metrics).toHaveLength(1);
       expect(metrics[0].thresholds).toEqual(DEFAULT_NUMBER_THRESHOLDS);
@@ -51,7 +56,9 @@ describe('GithubOpenPRsProvider', () => {
 
     beforeEach(() => {
       jest.clearAllMocks();
-      provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}));
+      provider = GithubOpenPRsProvider.fromConfig(new ConfigReader({}), {
+        logger: mockedLogger,
+      });
     });
 
     it('should calculate metric', async () => {

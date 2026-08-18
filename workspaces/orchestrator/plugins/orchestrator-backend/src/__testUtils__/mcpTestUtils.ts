@@ -28,20 +28,13 @@ import {
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 
+import { ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
+
 import type { Server } from 'node:http';
 
-// Must be imported after the `jest.mock` calls above so that `orchestratorPlugin`'s
-// transitive imports resolve to the mocked service classes.
-// eslint-disable-next-line import/first
+// eslint-disable-next-line import/first -- must follow jest.mock setup above
 import { orchestratorPlugin } from '../plugin';
 
-// Orchestrator has no official test double for SonataFlowService /
-// DataIndexService / WorkflowCacheService / OrchestratorService (unlike e.g.
-// Scorecard's `catalogServiceMock`). The only established convention for
-// stubbing them in this package is `service/router.test.ts`'s same-package,
-// relative-path `jest.mock(...)` calls, reused here verbatim so the real
-// `orchestratorPlugin` boots through `startTestBackend` without touching a
-// real SonataFlow/DataIndex service.
 jest.mock('../service/DataIndexService', () => ({
   DataIndexService: jest.fn().mockImplementation(() => ({})),
 }));
@@ -73,9 +66,11 @@ jest.mock('../service/OrchestratorService', () => ({
     .mockImplementation(() => mockOrchestratorService),
 }));
 
-export type BackendPermissionMode = 'allow-all' | 'deny-all';
+export type BackendPermissionMode =
+  'allow-all' | 'deny-all' | 'conditional-workflow1-only';
 
 export type StartMcpBackendOptions = {
+  pluginSources?: string[];
   permissionMode?: BackendPermissionMode;
 };
 
@@ -87,19 +82,48 @@ function getServerPort(server: Server): number {
   return address.port;
 }
 
+function conditionalWorkflowDecision(workflowIds: string[]): PolicyDecision {
+  return {
+    result: AuthorizeResult.CONDITIONAL,
+    pluginId: 'orchestrator',
+    resourceType: ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
+    conditions: {
+      anyOf: [
+        {
+          rule: 'IS_ALLOWED_WORKFLOW_ID',
+          resourceType: ORCHESTRATOR_WORKFLOW_RESOURCE_TYPE,
+          params: { workflowIds },
+        },
+      ],
+    },
+  } as PolicyDecision;
+}
+
 function createPermissionsFactory(mode: BackendPermissionMode) {
-  const decision: PolicyDecision =
-    mode === 'deny-all'
-      ? { result: AuthorizeResult.DENY }
-      : { result: AuthorizeResult.ALLOW };
+  if (mode === 'deny-all') {
+    return mockServices.permissions.mock({
+      authorize: async () => [{ result: AuthorizeResult.DENY }],
+      authorizeConditional: async () => [{ result: AuthorizeResult.DENY }],
+    }).factory;
+  }
+
+  if (mode === 'conditional-workflow1-only') {
+    return mockServices.permissions.mock({
+      authorize: async () => [{ result: AuthorizeResult.DENY }],
+      authorizeConditional: async () => [
+        conditionalWorkflowDecision(['workflow1']),
+      ],
+    }).factory;
+  }
 
   return mockServices.permissions.mock({
-    authorize: async () => [decision],
-    authorizeConditional: async () => [decision],
+    authorize: async () => [{ result: AuthorizeResult.ALLOW }],
+    authorizeConditional: async () => [{ result: AuthorizeResult.ALLOW }],
   }).factory;
 }
 
 export async function startMcpBackend({
+  pluginSources = ['orchestrator'],
   permissionMode = 'allow-all',
 }: StartMcpBackendOptions = {}) {
   return startTestBackend({
@@ -110,7 +134,7 @@ export async function startMcpBackend({
         data: {
           backend: {
             baseUrl: 'http://localhost:7007',
-            actions: { pluginSources: ['orchestrator'] },
+            actions: { pluginSources },
           },
           orchestrator: {
             dataIndexService: { url: 'http://localhost:8080' },

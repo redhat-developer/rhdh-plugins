@@ -19,8 +19,8 @@
 **RHIDP-15270 (Graduated Visibility):**
 | Key | Summary | Frontend? |
 |---|---|---|
-| RHIDP-15271 | Define and register `ai-catalog.asset.read` permission | No (backend) |
-| RHIDP-15272 | Define `ai-catalog.asset.read.usage-docs` with field-level filtering | No (backend) |
+| RHIDP-15271 | Define and register `ai-catalog.asset.access` permission | No (backend) |
+| RHIDP-15272 | Define `ai-catalog.asset.access.usage-docs` with field-level filtering | No (backend) |
 | RHIDP-15273 | **Frontend graduated visibility with RequirePermission gating** | **Yes** |
 | RHIDP-15306 | Define and register `ai-catalog.admin` permission | No (backend) |
 | RHIDP-15310 | Backend read-time RBAC filtering for SkillBundle skill lists | No (backend, UX messaging absorbed into RHIDP-15273) |
@@ -48,12 +48,12 @@
 
 RHDHPLAN-1509's feature acceptance criteria state: _"All visibility enforcement (browse list, search results including global search, and detail page direct navigation by URL/entity reference) consistently applies the RBAC policies defined by RHDHPLAN-1508."_
 
-This covers the **binary entity visibility** layer — i.e., when a user is denied `ai-catalog.asset.read`, the entity is hidden from browse, search, and direct URL access:
+This covers the **binary entity visibility** layer — i.e., when a user is denied `ai-catalog.asset.access`, the entity is hidden from browse, search, and direct URL access:
 
 | RHDHPLAN-1508 AC (frontend aspect)                                                         | RHDHPLAN-1509 Coverage    | Status      |
 | ------------------------------------------------------------------------------------------ | ------------------------- | ----------- |
-| Entity hidden from browse/search when `ai-catalog.asset.read` denied                       | RHIDP-15166 (Browse page) | Closed      |
-| Entity hidden from direct URL when `ai-catalog.asset.read` denied                          | RHIDP-15167 (Entity page) | New         |
+| Entity hidden from browse/search when `ai-catalog.asset.access` denied                     | RHIDP-15166 (Browse page) | Closed      |
+| Entity hidden from direct URL when `ai-catalog.asset.access` denied                        | RHIDP-15167 (Entity page) | New         |
 | No-leakage guarantee (no distinguishable errors between "doesn't exist" and "not visible") | RHIDP-15164 (baseline)    | In Progress |
 
 ## 2) Frontend Needs NOT Covered by RHDHPLAN-1509
@@ -62,7 +62,7 @@ RHDHPLAN-1508 has **4 frontend stories** across 2 epics that are its own deliver
 
 ### A. Graduated Visibility UI (RHIDP-15273)
 
-**What:** `RequirePermission` gating on entity detail pages. Users with `ai-catalog.asset.read` but NOT `ai-catalog.asset.read.usage-docs` see the asset's name, category, description, owner, and version list, but usage/install instructions, configuration snippets, and connection endpoints are replaced with a "request access" / "contact owner" placeholder.
+**What:** `RequirePermission` gating on entity detail pages. Users with `ai-catalog.asset.access` but NOT `ai-catalog.asset.access.usage-docs` see the asset's name, category, description, owner, and version list, but usage/install instructions, configuration snippets, and connection endpoints are replaced with a "request access" / "contact owner" placeholder.
 
 **Why not in RHDHPLAN-1509:** RHDHPLAN-1509 only handles binary visibility (asset exists vs. hidden). The graduated tier-2 model (asset visible but sensitive fields redacted) is RHDHPLAN-1508's own concern. RHDHPLAN-1509 _renders_ the entity detail page (RHIDP-15167), but RHDHPLAN-1508 _gates_ specific sections of it (RHIDP-15273).
 
@@ -72,11 +72,11 @@ RHDHPLAN-1508 has **4 frontend stories** across 2 epics that are its own deliver
 
 **What:** A standalone admin page at `/ai-catalog/admin/rbac` (a new frontend plugin page calling the RBAC REST API directly), accessible only to users with `ai-catalog.admin`. Three stories:
 
-| Story       | What it builds                                                                                                                                                                                     |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| RHIDP-15307 | Policy Dashboard — summary view of all active AI Catalog policies grouped by category and connector                                                                                                |
-| RHIDP-15308 | Category and Connector Policy Editor — create/edit/delete conditional policies for `ai-catalog.asset.read` and `ai-catalog.asset.read.usage-docs` with category and connector filters, no raw YAML |
-| RHIDP-15309 | Default Posture Configuration — UI to set default-allow/deny per category and per connector                                                                                                        |
+| Story       | What it builds                                                                                                                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| RHIDP-15307 | Policy Dashboard — summary view of all active AI Catalog policies grouped by category and connector                                                                                                    |
+| RHIDP-15308 | Category and Connector Policy Editor — create/edit/delete conditional policies for `ai-catalog.asset.access` and `ai-catalog.asset.access.usage-docs` with category and connector filters, no raw YAML |
+| RHIDP-15309 | Default Posture Configuration — UI to set default-allow/deny per category and per connector                                                                                                            |
 
 **Why not in RHDHPLAN-1509:** RHDHPLAN-1509 is the discovery UI (browse, search, detail pages for developers). Admin RBAC management is a distinct concern. RHDHPLAN-1509's out-of-scope explicitly says: _"Defining or implementing the RBAC policy model itself (delivered by RHDHPLAN-1508); this feature only consumes and enforces the policies that RHDHPLAN-1508 provides."_
 

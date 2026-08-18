@@ -70,7 +70,15 @@ export const ActiveMultiSelect: Widget<
 > = props => {
   const { classes } = useStyles();
   const templateUnitEvaluator = useTemplateUnitEvaluator();
-  const { id, name, label, value: rawValue, onChange, formContext } = props;
+  const {
+    id,
+    name,
+    label,
+    value: rawValue,
+    onChange,
+    onBlur,
+    formContext,
+  } = props;
   const value = rawValue as string[];
   const formData = formContext?.formData;
   const isChangedByUser = !!formContext?.getIsChangedByUser(id);
@@ -349,6 +357,7 @@ export const ActiveMultiSelect: Widget<
             freeSolo={allowNewItems}
             data-testid={`${id}-autocomplete`}
             disabled={isReadOnly}
+            onBlur={() => onBlur?.(id, value)}
             options={allOptions}
             isOptionEqualToValue={(option, selected) => option === selected}
             value={value}

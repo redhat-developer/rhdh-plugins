@@ -27,17 +27,6 @@ import {
   withMcpClient,
 } from './__testUtils__/mcpTestUtils';
 
-/**
- * Pyramid invariant (RHIDP-14041): the per-action unit tests
- * (`actions/*.test.ts`) already prove each action's branching/mapping logic
- * against mocked services. This suite proves the remaining, un-mocked
- * concern - that all 5 actions are actually *wired*: registered by the real
- * `orchestratorPlugin`, reachable through the real `@backstage/plugin-mcp-actions-backend`
- * plugin, and callable end-to-end by a real `@modelcontextprotocol/sdk`
- * client - not just invokable directly against `ActionsRegistryService`
- * mocks. Mirrors Scorecard PR #3332's `mcp-tools.integration.test.ts`.
- */
-
 type McpTestBackend = Awaited<ReturnType<typeof startMcpBackend>>;
 
 const ORCHESTRATOR_TOOL_NAMES = [
@@ -74,10 +63,14 @@ function rawInstance(overrides: Record<string, unknown> = {}) {
 describe('Orchestrator MCP tools integration', () => {
   let allowedBackend: McpTestBackend;
   let deniedBackend: McpTestBackend;
+  let conditionalBackend: McpTestBackend;
 
   beforeAll(async () => {
     allowedBackend = await startMcpBackend({ permissionMode: 'allow-all' });
     deniedBackend = await startMcpBackend({ permissionMode: 'deny-all' });
+    conditionalBackend = await startMcpBackend({
+      permissionMode: 'conditional-workflow1-only',
+    });
   });
 
   beforeEach(() => {
@@ -98,7 +91,7 @@ describe('Orchestrator MCP tools integration', () => {
     });
   });
 
-  it('marks the 4 read actions read-only and execute-workflow not read-only', async () => {
+  it('marks read tools read-only and execute-workflow destructive', async () => {
     await withMcpClient(allowedBackend.server, async client => {
       const result = await client.request(
         { method: 'tools/list' },
@@ -111,16 +104,41 @@ describe('Orchestrator MCP tools integration', () => {
 
       for (const toolName of READ_ONLY_TOOL_NAMES) {
         expect(toolsByName[toolName]?.annotations?.readOnlyHint).toBe(true);
+        expect(typeof toolsByName[toolName]?.annotations?.destructiveHint).toBe(
+          'boolean',
+        );
       }
+
       expect(
         toolsByName['orchestrator.execute-workflow']?.annotations?.readOnlyHint,
       ).toBe(false);
+      expect(
+        toolsByName['orchestrator.execute-workflow']?.annotations
+          ?.destructiveHint,
+      ).toBe(true);
+    });
+  });
+
+  it('hides orchestrator tools when orchestrator is not in pluginSources', async () => {
+    const filteredBackend = await startMcpBackend({ pluginSources: [] });
+
+    await withMcpClient(filteredBackend.server, async client => {
+      const result = await client.request(
+        { method: 'tools/list' },
+        ListToolsResultSchema,
+      );
+
+      const toolNames = result.tools.map(tool => tool.name);
+      for (const toolName of ORCHESTRATOR_TOOL_NAMES) {
+        expect(toolNames).not.toContain(toolName);
+      }
     });
   });
 
   it('calls orchestrator.list-workflows and returns configured workflows', async () => {
     mockOrchestratorService.fetchWorkflowOverviews.mockResolvedValue([
       { workflowId: 'workflow1', name: 'Onboard Employee' },
+      { workflowId: 'workflow2', name: 'Offboard Employee' },
     ]);
 
     await withMcpClient(allowedBackend.server, async client => {
@@ -134,7 +152,42 @@ describe('Orchestrator MCP tools integration', () => {
       };
 
       expect(result.isError).not.toBe(true);
-      expect(output.workflows.map(w => w.workflowId)).toContain('workflow1');
+      expect(output.workflows.map(w => w.workflowId)).toEqual(
+        expect.arrayContaining(['workflow1', 'workflow2']),
+      );
+    });
+  });
+
+  it('filters orchestrator.list-workflows for conditional workflow permissions', async () => {
+    mockOrchestratorService.fetchWorkflowOverviews.mockResolvedValue([
+      { workflowId: 'workflow1', name: 'Onboard Employee' },
+      { workflowId: 'workflow2', name: 'Offboard Employee' },
+    ]);
+
+    await withMcpClient(conditionalBackend.server, async client => {
+      const result = await client.callTool(
+        { name: 'orchestrator.list-workflows', arguments: {} },
+        CallToolResultSchema,
+      );
+
+      const output = parseCallToolOutput(result) as {
+        workflows: Array<{ workflowId: string }>;
+      };
+
+      expect(result.isError).not.toBe(true);
+      expect(output.workflows.map(w => w.workflowId)).toEqual(['workflow1']);
+    });
+  });
+
+  it('returns a tool error when orchestrator.list-workflows access is denied', async () => {
+    await withMcpClient(deniedBackend.server, async client => {
+      const result = await client.callTool(
+        { name: 'orchestrator.list-workflows', arguments: {} },
+        CallToolResultSchema,
+      );
+
+      expect(result.isError).toBe(true);
+      expect(parseCallToolError(result)).toContain('denied');
     });
   });
 
@@ -191,6 +244,36 @@ describe('Orchestrator MCP tools integration', () => {
     });
   });
 
+  it('returns validation error when get-workflow-schema workflowId is missing', async () => {
+    await withMcpClient(allowedBackend.server, async client => {
+      const result = await client.callTool(
+        {
+          name: 'orchestrator.get-workflow-schema',
+          arguments: {},
+        },
+        CallToolResultSchema,
+      );
+
+      expect(result.isError).toBe(true);
+      expect(parseCallToolError(result)).toContain('workflowId');
+    });
+  });
+
+  it('returns validation error when get-workflow-schema workflowId has invalid type', async () => {
+    await withMcpClient(allowedBackend.server, async client => {
+      const result = await client.callTool(
+        {
+          name: 'orchestrator.get-workflow-schema',
+          arguments: { workflowId: 12345 },
+        },
+        CallToolResultSchema,
+      );
+
+      expect(result.isError).toBe(true);
+      expect(parseCallToolError(result)).toContain('workflowId');
+    });
+  });
+
   it('calls orchestrator.execute-workflow and returns the new instance id and status', async () => {
     mockOrchestratorService.fetchWorkflowInfo.mockResolvedValue({
       id: 'workflow1',
@@ -220,6 +303,69 @@ describe('Orchestrator MCP tools integration', () => {
 
       expect(result.isError).not.toBe(true);
       expect(output).toEqual({ instanceId: 'instance1', status: 'ACTIVE' });
+    });
+  });
+
+  it('returns a tool error when execute-workflow inputs fail schema validation', async () => {
+    mockOrchestratorService.fetchWorkflowInfo.mockResolvedValue({
+      id: 'workflow1',
+      serviceUrl: 'http://localhost:8080',
+    });
+    mockOrchestratorService.fetchWorkflowDefinition.mockResolvedValue({
+      id: 'workflow1',
+      dataInputSchema: 'schema.json',
+    });
+    mockOrchestratorService.fetchWorkflowInfoOnService.mockResolvedValue({
+      id: 'workflow1',
+      inputSchema: {
+        type: 'object',
+        properties: { name: { type: 'string' } },
+        required: ['name'],
+      },
+    });
+
+    await withMcpClient(allowedBackend.server, async client => {
+      const result = await client.callTool(
+        {
+          name: 'orchestrator.execute-workflow',
+          arguments: { workflowId: 'workflow1', inputs: {} },
+        },
+        CallToolResultSchema,
+      );
+
+      expect(result.isError).toBe(true);
+      expect(parseCallToolError(result)).toContain('Invalid inputs');
+      expect(parseCallToolError(result)).toContain('workflow1');
+    });
+  });
+
+  it('returns a tool error when orchestrator.execute-workflow access is denied', async () => {
+    await withMcpClient(deniedBackend.server, async client => {
+      const result = await client.callTool(
+        {
+          name: 'orchestrator.execute-workflow',
+          arguments: { workflowId: 'workflow1', inputs: {} },
+        },
+        CallToolResultSchema,
+      );
+
+      expect(result.isError).toBe(true);
+      expect(parseCallToolError(result)).toContain('denied');
+    });
+  });
+
+  it('returns validation error when execute-workflow workflowId is missing', async () => {
+    await withMcpClient(allowedBackend.server, async client => {
+      const result = await client.callTool(
+        {
+          name: 'orchestrator.execute-workflow',
+          arguments: { inputs: {} },
+        },
+        CallToolResultSchema,
+      );
+
+      expect(result.isError).toBe(true);
+      expect(parseCallToolError(result)).toContain('workflowId');
     });
   });
 
@@ -261,15 +407,50 @@ describe('Orchestrator MCP tools integration', () => {
     });
   });
 
-  it('returns a tool error when access is denied', async () => {
-    await withMcpClient(deniedBackend.server, async client => {
+  it('returns a tool error when orchestrator.get-instance targets a missing instance', async () => {
+    mockOrchestratorService.fetchInstance.mockResolvedValue(undefined);
+
+    await withMcpClient(allowedBackend.server, async client => {
       const result = await client.callTool(
-        { name: 'orchestrator.list-workflows', arguments: {} },
+        {
+          name: 'orchestrator.get-instance',
+          arguments: { instanceId: 'missing-instance' },
+        },
         CallToolResultSchema,
       );
 
       expect(result.isError).toBe(true);
-      expect(parseCallToolError(result)).toContain('denied');
+      expect(parseCallToolError(result)).toContain('missing-instance');
+    });
+  });
+
+  it('returns validation error when get-instance instanceId is missing', async () => {
+    await withMcpClient(allowedBackend.server, async client => {
+      const result = await client.callTool(
+        {
+          name: 'orchestrator.get-instance',
+          arguments: {},
+        },
+        CallToolResultSchema,
+      );
+
+      expect(result.isError).toBe(true);
+      expect(parseCallToolError(result)).toContain('instanceId');
+    });
+  });
+
+  it('returns validation error when get-instance instanceId has invalid type', async () => {
+    await withMcpClient(allowedBackend.server, async client => {
+      const result = await client.callTool(
+        {
+          name: 'orchestrator.get-instance',
+          arguments: { instanceId: 12345 },
+        },
+        CallToolResultSchema,
+      );
+
+      expect(result.isError).toBe(true);
+      expect(parseCallToolError(result)).toContain('instanceId');
     });
   });
 });

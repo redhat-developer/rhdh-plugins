@@ -15,16 +15,18 @@
  */
 
 import { createBackendModule } from '@backstage/backend-plugin-api';
-import type { CatalogModelSource } from '@backstage/catalog-model/alpha';
-import { catalogModelExtensionPoint } from '@backstage/plugin-catalog-node/alpha';
-import { agentAiResourceEntityModel } from '@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent';
+import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node';
+
+import { AiResourceAgentProcessor } from './AiResourceAgentProcessor';
 
 /**
  * Registers the agent specType for the AiResource kind in the catalog.
  *
- * Follows the upstream pattern established by
- * `@backstage/plugin-catalog-backend-module-ai-model` which registers
- * skill/rule via `catalogModelExtensionPoint.addModelSource`.
+ * Uses `addProcessor` so the catalog's built-in kind processor
+ * (`BuiltinKindsEntityProcessor`) remains active for standard kinds.
+ * The previous `addModelSource` approach caused the built-in processor
+ * to be replaced entirely, breaking validation of User, Group,
+ * Component, and other standard entity kinds.
  *
  * @public
  */
@@ -34,15 +36,10 @@ export const catalogModuleAiResourceAgent = createBackendModule({
   register(reg) {
     reg.registerInit({
       deps: {
-        model: catalogModelExtensionPoint,
+        catalog: catalogProcessingExtensionPoint,
       },
-      async init({ model }) {
-        const source: CatalogModelSource = {
-          async *read() {
-            yield { data: [{ layer: agentAiResourceEntityModel }] };
-          },
-        };
-        model.addModelSource(source);
+      async init({ catalog }) {
+        catalog.addProcessor(new AiResourceAgentProcessor());
       },
     });
   },

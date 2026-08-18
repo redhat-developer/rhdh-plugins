@@ -4,6 +4,24 @@
 
 ```ts
 import { BackendFeature } from '@backstage/backend-plugin-api';
+import { CatalogProcessor } from '@backstage/plugin-catalog-node';
+import { CatalogProcessorEmit } from '@backstage/plugin-catalog-node';
+import { Entity } from '@backstage/catalog-model';
+import { LocationSpec } from '@backstage/plugin-catalog-common';
+
+// @public
+export class AiResourceAgentProcessor implements CatalogProcessor {
+  // (undocumented)
+  getProcessorName(): string;
+  // (undocumented)
+  preProcessEntity(
+    entity: Entity,
+    _location: LocationSpec,
+    _emit: CatalogProcessorEmit,
+  ): Promise<Entity>;
+  // (undocumented)
+  validateEntityKind(entity: Entity): Promise<boolean>;
+}
 
 // @public
 const catalogModuleAiResourceAgent: BackendFeature;

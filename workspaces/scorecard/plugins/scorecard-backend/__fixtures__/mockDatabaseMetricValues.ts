@@ -33,6 +33,7 @@ type BuildMockDatabaseMetricValuesParams = {
 export const mockDatabaseMetricValues = {
   createMetricValues: jest.fn(),
   readLatestEntityMetricValues: jest.fn(),
+  readEntityMetricValuesInRange: jest.fn(),
   cleanupExpiredMetrics: jest.fn(),
   readAggregatedMetricByEntityRefs: jest.fn(),
   readScalarAggregatedMetricByEntityRefs: jest.fn(),
@@ -74,6 +75,8 @@ export const buildMockDatabaseMetricValues = ({
   return {
     createMetricValues,
     readLatestEntityMetricValues,
+    readEntityMetricValuesInRange:
+      mockDatabaseMetricValues.readEntityMetricValuesInRange,
     cleanupExpiredMetrics,
     readAggregatedMetricByEntityRefs,
     readScalarAggregatedMetricByEntityRefs,

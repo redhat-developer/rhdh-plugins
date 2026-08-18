@@ -100,12 +100,27 @@ ai-catalog:
 #       # Older records beyond this limit are cleaned up daily.
 #       maxAttemptsPerConnector: 100
 #   connectors:
-#     github:
-#       enabled: true   # runtime sync-skip (default true)
-#     gitlab:
-#       enabled: false  # skip scheduled syncs without restarting
 #     jira:
-#       enabled: true
+#       enabled: true                        # runtime sync-skip (default true)
+#       endpoint: https://jira.example.com   # HTTPS required
+#       schedule:
+#         intervalMs: 300000                 # 5 minutes (default)
+#         cron: '*/10 * * * *'              # optional; takes precedence over intervalMs
+#       batchSize: 100                       # items per sync batch (default)
+#       timeout:
+#         connectionMs: 30000                # connection timeout (default)
+#     github:
+#       enabled: true                        # runtime sync-skip (default true)
+#       endpoint: https://api.github.com     # HTTPS required
+#       schedule:
+#         intervalMs: 300000                 # 5 minutes (default)
+#       batchSize: 100                       # items per sync batch (default)
+#     gitlab:
+#       enabled: false                       # skip scheduled syncs without restarting
+#       endpoint: https://gitlab.example.com # HTTPS required
+#       schedule:
+#         intervalMs: 600000                 # 10 minutes
+#       batchSize: 50
 #
 # ai-catalog:
 #   providers:
