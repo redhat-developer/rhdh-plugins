@@ -30,10 +30,15 @@ export interface DoraPullRequestsStore {
     collectorId: string,
     deploymentId: string,
   ): Promise<DbDoraPullRequest[]>;
+  /**
+   * Deletes pull requests whose parent deployment is older than the cutoff (for sqlite without CASCADE delete support).
+   */
+  deleteForDeploymentsOlderThan(olderThan: Date): Promise<number>;
 }
 
 export class DatabaseDoraPullRequests implements DoraPullRequestsStore {
   private readonly tableName = 'dora_pull_requests';
+  private readonly deploymentsTableName = 'dora_deployments';
 
   constructor(private readonly dbClient: Knex) {}
 
@@ -71,5 +76,16 @@ export class DatabaseDoraPullRequests implements DoraPullRequestsStore {
       .orderBy('first_commit_at', 'asc');
 
     return rows.map(fromDoraPullRequestRow);
+  }
+
+  async deleteForDeploymentsOlderThan(olderThan: Date): Promise<number> {
+    return await this.dbClient(this.tableName)
+      .whereIn(
+        'deployment_id',
+        this.dbClient(this.deploymentsTableName)
+          .select('id')
+          .where('created_at', '<', olderThan),
+      )
+      .del();
   }
 }

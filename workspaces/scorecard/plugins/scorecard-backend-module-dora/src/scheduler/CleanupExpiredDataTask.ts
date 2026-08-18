@@ -22,6 +22,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import type { DoraDeploymentsStore } from '../database/DatabaseDoraDeployments';
 import type { DoraIncidentsStore } from '../database/DatabaseDoraIncidents';
+import type { DoraPullRequestsStore } from '../database/DatabaseDoraPullRequests';
 import { DORA_CLEANUP_EXPIRED_DATA_TASK_ID } from '../constants';
 import { daysToMilliseconds } from './utils';
 
@@ -31,6 +32,7 @@ type Options = {
   dataRetentionDays: number;
   deployments: DoraDeploymentsStore;
   incidents: DoraIncidentsStore;
+  pullRequests: DoraPullRequestsStore;
 };
 
 export class CleanupExpiredDataTask {
@@ -39,10 +41,11 @@ export class CleanupExpiredDataTask {
   private readonly dataRetentionDays: number;
   private readonly deployments: DoraDeploymentsStore;
   private readonly incidents: DoraIncidentsStore;
+  private readonly pullRequests: DoraPullRequestsStore;
 
   private static readonly CLEANUP_SCHEDULE: SchedulerServiceTaskScheduleDefinition =
     {
-      frequency: { days: 1 },
+      frequency: { minutes: 3 },
       timeout: { minutes: 2 },
       initialDelay: { seconds: 3 },
     };
@@ -53,6 +56,7 @@ export class CleanupExpiredDataTask {
     this.dataRetentionDays = options.dataRetentionDays;
     this.deployments = options.deployments;
     this.incidents = options.incidents;
+    this.pullRequests = options.pullRequests;
   }
 
   async start(): Promise<void> {
@@ -82,14 +86,16 @@ export class CleanupExpiredDataTask {
       Date.now() - daysToMilliseconds(this.dataRetentionDays),
     );
 
-    // Pull requests are removed via ON DELETE CASCADE when their deployment is deleted.
+    const deletedPullRequests =
+      await this.pullRequests.deleteForDeploymentsOlderThan(olderThan);
     const deletedDeployments = await this.deployments.deleteOlderThan(
       olderThan,
     );
     const deletedIncidents = await this.incidents.deleteOlderThan(olderThan);
 
     logger.info(
-      `Deleted ${deletedDeployments} deployments and ${deletedIncidents} incidents older than ${this.dataRetentionDays} days`,
+      `Deleted ${deletedDeployments} deployments, ${deletedIncidents} incidents, ` +
+        `${deletedPullRequests} pull requests older than ${this.dataRetentionDays} days`,
     );
   }
 }

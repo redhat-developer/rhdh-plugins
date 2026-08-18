@@ -102,4 +102,5 @@ export const mockDoraIncidentsStore: jest.Mocked<DoraIncidentsStore> = {
 export const mockDoraPullRequestsStore: jest.Mocked<DoraPullRequestsStore> = {
   upsert: jest.fn(),
   readByEntityCollectorAndDeployment: jest.fn(),
+  deleteForDeploymentsOlderThan: jest.fn(),
 };

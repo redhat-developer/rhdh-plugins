@@ -22,25 +22,38 @@ jest.setTimeout(60000);
 
 async function seedDeployment(
   deploymentsDb: DatabaseDoraDeployments,
-  entityRef = 'component:default/service-a',
+  options: {
+    entityRef?: string;
+    originalDeploymentId?: string;
+    createdAt?: Date;
+  } = {},
 ) {
+  const entityRef = options.entityRef ?? 'component:default/service-a';
   const deploymentsCollectorId = 'github:deployments';
+  const originalDeploymentId = options.originalDeploymentId ?? 'dep-1';
+  const createdAt = options.createdAt ?? new Date('2026-06-10T10:00:00.000Z');
   await deploymentsDb.upsert([
     {
       catalogEntityRef: entityRef,
       collectorId: deploymentsCollectorId,
-      originalDeploymentId: 'dep-1',
+      originalDeploymentId,
       commitSha: 'sha-1',
       environment: 'production',
-      createdAt: new Date('2026-06-10T10:00:00.000Z'),
+      createdAt,
     },
   ]);
-  const [deployment] = await deploymentsDb.readByEntityCollectorAndWindow(
+  const rows = await deploymentsDb.readByEntityCollectorAndWindow(
     entityRef,
     deploymentsCollectorId,
-    new Date('2026-06-01T00:00:00.000Z'),
-    new Date('2026-06-30T00:00:00.000Z'),
+    new Date('2020-01-01T00:00:00.000Z'),
+    new Date('2030-01-01T00:00:00.000Z'),
   );
+  const deployment = rows.find(
+    row => row.originalDeploymentId === originalDeploymentId,
+  );
+  if (!deployment) {
+    throw new Error(`Failed to seed deployment ${originalDeploymentId}`);
+  }
   return { entityRef, deployment };
 }
 
@@ -175,6 +188,73 @@ describe('DatabaseDoraPullRequests', () => {
         );
 
         expect(rows.map(row => row.originalPrId)).toEqual(['pr-1', 'pr-2']);
+      },
+    );
+  });
+
+  describe('deleteForDeploymentsOlderThan', () => {
+    it.each(databases.eachSupportedId())(
+      'deletes pull requests for deployments older than the cutoff - %p',
+      async databaseId => {
+        const { deployments, pullRequests } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const prCollectorId = 'github:deploymentRangePullRequests';
+        const { entityRef, deployment: oldDeployment } = await seedDeployment(
+          deployments,
+          {
+            originalDeploymentId: 'dep-old',
+            createdAt: new Date('2025-01-01T00:00:00.000Z'),
+          },
+        );
+        const { deployment: newDeployment } = await seedDeployment(
+          deployments,
+          {
+            originalDeploymentId: 'dep-new',
+            createdAt: new Date('2026-06-10T00:00:00.000Z'),
+          },
+        );
+
+        await pullRequests.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId: prCollectorId,
+            originalPrId: 'pr-old',
+            firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
+            deploymentId: oldDeployment.id,
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId: prCollectorId,
+            originalPrId: 'pr-new',
+            firstCommitAt: new Date('2026-06-09T11:00:00.000Z'),
+            deploymentId: newDeployment.id,
+          },
+        ]);
+
+        const deleted = await pullRequests.deleteForDeploymentsOlderThan(
+          new Date('2026-01-01T00:00:00.000Z'),
+        );
+
+        expect(deleted).toBe(1);
+        expect(
+          (
+            await pullRequests.readByEntityCollectorAndDeployment(
+              entityRef,
+              prCollectorId,
+              oldDeployment.id,
+            )
+          ).map(row => row.originalPrId),
+        ).toEqual([]);
+        expect(
+          (
+            await pullRequests.readByEntityCollectorAndDeployment(
+              entityRef,
+              prCollectorId,
+              newDeployment.id,
+            )
+          ).map(row => row.originalPrId),
+        ).toEqual(['pr-new']);
       },
     );
   });

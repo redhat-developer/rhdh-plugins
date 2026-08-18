@@ -178,4 +178,4 @@ scorecard:
 - `dataRetentionDays`: how long source rows are retained before cleanup. Must be at least `30` (the DORA metric computation window). Defaults to `365`.
 - `staleAfterMs`: freshness threshold in milliseconds for deployments and incidents; if the last sync is within this window, those collectors are not refreshed.
 
-The module schedules a daily background task, `scorecard-dora:cleanup-expired-data`, that deletes deployments and incidents older than `dataRetentionDays`. Pull requests are removed when their parent deployment is deleted.
+The module schedules a daily background task, `scorecard-dora:cleanup-expired-data`, that deletes deployments, incidents, and pull requests linked to expired deployments older than `dataRetentionDays`.
