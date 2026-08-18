@@ -25,6 +25,7 @@ import {
   AppRootWrapperBlueprint,
   IconBundleBlueprint,
 } from '@backstage/plugin-app-react';
+import { ErrorBoundary } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { globalHeaderSystemIcons } from '../icons/globalHeaderSystemIcons';
@@ -81,7 +82,9 @@ function GlobalHeaderWrapper({
   return (
     <GlobalHeaderProvider components={allComponents} menuItems={allMenuItems}>
       <Suspense fallback={null}>
-        <LazyGlobalHeader />
+        <ErrorBoundary>
+          <LazyGlobalHeader />
+        </ErrorBoundary>
       </Suspense>
       {children}
     </GlobalHeaderProvider>

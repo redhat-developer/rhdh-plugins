@@ -199,7 +199,7 @@ export const myDocsItem = GlobalHeaderMenuItemBlueprint.make({
           <GlobalHeaderMenuItem
             to="https://docs.example.com"
             title="Documentation"
-            icon="menu_book"
+            icon="article"
             onClick={handleClose}
           />
         );
