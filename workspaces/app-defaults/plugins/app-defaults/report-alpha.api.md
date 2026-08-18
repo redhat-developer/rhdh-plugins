@@ -12,6 +12,11 @@ import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { ReactNode } from 'react';
 
 // @alpha
+const appDefaultsModule: FrontendModule;
+export { appDefaultsModule };
+export default appDefaultsModule;
+
+// @alpha
 export const appDrawerExtension: OverridableExtensionDefinition<{
   config: {};
   configInput: {};
@@ -39,8 +44,5 @@ export const appDrawerExtension: OverridableExtensionDefinition<{
 }>;
 
 // @alpha
-const appDrawerModule: FrontendModule;
-export { appDrawerModule as appDefaultsModule };
-export { appDrawerModule };
-export default appDrawerModule;
+export const appDrawerModule: FrontendModule;
 ```
