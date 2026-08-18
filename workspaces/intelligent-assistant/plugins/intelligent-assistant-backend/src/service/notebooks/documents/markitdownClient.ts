@@ -37,7 +37,9 @@ export async function convertToMarkdown(
   const nameExt = originalName.includes('.')
     ? `.${originalName.split('.').pop()!.toLowerCase()}`
     : '';
-  if (nameExt && nameExt !== ext) {
+  // Treat .yml and .yaml as equivalent
+  const normalizeExt = (e: string) => (e === '.yml' ? '.yaml' : e);
+  if (nameExt && normalizeExt(nameExt) !== normalizeExt(ext)) {
     throw new InputError(
       `File extension "${nameExt}" does not match declared file type "${fileType}"`,
     );

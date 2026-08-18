@@ -7845,7 +7845,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@napi-rs/canvas@npm:^0.1.65, @napi-rs/canvas@npm:^0.1.80":
+"@napi-rs/canvas@npm:^0.1.80":
   version: 0.1.100
   resolution: "@napi-rs/canvas@npm:0.1.100"
   dependencies:
@@ -9512,7 +9512,6 @@ __metadata:
     markitdown-ts: "npm:^0.0.10"
     msw: "npm:2.14.6"
     multer: "npm:^2.2.0"
-    pdfjs-dist: "npm:^4.10.38"
     prettier: "npm:3.9.6"
     supertest: "npm:6.3.4"
   languageName: unknown
@@ -28273,18 +28272,6 @@ __metadata:
     "@napi-rs/canvas":
       optional: true
   checksum: 10c0/a9e438f12771963f7c29934b4d5e58d508fa43954e4e4cbf951b040c6c89891d048e3d9d3799ed9ec6ceade677628a25f88062b300c5425777ce0b522e457532
-  languageName: node
-  linkType: hard
-
-"pdfjs-dist@npm:^4.10.38":
-  version: 4.10.38
-  resolution: "pdfjs-dist@npm:4.10.38"
-  dependencies:
-    "@napi-rs/canvas": "npm:^0.1.65"
-  dependenciesMeta:
-    "@napi-rs/canvas":
-      optional: true
-  checksum: 10c0/77b022109be7aac00372750a53decea3979409e6ef1cf93bf554351569cd4d1fafc70afae4a9a3e4b4de3facf59d3acd54d324b0fcff781374bcb00493d449ce
   languageName: node
   linkType: hard
 

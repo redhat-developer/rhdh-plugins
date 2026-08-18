@@ -57,8 +57,7 @@
     "http-proxy-middleware": "^3.0.7",
     "knex": "^3.1.0",
     "markitdown-ts": "^0.0.10",
-    "multer": "^2.2.0",
-    "pdfjs-dist": "^4.10.38"
+    "multer": "^2.2.0"
   },
   "devDependencies": {
     "@backstage/backend-test-utils": "^1.11.4",
