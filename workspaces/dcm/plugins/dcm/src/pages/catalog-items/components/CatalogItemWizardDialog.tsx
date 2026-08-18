@@ -348,7 +348,7 @@ function ResourcesTab({
 
       {form.resources.map((resource, i) => {
         const entryErrors: ResourceFormErrors = submitAttempted
-          ? validateResourceEntry(resource, allNames, t)
+          ? validateResourceEntry(resource, allNames, form.resources, t)
           : {};
 
         return (
@@ -448,7 +448,12 @@ function ResourcesTab({
             </FormControl>
 
             {!isEditMode && form.resources.length > 1 && (
-              <FormControl variant="outlined" size="small" fullWidth>
+              <FormControl
+                variant="outlined"
+                size="small"
+                fullWidth
+                error={Boolean(entryErrors.requires_resources)}
+              >
                 <InputLabel shrink>
                   {t('catalogItems.wizard.requiresResourcesLabel')}
                 </InputLabel>
@@ -490,7 +495,8 @@ function ResourcesTab({
                     ))}
                 </Select>
                 <FormHelperText>
-                  {t('catalogItems.wizard.requiresResourcesHelper')}
+                  {entryErrors.requires_resources ??
+                    t('catalogItems.wizard.requiresResourcesHelper')}
                 </FormHelperText>
               </FormControl>
             )}
@@ -607,7 +613,9 @@ export function CatalogItemWizardDialog({
         if (form.resources.length === 0) return false;
         const allNames = form.resources.map(r => r.name.trim());
         return form.resources.every(
-          r => Object.keys(validateResourceEntry(r, allNames)).length === 0,
+          r =>
+            Object.keys(validateResourceEntry(r, allNames, form.resources))
+              .length === 0,
         );
       }
       default: {

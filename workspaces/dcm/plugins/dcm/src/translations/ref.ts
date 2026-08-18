@@ -356,6 +356,8 @@ export const dcmMessages = {
         'Resource name must be unique within the catalog item',
       resourceNamePattern:
         'Only letters, numbers, hyphens and underscores are allowed (must start with a letter)',
+      requiresResourcesCycle:
+        'Circular dependency detected \u2014 this resource indirectly requires itself',
       resourcesRequired: 'At least one resource is required',
       duplicatePath: 'Duplicate path \u2014 paths must be unique',
       invalidJson:

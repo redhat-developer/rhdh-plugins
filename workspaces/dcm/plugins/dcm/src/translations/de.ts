@@ -329,6 +329,8 @@ const dcmTranslationDe: TranslationMessages<
       'Der Ressourcenname muss innerhalb des Katalogelements eindeutig sein',
     'validation.catalogItem.resourceNamePattern':
       'Nur Buchstaben, Zahlen, Bindestriche und Unterstriche erlaubt (muss mit einem Buchstaben beginnen)',
+    'validation.catalogItem.requiresResourcesCycle':
+      'Zirkul\u00e4re Abh\u00e4ngigkeit erkannt \u2014 diese Ressource h\u00e4ngt indirekt von sich selbst ab',
     'validation.catalogItem.resourcesRequired':
       'Mindestens eine Ressource ist erforderlich',
     'validation.catalogItem.duplicatePath':

@@ -126,11 +126,37 @@ export function validateCatalogItemForm(
 export type ResourceFormErrors = {
   name?: string;
   service_type?: string;
+  requires_resources?: string;
 };
+
+/**
+ * Returns true when the `requires_resources` graph contains a cycle that
+ * passes through `startName`. Uses an iterative DFS over the dependency map
+ * built from `resources`.
+ */
+function hasDependencyCycle(
+  startName: string,
+  resources: ResourceFormEntry[],
+): boolean {
+  const depMap = new Map(
+    resources.map(r => [r.name.trim(), r.requires_resources]),
+  );
+  const visited = new Set<string>();
+  const stack = [...(depMap.get(startName) ?? [])];
+  while (stack.length > 0) {
+    const current = stack.pop()!;
+    if (current === startName) return true;
+    if (visited.has(current)) continue;
+    visited.add(current);
+    stack.push(...(depMap.get(current) ?? []));
+  }
+  return false;
+}
 
 export function validateResourceEntry(
   entry: ResourceFormEntry,
   allNames: string[],
+  allResources?: ResourceFormEntry[],
   t?: TFunction,
 ): ResourceFormErrors {
   const m = makeTranslator(t);
@@ -158,6 +184,17 @@ export function validateResourceEntry(
     errors.service_type = m(
       'validation.catalogItem.serviceTypeRequired',
       'Service type is required',
+    );
+  }
+
+  if (
+    allResources &&
+    entry.requires_resources.length > 0 &&
+    hasDependencyCycle(entry.name.trim(), allResources)
+  ) {
+    errors.requires_resources = m(
+      'validation.catalogItem.requiresResourcesCycle',
+      'Circular dependency detected in requires_resources',
     );
   }
 
@@ -294,7 +331,7 @@ export function isCatalogItemFormValid(f: CatalogItemForm): boolean {
   if (f.resources.length === 0) return false;
   const allNames = f.resources.map(r => r.name.trim());
   for (const resource of f.resources) {
-    const errs = validateResourceEntry(resource, allNames);
+    const errs = validateResourceEntry(resource, allNames, f.resources);
     if (Object.keys(errs).length !== 0) return false;
     if (!hasValidFields(resource.fields)) return false;
     if (Object.keys(validateFieldRows(resource.fields)).length !== 0)
@@ -428,21 +465,17 @@ export function formToCatalogItem(f: CatalogItemForm): CatalogItem {
 
 /**
  * Converts an edit-mode form to a {@link CatalogItem} PATCH payload.
- * Includes `name` (as the resource identifier), `service_type`, and `api_version`
- * per resource. `api_version` is always sent to avoid backends that treat a
- * missing key as "clear" rather than "don't touch".
- * Omits `requires_resources` as it is immutable after creation.
+ * `api_version` is always included to avoid backends treating a missing key as
+ * "clear". `requires_resources` is included via {@link buildCatalogResources}
+ * because `updateCatalogItem` uses `application/merge-patch+json`, which
+ * replaces arrays wholesale — omitting it would wipe create-time dependencies.
  */
 export function formToCatalogItemForUpdate(f: CatalogItemForm): CatalogItem {
   return {
     display_name: f.display_name.trim() || undefined,
     api_version: f.api_version.trim() || undefined,
     spec: {
-      resources: f.resources.map(r => ({
-        name: r.name.trim(),
-        service_type: r.service_type.trim(),
-        fields: buildFieldConfigs(r.fields),
-      })),
+      resources: buildCatalogResources(f.resources),
     },
   };
 }
@@ -458,9 +491,23 @@ export function catalogItemFromPayload(raw: unknown): CatalogItemForm {
     typeof data.spec === 'object' && data.spec !== null
       ? (data.spec as Record<string, unknown>)
       : {};
-  const resourcesRaw = Array.isArray(specRaw.resources)
+  // Pre-multi-resource shape used spec.service_type + spec.fields at the top
+  // level. When importing such a file, wrap them as a single "default" resource
+  // so the form is populated rather than left empty.
+  const resourcesRaw: unknown[] = Array.isArray(specRaw.resources)
     ? specRaw.resources
     : [];
+  if (
+    resourcesRaw.length === 0 &&
+    (typeof specRaw.service_type === 'string' || Array.isArray(specRaw.fields))
+  ) {
+    resourcesRaw.push({
+      name: 'default',
+      service_type:
+        typeof specRaw.service_type === 'string' ? specRaw.service_type : '',
+      fields: Array.isArray(specRaw.fields) ? specRaw.fields : [],
+    });
+  }
 
   const resources: ResourceFormEntry[] =
     resourcesRaw.length > 0

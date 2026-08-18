@@ -342,6 +342,8 @@ const dcmTranslationEs: TranslationMessages<
       'El nombre del recurso debe ser \u00fanico dentro del elemento del cat\u00e1logo',
     'validation.catalogItem.resourceNamePattern':
       'Solo se permiten letras, n\u00fameros, guiones y guiones bajos (debe comenzar con una letra)',
+    'validation.catalogItem.requiresResourcesCycle':
+      'Dependencia circular detectada \u2014 este recurso se requiere indirectamente a s\u00ed mismo',
     'validation.catalogItem.resourcesRequired':
       'Se requiere al menos un recurso',
     'validation.catalogItem.duplicatePath':

@@ -341,6 +341,8 @@ const dcmTranslationIt: TranslationMessages<
       'Il nome della risorsa deve essere univoco all\u2019interno dell\u2019elemento del catalogo',
     'validation.catalogItem.resourceNamePattern':
       'Sono consentiti solo lettere, numeri, trattini e underscore (deve iniziare con una lettera)',
+    'validation.catalogItem.requiresResourcesCycle':
+      'Dipendenza circolare rilevata \u2014 questa risorsa si richiede indirettamente da sola',
     'validation.catalogItem.resourcesRequired':
       '\u00c8 richiesta almeno una risorsa',
     'validation.catalogItem.duplicatePath':

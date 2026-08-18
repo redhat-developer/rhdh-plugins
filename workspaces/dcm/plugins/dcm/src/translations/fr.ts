@@ -350,6 +350,8 @@ const dcmTranslationFr: TranslationMessages<
       'Le nom de la ressource doit \u00eatre unique au sein de l\u2019\u00e9l\u00e9ment du catalogue',
     'validation.catalogItem.resourceNamePattern':
       'Seules les lettres, les chiffres, les tirets et les underscores sont autoris\u00e9s (doit commencer par une lettre)',
+    'validation.catalogItem.requiresResourcesCycle':
+      'D\u00e9pendance circulaire d\u00e9tect\u00e9e \u2014 cette ressource se requiert indirectement elle-m\u00eame',
     'validation.catalogItem.resourcesRequired':
       'Au moins une ressource est requise',
     'validation.catalogItem.duplicatePath':

@@ -85,6 +85,7 @@ function Wrapper(
   );
 }
 
+/** New-shape YAML: spec.resources[] */
 const VALID_CATALOG_JSON = JSON.stringify({
   display_name: 'My Item',
   api_version: 'v1alpha1',
@@ -96,6 +97,16 @@ const VALID_CATALOG_JSON = JSON.stringify({
         fields: [{ path: 'config.replicas' }],
       },
     ],
+  },
+});
+
+/** Legacy shape: spec.service_type + spec.fields (no spec.resources). */
+const LEGACY_CATALOG_JSON = JSON.stringify({
+  display_name: 'Legacy Item',
+  api_version: 'v1alpha1',
+  spec: {
+    service_type: 'container',
+    fields: [{ path: 'config.replicas' }, { path: 'config.region' }],
   },
 });
 
@@ -190,7 +201,7 @@ describe('CatalogItemWizardDialog – file import error handling', () => {
     ).toBeInTheDocument();
   });
 
-  it('does not show an error alert when a valid JSON file is imported', async () => {
+  it('does not show an error alert and creates a resource tab when a valid JSON file is imported', async () => {
     render(<Wrapper />);
 
     const file = new File([VALID_CATALOG_JSON], 'good.json', {
@@ -202,11 +213,39 @@ describe('CatalogItemWizardDialog – file import error handling', () => {
 
     await userEvent.upload(input, file);
 
+    // No error alert.
     await waitFor(() =>
       expect(
         screen.queryByText(/Failed to import file/i),
       ).not.toBeInTheDocument(),
     );
+
+    // A per-resource field tab labelled "app" must appear in the left nav,
+    // proving spec.resources was not silently dropped.
+    await screen.findByRole('tab', { name: 'app' });
+  });
+
+  it('wraps legacy shape (spec.service_type + spec.fields) into a "default" resource on import', async () => {
+    render(<Wrapper />);
+
+    const file = new File([LEGACY_CATALOG_JSON], 'legacy.json', {
+      type: 'application/json',
+    });
+    const input = document.querySelector(
+      'input[type="file"]',
+    ) as HTMLInputElement;
+
+    await userEvent.upload(input, file);
+
+    // No error alert.
+    await waitFor(() =>
+      expect(
+        screen.queryByText(/Failed to import file/i),
+      ).not.toBeInTheDocument(),
+    );
+
+    // The legacy resource is wrapped as "default" and appears as a tab.
+    await screen.findByRole('tab', { name: 'default' });
   });
 
   it('dismisses the error alert when the close button is clicked', async () => {
