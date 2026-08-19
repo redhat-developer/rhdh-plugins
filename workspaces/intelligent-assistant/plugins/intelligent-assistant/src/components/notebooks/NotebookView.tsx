@@ -295,6 +295,7 @@ type NotebookViewProps = {
   isUploadModalOpen: boolean;
   onUploadModalOpenChange: (open: boolean) => void;
   onUploadsInProgressChange?: (inProgress: boolean) => void;
+  closingRef?: React.MutableRefObject<boolean>;
 };
 
 export const NotebookView = ({
@@ -315,6 +316,7 @@ export const NotebookView = ({
   isUploadModalOpen,
   onUploadModalOpenChange,
   onUploadsInProgressChange,
+  closingRef,
 }: NotebookViewProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
@@ -465,7 +467,17 @@ export const NotebookView = ({
   };
 
   useEffect(() => {
+    const closingRefCurrent = closingRef;
     return () => {
+      // Only auto-delete untitled empty notebooks when the user explicitly
+      // closed the notebook. Display-mode switches and tab changes also
+      // unmount this component but should preserve the notebook.
+      if (!closingRefCurrent?.current) {
+        queryClient.invalidateQueries({
+          queryKey: ['notebooks', 'sessions'],
+        });
+        return;
+      }
       const currentNotebook = autoDeleteRef.current;
       if (
         currentNotebook.isUntitled &&
@@ -488,7 +500,7 @@ export const NotebookView = ({
         });
       }
     };
-  }, [notebooksApi, sessionId, queryClient]);
+  }, [notebooksApi, sessionId, queryClient, closingRef]);
 
   const handleRenameDocument = useCallback(
     async (documentId: string, newTitle: string) => {

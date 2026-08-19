@@ -879,11 +879,14 @@ export const LightspeedChat = ({
     ],
   );
 
+  const notebookClosingRef = useRef(false);
+
   const handleCreateNotebook = useCallback(() => {
     createNotebookMutation.mutate(
       { name: UNTITLED_NOTEBOOK_NAME },
       {
         onSuccess: (session: NotebookSession) => {
+          notebookClosingRef.current = false;
           if (isFullscreenMode) {
             navigate(`${LIGHTSPEED_PATH}/notebooks/${session.session_id}`);
           } else {
@@ -895,6 +898,7 @@ export const LightspeedChat = ({
   }, [createNotebookMutation, isFullscreenMode, navigate, setActiveNotebookId]);
 
   const handleCloseNotebook = useCallback(() => {
+    notebookClosingRef.current = true;
     if (isFullscreenMode) {
       navigate(`${LIGHTSPEED_PATH}/notebooks`);
     } else {
@@ -2255,6 +2259,7 @@ export const LightspeedChat = ({
               isUploadModalOpen={notebookUploadModalOpen}
               onUploadModalOpenChange={setNotebookUploadModalOpen}
               onUploadsInProgressChange={setNotebookUploadsInProgress}
+              closingRef={notebookClosingRef}
             />
           )}
         {showNotebooksPanel &&
@@ -2285,6 +2290,7 @@ export const LightspeedChat = ({
                 openNotebookMenuId={openNotebookMenuId}
                 setOpenNotebookMenuId={setOpenNotebookMenuId}
                 onSelectNotebook={(notebook: NotebookSession) => {
+                  notebookClosingRef.current = false;
                   if (isFullscreenMode) {
                     navigate(
                       `${LIGHTSPEED_PATH}/notebooks/${notebook.session_id}`,
