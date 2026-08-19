@@ -14,10 +14,35 @@
  * limitations under the License.
  */
 
+import { extensionsApiRef, dynamicPluginsInfoApiRef } from './api';
 import { extensionsPlugin } from './plugin';
+import { allRoutes } from './routes';
 
-describe('extensions', () => {
-  it('should export plugin', () => {
-    expect(extensionsPlugin).toBeDefined();
+describe('extensionsPlugin', () => {
+  it('has plugin id extensions', () => {
+    expect(extensionsPlugin.getId()).toEqual('extensions');
+  });
+
+  it('registers API factories for the backend client and dynamic plugins info', () => {
+    const apiIds = Array.from(extensionsPlugin.getApis()).map(
+      factory => factory.api.id,
+    );
+
+    expect(apiIds).toEqual(
+      expect.arrayContaining([
+        extensionsApiRef.id,
+        dynamicPluginsInfoApiRef.id,
+      ]),
+    );
+  });
+
+  it('exposes catalog route refs', () => {
+    expect(extensionsPlugin.routes.rootRouteRef).toBe(allRoutes.rootRouteRef);
+    expect(extensionsPlugin.routes.pluginsRouteRef).toBe(
+      allRoutes.pluginsRouteRef,
+    );
+    expect(extensionsPlugin.routes.packagesRouteRef).toBe(
+      allRoutes.packagesRouteRef,
+    );
   });
 });
