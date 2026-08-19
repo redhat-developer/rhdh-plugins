@@ -3298,7 +3298,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-catalog-react@npm:^3.2.1, @backstage/plugin-catalog-react@npm:^3.2.2":
+"@backstage/plugin-catalog-react@npm:^3.2.0, @backstage/plugin-catalog-react@npm:^3.2.1, @backstage/plugin-catalog-react@npm:^3.2.2":
   version: 3.2.2
   resolution: "@backstage/plugin-catalog-react@npm:3.2.2"
   dependencies:
@@ -3622,7 +3622,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-permission-react@npm:^0.5.2, @backstage/plugin-permission-react@npm:^0.5.4":
+"@backstage/plugin-permission-react@npm:^0.5.2, @backstage/plugin-permission-react@npm:^0.5.3, @backstage/plugin-permission-react@npm:^0.5.4":
   version: 0.5.4
   resolution: "@backstage/plugin-permission-react@npm:0.5.4"
   dependencies:
@@ -3749,7 +3749,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-scaffolder-common@npm:^2.2.2, @backstage/plugin-scaffolder-common@npm:^2.2.3":
+"@backstage/plugin-scaffolder-common@npm:^2.2.1, @backstage/plugin-scaffolder-common@npm:^2.2.2, @backstage/plugin-scaffolder-common@npm:^2.2.3":
   version: 2.2.3
   resolution: "@backstage/plugin-scaffolder-common@npm:2.2.3"
   dependencies:
@@ -3823,7 +3823,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-scaffolder-react@npm:^2.0.3":
+"@backstage/plugin-scaffolder-react@npm:^2.0.2, @backstage/plugin-scaffolder-react@npm:^2.0.3":
   version: 2.0.3
   resolution: "@backstage/plugin-scaffolder-react@npm:2.0.3"
   dependencies:
@@ -9568,6 +9568,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@red-hat-developer-hub/backstage-plugin-app-react@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-app-react@npm:0.2.0"
+  dependencies:
+    "@backstage/catalog-model": "npm:^1.9.0"
+    "@backstage/core-components": "npm:^0.18.11"
+    "@backstage/core-plugin-api": "npm:^1.12.7"
+    "@backstage/frontend-plugin-api": "npm:^0.17.2"
+    "@backstage/plugin-app-react": "npm:^0.2.4"
+    "@backstage/plugin-catalog-react": "npm:^3.2.0"
+    "@backstage/plugin-permission-react": "npm:^0.5.3"
+    "@backstage/plugin-scaffolder-common": "npm:^2.2.1"
+    "@backstage/plugin-scaffolder-react": "npm:^2.0.2"
+    "@backstage/version-bridge": "npm:^1.0.12"
+    "@mui/icons-material": "npm:^5.17.1"
+    "@mui/material": "npm:5.18.0"
+  peerDependencies:
+    react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 10c0/13d76948108bb622d27fb3156943b4c5e6854d67e5e7384391a929300a461e2cd5c434069242f9ffd2798a3ccc0b5c5cfdf105bcf12acf6458605bd4b688ae8b
+  languageName: node
+  linkType: hard
+
 "@red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki@workspace:^, @red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki@workspace:plugins/orchestrator-backend-module-loki":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki@workspace:plugins/orchestrator-backend-module-loki"
@@ -9775,6 +9797,7 @@ __metadata:
     "@backstage/plugin-catalog-react": "npm:^3.2.2"
     "@backstage/plugin-permission-common": "npm:^0.9.10"
     "@backstage/plugin-permission-react": "npm:^0.5.4"
+    "@backstage/plugin-scaffolder-react": "npm:^2.0.2"
     "@backstage/plugin-search": "npm:^1.7.7"
     "@backstage/plugin-user-settings": "npm:^0.9.6"
     "@backstage/test-utils": "npm:^1.7.21"
@@ -9783,6 +9806,7 @@ __metadata:
     "@dagrejs/dagre": "npm:^2.0.4"
     "@mui/icons-material": "npm:^5.17.1"
     "@mui/material": "npm:^5.17.1"
+    "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.2.0"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react": "workspace:^"
