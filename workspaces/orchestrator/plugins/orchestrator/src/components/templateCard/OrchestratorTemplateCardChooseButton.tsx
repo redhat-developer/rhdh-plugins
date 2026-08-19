@@ -20,6 +20,7 @@ import { useApi } from '@backstage/core-plugin-api';
 import { useTranslationRef } from '@backstage/frontend-plugin-api';
 import { scaffolderReactTranslationRef } from '@backstage/plugin-scaffolder-react';
 
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 
@@ -31,7 +32,6 @@ import {
   getWorkflowIdFromTemplate,
   isOrchestratorWorkflowTemplate,
 } from '../../utils/getWorkflowIdFromTemplate';
-import { WorkflowUnavailableTooltip } from '../ui/WorkflowUnavailableTooltip';
 
 export const OrchestratorTemplateCardChooseButton = ({
   template,
@@ -74,14 +74,13 @@ export const OrchestratorTemplateCardChooseButton = ({
   }
 
   const isUnavailable = overviewResponse?.data.isAvailable === false;
-  const availability = overviewResponse?.data.availability;
   const disabled =
     !canCreateTask || loading || isUnavailable || Boolean(overviewError);
 
   let tooltipText = '';
   if (!canCreateTask) {
     tooltipText = t('workflow.messages.userNotAuthorizedExecute');
-  } else if (isUnavailable) {
+  } else if (isUnavailable || overviewError) {
     tooltipText = t('workflow.unavailable.runTooltip');
   }
 
@@ -97,17 +96,15 @@ export const OrchestratorTemplateCardChooseButton = ({
     </Button>
   );
 
-  if (isUnavailable && availability) {
-    return (
-      <WorkflowUnavailableTooltip availability={availability}>
-        {button}
-      </WorkflowUnavailableTooltip>
-    );
+  if (!tooltipText) {
+    return button;
   }
 
   return (
-    <Tooltip title={tooltipText} disableHoverListener={!tooltipText}>
-      <span>{button}</span>
+    <Tooltip title={tooltipText}>
+      <Box component="span" sx={{ display: 'inline-flex', cursor: 'default' }}>
+        {button}
+      </Box>
     </Tooltip>
   );
 };
