@@ -146,21 +146,46 @@ test('Verify Search functionality and results', async () => {
   const { search } = getHeaderElements();
   const searchQuery = 'example-website';
   const expectedUrl = /\/example-website/;
+  const resultLocation = `/catalog/default/component/${searchQuery}`;
 
-  const resultOption = page
-    .getByRole('listbox')
-    .getByRole('option', { name: searchQuery });
+  // Stub search so this header UI test is not coupled to collator indexing.
+  await page.route('**/api/search/query**', async route => {
+    const term = new URL(route.request().url()).searchParams.get('term') ?? '';
+    if (!term.includes(searchQuery)) {
+      await route.continue();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      json: {
+        results: [
+          {
+            type: 'software-catalog',
+            document: {
+              title: searchQuery,
+              text: searchQuery,
+              location: resultLocation,
+            },
+          },
+        ],
+      },
+    });
+  });
 
-  // Retry search until indexed results appear (search index may not be ready immediately)
-  await expect(async () => {
-    await search.clear();
+  try {
     await search.fill(searchQuery);
-    await expect(resultOption).toBeVisible();
-  }).toPass({ timeout: 30000, intervals: [2000] });
 
-  await resultOption.click();
-  await expect(page).toHaveURL(expectedUrl);
-  await expect(page.locator('h1')).toContainText(searchQuery);
+    const resultOption = page
+      .getByRole('listbox')
+      .getByRole('option', { name: searchQuery });
+
+    await expect(resultOption).toBeVisible();
+    await resultOption.click();
+    await expect(page).toHaveURL(expectedUrl);
+    await expect(page.locator('h1')).toContainText(searchQuery);
+  } finally {
+    await page.unroute('**/api/search/query**');
+  }
 });
 
 test('Verify Self-service functionality', async () => {
