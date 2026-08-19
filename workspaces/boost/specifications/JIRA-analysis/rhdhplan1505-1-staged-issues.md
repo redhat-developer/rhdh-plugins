@@ -449,7 +449,7 @@ From `openspec/changes/connector-config-hot-reload/tasks.md` group 2 (RHIDP-1534
 
 https://github.com/redhat-developer/rhdh-plugins/issues/4313
 
-**Status:** OPEN (this PR [#4314](https://github.com/redhat-developer/rhdh-plugins/pull/4314))
+**Status:** OPEN (PR [#4314](https://github.com/redhat-developer/rhdh-plugins/pull/4314))
 **Labels:** `enhancement`, `feature`, `triaged`, `ai-integrations`
 **Depends on:** Issue 6 (#4044, closed — connector leaves + resolver exist)
 **Unblocks:** Issue 22 (#4060) — hot-reload consumers must not invent their own fallbacks for unset optional numerics

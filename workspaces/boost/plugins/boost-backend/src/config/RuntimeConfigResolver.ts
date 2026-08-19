@@ -94,6 +94,9 @@ export interface RuntimeConfigResolverOptions {
  * 30-second TTL via Backstage `cacheService`, with immediate
  * invalidation on write.
  *
+ * Field defaults from `ConfigFieldMeta.defaultValue` are applied at
+ * read time on a per-call copy and are never written to the cache.
+ *
  * This is the single cache layer for config resolution — no duplicate
  * wrapper caches.
  *
@@ -124,9 +127,10 @@ export class RuntimeConfigResolver {
    */
   async resolve(key: BoostConfigKey): Promise<unknown | undefined> {
     const effectiveConfig = await this.getEffectiveConfig();
-    const value = effectiveConfig.get(key);
-    if (value !== undefined) {
-      return value;
+    // Match resolveAll(): the effective map omits unset keys and never
+    // stores `undefined`, so `has(key)` is the presence check.
+    if (effectiveConfig.has(key)) {
+      return effectiveConfig.get(key);
     }
     return getFieldDefault(key);
   }
@@ -188,8 +192,10 @@ export class RuntimeConfigResolver {
   }
 
   /**
-   * Remove a config override and invalidate the cache so the YAML
-   * baseline is restored.
+   * Remove a config override and invalidate the cache. The next
+   * {@link RuntimeConfigResolver.resolve} returns the YAML baseline if
+   * set, otherwise the field default (or `undefined` if the field has
+   * none).
    *
    * @param key - The config field key.
    * @internal
