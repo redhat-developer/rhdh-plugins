@@ -241,7 +241,7 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
                    xxs: { w: 4, h: 6, x: 8 }
    ```
 
-   The home module contributes eleven widgets:
+   The home module contributes twelve widgets:
 
    - `AggregatedCardWithDeprecatedMetricId` (title: **Scorecard: With deprecated metricId property (Jira)**)
    - `AggregatedCardWithDefaultAggregation` (title: **Scorecard: With default aggregation config (GitHub)**)
@@ -254,6 +254,7 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
    - `AggregatedCardWithMinOpenPrs` (title: **Scorecard: Minimum open PRs**)
    - `AggregatedCardWithTotalOpenBugs` (title: **Scorecard: Total open bugs**)
    - `AggregatedCardWithEntitiesWithOpenPrs` (title: **Scorecard: Entities with open PRs**)
+   - `AggregatedCardWithAvgOpenPrs` (title: **Scorecard: Average open PRs**)
 
    These widgets render the `ScorecardHomepageCard` component used in legacy apps, preconfigured with different aggregation/metric configurations.
 
@@ -288,6 +289,7 @@ The default `scorecardPlugin` registers the Scorecard page, API, entity tab, lay
 | `home-page-widget:scorecard/scorecard-min-open-prs`                | Homepage widget for scalar min open PRs.                                                                                         |
 | `home-page-widget:scorecard/scorecard-total-open-bugs`             | Homepage widget for scalar sum of open bugs.                                                                                     |
 | `home-page-widget:scorecard/scorecard-entities-with-open-prs`      | Homepage widget for scalar count of entities with open PRs.                                                                      |
+| `home-page-widget:scorecard/scorecard-avg-open-prs`                | Homepage widget for scalar average open PRs.                                                                                     |
 
 ##### Migration notes (NFS graduation)
 

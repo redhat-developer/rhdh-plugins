@@ -155,6 +155,15 @@ app:
                 sm: { w: 4, h: 6 }
                 xs: { w: 4, h: 6 }
                 xxs: { w: 4, h: 6 }
+            AggregatedCardWithAvgOpenPrs:
+              priority: 520
+              breakpoints:
+                xl: { w: 4, h: 6, x: 4 }
+                lg: { w: 4, h: 6, x: 4 }
+                md: { w: 4, h: 6, x: 4 }
+                sm: { w: 4, h: 6, x: 4 }
+                xs: { w: 4, h: 6, x: 4 }
+                xxs: { w: 4, h: 6, x: 4 }
 
 organization:
   name: My Company

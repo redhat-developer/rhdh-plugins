@@ -274,3 +274,21 @@ export const aggregatedCardWithEntitiesWithOpenPrsWidget =
       ),
     },
   });
+
+/**
+ * NFS widget: AggregatedCardWithAvgOpenPrs (scalar average).
+ */
+export const aggregatedCardWithAvgOpenPrsWidget = HomePageWidgetBlueprint.make({
+  name: 'scorecard-avg-open-prs',
+  params: {
+    name: 'AggregatedCardWithAvgOpenPrs',
+    title: 'Scorecard: Average open PRs',
+    layout: defaultCardLayout,
+    componentProps: {
+      Renderer: BorderlessHomeWidgetRenderer,
+    },
+    components: lazyScorecardWidget(ScorecardHomepageCardWithProvider => () => (
+      <ScorecardHomepageCardWithProvider aggregationId="avgOpenPrs" />
+    )),
+  },
+});
