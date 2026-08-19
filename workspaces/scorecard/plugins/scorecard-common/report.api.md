@@ -168,8 +168,9 @@ export type MetricResult = {
 
 // @public
 export type MetricTimeSeriesPoint = {
-  value: MetricValue;
+  value: MetricValue | null;
   timestamp: string;
+  error?: string;
 };
 
 // @public
