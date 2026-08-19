@@ -185,6 +185,25 @@ describe('convertToMarkdown', () => {
       expect(result).toBe('ok');
     });
 
+    it.each([
+      ['config.yml', 'yaml'],
+      ['config.yaml', 'yml'],
+    ])(
+      'should treat .yml and .yaml as equivalent (%s as %s)',
+      async (name, fileType) => {
+        const content = 'key: value';
+
+        const result = await convertToMarkdown(
+          Buffer.from(content),
+          name,
+          fileType,
+        );
+
+        expect(result).toBe(content);
+        expect(getMockConvertBuffer()).not.toHaveBeenCalled();
+      },
+    );
+
     it('should accept filename without extension', async () => {
       getMockConvertBuffer().mockResolvedValue({ markdown: 'ok' });
 
