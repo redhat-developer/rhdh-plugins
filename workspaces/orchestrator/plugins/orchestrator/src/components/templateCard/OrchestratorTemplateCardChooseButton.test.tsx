@@ -22,6 +22,7 @@ import { useAsync } from 'react-use';
 import { TestApiProvider } from '@backstage/test-utils';
 
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { orchestratorApiRef } from '../../api';
 import { OrchestratorTemplateCardChooseButton } from './OrchestratorTemplateCardChooseButton';
@@ -137,5 +138,27 @@ describe('OrchestratorTemplateCardChooseButton', () => {
     expect(
       screen.getByRole('button', { name: 'templateCard.chooseButtonText' }),
     ).toBeDisabled();
+  });
+
+  it('shows unavailable tooltip when orchestrator workflow is unavailable', async () => {
+    mockUseAsync.mockReturnValue({
+      loading: false,
+      value: {
+        data: {
+          isAvailable: false,
+        },
+      },
+    });
+
+    renderChooseButton();
+
+    const chooseButton = screen.getByRole('button', {
+      name: 'templateCard.chooseButtonText',
+    });
+    await userEvent.hover(chooseButton.parentElement!);
+
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'workflow.unavailable.runTooltip',
+    );
   });
 });
