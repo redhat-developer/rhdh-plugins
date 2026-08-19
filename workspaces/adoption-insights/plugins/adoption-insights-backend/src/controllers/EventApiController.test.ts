@@ -16,7 +16,7 @@
 import { Request, Response } from 'express';
 import EventApiController from './EventApiController';
 import { EventDatabase } from '../database/event-database';
-import { mockServices } from '@backstage/backend-test-utils';
+import { mockCredentials, mockServices } from '@backstage/backend-test-utils';
 import { EventBatchProcessor } from '../domain/EventBatchProcessor';
 import {
   AnalyticsContextValue,
@@ -56,6 +56,23 @@ const mockAuditor = {
   }),
 } as any;
 
+const mockAuth = mockServices.auth.mock();
+const mockDiscovery = mockServices.discovery.mock({
+  getBaseUrl: async (pluginId: string) => `http://example.com/api/${pluginId}`,
+});
+const mockLogger = mockServices.logger.mock();
+
+const createController = () =>
+  new EventApiController(
+    mockEventDb,
+    mockProcessor,
+    mockServices.rootConfig.mock(),
+    mockAuditor,
+    mockAuth,
+    mockDiscovery,
+    mockLogger,
+  );
+
 const mockEvent: AnalyticsEvent = {
   action: 'test-action',
   subject: 'test-subject',
@@ -77,12 +94,7 @@ describe('trackEvents', () => {
   let mockProcessorAddEvent: jest.Spied<EventBatchProcessor['addEvent']>;
 
   beforeEach(() => {
-    controller = new EventApiController(
-      mockEventDb,
-      mockProcessor,
-      mockServices.rootConfig.mock(),
-      mockAuditor,
-    );
+    controller = createController();
 
     mockProcessIncomingEvents = jest.spyOn(
       controller as any,
@@ -223,12 +235,19 @@ describe('trackEvents', () => {
 
 describe('GetInsights', () => {
   beforeEach(() => {
-    controller = new EventApiController(
-      mockEventDb,
-      mockProcessor,
-      mockServices.rootConfig.mock(),
-      mockAuditor,
-    );
+    controller = createController();
+    jest
+      .mocked(mockAuth.getOwnServiceCredentials)
+      .mockResolvedValue(mockCredentials.service());
+    jest.mocked(mockAuth.getPluginRequestToken).mockClear();
+    jest.mocked(mockAuth.getPluginRequestToken).mockResolvedValue({
+      token: 'mock-service-token',
+    });
+    jest
+      .mocked(mockDiscovery.getBaseUrl)
+      .mockImplementation(
+        async (pluginId: string) => `http://example.com/api/${pluginId}`,
+      );
 
     global.fetch = jest.fn().mockResolvedValue({} as any);
 
@@ -374,11 +393,29 @@ describe('GetInsights', () => {
     setupTechdocsTest('app-docs');
     const result = getTechdocsResult('test-component');
 
-    await controller.getTechdocsMetadata(
-      req as unknown as Request<{}, {}, {}, QueryParams>,
-      result,
-    );
+    await controller.getTechdocsMetadata(result);
 
+    expect(mockAuth.getPluginRequestToken).toHaveBeenCalledWith({
+      onBehalfOf: mockCredentials.service(),
+      targetPluginId: 'techdocs',
+    });
+    expect(fetch).toHaveBeenCalledWith(
+      'http://example.com/api/techdocs/metadata/techdocs/default/component/test-component',
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: 'Bearer mock-service-token',
+        },
+      },
+    );
+    expect(fetch).not.toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer test-token',
+        }),
+      }),
+    );
     expect(result.data[0].site_name).toBe('app-docs');
   });
 
@@ -386,11 +423,10 @@ describe('GetInsights', () => {
     setupTechdocsTest('app-docs');
     const result = getTechdocsResult('');
 
-    await controller.getTechdocsMetadata(
-      req as unknown as Request<{}, {}, {}, QueryParams>,
-      result,
-    );
+    await controller.getTechdocsMetadata(result);
 
+    expect(fetch).not.toHaveBeenCalled();
+    expect(mockAuth.getPluginRequestToken).not.toHaveBeenCalled();
     expect(result.data[0].site_name).toBe('');
   });
 
@@ -398,10 +434,7 @@ describe('GetInsights', () => {
     setupTechdocsTest(undefined);
     const result = getTechdocsResult('deleted-document');
 
-    await controller.getTechdocsMetadata(
-      req as unknown as Request<{}, {}, {}, QueryParams>,
-      result,
-    );
+    await controller.getTechdocsMetadata(result);
 
     expect(result.data[0].site_name).toBe('deleted-document');
   });
@@ -425,12 +458,42 @@ describe('GetInsights', () => {
       ],
     };
 
-    await controller.getTechdocsMetadata(
-      req as unknown as Request<{}, {}, {}, QueryParams>,
-      result,
-    );
+    await controller.getTechdocsMetadata(result);
 
     expect(result.data[0].site_name).toBe('app-docs');
+  });
+
+  it('should not fetch TechDocs metadata for unsafe entity path segments', async () => {
+    setupTechdocsTest('app-docs');
+    const result: TopTechDocsCount = {
+      data: [
+        {
+          count: 1,
+          last_used: new Date().toISOString(),
+          name: 'docs',
+          kind: 'component',
+          namespace: '..',
+        } as TechDocsCount,
+      ],
+    };
+
+    await controller.getTechdocsMetadata(result);
+
+    expect(fetch).not.toHaveBeenCalled();
+    expect(mockAuth.getPluginRequestToken).not.toHaveBeenCalled();
+    expect(result.data[0].site_name).toBe('docs');
+  });
+
+  it('should fall back to entity name when TechDocs metadata returns a non-OK status', async () => {
+    setupTechdocsTest('app-docs');
+    (fetch as jest.Mock).mockResolvedValue(
+      new global.Response('not found', { status: 404 }),
+    );
+    const result = getTechdocsResult('test-component');
+
+    await controller.getTechdocsMetadata(result);
+
+    expect(result.data[0].site_name).toBe('test-component');
   });
 
   it('should return the csv file with correct filename', async () => {

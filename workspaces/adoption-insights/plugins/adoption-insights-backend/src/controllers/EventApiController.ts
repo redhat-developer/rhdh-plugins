@@ -28,31 +28,52 @@ import { ValidationError } from '../validation/ValidationError';
 import {
   AuditorService,
   AuditorServiceEvent,
+  AuthService,
+  DiscoveryService,
+  LoggerService,
   RootConfigService,
 } from '@backstage/backend-plugin-api';
 import { getLicensedUsersCount } from '../utils/config';
 import { TechDocsCount, TopTechDocsCount } from '../types/event';
+import { buildTechDocsMetadataUrl } from '../utils/techdocsMetadata';
+
+function readTechDocsSiteName(payload: unknown): string | undefined {
+  if (
+    typeof payload !== 'object' ||
+    payload === null ||
+    !('site_name' in payload)
+  ) {
+    return undefined;
+  }
+  const siteName = (payload as { site_name: unknown }).site_name;
+  return typeof siteName === 'string' ? siteName : undefined;
+}
 
 class EventApiController {
   private readonly database: EventDatabase;
   private readonly config: RootConfigService;
   private readonly processor: EventBatchProcessor;
   private readonly auditor: AuditorService;
+  private readonly auth: AuthService;
+  private readonly discovery: DiscoveryService;
+  private readonly logger: LoggerService;
 
   constructor(
     eventDatabase: EventDatabase,
     processor: EventBatchProcessor,
     config: RootConfigService,
     auditor: AuditorService,
+    auth: AuthService,
+    discovery: DiscoveryService,
+    logger: LoggerService,
   ) {
     this.database = eventDatabase;
     this.processor = processor;
     this.config = config;
     this.auditor = auditor;
-  }
-
-  async getBaseUrl(pluginId: string): Promise<string> {
-    return `${this.config.getString('backend.baseUrl')}/api/${pluginId}`;
+    this.auth = auth;
+    this.discovery = discovery;
+    this.logger = logger;
   }
 
   private processIncomingEvents(
@@ -152,7 +173,7 @@ class EventApiController {
       const result = await queryHandlers[type as QueryType]();
 
       if (type === 'top_techdocs') {
-        await this.getTechdocsMetadata(req, result);
+        await this.getTechdocsMetadata(result);
       }
 
       auditEvent.success({
@@ -180,40 +201,73 @@ class EventApiController {
     }
   }
 
-  async getTechdocsMetadata(
-    req: Request<{}, {}, {}, QueryParams>,
-    result: TopTechDocsCount,
-  ) {
-    const promises: Promise<void>[] = [];
-    const baseUrl = await this.getBaseUrl('techdocs');
+  async getTechdocsMetadata(result: TopTechDocsCount) {
+    const baseUrl = await this.discovery.getBaseUrl('techdocs');
+    const rowsToFetch: { row: TechDocsCount; url: string }[] = [];
 
-    result.data.forEach((row: TechDocsCount) => {
+    for (const row of result.data) {
       if (!row.namespace || !row.kind || !row.name) {
         row.site_name = '';
-      } else {
-        promises.push(
-          fetch(
-            `${baseUrl}/metadata/techdocs/${row.namespace}/${row.kind}/${row.name}`,
-            {
-              headers: {
-                Accept: 'application/json',
-                Authorization: req.headers.authorization as string,
-              },
-            },
-          )
-            .then(async response => {
-              const data = await response.json();
-              row.site_name = data.site_name ?? row.name;
-            })
-            .catch(e => {
-              console.warn(e);
-              row.site_name = row.name;
-            }),
-        );
+        continue;
       }
+
+      const url = buildTechDocsMetadataUrl(baseUrl, {
+        namespace: row.namespace,
+        kind: row.kind,
+        name: row.name,
+      });
+      if (!url) {
+        this.logger.warn(
+          'Skipping TechDocs metadata fetch for unsafe entity path',
+          {
+            namespace: row.namespace,
+            kind: row.kind,
+            name: row.name,
+          },
+        );
+        row.site_name = row.name;
+        continue;
+      }
+
+      rowsToFetch.push({ row, url });
+    }
+
+    if (rowsToFetch.length === 0) {
+      return;
+    }
+
+    const { token } = await this.auth.getPluginRequestToken({
+      onBehalfOf: await this.auth.getOwnServiceCredentials(),
+      targetPluginId: 'techdocs',
     });
 
-    await Promise.all(promises);
+    await Promise.all(
+      rowsToFetch.map(({ row, url }) =>
+        fetch(url, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        })
+          .then(async response => {
+            if (!response.ok) {
+              row.site_name = row.name;
+              return;
+            }
+            const data: unknown = await response.json();
+            row.site_name = readTechDocsSiteName(data) ?? row.name;
+          })
+          .catch(error => {
+            this.logger.warn('Failed to fetch TechDocs metadata', {
+              kind: row.kind,
+              name: row.name,
+              namespace: row.namespace,
+              error: error instanceof Error ? error.message : String(error),
+            });
+            row.site_name = row.name;
+          }),
+      ),
+    );
   }
 }
 
