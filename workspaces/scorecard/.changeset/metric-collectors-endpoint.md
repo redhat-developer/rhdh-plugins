@@ -5,4 +5,6 @@
 '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora': minor
 ---
 
-Expose collector data sources for composite metrics via GET /metrics/:metricId/collectors
+Adds new endpoint `GET /metrics/:metricId/collectors` to list collector id and description for a metric. Composite metrics (like DORA) set optional `collectorIds` on `Metric` from config.
+
+Adds `getCollectorMetadata` to `ScorecardCollectorsService`. The default factory implements it. This interface is consumed via `scorecardCollectorsServiceRef`, a custom replacement of that service needs to add the method.
