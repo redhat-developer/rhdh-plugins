@@ -182,6 +182,27 @@ Every feature ships with tests. Integration tests use real database and cache ba
 - WCAG 2.1 AA accessibility
 - Feature flags via `boost.features.*` in `app-config.yaml`
 
+## Documentation conventions
+
+### Relative markdown links
+
+When creating or modifying relative links (`../` paths) between files in different directory subtrees (especially between `openspec/` and `specifications/`), verify each link resolves to an existing file. Count the directory levels from the source file to the nearest common ancestor directory, then from the ancestor to the target. Use `ls` or `stat` on the resolved path to confirm it exists before committing.
+
+The `openspec/changes/` tree can be 5–7 levels deep under `workspaces/boost/`, while `specifications/` is only 1 level deep — miscounting `../` levels between these subtrees is the most common documentation error.
+
+For example, a file at `openspec/changes/area/specs/group/spec.md` (6 levels deep) linking to `specifications/design.md` (1 level deep) requires 6 `../` segments to reach `workspaces/boost/`, then `specifications/design.md`:
+
+```
+../../../../../../specifications/design.md
+```
+
+Always verify:
+
+```bash
+# From the directory containing the source file, check the link resolves:
+ls <relative-path-from-link>
+```
+
 ## Build & verify
 
 | Task                | Command                                        |
