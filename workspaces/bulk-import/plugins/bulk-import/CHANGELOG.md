@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 8.0.3
+
+### Patch Changes
+
+- d12494f: Updated dependency `@playwright/test` to `1.62.0`.
+- 9ff7395: Updated dependency `js-yaml` to `^4.3.1`.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@8.0.3
+
 ## 8.0.2
 
 ### Patch Changes
