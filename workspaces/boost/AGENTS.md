@@ -81,7 +81,10 @@ failures or config-surface drift.
    `@visibility` JSDoc annotations matching the field's scope
 2. Register the field in `src/config/schemas.ts` under
    `boostConfigFields` with a Zod schema, `configScope`, and
-   `description`
+   `description`. Optional `defaultValue` is the read-time fallback
+   (DB → YAML → field default); do not use Zod `.default()` — that
+   collapses "unset" during `validateConfigValue` and breaks resolver
+   precedence.
 3. Bump `BOOST_CONFIG_SCHEMA_VERSION` in `src/config/schemas.ts`.
    Per-connector `__schemaVersion` leaves (`configScope: db-only`) are
    the versioning machinery itself and do not require bumping this

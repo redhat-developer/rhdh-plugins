@@ -32,6 +32,7 @@ export {
   validateConfigValue,
   isDbWritable,
   isSensitiveField,
+  getFieldDefault,
   type BoostConfigKey,
   type ConnectorId,
   type ConfigScope,
