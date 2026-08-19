@@ -92,7 +92,7 @@
     "@dagrejs/dagre": "^2.0.4",
     "@mui/icons-material": "^5.17.1",
     "@mui/material": "^5.17.1",
-    "@red-hat-developer-hub/backstage-plugin-app-react": "portal:../../../app-defaults/plugins/app-react",
+    "@red-hat-developer-hub/backstage-plugin-app-react": "^0.2.0",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react": "workspace:^",

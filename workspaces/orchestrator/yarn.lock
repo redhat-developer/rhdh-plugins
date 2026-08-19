@@ -9567,9 +9567,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-app-react@portal:../../../app-defaults/plugins/app-react::locator=%40red-hat-developer-hub%2Fbackstage-plugin-orchestrator%40workspace%3Aplugins%2Forchestrator":
-  version: 0.0.0-use.local
-  resolution: "@red-hat-developer-hub/backstage-plugin-app-react@portal:../../../app-defaults/plugins/app-react::locator=%40red-hat-developer-hub%2Fbackstage-plugin-orchestrator%40workspace%3Aplugins%2Forchestrator"
+"@red-hat-developer-hub/backstage-plugin-app-react@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-app-react@npm:0.2.0"
   dependencies:
     "@backstage/catalog-model": "npm:^1.9.0"
     "@backstage/core-components": "npm:^0.18.11"
@@ -9585,8 +9585,9 @@ __metadata:
     "@mui/material": "npm:5.18.0"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
+  checksum: 10c0/13d76948108bb622d27fb3156943b4c5e6854d67e5e7384391a929300a461e2cd5c434069242f9ffd2798a3ccc0b5c5cfdf105bcf12acf6458605bd4b688ae8b
   languageName: node
-  linkType: soft
+  linkType: hard
 
 "@red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki@workspace:^, @red-hat-developer-hub/backstage-plugin-orchestrator-backend-module-loki@workspace:plugins/orchestrator-backend-module-loki":
   version: 0.0.0-use.local
@@ -9804,7 +9805,7 @@ __metadata:
     "@dagrejs/dagre": "npm:^2.0.4"
     "@mui/icons-material": "npm:^5.17.1"
     "@mui/material": "npm:^5.17.1"
-    "@red-hat-developer-hub/backstage-plugin-app-react": "portal:../../../app-defaults/plugins/app-react"
+    "@red-hat-developer-hub/backstage-plugin-app-react": "npm:^0.2.0"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react": "workspace:^"
