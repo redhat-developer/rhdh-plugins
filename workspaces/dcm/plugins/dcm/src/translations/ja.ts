@@ -50,6 +50,9 @@ const dcmTranslationJa: TranslationMessages<
     'common.rows': '\u884c',
     'common.previousPage': '\u524d\u3078',
     'common.nextPage': '\u6b21\u3078',
+    'common.next': '\u6b21\u3078',
+    'common.back': '\u623b\u308b',
+    'common.loadingMore': '\u8aad\u307f\u8fbc\u307f\u4e2d\u2026',
     'deleteDialog.title': '{{resourceLabel}}\u3092\u524a\u9664',
     'deleteDialog.confirmButton': '\u524a\u9664',
     'deleteDialog.cancelButton': '\u30ad\u30e3\u30f3\u30bb\u30eb',
@@ -189,12 +192,13 @@ const dcmTranslationJa: TranslationMessages<
       '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0',
     'catalogItems.columns.displayName': '\u8868\u793a\u540d',
     'catalogItems.columns.apiVersion': 'API \u30d0\u30fc\u30b8\u30e7\u30f3',
-    'catalogItems.columns.serviceType':
-      '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7',
+    'catalogItems.columns.resources': '\u30ea\u30bd\u30fc\u30b9',
     'catalogItems.columns.fields': '\u30d5\u30a3\u30fc\u30eb\u30c9',
     'catalogItems.columns.created': '\u4f5c\u6210\u65e5',
     'catalogItems.fieldCount_one': '1 \u30d5\u30a3\u30fc\u30eb\u30c9',
     'catalogItems.fieldCount_other': '{{count}} \u30d5\u30a3\u30fc\u30eb\u30c9',
+    'catalogItems.resourceCount_one': '1 \u30ea\u30bd\u30fc\u30b9',
+    'catalogItems.resourceCount_other': '{{count}} \u30ea\u30bd\u30fc\u30b9',
     'catalogItems.form.importButton':
       '\u30d5\u30a1\u30a4\u30eb\u304b\u3089\u30a4\u30f3\u30dd\u30fc\u30c8',
     'catalogItems.form.importTooltip':
@@ -248,6 +252,27 @@ const dcmTranslationJa: TranslationMessages<
       'JSON \u30aa\u30d6\u30b8\u30a7\u30af\u30c8\u3067\u306a\u3051\u308c\u3070\u306a\u308a\u307e\u305b\u3093\uff08\u914d\u5217\u307e\u305f\u306f\u30d7\u30ea\u30df\u30c6\u30a3\u30d6\u306f\u4e0d\u53ef\uff09',
     'catalogItems.form.schemaInvalidJson':
       '\u7121\u52b9\u306a JSON \u69cb\u6587',
+    'catalogItems.wizard.tabOverview': '\u6982\u8981',
+    'catalogItems.wizard.tabApi': 'API',
+    'catalogItems.wizard.tabResources': '\u30ea\u30bd\u30fc\u30b9',
+    'catalogItems.wizard.resourcesDescription':
+      '1\u3064\u4ee5\u4e0a\u306e\u30ea\u30bd\u30fc\u30b9\u3092\u8ffd\u52a0\u3057\u3066\u304f\u3060\u3055\u3044\u3002\u5404\u30ea\u30bd\u30fc\u30b9\u306f\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u3092\u53c2\u7167\u3057\u3001\u72ec\u81ea\u306e\u30d5\u30a3\u30fc\u30eb\u30c9\u8a2d\u5b9a\u3092\u5b9a\u7fa9\u3057\u307e\u3059\u3002',
+    'catalogItems.wizard.resourcesRequired':
+      '\u5c11\u306a\u304f\u3068\u30821\u3064\u306e\u30ea\u30bd\u30fc\u30b9\u304c\u5fc5\u8981\u3067\u3059\u3002',
+    'catalogItems.wizard.addResourceButton':
+      '\u30ea\u30bd\u30fc\u30b9\u3092\u8ffd\u52a0',
+    'catalogItems.wizard.removeResource':
+      '\u30ea\u30bd\u30fc\u30b9\u3092\u524a\u9664',
+    'catalogItems.wizard.unnamedResource': '(\u540d\u524d\u306a\u3057)',
+    'catalogItems.wizard.resourceNameLabel': '\u30ea\u30bd\u30fc\u30b9\u540d *',
+    'catalogItems.wizard.resourceNameHelper':
+      '\u3053\u306e\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u5185\u306e\u4e00\u610f\u306e\u8b58\u5225\u5b50 \u2014 \u4f8b: app, ordersDb',
+    'catalogItems.wizard.requiresResourcesLabel':
+      '\u5fc5\u8981\u306a\u30ea\u30bd\u30fc\u30b9',
+    'catalogItems.wizard.requiresResourcesHelper':
+      '\u3053\u306e\u30ea\u30bd\u30fc\u30b9\u306e\u524d\u306b\u30d7\u30ed\u30d3\u30b8\u30e7\u30cb\u30f3\u30b0\u3059\u308b\u5fc5\u8981\u306e\u3042\u308b\u30ea\u30bd\u30fc\u30b9\u3092\u9078\u629e',
+    'catalogItems.wizard.apiVersionImmutable':
+      'API\u30d0\u30fc\u30b8\u30e7\u30f3\u306f\u4f5c\u6210\u5f8c\u306b\u5909\u66f4\u3067\u304d\u307e\u305b\u3093',
     'instances.emptyTitle':
       '\u30d7\u30ed\u30d3\u30b8\u30e7\u30cb\u30f3\u30b0\u6e08\u307f\u30a4\u30f3\u30b9\u30bf\u30f3\u30b9\u306a\u3057',
     'instances.emptyDescription':
@@ -278,7 +303,7 @@ const dcmTranslationJa: TranslationMessages<
     'instances.columns.displayName': '\u8868\u793a\u540d',
     'instances.columns.catalogItem':
       '\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0',
-    'instances.columns.resourceId': '\u30ea\u30bd\u30fc\u30b9 ID',
+    'instances.columns.resourceIds': '\u30ea\u30bd\u30fc\u30b9 ID',
     'instances.columns.apiVersion': 'API \u30d0\u30fc\u30b8\u30e7\u30f3',
     'instances.columns.created': '\u4f5c\u6210\u65e5',
     'instances.form.displayNameLabel': '\u8868\u793a\u540d *',
@@ -300,6 +325,7 @@ const dcmTranslationJa: TranslationMessages<
       '(\u3053\u306e\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u3067\u5b9a\u7fa9\u3055\u308c\u305f\u7de8\u96c6\u53ef\u80fd\u30d5\u30a3\u30fc\u30eb\u30c9)',
     'instances.form.noEditableFields':
       '\u3053\u306e\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u306b\u306f\u7de8\u96c6\u53ef\u80fd\u306a\u30d5\u30a3\u30fc\u30eb\u30c9\u304c\u3042\u308a\u307e\u305b\u3093\u3002',
+    'instances.wizard.tabOverview': '\u6982\u8981',
     'resources.emptyTitle':
       '\u30ea\u30bd\u30fc\u30b9\u304c\u898b\u3064\u304b\u308a\u307e\u305b\u3093',
     'resources.emptyDescription':
@@ -371,6 +397,16 @@ const dcmTranslationJa: TranslationMessages<
       'v<\u6570\u5b57>[alpha|beta][<\u6570\u5b57>] \u306e\u5f62\u5f0f\u306b\u5f93\u3063\u3066\u304f\u3060\u3055\u3044 \u2014 \u4f8b: v1, v1alpha1',
     'validation.catalogItem.serviceTypeRequired':
       '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u306f\u5fc5\u9808\u3067\u3059',
+    'validation.catalogItem.resourceNameRequired':
+      '\u30ea\u30bd\u30fc\u30b9\u540d\u306f\u5fc5\u9808\u3067\u3059',
+    'validation.catalogItem.resourceNameDuplicate':
+      '\u30ea\u30bd\u30fc\u30b9\u540d\u306f\u30ab\u30bf\u30ed\u30b0\u30a2\u30a4\u30c6\u30e0\u5185\u3067\u4e00\u610f\u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
+    'validation.catalogItem.resourceNamePattern':
+      '\u6587\u5b57\u3001\u6570\u5b57\u3001\u30cf\u30a4\u30d5\u30f3\u3001\u30a2\u30f3\u30c0\u30fc\u30b9\u30b3\u30a2\u306e\u307f\u4f7f\u7528\u53ef\u80fd\uff08\u6587\u5b57\u3067\u59cb\u307e\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059\uff09',
+    'validation.catalogItem.requiresResourcesCycle':
+      '\u5faa\u74b0\u4f9d\u5b58\u304c\u691c\u51fa\u3055\u308c\u307e\u3057\u305f \u2014 \u3053\u306e\u30ea\u30bd\u30fc\u30b9\u306f\u9593\u63a5\u7684\u306b\u81ea\u5206\u81ea\u8eab\u3092\u5fc5\u8981\u3068\u3057\u3066\u3044\u307e\u3059',
+    'validation.catalogItem.resourcesRequired':
+      '\u5c11\u306a\u304f\u3068\u30821\u3064\u306e\u30ea\u30bd\u30fc\u30b9\u304c\u5fc5\u8981\u3067\u3059',
     'validation.catalogItem.duplicatePath':
       '\u30d1\u30b9\u304c\u91cd\u8907\u3057\u3066\u3044\u307e\u3059 \u2014 \u30d1\u30b9\u306f\u4e00\u610f\u3067\u3042\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
     'validation.catalogItem.invalidJson':
