@@ -371,6 +371,7 @@ Requires `scorecard.metric.read` permission for the requested metric.
 - Metrics that do not use collectors (no `collectorIds`) return `{ "collectors": [] }`.
 - Unknown `metricId` returns `404 NotFoundError`.
 - Missing permission for the metric returns `403 NotAllowedError`.
+- A metric that references a collector ID that is not registered returns `500`.
 
 #### Example Request
 

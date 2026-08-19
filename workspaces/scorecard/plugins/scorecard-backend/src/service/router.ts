@@ -17,6 +17,7 @@ import {
   AuthenticationError,
   InputError,
   NotAllowedError,
+  NotFoundError,
 } from '@backstage/errors';
 import express from 'express';
 import Router from 'express-promise-router';
@@ -126,9 +127,18 @@ export async function createRouter({
       );
     }
 
-    const collectors = (metric.collectorIds ?? []).map(collectorId =>
-      collectorsService.getCollectorMetadata(collectorId),
-    );
+    const collectors = (metric.collectorIds ?? []).map(collectorId => {
+      try {
+        return collectorsService.getCollectorMetadata(collectorId);
+      } catch (error) {
+        if (error instanceof NotFoundError) {
+          throw new Error(
+            `Metric '${metricId}' is configured to use collector '${collectorId}', but that collector is not registered.`,
+          );
+        }
+        throw error;
+      }
+    });
 
     res.json({ collectors });
   });

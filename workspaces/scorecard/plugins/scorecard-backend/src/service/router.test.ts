@@ -426,6 +426,32 @@ describe('createRouter', () => {
       expect(response.status).toBe(403);
       expect(response.body.error.name).toBe('NotAllowedError');
     });
+
+    it('returns 500 when a collector ID on the metric is not registered', async () => {
+      (collectorsService.getCollectorMetadata as jest.Mock).mockImplementation(
+        (collectorId: string) => {
+          if (collectorId === 'github:deployments') {
+            return {
+              id: 'github:deployments',
+              description: 'Collects GitHub deployments.',
+            };
+          }
+          throw new NotFoundError(
+            `No collector registered for collector ID '${collectorId}'.`,
+          );
+        },
+      );
+
+      const response = await request(app).get(
+        '/metrics/dora.changeFailureRate/collectors',
+      );
+
+      expect(response.status).toBe(500);
+      expect(response.body.error.name).not.toBe('NotFoundError');
+      expect(response.body.error.message).toContain(
+        "Metric 'dora.changeFailureRate' is configured to use collector 'jira:incidents', but that collector is not registered.",
+      );
+    });
   });
 
   describe('GET /metrics/catalog/:kind/:namespace/:name', () => {
