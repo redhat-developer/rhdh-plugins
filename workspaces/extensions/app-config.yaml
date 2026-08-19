@@ -28,6 +28,14 @@ backend:
   auth:
     # keys:
     #   - secret: ${BACKEND_SECRET}
+    # Local curl smoke: add backend.auth.externalAccess in app-config.local.yaml
+    # (gitignored) or export BACKSTAGE_DEV_STATIC_TOKEN. See
+    # plugins/extensions-backend/CONTRIBUTING.md.
+    # externalAccess:
+    #   - type: static
+    #     options:
+    #       token: ${BACKSTAGE_DEV_STATIC_TOKEN}
+    #       subject: extensions-dev
   baseUrl: http://localhost:7007
   listen:
     port: 7007
