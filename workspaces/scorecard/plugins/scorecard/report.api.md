@@ -176,6 +176,15 @@ const _default: OverridableFrontendPlugin<
       inputs: {};
       params: HomePageWidgetBlueprintParams;
     }>;
+    'home-page-widget:scorecard/scorecard-entities-with-open-prs': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-entities-with-open-prs';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
     'home-page-widget:scorecard/scorecard-github-filecheck-codeowners': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
       name: 'scorecard-github-filecheck-codeowners';
@@ -215,6 +224,33 @@ const _default: OverridableFrontendPlugin<
     'home-page-widget:scorecard/scorecard-jira-open-issues': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
       name: 'scorecard-jira-open-issues';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-max-open-prs': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-max-open-prs';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-min-open-prs': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-min-open-prs';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-total-open-bugs': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-total-open-bugs';
       config: {};
       configInput: {};
       output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
@@ -431,6 +467,11 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.drillDownCalculationFailures': string;
     readonly 'metric.homepageEntityHealthRatio': string;
     readonly 'metric.homepageEntityCalculationHealth': string;
+    readonly 'metric.aggregationTypeMin': string;
+    readonly 'metric.aggregationTypeMax': string;
+    readonly 'metric.aggregationTypeSum': string;
+    readonly 'metric.aggregationTypeCount': string;
+    readonly 'metric.aggregationTypeAverage': string;
     readonly 'thresholds.success': string;
     readonly 'thresholds.warning': string;
     readonly 'thresholds.error': string;

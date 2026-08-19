@@ -14,41 +14,52 @@
  * limitations under the License.
  */
 
-import {
-  aggregationTypes,
-  type AggregatedMetricResult,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { AggregatedMetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { StatusGroupedCardComponent } from './StatusGroupedCard/StatusGroupedCardComponent';
 import { WeightedStatusScoreCardComponent } from './WeightedStatusScoreCard/WeightedStatusScoreCardComponent';
+import { ScalarStatCard } from './ScalarStatCard/ScalarStatCard';
 import { UnsupportedAggregationType } from './UnsupportedAggregationType';
+import {
+  isDistributionAggregationResult,
+  isScalarAggregationResult,
+  isWeightedStatusScoreResult,
+} from '../../utils';
 
 import type { WeightedStatusScoreCardComponentProps } from './WeightedStatusScoreCard/types';
 import type { StatusGroupedCardComponentProps } from './StatusGroupedCard/types';
+import type { ScalarStatCardProps } from './ScalarStatCard/types';
 import type { AggregatedMetricCardBaseProps } from './types';
 
 type AggregatedMetricCardProps = AggregatedMetricCardBaseProps & {
   scorecard: AggregatedMetricResult;
 };
 
-const isStatusGroupedCardProps = (
+const isScalarStatCardProps = (
   props: AggregatedMetricCardProps,
-): props is StatusGroupedCardComponentProps =>
-  props.scorecard.metadata.aggregationType === aggregationTypes.statusGrouped;
+): props is ScalarStatCardProps =>
+  isScalarAggregationResult(props.scorecard.result);
 
 const isWeightedStatusScoreCardProps = (
   props: AggregatedMetricCardProps,
 ): props is WeightedStatusScoreCardComponentProps =>
-  props.scorecard.metadata.aggregationType ===
-  aggregationTypes.weightedStatusScore;
+  isWeightedStatusScoreResult(props.scorecard.result);
+
+const isStatusGroupedCardProps = (
+  props: AggregatedMetricCardProps,
+): props is StatusGroupedCardComponentProps =>
+  isDistributionAggregationResult(props.scorecard.result);
 
 export const AggregatedMetricCard = (props: AggregatedMetricCardProps) => {
   const { cardTitle, description, dataTestId, scorecard } = props;
 
-  if (isStatusGroupedCardProps(props)) {
-    return <StatusGroupedCardComponent {...props} />;
+  if (isScalarStatCardProps(props)) {
+    return <ScalarStatCard {...props} />;
   }
   if (isWeightedStatusScoreCardProps(props)) {
     return <WeightedStatusScoreCardComponent {...props} />;
+  }
+  if (isStatusGroupedCardProps(props)) {
+    return <StatusGroupedCardComponent {...props} />;
   }
   return (
     <UnsupportedAggregationType

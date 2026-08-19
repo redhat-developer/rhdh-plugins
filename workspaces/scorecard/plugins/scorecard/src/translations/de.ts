@@ -119,6 +119,11 @@ const scorecardTranslationDe = createTranslationMessages({
     'metric.homepageEntityCalculationHealth':
       '{{healthy}} / {{total}} Entitäten ohne Metrikberechnungsfehler',
     'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} Entitäten',
+    'metric.aggregationTypeMin': 'Min',
+    'metric.aggregationTypeMax': 'Max',
+    'metric.aggregationTypeSum': 'Summe',
+    'metric.aggregationTypeCount': 'Anzahl',
+    'metric.aggregationTypeAverage': 'Durchschnitt',
     'metric.jira.openIssues.description':
       'Zeigt die Anzahl der kritischen, blockierenden Vorgänge an, die aktuell in Jira offen sind.',
     'metric.jira.openIssues.title': 'Jira-Tickets öffnen und blockieren',

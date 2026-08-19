@@ -184,6 +184,11 @@ export const scorecardMessages = {
     homepageEntityHealthRatio: '{{healthy}}/{{total}} entities',
     homepageEntityCalculationHealth:
       '{{healthy}} / {{total}} entities without metric calculation errors',
+    aggregationTypeMin: 'Min',
+    aggregationTypeMax: 'Max',
+    aggregationTypeSum: 'Sum',
+    aggregationTypeCount: 'Count',
+    aggregationTypeAverage: 'Average',
   },
 
   // Threshold translations
