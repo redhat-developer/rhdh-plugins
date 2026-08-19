@@ -54,6 +54,9 @@ export class DefaultScorecardCollectorsService
     if (!this.collectors) {
       throw new Error(`Scorecard collectors service has not been initialized`);
     }
+    if (collectorId === '') {
+      throw new Error(`Collector ID cannot be empty`);
+    }
 
     return this.collectors.has(collectorId);
   }

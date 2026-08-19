@@ -72,7 +72,7 @@ abstract class MockMetricProvider<T extends MetricType>
         description: this.description,
         type: this.metricType,
         thresholds: this.getDefaultThresholds(),
-        ...(this.collectorIds ? { collectorIds: this.collectorIds } : {}),
+        collectorIds: this.collectorIds,
       },
     ];
   }
