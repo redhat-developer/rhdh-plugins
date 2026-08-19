@@ -70,6 +70,7 @@ export type MetricResult = {
     unit?: string;
     history?: boolean;
     defaultVisualization?: MetricDefaultVisualization;
+    collectorIds?: string[];
   };
   result: {
     value: MetricValue | null;
@@ -156,5 +157,6 @@ export type MetricTimeSeriesResponse = {
     unit?: string;
     history?: boolean;
     defaultVisualization?: MetricDefaultVisualization;
+    collectorIds?: string[];
   };
 };
