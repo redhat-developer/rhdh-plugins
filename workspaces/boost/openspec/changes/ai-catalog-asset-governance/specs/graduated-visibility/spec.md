@@ -20,7 +20,7 @@ Three permissions MUST be registered via `permissionsRegistry.addPermissions()` 
   |---|---|---|---|
   | `ai-catalog.asset.access` | read | `ai-catalog-asset` | Tier 1: basic discovery (name, description, type, lifecycle stage) |
   | `ai-catalog.asset.access.usage-docs` | read | `ai-catalog-asset` | Tier 2: usage docs, connection endpoints, configuration |
-  | `ai-catalog.admin` | update | — (basic) | Management actions, posture config, admin UI access |
+  | `ai-catalog.admin` | update | — (basic) | Management actions, posture config~~, admin UI access~~ |
 - **AND** both read permissions are resource-based to support CONDITIONAL evaluation via RBAC conditional policies
 - **AND** `ai-catalog.admin` is basic (binary ALLOW/DENY) because management actions are not scoped to individual assets
 

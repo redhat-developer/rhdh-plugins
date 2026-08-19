@@ -14,7 +14,7 @@ Management actions on AI catalog RBAC configuration MUST emit audit events.
 
 #### Scenario: Default posture change event
 
-- **WHEN** an admin changes `ai-catalog.rbac.defaultPolicy` from `allow` to `deny` (or vice versa) via the admin UI
+- **WHEN** an admin changes `ai-catalog.rbac.defaultPolicy` from `allow` to `deny` (or vice versa) ~~via the admin UI~~ via YAML configuration
 - **THEN** an audit event is emitted with:
   - `eventName`: `ai-catalog.rbac.posture-changed`
   - `actor`: the admin's user entity ref
@@ -25,7 +25,7 @@ Management actions on AI catalog RBAC configuration MUST emit audit events.
 
 #### Scenario: Category/connector policy CRUD events
 
-- **WHEN** an admin creates, updates, or deletes a category-scoped or connector-scoped policy via the admin UI
+- **WHEN** an admin creates, updates, or deletes a category-scoped or connector-scoped policy ~~via the admin UI~~ via the RBAC plugin
 - **THEN** an audit event is emitted with:
   - `eventName`: `ai-catalog.rbac.policy-created` | `policy-updated` | `policy-deleted`
   - `actor`: the admin's user entity ref

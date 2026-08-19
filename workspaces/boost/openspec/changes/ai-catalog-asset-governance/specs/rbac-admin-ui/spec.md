@@ -1,8 +1,10 @@
-# RBAC Admin UI
+# ~~RBAC Admin UI~~
 
-> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+> **Status: ~~Draft~~ CANCELLED** — ~~Pre-implementation specification. Subject to change during implementation.~~
+>
+> **This spec is no longer in scope.** RHDHPLAN-1508 explicitly states AI Catalog permissions should "appear in the RBAC admin UI's permission picker exactly like existing permissions, and can be assigned to roles via the existing role-management screens **without any new UI surface**." The existing RBAC plugin UI already provides all required policy management functionality once `ai-catalog.asset.access`, `ai-catalog.asset.access.usage-docs`, and conditional rules are registered. Building a standalone page at `/ai-catalog/admin/rbac` would duplicate that capability.
 
-Standalone admin page at `/ai-catalog/admin/rbac` for SMP Admins to manage AI Catalog visibility policies. The page calls the RBAC REST API directly and is gated by `ai-catalog.admin` permission.
+~~Standalone admin page at `/ai-catalog/admin/rbac` for SMP Admins to manage AI Catalog visibility policies. The page calls the RBAC REST API directly and is gated by `ai-catalog.admin` permission.~~
 
 **Jira references:** RHIDP-15304
 
