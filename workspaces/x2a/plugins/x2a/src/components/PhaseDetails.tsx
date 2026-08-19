@@ -33,6 +33,8 @@ import {
   Telemetry,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
+import millify from 'millify';
+
 import { useTranslation } from '../hooks/useTranslation';
 import { useLogStream } from '../hooks/useLogStream';
 import { useClientService } from '../ClientService';
@@ -374,10 +376,10 @@ export const PhaseDetails = (
               {tokenTotals && (
                 <Grid item>
                   <Typography variant="body2" color="textSecondary">
-                    {tokenTotals.inputTokens.toLocaleString()}{' '}
+                    {millify(tokenTotals.inputTokens)}{' '}
                     {t('modulePage.phases.telemetry.totalInputTokens')}
                     {' · '}
-                    {tokenTotals.outputTokens.toLocaleString()}{' '}
+                    {millify(tokenTotals.outputTokens)}{' '}
                     {t('modulePage.phases.telemetry.totalOutputTokens')}
                   </Typography>
                 </Grid>
