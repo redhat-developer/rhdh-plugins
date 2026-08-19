@@ -229,21 +229,46 @@ export class DatabaseMetricValues {
   }
 
   /**
-   * Get metric values for a specific entity and metric within a timestamp range.
+   * Latest metric value per UTC calendar day for a specific entity and metric.
+   *
+   * For each UTC day in `[from, to]`: prefer the successful sample with the highest
+   * `id`; if the day has no success, use the calculation-error row with the highest
+   * `id`. Days with only null-without-error rows are omitted.
+   *
    * Ordered by timestamp ascending, then id ascending.
    */
-  async readEntityMetricValuesInRange(
+  async readLatestEntityMetricValuesPerUtcDay(
     catalogEntityRef: string,
     metricId: string,
     from: Date,
     to: Date,
   ): Promise<DbMetricValue[]> {
-    const rows = await this.dbClient(this.tableName)
-      .select('*')
+    const clientName: string =
+      (this.dbClient as any).client?.config?.client ?? '';
+    const isPostgres = clientName === 'pg' || clientName.includes('postgres');
+
+    const utcDayExpr = isPostgres
+      ? "TO_CHAR(timestamp, 'YYYY-MM-DD')"
+      : "strftime('%Y-%m-%d', timestamp / 1000, 'unixepoch')";
+
+    const missing = DatabaseMetricValues.metricValueIsMissingExpr;
+    const chosenIdExpr = `COALESCE(
+      MAX(CASE WHEN NOT ${missing} THEN id END),
+      MAX(CASE WHEN error_message IS NOT NULL AND ${missing} THEN id END)
+    )`;
+
+    const latestIdsPerDay = this.dbClient(this.tableName)
+      .select(this.dbClient.raw(`${chosenIdExpr} as id`))
       .where('catalog_entity_ref', catalogEntityRef)
       .where('metric_id', metricId)
       .where('timestamp', '>=', from)
       .where('timestamp', '<=', to)
+      .groupByRaw(utcDayExpr)
+      .havingRaw(`${chosenIdExpr} IS NOT NULL`);
+
+    const rows = await this.dbClient(this.tableName)
+      .select('*')
+      .whereIn('id', latestIdsPerDay)
       .orderBy([
         { column: 'timestamp', order: 'asc' },
         { column: 'id', order: 'asc' },

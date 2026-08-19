@@ -302,7 +302,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service?
 
 ### `GET /metrics/catalog/:kind/:namespace/:name/time-series`
 
-Returns daily time-series points for one metric on a catalog entity. Each point is the latest successful sample (`MAX(id)`) for that UTC calendar day. Calculation failures and null values are omitted. Returns `200` with `points: []` when the entity and metric are authorized but no data exists in the range.
+Returns daily time-series points for one metric on a catalog entity. Each point is the latest successful sample (`MAX(id)` among successes) for that UTC calendar day. If a UTC day has only calculation failures, the latest failure is returned as `{ "value": null, "error": "..." }` so clients can gap a sparkline. Days with no rows (or only null without `error_message`) are omitted. Returns `200` with `points: []` when the entity and metric are authorized but no data exists in the range.
 
 #### Path Parameters
 
@@ -346,7 +346,12 @@ curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service/
   },
   "points": [
     { "value": 8, "timestamp": "2026-04-27T23:10:00.000Z" },
-    { "value": 7, "timestamp": "2026-04-28T22:55:00.000Z" }
+    {
+      "value": null,
+      "timestamp": "2026-04-28T16:00:00.000Z",
+      "error": "GitHub API 500"
+    },
+    { "value": 7, "timestamp": "2026-04-29T22:55:00.000Z" }
   ]
 }
 ```
