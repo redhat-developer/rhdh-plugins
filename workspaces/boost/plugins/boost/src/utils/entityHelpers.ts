@@ -35,13 +35,20 @@ export function entityHref(entity: Entity): string {
  * `kind:namespace/name` ref, or a `kind:name` ref. Bare names default to
  * kind `group` in the `default` namespace, matching common Backstage
  * conventions for `spec.owner`.
+ *
+ * Returns `undefined` when `ref` is not a valid entity ref, so callers
+ * (the Usage tab denied fallback) can omit the link instead of throwing.
  */
-export function entityRefHref(ref: string): string {
-  const { kind, namespace, name } = parseEntityRef(ref, {
-    defaultKind: 'group',
-    defaultNamespace: 'default',
-  });
-  return catalogHref(kind, namespace, name);
+export function entityRefHref(ref: string): string | undefined {
+  try {
+    const { kind, namespace, name } = parseEntityRef(ref, {
+      defaultKind: 'group',
+      defaultNamespace: 'default',
+    });
+    return catalogHref(kind, namespace, name);
+  } catch {
+    return undefined;
+  }
 }
 
 export function getSpecField(

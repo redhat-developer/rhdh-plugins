@@ -20,6 +20,7 @@ import { useEntity } from '@backstage/plugin-catalog-react';
 import { usePermission } from '@backstage/plugin-permission-react';
 import { renderInTestApp } from '@backstage/test-utils';
 import { screen } from '@testing-library/react';
+import { aiCatalogAssetAccessUsageDocsPermission } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 
 import { boostMessages } from '../../../translations/ref';
 import { UsageTab } from './UsageTab';
@@ -112,6 +113,20 @@ const entityWithQualifiedOwner: Entity = {
   },
 };
 
+const entityWithInvalidOwner: Entity = {
+  apiVersion: 'backstage.io/v1alpha1',
+  kind: 'AiResource',
+  metadata: {
+    name: 'invalid-owner-asset',
+    namespace: 'default',
+    uid: 'uid-6',
+  },
+  spec: {
+    type: 'skill',
+    owner: 'group:',
+  },
+};
+
 function setEntity(entity: Entity) {
   mockUseEntity.mockReturnValue({
     entity,
@@ -133,6 +148,7 @@ describe('UsageTab', () => {
 
     await renderInTestApp(<UsageTab />);
 
+    expect(screen.getByTestId('usage-tab-loading')).toBeInTheDocument();
     // Should not render the title, docs, or contact owner
     expect(screen.queryByText(msg.tab.usageTitle)).not.toBeInTheDocument();
     expect(
@@ -166,11 +182,10 @@ describe('UsageTab', () => {
 
     await renderInTestApp(<UsageTab />);
 
-    expect(mockUsePermission).toHaveBeenCalledWith(
-      expect.objectContaining({
-        resourceRef: stringifyEntityRef(entityWithTechDocs),
-      }),
-    );
+    expect(mockUsePermission).toHaveBeenCalledWith({
+      permission: aiCatalogAssetAccessUsageDocsPermission,
+      resourceRef: stringifyEntityRef(entityWithTechDocs),
+    });
   });
 
   it('renders external links when permission is allowed and entity has links', async () => {
@@ -240,5 +255,17 @@ describe('UsageTab', () => {
       name: msg.tab.usageContactOwner,
     });
     expect(contactLink).toHaveAttribute('href', '/catalog/default/user/jdoe');
+  });
+
+  it('renders permission denied message without contact link when owner ref is invalid', async () => {
+    setEntity(entityWithInvalidOwner);
+    setPermission({ loading: false, allowed: false });
+
+    await renderInTestApp(<UsageTab />);
+
+    expect(screen.getByText(msg.tab.usagePermissionDenied)).toBeInTheDocument();
+    expect(
+      screen.queryByText(msg.tab.usageContactOwner),
+    ).not.toBeInTheDocument();
   });
 });

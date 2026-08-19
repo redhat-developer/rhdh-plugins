@@ -132,7 +132,7 @@ const versionListCard = EntityCardBlueprint.make({
 });
 
 // ---------------------------------------------------------------------------
-// Entity Content Blueprint — Usage tab stub with isAiAsset filter
+// Entity Content Blueprint — Usage tab (RBAC-gated) with isAiAsset filter
 // ---------------------------------------------------------------------------
 const usageTab = EntityContentBlueprint.make({
   name: 'usage',

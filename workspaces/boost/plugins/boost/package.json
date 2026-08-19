@@ -76,7 +76,6 @@
     "@backstage/frontend-plugin-api": "^0.17.2",
     "@backstage/plugin-app-react": "^0.2.4",
     "@backstage/plugin-catalog-react": "^3.1.0",
-    "@backstage/plugin-permission-common": "^0.9.9",
     "@backstage/plugin-permission-react": "^0.5.2",
     "@backstage/ui": "^0.16.0",
     "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^",

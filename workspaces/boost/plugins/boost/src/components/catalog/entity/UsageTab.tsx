@@ -33,7 +33,7 @@ export const UsageTab = () => {
 
   if (loading) {
     return (
-      <Flex direction="column" gap="4" p="4">
+      <Flex direction="column" gap="4" p="4" data-testid="usage-tab-loading">
         <Skeleton width="40%" height={20} />
         <Skeleton width="70%" height={16} />
       </Flex>
@@ -42,16 +42,15 @@ export const UsageTab = () => {
 
   if (!allowed) {
     const owner = getSpecField(entity, 'owner');
+    const ownerHref = owner ? entityRefHref(owner) : undefined;
     return (
       <Flex direction="column" gap="4" p="4">
         <Text variant="title-small">{t('catalog.tab.usageTitle')}</Text>
         <Text variant="body-medium" color="secondary">
           {t('catalog.tab.usagePermissionDenied')}
         </Text>
-        {owner && (
-          <Link href={entityRefHref(owner)}>
-            {t('catalog.tab.usageContactOwner')}
-          </Link>
+        {ownerHref && (
+          <Link href={ownerHref}>{t('catalog.tab.usageContactOwner')}</Link>
         )}
       </Flex>
     );
