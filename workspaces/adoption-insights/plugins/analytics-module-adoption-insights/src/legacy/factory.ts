@@ -13,13 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import {
+  analyticsApiRef,
+  configApiRef,
+  createApiFactory,
+  identityApiRef,
+} from '@backstage/core-plugin-api';
+import { AdoptionInsightsAnalyticsApi } from '../api/AdoptionInsightsAnalyticsApi';
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
-
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
+/**
+ * API Factory for Adoption Insights Analytics API
+ *
+ * @public
+ */
+export const AdoptionInsightsAnalyticsApiFactory = createApiFactory({
+  api: analyticsApiRef,
+  deps: { configApi: configApiRef, identityApi: identityApiRef },
+  factory: ({ configApi, identityApi }) =>
+    AdoptionInsightsAnalyticsApi.fromConfig(configApi, {
+      identityApi,
+    }),
 });
-
-export * from './plugin';

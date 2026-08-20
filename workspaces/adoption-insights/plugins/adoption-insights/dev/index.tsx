@@ -19,7 +19,10 @@ import { createDevApp } from '@backstage/dev-utils';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 import { TestApiProvider } from '@backstage/test-utils';
 
-import { adoptionInsightsPlugin, AdoptionInsightsPage } from '../src/plugin';
+import {
+  adoptionInsightsPlugin,
+  AdoptionInsightsPage,
+} from '../src/legacy/plugin';
 import { adoptionInsightsApiRef } from '../src/api';
 import { adoptionInsightsTranslations } from '../src/translations';
 import {

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import plugin, { adoptionInsightsTranslationsModule } from './alpha';
+import plugin, { adoptionInsightsTranslationsModule } from './index';
 import translationsModuleDefault from './adoptionInsightsTranslationsModuleExport';
 
-describe('adoption-insights alpha', () => {
+describe('adoption-insights NFS exports', () => {
   it('should export a valid frontend plugin', () => {
     expect(plugin).toBeDefined();
     expect(plugin.$$type).toBe('@backstage/FrontendPlugin');
