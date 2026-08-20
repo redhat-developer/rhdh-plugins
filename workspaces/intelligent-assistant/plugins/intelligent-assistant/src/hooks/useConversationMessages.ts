@@ -165,7 +165,8 @@ export const useConversationMessages = (
   createMessageOverride?: (
     vars: CreateMessageVariables,
   ) => Promise<ReadableStreamDefaultReader<Uint8Array>>,
-  onRequestIdReady?: (request_id: string) => void,
+  onRequestIdReady?: (request_id: string, conversation_id?: string) => void,
+  onConversationsUpdate?: (messages: MessageProps[], activeKey: string) => void,
 ): UseConversationMessagesReturn => {
   const theme = useTheme();
   const botAvatar =
@@ -192,6 +193,15 @@ export const useConversationMessages = (
 
   // Track pending tool calls during streaming
   const pendingToolCalls = useRef<Record<string, ToolCall>>({});
+
+  const onConversationsUpdateRef = useRef(onConversationsUpdate);
+  onConversationsUpdateRef.current = onConversationsUpdate;
+
+  const conversationsRef = useRef(conversations);
+  conversationsRef.current = conversations;
+
+  const setConversationsRef = useRef(setConversations);
+  setConversationsRef.current = setConversations;
 
   useEffect(() => {
     if (currentConversation !== conversationId) {
@@ -313,6 +323,26 @@ export const useConversationMessages = (
             ? createTempToolCallsCacheSessionPrefix()
             : currentConversation;
 
+        // Shadow setConversations to relay updates to a module-level listener
+        // so streaming tokens continue flowing after display mode switches.
+        const _origSetConversations = setConversationsRef.current;
+        const _convTracker = { current: conversationsRef.current };
+        // eslint-disable-next-line @typescript-eslint/no-shadow
+        const setConversations: typeof _origSetConversations = (
+          updater: Conversations | ((prev: Conversations) => Conversations),
+        ) => {
+          const newState =
+            typeof updater === 'function'
+              ? updater(_convTracker.current)
+              : updater;
+          _convTracker.current = newState;
+          _origSetConversations(updater);
+          const msgs = newState[currentConversation] ?? [];
+          if (msgs.length > 0) {
+            onConversationsUpdateRef.current?.(msgs, currentConversation);
+          }
+        };
+
         const conversationTuple = [
           createUserMessage({
             avatar,
@@ -387,12 +417,13 @@ export const useConversationMessages = (
                 const { event, data } = JSON.parse(jsonString);
                 if (event === 'start') {
                   requestId = data?.request_id;
-                  onRequestIdReady?.(requestId);
 
                   if (currentConversation === TEMP_CONVERSATION_ID) {
                     // If the conversation is temp, we need to set the new conversation id
                     newConversationId = data?.conversation_id;
                   }
+
+                  onRequestIdReady?.(requestId, newConversationId || undefined);
                 }
 
                 // Handle tool_call event

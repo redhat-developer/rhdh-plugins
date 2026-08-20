@@ -57,7 +57,11 @@ import { CreateMessageVariables } from '../../hooks/useCreateCoversationMessage'
 import { useNotebookWelcomePrompts } from '../../hooks/useNotebookWelcomePrompts';
 import { useStopConversation } from '../../hooks/useStopConversation';
 import { useTranslation } from '../../hooks/useTranslation';
-import { NotebookSessionMetadata, SessionDocument } from '../../types';
+import {
+  NotebookSession,
+  NotebookSessionMetadata,
+  SessionDocument,
+} from '../../types';
 import { ChatbotFootnoteWithIcon } from '../../utils/lightspeed-chatbox-utils';
 import { runFileUploads } from '../../utils/notebook-upload-runner';
 import { LightspeedChatBox } from '../LightspeedChatBox';
@@ -298,6 +302,89 @@ type NotebookViewProps = {
   closingRef?: React.MutableRefObject<boolean>;
 };
 
+// Module-level cache for preserving notebook streaming state across display mode switches.
+// When the user switches modes mid-stream, the component unmounts but the async streaming
+// loop continues in the background. This cache bridges the gap so the remounted component
+// can show the accumulated messages while waiting for the background stream to complete.
+const notebookStreamCache = new Map<
+  string,
+  {
+    messages: MessageProps[];
+    conversationId: string;
+    wasStreaming: boolean;
+  }
+>();
+
+// Module-level store for relaying live streaming tokens across display mode
+// switches. The background streaming loop writes here via onConversationsUpdate;
+// the remounted component subscribes and displays tokens in real-time.
+type StreamListener = (messages: MessageProps[]) => void;
+const notebookLiveStreamMessages = new Map<string, MessageProps[]>();
+const notebookLiveStreamListeners = new Map<string, Set<StreamListener>>();
+
+function emitLiveStreamUpdate(sessionId: string, messages: MessageProps[]) {
+  notebookLiveStreamMessages.set(sessionId, messages);
+  notebookLiveStreamListeners.get(sessionId)?.forEach(l => l(messages));
+}
+
+function subscribeLiveStream(
+  sessionId: string,
+  listener: StreamListener,
+): () => void {
+  if (!notebookLiveStreamListeners.has(sessionId)) {
+    notebookLiveStreamListeners.set(sessionId, new Set());
+  }
+  notebookLiveStreamListeners.get(sessionId)!.add(listener);
+  const current = notebookLiveStreamMessages.get(sessionId);
+  if (current && current.length > 0) listener(current);
+  return () => {
+    notebookLiveStreamListeners.get(sessionId)?.delete(listener);
+  };
+}
+
+function clearLiveStream(sessionId: string) {
+  notebookLiveStreamMessages.delete(sessionId);
+  notebookLiveStreamListeners.delete(sessionId);
+}
+
+// Module-level metadata for the background stream (requestId, completion).
+// Callbacks on the dead instance write here; the remounted instance reads
+// and subscribes so it can stop the stream and know when it finishes.
+type StreamMeta = { requestId: string; complete: boolean };
+type MetaListener = (meta: StreamMeta) => void;
+const notebookStreamMeta = new Map<string, StreamMeta>();
+const notebookStreamMetaListeners = new Map<string, Set<MetaListener>>();
+
+function setStreamMeta(sessionId: string, update: Partial<StreamMeta>) {
+  const prev = notebookStreamMeta.get(sessionId) ?? {
+    requestId: '',
+    complete: false,
+  };
+  const next = { ...prev, ...update };
+  notebookStreamMeta.set(sessionId, next);
+  notebookStreamMetaListeners.get(sessionId)?.forEach(l => l(next));
+}
+
+function subscribeStreamMeta(
+  sessionId: string,
+  listener: MetaListener,
+): () => void {
+  if (!notebookStreamMetaListeners.has(sessionId)) {
+    notebookStreamMetaListeners.set(sessionId, new Set());
+  }
+  notebookStreamMetaListeners.get(sessionId)!.add(listener);
+  const current = notebookStreamMeta.get(sessionId);
+  if (current) listener(current);
+  return () => {
+    notebookStreamMetaListeners.get(sessionId)?.delete(listener);
+  };
+}
+
+function clearStreamMeta(sessionId: string) {
+  notebookStreamMeta.delete(sessionId);
+  notebookStreamMetaListeners.delete(sessionId);
+}
+
 export const NotebookView = ({
   sessionId,
   notebookName = UNTITLED_NOTEBOOK_NAME,
@@ -331,11 +418,34 @@ export const NotebookView = ({
       'intelligent-assistant.notebooks.queryDefaults.model',
     ) || '';
 
+  const cachedStreamState = notebookStreamCache.get(sessionId);
+  // When overlay→dock happens in the same React render cycle, the cleanup
+  // effect that populates notebookStreamCache hasn't run yet. Fall back to
+  // the live stream store which is written synchronously during streaming.
+  let recoveryState = cachedStreamState;
+  if (!recoveryState) {
+    const liveStreamSnapshot = notebookLiveStreamMessages.get(sessionId);
+    if (liveStreamSnapshot && liveStreamSnapshot.length > 0) {
+      const meta = notebookStreamMeta.get(sessionId);
+      recoveryState = {
+        messages: liveStreamSnapshot,
+        conversationId: metadata?.conversation_id ?? TEMP_CONVERSATION_ID,
+        wasStreaming: !meta?.complete,
+      };
+    }
+  }
+
   const [conversationId, setConversationId] = useState(
-    metadata?.conversation_id ?? TEMP_CONVERSATION_ID,
+    metadata?.conversation_id ??
+      recoveryState?.conversationId ??
+      TEMP_CONVERSATION_ID,
   );
-  const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
-  const [requestId, setRequestId] = useState('');
+  const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(
+    recoveryState?.wasStreaming ?? false,
+  );
+  const [requestId, setRequestId] = useState(
+    () => notebookStreamMeta.get(sessionId)?.requestId ?? '',
+  );
   const { mutate: stopConversation } = useStopConversation();
   const wasStoppedByUserRef = useRef(false);
   const autoDeleteRef = useRef({
@@ -365,6 +475,8 @@ export const NotebookView = ({
   const onComplete = useCallback(
     (message: string) => {
       setIsSendButtonDisabled(false);
+      clearLiveStream(sessionId);
+      setStreamMeta(sessionId, { complete: true });
       if (!wasStoppedByUserRef.current) {
         setAnnouncement(`Message from Bot: ${message}`);
       }
@@ -373,12 +485,28 @@ export const NotebookView = ({
         queryKey: ['conversationMessages', conversationId],
       });
     },
-    [queryClient, conversationId],
+    [queryClient, conversationId, sessionId],
   );
 
-  const onStart = useCallback((conv_id: string) => {
-    setConversationId(conv_id);
-  }, []);
+  const onStart = useCallback(
+    (conv_id: string) => {
+      setConversationId(conv_id);
+      queryClient.setQueryData<NotebookSession>(
+        ['notebooks', 'session', sessionId],
+        old =>
+          old
+            ? {
+                ...old,
+                metadata: { ...old.metadata, conversation_id: conv_id },
+              }
+            : old,
+      );
+      queryClient.invalidateQueries({
+        queryKey: ['conversationMessages', conv_id],
+      });
+    },
+    [queryClient, sessionId],
+  );
 
   const createMessageAdapter = useCallback(
     async (vars: CreateMessageVariables) => {
@@ -390,9 +518,32 @@ export const NotebookView = ({
     [notebookCreateMessage, sessionId],
   );
 
-  const onRequestIdReady = useCallback((rid: string) => {
-    setRequestId(rid);
-  }, []);
+  const onRequestIdReady = useCallback(
+    (rid: string, convId?: string) => {
+      setRequestId(rid);
+      setStreamMeta(sessionId, { requestId: rid });
+      if (convId) {
+        queryClient.setQueryData<NotebookSession>(
+          ['notebooks', 'session', sessionId],
+          old =>
+            old
+              ? {
+                  ...old,
+                  metadata: { ...old.metadata, conversation_id: convId },
+                }
+              : old,
+        );
+      }
+    },
+    [queryClient, sessionId],
+  );
+
+  const onConversationsUpdate = useCallback(
+    (msgs: MessageProps[]) => {
+      emitLiveStreamUpdate(sessionId, msgs);
+    },
+    [sessionId],
+  );
 
   const { conversationMessages, handleInputPrompt, scrollToBottomRef } =
     useConversationMessages(
@@ -405,18 +556,105 @@ export const NotebookView = ({
       onStart,
       createMessageAdapter,
       onRequestIdReady,
+      onConversationsUpdate,
     );
 
-  const [messages, setMessages] =
-    useState<MessageProps[]>(conversationMessages);
+  const [messages, setMessages] = useState<MessageProps[]>(
+    () => recoveryState?.messages ?? conversationMessages,
+  );
 
+  // Refs to capture latest values for cleanup functions
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
+  const conversationIdRef = useRef(conversationId);
+  conversationIdRef.current = conversationId;
+  const isSendButtonDisabledRef = useRef(isSendButtonDisabled);
+  isSendButtonDisabledRef.current = isSendButtonDisabled;
+
+  // Track whether we're recovering from a cached mode switch
+  const isRecoveringFromCacheRef = useRef(!!recoveryState);
+  const cachedMessageCountRef = useRef(recoveryState?.messages.length ?? 0);
+
+  // Clear the cache entry after reading it on mount
   useEffect(() => {
-    setMessages(conversationMessages);
-  }, [conversationMessages]);
+    notebookStreamCache.delete(sessionId);
+  }, [sessionId]);
+
+  // Subscribe to live streaming updates from the background loop during recovery
+  useEffect(() => {
+    if (!isRecoveringFromCacheRef.current) return undefined;
+    return subscribeLiveStream(sessionId, msgs => {
+      if (msgs.length > 0) {
+        setMessages(msgs);
+      }
+    });
+  }, [sessionId]);
+
+  // Subscribe to stream metadata so the new instance receives requestId
+  // updates and the stream-complete signal from the old instance's callbacks.
+  useEffect(() => {
+    return subscribeStreamMeta(sessionId, meta => {
+      if (meta.requestId) {
+        setRequestId(meta.requestId);
+      }
+      if (meta.complete && isRecoveringFromCacheRef.current) {
+        isRecoveringFromCacheRef.current = false;
+        cachedMessageCountRef.current = 0;
+        setIsSendButtonDisabled(false);
+        clearLiveStream(sessionId);
+      }
+    });
+  }, [sessionId]);
+
+  // Sync messages from the hook, with recovery-aware gating
+  useEffect(() => {
+    if (isRecoveringFromCacheRef.current) {
+      // During recovery, only switch to server data once the stream has
+      // actually completed. The count check alone is insufficient because the
+      // server may already have the inflight pair with empty/partial content.
+      const meta = notebookStreamMeta.get(sessionId);
+      if (meta?.complete) {
+        isRecoveringFromCacheRef.current = false;
+        cachedMessageCountRef.current = 0;
+        setMessages(conversationMessages);
+        setIsSendButtonDisabled(false);
+        clearLiveStream(sessionId);
+      }
+    } else {
+      setMessages(conversationMessages);
+    }
+  }, [conversationMessages, sessionId]);
+
+  // Cache messages on unmount during mode switch (not intentional close)
+  useEffect(() => {
+    const closingRefCurrent = closingRef;
+    return () => {
+      if (!closingRefCurrent?.current && messagesRef.current.length > 0) {
+        notebookStreamCache.set(sessionId, {
+          messages: messagesRef.current,
+          conversationId: conversationIdRef.current,
+          wasStreaming: isSendButtonDisabledRef.current,
+        });
+      }
+    };
+  }, [sessionId, closingRef]);
+
+  // During recovery, sync conversationId from metadata if the background
+  // stream's onRequestIdReady updated the session cache after our unmount
+  useEffect(() => {
+    if (
+      isRecoveringFromCacheRef.current &&
+      metadata?.conversation_id &&
+      conversationId === TEMP_CONVERSATION_ID
+    ) {
+      setConversationId(metadata.conversation_id);
+    }
+  }, [metadata?.conversation_id, conversationId]);
 
   const sendMessage = useCallback(
     (message: string | number) => {
       wasStoppedByUserRef.current = false;
+      setStreamMeta(sessionId, { requestId: '', complete: false });
       setAnnouncement(
         t('conversation.announcement.userMessage' as any, {
           prompt: message.toString(),
@@ -425,18 +663,21 @@ export const NotebookView = ({
       handleInputPrompt(message.toString(), []);
       setIsSendButtonDisabled(true);
     },
-    [handleInputPrompt, t],
+    [handleInputPrompt, sessionId, t],
   );
 
   const handleStopButton = useCallback(() => {
     wasStoppedByUserRef.current = true;
-    if (requestId) {
-      stopConversation(requestId);
+    const rid = requestId || notebookStreamMeta.get(sessionId)?.requestId || '';
+    if (rid) {
+      stopConversation(rid);
       setRequestId('');
+      setStreamMeta(sessionId, { requestId: '', complete: true });
     }
     setIsSendButtonDisabled(false);
+    clearLiveStream(sessionId);
     setAnnouncement(t('conversation.announcement.responseStopped'));
-  }, [requestId, stopConversation, t]);
+  }, [requestId, sessionId, stopConversation, t]);
 
   const notebookPrompts = useNotebookWelcomePrompts();
   const welcomePrompts = notebookPrompts.map(title => ({
@@ -478,6 +719,9 @@ export const NotebookView = ({
         });
         return;
       }
+      notebookStreamCache.delete(sessionId);
+      clearLiveStream(sessionId);
+      clearStreamMeta(sessionId);
       const currentNotebook = autoDeleteRef.current;
       if (
         currentNotebook.isUntitled &&
