@@ -92,19 +92,6 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         ':root:has(#global-header)': {
           '--rhdh-global-header-height': '64px',
         },
-        // BUI Dialog overlay is z-index 1000 and InspectEntityDialog uses
-        // height 100vh, so the sticky AppBar (1100) covers the title/close
-        // control (RHDHBUGS-3603). Sit the overlay below the masthead.
-        ':root:has(#global-header) [class*="bui-DialogOverlay"]': {
-          top: GLOBAL_HEADER_OFFSET,
-          height: `calc(100% - ${GLOBAL_HEADER_OFFSET})`,
-          zIndex: 1300,
-        },
-        ':root:has(#global-header) [class*="bui-DialogOverlay"] > [class*="bui-Dialog"]':
-          {
-            height: `calc(100vh - ${GLOBAL_HEADER_OFFSET} - 3rem) !important`,
-            maxHeight: `calc(100vh - ${GLOBAL_HEADER_OFFSET} - 3rem)`,
-          },
         body: {
           ...(backstageStyles.body as CSSObject),
           fontFamily: redHatFonts.text,

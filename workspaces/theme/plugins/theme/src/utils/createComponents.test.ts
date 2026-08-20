@@ -136,14 +136,6 @@ describe('createComponents', () => {
     expect(String(overrides)).toContain('--rhdh-global-header-height');
   });
 
-  it('offsets BUI dialogs below the masthead so Inspect Entity stays visible', () => {
-    const actual = createComponents({});
-    const overrides = actual.MuiCssBaseline?.styleOverrides;
-    expect(typeof overrides).toBe('function');
-    expect(String(overrides)).toContain('bui-DialogOverlay');
-    expect(String(overrides)).toContain('GLOBAL_HEADER_OFFSET');
-  });
-
   it('paints BUI content Containers with mainSectionBackgroundColor', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     const root = actual.BackstageSidebarPage?.styleOverrides?.root as
