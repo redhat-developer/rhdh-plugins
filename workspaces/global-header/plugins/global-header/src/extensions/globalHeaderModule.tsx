@@ -31,6 +31,7 @@ import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { globalHeaderSystemIcons } from '../icons/globalHeaderSystemIcons';
 
 import { GlobalHeaderProvider } from './GlobalHeaderContext';
+import { GlobalHeaderLayout } from '../components/GlobalHeaderLayout';
 import {
   globalHeaderComponentDataRef,
   globalHeaderMenuItemDataRef,
@@ -81,12 +82,17 @@ function GlobalHeaderWrapper({
 
   return (
     <GlobalHeaderProvider components={allComponents} menuItems={allMenuItems}>
-      <Suspense fallback={null}>
-        <ErrorBoundary>
-          <LazyGlobalHeader />
-        </ErrorBoundary>
-      </Suspense>
-      {children}
+      <GlobalHeaderLayout
+        header={
+          <Suspense fallback={null}>
+            <ErrorBoundary>
+              <LazyGlobalHeader />
+            </ErrorBoundary>
+          </Suspense>
+        }
+      >
+        {children}
+      </GlobalHeaderLayout>
     </GlobalHeaderProvider>
   );
 }
