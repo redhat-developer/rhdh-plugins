@@ -418,13 +418,14 @@ export interface ConnectorCandidate {
 // @public
 export class ConnectorConfigReader {
   constructor(options: ConnectorConfigReaderOptions);
-  listCandidates(): ConnectorCandidate[];
+  listCandidates(): Promise<ConnectorCandidate[]>;
 }
 
 // @public
 export interface ConnectorConfigReaderOptions {
   config: RootConfigService;
   logger: LoggerService;
+  resolver: RuntimeConfigResolver;
 }
 
 // @public
