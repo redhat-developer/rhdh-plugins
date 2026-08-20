@@ -75,6 +75,12 @@ export class DatabaseMetricValues {
 
   constructor(private readonly dbClient: Knex<any, any[]>) {}
 
+  private get isPostgres(): boolean {
+    const clientName: string =
+      (this.dbClient as any).client?.config?.client ?? '';
+    return clientName === 'pg' || clientName.includes('postgres');
+  }
+
   /**
    * Get the latest ids subquery for a given metric and catalog entity refs
    */
@@ -135,11 +141,7 @@ export class DatabaseMetricValues {
     aggregationFn: ScalarAggregationFn,
     filter?: AggregationConfigFilter,
   ): Promise<ScalarAggregationRowResult> {
-    const clientName: string =
-      (this.dbClient as any).client?.config?.client ?? '';
-    const isPostgres = clientName === 'pg' || clientName.includes('postgres');
-
-    const numericValueExpr = isPostgres
+    const numericValueExpr = this.isPostgres
       ? 'CAST(value::text AS DOUBLE PRECISION)'
       : 'CAST(CAST(value AS TEXT) AS REAL)';
 
@@ -243,12 +245,11 @@ export class DatabaseMetricValues {
     from: Date,
     to: Date,
   ): Promise<DbMetricValue[]> {
-    const clientName: string =
-      (this.dbClient as any).client?.config?.client ?? '';
-    const isPostgres = clientName === 'pg' || clientName.includes('postgres');
-
-    const utcDayExpr = isPostgres
-      ? "TO_CHAR(timestamp, 'YYYY-MM-DD')"
+    // Knex dateTime is timestamptz on Postgres. TO_CHAR(timestamptz, ...) formats in
+    // the session TimeZone, so non-UTC sessions bucket by local calendar day. Convert
+    // to UTC wall-clock first so grouping matches Date#getUTC* (UTC sessions unchanged).
+    const utcDayExpr = this.isPostgres
+      ? "TO_CHAR(timestamp AT TIME ZONE 'UTC', 'YYYY-MM-DD')"
       : "strftime('%Y-%m-%d', timestamp / 1000, 'unixepoch')";
 
     const missing = DatabaseMetricValues.metricValueIsMissingExpr;
@@ -411,10 +412,6 @@ export class DatabaseMetricValues {
     metricId: string,
     options: ReadEntityMetricsWithFiltersOptions,
   ): Promise<DbMetricValue[]> {
-    const clientName: string =
-      (this.dbClient as any).client?.config?.client ?? '';
-    const isPostgres = clientName === 'pg' || clientName.includes('postgres');
-
     const latestIdsSubquery = this.dbClient(this.tableName)
       .max('id')
       .where('metric_id', metricId)
@@ -438,7 +435,7 @@ export class DatabaseMetricValues {
       (options.sortBy && sortColumnMap[options.sortBy]) ?? 'timestamp';
     const direction = options.sortOrder === 'asc' ? 'asc' : 'desc';
 
-    this.applySort(query, options.sortBy, column, direction, isPostgres);
+    this.applySort(query, options.sortBy, column, direction, this.isPostgres);
 
     if (options.status) {
       query.where('status', options.status);

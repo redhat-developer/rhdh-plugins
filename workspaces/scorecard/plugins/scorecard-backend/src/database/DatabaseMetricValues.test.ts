@@ -393,6 +393,92 @@ describe('DatabaseMetricValues', () => {
     );
 
     it.each(databases.eachSupportedId())(
+      'should bucket by UTC day when Postgres session TimeZone is non-UTC - %p',
+      async databaseId => {
+        if (databaseId !== 'POSTGRES_15') {
+          return;
+        }
+
+        const { client } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        // Knex dateTime → timestamptz. TO_CHAR(timestamptz) uses the session TimeZone,
+        // so America/New_York would put both of these UTC instants on local 2026-04-27.
+        // Keep SET LOCAL + queries on one connection via a transaction.
+        await client.transaction(async trx => {
+          await trx.raw(`SET LOCAL TIME ZONE 'America/New_York'`);
+
+          await trx('metric_values').insert(
+            [
+              createMetricValue({
+                entityRef,
+                metricId,
+                value: 1,
+                timestamp: new Date('2026-04-27T23:30:00.000Z'),
+              }),
+              createMetricValue({
+                entityRef,
+                metricId,
+                value: 2,
+                timestamp: new Date('2026-04-28T00:15:00.000Z'),
+              }),
+            ].map(toMetricValueRow),
+          );
+
+          const db = new DatabaseMetricValues(trx);
+          const result = await db.readLatestEntityMetricValuesPerUtcDay(
+            entityRef,
+            metricId,
+            new Date('2026-04-27T00:00:00.000Z'),
+            new Date('2026-04-28T23:59:59.999Z'),
+          );
+
+          expect(result).toHaveLength(2);
+          expect(result.map(r => r.value)).toEqual([1, 2]);
+          expect(result[0].timestamp.toISOString()).toBe(
+            '2026-04-27T23:30:00.000Z',
+          );
+          expect(result[1].timestamp.toISOString()).toBe(
+            '2026-04-28T00:15:00.000Z',
+          );
+        });
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should map JSON literal null with error_message as calculation error - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: entityRef,
+            metric_id: metricId,
+            // Simulates a JSON literal null (not SQL NULL), seen in production DB rows.
+            value: 'null',
+            timestamp: new Date('2023-01-01T10:00:00Z'),
+            error_message: 'GitHub API 500',
+            status: null,
+          },
+        ]);
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2023-01-01T00:00:00Z'),
+          new Date('2023-01-01T23:59:59Z'),
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].value).toBeNull();
+        expect(result[0].errorMessage).toBe('GitHub API 500');
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
       'should treat 0 and boolean false as successes - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
