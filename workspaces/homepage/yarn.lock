@@ -8843,7 +8843,7 @@ __metadata:
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.2.0
     react-dom: "*"
-    react-router-dom: 6.30.4
+    react-router-dom: 6.30.6
   languageName: unknown
   linkType: soft
 
