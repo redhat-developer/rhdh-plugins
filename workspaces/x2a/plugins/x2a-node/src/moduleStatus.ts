@@ -40,19 +40,18 @@ export function calculateModuleStatus({
   publish?: Job;
 }): { status: ModuleStatus; errorDetails?: string } {
   const latestPhaseJob = publish ?? migrate ?? analyze;
-  if (latestPhaseJob && JobStatus.from(latestPhaseJob.status).isCancelled()) {
+
+  if (!latestPhaseJob) {
+    return { status: 'pending', errorDetails: undefined };
+  }
+
+  if (JobStatus.from(latestPhaseJob.status).isCancelled()) {
     return { status: 'cancelled', errorDetails: undefined };
   }
 
-  if (publish) {
-    return { status: publish.status, errorDetails: publish.errorDetails };
-  }
-  if (migrate) {
-    return { status: migrate.status, errorDetails: migrate.errorDetails };
-  }
-  if (analyze) {
-    return { status: analyze.status, errorDetails: analyze.errorDetails };
-  }
+  const status: ModuleStatus = JobStatus.from(latestPhaseJob.status).isStale()
+    ? 'success'
+    : (latestPhaseJob.status as ModuleStatus);
 
-  return { status: 'pending', errorDetails: undefined };
+  return { status, errorDetails: latestPhaseJob.errorDetails };
 }

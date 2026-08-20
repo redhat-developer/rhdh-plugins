@@ -34,6 +34,20 @@ import { CallbackToken } from '@red-hat-developer-hub/backstage-plugin-x2a-node'
 import type { RouterDeps } from './types';
 import { executePhaseActions } from './phaseActions';
 
+const DOWNSTREAM_PHASES: Record<MigrationPhase, readonly MigrationPhase[]> = {
+  init: [],
+  analyze: [
+    'adversarial-analyze',
+    'migrate',
+    'adversarial-migrate',
+    'publish',
+  ] as const,
+  migrate: ['adversarial-migrate', 'publish'] as const,
+  publish: [],
+  'adversarial-analyze': [],
+  'adversarial-migrate': [],
+};
+
 const agentMetricsSchema = z.object({
   name: z.string(),
   startedAt: z.string().optional(),
@@ -314,6 +328,44 @@ export function registerCollectArtifactsRoutes(
   );
 }
 
+async function invalidateDownstreamPhases(
+  phase: MigrationPhase,
+  projectId: string,
+  moduleId: string | undefined,
+  x2aDatabase: RouterDeps['x2aDatabase'],
+  logger: RouterDeps['logger'],
+): Promise<void> {
+  const downstreamPhases = DOWNSTREAM_PHASES[phase];
+  if (downstreamPhases.length === 0 || !moduleId) {
+    return;
+  }
+
+  logger.info(
+    `Invalidating downstream phases for ${phase} on module ${moduleId}: ${downstreamPhases.join(', ')}`,
+  );
+
+  const jobsToStale: string[] = [];
+
+  for (const downstreamPhase of downstreamPhases) {
+    const jobs = await x2aDatabase.listJobs({
+      projectId,
+      moduleId,
+      phase: downstreamPhase,
+      lastJobOnly: true,
+    });
+
+    const lastJob = jobs[0];
+    if (lastJob && JobStatus.from(lastJob.status).isFinished()) {
+      jobsToStale.push(lastJob.id);
+    }
+  }
+
+  if (jobsToStale.length > 0) {
+    await x2aDatabase.markJobsAsStale(jobsToStale);
+    logger.info(`Marked ${jobsToStale.length} downstream jobs as stale`);
+  }
+}
+
 async function processJobCompletion(
   validatedRequest: CollectArtifactsRequestBody,
   phase: MigrationPhase,
@@ -354,6 +406,22 @@ async function processJobCompletion(
     telemetry: validatedRequest.telemetry || null,
     commitId: validatedRequest.commitId,
   });
+
+  if (jobStatus.isSuccess()) {
+    try {
+      await invalidateDownstreamPhases(
+        phase,
+        projectId,
+        job.moduleId,
+        x2aDatabase,
+        logger,
+      );
+    } catch (err) {
+      logger.error(
+        `Failed to invalidate downstream phases for job ${validatedRequest.jobId}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
 
   return { message: 'Artifacts collected successfully' };
 }

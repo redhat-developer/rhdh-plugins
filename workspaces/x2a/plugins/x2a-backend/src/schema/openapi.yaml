@@ -999,6 +999,7 @@ components:
         - success
         - error
         - cancelled
+        - stale
 
     ModuleStatus:
       type: string

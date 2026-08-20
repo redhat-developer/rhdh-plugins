@@ -143,6 +143,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'module.statuses.success': 'Éxito',
     'module.statuses.error': 'Error',
     'module.statuses.cancelled': 'Cancelado',
+    'module.statuses.stale': 'Obsoleto',
     'module.statuses.removed': 'Eliminado',
     'artifact.types.migrated_sources': 'Fuentes migradas',
     'artifact.types.project_metadata': 'Metadatos del proyecto',
@@ -170,6 +171,7 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.phases.statuses.success': 'Éxito',
     'modulePage.phases.statuses.error': 'Error',
     'modulePage.phases.statuses.cancelled': 'Cancelado',
+    'modulePage.phases.statuses.stale': 'Obsoleto',
     'modulePage.phases.reanalyzeInstructions':
       'El plan de migración del módulo ya existe. Si el plan de migración general del proyecto se ha actualizado, vuelva a ejecutar el análisis para reflejar los cambios.',
     'modulePage.phases.rerunAnalyze': 'Recrear el plan de migración del módulo',
@@ -215,6 +217,8 @@ const x2aPluginTranslationEs = createTranslationMessages({
       'Total de tokens de salida',
     'modulePage.phases.resyncMigrationPlanInstructions':
       'Resincronizar la lista de módulos para que coincida con el plan de migración.',
+    'modulePage.phases.staleInstructions':
+      'El resultado de esta fase es obsoleto porque una fase anterior se volvió a ejecutar. Vuelva a ejecutar para actualizar.',
     'time.duration.daysAndHours': '{{days}}d {{hours}}h',
     'time.duration.daysOnly': '{{days}}d',
     'time.duration.hoursAndMinutes': '{{hours}}h {{minutes}}min',

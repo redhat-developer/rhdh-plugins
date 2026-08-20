@@ -77,11 +77,15 @@ const PhaseRunAction = ({
 
   const previousRunSucceeded =
     !!phase?.status && JobStatus.from(phase.status).isSuccess();
+  const isStale = !!phase?.status && JobStatus.from(phase.status).isStale();
   if (!onRunPhase) {
     return null;
   }
 
   const getInstructions = () => {
+    if (isStale) {
+      return t('modulePage.phases.staleInstructions');
+    }
     if (phaseName === 'init') {
       return t('modulePage.phases.resyncMigrationPlanInstructions');
     }

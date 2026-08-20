@@ -110,9 +110,12 @@ export const x2aPluginMessages = {
         success: 'Success',
         error: 'Error',
         cancelled: 'Cancelled',
+        stale: 'Stale',
       },
       resyncMigrationPlanInstructions:
         'Resync module list to match the migration plan.',
+      staleInstructions:
+        'This phase result is stale because an upstream phase was re-run. Re-run to update.',
       reanalyzeInstructions:
         'The module migration plan is already present. In case the overall project migration plan has been updated, retrigger the analysis to reflect the changes.',
       rerunAnalyze: 'Recreate the module migration plan',
@@ -315,6 +318,7 @@ export const x2aPluginMessages = {
       success: 'Success',
       error: 'Error',
       cancelled: 'Cancelled',
+      stale: 'Stale',
       removed: 'Removed',
     },
   },

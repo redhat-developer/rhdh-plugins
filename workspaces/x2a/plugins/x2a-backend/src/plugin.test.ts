@@ -141,6 +141,9 @@ const getX2aDatabaseServiceMock = (): typeof x2aDatabaseServiceRef.T => ({
   listJobsForModule: jest
     .fn()
     .mockRejectedValue(new NotAllowedError('mock error')),
+  markJobsAsStale: jest
+    .fn()
+    .mockRejectedValue(new NotAllowedError('mock error')),
   // rules
   createRule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),
   updateRule: jest.fn().mockRejectedValue(new NotAllowedError('mock error')),

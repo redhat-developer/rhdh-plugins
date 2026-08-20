@@ -255,6 +255,7 @@ export interface MockRouterDeps {
     listJobsForModule: jest.Mock;
     createJob: jest.Mock;
     getJobLogs: jest.Mock;
+    markJobsAsStale: jest.Mock;
   };
   kubeService: {
     createJob: jest.Mock;
@@ -303,6 +304,7 @@ export function createMockRouterDeps(): MockRouterDeps {
       listJobsForModule: jest.fn(),
       createJob: jest.fn(),
       getJobLogs: jest.fn(),
+      markJobsAsStale: jest.fn(),
     },
     kubeService: {
       createJob: jest.fn().mockResolvedValue({ k8sJobName: 'test-job' }),
