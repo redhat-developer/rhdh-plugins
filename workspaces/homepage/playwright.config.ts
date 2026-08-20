@@ -80,7 +80,7 @@ export default defineConfig({
     {
       name: 'en',
       use: {
-        channel: 'chrome' as const,
+        channel: 'chromium' as const,
         locale: 'en',
       },
     },
@@ -89,7 +89,7 @@ export default defineConfig({
       name: locale,
       testMatch: '**/homepageCards.test.ts',
       use: {
-        channel: 'chrome' as const,
+        channel: 'chromium' as const,
         locale,
       },
     })),

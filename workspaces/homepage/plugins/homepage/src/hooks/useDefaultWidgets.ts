@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useApi } from '@backstage/core-plugin-api';
+import { useApi } from '@backstage/frontend-plugin-api';
 import useAsync from 'react-use/lib/useAsync';
 
 import {

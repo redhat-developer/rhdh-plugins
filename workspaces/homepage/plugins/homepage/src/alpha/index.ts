@@ -19,6 +19,7 @@ import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import {
   catalogStarredWidget,
   disableRandomJoke,
+  disableStarredEntities,
   disableToolkit,
   entitySectionWidget,
   featuredDocsCardWidget,
@@ -58,6 +59,7 @@ export const homePageModule = createFrontendModule({
     TopVisitedWidget,
     RecentlyVisitedWidget,
     catalogStarredWidget,
+    disableStarredEntities,
     disableToolkit,
     disableRandomJoke,
   ],
