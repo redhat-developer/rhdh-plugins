@@ -259,10 +259,6 @@ export class DevModeService {
   }
 
   public async loadDevWorkflows() {
-    console.log('loadDevWorkflows', {
-      ...this.connection,
-      notificationsBearerToken: undefined,
-    });
     if (!this.connection?.repoUrl || !this.connection?.resourcesPath) {
       this.logger.info(
         'No Git repository or path configured. Skipping dev workflows loading.',
