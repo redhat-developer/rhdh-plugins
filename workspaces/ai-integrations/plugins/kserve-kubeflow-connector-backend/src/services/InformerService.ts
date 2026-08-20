@@ -695,18 +695,21 @@ function registerInformerHandlers(
   informer: k8s.Informer<InferenceService> & k8s.ObjectCache<InferenceService>,
   client: k8s.CustomObjectsApi,
   config: ReconcilerConfig,
+  isLLM: boolean = false,
 ): void {
   const logger = config.logger!;
+  const kind = isLLM ? 'LLMInferenceService' : 'InferenceService';
+  const prefix = isLLM ? 'LLM ' : '';
 
   informer.on('add', async (obj: InferenceService) => {
     logger.debug(
-      `Added: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
+      `${prefix}Added: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
     );
     try {
-      await reconcileInferenceService(obj, config);
+      await reconcileInferenceService(obj, config, isLLM);
     } catch (error) {
       logger.error(
-        `Error reconciling InferenceService ${obj.metadata.namespace}/${obj.metadata.name}`,
+        `Error reconciling ${kind} ${obj.metadata.namespace}/${obj.metadata.name}`,
         error as Error,
       );
     }
@@ -714,13 +717,13 @@ function registerInformerHandlers(
 
   informer.on('update', async (obj: InferenceService) => {
     logger.debug(
-      `Updated: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
+      `${prefix}Updated: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
     );
     try {
-      await reconcileInferenceService(obj, config);
+      await reconcileInferenceService(obj, config, isLLM);
     } catch (error) {
       logger.error(
-        `Error reconciling InferenceService ${obj.metadata.namespace}/${obj.metadata.name}`,
+        `Error reconciling ${kind} ${obj.metadata.namespace}/${obj.metadata.name}`,
         error as Error,
       );
     }
@@ -728,89 +731,26 @@ function registerInformerHandlers(
 
   informer.on('delete', async (obj: InferenceService) => {
     logger.debug(
-      `Deleted: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
+      `${prefix}Deleted: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
     );
     try {
       logger.debug(
-        `Initiating delete processing for ${obj.metadata.namespace}/${obj.metadata.name}`,
+        `Initiating delete processing for ${kind} ${obj.metadata.namespace}/${obj.metadata.name}`,
       );
-      await innerStart(client, config);
+      await innerStart(client, config, isLLM ? informer : undefined);
       logger.debug(
-        `Delete processing completed for ${obj.metadata.namespace}/${obj.metadata.name}`,
+        `Delete processing completed for ${kind} ${obj.metadata.namespace}/${obj.metadata.name}`,
       );
     } catch (error) {
       logger.error(
-        `Error during delete processing for ${obj.metadata.namespace}/${obj.metadata.name}`,
+        `Error during delete processing for ${kind} ${obj.metadata.namespace}/${obj.metadata.name}`,
         error as Error,
       );
     }
   });
 
   informer.on('error', (err: any) => {
-    logger.error('Informer error', err as Error);
-    setTimeout(() => {
-      informer.start();
-    }, 5000);
-  });
-}
-
-function registerLLMInformerHandlers(
-  informer: k8s.Informer<InferenceService> & k8s.ObjectCache<InferenceService>,
-  client: k8s.CustomObjectsApi,
-  config: ReconcilerConfig,
-): void {
-  const logger = config.logger!;
-
-  informer.on('add', async (obj: InferenceService) => {
-    logger.debug(
-      `LLM Added: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
-    );
-    try {
-      await reconcileInferenceService(obj, config, true);
-    } catch (error) {
-      logger.error(
-        `Error reconciling LLMInferenceService ${obj.metadata.namespace}/${obj.metadata.name}`,
-        error as Error,
-      );
-    }
-  });
-
-  informer.on('update', async (obj: InferenceService) => {
-    logger.debug(
-      `LLM Updated: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
-    );
-    try {
-      await reconcileInferenceService(obj, config, true);
-    } catch (error) {
-      logger.error(
-        `Error reconciling LLMInferenceService ${obj.metadata.namespace}/${obj.metadata.name}`,
-        error as Error,
-      );
-    }
-  });
-
-  informer.on('delete', async (obj: InferenceService) => {
-    logger.debug(
-      `LLM Deleted: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
-    );
-    try {
-      logger.debug(
-        `Initiating delete processing for LLMInferenceService ${obj.metadata.namespace}/${obj.metadata.name}`,
-      );
-      await innerStart(client, config, informer);
-      logger.debug(
-        `Delete processing completed for LLMInferenceService ${obj.metadata.namespace}/${obj.metadata.name}`,
-      );
-    } catch (error) {
-      logger.error(
-        `Error during delete processing for LLMInferenceService ${obj.metadata.namespace}/${obj.metadata.name}`,
-        error as Error,
-      );
-    }
-  });
-
-  informer.on('error', (err: any) => {
-    logger.error('LLM Informer error', err as Error);
+    logger.error(`${kind} Informer error`, err as Error);
     setTimeout(() => {
       informer.start();
     }, 5000);
@@ -913,7 +853,7 @@ export const setupInformer = async (
     llmListFn,
   );
 
-  registerLLMInformerHandlers(llmInformer, client, config);
+  registerInformerHandlers(llmInformer, client, config, true);
 
   logger.info('Starting informer for LLMInferenceServices...');
   await llmInformer.start();
