@@ -164,7 +164,10 @@ export interface BackendApprovalStoreOptions {
 }
 
 // @public
-export const BOOST_CONFIG_SCHEMA_VERSION = 4;
+export const BOOST_CONFIG_SCHEMA_VERSION = 5;
+
+// @public
+export const BOOST_CONNECTOR_SCHEMA_VERSION = 1;
 
 // @public
 export const boostAiProviderServiceFactory: ServiceFactory<
@@ -273,6 +276,21 @@ export const boostConfigFields: {
     readonly configScope: ConfigScope;
     readonly description: string;
   };
+  readonly 'boost.connectors.jira.__schemaVersion': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.github.__schemaVersion': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.gitlab.__schemaVersion': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
   readonly 'boost.connectors.jira.enabled': {
     readonly schema: z.ZodOptional<z.ZodBoolean>;
     readonly configScope: ConfigScope;
@@ -287,6 +305,7 @@ export const boostConfigFields: {
     readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;
+    readonly defaultValue: 300000;
   };
   readonly 'boost.connectors.jira.schedule.cron': {
     readonly schema: z.ZodOptional<z.ZodString>;
@@ -297,11 +316,13 @@ export const boostConfigFields: {
     readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;
+    readonly defaultValue: 100;
   };
   readonly 'boost.connectors.jira.timeout.connectionMs': {
     readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;
+    readonly defaultValue: 30000;
   };
   readonly 'boost.connectors.github.enabled': {
     readonly schema: z.ZodOptional<z.ZodBoolean>;
@@ -317,11 +338,13 @@ export const boostConfigFields: {
     readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;
+    readonly defaultValue: 300000;
   };
   readonly 'boost.connectors.github.batchSize': {
     readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;
+    readonly defaultValue: 100;
   };
   readonly 'boost.connectors.gitlab.enabled': {
     readonly schema: z.ZodOptional<z.ZodBoolean>;
@@ -337,11 +360,13 @@ export const boostConfigFields: {
     readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;
+    readonly defaultValue: 300000;
   };
   readonly 'boost.connectors.gitlab.batchSize': {
     readonly schema: z.ZodOptional<z.ZodNumber>;
     readonly configScope: ConfigScope;
     readonly description: string;
+    readonly defaultValue: 100;
   };
 };
 
@@ -370,6 +395,7 @@ export interface ClassifyOptions {
 // @public
 export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
   configScope: ConfigScope;
+  defaultValue?: z.output<T>;
   description: string;
   schema: T;
   sensitive?: boolean;
@@ -377,6 +403,9 @@ export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
 
 // @public
 export type ConfigScope = 'yaml-only' | 'db-overridable' | 'db-only';
+
+// @public
+export const CONNECTOR_IDS: readonly ['jira', 'github', 'gitlab'];
 
 // @public
 export interface ConnectorCandidate {
@@ -397,6 +426,18 @@ export interface ConnectorConfigReaderOptions {
   config: RootConfigService;
   logger: LoggerService;
 }
+
+// @public
+export type ConnectorId = (typeof CONNECTOR_IDS)[number];
+
+// @public
+export type ConnectorMigrationFn = (
+  connectorId: ConnectorId,
+  adminConfigService: AdminConfigService,
+) => Promise<void>;
+
+// @public
+export type ConnectorMigrationRegistry = Map<number, ConnectorMigrationFn>;
 
 // @public
 export class ConversationAgentCache {
@@ -671,6 +712,9 @@ export type ResourceLoader = (req: Request_2) => Promise<
 export class RuntimeConfigResolver {
   constructor(options: RuntimeConfigResolverOptions);
   invalidate(): Promise<void>;
+  migrateConnectorSchemas(
+    migrations?: ConnectorMigrationRegistry,
+  ): Promise<void>;
   resolve(key: BoostConfigKey): Promise<unknown | undefined>;
   resolveAll(): Promise<Map<string, unknown>>;
 }

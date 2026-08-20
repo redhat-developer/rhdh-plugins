@@ -1,5 +1,21 @@
 # @red-hat-developer-hub/backstage-plugin-boost-backend
 
+## 0.7.0
+
+### Minor Changes
+
+- 5b04ff0: Add optional `defaultValue` field to `ConfigFieldMeta` and apply it as a third
+  precedence layer in `RuntimeConfigResolver`: DB override, YAML baseline, field
+  default, undefined. Connector defaults: `schedule.intervalMs` 300000,
+  `batchSize` 100, `timeout.connectionMs` 30000 (Jira only). Bumps
+  `BOOST_CONFIG_SCHEMA_VERSION` from 4 to 5.
+
+## 0.6.0
+
+### Minor Changes
+
+- 238b1a3: Add per-connector `__schemaVersion` leaf with `db-only` scope and startup migration infrastructure. Registers `boost.connectors.<id>.__schemaVersion` metadata keys for jira, github, and gitlab connectors. Introduces `BOOST_CONNECTOR_SCHEMA_VERSION`, `CONNECTOR_IDS`, `ConnectorId` type, `ConnectorMigrationFn`, `ConnectorMigrationRegistry`, and `RuntimeConfigResolver.migrateConnectorSchemas()` which runs on plugin startup.
+
 ## 0.5.0
 
 ### Minor Changes

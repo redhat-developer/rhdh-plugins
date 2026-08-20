@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-app-react",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "license": "Apache-2.0",
   "description": "Shared UI components and extension APIs for the RHDH app shell",
   "main": "src/index.ts",
@@ -47,10 +47,17 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
+    "@backstage/catalog-model": "^1.9.0",
+    "@backstage/core-components": "^0.18.11",
     "@backstage/core-plugin-api": "^1.12.7",
     "@backstage/frontend-plugin-api": "^0.17.2",
     "@backstage/plugin-app-react": "^0.2.4",
+    "@backstage/plugin-catalog-react": "^3.2.0",
+    "@backstage/plugin-permission-react": "^0.5.3",
+    "@backstage/plugin-scaffolder-common": "^2.2.1",
+    "@backstage/plugin-scaffolder-react": "^2.0.2",
     "@backstage/version-bridge": "^1.0.12",
+    "@mui/icons-material": "^5.17.1",
     "@mui/material": "5.18.0"
   },
   "peerDependencies": {

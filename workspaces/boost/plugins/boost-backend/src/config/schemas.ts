@@ -167,6 +167,14 @@ export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
   description: string;
   /** Whether this field contains sensitive credentials. */
   sensitive?: boolean;
+  /**
+   * Default value applied by {@link RuntimeConfigResolver} when neither
+   * DB override nor YAML baseline provides a value. Intentionally kept
+   * outside Zod `.default()` so `validateConfigValue(key, undefined)`
+   * preserves "unset" semantics and resolver precedence
+   * (DB → YAML → field default) is respected.
+   */
+  defaultValue?: z.output<T>;
 }
 
 // ---------------------------------------------------------------------------
@@ -177,9 +185,37 @@ export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
  * Current schema version. Stored alongside DB values to detect
  * schema evolution on startup.
  *
+ * Per-connector `__schemaVersion` leaves (`configScope: db-only`) are
+ * the versioning machinery itself and do not require bumping this
+ * constant (AGENTS.md "Adding new config fields" step 3).
+ *
  * @public
  */
-export const BOOST_CONFIG_SCHEMA_VERSION = 4;
+export const BOOST_CONFIG_SCHEMA_VERSION = 5;
+
+/**
+ * Current per-connector schema version. Stored as the
+ * `boost.connectors.<id>.__schemaVersion` leaf (configScope: db-only)
+ * and bumped when connector field semantics change (renames, removals,
+ * type changes). Missing values are treated as v1.
+ *
+ * @public
+ */
+export const BOOST_CONNECTOR_SCHEMA_VERSION = 1;
+
+/**
+ * Known connector identifiers that have registered config leaves.
+ *
+ * @public
+ */
+export const CONNECTOR_IDS = ['jira', 'github', 'gitlab'] as const;
+
+/**
+ * Union type of known connector identifiers.
+ *
+ * @public
+ */
+export type ConnectorId = (typeof CONNECTOR_IDS)[number];
 
 // ---------------------------------------------------------------------------
 // Connector field factories — shared patterns for per-connector leaves
@@ -223,6 +259,7 @@ function connectorIntervalMs(label: string) {
     description:
       `Interval in milliseconds between ${label} sync runs. ` +
       `Defaults to 300000 (5 minutes) when not set.`,
+    defaultValue: 300_000,
   } as const;
 }
 
@@ -240,6 +277,23 @@ function connectorBatchSize(label: string) {
     description:
       `Number of ${label} items to fetch per sync batch. ` +
       `Defaults to 100 when not set.`,
+    defaultValue: 100,
+  } as const;
+}
+
+/** @internal */
+function connectorSchemaVersion(label: string) {
+  return {
+    schema: z
+      .number()
+      .int()
+      .positive()
+      .optional()
+      .describe('Connector config schema version (internal metadata)'),
+    configScope: 'db-only' as ConfigScope,
+    description:
+      `Per-connector schema version for ${label}. Written during migration, ` +
+      'excluded from per-leaf Zod product validation. Missing → v1.',
   } as const;
 }
 
@@ -435,6 +489,11 @@ export const boostConfigFields = {
       'Defaults to 100 when not set.',
   },
 
+  // -- Connector schema version (db-only metadata) --
+  'boost.connectors.jira.__schemaVersion': connectorSchemaVersion('Jira'),
+  'boost.connectors.github.__schemaVersion': connectorSchemaVersion('GitHub'),
+  'boost.connectors.gitlab.__schemaVersion': connectorSchemaVersion('GitLab'),
+
   // -- Connector config: Jira --
   'boost.connectors.jira.enabled': connectorEnabled('Jira', 'jira'),
   'boost.connectors.jira.endpoint': connectorEndpoint(
@@ -464,6 +523,7 @@ export const boostConfigFields = {
     description:
       'Connection timeout in milliseconds for Jira API requests. ' +
       'Defaults to 30000 (30 seconds) when not set.',
+    defaultValue: 30_000,
   },
 
   // -- Connector config: GitHub --
@@ -534,4 +594,23 @@ export function isDbWritable(key: BoostConfigKey): boolean {
 export function isSensitiveField(key: BoostConfigKey): boolean {
   const field = boostConfigFields[key] as ConfigFieldMeta | undefined;
   return field?.sensitive === true;
+}
+
+/**
+ * Returns the default value for a config field, or `undefined` if no
+ * default is defined.
+ *
+ * @param key - The config field key.
+ * @returns The default value, typed to the field's schema output, or
+ *   `undefined`.
+ *
+ * @public
+ */
+export function getFieldDefault<K extends BoostConfigKey>(
+  key: K,
+): z.output<(typeof boostConfigFields)[K]['schema']> | undefined {
+  const field = boostConfigFields[key] as ConfigFieldMeta;
+  return field.defaultValue as
+    | z.output<(typeof boostConfigFields)[K]['schema']>
+    | undefined;
 }

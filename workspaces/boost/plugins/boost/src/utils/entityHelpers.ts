@@ -15,15 +15,40 @@
  */
 
 import type { Entity } from '@backstage/catalog-model';
+import { parseEntityRef } from '@backstage/catalog-model';
 
 import type { FilterDefinition } from '../blueprints/AiCatalogFilterBlueprint';
 import { getCategoryMeta } from './categoryMeta';
 
+function catalogHref(kind: string, namespace: string, name: string): string {
+  return `/catalog/${namespace}/${kind.toLowerCase()}/${name}`;
+}
+
 export function entityHref(entity: Entity): string {
   const namespace = entity.metadata.namespace ?? 'default';
-  const kind = entity.kind.toLowerCase();
-  const name = entity.metadata.name;
-  return `/catalog/${namespace}/${kind}/${name}`;
+  return catalogHref(entity.kind, namespace, entity.metadata.name);
+}
+
+/**
+ * Builds a catalog entity page URL from an entity ref string (e.g. an
+ * owner value from `spec.owner`), which may be a bare name, a
+ * `kind:namespace/name` ref, or a `kind:name` ref. Bare names default to
+ * kind `group` in the `default` namespace, matching common Backstage
+ * conventions for `spec.owner`.
+ *
+ * Returns `undefined` when `ref` is not a valid entity ref, so callers
+ * (the Usage tab denied fallback) can omit the link instead of throwing.
+ */
+export function entityRefHref(ref: string): string | undefined {
+  try {
+    const { kind, namespace, name } = parseEntityRef(ref, {
+      defaultKind: 'group',
+      defaultNamespace: 'default',
+    });
+    return catalogHref(kind, namespace, name);
+  } catch {
+    return undefined;
+  }
 }
 
 export function getSpecField(

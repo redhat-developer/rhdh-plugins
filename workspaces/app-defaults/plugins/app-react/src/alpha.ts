@@ -21,3 +21,4 @@
  */
 
 export * from './drawer';
+export * from './templateCard';

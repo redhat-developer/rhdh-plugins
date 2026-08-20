@@ -88,7 +88,8 @@
     "prismjs": "1.30.0",
     "@backstage-community/plugin-rbac-backend/@backstage/plugin-permission-backend": "0.6.0",
     "fast-xml-parser": "5.10.1",
-    "casbin/minimatch": "7.4.9"
+    "casbin/minimatch": "7.4.9",
+    "es5-ext": "npm:@unes/es5-ext@0.10.64-1"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {

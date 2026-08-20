@@ -81,14 +81,56 @@ failures or config-surface drift.
    `@visibility` JSDoc annotations matching the field's scope
 2. Register the field in `src/config/schemas.ts` under
    `boostConfigFields` with a Zod schema, `configScope`, and
-   `description`
-3. Bump `BOOST_CONFIG_SCHEMA_VERSION` in `src/config/schemas.ts`
+   `description`. Optional `defaultValue` is the read-time fallback
+   (DB → YAML → field default); do not use Zod `.default()` — that
+   collapses "unset" during `validateConfigValue` and breaks resolver
+   precedence.
+3. Bump `BOOST_CONFIG_SCHEMA_VERSION` in `src/config/schemas.ts`.
+   Per-connector `__schemaVersion` leaves (`configScope: db-only`) are
+   the versioning machinery itself and do not require bumping this
+   constant.
 4. Add example usage in `examples/app-config.connectors.yaml` (or
    the appropriate `app-config.*.yaml` example file)
 5. Run `yarn tsc:full && yarn build:api-reports:only` and commit the
    updated `report.api.md`
 
 When reviewing PRs that add or modify `boost.*` config keys, verify all five registration steps above were completed.
+
+### Wiring startup logic
+
+When adding a new initialization, migration, or validation method to
+`RuntimeConfigResolver`, `AdminConfigService`, or any plugin-scoped
+service:
+
+1. Implement the method with unit tests.
+2. Wire it into the corresponding `plugin.ts` module setup — verify
+   the method is actually called during startup.
+3. If the method must run before other initialization (e.g., migration
+   before config reads), place the call in the correct order within
+   the setup function.
+4. Confirm the plugin still starts cleanly by running the full test
+   suite.
+
+### Migration patterns
+
+Connector schema migrations (`migrateConnectorSchemas` in
+`RuntimeConfigResolver`) follow these robustness requirements:
+
+- **Per-step version stamping:** After each successful migration step
+  (e.g., v1 to v2), stamp the new version immediately. This makes
+  migrations resumable — a failure at v2-to-v3 does not re-run v1-to-v2
+  on the next startup.
+- **Per-entity error isolation:** Wrap each connector's migration in
+  try/catch. A failure migrating one connector (e.g., jira) must not
+  prevent migration of others (github, gitlab). Accumulate the first
+  error and rethrow after all connectors are attempted.
+- **Preserve original errors:** When post-migration cleanup (e.g.,
+  cache invalidation) also fails, preserve the original migration
+  error. Use `firstError ??= cleanupError` so the root cause is not
+  masked.
+- **Missing version = v1:** Treat a missing `__schemaVersion` as v1
+  (the initial version), not as the current version. Write v1
+  explicitly and fall through to the migration loop.
 
 ### Package structure
 
@@ -142,6 +184,27 @@ Every feature ships with tests. Integration tests use real database and cache ba
 - PatternFly design system components consistent with RHDH
 - WCAG 2.1 AA accessibility
 - Feature flags via `boost.features.*` in `app-config.yaml`
+
+## Documentation conventions
+
+### Relative markdown links
+
+When creating or modifying relative links (`../` paths) between files in different directory subtrees (especially between `openspec/` and `specifications/`), verify each link resolves to an existing file. Count the directory levels from the source file to the nearest common ancestor directory, then from the ancestor to the target. Use `ls` or `stat` on the resolved path to confirm it exists before committing.
+
+The `openspec/changes/` tree can be 5–7 levels deep under `workspaces/boost/`, while `specifications/` is only 1 level deep — miscounting `../` levels between these subtrees is the most common documentation error.
+
+For example, a file at `openspec/changes/area/specs/group/spec.md` (6 levels deep) linking to `specifications/design.md` (1 level deep) requires 6 `../` segments to reach `workspaces/boost/`, then `specifications/design.md`:
+
+```
+../../../../../../specifications/design.md
+```
+
+Always verify:
+
+```bash
+# From the directory containing the source file, check the link resolves:
+ls <relative-path-from-link>
+```
 
 ## Build & verify
 
