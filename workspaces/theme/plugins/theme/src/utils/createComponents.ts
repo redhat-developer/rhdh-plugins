@@ -47,6 +47,13 @@ export type Components = UnifiedThemeOptions['components'] & {
   RHDHPageMainContainer?: Component;
 };
 
+/**
+ * Reserved by the global-header plugin so 100vh page-shell rules can sit
+ * below the masthead. Falls back to 0px when the header is not mounted.
+ * @see RHDHBUGS-3627
+ */
+const GLOBAL_HEADER_OFFSET = 'var(--rhdh-global-header-height, 0px)';
+
 export const createComponents = (themeConfig: ThemeConfig): Components => {
   // Short hands to ensure that the code doesn't break if one of the properties is not defined.
 
@@ -87,6 +94,11 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       return {
         ...backstageStyles,
         '@font-face': redHatFontFaces,
+        // First-paint fallback (MUI Toolbar default) until ResizeObserver
+        // publishes the measured masthead height (RHDHBUGS-3627).
+        ':root:has(#global-header)': {
+          '--rhdh-global-header-height': '64px',
+        },
         ':root:has(#global-header) [class*="bui-DialogOverlay"]': {
           top: `${dialogMastheadOffset} !important`,
           height: `calc(100% - ${dialogMastheadOffset}) !important`,
@@ -680,6 +692,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           paddingBottom: '1.5rem',
           backgroundColor: sidebarBackgroundColor,
           alignItems: 'stretch',
+          // Sidebar is position:fixed to the viewport; keep it below the
+          // in-flow / sticky masthead (RHDHBUGS-3627 / RHDHBUGS-3573).
+          top: GLOBAL_HEADER_OFFSET,
           '& hr': {
             backgroundColor: general.sidebarDividerColor,
           },
@@ -811,8 +826,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           // Fill the viewport so short pages don't leave a gap below the shell.
           // App root wrappers (e.g. ApplicationDrawer) can collapse to content
           // height; without a min-height here the page-inset background stops
-          // early and body/html shows through (RHDHBUGS-3498).
-          minHeight: '100vh',
+          // early and body/html shows through (RHDHBUGS-3498). Subtract the
+          // masthead so HeaderTabs are not covered (RHDHBUGS-3627).
+          minHeight: `calc(100vh - ${GLOBAL_HEADER_OFFSET})`,
           // Let BUI Container's flex: 1 grow into the remaining viewport below
           // PluginHeader / Header slots (those slots set flex: none).
           display: 'flex',
@@ -821,12 +837,13 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           '@media (min-width: 600px)': {
             backgroundColor:
               general.pageInsetBackgroundColor ?? general.appBarBackgroundColor,
-            // Fixed viewport shell. Inset uses padding (border-box) so in-flow
-            // children still respect Backstage's paddingLeft for the sidebar.
-            // Do not position the main well absolutely — that ignores drawer padding.
+            // Fixed viewport shell below the masthead. Inset uses padding
+            // (border-box) so in-flow children still respect Backstage's
+            // paddingLeft for the sidebar. Do not position the main well
+            // absolutely — that ignores drawer padding.
             boxSizing: 'border-box',
-            height: '100vh',
-            maxHeight: '100vh',
+            height: `calc(100vh - ${GLOBAL_HEADER_OFFSET})`,
+            maxHeight: `calc(100vh - ${GLOBAL_HEADER_OFFSET})`,
             minHeight: '0 !important',
             overflow: 'hidden',
             overscrollBehavior: 'none',

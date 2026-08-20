@@ -87,11 +87,11 @@ describe('createComponents', () => {
     });
   });
 
-  it('sets BackstageSidebarPage minHeight to fill the viewport', () => {
+  it('sets BackstageSidebarPage minHeight to fill the viewport below the masthead', () => {
     const actual = createComponents({});
     expect(actual.BackstageSidebarPage?.styleOverrides?.root).toEqual(
       expect.objectContaining({
-        minHeight: '100vh',
+        minHeight: 'calc(100vh - var(--rhdh-global-header-height, 0px))',
         display: 'flex',
         flexDirection: 'column',
       }),
@@ -110,8 +110,8 @@ describe('createComponents', () => {
       expect.objectContaining({
         boxSizing: 'border-box',
         overflow: 'hidden',
-        height: '100vh',
-        maxHeight: '100vh',
+        height: 'calc(100vh - var(--rhdh-global-header-height, 0px))',
+        maxHeight: 'calc(100vh - var(--rhdh-global-header-height, 0px))',
         overscrollBehavior: 'none',
         paddingTop: '1.5rem',
         paddingRight: '1.5rem',
@@ -162,6 +162,23 @@ describe('createComponents', () => {
     const overrides = actual.MuiCssBaseline?.styleOverrides;
     expect(typeof overrides).toBe('function');
     expect(String(overrides)).toContain('bui-DialogOverlay');
+    expect(String(overrides)).toContain('--rhdh-global-header-height');
+  });
+
+  it('offsets the fixed sidebar below the masthead', () => {
+    const actual = createComponents({});
+    expect(actual.BackstageSidebar?.styleOverrides?.drawer).toEqual(
+      expect.objectContaining({
+        top: 'var(--rhdh-global-header-height, 0px)',
+      }),
+    );
+  });
+
+  it('defines a first-paint masthead height token when #global-header is present', () => {
+    const actual = createComponents({});
+    const overrides = actual.MuiCssBaseline?.styleOverrides;
+    expect(typeof overrides).toBe('function');
+    expect(String(overrides)).toContain(':root:has(#global-header)');
     expect(String(overrides)).toContain('--rhdh-global-header-height');
   });
 
