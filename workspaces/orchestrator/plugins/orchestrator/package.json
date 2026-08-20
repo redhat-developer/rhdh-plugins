@@ -108,6 +108,7 @@
     "@backstage/core-compat-api": "^0.5.12",
     "@backstage/dev-utils": "^1.1.24",
     "@backstage/frontend-defaults": "^0.5.3",
+    "@backstage/frontend-test-utils": "^0.6.1",
     "@backstage/plugin-search": "^1.7.5",
     "@backstage/plugin-user-settings": "^0.9.4",
     "@backstage/test-utils": "^1.7.19",
