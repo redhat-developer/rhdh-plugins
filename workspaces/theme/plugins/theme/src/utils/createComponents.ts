@@ -77,9 +77,25 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           ? (backstageOverrides(theme) as CSSObject)
           : (backstageOverrides as CSSObject);
 
+      // Sticky AppBar is z-index 1100. BUI Dialog overlay is 1000 and
+      // InspectEntityDialog uses height 100vh, so the masthead covers the
+      // title and close control (RHDHBUGS-3603). 64px fallback matches the
+      // MUI Toolbar default when --rhdh-global-header-height is unset.
+      const dialogMastheadOffset = 'var(--rhdh-global-header-height, 64px)';
+
       return {
         ...backstageStyles,
         '@font-face': redHatFontFaces,
+        ':root:has(#global-header) [class*="bui-DialogOverlay"]': {
+          top: dialogMastheadOffset,
+          height: `calc(100% - ${dialogMastheadOffset})`,
+          zIndex: 1300,
+        },
+        ':root:has(#global-header) [class*="bui-DialogOverlay"] > [class*="bui-Dialog"]':
+          {
+            height: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
+            maxHeight: `calc(100vh - ${dialogMastheadOffset} - 3rem)`,
+          },
         body: {
           ...(backstageStyles.body as CSSObject),
           fontFamily: redHatFonts.text,
