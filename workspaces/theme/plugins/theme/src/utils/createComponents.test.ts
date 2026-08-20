@@ -87,11 +87,11 @@ describe('createComponents', () => {
     });
   });
 
-  it('sets BackstageSidebarPage minHeight to fill the viewport', () => {
+  it('sets BackstageSidebarPage minHeight to fill the viewport below the masthead', () => {
     const actual = createComponents({});
     expect(actual.BackstageSidebarPage?.styleOverrides?.root).toEqual(
       expect.objectContaining({
-        minHeight: '100vh',
+        minHeight: 'calc(100vh - var(--rhdh-global-header-height, 0px))',
         display: 'flex',
         flexDirection: 'column',
       }),
@@ -111,10 +111,29 @@ describe('createComponents', () => {
     ).toEqual(
       expect.objectContaining({
         backgroundColor: '#292929',
-        minHeight: 'calc(100vh - 2 * 1.5rem)',
-        maxHeight: 'calc(100vh - 2 * 1.5rem)',
+        minHeight:
+          'calc(100vh - var(--rhdh-global-header-height, 0px) - 2 * 1.5rem)',
+        maxHeight:
+          'calc(100vh - var(--rhdh-global-header-height, 0px) - 2 * 1.5rem)',
       }),
     );
+  });
+
+  it('offsets the fixed sidebar below the masthead', () => {
+    const actual = createComponents({});
+    expect(actual.BackstageSidebar?.styleOverrides?.drawer).toEqual(
+      expect.objectContaining({
+        top: 'var(--rhdh-global-header-height, 0px)',
+      }),
+    );
+  });
+
+  it('defines a first-paint masthead height token when #global-header is present', () => {
+    const actual = createComponents({});
+    const overrides = actual.MuiCssBaseline?.styleOverrides;
+    expect(typeof overrides).toBe('function');
+    expect(String(overrides)).toContain(':root:has(#global-header)');
+    expect(String(overrides)).toContain('--rhdh-global-header-height');
   });
 
   it('paints BUI content Containers with mainSectionBackgroundColor', () => {

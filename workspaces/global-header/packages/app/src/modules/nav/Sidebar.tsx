@@ -22,7 +22,6 @@ import {
   SidebarSpace,
 } from '@backstage/core-components';
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
-import { SidebarLogo } from './SidebarLogo';
 import MenuIcon from '@mui/icons-material/Menu';
 import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
 
@@ -38,8 +37,6 @@ export const SidebarContent = NavContentBlueprint.make({
 
       return (
         <Sidebar>
-          <SidebarLogo />
-          <SidebarDivider />
           <SidebarGroup label="Menu" icon={<MenuIcon />}>
             {nav.take('page:catalog')}
             {nav.take('page:scaffolder')}
