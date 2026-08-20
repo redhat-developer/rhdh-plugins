@@ -30,8 +30,11 @@ const NOISE_SELECTOR = [
   'img',
   'video',
   'iframe',
-  '[aria-hidden="true"]',
+  '[aria-hidden="true"]:not([aria-label^="Status"])',
   '[data-screen-capture-exclude]',
+  '[hidden]',
+  'footer',
+  '.MuiCollapse-hidden',
 ].join(', ');
 
 export interface DomExtractionOptions {
@@ -45,7 +48,11 @@ export interface DomExtractionOptions {
  * Extracts structured page context from the current RHDH viewport.
  * Returns a plain text string suitable for LLM consumption as an attachment.
  *
- * Extraction priority: header > alerts > headings > tables > body text.
+ * Extraction priority:
+ *   header > overlay > alerts > stepper > headings > status >
+ *   forms > tables > description lists > empty state > pagination >
+ *   body text > shadow DOM.
+ *
  * Stops appending when maxChars budget is reached.
  */
 export function extractPageContext(options?: DomExtractionOptions): string {
@@ -58,7 +65,6 @@ export function extractPageContext(options?: DomExtractionOptions): string {
 
   const clone = root.cloneNode(true) as HTMLElement;
 
-  // Remove noise elements
   clone.querySelectorAll(NOISE_SELECTOR).forEach(el => el.remove());
   if (options?.excludeSelector) {
     clone.querySelectorAll(options.excludeSelector).forEach(el => el.remove());
@@ -82,7 +88,7 @@ export function extractPageContext(options?: DomExtractionOptions): string {
     return true;
   };
 
-  // 1. Header -- always included
+  // 1. Header -- always included (reads from live DOM for accurate selectors)
   const headerLines = [`Page: ${window.location.pathname}`];
 
   const pluginName = document
@@ -106,6 +112,25 @@ export function extractPageContext(options?: DomExtractionOptions): string {
     headerLines.push(`Tab: ${activeTab}`);
   }
 
+  const breadcrumb = document.querySelector(
+    '[aria-label="breadcrumb"], .MuiBreadcrumbs-root, [class*="bui-HeaderBreadcrumb"]',
+  );
+  if (breadcrumb) {
+    const crumbs = Array.from(breadcrumb.querySelectorAll('li, a, p'))
+      .map(el => el.textContent?.trim())
+      .filter(Boolean);
+    if (crumbs.length > 0) {
+      headerLines.push(`Breadcrumb: ${crumbs.join(' > ')}`);
+    }
+  }
+
+  const activeNav = document
+    .querySelector('[aria-current="page"]')
+    ?.textContent?.trim();
+  if (activeNav) {
+    headerLines.push(`Nav: ${activeNav}`);
+  }
+
   headerLines.push(`Document: ${document.title}`);
 
   const header = headerLines.join('\n');
@@ -113,31 +138,76 @@ export function extractPageContext(options?: DomExtractionOptions): string {
     return redactText(sections.join('\n\n'));
   }
 
-  // 2. Alerts / Toasts
+  // 2. Active overlay -- dialog/modal/drawer content takes priority
+  const overlayText = extractActiveOverlay();
+  if (overlayText && !appendSection(overlayText)) {
+    return redactText(sections.join('\n\n'));
+  }
+
+  // 3. Remove navigation noise (after breadcrumb extraction above)
+  clone.querySelectorAll('nav, [role="navigation"]').forEach(el => el.remove());
+
+  // 4. Alerts / Toasts
   const alertText = extractAlerts(clone);
   if (alertText && !appendSection(alertText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 3. Headings
+  // 5. Stepper state
+  const stepperText = extractStepperState(clone);
+  if (stepperText && !appendSection(stepperText)) {
+    return redactText(sections.join('\n\n'));
+  }
+
+  // 6. Headings
   const headingsText = extractHeadings(clone);
   if (headingsText && !appendSection(headingsText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 4. Tables
+  // 7. Status indicators
+  const statusText = extractStatusIndicators(clone);
+  if (statusText && !appendSection(statusText)) {
+    return redactText(sections.join('\n\n'));
+  }
+
+  // 8. Form fields
+  const formsText = extractFormFields(clone);
+  if (formsText && !appendSection(formsText)) {
+    return redactText(sections.join('\n\n'));
+  }
+
+  // 9. Tables (also captures StructuredMetadataTable)
   const tablesText = extractTables(clone);
   if (tablesText && !appendSection(tablesText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 5. Body text (TreeWalker) -- fills remaining budget
+  // 10. Description lists (dl/dt/dd key-value pairs)
+  const dlText = extractDescriptionLists(clone);
+  if (dlText && !appendSection(dlText)) {
+    return redactText(sections.join('\n\n'));
+  }
+
+  // 11. Empty states
+  const emptyText = extractEmptyState(clone);
+  if (emptyText && !appendSection(emptyText)) {
+    return redactText(sections.join('\n\n'));
+  }
+
+  // 12. Pagination context
+  const paginationText = extractPagination(clone);
+  if (paginationText && !appendSection(paginationText)) {
+    return redactText(sections.join('\n\n'));
+  }
+
+  // 13. Body text (TreeWalker) -- fills remaining budget
   const bodyText = extractBodyText(clone, maxChars - charCount);
   if (bodyText) {
     appendSection(bodyText);
   }
 
-  // 6. TechDocs Shadow DOM (if present on the live DOM)
+  // 14. TechDocs Shadow DOM (if present on the live DOM)
   const shadowText = extractShadowDomContent();
   if (shadowText) {
     appendSection(shadowText);
@@ -147,9 +217,43 @@ export function extractPageContext(options?: DomExtractionOptions): string {
   return result ? redactText(result) : '';
 }
 
+function extractActiveOverlay(): string {
+  // Modal dialog -- MUI Dialog and BUI Dialog both render role="dialog"
+  const dialog = document.querySelector('[role="dialog"][aria-modal="true"]');
+  if (dialog) {
+    const title = dialog
+      .querySelector(
+        '.MuiDialogTitle-root, [class*="MuiDialogTitle"], [class*="bui-DialogHeaderTitle"]',
+      )
+      ?.textContent?.trim();
+    const content = collapseWhitespace(
+      dialog.querySelector(
+        '.MuiDialogContent-root, [class*="MuiDialogContent"], [class*="bui-DialogBody"]',
+      )?.textContent || '',
+    );
+    const lines = ['## Active Dialog'];
+    if (title) lines.push(`Title: ${title}`);
+    if (content) lines.push(content);
+    return lines.length > 1 ? lines.join('\n') : '';
+  }
+
+  // Persistent drawer (BUI ApplicationDrawer)
+  if (document.body.classList.contains('docked-drawer-open')) {
+    const drawerPaper = document.querySelector('.MuiDrawer-paper');
+    if (drawerPaper && !drawerPaper.querySelector('.pf-chatbot')) {
+      const text = collapseWhitespace(drawerPaper.textContent || '');
+      if (text) {
+        return `## Active Drawer\n${text.slice(0, 2000)}`;
+      }
+    }
+  }
+
+  return '';
+}
+
 function extractAlerts(root: HTMLElement): string {
   const alerts = root.querySelectorAll(
-    '[role="alert"], [aria-live="assertive"], [class*="MuiAlert-root"]',
+    '[role="alert"], [aria-live="assertive"], [class*="MuiAlert-root"], [class*="bui-Alert"]',
   );
   if (alerts.length === 0) return '';
 
@@ -162,6 +266,28 @@ function extractAlerts(root: HTMLElement): string {
     alert.remove();
   });
 
+  return lines.length > 1 ? lines.join('\n') : '';
+}
+
+function extractStepperState(root: HTMLElement): string {
+  const steppers = root.querySelectorAll('.MuiStepper-root');
+  if (steppers.length === 0) return '';
+
+  const lines: string[] = ['## Stepper'];
+  steppers.forEach(stepper => {
+    const labels = stepper.querySelectorAll('.MuiStepLabel-label');
+    labels.forEach(label => {
+      const text = label.textContent?.trim();
+      if (!text) return;
+      const isActive = label.classList.contains('Mui-active');
+      const isCompleted = label.classList.contains('Mui-completed');
+      let marker = '';
+      if (isActive) marker = ' [active]';
+      else if (isCompleted) marker = ' [done]';
+      lines.push(`- ${text}${marker}`);
+    });
+    stepper.remove();
+  });
   return lines.length > 1 ? lines.join('\n') : '';
 }
 
@@ -180,6 +306,50 @@ function extractHeadings(root: HTMLElement): string {
     heading.remove();
   });
 
+  return lines.length > 1 ? lines.join('\n') : '';
+}
+
+function extractStatusIndicators(root: HTMLElement): string {
+  const indicators = root.querySelectorAll('[aria-label^="Status"]');
+  if (indicators.length === 0) return '';
+
+  const lines: string[] = ['## Status'];
+  const seen = new Set<string>();
+  indicators.forEach(el => {
+    const status = el.getAttribute('aria-label')?.replace('Status ', '') || '';
+    const text = el.textContent?.trim();
+    const entry = text ? `${status}: ${text}` : status;
+    if (entry && !seen.has(entry)) {
+      seen.add(entry);
+      lines.push(`- ${entry}`);
+    }
+    el.remove();
+  });
+  return lines.length > 1 ? lines.join('\n') : '';
+}
+
+function extractFormFields(root: HTMLElement): string {
+  const formControls = root.querySelectorAll(
+    '.MuiFormControl-root, .MuiTextField-root, [class*="bui-TextField"]',
+  );
+  if (formControls.length === 0) return '';
+
+  const lines: string[] = ['## Form Fields'];
+  formControls.forEach(control => {
+    const label = control.querySelector('label')?.textContent?.trim();
+    const input = control.querySelector('input, textarea, select');
+    const value = (input as HTMLInputElement)?.value || '';
+    const helper = control
+      .querySelector('.MuiFormHelperText-root, [slot="description"]')
+      ?.textContent?.trim();
+    if (label) {
+      let line = `- ${label}`;
+      if (value) line += `: ${value}`;
+      if (helper) line += ` (${helper})`;
+      lines.push(line);
+    }
+    control.remove();
+  });
   return lines.length > 1 ? lines.join('\n') : '';
 }
 
@@ -223,20 +393,87 @@ function extractTables(root: HTMLElement): string {
   return output.length > 1 ? output.join('\n') : '';
 }
 
+function extractDescriptionLists(root: HTMLElement): string {
+  const dls = root.querySelectorAll('dl');
+  if (dls.length === 0) return '';
+
+  const lines: string[] = ['## Details'];
+  dls.forEach(dl => {
+    const terms = dl.querySelectorAll('dt');
+    terms.forEach(dt => {
+      const key = collapseWhitespace(dt.textContent || '');
+      const dd = dt.nextElementSibling;
+      const val =
+        dd?.tagName === 'DD' ? collapseWhitespace(dd.textContent || '') : '';
+      if (key) lines.push(`- ${key}: ${val}`);
+    });
+    dl.remove();
+  });
+  return lines.length > 1 ? lines.join('\n') : '';
+}
+
+function extractEmptyState(root: HTMLElement): string {
+  const emptyState = root.querySelector('[class*="BackstageEmptyState"]');
+  if (!emptyState) return '';
+
+  const title = emptyState.querySelector('h5')?.textContent?.trim();
+  const desc = emptyState
+    .querySelector('[class*="body1"]')
+    ?.textContent?.trim();
+  const lines = ['## Empty State'];
+  if (title) lines.push(`Title: ${title}`);
+  if (desc) lines.push(desc);
+  emptyState.remove();
+  return lines.length > 1 ? lines.join('\n') : '';
+}
+
+function extractPagination(root: HTMLElement): string {
+  const paginations = root.querySelectorAll(
+    '.MuiTablePagination-root, [class*="TablePagination"], [class*="bui-TablePagination"]',
+  );
+  if (paginations.length === 0) return '';
+
+  const lines: string[] = [];
+  paginations.forEach(pg => {
+    const text = collapseWhitespace(pg.textContent || '');
+    if (text) lines.push(`Pagination: ${text}`);
+    pg.remove();
+  });
+  return lines.length > 0 ? lines.join('\n') : '';
+}
+
 function extractBodyText(root: HTMLElement, budget: number): string {
   if (budget <= 0) return '';
+
+  const preBlocks = root.querySelectorAll('pre');
+  const preTexts: string[] = [];
+  preBlocks.forEach(pre => {
+    const text = pre.textContent || '';
+    if (text.trim()) {
+      preTexts.push(text.slice(0, 500));
+    }
+    pre.remove();
+  });
 
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const lines: string[] = ['## Content'];
   let length = lines[0].length;
   const seen = new Set<string>();
 
+  for (const preText of preTexts) {
+    const block = `\`\`\`\n${preText}\n\`\`\``;
+    const blockLength = block.length + 1;
+    if (length + blockLength > budget) break;
+    lines.push(block);
+    length += blockLength;
+  }
+
   let node = walker.nextNode();
   while (node) {
     const text = collapseWhitespace(node.textContent || '');
     if (text && text.length > 1 && !seen.has(text)) {
       seen.add(text);
-      const lineLength = text.length + 1; // +1 for newline
+      const lineLength = text.length + 1;
       if (length + lineLength > budget) {
         break;
       }
