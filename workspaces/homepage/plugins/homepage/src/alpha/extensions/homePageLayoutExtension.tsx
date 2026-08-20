@@ -15,6 +15,7 @@
  */
 
 import { HomePageLayoutBlueprint } from '@backstage/plugin-home-react/alpha';
+import { z } from 'zod';
 import { HomePageCardConfig } from '../../types';
 
 /**
@@ -31,28 +32,27 @@ import { HomePageCardConfig } from '../../types';
 export const homePageLayoutExtension =
   HomePageLayoutBlueprint.makeWithOverrides({
     name: 'dynamic-homepage-layout',
-    config: {
-      schema: {
-        customizable: z => z.boolean().optional(),
-        widgetLayout: z =>
-          z
-            .record(
-              z.object({
-                priority: z.number().optional(),
-                breakpoints: z
-                  .record(
-                    z.object({
-                      w: z.number().optional(),
-                      h: z.number().optional(),
-                      x: z.number().optional(),
-                      y: z.number().optional(),
-                    }),
-                  )
-                  .optional(),
-              }),
-            )
-            .optional(),
-      },
+    configSchema: {
+      customizable: z.boolean().optional(),
+      widgetLayout: z
+        .record(
+          z.string(),
+          z.object({
+            priority: z.number().optional(),
+            breakpoints: z
+              .record(
+                z.string(),
+                z.object({
+                  w: z.number().optional(),
+                  h: z.number().optional(),
+                  x: z.number().optional(),
+                  y: z.number().optional(),
+                }),
+              )
+              .optional(),
+          }),
+        )
+        .optional(),
     },
     factory(originalFactory, { config }) {
       const customizable = config.customizable ?? true;

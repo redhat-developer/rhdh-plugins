@@ -133,7 +133,7 @@ describe('HealthStatusService', () => {
         getLastSuccessfulAttempt: jest.fn().mockResolvedValue(null),
       };
       mockConfigReader = {
-        listCandidates: jest.fn().mockReturnValue([]),
+        listCandidates: jest.fn().mockResolvedValue([]),
       };
       service = new HealthStatusService({
         store: mockRepo as unknown as SyncAttemptsStore,
@@ -143,7 +143,7 @@ describe('HealthStatusService', () => {
     });
 
     it('returns empty array when no connectors configured', async () => {
-      mockConfigReader.listCandidates.mockReturnValue([]);
+      mockConfigReader.listCandidates.mockResolvedValue([]);
       const result = await service.getHealthStatuses();
       expect(result).toEqual([]);
     });
@@ -157,7 +157,7 @@ describe('HealthStatusService', () => {
           runtimeEnabled: true,
         },
       ];
-      mockConfigReader.listCandidates.mockReturnValue(candidates);
+      mockConfigReader.listCandidates.mockResolvedValue(candidates);
       mockRepo.getLatestAttemptsForAll.mockResolvedValue(
         new Map([['github', []]]),
       );
@@ -184,7 +184,7 @@ describe('HealthStatusService', () => {
           runtimeEnabled: false,
         },
       ];
-      mockConfigReader.listCandidates.mockReturnValue(candidates);
+      mockConfigReader.listCandidates.mockResolvedValue(candidates);
       mockRepo.getLatestAttemptsForAll.mockResolvedValue(
         new Map([['github', []]]),
       );
@@ -209,7 +209,7 @@ describe('HealthStatusService', () => {
           runtimeEnabled: false,
         },
       ];
-      mockConfigReader.listCandidates.mockReturnValue(candidates);
+      mockConfigReader.listCandidates.mockResolvedValue(candidates);
       mockRepo.getLatestAttemptsForAll.mockResolvedValue(
         new Map([
           ['github', []],
@@ -234,7 +234,7 @@ describe('HealthStatusService', () => {
           runtimeEnabled: true,
         },
       ];
-      mockConfigReader.listCandidates.mockReturnValue(candidates);
+      mockConfigReader.listCandidates.mockResolvedValue(candidates);
 
       const attempts = [
         makeAttempt({
@@ -286,7 +286,7 @@ describe('HealthStatusService', () => {
           runtimeEnabled: true,
         },
       ];
-      mockConfigReader.listCandidates.mockReturnValue(candidates);
+      mockConfigReader.listCandidates.mockResolvedValue(candidates);
 
       const attempts = [
         makeAttempt({
@@ -316,7 +316,7 @@ describe('HealthStatusService', () => {
           runtimeEnabled: true,
         },
       ];
-      mockConfigReader.listCandidates.mockReturnValue(candidates);
+      mockConfigReader.listCandidates.mockResolvedValue(candidates);
 
       const attempts = [
         makeAttempt({
@@ -362,7 +362,7 @@ describe('HealthStatusService', () => {
           runtimeEnabled: true,
         },
       ];
-      mockConfigReader.listCandidates.mockReturnValue(candidates);
+      mockConfigReader.listCandidates.mockResolvedValue(candidates);
 
       const recentFailures = [
         makeAttempt({
@@ -412,7 +412,7 @@ describe('HealthStatusService', () => {
           runtimeEnabled: true,
         },
       ];
-      mockConfigReader.listCandidates.mockReturnValue(candidates);
+      mockConfigReader.listCandidates.mockResolvedValue(candidates);
 
       // Ambiguous message that could reclassify differently; stored type wins.
       const attempts = [
