@@ -105,17 +105,21 @@ Connector config schemas support versioning for backward compatibility.
 
 ### Requirement: Default Values
 
-Connector config schemas define default values for optional fields.
+Optional connector fields may declare a read-time default on
+`ConfigFieldMeta.defaultValue`. Defaults are **not** Zod `.default()` —
+`validateConfigValue(key, undefined)` must preserve "unset", and
+`RuntimeConfigResolver` applies the fallback after the YAML+DB merge
+(DB override → YAML baseline → field default → undefined).
 
 #### Scenario: Default schedule interval
 
 - **WHEN** connector config omits `schedule.intervalMs`
-- **THEN** schema provides default value (e.g., `300000` ms = 5 minutes)
+- **THEN** `RuntimeConfigResolver.resolve()` returns `ConfigFieldMeta.defaultValue` (e.g., `300000` ms = 5 minutes)
 
 #### Scenario: Default batch size
 
 - **WHEN** connector config omits `batchSize`
-- **THEN** schema provides default value (e.g., `100`)
+- **THEN** `RuntimeConfigResolver.resolve()` returns `ConfigFieldMeta.defaultValue` (e.g., `100`)
 
 ### Requirement: Override Removal
 
@@ -126,7 +130,7 @@ DB overrides can be removed to revert to the YAML baseline value.
 - **WHEN** admin calls `DELETE /api/boost/admin/config?key=boost.connectors.jira.schedule.intervalMs`
 - **THEN** `AdminConfigService.removeOverride('boost.connectors.jira.schedule.intervalMs')` deletes the DB row
 - **AND** `RuntimeConfigResolver.invalidate()` is called
-- **AND** next `resolve('boost.connectors.jira.schedule.intervalMs')` returns the YAML baseline value (or schema default if no YAML value)
+- **AND** next `resolve('boost.connectors.jira.schedule.intervalMs')` returns the YAML baseline value (or `ConfigFieldMeta.defaultValue` if no YAML value)
 
 #### Scenario: Schedule type precedence when both overrides exist
 

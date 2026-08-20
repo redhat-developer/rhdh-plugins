@@ -65,6 +65,12 @@ export type Plugin = PluginSpec & {
 
 export type PluginMap = Record<string, Plugin>;
 
+/** A parsed include file: its path and the plugin entries it declares. */
+export type IncludePluginList = readonly [
+  file: string,
+  plugins: readonly PluginSpec[],
+];
+
 export type DynamicPluginsConfig = {
   includes?: string[];
   plugins?: PluginSpec[];

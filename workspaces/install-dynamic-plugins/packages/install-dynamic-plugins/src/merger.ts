@@ -24,10 +24,10 @@ import {
   type ParsedOciKey,
   tryParseOciRegistryAndPath,
 } from './oci-key';
-import { extractPluginName } from './plugin-name';
-import { isOciUrl, isRefUrl, OCI_PROTO, REF_PROTO } from './protocols';
+import { isOciUrl, OCI_PROTO } from './protocols';
 import {
   type DynamicPluginsConfig,
+  type IncludePluginList,
   isPluginDisabled,
   type Plugin,
   type PluginMap,
@@ -126,23 +126,6 @@ export async function mergePluginsFromFile(
   }
 }
 
-export function resolveRefPlugin(pkg: string, allPlugins: PluginMap): string {
-  const refName = pkg.slice(REF_PROTO.length);
-  if (!refName) {
-    throw new InstallException(
-      `Invalid ref:// reference: empty plugin name in ref://`,
-    );
-  }
-  for (const entry of Object.values(allPlugins)) {
-    if (extractPluginName(entry.package) === refName) {
-      return entry.package;
-    }
-  }
-  throw new InstallException(
-    `Cannot resolve ref:// reference: no plugin named '${refName}' found in included plugins`,
-  );
-}
-
 export async function mergePlugin(
   plugin: Plugin,
   allPlugins: PluginMap,
@@ -154,9 +137,6 @@ export async function mergePlugin(
     throw new InstallException(
       `content of the 'plugins.package' field must be a string in ${configFile}`,
     );
-  }
-  if (isRefUrl(plugin.package)) {
-    plugin.package = resolveRefPlugin(plugin.package, allPlugins);
   }
   if (isOciUrl(plugin.package)) {
     await mergeOciPlugin(plugin, allPlugins, configFile, level, imageCache);
@@ -351,11 +331,6 @@ function isObjectEqual(
   if (keysA.length !== Object.keys(b).length) return false;
   return keysA.every(k => isEqual(a[k], b[k]));
 }
-
-type IncludePluginList = readonly [
-  file: string,
-  plugins: readonly PluginSpec[],
-];
 
 type EntryState = { disabled: boolean; level: number };
 
