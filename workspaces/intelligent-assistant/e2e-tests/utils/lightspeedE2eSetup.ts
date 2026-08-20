@@ -44,21 +44,26 @@ async function loginAsGuest(page: Page) {
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const enter = page.getByRole('button', { name: 'Enter' });
     await enter.click();
-    await page.waitForTimeout(2000);
 
-    if (process.env.APP_MODE !== 'nfs') {
-      try {
+    try {
+      if (process.env.APP_MODE !== 'nfs') {
         await page
           .getByRole('heading', { name: 'Red Hat Catalog' })
-          .waitFor({ state: 'visible', timeout: 10_000 });
-        return;
-      } catch {
-        if (attempt === maxAttempts) throw new Error('loginAsGuest failed');
-        await page.reload();
-        await page.waitForTimeout(2000);
+          .waitFor({ state: 'visible', timeout: 15_000 });
+      } else {
+        // NFS has no catalog heading. Wait until the guest session is actually
+        // established — a fixed sleep is not enough when several workers log
+        // in during the first NFS compile, and English skips switchToLocale.
+        await enter.waitFor({ state: 'hidden', timeout: 15_000 });
+        await page
+          .getByRole('link', { name: 'Settings' })
+          .waitFor({ state: 'visible', timeout: 15_000 });
       }
-    } else {
       return;
+    } catch {
+      if (attempt === maxAttempts) throw new Error('loginAsGuest failed');
+      await page.reload();
+      await page.waitForTimeout(2000);
     }
   }
 }

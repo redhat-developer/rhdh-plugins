@@ -278,6 +278,11 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     flex: 1,
     overflow: 'auto',
+    '& .pf-chatbot__message-contents': {
+      overflowX: 'hidden',
+      overflowWrap: 'break-word',
+      wordBreak: 'break-word',
+    },
   },
 }));
 
@@ -299,7 +304,7 @@ type NotebookViewProps = {
   isUploadModalOpen: boolean;
   onUploadModalOpenChange: (open: boolean) => void;
   onUploadsInProgressChange?: (inProgress: boolean) => void;
-  closingRef?: React.MutableRefObject<boolean>;
+  modeSwitchRef?: React.MutableRefObject<boolean>;
 };
 
 // Module-level cache for preserving notebook streaming state across display mode switches.
@@ -403,7 +408,7 @@ export const NotebookView = ({
   isUploadModalOpen,
   onUploadModalOpenChange,
   onUploadsInProgressChange,
-  closingRef,
+  modeSwitchRef,
 }: NotebookViewProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
@@ -625,11 +630,13 @@ export const NotebookView = ({
     }
   }, [conversationMessages, sessionId]);
 
-  // Cache messages on unmount during mode switch (not intentional close)
+  // Cache messages on unmount only during display mode switches so the
+  // remounted instance can restore state. Tab switches, navigation, and
+  // explicit close do not remount the notebook.
   useEffect(() => {
-    const closingRefCurrent = closingRef;
+    const modeSwitchRefCurrent = modeSwitchRef;
     return () => {
-      if (!closingRefCurrent?.current && messagesRef.current.length > 0) {
+      if (modeSwitchRefCurrent?.current && messagesRef.current.length > 0) {
         notebookStreamCache.set(sessionId, {
           messages: messagesRef.current,
           conversationId: conversationIdRef.current,
@@ -637,7 +644,7 @@ export const NotebookView = ({
         });
       }
     };
-  }, [sessionId, closingRef]);
+  }, [sessionId, modeSwitchRef]);
 
   // During recovery, sync conversationId from metadata if the background
   // stream's onRequestIdReady updated the session cache after our unmount
@@ -708,12 +715,14 @@ export const NotebookView = ({
   };
 
   useEffect(() => {
-    const closingRefCurrent = closingRef;
+    const modeSwitchRefCurrent = modeSwitchRef;
     return () => {
-      // Only auto-delete untitled empty notebooks when the user explicitly
-      // closed the notebook. Display-mode switches and tab changes also
-      // unmount this component but should preserve the notebook.
-      if (!closingRefCurrent?.current) {
+      // Display-mode switches remount the component but should preserve the
+      // notebook and its streaming state. All other unmount reasons (tab
+      // switch, navigation, explicit close) should clean up and auto-delete
+      // empty untitled notebooks.
+      if (modeSwitchRefCurrent?.current) {
+        modeSwitchRefCurrent.current = false;
         queryClient.invalidateQueries({
           queryKey: ['notebooks', 'sessions'],
         });
@@ -744,7 +753,7 @@ export const NotebookView = ({
         });
       }
     };
-  }, [notebooksApi, sessionId, queryClient, closingRef]);
+  }, [notebooksApi, sessionId, queryClient, modeSwitchRef]);
 
   const handleRenameDocument = useCallback(
     async (documentId: string, newTitle: string) => {

@@ -112,7 +112,7 @@ const useStyles = makeStyles(theme => ({
   },
   dialogActionsCompact: {
     padding: '12px 16px !important',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
     gap: theme.spacing(1),
   },
   addButton: {
