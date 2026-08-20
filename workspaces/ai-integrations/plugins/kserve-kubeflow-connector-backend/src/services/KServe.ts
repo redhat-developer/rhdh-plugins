@@ -70,30 +70,36 @@ function getTags(is: InferenceService): string[] {
     return tags;
   }
 
+  // InferenceService (v1beta1) uses spec.predictor; LLMInferenceService (v1alpha2)
+  // uses spec.model directly with no predictor field.
   const predictor = is.spec.predictor;
+  if (predictor) {
+    if (predictor.sklearn) tags.push(FRAMEWORK_SKLEARN);
+    if (predictor.xgboost) tags.push(FRAMEWORK_XGBOOST);
+    if (predictor.tensorflow) tags.push(FRAMEWORK_TENSORFLOW);
+    if (predictor.pytorch) tags.push(FRAMEWORK_PYTORCH);
+    if (predictor.triton) tags.push(FRAMEWORK_TRITON);
+    if (predictor.onnx) tags.push(FRAMEWORK_ONNX);
+    if (predictor.huggingface) tags.push(FRAMEWORK_HUGGINGFACE);
+    if (predictor.pmml) tags.push(FRAMEWORK_PMML);
+    if (predictor.lightgbm) tags.push(FRAMEWORK_LIGHTGBM);
+    if (predictor.paddle) tags.push(FRAMEWORK_PADDLE);
 
-  if (predictor.sklearn) tags.push(FRAMEWORK_SKLEARN);
-  if (predictor.xgboost) tags.push(FRAMEWORK_XGBOOST);
-  if (predictor.tensorflow) tags.push(FRAMEWORK_TENSORFLOW);
-  if (predictor.pytorch) tags.push(FRAMEWORK_PYTORCH);
-  if (predictor.triton) tags.push(FRAMEWORK_TRITON);
-  if (predictor.onnx) tags.push(FRAMEWORK_ONNX);
-  if (predictor.huggingface) tags.push(FRAMEWORK_HUGGINGFACE);
-  if (predictor.pmml) tags.push(FRAMEWORK_PMML);
-  if (predictor.lightgbm) tags.push(FRAMEWORK_LIGHTGBM);
-  if (predictor.paddle) tags.push(FRAMEWORK_PADDLE);
-
-  if (predictor.model) {
-    const modelFormat = predictor.model.modelFormat;
-    let tag = modelFormat.name;
-    if (modelFormat.version) {
-      tag = `${tag}-${modelFormat.version}`;
+    if (predictor.model?.modelFormat) {
+      const modelFormat = predictor.model.modelFormat;
+      let tag = modelFormat.name;
+      if (modelFormat.version) {
+        tag = `${tag}-${modelFormat.version}`;
+      }
+      tags.push(tag.toLowerCase());
     }
-    tags.push(tag.toLowerCase());
-  }
 
-  if (is.spec.explainer?.art) {
-    tags.push(is.spec.explainer.art.type.toLowerCase());
+    if (is.spec.explainer?.art) {
+      tags.push(is.spec.explainer.art.type.toLowerCase());
+    }
+  } else if (is.spec.model?.name) {
+    // LLMInferenceService: use the model name as a tag
+    tags.push(sanitizeName(is.spec.model.name));
   }
 
   return tags;
@@ -115,14 +121,18 @@ function getTagsFromLabels(is: InferenceService): string[] {
 }
 
 function getArtifactLocationURL(is: InferenceService): string | undefined {
-  const model = is.spec.predictor.model;
-
-  if (model?.storageURI) {
-    return model.storageURI;
+  // InferenceService (v1beta1): storage is under spec.predictor.model
+  const predictorModel = is.spec.predictor?.model;
+  if (predictorModel?.storageURI) {
+    return predictorModel.storageURI;
+  }
+  if (predictorModel?.storage?.path) {
+    return `s3://${predictorModel.storage.path}`;
   }
 
-  if (model?.storage?.path) {
-    return `s3://${model.storage.path}`;
+  // LLMInferenceService (v1alpha2): storage URI is at spec.model.uri
+  if (is.spec.model?.uri) {
+    return is.spec.model.uri;
   }
 
   return undefined;

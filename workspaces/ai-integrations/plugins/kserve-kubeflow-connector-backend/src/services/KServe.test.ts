@@ -43,6 +43,36 @@ function makeInferenceService(
   };
 }
 
+function makeLLMInferenceService(
+  overrides: Partial<{
+    name: string;
+    namespace: string;
+    labels: Record<string, string>;
+    annotations: Record<string, string>;
+    spec: any;
+    status: any;
+  }> = {},
+): InferenceService {
+  return {
+    apiVersion: 'serving.kserve.io/v1alpha2',
+    kind: 'LLMInferenceService',
+    metadata: {
+      name: overrides.name ?? 'gpt-oss-20b',
+      namespace: overrides.namespace ?? 'deploy-model-gpt',
+      ...(overrides.labels && { labels: overrides.labels }),
+      ...(overrides.annotations && { annotations: overrides.annotations }),
+    },
+    spec: overrides.spec ?? {
+      model: {
+        name: 'gpt-oss-20b',
+        uri: 's3://bucket/gpt-oss-20b/1.0.0',
+      },
+      replicas: 1,
+    },
+    ...(overrides.status && { status: overrides.status }),
+  };
+}
+
 describe('callBackstagePrinters', () => {
   const logger = mockServices.logger.mock();
 
@@ -471,5 +501,122 @@ describe('callBackstagePrinters', () => {
     expect(result.modelServer!.homepageURL).toBe(
       'https://homepage.example.com',
     );
+  });
+});
+
+describe('callBackstagePrinters — LLMInferenceService (v1alpha2)', () => {
+  const logger = mockServices.logger.mock();
+
+  it('should generate basic model catalog from LLMInferenceService', async () => {
+    const is = makeLLMInferenceService({
+      name: 'gpt-oss-20b-100',
+      namespace: 'deploy-model-gpt',
+    });
+
+    const result = await callBackstagePrinters(
+      'my-owner',
+      'production',
+      is,
+      false,
+      logger,
+    );
+
+    expect(result.models).toHaveLength(1);
+    expect(result.models[0].name).toBe('deploy-model-gpt-gpt-oss-20b-100');
+    expect(result.models[0].owner).toBe('my-owner');
+    expect(result.models[0].lifecycle).toBe('production');
+    expect(result.modelServer).toBeDefined();
+  });
+
+  it('should not crash when spec.predictor is absent', async () => {
+    const is = makeLLMInferenceService();
+
+    await expect(
+      callBackstagePrinters('owner', 'production', is, false, logger),
+    ).resolves.not.toThrow();
+  });
+
+  it('should use spec.model.name as tag', async () => {
+    const is = makeLLMInferenceService({
+      spec: {
+        model: { name: 'gpt-oss-20b', uri: 's3://bucket/model' },
+        replicas: 1,
+      },
+    });
+
+    const result = await callBackstagePrinters(
+      'owner',
+      'production',
+      is,
+      false,
+      logger,
+    );
+
+    expect(result.models[0].tags).toContain('gpt-oss-20b');
+  });
+
+  it('should return spec.model.uri as artifactLocationURL', async () => {
+    const is = makeLLMInferenceService({
+      spec: {
+        model: {
+          name: 'gpt-oss-20b',
+          uri: 's3://model-registry-artifacts/gpt-oss-20b/1.0.0',
+        },
+        replicas: 1,
+      },
+    });
+
+    const result = await callBackstagePrinters(
+      'owner',
+      'production',
+      is,
+      false,
+      logger,
+    );
+
+    expect(result.models[0].artifactLocationURL).toBe(
+      's3://model-registry-artifacts/gpt-oss-20b/1.0.0',
+    );
+  });
+
+  it('should use status.url for API url', async () => {
+    const is = makeLLMInferenceService({
+      status: {
+        url: 'https://maas-gateway/deploy-model-gpt/gpt-oss-20b-100',
+        conditions: [{ type: 'Ready', status: 'True' }],
+      },
+    });
+
+    const result = await callBackstagePrinters(
+      'owner',
+      'production',
+      is,
+      false,
+      logger,
+    );
+
+    expect(result.modelServer!.API!.url).toBe(
+      'https://maas-gateway/deploy-model-gpt/gpt-oss-20b-100',
+    );
+  });
+
+  it('should override owner and lifecycle via annotations', async () => {
+    const is = makeLLMInferenceService({
+      annotations: {
+        'rhdh.io/owner': 'llm-team',
+        'rhdh.io/lifecycle': 'experimental',
+      },
+    });
+
+    const result = await callBackstagePrinters(
+      'default-owner',
+      'production',
+      is,
+      false,
+      logger,
+    );
+
+    expect(result.models[0].owner).toBe('llm-team');
+    expect(result.models[0].lifecycle).toBe('experimental');
   });
 });

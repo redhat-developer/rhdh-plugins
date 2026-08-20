@@ -201,11 +201,12 @@ describe('InformerService', () => {
       );
     });
 
-    it('should register add, update, delete, and error handlers on the informer', async () => {
+    it('should register add, update, delete, and error handlers on both informers', async () => {
       const config: ReconcilerConfig = {};
 
       await setupInformer(config, logger);
 
+      // Both InferenceService and LLMInferenceService informers register 4 handlers each
       const registeredEvents = mockInformerOn.mock.calls.map(
         (call: any[]) => call[0],
       );
@@ -213,14 +214,17 @@ describe('InformerService', () => {
       expect(registeredEvents).toContain('update');
       expect(registeredEvents).toContain('delete');
       expect(registeredEvents).toContain('error');
+      // 4 handlers per informer × 2 informers
+      expect(mockInformerOn.mock.calls.length).toBe(8);
     });
 
-    it('should start the informer', async () => {
+    it('should start both informers', async () => {
       const config: ReconcilerConfig = {};
 
       await setupInformer(config, logger);
 
-      expect(mockInformerStart).toHaveBeenCalled();
+      // Called once for InferenceService informer and once for LLMInferenceService informer
+      expect(mockInformerStart).toHaveBeenCalledTimes(2);
     });
 
     it('should set config.logger', async () => {
