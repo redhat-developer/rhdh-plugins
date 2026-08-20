@@ -22,6 +22,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
   DORA_DEFAULT_DATA_RETENTION_DAYS,
+  DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
@@ -30,6 +31,7 @@ import {
   DORA_TIME_WINDOW_DAYS,
 } from '../constants';
 import type { JsonValue } from '@backstage/types';
+import { daysToMilliseconds } from '../scheduler/utils';
 
 export type DoraDeploymentFrequencyConfig = {
   deploymentsCollector: CollectorConfig;
@@ -50,6 +52,11 @@ export type DoraChangeFailureRateConfig = {
   deploymentsCollector: CollectorConfig;
   incidentsCollector: CollectorConfig;
   productionEnvironments: string[];
+};
+
+export type DoraSyncConfig = {
+  staleAfterMs: number;
+  deploymentLookbackMs: number;
 };
 
 export const DEFAULT_DORA_DEPLOYMENT_FREQUENCY_THRESHOLDS: ThresholdConfig =
@@ -291,10 +298,9 @@ export function parseDoraDataRetentionDays(config: Config): number {
 }
 
 /**
- * Parses collector refresh staleness threshold in milliseconds.
- * If last sync is within this window, collector refresh is skipped.
+ * Parses DORA sync service options from `scorecard.plugins.dora`.
  */
-export function parseDoraStaleAfterMs(config: Config): number {
+export function parseDoraSyncConfig(config: Config): DoraSyncConfig {
   const staleAfterMs =
     config.getOptionalNumber('scorecard.plugins.dora.staleAfterMs') ??
     DORA_DEFAULT_STALE_AFTER_MS;
@@ -303,5 +309,20 @@ export function parseDoraStaleAfterMs(config: Config): number {
       'scorecard.plugins.dora.staleAfterMs must be greater than or equal to 0',
     );
   }
-  return staleAfterMs;
+
+  const deploymentLookbackMs =
+    config.getOptionalNumber('scorecard.plugins.dora.deploymentLookbackMs') ??
+    DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS;
+  if (deploymentLookbackMs < 0) {
+    throw new Error(
+      'scorecard.plugins.dora.deploymentLookbackMs must be greater than or equal to 0',
+    );
+  }
+  const maxLookbackMs = daysToMilliseconds(DORA_TIME_WINDOW_DAYS);
+  if (deploymentLookbackMs > maxLookbackMs) {
+    throw new Error(
+      `scorecard.plugins.dora.deploymentLookbackMs must be less than or equal to the DORA metric computation window (${DORA_TIME_WINDOW_DAYS} days)`,
+    );
+  }
+  return { staleAfterMs, deploymentLookbackMs };
 }

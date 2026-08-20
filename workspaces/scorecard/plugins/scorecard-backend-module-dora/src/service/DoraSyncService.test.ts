@@ -27,6 +27,7 @@ import { createTestDatabase } from '../database/__fixtures__';
 import { DefaultDoraDataService } from './DoraDataService';
 import { DefaultDoraSyncService } from './DoraSyncService';
 import {
+  DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
@@ -149,7 +150,9 @@ describe('DefaultDoraSyncService', () => {
       expect(collect).toHaveBeenLastCalledWith(
         expect.objectContaining({
           input: expect.objectContaining({
-            from: firstWindowTo.toISOString(),
+            from: new Date(
+              firstWindowTo.getTime() - DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
+            ).toISOString(),
             to: secondWindowTo.toISOString(),
           }),
         }),
@@ -420,7 +423,7 @@ describe('DefaultDoraSyncService', () => {
         pullRequests,
         lastSync,
         logger,
-        staleAfterMs,
+        { staleAfterMs, deploymentLookbackMs: 0 },
       );
 
       const windowTo = new Date();

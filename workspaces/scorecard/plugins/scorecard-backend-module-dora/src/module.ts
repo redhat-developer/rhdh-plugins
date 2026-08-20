@@ -35,7 +35,7 @@ import { DefaultDoraSyncService } from './service/DoraSyncService';
 import { CleanupExpiredDataTask } from './scheduler/CleanupExpiredDataTask';
 import {
   parseDoraDataRetentionDays,
-  parseDoraStaleAfterMs,
+  parseDoraSyncConfig,
 } from './metricProviders/DoraConfig';
 
 export const scorecardModuleDora = createBackendModule({
@@ -74,7 +74,7 @@ export const scorecardModuleDora = createBackendModule({
           pullRequestsDb,
           lastSyncDb,
           logger,
-          parseDoraStaleAfterMs(config),
+          parseDoraSyncConfig(config),
         );
         const doraDataService = new DefaultDoraDataService(
           deploymentsDb,

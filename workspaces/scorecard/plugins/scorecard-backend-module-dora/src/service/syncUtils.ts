@@ -22,6 +22,26 @@ export function laterOf(windowFrom: Date, watermark: Date | undefined): Date {
 }
 
 /**
+ * Computes the `from` bound for a deployments collector refresh.
+ * With no prior watermark, returns `windowFrom`. Otherwise returns
+ * `max(windowFrom, watermark - lookbackMs)` so deployments created near the
+ * last watermark are re-queried if they succeed afterward.
+ */
+export function deploymentSyncFrom(
+  windowFrom: Date,
+  watermark: Date | undefined,
+  lookbackMs: number,
+): Date {
+  if (!watermark) {
+    return windowFrom;
+  }
+  if (lookbackMs <= 0) {
+    return laterOf(windowFrom, watermark);
+  }
+  return laterOf(windowFrom, new Date(watermark.getTime() - lookbackMs));
+}
+
+/**
  * Returns true when last sync is still considered fresh and a refresh should be skipped.
  */
 export function isWithinStaleWindow(

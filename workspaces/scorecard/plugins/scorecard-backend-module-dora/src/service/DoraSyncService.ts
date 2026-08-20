@@ -21,7 +21,11 @@ import type { DoraDeploymentsStore } from '../database/DatabaseDoraDeployments';
 import type { DoraIncidentsStore } from '../database/DatabaseDoraIncidents';
 import type { DoraLastSyncStore } from '../database/DatabaseDoraLastSync';
 import type { DoraPullRequestsStore } from '../database/DatabaseDoraPullRequests';
-import { DORA_DEFAULT_STALE_AFTER_MS } from '../constants';
+import type { DoraSyncConfig } from '../metricProviders/DoraConfig';
+import {
+  DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
+  DORA_DEFAULT_STALE_AFTER_MS,
+} from '../constants';
 import {
   deploymentsCollectorInputSchema,
   deploymentsCollectorOutputSchema,
@@ -35,7 +39,17 @@ import {
   deploymentPullRequestsCollectorOutputSchema,
 } from '../metricProviders/schemas/pullRequestSchemas';
 import type { WindowOptions, CollectorCallOptions } from './types';
-import { coalesceInFlight, isWithinStaleWindow, laterOf } from './syncUtils';
+import {
+  coalesceInFlight,
+  deploymentSyncFrom,
+  isWithinStaleWindow,
+  laterOf,
+} from './syncUtils';
+
+const DEFAULT_DORA_SYNC_CONFIG: DoraSyncConfig = {
+  staleAfterMs: DORA_DEFAULT_STALE_AFTER_MS,
+  deploymentLookbackMs: DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
+};
 
 /**
  * Collects new DORA source data via collectors and persists it.
@@ -71,12 +85,12 @@ export class DefaultDoraSyncService implements DoraSyncService {
     private readonly pullRequestsDb: DoraPullRequestsStore,
     private readonly lastSyncDb: DoraLastSyncStore,
     private readonly logger: LoggerService,
-    private readonly staleAfterMs: number = DORA_DEFAULT_STALE_AFTER_MS,
+    private readonly config: DoraSyncConfig = DEFAULT_DORA_SYNC_CONFIG,
   ) {}
 
   /**
    * Retrieves and persists deployments created after the last successful sync
-   * for a given entity and collector.
+   * (minus lookback) for a given entity and collector.
    *
    * Concurrent syncs for the same entity and collector share one in-flight fetch.
    */
@@ -101,13 +115,17 @@ export class DefaultDoraSyncService implements DoraSyncService {
       catalogEntityRef,
       collectorId,
     );
-    if (isWithinStaleWindow(lastSyncedAt, this.staleAfterMs)) {
+    if (isWithinStaleWindow(lastSyncedAt, this.config.staleAfterMs)) {
       this.logger.debug(
-        `Skipping DORA deployments refresh for collector "${collectorId}" on "${catalogEntityRef}" because data is fresh within staleAfterMs (${this.staleAfterMs} ms).`,
+        `Skipping DORA deployments refresh for collector "${collectorId}" on "${catalogEntityRef}" because data is fresh within staleAfterMs (${this.config.staleAfterMs} ms).`,
       );
       return;
     }
-    const syncFrom = laterOf(options.windowFrom, lastSyncedAt);
+    const syncFrom = deploymentSyncFrom(
+      options.windowFrom,
+      lastSyncedAt,
+      this.config.deploymentLookbackMs,
+    );
 
     const collected = await this.collectorsService.collect<
       typeof deploymentsCollectorInputSchema,
@@ -173,9 +191,9 @@ export class DefaultDoraSyncService implements DoraSyncService {
       catalogEntityRef,
       collectorId,
     );
-    if (isWithinStaleWindow(lastSyncedAt, this.staleAfterMs)) {
+    if (isWithinStaleWindow(lastSyncedAt, this.config.staleAfterMs)) {
       this.logger.debug(
-        `Skipping DORA incidents refresh for collector "${collectorId}" on "${catalogEntityRef}" because data is fresh within staleAfterMs (${this.staleAfterMs} ms).`,
+        `Skipping DORA incidents refresh for collector "${collectorId}" on "${catalogEntityRef}" because data is fresh within staleAfterMs (${this.config.staleAfterMs} ms).`,
       );
       return;
     }
