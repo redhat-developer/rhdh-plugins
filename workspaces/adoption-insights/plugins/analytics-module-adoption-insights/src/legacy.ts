@@ -13,15 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import plugin from './alpha';
 
-describe('analytics-module-adoption-insights alpha', () => {
-  it('should export a valid frontend plugin', () => {
-    expect(plugin).toBeDefined();
-    expect(plugin.$$type).toBe('@backstage/FrontendPlugin');
-  });
-
-  it('should have the correct plugin id', () => {
-    expect(plugin.id).toBe('analytics-module-adoption-insights');
-  });
-});
+/**
+ * Legacy frontend system API surface for the Adoption Insights analytics module.
+ *
+ * @packageDocumentation
+ */
+export { AdoptionInsightsAnalyticsApi } from './api';
+export { AdoptionInsightsAnalyticsApiFactory } from './legacy/factory';

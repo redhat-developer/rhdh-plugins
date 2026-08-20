@@ -13,24 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import {
-  analyticsApiRef,
-  configApiRef,
-  createApiFactory,
-  identityApiRef,
-} from '@backstage/core-plugin-api';
-import { AdoptionInsightsAnalyticsApi } from './AdoptionInsightsAnalyticsApi';
 
 /**
- * API Factory for Adoption Insights Analytics API
+ * Translations remain available at the `/alpha` export.
+ * NFS plugin and modules have graduated to the primary package entry point.
  *
- * @public
+ * @packageDocumentation
  */
-export const AdoptionInsightsAnalyticsApiFactory = createApiFactory({
-  api: analyticsApiRef,
-  deps: { configApi: configApiRef, identityApi: identityApiRef },
-  factory: ({ configApi, identityApi }) =>
-    AdoptionInsightsAnalyticsApi.fromConfig(configApi, {
-      identityApi,
-    }),
-});
+export * from './translations';

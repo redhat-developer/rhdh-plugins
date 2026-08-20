@@ -13,6 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/**
+ * Adoption Insights plugin for the new Backstage frontend system.
+ *
+ * @packageDocumentation
+ */
 import {
   configApiRef,
   createApiFactory,
@@ -62,7 +68,7 @@ const adoptionInsightsTranslation = TranslationBlueprint.make({
 
 /**
  * The Adoption Insights plugin for the new frontend system.
- * @alpha
+ * @public
  */
 export default createFrontendPlugin({
   pluginId: 'adoption-insights',
@@ -74,11 +80,9 @@ export default createFrontendPlugin({
  * A frontend module that registers Adoption Insights translations.
  * Must be installed separately in the app's features since TranslationBlueprint
  * is restricted to the app plugin (pluginId: 'app').
- * @alpha
+ * @public
  */
 export const adoptionInsightsTranslationsModule = createFrontendModule({
   pluginId: 'app',
   extensions: [adoptionInsightsTranslation],
 });
-
-export * from './translations';

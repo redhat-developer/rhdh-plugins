@@ -8877,6 +8877,7 @@ __metadata:
     "@backstage/core-components": "npm:^0.18.11"
     "@backstage/core-plugin-api": "npm:^1.12.7"
     "@backstage/dev-utils": "npm:^1.1.24"
+    "@backstage/frontend-defaults": "npm:^0.5.3"
     "@backstage/frontend-plugin-api": "npm:^0.17.2"
     "@backstage/frontend-test-utils": "npm:^0.6.1"
     "@backstage/plugin-app-react": "npm:^0.2.4"
@@ -8885,6 +8886,7 @@ __metadata:
     "@backstage/plugin-permission-react": "npm:^0.5.2"
     "@backstage/test-utils": "npm:^1.7.19"
     "@backstage/theme": "npm:^0.7.3"
+    "@backstage/ui": "npm:^0.16.0"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/lab": "npm:5.0.0-alpha.177"
     "@mui/material": "npm:5.18.0"
@@ -8898,10 +8900,12 @@ __metadata:
     date-fns-tz: "npm:^2.0.1"
     msw: "npm:^1.0.0"
     react: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
+    react-dom: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
     react-use: "npm:^17.2.4"
     recharts: "npm:^2.15.1"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
   languageName: unknown
   linkType: soft
 
@@ -27811,7 +27815,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:^18.0.2":
+"react-dom@npm:^16.13.1 || ^17.0.0 || ^18.0.0, react-dom@npm:^18.0.2":
   version: 18.3.1
   resolution: "react-dom@npm:18.3.1"
   dependencies:

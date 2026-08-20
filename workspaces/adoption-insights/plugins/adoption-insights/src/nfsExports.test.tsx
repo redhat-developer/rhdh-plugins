@@ -16,11 +16,15 @@
 import { coreExtensionData } from '@backstage/frontend-plugin-api';
 import { createExtensionTester } from '@backstage/frontend-test-utils';
 
-import plugin, { adoptionInsightsTranslationsModule } from './alpha';
+import plugin, { adoptionInsightsTranslationsModule } from './index';
 import translationsModuleDefault from './adoptionInsightsTranslationsModuleExport';
+import {
+  adoptionInsightsTranslationRef,
+  adoptionInsightsTranslations,
+} from './alpha';
 import { rootRouteRef } from './routes';
 
-describe('adoption-insights alpha', () => {
+describe('adoption-insights NFS exports', () => {
   it('should export a valid frontend plugin', () => {
     expect(plugin).toBeDefined();
     expect(plugin.$$type).toBe('@backstage/FrontendPlugin');
@@ -44,6 +48,12 @@ describe('adoption-insights alpha', () => {
 
   it('should export the translations module as default for NFS discovery', () => {
     expect(translationsModuleDefault).toBe(adoptionInsightsTranslationsModule);
+  });
+
+  it('should keep translation resources on the /alpha export', () => {
+    expect(adoptionInsightsTranslations).toBeDefined();
+    expect(adoptionInsightsTranslationRef).toBeDefined();
+    expect(adoptionInsightsTranslationRef.id).toBe('plugin.adoption-insights');
   });
 });
 
