@@ -23,8 +23,8 @@ import { ReactElement } from 'react';
 import { RouteRef } from '@backstage/frontend-plugin-api';
 import { RouteRef as RouteRef_2 } from '@backstage/core-plugin-api';
 import { SubRouteRef } from '@backstage/core-plugin-api';
-import { TranslationRef } from '@backstage/frontend-plugin-api';
-import { TranslationResource } from '@backstage/frontend-plugin-api';
+import { TranslationRef } from '@backstage/core-plugin-api/alpha';
+import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
 // @public
 const _default: OverridableFrontendPlugin<

@@ -8,8 +8,8 @@ import { Entity } from '@backstage/catalog-model';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { RouteRef } from '@backstage/core-plugin-api';
 import type { SVGProps } from 'react';
-import { TranslationRef } from '@backstage/frontend-plugin-api';
-import { TranslationResource } from '@backstage/frontend-plugin-api';
+import { TranslationRef } from '@backstage/core-plugin-api/alpha';
+import { TranslationResource } from '@backstage/core-plugin-api/alpha';
 
 // @public
 export const IsOrchestratorCatalogTabAvailable: (entity: Entity) => boolean;
