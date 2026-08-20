@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 4.0.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.0.1
+
 ## 4.0.0
 
 ### Major Changes
