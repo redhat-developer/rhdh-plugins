@@ -15,16 +15,20 @@
  */
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import { appDrawerExtension } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import {
+  appDrawerExtension,
+  templateCardExtension,
+} from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
 
 /**
  * RHDH app module for `pluginId: 'app'`.
- * Provides the application drawer system for dockable panel extensions.
+ * Provides the application drawer system and the extensible scaffolder
+ * template card for dockable panel and template card action extensions.
  * Default-export this module for dynamic frontend loading.
  *
  * @alpha
  */
 export const appDefaultsModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [appDrawerExtension],
+  extensions: [appDrawerExtension, templateCardExtension],
 });

@@ -17,7 +17,11 @@
 import type { Entity } from '@backstage/catalog-model';
 
 import type { FilterDefinition } from '../blueprints/AiCatalogFilterBlueprint';
-import { applyEntityFilters, getAdoptionAction } from './entityHelpers';
+import {
+  applyEntityFilters,
+  entityRefHref,
+  getAdoptionAction,
+} from './entityHelpers';
 
 function entity(overrides: {
   name?: string;
@@ -43,6 +47,30 @@ function entity(overrides: {
     },
   } as Entity;
 }
+
+describe('entityRefHref', () => {
+  it('builds a group catalog URL from a bare owner name', () => {
+    expect(entityRefHref('team-ai-platform')).toBe(
+      '/catalog/default/group/team-ai-platform',
+    );
+  });
+
+  it('parses a fully-qualified group ref', () => {
+    expect(entityRefHref('group:other-ns/platform')).toBe(
+      '/catalog/other-ns/group/platform',
+    );
+  });
+
+  it('parses a fully-qualified user ref', () => {
+    expect(entityRefHref('user:default/jdoe')).toBe(
+      '/catalog/default/user/jdoe',
+    );
+  });
+
+  it('returns undefined for an unparseable ref', () => {
+    expect(entityRefHref('group:')).toBeUndefined();
+  });
+});
 
 describe('getAdoptionAction', () => {
   it('returns npx copy command for skill entities', () => {

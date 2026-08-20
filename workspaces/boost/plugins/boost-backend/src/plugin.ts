@@ -196,6 +196,8 @@ export const boostPlugin = createBackendPlugin({
           logger,
         });
 
+        await runtimeConfigResolver.migrateConnectorSchemas();
+
         logger.info('Runtime configuration engine initialized');
 
         // Initialize agent lifecycle store
