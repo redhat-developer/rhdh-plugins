@@ -54,6 +54,7 @@ ClassNameGenerator.configure(componentName => {
 });
 
 /**
+ * Orchestrator page extension for the new frontend system.
  * @public
  */
 export const orchestratorPage = PageBlueprint.make({
@@ -68,6 +69,7 @@ export const orchestratorPage = PageBlueprint.make({
 });
 
 /**
+ * Orchestrator API extension for the new frontend system.
  * @public
  */
 export const orchestratorApi = ApiBlueprint.make({
@@ -97,6 +99,7 @@ const isOrchestratorCatalogTabAvailable = (entity: {
 }) => Boolean(entity.metadata?.annotations?.['orchestrator.io/workflows']);
 
 /**
+ * Workflows entity content extension for the catalog.
  * @public
  */
 export const orchestratorEntityContent = EntityContentBlueprint.make({
