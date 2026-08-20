@@ -120,6 +120,14 @@ export class DevModeService {
       shell: false,
     });
 
+    process.stdout.on('data', data => {
+      this.logger.info(`SonataFlow process stdout: ${data}`);
+    });
+
+    process.stderr.on('data', data => {
+      this.logger.error(`SonataFlow process stderr: ${data}`);
+    });
+
     process.on('close', code => {
       this.logger.info(`SonataFlow process exited with code ${code}`);
     });
