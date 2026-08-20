@@ -217,6 +217,7 @@ function backstage-image {
 
   echo "Building Backstage app image: $image_tag"
   "$_pocker" build \
+    --no-cache \
     "${volume_args[@]+"${volume_args[@]}"}" \
     --tag "$image_tag" \
     --tag "$REGISTRY_URL/$ORG_ID/$REPO:main" \

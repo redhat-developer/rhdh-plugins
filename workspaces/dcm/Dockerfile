@@ -60,8 +60,8 @@ RUN YARN_ENABLE_IMMUTABLE_INSTALLS=false \
     YARN_CACHE_FOLDER=/root/.yarn/berry/cache \
     yarn workspaces focus --all --production
 
-# FIX 4: Explicitly force a targeted native compilation for your runtime environment
-RUN yarn workspace backend exec node-gyp rebuild || true
+# Rebuild better-sqlite3 native addon for the container's architecture
+RUN npm rebuild better-sqlite3
 
 # Clean up yarn cache after native build is done
 RUN rm -rf "$(yarn cache dir)"
