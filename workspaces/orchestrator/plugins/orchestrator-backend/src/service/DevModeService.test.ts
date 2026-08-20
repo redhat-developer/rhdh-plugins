@@ -35,6 +35,13 @@ const mockSpawn = spawn as jest.MockedFunction<typeof spawn>;
 
 const flushPromises = () => new Promise(resolve => process.nextTick(resolve));
 
+function createMockChildProcess() {
+  const child = new EventEmitter() as any;
+  child.stdout = new EventEmitter();
+  child.stderr = new EventEmitter();
+  return child;
+}
+
 describe('DevModeService', () => {
   let mockLogger: jest.Mocked<LoggerService>;
   let mockConfig: jest.Mocked<Config>;
@@ -257,7 +264,7 @@ describe('DevModeService', () => {
       });
       mockConfig.getOptionalNumber.mockReturnValue(8080);
 
-      const mockProcess = new EventEmitter() as any;
+      const mockProcess = createMockChildProcess();
       mockSpawn.mockReturnValue(mockProcess);
 
       global.fetch = jest
@@ -288,7 +295,7 @@ describe('DevModeService', () => {
       });
       mockConfig.getOptionalNumber.mockReturnValue(8080);
 
-      const mockProcess = new EventEmitter() as any;
+      const mockProcess = createMockChildProcess();
       mockSpawn.mockReturnValue(mockProcess);
 
       global.fetch = jest
@@ -319,7 +326,7 @@ describe('DevModeService', () => {
       });
       mockConfig.getOptionalNumber.mockReturnValue(8080);
 
-      const mockProcess = new EventEmitter() as any;
+      const mockProcess = createMockChildProcess();
       mockSpawn.mockReturnValue(mockProcess);
 
       global.fetch = jest
@@ -362,7 +369,7 @@ describe('DevModeService', () => {
       });
       mockConfig.getOptionalNumber.mockReturnValue(8080);
 
-      const mockProcess = new EventEmitter() as any;
+      const mockProcess = createMockChildProcess();
       mockSpawn.mockReturnValue(mockProcess);
 
       global.fetch = jest
@@ -411,7 +418,7 @@ describe('DevModeService', () => {
       });
       mockConfig.getOptionalNumber.mockReturnValue(port);
 
-      const mockProcess = new EventEmitter() as any;
+      const mockProcess = createMockChildProcess();
       mockSpawn.mockReturnValue(mockProcess);
 
       global.fetch = jest
@@ -456,7 +463,7 @@ describe('DevModeService', () => {
       });
       mockConfig.getOptionalNumber.mockReturnValue(8080);
 
-      const mockProcess = new EventEmitter() as any;
+      const mockProcess = createMockChildProcess();
       mockSpawn.mockReturnValue(mockProcess);
 
       global.fetch = jest
@@ -489,7 +496,7 @@ describe('DevModeService', () => {
       });
       mockConfig.getOptionalNumber.mockReturnValue(8080);
 
-      const mockProcess = new EventEmitter() as any;
+      const mockProcess = createMockChildProcess();
       mockSpawn.mockReturnValue(mockProcess);
 
       global.fetch = jest
@@ -525,7 +532,7 @@ describe('DevModeService', () => {
       });
       mockConfig.getOptionalNumber.mockReturnValue(8080);
 
-      const mockProcess = new EventEmitter() as any;
+      const mockProcess = createMockChildProcess();
       mockSpawn.mockReturnValue(mockProcess);
 
       global.fetch = jest
@@ -544,6 +551,45 @@ describe('DevModeService', () => {
 
       expect(mockLogger.info).toHaveBeenCalledWith(
         expect.stringContaining('SonataFlow process exited with code 1'),
+      );
+
+      await launchPromise;
+    });
+
+    it('should log child process stdout and stderr', async () => {
+      mockConfig.getOptionalString.mockImplementation((key: string) => {
+        if (key === 'orchestrator.sonataFlowService.baseUrl')
+          return 'http://localhost';
+        if (key === 'orchestrator.sonataFlowService.workflowsSource.localPath')
+          return '/test/workflows';
+        if (key === 'orchestrator.sonataFlowService.runtime') return 'docker';
+        return undefined;
+      });
+      mockConfig.getOptionalNumber.mockReturnValue(8080);
+
+      const mockProcess = createMockChildProcess();
+      mockSpawn.mockReturnValue(mockProcess);
+
+      global.fetch = jest
+        .fn()
+        .mockResolvedValueOnce({ ok: false })
+        .mockResolvedValue({ ok: true });
+
+      const service = new DevModeService(mockConfig, mockLogger);
+      const launchPromise = service.launchDevMode();
+
+      await flushPromises();
+
+      mockProcess.stdout.emit('data', 'container started');
+      mockProcess.stderr.emit('data', 'pulling image');
+
+      await flushPromises();
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        'SonataFlow process stdout: container started',
+      );
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'SonataFlow process stderr: pulling image',
       );
 
       await launchPromise;

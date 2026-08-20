@@ -116,27 +116,27 @@ export class DevModeService {
       } ${launcherCmd.args.join(' ')}`,
     );
 
-    const process = spawn(launcherCmd.command, launcherCmd.args, {
+    const child = spawn(launcherCmd.command, launcherCmd.args, {
       shell: false,
     });
 
-    process.stdout.on('data', data => {
+    child.stdout?.on('data', data => {
       this.logger.info(`SonataFlow process stdout: ${data}`);
     });
 
-    process.stderr.on('data', data => {
+    child.stderr?.on('data', data => {
       this.logger.error(`SonataFlow process stderr: ${data}`);
     });
 
-    process.on('close', code => {
+    child.on('close', code => {
       this.logger.info(`SonataFlow process exited with code ${code}`);
     });
 
-    process.on('exit', code => {
+    child.on('exit', code => {
       this.logger.info(`SonataFlow process exited with code ${code}`);
     });
 
-    process.on('error', error => {
+    child.on('error', error => {
       this.logger.error(`SonataFlow process error: ${error}`);
     });
   }
