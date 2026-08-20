@@ -45,13 +45,15 @@ import {
 } from './merger';
 import { computePluginHash } from './plugin-hash';
 import { Skopeo } from './skopeo';
-import { isLocalPath, isOciUrl } from './protocols';
+import { extractPluginName } from './plugin-name';
+import { isLocalPath, isOciUrl, isRefUrl, REF_PROTO } from './protocols';
 import {
   CONFIG_HASH_FILE,
   DPDY_FILENAME,
   type DynamicPluginsConfig,
   effectivePullPolicy,
   GLOBAL_CONFIG_FILENAME,
+  type IncludePluginList,
   isPluginDisabled,
   LOCK_FILENAME,
   type Plugin,
@@ -232,6 +234,57 @@ async function loadDynamicPluginsConfig(
   return content;
 }
 
+/**
+ * Resolve `ref://` entries in the main plugin list to their full package URLs
+ * by matching the ref name against entries in the include lists.
+ *
+ * This must run before the pre-merge pass so that resolved entries are visible
+ * as standard OCI URLs and level overrides apply correctly.
+ *
+ * Mutates `plugin.package` in place for each resolved entry:
+ *
+ * @example
+ * // ref://backstage-plugin-foo → oci://quay.io/rhdh/backstage-plugin-foo@sha256:abc
+ */
+export function resolveRefPlugins(
+  mainPlugins: PluginSpec[],
+  includeLists: IncludePluginList[],
+): void {
+  const pluginsWithRef = mainPlugins.filter(p => isRefUrl(p.package));
+  if (pluginsWithRef.length === 0) return;
+
+  const nameToPackage = new Map<string, string>();
+
+  for (const [, plugins] of includeLists) {
+    for (const plugin of plugins) {
+      const name = extractPluginName(plugin.package);
+      if (name && !nameToPackage.has(name)) {
+        nameToPackage.set(name, plugin.package);
+      }
+    }
+  }
+
+  for (const plugin of pluginsWithRef) {
+    const refName = plugin.package.slice(REF_PROTO.length);
+
+    if (!refName) {
+      throw new InstallException(
+        'Invalid ref:// reference: empty plugin name in ref://',
+      );
+    }
+
+    const resolved = nameToPackage.get(refName);
+
+    if (!resolved) {
+      throw new InstallException(
+        `Cannot resolve ref:// reference: no plugin named '${refName}' found in included plugins`,
+      );
+    }
+
+    plugin.package = resolved;
+  }
+}
+
 /** Resolve include paths, substitute the catalog-index placeholder, merge
  * everything into a single `PluginMap`, and compute change-detection hashes.
  *
@@ -256,7 +309,7 @@ async function loadAllPlugins(
     catalogDpdy,
   );
 
-  const includeLists: Array<[string, PluginSpec[]]> = [];
+  const includeLists: IncludePluginList[] = [];
   for (const inc of includes) {
     if (!(await fileExists(inc))) {
       log(`WARNING: include file ${inc} not found, skipping`);
@@ -278,6 +331,8 @@ async function loadAllPlugins(
     includeLists.push([inc, plugins]);
   }
   const mainPlugins = content.plugins ?? [];
+
+  resolveRefPlugins(mainPlugins, includeLists);
 
   const disabledRegistries = preMergeOciDisabledState(
     includeLists,
