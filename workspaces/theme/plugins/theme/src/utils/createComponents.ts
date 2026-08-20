@@ -87,14 +87,14 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         ...backstageStyles,
         '@font-face': redHatFontFaces,
         ':root:has(#global-header) [class*="bui-DialogOverlay"]': {
-          top: dialogMastheadOffset,
-          height: `calc(100% - ${dialogMastheadOffset})`,
+          top: `${dialogMastheadOffset} !important`,
+          height: `calc(100% - ${dialogMastheadOffset}) !important`,
           zIndex: 1300,
         },
         ':root:has(#global-header) [class*="bui-DialogOverlay"] > [class*="bui-Dialog"]':
           {
             height: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
-            maxHeight: `calc(100vh - ${dialogMastheadOffset} - 3rem)`,
+            maxHeight: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
           },
         body: {
           ...(backstageStyles.body as CSSObject),
