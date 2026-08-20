@@ -22,11 +22,7 @@ import {
 import { orchestratorFormApiRef } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { FormWidgetsApi } from './FormWidgetsApi';
 
-/**
- * Default form-widgets API extension for the new frontend system.
- * @public
- */
-export const orchestratorFormApi = ApiBlueprint.make({
+const orchestratorFormApi = ApiBlueprint.make({
   params: defineParams =>
     defineParams(
       createApiFactory({

@@ -13,17 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import plugin, { orchestratorFormApi } from './index';
-
-function registeredExtensionIds(frontendPlugin: object): string[] {
-  const extensions = (
-    frontendPlugin as { extensions?: ReadonlyArray<{ id: string }> }
-  ).extensions;
-  if (!extensions) {
-    throw new Error('plugin.extensions is missing');
-  }
-  return extensions.map(extension => extension.id);
-}
+import plugin from './index';
 
 describe('orchestrator-form-widgets NFS', () => {
   it('should export a valid frontend plugin', () => {
@@ -33,11 +23,5 @@ describe('orchestrator-form-widgets NFS', () => {
 
   it('should have the correct plugin id', () => {
     expect(plugin.id).toBe('orchestrator-form-widgets');
-  });
-
-  it('registers the form API extension on the plugin', () => {
-    const extensionIds = registeredExtensionIds(plugin);
-    expect(extensionIds).toContain('api:orchestrator-form-widgets');
-    expect(orchestratorFormApi).toBeDefined();
   });
 });

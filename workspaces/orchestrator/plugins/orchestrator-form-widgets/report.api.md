@@ -34,22 +34,5 @@ const _default: OverridableFrontendPlugin<
 >;
 export default _default;
 
-// @public
-export const orchestratorFormApi: OverridableExtensionDefinition<{
-  kind: 'api';
-  name: undefined;
-  config: {};
-  configInput: {};
-  output: ExtensionDataRef<AnyApiFactory, 'core.api.factory', {}>;
-  inputs: {};
-  params: <
-    TApi,
-    TImpl extends TApi,
-    TDeps extends { [name in string]: unknown },
-  >(
-    params: ApiFactory<TApi, TImpl, TDeps>,
-  ) => ExtensionBlueprintParams<AnyApiFactory>;
-}>;
-
 // (No @packageDocumentation comment for this package)
 ```
