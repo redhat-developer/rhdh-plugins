@@ -50,7 +50,8 @@ export interface DomExtractionOptions {
  * Returns a plain text string suitable for LLM consumption as an attachment.
  *
  * Extraction priority:
- *   header > overlay > alerts > stepper > headings > status >
+ *   header > overlay > search inputs > filters >
+ *   alerts > stepper > headings > status >
  *   forms > tables > description lists > empty state > pagination >
  *   body text > shadow DOM.
  *
@@ -145,70 +146,82 @@ export function extractPageContext(options?: DomExtractionOptions): string {
     return redactText(sections.join('\n\n'));
   }
 
-  // 3. Remove navigation noise (after breadcrumb extraction above)
+  // 3. Search inputs (from live DOM, before nav removal strips the header)
+  const searchText = extractSearchInputs();
+  if (searchText && !appendSection(searchText)) {
+    return redactText(sections.join('\n\n'));
+  }
+
+  // 4. Filter sections (accordion lists, menu pickers — from live DOM)
+  const filterText = extractFilterSections();
+  if (filterText && !appendSection(filterText)) {
+    return redactText(sections.join('\n\n'));
+  }
+
+  // 5. Remove navigation noise (after breadcrumb/search extraction above)
   clone.querySelectorAll('nav, [role="navigation"]').forEach(el => el.remove());
 
-  // 4. Alerts / Toasts
+  // 6. Alerts / Toasts
   const alertText = extractAlerts(clone);
   if (alertText && !appendSection(alertText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 5. Stepper state
+  // 7. Stepper state
   const stepperText = extractStepperState(clone);
   if (stepperText && !appendSection(stepperText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 6. Headings
+  // 8. Headings
   const headingsText = extractHeadings(clone);
   if (headingsText && !appendSection(headingsText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 7. Status indicators
+  // 9. Status indicators
   const statusText = extractStatusIndicators(clone);
   if (statusText && !appendSection(statusText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 8. Form fields
+  // 10. Form fields
   const formsText = extractFormFields(clone);
   if (formsText && !appendSection(formsText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 9. Tables (also captures StructuredMetadataTable)
+  // 11. Tables (also captures StructuredMetadataTable)
   const tablesText = extractTables(clone);
   if (tablesText && !appendSection(tablesText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 10. Description lists (dl/dt/dd key-value pairs)
+  // 12. Description lists (dl/dt/dd key-value pairs)
   const dlText = extractDescriptionLists(clone);
   if (dlText && !appendSection(dlText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 11. Empty states
+  // 13. Empty states
   const emptyText = extractEmptyState(clone);
   if (emptyText && !appendSection(emptyText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 12. Pagination context
+  // 14. Pagination context
   const paginationText = extractPagination(clone);
   if (paginationText && !appendSection(paginationText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 13. Body text (TreeWalker) -- fills remaining budget
+  // 15. Body text (TreeWalker) -- fills remaining budget
   const bodyText = extractBodyText(clone, maxChars - charCount);
   if (bodyText) {
     appendSection(bodyText);
   }
 
-  // 14. TechDocs Shadow DOM (if present on the live DOM)
+  // 16. TechDocs Shadow DOM (if present on the live DOM)
   const shadowText = extractShadowDomContent();
   if (shadowText) {
     appendSection(shadowText);
@@ -317,6 +330,7 @@ function extractStatusIndicators(root: HTMLElement): string {
   const lines: string[] = ['## Status'];
   const seen = new Set<string>();
   indicators.forEach(el => {
+    if (el.closest('td, th')) return;
     const status = el.getAttribute('aria-label')?.replace('Status ', '') || '';
     const text = el.textContent?.trim();
     const entry = text ? `${status}: ${text}` : status;
@@ -342,24 +356,296 @@ function extractFormFields(root: HTMLElement): string {
   );
 
   const lines: string[] = ['## Form Fields'];
+  const seen = new Set<string>();
+
   leafControls.forEach(control => {
-    const label = control.querySelector('label')?.textContent?.trim();
-    const input = control.querySelector(
-      'input, textarea, select',
-    ) as HTMLInputElement | null;
-    const value = input?.value || '';
+    // Skip controls already captured by extractFilterSections
+    if (control.closest('[data-testid*="filter"]')) return;
+
+    // Skip search inputs already captured by extractSearchInputs
+    const searchInput = control.querySelector(
+      'input[placeholder*="earch" i], input[aria-label*="earch" i]',
+    );
+    if (
+      searchInput &&
+      !control.querySelector(
+        '.MuiSelect-select, .MuiChip-label, input[type="checkbox"]',
+      )
+    )
+      return;
+
+    const { label, value } = resolveFormField(control as HTMLElement);
+    if (!label) return;
+    const key = `${label}:${value}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+
     const helper = control
       .querySelector('.MuiFormHelperText-root, [slot="description"]')
       ?.textContent?.trim();
-    if (label) {
-      let line = `- ${label}`;
-      if (value) line += `: ${value}`;
-      if (helper) line += ` (${helper})`;
-      lines.push(line);
-    }
+    let line = `- ${label}: ${value || '(empty)'}`;
+    if (helper) line += ` (${helper})`;
+    lines.push(line);
   });
   cloneControls.forEach(el => el.remove());
   return lines.length > 1 ? lines.join('\n') : '';
+}
+
+function resolveFormField(control: HTMLElement): {
+  label: string;
+  value: string;
+} {
+  // --- Label resolution ---
+  let label = '';
+  const labelEl = control.querySelector('label');
+  if (labelEl) {
+    label = labelEl.textContent?.trim() || '';
+  }
+  if (!label) {
+    // Autocomplete pattern: label wraps the autocomplete as a parent
+    const parentLabel = control.closest('label');
+    if (parentLabel) {
+      const span = parentLabel.querySelector(':scope > span');
+      label =
+        span?.textContent?.trim() ||
+        parentLabel.childNodes[0]?.textContent?.trim() ||
+        '';
+    }
+  }
+  if (!label) {
+    // label[for] pointing at an input inside this control
+    const input = control.querySelector('input[id]') as HTMLInputElement | null;
+    if (input?.id) {
+      const forLabel = document.querySelector(
+        `label[for="${input.id}"]`,
+      ) as HTMLElement | null;
+      if (forLabel) {
+        label = forLabel.textContent?.trim() || '';
+      }
+    }
+  }
+  if (!label) {
+    // Sibling label preceding the Autocomplete ancestor
+    const autocomplete = control.closest('.MuiAutocomplete-root');
+    if (autocomplete) {
+      const prev = autocomplete.previousElementSibling;
+      if (
+        prev?.tagName === 'LABEL' ||
+        prev?.matches?.('[class*="MuiTypography"]')
+      ) {
+        label = prev.textContent?.trim() || '';
+      }
+    }
+  }
+  if (!label) {
+    const input = control.querySelector('input');
+    label =
+      control.closest('[aria-label]')?.getAttribute('aria-label') ||
+      input?.getAttribute('aria-label') ||
+      input?.getAttribute('placeholder') ||
+      '';
+  }
+
+  // --- Value resolution (chips > select display > checkbox group > input) ---
+
+  // Autocomplete chips (multi-select)
+  const chips = control.querySelectorAll('.MuiChip-label');
+  if (chips.length > 0) {
+    const chipValues = Array.from(chips)
+      .map(c => c.textContent?.trim())
+      .filter(Boolean);
+    return { label, value: chipValues.join(', ') };
+  }
+
+  // MUI Select visible text
+  const selectDisplay = control.querySelector(
+    '.MuiSelect-select:not(.MuiTablePagination-select)',
+  );
+  if (selectDisplay) {
+    return { label, value: selectDisplay.textContent?.trim() || '' };
+  }
+
+  // Checkbox group — collect checked values
+  const checkboxes = control.querySelectorAll('input[type="checkbox"]');
+  if (checkboxes.length > 0) {
+    const checked: string[] = [];
+    checkboxes.forEach(cb => {
+      const input = cb as HTMLInputElement;
+      if (input.checked) {
+        const cbLabel =
+          cb
+            .closest('label')
+            ?.querySelector('.MuiFormControlLabel-label')
+            ?.textContent?.trim() || input.value;
+        checked.push(cbLabel);
+      }
+    });
+    return { label, value: checked.join(', ') };
+  }
+
+  // Standard input/textarea
+  const input = control.querySelector(
+    'input:not([type="checkbox"]):not([type="radio"]):not([aria-hidden="true"]), textarea, select',
+  ) as HTMLInputElement | null;
+  return { label, value: input?.value || '' };
+}
+
+function extractSearchInputs(): string {
+  const searchInputs = document.querySelectorAll(
+    'input[placeholder*="earch" i], input[aria-label*="earch" i], [aria-label="search" i] input',
+  );
+  if (searchInputs.length === 0) return '';
+
+  const lines: string[] = ['## Search'];
+  const seen = new Set<string>();
+
+  searchInputs.forEach(el => {
+    const input = el as HTMLInputElement;
+    if (input.type === 'hidden') return;
+    const value = input.value;
+    const label =
+      input.getAttribute('placeholder') ||
+      input.getAttribute('aria-label') ||
+      input.closest('[aria-label]')?.getAttribute('aria-label') ||
+      'Search';
+    const key = `${label}:${value}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      lines.push(`- ${label}: ${value || '(empty)'}`);
+    }
+  });
+  return lines.length > 1 ? lines.join('\n') : '';
+}
+
+function extractFilterSections(): string {
+  const lines: string[] = ['## Filters'];
+
+  // Pattern 1: Accordion filter lists (SearchType.Accordion)
+  // Selected item has Mui-selected inside a nav[aria-label="filter by type"]
+  const filterNavs = document.querySelectorAll(
+    'nav[aria-label*="filter"], .MuiAccordionDetails-root nav',
+  );
+  filterNavs.forEach(nav => {
+    const heading =
+      nav
+        .closest('.MuiAccordion-root')
+        ?.previousElementSibling?.textContent?.trim() ||
+      nav
+        .closest('.MuiAccordionDetails-root')
+        ?.closest('.MuiAccordion-root')
+        ?.querySelector('.MuiAccordionSummary-content')
+        ?.textContent?.trim();
+    const groupLabel =
+      heading ||
+      nav.closest('.MuiBox-root')?.querySelector('h2')?.textContent?.trim();
+
+    const selected = nav.querySelector('.Mui-selected');
+    if (selected) {
+      const primary = selected
+        .querySelector('.MuiListItemText-primary')
+        ?.textContent?.trim();
+      const secondary = selected
+        .querySelector('.MuiListItemText-secondary')
+        ?.textContent?.trim();
+      const text = secondary ? `${primary} (${secondary})` : primary;
+      if (groupLabel && text) {
+        lines.push(`- ${groupLabel}: ${text}`);
+      }
+    }
+  });
+
+  // Pattern 2: Menu pickers (role="menu" with Mui-selected — catalog pickers)
+  const menus = document.querySelectorAll('ul[role="menu"]');
+  menus.forEach(menu => {
+    const groupLabel =
+      menu.getAttribute('aria-label') ||
+      (
+        menu.closest('.MuiCard-root')?.previousElementSibling as HTMLElement
+      )?.textContent?.trim();
+    const selected = menu.querySelector('.Mui-selected');
+    if (selected) {
+      const selectedText = selected
+        .querySelector('p, .MuiListItemText-root')
+        ?.textContent?.trim();
+      if (groupLabel && selectedText) {
+        lines.push(`- ${groupLabel}: ${selectedText}`);
+      }
+    }
+  });
+
+  // Pattern 3: Form controls inside data-testid*="filter" containers (Select, Checkbox)
+  const filterContainers = document.querySelectorAll('[data-testid*="filter"]');
+  filterContainers.forEach(container => {
+    const resolved = resolveFilterControl(container as HTMLElement);
+    if (resolved && resolved.label) {
+      lines.push(`- ${resolved.label}: ${resolved.value || '(empty)'}`);
+    }
+  });
+
+  return lines.length > 1 ? lines.join('\n') : '';
+}
+
+function resolveFilterControl(
+  container: HTMLElement,
+): { label: string; value: string } | null {
+  const labelEl = container.querySelector(
+    'label, .MuiFormLabel-root, .MuiInputLabel-root',
+  );
+  let label =
+    labelEl?.textContent?.trim() || container.getAttribute('aria-label') || '';
+
+  // MUI Select visible text
+  const selectDisplay = container.querySelector(
+    '.MuiSelect-select:not(.MuiTablePagination-select)',
+  );
+  if (selectDisplay) {
+    if (!label) {
+      label =
+        container.querySelector('[aria-label]')?.getAttribute('aria-label') ||
+        '';
+    }
+    return { label, value: selectDisplay.textContent?.trim() || '' };
+  }
+
+  // Autocomplete chips
+  const chips = container.querySelectorAll('.MuiChip-label');
+  if (chips.length > 0) {
+    const chipValues = Array.from(chips)
+      .map(c => c.textContent?.trim())
+      .filter(Boolean);
+    return { label, value: chipValues.join(', ') };
+  }
+
+  // Checkbox group
+  const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+  if (checkboxes.length > 0) {
+    const checked: string[] = [];
+    checkboxes.forEach(cb => {
+      const input = cb as HTMLInputElement;
+      if (input.checked) {
+        const cbLabel =
+          cb
+            .closest('label')
+            ?.querySelector('.MuiFormControlLabel-label')
+            ?.textContent?.trim() || input.value;
+        checked.push(cbLabel);
+      }
+    });
+    return { label, value: checked.join(', ') };
+  }
+
+  // Standard input/textarea (not search)
+  const input = container.querySelector(
+    'input:not([type="checkbox"]):not([type="radio"]):not([aria-hidden="true"]):not([placeholder*="earch" i]), textarea',
+  ) as HTMLInputElement | null;
+  if (input) {
+    if (!label) {
+      label = input.getAttribute('placeholder') || '';
+    }
+    return { label, value: input.value || '' };
+  }
+
+  return null;
 }
 
 function extractTables(root: HTMLElement): string {
@@ -444,8 +730,14 @@ function extractPagination(root: HTMLElement): string {
 
   const lines: string[] = [];
   paginations.forEach(pg => {
-    const text = collapseWhitespace(pg.textContent || '');
-    if (text) lines.push(`Pagination: ${text}`);
+    // Only extract pagination that has actionable navigation buttons
+    const hasActions = pg.querySelector(
+      '.MuiTablePagination-actions button:not([disabled]), [class*="PaginationActions"] button:not([disabled])',
+    );
+    if (hasActions) {
+      const text = collapseWhitespace(pg.textContent || '');
+      if (text) lines.push(`Pagination: ${text}`);
+    }
     pg.remove();
   });
   return lines.length > 0 ? lines.join('\n') : '';

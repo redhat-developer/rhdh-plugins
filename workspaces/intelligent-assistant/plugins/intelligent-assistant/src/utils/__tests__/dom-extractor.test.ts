@@ -600,7 +600,13 @@ describe('extractPageContext', () => {
   it('should extract MUI TablePagination context', () => {
     setRootHtml(`
       <table><tr><td>Row 1</td></tr></table>
-      <div class="MuiTablePagination-root">Rows per page: 10 1-10 of 42</div>
+      <div class="MuiTablePagination-root">
+        Rows per page: 10 1-10 of 42
+        <div class="MuiTablePagination-actions">
+          <button disabled aria-label="Go to previous page"></button>
+          <button aria-label="Go to next page"></button>
+        </div>
+      </div>
     `);
     const result = extractPageContext();
 
@@ -612,6 +618,10 @@ describe('extractPageContext', () => {
       <table><tr><td>Row 1</td></tr></table>
       <div class="bui-TablePagination TablePagination_bui-TablePagination__abc123">
         1 - 10 of 100
+        <div class="MuiTablePagination-actions">
+          <button disabled aria-label="Go to previous page"></button>
+          <button aria-label="Go to next page"></button>
+        </div>
       </div>
     `);
     const result = extractPageContext();
@@ -793,5 +803,467 @@ const y = 2;</pre>
     expect(result).toContain('| my-svc | team-a |');
     expect(result).toContain('## Content');
     expect(result).toContain('Description of the catalog page');
+  });
+
+  // ── Search Inputs ──
+
+  it('should capture search bar with placeholder and value from live DOM', () => {
+    setRootHtml(`
+      <div class="MuiFormControl-root" data-testid="search-bar-next">
+        <div class="MuiInputBase-root">
+          <input aria-label="Search" placeholder="Search in Red Hat Developer Hub" type="text" value="api">
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Search');
+    expect(result).toContain('- Search in Red Hat Developer Hub: api');
+  });
+
+  it('should include search section even when search inputs are empty', () => {
+    setRootHtml(`
+      <div class="MuiFormControl-root">
+        <div class="MuiInputBase-root" aria-label="search">
+          <input placeholder="Search" type="text" value="">
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Search');
+    expect(result).toContain('- Search: (empty)');
+  });
+
+  // ── Filter Sections ──
+
+  it('should extract accordion filter with selected item (SearchType.Accordion pattern)', () => {
+    setRootHtml(`
+      <div class="MuiBox-root">
+        <h2>Result Type</h2>
+        <div class="MuiAccordion-root Mui-expanded">
+          <div class="MuiAccordionSummary-root Mui-expanded">
+            <div class="MuiAccordionSummary-content">Collapse</div>
+          </div>
+          <div class="MuiCollapse-root MuiCollapse-entered">
+            <div class="MuiAccordionDetails-root">
+              <nav class="MuiList-root" aria-label="filter by type">
+                <div class="MuiListItem-root Mui-selected" role="button">
+                  <div class="MuiListItemText-root MuiListItemText-multiline">
+                    <span class="MuiListItemText-primary">Software Catalog</span>
+                    <p class="MuiListItemText-secondary">131 results</p>
+                  </div>
+                </div>
+                <div class="MuiListItem-root" role="button">
+                  <div class="MuiListItemText-root MuiListItemText-multiline">
+                    <span class="MuiListItemText-primary">Documentation</span>
+                    <p class="MuiListItemText-secondary">15 results</p>
+                  </div>
+                </div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Filters');
+    expect(result).toContain('Software Catalog (131 results)');
+  });
+
+  it('should extract menu picker with Mui-selected item (catalog picker pattern)', () => {
+    setRootHtml(`
+      <div class="MuiCard-root">
+        <span class="MuiTypography-subtitle2">Personal</span>
+        <ul class="MuiList-root" role="menu" aria-label="Personal">
+          <li role="menuitem">
+            <div class="MuiMenuItem-root">
+              <p>Starred</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <span class="MuiTypography-subtitle2">My Org</span>
+      <div class="MuiCard-root">
+        <ul class="MuiList-root" role="menu" aria-label="My Org">
+          <li role="menuitem">
+            <div class="MuiMenuItem-root Mui-selected" data-testid="user-picker-all">
+              <p>All</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Filters');
+    expect(result).toContain('- My Org: All');
+  });
+
+  // ── Form Fields: Select visible text ──
+
+  it('should show visible Select text instead of hidden UUID', () => {
+    setRootHtml(`
+      <div class="MuiFormControl-root">
+        <label>Kind</label>
+        <div class="MuiInputBase-root" aria-label="Kind" data-testid="select">
+          <div class="MuiSelect-root MuiSelect-select" tabindex="0" role="button">
+            <p>All</p>
+          </div>
+          <input aria-hidden="true" tabindex="-1" class="MuiSelect-nativeInput" value="c30bbd28-16c2-4ad2-b798-47bfcd1e3ace">
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Form Fields');
+    expect(result).toContain('- Kind: All');
+    expect(result).not.toContain('c30bbd28');
+  });
+
+  // ── Form Fields: Autocomplete chips ──
+
+  it('should read Autocomplete chip labels as the value', () => {
+    setRootHtml(`
+      <div class="MuiFormControl-root MuiTextField-root">
+        <label for="categories-picker">Categories</label>
+        <div class="MuiInputBase-root MuiAutocomplete-inputRoot">
+          <div class="MuiChip-root MuiAutocomplete-tag">
+            <span class="MuiChip-label">service</span>
+          </div>
+          <div class="MuiChip-root MuiAutocomplete-tag">
+            <span class="MuiChip-label">backend</span>
+          </div>
+          <input id="categories-picker" value="">
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Form Fields');
+    expect(result).toContain('- Categories: service, backend');
+  });
+
+  // ── Form Fields: Checkbox group ──
+
+  it('should extract checked checkboxes with their labels', () => {
+    setRootHtml(`
+      <div class="MuiFormControl-root" data-testid="search-checkboxfilter-next">
+        <label class="MuiFormLabel-root">Lifecycle</label>
+        <label class="MuiFormControlLabel-root">
+          <span class="MuiCheckbox-root Mui-checked">
+            <input name="experimental" type="checkbox" value="experimental" checked>
+          </span>
+          <span class="MuiFormControlLabel-label">experimental</span>
+        </label>
+        <label class="MuiFormControlLabel-root">
+          <span class="MuiCheckbox-root">
+            <input name="production" type="checkbox" value="production">
+          </span>
+          <span class="MuiFormControlLabel-label">production</span>
+        </label>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Filters');
+    expect(result).toContain('- Lifecycle: experimental');
+    expect(result).not.toContain('production');
+  });
+
+  // ── Form Fields: No label fallback to placeholder ──
+
+  it('should use placeholder as label when no label element exists', () => {
+    setRootHtml(`
+      <div class="MuiFormControl-root">
+        <div class="MuiInputBase-root">
+          <input placeholder="Filter by name" type="text" value="my-component">
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Form Fields');
+    expect(result).toContain('- Filter by name: my-component');
+  });
+
+  // ── Status in Table ──
+
+  it('should preserve status indicators inside table cells for table extraction', () => {
+    setRootHtml(`
+      <table>
+        <tr><th>Name</th><th>Status</th></tr>
+        <tr>
+          <td>my-task</td>
+          <td><span aria-label="Status error">failed</span></td>
+        </tr>
+      </table>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Tables');
+    expect(result).toContain('failed');
+    expect(result).not.toContain('## Status');
+  });
+
+  it('should still extract standalone status indicators outside tables', () => {
+    setRootHtml(`
+      <div aria-label="Status ok">Running</div>
+      <table>
+        <tr><th>Name</th></tr>
+        <tr><td>my-task</td></tr>
+      </table>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Status');
+    expect(result).toContain('- ok: Running');
+  });
+
+  // ── Empty Form Fields ──
+
+  it('should show (empty) for form fields with a label but no value', () => {
+    setRootHtml(`
+      <div class="MuiFormControl-root">
+        <label>Username</label>
+        <div class="MuiInputBase-root">
+          <input type="text" value="">
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Form Fields');
+    expect(result).toContain('- Username: (empty)');
+  });
+
+  it('should show (empty) for form field with placeholder as label and no value', () => {
+    setRootHtml(`
+      <div class="MuiFormControl-root">
+        <div class="MuiInputBase-root">
+          <input placeholder="Filter" type="text" value="">
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Form Fields');
+    expect(result).toContain('- Filter: (empty)');
+  });
+
+  // ── Filter vs Form Field categorization ──
+
+  it('should categorize Select inside data-testid*="filter" as Filter, not Form Field', () => {
+    setRootHtml(`
+      <div class="MuiFormControl-root" data-testid="search-selectfilter-next">
+        <label>Kind</label>
+        <div class="MuiInputBase-root">
+          <div class="MuiSelect-root MuiSelect-select" tabindex="0" role="button">
+            <p>All</p>
+          </div>
+          <input aria-hidden="true" tabindex="-1" class="MuiSelect-nativeInput" value="all">
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Filters');
+    expect(result).toContain('- Kind: All');
+    expect(result).not.toContain('## Form Fields');
+  });
+
+  it('should categorize Checkbox inside data-testid*="filter" as Filter, not Form Field', () => {
+    setRootHtml(`
+      <div class="MuiFormControl-root" data-testid="search-checkboxfilter-next">
+        <label class="MuiFormLabel-root">Lifecycle</label>
+        <label class="MuiFormControlLabel-root">
+          <span class="MuiCheckbox-root Mui-checked">
+            <input name="experimental" type="checkbox" value="experimental" checked>
+          </span>
+          <span class="MuiFormControlLabel-label">experimental</span>
+        </label>
+        <label class="MuiFormControlLabel-root">
+          <span class="MuiCheckbox-root">
+            <input name="production" type="checkbox" value="production">
+          </span>
+          <span class="MuiFormControlLabel-label">production</span>
+        </label>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Filters');
+    expect(result).toContain('- Lifecycle: experimental');
+    expect(result).not.toContain('## Form Fields');
+  });
+
+  it('should show (empty) for filter with no selection', () => {
+    setRootHtml(`
+      <div class="MuiFormControl-root" data-testid="search-checkboxfilter-next">
+        <label class="MuiFormLabel-root">Lifecycle</label>
+        <label class="MuiFormControlLabel-root">
+          <span class="MuiCheckbox-root">
+            <input name="production" type="checkbox" value="production">
+          </span>
+          <span class="MuiFormControlLabel-label">production</span>
+        </label>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Filters');
+    expect(result).toContain('- Lifecycle: (empty)');
+  });
+
+  it('should keep regular form fields outside filter containers in Form Fields section', () => {
+    setRootHtml(`
+      <div class="MuiFormControl-root" data-testid="search-selectfilter-next">
+        <label>Kind</label>
+        <div class="MuiInputBase-root">
+          <div class="MuiSelect-root MuiSelect-select" tabindex="0" role="button">
+            <p>Component</p>
+          </div>
+          <input aria-hidden="true" tabindex="-1" class="MuiSelect-nativeInput" value="component">
+        </div>
+      </div>
+      <div class="MuiFormControl-root">
+        <label>Name</label>
+        <div class="MuiInputBase-root">
+          <input type="text" value="my-service">
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Filters');
+    expect(result).toContain('- Kind: Component');
+    expect(result).toContain('## Form Fields');
+    expect(result).toContain('- Name: my-service');
+  });
+
+  // ── Pagination: actionable only ──
+
+  it('should extract pagination when it has enabled navigation buttons', () => {
+    setRootHtml(`
+      <div class="MuiTablePagination-root">
+        <p>1–20 of 100</p>
+        <div class="MuiTablePagination-actions">
+          <button disabled aria-label="Go to previous page"></button>
+          <button aria-label="Go to next page"></button>
+        </div>
+      </div>
+      <p>Other content</p>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('Pagination:');
+  });
+
+  it('should not extract pagination when all navigation buttons are disabled', () => {
+    setRootHtml(`
+      <div class="MuiTablePagination-root">
+        <p>1–5 of 5</p>
+        <div class="MuiTablePagination-actions">
+          <button disabled aria-label="Go to previous page"></button>
+          <button disabled aria-label="Go to next page"></button>
+        </div>
+      </div>
+      <p>Other content</p>
+    `);
+    const result = extractPageContext();
+
+    expect(result).not.toContain('Pagination:');
+  });
+
+  it('should not extract pagination when there are no action buttons', () => {
+    setRootHtml(`
+      <div class="MuiTablePagination-root">
+        <p>Showing 1–5 of 5</p>
+      </div>
+      <p>Other content</p>
+    `);
+    const result = extractPageContext();
+
+    expect(result).not.toContain('Pagination:');
+  });
+
+  // ── Multi-select Autocomplete ──
+
+  it('should resolve label via label[for] when label is a sibling of the Autocomplete', () => {
+    setRootHtml(`
+      <div class="MuiBox-root">
+        <label for="categories-picker">Categories</label>
+        <div class="MuiAutocomplete-root" role="combobox">
+          <div class="MuiFormControl-root MuiTextField-root">
+            <div class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot">
+              <div class="MuiChip-root MuiAutocomplete-tag">
+                <span class="MuiChip-label">service</span>
+              </div>
+              <div class="MuiChip-root MuiAutocomplete-tag">
+                <span class="MuiChip-label">plugin</span>
+              </div>
+              <input id="categories-picker" value="">
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Form Fields');
+    expect(result).toContain('- Categories: service, plugin');
+  });
+
+  it('should resolve label from ancestor wrapping label for multi-select Autocomplete', () => {
+    setRootHtml(`
+      <div class="MuiBox-root">
+        <label class="MuiTypography-root MuiTypography-body1">
+          <span class="MuiBox-root">Tags</span>
+          <div class="MuiAutocomplete-root" role="combobox">
+            <div class="MuiFormControl-root MuiTextField-root">
+              <div class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot">
+                <div class="MuiChip-root MuiAutocomplete-tag">
+                  <span class="MuiChip-label">aap</span>
+                </div>
+                <div class="MuiChip-root MuiAutocomplete-tag">
+                  <span class="MuiChip-label">argocd</span>
+                </div>
+                <div class="MuiChip-root MuiAutocomplete-tag">
+                  <span class="MuiChip-label">backend-plugin</span>
+                </div>
+                <input value="" id="mui-12345">
+              </div>
+            </div>
+          </div>
+        </label>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Form Fields');
+    expect(result).toContain('- Tags: aap, argocd, backend-plugin');
+  });
+
+  it('should resolve label from preceding sibling of Autocomplete root', () => {
+    setRootHtml(`
+      <div class="MuiBox-root">
+        <span class="MuiTypography-root">Owner</span>
+        <div class="MuiAutocomplete-root" role="combobox">
+          <div class="MuiFormControl-root MuiTextField-root">
+            <div class="MuiInputBase-root MuiOutlinedInput-root MuiAutocomplete-inputRoot">
+              <div class="MuiChip-root MuiAutocomplete-tag">
+                <span class="MuiChip-label">team-alpha</span>
+              </div>
+              <input value="">
+            </div>
+          </div>
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Form Fields');
+    expect(result).toContain('- Owner: team-alpha');
   });
 });
