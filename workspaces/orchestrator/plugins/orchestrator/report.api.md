@@ -218,6 +218,9 @@ const _default: OverridableFrontendPlugin<
 export default _default;
 
 // @public
+export const orchestratorTemplateCardModule: FrontendModule;
+
+// @public
 export const orchestratorTranslationRef: TranslationRef<
   'plugin.orchestrator',
   {
