@@ -161,3 +161,23 @@ DORA providers follow Scorecard scheduling settings under their metric keys:
 - `scorecard.metricProviders.dora.changeFailureRate.schedule`
 
 See [providers.md](../scorecard-backend/docs/providers.md#metric-collection-scheduling) for schedule schema and defaults.
+
+## Data retention and staleness
+
+Configure DORA module data retention and collector staleness behavior under
+`scorecard.plugins.dora`:
+
+```yaml
+scorecard:
+  plugins:
+    dora:
+      dataRetentionDays: 365
+      staleAfterMs: 60000 # 1 minute
+      deploymentLookbackMs: 172800000 # 48 hours
+```
+
+- `dataRetentionDays`: how long source rows (deployments, incidents, and pull requests linked to expired deployments) are retained before cleanup. Must be at least `30` (the DORA metric computation window). Default: `365`.
+- `staleAfterMs`: freshness threshold in milliseconds for deployments and incidents; if the last sync is within this window, those collectors are not refreshed. Must be greater than or equal to `0`. Set to `0` to always refresh. Default: `60000`. Pull request sync is not gated by `staleAfterMs`; PRs are fetched once per deployment when none are stored yet.
+- `deploymentLookbackMs`: when refreshing deployments, re-query from `max(windowFrom, lastSync − lookback)` by created time so deployments that succeed shortly after the previous lastSync watermark are not missed. Must be greater than or equal to `0` and at most `30` days. Set to `0` for watermark-only incremental refresh. Default: `172800000` (48 hours). Does not apply to incidents.
+
+The module schedules a daily background task, `scorecard-dora:cleanup-expired-data`, that deletes deployments, incidents, and pull requests linked to expired deployments older than `dataRetentionDays`.

@@ -16,16 +16,23 @@
 
 import { ConfigReader } from '@backstage/config';
 import {
+  DORA_DEFAULT_DATA_RETENTION_DAYS,
+  DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
   DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+  DORA_DEFAULT_STALE_AFTER_MS,
+  DORA_TIME_WINDOW_DAYS,
 } from '../constants';
+import { daysToMilliseconds } from '../scheduler/utils';
 import {
   parseDoraChangeFailureRateConfig,
+  parseDoraDataRetentionDays,
   parseDoraDeploymentFrequencyConfig,
   parseDoraMeanTimeToRestoreConfig,
   parseDoraMedianLeadTimeForChangesConfig,
+  parseDoraSyncConfig,
 } from './DoraConfig';
 
 describe('DoraConfig', () => {
@@ -245,6 +252,186 @@ describe('DoraConfig', () => {
         },
         productionEnvironments: ['prod', 'live'],
       });
+    });
+  });
+
+  describe('parseDoraDataRetentionDays', () => {
+    it('returns the default when unset', () => {
+      expect(parseDoraDataRetentionDays(new ConfigReader({}))).toBe(
+        DORA_DEFAULT_DATA_RETENTION_DAYS,
+      );
+    });
+
+    it('returns the configured value', () => {
+      expect(
+        parseDoraDataRetentionDays(
+          new ConfigReader({
+            scorecard: {
+              plugins: {
+                dora: {
+                  dataRetentionDays: 90,
+                },
+              },
+            },
+          }),
+        ),
+      ).toBe(90);
+    });
+
+    it('throws when configured below the DORA metric window', () => {
+      expect(() =>
+        parseDoraDataRetentionDays(
+          new ConfigReader({
+            scorecard: {
+              plugins: {
+                dora: {
+                  dataRetentionDays: DORA_TIME_WINDOW_DAYS - 1,
+                },
+              },
+            },
+          }),
+        ),
+      ).toThrow(
+        `scorecard.plugins.dora.dataRetentionDays must be greater than or equal to ${DORA_TIME_WINDOW_DAYS}`,
+      );
+    });
+
+    it('allows retention equal to the DORA metric window', () => {
+      expect(
+        parseDoraDataRetentionDays(
+          new ConfigReader({
+            scorecard: {
+              plugins: {
+                dora: {
+                  dataRetentionDays: DORA_TIME_WINDOW_DAYS,
+                },
+              },
+            },
+          }),
+        ),
+      ).toBe(DORA_TIME_WINDOW_DAYS);
+    });
+  });
+
+  describe('parseDoraSyncConfig', () => {
+    it('returns defaults when unset', () => {
+      expect(parseDoraSyncConfig(new ConfigReader({}))).toEqual({
+        staleAfterMs: DORA_DEFAULT_STALE_AFTER_MS,
+        deploymentLookbackMs: DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
+      });
+    });
+
+    it('returns configured sync options', () => {
+      expect(
+        parseDoraSyncConfig(
+          new ConfigReader({
+            scorecard: {
+              plugins: {
+                dora: {
+                  staleAfterMs: 60000,
+                  deploymentLookbackMs: 86_400_000,
+                },
+              },
+            },
+          }),
+        ),
+      ).toEqual({
+        staleAfterMs: 60000,
+        deploymentLookbackMs: 86_400_000,
+      });
+    });
+
+    it('allows staleAfterMs and deploymentLookbackMs of 0', () => {
+      expect(
+        parseDoraSyncConfig(
+          new ConfigReader({
+            scorecard: {
+              plugins: {
+                dora: {
+                  staleAfterMs: 0,
+                  deploymentLookbackMs: 0,
+                },
+              },
+            },
+          }),
+        ),
+      ).toEqual({
+        staleAfterMs: 0,
+        deploymentLookbackMs: 0,
+      });
+    });
+
+    it('throws when configured staleAfterMs is negative', () => {
+      expect(() =>
+        parseDoraSyncConfig(
+          new ConfigReader({
+            scorecard: {
+              plugins: {
+                dora: {
+                  staleAfterMs: -1,
+                },
+              },
+            },
+          }),
+        ),
+      ).toThrow(
+        'scorecard.plugins.dora.staleAfterMs must be greater than or equal to 0',
+      );
+    });
+
+    it('throws when configured deploymentLookbackMs is negative', () => {
+      expect(() =>
+        parseDoraSyncConfig(
+          new ConfigReader({
+            scorecard: {
+              plugins: {
+                dora: {
+                  deploymentLookbackMs: -1,
+                },
+              },
+            },
+          }),
+        ),
+      ).toThrow(
+        'scorecard.plugins.dora.deploymentLookbackMs must be greater than or equal to 0',
+      );
+    });
+
+    it('allows deploymentLookbackMs equal to the time window', () => {
+      expect(
+        parseDoraSyncConfig(
+          new ConfigReader({
+            scorecard: {
+              plugins: {
+                dora: {
+                  deploymentLookbackMs: daysToMilliseconds(
+                    DORA_TIME_WINDOW_DAYS,
+                  ),
+                },
+              },
+            },
+          }),
+        ).deploymentLookbackMs,
+      ).toBe(daysToMilliseconds(DORA_TIME_WINDOW_DAYS));
+    });
+
+    it('throws when configured deploymentLookbackMs is greater than the time window', () => {
+      expect(() =>
+        parseDoraSyncConfig(
+          new ConfigReader({
+            scorecard: {
+              plugins: {
+                dora: {
+                  deploymentLookbackMs:
+                    daysToMilliseconds(DORA_TIME_WINDOW_DAYS) + 1,
+                },
+              },
+            },
+          }),
+        ),
+      ).toThrow(
+        `scorecard.plugins.dora.deploymentLookbackMs must be less than or equal to the DORA metric computation window (${DORA_TIME_WINDOW_DAYS} days)`,
+      );
     });
   });
 });

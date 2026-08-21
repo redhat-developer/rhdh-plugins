@@ -65,12 +65,13 @@ Required input:
 
 - `from: string` (ISO datetime)
 - `to: string` (ISO datetime)
+- `updatedSince: string` (ISO datetime)
 
 Required output:
 
-- `incidents: Array<{ id: string; createdAt: string; resolutionAt: string | null }>`
+- `incidents: Array<{ id: string; createdAt: string; updatedAt: string; resolutionAt: string | null }>`
 
-`createdAt` must be a valid ISO datetime.
+`createdAt` and `updatedAt` must be valid ISO datetimes.
 `resolutionAt` must be `null` for unresolved incidents or a valid ISO datetime for resolved incidents.
 
 Collector-specific extra input fields are allowed, but they do not replace required contract fields.

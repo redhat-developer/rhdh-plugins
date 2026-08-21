@@ -367,6 +367,12 @@ scorecard:
   #     except:
   #       - openssf.maintained
 
+  # plugins:
+  #   # Optional DORA source-data retention and freshness controls
+  #   dora:
+  #     dataRetentionDays: 365
+  #     staleAfterMs: 60000
+
   metricProviders:
     jira:
       openIssues:

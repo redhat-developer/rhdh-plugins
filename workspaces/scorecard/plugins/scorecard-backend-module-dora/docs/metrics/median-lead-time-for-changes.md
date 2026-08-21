@@ -7,8 +7,8 @@
 
 Median Lead Time for Changes measures how long changes typically take to move from code to production.
 
-The metric computes lead time for changes from pull request first commit timestamp to production deployment timestamp, then returns the median.
-Deployments are processed as chronological pairs (`previousDeployment` -> `currentDeployment`), and pull requests are resolved for the commit range between those two deployment SHAs.
+The metric computes lead time for changes from pull request first commit timestamp to successful production deployment timestamp, then returns the median.
+Deployments are processed as chronological pairs of successful production deployments (`previousDeployment` -> `currentDeployment`), and pull requests are resolved for the commit range between those two deployment SHAs.
 For each pull request in that range, lead time is `currentDeployment.createdAt - pullRequest.firstCommitAt` in hours.
 The result is: `median(leadTimeHours)`.
 
@@ -95,6 +95,8 @@ Required input:
 Required output:
 
 - `deployments: Array<{ id: string; commitSha: string; environment?: string; createdAt: string; result: 'success' | 'failure' | '' }>`
+
+Only deployments with `result: 'success'` are included in the calculation.
 
 Ordering requirement:
 

@@ -14,34 +14,27 @@
  * limitations under the License.
  */
 
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
+import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
-import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import {
-  type ScorecardCollectorsService,
-  MetricProvider,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { DORA_TIME_WINDOW_DAYS } from '../constants';
-import {
-  deploymentPullRequestsCollectorInputSchema,
-  deploymentPullRequestsCollectorOutputSchema,
-} from './schemas/pullRequestSchemas';
-import {
-  deploymentsCollectorInputSchema,
-  deploymentsCollectorOutputSchema,
-} from './schemas/deploymentSchemas';
-import { calculateMedian } from './utils/calculationUtils';
+import { daysToMilliseconds } from '../scheduler/utils';
+import type { DoraDataService } from '../service/DoraDataService';
+import type { DoraSyncService } from '../service/DoraSyncService';
 import {
   DEFAULT_DORA_MEDIAN_LEAD_TIME_THRESHOLDS,
-  type DoraMedianLeadTimeForChangesConfig,
   parseDoraMedianLeadTimeForChangesConfig,
+  type DoraMedianLeadTimeForChangesConfig,
 } from './DoraConfig';
-import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
-import { isSuccessfulProductionDeployment } from './utils/deploymentFilterUtils';
+import { calculateMedian } from './utils/calculationUtils';
+import { isProductionEnvironment } from './utils/deploymentFilterUtils';
 
 type DoraMedianLeadTimeForChangesProviderOptions = {
-  collectorsService: ScorecardCollectorsService;
+  doraSyncService: DoraSyncService;
+  doraDataService: DoraDataService;
   config: DoraMedianLeadTimeForChangesConfig;
   logger: LoggerService;
 };
@@ -49,12 +42,14 @@ type DoraMedianLeadTimeForChangesProviderOptions = {
 export class DoraMedianLeadTimeForChangesProvider
   implements MetricProvider<'number'>
 {
-  private readonly collectorsService: ScorecardCollectorsService;
+  private readonly doraSyncService: DoraSyncService;
+  private readonly doraDataService: DoraDataService;
   private readonly config: DoraMedianLeadTimeForChangesConfig;
   private readonly logger: LoggerService;
 
   private constructor(options: DoraMedianLeadTimeForChangesProviderOptions) {
-    this.collectorsService = options.collectorsService;
+    this.doraSyncService = options.doraSyncService;
+    this.doraDataService = options.doraDataService;
     this.config = options.config;
     this.logger = options.logger;
   }
@@ -62,12 +57,14 @@ export class DoraMedianLeadTimeForChangesProvider
   static fromConfig(
     config: Config,
     options: {
-      collectorsService: ScorecardCollectorsService;
+      doraSyncService: DoraSyncService;
+      doraDataService: DoraDataService;
       logger: LoggerService;
     },
   ): DoraMedianLeadTimeForChangesProvider {
     return new DoraMedianLeadTimeForChangesProvider({
-      collectorsService: options.collectorsService,
+      doraSyncService: options.doraSyncService,
+      doraDataService: options.doraDataService,
       config: parseDoraMedianLeadTimeForChangesConfig(config),
       logger: options.logger,
     });
@@ -110,30 +107,28 @@ export class DoraMedianLeadTimeForChangesProvider
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const results = new Map<string, number>();
     const to = new Date();
-    const from = new Date();
-    from.setDate(to.getDate() - DORA_TIME_WINDOW_DAYS);
+    const from = new Date(
+      to.getTime() - daysToMilliseconds(DORA_TIME_WINDOW_DAYS),
+    );
 
-    const deploymentsCollected = await this.collectorsService.collect<
-      typeof deploymentsCollectorInputSchema,
-      typeof deploymentsCollectorOutputSchema
-    >({
-      collectorId: this.config.deploymentsCollector.id,
-      contract: {
-        inputSchema: deploymentsCollectorInputSchema,
-        outputSchema: deploymentsCollectorOutputSchema,
-      },
-      entity,
-      input: {
-        ...this.config.deploymentsCollector.input,
-        from: from.toISOString(),
-        to: to.toISOString(),
-      },
+    await this.doraSyncService.syncDeployments(entity, {
+      windowFrom: from,
+      windowTo: to,
+      collector: this.config.deploymentsCollector,
     });
 
+    const catalogEntityRef = stringifyEntityRef(entity);
+
     // Deployments are expected to be returned sorted ascending by createdAt.
-    const deployments = deploymentsCollected.deployments.filter(deployment =>
-      isSuccessfulProductionDeployment(
-        deployment,
+    const deployments = (
+      await this.doraDataService.readDeployments(catalogEntityRef, {
+        windowFrom: from,
+        windowTo: to,
+        collector: this.config.deploymentsCollector,
+      })
+    ).filter(deployment =>
+      isProductionEnvironment(
+        deployment.environment,
         this.config.productionEnvironments,
       ),
     );
@@ -153,23 +148,12 @@ export class DoraMedianLeadTimeForChangesProvider
       const previousDeployment = deployments[deploymentIndex - 1];
       const deployment = deployments[deploymentIndex];
 
-      let pullRequestsCollected;
       try {
-        pullRequestsCollected = await this.collectorsService.collect<
-          typeof deploymentPullRequestsCollectorInputSchema,
-          typeof deploymentPullRequestsCollectorOutputSchema
-        >({
-          collectorId: this.config.deploymentPullRequestsCollector.id,
-          contract: {
-            inputSchema: deploymentPullRequestsCollectorInputSchema,
-            outputSchema: deploymentPullRequestsCollectorOutputSchema,
-          },
-          entity,
-          input: {
-            ...this.config.deploymentPullRequestsCollector.input,
-            baseCommitSha: previousDeployment.commitSha,
-            headCommitSha: deployment.commitSha,
-          },
+        await this.doraSyncService.syncPullRequestsForDeployment(entity, {
+          collector: this.config.deploymentPullRequestsCollector,
+          deploymentId: deployment.id,
+          baseCommitSha: previousDeployment.commitSha,
+          headCommitSha: deployment.commitSha,
         });
       } catch (error) {
         this.logger.warn(
@@ -184,20 +168,25 @@ export class DoraMedianLeadTimeForChangesProvider
         continue;
       }
 
-      const deployedAtTimestamp = new Date(deployment.createdAt).getTime();
-      for (const pullRequest of pullRequestsCollected.pullRequests) {
-        const firstCommitAtTimestamp = new Date(
-          pullRequest.firstCommitAt,
-        ).getTime();
+      const pullRequests =
+        await this.doraDataService.readPullRequestsForDeployment(
+          catalogEntityRef,
+          {
+            collector: this.config.deploymentPullRequestsCollector,
+            deploymentId: deployment.id,
+          },
+        );
+
+      const deployedAtTimestamp = deployment.createdAt.getTime();
+      for (const pullRequest of pullRequests) {
+        const firstCommitAtTimestamp = pullRequest.firstCommitAt.getTime();
         if (deployedAtTimestamp < firstCommitAtTimestamp) {
           this.logger.warn(
             `Skipping pull request ${pullRequest.id} for deployment ${
               deployment.id
             } (${stringifyEntityRef(
               entity,
-            )}) while calculating ${this.getProviderId()}: negative lead time (deployedAt=${
-              deployment.createdAt
-            }, firstCommitAt=${pullRequest.firstCommitAt})`,
+            )}) while calculating ${this.getProviderId()}: negative lead time (deployedAt=${deployment.createdAt.toISOString()}, firstCommitAt=${pullRequest.firstCommitAt.toISOString()})`,
           );
           continue;
         }

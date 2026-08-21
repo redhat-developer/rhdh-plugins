@@ -41,32 +41,34 @@ export function joinJqlClauses(
     .join(' AND ');
 }
 
-export function toJiraDateTime(value: string): string {
-  const parsedDate = parseDateTime(value);
-
-  const year = parsedDate.getUTCFullYear();
-  const month = String(parsedDate.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(parsedDate.getUTCDate()).padStart(2, '0');
-  const hours = String(parsedDate.getUTCHours()).padStart(2, '0');
-  const minutes = String(parsedDate.getUTCMinutes()).padStart(2, '0');
-
-  return `${year}-${month}-${day} ${hours}:${minutes}`;
+/**
+ * Converts a validated ISO datetime to Unix epoch milliseconds for JQL.
+ *
+ * Unquoted numbers in JQL date comparisons are treated as milliseconds since
+ * epoch (1970-01-01). Quoted `"yyyy-MM-dd HH:mm"` values use the configured
+ * (usually server) timezone. Epoch avoids that skew.
+ *
+ * @see https://support.atlassian.com/jira-software-cloud/docs/jql-fields/ (`created`, `updated` fields)
+ * @see https://confluence.atlassian.com/jiracoreserver/advanced-searching-fields-reference-939937719.html (`created`, `updated` fields)
+ */
+export function toJiraEpochMillis(value: string): number {
+  return new Date(value).getTime();
 }
 
-export function toIsoDateTime(value: string): string {
-  return parseDateTime(value).toISOString();
-}
-
-function parseDateTime(value: string): Date {
-  const normalizedValue = normalizeTimezone(value);
+/**
+ * Reformats a datetime from a Jira API response to strict ISO-8601.
+ * Jira may return offsets without a colon (`+0530`); those are normalized.
+ */
+export function jiraDateTimeToIso(value: string): string {
+  const normalizedValue = normalizeJiraOffset(value);
   const parsedDate = new Date(normalizedValue);
   if (Number.isNaN(parsedDate.getTime())) {
-    throw new TypeError(`Invalid datetime "${value}"`);
+    throw new TypeError(`Invalid Jira datetime "${value}"`);
   }
-  return parsedDate;
+  return parsedDate.toISOString();
 }
 
-function normalizeTimezone(value: string): string {
-  // Jira can return offsets like +0530; normalize to +05:30 for strict ISO parsing.
+/** Jira can return offsets like `+0530`; ISO expects `+05:30`. */
+function normalizeJiraOffset(value: string): string {
   return value.replace(/([+-]\d{2})(\d{2})$/, '$1:$2');
 }

@@ -88,6 +88,8 @@ Required output:
 
 - `deployments: Array<{ id: string; commitSha: string; environment?: string; createdAt: string; result: 'success' | 'failure' | '' }>`
 
+Only deployments with `result: 'success'` are included in the calculation.
+
 ## Collector configuration
 
 ### Use GitHub deployments collector (default)
