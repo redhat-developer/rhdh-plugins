@@ -35,6 +35,7 @@ const NOISE_SELECTOR = [
   '[hidden]',
   'footer',
   '.MuiCollapse-hidden',
+  '[data-testid="techdocs-native-shadowroot"]',
 ].join(', ');
 
 export interface DomExtractionOptions {
@@ -329,16 +330,24 @@ function extractStatusIndicators(root: HTMLElement): string {
 }
 
 function extractFormFields(root: HTMLElement): string {
-  const formControls = root.querySelectorAll(
-    '.MuiFormControl-root, .MuiTextField-root, [class*="bui-TextField"]',
+  const FORM_SELECTOR =
+    '.MuiFormControl-root, .MuiTextField-root, [class*="bui-TextField"]';
+  const liveControls = Array.from(document.querySelectorAll(FORM_SELECTOR));
+  const cloneControls = root.querySelectorAll(FORM_SELECTOR);
+  if (liveControls.length === 0) return '';
+
+  // Only process leaf-level controls (those not containing another matched control)
+  const leafControls = liveControls.filter(
+    control => !control.querySelector(FORM_SELECTOR),
   );
-  if (formControls.length === 0) return '';
 
   const lines: string[] = ['## Form Fields'];
-  formControls.forEach(control => {
+  leafControls.forEach(control => {
     const label = control.querySelector('label')?.textContent?.trim();
-    const input = control.querySelector('input, textarea, select');
-    const value = (input as HTMLInputElement)?.value || '';
+    const input = control.querySelector(
+      'input, textarea, select',
+    ) as HTMLInputElement | null;
+    const value = input?.value || '';
     const helper = control
       .querySelector('.MuiFormHelperText-root, [slot="description"]')
       ?.textContent?.trim();
@@ -348,8 +357,8 @@ function extractFormFields(root: HTMLElement): string {
       if (helper) line += ` (${helper})`;
       lines.push(line);
     }
-    control.remove();
   });
+  cloneControls.forEach(el => el.remove());
   return lines.length > 1 ? lines.join('\n') : '';
 }
 
@@ -487,18 +496,61 @@ function extractBodyText(root: HTMLElement, budget: number): string {
 }
 
 function extractShadowDomContent(): string {
-  const shadowHosts = document.querySelectorAll('[class*="shadowDom" i]');
+  const shadowHosts = document.querySelectorAll(
+    '[data-testid="techdocs-native-shadowroot"], [class*="shadowDom" i]',
+  );
   if (shadowHosts.length === 0) return '';
 
   const lines: string[] = ['## Documentation'];
 
   shadowHosts.forEach(host => {
-    if (host.shadowRoot) {
-      const text = collapseWhitespace(host.shadowRoot.textContent || '');
-      if (text) {
-        lines.push(text.slice(0, 2000));
-      }
+    const root = host.shadowRoot;
+    if (!root) return;
+
+    const container =
+      root.querySelector('article.md-content__inner') ||
+      root.querySelector('.md-content__inner') ||
+      root.querySelector('.md-typeset') ||
+      root.querySelector('.md-content') ||
+      root.querySelector('main');
+
+    if (!container) return;
+
+    container
+      .querySelectorAll('style, script, link, noscript, svg, img, template')
+      .forEach(el => el.remove());
+
+    const headings = container.querySelectorAll('h1, h2, h3, h4');
+    if (headings.length > 0) {
+      headings.forEach(h => {
+        const level = parseInt(h.tagName[1], 10);
+        const indent = '  '.repeat(level - 1);
+        const text = h.textContent?.trim().replace(/¶/g, '');
+        if (text) lines.push(`${indent}- ${text}`);
+      });
+      lines.push('');
     }
+
+    container.querySelectorAll('p').forEach(p => {
+      if (p.closest('.md-nav, .md-sidebar, .md-footer')) return;
+      const text = collapseWhitespace(p.textContent || '').replace(/¶/g, '');
+      if (text && text.length > 2) lines.push(text);
+    });
+
+    container.querySelectorAll('ul, ol').forEach(list => {
+      if (list.closest('.md-nav, .md-sidebar, .md-footer')) return;
+      list.querySelectorAll(':scope > li').forEach(li => {
+        const text = collapseWhitespace(li.textContent || '').replace(/¶/g, '');
+        if (text && text.length > 2) lines.push(`- ${text}`);
+      });
+    });
+
+    container.querySelectorAll('pre').forEach(pre => {
+      const code = pre.textContent?.trim();
+      if (code) {
+        lines.push(`\`\`\`\n${code.slice(0, 500)}\n\`\`\``);
+      }
+    });
   });
 
   return lines.length > 1 ? lines.join('\n') : '';

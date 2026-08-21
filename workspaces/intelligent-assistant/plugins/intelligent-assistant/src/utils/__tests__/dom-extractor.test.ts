@@ -456,6 +456,23 @@ describe('extractPageContext', () => {
     expect(result).toContain('(Optional field)');
   });
 
+  it('should capture live input values from the DOM', () => {
+    setRootHtml(`
+      <div class="MuiFormControl-root">
+        <label>Service Name</label>
+        <input type="text" />
+      </div>
+      <p>Content</p>
+    `);
+    const input = document.querySelector(
+      '.MuiFormControl-root input',
+    ) as HTMLInputElement;
+    input.value = 'my-backend-svc';
+    const result = extractPageContext();
+
+    expect(result).toContain('- Service Name: my-backend-svc');
+  });
+
   it('should skip form fields without labels', () => {
     setRootHtml(`
       <div class="MuiFormControl-root">
@@ -728,6 +745,25 @@ const y = 2;</pre>
 
     expect(result).not.toContain('## Active Dialog');
     expect(result).not.toContain('## Active Drawer');
+  });
+
+  // ── Shadow DOM (TechDocs) ──
+
+  it('should extract TechDocs shadow DOM content via data-testid selector', () => {
+    setRootHtml(`
+      <h1 class="bui-PluginHeaderToolbarName"><a href="/docs">Docs</a></h1>
+      <div data-testid="techdocs-native-shadowroot" id="shadow-host"></div>
+    `);
+    const host = document.getElementById('shadow-host')!;
+    const shadow = host.attachShadow({ mode: 'open' });
+    shadow.innerHTML =
+      '<article class="md-content__inner md-typeset"><h1>Getting Started</h1><p>Follow these steps to set up the plugin.</p></article>';
+
+    const result = extractPageContext();
+
+    expect(result).toContain('## Documentation');
+    expect(result).toContain('Getting Started');
+    expect(result).toContain('Follow these steps to set up the plugin');
   });
 
   // ── Full integration ──
