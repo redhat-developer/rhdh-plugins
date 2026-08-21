@@ -133,13 +133,17 @@ export type EntityMetricDetailResponse = {
 };
 
 /**
- * A single sample in a metric time series (latest successful value for a UTC day).
+ * A single sample in a metric time series (latest value for a UTC day).
+ * Success points have a non-null `value`. Error-only days use `value: null`
+ * and set `error` to the calculation failure message.
  * @public
  */
 export type MetricTimeSeriesPoint = {
-  value: MetricValue;
+  value: MetricValue | null;
   /** ISO-8601 timestamp of the chosen sample */
   timestamp: string;
+  /** Present when this point is a calculation failure */
+  error?: string;
 };
 
 /**

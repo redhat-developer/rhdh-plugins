@@ -454,7 +454,9 @@ describe('CatalogMetricService', () => {
       (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue([
         provider.getMetrics()[0],
       ]);
-      mockedDatabase.readEntityMetricValuesInRange.mockResolvedValue([]);
+      mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue(
+        [],
+      );
     });
 
     it('should throw NotFoundError when entity is not found', async () => {
@@ -531,25 +533,13 @@ describe('CatalogMetricService', () => {
           collectorIds: provider.getMetrics()[0].collectorIds,
         },
       });
-      expect(mockedDatabase.readEntityMetricValuesInRange).toHaveBeenCalledWith(
-        entityRef,
-        metricId,
-        from,
-        to,
-      );
+      expect(
+        mockedDatabase.readLatestEntityMetricValuesPerUtcDay,
+      ).toHaveBeenCalledWith(entityRef, metricId, from, to);
     });
 
-    it('should fold multiple samples on the same UTC day to the highest id', async () => {
-      mockedDatabase.readEntityMetricValuesInRange.mockResolvedValue([
-        {
-          id: 1,
-          catalogEntityRef: entityRef,
-          metricId: metricId,
-          value: 8,
-          timestamp: new Date('2024-01-01T08:00:00.000Z'),
-          errorMessage: null,
-          status: 'success',
-        },
+    it('should map each daily DB row to a time-series point', async () => {
+      mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
         {
           id: 3,
           catalogEntityRef: entityRef,
@@ -583,31 +573,31 @@ describe('CatalogMetricService', () => {
       ]);
     });
 
-    it('should exclude null values and calculation errors from points', async () => {
-      mockedDatabase.readEntityMetricValuesInRange.mockResolvedValue([
+    it('should map calculation-error rows to null value with error', async () => {
+      mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
         {
           id: 1,
           catalogEntityRef: entityRef,
           metricId: metricId,
-          value: null,
+          value: 8,
           timestamp: new Date('2024-01-01T10:00:00.000Z'),
-          errorMessage: 'Failed to calculate',
-          status: null,
+          errorMessage: null,
+          status: 'success',
         },
         {
           id: 2,
           catalogEntityRef: entityRef,
           metricId: metricId,
           value: null,
-          timestamp: new Date('2024-01-02T10:00:00.000Z'),
-          errorMessage: null,
-          status: 'success',
+          timestamp: new Date('2024-01-02T16:00:00.000Z'),
+          errorMessage: 'GitHub API 500',
+          status: null,
         },
         {
           id: 3,
           catalogEntityRef: entityRef,
           metricId: metricId,
-          value: 5,
+          value: 7,
           timestamp: new Date('2024-01-03T10:00:00.000Z'),
           errorMessage: null,
           status: 'success',
@@ -622,7 +612,13 @@ describe('CatalogMetricService', () => {
       );
 
       expect(result.points).toEqual([
-        { value: 5, timestamp: '2024-01-03T10:00:00.000Z' },
+        { value: 8, timestamp: '2024-01-01T10:00:00.000Z' },
+        {
+          value: null,
+          timestamp: '2024-01-02T16:00:00.000Z',
+          error: 'GitHub API 500',
+        },
+        { value: 7, timestamp: '2024-01-03T10:00:00.000Z' },
       ]);
     });
 

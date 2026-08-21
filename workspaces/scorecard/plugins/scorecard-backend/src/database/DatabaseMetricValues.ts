@@ -75,6 +75,12 @@ export class DatabaseMetricValues {
 
   constructor(private readonly dbClient: Knex<any, any[]>) {}
 
+  private get isPostgres(): boolean {
+    const clientName: string =
+      (this.dbClient as any).client?.config?.client ?? '';
+    return clientName === 'pg' || clientName.includes('postgres');
+  }
+
   /**
    * Get the latest ids subquery for a given metric and catalog entity refs
    */
@@ -135,11 +141,7 @@ export class DatabaseMetricValues {
     aggregationFn: ScalarAggregationFn,
     filter?: AggregationConfigFilter,
   ): Promise<ScalarAggregationRowResult> {
-    const clientName: string =
-      (this.dbClient as any).client?.config?.client ?? '';
-    const isPostgres = clientName === 'pg' || clientName.includes('postgres');
-
-    const numericValueExpr = isPostgres
+    const numericValueExpr = this.isPostgres
       ? 'CAST(value::text AS DOUBLE PRECISION)'
       : 'CAST(CAST(value AS TEXT) AS REAL)';
 
@@ -229,21 +231,45 @@ export class DatabaseMetricValues {
   }
 
   /**
-   * Get metric values for a specific entity and metric within a timestamp range.
+   * Latest metric value per UTC calendar day for a specific entity and metric.
+   *
+   * For each UTC day in `[from, to]`: prefer the successful sample with the highest
+   * `id`; if the day has no success, use the calculation-error row with the highest
+   * `id`. Days with only null-without-error rows are omitted.
+   *
    * Ordered by timestamp ascending, then id ascending.
    */
-  async readEntityMetricValuesInRange(
+  async readLatestEntityMetricValuesPerUtcDay(
     catalogEntityRef: string,
     metricId: string,
     from: Date,
     to: Date,
   ): Promise<DbMetricValue[]> {
-    const rows = await this.dbClient(this.tableName)
-      .select('*')
+    // Knex dateTime is timestamptz on Postgres. TO_CHAR(timestamptz, ...) formats in
+    // the session TimeZone, so non-UTC sessions bucket by local calendar day. Convert
+    // to UTC wall-clock first so grouping matches Date#getUTC* (UTC sessions unchanged).
+    const utcDayExpr = this.isPostgres
+      ? "TO_CHAR(timestamp AT TIME ZONE 'UTC', 'YYYY-MM-DD')"
+      : "strftime('%Y-%m-%d', timestamp / 1000, 'unixepoch')";
+
+    const missing = DatabaseMetricValues.metricValueIsMissingExpr;
+    const chosenIdExpr = `COALESCE(
+      MAX(CASE WHEN NOT ${missing} THEN id END),
+      MAX(CASE WHEN error_message IS NOT NULL AND ${missing} THEN id END)
+    )`;
+
+    const latestIdsPerDay = this.dbClient(this.tableName)
+      .select(this.dbClient.raw(`${chosenIdExpr} as id`))
       .where('catalog_entity_ref', catalogEntityRef)
       .where('metric_id', metricId)
       .where('timestamp', '>=', from)
       .where('timestamp', '<=', to)
+      .groupByRaw(utcDayExpr)
+      .havingRaw(`${chosenIdExpr} IS NOT NULL`);
+
+    const rows = await this.dbClient(this.tableName)
+      .select('*')
+      .whereIn('id', latestIdsPerDay)
       .orderBy([
         { column: 'timestamp', order: 'asc' },
         { column: 'id', order: 'asc' },
@@ -386,10 +412,6 @@ export class DatabaseMetricValues {
     metricId: string,
     options: ReadEntityMetricsWithFiltersOptions,
   ): Promise<DbMetricValue[]> {
-    const clientName: string =
-      (this.dbClient as any).client?.config?.client ?? '';
-    const isPostgres = clientName === 'pg' || clientName.includes('postgres');
-
     const latestIdsSubquery = this.dbClient(this.tableName)
       .max('id')
       .where('metric_id', metricId)
@@ -413,7 +435,7 @@ export class DatabaseMetricValues {
       (options.sortBy && sortColumnMap[options.sortBy]) ?? 'timestamp';
     const direction = options.sortOrder === 'asc' ? 'asc' : 'desc';
 
-    this.applySort(query, options.sortBy, column, direction, isPostgres);
+    this.applySort(query, options.sortBy, column, direction, this.isPostgres);
 
     if (options.status) {
       query.where('status', options.status);
