@@ -404,6 +404,60 @@ describe('GithubApiService tests', () => {
     });
   });
 
+  describe('getAppInstallationCredentials', () => {
+    it('returns the token when credentials are from a GitHub App', async () => {
+      jest
+        .spyOn(githubApiService.githubCredentialsProvider, 'getCredentials')
+        .mockResolvedValue({
+          headers: { Authorization: 'Bearer app_token' },
+          token: 'app_token',
+          type: 'app',
+        });
+
+      await expect(
+        githubApiService.getAppInstallationCredentials(
+          'https://github.com/backstage/A',
+        ),
+      ).resolves.toEqual({ token: 'app_token' });
+    });
+
+    it('fails closed when only a classic PAT is available', async () => {
+      jest
+        .spyOn(githubApiService.githubCredentialsProvider, 'getCredentials')
+        .mockResolvedValue({
+          headers: { Authorization: 'Bearer pat_token' },
+          token: 'pat_token',
+          type: 'token',
+        });
+
+      await expect(
+        githubApiService.getAppInstallationCredentials(
+          'https://github.com/backstage/A',
+        ),
+      ).rejects.toThrow(
+        /Orchestrator import requires a GitHub App installation token/,
+      );
+    });
+
+    it('fails closed when no token is returned', async () => {
+      jest
+        .spyOn(githubApiService.githubCredentialsProvider, 'getCredentials')
+        .mockResolvedValue({
+          headers: undefined,
+          token: undefined,
+          type: 'token',
+        });
+
+      await expect(
+        githubApiService.getAppInstallationCredentials(
+          'https://github.com/backstage/A',
+        ),
+      ).rejects.toThrow(
+        /Orchestrator import requires a GitHub App installation token/,
+      );
+    });
+  });
+
   describe('with userTokens', () => {
     it('uses the user-token path for getRepositoriesFromIntegrations when a matching host token is provided', async () => {
       octokit.rest.repos.listForAuthenticatedUser.mockReturnValue({
