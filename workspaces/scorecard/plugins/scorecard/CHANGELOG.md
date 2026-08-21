@@ -1,5 +1,25 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 4.3.0
+
+### Minor Changes
+
+- ff6683f: Add DORA metrics and a collectors framework for composing datasource data into metrics.
+
+  - New `@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora` with Deployment Frequency, Median Lead Time for Changes, Mean Time to Restore, and Change Failure Rate
+  - New data collectors used by DORA: GitHub deployments, deployment workflow runs, and deployment pull requests; Jira incidents
+  - Metric time-series API `/metrics/catalog/:kind/:namespace/:name/time-series`
+  - Adds `defaultVisualization` to Metric metadata for sparkline
+
+- f3f71a5: Add unit to metric and display it in threshold legend
+
+### Patch Changes
+
+- Updated dependencies [fea86e8]
+- Updated dependencies [ff6683f]
+- Updated dependencies [f3f71a5]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.3.0
+
 ## 4.2.0
 
 ### Minor Changes

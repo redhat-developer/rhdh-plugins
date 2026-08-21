@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-node
 
+## 4.3.0
+
+### Minor Changes
+
+- fea86e8: Adds new endpoint `GET /metrics/:metricId/collectors` to list collector id and description for a metric. Composite metrics (like DORA) set optional `collectorIds` on `Metric` from config.
+
+  **BREAKING**: `ScorecardCollectorsService` now includes `getCollectorMetadata`. The default implementation behind `scorecardCollectorsServiceRef` already provides it, so no change is required unless you registered your own factory for that ref — then implement the new method.
+
+### Patch Changes
+
+- Updated dependencies [fea86e8]
+- Updated dependencies [ff6683f]
+- Updated dependencies [f3f71a5]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.3.0
+
 ## 4.2.0
 
 ### Patch Changes
