@@ -36,6 +36,11 @@ import {
   aggregatedCardWithGithubFilecheckLicenseWidget,
   aggregatedCardWithGithubFilecheckCodeownersWidget,
   aggregatedCardWithGithubOpenPrsWeightedWidget,
+  aggregatedCardWithMaxOpenPrsWidget,
+  aggregatedCardWithMinOpenPrsWidget,
+  aggregatedCardWithTotalOpenBugsWidget,
+  aggregatedCardWithEntitiesWithOpenPrsWidget,
+  aggregatedCardWithAvgOpenPrsWidget,
 } from './extensions/homePageCards';
 import { scorecardPage } from './extensions/scorecardPage';
 import { scorecardEntityLayoutGrid } from './extensions/scorecardLayoutExtensions';
@@ -72,6 +77,11 @@ export default createFrontendPlugin({
     aggregatedCardWithGithubFilecheckLicenseWidget,
     aggregatedCardWithGithubFilecheckCodeownersWidget,
     aggregatedCardWithGithubOpenPrsWeightedWidget,
+    aggregatedCardWithMaxOpenPrsWidget,
+    aggregatedCardWithMinOpenPrsWidget,
+    aggregatedCardWithTotalOpenBugsWidget,
+    aggregatedCardWithEntitiesWithOpenPrsWidget,
+    aggregatedCardWithAvgOpenPrsWidget,
   ],
   routes: {
     root: rootRouteRef,

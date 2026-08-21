@@ -119,6 +119,51 @@ app:
                 sm: { w: 4, h: 6, x: 8 }
                 xs: { w: 4, h: 6, x: 8 }
                 xxs: { w: 4, h: 6, x: 8 }
+            AggregatedCardWithMaxOpenPrs:
+              priority: 480
+              breakpoints:
+                xl: { w: 4, h: 6 }
+                lg: { w: 4, h: 6 }
+                md: { w: 4, h: 6 }
+                sm: { w: 4, h: 6 }
+                xs: { w: 4, h: 6 }
+                xxs: { w: 4, h: 6 }
+            AggregatedCardWithMinOpenPrs:
+              priority: 490
+              breakpoints:
+                xl: { w: 4, h: 6, x: 4 }
+                lg: { w: 4, h: 6, x: 4 }
+                md: { w: 4, h: 6, x: 4 }
+                sm: { w: 4, h: 6, x: 4 }
+                xs: { w: 4, h: 6, x: 4 }
+                xxs: { w: 4, h: 6, x: 4 }
+            AggregatedCardWithTotalOpenBugs:
+              priority: 500
+              breakpoints:
+                xl: { w: 4, h: 6, x: 8 }
+                lg: { w: 4, h: 6, x: 8 }
+                md: { w: 4, h: 6, x: 8 }
+                sm: { w: 4, h: 6, x: 8 }
+                xs: { w: 4, h: 6, x: 8 }
+                xxs: { w: 4, h: 6, x: 8 }
+            AggregatedCardWithEntitiesWithOpenPrs:
+              priority: 510
+              breakpoints:
+                xl: { w: 4, h: 6 }
+                lg: { w: 4, h: 6 }
+                md: { w: 4, h: 6 }
+                sm: { w: 4, h: 6 }
+                xs: { w: 4, h: 6 }
+                xxs: { w: 4, h: 6 }
+            AggregatedCardWithAvgOpenPrs:
+              priority: 520
+              breakpoints:
+                xl: { w: 4, h: 6, x: 4 }
+                lg: { w: 4, h: 6, x: 4 }
+                md: { w: 4, h: 6, x: 4 }
+                sm: { w: 4, h: 6, x: 4 }
+                xs: { w: 4, h: 6, x: 4 }
+                xxs: { w: 4, h: 6, x: 4 }
 
 organization:
   name: My Company
@@ -340,6 +385,33 @@ scorecard:
       description: This KPI provides a minimum open issues count per entity.
       type: min
       metricId: jira.openIssues
+    minOpenPrs:
+      title: Minimum Open PRs
+      description: Lowest open PR count among owned entities.
+      type: min
+      metricId: github.openPRs
+    avgOpenPrs:
+      title: Average Open PRs
+      description: Mean open PR count per entity.
+      type: average
+      metricId: github.openPRs
+    totalOpenBugs:
+      title: Total Open Bugs
+      description: Sum of open issues across owned entities.
+      type: sum
+      metricId: jira.openIssues
+      options:
+        thresholds:
+          rules:
+            - key: success
+              expression: '<30'
+              color: '#6bb300'
+            - key: warning
+              expression: '30-80'
+              color: 'rgb(224, 189, 108)'
+            - key: error
+              expression: '>80'
+              color: '#be1ec7'
 
   # Globally disabled metrics — these checks never run, regardless of entity annotations.
   # disabledMetrics:
