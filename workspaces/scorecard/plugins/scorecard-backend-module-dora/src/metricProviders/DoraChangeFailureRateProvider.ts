@@ -90,6 +90,10 @@ export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
         unit: '%',
         history: true,
         defaultVisualization: 'sparkline',
+        collectorIds: [
+          this.config.deploymentsCollector.id,
+          this.config.incidentsCollector.id,
+        ],
       },
     ];
   }

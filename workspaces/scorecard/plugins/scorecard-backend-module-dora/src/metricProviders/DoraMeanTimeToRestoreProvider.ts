@@ -86,6 +86,7 @@ export class DoraMeanTimeToRestoreProvider implements MetricProvider<'number'> {
         unit: 'h',
         history: true,
         defaultVisualization: 'sparkline',
+        collectorIds: [this.config.incidentsCollector.id],
       },
     ];
   }

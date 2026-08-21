@@ -97,6 +97,12 @@ export type CollectorConfig = {
 };
 
 // @public
+export type CollectorMetadata = {
+  id: string;
+  description: string;
+};
+
+// @public
 export const DEFAULT_NUMBER_THRESHOLDS: ThresholdConfig;
 
 // @public
@@ -141,6 +147,7 @@ export type Metric<T extends MetricType = MetricType> = {
   unit?: string;
   history?: boolean;
   defaultVisualization?: MetricDefaultVisualization;
+  collectorIds?: string[];
 };
 
 // @public
@@ -157,6 +164,7 @@ export type MetricResult = {
     unit?: string;
     history?: boolean;
     defaultVisualization?: MetricDefaultVisualization;
+    collectorIds?: string[];
   };
   result: {
     value: MetricValue | null;
@@ -184,6 +192,7 @@ export type MetricTimeSeriesResponse = {
     unit?: string;
     history?: boolean;
     defaultVisualization?: MetricDefaultVisualization;
+    collectorIds?: string[];
   };
 };
 

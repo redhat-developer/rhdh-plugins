@@ -168,6 +168,7 @@ export class CatalogMetricService {
             unit: metric.unit,
             history: metric.history,
             defaultVisualization: metric.defaultVisualization,
+            collectorIds: metric.collectorIds,
           },
           ...(isMetricCalcError && {
             error:
@@ -263,6 +264,7 @@ export class CatalogMetricService {
         unit: metric.unit,
         history: metric.history,
         defaultVisualization: metric.defaultVisualization,
+        collectorIds: metric.collectorIds,
       },
     };
   }

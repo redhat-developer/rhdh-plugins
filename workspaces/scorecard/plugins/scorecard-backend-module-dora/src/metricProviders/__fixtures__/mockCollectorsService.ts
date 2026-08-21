@@ -40,6 +40,16 @@ export function buildMockCollectorsService(options: {
   const collectorsService = {
     init: () => undefined,
     hasCollector: (collectorId: string) => collectorsById.has(collectorId),
+    getCollectorMetadata: (collectorId: string) => {
+      const collector = collectorsById.get(collectorId);
+      if (!collector) {
+        throw new Error(`Unexpected collector id "${collectorId}"`);
+      }
+      return {
+        id: collector.getCollectorId(),
+        description: collector.getCollectorDescription(),
+      };
+    },
     collect,
   } as ScorecardCollectorsService;
 

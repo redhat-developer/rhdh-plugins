@@ -174,6 +174,7 @@ export const scorecardPlugin = createBackendPlugin({
             permissions,
             logger,
             thresholdResolver,
+            collectorsService,
           }),
         );
       },

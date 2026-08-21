@@ -47,6 +47,7 @@ abstract class MockMetricProvider<T extends MetricType>
     protected title: string,
     protected description: string,
     protected value: MetricValue<T>,
+    protected collectorIds?: string[],
   ) {}
 
   abstract getDefaultThresholds(): ThresholdConfig;
@@ -71,6 +72,7 @@ abstract class MockMetricProvider<T extends MetricType>
         description: this.description,
         type: this.metricType,
         thresholds: this.getDefaultThresholds(),
+        collectorIds: this.collectorIds,
       },
     ];
   }
@@ -91,8 +93,17 @@ export class MockNumberProvider extends MockMetricProvider<'number'> {
     title: string = 'Mock Number Metric',
     description: string = 'Mock number description.',
     value: number = 42,
+    collectorIds?: string[],
   ) {
-    super('number', providerId, datasourceId, title, description, value);
+    super(
+      'number',
+      providerId,
+      datasourceId,
+      title,
+      description,
+      value,
+      collectorIds,
+    );
   }
   getDefaultThresholds(): ThresholdConfig {
     return {
