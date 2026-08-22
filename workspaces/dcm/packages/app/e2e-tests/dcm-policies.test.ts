@@ -25,7 +25,7 @@ test.describe('DCM Policies CRUD @dcm', () => {
 
   test.beforeEach(async ({ page }) => {
     dcm = new DcmPage(page);
-    await dcm.loginAsGuest();
+    await dcm.login();
     await dcm.navigateToDataCenter();
     await dcm.clickTab('Policies');
   });
@@ -53,7 +53,7 @@ test.describe('DCM Policies CRUD @dcm', () => {
       policyType: 'GLOBAL',
       priority,
       regoCode:
-        'package dcm.placement\n\nselected_provider := "k8s-container-provider"',
+        'package dcm.placement\n\nmain = {"provider": "k8s-container-provider"}',
     });
     await dcm.submitDialog('Create');
     await dcm.waitForDialogClosed();
@@ -73,7 +73,7 @@ test.describe('DCM Policies CRUD @dcm', () => {
       policyType: 'USER',
       priority,
       regoCode:
-        'package dcm.placement\n\nselected_provider := "k8s-container-provider"',
+        'package dcm.placement\n\nmain = {"provider": "k8s-container-provider"}',
     });
     await dcm.submitDialog('Create');
     await dcm.waitForDialogClosed();
@@ -115,7 +115,7 @@ test.describe('DCM Policies CRUD @dcm', () => {
       policyType: 'GLOBAL',
       priority,
       regoCode:
-        'package dcm.placement\n\nselected_provider := "k8s-container-provider"',
+        'package dcm.placement\n\nmain = {"provider": "k8s-container-provider"}',
     });
     await dcm.submitDialog('Create');
     await dcm.waitForDialogClosed();
@@ -140,7 +140,7 @@ test.describe('DCM Policies CRUD @dcm', () => {
       policyType: 'GLOBAL',
       priority,
       regoCode:
-        'package dcm.placement\n\nselected_provider := "k8s-container-provider"',
+        'package dcm.placement\n\nmain = {"provider": "k8s-container-provider"}',
     });
     await dcm.submitDialog('Create');
     await dcm.waitForDialogClosed();

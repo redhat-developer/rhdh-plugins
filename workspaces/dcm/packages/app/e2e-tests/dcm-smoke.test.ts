@@ -15,7 +15,7 @@
  */
 
 import { test, expect } from '@playwright/test';
-import { DcmPage, SERVICE_TYPES } from './pages/DcmPage';
+import { DcmPage } from './pages/DcmPage';
 import { TIMEOUTS } from './utils/constants';
 
 test.describe('DCM Plugin Smoke Tests @dcm', () => {
@@ -23,7 +23,7 @@ test.describe('DCM Plugin Smoke Tests @dcm', () => {
 
   test.beforeEach(async ({ page }) => {
     dcm = new DcmPage(page);
-    await dcm.loginAsGuest();
+    await dcm.login();
   });
 
   test('FLPATH-4200: Data Center page renders from sidebar navigation', async () => {
@@ -76,20 +76,19 @@ test.describe('DCM Plugin Smoke Tests @dcm', () => {
     await dcm.verifyCellContent('k8s-container-provider');
   });
 
-  test('FLPATH-4200: Service types tab shows all five default types', async () => {
+  test('FLPATH-4200: Service types tab shows registered types', async () => {
     await dcm.navigateToDataCenter();
     await dcm.clickTab('Service types');
     await dcm.verifyTableVisible();
-    await dcm.verifyTableHasRows(5);
+    await dcm.verifyTableHasRows(2);
 
     await dcm.verifyColumnHeader('Service type');
     await dcm.verifyColumnHeader('API version');
     await dcm.verifyColumnHeader('Path');
     await dcm.verifyColumnHeader('Created');
 
-    for (const st of SERVICE_TYPES) {
-      await dcm.verifyCellContent(st);
-    }
+    await dcm.verifyCellContent('container');
+    await dcm.verifyCellContent('three-tier-app-demo');
   });
 
   test('FLPATH-4200: Catalog items tab shows Pet Clinic item', async () => {
@@ -139,7 +138,6 @@ test.describe('DCM Plugin Smoke Tests @dcm', () => {
     page,
   }) => {
     await page.goto('/dcm/service-specs', { timeout: TIMEOUTS.page });
-    await page.waitForLoadState('networkidle');
     await dcm.verifyPageTitle();
     const errorAlert = page.locator('[class*="MuiAlert-standardError"]');
     await expect(errorAlert).toHaveCount(0);
@@ -151,7 +149,7 @@ test.describe('DCM Plugin Smoke Tests @dcm', () => {
     await dcm.verifyCellContent('k8s-container-provider');
 
     await dcm.clickTab('Service types');
-    await dcm.verifyTableHasRows(5);
+    await dcm.verifyTableHasRows(2);
 
     await dcm.clickTab('Catalog items');
     await dcm.verifyCellContent('Pet Clinic');
