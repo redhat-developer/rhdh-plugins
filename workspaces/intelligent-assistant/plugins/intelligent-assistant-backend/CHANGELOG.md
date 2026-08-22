@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
 
+## 4.0.1
+
+### Patch Changes
+
+- c0d97e4: Removed unused `@langchain/core` and `@langchain/openai` dependencies left over after the backend switched from an in-process LangChain client to the Lightspeed Core HTTP proxy.
+- e5deac5: AI Notebooks will use markitdown to clean up data before vectorizing documents
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.0.1
+
 ## 4.0.0
 
 ### Major Changes
