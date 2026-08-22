@@ -21,6 +21,12 @@ import type {
 import { mockServices } from '@backstage/backend-test-utils';
 import type { EntityProviderConnection } from '@backstage/plugin-catalog-node';
 
+import {
+  AI_ASSET_CATEGORY_ANNOTATION,
+  AI_ASSET_SOURCE_ANNOTATION,
+  AI_ASSET_VERSION_ANNOTATION,
+} from '@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk';
+
 import { OgxModelEntityProvider } from './OgxModelEntityProvider';
 import type { OgxEntityProviderConfig } from '../types';
 
@@ -118,6 +124,60 @@ describe('OgxModelEntityProvider', () => {
       'meta-llama/Llama-3.1-8B-Instruct',
       'ibm/granite-3.0',
     ]);
+  });
+
+  it('should include all three required AI asset annotations', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        data: [{ id: 'model-1', object: 'model', owned_by: 'test' }],
+      }),
+    } as Response);
+
+    const provider = new OgxModelEntityProvider({
+      config: { ...defaultConfig, serverVersion: '2.1.0' },
+      logger: mockServices.logger.mock(),
+      taskRunner,
+    });
+
+    await provider.connect(mockConnection);
+    await taskRunner.runAll();
+
+    const mutation = (mockConnection.applyMutation as jest.Mock).mock
+      .calls[0][0];
+    const entity = mutation.entities[0].entity;
+
+    expect(entity.metadata.annotations[AI_ASSET_CATEGORY_ANNOTATION]).toBe(
+      'model-server',
+    );
+    expect(entity.metadata.annotations[AI_ASSET_SOURCE_ANNOTATION]).toBe('ogx');
+    expect(entity.metadata.annotations[AI_ASSET_VERSION_ANNOTATION]).toBe(
+      '2.1.0',
+    );
+  });
+
+  it('should normalize version when no serverVersion is configured', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ data: [{ id: 'model-1' }] }),
+    } as Response);
+
+    const provider = new OgxModelEntityProvider({
+      config: defaultConfig,
+      logger: mockServices.logger.mock(),
+      taskRunner,
+    });
+
+    await provider.connect(mockConnection);
+    await taskRunner.runAll();
+
+    const mutation = (mockConnection.applyMutation as jest.Mock).mock
+      .calls[0][0];
+    const entity = mutation.entities[0].entity;
+
+    expect(entity.metadata.annotations[AI_ASSET_VERSION_ANNOTATION]).toBe(
+      '0.0.0-unknown',
+    );
   });
 
   it('should send Authorization header when apiKey is configured', async () => {
