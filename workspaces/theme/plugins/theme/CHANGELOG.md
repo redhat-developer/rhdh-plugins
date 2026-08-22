@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.0.3
+
+### Patch Changes
+
+- 889a5d0: Fix light-theme WCAG contrast and demo a11y issues so the theme e2e axe suite can enforce violations.
+- a1601a9: Added `createSharedThemeProvider` internal utility that creates a single shared Provider for multiple themes, preventing full application remount when switching themes. All built-in RHDH themes now share one Provider.
+
 ## 1.0.2
 
 ### Patch Changes
