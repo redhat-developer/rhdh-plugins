@@ -6,13 +6,13 @@
   "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./alpha": "./src/alpha.ts",
+    "./legacy": "./src/legacy.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
-      "alpha": [
-        "src/alpha.ts"
+      "legacy": [
+        "src/legacy.ts"
       ],
       "package.json": [
         "package.json"
@@ -20,11 +20,7 @@
     }
   },
   "publishConfig": {
-    "access": "public",
-    "alpha": {
-      "types": "dist/alpha.d.ts",
-      "default": "dist/alpha.esm.js"
-    }
+    "access": "public"
   },
   "repository": {
     "type": "git",

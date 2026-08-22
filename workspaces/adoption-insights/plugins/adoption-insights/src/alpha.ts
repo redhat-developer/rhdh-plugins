@@ -13,4 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { adoptionInsightsTranslationsModule as default } from './index';
+
+/**
+ * Translations remain available at the `/alpha` export.
+ * NFS plugin and modules have graduated to the primary package entry point.
+ */
+export * from './translations';

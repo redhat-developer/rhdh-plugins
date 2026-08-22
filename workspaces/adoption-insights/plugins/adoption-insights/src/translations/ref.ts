@@ -19,7 +19,7 @@ import { createTranslationRef } from '@backstage/core-plugin-api/alpha';
 /**
  * Messages object containing all English translations.
  * This is our single source of truth for translations.
- * @alpha
+ * @public
  */
 export const adoptionInsightsMessages = {
   page: {
@@ -137,7 +137,7 @@ export const adoptionInsightsMessages = {
 /**
  * Reference translation for Adoption Insights.
  * Defines all the translation keys used in the plugin.
- * @alpha
+ * @public
  */
 export const adoptionInsightsTranslationRef = createTranslationRef({
   id: 'plugin.adoption-insights',

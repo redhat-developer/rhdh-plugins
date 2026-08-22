@@ -23,8 +23,8 @@ import {
 } from '@backstage/core-plugin-api';
 
 import MUIAdoptionInsightsIcon from '@mui/icons-material/QueryStatsOutlined';
-import { rootRouteRef } from './routes';
-import { AdoptionInsightsApiClient, adoptionInsightsApiRef } from './api';
+import { rootRouteRef } from '../routes';
+import { AdoptionInsightsApiClient, adoptionInsightsApiRef } from '../api';
 
 /**
  * Plugin for Adoption Insights frontend
@@ -56,7 +56,7 @@ export const AdoptionInsightsPage = adoptionInsightsPlugin.provide(
   createRoutableExtension({
     name: 'AdoptionInsightsPage',
     component: () =>
-      import('./components/AdoptionInsightsPage').then(
+      import('../components/AdoptionInsightsPage').then(
         m => m.AdoptionInsightsPage,
       ),
     mountPoint: rootRouteRef,
@@ -64,6 +64,7 @@ export const AdoptionInsightsPage = adoptionInsightsPlugin.provide(
 );
 
 /**
+ * Icon for the Adoption Insights plugin.
  * @public
  */
 export const AdoptionInsightsIcon: IconComponent = MUIAdoptionInsightsIcon;

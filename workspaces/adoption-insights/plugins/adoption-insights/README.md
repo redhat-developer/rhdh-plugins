@@ -2,6 +2,8 @@
 
 The Adoption Insights plugin provides an interactive dashboard to visualize analytics data in Backstage. This frontend plugin integrates with the Adoption Insights backend to deliver insights into adoption trends and usage statistics.
 
+The plugin supports both the **legacy** Backstage frontend and the **New Frontend System (NFS)**. NFS is the primary package entry point. OFS (legacy) exports are available only at `./legacy`. Translations remain available at `./alpha`.
+
 ## Getting started
 
 Your plugin has been added to the example app in this repository, meaning you'll be able to access it by running `yarn start` in the root directory, and then navigating to [/adoption-insights](http://localhost:3000/adoption-insights).
@@ -18,10 +20,12 @@ Before installing the frontend plugin, ensure that the Adoption Insights backend
 
 ### Installation
 
-To install the Adoption Insights plugin, run the following command:
+Install the package in your frontend (use `app` for NFS or `app-legacy` for legacy):
 
 ```sh
 yarn workspace app add @red-hat-developer-hub/backstage-plugin-adoption-insights
+# or for the legacy frontend:
+yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-adoption-insights
 ```
 
 **Note**
@@ -50,10 +54,35 @@ permission:
 
 ### Configuration
 
+#### NFS (New Frontend System) — app
+
+Register the default plugin plus `adoptionInsightsTranslationsModule` in `packages/app/src/App.tsx`:
+
+```tsx
+import { createApp } from '@backstage/frontend-defaults';
+import adoptionInsightsPlugin, {
+  adoptionInsightsTranslationsModule,
+} from '@red-hat-developer-hub/backstage-plugin-adoption-insights';
+
+const app = createApp({
+  features: [
+    adoptionInsightsPlugin,
+    adoptionInsightsTranslationsModule,
+    // ... other plugins
+  ],
+});
+
+export default app.createRoot();
+```
+
+The translations module uses `pluginId: 'app'` and is also available as the default export of `@red-hat-developer-hub/backstage-plugin-adoption-insights/adoption-insights-translations-module`.
+
+#### OFS (legacy frontend) — app-legacy
+
 1. Add the **Adoption Insights** page to your Backstage application by modifying `packages/app/src/App.tsx`:
 
    ```tsx
-   import { AdoptionInsightsPage } from '@red-hat-developer-hub/backstage-plugin-adoption-insights';
+   import { AdoptionInsightsPage } from '@red-hat-developer-hub/backstage-plugin-adoption-insights/legacy';
 
    <Route path="/adoption-insights" element={<AdoptionInsightsPage />} />;
    ```
@@ -69,6 +98,8 @@ permission:
      text="Adoption Insights"
    />;
    ```
+
+Dynamic plugin configurations must use `module: Legacy` for OFS exports. See `app-config.dynamic.yaml`.
 
 ## For Users
 
