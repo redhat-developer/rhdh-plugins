@@ -56,8 +56,14 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: theme.spacing(2),
     gap: theme.spacing(1),
+  },
+  sectionDivider: {
+    borderTop: '1px solid var(--pf-t--global--border--color--default, #c7c7c7)',
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+    marginLeft: -theme.spacing(2),
+    marginRight: -theme.spacing(2),
   },
   title: {
     fontWeight: 500,
@@ -385,6 +391,12 @@ export const DocumentSidebar = ({
           </Button>
         </Tooltip>
       </div>
+
+      <div
+        className={classes.sectionDivider}
+        role="separator"
+        aria-orientation="horizontal"
+      />
 
       <div className={classes.documentsRow}>
         <Typography className={classes.documentCount}>
