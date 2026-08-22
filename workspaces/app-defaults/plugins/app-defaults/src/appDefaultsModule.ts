@@ -15,10 +15,8 @@
  */
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import {
-  appDrawerExtension,
-  templateCardExtension,
-} from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { templateCardExtension } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { appDrawerExtension } from './appDrawerModule';
 
 /**
  * RHDH app module for `pluginId: 'app'`.

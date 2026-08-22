@@ -18,11 +18,9 @@ import { createApp } from '@backstage/frontend-defaults';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import scaffolderPlugin from '@backstage/plugin-scaffolder/alpha';
 import { appAuthModule } from '@red-hat-developer-hub/backstage-plugin-app-auth/alpha';
+import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-defaults/alpha';
 import { appIntegrationsModule } from '@red-hat-developer-hub/backstage-plugin-app-integrations/alpha';
-import {
-  appDrawerModule,
-  templateCardModule,
-} from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { templateCardModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
 import {
   globalHeaderModule,
   globalHeaderTranslationsModule,
