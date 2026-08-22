@@ -9,6 +9,7 @@
     "./legacy": "./src/legacy.ts",
     "./global-header-module": "./src/globalHeaderModuleExport.ts",
     "./global-header-translations-module": "./src/globalHeaderTranslationsModuleExport.ts",
+    "./components": "./src/componentsExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -24,6 +25,9 @@
       ],
       "global-header-translations-module": [
         "src/globalHeaderTranslationsModuleExport.ts"
+      ],
+      "components": [
+        "src/componentsExport.ts"
       ],
       "package.json": [
         "package.json"
@@ -123,6 +127,7 @@
       "PluginRoot": "./src/index.ts",
       "Alpha": "./src/alpha/index.ts",
       "Legacy": "./src/legacy.ts",
+      "Components": "./src/componentsExport.ts",
       "GlobalHeaderModule": "./src/globalHeaderModuleExport.ts",
       "GlobalHeaderTranslationsModule": "./src/globalHeaderTranslationsModuleExport.ts"
     }
