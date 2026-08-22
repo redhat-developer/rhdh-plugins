@@ -20,4 +20,5 @@
  * @packageDocumentation
  */
 
+/** @public */
 export { scorecardModuleDependabot as default } from './module';
