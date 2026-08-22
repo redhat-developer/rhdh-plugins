@@ -6711,6 +6711,7 @@ __metadata:
     "@microsoft/api-extractor-model": "npm:^7.29.2"
     "@microsoft/tsdoc": "npm:^0.16.0"
     "@microsoft/tsdoc-config": "npm:^0.18.0"
+    "@playwright/test": "npm:1.61.1"
     "@types/jest": "npm:^30.0.0"
     "@types/jsdom": "npm:^27.0.0"
     "@useoptic/optic": "npm:^0.55.0"
