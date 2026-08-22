@@ -22,8 +22,11 @@
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import { ThemeBlueprint } from '@backstage/plugin-app-react';
 
-import './assets/fonts/font.min.css';
 import { getAllThemes } from './themes';
+
+import './assets/fonts/font.min.css';
+import './assets/bui/tokens.css';
+import './assets/bui/component-overrides.css';
 
 export { LogoFull, LogoIcon } from './components';
 
