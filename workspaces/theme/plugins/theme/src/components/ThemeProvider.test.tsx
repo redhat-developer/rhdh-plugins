@@ -51,6 +51,10 @@ jest.mock('../hooks/useTheme', () => ({
   useTheme: () => themes.light,
 }));
 
+jest.mock('../hooks/useBranding', () => ({
+  useBranding: () => undefined,
+}));
+
 const mockAppThemeApi = (activeThemeId?: string) => {
   (useApi as jest.Mock).mockReturnValue({
     getActiveThemeId: () => activeThemeId,
