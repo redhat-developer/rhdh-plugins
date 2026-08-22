@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "license": "Apache-2.0",
   "description": "The ai-model-server backend module for the catalog plugin. Registers the AiModelServerAPI kind.",
   "main": "src/index.ts",
