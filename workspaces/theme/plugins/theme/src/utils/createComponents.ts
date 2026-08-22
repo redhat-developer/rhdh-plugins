@@ -46,6 +46,13 @@ export type Components = UnifiedThemeOptions['components'] & {
   RHDHPageWithoutFixHeight?: Component;
 };
 
+/**
+ * Reserved by the global-header plugin so 100vh page-shell rules can sit
+ * below the masthead. Falls back to 0px when the header is not mounted.
+ * @see RHDHBUGS-3627
+ */
+const GLOBAL_HEADER_OFFSET = 'var(--rhdh-global-header-height, 0px)';
+
 export const createComponents = (themeConfig: ThemeConfig): Components => {
   // Short hands to ensure that the code doesn't break if one of the properties is not defined.
 
@@ -80,6 +87,11 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
       return {
         ...backstageStyles,
         '@font-face': redHatFontFaces,
+        // First-paint fallback (MUI Toolbar default) until ResizeObserver
+        // publishes the measured masthead height (RHDHBUGS-3627).
+        ':root:has(#global-header)': {
+          '--rhdh-global-header-height': '64px',
+        },
         body: {
           ...(backstageStyles.body as CSSObject),
           fontFamily: redHatFonts.text,
@@ -633,6 +645,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           paddingBottom: '1.5rem',
           backgroundColor: sidebarBackgroundColor,
           alignItems: 'stretch',
+          // Sidebar is position:fixed to the viewport; keep it below the
+          // in-flow / sticky masthead (RHDHBUGS-3627 / RHDHBUGS-3573).
+          top: GLOBAL_HEADER_OFFSET,
           '& hr': {
             backgroundColor: general.sidebarDividerColor,
           },
@@ -757,8 +772,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           // Fill the viewport so short pages don't leave a gap below the shell.
           // App root wrappers (e.g. ApplicationDrawer) can collapse to content
           // height; without a min-height here the page-inset background stops
-          // early and body/html shows through (RHDHBUGS-3498).
-          minHeight: '100vh',
+          // early and body/html shows through (RHDHBUGS-3498). Subtract the
+          // masthead so HeaderTabs are not covered (RHDHBUGS-3627).
+          minHeight: `calc(100vh - ${GLOBAL_HEADER_OFFSET})`,
           // Let BUI Container's flex: 1 grow into the remaining viewport below
           // PluginHeader / Header slots (those slots set flex: none).
           display: 'flex',
@@ -785,9 +801,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
               // Fill the inset well so short pages use mainSectionBackgroundColor
               // (#292929) instead of leaving a pageInset (#151515) band below content.
               backgroundColor: general.mainSectionBackgroundColor,
-              minHeight: `calc(100vh - 2 * ${general.pageInset})`,
+              minHeight: `calc(100vh - ${GLOBAL_HEADER_OFFSET} - 2 * ${general.pageInset})`,
               // Prevent overflow in the main container due to the margin
-              maxHeight: `calc(100vh - 2 * ${general.pageInset})`,
+              maxHeight: `calc(100vh - ${GLOBAL_HEADER_OFFSET} - 2 * ${general.pageInset})`,
             },
             // NFS / BUI pages use Container instead of <main>. Match the content
             // well color (same token as BackstageContent) and rely on flex: 1
@@ -815,7 +831,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             // inset to look right.
             "& > [class*='MuiLinearProgress-root']": {
               backgroundColor: general.mainSectionBackgroundColor,
-              height: '100vh',
+              height: `calc(100vh - ${GLOBAL_HEADER_OFFSET})`,
               "& > [class*='MuiLinearProgress-']": {
                 height: '0.5rem !important',
               },
