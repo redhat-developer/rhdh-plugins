@@ -23,6 +23,7 @@ import {
   mockMetricsApi,
   mockApiResponse,
   mockSonarqubeScorecardResponse,
+  mockCodeCoverageScorecardResponse,
 } from './utils/apiUtils';
 import { CatalogPage } from './pages/CatalogPage';
 import { ScorecardPage } from './pages/ScorecardPage';
@@ -48,6 +49,7 @@ import {
   sonarqubeScorecardResponse,
   sonarqubeFailedQualityGateResponse,
   fileCheckScorecardResponse,
+  codeCoverageScorecardResponse,
   githubCustomAggregatedResponse,
   gitHubPartiallyAggregatedResponse,
   gitHubWeightedPartiallyAggregatedResponse,
@@ -417,6 +419,87 @@ test.describe('Scorecard Plugin Tests', () => {
 
       await catalogPage.openCatalog();
       await catalogPage.openComponent('sonarqube-scorecard-only');
+      await page.getByText('Scorecard', { exact: true }).click();
+
+      await expect(page.getByText(translations.emptyState.title)).toBeVisible();
+    });
+  });
+
+  test.describe('Code Coverage Entity Scorecards', () => {
+    test.skip(
+      process.env.APP_MODE === 'nfs',
+      'Legacy-only: NFS uses grouped metric cards',
+    );
+
+    test('Verify all code coverage metrics display correctly', async ({}, testInfo) => {
+      await mockCodeCoverageScorecardResponse(
+        page,
+        codeCoverageScorecardResponse,
+      );
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('code-coverage-scorecard-only');
+      await page.getByText('Scorecard', { exact: true }).click();
+
+      const expectedTitles = [
+        'Code coverage (Lines)',
+        'Code coverage - Tracked lines of code',
+        'Code coverage - Covered lines of code',
+        'Code coverage - Missed lines of code',
+        'Code coverage (Branches)',
+        'Code coverage - Tracked branches',
+        'Code coverage - Covered branches',
+        'Code coverage - Missed branches',
+      ];
+
+      for (const title of expectedTitles) {
+        await expect(
+          page.getByText(title, { exact: true }).first(),
+        ).toBeVisible({ timeout: 10000 });
+      }
+
+      await runAccessibilityTests(page, testInfo);
+    });
+
+    test('Verify code coverage metric values', async () => {
+      await mockCodeCoverageScorecardResponse(
+        page,
+        codeCoverageScorecardResponse,
+      );
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('code-coverage-scorecard-only');
+      await page.getByText('Scorecard', { exact: true }).click();
+
+      await expect(
+        page.getByText('Code coverage (Lines)', { exact: true }),
+      ).toBeVisible({ timeout: 10000 });
+
+      const expectedValues: Record<string, string> = {
+        'Code coverage (Lines)': '80',
+        'Code coverage - Tracked lines of code': '200',
+        'Code coverage - Covered lines of code': '160',
+        'Code coverage - Missed lines of code': '40',
+        'Code coverage (Branches)': '70',
+        'Code coverage - Tracked branches': '50',
+        'Code coverage - Covered branches': '35',
+        'Code coverage - Missed branches': '15',
+      };
+
+      for (const [title, value] of Object.entries(expectedValues)) {
+        const card = page
+          .locator('[role="article"]')
+          .filter({ hasText: title })
+          .first();
+        await expect(card).toContainText(value);
+      }
+    });
+
+    test('Verify empty state for code-coverage entity with no metrics', async () => {
+      await mockCodeCoverageScorecardResponse(page, emptyScorecardResponse);
+
+      await catalogPage.openCatalog();
+      await catalogPage.openComponent('code-coverage-scorecard-only');
       await page.getByText('Scorecard', { exact: true }).click();
 
       await expect(page.getByText(translations.emptyState.title)).toBeVisible();
