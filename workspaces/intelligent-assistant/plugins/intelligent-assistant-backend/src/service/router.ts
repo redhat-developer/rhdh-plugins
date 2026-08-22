@@ -160,6 +160,71 @@ async function buildMcpHeaders(
 }
 
 /**
+ * How long a single vision probe is allowed to run before it is aborted.
+ * Keeps a slow/hanging LCS from stalling the caller (e.g. GET /v1/models).
+ */
+const VISION_PROBE_TIMEOUT_MS = 10_000;
+
+/**
+ * Determine whether a model supports vision (JPEG image input).
+ *
+ * Result is memoised in {@link ModelCapabilitiesCache} (per-pod, 24h TTL), so
+ * each `provider/model` pair is only probed once per pod until the entry
+ * expires. On a cache hit the cached value is returned without contacting LCS.
+ *
+ * On a miss a tiny test-inference request is sent to LCS `/v1/responses`:
+ * a 2xx response means the model accepted the image (vision-capable), any
+ * other status means it did not. Both outcomes are cached.
+ *
+ * Network/timeout errors are re-thrown (nothing is cached) so callers can
+ * decide how to surface an unreachable upstream.
+ */
+async function probeModelVisionSupport(
+  lcsBaseUrl: string,
+  cacheKey: string,
+): Promise<boolean> {
+  const cached = ModelCapabilitiesCache.get(cacheKey);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  const testJpeg = `data:image/jpeg;base64,${TEST_VISION_JPEG}`;
+  const testResponse = await fetch(`${lcsBaseUrl}/v1/responses`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    signal: AbortSignal.timeout(VISION_PROBE_TIMEOUT_MS),
+    body: JSON.stringify({
+      model: cacheKey,
+      input: [
+        {
+          type: 'message',
+          role: 'user',
+          content: [
+            {
+              type: 'input_image',
+              image_url: testJpeg,
+              detail: 'low',
+            },
+            {
+              type: 'input_text',
+              text: 'hi, respond with hi.',
+            },
+          ],
+        },
+      ],
+      tool_choice: 'none',
+      temperature: 0,
+      store: false,
+      stream: false,
+    }),
+  });
+
+  const supportsVision = testResponse.ok;
+  ModelCapabilitiesCache.set(cacheKey, supportsVision);
+  return supportsVision;
+}
+
+/**
  * @public
  * The lightspeed backend router
  */
@@ -606,11 +671,72 @@ export async function createRouter(
 
   // ─── Proxy Routes ───────────────────────────────────────────────────
 
+  // Unlike the other proxy routes, GET /v1/models is served by a dedicated
+  // handler so the response can be enriched with each model's vision capability
+  // (`supportsVision`). This lets the frontend learn image support directly from
+  // the model list and removes the need for a per-user /v1/validate-model-vision
+  // round-trip. Vision probes are memoised per-pod (24h TTL), so a given model is
+  // only probed once until its cache entry expires. Like the proxy, /v1/models is
+  // in SKIP_USER_ID_ENDPOINTS, so no user_id is forwarded to LCS.
   router.get(
     '/v1/models',
     generalRateLimiter,
     requirePermission(iaChatAccessPermission),
-    apiProxy,
+    async (_request, response) => {
+      try {
+        const upstream = await fetch(`${lcsBaseUrl}/v1/models`);
+        if (!upstream.ok) {
+          response
+            .status(upstream.status)
+            .json({ error: `Failed to fetch models: HTTP ${upstream.status}` });
+          return;
+        }
+
+        const data = (await upstream.json()) as {
+          models?: Array<{
+            identifier: string;
+            provider_id: string;
+            api_model_type?: string;
+          }>;
+        };
+        const models = Array.isArray(data.models) ? data.models : [];
+
+        const enriched = await Promise.all(
+          models.map(async model => {
+            // Only LLMs can be vision-capable; never probe embeddings etc.
+            if (model.api_model_type !== 'llm') {
+              return { ...model, supportsVision: false };
+            }
+            const cacheKey = `${model.provider_id}/${model.identifier}`;
+            try {
+              const supportsVision = await probeModelVisionSupport(
+                lcsBaseUrl,
+                cacheKey,
+              );
+              return { ...model, supportsVision };
+            } catch (error) {
+              // A single unreachable/timed-out probe must not fail the whole
+              // list; report the model as non-vision and leave it uncached so a
+              // later request can retry.
+              logger.warn(
+                `Vision probe failed for ${cacheKey}: ${
+                  error instanceof Error ? error.message : String(error)
+                }`,
+              );
+              return { ...model, supportsVision: false };
+            }
+          }),
+        );
+
+        response.json({ ...data, models: enriched });
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        logger.error(`Error while fetching models: ${msg}`);
+        response
+          .status(502)
+          .json({ error: 'Unable to fetch models — upstream unreachable' });
+      }
+    },
   );
   router.get(
     '/v1/shields',
@@ -953,47 +1079,11 @@ export async function createRouter(
       try {
         logger.info(`Vision validation requested for model: ${cacheKey}`);
 
-        if (ModelCapabilitiesCache.has(cacheKey)) {
-          const cached = ModelCapabilitiesCache.get(cacheKey)!;
-          logger.info(`Cache hit for ${cacheKey}: ${cached}`);
-          response.json({ model, provider, supportsVision: cached });
-          return;
-        }
-
-        const testJpeg = `data:image/jpeg;base64,${TEST_VISION_JPEG}`;
-        const testResponse = await fetch(`${lcsBaseUrl}/v1/responses`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: cacheKey,
-            input: [
-              {
-                type: 'message',
-                role: 'user',
-                content: [
-                  {
-                    type: 'input_image',
-                    image_url: testJpeg,
-                    detail: 'low',
-                  },
-                  {
-                    type: 'input_text',
-                    text: 'hi, respond with hi.',
-                  },
-                ],
-              },
-            ],
-            tool_choice: 'none',
-            temperature: 0,
-            store: false,
-            stream: false,
-          }),
-        });
-
-        if (testResponse.ok) {
-          ModelCapabilitiesCache.set(cacheKey, true);
-          response.json({ model, provider, supportsVision: true });
-        }
+        const supportsVision = await probeModelVisionSupport(
+          lcsBaseUrl,
+          cacheKey,
+        );
+        response.json({ model, provider, supportsVision });
       } catch (error) {
         logger.error(`Vision test error for ${cacheKey}:`, error);
         response.status(502).json({
