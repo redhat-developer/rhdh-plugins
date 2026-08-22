@@ -104,6 +104,8 @@ If you want to run the entire project, including the frontend, run `yarn start` 
 
 `GET /api/adoption-insights/events`
 
+When `type=top_techdocs`, the backend may enrich each row with a TechDocs `site_name`. That lookup uses Backstage service-to-service authentication to the TechDocs plugin. If the lookup fails or the entity path is invalid, `site_name` falls back to the entity name.
+
 ## Query Parameters
 
 | Parameter    | Type                | Required | Description                                                                                                                                     |
