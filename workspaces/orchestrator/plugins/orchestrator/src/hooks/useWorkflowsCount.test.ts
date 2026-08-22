@@ -27,7 +27,6 @@ import {
   isEntityScopedWorkflowOverviews,
   ORCHESTRATOR_WORKFLOW_OVERVIEWS_CACHE_KEY,
   useWorkflowOverviews,
-  useWorkflowsCount,
 } from './useWorkflowsCount';
 
 describe('workflow overview helpers', () => {
@@ -149,45 +148,5 @@ describe('useWorkflowOverviews', () => {
     expect(listWorkflowOverviews).not.toHaveBeenCalled();
     expect(result.current.isPaginated).toBe(false);
     expect(result.current.count).toBe(1);
-  });
-});
-
-describe('useWorkflowsCount', () => {
-  const listWorkflowOverviews = jest.fn();
-  const getWorkflowsOverviewForEntity = jest.fn();
-
-  const wrapper = ({ children }: { children: ReactNode }) =>
-    createElement(TestApiProvider, {
-      apis: [
-        [
-          orchestratorApiRef,
-          { listWorkflowOverviews, getWorkflowsOverviewForEntity },
-        ],
-      ],
-      children,
-    });
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('returns the overview count from unpaginated overviews', async () => {
-    getWorkflowsOverviewForEntity.mockResolvedValue({
-      data: {
-        overviews: [{ workflowId: 'a' }, { workflowId: 'b' }],
-      },
-    });
-
-    // Entity-scoped key avoids colliding with the persisted global SWR cache.
-    const { result } = renderHook(
-      () =>
-        useWorkflowsCount({
-          workflowsArray: ['a', 'b'],
-          targetEntity: 'component:default/count-test',
-        }),
-      { wrapper },
-    );
-
-    await waitFor(() => expect(result.current).toBe(2));
   });
 });

@@ -30,14 +30,11 @@ import {
   WorkflowRunStatusDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import {
-  buildPagination,
-  buildPaginationTmp,
-  Pagination,
-} from '../../types/pagination';
+import { buildPagination, Pagination } from '../../types/pagination';
 import { OrchestratorService } from '../OrchestratorService';
 import { mapToWorkflowOverviewDTO } from './mapping/V2Mappings';
 import {
+  buildPaginationTmp,
   generateProcessInstance,
   generateProcessInstanceForEventType,
   generateProcessInstances,
