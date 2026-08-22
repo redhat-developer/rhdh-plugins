@@ -50,7 +50,7 @@ export const createListMetricsAction = ({
               id: z.string(),
               title: z.string(),
               description: z.string(),
-              type: z.enum(['number', 'boolean']),
+              type: z.enum(['number', 'boolean', 'string']),
               unit: z.string().optional(),
               history: z.boolean().optional(),
               defaultVisualization: z.enum(['value', 'sparkline']).optional(),
