@@ -28,6 +28,7 @@ import {
 } from '@backstage/plugin-user-settings';
 import { SidebarLogo } from './SidebarLogo';
 import MenuIcon from '@mui/icons-material/Menu';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 
 export const SidebarContent = NavContentBlueprint.make({
   params: {
@@ -51,6 +52,11 @@ export const SidebarContent = NavContentBlueprint.make({
                 />
               ))}
             </SidebarScrollWrapper>
+            <SidebarItem
+              icon={NotificationsIcon}
+              to="/notifications"
+              text="Notifications"
+            />
           </SidebarGroup>
           <SidebarSpace />
           <SidebarDivider />

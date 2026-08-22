@@ -103,6 +103,7 @@ export const adoptionInsightsMessages = {
       lastUsed: 'Last used',
       views: 'Views',
       executions: 'Executions',
+      estTimeSaved: 'Est. Time Saved',
       trend: 'Trend',
       entity: 'Entity',
     },
@@ -126,6 +127,11 @@ export const adoptionInsightsMessages = {
     invalidDateFormat: 'Invalid date format',
     csvFilename: 'active_users',
     loading: 'Loading',
+  },
+  units: {
+    days: '{{value}} d',
+    hours: '{{value}} h',
+    minutes: '{{value}} min',
   },
   permission: {
     title: 'Missing permissions',

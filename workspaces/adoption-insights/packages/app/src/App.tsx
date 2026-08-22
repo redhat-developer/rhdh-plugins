@@ -15,6 +15,7 @@
  */
 import { createApp } from '@backstage/frontend-defaults';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import notificationsPlugin from '@backstage/plugin-notifications/alpha';
 import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
 import adoptionInsightsPlugin, {
   adoptionInsightsTranslationsModule,
@@ -26,6 +27,7 @@ import { signInModule } from './modules/signIn';
 export default createApp({
   features: [
     catalogPlugin,
+    notificationsPlugin,
     userSettingsPlugin,
     adoptionInsightsPlugin,
     adoptionInsightsTranslationsModule,
