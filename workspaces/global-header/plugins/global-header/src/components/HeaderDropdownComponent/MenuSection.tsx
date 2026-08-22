@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { Fragment } from 'react';
 import type { ComponentType, FC } from 'react';
 import Divider from '@mui/material/Divider';
 import Box from '@mui/material/Box';
@@ -69,17 +68,46 @@ export const MenuSection: FC<MenuSectionConfig> = ({
 
   return (
     <>
-      {sectionLabel && (
-        <MenuItem
-          sx={{
-            p: 0,
-          }}
-          disableRipple
-          disableTouchRipple
-          component={hasClickableSubheader ? Link : Fragment}
-          to={optionalLink}
-          onClick={handleClose}
-        >
+      {sectionLabel &&
+        (hasClickableSubheader ? (
+          <MenuItem
+            sx={{
+              p: 0,
+            }}
+            disableRipple
+            disableTouchRipple
+            component={Link}
+            to={optionalLink}
+            onClick={handleClose}
+          >
+            <ListSubheader
+              sx={{
+                backgroundColor: 'transparent',
+                m: 0,
+                color: 'text.disabled',
+                lineHeight: 2,
+                mt: '0.5rem',
+                fontWeight: 400,
+              }}
+            >
+              {translatedSectionLabel}
+            </ListSubheader>
+
+            {optionalLinkLabel && (
+              <Box
+                sx={{
+                  fontSize: '0.875em',
+                  mr: 2,
+                  flexGrow: 1,
+                  textAlign: 'right',
+                  mt: '0.5rem',
+                }}
+              >
+                {optionalLinkLabel}
+              </Box>
+            )}
+          </MenuItem>
+        ) : (
           <ListSubheader
             sx={{
               backgroundColor: 'transparent',
@@ -92,22 +120,7 @@ export const MenuSection: FC<MenuSectionConfig> = ({
           >
             {translatedSectionLabel}
           </ListSubheader>
-
-          {optionalLinkLabel && (
-            <Box
-              sx={{
-                fontSize: '0.875em',
-                mr: 2,
-                flexGrow: 1,
-                textAlign: 'right',
-                mt: '0.5rem',
-              }}
-            >
-              {optionalLinkLabel}
-            </Box>
-          )}
-        </MenuItem>
-      )}
+        ))}
 
       {items.map(
         (
@@ -132,8 +145,7 @@ export const MenuSection: FC<MenuSectionConfig> = ({
               handleClose();
             }}
             sx={{ py: 0.5, color: 'inherit', textDecoration: 'none' }}
-            component={link ? Link : Fragment}
-            to={link}
+            {...(link ? { component: Link, to: link } : {})}
           >
             <Component
               icon={icon}

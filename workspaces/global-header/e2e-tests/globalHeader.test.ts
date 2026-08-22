@@ -216,9 +216,9 @@ test('Verify Help functionality', async () => {
   await expect(
     page.getByRole('menuitem', { name: translations.help.quickStart }),
   ).toBeVisible();
-  await expect(
-    page.getByRole('menuitem', { name: translations.help.supportTitle }),
-  ).toBeVisible();
+  const support = page.getByRole('menu').getByTestId('support-button');
+  await expect(support).toBeVisible();
+  await expect(support).toContainText(translations.help.supportTitle);
   await page.keyboard.press('Escape');
 });
 
