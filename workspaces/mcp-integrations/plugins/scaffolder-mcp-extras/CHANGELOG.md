@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-scaffolder-mcp-extras
 
+## 0.4.4
+
+### Patch Changes
+
+- dbce029: Bump mcp-integrations workspace to Backstage v1.54.0
+
 ## 0.4.3
 
 ### Patch Changes
