@@ -142,6 +142,8 @@ export const orchestratorTranslationsModule = createFrontendModule({
   extensions: [orchestratorTranslation],
 });
 
+export { orchestratorTemplateCardModule } from './templateCard';
+
 export {
   orchestratorTranslationRef,
   orchestratorTranslations,

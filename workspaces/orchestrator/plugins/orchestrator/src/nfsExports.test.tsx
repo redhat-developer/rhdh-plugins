@@ -13,7 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import plugin, { orchestratorTranslationsModule } from './index';
+import plugin, {
+  orchestratorTemplateCardModule,
+  orchestratorTranslationsModule,
+} from './index';
+import templateCardModuleDefault from './orchestratorTemplateCardModuleExport';
 import translationsModuleDefault from './orchestratorTranslationsModuleExport';
 
 describe('orchestrator NFS plugin test', () => {
@@ -40,5 +44,16 @@ describe('orchestrator NFS plugin test', () => {
 
   it('should export the translations module as default for NFS discovery', () => {
     expect(translationsModuleDefault).toBe(orchestratorTranslationsModule);
+  });
+
+  it('should export a template card module targeting the app plugin', () => {
+    expect(orchestratorTemplateCardModule).toBeDefined();
+    expect(orchestratorTemplateCardModule.$$type).toBe(
+      '@backstage/FrontendModule',
+    );
+  });
+
+  it('should export the template card module as default for NFS discovery', () => {
+    expect(templateCardModuleDefault).toBe(orchestratorTemplateCardModule);
   });
 });
