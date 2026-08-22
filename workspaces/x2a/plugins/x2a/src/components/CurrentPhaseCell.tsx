@@ -18,7 +18,7 @@ import { MigrationPhase } from '@red-hat-developer-hub/backstage-plugin-x2a-comm
 
 import { useTranslation } from '../hooks/useTranslation';
 
-const phaseToStep: Record<MigrationPhase, number> = {
+const phaseToStep: Partial<Record<MigrationPhase, number>> = {
   init: 0,
   analyze: 1,
   migrate: 2,
@@ -34,7 +34,8 @@ export const CurrentPhaseCell = ({ phase }: { phase?: MigrationPhase }) => {
 
   const stepNumber = phaseToStep[phase];
   const phaseName = t(`module.phases.${phase}`);
-  const displayText = `${phaseName} (${stepNumber}/3)`;
+  const displayText =
+    stepNumber !== undefined ? `${phaseName} (${stepNumber}/3)` : phaseName;
 
   return <div>{displayText}</div>;
 };

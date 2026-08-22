@@ -15,21 +15,30 @@
  */
 
 import { RELATION_MEMBER_OF } from '@backstage/catalog-model';
-import { mockCredentials } from '@backstage/backend-test-utils';
+import {
+  mockCredentials,
+  mockErrorHandler,
+  mockServices,
+} from '@backstage/backend-test-utils';
+import express from 'express';
+import { Knex } from 'knex';
 import request from 'supertest';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 
 import {
   createApp,
   createDatabase,
+  createDatabaseAndService,
   createService,
   createTestJob,
+  getCatalogMock,
   LONG_TEST_TIMEOUT,
   mockInputProject,
   nonExistentId,
   supportedDatabaseIds,
   tearDownDatabases,
 } from '../__testUtils__';
+import { createRouter } from '../router';
 
 describe('createRouter – projects', () => {
   afterEach(async () => {
@@ -803,5 +812,399 @@ describe('createRouter – projects', () => {
         LONG_TEST_TIMEOUT,
       );
     });
+  });
+
+  describe('POST /projects/:projectId/adversarial-run', () => {
+    const VALID_PROMPT =
+      'Review the migration output for security vulnerabilities, privilege escalation, and correctness issues in the generated Ansible playbooks.';
+
+    const validAgentInput = {
+      name: 'Security Checker',
+      prompt: VALID_PROMPT,
+      phases: ['analyze'],
+      critical: false,
+      createdBy: 'user:default/mock',
+    };
+
+    async function createAppWithGitToken(client: Knex) {
+      const x2aDatabase = createService(client);
+      const router = await createRouter({
+        httpAuth: mockServices.httpAuth(),
+        logger: mockServices.logger.mock(),
+        permissionsSvc: mockServices.permissions.mock({
+          authorize: async () => [{ result: AuthorizeResult.ALLOW }] as any,
+        }),
+        discoveryApi: {
+          getBaseUrl: jest
+            .fn()
+            .mockResolvedValue('http://localhost:7007/api/x2a'),
+          getExternalBaseUrl: jest
+            .fn()
+            .mockResolvedValue('http://localhost:7007'),
+        },
+        catalog: getCatalogMock(),
+        config: mockServices.rootConfig({
+          data: {
+            x2a: {
+              kubernetes: {
+                namespace: 'test-namespace',
+                image: 'test-image',
+                imageTag: 'test',
+                ttlSecondsAfterFinished: 86400,
+                resources: {
+                  requests: { cpu: '100m', memory: '128Mi' },
+                  limits: { cpu: '200m', memory: '256Mi' },
+                },
+              },
+              credentials: { llm: { LLM_MODEL: 'test-model' } },
+              git: { targetRepo: { token: 'config-git-token' } },
+            },
+          },
+        }),
+        x2aDatabase,
+        kubeService: {
+          createJob: jest.fn().mockResolvedValue({ k8sJobName: 'test-job' }),
+          getJobStatus: jest.fn().mockResolvedValue({ status: 'pending' }),
+          getJobLogs: jest.fn().mockResolvedValue(''),
+          deleteJob: jest.fn().mockResolvedValue(undefined),
+        },
+      });
+      const app = express();
+      app.use(router);
+      app.use(mockErrorHandler());
+      return app;
+    }
+
+    it.each(supportedDatabaseIds)(
+      'returns 202 and starts an adversarial job - %p',
+      async databaseId => {
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
+        const app = await createApp(client);
+
+        const projectRes = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        expect(projectRes.status).toBe(200);
+        const projectId = projectRes.body.id;
+
+        const module = await x2aDatabase.createModule({
+          name: 'Test Module',
+          sourcePath: '/path',
+          projectId,
+        });
+        const agent = await x2aDatabase.createAdversarialAgent(validAgentInput);
+
+        const response = await request(app)
+          .post(`/projects/${projectId}/adversarial-run`)
+          .send({
+            phase: 'analyze',
+            moduleId: module.id,
+            agentIds: [agent.id],
+            targetRepoAuth: { token: 'test-token' },
+          });
+
+        expect(response.status).toBe(202);
+        expect(response.body).toMatchObject({ jobId: expect.any(String) });
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'returns 400 when no agents match the requested phase - %p',
+      async databaseId => {
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
+        const app = await createApp(client);
+
+        const projectRes = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        const projectId = projectRes.body.id;
+        const module = await x2aDatabase.createModule({
+          name: 'Test Module',
+          sourcePath: '/path',
+          projectId,
+        });
+        // Agent only covers 'migrate', request asks for 'analyze'
+        const agent = await x2aDatabase.createAdversarialAgent({
+          ...validAgentInput,
+          name: 'Migrate Only Agent',
+          phases: ['migrate'],
+        });
+
+        const response = await request(app)
+          .post(`/projects/${projectId}/adversarial-run`)
+          .send({
+            phase: 'analyze',
+            moduleId: module.id,
+            agentIds: [agent.id],
+            targetRepoAuth: { token: 'test-token' },
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toMatchObject({ error: 'AgentIdMismatch' });
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'returns 400 when only some agent IDs match the requested phase - %p',
+      async databaseId => {
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
+        const app = await createApp(client);
+
+        const projectRes = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        const projectId = projectRes.body.id;
+        const module = await x2aDatabase.createModule({
+          name: 'Test Module',
+          sourcePath: '/path',
+          projectId,
+        });
+        const goodAgent =
+          await x2aDatabase.createAdversarialAgent(validAgentInput);
+        // Second agent covers a different phase — will not match 'analyze'
+        const wrongPhaseAgent = await x2aDatabase.createAdversarialAgent({
+          ...validAgentInput,
+          name: 'Migrate Only Agent',
+          phases: ['migrate'],
+        });
+
+        const response = await request(app)
+          .post(`/projects/${projectId}/adversarial-run`)
+          .send({
+            phase: 'analyze',
+            moduleId: module.id,
+            agentIds: [goodAgent.id, wrongPhaseAgent.id],
+            targetRepoAuth: { token: 'test-token' },
+          });
+
+        expect(response.status).toBe(400);
+        expect(response.body).toMatchObject({
+          error: 'AgentIdMismatch',
+          missingIds: [wrongPhaseAgent.id],
+        });
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'returns 400 when module does not belong to the project - %p',
+      async databaseId => {
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
+        const app = await createApp(client);
+
+        const projectARes = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        const projectBRes = await request(app)
+          .post('/projects')
+          .send({ ...mockInputProject, name: 'Project B' });
+        const projectAId = projectARes.body.id;
+        const projectBId = projectBRes.body.id;
+
+        // Module belongs to project B, but we query under project A
+        const moduleB = await x2aDatabase.createModule({
+          name: 'Module B',
+          sourcePath: '/path',
+          projectId: projectBId,
+        });
+        const agent = await x2aDatabase.createAdversarialAgent(validAgentInput);
+
+        const response = await request(app)
+          .post(`/projects/${projectAId}/adversarial-run`)
+          .send({
+            phase: 'analyze',
+            moduleId: moduleB.id,
+            agentIds: [agent.id],
+            targetRepoAuth: { token: 'test-token' },
+          });
+
+        expect(response.status).toBe(400);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'returns 409 when an adversarial job is already active for the module - %p',
+      async databaseId => {
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
+        const app = await createApp(client, undefined, undefined, {
+          getJobStatus: jest.fn().mockResolvedValue({ status: 'running' }),
+        });
+
+        const projectRes = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        const projectId = projectRes.body.id;
+        const module = await x2aDatabase.createModule({
+          name: 'Test Module',
+          sourcePath: '/path',
+          projectId,
+        });
+        const agent = await x2aDatabase.createAdversarialAgent(validAgentInput);
+
+        // Seed an active adversarial-analyze job
+        const existingJob = await x2aDatabase.createJob({
+          projectId,
+          moduleId: module.id,
+          phase: 'adversarial-analyze',
+          status: 'running',
+          callbackToken: 'token',
+        });
+        await x2aDatabase.updateJob({
+          id: existingJob.id,
+          k8sJobName: 'existing-k8s-job',
+          status: 'running',
+        });
+
+        const response = await request(app)
+          .post(`/projects/${projectId}/adversarial-run`)
+          .send({
+            phase: 'analyze',
+            moduleId: module.id,
+            agentIds: [agent.id],
+            targetRepoAuth: { token: 'test-token' },
+          });
+
+        expect(response.status).toBe(409);
+        expect(response.body).toMatchObject({
+          error: 'JobAlreadyRunning',
+          activeJobId: existingJob.id,
+        });
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'proceeds after reconcile clears a stale running adversarial job - %p',
+      async databaseId => {
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
+        // k8s reports the job has already succeeded → reconcile clears it → no 409
+        const app = await createApp(client, undefined, undefined, {
+          getJobStatus: jest.fn().mockResolvedValue({ status: 'success' }),
+          getJobLogs: jest.fn().mockResolvedValue(''),
+        });
+
+        const projectRes = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        const projectId = projectRes.body.id;
+        const module = await x2aDatabase.createModule({
+          name: 'Test Module',
+          sourcePath: '/path',
+          projectId,
+        });
+        const agent = await x2aDatabase.createAdversarialAgent(validAgentInput);
+
+        // DB thinks job is running, but k8s has finished it
+        const staleJob = await x2aDatabase.createJob({
+          projectId,
+          moduleId: module.id,
+          phase: 'adversarial-analyze',
+          status: 'running',
+          callbackToken: 'token',
+        });
+        await x2aDatabase.updateJob({
+          id: staleJob.id,
+          k8sJobName: 'stale-k8s-job',
+          status: 'running',
+        });
+
+        const response = await request(app)
+          .post(`/projects/${projectId}/adversarial-run`)
+          .send({
+            phase: 'analyze',
+            moduleId: module.id,
+            agentIds: [agent.id],
+            targetRepoAuth: { token: 'test-token' },
+          });
+
+        expect(response.status).toBe(202);
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'passes adversarialAgents to kubeService.createJob - %p',
+      async databaseId => {
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
+        const mockCreateJob = jest
+          .fn()
+          .mockResolvedValue({ k8sJobName: 'test-job' });
+        const app = await createApp(client, undefined, undefined, {
+          createJob: mockCreateJob,
+        });
+
+        const projectRes = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        const projectId = projectRes.body.id;
+        const module = await x2aDatabase.createModule({
+          name: 'Test Module',
+          sourcePath: '/path',
+          projectId,
+        });
+        const agent = await x2aDatabase.createAdversarialAgent(validAgentInput);
+
+        await request(app)
+          .post(`/projects/${projectId}/adversarial-run`)
+          .send({
+            phase: 'analyze',
+            moduleId: module.id,
+            agentIds: [agent.id],
+            targetRepoAuth: { token: 'test-token' },
+          });
+
+        expect(mockCreateJob).toHaveBeenCalledWith(
+          expect.objectContaining({
+            phase: 'adversarial-analyze',
+            adversarialAgents: expect.arrayContaining([
+              expect.objectContaining({ id: agent.id }),
+            ]),
+          }),
+        );
+      },
+      LONG_TEST_TIMEOUT,
+    );
+
+    it.each(supportedDatabaseIds)(
+      'uses targetRepo token from config when not provided in request body - %p',
+      async databaseId => {
+        const { client, x2aDatabase } =
+          await createDatabaseAndService(databaseId);
+        const app = await createAppWithGitToken(client);
+
+        const projectRes = await request(app)
+          .post('/projects')
+          .send(mockInputProject);
+        const projectId = projectRes.body.id;
+        const module = await x2aDatabase.createModule({
+          name: 'Test Module',
+          sourcePath: '/path',
+          projectId,
+        });
+        const agent = await x2aDatabase.createAdversarialAgent(validAgentInput);
+
+        // No targetRepoAuth in body — resolved from x2a.git.targetRepo.token config
+        const response = await request(app)
+          .post(`/projects/${projectId}/adversarial-run`)
+          .send({
+            phase: 'analyze',
+            moduleId: module.id,
+            agentIds: [agent.id],
+          });
+
+        expect(response.status).toBe(202);
+      },
+      LONG_TEST_TIMEOUT,
+    );
   });
 });
