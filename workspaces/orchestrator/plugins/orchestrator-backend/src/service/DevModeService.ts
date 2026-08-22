@@ -154,6 +154,8 @@ export class DevModeService {
       launcherArgs.push(
         '-e',
         'QUARKUS_EXTENSIONS=io.quarkus:quarkus-smallrye-health',
+        '-e',
+        'MAVEN_OPTS=-Dquarkus.bootstrap.offline=false',
       );
     }
 
