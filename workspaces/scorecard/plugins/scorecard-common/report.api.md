@@ -137,6 +137,9 @@ export type EntityMetricDetailResponse = {
   entityHealth: ScorecardEntityHealthSummary;
 };
 
+// @public
+export const INFORMATIONAL_NUMBER_THRESHOLD: ThresholdConfig;
+
 // @public (undocumented)
 export type Metric<T extends MetricType = MetricType> = {
   id: string;

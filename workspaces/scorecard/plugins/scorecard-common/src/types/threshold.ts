@@ -98,6 +98,15 @@ export const DEFAULT_NUMBER_THRESHOLDS: ThresholdConfig = {
 };
 
 /**
+ * Threshold configuration for informational number metrics where
+ * any value is acceptable and mapped to `info` status.
+ * @public
+ */
+export const INFORMATIONAL_NUMBER_THRESHOLD: ThresholdConfig = {
+  rules: [{ key: 'info', expression: '>=0', color: 'info.main' }],
+};
+
+/**
  * Predefined scorecard threshold rule color constants.
  * Use in threshold rule color configurations instead of hex/RGB values.
  * Map to theme.palette colors.
