@@ -21,7 +21,7 @@ import { styled } from '@mui/material/styles';
 import {
   QuickAccessCardContent,
   type QuickAccessCardProps,
-} from '../QuickAccessCard';
+} from '../../components/QuickAccessCard';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getTranslatedTextWithFallback } from '../../translations/utils';
 

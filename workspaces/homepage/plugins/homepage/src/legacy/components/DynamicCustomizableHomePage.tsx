@@ -18,14 +18,14 @@ import type { ClockConfig } from '@backstage/plugin-home';
 
 import { useDynamicHomePageCards } from '../hooks/useDynamicHomePageCards';
 import { HomePage } from './HomePage';
-import type { LocalClockProps } from './LocalClock';
+import type { LocalClockProps } from '../../components/LocalClock';
 
 /**
  * This type is similar to Omit&lt;HomePageProps, 'cards'&gt;.
  * We redefine it here to avoid the need to export HomePageProps to the API export!
  * @public
  */
-export interface DynamicHomePageProps {
+export interface DynamicCustomizableHomePageProps {
   title?: string;
   personalizedTitle?: string;
   pageTitle?: string;
@@ -37,8 +37,10 @@ export interface DynamicHomePageProps {
 /**
  * @public
  */
-export const DynamicHomePage = (props: DynamicHomePageProps) => {
+export const DynamicCustomizableHomePage = (
+  props: DynamicCustomizableHomePageProps,
+) => {
   const mountPoints = useDynamicHomePageCards();
 
-  return <HomePage {...props} mountPoints={mountPoints} customizable={false} />;
+  return <HomePage {...props} mountPoints={mountPoints} customizable />;
 };

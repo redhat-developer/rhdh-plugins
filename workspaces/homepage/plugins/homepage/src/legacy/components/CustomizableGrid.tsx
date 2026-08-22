@@ -14,39 +14,24 @@
  * limitations under the License.
  */
 
-// This complete read-only home page grid picks up the idea and styles from
-// https://github.com/backstage/backstage/blob/master/plugins/home
-// Esp. from the CustomHomepageGrid component:
-// https://github.com/backstage/backstage/blob/master/plugins/home/src/components/CustomHomepage/CustomHomepageGrid.tsx
-// but without the drag and drop functionality.
-
 import type { ReactElement } from 'react';
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
-import {
-  CustomHomepageGrid,
-  LayoutConfiguration,
-} from '@backstage/plugin-home';
+import { LayoutConfiguration } from '@backstage/plugin-home';
 import {
   ComponentParts,
   createCardExtension,
 } from '@backstage/plugin-home-react';
 
-import GlobalStyles from '@mui/material/GlobalStyles';
-import { useTheme } from '@mui/material/styles';
-
-// Removes the doubled scrollbar
-import 'react-grid-layout/css/styles.css';
-
-import { HomePageCardMountPoint } from '../types';
+import { HomePageCardMountPoint } from '../../types';
 import { dynamicHomePagePlugin } from '../plugin';
-import { useTranslation } from '../hooks/useTranslation';
-import { useContainerQuery } from '../hooks/useContainerQuery';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   isCardADefaultConfiguration,
   getCardTitle,
   getCardDescription,
-} from '../utils/customizable-cards';
+} from '../../utils/customizable-cards';
+import { CustomizableGridShell } from './CustomizableGridShell';
 
 /**
  * @public
@@ -59,21 +44,13 @@ export interface CustomizableGridProps {
  * @public
  */
 export const CustomizableGrid = ({ mountPoints }: CustomizableGridProps) => {
-  const theme = useTheme();
   const { t } = useTranslation();
-  const gridContainerRef = useRef<HTMLDivElement>(null);
-  useContainerQuery(gridContainerRef, { notifyWindowResize: true });
 
   const { children, config } = useMemo(() => {
-    // Children contains the additional / available cards a user can add.
-    // Maps the card name to the actual card component.
-    // Contains also the title to allow sorting before rendering.
     const childDictionary: Record<
       string,
       { child: ReactElement; title: string | undefined }
     > = {};
-
-    // Config contains the default layout of the homepage
     const defaultConfig: LayoutConfiguration[] = [];
 
     mountPoints.forEach(mountPoint => {
@@ -90,11 +67,8 @@ export const CustomizableGrid = ({ mountPoints }: CustomizableGridProps) => {
         Content: props => (
           <mountPoint.Component {...mountPoint.config!.props} {...props} />
         ),
-        // Untested and unsupported for now!
         Actions: mountPoint.Actions as () => JSX.Element,
-        // Untested and unsupported for now!
         Settings: mountPoint.Settings as () => JSX.Element,
-        // This is a workaround to NOT automatically wrap in an InfoCard
         ContextProvider: automaticallyWrapInInfoCard
           ? undefined
           : props => (
@@ -145,30 +119,6 @@ export const CustomizableGrid = ({ mountPoints }: CustomizableGridProps) => {
   }, [mountPoints, t]);
 
   return (
-    <>
-      <GlobalStyles
-        styles={{
-          '[class*="makeStyles-settingsOverlay"]': {
-            backgroundColor:
-              theme.palette.mode === 'dark'
-                ? 'rgba(20, 20, 20, 0.95) !important'
-                : 'rgba(40, 40, 40, 0.93) !important',
-          },
-        }}
-      />
-      <div
-        ref={gridContainerRef}
-        style={{ width: '100%', minWidth: 0, boxSizing: 'border-box' }}
-      >
-        <CustomHomepageGrid
-          config={config}
-          preventCollision={false}
-          compactType="vertical"
-          style={{ margin: '-10px' }}
-        >
-          {children}
-        </CustomHomepageGrid>
-      </div>
-    </>
+    <CustomizableGridShell config={config}>{children}</CustomizableGridShell>
   );
 };

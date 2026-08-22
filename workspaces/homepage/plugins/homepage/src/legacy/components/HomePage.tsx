@@ -22,12 +22,12 @@ import {
 } from '@backstage/core-components';
 
 import { useDefaultWidgets } from '../hooks/useDefaultWidgets';
-import { useTranslation } from '../hooks/useTranslation';
-import { HomePageCardMountPoint } from '../types';
+import { useTranslation } from '../../hooks/useTranslation';
+import { HomePageCardMountPoint } from '../../types';
 import { CustomizableGrid } from './CustomizableGrid';
 import { DefaultWidgetsCustomizableGrid } from './DefaultWidgetsCustomizableGrid';
 import { DefaultWidgetsReadOnlyGrid } from './DefaultWidgetsReadOnlyGrid';
-import { Header, HeaderProps } from './Header';
+import { Header, HeaderProps } from '../../components/Header';
 import { ReadOnlyGrid } from './ReadOnlyGrid';
 
 export interface HomePageProps extends HeaderProps {

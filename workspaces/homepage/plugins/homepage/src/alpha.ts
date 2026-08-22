@@ -13,4 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { TemplateSectionContent } from './TemplateSection';
+
+/**
+ * Translations remain available at the `/alpha` export.
+ * NFS modules have graduated to the primary package entry point.
+ *
+ * @packageDocumentation
+ */
+
+export * from './translations';

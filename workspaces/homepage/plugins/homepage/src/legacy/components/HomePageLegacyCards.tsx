@@ -18,9 +18,9 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Typography from '@mui/material/Typography';
 
-import { useOnboardingSection } from '../OnboardingSection/OnboardingSection';
-import { EntitySectionContent } from '../EntitySection/EntitySection';
-import { TemplateSectionContent } from '../TemplateSection/TemplateSection';
+import { useOnboardingSection } from '../../components/OnboardingSection/OnboardingSection';
+import { EntitySectionContent } from '../../components/EntitySection/EntitySection';
+import { TemplateSectionContent } from '../../components/TemplateSection/TemplateSection';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   sectionCardSx,

@@ -19,6 +19,6 @@
 
 | Name                       | Location                               | Severity |
 | :------------------------- | :------------------------------------- | :------- |
-| @backstage/core-compat-api | src/alpha/extensions/homePageCards.tsx | error    |
+| @backstage/core-compat-api | src/extensions/homePageCards.tsx        | error    |
 | react-dom                  | dev/index.tsx                          | error    |
 

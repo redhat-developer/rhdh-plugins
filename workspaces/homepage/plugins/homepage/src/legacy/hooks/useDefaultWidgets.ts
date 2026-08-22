@@ -20,7 +20,7 @@ import useAsync from 'react-use/lib/useAsync';
 import {
   defaultWidgetsApiRef,
   type VisibleDefaultWidget,
-} from '../api/DefaultWidgetsApiClient';
+} from '../../api/DefaultWidgetsApiClient';
 
 export const useDefaultWidgets = (): {
   defaultWidgets: VisibleDefaultWidget[] | undefined;

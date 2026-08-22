@@ -29,16 +29,15 @@ import {
 import { useTheme } from '@mui/material/styles';
 import GlobalStyles from '@mui/material/GlobalStyles';
 
-import { cardWrapperSx } from '../../styles/cardWrapperSx';
-import { HomePageCardConfig } from '../../types';
-import { useContainerQuery } from '../../hooks/useContainerQuery';
+import { cardWrapperSx } from '../styles/cardWrapperSx';
+import { HomePageCardConfig } from '../types';
+import { useContainerQuery } from '../hooks/useContainerQuery';
 
 import 'react-grid-layout/css/styles.css';
-import { isCardADefaultConfiguration } from '../utils';
+import { isCardADefaultConfiguration } from '../utils/nfsLayout';
 
 /**
  * Props for the customizable grid layout.
- * @alpha
  */
 export interface CustomizableGridLayoutProps {
   homepageCards: HomePageCardConfig[];
@@ -47,7 +46,6 @@ export interface CustomizableGridLayoutProps {
 /**
  * Customizable grid layout for the NFS home page (drag, drop, resize).
  *
- * @alpha
  */
 export const CustomizableGridLayout = ({
   homepageCards,
