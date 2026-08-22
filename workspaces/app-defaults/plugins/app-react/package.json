@@ -7,13 +7,17 @@
   "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./alpha": "./src/alpha.ts",
+    "./legacy": "./src/legacy/index.ts",
+    "./app-drawer-module": "./src/appDrawerModuleExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
-      "alpha": [
-        "src/alpha.ts"
+      "legacy": [
+        "src/legacy/index.ts"
+      ],
+      "app-drawer-module": [
+        "src/appDrawerModuleExport.ts"
       ],
       "package.json": [
         "package.json"

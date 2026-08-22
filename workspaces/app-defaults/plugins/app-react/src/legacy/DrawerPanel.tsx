@@ -20,7 +20,7 @@ import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 
 /**
- * Props for {@link DrawerPanel}.
+ * Props for DrawerPanel.
  *
  * @public
  */

@@ -17,12 +17,12 @@
 import { createApp } from '@backstage/frontend-defaults';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import scaffolderPlugin from '@backstage/plugin-scaffolder/alpha';
-import { appAuthModule } from '@red-hat-developer-hub/backstage-plugin-app-auth/alpha';
-import { appIntegrationsModule } from '@red-hat-developer-hub/backstage-plugin-app-integrations/alpha';
+import { appAuthModule } from '@red-hat-developer-hub/backstage-plugin-app-auth';
+import { appIntegrationsModule } from '@red-hat-developer-hub/backstage-plugin-app-integrations';
 import {
   appDrawerModule,
   templateCardModule,
-} from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-app-react';
 import {
   globalHeaderModule,
   globalHeaderTranslationsModule,

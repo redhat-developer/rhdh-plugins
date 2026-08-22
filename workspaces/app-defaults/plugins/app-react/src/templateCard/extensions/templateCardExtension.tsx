@@ -31,7 +31,7 @@ import { templateCardBadgeDataRef } from './templateCardBadgeDataRef';
  * - `action` input: custom action button replacement (via {@link TemplateCardActionBlueprint})
  * - `badges` input: badge components rendered in the card body (via {@link TemplateCardBadgeBlueprint})
  *
- * @alpha
+ * @public
  */
 export const templateCardExtension = createExtension({
   kind: 'component',
@@ -69,7 +69,7 @@ export const templateCardExtension = createExtension({
 /**
  * Frontend module that provides the extensible scaffolder template card.
  *
- * @alpha
+ * @public
  */
 export const templateCardModule = createFrontendModule({
   pluginId: 'app',

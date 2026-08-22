@@ -15,10 +15,17 @@
  */
 
 /**
- * New Frontend System extension APIs for the RHDH app shell.
+ * Legacy (OFS) direct-component API surface for the RHDH app drawer.
+ *
+ * @deprecated Migrate to the NFS extension API:
+ *   `import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react'`
  *
  * @packageDocumentation
  */
 
-export * from './drawer';
-export * from './templateCard';
+export { useAppDrawer } from '../drawer/hooks/useAppDrawer';
+export { ApplicationDrawer } from './ApplicationDrawer';
+export { DrawerPanel } from './DrawerPanel';
+export type { ApplicationDrawerProps } from './ApplicationDrawer';
+export type { DrawerPanelProps } from './DrawerPanel';
+export type { AppDrawerContent, AppDrawerApi } from '../drawer/types';

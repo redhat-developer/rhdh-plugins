@@ -172,7 +172,7 @@ const signInPage = SignInPageBlueprint.make({
  * RHDH app sign-in page plus OIDC, Keycloak, PingFederate, Auth0, and SAML OAuth2 frontend APIs (`pluginId: app`).
  * Default-export this module for dynamic frontend loading.
  *
- * @alpha
+ * @public
  */
 export const appAuthModule = createFrontendModule({
   pluginId: 'app',

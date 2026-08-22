@@ -14,12 +14,4 @@
  * limitations under the License.
  */
 
-/**
- * New Frontend System: empty app module for the app plugin.
- *
- * @packageDocumentation
- */
-
-export { appDefaultsModule } from './appDefaultsModule';
-
-export { appDefaultsModule as default } from './appDefaultsModule';
+export { appDrawerModule as default } from './drawer';
