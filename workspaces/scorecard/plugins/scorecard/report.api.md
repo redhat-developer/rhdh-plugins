@@ -16,6 +16,7 @@ import { FilterPredicate } from '@backstage/filter-predicates';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { HomePageWidgetBlueprintParams } from '@backstage/plugin-home-react/alpha';
 import { HomePageWidgetData } from '@backstage/plugin-home-react/alpha';
+import { IconComponent } from '@backstage/frontend-plugin-api';
 import { IconElement } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react';
 import { JSXElementConstructor } from 'react';
@@ -220,6 +221,23 @@ const _default: OverridableFrontendPlugin<
       output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
       inputs: {};
       params: HomePageWidgetBlueprintParams;
+    }>;
+    'icon-bundle:scorecard': OverridableExtensionDefinition<{
+      kind: 'icon-bundle';
+      name: undefined;
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<
+        {
+          [x: string]: IconComponent | IconElement;
+        },
+        'core.icons',
+        {}
+      >;
+      inputs: {};
+      params: {
+        icons: { [key in string]: IconComponent | IconElement };
+      };
     }>;
     'page:scorecard': OverridableExtensionDefinition<{
       kind: 'page';
