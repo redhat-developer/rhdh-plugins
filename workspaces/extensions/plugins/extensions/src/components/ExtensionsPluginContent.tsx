@@ -48,6 +48,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 
 import {
   isExtensionsPackage,
+  isExtensionsPlugin,
   ExtensionsPackage,
   ExtensionsPlugin,
   ExtensionsPluginInstallStatus,
@@ -77,6 +78,7 @@ import { BadgeChip } from './Badges';
 import { PluginIcon } from './PluginIcon';
 import { Markdown } from './Markdown';
 
+import { CatalogSourceChip, CatalogSourceLabel } from './CatalogSourceLabel';
 import { Links } from './Links';
 import { ActionsMenu } from './ActionsMenu';
 import { useEnablePlugin } from '../hooks/useEnablePlugin';
@@ -613,6 +615,9 @@ export const ExtensionsPluginContent = ({
                 </Typography>
               ) : null}
               {!isPackage && <BadgeChip plugin={plugin} />}
+              {isExtensionsPlugin(plugin) && (
+                <CatalogSourceChip plugin={plugin} />
+              )}
             </Stack>
           </Stack>
         </Stack>
@@ -660,6 +665,10 @@ export const ExtensionsPluginContent = ({
               value={plugin.spec?.support?.provider}
             />
 
+            {isExtensionsPlugin(plugin) && (
+              <CatalogSourceLabel plugin={plugin} />
+            )}
+
             {pluginActionButton()}
           </Grid>
           <Grid item md={9}>
@@ -667,7 +676,7 @@ export const ExtensionsPluginContent = ({
 
             <Links entity={plugin} />
 
-            {!isExtensionsPackage(plugin) && (
+            {isExtensionsPlugin(plugin) && (
               <PluginPackageTable packages={packages.data ?? []} />
             )}
           </Grid>

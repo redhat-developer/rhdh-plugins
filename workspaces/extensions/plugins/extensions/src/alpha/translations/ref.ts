@@ -111,6 +111,7 @@ export const extensionsMessages = {
     category: 'Category',
     author: 'Author',
     supportType: 'Support type',
+    catalogSource: 'Catalog source',
     noResults: 'No plugins match your search criteria',
     filterBy: 'Filter by',
     clearFilters: 'Clear filters',
@@ -267,6 +268,7 @@ export const extensionsMessages = {
     category: 'Category',
     versions: 'Versions',
     backstageCompatibility: 'Backstage compatibility version',
+    catalogSource: 'Catalog source',
   },
 
   // Support type filters
