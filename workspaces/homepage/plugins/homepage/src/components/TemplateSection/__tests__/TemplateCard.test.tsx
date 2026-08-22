@@ -16,7 +16,7 @@
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 
-import TemplateCard from './TemplateCard';
+import TemplateCard from '../TemplateCard';
 
 describe('TemplateCard', () => {
   const props = {

@@ -16,12 +16,16 @@
 
 import { render, screen } from '@testing-library/react';
 
-import { Headline } from './Headline';
+import { HomePageStylesProvider } from '../HomePageStylesProvider';
 
-describe('Headline', () => {
-  it('renders successfully', async () => {
-    render(<Headline title="This is a headline" />);
+describe('HomePageStylesProvider', () => {
+  it('renders children', () => {
+    render(
+      <HomePageStylesProvider>
+        <div>Home page content</div>
+      </HomePageStylesProvider>,
+    );
 
-    expect(screen.getByText('This is a headline')).toBeInTheDocument();
+    expect(screen.getByText('Home page content')).toBeInTheDocument();
   });
 });

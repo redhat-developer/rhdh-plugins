@@ -15,20 +15,27 @@
  */
 
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 
-import { MarkdownCard } from './MarkdownCard';
+import { ViewMoreLink } from '../ViewMoreLink';
 
-describe('MarkdownCard', () => {
-  it('renders successfully', async () => {
+jest.mock('@backstage/core-components', () => ({
+  Link: ({ to, children }: { to: string; children: React.ReactNode }) => (
+    <a href={to}>{children}</a>
+  ),
+}));
+
+describe('TemplateSection ViewMoreLink', () => {
+  it('renders a link with children', () => {
     render(
-      <MarkdownCard
-        title="This is a headline"
-        content={'## This is some markdown\n\nSome content'}
-      />,
+      <MemoryRouter>
+        <ViewMoreLink to="/catalog?filters[kind]=template">
+          View all templates
+        </ViewMoreLink>
+      </MemoryRouter>,
     );
 
-    expect(screen.getByText('This is a headline')).toBeInTheDocument();
-    expect(screen.getByText('This is some markdown')).toBeInTheDocument();
-    expect(screen.getByText('Some content')).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: 'View all templates' });
+    expect(link).toHaveAttribute('href', '/catalog?filters[kind]=template');
   });
 });

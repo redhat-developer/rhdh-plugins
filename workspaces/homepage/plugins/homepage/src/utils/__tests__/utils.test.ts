@@ -17,7 +17,7 @@ import {
   getDismissedEntityIllustrationUsers,
   addDismissedEntityIllustrationUsers,
   hasEntityIllustrationUserDismissed,
-} from './utils';
+} from '../utils';
 
 describe('Entity Illustration Dismissal Utils', () => {
   const key = 'homepage/dismissedEntityIllustrationUsers';

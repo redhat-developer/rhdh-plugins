@@ -17,7 +17,7 @@ import { render, screen } from '@testing-library/react';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import HomeIcon from '@mui/icons-material/Home';
 
-import { QuickAccessIcon } from './QuickAccessIcon';
+import { QuickAccessIcon } from '../QuickAccessIcon';
 
 const mockGetSystemIcon = jest.fn();
 
