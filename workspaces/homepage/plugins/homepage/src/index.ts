@@ -15,7 +15,9 @@
  */
 
 /**
- * Dynamic Home Page plugin based on the upstream `home` plugin that can be extended and customized with the RHDH dynamic plugin feature.
+ * Dynamic Home Page plugin for the New Frontend System.
+ *
+ * Extends the upstream `home` plugin with a custom layout and RHDH widgets.
  *
  * @packageDocumentation
  */
@@ -28,4 +30,76 @@ ClassNameGenerator.configure(componentName => {
     : `v5-${componentName}`;
 });
 
-export * from './plugin';
+import { TranslationBlueprint } from '@backstage/plugin-app-react';
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import {
+  catalogStarredWidget,
+  disableRandomJoke,
+  disableToolkit,
+  entitySectionWidget,
+  featuredDocsCardWidget,
+  onboardingSectionWidget,
+  quickAccessCardWidget,
+  RecentlyVisitedWidget,
+  searchBarWidget,
+  templateSectionWidget,
+  TopVisitedWidget,
+} from './extensions/homePageCards';
+import { homepageTranslations } from './translations';
+import { homePageLayoutExtension } from './extensions/homePageLayoutExtension';
+import { defaultWidgetsApi, quickAccessApi } from './extensions/apis';
+
+/**
+ * Frontend module for the Dynamic Home Page plugin (New Frontend System).
+ *
+ * Extends the `home` plugin with a custom layout and RHDH widgets: Onboarding,
+ * Entity Catalog, Templates, Quick Access, Search, Recently Visited, Top Visited, etc.
+ * Add to your app's `createApp({ features: [..., homePageModule] })`.
+ *
+ * @public
+ */
+export const homePageModule = createFrontendModule({
+  pluginId: 'home', // upstream home!
+  extensions: [
+    homePageLayoutExtension,
+    onboardingSectionWidget,
+    entitySectionWidget,
+    templateSectionWidget,
+    defaultWidgetsApi,
+    quickAccessApi,
+    quickAccessCardWidget,
+    featuredDocsCardWidget,
+    searchBarWidget,
+    TopVisitedWidget,
+    RecentlyVisitedWidget,
+    catalogStarredWidget,
+    disableToolkit,
+    disableRandomJoke,
+  ],
+});
+
+/**
+ * Translation module for the Dynamic Home Page plugin.
+ *
+ * @public
+ */
+export const homepageTranslationsModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    TranslationBlueprint.make({
+      name: 'homepage-translations',
+      params: {
+        resource: homepageTranslations,
+      },
+    }),
+  ],
+});
+
+export { homepageTranslationRef, homepageTranslations } from './translations';
+
+/**
+ * Default export required for Module Federation to emit the NFS expose.
+ *
+ * @public
+ */
+export default homePageModule;

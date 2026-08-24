@@ -17,7 +17,7 @@
 import { useMemo } from 'react';
 import { useScalprum } from '@scalprum/react-core';
 
-import { HomePageCardMountPoint } from '../types';
+import { HomePageCardMountPoint } from '../../types';
 
 interface ScalprumState {
   api?: {

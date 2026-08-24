@@ -2,7 +2,7 @@
 
 This is a dynamic version of the upstream [home page plugin](https://github.com/backstage/backstage/tree/master/plugins/home).
 
-Instead of manually adding supported "home page cards" to a custom route, it allows dynamic plugins to expose such cards. The plugin supports both the **New Frontend System (NFS)** and the **legacy** dynamic plugin model (Scalprum).
+The plugin supports both the **New Frontend System (NFS)** and the **legacy** dynamic plugin model (Scalprum / OFS). NFS is the primary package entry point. OFS exports are available only at `./legacy`. Translations remain available at `./alpha`.
 
 ## New Frontend System
 
@@ -12,14 +12,14 @@ If you're using Backstage's new frontend system, add the plugin to your app:
 // packages/app/src/App.tsx
 import { createApp } from '@backstage/frontend-defaults';
 import {
-  homePageDevModule,
+  homePageModule,
   homepageTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-homepage/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-homepage';
 
 export default createApp({
   features: [
     // ... other plugins (nav, signIn, etc.)
-    homePageDevModule,
+    homePageModule,
     homepageTranslationsModule,
   ],
 });
@@ -70,16 +70,20 @@ app:
 
 ### Modules
 
-The following modules are available from the alpha export:
+The following modules are available from the primary package entry point:
 
 | Module                       | Description                                                                                                             |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `homePageDevModule`          | Home page layout and widgets (Onboarding, Entity, Templates, Quick Access, Search, Recently Visited, Top Visited, etc.) |
+| `homePageModule` (default)   | Home page layout and widgets (Onboarding, Entity, Templates, Quick Access, Search, Recently Visited, Top Visited, etc.) |
 | `homepageTranslationsModule` | i18n translations (en, de, es, fr, it, ja)                                                                              |
+
+`homepageTranslationsModule` (`pluginId: 'app'`) is also available as a dedicated Module Federation entry:
+
+- `@red-hat-developer-hub/backstage-plugin-homepage/homepage-translations-module`
 
 ### Extensions
 
-The `homePageDevModule` extends the `home` plugin (`@backstage/plugin-home`) with:
+The `homePageModule` extends the `home` plugin (`@backstage/plugin-home`) with:
 
 - `home-page-layout:home/dynamic-homepage-layout` – Custom layout with config-driven widget arrangement and priority
 - `home-page-widget:home/rhdh-onboarding-section` – Onboarding section
@@ -94,4 +98,18 @@ The `homePageDevModule` extends the `home` plugin (`@backstage/plugin-home`) wit
 
 ## Legacy System (Dynamic Plugins)
 
-For the legacy Scalprum-based dynamic plugin model, use the main export and configure via `app-config.dynamic.yaml`. See `app-config.dynamic.yaml` in this package for the mount point configuration.
+Legacy component imports have been removed from the main package path. OFS consumers must import from `./legacy`, and dynamic plugin config needs `module: Legacy`. See `app-config.dynamic.yaml` in this package for the mount point configuration.
+
+```tsx
+import {
+  DynamicHomePage,
+  OnboardingSection,
+  homepageTranslations,
+} from '@red-hat-developer-hub/backstage-plugin-homepage/legacy';
+```
+
+## Migration
+
+- **NFS**: change imports from `@red-hat-developer-hub/backstage-plugin-homepage/alpha` to `@red-hat-developer-hub/backstage-plugin-homepage`.
+- **OFS**: change imports from `@red-hat-developer-hub/backstage-plugin-homepage` to `@red-hat-developer-hub/backstage-plugin-homepage/legacy`, and set `module: Legacy` in dynamic plugin config.
+- **Translations**: remain available at `./alpha` (and also on the main and legacy entry points / translations module).

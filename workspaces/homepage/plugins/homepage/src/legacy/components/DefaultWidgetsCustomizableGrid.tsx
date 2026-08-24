@@ -15,29 +15,24 @@
  */
 
 import type { ReactElement } from 'react';
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 
-import {
-  CustomHomepageGrid,
-  LayoutConfiguration,
-} from '@backstage/plugin-home';
+import { LayoutConfiguration } from '@backstage/plugin-home';
 import {
   ComponentParts,
   createCardExtension,
 } from '@backstage/plugin-home-react';
 
-import GlobalStyles from '@mui/material/GlobalStyles';
-import { useTheme } from '@mui/material/styles';
-
-import 'react-grid-layout/css/styles.css';
-
-import type { VisibleDefaultWidget } from '../api/DefaultWidgetsApiClient';
-import { HomePageCardMountPoint } from '../types';
+import type { VisibleDefaultWidget } from '../../api/DefaultWidgetsApiClient';
+import { HomePageCardMountPoint } from '../../types';
 import { dynamicHomePagePlugin } from '../plugin';
-import { useTranslation } from '../hooks/useTranslation';
-import { useContainerQuery } from '../hooks/useContainerQuery';
-import { getCardTitle, getCardDescription } from '../utils/customizable-cards';
-import { getTranslatedTextWithFallback } from '../translations/utils';
+import { useTranslation } from '../../hooks/useTranslation';
+import {
+  getCardTitle,
+  getCardDescription,
+} from '../../utils/customizable-cards';
+import { getTranslatedTextWithFallback } from '../../translations/utils';
+import { CustomizableGridShell } from './CustomizableGridShell';
 
 export interface DefaultWidgetsCustomizableGridProps {
   defaultWidgets: VisibleDefaultWidget[];
@@ -48,10 +43,7 @@ export const DefaultWidgetsCustomizableGrid = ({
   defaultWidgets,
   mountPoints,
 }: DefaultWidgetsCustomizableGridProps) => {
-  const theme = useTheme();
   const { t } = useTranslation();
-  const gridContainerRef = useRef<HTMLDivElement>(null);
-  useContainerQuery(gridContainerRef, { notifyWindowResize: true });
 
   const mountPointsById = useMemo(() => {
     const map = new Map<string, HomePageCardMountPoint>();
@@ -109,7 +101,6 @@ export const DefaultWidgetsCustomizableGrid = ({
 
       const Card = dynamicHomePagePlugin.provide(cardExtension);
 
-      // Make mount points available as 'addable' cards.
       childDictionary[mountPointId] = {
         child: <Card key={mountPointId} />,
         title,
@@ -126,7 +117,6 @@ export const DefaultWidgetsCustomizableGrid = ({
         return;
       }
 
-      // Make default widgets available as 'addable' cards because they can have custom props!
       let cardId = defaultWidget.ref;
       if (defaultWidget.props) {
         cardId = defaultWidget.id;
@@ -215,30 +205,6 @@ export const DefaultWidgetsCustomizableGrid = ({
   }, [defaultWidgets, mountPoints, mountPointsById, t]);
 
   return (
-    <>
-      <GlobalStyles
-        styles={{
-          '[class*="makeStyles-settingsOverlay"]': {
-            backgroundColor:
-              theme.palette.mode === 'dark'
-                ? 'rgba(20, 20, 20, 0.95) !important'
-                : 'rgba(40, 40, 40, 0.93) !important',
-          },
-        }}
-      />
-      <div
-        ref={gridContainerRef}
-        style={{ width: '100%', minWidth: 0, boxSizing: 'border-box' }}
-      >
-        <CustomHomepageGrid
-          config={config}
-          preventCollision={false}
-          compactType="vertical"
-          style={{ margin: '-10px' }}
-        >
-          {children}
-        </CustomHomepageGrid>
-      </div>
-    </>
+    <CustomizableGridShell config={config}>{children}</CustomizableGridShell>
   );
 };

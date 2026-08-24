@@ -36,42 +36,42 @@ import {
   VisitsStorageApi,
 } from '@backstage/plugin-home';
 
-import { rootRouteRef } from './routes';
+import { rootRouteRef } from '../routes';
 import {
   DefaultWidgetsApiClient,
   defaultWidgetsApiRef,
   QuickAccessApiClient,
   quickAccessApiRef,
-} from './api';
+} from '../api';
 
 import type { DynamicHomePageProps } from './components/DynamicHomePage';
 import type { DynamicCustomizableHomePageProps } from './components/DynamicCustomizableHomePage';
-import type { SearchBarProps } from './components/SearchBar';
-import type { QuickAccessCardProps } from './components/QuickAccessCard';
+import type { SearchBarProps } from '../components/SearchBar';
+import type { QuickAccessCardProps } from '../components/QuickAccessCard';
 import type { HeadlineProps } from './components/Headline';
 import type { MarkdownProps } from './components/Markdown';
 import type { MarkdownCardProps } from './components/MarkdownCard';
 import type { PlaceholderProps } from './components/Placeholder';
 
-export { defaultWidgetsApiRef } from './api';
-export type { DefaultWidgetsApi } from './api';
+export { defaultWidgetsApiRef } from '../api';
+export type { DefaultWidgetsApi } from '../api';
 
 export type { DynamicHomePageProps } from './components/DynamicHomePage';
 export type { DynamicCustomizableHomePageProps } from './components/DynamicCustomizableHomePage';
-export type { SearchBarProps } from './components/SearchBar';
-export type { QuickAccessCardProps } from './components/QuickAccessCard';
+export type { SearchBarProps } from '../components/SearchBar';
+export type { QuickAccessCardProps } from '../components/QuickAccessCard';
 export type { HeadlineProps } from './components/Headline';
 export type { MarkdownProps } from './components/Markdown';
 export type { MarkdownCardProps } from './components/MarkdownCard';
 export type { PlaceholderProps } from './components/Placeholder';
-export type { LocalClockProps } from './components/LocalClock';
+export type { LocalClockProps } from '../components/LocalClock';
 export type { WorldClockProps } from './components/WorldClock';
 export type {
   HomePageCardMountPoint,
   HomePageCardMountPointConfig,
   Breakpoint,
   Layout,
-} from './types';
+} from '../types';
 
 /**
  * Dynamic Home Page Plugin
@@ -152,7 +152,7 @@ export const SearchBar: ComponentType<SearchBarProps> =
     createComponentExtension({
       name: 'SearchBar',
       component: {
-        lazy: () => import('./components/SearchBar').then(m => m.SearchBar),
+        lazy: () => import('../components/SearchBar').then(m => m.SearchBar),
       },
     }),
   );
@@ -166,7 +166,7 @@ export const QuickAccessCard: ComponentType<QuickAccessCardProps> =
       name: 'QuickAccessCard',
       component: {
         lazy: () =>
-          import('./components/legacy/QuickAccessCardLegacy').then(
+          import('./components/QuickAccessCardLegacy').then(
             m => m.QuickAccessCard,
           ),
       },
@@ -235,7 +235,7 @@ export const CatalogStarredEntitiesCard: ComponentType<StarredEntitiesProps> =
       name: 'CatalogStarredEntitiesCard',
       component: {
         lazy: () =>
-          import('./components/legacy/TranslatedUpstreamHomePageCards').then(
+          import('../components/TranslatedUpstreamHomePageCards').then(
             m => m.CatalogStarredEntitiesCard,
           ),
       },
@@ -251,7 +251,7 @@ export const RecentlyVisitedCard: ComponentType<VisitedByTypeProps> =
       name: 'RecentlyVisitedCard',
       component: {
         lazy: () =>
-          import('./components/legacy/TranslatedUpstreamHomePageCards').then(
+          import('../components/TranslatedUpstreamHomePageCards').then(
             m => m.RecentlyVisitedCard,
           ),
       },
@@ -267,7 +267,7 @@ export const TopVisitedCard: ComponentType<VisitedByTypeProps> =
       name: 'TopVisitedCard',
       component: {
         lazy: () =>
-          import('./components/legacy/TranslatedUpstreamHomePageCards').then(
+          import('../components/TranslatedUpstreamHomePageCards').then(
             m => m.TopVisitedCard,
           ),
       },
@@ -283,7 +283,9 @@ export const FeaturedDocsCard: ComponentType<FeaturedDocsCardProps> =
       name: 'FeaturedDocsCard',
       component: {
         lazy: () =>
-          import('./components/FeaturedDocsCard').then(m => m.FeaturedDocsCard),
+          import('../components/FeaturedDocsCard').then(
+            m => m.FeaturedDocsCard,
+          ),
       },
     }),
   );
@@ -321,7 +323,9 @@ export const OnboardingSection = dynamicHomePagePlugin.provide(
     name: 'OnboardingSection',
     component: {
       lazy: () =>
-        import('./components/OnboardingSection').then(m => m.OnboardingSection),
+        import('./components/HomePageLegacyCards').then(
+          m => m.OnboardingSection,
+        ),
     },
   }),
 );
@@ -334,7 +338,7 @@ export const EntitySection = dynamicHomePagePlugin.provide(
     name: 'EntitySection',
     component: {
       lazy: () =>
-        import('./components/EntitySection').then(m => m.EntitySection),
+        import('./components/HomePageLegacyCards').then(m => m.EntitySection),
     },
   }),
 );
@@ -347,7 +351,7 @@ export const TemplateSection = dynamicHomePagePlugin.provide(
     name: 'TemplateSection',
     component: {
       lazy: () =>
-        import('./components/TemplateSection').then(m => m.TemplateSection),
+        import('./components/HomePageLegacyCards').then(m => m.TemplateSection),
     },
   }),
 );
