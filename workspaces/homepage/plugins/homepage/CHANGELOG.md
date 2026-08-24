@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-homepage
 
+## 2.0.0
+
+### Major Changes
+
+- b6a2508: **BREAKING:** Graduate NFS homepage exports from `/alpha` to the primary entry point, and move OFS exports to `./legacy`.
+  `/alpha` now only re-exports translations.
+
+  Note: Dynamic plugin config must use `module: Legacy` now.
+
+### Patch Changes
+
+- 95238a4: Updated peerDependency `react-router-dom` from `6.30.4` to `6.30.6` so it matches the workspace lockfile.
+
 ## 1.18.0
 
 ### Minor Changes
