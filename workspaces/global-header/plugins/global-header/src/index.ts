@@ -78,6 +78,11 @@ export { GlobalHeaderMenuItem } from './components/GlobalHeaderMenuItem';
 export type { GlobalHeaderMenuItemProps } from './components/GlobalHeaderMenuItem';
 export { GlobalHeaderDropdown } from './components/GlobalHeaderDropdown';
 export type { GlobalHeaderDropdownProps } from './components/GlobalHeaderDropdown';
+export { useBrandingFullLogo } from './hooks/useBrandingFullLogo';
+export type {
+  LogoURLs,
+  CompanyLogoProps,
+} from './components/CompanyLogo/CompanyLogo';
 
 // ── Default extensions (collections + individual for cherry-picking) ───
 

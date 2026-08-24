@@ -18,7 +18,7 @@ import { Link } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import DefaultLogo from './DefaultLogo';
 import Box from '@mui/material/Box';
-import { useAppBarBackgroundScheme } from '../../hooks/useAppBarBackgroundScheme';
+import { useBrandingFullLogo } from '../../hooks/useBrandingFullLogo';
 
 const LogoRender = ({
   base64Logo,
@@ -86,37 +86,13 @@ export interface CompanyLogoProps {
   layout?: CSSProperties;
 }
 
-/**
- * Gets a themed image based on the current theme.
- */
-const useFullLogo = (logo: LogoURLs): string | undefined => {
-  const appBarBackgroundScheme = useAppBarBackgroundScheme();
-
-  const configApi = useApi(configApiRef);
-
-  /** The fullLogo config specified by app.branding.fullLogo */
-  const fullLogo = configApi.getOptional<LogoURLs>('app.branding.fullLogo');
-
-  /** The URI of the logo specified by app.branding.fullLogo */
-  const fullLogoURI =
-    typeof fullLogo === 'string'
-      ? fullLogo
-      : fullLogo?.[appBarBackgroundScheme];
-
-  /** The URI of the logo specified by CompanyLogo props */
-  const propsLogoURI =
-    typeof logo === 'string' ? logo : logo?.[appBarBackgroundScheme];
-
-  return propsLogoURI ?? fullLogoURI ?? undefined;
-};
-
 export const CompanyLogo = ({
   logo,
   width,
   height,
   to = '/',
 }: CompanyLogoProps) => {
-  const logoURL = useFullLogo(logo);
+  const logoURL = useBrandingFullLogo(logo);
   const configApi = useApi(configApiRef);
   const fullLogoWidth = configApi.getOptional<number | string>(
     'app.branding.fullLogoWidth',
