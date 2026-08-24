@@ -20,6 +20,10 @@ import type { AiModelServerApiEntity } from '@red-hat-developer-hub/backstage-pl
 
 const TECHDOCS_KEY = 'techdocs';
 
+const SYSTEM_ANNOTATION = 'rhdh.io/system';
+const SERVER_TYPE_ANNOTATION = 'rhdh.io/serverType';
+const DEFAULT_ANNOTATION = 'rhdh.io/default';
+
 function isModelCatalog(o: any): o is ModelCatalog {
   return 'models' in o || 'modelServer' in o;
 }
@@ -104,6 +108,11 @@ export function GenerateCatalogEntities(
     }
   }
 
+  // Read annotation-driven overrides for spec fields
+  const systemOverride = modelServer.annotations?.[SYSTEM_ANNOTATION];
+  const serverTypeOverride = modelServer.annotations?.[SERVER_TYPE_ANNOTATION];
+  const defaultOverride = modelServer.annotations?.[DEFAULT_ANNOTATION];
+
   const entity: AiModelServerApiEntity = {
     apiVersion: 'backstage.io/v1alpha1',
     kind: 'AiModelServerAPI',
@@ -118,19 +127,31 @@ export function GenerateCatalogEntities(
       type: 'ai-model-server',
       lifecycle: modelServer.lifecycle,
       owner: `user:${modelServer.owner}`,
-      serverType: modelServer.API?.type ?? 'unknown',
+      ...(systemOverride && { system: systemOverride }),
+      serverType: serverTypeOverride || (modelServer.API?.type ?? 'unknown'),
       serverUrl: modelServer.API?.url ?? '',
       requiresApiKey: modelServer.authentication ?? false,
       models: {
         available: models.map(m => sanitizeMetadataName(m.name)),
-        ...(models.length > 0 && {
-          default: sanitizeMetadataName(models[0].name),
-        }),
+        ...getDefaultModel(defaultOverride, models),
       },
     },
   };
 
   return [entity];
+}
+
+function getDefaultModel(
+  defaultOverride: string | undefined,
+  models: { name: string }[],
+): { default: string } | Record<string, never> {
+  if (defaultOverride) {
+    return { default: defaultOverride };
+  }
+  if (models.length > 0) {
+    return { default: sanitizeMetadataName(models[0].name) };
+  }
+  return {};
 }
 
 function sanitizeMetadataName(modelName: string): string {

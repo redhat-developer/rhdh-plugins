@@ -369,6 +369,197 @@ describe('Model Catalog Generator', () => {
     const entities = GenerateCatalogEntities(modelCatalog);
     expect(entities[0].metadata.annotations).toBeUndefined();
   });
+
+  it('should set system from rhdh.io/system annotation', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'system-service',
+        owner: 'example-user',
+        description: 'Service with system annotation',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/system': 'my-ai-system',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).system).toBe('my-ai-system');
+  });
+
+  it('should override serverType from rhdh.io/serverType annotation', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'servertype-service',
+        owner: 'example-user',
+        description: 'Service with serverType annotation',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/serverType': 'anthropic',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).serverType).toBe('anthropic');
+  });
+
+  it('should use API type as serverType when no annotation override', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'default-servertype-service',
+        owner: 'example-user',
+        description: 'Service without serverType annotation',
+        lifecycle: 'production',
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Grpc,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).serverType).toBe('grpc');
+  });
+
+  it('should override default model from rhdh.io/default annotation', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'default-override-service',
+        owner: 'example-user',
+        description: 'Service with default annotation',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/default': 'preferred-model',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'model-a',
+          description: 'First model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+        {
+          name: 'model-b',
+          description: 'Second model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).models.default).toBe('preferred-model');
+  });
+
+  it('should not set system when rhdh.io/system annotation is absent', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'no-system-service',
+        owner: 'example-user',
+        description: 'Service without system annotation',
+        lifecycle: 'production',
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).system).toBeUndefined();
+  });
+
+  it('should set all three annotation overrides together', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'all-overrides-service',
+        owner: 'example-user',
+        description: 'Service with all annotation overrides',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/system': 'ai-platform',
+          'rhdh.io/serverType': 'openai-v1',
+          'rhdh.io/default': 'gpt-4',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'gpt-3.5',
+          description: 'GPT 3.5',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+        {
+          name: 'gpt-4',
+          description: 'GPT 4',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    const spec = entities[0].spec as any;
+    expect(spec.system).toBe('ai-platform');
+    expect(spec.serverType).toBe('openai-v1');
+    expect(spec.models.default).toBe('gpt-4');
+  });
 });
 
 describe('ParseCatalogJSON', () => {
