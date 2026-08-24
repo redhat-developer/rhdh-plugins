@@ -16,7 +16,7 @@
 
 import { render, screen } from '@testing-library/react';
 
-import { Placeholder } from './Placeholder';
+import { Placeholder } from '../Placeholder';
 
 describe('Placeholder', () => {
   it('renders successfully', async () => {

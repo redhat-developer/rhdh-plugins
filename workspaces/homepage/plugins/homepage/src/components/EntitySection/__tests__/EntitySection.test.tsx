@@ -19,8 +19,8 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
-import { EntitySection } from '../legacy/HomePageLegacyCards';
-import { useEntities } from '../../hooks/useEntities';
+import { EntitySection } from '../../legacy/HomePageLegacyCards';
+import { useEntities } from '../../../hooks/useEntities';
 
 // jsdom does not provide ResizeObserver; required by useContainerQuery in EntitySection
 class ResizeObserverMock {
@@ -30,7 +30,7 @@ class ResizeObserverMock {
 }
 window.ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver;
 
-jest.mock('../../hooks/useEntities');
+jest.mock('../../../hooks/useEntities');
 const mockUseEntities = useEntities as jest.MockedFunction<typeof useEntities>;
 
 jest.mock('@backstage/plugin-user-settings', () => ({
@@ -57,30 +57,30 @@ jest.mock('@backstage/core-components', () => ({
   MarkdownContent: ({ content }: { content: string }) => <span>{content}</span>,
 }));
 
-jest.mock('../../hooks/useTranslation', () => ({
+jest.mock('../../../hooks/useTranslation', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
 }));
 
-jest.mock('../Trans', () => ({
+jest.mock('../../Trans', () => ({
   Trans: ({ message }: { message: string }) => <span>{message}</span>,
 }));
 
-jest.mock('./ViewMoreLink', () => ({
+jest.mock('../ViewMoreLink', () => ({
   ViewMoreLink: ({ children }: { children: ReactNode }) => (
     <span>{children}</span>
   ),
 }));
 
-jest.mock('../../utils/utils', () => ({
+jest.mock('../../../utils/utils', () => ({
   hasEntityIllustrationUserDismissed: () => true,
   addDismissedEntityIllustrationUsers: jest.fn(),
 }));
 
-jest.mock('../../images/homepage-entities-1.svg', () => 'mock-image.svg');
+jest.mock('../../../images/homepage-entities-1.svg', () => 'mock-image.svg');
 
-jest.mock('../../hooks/useContainerQuery', () => ({
+jest.mock('../../../hooks/useContainerQuery', () => ({
   useContainerQuery: () => 'lg',
 }));
 
