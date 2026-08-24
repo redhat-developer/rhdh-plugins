@@ -167,11 +167,6 @@ const useStyles = makeStyles(theme => ({
     height: '100% !important',
     minHeight: '0 !important',
     overflow: 'hidden',
-    '& .pf-chatbot-container': {
-      minHeight: '0 !important',
-      display: 'flex',
-      flexDirection: 'column',
-    },
   },
   header: {
     padding: `${theme.spacing(3)}px ${theme.spacing(3)}px 0 ${theme.spacing(

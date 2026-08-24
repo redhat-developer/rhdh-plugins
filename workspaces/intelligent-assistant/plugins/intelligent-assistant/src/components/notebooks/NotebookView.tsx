@@ -93,22 +93,6 @@ const useStyles = makeStyles(theme => ({
     flex: 1,
     minHeight: 0,
     minWidth: 0,
-    '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default) !important',
-    },
-    '& .pf-v6-c-drawer__panel-main, & .pf-v5-c-drawer__panel-main': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default) !important',
-    },
-    '& .pf-v6-c-drawer__panel-body, & .pf-v5-c-drawer__panel-body': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default) !important',
-    },
-    '& .pf-v6-c-drawer__splitter, & .pf-v5-c-drawer__splitter': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default)',
-    },
   },
   expandStrip: {
     display: 'flex',
@@ -173,19 +157,6 @@ const useStyles = makeStyles(theme => ({
     boxSizing: 'border-box',
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default)',
-    '& .pf-v6-c-alert, & .pf-v5-c-alert': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--secondary--default) !important',
-    },
-    '& .pf-v6-c-alert__content, & .pf-v5-c-alert__content': {
-      backgroundColor: 'transparent !important',
-    },
-    '& .pf-v6-c-alert__body, & .pf-v5-c-alert__body': {
-      backgroundColor: 'transparent !important',
-    },
-    '& .pf-v6-c-alert__description, & .pf-v5-c-alert__description': {
-      backgroundColor: 'transparent !important',
-    },
   },
   notebookDisclaimerInner: {
     width: '95%',
@@ -265,11 +236,6 @@ const useStyles = makeStyles(theme => ({
         theme.palette.type === 'light'
           ? theme.palette.grey[100]
           : 'var(--pf-t--global--background--color--secondary--default)',
-    },
-    '& .pf-chatbot__button--send, & .pf-chatbot__button--microphone': {
-      '--pf-v6-c-button--BorderRadius':
-        'var(--pf-t--global--border--radius--pill)',
-      borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
     },
   },
   chatContent: {
