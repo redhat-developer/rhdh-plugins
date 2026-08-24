@@ -16,6 +16,7 @@
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { ButtonLink } from '@backstage/ui';
+import { RiExternalLinkLine } from '@remixicon/react';
 
 export const SupportButton = ({ supportUrl }: { supportUrl?: string }) => {
   const configApi = useApi(configApiRef);
@@ -30,6 +31,7 @@ export const SupportButton = ({ supportUrl }: { supportUrl?: string }) => {
       target="_blank"
       rel="noopener noreferrer"
       variant="tertiary"
+      iconEnd={<RiExternalLinkLine />}
     >
       Support
     </ButtonLink>
