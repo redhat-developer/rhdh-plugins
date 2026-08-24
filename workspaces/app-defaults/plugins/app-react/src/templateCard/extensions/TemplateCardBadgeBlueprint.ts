@@ -38,7 +38,7 @@ import type { TemplateCardBadgeData } from '../types';
  * });
  * ```
  *
- * @alpha
+ * @public
  */
 export const TemplateCardBadgeBlueprint = createExtensionBlueprint({
   kind: 'template-card-badge',

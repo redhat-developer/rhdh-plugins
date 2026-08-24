@@ -46,7 +46,7 @@ import type { TemplateCardActionProps } from '../types';
  * });
  * ```
  *
- * @alpha
+ * @public
  */
 export const TemplateCardActionBlueprint = createExtensionBlueprint({
   kind: 'template-card-action',
