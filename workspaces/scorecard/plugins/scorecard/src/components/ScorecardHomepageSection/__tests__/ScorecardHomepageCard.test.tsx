@@ -131,15 +131,15 @@ jest.mock('../../../hooks/useTranslation', () => ({
           return 'Missing permission';
         case 'errors.unsupportedAggregationType':
           return 'Unsupported aggregation type';
-        case 'metric.aggregationTypeMin':
+        case 'aggregation.min':
           return 'Min';
-        case 'metric.aggregationTypeMax':
+        case 'aggregation.max':
           return 'Max';
-        case 'metric.aggregationTypeSum':
+        case 'aggregation.sum':
           return 'Sum';
-        case 'metric.aggregationTypeCount':
+        case 'aggregation.count':
           return 'Count';
-        case 'metric.aggregationTypeAverage':
+        case 'aggregation.average':
           return 'Average';
         default:
           return key;
@@ -578,6 +578,37 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
       '0/5 entities',
     );
     expect(screen.getByTestId('scalar-stat-value')).toHaveTextContent('0');
+    expect(screen.getByTestId('scalar-stat-tile')).toHaveAttribute(
+      'data-threshold-status',
+      '',
+    );
+  });
+
+  it('should skip threshold coloring when a scalar aggregation has no entities', () => {
+    render(
+      <AggregatedMetricCard
+        scorecard={{
+          ...mockScalarAggregationScorecard,
+          result: {
+            ...mockScalarAggregationScorecard.result,
+            total: 0,
+            value: 0,
+            entitiesConsidered: 0,
+            calculationErrorCount: 0,
+          },
+        }}
+        aggregationId={mockScalarAggregationScorecard.id}
+        cardTitle="Total Critical PRs"
+        description="desc"
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByTestId('scalar-stat-value')).toHaveTextContent('0');
+    expect(screen.getByTestId('scalar-stat-tile')).toHaveAttribute(
+      'data-threshold-status',
+      '',
+    );
   });
 
   it('should render ScalarStatCard for an unknown type when the result is scalar-shaped', () => {

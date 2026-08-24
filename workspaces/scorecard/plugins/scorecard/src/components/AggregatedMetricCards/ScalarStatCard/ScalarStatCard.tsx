@@ -35,11 +35,11 @@ import { ScalarStatTile } from './ScalarStatTile';
 import type { ScalarStatCardProps } from './types';
 
 const aggregationTypeLabelKeys = {
-  min: 'metric.aggregationTypeMin',
-  max: 'metric.aggregationTypeMax',
-  sum: 'metric.aggregationTypeSum',
-  count: 'metric.aggregationTypeCount',
-  average: 'metric.aggregationTypeAverage',
+  min: 'aggregation.min',
+  max: 'aggregation.max',
+  sum: 'aggregation.sum',
+  count: 'aggregation.count',
+  average: 'aggregation.average',
 } as const;
 
 function getAggregationTypeLabel(
@@ -68,10 +68,12 @@ export const ScalarStatCard = ({
   const { t } = useTranslation();
   const { result, metadata, id: scorecardId } = scorecard;
 
-  const matchingThresholdKey = getMatchingThresholdKey(
-    result.value,
-    result.thresholds,
-  );
+  // No successful samples: value is a placeholder (often 0) and must not
+  // pick up a success threshold color. Empty and all-failed both have total 0.
+  const matchingThresholdKey =
+    result.total > 0
+      ? getMatchingThresholdKey(result.value, result.thresholds)
+      : undefined;
   const statusConfig = getStatusConfig({
     evaluation: matchingThresholdKey ?? null,
     thresholdRules: result.thresholds?.rules,
