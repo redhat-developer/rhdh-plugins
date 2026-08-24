@@ -48,11 +48,11 @@ export function buildPaginationTmp(
   }
   const { offset, pageSize, orderBy, orderDirection } = paginationInfo;
 
-  if (!isNaN(Number(offset))) {
+  if (!Number.isNaN(Number(offset))) {
     pagination.offset = Number(offset);
   }
 
-  if (!isNaN(Number(pageSize))) {
+  if (!Number.isNaN(Number(pageSize))) {
     pagination.limit = Number(pageSize);
   }
 
