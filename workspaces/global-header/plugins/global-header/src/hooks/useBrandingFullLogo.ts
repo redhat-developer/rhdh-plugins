@@ -16,7 +16,7 @@
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import type { LogoURLs } from '../components/CompanyLogo/CompanyLogo';
+import type { LogoURLs } from '../components/CompanyLogo/types';
 import { useAppBarBackgroundScheme } from './useAppBarBackgroundScheme';
 
 /**
@@ -24,7 +24,7 @@ import { useAppBarBackgroundScheme } from './useAppBarBackgroundScheme';
  *
  * When `fullLogo` is an object, the variant for the current app bar
  * background scheme (`light` or `dark`) is selected. An optional `logo`
- * prop takes precedence over config, matching {@link CompanyLogo}.
+ * prop takes precedence over config, matching {@link CompanyLogoProps}.
  *
  * @public
  */

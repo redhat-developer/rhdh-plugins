@@ -14,28 +14,24 @@
  * limitations under the License.
  */
 import type { ComponentType } from 'react';
-import { LogoutButton } from '../../components/LogoutButton/LogoutButton';
 import { ProfileDropdown } from '../components/HeaderDropdownComponent/ProfileDropdown';
-import { RegisterAComponentSection } from '../components/HeaderDropdownComponent/RegisterAComponentSection';
-import { SoftwareTemplatesSection } from '../components/HeaderDropdownComponent/SoftwareTemplatesSection';
 import { SearchComponent } from '../../components/SearchComponent/SearchComponent';
 import { HeaderIconButton } from '../../components/HeaderIconButton/HeaderIconButton';
-import { SupportButton } from '../../components/SupportButton/SupportButton';
-import {
-  ApplicationLauncherDropdownMountPoint,
-  CreateDropdownMountPoint,
-  GlobalHeaderComponentMountPoint,
-  HelpDropdownMountPoint,
-  ProfileDropdownMountPoint,
-} from '../types';
+import { GlobalHeaderComponentMountPoint } from '../types';
 import { NotificationButton } from '../../components/NotificationButton/NotificationButton';
 import { Divider } from '../../components/Divider/Divider';
-import { MenuItemLink } from '../../components/MenuItemLink/MenuItemLink';
 import { Spacer } from '../../components/Spacer/Spacer';
 import { StarredDropdown } from '../../components/HeaderDropdownComponent/StarredDropdown';
 import { ApplicationLauncherDropdown } from '../components/HeaderDropdownComponent/ApplicationLauncherDropdown';
 import { CompanyLogo } from '../../components/CompanyLogo/CompanyLogo';
 import { HelpDropdown } from '../components/HeaderDropdownComponent/HelpDropdown';
+
+export {
+  defaultApplicationLauncherDropdownMountPoints,
+  defaultCreateDropdownMountPoints,
+  defaultHelpDropdownMountPoints,
+  defaultProfileDropdownMountPoints,
+} from './defaultDropdownMountPoints';
 
 /**
  * default Global Header Components mount points
@@ -114,105 +110,6 @@ export const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMoun
       Component: ProfileDropdown,
       config: {
         priority: 10, // the greater the number, the more to the left it will be
-      },
-    },
-  ];
-
-export const defaultCreateDropdownMountPoints: CreateDropdownMountPoint[] = [
-  {
-    Component: SoftwareTemplatesSection as ComponentType,
-    config: {
-      priority: 200,
-    },
-  },
-  {
-    Component: RegisterAComponentSection as ComponentType,
-    config: {
-      priority: 100,
-    },
-  },
-];
-
-export const defaultProfileDropdownMountPoints: ProfileDropdownMountPoint[] = [
-  {
-    Component: MenuItemLink as ComponentType,
-    config: {
-      priority: 200,
-      props: {
-        title: 'Settings',
-        titleKey: 'profile.settings',
-        link: '/settings',
-        icon: 'manageAccounts',
-      },
-    },
-  },
-  {
-    Component: MenuItemLink as ComponentType,
-    config: {
-      priority: 150,
-      props: {
-        title: 'My profile',
-        titleKey: 'profile.myProfile',
-        icon: 'account',
-        type: 'myProfile', // Semantic identifier
-      },
-    },
-  },
-  {
-    Component: LogoutButton,
-    config: {
-      priority: 100,
-    },
-  },
-];
-
-export const defaultHelpDropdownMountPoints: HelpDropdownMountPoint[] = [
-  {
-    Component: MenuItemLink as ComponentType,
-    config: {
-      priority: 100,
-      props: {
-        title: 'Quick start',
-        titleKey: 'help.quickStart',
-        icon: 'quickstart',
-        link: 'https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/',
-      },
-    },
-  },
-  {
-    Component: SupportButton,
-    config: {
-      priority: 10,
-    },
-  },
-];
-
-export const defaultApplicationLauncherDropdownMountPoints: ApplicationLauncherDropdownMountPoint[] =
-  [
-    {
-      Component: MenuItemLink as ComponentType,
-      config: {
-        section: 'applicationLauncher.sections.documentation',
-        priority: 150,
-        props: {
-          title: 'Developer Hub',
-          titleKey: 'applicationLauncher.developerHub',
-          icon: 'developerHub',
-          link: 'https://docs.redhat.com/en/documentation/red_hat_developer_hub',
-        },
-      },
-    },
-    {
-      Component: MenuItemLink as ComponentType,
-      config: {
-        section: 'applicationLauncher.sections.developerTools',
-        priority: 130,
-        props: {
-          title: 'RHDH Local',
-          titleKey: 'applicationLauncher.rhdhLocal',
-          icon: 'developerHub',
-          link: 'https://github.com/redhat-developer/rhdh-local',
-        },
       },
     },
   ];

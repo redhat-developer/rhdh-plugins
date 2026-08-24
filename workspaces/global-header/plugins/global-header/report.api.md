@@ -7,6 +7,7 @@ import type Button from '@mui/material/Button';
 import type { ComponentProps } from 'react';
 import type { ComponentType } from 'react';
 import { ConfigurableExtensionDataRef } from '@backstage/frontend-plugin-api';
+import type { CSSProperties } from 'react';
 import { ExtensionBlueprint } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
@@ -120,6 +121,15 @@ export const companyLogoExtension: OverridableExtensionDefinition<{
   inputs: {};
   params: ToolbarComponentParams;
 }>;
+
+// @public (undocumented)
+export interface CompanyLogoProps {
+  height?: string | number;
+  layout?: CSSProperties;
+  logo?: LogoURLs;
+  to?: string;
+  width?: string | number;
+}
 
 // @public
 export const defaultMenuItemExtensions: (
@@ -1103,6 +1113,15 @@ export const helpDropdownExtension: OverridableExtensionDefinition<{
   params: ToolbarComponentParams;
 }>;
 
+// @public
+export type LogoURLs =
+  | {
+      light: string;
+      dark: string;
+    }
+  | string
+  | undefined;
+
 // @public (undocumented)
 export const logoutMenuItemExtension: OverridableExtensionDefinition<{
   kind: 'gh-menu-item';
@@ -1396,6 +1415,9 @@ export interface ToolbarComponentParams {
   // (undocumented)
   tooltip?: string;
 }
+
+// @public
+export const useBrandingFullLogo: (logo?: LogoURLs) => string | undefined;
 
 // @public
 export function useGlobalHeaderComponents(): GlobalHeaderComponentData[];

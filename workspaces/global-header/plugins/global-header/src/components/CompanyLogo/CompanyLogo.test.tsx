@@ -41,6 +41,18 @@ const configWithFullLogo = mockApis.config({
 });
 
 describe('CompanyLogo', () => {
+  it('renders the built-in default logo when no branding is configured', async () => {
+    await renderInTestApp(
+      <TestApiProvider apis={[[configApiRef, mockApis.config({})]]}>
+        <CompanyLogo />
+      </TestApiProvider>,
+    );
+
+    const logo = screen.getByTestId('home-logo');
+    expect(logo).toHaveAttribute('alt', 'Home logo');
+    expect(logo.getAttribute('src')).toMatch(/^data:image\/svg\+xml,/);
+  });
+
   it('renders app.branding.fullLogo when no logo prop is provided', async () => {
     await renderInTestApp(
       <TestApiProvider apis={[[configApiRef, configWithFullLogo]]}>

@@ -1,7 +1,6 @@
 app:
   title: RHDH Global Header Test App
   baseUrl: http://localhost:3000
-
   packages: all
 
   extensions:
@@ -39,7 +38,7 @@ globalHeader:
       priority: 80
     - target: app-launcher
       title: Issue Tracker
-      icon: bug_report
+      icon: bugReport
       link: https://issues.internal.example.com
       sectionLabel: Resources
       priority: 70
