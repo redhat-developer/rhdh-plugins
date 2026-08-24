@@ -550,6 +550,209 @@ export const apiDocsPluginOverride: OverridableFrontendPlugin<
 export const appDefaultsModule: FrontendModule;
 
 // @public
+export const catalogGraphPluginOverride: OverridableFrontendPlugin<
+  {
+    catalogGraph: RouteRef<undefined>;
+  },
+  {
+    catalogEntity: ExternalRouteRef<
+      {
+        name: string;
+        kind: string;
+        namespace: string;
+      },
+      true
+    >;
+  },
+  {
+    'api:catalog-graph': OverridableExtensionDefinition<{
+      kind: 'api';
+      name: undefined;
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<AnyApiFactory, 'core.api.factory', {}>;
+      inputs: {};
+      params: <
+        TApi,
+        TImpl extends TApi,
+        TDeps extends { [name in string]: unknown },
+      >(
+        params: ApiFactory<TApi, TImpl, TDeps>,
+      ) => ExtensionBlueprintParams<AnyApiFactory>;
+    }>;
+    'entity-card:catalog-graph/relations': OverridableExtensionDefinition<{
+      config: {
+        kinds: string[] | undefined;
+        relations: string[] | undefined;
+        maxDepth: number | undefined;
+        unidirectional: boolean | undefined;
+        mergeRelations: boolean | undefined;
+        showArrowHeads: boolean | undefined;
+        direction: 'TB' | 'BT' | 'LR' | 'RL' | undefined;
+        relationPairs: [string, string][] | undefined;
+        zoom: 'disabled' | 'enabled' | 'enable-on-click' | undefined;
+        curve: 'curveStepBefore' | 'curveMonotoneX' | undefined;
+        title: string | undefined;
+        height: number | undefined;
+        filter: FilterPredicate | undefined;
+        type: 'content' | 'info' | undefined;
+      };
+      configInput: {
+        kinds?: string[] | undefined;
+        relations?: string[] | undefined;
+        maxDepth?: number | undefined;
+        unidirectional?: boolean | undefined;
+        mergeRelations?: boolean | undefined;
+        showArrowHeads?: boolean | undefined;
+        direction?: 'TB' | 'BT' | 'LR' | 'RL' | undefined;
+        relationPairs?: [string, string][] | undefined;
+        zoom?: 'disabled' | 'enabled' | 'enable-on-click' | undefined;
+        curve?: 'curveStepBefore' | 'curveMonotoneX' | undefined;
+        title?: string | undefined;
+        height?: number | undefined;
+        filter?: FilterPredicate | undefined;
+        type?: 'content' | 'info' | undefined;
+      };
+      output:
+        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
+        | ExtensionDataRef<
+            (entity: Entity) => boolean,
+            'catalog.entity-filter-function',
+            {
+              optional: true;
+            }
+          >
+        | ExtensionDataRef<
+            string,
+            'catalog.entity-filter-expression',
+            {
+              optional: true;
+            }
+          >
+        | ExtensionDataRef<
+            EntityCardType,
+            'catalog.entity-card-type',
+            {
+              optional: true;
+            }
+          >;
+      inputs: {};
+      kind: 'entity-card';
+      name: 'relations';
+      params: {
+        loader: () => Promise<JSX.Element>;
+        filter?: string | FilterPredicate | ((entity: Entity) => boolean);
+        type?: EntityCardType;
+      };
+    }>;
+    'page:catalog-graph': OverridableExtensionDefinition<{
+      config: {
+        selectedKinds: string[] | undefined;
+        selectedRelations: string[] | undefined;
+        rootEntityRefs: string[] | undefined;
+        maxDepth: number | undefined;
+        unidirectional: boolean | undefined;
+        mergeRelations: boolean | undefined;
+        showArrowHeads: boolean | undefined;
+        direction: 'TB' | 'BT' | 'LR' | 'RL' | undefined;
+        showFilters: boolean | undefined;
+        curve: 'curveStepBefore' | 'curveMonotoneX' | undefined;
+        kinds: string[] | undefined;
+        relations: string[] | undefined;
+        relationPairs: [string, string][] | undefined;
+        zoom: 'disabled' | 'enabled' | 'enable-on-click' | undefined;
+        path: string | undefined;
+        title: string | undefined;
+      };
+      configInput: {
+        selectedKinds?: string[] | undefined;
+        selectedRelations?: string[] | undefined;
+        rootEntityRefs?: string[] | undefined;
+        maxDepth?: number | undefined;
+        unidirectional?: boolean | undefined;
+        mergeRelations?: boolean | undefined;
+        showArrowHeads?: boolean | undefined;
+        direction?: 'TB' | 'BT' | 'LR' | 'RL' | undefined;
+        showFilters?: boolean | undefined;
+        curve?: 'curveStepBefore' | 'curveMonotoneX' | undefined;
+        kinds?: string[] | undefined;
+        relations?: string[] | undefined;
+        relationPairs?: [string, string][] | undefined;
+        zoom?: 'disabled' | 'enabled' | 'enable-on-click' | undefined;
+        path?: string | undefined;
+        title?: string | undefined;
+      };
+      output:
+        | ExtensionDataRef<string, 'core.routing.path', {}>
+        | ExtensionDataRef<
+            RouteRef_2<AnyRouteRefParams>,
+            'core.routing.ref',
+            {
+              optional: true;
+            }
+          >
+        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
+        | ExtensionDataRef<
+            string,
+            'core.title',
+            {
+              optional: true;
+            }
+          >
+        | ExtensionDataRef<
+            IconElement,
+            'core.icon',
+            {
+              optional: true;
+            }
+          >;
+      inputs: {
+        pages: ExtensionInput<
+          | ConfigurableExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
+          | ConfigurableExtensionDataRef<string, 'core.routing.path', {}>
+          | ConfigurableExtensionDataRef<
+              RouteRef_2<AnyRouteRefParams>,
+              'core.routing.ref',
+              {
+                optional: true;
+              }
+            >
+          | ConfigurableExtensionDataRef<
+              string,
+              'core.title',
+              {
+                optional: true;
+              }
+            >
+          | ConfigurableExtensionDataRef<
+              IconElement,
+              'core.icon',
+              {
+                optional: true;
+              }
+            >,
+          {
+            singleton: false;
+            optional: false;
+            internal: false;
+          }
+        >;
+      };
+      kind: 'page';
+      name: undefined;
+      params: {
+        path: string;
+        title?: string;
+        icon?: IconElement;
+        loader?: () => Promise<JSX_2.Element>;
+        routeRef?: RouteRef_2;
+        noHeader?: boolean;
+      };
+    }>;
+  }
+>;
+
+// @public
 export const catalogPluginOverride: OverridableFrontendPlugin<
   {
     catalogIndex: RouteRef<undefined>;
