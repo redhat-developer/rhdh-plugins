@@ -236,7 +236,8 @@ function backstage-image {
     "$_pocker" push "$image_tag"
     "$_pocker" push "$REGISTRY_URL/$ORG_ID/$REPO:main"
   else
-    echo "Image built. Run with --push to push to the registry, or use:"
+    echo "Image built. Pass --push to push to the registry, --no-cache to rebuild layers from scratch."
+    echo "  Or push manually with:"
     echo "  $_pocker push $image_tag"
   fi
   return 0
