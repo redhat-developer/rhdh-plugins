@@ -15,20 +15,28 @@
  */
 
 import type {
-  AggregatedMetricResult,
-  AggregatedMetricTimeSeriesResponse,
+  ThresholdConfig,
+  ThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type {
-  AggregationOptions,
-  AggregationTimeSeriesOptions,
-} from '../types';
+import { ThresholdEvaluator } from '../../threshold/ThresholdEvaluator';
+import { withStandardThresholdDefaults } from './withStandardThresholdDefaults';
 
-export interface AggregationStrategy {
-  aggregate(options: AggregationOptions): Promise<AggregatedMetricResult>;
-  /**
-   * Daily portfolio aggregation.
-   */
-  aggregateTimeSeries?(
-    options: AggregationTimeSeriesOptions,
-  ): Promise<AggregatedMetricTimeSeriesResponse>;
+export function classifyNumberAgainstThresholds(
+  value: number,
+  thresholds: ThresholdConfig,
+  evaluator: ThresholdEvaluator,
+): ThresholdRule | undefined {
+  const evaluation = evaluator.getFirstMatchingThreshold(
+    value,
+    'number',
+    thresholds,
+  );
+  if (!evaluation) {
+    return undefined;
+  }
+  const rule = thresholds.rules.find(r => r.key === evaluation);
+  if (!rule) {
+    return undefined;
+  }
+  return withStandardThresholdDefaults(rule);
 }

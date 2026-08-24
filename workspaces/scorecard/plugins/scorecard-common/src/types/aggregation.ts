@@ -151,3 +151,45 @@ export type AggregationConfig = {
   filter?: AggregationConfigFilter;
   options?: AggregationConfigOptions;
 };
+
+/**
+ * One UTC-day scalar aggregate across owned entities that reported a value.
+ * @public
+ */
+export type ScalarAggregatedTimeSeriesPoint = {
+  value: number;
+  /** Entities that contributed a non-error value that day. */
+  total: number;
+  /** Start of the UTC calendar day (ISO-8601). */
+  timestamp: string;
+};
+
+/**
+ * Daily scalar aggregation (`sum`, `average`, `max`, `min`, `count`).
+ * Calculation-error entity-days are omitted from the aggregation. Days with no successful
+ * contributors are omitted from `points`.
+ * @public
+ */
+export type ScalarAggregatedMetricTimeSeriesResponse = {
+  id: string;
+  metricId: string;
+  metadata: AggregationMetadata;
+  points: ScalarAggregatedTimeSeriesPoint[];
+  /**
+   * KPI `options.thresholds`, or `DEFAULT_NUMBER_THRESHOLDS` when omitted.
+   */
+  thresholds: ThresholdConfig;
+  /**
+   * Chart color from classifying the last point's `value` against `thresholds`.
+   * Set to `null` when `points` is empty or the last value matches no colored rule.
+   */
+  aggregationChartDisplayColor: string | null;
+};
+
+/**
+ * Daily portfolio aggregation time series.
+ * Currently only scalar aggregation types; other members may be added to as union later.
+ * @public
+ */
+export type AggregatedMetricTimeSeriesResponse =
+  ScalarAggregatedMetricTimeSeriesResponse;

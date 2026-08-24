@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-import {
-  type Metric,
-  type ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { ValidatedAggregationConfig } from '../../validation/schemas/aggregationConfigSchemas';
+import { formatUtcDateAsStartOfDayIso } from './formatUtcDate';
 
-export type AggregationOptions = {
-  metric: Metric;
-  entityRefs: string[];
-  thresholds: ThresholdConfig;
-  aggregationConfig: ValidatedAggregationConfig;
-};
-
-export type AggregationTimeSeriesOptions = AggregationOptions & {
-  from: Date;
-  to: Date;
-};
+describe('formatUtcDateAsStartOfDayIso', () => {
+  it('should append midnight UTC to a YYYY-MM-DD day', () => {
+    expect(formatUtcDateAsStartOfDayIso('2024-01-01')).toBe(
+      '2024-01-01T00:00:00.000Z',
+    );
+  });
+});

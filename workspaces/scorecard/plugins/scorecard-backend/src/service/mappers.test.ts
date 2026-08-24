@@ -360,4 +360,38 @@ describe('AggregatedMetricMapper', () => {
       expect(result.metadata).not.toHaveProperty('filter');
     });
   });
+
+  describe('toScalarAggregatedMetricTimeSeriesResponse', () => {
+    it('should wrap points with aggregation id, thresholds, and aggregationChartDisplayColor', () => {
+      const aggregationConfig = mockScalarAggregationConfig(
+        aggregationTypes.sum,
+        {
+          id: 'totalOpenPrs',
+        },
+      );
+      const points = [
+        { value: 12, total: 3, timestamp: '2024-01-01T00:00:00.000Z' },
+      ];
+
+      const result =
+        AggregatedMetricMapper.toScalarAggregatedMetricTimeSeriesResponse(
+          mockMetric,
+          aggregationConfig,
+          points,
+          DEFAULT_NUMBER_THRESHOLDS,
+          'warning.main',
+        );
+
+      expect(result).toEqual({
+        id: 'totalOpenPrs',
+        metricId: 'test.metric',
+        points,
+        metadata: expect.objectContaining({
+          aggregationType: aggregationTypes.sum,
+        }),
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        aggregationChartDisplayColor: 'warning.main',
+      });
+    });
+  });
 });

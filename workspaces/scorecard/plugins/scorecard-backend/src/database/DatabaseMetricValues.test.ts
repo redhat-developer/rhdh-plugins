@@ -20,7 +20,7 @@ import {
   TestDatabases,
 } from '@backstage/backend-test-utils';
 import { DatabaseMetricValues } from './DatabaseMetricValues';
-import { DbMetricValueCreate } from './types';
+import { DbMetricValueCreate, ScalarAggregationFn } from './types';
 import { toMetricValueRow } from './utils/mapMetricValueRow';
 import { migrate } from './migration';
 
@@ -2246,6 +2246,435 @@ describe('DatabaseMetricValues', () => {
             ...portfolioCounts,
           });
         });
+      },
+    );
+  });
+
+  describe('readScalarAggregatedMetricTimeSeriesByEntityRefs', () => {
+    const entityRefs = [
+      'component:default/a',
+      'component:default/b',
+      'component:default/c',
+    ];
+    const from = new Date('2024-01-01T00:00:00Z');
+    const to = new Date('2024-01-02T23:59:59Z');
+
+    it.each(databases.eachSupportedId())(
+      'should filter in [from, to] range - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 1,
+              timestamp: new Date('2024-01-01T23:59:59Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 7,
+              timestamp: new Date('2024-01-02T00:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 13,
+              timestamp: new Date('2024-01-03T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 28,
+              timestamp: new Date('2024-01-04T00:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a'],
+            'github.metric1',
+            'sum',
+            new Date('2024-01-02T00:00:00Z'),
+            new Date('2024-01-03T23:59:59Z'),
+          );
+
+        expect(result).toEqual([
+          { utcDay: '2024-01-02', value: 7, total: 1 },
+          { utcDay: '2024-01-03', value: 13, total: 1 },
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should filter by catalog entity refs and metricId - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              metricId: 'github:otherMetric',
+              value: 10,
+              timestamp: new Date('2024-01-01T08:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 14,
+              timestamp: new Date('2024-01-01T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/b',
+              value: 1,
+              timestamp: new Date('2024-01-01T10:30:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a'],
+            'github.metric1',
+            'sum',
+            new Date('2024-01-01T00:00:00Z'),
+            new Date('2024-01-01T23:59:59Z'),
+          );
+
+        expect(result).toEqual([{ utcDay: '2024-01-01', value: 14, total: 1 }]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should use the latest success per UTC day when multiple samples - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 10,
+              timestamp: new Date('2024-01-01T08:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 14,
+              timestamp: new Date('2024-01-01T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/b',
+              value: 1,
+              timestamp: new Date('2024-01-01T10:30:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 20, // A latest
+              timestamp: new Date('2024-01-01T11:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/b',
+              value: 7, // B latest
+              timestamp: new Date('2024-01-01T11:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a', // A next day
+              value: 40,
+              timestamp: new Date('2024-01-02T10:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a', 'component:default/b'],
+            'github.metric1',
+            'sum',
+            new Date('2024-01-01T00:00:00Z'),
+            new Date('2024-01-03T23:59:59Z'),
+          );
+
+        expect(result).toEqual([
+          { utcDay: '2024-01-01', value: 27, total: 2 },
+          { utcDay: '2024-01-02', value: 40, total: 1 },
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should keep an earlier success when a later sample the same UTC day is a calculation error - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 10,
+              timestamp: new Date('2024-01-01T08:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: null,
+              errorMessage: 'boom',
+              status: null,
+              timestamp: new Date('2024-01-01T18:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a'],
+            'github.metric1',
+            'sum',
+            new Date('2024-01-01T00:00:00Z'),
+            new Date('2024-01-01T23:59:59Z'),
+          );
+
+        expect(result).toEqual([{ utcDay: '2024-01-01', value: 10, total: 1 }]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return empty points when entity refs list is empty - %p',
+      async databaseId => {
+        const { db } = await createDatabase(databaseId);
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            [],
+            'github.metric1',
+            'sum',
+            from,
+            to,
+          );
+
+        expect(result).toEqual([]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should omit days with only calculation errors for every aggregation function - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: null,
+              errorMessage: 'boom',
+              status: null,
+              timestamp: new Date('2024-01-01T12:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const aggregationFunctions: ScalarAggregationFn[] = [
+          'sum',
+          'average',
+          'count',
+          'max',
+          'min',
+        ];
+
+        for (const aggregationFn of aggregationFunctions) {
+          const result =
+            await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+              ['component:default/a'],
+              'github.metric1',
+              aggregationFn,
+              from,
+              to,
+            );
+
+          expect(result).toEqual([]);
+        }
+      },
+    );
+
+    describe.each(databases.eachSupportedId())(
+      'aggregate latest success value per entity per UTC day - %p',
+      databaseId => {
+        let db: DatabaseMetricValues;
+
+        beforeAll(async () => {
+          const database = await createDatabase(databaseId);
+          const { client } = database;
+          db = database.db;
+
+          const day1 = new Date('2024-01-01T12:00:00Z');
+          const day1Later = new Date('2024-01-01T18:00:00Z');
+          const day2 = new Date('2024-01-02T12:00:00Z');
+
+          await client('metric_values').insert(
+            [
+              createMetricValue({
+                entityRef: 'component:default/a',
+                value: 10,
+                timestamp: day1,
+              }),
+              createMetricValue({
+                entityRef: 'component:default/a',
+                value: 20,
+                timestamp: day1Later,
+              }),
+              createMetricValue({
+                entityRef: 'component:default/b',
+                value: 40,
+                timestamp: day1,
+              }),
+              createMetricValue({
+                entityRef: 'component:default/c',
+                value: null,
+                errorMessage: 'boom',
+                status: null,
+                timestamp: day1,
+              }),
+              createMetricValue({
+                entityRef: 'component:default/a',
+                value: 5,
+                timestamp: day2,
+              }),
+              createMetricValue({
+                entityRef: 'component:default/b',
+                value: null,
+                errorMessage: 'boom',
+                status: null,
+                timestamp: day2,
+              }),
+            ].map(toMetricValueRow),
+          );
+        });
+
+        it.each([
+          [
+            'sum',
+            [
+              { utcDay: '2024-01-01', value: 60, total: 2 },
+              { utcDay: '2024-01-02', value: 5, total: 1 },
+            ],
+          ],
+          [
+            'average',
+            [
+              { utcDay: '2024-01-01', value: 30, total: 2 },
+              { utcDay: '2024-01-02', value: 5, total: 1 },
+            ],
+          ],
+          [
+            'count',
+            [
+              { utcDay: '2024-01-01', value: 2, total: 2 },
+              { utcDay: '2024-01-02', value: 1, total: 1 },
+            ],
+          ],
+          [
+            'max',
+            [
+              { utcDay: '2024-01-01', value: 40, total: 2 },
+              { utcDay: '2024-01-02', value: 5, total: 1 },
+            ],
+          ],
+          [
+            'min',
+            [
+              { utcDay: '2024-01-01', value: 20, total: 2 },
+              { utcDay: '2024-01-02', value: 5, total: 1 },
+            ],
+          ],
+        ] as const)(
+          'should %s across UTC days, skipping calculation errors or missing data',
+          async (aggregationFn, expected) => {
+            const result =
+              await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+                entityRefs,
+                'github.metric1',
+                aggregationFn,
+                from,
+                to,
+              );
+
+            expect(result).toEqual(expected);
+          },
+        );
+      },
+    );
+
+    describe.each(databases.eachSupportedId())(
+      'filter.status - %p',
+      databaseId => {
+        let db: DatabaseMetricValues;
+
+        beforeAll(async () => {
+          const database = await createDatabase(databaseId);
+          const { client } = database;
+          db = database.db;
+
+          await client('metric_values').insert(
+            [
+              createMetricValue({
+                entityRef: 'component:default/a',
+                value: 10,
+                status: 'error',
+                timestamp: new Date('2024-01-01T12:00:00Z'),
+              }),
+              createMetricValue({
+                entityRef: 'component:default/b',
+                value: 40,
+                status: 'success',
+                timestamp: new Date('2024-01-01T12:00:00Z'),
+              }),
+              createMetricValue({
+                entityRef: 'component:default/c',
+                value: 25,
+                status: 'error',
+                timestamp: new Date('2024-01-01T12:00:00Z'),
+              }),
+            ].map(toMetricValueRow),
+          );
+        });
+
+        it.each([
+          ['sum', 'error', { utcDay: '2024-01-01', value: 35, total: 2 }],
+          ['count', 'error', { utcDay: '2024-01-01', value: 2, total: 2 }],
+          ['max', 'error', { utcDay: '2024-01-01', value: 25, total: 2 }],
+          ['min', 'error', { utcDay: '2024-01-01', value: 10, total: 2 }],
+          ['average', 'error', { utcDay: '2024-01-01', value: 17.5, total: 2 }],
+          ['sum', 'success', { utcDay: '2024-01-01', value: 40, total: 1 }],
+        ] as const)(
+          'should %s only rows matching filter.status=%s',
+          async (aggregationFn, status, expected) => {
+            const result =
+              await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+                entityRefs,
+                'github.metric1',
+                aggregationFn,
+                from,
+                to,
+                { status },
+              );
+
+            expect(result).toEqual([expected]);
+          },
+        );
+
+        it.each(['sum', 'average', 'count', 'max', 'min'] as const)(
+          'should omit the day when no rows match filter.status for %s',
+          async aggregationFn => {
+            const result =
+              await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+                entityRefs,
+                'github.metric1',
+                aggregationFn,
+                from,
+                to,
+                { status: 'warning' },
+              );
+
+            expect(result).toEqual([]);
+          },
+        );
       },
     );
   });

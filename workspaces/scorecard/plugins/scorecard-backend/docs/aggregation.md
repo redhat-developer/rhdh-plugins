@@ -229,16 +229,19 @@ Scalar KPIs may include an optional top-level **`filter.status`** to restrict ag
 
 ### `GET /aggregations/:aggregationId`
 
+Returns a **KPI snapshot**: the current aggregated value of a scorecard KPI across entities you own.
 Use this endpoint for all new integrations.
 
 - **`aggregationId`** may be a key under **`scorecard.aggregationKPIs`** in app-config (see the [backend README](../README.md#aggregation-kpis-homepage-and-get-aggregations)), which supplies **title**, **description**, **type**, **metricId**, and type-specific **`options`** (for example **`options.statusScores`** for **`weightedStatusScore`**, or optional **`options.thresholds`** for scalar types and **`weightedStatusScore`**).
-- If there is **no** `scorecard.aggregationKPIs.<aggregationId>` block, the backend still responds successfully: it treats **`aggregationId` as the `metricId`** and uses the default **statusGrouped** strategy (same as calling **`/aggregations/<metricId>`** with a metric id). A **warning** is logged on the server so missing KPI config is visible in operator logs. To get a custom **title**, **`weightedStatusScore`** or **scalar** type, or other KPI options, you must add that block; a typo in the id falls through to this default and can look like “wrong” aggregation behavior in the UI, so check logs and app-config.
+- If there is **no** `scorecard.aggregationKPIs.<aggregationId>` block, the backend still responds successfully: it treats **`aggregationId` as the `metricId`**. The default type is **`average`** when the metric’s **`defaultVisualization`** is **`sparkline`**, otherwise **`statusGrouped`**. A **warning** is logged on the server so missing KPI config is visible in operator logs. To get a custom **title**, **`weightedStatusScore`** or **scalar** type, or other KPI options, you must add that block; a typo in the id falls through to this default and can look like “wrong” aggregation behavior in the UI, so check logs and app-config.
 
 The response shape includes **`id`**, **`status`**, **`metadata`** (title, description, type, unit, aggregation type, and **`filter`** when configured), and **`result`**. The shape of **`result`** depends on the aggregation type:
 
 - **`statusGrouped`**: counts per threshold rule, **`total`**, **`thresholds`**, **`entitiesConsidered`**, **`calculationErrorCount`**, **`timestamp`**.
 - **`weightedStatusScore`**: same as status-grouped, plus **`weightedStatusScore`** (portfolio percentage in \[0, 100\], one decimal), **`weightedStatusSum`**, **`weightedStatusMaxPossible`**, and **`aggregationChartDisplayColor`** (see backend README). The homepage card shows a donut gauge for this type instead of a multi-slice status pie.
 - **Scalar types** (`sum`, `average`, `max`, `min`, `count`): see [Scalar result fields](#scalar-result-fields) below. When **`filter.status`** is configured, **`metadata.filter`** is also returned.
+
+For a daily history of a **scalar** KPI over owned entities, see [`GET /aggregations/:aggregationId/time-series`](#get-aggregationsaggregationidtime-series).
 
 ### Scalar result fields
 
@@ -305,9 +308,116 @@ Always read **`value`** together with **`total`**. When nothing contributed, SQL
 - Response **`{ "value": 0, "total": 5 }`** means you own 5 components currently in **`error`** status whose open-PR values contributed, and the minimum among them is **`0`**.
 - Response **`{ "value": 0, "total": 0 }`** means no **`error`**-status rows contributed — show “no data”, not “min is 0”.
 
+### `GET /aggregations/:aggregationId/time-series`
+
+Returns a **day-by-day history** of a **scalar** KPI (`sum`, `average`, `max`, `min`, `count`) across entities you own. The UI uses this for a sparkline: one number per day, with a single stroke color from the **last** point.
+
+**`statusGrouped`** and **`weightedStatusScore`** are currently not supported. Calling this route for those types returns **`400 Bad Request`** (`InputError`). A metric id with no KPI block defaults to **`statusGrouped`** unless the metric’s **`defaultVisualization`** is **`sparkline`** (then **`average`**).
+
+Each response point is **one UTC calendar day**. For that day, Scorecard uses each owned entity’s **last successful metric sample**, then applies the same scalar aggregation as the snapshot. Failed calculations are skipped. Days with no successful data are left out of the series, so a gap means “no data that day”, not a real zero.
+
+If the KPI has **`filter.status`**, only entities that were in that status on that day contribute to the day’s value.
+
+#### Path parameters
+
+| Parameter       | Type   | Required | Description                                                                                        |
+| --------------- | ------ | -------- | -------------------------------------------------------------------------------------------------- |
+| `aggregationId` | string | Yes      | KPI key under **`scorecard.aggregationKPIs`**, or a **metric id** when no KPI block is configured. |
+
+#### Query parameters
+
+| Parameter | Type   | Required | Description                                                                                                             |
+| --------- | ------ | -------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `from`    | string | Yes      | Inclusive range start (ISO-8601 datetime, for example `2024-01-01T00:00:00.000Z`).                                      |
+| `to`      | string | Yes      | Inclusive range end (ISO-8601 datetime). Must be **greater than or equal to** **`from`**. Maximum span is **365 days**. |
+
+Invalid or missing query parameters return **`400 Bad Request`** (`InputError`).
+
+#### Permissions
+
+Requires:
+
+- **`scorecard.metric.read`** on the KPI's underlying metric
+- **`catalog.entity.read`** for each entity included in the aggregation
+
+#### Error handling
+
+| Condition                     | Status             | Notes                                                                         |
+| ----------------------------- | ------------------ | ----------------------------------------------------------------------------- |
+| Metric access denied          | `403 Forbidden`    | User cannot read the metric                                                   |
+| Missing credentials           | `401 Unauthorized` | `AuthenticationError`                                                         |
+| Missing user entity reference | `401 Unauthorized` | `AuthenticationError`                                                         |
+| Invalid query params          | `400 Bad Request`  | Format `ISO-8601`, `from` <= `to`, maximum span is 365 days                   |
+| Unsupported aggregation type  | `400 Bad Request`  | `statusGrouped` and `weightedStatusScore` aggregation types are not supported |
+
+#### Response
+
+Currently only scalar KPIs are returned, further aggregation types can be added later; clients should branch on **`metadata.aggregationType`**.
+
+| Field                              | Description                                                                                                                                                                                                                                    |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`id`**                           | Aggregation id (KPI key or metric id).                                                                                                                                                                                                         |
+| **`metricId`**                     | Backing metric id.                                                                                                                                                                                                                             |
+| **`metadata`**                     | Same metadata as the snapshot route (`title`, `description`, `type`, `unit`, `aggregationType`, and `filter` when configured).                                                                                                                 |
+| **`points`**                       | Chronological daily aggregates. Each point has **`value`**, **`total`** (entities that contributed a non-error value that day), and **`timestamp`** (start of that UTC calendar day).                                                          |
+| **`thresholds`**                   | Number-style rules for classifying **`value`**; from KPI **`options.thresholds`** or **`DEFAULT_NUMBER_THRESHOLDS`** when omitted. Not entity annotation overrides.                                                                            |
+| **`aggregationChartDisplayColor`** | Color of the sparkline stroke from the **last** point’s matching threshold rule **`color`**. Same role as weighted snapshot **`aggregationChartDisplayColor`**. **`null`** when **`points`** is empty or the matching rule has no **`color`**. |
+
+#### How each day is computed
+
+These rules match snapshot scalar aggregation:
+
+- **Latest successful sample per entity per day:** the stored row with the highest `id` that has a non-null value. Rows with `error_message` set and a missing value are excluded. A mixed day (some entities succeeded, some failed) still produces a point. A day with **no** successful contributors is omitted from **`points`**.
+- **Status on stored samples** (used for scalar **`filter.status`**) is whatever was written at metric sync, including per-entity annotation threshold overrides.
+
+#### Empty results
+
+- No owned entities, or no successful entity-days in range: **`200`** with **`points: []`** and **`aggregationChartDisplayColor: null`** (not an error).
+- Days with only calculation errors are omitted; they do not appear as zero-valued points.
+
+#### Example request
+
+```bash
+curl -X GET "{{url}}/api/scorecard/aggregations/totalOpenBugs/time-series?from=2024-01-01T00:00:00.000Z&to=2024-01-31T00:00:00.000Z" \
+  -H "Authorization: Bearer <token>"
+```
+
+Example scalar response:
+
+```json
+{
+  "id": "totalOpenBugs",
+  "metricId": "jira.openIssues",
+  "metadata": {
+    "title": "Total Open Bugs",
+    "description": "Sum of open issues across owned entities.",
+    "type": "number",
+    "aggregationType": "sum"
+  },
+  "points": [
+    { "value": 12, "total": 3, "timestamp": "2024-01-15T00:00:00.000Z" },
+    { "value": 18, "total": 3, "timestamp": "2024-01-16T00:00:00.000Z" }
+  ],
+  "thresholds": {
+    "rules": [
+      { "key": "success", "expression": "<=10", "color": "success.main" },
+      { "key": "warning", "expression": "10-50", "color": "warning.main" },
+      { "key": "error", "expression": ">50", "color": "error.main" }
+    ]
+  },
+  "aggregationChartDisplayColor": "warning.main"
+}
+```
+
 ### `GET /aggregations/:aggregationId/metadata`
 
-Same resolution as above, but returns only metadata fields (no aggregate counts), including **`filter`** when configured on a scalar KPI. Useful for UIs that list KPIs without loading full aggregation data.
+Same **`aggregationId`** resolution as [`GET /aggregations/:aggregationId`](#get-aggregationsaggregationid), but returns only metadata (no aggregate counts or time-series points), including **`filter`** when configured on a scalar KPI. Use this for UIs that list KPIs without loading full aggregation data.
+
+#### Path parameters
+
+| Parameter       | Type   | Required | Description                                                                                        |
+| --------------- | ------ | -------- | -------------------------------------------------------------------------------------------------- |
+| `aggregationId` | string | Yes      | KPI key under **`scorecard.aggregationKPIs`**, or a **metric id** when no KPI block is configured. |
 
 #### Permissions and errors
 
@@ -319,7 +429,7 @@ Same resolution as above, but returns only metadata fields (no aggregate counts)
 
 #### Empty results
 
-When the user owns no relevant entities, distribution types (**`statusGrouped`**, **`weightedStatusScore`**) return **zero total** and zeroed bucket counts (not an error). For scalar empty / filtered-empty handling — including why **`value: 0`** with **`total: 0`** is ambiguous for **`min`** / **`max`** — see [Interpreting scalar results](#interpreting-scalar-results).
+When the user owns no relevant entities, snapshot distribution types (**`statusGrouped`**, **`weightedStatusScore`**) return **zero total** and zeroed bucket counts (not an error). For scalar empty / filtered-empty handling — including why **`value: 0`** with **`total: 0`** is ambiguous for **`min`** / **`max`** — see [Interpreting scalar results](#interpreting-scalar-results). Scalar time-series empty ranges return **`points: []`** and **`aggregationChartDisplayColor: null`** as described above.
 
 ### Drill-down vs aggregation id
 
@@ -406,7 +516,7 @@ If the user doesn't have access to the specified metric:
 4. **Group Structure**: Be aware of the direct parent group limitation when designing your group hierarchy. You currently receive scorecard results only for entities you own and those of your immediate parent group. To include results from _all_ parent
    groups, you can either implement custom logic, restructure your groups, or (if using RHDH), enable transitive parent groups ([see transitive parent group enablement documentation](https://docs.redhat.com/en/documentation/red_hat_developer_hub/1.5/html-single/authorization_in_red_hat_developer_hub/index#enabling-transitive-parent-groups)).
 
-5. **Metric access**: Aggregation routes enforce **`scorecard.metric.read`** for the underlying metric and **`catalog.entity.read`** for each included entity; expect **`403 Forbidden`** when either check fails.
+5. **Metric access**: Aggregation snapshot and time-series routes enforce **`scorecard.metric.read`** for the underlying metric and **`catalog.entity.read`** for each included entity; expect **`403 Forbidden`** when either check fails.
 
 For RBAC, scheduling, full endpoint reference, and **app-config examples** for **`weightedStatusScore`** and **scalar** KPIs, see the [Scorecard backend README](../README.md).
 

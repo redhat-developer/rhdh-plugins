@@ -19,7 +19,10 @@ import type { Request, Response } from 'express';
 import { validateAggregationIdParam } from './validateAggregationIdParam';
 import { validateMetricIdsQueryParams } from './validateMetricIdsQueryParams';
 import { validateDatasourceQueryParams } from './validateDatasourceQueryParams';
-import { validateTimeSeriesQueryParams } from './validateTimeSeriesQueryParams';
+import {
+  validateAggregationTimeSeriesQueryParams,
+  validateTimeSeriesQueryParams,
+} from './validateTimeSeriesQueryParams';
 
 function mockReq(overrides: Partial<Request> = {}): Request {
   return {
@@ -248,6 +251,83 @@ describe('Validators', () => {
       expect(() => validateTimeSeriesQueryParams(req, res, next)).toThrow(
         /time range must not exceed 365 days/,
       );
+      expect(next).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('validateAggregationTimeSeriesQueryParams', () => {
+    it('should call next without metricId', () => {
+      const req = mockReq({
+        query: {
+          from: '2024-01-01T00:00:00.000Z',
+          to: '2024-01-31T23:59:59.000Z',
+        },
+      });
+
+      validateAggregationTimeSeriesQueryParams(req, res, next);
+
+      expect(next).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw InputError when from/to are missing', () => {
+      const req = mockReq({ query: {} });
+
+      expect(() =>
+        validateAggregationTimeSeriesQueryParams(req, res, next),
+      ).toThrow(InputError);
+    });
+
+    it('should call next when from equals to', () => {
+      const req = mockReq({
+        query: {
+          from: '2024-01-01T00:00:00.000Z',
+          to: '2024-01-01T00:00:00.000Z',
+        },
+      });
+
+      validateAggregationTimeSeriesQueryParams(req, res, next);
+
+      expect(next).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw InputError when from is after to', () => {
+      const req = mockReq({
+        query: {
+          from: '2024-02-01T00:00:00.000Z',
+          to: '2024-01-01T00:00:00.000Z',
+        },
+      });
+
+      expect(() =>
+        validateAggregationTimeSeriesQueryParams(req, res, next),
+      ).toThrow(/from must be less than or equal to to/);
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should call next when range is exactly 365 days', () => {
+      const req = mockReq({
+        query: {
+          from: '2024-01-01T00:00:00.000Z',
+          to: '2024-12-31T00:00:00.000Z',
+        },
+      });
+
+      validateAggregationTimeSeriesQueryParams(req, res, next);
+
+      expect(next).toHaveBeenCalledTimes(1);
+    });
+
+    it('should throw InputError when range exceeds 365 days', () => {
+      const req = mockReq({
+        query: {
+          from: '2024-01-01T00:00:00.000Z',
+          to: '2025-01-01T00:00:00.001Z',
+        },
+      });
+
+      expect(() =>
+        validateAggregationTimeSeriesQueryParams(req, res, next),
+      ).toThrow(/time range must not exceed 365 days/);
       expect(next).not.toHaveBeenCalled();
     });
   });

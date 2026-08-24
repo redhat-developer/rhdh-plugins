@@ -17,14 +17,21 @@
 import {
   AggregatedMetric,
   AggregatedMetricResult,
+  AggregatedMetricTimeSeriesResponse,
   AggregationMetadata,
   Metric,
   AggregationResultByType,
   ScalarAggregatedMetric,
+  ScalarAggregatedTimeSeriesPoint,
+  ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DbAggregatedMetric } from '../database/types';
-import type { DbScalarAggregatedMetric } from '../database/types';
+import type {
+  DbScalarAggregatedMetric,
+  DbScalarTimeSeriesPoint,
+} from '../database/types';
 import { ValidatedAggregationConfig } from '../validation/schemas/aggregationConfigSchemas';
+import { formatUtcDateAsStartOfDayIso } from '../utils/formatUtcDate';
 import { normalizeTimestamp } from '../utils/normalizeTimestamp';
 
 export class AggregatedMetricMapper {
@@ -91,6 +98,33 @@ export class AggregatedMetricMapper {
       status: 'success',
       metadata: this.toAggregationMetadata(metric, aggregationConfig),
       result,
+    };
+  }
+
+  static toScalarTimeSeriesPoint(
+    row: DbScalarTimeSeriesPoint,
+  ): ScalarAggregatedTimeSeriesPoint {
+    return {
+      value: row.value,
+      total: row.total,
+      timestamp: formatUtcDateAsStartOfDayIso(row.utcDay),
+    };
+  }
+
+  static toScalarAggregatedMetricTimeSeriesResponse(
+    metric: Metric,
+    aggregationConfig: ValidatedAggregationConfig,
+    points: ScalarAggregatedTimeSeriesPoint[],
+    thresholds: ThresholdConfig,
+    aggregationChartDisplayColor: string | null,
+  ): AggregatedMetricTimeSeriesResponse {
+    return {
+      id: aggregationConfig.id,
+      metricId: metric.id,
+      points,
+      metadata: this.toAggregationMetadata(metric, aggregationConfig),
+      thresholds,
+      aggregationChartDisplayColor,
     };
   }
 }

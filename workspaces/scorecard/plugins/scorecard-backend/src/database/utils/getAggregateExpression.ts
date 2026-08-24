@@ -16,21 +16,35 @@
 
 import { ScalarAggregationFn } from '../types';
 
+/**
+ * Builds a SQL aggregate expression for a scalar function.
+ *
+ * @param aggregationFn - Scalar function (`sum`, `average`, `max`, `min`, `count`)
+ * @param numericValueExpr - SQL expression for the numeric metric value
+ * @param rowIncludedExpr - Optional SQL boolean; only matching rows are included
+ */
 export function getAggregateExpression(
   aggregationFn: ScalarAggregationFn,
   numericValueExpr: string,
+  rowIncludedExpr?: string,
 ): string {
+  const valueExpr = rowIncludedExpr
+    ? `CASE WHEN ${rowIncludedExpr} THEN ${numericValueExpr} END`
+    : numericValueExpr;
+
   switch (aggregationFn) {
     case 'count':
-      return 'COUNT(*)';
+      return rowIncludedExpr
+        ? `COUNT(CASE WHEN ${rowIncludedExpr} THEN 1 END)`
+        : 'COUNT(*)';
     case 'sum':
-      return `SUM(${numericValueExpr})`;
+      return `SUM(${valueExpr})`;
     case 'average':
-      return `AVG(${numericValueExpr})`;
+      return `AVG(${valueExpr})`;
     case 'max':
-      return `MAX(${numericValueExpr})`;
+      return `MAX(${valueExpr})`;
     case 'min':
-      return `MIN(${numericValueExpr})`;
+      return `MIN(${valueExpr})`;
     default:
       throw new Error(`Invalid aggregation function: ${aggregationFn}`);
   }

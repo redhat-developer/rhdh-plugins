@@ -18,6 +18,7 @@ import type {
   AggregatedMetric,
   AggregationConfigFilter,
   ScalarAggregatedMetric,
+  ScalarAggregatedTimeSeriesPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { DatabaseMetricValues } from '../../database/DatabaseMetricValues';
 import type { ScalarAggregationFn } from '../../database/types';
@@ -62,5 +63,30 @@ export class AggregatedMetricLoader {
       );
 
     return AggregatedMetricMapper.toScalarAggregatedMetric(scalarMetric);
+  }
+
+  async loadScalarMetricTimeSeriesByEntityRefs(
+    entityRefs: string[],
+    metricId: string,
+    aggregationFn: ScalarAggregationFn,
+    from: Date,
+    to: Date,
+    filter?: AggregationConfigFilter,
+  ): Promise<ScalarAggregatedTimeSeriesPoint[]> {
+    if (entityRefs.length === 0) {
+      return [];
+    }
+
+    const rows =
+      await this.database.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+        entityRefs,
+        metricId,
+        aggregationFn,
+        from,
+        to,
+        filter,
+      );
+
+    return rows.map(row => AggregatedMetricMapper.toScalarTimeSeriesPoint(row));
   }
 }

@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-import {
-  type Metric,
-  type ThresholdConfig,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import type { ValidatedAggregationConfig } from '../../validation/schemas/aggregationConfigSchemas';
-
-export type AggregationOptions = {
-  metric: Metric;
-  entityRefs: string[];
-  thresholds: ThresholdConfig;
-  aggregationConfig: ValidatedAggregationConfig;
-};
-
-export type AggregationTimeSeriesOptions = AggregationOptions & {
-  from: Date;
-  to: Date;
-};
+/**
+ * Formats a UTC calendar day (`YYYY-MM-DD`) as an ISO-8601 timestamp at midnight UTC.
+ */
+export function formatUtcDateAsStartOfDayIso(utcDay: string): string {
+  return `${utcDay}T00:00:00.000Z`;
+}

@@ -29,7 +29,9 @@ import {
 } from '../__fixtures__/mockProviders';
 import request from 'supertest';
 import type { Server } from 'http';
-import type { Entity } from '@backstage/catalog-model';
+import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
+import { knex as createKnex, type Knex } from 'knex';
+import { toMetricValueRow } from './database/utils/mapMetricValueRow';
 
 /**
  * Backend module that registers mock metric providers via the extension point,
@@ -68,6 +70,7 @@ const BASE_CONFIG = {
 function startScorecardBackend(options?: {
   config?: object;
   entities?: Entity[];
+  knex?: Knex;
 }) {
   return startTestBackend({
     features: [
@@ -79,6 +82,9 @@ function startScorecardBackend(options?: {
         defaultCredentials: mockCredentials.user('user:default/test'),
       }),
       catalogServiceMock.factory({ entities: options?.entities ?? [] }),
+      ...(options?.knex
+        ? [mockServices.database.factory({ knex: options.knex })]
+        : []),
     ],
   });
 }
@@ -98,6 +104,16 @@ const TEST_ENTITIES: Entity[] = [
       name: 'my-service',
       namespace: 'default',
       annotations: { 'mock/key': 'true' },
+    },
+    spec: { type: 'service', owner: 'user:default/test' },
+    relations: [{ type: 'ownedBy', targetRef: 'user:default/test' }],
+  },
+  {
+    apiVersion: 'backstage.io/v1alpha1',
+    kind: 'Component',
+    metadata: {
+      name: 'my-service2',
+      namespace: 'default',
     },
     spec: { type: 'service', owner: 'user:default/test' },
     relations: [{ type: 'ownedBy', targetRef: 'user:default/test' }],
@@ -296,6 +312,36 @@ describe('scorecard plugin (startTestBackend)', () => {
       expect(res.status).toBe(404);
     });
   });
+
+  describe('GET /api/scorecard/aggregations/:aggregationId/time-series', () => {
+    it('returns 400 for statusGrouped default (metric id without KPI)', async () => {
+      const res = await request(server).get(
+        '/api/scorecard/aggregations/github.openPRs/time-series?from=2024-01-01T00:00:00.000Z&to=2024-01-31T00:00:00.000Z',
+      );
+
+      expect(res.status).toBe(400);
+      expect(res.body.error.name).toBe('InputError');
+      expect(res.body.error.message).toMatch(/does not support time-series/);
+    });
+
+    it('returns 401 when request has no user credentials', async () => {
+      const res = await request(server)
+        .get(
+          '/api/scorecard/aggregations/github.openPRs/time-series?from=2024-01-01T00:00:00.000Z&to=2024-01-31T00:00:00.000Z',
+        )
+        .set('Authorization', mockCredentials.none.header());
+
+      expect(res.status).toBe(401);
+    });
+
+    it('returns 404 for non-existent aggregation', async () => {
+      const res = await request(server).get(
+        '/api/scorecard/aggregations/non.existent/time-series?from=2024-01-01T00:00:00.000Z&to=2024-01-31T00:00:00.000Z',
+      );
+
+      expect(res.status).toBe(404);
+    });
+  });
 });
 
 describe('scorecard plugin with aggregationKPIs config', () => {
@@ -323,7 +369,10 @@ describe('scorecard plugin with aggregationKPIs config', () => {
   };
 
   beforeAll(async () => {
-    ({ server } = await startScorecardBackend({ config: KPI_CONFIG }));
+    ({ server } = await startScorecardBackend({
+      config: KPI_CONFIG,
+      entities: TEST_ENTITIES,
+    }));
   });
 
   afterAll(() => {
@@ -352,5 +401,147 @@ describe('scorecard plugin with aggregationKPIs config', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.title).toBe('GitHub Open PRs');
+  });
+
+  it('returns 400 for time-series of weightedStatusScore KPIs', async () => {
+    const res = await request(server).get(
+      '/api/scorecard/aggregations/myCustomKpi/time-series?from=2024-01-01T00:00:00.000Z&to=2024-01-31T00:00:00.000Z',
+    );
+
+    expect(res.status).toBe(400);
+    expect(res.body.error.name).toBe('InputError');
+  });
+});
+
+describe('scorecard plugin with scalar aggregationKPI', () => {
+  let server: Server;
+  let knex: Knex;
+
+  const KPI_CONFIG = {
+    ...BASE_CONFIG,
+    scorecard: {
+      aggregationKPIs: {
+        totalOpenPrs: {
+          title: 'Total Open PRs',
+          description: 'Sum of open PRs',
+          type: 'sum',
+          metricId: 'github.openPRs',
+        },
+      },
+    },
+  };
+
+  beforeAll(async () => {
+    knex = createKnex({
+      client: 'better-sqlite3',
+      connection: ':memory:',
+      useNullAsDefault: true,
+    });
+
+    ({ server } = await startScorecardBackend({
+      config: KPI_CONFIG,
+      entities: TEST_ENTITIES,
+      knex,
+    }));
+
+    await knex('metric_values').insert(
+      [
+        {
+          catalogEntityRef: stringifyEntityRef(TEST_ENTITIES[1]),
+          metricId: 'github.openPRs',
+          value: 5,
+          timestamp: new Date('2024-01-01T12:00:00.000Z'),
+          status: 'success',
+        },
+        {
+          catalogEntityRef: stringifyEntityRef(TEST_ENTITIES[1]),
+          metricId: 'github.openPRs',
+          value: 12,
+          timestamp: new Date('2024-01-02T12:00:00.000Z'),
+          status: 'success',
+        },
+        {
+          catalogEntityRef: stringifyEntityRef(TEST_ENTITIES[2]),
+          metricId: 'github.openPRs',
+          value: 4,
+          timestamp: new Date('2024-01-02T12:10:00.000Z'),
+          status: 'success',
+        },
+      ].map(toMetricValueRow),
+    );
+  });
+
+  afterAll(async () => {
+    server.close();
+    await knex.destroy();
+  });
+
+  it('returns empty scalar time-series when there is no metric data in range', async () => {
+    const res = await request(server).get(
+      '/api/scorecard/aggregations/totalOpenPrs/time-series?from=2023-01-01T00:00:00.000Z&to=2023-01-31T00:00:00.000Z',
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(
+      expect.objectContaining({
+        id: 'totalOpenPrs',
+        metricId: 'github.openPRs',
+        points: [],
+        aggregationChartDisplayColor: null,
+        metadata: expect.objectContaining({
+          aggregationType: 'sum',
+        }),
+      }),
+    );
+    expect(res.body.thresholds.rules).toEqual(expect.any(Array));
+  });
+
+  it('returns scalar time-series points for owned entities', async () => {
+    const res = await request(server).get(
+      '/api/scorecard/aggregations/totalOpenPrs/time-series?from=2024-01-01T00:00:00.000Z&to=2024-01-31T00:00:00.000Z',
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual(
+      expect.objectContaining({
+        id: 'totalOpenPrs',
+        metricId: 'github.openPRs',
+        metadata: expect.objectContaining({
+          aggregationType: 'sum',
+          title: 'Total Open PRs',
+        }),
+        points: [
+          {
+            value: 5,
+            total: 1,
+            timestamp: '2024-01-01T00:00:00.000Z',
+          },
+          {
+            value: 16,
+            total: 2,
+            timestamp: '2024-01-02T00:00:00.000Z',
+          },
+        ],
+        aggregationChartDisplayColor: 'warning.main',
+      }),
+    );
+  });
+
+  it('returns 401 when request has no user credentials', async () => {
+    const res = await request(server)
+      .get(
+        '/api/scorecard/aggregations/totalOpenPrs/time-series?from=2024-01-01T00:00:00.000Z&to=2024-01-31T00:00:00.000Z',
+      )
+      .set('Authorization', mockCredentials.none.header());
+
+    expect(res.status).toBe(401);
+  });
+
+  it('returns 404 for non-existent aggregation', async () => {
+    const res = await request(server).get(
+      '/api/scorecard/aggregations/non.existent/time-series?from=2024-01-01T00:00:00.000Z&to=2024-01-31T00:00:00.000Z',
+    );
+
+    expect(res.status).toBe(404);
   });
 });

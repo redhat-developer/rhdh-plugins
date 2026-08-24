@@ -168,4 +168,65 @@ describe('AggregatedMetricLoader', () => {
       );
     });
   });
+
+  describe('loadScalarMetricTimeSeriesByEntityRefs', () => {
+    const dbRows = [
+      { utcDay: '2024-01-01', value: 12, total: 3 },
+      { utcDay: '2024-01-02', value: 5, total: 3 },
+    ];
+    const readScalarAggregatedMetricTimeSeriesByEntityRefs = jest
+      .fn()
+      .mockResolvedValue(dbRows);
+    const from = new Date('2024-01-01T00:00:00Z');
+    const to = new Date('2024-01-31T00:00:00Z');
+
+    let loader: AggregatedMetricLoader;
+
+    beforeEach(() => {
+      loader = new AggregatedMetricLoader({
+        readScalarAggregatedMetricTimeSeriesByEntityRefs,
+      } as unknown as DatabaseMetricValues);
+    });
+
+    it('should return empty points when entityRefs is empty', async () => {
+      const result = await loader.loadScalarMetricTimeSeriesByEntityRefs(
+        [],
+        'metric.id',
+        'sum',
+        from,
+        to,
+      );
+
+      expect(result).toEqual([]);
+      expect(
+        readScalarAggregatedMetricTimeSeriesByEntityRefs,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should map db rows to time-series points', async () => {
+      const result = await loader.loadScalarMetricTimeSeriesByEntityRefs(
+        ['component:default/a'],
+        'metric.id',
+        'sum',
+        from,
+        to,
+        { status: 'error' },
+      );
+
+      expect(
+        readScalarAggregatedMetricTimeSeriesByEntityRefs,
+      ).toHaveBeenCalledWith(
+        ['component:default/a'],
+        'metric.id',
+        'sum',
+        from,
+        to,
+        { status: 'error' },
+      );
+      expect(result).toEqual([
+        { value: 12, total: 3, timestamp: '2024-01-01T00:00:00.000Z' },
+        { value: 5, total: 3, timestamp: '2024-01-02T00:00:00.000Z' },
+      ]);
+    });
+  });
 });
