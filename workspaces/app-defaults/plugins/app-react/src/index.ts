@@ -22,7 +22,6 @@
 
 export { AppDrawerContentBlueprint } from './drawer';
 export { appDrawerContentDataRef } from './drawer';
-export { appDrawerExtension, appDrawerModule } from './drawer';
 
 export { useAppDrawer } from './drawer';
 export type { AppDrawerContent, AppDrawerApi } from './drawer';

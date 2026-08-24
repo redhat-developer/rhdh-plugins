@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export { appDrawerModule as default } from './drawer';
+export { appDrawerModule as default } from './appDrawerModule';
