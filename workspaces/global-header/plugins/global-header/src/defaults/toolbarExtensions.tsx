@@ -32,11 +32,10 @@ export const companyLogoExtension = GlobalHeaderComponentBlueprint.make({
   params: {
     priority: 200,
     loader: async () => {
-      const [{ CompanyLogo }, { rhdhLogo }] = await Promise.all([
-        import('../components/CompanyLogo/CompanyLogo'),
-        import('./rhdhLogo'),
-      ]);
-      return () => <CompanyLogo to="/" logo={rhdhLogo} />;
+      const { CompanyLogo } = await import(
+        '../components/CompanyLogo/CompanyLogo'
+      );
+      return () => <CompanyLogo to="/" />;
     },
   },
 });

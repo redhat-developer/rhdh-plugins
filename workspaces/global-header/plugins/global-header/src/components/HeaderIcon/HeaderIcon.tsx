@@ -19,6 +19,8 @@ import { useApp } from '@backstage/core-plugin-api';
 import MuiIcon from '@mui/material/Icon';
 import Box from '@mui/material/Box';
 
+import { ShapesOutlinedIcon } from '../../icons/ShapesOutlinedIcon';
+
 /**
  * @public
  */
@@ -76,5 +78,14 @@ export const HeaderIcon = ({
     );
   }
 
-  return null;
+  // eslint-disable-next-line no-console
+  console.warn(
+    `HeaderIcon: unregistered icon id "${icon}". Register via IconBundleBlueprint, app.getSystemIcon(), or use an image/SVG URL.`,
+  );
+
+  return (
+    <Box aria-hidden sx={{ display: 'flex', alignItems: 'center', ...layout }}>
+      <ShapesOutlinedIcon fontSize={size} />
+    </Box>
+  );
 };

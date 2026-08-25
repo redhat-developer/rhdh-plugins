@@ -17,6 +17,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentProps, ReactNode } from 'react';
 import type Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 
 import { useGlobalHeaderMenuItems } from '../extensions/GlobalHeaderContext';
 import { buildDropdownEntries } from '../utils/menuItemGrouping';
@@ -156,21 +157,24 @@ export const GlobalHeaderDropdown = ({
         emptyState
       ) : (
         <>
+          {trackValidity && showEmptyState ? emptyState : null}
           {/*
-           * Keep the menu content mounted while showing the empty state so
-           * lazy ExtensionBoundary items can still render and recover.
-           * This prevents permanently latching into the empty state if a
-           * menu item appears after the initial validity check.
+           * Keep content mounted for lazy validity recovery. Use display:contents
+           * when visible so MenuItems stay direct DOM children of the MenuList
+           * for keyboard navigation; hide the subtree only while emptyState shows.
            */}
-          <div hidden={trackValidity && showEmptyState}>
+          <Box
+            component="div"
+            sx={{
+              display: trackValidity && showEmptyState ? 'none' : 'contents',
+            }}
+          >
             <GlobalHeaderDropdownContent
               entries={entries}
               target={target}
               handleClose={handleClose}
             />
-          </div>
-
-          {trackValidity && showEmptyState ? emptyState : null}
+          </Box>
         </>
       )}
     </HeaderDropdownComponent>

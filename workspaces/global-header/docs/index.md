@@ -10,7 +10,8 @@ The plugin supports two integration modes:
   (`@red-hat-developer-hub/backstage-plugin-global-header`). Extension blueprints
   (`GlobalHeaderComponentBlueprint`, `GlobalHeaderMenuItemBlueprint`) allow any
   plugin to contribute toolbar items and dropdown menu items. Building-block UI
-  belongs on `/components` so it stays off the main NFS sync chunk. See the
+  belongs on the `/components` package subpath so it stays off the root NFS
+  sync chunk. See the
   [New Frontend System Guide](new-frontend-system.md) for full details,
   including architecture, code examples, and API reference.
 - **Legacy Mount Points** -- Import from `/legacy` for traditional Backstage

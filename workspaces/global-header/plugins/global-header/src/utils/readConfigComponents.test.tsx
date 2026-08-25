@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import { screen } from '@testing-library/react';
-import { renderInTestApp } from '@backstage/test-utils';
+import { render, screen } from '@testing-library/react';
 import { ConfigReader } from '@backstage/config';
 import { readConfigComponents } from './readConfigComponents';
 
-jest.mock('../hooks/useTranslation', () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
+jest.mock('../components/HeaderIconButton/HeaderIconButton', () => ({
+  HeaderIconButton: ({ title, to }: { title: string; to: string }) => (
+    <a href={to} aria-label={title} />
+  ),
 }));
 
 describe('readConfigComponents', () => {
@@ -68,9 +69,9 @@ describe('readConfigComponents', () => {
     const [item] = readConfigComponents(config);
     const Comp = item.component;
 
-    await renderInTestApp(<Comp />);
+    render(<Comp />);
 
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/my-tool');
+    expect(await screen.findByRole('link')).toHaveAttribute('href', '/my-tool');
     expect(screen.getByLabelText('My Tool')).toBeInTheDocument();
   });
 });

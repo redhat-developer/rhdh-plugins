@@ -5,13 +5,8 @@
 ```ts
 import type Button from '@mui/material/Button';
 import type { ComponentProps } from 'react';
-import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import type { ReactNode } from 'react';
-
-// @public
-const _default: FrontendModule;
-export default _default;
 
 // @public
 export const GlobalHeaderDropdown: (
@@ -70,6 +65,4 @@ export interface HeaderIconButtonProps {
   // (undocumented)
   tooltip?: string;
 }
-
-// (No @packageDocumentation comment for this package)
 ```

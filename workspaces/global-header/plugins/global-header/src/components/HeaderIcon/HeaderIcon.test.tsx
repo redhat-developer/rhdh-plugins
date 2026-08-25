@@ -62,8 +62,19 @@ describe('HeaderIcon', () => {
     );
   });
 
-  it('returns null for unknown icon ids', () => {
+  it('renders a fallback icon for unknown icon ids without its own tooltip', () => {
+    const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
     const { container } = render(<HeaderIcon icon="unknown_custom_icon" />);
-    expect(container).toBeEmptyDOMElement();
+
+    expect(screen.getByTestId('ShapesOutlinedIcon')).toBeInTheDocument();
+    expect(
+      container.querySelector('[aria-label*="Unknown icon"]'),
+    ).not.toBeInTheDocument();
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('unknown_custom_icon'),
+    );
+
+    warnSpy.mockRestore();
   });
 });
