@@ -75,6 +75,54 @@ The entity MUST include an `auth-required` tag when `modelServer.authentication`
 
 ---
 
+### Requirement: Annotation-driven field overrides
+
+Three `rhdh.io/` annotations on `modelServer.annotations` act as control annotations that drive spec-level fields on the generated `AiModelServerAPI` entity. These annotations MUST NOT appear in the entity's `metadata.annotations` — they are consumed during generation and deleted before the entity is emitted.
+
+| Annotation | Target field | Behavior when present | Behavior when absent |
+|---|---|---|---|
+| `rhdh.io/system` | `spec.system` | Set to the annotation value | `spec.system` is omitted |
+| `rhdh.io/serverType` | `spec.serverType` | Overrides the API type | Falls back to `modelServer.API.type` (or `'unknown'`) |
+| `rhdh.io/default` | `spec.models.default` | Overrides with the annotation's sanitized value | Falls back to the first model's sanitized name |
+
+#### Scenario: System set by annotation
+
+- **WHEN** `modelServer.annotations` contains `rhdh.io/system: 'my-ai-system'`
+- **THEN** the entity has `spec.system: 'my-ai-system'`
+
+#### Scenario: System absent when annotation missing
+
+- **WHEN** `modelServer.annotations` does not contain `rhdh.io/system`
+- **THEN** the entity has no `spec.system` field
+
+#### Scenario: ServerType overridden by annotation
+
+- **WHEN** `modelServer.annotations` contains `rhdh.io/serverType: 'anthropic'` and `modelServer.API.type` is `'openapi'`
+- **THEN** the entity has `spec.serverType: 'anthropic'` (the annotation value takes precedence)
+
+#### Scenario: ServerType falls back to API type when annotation absent
+
+- **WHEN** `modelServer.annotations` does not contain `rhdh.io/serverType` and `modelServer.API.type` is `'grpc'`
+- **THEN** the entity has `spec.serverType: 'grpc'`
+
+#### Scenario: Default model overridden by annotation
+
+- **WHEN** `modelServer.annotations` contains `rhdh.io/default: 'preferred-model'` and models are `['model-a', 'model-b']`
+- **THEN** the entity has `spec.models.default: 'preferred-model'` (sanitized)
+
+#### Scenario: Default model falls back to first model when annotation absent
+
+- **WHEN** `modelServer.annotations` does not contain `rhdh.io/default` and models are `['ibm-granite-20b', 'mistral-7b']`
+- **THEN** the entity has `spec.models.default: 'ibm-granite-20b'`
+
+#### Scenario: All three overrides applied together
+
+- **WHEN** `modelServer.annotations` contains `rhdh.io/system: 'ai-platform'`, `rhdh.io/serverType: 'openai-v1'`, and `rhdh.io/default: 'gpt-4'`
+- **THEN** the entity has `spec.system: 'ai-platform'`, `spec.serverType: 'openai-v1'`, and `spec.models.default: 'gpt-4'`
+- **AND** none of the three annotations appear in `metadata.annotations`
+
+---
+
 ### Requirement: Annotations merged from API and modelServer
 
 API annotations MUST be copied to the entity metadata. ModelServer annotations MUST also be copied, overriding API annotations on key conflict.
