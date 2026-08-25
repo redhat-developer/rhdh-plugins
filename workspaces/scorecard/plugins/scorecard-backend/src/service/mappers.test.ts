@@ -370,7 +370,14 @@ describe('AggregatedMetricMapper', () => {
         },
       );
       const points = [
-        { value: 12, total: 3, timestamp: '2024-01-01T00:00:00.000Z' },
+        {
+          value: 12,
+          successCount: 3,
+          errorCount: 0,
+          total: 3,
+          status: 'success' as const,
+          timestamp: '2024-01-01T00:00:00.000Z',
+        },
       ];
 
       const result =
@@ -391,6 +398,70 @@ describe('AggregatedMetricMapper', () => {
         }),
         thresholds: DEFAULT_NUMBER_THRESHOLDS,
         aggregationChartDisplayColor: 'warning.main',
+      });
+    });
+  });
+
+  describe('toScalarTimeSeriesPoint', () => {
+    it('should omit errors when none are present', () => {
+      expect(
+        AggregatedMetricMapper.toScalarTimeSeriesPoint({
+          utcDay: '2024-01-01',
+          value: 12,
+          successCount: 3,
+          errorCount: 0,
+          total: 3,
+          errors: [],
+        }),
+      ).toEqual({
+        value: 12,
+        successCount: 3,
+        errorCount: 0,
+        total: 3,
+        status: 'success',
+        timestamp: '2024-01-01T00:00:00.000Z',
+      });
+    });
+
+    it('should map a successful day', () => {
+      expect(
+        AggregatedMetricMapper.toScalarTimeSeriesPoint({
+          utcDay: '2024-01-01',
+          value: 12,
+          successCount: 3,
+          errorCount: 1,
+          total: 4,
+          errors: [{ message: 'boom', count: 1 }],
+        }),
+      ).toEqual({
+        value: 12,
+        successCount: 3,
+        errorCount: 1,
+        total: 4,
+        status: 'success',
+        errors: [{ message: 'boom', count: 1 }],
+        timestamp: '2024-01-01T00:00:00.000Z',
+      });
+    });
+
+    it('should map an error-only day with null value and status error', () => {
+      expect(
+        AggregatedMetricMapper.toScalarTimeSeriesPoint({
+          utcDay: '2024-01-01',
+          value: null,
+          successCount: 0,
+          errorCount: 2,
+          total: 2,
+          errors: [{ message: 'boom', count: 2 }],
+        }),
+      ).toEqual({
+        value: null,
+        successCount: 0,
+        errorCount: 2,
+        total: 2,
+        status: 'error',
+        errors: [{ message: 'boom', count: 2 }],
+        timestamp: '2024-01-01T00:00:00.000Z',
       });
     });
   });

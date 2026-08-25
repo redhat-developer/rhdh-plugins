@@ -105,12 +105,14 @@ export class ScalarAggregationStrategy implements AggregationStrategy {
       aggregationConfig.filter,
     );
 
-    const lastPoint = points.at(-1);
+    const lastSuccessValue = [...points]
+      .reverse()
+      .find(point => point.status === 'success' && point.value !== null)?.value;
     const aggregationChartDisplayColor =
-      lastPoint === undefined
+      lastSuccessValue === undefined || lastSuccessValue === null
         ? null
         : classifyNumberAgainstThresholds(
-            lastPoint.value,
+            lastSuccessValue,
             headlineThresholds,
             this.thresholdEvaluator,
           )?.color ?? null;

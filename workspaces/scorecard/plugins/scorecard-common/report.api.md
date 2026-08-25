@@ -230,9 +230,19 @@ export type ScalarAggregatedMetricTimeSeriesResponse = {
 };
 
 // @public
+export type TimeSeriesPointError = {
+  message: string;
+  count: number;
+};
+
+// @public
 export type ScalarAggregatedTimeSeriesPoint = {
-  value: number;
+  value: number | null;
+  successCount: number;
+  errorCount: number;
   total: number;
+  status: 'success' | 'error';
+  errors?: TimeSeriesPointError[];
   timestamp: string;
 };
 

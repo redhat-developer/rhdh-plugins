@@ -325,6 +325,48 @@ scorecard:
       description: This KPI provides a mean open issues count per entity.
       type: average
       metricId: jira.openIssues
+    avgDeploymentFrequency:
+      title: Average Deployment Frequency
+      description: This KPI provides average weekly production deploys over a 30-day window per entity.
+      type: average
+      metricId: dora.deploymentFrequency
+      options:
+        thresholds:
+          rules:
+            - key: elite
+              expression: '>=7'
+              color: success.main
+              icon: scorecardSuccessStatusIcon
+            - key: medium
+              expression: '1-7'
+              color: warning.main
+              icon: scorecardWarningStatusIcon
+            - key: error
+              expression: '<1'
+              color: error.main
+              icon: scorecardErrorStatusIcon
+    avgEliteDeploymentFrequency:
+      title: Average Elite Deployment Frequency
+      description: This KPI provides average elite weekly production deploys over a 30-day window per entity.
+      type: average
+      metricId: dora.deploymentFrequency
+      options:
+        thresholds:
+          rules:
+            - key: elite
+              expression: '>=7'
+              color: success.main
+              icon: scorecardSuccessStatusIcon
+            - key: medium
+              expression: '1-7'
+              color: warning.main
+              icon: scorecardWarningStatusIcon
+            - key: error
+              expression: '<1'
+              color: error.main
+              icon: scorecardErrorStatusIcon
+      filter:
+        status: elite
     entitiesWithOpenPrs:
       title: Entities with Open PRs
       description: This KPI provides a count of entities with a stored open-prs value.

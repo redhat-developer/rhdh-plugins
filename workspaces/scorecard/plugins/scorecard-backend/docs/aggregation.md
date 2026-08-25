@@ -219,6 +219,37 @@ Scalar KPIs may include an optional top-level **`filter.status`** to restrict ag
 
 **Startup validation:** When **`filter.status`** is set, the backend validates at plugin load that the value is a **threshold rule key** for the KPI’s **`metricId`** (provider defaults plus app-config at **`scorecard.metricProviders.<datasource>.<providerName>.metrics.<metricName>.thresholds`** or provider-level **`scorecard.metricProviders.<datasource>.<providerName>.thresholds`** — for example `scorecard.metricProviders.jira.openIssues.metrics.openIssues.thresholds` when **`metricId`** is `jira.openIssues`). Keys are **case-sensitive** (`error` ≠ `Error`) and must be 1–64 characters. Invalid keys cause startup to fail with an error listing valid keys. Per-entity annotation threshold overrides are **not** considered (they apply at metric sync time only). See [thresholds.md — Scalar status filter](./thresholds.md#5-aggregation-kpi-result-thresholds-scalar-types).
 
+## Default aggregation
+
+You do not need a KPI block for every metric. If the aggregation id is **not** a key under **`scorecard.aggregationKPIs`**, Scorecard treats it as a **metric id** (for example `github.openPRs`). Title and description for aggregation come from the metric itself.
+
+The aggregation type is then:
+
+- **`average`** when the metric’s **`defaultVisualization`** is **`sparkline`**
+- **`statusGrouped`** otherwise
+
+The Scorecard **backend plugin logger** logs an **info** the first time an aggregation id is resolved with no matching KPI.
+
+```text
+No "scorecard.aggregationKPIs.dora.deploymentFrequency" block in app-config; using default type "average" with metricId="dora.deploymentFrequency" (same as aggregation id). Add a KPI entry if you meant a custom title, description, or type.
+```
+
+Add a **`scorecard.aggregationKPIs`** entry when you need a custom title, a different type (for example **`sum`** or **`weightedStatusScore`**), **`filter`**, or **`options`**:
+
+```yaml
+scorecard:
+  aggregationKPIs:
+    avgDeploymentFrequency:
+      title: Average Deployment Frequency
+      description: This KPI provides average weekly production deploys over a 30-day window per entity.
+      type: average
+      metricId: dora.deploymentFrequency
+```
+
+This default applies to **`GET /aggregations/:aggregationId`**, **`GET /aggregations/:aggregationId/time-series`**, and **`GET /aggregations/:aggregationId/metadata`**. Time-series only accepts scalar types, so a default **`statusGrouped`** metric id returns **`400`**; a sparkline metric’s default **`average`** works without extra config.
+
+**Homepage cards** are configured in the app (for example Dynamic Home Page mount points). They should pass **`aggregationId`** matching a key in `aggregationKPIs` or the metric id for the default case. See the [Scorecard frontend plugin README](../../scorecard/README.md#homepage-scorecard-cards).
+
 ## Configuration validation
 
 - **`scorecard.aggregationKPIs`** is validated when the backend plugin starts. Invalid entries cause startup to fail with an error so misconfiguration is caught early. Fix app-config and redeploy.
@@ -310,13 +341,13 @@ Always read **`value`** together with **`total`**. When nothing contributed, SQL
 
 ### `GET /aggregations/:aggregationId/time-series`
 
-Returns a **day-by-day history** of a **scalar** KPI (`sum`, `average`, `max`, `min`, `count`) across entities you own. The UI uses this for a sparkline: one number per day, with a single stroke color from the **last** point.
+Returns a **daily history** of a **scalar** KPI (`sum`, `average`, `max`, `min`, `count`) across entities you own.
 
-**`statusGrouped`** and **`weightedStatusScore`** are currently not supported. Calling this route for those types returns **`400 Bad Request`** (`InputError`). A metric id with no KPI block defaults to **`statusGrouped`** unless the metric’s **`defaultVisualization`** is **`sparkline`** (then **`average`**).
+Each response point is one UTC day: Scorecard takes **latest stored row** for each owned entity that day (including calculation failures), then rolls successful values up with the KPI’s aggregation type. UTC days with no rows are omitted; a day with only failures is included with **`value: null`**, **`status: error`** and **`errors`** list.
 
-Each response point is **one UTC calendar day**. For that day, Scorecard uses each owned entity’s **last successful metric sample**, then applies the same scalar aggregation as the snapshot. Failed calculations are skipped. Days with no successful data are left out of the series, so a gap means “no data that day”, not a real zero.
+If the KPI has optional **`filter.status`**, only successes whose stored **`status`** matches that key contribute to **`value`**. Calculation errors are still included on the point.
 
-If the KPI has **`filter.status`**, only entities that were in that status on that day contribute to the day’s value.
+Only [scalar](#scalar-types) KPIs are supported. **`statusGrouped`** and **`weightedStatusScore`** return **`400 Bad Request`**. A metric id with no KPI block defaults to **`statusGrouped`** unless the metric’s **`defaultVisualization`** is **`sparkline`** (then **`average`**).
 
 #### Path parameters
 
@@ -352,60 +383,124 @@ Requires:
 
 #### Response
 
-Currently only scalar KPIs are returned, further aggregation types can be added later; clients should branch on **`metadata.aggregationType`**.
-
-| Field                              | Description                                                                                                                                                                                                                                    |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`id`**                           | Aggregation id (KPI key or metric id).                                                                                                                                                                                                         |
-| **`metricId`**                     | Backing metric id.                                                                                                                                                                                                                             |
-| **`metadata`**                     | Same metadata as the snapshot route (`title`, `description`, `type`, `unit`, `aggregationType`, and `filter` when configured).                                                                                                                 |
-| **`points`**                       | Chronological daily aggregates. Each point has **`value`**, **`total`** (entities that contributed a non-error value that day), and **`timestamp`** (start of that UTC calendar day).                                                          |
-| **`thresholds`**                   | Number-style rules for classifying **`value`**; from KPI **`options.thresholds`** or **`DEFAULT_NUMBER_THRESHOLDS`** when omitted. Not entity annotation overrides.                                                                            |
-| **`aggregationChartDisplayColor`** | Color of the sparkline stroke from the **last** point’s matching threshold rule **`color`**. Same role as weighted snapshot **`aggregationChartDisplayColor`**. **`null`** when **`points`** is empty or the matching rule has no **`color`**. |
+| Field                              | Description                                                                                                                                                                                                                                                                         |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`id`**                           | Aggregation id (KPI key or metric id).                                                                                                                                                                                                                                              |
+| **`metricId`**                     | Backing metric id.                                                                                                                                                                                                                                                                  |
+| **`metadata`**                     | Same metadata as the snapshot route (`title`, `description`, `type`, `unit`, `aggregationType`, and `filter` when configured).                                                                                                                                                      |
+| **`points`**                       | List of UTC days that have at least one stored row. Each point has **`value`** (or **`null` when `successCount` is 0**), **`successCount`**, **`errorCount`**, **`total`**, **`status`** (`success` / `error`), optional **`errors`**, and **`timestamp`** (start of that UTC day). |
+| **`thresholds`**                   | Number-style rules for classifying **`value`**; from KPI **`options.thresholds`** or **`DEFAULT_NUMBER_THRESHOLDS`** when omitted. Not entity annotation overrides.                                                                                                                 |
+| **`aggregationChartDisplayColor`** | Color of the sparkline stroke from the **last successful** point’s matching threshold rule **`color`**. **`null`** when no day has a value or the matching rule has no **`color`**.                                                                                                 |
 
 #### How each day is computed
 
-These rules match snapshot scalar aggregation:
+- **Latest sample per entity per UTC day:** the stored row with the highest `id` that day, **including calculation failures**.
+- **`successCount` / `value`:** entities whose latest row that day has a real value. Optional **`filter.status`** applies only to these successes.
+- **`errorCount` / `errors`:** entities whose latest row that day is a calculation failure (`error_message` set and value missing). **`errors`** lists unique messages with how many entities reported each. It is **omitted** when there are none.
+- **`status`:** `success` if `successCount > 0`; `error` if only calculation failures. **`value`** is **`null`** unless `status` is `success`.
+- **`total`:** `successCount + errorCount` (entities that reported that day). Homepage scorecard entities current health is reported from the **last point** in `points` (`successCount` / `total`).
 
-- **Latest successful sample per entity per day:** the stored row with the highest `id` that has a non-null value. Rows with `error_message` set and a missing value are excluded. A mixed day (some entities succeeded, some failed) still produces a point. A day with **no** successful contributors is omitted from **`points`**.
-- **Status on stored samples** (used for scalar **`filter.status`**) is whatever was written at metric sync, including per-entity annotation threshold overrides.
+#### Empty / missing days
 
-#### Empty results
+- **`points` is sparse:** UTC days with **no stored rows** are omitted. The UI treats a gap in `[from, to]` as no data.
+- A day with only calculation errors **is** included (`status: 'error'`, **`value: null`**, **`errors`**).
+- No owned entities, or no rows in range: **`200`** with **`points: []`**.
 
-- No owned entities, or no successful entity-days in range: **`200`** with **`points: []`** and **`aggregationChartDisplayColor: null`** (not an error).
-- Days with only calculation errors are omitted; they do not appear as zero-valued points.
+#### Example request and response
 
-#### Example request
+KPI configuration:
+
+```yaml
+scorecard:
+  aggregationKPIs:
+    avgDeploymentFrequency:
+      title: Average Deployment Frequency
+      description: This KPI provides average weekly production deploys over a 30-day window per entity.
+      type: average
+      metricId: dora.deploymentFrequency
+      options:
+        thresholds:
+          rules:
+            - key: elite
+              expression: '>=7'
+              color: success.main
+              icon: scorecardSuccessStatusIcon
+            - key: medium
+              expression: '1-7'
+              color: warning.main
+              icon: scorecardWarningStatusIcon
+            - key: error
+              expression: '<1'
+              color: error.main
+              icon: scorecardErrorStatusIcon
+      # Optional status filter
+      # filter:
+      #   status: elite
+```
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/aggregations/totalOpenBugs/time-series?from=2024-01-01T00:00:00.000Z&to=2024-01-31T00:00:00.000Z" \
+curl -X GET "{{url}}/api/scorecard/aggregations/avgDeploymentFrequency/time-series?from=2026-08-24T00:00:00.000Z&to=2026-08-24T23:59:59.999Z" \
   -H "Authorization: Bearer <token>"
 ```
 
-Example scalar response:
+Latest data for **2026-08-24** per entity: successes `10` (elite), `14` (elite), `3` (medium), `0.2` (low); errors `timeout` ×1 and `GitHub API error` ×2.
+
+| KPI                           | `value`                     | `successCount` | `errorCount` | `total` | `status` | `errors`    |
+| ----------------------------- | --------------------------- | -------------- | ------------ | ------- | -------- | ----------- |
+| `avgDeploymentFrequency`      | `(10+14+3+0.2)/4` = **6.8** | 4              | 3            | 7       | `medium` | both errors |
+| `avgEliteDeploymentFrequency` | `(10+14)/2` = **12**        | 2              | 3            | 5       | `elite`  | both errors |
+
+Example response for KPI without filter and one UTC day 2026-08-24:
 
 ```json
 {
-  "id": "totalOpenBugs",
-  "metricId": "jira.openIssues",
+  "id": "avgDeploymentFrequency",
+  "metricId": "dora.deploymentFrequency",
   "metadata": {
-    "title": "Total Open Bugs",
-    "description": "Sum of open issues across owned entities.",
+    "title": "Average Deployment Frequency",
+    "description": "This KPI provides average weekly production deploys over a 30-day window per entity.",
     "type": "number",
-    "aggregationType": "sum"
+    "unit": "/week",
+    "history": true,
+    "aggregationType": "average"
   },
   "points": [
-    { "value": 12, "total": 3, "timestamp": "2024-01-15T00:00:00.000Z" },
-    { "value": 18, "total": 3, "timestamp": "2024-01-16T00:00:00.000Z" }
+    {
+      "value": 6.8,
+      "successCount": 4,
+      "errorCount": 3,
+      "total": 7,
+      "status": "success",
+      "timestamp": "2026-08-24T00:00:00.000Z",
+      "errors": [
+        { "message": "GitHub API error", "count": 2 },
+        { "message": "timeout", "count": 1 }
+      ]
+    }
   ],
   "thresholds": {
     "rules": [
-      { "key": "success", "expression": "<=10", "color": "success.main" },
-      { "key": "warning", "expression": "10-50", "color": "warning.main" },
-      { "key": "error", "expression": ">50", "color": "error.main" }
+      {
+        "key": "elite",
+        "expression": ">=7",
+        "color": "success.main",
+        "icon": "scorecardSuccessStatusIcon"
+      },
+      {
+        "key": "medium",
+        "expression": "1-7",
+        "color": "warning.main",
+        "icon": "scorecardWarningStatusIcon"
+      },
+      {
+        "key": "error",
+        "expression": "<1",
+        "color": "error.main",
+        "icon": "scorecardErrorStatusIcon"
+      }
     ]
   },
-  "aggregationChartDisplayColor": "warning.main"
+  "aggregationChartDisplayColor": "warning.main" // from value of last successful point classified againts KPI thresholds
 }
 ```
 
@@ -429,7 +524,7 @@ Same **`aggregationId`** resolution as [`GET /aggregations/:aggregationId`](#get
 
 #### Empty results
 
-When the user owns no relevant entities, snapshot distribution types (**`statusGrouped`**, **`weightedStatusScore`**) return **zero total** and zeroed bucket counts (not an error). For scalar empty / filtered-empty handling — including why **`value: 0`** with **`total: 0`** is ambiguous for **`min`** / **`max`** — see [Interpreting scalar results](#interpreting-scalar-results). Scalar time-series empty ranges return **`points: []`** and **`aggregationChartDisplayColor: null`** as described above.
+When the user owns no relevant entities, snapshot distribution types (**`statusGrouped`**, **`weightedStatusScore`**) return **zero total** and zeroed bucket counts (not an error). For scalar empty / filtered-empty handling — including why **`value: 0`** with **`total: 0`** is ambiguous for **`min`** / **`max`** — see [Interpreting scalar results](#interpreting-scalar-results). Scalar time-series **omits** UTC days with no rows (`points` may be `[]`).
 
 ### Drill-down vs aggregation id
 

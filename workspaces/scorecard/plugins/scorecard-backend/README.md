@@ -247,7 +247,7 @@ The aggregation type is then:
 - **`average`** when the metric’s **`defaultVisualization`** is **`sparkline`**
 - **`statusGrouped`** otherwise
 
-The Scorecard **backend plugin logger** writes a **warning** the first time an aggregation id is resolved with no matching KPI (pod / `backend` process logs).
+The Scorecard **backend plugin logger** logs an **info** the first time an aggregation id is resolved with no matching KPI.
 
 ```text
 No "scorecard.aggregationKPIs.dora.deploymentFrequency" block in app-config; using default type "average" with metricId="dora.deploymentFrequency" (same as aggregation id). Add a KPI entry if you meant a custom title, description, or type.
@@ -259,8 +259,8 @@ Add a **`scorecard.aggregationKPIs`** entry when you need a custom title, a diff
 scorecard:
   aggregationKPIs:
     avgDeploymentFrequency:
-      title: Average deployment frequency
-      description: Mean weekly production deploys across catalog entities you own.
+      title: Average Deployment Frequency
+      description: This KPI provides average weekly production deploys over a 30-day window per entity.
       type: average
       metricId: dora.deploymentFrequency
 ```
@@ -467,9 +467,9 @@ curl -X GET "{{url}}/api/scorecard/aggregations/github.openPRs" \
 
 ### `GET /aggregations/:aggregationId/time-series`
 
-Returns a daily history of a **scalar** KPI (`sum`, `average`, `max`, `min`, or `count`) across catalog entities you own. Each point is one UTC day: Scorecard takes the last successful sample for each owned entity that day, then rolls those values up with the KPI’s aggregation type. Days where every sample failed or was missing are skipped.
+Returns a **daily** history of a **scalar** KPI (`sum`, `average`, `max`, `min`, or `count`) across entities you own. Each response point is one UTC day: Scorecard takes **latest stored row** for each owned entity that day (including calculation failures), then rolls successful values up with the KPI’s aggregation type. Optional **`filter.status`** applies only to successes. UTC days with no rows are omitted; a day with only failures is included with **`value: null`**, **`status: error`** and **`errors`** list.
 
-Aggregation types **`statusGrouped`** and **`weightedStatusScore`** are not supported and return **`400`**. See [aggregation.md](./docs/aggregation.md#get-aggregationsaggregationidtime-series).
+Only [scalar](./docs/aggregation.md/#scalar-types) aggregation types are supported. **`statusGrouped`** and **`weightedStatusScore`** return **`400 Bad Request`**. See [aggregation.md](./docs/aggregation.md#get-aggregationsaggregationidtime-series) for details.
 
 #### Path Parameters
 
@@ -491,34 +491,61 @@ Requires user authentication, `scorecard.metric.read` permission, and `catalog.e
 #### Example Request
 
 ```bash
-curl -X GET "{{url}}/api/scorecard/aggregations/totalOpenBugs/time-series?from=2024-01-01T00:00:00.000Z&to=2024-01-31T00:00:00.000Z" \
+curl -X GET "{{url}}/api/scorecard/aggregations/avgDeploymentFrequency/time-series?from=2026-08-24T00:00:00.000Z&to=2026-08-24T23:59:59.999Z" \
   -H "Authorization: Bearer <token>"
 ```
 
-#### Example Response
+### Example Response
 
 ```json
 {
-  "id": "totalOpenBugs",
-  "metricId": "jira.openIssues",
+  "id": "avgDeploymentFrequency",
+  "metricId": "dora.deploymentFrequency",
   "metadata": {
-    "title": "Total Open Bugs",
-    "description": "Sum of open issues across owned entities.",
+    "title": "Average Deployment Frequency",
+    "description": "This KPI provides average weekly production deploys over a 30-day window per entity.",
     "type": "number",
-    "aggregationType": "sum"
+    "unit": "/week",
+    "history": true,
+    "aggregationType": "average"
   },
   "points": [
-    { "value": 12, "total": 3, "timestamp": "2024-01-15T00:00:00.000Z" },
-    { "value": 18, "total": 3, "timestamp": "2024-01-16T00:00:00.000Z" }
+    {
+      "value": 6.8,
+      "successCount": 4,
+      "errorCount": 3,
+      "total": 7,
+      "status": "success",
+      "timestamp": "2026-08-24T00:00:00.000Z",
+      "errors": [
+        { "message": "GitHub API error", "count": 2 },
+        { "message": "timeout", "count": 1 }
+      ]
+    }
   ],
   "thresholds": {
     "rules": [
-      { "key": "success", "expression": "<=10", "color": "success.main" },
-      { "key": "warning", "expression": "10-50", "color": "warning.main" },
-      { "key": "error", "expression": ">50", "color": "error.main" }
+      {
+        "key": "elite",
+        "expression": ">=7",
+        "color": "success.main",
+        "icon": "scorecardSuccessStatusIcon"
+      },
+      {
+        "key": "medium",
+        "expression": "1-7",
+        "color": "warning.main",
+        "icon": "scorecardWarningStatusIcon"
+      },
+      {
+        "key": "error",
+        "expression": "<1",
+        "color": "error.main",
+        "icon": "scorecardErrorStatusIcon"
+      }
     ]
   },
-  "aggregationChartDisplayColor": "warning.main"
+  "aggregationChartDisplayColor": "warning.main" // from value of last successful point classified againts KPI thresholds
 }
 ```
 

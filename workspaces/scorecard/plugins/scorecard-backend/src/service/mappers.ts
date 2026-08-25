@@ -104,10 +104,19 @@ export class AggregatedMetricMapper {
   static toScalarTimeSeriesPoint(
     row: DbScalarTimeSeriesPoint,
   ): ScalarAggregatedTimeSeriesPoint {
+    const successCount = row.successCount;
+    const errorCount = row.errorCount;
+    const status: ScalarAggregatedTimeSeriesPoint['status'] =
+      successCount > 0 ? 'success' : 'error';
+
     return {
-      value: row.value,
+      value: successCount > 0 ? row.value : null,
+      successCount,
+      errorCount,
       total: row.total,
+      status,
       timestamp: formatUtcDateAsStartOfDayIso(row.utcDay),
+      ...(row.errors.length > 0 ? { errors: row.errors } : {}),
     };
   }
 

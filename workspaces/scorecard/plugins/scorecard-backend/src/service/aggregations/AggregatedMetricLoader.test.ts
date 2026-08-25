@@ -171,8 +171,22 @@ describe('AggregatedMetricLoader', () => {
 
   describe('loadScalarMetricTimeSeriesByEntityRefs', () => {
     const dbRows = [
-      { utcDay: '2024-01-01', value: 12, total: 3 },
-      { utcDay: '2024-01-02', value: 5, total: 3 },
+      {
+        utcDay: '2024-01-01',
+        value: 12,
+        successCount: 3,
+        errorCount: 0,
+        total: 3,
+        errors: [],
+      },
+      {
+        utcDay: '2024-01-02',
+        value: 5,
+        successCount: 3,
+        errorCount: 0,
+        total: 3,
+        errors: [],
+      },
     ];
     const readScalarAggregatedMetricTimeSeriesByEntityRefs = jest
       .fn()
@@ -188,7 +202,7 @@ describe('AggregatedMetricLoader', () => {
       } as unknown as DatabaseMetricValues);
     });
 
-    it('should return empty points when entityRefs is empty', async () => {
+    it('should return no points when entityRefs is empty', async () => {
       const result = await loader.loadScalarMetricTimeSeriesByEntityRefs(
         [],
         'metric.id',
@@ -224,8 +238,22 @@ describe('AggregatedMetricLoader', () => {
         { status: 'error' },
       );
       expect(result).toEqual([
-        { value: 12, total: 3, timestamp: '2024-01-01T00:00:00.000Z' },
-        { value: 5, total: 3, timestamp: '2024-01-02T00:00:00.000Z' },
+        {
+          value: 12,
+          successCount: 3,
+          errorCount: 0,
+          total: 3,
+          status: 'success',
+          timestamp: '2024-01-01T00:00:00.000Z',
+        },
+        {
+          value: 5,
+          successCount: 3,
+          errorCount: 0,
+          total: 3,
+          status: 'success',
+          timestamp: '2024-01-02T00:00:00.000Z',
+        },
       ]);
     });
   });

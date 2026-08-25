@@ -21,7 +21,7 @@ import { ScalarAggregationFn } from '../types';
  *
  * @param aggregationFn - Scalar function (`sum`, `average`, `max`, `min`, `count`)
  * @param numericValueExpr - SQL expression for the numeric metric value
- * @param rowIncludedExpr - Optional SQL boolean; only matching rows are included
+ * @param rowIncludedExpr - Optional SQL boolean; only matching rows are included in aggregation
  */
 export function getAggregateExpression(
   aggregationFn: ScalarAggregationFn,

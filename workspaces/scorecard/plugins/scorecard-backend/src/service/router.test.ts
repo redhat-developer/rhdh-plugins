@@ -1839,7 +1839,10 @@ describe('createRouter', () => {
             {
               utcDay: '2024-01-01',
               value: 12,
+              successCount: 3,
+              errorCount: 0,
               total: 3,
+              errors: [],
             },
           ]);
 
@@ -1868,7 +1871,10 @@ describe('createRouter', () => {
             points: [
               {
                 value: 12,
+                successCount: 3,
+                errorCount: 0,
                 total: 3,
+                status: 'success',
                 timestamp: '2024-01-01T00:00:00.000Z',
               },
             ],

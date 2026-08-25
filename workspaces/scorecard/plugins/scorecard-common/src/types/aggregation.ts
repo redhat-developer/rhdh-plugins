@@ -153,21 +153,42 @@ export type AggregationConfig = {
 };
 
 /**
- * One UTC-day scalar aggregate across owned entities that reported a value.
+ * Unique calculation-error message for a UTC day, with how many entities reported it.
+ * @public
+ */
+export type TimeSeriesPointError = {
+  message: string;
+  count: number;
+};
+
+/**
+ * One UTC-day scalar aggregate across entities.
  * @public
  */
 export type ScalarAggregatedTimeSeriesPoint = {
-  value: number;
-  /** Entities that contributed a non-error value that day. */
+  /** Aggregate of latest successful values that day; `null` when `successCount` is 0. */
+  value: number | null;
+  /** Entities whose latest row that day has a real value. */
+  successCount: number;
+  /** Entities whose latest row that day is a calculation failure. */
+  errorCount: number;
+  /** `successCount + errorCount` (entities that reported that day). */
   total: number;
+  /**
+   * `success` when `successCount > 0`, `error` when only calculation failures.
+   */
+  status: 'success' | 'error';
+  /**
+   * Unique error messages for that day. Omitted when there are none.
+   */
+  errors?: TimeSeriesPointError[];
   /** Start of the UTC calendar day (ISO-8601). */
   timestamp: string;
 };
 
 /**
- * Daily scalar aggregation (`sum`, `average`, `max`, `min`, `count`).
- * Calculation-error entity-days are omitted from the aggregation. Days with no successful
- * contributors are omitted from `points`.
+ * Scalar aggregation over a specified time period, grouped by UTC day.
+ * The `points` array contains the aggregated values for each day where data was reported.
  * @public
  */
 export type ScalarAggregatedMetricTimeSeriesResponse = {
@@ -180,8 +201,8 @@ export type ScalarAggregatedMetricTimeSeriesResponse = {
    */
   thresholds: ThresholdConfig;
   /**
-   * Chart color from classifying the last point's `value` against `thresholds`.
-   * Set to `null` when `points` is empty or the last value matches no colored rule.
+   * Chart color from classifying the last **successful** point's `value` against
+   * `thresholds`. `null` when no day has a value or the matching rule has no color.
    */
   aggregationChartDisplayColor: string | null;
 };

@@ -66,8 +66,16 @@ export type DbScalarAggregatedMetric = {
   latestEntityCount: number;
 };
 
+export type DbTimeSeriesPointError = {
+  message: string;
+  count: number;
+};
+
 export type DbScalarTimeSeriesPoint = {
   utcDay: string;
-  value: number;
+  value: number | null;
+  successCount: number;
+  errorCount: number;
   total: number;
+  errors: DbTimeSeriesPointError[];
 };

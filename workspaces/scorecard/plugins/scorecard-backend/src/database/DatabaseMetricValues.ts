@@ -32,6 +32,10 @@ import {
   toMetricValueRow,
   type MetricValueRowWithId,
 } from './utils/mapMetricValueRow';
+import {
+  buildScalarTimeSeriesPoints,
+  type DbScalarTimeSeriesQueryRow,
+} from './utils/buildScalarTimeSeriesPoints';
 
 type ReadEntityMetricsWithFiltersOptions = {
   status?: string;
@@ -113,31 +117,34 @@ export class DatabaseMetricValues {
   }
 
   /**
-   * Get latest successful row ids per entity and UTC day in `[from, to]` for a metric.
+   * Get the latest ids subquery in time range for a metric and each entity in catalogEntityRefs.
    *
-   * Groups `metric_values` by `(catalog_entity_ref, UTC day)` and picks
-   * `MAX(id)` among rows that have a real metric value.
-   * Days/entities with only calculation failures are dropped via HAVING.
-   * Aggregation time-series readers restrict to these ids.
+   * Groups `metric_values` by `(catalog_entity_ref, UTC day)` and picks `MAX(id)`
+   * regardless if calculation is success or error.
+   * @param catalogEntityRefs An array of catalog entity references to filter the metric values by.
+   * @param metricId The ID of the metric to retrieve latest IDs for.
+   * @param from The start of the time range (inclusive).
+   * @param to The end of the time range (inclusive).
+   * @returns Knex QueryBuilder is resolving to [{ id: NUM, utc_day: 'YYYY-MM-DD' }]
    */
-  private getLatestIdsPerEntityUtcDayWithSuccessSubquery(
+  private getLatestIdsPerUTCDaySubquery(
     catalogEntityRefs: string[],
     metricId: string,
     from: Date,
     to: Date,
   ): Knex.QueryBuilder {
     const utcDayExpr = this.getUtcDayExpr();
-    const missing = DatabaseMetricValues.metricValueIsMissingExpr;
-    const chosenIdExpr = `MAX(CASE WHEN NOT ${missing} THEN id END)`;
 
     return this.dbClient(this.tableName)
-      .select(this.dbClient.raw(`${chosenIdExpr} as id`))
-      .whereIn('catalog_entity_ref', catalogEntityRefs)
+      .select(
+        this.dbClient.raw('MAX(id) as id'),
+        this.dbClient.raw(`${utcDayExpr} as utc_day`),
+      )
       .where('metric_id', metricId)
+      .whereIn('catalog_entity_ref', catalogEntityRefs)
       .where('timestamp', '>=', from)
       .where('timestamp', '<=', to)
-      .groupByRaw(`catalog_entity_ref, ${utcDayExpr}`)
-      .havingRaw(`${chosenIdExpr} IS NOT NULL`);
+      .groupByRaw(`catalog_entity_ref, ${utcDayExpr}`);
   }
 
   /**
@@ -448,13 +455,14 @@ export class DatabaseMetricValues {
   }
 
   /**
-   * Scalar aggregation of latest successful values per entity per UTC day.
-   * Days with no successful contributors are omitted.
+   * Scalar aggregation of the latest row per entity per UTC day (success and errors).
+   * Days with no stored rows are omitted.
    *
-   * Query plan:
-   * 1. Subquery: latest success id per (entity, UTC day) in [from, to] range for metricId.
-   * 2. Outer: join those ids, optionally filter by `status`, then
-   *    `GROUP BY UTC day` with sum/avg/count/max/min over numeric `value`.
+   * Query plan (single round-trip):
+   * 1. `latest_ids`: latest id per (entity, UTC day) in [from, to].
+   * 2. `daily`: aggrefated value / successCount / errorCount grouped by that utc_day.
+   *    Optional `filter.status` keeps matching successes and all calculation errors.
+   * 3. `error_counts`: unique error_message counts, left-joined onto daily.
    */
   async readScalarAggregatedMetricTimeSeriesByEntityRefs(
     catalogEntityRefs: string[],
@@ -468,50 +476,71 @@ export class DatabaseMetricValues {
       return [];
     }
 
-    const utcDayExpr = this.getUtcDayExpr();
-    const latestIdsSubquery =
-      this.getLatestIdsPerEntityUtcDayWithSuccessSubquery(
-        catalogEntityRefs,
-        metricId,
-        from,
-        to,
-      );
-    const missing = DatabaseMetricValues.metricValueIsMissingExpr;
+    const missingExpr = DatabaseMetricValues.metricValueIsMissingExpr;
+    const calculationErrorExpr = `error_message IS NOT NULL AND ${missingExpr}`;
+    const successSql = `NOT ${missingExpr}`;
     const aggregateExpression = getAggregateExpression(
       aggregationFn,
       this.getNumericValueExpr(),
-      `NOT ${missing}`,
+      successSql,
     );
 
-    const query = this.dbClient(this.tableName).whereIn(
-      'id',
-      latestIdsSubquery,
+    const latestIdsPerEntityPerUTCDay = this.getLatestIdsPerUTCDaySubquery(
+      catalogEntityRefs,
+      metricId,
+      from,
+      to,
     );
 
+    const dailyAggregateQuery = this.dbClient(this.tableName)
+      .innerJoin('latest_ids', `${this.tableName}.id`, 'latest_ids.id')
+      .select(
+        'latest_ids.utc_day as utc_day',
+        this.dbClient.raw(`${aggregateExpression} as value`),
+        this.dbClient.raw(
+          `COUNT(CASE WHEN ${successSql} THEN 1 END) as success_count`,
+        ),
+        this.dbClient.raw(
+          `SUM(CASE WHEN ${calculationErrorExpr} THEN 1 ELSE 0 END) as error_count`,
+        ),
+      )
+      .groupBy('latest_ids.utc_day');
+
+    // Apply filter to aggregation (filter rows by status OR include them if they have error)
     if (filter?.status && filter.status !== '') {
-      query.where('status', filter.status);
+      dailyAggregateQuery.where(qb => {
+        qb.where('status', filter.status).orWhereRaw(calculationErrorExpr);
+      });
     }
 
-    const rows = await query
+    const errorCounts = this.dbClient(this.tableName)
+      .innerJoin('latest_ids', `${this.tableName}.id`, 'latest_ids.id')
+      .whereRaw(calculationErrorExpr)
       .select(
-        this.dbClient.raw(`${utcDayExpr} as utc_day`),
-        this.dbClient.raw(`${aggregateExpression} as value`),
-        this.dbClient.raw('COUNT(*) as total'),
+        'latest_ids.utc_day as utc_day',
+        'error_message',
+        this.dbClient.raw('COUNT(*) as count'),
       )
-      .groupByRaw(utcDayExpr)
-      .orderBy('utc_day', 'asc');
+      .groupBy('latest_ids.utc_day', 'error_message');
 
-    return (rows as { utc_day: string; value: unknown; total: unknown }[])
-      .map(row => {
-        const total = Number(row.total);
-        const value = Number(row.value);
-        return {
-          utcDay: String(row.utc_day),
-          value: Number.isFinite(value) ? value : 0,
-          total: Number.isFinite(total) ? total : 0,
-        };
-      })
-      .filter(point => point.total > 0);
+    const rows = await this.dbClient
+      .with('latest_ids', latestIdsPerEntityPerUTCDay)
+      .with('daily', dailyAggregateQuery)
+      .with('error_counts', errorCounts)
+      .from('daily')
+      .leftJoin('error_counts', 'daily.utc_day', 'error_counts.utc_day')
+      .select(
+        'daily.utc_day as utc_day',
+        'daily.value as value',
+        'daily.success_count as success_count',
+        'daily.error_count as error_count',
+        this.dbClient.raw('(daily.success_count + daily.error_count) as total'),
+        'error_counts.error_message as error_message',
+        this.dbClient.raw('error_counts.count as error_msg_count'),
+      )
+      .orderBy('daily.utc_day', 'asc');
+
+    return buildScalarTimeSeriesPoints(rows as DbScalarTimeSeriesQueryRow[]);
   }
 
   /**
