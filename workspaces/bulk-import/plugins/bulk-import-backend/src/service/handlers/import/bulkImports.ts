@@ -983,9 +983,9 @@ export async function findOrchestratorImportStatusByRepo(
     orchestratorRepositoryDao: RepositoryDao<'orchestrator_repositories'>;
     orchestratorWorkflowDao: OrchestratorWorkflowDao;
     discovery: DiscoveryService;
+    auth: AuthService;
   },
   repoUrl: string,
-  token: string,
   skipWorkflows?: boolean,
 ): Promise<HandlerResponse<Components.Schemas.Import>> {
   deps.logger.debug(
@@ -1019,6 +1019,10 @@ export async function findOrchestratorImportStatusByRepo(
       }
       if (workflow.instanceId) {
         const baseUrl = await deps.discovery.getBaseUrl('orchestrator');
+        const { token } = await deps.auth.getPluginRequestToken({
+          onBehalfOf: await deps.auth.getOwnServiceCredentials(),
+          targetPluginId: 'orchestrator',
+        });
         const orchestratorApi = new DefaultApi(new Configuration(), baseUrl);
         const response = await orchestratorApi.getInstanceById(
           workflow.instanceId,

@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { AuthService } from '@backstage/backend-plugin-api';
 import { DiscoveryApi } from '@backstage/plugin-permission-common';
 
 import { DefaultApi } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
@@ -42,6 +43,7 @@ describe('execute-orchestrator-workflow', () => {
     RepositoryDao<'orchestrator_repositories'>
   >;
   let mockDiscovery: DiscoveryApi;
+  let mockAuth: AuthService;
   let mockGithubApiService: GithubApiService;
   let mockGitlabApiService: GitlabApiService;
   let mockOrchestratorApi: jest.Mocked<DefaultApi>;
@@ -65,6 +67,13 @@ describe('execute-orchestrator-workflow', () => {
         .fn()
         .mockResolvedValue('https://orchestrator.example.com'),
     } as unknown as DiscoveryApi;
+
+    mockAuth = {
+      getPluginRequestToken: jest.fn().mockResolvedValue({
+        token: 'orchestrator-token',
+      }),
+      getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
+    } as unknown as AuthService;
 
     mockGithubApiService = {
       getAppInstallationCredentials: jest.fn(),
@@ -91,6 +100,7 @@ describe('execute-orchestrator-workflow', () => {
       const result = await createWorkflowImportJobs({
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
+        auth: mockAuth,
         requestBody: [],
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -116,6 +126,7 @@ describe('execute-orchestrator-workflow', () => {
       const result = await createWorkflowImportJobs({
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
+        auth: mockAuth,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -160,7 +171,7 @@ describe('execute-orchestrator-workflow', () => {
       const result = await createWorkflowImportJobs({
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
-        token: 'auth-token',
+        auth: mockAuth,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -169,6 +180,10 @@ describe('execute-orchestrator-workflow', () => {
       });
 
       expect(result.statusCode).toBe(202);
+      expect(mockAuth.getPluginRequestToken).toHaveBeenCalledWith({
+        onBehalfOf: expect.anything(),
+        targetPluginId: 'orchestrator',
+      });
       expect(
         mockGithubApiService.getAppInstallationCredentials,
       ).toHaveBeenCalledWith('https://github.com/test-org/test-repo');
@@ -186,7 +201,7 @@ describe('execute-orchestrator-workflow', () => {
         }),
         expect.objectContaining({
           headers: expect.objectContaining({
-            Authorization: 'Bearer auth-token',
+            Authorization: 'Bearer orchestrator-token',
             'Content-Type': 'application/json',
           }),
         }),
@@ -195,7 +210,7 @@ describe('execute-orchestrator-workflow', () => {
         mockWorkflowId,
         expect.objectContaining({
           headers: expect.objectContaining({
-            Authorization: 'Bearer auth-token',
+            Authorization: 'Bearer orchestrator-token',
             'Content-Type': 'application/json',
           }),
         }),
@@ -242,7 +257,7 @@ describe('execute-orchestrator-workflow', () => {
       const result = await createWorkflowImportJobs({
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
-        token: 'auth-token',
+        auth: mockAuth,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -301,7 +316,7 @@ describe('execute-orchestrator-workflow', () => {
       await createWorkflowImportJobs({
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
-        token: 'auth-token',
+        auth: mockAuth,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -356,7 +371,7 @@ describe('execute-orchestrator-workflow', () => {
       await createWorkflowImportJobs({
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
-        token: 'auth-token',
+        auth: mockAuth,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -403,7 +418,7 @@ describe('execute-orchestrator-workflow', () => {
       const result = await createWorkflowImportJobs({
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
-        token: 'auth-token',
+        auth: mockAuth,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -445,7 +460,7 @@ describe('execute-orchestrator-workflow', () => {
       const result = await createWorkflowImportJobs({
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
-        token: 'auth-token',
+        auth: mockAuth,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -506,7 +521,7 @@ describe('execute-orchestrator-workflow', () => {
       const result = await createWorkflowImportJobs({
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
-        token: 'auth-token',
+        auth: mockAuth,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -566,7 +581,7 @@ describe('execute-orchestrator-workflow', () => {
         const result = await createWorkflowImportJobs({
           orchestratorWorkflowId: 'test-workflow-id',
           discovery: mockDiscovery,
-          token: 'auth-token',
+          auth: mockAuth,
           requestBody,
           orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
           orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -636,7 +651,7 @@ describe('execute-orchestrator-workflow', () => {
       const result = await createWorkflowImportJobs({
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
-        token: 'auth-token',
+        auth: mockAuth,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,

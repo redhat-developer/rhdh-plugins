@@ -460,7 +460,7 @@ export async function createRouter(
 
   api.register(
     Operations.FIND_ALL_ORCHESTRATOR_WORKFLOW_IMPORTS,
-    async (c: Context, req: Request, res: Response) => {
+    async (c: Context, _req: Request, res: Response) => {
       const { pageNumber, pageSize, search, sortColumn, sortOrder } =
         getFindImportsParams(c);
       const imports: SourceImport[] = [];
@@ -470,8 +470,6 @@ export async function createRouter(
         search,
       );
 
-      const token = getBearerTokenFromReq(req);
-
       for (const repo of repositories.data) {
         const response = await findOrchestratorImportStatusByRepo(
           {
@@ -479,9 +477,9 @@ export async function createRouter(
             orchestratorRepositoryDao,
             orchestratorWorkflowDao,
             discovery,
+            auth,
           },
           repo.url,
-          token,
           true,
         );
         if (response.responseBody) {
@@ -565,7 +563,7 @@ export async function createRouter(
     Operations.CREATE_ORCHESTRATOR_WORKFLOW_JOBS,
     async (
       c: Context<Paths.CreateImportJobs.RequestBody>,
-      req: Request,
+      _req: Request,
       res: Response,
     ) => {
       if (!orchestratorWorkflowId) {
@@ -574,12 +572,10 @@ export async function createRouter(
         );
       }
 
-      const token = getBearerTokenFromReq(req);
-
       const response = await createWorkflowImportJobs({
         orchestratorWorkflowId,
         discovery,
-        token,
+        auth,
         requestBody: c.request.requestBody,
         orchestratorWorkflowDao,
         orchestratorRepositoryDao,
@@ -647,23 +643,22 @@ export async function createRouter(
 
   api.register(
     Operations.FIND_ORCHESTRATOR_IMPORT_STATUS_BY_REPO,
-    async (c: Context, req: Request, res: Response) => {
+    async (c: Context, _req: Request, res: Response) => {
       const q: Paths.FindImportStatusByRepo.QueryParameters = {
         ...c.request.query,
       };
       if (!q.repo?.trim()) {
         throw new Error('missing or blank parameter');
       }
-      const token = getBearerTokenFromReq(req);
       const response = await findOrchestratorImportStatusByRepo(
         {
           logger,
           orchestratorRepositoryDao,
           orchestratorWorkflowDao,
           discovery,
+          auth,
         },
         q.repo,
-        token,
       );
       return res.status(response.statusCode).json(response.responseBody);
     },
@@ -921,12 +916,4 @@ function getFindImportsParams(c: Context<any, any, any, any, any, Document>): {
     sortColumn: q.sortColumn,
     sortOrder: q.sortOrder,
   };
-}
-
-function getBearerTokenFromReq(req: express.Request): string {
-  const header = req.header('authorization') ?? req.headers.authorization;
-  if (header?.startsWith(`Bearer `)) {
-    return header.replace('Bearer ', '');
-  }
-  throw new InputError(`Request provided without token`);
 }

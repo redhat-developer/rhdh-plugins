@@ -1727,18 +1727,29 @@ describe('bulkimports.ts unit tests', () => {
 
       (DefaultApi as jest.Mock).mockImplementation(() => mockOrchestratorApi);
 
+      const mockAuth = {
+        getPluginRequestToken: jest.fn().mockResolvedValue({
+          token: 'orchestrator-token',
+        }),
+        getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
+      } as any;
+
       const result = await findOrchestratorImportStatusByRepo(
         {
           logger,
           orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
           orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
           discovery: mockDiscovery,
+          auth: mockAuth,
         },
         'https://github.com/test-org/test-repo',
-        'token',
       );
 
       expect(result.statusCode).toBe(200);
+      expect(mockAuth.getPluginRequestToken).toHaveBeenCalledWith({
+        onBehalfOf: expect.anything(),
+        targetPluginId: 'orchestrator',
+      });
       expect(result.responseBody?.workflow?.workflowId).toBe(
         'workflow-instance-123',
       );
@@ -1766,15 +1777,20 @@ describe('bulkimports.ts unit tests', () => {
         getBaseUrl: jest.fn(),
       } as any;
 
+      const mockAuth = {
+        getPluginRequestToken: jest.fn(),
+        getOwnServiceCredentials: jest.fn(),
+      } as any;
+
       const result = await findOrchestratorImportStatusByRepo(
         {
           logger,
           orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
           orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
           discovery: mockDiscovery,
+          auth: mockAuth,
         },
         'https://github.com/test-org/test-repo',
-        'token',
       );
 
       expect(result.statusCode).toBe(404);
@@ -1805,15 +1821,20 @@ describe('bulkimports.ts unit tests', () => {
           .mockRejectedValue(new Error('Discovery service error')),
       } as any;
 
+      const mockAuth = {
+        getPluginRequestToken: jest.fn(),
+        getOwnServiceCredentials: jest.fn(),
+      } as any;
+
       const result = await findOrchestratorImportStatusByRepo(
         {
           logger,
           orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
           orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
           discovery: mockDiscovery,
+          auth: mockAuth,
         },
         'https://github.com/test-org/test-repo',
-        'token',
       );
 
       expect(result.statusCode).toBe(200);
@@ -1857,15 +1878,22 @@ describe('bulkimports.ts unit tests', () => {
 
       (DefaultApi as jest.Mock).mockImplementation(() => mockOrchestratorApi);
 
+      const mockAuth = {
+        getPluginRequestToken: jest.fn().mockResolvedValue({
+          token: 'orchestrator-token',
+        }),
+        getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
+      } as any;
+
       const result = await findOrchestratorImportStatusByRepo(
         {
           logger,
           orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
           orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
           discovery: mockDiscovery,
+          auth: mockAuth,
         },
         'https://github.com/test-org/test-repo',
-        'token',
         true,
       );
 

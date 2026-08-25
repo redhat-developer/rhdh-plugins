@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { AuthService } from '@backstage/backend-plugin-api';
 import { DiscoveryApi } from '@backstage/plugin-permission-common';
 
 import {
@@ -35,7 +36,7 @@ import { sortImports } from './bulkImports';
 export type CreateWorkflowImportJobsArgs = {
   orchestratorWorkflowId: string;
   discovery: DiscoveryApi;
-  token?: string;
+  auth: AuthService;
   requestBody: ImportRequest[];
   orchestratorWorkflowDao: OrchestratorWorkflowDao;
   orchestratorRepositoryDao: RepositoryDao<'orchestrator_repositories'>;
@@ -49,7 +50,7 @@ export async function createWorkflowImportJobs(
   const {
     orchestratorWorkflowId,
     discovery,
-    token,
+    auth,
     requestBody,
     orchestratorWorkflowDao,
     orchestratorRepositoryDao,
@@ -66,6 +67,10 @@ export async function createWorkflowImportJobs(
 
   const result: Components.Schemas.Import[] = [];
   const baseUrl = await discovery.getBaseUrl('orchestrator');
+  const { token } = await auth.getPluginRequestToken({
+    onBehalfOf: await auth.getOwnServiceCredentials(),
+    targetPluginId: 'orchestrator',
+  });
   const apiConfig = new Configuration();
 
   // Initialize the client
