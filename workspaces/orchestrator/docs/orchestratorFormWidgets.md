@@ -863,6 +863,52 @@ orchestrator:
 
 All values in this namespace are exposed to the frontend and must not contain secrets.
 
+#### Nested Configuration
+
+You can organize related parameters using nested objects (supported since v2.0+):
+
+```yaml
+orchestrator:
+  rjsf-widgets:
+    # Nested structures for widget-specific config
+    app-registration:
+      xParams:
+        name: app-registration
+        version: 0.21.0
+      environment: production
+
+    cloud-run:
+      xParams:
+        name: cloud-run
+        version: 1.0.0
+      region: us-central1
+
+    # Flat keys still work (backward compatible)
+    globalTimeout: '30s'
+    defaultEnvironment: production
+```
+
+**Accessing nested values in workflow schemas:**
+
+Access nested configuration using dot-path notation in templates:
+
+```json
+{
+  "ui:widget": "ActiveText",
+  "ui:props": {
+    "ui:text": "Deploying $${{rjsfConfig.app-registration.xParams.name}} v$${{rjsfConfig.app-registration.xParams.version}}"
+  }
+}
+```
+
+**Important notes:**
+
+- Templates resolve **leaf values only** (primitive strings, numbers, booleans)
+- Numbers and booleans are converted to strings: `version: 0.21.0` → `"0.21.0"`
+- Missing paths return `undefined` without crashing the form
+- Existing flat configurations continue to work
+- You can mix flat and nested keys in the same section
+
 |                                 Key Family                                  |                                                      Key                                                       |                                                                                                                                                                                                                                     Value of at runtime\<br\>(skipping promises for simplicity)                                                                                                                                                                                                                                     |
 | :-------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
 |                                   current                                   |                                           \[whatever property name\]                                           |                                                                                                                    Value of other field/property of the form. The properties build hierarchy separated by `.` (dots) matching the structure of fields/objects defined by the data input schema. Arrays or branches of a complex object structure can be passed as well, data are encoded into JSON in that case.                                                                                                                    |
@@ -875,7 +921,7 @@ All values in this namespace are exposed to the frontend and must not contain se
 | atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |                                                  profileEmail                                                  |                                                                                                                                                                                                                                             ProfileInfoApi.getProfile(undefined).email                                                                                                                                                                                                                                              |
 | atlassianAuthApi githubAuthApi microsoftAuthApi gitlabAuthApi googleAuthApi |                                                  profileName                                                   |                                                                                                                                                                                                                                          ProfileInfoApi.getProfile(undefined).displayName                                                                                                                                                                                                                                           |
 |                                customAuthApi                                | One of: openIdToken, token, profileEmail, profileName (availability depends on custom-provided implementation) | Encapsulated access to custom-implemented authentication provider API. The provider API id must match its ApiRef id (as passed to `createApiRef()` when building the API). Full format: `[KEY_FAMILY].[PLUGIN_ID].[KEY]`. Example: `customAuthApi.my.auth.github-two.token` to access `OAuthApi.getAccessToken()` (if implemented) via custom apiRef created by: `createApiRef({id: 'my.auth.github-two'})`. See more info about [custom-provider implementation](https://backstage.io/docs/auth/#custom-scmauthapi-implementation) |
-|                                 rjsfConfig                                  |                                         orchestrator.\[whatever key\]                                          |                                                                                                                                                                                                                           configApi.getOptionalString(\`${orchestrator.rjsf-widgets.\[whatever key\]}\`)                                                                                                                                                                                                                            |
+|                                 rjsfConfig                                  |                                        \[whatever key or nested.path\]                                         |                                                                                                                                                                                       configApi.getOptionalString(\`orchestrator.rjsf-widgets.${key}\`). Supports dot-path notation for nested config (e.g., `app-registration.xParams.name`)                                                                                                                                                                                       |
 |                                   backend                                   |                                                    baseUrl                                                     |                                                                                                                                                                                                             configApi.getString('backend.baseUrl') - useful for building URLs with proxy without hardcoding the backend                                                                                                                                                                                                             |
 
 ## Retrieving Data from Backstage Catalog

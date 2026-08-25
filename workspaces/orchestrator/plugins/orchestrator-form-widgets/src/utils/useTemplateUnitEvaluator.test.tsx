@@ -132,6 +132,80 @@ describe('useTemplateUnitEvaluator', () => {
     );
   });
 
+  it('evaluates rjsfConfig.* with nested paths', async () => {
+    configApi.getOptionalString.mockImplementation((path: string) => {
+      const configs: Record<string, string> = {
+        'orchestrator.rjsf-widgets.app-registration.xParams.name':
+          'app-registration',
+        'orchestrator.rjsf-widgets.app-registration.xParams.version': '0.21.0',
+        'orchestrator.rjsf-widgets.cloud-run.xParams.name': 'cloud-run',
+      };
+      return configs[path];
+    });
+
+    const { result } = renderHook(() => useTemplateUnitEvaluator());
+
+    await expect(
+      result.current('rjsfConfig.app-registration.xParams.name', {} as any),
+    ).resolves.toBe('app-registration');
+    expect(configApi.getOptionalString).toHaveBeenCalledWith(
+      'orchestrator.rjsf-widgets.app-registration.xParams.name',
+    );
+
+    await expect(
+      result.current('rjsfConfig.app-registration.xParams.version', {} as any),
+    ).resolves.toBe('0.21.0');
+    expect(configApi.getOptionalString).toHaveBeenCalledWith(
+      'orchestrator.rjsf-widgets.app-registration.xParams.version',
+    );
+  });
+
+  it('evaluates rjsfConfig.* with multiple nested widget namespaces', async () => {
+    configApi.getOptionalString.mockImplementation((path: string) => {
+      const configs: Record<string, string> = {
+        'orchestrator.rjsf-widgets.cloud-run.xParams.name': 'cloud-run',
+      };
+      return configs[path];
+    });
+
+    const { result } = renderHook(() => useTemplateUnitEvaluator());
+
+    await expect(
+      result.current('rjsfConfig.cloud-run.xParams.name', {} as any),
+    ).resolves.toBe('cloud-run');
+  });
+
+  it('returns undefined for missing nested paths in rjsfConfig', async () => {
+    configApi.getOptionalString.mockReturnValue(undefined);
+
+    const { result } = renderHook(() => useTemplateUnitEvaluator());
+
+    await expect(
+      result.current('rjsfConfig.nonexistent.path', {} as any),
+    ).resolves.toBeUndefined();
+  });
+
+  it('supports mixed flat and nested keys in rjsfConfig', async () => {
+    configApi.getOptionalString.mockImplementation((path: string) => {
+      const configs: Record<string, string> = {
+        'orchestrator.rjsf-widgets.defaultEnvironment': 'production',
+        'orchestrator.rjsf-widgets.app-registration.xParams.name':
+          'app-registration',
+      };
+      return configs[path];
+    });
+
+    const { result } = renderHook(() => useTemplateUnitEvaluator());
+
+    await expect(
+      result.current('rjsfConfig.defaultEnvironment', {} as any),
+    ).resolves.toBe('production');
+
+    await expect(
+      result.current('rjsfConfig.app-registration.xParams.name', {} as any),
+    ).resolves.toBe('app-registration');
+  });
+
   it('evaluates fetch response selector units', async () => {
     mockedApplySelectorString.mockResolvedValue('resolved-value');
     const { result } = renderHook(() => useTemplateUnitEvaluator());
