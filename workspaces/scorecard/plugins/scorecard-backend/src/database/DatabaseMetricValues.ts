@@ -233,9 +233,9 @@ export class DatabaseMetricValues {
   /**
    * Latest metric value per UTC calendar day for a specific entity and metric.
    *
-   * For each UTC day in `[from, to]`: prefer the successful sample with the highest
-   * `id`; if the day has no success, use the calculation-error row with the highest
-   * `id`. Days with only null-without-error rows are omitted.
+   * For each UTC day in `[from, to]`: pick the sample with the highest `id` among
+   * rows that are either a real value or a calculation error. Days with only
+   * null-without-error rows are omitted.
    *
    * Ordered by timestamp ascending, then id ascending.
    */
@@ -253,10 +253,10 @@ export class DatabaseMetricValues {
       : "strftime('%Y-%m-%d', timestamp / 1000, 'unixepoch')";
 
     const missing = DatabaseMetricValues.metricValueIsMissingExpr;
-    const chosenIdExpr = `COALESCE(
-      MAX(CASE WHEN NOT ${missing} THEN id END),
-      MAX(CASE WHEN error_message IS NOT NULL AND ${missing} THEN id END)
-    )`;
+    const chosenIdExpr = `MAX(CASE
+      WHEN NOT ${missing} OR (error_message IS NOT NULL AND ${missing})
+      THEN id
+    END)`;
 
     const latestIdsPerDay = this.dbClient(this.tableName)
       .select(this.dbClient.raw(`${chosenIdExpr} as id`))

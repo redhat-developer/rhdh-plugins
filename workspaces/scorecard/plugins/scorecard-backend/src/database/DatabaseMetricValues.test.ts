@@ -198,7 +198,7 @@ describe('DatabaseMetricValues', () => {
 
   describe('readLatestEntityMetricValuesPerUtcDay', () => {
     it.each(databases.eachSupportedId())(
-      'should return one row per UTC day with highest success id - %p',
+      'should return one row per UTC day with highest id - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
         const entityRef = 'component:default/test-service';
@@ -263,7 +263,7 @@ describe('DatabaseMetricValues', () => {
     );
 
     it.each(databases.eachSupportedId())(
-      'should keep only the highest id among successes on the same UTC day - %p',
+      'should keep only the highest id among samples on the same UTC day - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
         const entityRef = 'component:default/test-service';
@@ -580,7 +580,7 @@ describe('DatabaseMetricValues', () => {
     );
 
     it.each(databases.eachSupportedId())(
-      'should prefer success over a later error on the same UTC day - %p',
+      'should prefer a later error over an earlier success on the same UTC day - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
         const entityRef = 'component:default/test-service';
@@ -613,8 +613,11 @@ describe('DatabaseMetricValues', () => {
         );
 
         expect(result).toHaveLength(1);
-        expect(result[0].value).toBe(5);
-        expect(result[0].errorMessage).toBeNull();
+        expect(result[0].value).toBeNull();
+        expect(result[0].errorMessage).toBe('fail');
+        expect(result[0].timestamp.toISOString()).toBe(
+          '2023-01-01T21:00:00.000Z',
+        );
       },
     );
 

@@ -128,8 +128,9 @@ export type EntityMetricDetailResponse = {
 
 /**
  * A single sample in a metric time series (latest value for a UTC day).
- * Success points have a non-null `value`. Error-only days use `value: null`
- * and set `error` to the calculation failure message.
+ * Success points have a non-null `value`. When the latest sample is a
+ * calculation failure, `value` is `null` and `error` is set to the failure
+ * message.
  * @public
  */
 export type MetricTimeSeriesPoint = {

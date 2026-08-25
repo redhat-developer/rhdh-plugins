@@ -191,9 +191,9 @@ export class CatalogMetricService {
   /**
    * Get a daily time series for one metric on one catalog entity.
    *
-   * Returns at most one point per UTC calendar day: latest successful sample
-   * (`MAX(id)` among successes), or else the latest calculation-error sample
-   * when the day has no success. Error-only days use `value: null` and `error`.
+   * Returns at most one point per UTC calendar day: the latest sample
+   * (`MAX(id)`), whether success or calculation error. Calculation failures
+   * use `value: null` and `error`.
    *
    * @param entityRef - Entity reference in format "kind:namespace/name"
    * @param metricId - Metric ID to fetch
