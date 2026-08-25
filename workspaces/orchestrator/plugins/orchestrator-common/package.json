@@ -55,16 +55,17 @@
     "openapi:check": "./scripts/openapi.sh check"
   },
   "dependencies": {
-    "@backstage/core-plugin-api": "^1.12.9",
     "@backstage/plugin-permission-common": "^0.9.10",
     "@backstage/types": "^1.2.2",
     "@serverlessworkflow/sdk-typescript": "^0.8.4",
     "axios": "^1.15.0",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "json-schema": "^0.4.0"
   },
   "devDependencies": {
     "@backstage/cli": "^0.36.5",
     "@openapitools/openapi-generator-cli": "2.30.2",
+    "@spotify/prettier-config": "^15.0.0",
     "@types/js-yaml": "^4.0.0",
     "@types/json-schema": "7.0.15",
     "js-yaml-cli": "^0.6.0"
