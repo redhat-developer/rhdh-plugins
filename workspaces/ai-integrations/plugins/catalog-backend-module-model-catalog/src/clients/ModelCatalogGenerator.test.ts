@@ -499,6 +499,37 @@ describe('Model Catalog Generator', () => {
     expect(entities[0].metadata.annotations).toBeUndefined();
   });
 
+  it('should sanitize whitespace in rhdh.io/default annotation value', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'whitespace-default-service',
+        owner: 'example-user',
+        description: 'Service with whitespace in default annotation',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/default': 'preferred model',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'model-a',
+          description: 'First model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    // Whitespace must be stripped so default matches sanitized available entries
+    expect((entities[0].spec as any).models.default).toBe('preferredmodel');
+  });
+
   it('should not set system when rhdh.io/system annotation is absent', () => {
     const modelCatalog: ModelCatalog = {
       modelServer: {

@@ -152,7 +152,7 @@ function getDefaultModel(
   models: { name: string }[],
 ): { default: string } | Record<string, never> {
   if (defaultOverride) {
-    return { default: defaultOverride };
+    return { default: sanitizeMetadataName(defaultOverride) };
   }
   if (models.length > 0) {
     return { default: sanitizeMetadataName(models[0].name) };
