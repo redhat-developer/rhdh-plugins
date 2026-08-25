@@ -23,12 +23,16 @@ import { FetchApi } from '../types/fetch';
 import crossFetch from 'cross-fetch';
 import { pluginId } from '../pluginId';
 import * as parser from 'uri-template';
+import { AdversarialAgent } from '../models/AdversarialAgent.model';
+import { AdversarialAgentsGet200Response } from '../models/AdversarialAgentsGet200Response.model';
+import { AdversarialAgentsPostRequest } from '../models/AdversarialAgentsPostRequest.model';
 import { MigrationPhase } from '../models/MigrationPhase.model';
 import { Module } from '../models/Module.model';
-import { ModulePhase } from '../models/ModulePhase.model';
 import { Project } from '../models/Project.model';
 import { ProjectsGet200Response } from '../models/ProjectsGet200Response.model';
 import { ProjectsPostRequest } from '../models/ProjectsPostRequest.model';
+import { ProjectsProjectIdAdversarialRunPost202Response } from '../models/ProjectsProjectIdAdversarialRunPost202Response.model';
+import { ProjectsProjectIdAdversarialRunPostRequest } from '../models/ProjectsProjectIdAdversarialRunPostRequest.model';
 import { ProjectsProjectIdCollectArtifactsPost200Response } from '../models/ProjectsProjectIdCollectArtifactsPost200Response.model';
 import { ProjectsProjectIdCollectArtifactsPostRequest } from '../models/ProjectsProjectIdCollectArtifactsPostRequest.model';
 import { ProjectsProjectIdDelete200Response } from '../models/ProjectsProjectIdDelete200Response.model';
@@ -63,6 +67,45 @@ export interface RequestOptions {
 /**
  * @public
  */
+export type AdversarialAgentsGet = {
+  query: {
+    phase?: 'analyze' | 'migrate';
+  };
+};
+/**
+ * @public
+ */
+export type AdversarialAgentsIdDelete = {
+  path: {
+    id: string;
+  };
+};
+/**
+ * @public
+ */
+export type AdversarialAgentsIdGet = {
+  path: {
+    id: string;
+  };
+};
+/**
+ * @public
+ */
+export type AdversarialAgentsIdPut = {
+  path: {
+    id: string;
+  };
+  body: AdversarialAgentsPostRequest;
+};
+/**
+ * @public
+ */
+export type AdversarialAgentsPost = {
+  body: AdversarialAgentsPostRequest;
+};
+/**
+ * @public
+ */
 export type ProjectsGet = {
   query: {
     page?: number;
@@ -76,6 +119,15 @@ export type ProjectsGet = {
  */
 export type ProjectsPost = {
   body: ProjectsPostRequest;
+};
+/**
+ * @public
+ */
+export type ProjectsProjectIdAdversarialRunPost = {
+  path: {
+    projectId: string;
+  };
+  body: ProjectsProjectIdAdversarialRunPostRequest;
 };
 /**
  * @public
@@ -157,7 +209,7 @@ export type ProjectsProjectIdModulesModuleIdLogGet = {
   };
   query: {
     streaming?: boolean;
-    phase: ModulePhase;
+    phase: MigrationPhase;
   };
 };
 /**
@@ -240,6 +292,137 @@ export class DefaultApiClient {
   }
 
   /**
+   * Returns a list of all adversarial agents.
+   * @param phase - Filter agents by workflow phase
+   */
+  public async adversarialAgentsGet(
+    // @ts-ignore
+    request: AdversarialAgentsGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<AdversarialAgentsGet200Response>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/adversarial-agents{?phase}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      ...request.query,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Deletes an adversarial agent by ID (admin only).
+   * @param id -
+   */
+  public async adversarialAgentsIdDelete(
+    // @ts-ignore
+    request: AdversarialAgentsIdDelete,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<void>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/adversarial-agents/{id}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      id: request.path.id,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'DELETE',
+    });
+  }
+
+  /**
+   * Returns an adversarial agent by ID.
+   * @param id -
+   */
+  public async adversarialAgentsIdGet(
+    // @ts-ignore
+    request: AdversarialAgentsIdGet,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<AdversarialAgent>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/adversarial-agents/{id}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      id: request.path.id,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'GET',
+    });
+  }
+
+  /**
+   * Updates an adversarial agent by ID (admin only).
+   * @param id -
+   * @param adversarialAgentsPostRequest -
+   */
+  public async adversarialAgentsIdPut(
+    // @ts-ignore
+    request: AdversarialAgentsIdPut,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<AdversarialAgent>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/adversarial-agents/{id}`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      id: request.path.id,
+    });
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'PUT',
+      body: JSON.stringify(request.body),
+    });
+  }
+
+  /**
+   * Creates a new adversarial agent (admin only).
+   * @param adversarialAgentsPostRequest -
+   */
+  public async adversarialAgentsPost(
+    // @ts-ignore
+    request: AdversarialAgentsPost,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<AdversarialAgent>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/adversarial-agents`;
+
+    const uri = parser.parse(uriTemplate).expand({});
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'POST',
+      body: JSON.stringify(request.body),
+    });
+  }
+
+  /**
    * Returns a list of projects.
    * @param page - Page number
    * @param pageSize - Page size
@@ -282,6 +465,35 @@ export class DefaultApiClient {
     const uriTemplate = `/projects`;
 
     const uri = parser.parse(uriTemplate).expand({});
+
+    return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options?.token && { Authorization: `Bearer ${options?.token}` }),
+      },
+      method: 'POST',
+      body: JSON.stringify(request.body),
+    });
+  }
+
+  /**
+   * Runs adversarial agents against the output of a completed analyze or migrate phase. The agents review the committed artifacts in the target repository and append a markdown report alongside a JSON summary back to the target repo.
+   * Triggers an adversarial review job for a module phase
+   * @param projectId -
+   * @param projectsProjectIdAdversarialRunPostRequest -
+   */
+  public async projectsProjectIdAdversarialRunPost(
+    // @ts-ignore
+    request: ProjectsProjectIdAdversarialRunPost,
+    options?: RequestOptions,
+  ): Promise<TypedResponse<ProjectsProjectIdAdversarialRunPost202Response>> {
+    const baseUrl = await this.discoveryApi.getBaseUrl(pluginId);
+
+    const uriTemplate = `/projects/{projectId}/adversarial-run`;
+
+    const uri = parser.parse(uriTemplate).expand({
+      projectId: request.path.projectId,
+    });
 
     return await this.fetchApi.fetch(`${baseUrl}${uri}`, {
       headers: {

@@ -39,6 +39,12 @@ export const rulesRouteRef = createSubRouteRef({
   path: '/rules',
 });
 
+export const adversarialAgentsRouteRef = createSubRouteRef({
+  id: 'x2a.adversarial-agents',
+  parent: rootRouteRef,
+  path: '/adversarial-agents',
+});
+
 export const downloadRouteRef = createSubRouteRef({
   id: 'x2a.download',
   parent: rootRouteRef,

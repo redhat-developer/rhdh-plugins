@@ -375,6 +375,242 @@ export const spec = {
         }
       }
     },
+    "/adversarial-agents": {
+      "get": {
+        "summary": "Returns a list of all adversarial agents.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "phase",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "analyze",
+                "migrate"
+              ]
+            },
+            "required": false,
+            "description": "Filter agents by workflow phase"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "All adversarial agents, optionally filtered by phase.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "agents": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AdversarialAgent"
+                      }
+                    },
+                    "total": {
+                      "type": "integer",
+                      "description": "Total number of agents returned"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Creates a new adversarial agent (admin only).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 100,
+                    "description": "Name of the agent"
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "minLength": 50,
+                    "maxLength": 5000,
+                    "description": "AI prompt describing what the agent should check for"
+                  },
+                  "phases": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "analyze",
+                        "migrate"
+                      ]
+                    },
+                    "minItems": 1,
+                    "description": "Workflow phases this agent runs in"
+                  },
+                  "critical": {
+                    "type": "boolean",
+                    "description": "Whether this is a critical security/correctness check"
+                  }
+                },
+                "required": [
+                  "name",
+                  "prompt",
+                  "phases",
+                  "critical"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created adversarial agent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdversarialAgent"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input."
+          }
+        }
+      }
+    },
+    "/adversarial-agents/{id}": {
+      "get": {
+        "summary": "Returns an adversarial agent by ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Adversarial agent data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdversarialAgent"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Adversarial agent not found."
+          }
+        }
+      },
+      "put": {
+        "summary": "Updates an adversarial agent by ID (admin only).",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 100,
+                    "description": "Name of the agent"
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "minLength": 50,
+                    "maxLength": 5000,
+                    "description": "AI prompt describing what the agent should check for"
+                  },
+                  "phases": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "analyze",
+                        "migrate"
+                      ]
+                    },
+                    "minItems": 1,
+                    "description": "Workflow phases this agent runs in"
+                  },
+                  "critical": {
+                    "type": "boolean",
+                    "description": "Whether this is a critical security/correctness check"
+                  }
+                },
+                "required": [
+                  "name",
+                  "prompt",
+                  "phases",
+                  "critical"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated adversarial agent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdversarialAgent"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input."
+          },
+          "404": {
+            "description": "Adversarial agent not found."
+          }
+        }
+      },
+      "delete": {
+        "summary": "Deletes an adversarial agent by ID (admin only).",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Adversarial agent deleted successfully."
+          },
+          "404": {
+            "description": "Adversarial agent not found."
+          }
+        }
+      }
+    },
     "/projects/{projectId}": {
       "get": {
         "summary": "Returns a project by ID.",
@@ -758,7 +994,7 @@ export const spec = {
                 "type": "object",
                 "properties": {
                   "phase": {
-                    "$ref": "#/components/schemas/ModulePhase"
+                    "$ref": "#/components/schemas/CancellablePhase"
                   }
                 },
                 "required": [
@@ -856,7 +1092,7 @@ export const spec = {
             "in": "query",
             "name": "phase",
             "schema": {
-              "$ref": "#/components/schemas/ModulePhase"
+              "$ref": "#/components/schemas/MigrationPhase"
             },
             "required": true,
             "description": "Migration module phase to filter"
@@ -875,6 +1111,97 @@ export const spec = {
           },
           "404": {
             "description": "Module not found or no jobs exist"
+          }
+        }
+      }
+    },
+    "/projects/{projectId}/adversarial-run": {
+      "post": {
+        "summary": "Triggers an adversarial review job for a module phase",
+        "description": "Runs adversarial agents against the output of a completed analyze or migrate phase.\nThe agents review the committed artifacts in the target repository and append\na markdown report alongside a JSON summary back to the target repo.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "projectId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "phase": {
+                    "type": "string",
+                    "enum": [
+                      "analyze",
+                      "migrate"
+                    ],
+                    "description": "The phase whose output should be reviewed"
+                  },
+                  "moduleId": {
+                    "type": "string",
+                    "description": "UUID of the module to review"
+                  },
+                  "agentIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "description": "IDs of adversarial agents to run for this phase"
+                  },
+                  "targetRepoAuth": {
+                    "$ref": "#/components/schemas/GitRepoAuth"
+                  }
+                },
+                "required": [
+                  "phase",
+                  "moduleId",
+                  "agentIds"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Adversarial review job accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "jobId": {
+                      "type": "string",
+                      "description": "UUID of the created job"
+                    },
+                    "k8sJobName": {
+                      "type": "string",
+                      "description": "Kubernetes job name"
+                    }
+                  },
+                  "required": [
+                    "jobId",
+                    "k8sJobName"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request (bad phase, module not found, or no adversarial agents configured)"
+          },
+          "404": {
+            "description": "Project not found"
+          },
+          "409": {
+            "description": "An adversarial job is already running for this module and phase"
           }
         }
       }
@@ -1121,6 +1448,12 @@ export const spec = {
           "publish": {
             "$ref": "#/components/schemas/Job"
           },
+          "adversarialAnalyze": {
+            "$ref": "#/components/schemas/Job"
+          },
+          "adversarialMigrate": {
+            "$ref": "#/components/schemas/Job"
+          },
           "status": {
             "$ref": "#/components/schemas/ModuleStatus"
           },
@@ -1317,7 +1650,9 @@ export const spec = {
           "module_migration_plan",
           "migrated_sources",
           "project_metadata",
-          "ansible_project"
+          "ansible_project",
+          "adversarial_report",
+          "adversarial_report_json"
         ]
       },
       "Artifact": {
@@ -1389,7 +1724,9 @@ export const spec = {
           "init",
           "analyze",
           "migrate",
-          "publish"
+          "publish",
+          "adversarial-analyze",
+          "adversarial-migrate"
         ],
         "description": "All migration phases"
       },
@@ -1401,6 +1738,17 @@ export const spec = {
           "publish"
         ],
         "description": "Phases to execute on a module"
+      },
+      "CancellablePhase": {
+        "type": "string",
+        "enum": [
+          "analyze",
+          "migrate",
+          "publish",
+          "adversarial-analyze",
+          "adversarial-migrate"
+        ],
+        "description": "Phases that support cancellation"
       },
       "SourceTechnology": {
         "type": "string",
@@ -1507,6 +1855,64 @@ export const spec = {
           "id",
           "title",
           "description"
+        ]
+      },
+      "AdversarialAgent": {
+        "type": "object",
+        "description": "AI agent that reviews migration outputs for security, functional gaps, and correctness issues",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID for the adversarial agent"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the agent"
+          },
+          "prompt": {
+            "type": "string",
+            "description": "AI prompt describing what the agent should check for"
+          },
+          "phases": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "analyze",
+                "migrate"
+              ]
+            },
+            "description": "Workflow phases this agent runs in (analyze and migrate only)"
+          },
+          "critical": {
+            "type": "boolean",
+            "description": "Whether this is a critical security/correctness check"
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "User or system that created the agent"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date/time when the agent was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Date/time when the agent was last updated"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "prompt",
+          "phases",
+          "critical",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
         ]
       },
       "AgentMetrics": {

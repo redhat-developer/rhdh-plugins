@@ -21,4 +21,10 @@
 /**
  * @public
  */
-export type MigrationPhase = 'init' | 'analyze' | 'migrate' | 'publish';
+export type MigrationPhase =
+  | 'init'
+  | 'analyze'
+  | 'migrate'
+  | 'publish'
+  | 'adversarial-analyze'
+  | 'adversarial-migrate';
