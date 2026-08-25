@@ -18,7 +18,7 @@
 
 ### Requirement: Models collected into spec.models.available
 
-Model names from the `ModelCatalog.models` array MUST be collected into `spec.models.available` as a string array. When models are present, `spec.models.default` MUST be set according to override precedence: if `modelServer.annotations` contains the `rhdh.io/default` annotation, its value is used; otherwise, the first model's sanitized name is used.
+Model names from the `ModelCatalog.models` array MUST be collected into `spec.models.available` as a string array. When models are present, `spec.models.default` MUST be set according to override precedence: if `modelServer.annotations` contains the `rhdh.io/default` annotation, its sanitized value is used; otherwise, the first model's sanitized name is used.
 
 #### Scenario: Multiple models listed (no override)
 
