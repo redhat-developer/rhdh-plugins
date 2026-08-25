@@ -151,4 +151,13 @@ describe('createComponents', () => {
       }),
     );
   });
+
+  it('wraps MuiToggleButtonGroup to prevent overflow', () => {
+    const actual = createComponents({ palette: customDarkTheme() });
+    expect(actual.MuiToggleButtonGroup?.styleOverrides?.root).toEqual(
+      expect.objectContaining({
+        flexWrap: 'wrap',
+      }),
+    );
+  });
 });
