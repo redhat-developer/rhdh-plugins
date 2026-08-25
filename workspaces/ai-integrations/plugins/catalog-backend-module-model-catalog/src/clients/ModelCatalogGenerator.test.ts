@@ -398,6 +398,8 @@ describe('Model Catalog Generator', () => {
 
     const entities = GenerateCatalogEntities(modelCatalog);
     expect((entities[0].spec as any).system).toBe('my-ai-system');
+    // Control annotation must not leak into metadata
+    expect(entities[0].metadata.annotations).toBeUndefined();
   });
 
   it('should override serverType from rhdh.io/serverType annotation', () => {
@@ -428,6 +430,8 @@ describe('Model Catalog Generator', () => {
 
     const entities = GenerateCatalogEntities(modelCatalog);
     expect((entities[0].spec as any).serverType).toBe('anthropic');
+    // Control annotation must not leak into metadata
+    expect(entities[0].metadata.annotations).toBeUndefined();
   });
 
   it('should use API type as serverType when no annotation override', () => {
@@ -491,6 +495,8 @@ describe('Model Catalog Generator', () => {
 
     const entities = GenerateCatalogEntities(modelCatalog);
     expect((entities[0].spec as any).models.default).toBe('preferred-model');
+    // Control annotation must not leak into metadata
+    expect(entities[0].metadata.annotations).toBeUndefined();
   });
 
   it('should not set system when rhdh.io/system annotation is absent', () => {
@@ -559,6 +565,8 @@ describe('Model Catalog Generator', () => {
     expect(spec.system).toBe('ai-platform');
     expect(spec.serverType).toBe('openai-v1');
     expect(spec.models.default).toBe('gpt-4');
+    // Control annotations must not leak into metadata
+    expect(entities[0].metadata.annotations).toBeUndefined();
   });
 });
 

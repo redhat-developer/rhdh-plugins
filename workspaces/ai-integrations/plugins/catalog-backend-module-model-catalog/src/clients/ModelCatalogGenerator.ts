@@ -84,6 +84,12 @@ export function GenerateCatalogEntities(
     Object.assign(annotations, modelServer.annotations);
   }
 
+  // Remove control annotations that drive spec fields — they should
+  // not leak into entity metadata.annotations.
+  delete annotations[SYSTEM_ANNOTATION];
+  delete annotations[SERVER_TYPE_ANNOTATION];
+  delete annotations[DEFAULT_ANNOTATION];
+
   // Collect techdocs from models — use the first one found
   for (const model of models) {
     if (model.annotations?.[TECHDOCS_KEY]) {
