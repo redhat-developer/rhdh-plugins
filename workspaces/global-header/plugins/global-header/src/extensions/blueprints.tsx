@@ -15,6 +15,7 @@
  */
 
 import type { ComponentType } from 'react';
+import { z } from 'zod';
 import {
   createExtensionBlueprint,
   ExtensionBoundary,
@@ -105,6 +106,9 @@ function resolveLazyComponent(
   node: AppNode,
   loader: () => Promise<ComponentType<any>>,
 ): ComponentType<any> {
+  // ExtensionBoundary.lazyComponent wraps each resolved component in its own
+  // ExtensionBoundary + Suspense (Progress fallback) — suspending items do not
+  // bubble to the app-root Suspense around LazyGlobalHeader.
   return ExtensionBoundary.lazyComponent(node, async () => {
     const Comp = await loader();
     return (props: any) => <Comp {...props} />;
@@ -243,10 +247,8 @@ export const GlobalHeaderComponentBlueprint = createExtensionBlueprint({
   },
   output: [globalHeaderComponentDataRef],
   dataRefs: { componentData: globalHeaderComponentDataRef },
-  config: {
-    schema: {
-      priority: z => z.number().optional(),
-    },
+  configSchema: {
+    priority: z.number().optional(),
   },
   *factory(params: ToolbarComponentParams, { config, node }) {
     yield globalHeaderComponentDataRef({
@@ -291,17 +293,15 @@ export const GlobalHeaderMenuItemBlueprint = createExtensionBlueprint({
   },
   output: [globalHeaderMenuItemDataRef],
   dataRefs: { menuItemData: globalHeaderMenuItemDataRef },
-  config: {
-    schema: {
-      priority: z => z.number().optional(),
-      title: z => z.string().optional(),
-      titleKey: z => z.string().optional(),
-      icon: z => z.string().optional(),
-      link: z => z.string().optional(),
-      sectionLabel: z => z.string().optional(),
-      sectionLink: z => z.string().optional(),
-      sectionLinkLabel: z => z.string().optional(),
-    },
+  configSchema: {
+    priority: z.number().optional(),
+    title: z.string().optional(),
+    titleKey: z.string().optional(),
+    icon: z.string().optional(),
+    link: z.string().optional(),
+    sectionLabel: z.string().optional(),
+    sectionLink: z.string().optional(),
+    sectionLinkLabel: z.string().optional(),
   },
   *factory(params: MenuItemParams, { config, node }) {
     const title = config.title ?? params.title;

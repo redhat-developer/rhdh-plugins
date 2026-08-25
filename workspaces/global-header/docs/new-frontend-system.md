@@ -4,10 +4,12 @@ The global header is the top-level navigation bar in Red Hat Developer Hub. It s
 
 The NFS surface is **stable** on the package root
 (`@red-hat-developer-hub/backstage-plugin-global-header`). Building-block UI
-components live on a separate `/components` entry so they stay off the main
-Module Federation sync chunk. Prefer `/legacy` only for Old Frontend System
-(mount-point) apps. `/alpha` is a deprecated translations-only shim — do not
-use it for the plugin, module, or blueprints.
+components live on a separate `/components` **package subpath** so they stay off
+the root Module Federation sync chunk. Other dynamic plugins import that
+subpath at compile/export time (typically from a file reached only via a
+blueprint `loader`); it is not a host-loaded federated remote. Prefer `/legacy`
+only for Old Frontend System (mount-point) apps. `/alpha` is a deprecated
+translations-only shim — do not use it for the plugin, module, or blueprints.
 
 This guide explains how to:
 
@@ -178,6 +180,25 @@ Use `GlobalHeaderMenuItem` from `/components` inside a blueprint `loader` so the
 UI stays off the root NFS sync chunk. The component receives
 `handleClose` and `hideDivider` as props from the dropdown.
 
+Put the menu item UI in its own file so the `/components` import is only pulled
+in when the loader runs:
+
+```typescript
+// docs-item.tsx
+import { GlobalHeaderMenuItem } from '@red-hat-developer-hub/backstage-plugin-global-header/components';
+
+export function DocsLink({ handleClose }: { handleClose?: () => void }) {
+  return (
+    <GlobalHeaderMenuItem
+      to="https://docs.example.com"
+      title="Documentation"
+      icon="article"
+      onClick={handleClose}
+    />
+  );
+}
+```
+
 ```typescript
 import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header';
 
@@ -186,28 +207,14 @@ export const myDocsItem = GlobalHeaderMenuItemBlueprint.make({
   params: {
     target: 'help',
     priority: 50,
-    loader: async () => {
-      const { GlobalHeaderMenuItem } = await import(
-        '@red-hat-developer-hub/backstage-plugin-global-header/components'
-      );
-      return function MyDocsLink({
-        handleClose,
-      }: {
-        handleClose?: () => void;
-      }) {
-        return (
-          <GlobalHeaderMenuItem
-            to="https://docs.example.com"
-            title="Documentation"
-            icon="article"
-            onClick={handleClose}
-          />
-        );
-      };
-    },
+    loader: () => import('./docs-item').then(m => m.DocsLink),
   },
 });
 ```
+
+> For simple links with `title`, `icon`, and `link`, prefer the
+> [data-driven item](#data-driven-item) above — no custom component or loader
+> required.
 
 ### Fully custom component item
 
@@ -372,8 +379,10 @@ Extension ID pattern: `gh-menu-item:global-header/<name>`
 
 For plugin authors building custom toolbar components or dropdowns, the plugin exports lower-level building blocks and React hooks:
 
-**Building-block components** (import from `/components` — not the root
-entry — so MUI stays off the main NFS sync chunk):
+**Building-block components** (import from the `/components` package subpath —
+not the root entry — so MUI stays off the root NFS sync chunk). Put the import
+in a file that is only loaded from a blueprint `loader` so the consumer bundles
+it into its own async chunk:
 
 | Component                | Key props                        | Purpose                                                                      |
 | ------------------------ | -------------------------------- | ---------------------------------------------------------------------------- |
@@ -389,7 +398,9 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-global-header/components';
 ```
 
-Prefer dynamic `import()` of these from inside blueprint `loader`s.
+Prefer reaching these from inside a blueprint `loader` (static import in the
+lazy file, or `await import('…/components')` in the loader). Do not import them
+from the global-header package root.
 
 **Context hooks** (direct access to collected extension data):
 
@@ -403,6 +414,6 @@ Prefer dynamic `import()` of these from inside blueprint `loader`s.
 | Entry              | Use for                                                           |
 | ------------------ | ----------------------------------------------------------------- |
 | Package root (`.`) | NFS plugin, module, blueprints, hooks, translations               |
-| `/components`      | Building-block UI only (`GlobalHeaderMenuItem`, dropdowns, icons) |
+| `/components`      | Building-block UI package subpath only (not a loaded NFS feature) |
 | `/legacy`          | Deprecated OFS / mount-point API                                  |
 | `/alpha`           | Deprecated translations re-export only (not an NFS entry)         |

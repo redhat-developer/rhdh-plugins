@@ -340,6 +340,39 @@ describe('GlobalHeaderDropdown', () => {
     });
   });
 
+  it('supports arrow-key navigation between visible menu items', async () => {
+    const menuItems: GlobalHeaderMenuItemData[] = [
+      {
+        target: 'help',
+        type: 'data',
+        title: 'First item',
+        link: '/first',
+        priority: 20,
+      },
+      {
+        target: 'help',
+        type: 'data',
+        title: 'Second item',
+        link: '/second',
+        priority: 10,
+      },
+    ];
+
+    await renderDropdown(menuItems);
+    await openMenu();
+
+    const firstItem = await screen.findByRole('menuitem', {
+      name: /first item/i,
+    });
+    const secondItem = screen.getByRole('menuitem', { name: /second item/i });
+
+    firstItem.focus();
+    expect(firstItem).toHaveFocus();
+
+    await userEvent.keyboard('{ArrowDown}');
+    expect(secondItem).toHaveFocus();
+  });
+
   it('forwards tooltip and icon button props to the trigger', async () => {
     await renderDropdown([], {
       isIconButton: true,
