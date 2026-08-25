@@ -29,8 +29,10 @@ export async function createRouter({
   router.use(express.json());
 
   router.get('/default-widgets', async (req, res) => {
-    const credentials = await httpAuth.credentials(req, { allow: ['user'] });
-    const result = await defaultWidgets.getDefaultWidgets({ credentials });
+    const userCredentials = await httpAuth.credentials(req, {
+      allow: ['user'],
+    });
+    const result = await defaultWidgets.getDefaultWidgets({ userCredentials });
     res.json(result);
   });
 

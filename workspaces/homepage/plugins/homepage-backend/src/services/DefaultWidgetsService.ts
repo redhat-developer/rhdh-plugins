@@ -15,6 +15,7 @@
  */
 
 import {
+  AuthService,
   BackstageCredentials,
   BackstageUserPrincipal,
   LoggerService,
@@ -38,19 +39,21 @@ import {
 
 export interface DefaultWidgetsService {
   getDefaultWidgets(options: {
-    credentials: BackstageCredentials<BackstageUserPrincipal>;
+    userCredentials: BackstageCredentials<BackstageUserPrincipal>;
   }): Promise<DefaultWidgetsResponse>;
 }
 
 export class DefaultWidgetsServiceImpl implements DefaultWidgetsService {
   readonly #tree: DefaultWidgetNode[] | undefined;
   readonly #referencedPermissions: Set<string>;
+  readonly #auth: AuthService;
   readonly #catalog: typeof catalogServiceRef.T;
   readonly #permissions: PermissionsService;
   readonly #logger: LoggerService;
 
   static create(options: {
     config: RootConfigService;
+    auth: AuthService;
     catalog: typeof catalogServiceRef.T;
     permissions: PermissionsService;
     logger: LoggerService;
@@ -67,6 +70,7 @@ export class DefaultWidgetsServiceImpl implements DefaultWidgetsService {
     return new DefaultWidgetsServiceImpl(
       tree,
       referencedPermissions,
+      options.auth,
       options.catalog,
       options.permissions,
       options.logger,
@@ -76,31 +80,34 @@ export class DefaultWidgetsServiceImpl implements DefaultWidgetsService {
   private constructor(
     tree: DefaultWidgetNode[] | undefined,
     referencedPermissions: Set<string>,
+    auth: AuthService,
     catalog: typeof catalogServiceRef.T,
     permissions: PermissionsService,
     logger: LoggerService,
   ) {
     this.#tree = tree;
     this.#referencedPermissions = referencedPermissions;
+    this.#auth = auth;
     this.#catalog = catalog;
     this.#permissions = permissions;
     this.#logger = logger;
   }
 
   async getDefaultWidgets({
-    credentials,
+    userCredentials,
   }: {
-    credentials: BackstageCredentials<BackstageUserPrincipal>;
+    userCredentials: BackstageCredentials<BackstageUserPrincipal>;
   }): Promise<DefaultWidgetsResponse> {
     if (!this.#tree) {
       return {};
     }
     const ctx = await buildUserContext({
-      credentials,
+      auth: this.#auth,
       catalog: this.#catalog,
       permissions: this.#permissions,
       referencedPermissions: this.#referencedPermissions,
       logger: this.#logger,
+      userCredentials,
     });
     return {
       items: filterToVisibleLeaves(this.#tree, ctx),
@@ -116,6 +123,7 @@ export const defaultWidgetsServiceRef = createServiceRef<DefaultWidgetsService>(
         service,
         deps: {
           config: coreServices.rootConfig,
+          auth: coreServices.auth,
           catalog: catalogServiceRef,
           permissions: coreServices.permissions,
           logger: coreServices.logger,

@@ -15,6 +15,7 @@
  */
 
 import {
+  AuthService,
   BackstageCredentials,
   BackstageUserPrincipal,
   LoggerService,
@@ -31,19 +32,27 @@ import { homepageDefaultWidgetsReadPermission } from '@red-hat-developer-hub/bac
 import { UserContext } from './types';
 
 export async function buildUserContext(opts: {
-  credentials: BackstageCredentials<BackstageUserPrincipal>;
+  auth: AuthService;
   catalog: CatalogService;
   permissions: PermissionsService;
   referencedPermissions: Set<string>;
   logger: LoggerService;
+  userCredentials: BackstageCredentials<BackstageUserPrincipal>;
 }): Promise<UserContext> {
-  const { credentials, catalog, permissions, referencedPermissions, logger } =
-    opts;
+  const {
+    auth,
+    catalog,
+    permissions,
+    referencedPermissions,
+    logger,
+    userCredentials,
+  } = opts;
 
   // user ref
-  const userEntityRef = credentials.principal.userEntityRef;
+  const userEntityRef = userCredentials.principal.userEntityRef;
+  const serviceCredentials = await auth.getOwnServiceCredentials();
   const userEntity = await catalog.getEntityByRef(userEntityRef, {
-    credentials,
+    credentials: serviceCredentials,
   });
 
   if (!userEntity) {
@@ -78,7 +87,7 @@ export async function buildUserContext(opts: {
 
   const [defaultWidgetsReadDecision, ...otherConditionalDecisions] =
     await permissions.authorizeConditional(conditionalPermissionRequests, {
-      credentials,
+      credentials: userCredentials,
     });
 
   const otherPolicyDecisions = new Map<string, PolicyDecision>();
