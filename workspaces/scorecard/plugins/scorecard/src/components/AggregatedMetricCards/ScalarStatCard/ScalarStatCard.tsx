@@ -22,7 +22,6 @@ import {
   formatWithMetricUnit,
   getMatchingThresholdKey,
   getStatusConfig,
-  isScalarAggregationType,
   resolveStatusColor,
 } from '../../../utils';
 import { useTranslation } from '../../../hooks/useTranslation';
@@ -34,24 +33,20 @@ import { formatAggregationScoreDetail } from '../WeightedStatusScoreCard/Tooltip
 import { ScalarStatTile } from './ScalarStatTile';
 import type { ScalarStatCardProps } from './types';
 
-const aggregationTypeLabelKeys = {
-  min: 'aggregation.min',
-  max: 'aggregation.max',
-  sum: 'aggregation.sum',
-  count: 'aggregation.count',
-  average: 'aggregation.average',
-} as const;
-
 function getAggregationTypeLabel(
   aggregationType: string,
   t: TranslationFunction<typeof scorecardTranslationRef.T>,
 ): string {
-  if (isScalarAggregationType(aggregationType)) {
-    return t(aggregationTypeLabelKeys[aggregationType]);
-  }
   if (!aggregationType) {
     return '';
   }
+
+  const key = `aggregation.${aggregationType}`;
+  const translated = t(key as any, {});
+  if (translated !== key) {
+    return translated;
+  }
+
   return aggregationType.charAt(0).toUpperCase() + aggregationType.slice(1);
 }
 

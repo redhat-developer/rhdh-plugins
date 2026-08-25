@@ -239,6 +239,51 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
                    sm: { w: 4, h: 6, x: 8 }
                    xs: { w: 4, h: 6, x: 8 }
                    xxs: { w: 4, h: 6, x: 8 }
+               AggregatedCardWithMaxOpenPrs:
+                 priority: 480
+                 breakpoints:
+                   xl: { w: 4, h: 6 }
+                   lg: { w: 4, h: 6 }
+                   md: { w: 4, h: 6 }
+                   sm: { w: 4, h: 6 }
+                   xs: { w: 4, h: 6 }
+                   xxs: { w: 4, h: 6 }
+               AggregatedCardWithMinOpenPrs:
+                 priority: 490
+                 breakpoints:
+                   xl: { w: 4, h: 6, x: 4 }
+                   lg: { w: 4, h: 6, x: 4 }
+                   md: { w: 4, h: 6, x: 4 }
+                   sm: { w: 4, h: 6, x: 4 }
+                   xs: { w: 4, h: 6, x: 4 }
+                   xxs: { w: 4, h: 6, x: 4 }
+               AggregatedCardWithTotalOpenBugs:
+                 priority: 500
+                 breakpoints:
+                   xl: { w: 4, h: 6, x: 8 }
+                   lg: { w: 4, h: 6, x: 8 }
+                   md: { w: 4, h: 6, x: 8 }
+                   sm: { w: 4, h: 6, x: 8 }
+                   xs: { w: 4, h: 6, x: 8 }
+                   xxs: { w: 4, h: 6, x: 8 }
+               AggregatedCardWithEntitiesWithOpenPrs:
+                 priority: 510
+                 breakpoints:
+                   xl: { w: 4, h: 6 }
+                   lg: { w: 4, h: 6 }
+                   md: { w: 4, h: 6 }
+                   sm: { w: 4, h: 6 }
+                   xs: { w: 4, h: 6 }
+                   xxs: { w: 4, h: 6 }
+               AggregatedCardWithAvgOpenPrs:
+                 priority: 520
+                 breakpoints:
+                   xl: { w: 4, h: 6, x: 4 }
+                   lg: { w: 4, h: 6, x: 4 }
+                   md: { w: 4, h: 6, x: 4 }
+                   sm: { w: 4, h: 6, x: 4 }
+                   xs: { w: 4, h: 6, x: 4 }
+                   xxs: { w: 4, h: 6, x: 4 }
    ```
 
    The home module contributes twelve widgets:
