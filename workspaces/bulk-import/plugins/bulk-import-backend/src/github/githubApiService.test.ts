@@ -15,6 +15,7 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
+import { DefaultGithubCredentialsProvider } from '@backstage/integration';
 
 import { GithubApiService } from './githubApiService';
 import { CustomGithubCredentialsProvider } from './GithubAppManager';
@@ -404,15 +405,50 @@ describe('GithubApiService tests', () => {
     });
   });
 
+  describe('getCredentials', () => {
+    it('returns the token and credential type from the integration provider', async () => {
+      const mockGetCredentials = jest.fn().mockResolvedValue({
+        headers: { Authorization: 'Bearer app_token' },
+        token: 'app_token',
+        type: 'app',
+      });
+      jest
+        .spyOn(DefaultGithubCredentialsProvider, 'fromIntegrations')
+        .mockReturnValue({
+          getCredentials: mockGetCredentials,
+        } as unknown as DefaultGithubCredentialsProvider);
+
+      await expect(
+        githubApiService.getCredentials('https://github.com/backstage/A'),
+      ).resolves.toEqual({ token: 'app_token', type: 'app' });
+      expect(mockGetCredentials).toHaveBeenCalledWith({
+        url: 'https://github.com/backstage/A',
+      });
+    });
+
+    it('throws when no token is configured', async () => {
+      jest
+        .spyOn(DefaultGithubCredentialsProvider, 'fromIntegrations')
+        .mockReturnValue({
+          getCredentials: jest.fn().mockResolvedValue({
+            headers: undefined,
+            token: undefined,
+            type: 'token',
+          }),
+        } as unknown as DefaultGithubCredentialsProvider);
+
+      await expect(
+        githubApiService.getCredentials('https://github.com/backstage/A'),
+      ).rejects.toThrow(`Token not configured for 'github' provider`);
+    });
+  });
+
   describe('getAppInstallationCredentials', () => {
     it('returns the token when credentials are from a GitHub App', async () => {
-      jest
-        .spyOn(githubApiService.githubCredentialsProvider, 'getCredentials')
-        .mockResolvedValue({
-          headers: { Authorization: 'Bearer app_token' },
-          token: 'app_token',
-          type: 'app',
-        });
+      jest.spyOn(githubApiService, 'getCredentials').mockResolvedValue({
+        token: 'app_token',
+        type: 'app',
+      });
 
       await expect(
         githubApiService.getAppInstallationCredentials(
@@ -422,13 +458,10 @@ describe('GithubApiService tests', () => {
     });
 
     it('fails closed when only a classic PAT is available', async () => {
-      jest
-        .spyOn(githubApiService.githubCredentialsProvider, 'getCredentials')
-        .mockResolvedValue({
-          headers: { Authorization: 'Bearer pat_token' },
-          token: 'pat_token',
-          type: 'token',
-        });
+      jest.spyOn(githubApiService, 'getCredentials').mockResolvedValue({
+        token: 'pat_token',
+        type: 'token',
+      });
 
       await expect(
         githubApiService.getAppInstallationCredentials(
@@ -439,22 +472,18 @@ describe('GithubApiService tests', () => {
       );
     });
 
-    it('fails closed when no token is returned', async () => {
+    it('propagates the error when no token is configured', async () => {
       jest
-        .spyOn(githubApiService.githubCredentialsProvider, 'getCredentials')
-        .mockResolvedValue({
-          headers: undefined,
-          token: undefined,
-          type: 'token',
-        });
+        .spyOn(githubApiService, 'getCredentials')
+        .mockRejectedValue(
+          new Error(`Token not configured for 'github' provider`),
+        );
 
       await expect(
         githubApiService.getAppInstallationCredentials(
           'https://github.com/backstage/A',
         ),
-      ).rejects.toThrow(
-        /Orchestrator import requires a GitHub App installation token/,
-      );
+      ).rejects.toThrow(`Token not configured for 'github' provider`);
     });
   });
 

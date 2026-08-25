@@ -22,6 +22,7 @@ import type { Config } from '@backstage/config';
 import {
   DefaultGithubCredentialsProvider,
   GithubCredentials,
+  GithubCredentialType,
   GithubIntegrationConfig,
   ScmIntegrations,
 } from '@backstage/integration';
@@ -124,7 +125,10 @@ export class GithubApiService implements GitApiService {
     };
   }
 
-  async getCredentials(repoUrl: string): Promise<{ token: string }> {
+  async getCredentials(repoUrl: string): Promise<{
+    token: string;
+    type: GithubCredentialType;
+  }> {
     const provider = DefaultGithubCredentialsProvider.fromIntegrations(
       this.integrations,
     );
@@ -136,6 +140,7 @@ export class GithubApiService implements GitApiService {
     }
     return {
       token: creds.token,
+      type: creds.type,
     };
   }
 
@@ -147,10 +152,8 @@ export class GithubApiService implements GitApiService {
   async getAppInstallationCredentials(
     repoUrl: string,
   ): Promise<{ token: string }> {
-    const creds = await this.githubCredentialsProvider.getCredentials({
-      url: repoUrl,
-    });
-    if (!creds?.token || creds.type !== 'app') {
+    const creds = await this.getCredentials(repoUrl);
+    if (creds.type !== 'app') {
       throw new Error(
         `Orchestrator import requires a GitHub App installation token for '${repoUrl}'. ` +
           `Configure integrations.github with an App that has access to this repository; ` +
