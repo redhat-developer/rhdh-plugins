@@ -23,3 +23,12 @@ export type CollectorConfig = {
   id: string;
   input?: Record<string, JsonValue>;
 };
+
+/**
+ * Public metadata for a registered collector.
+ * @public
+ */
+export type CollectorMetadata = {
+  id: string;
+  description: string;
+};

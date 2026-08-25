@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-homepage-common",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "license": "Apache-2.0",
   "description": "Common functionalities for the homepage plugin",
   "main": "src/index.ts",
@@ -35,10 +35,10 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@backstage/plugin-permission-common": "^0.9.9"
+    "@backstage/plugin-permission-common": "^0.9.10"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.36.3"
+    "@backstage/cli": "^0.36.5"
   },
   "files": [
     "dist"

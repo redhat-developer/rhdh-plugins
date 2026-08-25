@@ -3,8 +3,8 @@
   "version": "0.2.0",
   "license": "Apache-2.0",
   "description": "RHDH sign-in page and OIDC/Auth0/SAML frontend auth APIs for the new frontend system",
-  "main": "src/alpha.ts",
-  "types": "src/alpha.ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
     "./alpha": "./src/alpha.ts",

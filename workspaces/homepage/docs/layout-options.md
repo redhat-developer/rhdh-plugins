@@ -23,6 +23,7 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: home.page/cards
           importName: Placeholder
+          module: Legacy
           config:
             props:
               showBorder: true
@@ -64,6 +65,7 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: home.page/cards
           importName: Placeholder
+          module: Legacy
           config:
             layouts:
               xl: { w: 6, h: 2 }
@@ -90,6 +92,7 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: home.page/cards
           importName: Placeholder
+          module: Legacy
           config:
             layouts:
               xl: { w: 6, h: 2 }
@@ -103,6 +106,7 @@ dynamicPlugins:
               debugContent: left
         - mountPoint: home.page/cards
           importName: Placeholder
+          module: Legacy
           config:
             layouts:
               xl: { w: 6, h: 2, x: 6 }
@@ -129,6 +133,7 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: home.page/cards
           importName: Placeholder
+          module: Legacy
           config:
             layouts:
               xl: { w: 4, h: 2 }
@@ -142,6 +147,7 @@ dynamicPlugins:
               debugContent: left
         - mountPoint: home.page/cards
           importName: Placeholder
+          module: Legacy
           config:
             layouts:
               xl: { w: 4, h: 2, x: 4 }
@@ -155,6 +161,7 @@ dynamicPlugins:
               debugContent: center
         - mountPoint: home.page/cards
           importName: Placeholder
+          module: Legacy
           config:
             layouts:
               xl: { w: 4, h: 2, x: 8 }

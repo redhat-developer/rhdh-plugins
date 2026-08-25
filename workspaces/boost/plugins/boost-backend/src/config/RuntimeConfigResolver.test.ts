@@ -735,4 +735,278 @@ describe('RuntimeConfigResolver', () => {
       );
     });
   });
+
+  describe('field defaults', () => {
+    it('returns field default when DB and YAML are both unset', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      expect(
+        await resolver.resolve('boost.connectors.jira.schedule.intervalMs'),
+      ).toBe(300000);
+      expect(
+        await resolver.resolve('boost.connectors.github.schedule.intervalMs'),
+      ).toBe(300000);
+      expect(
+        await resolver.resolve('boost.connectors.gitlab.schedule.intervalMs'),
+      ).toBe(300000);
+    });
+
+    it('returns batchSize default when DB and YAML are both unset', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      expect(await resolver.resolve('boost.connectors.jira.batchSize')).toBe(
+        100,
+      );
+      expect(await resolver.resolve('boost.connectors.github.batchSize')).toBe(
+        100,
+      );
+      expect(await resolver.resolve('boost.connectors.gitlab.batchSize')).toBe(
+        100,
+      );
+    });
+
+    it('returns timeout.connectionMs default for Jira when unset', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      expect(
+        await resolver.resolve('boost.connectors.jira.timeout.connectionMs'),
+      ).toBe(30000);
+    });
+
+    it('YAML value takes precedence over field default', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            jira: {
+              schedule: { intervalMs: 600000 },
+              batchSize: 50,
+              timeout: { connectionMs: 15000 },
+            },
+          },
+        },
+      });
+
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      expect(
+        await resolver.resolve('boost.connectors.jira.schedule.intervalMs'),
+      ).toBe(600000);
+      expect(await resolver.resolve('boost.connectors.jira.batchSize')).toBe(
+        50,
+      );
+      expect(
+        await resolver.resolve('boost.connectors.jira.timeout.connectionMs'),
+      ).toBe(15000);
+    });
+
+    it('DB override takes precedence over YAML and field default', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            jira: {
+              schedule: { intervalMs: 600000 },
+              batchSize: 50,
+            },
+          },
+        },
+      });
+
+      const dbOverrides = new Map<string, unknown>([
+        ['boost.connectors.jira.schedule.intervalMs', 120000],
+        ['boost.connectors.jira.batchSize', 25],
+      ]);
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(dbOverrides),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      expect(
+        await resolver.resolve('boost.connectors.jira.schedule.intervalMs'),
+      ).toBe(120000);
+      expect(await resolver.resolve('boost.connectors.jira.batchSize')).toBe(
+        25,
+      );
+    });
+
+    it('falls back to default after removeOverride when no YAML', async () => {
+      const config = createMockConfig({});
+
+      let dbOverrides = new Map<string, unknown>([
+        ['boost.connectors.jira.batchSize', 25],
+      ]);
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockImplementation(async () => dbOverrides),
+        removeOverride: jest.fn().mockImplementation(async () => {
+          dbOverrides = new Map();
+        }),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      // DB override is present
+      expect(await resolver.resolve('boost.connectors.jira.batchSize')).toBe(
+        25,
+      );
+
+      // Remove override and invalidate
+      await resolver.remove('boost.connectors.jira.batchSize');
+
+      // Should fall back to field default
+      expect(await resolver.resolve('boost.connectors.jira.batchSize')).toBe(
+        100,
+      );
+    });
+
+    it('returns undefined for fields without defaults', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      // enabled, endpoint, schedule.cron have no defaults
+      expect(
+        await resolver.resolve('boost.connectors.jira.enabled'),
+      ).toBeUndefined();
+      expect(
+        await resolver.resolve('boost.connectors.jira.endpoint'),
+      ).toBeUndefined();
+      expect(
+        await resolver.resolve('boost.connectors.jira.schedule.cron'),
+      ).toBeUndefined();
+    });
+
+    it('resolveAll includes field defaults for unset keys', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      const allConfig = await resolver.resolveAll();
+
+      // Defaults should be present
+      expect(allConfig.get('boost.connectors.jira.schedule.intervalMs')).toBe(
+        300000,
+      );
+      expect(allConfig.get('boost.connectors.jira.batchSize')).toBe(100);
+      expect(allConfig.get('boost.connectors.jira.timeout.connectionMs')).toBe(
+        30000,
+      );
+      expect(allConfig.get('boost.connectors.github.schedule.intervalMs')).toBe(
+        300000,
+      );
+      expect(allConfig.get('boost.connectors.github.batchSize')).toBe(100);
+      expect(allConfig.get('boost.connectors.gitlab.schedule.intervalMs')).toBe(
+        300000,
+      );
+      expect(allConfig.get('boost.connectors.gitlab.batchSize')).toBe(100);
+
+      // Fields without defaults should NOT be present
+      expect(allConfig.has('boost.connectors.jira.enabled')).toBe(false);
+      expect(allConfig.has('boost.connectors.jira.endpoint')).toBe(false);
+      expect(allConfig.has('boost.connectors.jira.schedule.cron')).toBe(false);
+    });
+
+    it('resolveAll does not override YAML or DB values with defaults', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            jira: {
+              schedule: { intervalMs: 600000 },
+            },
+          },
+        },
+      });
+
+      const dbOverrides = new Map<string, unknown>([
+        ['boost.connectors.jira.batchSize', 250],
+      ]);
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(dbOverrides),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      const allConfig = await resolver.resolveAll();
+
+      // YAML value beats default
+      expect(allConfig.get('boost.connectors.jira.schedule.intervalMs')).toBe(
+        600000,
+      );
+      // DB override beats default
+      expect(allConfig.get('boost.connectors.jira.batchSize')).toBe(250);
+      // No YAML or DB — default applied
+      expect(allConfig.get('boost.connectors.jira.timeout.connectionMs')).toBe(
+        30000,
+      );
+    });
+  });
 });

@@ -2,7 +2,7 @@
 
 Shared UI components and extension APIs for the RHDH app shell. Provides the
 application drawer system that lets plugins contribute persistent side panels
-with host-owned state.
+with host-owned state, and the extensible scaffolder template card.
 
 ## Installation
 
@@ -18,7 +18,7 @@ Register the drawer module in your app's `createApp` call:
 
 ```typescript
 import { createApp } from '@backstage/frontend-defaults';
-import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { appDrawerModule } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 export default createApp({
   features: [
@@ -38,12 +38,11 @@ wrapping provider.
 
 ### Contributing a Drawer
 
-Use `AppDrawerContentBlueprint` to declare drawer content in your plugin's
-`/alpha` export:
+Use `AppDrawerContentBlueprint` to declare drawer content in your plugin:
 
 ```typescript
 import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
-import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 const myDrawerExtension = AppDrawerContentBlueprint.make({
   name: 'my-drawer',
@@ -138,13 +137,27 @@ function MyDrawerContent() {
 
 ### Main entry (`@red-hat-developer-hub/backstage-plugin-app-react`)
 
+- `AppDrawerContentBlueprint` -- blueprint for contributing drawers
+- `appDrawerContentDataRef` -- extension data ref
+- `appDrawerExtension` -- drawer wrapper extension
+- `appDrawerModule` -- frontend module (registers the drawer wrapper extension)
+- `TemplateCardActionBlueprint` -- blueprint for custom template card actions
+- `TemplateCardBadgeBlueprint` -- blueprint for template card badges
+- `templateCardExtension` -- extensible scaffolder template card component
+- `templateCardModule` -- frontend module (registers the template card)
 - `useAppDrawer` -- hook to control drawers
+- `AppDrawerContent` / `AppDrawerApi` / `ApplicationDrawerProps` / `DrawerPanelProps` types
+- `TemplateCardActionData` / `TemplateCardActionProps` / `TemplateCardBadgeData` types
+
+### Legacy entry (`@red-hat-developer-hub/backstage-plugin-app-react/legacy`)
+
+Direct-use OFS components for backward compatibility:
+
 - `ApplicationDrawer` -- drawer renderer component
 - `DrawerPanel` -- low-level MUI drawer wrapper
-- `AppDrawerContent` / `AppDrawerApi` / `ApplicationDrawerProps` / `DrawerPanelProps` types
+- `useAppDrawer` -- hook to control drawers
+- Associated types
 
-### Alpha entry (`@red-hat-developer-hub/backstage-plugin-app-react/alpha`)
+### Module entry (`@red-hat-developer-hub/backstage-plugin-app-react/app-drawer-module`)
 
-- `appDrawerContentDataRef` -- extension data ref
-- `AppDrawerContentBlueprint` -- blueprint for contributing drawers
-- `appDrawerModule` -- frontend module (registers the drawer wrapper extension)
+- Default-exports `appDrawerModule` for Scalprum / module-federation dynamic loading.
