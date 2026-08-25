@@ -37,8 +37,7 @@ export const CatalogSourceBadge = ({
   if (!sourceKey) return null;
 
   const meta = sourcesConfig[sourceKey];
-  const badgeLabel =
-    meta?.badge ?? getCatalogSourceLabel(plugin, sourcesConfig);
+  const badgeLabel = getCatalogSourceLabel(plugin, sourcesConfig);
 
   const chip = (
     <Chip

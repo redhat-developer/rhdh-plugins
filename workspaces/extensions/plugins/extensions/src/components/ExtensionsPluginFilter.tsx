@@ -196,6 +196,13 @@ const CatalogSourceFilter = () => {
     }));
   }, [sources, sourcesConfig]);
 
+  const selectedItems = useMemo(() => {
+    return filter.current.map(selected => ({
+      ...selected,
+      label: sourcesConfig[selected.value]?.label ?? selected.value,
+    }));
+  }, [filter, sourcesConfig]);
+
   const handleChange = useCallback(
     (_e: SyntheticEvent, value: CustomSelectItem[]) => {
       const newSelection = value.map(v => v.value);
@@ -211,7 +218,7 @@ const CatalogSourceFilter = () => {
       label={t('search.catalogSource')}
       items={items}
       onChange={handleChange}
-      selectedItems={filter.current}
+      selectedItems={selectedItems}
     />
   );
 };

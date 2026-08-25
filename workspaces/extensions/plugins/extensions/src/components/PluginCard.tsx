@@ -222,18 +222,29 @@ export const PluginCard = ({ plugin }: { plugin: ExtensionsPlugin }) => {
 
                   const description =
                     sourceKey && sourcesConfig[sourceKey]?.description;
-                  const label = (
+                  const link = (
+                    <span style={{ display: 'inline-flex' }}>
+                      <Link
+                        to={withFilter('catalog-source', sourceKey!)}
+                        color="primary"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        {sourceLabel}
+                      </Link>
+                    </span>
+                  );
+                  const labelWithSeparator = (
                     <span>
                       {plugin.spec?.authors && ' / '}
-                      {sourceLabel}
+                      {link}
                     </span>
                   );
                   return description ? (
                     <Tooltip title={description} arrow>
-                      {label}
+                      {labelWithSeparator}
                     </Tooltip>
                   ) : (
-                    label
+                    labelWithSeparator
                   );
                 })()}
               </Typography>
