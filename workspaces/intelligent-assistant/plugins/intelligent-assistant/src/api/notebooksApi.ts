@@ -57,6 +57,7 @@ export type NotebooksAPI = {
   querySession: (
     sessionId: string,
     query: string,
+    options?: { signal?: AbortSignal },
   ) => Promise<ReadableStreamDefaultReader<Uint8Array>>;
 };
 

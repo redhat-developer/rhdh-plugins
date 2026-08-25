@@ -19,12 +19,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { makeStyles, Typography } from '@material-ui/core';
-import {
-  ChatbotContent,
-  ChatbotFooter,
-  MessageBar,
-  MessageProps,
-} from '@patternfly/chatbot';
+import { useTheme } from '@material-ui/core/styles';
+import { ChatbotContent, ChatbotFooter, MessageBar } from '@patternfly/chatbot';
 import {
   Alert,
   Button,
@@ -53,15 +49,13 @@ import { useRenameDocument } from '../../hooks/notebooks/useRenameDocument';
 import { useRenameNotebookWithAlert } from '../../hooks/notebooks/useRenameNotebookWithAlert';
 import { useUploadDocument } from '../../hooks/notebooks/useUploadDocument';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
-import { CreateMessageVariables } from '../../hooks/useCreateCoversationMessage';
 import { useNotebookWelcomePrompts } from '../../hooks/useNotebookWelcomePrompts';
 import { useStopConversation } from '../../hooks/useStopConversation';
 import { useTranslation } from '../../hooks/useTranslation';
-import {
-  NotebookSession,
-  NotebookSessionMetadata,
-  SessionDocument,
-} from '../../types';
+import botAvatarDark from '../../images/bot-avatar-dark.svg';
+import botAvatarLight from '../../images/bot-avatar.svg';
+import userAvatar from '../../images/user-avatar.svg';
+import { NotebookSessionMetadata, SessionDocument } from '../../types';
 import { ChatbotFootnoteWithIcon } from '../../utils/lightspeed-chatbox-utils';
 import { runFileUploads } from '../../utils/notebook-upload-runner';
 import { LightspeedChatBox } from '../LightspeedChatBox';
@@ -69,6 +63,7 @@ import { ToastAlertGroup } from '../ToastAlertGroup';
 import { AddDocumentModal } from './AddDocumentModal';
 import { DeleteDocumentModal } from './DeleteDocumentModal';
 import { DocumentSidebar } from './DocumentSidebar';
+import { useNotebookStream } from './NotebookStreamProvider';
 import { OverwriteConfirmModal } from './OverwriteConfirmModal';
 import { AddCircleFilledIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
 import { UploadResourceScreen } from './UploadResourceScreen';
@@ -82,7 +77,8 @@ const useStyles = makeStyles(theme => ({
     minWidth: 0,
     width: '100%',
     overflow: 'hidden',
-    backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
   },
   drawerContent: {
     display: 'flex',
@@ -93,6 +89,10 @@ const useStyles = makeStyles(theme => ({
     flex: 1,
     minHeight: 0,
     minWidth: 0,
+    '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--floating--default)',
+    },
   },
   expandStrip: {
     display: 'flex',
@@ -134,7 +134,8 @@ const useStyles = makeStyles(theme => ({
     minWidth: 0,
   },
   drawerContentBody: {
-    backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
@@ -244,6 +245,8 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     flex: 1,
     overflow: 'auto',
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
     '& .pf-chatbot__message-contents': {
       overflowX: 'hidden',
       overflowWrap: 'break-word',
@@ -270,91 +273,7 @@ type NotebookViewProps = {
   isUploadModalOpen: boolean;
   onUploadModalOpenChange: (open: boolean) => void;
   onUploadsInProgressChange?: (inProgress: boolean) => void;
-  modeSwitchRef?: React.MutableRefObject<boolean>;
 };
-
-// Module-level cache for preserving notebook streaming state across display mode switches.
-// When the user switches modes mid-stream, the component unmounts but the async streaming
-// loop continues in the background. This cache bridges the gap so the remounted component
-// can show the accumulated messages while waiting for the background stream to complete.
-const notebookStreamCache = new Map<
-  string,
-  {
-    messages: MessageProps[];
-    conversationId: string;
-    wasStreaming: boolean;
-  }
->();
-
-// Module-level store for relaying live streaming tokens across display mode
-// switches. The background streaming loop writes here via onConversationsUpdate;
-// the remounted component subscribes and displays tokens in real-time.
-type StreamListener = (messages: MessageProps[]) => void;
-const notebookLiveStreamMessages = new Map<string, MessageProps[]>();
-const notebookLiveStreamListeners = new Map<string, Set<StreamListener>>();
-
-function emitLiveStreamUpdate(sessionId: string, messages: MessageProps[]) {
-  notebookLiveStreamMessages.set(sessionId, messages);
-  notebookLiveStreamListeners.get(sessionId)?.forEach(l => l(messages));
-}
-
-function subscribeLiveStream(
-  sessionId: string,
-  listener: StreamListener,
-): () => void {
-  if (!notebookLiveStreamListeners.has(sessionId)) {
-    notebookLiveStreamListeners.set(sessionId, new Set());
-  }
-  notebookLiveStreamListeners.get(sessionId)!.add(listener);
-  const current = notebookLiveStreamMessages.get(sessionId);
-  if (current && current.length > 0) listener(current);
-  return () => {
-    notebookLiveStreamListeners.get(sessionId)?.delete(listener);
-  };
-}
-
-function clearLiveStream(sessionId: string) {
-  notebookLiveStreamMessages.delete(sessionId);
-  notebookLiveStreamListeners.delete(sessionId);
-}
-
-// Module-level metadata for the background stream (requestId, completion).
-// Callbacks on the dead instance write here; the remounted instance reads
-// and subscribes so it can stop the stream and know when it finishes.
-type StreamMeta = { requestId: string; complete: boolean };
-type MetaListener = (meta: StreamMeta) => void;
-const notebookStreamMeta = new Map<string, StreamMeta>();
-const notebookStreamMetaListeners = new Map<string, Set<MetaListener>>();
-
-function setStreamMeta(sessionId: string, update: Partial<StreamMeta>) {
-  const prev = notebookStreamMeta.get(sessionId) ?? {
-    requestId: '',
-    complete: false,
-  };
-  const next = { ...prev, ...update };
-  notebookStreamMeta.set(sessionId, next);
-  notebookStreamMetaListeners.get(sessionId)?.forEach(l => l(next));
-}
-
-function subscribeStreamMeta(
-  sessionId: string,
-  listener: MetaListener,
-): () => void {
-  if (!notebookStreamMetaListeners.has(sessionId)) {
-    notebookStreamMetaListeners.set(sessionId, new Set());
-  }
-  notebookStreamMetaListeners.get(sessionId)!.add(listener);
-  const current = notebookStreamMeta.get(sessionId);
-  if (current) listener(current);
-  return () => {
-    notebookStreamMetaListeners.get(sessionId)?.delete(listener);
-  };
-}
-
-function clearStreamMeta(sessionId: string) {
-  notebookStreamMeta.delete(sessionId);
-  notebookStreamMetaListeners.delete(sessionId);
-}
 
 export const NotebookView = ({
   sessionId,
@@ -374,9 +293,11 @@ export const NotebookView = ({
   isUploadModalOpen,
   onUploadModalOpenChange,
   onUploadsInProgressChange,
-  modeSwitchRef,
 }: NotebookViewProps) => {
   const classes = useStyles();
+  const theme = useTheme();
+  const botAvatar =
+    theme.palette.type === 'dark' ? botAvatarDark : botAvatarLight;
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const configApi = useApi(configApiRef);
@@ -389,43 +310,22 @@ export const NotebookView = ({
       'intelligent-assistant.notebooks.queryDefaults.model',
     ) || '';
 
-  const cachedStreamState = notebookStreamCache.get(sessionId);
-  // When overlay→dock happens in the same React render cycle, the cleanup
-  // effect that populates notebookStreamCache hasn't run yet. Fall back to
-  // the live stream store which is written synchronously during streaming.
-  let recoveryState = cachedStreamState;
-  if (!recoveryState) {
-    const liveStreamSnapshot = notebookLiveStreamMessages.get(sessionId);
-    if (liveStreamSnapshot && liveStreamSnapshot.length > 0) {
-      const meta = notebookStreamMeta.get(sessionId);
-      recoveryState = {
-        messages: liveStreamSnapshot,
-        conversationId: metadata?.conversation_id ?? TEMP_CONVERSATION_ID,
-        wasStreaming: !meta?.complete,
-      };
-    }
-  }
-
   const [conversationId, setConversationId] = useState(
-    metadata?.conversation_id ??
-      recoveryState?.conversationId ??
-      TEMP_CONVERSATION_ID,
-  );
-  const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(
-    recoveryState?.wasStreaming ?? false,
-  );
-  const [requestId, setRequestId] = useState(
-    () => notebookStreamMeta.get(sessionId)?.requestId ?? '',
+    metadata?.conversation_id ?? TEMP_CONVERSATION_ID,
   );
   const { mutate: stopConversation } = useStopConversation();
-  const wasStoppedByUserRef = useRef(false);
-  const autoDeleteRef = useRef({
-    isUntitled: false,
-    isEmpty: true,
-    noPending: true,
-    noUploading: true,
-    noChat: true,
-  });
+
+  // Streaming lives in a store above the display-mode remount boundary, so it
+  // survives overlay/docked/fullscreen switches. This view only subscribes.
+  const {
+    messages: streamMessages,
+    status: streamStatus,
+    requestId,
+    send: sendNotebookStream,
+    stop: stopNotebookStream,
+  } = useNotebookStream(sessionId);
+  const isStreaming = streamStatus === 'streaming';
+
   const [announcement, setAnnouncement] = useState<string | undefined>(
     undefined,
   );
@@ -443,214 +343,85 @@ export const NotebookView = ({
 
   const { mutateAsync: renameDocument } = useRenameDocument();
 
-  const onComplete = useCallback(
-    (message: string) => {
-      setIsSendButtonDisabled(false);
-      clearLiveStream(sessionId);
-      setStreamMeta(sessionId, { complete: true });
-      if (!wasStoppedByUserRef.current) {
-        setAnnouncement(`Message from Bot: ${message}`);
-      }
-      wasStoppedByUserRef.current = false;
-      queryClient.invalidateQueries({
-        queryKey: ['conversationMessages', conversationId],
-      });
-    },
-    [queryClient, conversationId, sessionId],
+  // Read-only: persisted (server) messages + transform. Displayed when the
+  // store has no live/finished stream for this session. Sending is handled by
+  // the stream store, not this hook.
+  const { conversationMessages, scrollToBottomRef } = useConversationMessages(
+    conversationId,
+    userName,
+    notebookModel,
+    '',
+    avatar,
   );
 
-  const onStart = useCallback(
-    (conv_id: string) => {
-      setConversationId(conv_id);
-      queryClient.setQueryData<NotebookSession>(
-        ['notebooks', 'session', sessionId],
-        old =>
-          old
-            ? {
-                ...old,
-                metadata: { ...old.metadata, conversation_id: conv_id },
-              }
-            : old,
-      );
-      queryClient.invalidateQueries({
-        queryKey: ['conversationMessages', conv_id],
-      });
-    },
-    [queryClient, sessionId],
-  );
+  // Show the store's transcript whenever there is an active or finished stream
+  // for this session; otherwise fall back to persisted server messages.
+  const messages =
+    streamStatus === 'idle' ? conversationMessages : streamMessages;
 
-  const createMessageAdapter = useCallback(
-    async (vars: CreateMessageVariables) => {
-      return notebookCreateMessage({
-        prompt: vars.prompt,
-        sessionId,
-      });
-    },
-    [notebookCreateMessage, sessionId],
-  );
-
-  const onRequestIdReady = useCallback(
-    (rid: string, convId?: string) => {
-      setRequestId(rid);
-      setStreamMeta(sessionId, { requestId: rid });
-      if (convId) {
-        queryClient.setQueryData<NotebookSession>(
-          ['notebooks', 'session', sessionId],
-          old =>
-            old
-              ? {
-                  ...old,
-                  metadata: { ...old.metadata, conversation_id: convId },
-                }
-              : old,
-        );
-      }
-    },
-    [queryClient, sessionId],
-  );
-
-  const onConversationsUpdate = useCallback(
-    (msgs: MessageProps[]) => {
-      emitLiveStreamUpdate(sessionId, msgs);
-    },
-    [sessionId],
-  );
-
-  const { conversationMessages, handleInputPrompt, scrollToBottomRef } =
-    useConversationMessages(
-      conversationId,
-      userName,
-      notebookModel,
-      '',
-      avatar,
-      onComplete,
-      onStart,
-      createMessageAdapter,
-      onRequestIdReady,
-      onConversationsUpdate,
-    );
-
-  const [messages, setMessages] = useState<MessageProps[]>(
-    () => recoveryState?.messages ?? conversationMessages,
-  );
-
-  // Refs to capture latest values for cleanup functions
-  const messagesRef = useRef(messages);
-  messagesRef.current = messages;
-  const conversationIdRef = useRef(conversationId);
-  conversationIdRef.current = conversationId;
-  const isSendButtonDisabledRef = useRef(isSendButtonDisabled);
-  isSendButtonDisabledRef.current = isSendButtonDisabled;
-
-  // Track whether we're recovering from a cached mode switch
-  const isRecoveringFromCacheRef = useRef(!!recoveryState);
-  const cachedMessageCountRef = useRef(recoveryState?.messages.length ?? 0);
-
-  // Clear the cache entry after reading it on mount
-  useEffect(() => {
-    notebookStreamCache.delete(sessionId);
-  }, [sessionId]);
-
-  // Subscribe to live streaming updates from the background loop during recovery
-  useEffect(() => {
-    if (!isRecoveringFromCacheRef.current) return undefined;
-    return subscribeLiveStream(sessionId, msgs => {
-      if (msgs.length > 0) {
-        setMessages(msgs);
-      }
-    });
-  }, [sessionId]);
-
-  // Subscribe to stream metadata so the new instance receives requestId
-  // updates and the stream-complete signal from the old instance's callbacks.
-  useEffect(() => {
-    return subscribeStreamMeta(sessionId, meta => {
-      if (meta.requestId) {
-        setRequestId(meta.requestId);
-      }
-      if (meta.complete && isRecoveringFromCacheRef.current) {
-        isRecoveringFromCacheRef.current = false;
-        cachedMessageCountRef.current = 0;
-        setIsSendButtonDisabled(false);
-        clearLiveStream(sessionId);
-      }
-    });
-  }, [sessionId]);
-
-  // Sync messages from the hook, with recovery-aware gating
-  useEffect(() => {
-    if (isRecoveringFromCacheRef.current) {
-      // During recovery, only switch to server data once the stream has
-      // actually completed. The count check alone is insufficient because the
-      // server may already have the inflight pair with empty/partial content.
-      const meta = notebookStreamMeta.get(sessionId);
-      if (meta?.complete) {
-        isRecoveringFromCacheRef.current = false;
-        cachedMessageCountRef.current = 0;
-        setMessages(conversationMessages);
-        setIsSendButtonDisabled(false);
-        clearLiveStream(sessionId);
-      }
-    } else {
-      setMessages(conversationMessages);
-    }
-  }, [conversationMessages, sessionId]);
-
-  // Cache messages on unmount only during display mode switches so the
-  // remounted instance can restore state. Tab switches, navigation, and
-  // explicit close do not remount the notebook.
-  useEffect(() => {
-    const modeSwitchRefCurrent = modeSwitchRef;
-    return () => {
-      if (modeSwitchRefCurrent?.current && messagesRef.current.length > 0) {
-        notebookStreamCache.set(sessionId, {
-          messages: messagesRef.current,
-          conversationId: conversationIdRef.current,
-          wasStreaming: isSendButtonDisabledRef.current,
-        });
-      }
-    };
-  }, [sessionId, modeSwitchRef]);
-
-  // During recovery, sync conversationId from metadata if the background
-  // stream's onRequestIdReady updated the session cache after our unmount
+  // Keep the local conversation id in sync when the store resolves a temp
+  // conversation to its real id (written into the session query cache).
   useEffect(() => {
     if (
-      isRecoveringFromCacheRef.current &&
       metadata?.conversation_id &&
-      conversationId === TEMP_CONVERSATION_ID
+      metadata.conversation_id !== conversationId
     ) {
       setConversationId(metadata.conversation_id);
     }
   }, [metadata?.conversation_id, conversationId]);
 
+  // Announce the completed bot response for screen readers.
+  const prevStatusRef = useRef(streamStatus);
+  useEffect(() => {
+    if (prevStatusRef.current === 'streaming' && streamStatus === 'complete') {
+      const last = streamMessages[streamMessages.length - 1];
+      if (last?.role === 'bot' && last.content) {
+        setAnnouncement(`Message from Bot: ${last.content}`);
+      }
+    }
+    prevStatusRef.current = streamStatus;
+  }, [streamStatus, streamMessages]);
+
   const sendMessage = useCallback(
     (message: string | number) => {
-      wasStoppedByUserRef.current = false;
-      setStreamMeta(sessionId, { requestId: '', complete: false });
+      const text = message.toString();
+      if (!text.trim()) return;
       setAnnouncement(
-        t('conversation.announcement.userMessage' as any, {
-          prompt: message.toString(),
-        }),
+        t('conversation.announcement.userMessage' as any, { prompt: text }),
       );
-      handleInputPrompt(message.toString(), []);
-      setIsSendButtonDisabled(true);
+      sendNotebookStream({
+        prompt: text,
+        seedMessages: messages,
+        conversationId,
+        userName,
+        avatar: avatar || userAvatar,
+        botAvatar,
+        selectedModel: notebookModel,
+        createMessage: (prompt: string, options?: { signal?: AbortSignal }) =>
+          notebookCreateMessage({ prompt, sessionId, signal: options?.signal }),
+      });
     },
-    [handleInputPrompt, sessionId, t],
+    [
+      sendNotebookStream,
+      messages,
+      conversationId,
+      userName,
+      avatar,
+      botAvatar,
+      notebookModel,
+      notebookCreateMessage,
+      sessionId,
+      t,
+    ],
   );
 
   const handleStopButton = useCallback(() => {
-    wasStoppedByUserRef.current = true;
-    const rid = requestId || notebookStreamMeta.get(sessionId)?.requestId || '';
-    if (rid) {
-      stopConversation(rid);
-      setRequestId('');
-      setStreamMeta(sessionId, { requestId: '', complete: true });
+    if (requestId) {
+      stopConversation(requestId);
     }
-    setIsSendButtonDisabled(false);
-    clearLiveStream(sessionId);
+    stopNotebookStream();
     setAnnouncement(t('conversation.announcement.responseStopped'));
-  }, [requestId, sessionId, stopConversation, t]);
+  }, [requestId, stopConversation, stopNotebookStream, t]);
 
   const notebookPrompts = useNotebookWelcomePrompts();
   const welcomePrompts = notebookPrompts.map(title => ({
@@ -671,55 +442,6 @@ export const NotebookView = ({
   const [allFilesForOverwrite, setAllFilesForOverwrite] = useState<File[]>([]);
   const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
   const [filesToAddToModal, setFilesToAddToModal] = useState<File[]>([]);
-
-  autoDeleteRef.current = {
-    isUntitled: notebookName === UNTITLED_NOTEBOOK_NAME,
-    isEmpty: documents.length === 0 && completedFileNames.size === 0,
-    noPending: !pendingUploads.length,
-    noUploading: !uploadingFileNames.length,
-    noChat: conversationId === TEMP_CONVERSATION_ID,
-  };
-
-  useEffect(() => {
-    const modeSwitchRefCurrent = modeSwitchRef;
-    return () => {
-      // Display-mode switches remount the component but should preserve the
-      // notebook and its streaming state. All other unmount reasons (tab
-      // switch, navigation, explicit close) should clean up and auto-delete
-      // empty untitled notebooks.
-      if (modeSwitchRefCurrent?.current) {
-        modeSwitchRefCurrent.current = false;
-        queryClient.invalidateQueries({
-          queryKey: ['notebooks', 'sessions'],
-        });
-        return;
-      }
-      notebookStreamCache.delete(sessionId);
-      clearLiveStream(sessionId);
-      clearStreamMeta(sessionId);
-      const currentNotebook = autoDeleteRef.current;
-      if (
-        currentNotebook.isUntitled &&
-        currentNotebook.isEmpty &&
-        currentNotebook.noPending &&
-        currentNotebook.noUploading &&
-        currentNotebook.noChat
-      ) {
-        notebooksApi
-          .deleteSession(sessionId)
-          .then(() => {
-            queryClient.invalidateQueries({
-              queryKey: ['notebooks', 'sessions'],
-            });
-          })
-          .catch(() => {});
-      } else {
-        queryClient.invalidateQueries({
-          queryKey: ['notebooks', 'sessions'],
-        });
-      }
-    };
-  }, [notebooksApi, sessionId, queryClient, modeSwitchRef]);
 
   const handleRenameDocument = useCallback(
     async (documentId: string, newTitle: string) => {
@@ -979,7 +701,7 @@ export const NotebookView = ({
             ref={scrollToBottomRef}
             welcomePrompts={[]}
             conversationId={conversationId}
-            isStreaming={isSendButtonDisabled}
+            isStreaming={isStreaming}
             topicRestrictionEnabled={topicRestrictionEnabled}
             showSourcesChipPopover
           />
@@ -1142,11 +864,11 @@ export const NotebookView = ({
                       <MessageBar
                         hasAttachButton={false}
                         hasMicrophoneButton
-                        hasStopButton={isSendButtonDisabled}
+                        hasStopButton={isStreaming}
                         handleStopButton={
-                          isSendButtonDisabled ? handleStopButton : undefined
+                          isStreaming ? handleStopButton : undefined
                         }
-                        isSendButtonDisabled={isSendButtonDisabled}
+                        isSendButtonDisabled={isStreaming}
                         onSendMessage={sendMessage}
                         placeholder={t('notebook.view.input.placeholder')}
                         forceMultilineLayout

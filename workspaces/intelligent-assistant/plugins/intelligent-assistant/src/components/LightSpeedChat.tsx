@@ -99,6 +99,7 @@ import {
   useStopConversation,
 } from '../hooks';
 import { useCreateNotebook } from '../hooks/notebooks/useCreateNotebook';
+import { useDeleteNotebook } from '../hooks/notebooks/useDeleteNotebook';
 import { useNotebookDocuments } from '../hooks/notebooks/useNotebookDocuments';
 import { useRenameNotebookWithAlert } from '../hooks/notebooks/useRenameNotebookWithAlert';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
@@ -125,6 +126,7 @@ import { MessageBarModelSelector } from './MessageBarModelSelector';
 import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
 import { NotebookHeaderActions } from './notebooks/NotebookHeaderActions';
 import { NotebooksTab } from './notebooks/NotebooksTab';
+import { useNotebookStreamStore } from './notebooks/NotebookStreamProvider';
 import { NotebookView } from './notebooks/NotebookView';
 import {
   SidebarCollapseIcon,
@@ -771,6 +773,8 @@ export const LightspeedChat = ({
     useNotebookDocuments(activeNotebook?.session_id);
   const [notebookUploadsInProgress, setNotebookUploadsInProgress] =
     useState(false);
+  const { mutate: deleteNotebook } = useDeleteNotebook();
+  const notebookStreamStore = useNotebookStreamStore();
   const [notebookSidebarCollapsed, setNotebookSidebarCollapsed] =
     useState(!isFullscreenMode);
   const [notebookUploadModalOpen, setNotebookUploadModalOpen] = useState(false);
@@ -827,7 +831,34 @@ export const LightspeedChat = ({
     setShellViewTab,
   ]);
 
+  // Auto-delete the currently active notebook when the user leaves it, but only
+  // if it is still an empty untitled "scratch" notebook (no documents, no
+  // uploads, no conversation). Called explicitly from the leave points (close,
+  // tab switch, notebook switch) so display-mode switches never trigger it.
+  const maybeAutoDeleteScratchNotebook = useCallback(() => {
+    const nb = activeNotebook;
+    if (!nb) return;
+    const isUntitled = nb.name === UNTITLED_NOTEBOOK_NAME;
+    const isEmpty = notebookDocuments.length === 0;
+    const noUploads = !notebookUploadsInProgress;
+    const convId = nb.metadata?.conversation_id;
+    const noChat = !convId || convId === TEMP_CONVERSATION_ID;
+    if (isUntitled && isEmpty && noUploads && noChat) {
+      notebookStreamStore.clear(nb.session_id);
+      deleteNotebook(nb.session_id);
+    }
+  }, [
+    activeNotebook,
+    notebookDocuments,
+    notebookUploadsInProgress,
+    notebookStreamStore,
+    deleteNotebook,
+  ]);
+
   const handleNotebookTabSelect = (_event: SyntheticEvent, nextTab: number) => {
+    if (nextTab === 0) {
+      maybeAutoDeleteScratchNotebook();
+    }
     setActiveTab(nextTab);
     setShellViewTab(nextTab);
     if (isFullscreenMode) {
@@ -850,14 +881,8 @@ export const LightspeedChat = ({
     }
   };
 
-  const notebookModeSwitchRef = useRef(false);
-
   const setDisplayModeFromHeader = useCallback(
     (mode: ChatbotDisplayMode) => {
-      // Only set the mode switch flag if the mode is actually changing
-      if (mode !== displayMode) {
-        notebookModeSwitchRef.current = true;
-      }
       if (mode !== ChatbotDisplayMode.embedded) {
         if (activeTab === 1) {
           const notebookId = routeNotebookId || activeNotebookId;
@@ -881,7 +906,6 @@ export const LightspeedChat = ({
       }
     },
     [
-      displayMode,
       setDisplayMode,
       activeTab,
       routeNotebookId,
@@ -891,6 +915,7 @@ export const LightspeedChat = ({
   );
 
   const handleCreateNotebook = useCallback(() => {
+    maybeAutoDeleteScratchNotebook();
     createNotebookMutation.mutate(
       { name: UNTITLED_NOTEBOOK_NAME },
       {
@@ -902,15 +927,28 @@ export const LightspeedChat = ({
         },
       },
     );
-  }, [createNotebookMutation, isFullscreenMode, navigate, setActiveNotebookId]);
+  }, [
+    maybeAutoDeleteScratchNotebook,
+    createNotebookMutation,
+    isFullscreenMode,
+    navigate,
+    setActiveNotebookId,
+  ]);
 
   const handleCloseNotebook = useCallback(() => {
+    maybeAutoDeleteScratchNotebook();
     setActiveNotebookId(undefined);
     if (isFullscreenMode) {
       navigate(`${LIGHTSPEED_PATH}/notebooks`);
     }
     refetchNotebooks();
-  }, [isFullscreenMode, navigate, refetchNotebooks, setActiveNotebookId]);
+  }, [
+    maybeAutoDeleteScratchNotebook,
+    isFullscreenMode,
+    navigate,
+    refetchNotebooks,
+    setActiveNotebookId,
+  ]);
 
   const handleRemoveNotebookAlert = (key: React.Key) => {
     setNotebookAlerts(prevAlerts =>
@@ -919,6 +957,9 @@ export const LightspeedChat = ({
   };
 
   const handleNotebookDeleted = () => {
+    if (deleteNotebookId) {
+      notebookStreamStore.clear(deleteNotebookId);
+    }
     const key = Date.now();
     setNotebookAlerts(prevAlerts => [
       { title: t('notebooks.delete.toast'), variant: 'success', key },
@@ -2264,7 +2305,6 @@ export const LightspeedChat = ({
               isUploadModalOpen={notebookUploadModalOpen}
               onUploadModalOpenChange={setNotebookUploadModalOpen}
               onUploadsInProgressChange={setNotebookUploadsInProgress}
-              modeSwitchRef={notebookModeSwitchRef}
             />
           )}
         {showNotebooksPanel &&
@@ -2295,6 +2335,7 @@ export const LightspeedChat = ({
                 openNotebookMenuId={openNotebookMenuId}
                 setOpenNotebookMenuId={setOpenNotebookMenuId}
                 onSelectNotebook={(notebook: NotebookSession) => {
+                  maybeAutoDeleteScratchNotebook();
                   setActiveNotebookId(notebook.session_id);
                   if (isFullscreenMode) {
                     navigate(

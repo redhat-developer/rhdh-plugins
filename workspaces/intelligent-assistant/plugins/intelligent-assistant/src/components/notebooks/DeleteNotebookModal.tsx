@@ -152,7 +152,7 @@ export const DeleteNotebookModal = ({
             {t('notebooks.delete.title', { name } as any)}
           </Typography>
           <IconButton
-            aria-label="close"
+            aria-label={t('common.close')}
             onClick={onClose}
             title={t('common.close')}
             size={isCompact ? 'small' : 'large'}

@@ -23,6 +23,7 @@ import { DOCKED_CONTENT_OFFSET } from '../const';
 import { useLightspeedProviderState } from '../hooks/useLightspeedProviderState';
 import { LightspeedChatContainer } from './LightspeedChatContainer';
 import { LightspeedDrawerContext } from './LightspeedDrawerContext';
+import { NotebookStreamProvider } from './notebooks/NotebookStreamProvider';
 
 const useStyles = makeStyles(theme => ({
   chatbotModal: {
@@ -49,20 +50,22 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
 
   return (
     <LightspeedDrawerContext.Provider value={contextValue}>
-      {children}
-      {shouldRenderOverlayModal && (
-        <ChatbotModal
-          isOpen
-          displayMode={contextValue.displayMode}
-          disableFocusTrap
-          onEscapePress={() => closeChatbot()}
-          ouiaId="LightspeedChatbotModal"
-          aria-labelledby="lightspeed-chatpopup-modal"
-          className={classes.chatbotModal}
-        >
-          <LightspeedChatContainer />
-        </ChatbotModal>
-      )}
+      <NotebookStreamProvider>
+        {children}
+        {shouldRenderOverlayModal && (
+          <ChatbotModal
+            isOpen
+            displayMode={contextValue.displayMode}
+            disableFocusTrap
+            onEscapePress={() => closeChatbot()}
+            ouiaId="LightspeedChatbotModal"
+            aria-labelledby="lightspeed-chatpopup-modal"
+            className={classes.chatbotModal}
+          >
+            <LightspeedChatContainer />
+          </ChatbotModal>
+        )}
+      </NotebookStreamProvider>
     </LightspeedDrawerContext.Provider>
   );
 };

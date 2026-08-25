@@ -42,6 +42,7 @@ import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerConte
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import FileAttachmentContextProvider from '../AttachmentContext';
 import { LightspeedChat } from '../LightSpeedChat';
+import { NotebookStreamProvider } from '../notebooks/NotebookStreamProvider';
 
 const identityApi = {
   async getCredentials() {
@@ -209,16 +210,18 @@ const setupLightspeedChat = (initialPath = '/intelligent-assistant') => (
     >
       <FileAttachmentContextProvider>
         <QueryClientProvider client={queryClient}>
-          <LightspeedChat
-            selectedModel="granite"
-            profileLoading={false}
-            handleSelectedModel={() => {}}
-            topicRestrictionEnabled={false}
-            selectedProvider="openai"
-            models={[]}
-            avatar="test"
-            userName="user:test"
-          />
+          <NotebookStreamProvider>
+            <LightspeedChat
+              selectedModel="granite"
+              profileLoading={false}
+              handleSelectedModel={() => {}}
+              topicRestrictionEnabled={false}
+              selectedProvider="openai"
+              models={[]}
+              avatar="test"
+              userName="user:test"
+            />
+          </NotebookStreamProvider>
         </QueryClientProvider>
       </FileAttachmentContextProvider>
     </TestApiProvider>
