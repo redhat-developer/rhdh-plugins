@@ -226,7 +226,7 @@ export const PluginCard = ({ plugin }: { plugin: ExtensionsPlugin }) => {
                     <span style={{ display: 'inline-flex' }}>
                       <Link
                         to={withFilter('catalog-source', sourceKey!)}
-                        color="primary"
+                        color="inherit"
                         onClick={e => e.stopPropagation()}
                       >
                         {sourceLabel}
