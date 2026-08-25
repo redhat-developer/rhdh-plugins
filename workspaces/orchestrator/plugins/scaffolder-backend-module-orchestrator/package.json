@@ -55,7 +55,6 @@
   },
   "dependencies": {
     "@backstage/backend-plugin-api": "^1.10.0",
-    "@backstage/catalog-model": "^1.10.0",
     "@backstage/plugin-permission-common": "^0.9.10",
     "@backstage/plugin-scaffolder-node": "^0.13.6",
     "@backstage/types": "^1.2.2",
