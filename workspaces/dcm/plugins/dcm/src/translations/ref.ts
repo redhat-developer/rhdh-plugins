@@ -76,6 +76,14 @@ export const dcmMessages = {
       cost: 'Cost',
       topic: 'Topic',
       health: 'Health',
+      lastHeartbeat: 'Last heartbeat',
+    },
+    filter: {
+      healthLabel: 'Health status',
+      healthAll: 'All',
+      healthReady: 'Ready',
+      healthCongested: 'Congested',
+      healthUnavailable: 'Unavailable',
     },
     form: {
       nameLabel: 'Name *',
@@ -238,7 +246,7 @@ export const dcmMessages = {
   instances: {
     emptyTitle: 'No instances provisioned',
     emptyDescription:
-      'Catalog item instances represent provisioned services. Create an instance from a catalog item to provision a service on the registered provider infrastructure.',
+      'Catalog item instances represent provisioned services. Create an instance from a catalog item to provision a service on a registered environment agent.',
     createButton: 'Create',
     entityLabel: 'Catalog item instances',
     createDialogTitle: 'Create catalog item instance',

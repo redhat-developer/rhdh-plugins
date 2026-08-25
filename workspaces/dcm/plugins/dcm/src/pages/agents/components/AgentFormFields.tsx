@@ -18,6 +18,7 @@ import { useMemo } from 'react';
 import {
   Box,
   Chip,
+  CircularProgress,
   FormControl,
   FormHelperText,
   InputLabel,
@@ -26,12 +27,28 @@ import {
   Select,
   TextField,
 } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+import type { ServiceType } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 import {
   AGENT_COST_OPTIONS,
   AgentForm,
   validateAgentForm,
 } from '../agentFormTypes';
 import { useTranslation } from '../../../hooks/useTranslation';
+
+const useStyles = makeStyles(theme => ({
+  placeholderText: {
+    color:
+      theme.palette.type === 'dark'
+        ? 'rgba(255,255,255,0.5)'
+        : 'rgba(0,0,0,0.38)',
+  },
+  chipWrap: {
+    display: 'flex',
+    flexWrap: 'wrap' as const,
+    gap: 4,
+  },
+}));
 
 type TouchedMap = Partial<Record<keyof AgentForm, boolean>>;
 
@@ -40,6 +57,10 @@ export type AgentFormFieldsProps = Readonly<{
   setForm: React.Dispatch<React.SetStateAction<AgentForm>>;
   touched: TouchedMap;
   setTouched: React.Dispatch<React.SetStateAction<TouchedMap>>;
+  serviceTypes?: ServiceType[];
+  loadingServiceTypes?: boolean;
+  loadingMoreServiceTypes?: boolean;
+  loadMoreServiceTypes?: () => void;
 }>;
 
 export function AgentFormFields({
@@ -47,7 +68,12 @@ export function AgentFormFields({
   setForm,
   touched,
   setTouched,
+  serviceTypes = [],
+  loadingServiceTypes = false,
+  loadingMoreServiceTypes = false,
+  loadMoreServiceTypes,
 }: AgentFormFieldsProps) {
+  const classes = useStyles();
   const { t } = useTranslation();
   const errors = useMemo(() => validateAgentForm(form, t), [form, t]);
 
@@ -64,7 +90,19 @@ export function AgentFormFields({
         helperText={err('name') ?? t('agents.form.nameHelper')}
         error={Boolean(err('name'))}
         value={form.name}
-        onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
+        onChange={e => {
+          const newName = e.target.value;
+          setForm(prev => {
+            const generated =
+              prev.topic_name === '' ||
+              prev.topic_name === `dcm.agent.${prev.name}`;
+            return {
+              ...prev,
+              name: newName,
+              ...(generated ? { topic_name: `dcm.agent.${newName}` } : {}),
+            };
+          });
+        }}
         onBlur={() => touch('name')}
         fullWidth
         variant="outlined"
@@ -110,22 +148,54 @@ export function AgentFormFields({
           onBlur={() => touch('service_types')}
           renderValue={selected =>
             (selected as string[]).length === 0 ? (
-              <em style={{ color: 'rgba(0,0,0,0.38)' }}>
+              <em className={classes.placeholderText}>
                 {t('agents.form.serviceTypesHelper')}
               </em>
             ) : (
-              <Box display="flex" flexWrap="wrap" style={{ gap: 4 }}>
+              <Box className={classes.chipWrap}>
                 {(selected as string[]).map(val => (
                   <Chip key={val} label={val} size="small" />
                 ))}
               </Box>
             )
           }
+          MenuProps={{
+            MenuListProps: {
+              onScroll: (e: React.UIEvent<HTMLUListElement>) => {
+                const el = e.currentTarget;
+                if (
+                  el.scrollHeight - el.scrollTop <= el.clientHeight + 40 &&
+                  loadMoreServiceTypes
+                ) {
+                  loadMoreServiceTypes();
+                }
+              },
+            },
+          }}
           displayEmpty
         >
-          <MenuItem value="" disabled>
-            <em>{t('agents.form.serviceTypesHelper')}</em>
-          </MenuItem>
+          {serviceTypes.length === 0 &&
+            !loadingServiceTypes &&
+            !loadingMoreServiceTypes && (
+              <MenuItem value="" disabled>
+                <em>{t('agents.form.serviceTypesHelper')}</em>
+              </MenuItem>
+            )}
+          {loadingServiceTypes && (
+            <MenuItem disabled>
+              <CircularProgress size={16} />
+            </MenuItem>
+          )}
+          {serviceTypes.map(st => (
+            <MenuItem key={st.service_type} value={st.service_type}>
+              {st.service_type}
+            </MenuItem>
+          ))}
+          {loadingMoreServiceTypes && (
+            <MenuItem disabled>
+              <CircularProgress size={16} />
+            </MenuItem>
+          )}
         </Select>
         <FormHelperText>
           {err('service_types') ?? t('agents.form.serviceTypesHelper')}

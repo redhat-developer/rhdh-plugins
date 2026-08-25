@@ -14,23 +14,36 @@
  * limitations under the License.
  */
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { TableColumn } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
-import { Box, Chip, Tooltip } from '@material-ui/core';
+import {
+  Box,
+  Chip,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Tooltip,
+  Typography,
+} from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 
-import type { Agent } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
-import { agentsApiRef } from '../../apis';
+import type {
+  Agent,
+  AgentHealthStatus,
+} from '@red-hat-developer-hub/backstage-plugin-dcm-common';
+import { agentsApiRef, catalogApiRef } from '../../apis';
 import { DcmCrudTabLayout } from '../../components/DcmCrudTabLayout';
 import { DcmFormDialog } from '../../components/DcmFormDialog';
 import { DcmSuccessSnackbar } from '../../components/DcmSuccessSnackbar';
 import { DcmFormDialogActions } from '../../components/DcmFormDialogActions';
 import { usePaginatedCrudTab } from '../../hooks/usePaginatedCrudTab';
+import { useInfiniteSelect } from '../../hooks/useInfiniteSelect';
 import { useTranslation } from '../../hooks/useTranslation';
 import emptyIllustration from '../../assets/environments-empty-state.png';
 import { TruncatedText, DcmEmptyCell } from '../../components/TruncatedText';
-import { AgentHealthStatus } from './components/AgentHealthStatus';
+import { AgentHealthStatus as AgentHealthStatusBadge } from './components/AgentHealthStatus';
 import { AgentFormFields } from './components/AgentFormFields';
 import { CopyButton } from './components/CopyButton';
 import {
@@ -49,17 +62,62 @@ const useStyles = makeStyles(theme => ({
     flexWrap: 'wrap',
     gap: theme.spacing(0.5),
   },
+  healthFilter: {
+    minWidth: 140,
+  },
 }));
 
 export function AgentsTabContent() {
   const classes = useStyles();
   const agentsApi = useApi(agentsApiRef);
+  const catalogApi = useApi(catalogApiRef);
   const { t } = useTranslation();
+
+  const [healthFilter, setHealthFilter] = useState<AgentHealthStatus | ''>('');
+  const [serviceTypesErrorDismissed, setServiceTypesErrorDismissed] =
+    useState(false);
+
+  const healthFilterOptions = useMemo(
+    () => [
+      {
+        value: 'ready' as AgentHealthStatus,
+        label: t('agents.filter.healthReady'),
+      },
+      {
+        value: 'congested' as AgentHealthStatus,
+        label: t('agents.filter.healthCongested'),
+      },
+      {
+        value: 'unavailable' as AgentHealthStatus,
+        label: t('agents.filter.healthUnavailable'),
+      },
+    ],
+    [t],
+  );
+
+  const {
+    items: serviceTypes,
+    loading: loadingServiceTypes,
+    loadingMore: loadingMoreServiceTypes,
+    loadMore: loadMoreServiceTypes,
+    error: serviceTypesError,
+  } = useInfiniteSelect((token?: string) =>
+    catalogApi.listServiceTypes({ max_page_size: 100, page_token: token }),
+  );
+
+  // Keep the latest filter value accessible inside the loadFn without
+  // causing the hook to re-initialise when the filter changes.
+  const healthFilterRef = useRef(healthFilter);
+  healthFilterRef.current = healthFilter;
 
   const crud = usePaginatedCrudTab<Agent, AgentForm>({
     loadFn: ({ pageToken, pageSize: ps }) =>
       agentsApi
-        .listAgents({ page_token: pageToken, max_page_size: ps })
+        .listAgents({
+          page_token: pageToken,
+          max_page_size: ps,
+          health_status: healthFilterRef.current || undefined,
+        })
         .then(r => ({
           items: r.agents ?? [],
           nextPageToken: r.next_page_token,
@@ -72,6 +130,18 @@ export function AgentsTabContent() {
     isValid: isAgentFormValid,
     createSuccessMessage: t('agents.createSuccess'),
   });
+
+  // Reset cursor and reload whenever the health filter changes, but skip the
+  // initial render (the hook already loads on mount).
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    crud.resetAndReload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [healthFilter]);
 
   const columns = useMemo<TableColumn<Agent>[]>(
     () => [
@@ -113,6 +183,7 @@ export function AgentsTabContent() {
         sorting: false,
         render: a => {
           const types = a.service_types ?? [];
+          if (types.length === 0) return <DcmEmptyCell />;
           const VISIBLE = 2;
           const visible = types.slice(0, VISIBLE);
           const rest = types.slice(VISIBLE);
@@ -163,10 +234,51 @@ export function AgentsTabContent() {
       {
         title: t('agents.columns.health'),
         field: 'health_status',
-        render: a => <AgentHealthStatus value={a.health_status} />,
+        render: a => <AgentHealthStatusBadge value={a.health_status} />,
+      },
+      {
+        title: t('agents.columns.lastHeartbeat'),
+        field: 'last_heartbeat',
+        render: a =>
+          a.last_heartbeat ? (
+            <Typography variant="body2">
+              {new Date(a.last_heartbeat).toLocaleString()}
+            </Typography>
+          ) : (
+            <DcmEmptyCell />
+          ),
       },
     ],
     [classes, t],
+  );
+
+  const healthFilterControl = (
+    <FormControl
+      variant="outlined"
+      size="small"
+      className={classes.healthFilter}
+    >
+      <InputLabel shrink id="health-filter-label">
+        {t('agents.filter.healthLabel')}
+      </InputLabel>
+      <Select
+        labelId="health-filter-label"
+        value={healthFilter}
+        onChange={e =>
+          setHealthFilter(e.target.value as AgentHealthStatus | '')
+        }
+        displayEmpty
+        label={t('agents.filter.healthLabel')}
+        inputProps={{ 'data-testid': 'health-filter' }}
+      >
+        <MenuItem value="">{t('agents.filter.healthAll')}</MenuItem>
+        {healthFilterOptions.map(opt => (
+          <MenuItem key={opt.value} value={opt.value}>
+            {opt.label}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
   );
 
   return (
@@ -188,6 +300,10 @@ export function AgentsTabContent() {
         onPrimaryAction={crud.handleOpenCreate}
         illustrationSrc={emptyIllustration}
         entityLabel={t('agents.entityLabel')}
+        toolbarExtra={healthFilterControl}
+        hasActiveFilter={Boolean(healthFilter)}
+        actionError={serviceTypesErrorDismissed ? null : serviceTypesError}
+        onDismissActionError={() => setServiceTypesErrorDismissed(true)}
       />
 
       <DcmFormDialog
@@ -211,6 +327,10 @@ export function AgentsTabContent() {
           setForm={crud.setCreateForm}
           touched={crud.createTouched}
           setTouched={crud.setCreateTouched}
+          serviceTypes={serviceTypes}
+          loadingServiceTypes={loadingServiceTypes}
+          loadingMoreServiceTypes={loadingMoreServiceTypes}
+          loadMoreServiceTypes={loadMoreServiceTypes}
         />
       </DcmFormDialog>
 

@@ -68,6 +68,15 @@ describe('isAgentFormValid', () => {
     expect(isAgentFormValid({ ...VALID_FORM, cost: '' })).toBe(false);
   });
 
+  it('returns false when cost is not a valid option', () => {
+    expect(
+      isAgentFormValid({
+        ...VALID_FORM,
+        cost: 'not-a-cost' as AgentForm['cost'],
+      }),
+    ).toBe(false);
+  });
+
   it('returns false when topic_name is empty', () => {
     expect(isAgentFormValid({ ...VALID_FORM, topic_name: '' })).toBe(false);
   });

@@ -17,6 +17,7 @@
 import type { PaginationParams } from '../types/common';
 import type {
   Agent,
+  AgentHealthStatus,
   AgentList,
   AgentRegistrationRequest,
   HeartbeatRequest,
@@ -29,7 +30,7 @@ import type {
  */
 export interface AgentsApi {
   listAgents(
-    params?: PaginationParams & { health_status?: string },
+    params?: PaginationParams & { health_status?: AgentHealthStatus },
   ): Promise<AgentList>;
   getAgent(agentId: string): Promise<Agent>;
   createAgent(agent: AgentRegistrationRequest): Promise<Agent>;

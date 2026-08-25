@@ -18,6 +18,7 @@ import {
   StatusOK,
   StatusWarning,
   StatusError,
+  StatusPending,
 } from '@backstage/core-components';
 import { Box, makeStyles, Typography } from '@material-ui/core';
 
@@ -72,8 +73,10 @@ export function AgentHealthStatus({
       StatusComponent = StatusWarning;
       break;
     case 'unavailable':
-    default:
       StatusComponent = StatusError;
+      break;
+    default:
+      StatusComponent = StatusPending;
       break;
   }
 

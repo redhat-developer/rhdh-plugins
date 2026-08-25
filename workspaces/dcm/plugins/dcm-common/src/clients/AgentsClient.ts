@@ -17,6 +17,7 @@
 import type { PaginationParams } from '../types/common';
 import type {
   Agent,
+  AgentHealthStatus,
   AgentList,
   AgentRegistrationRequest,
   HeartbeatRequest,
@@ -38,7 +39,7 @@ export class AgentsClient extends DcmBaseClient implements AgentsApi {
   protected readonly serviceName = 'Agents';
 
   async listAgents(
-    params: PaginationParams & { health_status?: string } = {},
+    params: PaginationParams & { health_status?: AgentHealthStatus } = {},
   ): Promise<AgentList> {
     const { health_status, ...pagination } = params;
     let query = buildPaginationQuery(pagination);

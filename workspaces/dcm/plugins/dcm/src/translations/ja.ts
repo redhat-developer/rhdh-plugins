@@ -72,6 +72,14 @@ const dcmTranslationJa: TranslationMessages<
     'agents.columns.cost': '\u30b3\u30b9\u30c8',
     'agents.columns.topic': 'Topic',
     'agents.columns.health': '\u30d8\u30eb\u30b9',
+    'agents.columns.lastHeartbeat':
+      '\u6700\u5f8c\u306e\u30cf\u30fc\u30c8\u30d3\u30fc\u30c8',
+    'agents.filter.healthLabel':
+      '\u30d8\u30eb\u30b9\u30b9\u30c6\u30fc\u30bf\u30b9',
+    'agents.filter.healthAll': 'すべて',
+    'agents.filter.healthReady': '準備完了',
+    'agents.filter.healthCongested': '輻輳',
+    'agents.filter.healthUnavailable': '利用不可',
     'agents.form.nameLabel': '\u540d\u524d *',
     'agents.form.namePlaceholder': '\u4f8b: env-agent-west-1',
     'agents.form.nameHelper':

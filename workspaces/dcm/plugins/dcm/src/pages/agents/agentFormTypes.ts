@@ -54,6 +54,7 @@ function buildAgentSchema(t?: TFunction) {
       ),
     environment: yup
       .string()
+      .trim()
       .required(
         m('validation.agent.environmentRequired', 'Environment is required'),
       ),
@@ -69,6 +70,10 @@ function buildAgentSchema(t?: TFunction) {
       ),
     cost: yup
       .string()
+      .oneOf(
+        AGENT_COST_OPTIONS as string[],
+        m('validation.agent.costRequired', 'Cost is required'),
+      )
       .required(m('validation.agent.costRequired', 'Cost is required')),
     topic_name: yup
       .string()

@@ -17,7 +17,7 @@
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { TestApiProvider, renderInTestApp } from '@backstage/test-utils';
 import type { Agent } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
-import { agentsApiRef } from '../../apis';
+import { agentsApiRef, catalogApiRef } from '../../apis';
 import { AgentsTabContent } from './AgentsTabContent';
 
 jest.mock('../../hooks/useTranslation', () => {
@@ -35,6 +35,24 @@ const MOCK_AGENT: Agent = {
   health_status: 'ready',
 };
 
+const baseCatalogApi = {
+  listServiceTypes: jest
+    .fn()
+    .mockResolvedValue({ results: [], next_page_token: undefined }),
+  getServiceType: jest.fn(),
+  createServiceType: jest.fn(),
+  listCatalogItems: jest.fn(),
+  getCatalogItem: jest.fn(),
+  createCatalogItem: jest.fn(),
+  updateCatalogItem: jest.fn(),
+  deleteCatalogItem: jest.fn(),
+  listCatalogItemInstances: jest.fn(),
+  getCatalogItemInstance: jest.fn(),
+  createCatalogItemInstance: jest.fn(),
+  rehydrateCatalogItemInstance: jest.fn(),
+  deleteCatalogItemInstance: jest.fn(),
+};
+
 const baseAgentsApi = {
   listAgents: jest.fn().mockResolvedValue({
     agents: [MOCK_AGENT],
@@ -46,14 +64,22 @@ const baseAgentsApi = {
 };
 
 function buildApis(overrides: Partial<typeof baseAgentsApi> = {}) {
-  return { agents: { ...baseAgentsApi, ...overrides } };
+  return {
+    agents: { ...baseAgentsApi, ...overrides },
+    catalog: baseCatalogApi,
+  };
 }
 
 async function renderAgentsTab(
   apis: ReturnType<typeof buildApis> = buildApis(),
 ) {
   return renderInTestApp(
-    <TestApiProvider apis={[[agentsApiRef, apis.agents]]}>
+    <TestApiProvider
+      apis={[
+        [agentsApiRef, apis.agents],
+        [catalogApiRef, apis.catalog],
+      ]}
+    >
       <AgentsTabContent />
     </TestApiProvider>,
   );
@@ -202,6 +228,51 @@ describe('AgentsTabContent', () => {
         expect(
           screen.getByRole('button', { name: /previous/i }),
         ).not.toBeDisabled(),
+      );
+    });
+  });
+
+  describe('health-status filter', () => {
+    it('calls listAgents with health_status when a filter is selected', async () => {
+      const listAgents = jest
+        .fn()
+        .mockResolvedValue({ agents: [MOCK_AGENT], next_page_token: '' });
+      const apis = buildApis({ listAgents });
+      await renderAgentsTab(apis);
+
+      await waitFor(() => expect(listAgents).toHaveBeenCalledTimes(1));
+
+      const filterInput = document.querySelector(
+        '[data-testid="health-filter"]',
+      ) as HTMLInputElement;
+      fireEvent.change(filterInput, { target: { value: 'ready' } });
+
+      await waitFor(() =>
+        expect(listAgents).toHaveBeenCalledWith(
+          expect.objectContaining({ health_status: 'ready' }),
+        ),
+      );
+    });
+
+    it('calls listAgents without health_status when "All" is selected', async () => {
+      const listAgents = jest
+        .fn()
+        .mockResolvedValue({ agents: [MOCK_AGENT], next_page_token: '' });
+      const apis = buildApis({ listAgents });
+      await renderAgentsTab(apis);
+
+      const filterInput = document.querySelector(
+        '[data-testid="health-filter"]',
+      ) as HTMLInputElement;
+      fireEvent.change(filterInput, { target: { value: 'ready' } });
+      await waitFor(() => expect(listAgents).toHaveBeenCalledTimes(2));
+
+      fireEvent.change(filterInput, { target: { value: '' } });
+
+      await waitFor(() =>
+        expect(listAgents).toHaveBeenCalledWith(
+          expect.not.objectContaining({ health_status: expect.anything() }),
+        ),
       );
     });
   });

@@ -68,6 +68,12 @@ const dcmTranslationDe: TranslationMessages<
     'agents.columns.cost': 'Kosten',
     'agents.columns.topic': 'Topic',
     'agents.columns.health': 'Zustand',
+    'agents.columns.lastHeartbeat': 'Letzter Herzschlag',
+    'agents.filter.healthLabel': 'Gesundheitsstatus',
+    'agents.filter.healthAll': 'Alle',
+    'agents.filter.healthReady': 'Bereit',
+    'agents.filter.healthCongested': 'Überlastet',
+    'agents.filter.healthUnavailable': 'Nicht verfügbar',
     'agents.form.nameLabel': 'Name *',
     'agents.form.namePlaceholder': 'z.\u00a0B. env-agent-west-1',
     'agents.form.nameHelper':
