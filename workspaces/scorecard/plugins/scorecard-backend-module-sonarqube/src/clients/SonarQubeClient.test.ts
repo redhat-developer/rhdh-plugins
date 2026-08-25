@@ -121,7 +121,7 @@ describe('SonarQubeClient', () => {
       });
 
       await expect(client.getOpenIssuesCount('my-project')).rejects.toThrow(
-        /SonarQube API error: 404 Not Found/,
+        "SonarQube project 'my-project' is not accessible or the project key is missing",
       );
       expect(mockFetch).toHaveBeenCalledTimes(1);
       expect(mockFetch).toHaveBeenCalledWith(
