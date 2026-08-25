@@ -134,7 +134,7 @@ export function GenerateCatalogEntities(
       lifecycle: modelServer.lifecycle,
       owner: `user:${modelServer.owner}`,
       ...(systemOverride && { system: systemOverride }),
-      serverType: serverTypeOverride || (modelServer.API?.type ?? 'unknown'),
+      serverType: serverTypeOverride ?? modelServer.API?.type ?? 'unknown',
       serverUrl: modelServer.API?.url ?? '',
       requiresApiKey: modelServer.authentication ?? false,
       models: {
