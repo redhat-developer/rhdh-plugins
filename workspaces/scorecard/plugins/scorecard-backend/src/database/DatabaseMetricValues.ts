@@ -435,7 +435,7 @@ export class DatabaseMetricValues {
       (options.sortBy && sortColumnMap[options.sortBy]) ?? 'timestamp';
     const direction = options.sortOrder === 'asc' ? 'asc' : 'desc';
 
-    this.applySort(query, options.sortBy, column, direction, this.isPostgres);
+    this.applySort(query, options.sortBy, column, direction);
 
     if (options.status) {
       query.where('status', options.status);
@@ -471,11 +471,10 @@ export class DatabaseMetricValues {
     sortBy: string | undefined,
     column: string,
     direction: string,
-    isPostgres: boolean,
   ): void {
     if (sortBy === 'metricValue') {
       // value is JSON and nullable; cast for numeric sort with NULLs last
-      if (isPostgres) {
+      if (this.isPostgres) {
         query.orderByRaw(
           `CAST(value::text AS DOUBLE PRECISION) ${direction} NULLS LAST, id ASC`,
         );
@@ -487,7 +486,7 @@ export class DatabaseMetricValues {
       }
     } else if (sortBy === 'status') {
       // status is nullable; NULLs always sort last regardless of direction
-      if (isPostgres) {
+      if (this.isPostgres) {
         query.orderByRaw(`status ${direction} NULLS LAST, id ASC`);
       } else {
         // SQLite: "status IS NULL" evaluates to 1 for NULLs, pushing them to the end

@@ -237,9 +237,7 @@ export class CatalogMetricService {
         return {
           value: null,
           timestamp: row.timestamp.toISOString(),
-          error:
-            row.errorMessage ??
-            stringifyError(new Error(`Metric value is 'undefined'`)),
+          error: row.errorMessage!,
         };
       }
       return {
