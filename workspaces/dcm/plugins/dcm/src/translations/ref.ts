@@ -28,7 +28,7 @@ export const dcmMessages = {
   page: {
     title: 'Data Center',
     tabs: {
-      providers: 'Providers',
+      agents: 'Agents',
       policies: 'Policies',
       serviceTypes: 'Service types',
       catalogItems: 'Catalog items',
@@ -61,48 +61,37 @@ export const dcmMessages = {
     cancelButton: 'Cancel',
     body: 'Are you sure you want to delete {{resourceName}}? This action cannot be undone.',
   },
-  providers: {
-    emptyTitle: 'No providers registered',
+  agents: {
+    emptyTitle: 'No agents registered',
     emptyDescription:
-      'Register a service provider to allow DCM to provision resources on external infrastructure (e.g. OpenShift, AWS).',
+      'Environment agents register with the control plane and send periodic heartbeats. Register an agent to allow DCM to manage workloads on external environments.',
     registerButton: 'Register',
-    entityLabel: 'Providers',
-    registerDialogTitle: 'Register provider',
-    editDialogTitle: 'Edit provider',
-    saveButton: 'Save',
-    createSuccess: 'Provider registered successfully.',
-    updateSuccess: 'Provider updated successfully.',
-    deleteSuccess: 'Provider deleted successfully.',
-    deleteLabel: 'provider',
+    entityLabel: 'Agents',
+    registerDialogTitle: 'Register agent',
+    createSuccess: 'Agent registered successfully.',
     columns: {
-      displayName: 'Display name',
       name: 'Name',
-      endpoint: 'Endpoint',
-      serviceType: 'Service type',
-      operations: 'Operations',
-      status: 'Status',
+      environment: 'Environment',
+      serviceTypes: 'Service types',
+      cost: 'Cost',
+      topic: 'Topic',
+      health: 'Health',
     },
     form: {
       nameLabel: 'Name *',
-      namePlaceholder: 'e.g. my-k8s-provider',
+      namePlaceholder: 'e.g. env-agent-west-1',
       nameHelper:
         'Unique slug identifier \u2014 only lowercase letters, numbers, and hyphens',
-      nameHelperEditMode: 'Provider name cannot be changed after creation',
-      endpointLabel: 'Endpoint *',
-      endpointPlaceholder: 'https://api.example.com',
-      endpointHelper:
-        'Full URL of the provider API (e.g. https://api.example.com)',
-      serviceTypeLabel: 'Service type *',
-      serviceTypeEmpty: 'No service types available',
-      serviceTypeSelect: 'Select a service type\u2026',
-      serviceTypeHelperNoTypes:
-        'Create a service type first in the Service types tab',
-      serviceTypeHelperDefault: 'Select from registered service types',
-      schemaVersionLabel: 'Schema version *',
-      schemaVersionHelper:
-        'e.g. v1, v1alpha1, v2beta2 \u2014 only v<number>[alpha|beta][number]',
-      operationsLabel: 'Operations',
-      operationsHelper: 'Select the operations this provider supports',
+      environmentLabel: 'Environment *',
+      environmentPlaceholder: 'e.g. production',
+      environmentHelper: 'Environment label for the agent',
+      serviceTypesLabel: 'Service types *',
+      serviceTypesHelper: 'Service types this agent can provide',
+      costLabel: 'Cost *',
+      costHelper: 'Relative cost weight used for placement decisions',
+      topicNameLabel: 'Topic name *',
+      topicNamePlaceholder: 'e.g. dcm.agent.env-agent-west-1',
+      topicNameHelper: 'NATS topic name \u2014 must start with dcm.agent.',
     },
   },
   policies: {
@@ -313,18 +302,15 @@ export const dcmMessages = {
     ariaLabel: 'Copy to clipboard',
   },
   validation: {
-    provider: {
+    agent: {
       nameRequired: 'Name is required',
       namePattern:
         'Only lowercase letters, numbers, and hyphens are allowed (must start with a letter)',
-      endpointRequired: 'Endpoint is required',
-      endpointPattern:
-        'Must start with http:// or https:// (e.g. https://my-service:8081/api)',
-      serviceTypeRequired: 'Service type is required',
-      serviceTypeMin: 'Please select a service type from the list',
-      schemaVersionRequired: 'Schema version is required',
-      schemaVersionPattern:
-        'Must follow the pattern v<number>[alpha|beta][number] \u2014 e.g. v1, v1alpha1, v2beta2',
+      environmentRequired: 'Environment is required',
+      serviceTypesRequired: 'At least one service type is required',
+      costRequired: 'Cost is required',
+      topicNameRequired: 'Topic name is required',
+      topicNamePattern: 'Topic name must start with dcm.agent.',
     },
     policy: {
       displayNameRequired: 'Display name is required',

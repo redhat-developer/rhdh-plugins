@@ -17,5 +17,5 @@
 export * from './catalog';
 export * from './common';
 export * from './policy-manager';
-export * from './providers';
+export * from './agents';
 export * from './resources';

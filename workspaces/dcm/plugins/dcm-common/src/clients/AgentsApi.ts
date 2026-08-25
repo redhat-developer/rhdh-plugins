@@ -15,17 +15,23 @@
  */
 
 import type { PaginationParams } from '../types/common';
-import type { Provider, ProviderList } from '../types/providers';
+import type {
+  Agent,
+  AgentList,
+  AgentRegistrationRequest,
+  HeartbeatRequest,
+} from '../types/agents';
 
 /**
- * Interface for the DCM Providers API client.
+ * Interface for the DCM Agents API client.
  *
  * @public
  */
-export interface ProvidersApi {
-  listProviders(params?: PaginationParams): Promise<ProviderList>;
-  getProvider(providerId: string): Promise<Provider>;
-  createProvider(provider: Provider): Promise<Provider>;
-  applyProvider(providerId: string, provider: Provider): Promise<Provider>;
-  deleteProvider(providerId: string): Promise<void>;
+export interface AgentsApi {
+  listAgents(
+    params?: PaginationParams & { health_status?: string },
+  ): Promise<AgentList>;
+  getAgent(agentId: string): Promise<Agent>;
+  createAgent(agent: AgentRegistrationRequest): Promise<Agent>;
+  agentHeartbeat(agentId: string, heartbeat: HeartbeatRequest): Promise<Agent>;
 }

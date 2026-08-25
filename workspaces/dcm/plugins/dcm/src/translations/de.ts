@@ -27,7 +27,7 @@ const dcmTranslationDe: TranslationMessages<
   ref: dcmTranslationRef,
   messages: {
     'page.title': 'Rechenzentrum',
-    'page.tabs.providers': 'Anbieter',
+    'page.tabs.agents': 'Agenten',
     'page.tabs.policies': 'Richtlinien',
     'page.tabs.serviceTypes': 'Diensttypen',
     'page.tabs.catalogItems': 'Katalogelemente',
@@ -55,47 +55,36 @@ const dcmTranslationDe: TranslationMessages<
     'deleteDialog.cancelButton': 'Abbrechen',
     'deleteDialog.body':
       'M\u00f6chten Sie {{resourceName}} wirklich l\u00f6schen? Diese Aktion kann nicht r\u00fcckg\u00e4ngig gemacht werden.',
-    'providers.emptyTitle': 'Keine Anbieter registriert',
-    'providers.emptyDescription':
-      'Registrieren Sie einen Dienstanbieter, damit DCM Ressourcen auf externer Infrastruktur bereitstellen kann (z.\u00a0B. OpenShift, AWS).',
-    'providers.registerButton': 'Registrieren',
-    'providers.entityLabel': 'Anbieter',
-    'providers.registerDialogTitle': 'Anbieter registrieren',
-    'providers.editDialogTitle': 'Anbieter bearbeiten',
-    'providers.saveButton': 'Speichern',
-    'providers.createSuccess': 'Anbieter erfolgreich registriert.',
-    'providers.updateSuccess': 'Anbieter erfolgreich aktualisiert.',
-    'providers.deleteSuccess': 'Anbieter erfolgreich gel\u00f6scht.',
-    'providers.deleteLabel': 'Anbieter',
-    'providers.columns.displayName': 'Anzeigename',
-    'providers.columns.name': 'Name',
-    'providers.columns.endpoint': 'Endpunkt',
-    'providers.columns.serviceType': 'Diensttyp',
-    'providers.columns.operations': 'Operationen',
-    'providers.columns.status': 'Status',
-    'providers.form.nameLabel': 'Name *',
-    'providers.form.namePlaceholder': 'z.\u00a0B. mein-k8s-anbieter',
-    'providers.form.nameHelper':
+    'agents.emptyTitle': 'Keine Agenten registriert',
+    'agents.emptyDescription':
+      'Umgebungsagenten registrieren sich bei der Steuerungsebene und senden regelmäßige Heartbeats.',
+    'agents.registerButton': 'Registrieren',
+    'agents.entityLabel': 'Agenten',
+    'agents.registerDialogTitle': 'Agent registrieren',
+    'agents.createSuccess': 'Agent erfolgreich registriert.',
+    'agents.columns.name': 'Name',
+    'agents.columns.environment': 'Umgebung',
+    'agents.columns.serviceTypes': 'Diensttypen',
+    'agents.columns.cost': 'Kosten',
+    'agents.columns.topic': 'Topic',
+    'agents.columns.health': 'Zustand',
+    'agents.form.nameLabel': 'Name *',
+    'agents.form.namePlaceholder': 'z.\u00a0B. env-agent-west-1',
+    'agents.form.nameHelper':
       'Eindeutiger Slug \u2014 nur Kleinbuchstaben, Zahlen und Bindestriche',
-    'providers.form.nameHelperEditMode':
-      'Der Anbietername kann nach der Erstellung nicht ge\u00e4ndert werden',
-    'providers.form.endpointLabel': 'Endpunkt *',
-    'providers.form.endpointPlaceholder': 'https://api.beispiel.de',
-    'providers.form.endpointHelper':
-      'Vollst\u00e4ndige URL der Anbieter-API (z.\u00a0B. https://api.beispiel.de)',
-    'providers.form.serviceTypeLabel': 'Diensttyp *',
-    'providers.form.serviceTypeEmpty': 'Keine Diensttypen verf\u00fcgbar',
-    'providers.form.serviceTypeSelect': 'Diensttyp ausw\u00e4hlen\u2026',
-    'providers.form.serviceTypeHelperNoTypes':
-      'Erstellen Sie zuerst einen Diensttyp im Reiter Diensttypen',
-    'providers.form.serviceTypeHelperDefault':
-      'Aus registrierten Diensttypen ausw\u00e4hlen',
-    'providers.form.schemaVersionLabel': 'Schema-Version *',
-    'providers.form.schemaVersionHelper':
-      'z.\u00a0B. v1, v1alpha1, v2beta2 \u2014 nur v<Zahl>[alpha|beta][Zahl]',
-    'providers.form.operationsLabel': 'Operationen',
-    'providers.form.operationsHelper':
-      'Die von diesem Anbieter unterst\u00fctzten Operationen ausw\u00e4hlen',
+    'agents.form.environmentLabel': 'Umgebung *',
+    'agents.form.environmentPlaceholder': 'z.\u00a0B. production',
+    'agents.form.environmentHelper': 'Umgebungsbezeichnung für den Agenten',
+    'agents.form.serviceTypesLabel': 'Diensttypen *',
+    'agents.form.serviceTypesHelper':
+      'Diensttypen, die dieser Agent bereitstellen kann',
+    'agents.form.costLabel': 'Kosten *',
+    'agents.form.costHelper':
+      'Relatives Kostengewicht für Platzierungsentscheidungen',
+    'agents.form.topicNameLabel': 'Topic-Name *',
+    'agents.form.topicNamePlaceholder': 'z.\u00a0B. dcm.agent.env-agent-west-1',
+    'agents.form.topicNameHelper':
+      'NATS-Topic-Name \u2014 muss mit dcm.agent. beginnen',
     'policies.emptyTitle': 'Keine Richtlinien definiert',
     'policies.emptyDescription':
       'Erstellen Sie OPA-Rego-Richtlinien, um Governance-Regeln f\u00fcr DCM-Ressourcen durchzusetzen.',
@@ -283,19 +272,16 @@ const dcmTranslationDe: TranslationMessages<
     'copyButton.copied': 'Kopiert!',
     'copyButton.failed': 'Kopieren fehlgeschlagen',
     'copyButton.ariaLabel': 'In die Zwischenablage kopieren',
-    'validation.provider.nameRequired': 'Name ist erforderlich',
-    'validation.provider.namePattern':
+    'validation.agent.nameRequired': 'Name ist erforderlich',
+    'validation.agent.namePattern':
       'Nur Kleinbuchstaben, Zahlen und Bindestriche sind erlaubt (muss mit einem Buchstaben beginnen)',
-    'validation.provider.endpointRequired': 'Endpunkt ist erforderlich',
-    'validation.provider.endpointPattern':
-      'Muss mit http:// oder https:// beginnen (z. B. https://mein-dienst:8081/api)',
-    'validation.provider.serviceTypeRequired': 'Diensttyp ist erforderlich',
-    'validation.provider.serviceTypeMin':
-      'Bitte wählen Sie einen Diensttyp aus der Liste',
-    'validation.provider.schemaVersionRequired':
-      'Schema-Version ist erforderlich',
-    'validation.provider.schemaVersionPattern':
-      'Muss dem Muster v<Zahl>[alpha|beta][Zahl] folgen \u2014 z. B. v1, v1alpha1, v2beta2',
+    'validation.agent.environmentRequired': 'Umgebung ist erforderlich',
+    'validation.agent.serviceTypesRequired':
+      'Mindestens ein Diensttyp ist erforderlich',
+    'validation.agent.costRequired': 'Kosten sind erforderlich',
+    'validation.agent.topicNameRequired': 'Topic-Name ist erforderlich',
+    'validation.agent.topicNamePattern':
+      'Topic-Name muss mit dcm.agent. beginnen',
     'validation.policy.displayNameRequired': 'Anzeigename ist erforderlich',
     'validation.policy.displayNameEmpty': 'Anzeigename darf nicht leer sein',
     'validation.policy.displayNameMax':

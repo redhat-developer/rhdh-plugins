@@ -18,9 +18,6 @@ import {
   StatusOK,
   StatusWarning,
   StatusError,
-  StatusAborted,
-  StatusPending,
-  StatusRunning,
 } from '@backstage/core-components';
 import { Box, makeStyles, Typography } from '@material-ui/core';
 
@@ -46,17 +43,16 @@ const useStyles = makeStyles(theme => ({
 }));
 
 /**
- * Maps a provider `health_status` string to a Backstage Status component.
+ * Maps an agent `health_status` value to a Backstage Status component.
  *
  * Mapping:
- *   ready / ok / healthy / active   → StatusOK
- *   degraded / warning              → StatusWarning
- *   error / failed / unhealthy      → StatusError
- *   running / starting              → StatusRunning
- *   aborted / terminated / deleted  → StatusAborted
- *   not_ready / pending / (other)   → StatusPending
+ *   ready       → StatusOK
+ *   congested   → StatusWarning
+ *   unavailable → StatusError
  */
-export function ProviderStatus({ value }: Readonly<{ value?: string }>) {
+export function AgentHealthStatus({
+  value,
+}: Readonly<{ value?: string | null }>) {
   const classes = useStyles();
 
   if (!value) {
@@ -67,21 +63,18 @@ export function ProviderStatus({ value }: Readonly<{ value?: string }>) {
     );
   }
 
-  const normalised = value.toLowerCase().replaceAll(/[_-]/g, '');
-
   let StatusComponent: React.ElementType;
-  if (['ready', 'ok', 'healthy', 'active'].includes(normalised)) {
-    StatusComponent = StatusOK;
-  } else if (['degraded', 'warning'].includes(normalised)) {
-    StatusComponent = StatusWarning;
-  } else if (['error', 'failed', 'unhealthy'].includes(normalised)) {
-    StatusComponent = StatusError;
-  } else if (['running', 'starting'].includes(normalised)) {
-    StatusComponent = StatusRunning;
-  } else if (['aborted', 'terminated', 'deleted'].includes(normalised)) {
-    StatusComponent = StatusAborted;
-  } else {
-    StatusComponent = StatusPending;
+  switch (value.toLowerCase()) {
+    case 'ready':
+      StatusComponent = StatusOK;
+      break;
+    case 'congested':
+      StatusComponent = StatusWarning;
+      break;
+    case 'unavailable':
+    default:
+      StatusComponent = StatusError;
+      break;
   }
 
   return (
