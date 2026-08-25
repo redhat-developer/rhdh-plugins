@@ -297,6 +297,7 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         root: {
           flexWrap: 'wrap',
           rowGap: '8px',
+          maxWidth: '100%',
         },
       },
     };
