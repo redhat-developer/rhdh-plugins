@@ -133,15 +133,18 @@ describe('useTemplateUnitEvaluator', () => {
   });
 
   it('evaluates rjsfConfig.* with nested paths', async () => {
-    configApi.getOptionalString.mockImplementation((path: string) => {
-      const configs: Record<string, string> = {
-        'orchestrator.rjsf-widgets.app-registration.xParams.name':
-          'app-registration',
-        'orchestrator.rjsf-widgets.app-registration.xParams.version': '0.21.0',
-        'orchestrator.rjsf-widgets.cloud-run.xParams.name': 'cloud-run',
-      };
-      return configs[path];
-    });
+    (configApi.getOptionalString as jest.Mock).mockImplementation(
+      (path: string) => {
+        const configs: Record<string, string> = {
+          'orchestrator.rjsf-widgets.app-registration.xParams.name':
+            'app-registration',
+          'orchestrator.rjsf-widgets.app-registration.xParams.version':
+            '0.21.0',
+          'orchestrator.rjsf-widgets.cloud-run.xParams.name': 'cloud-run',
+        };
+        return configs[path];
+      },
+    );
 
     const { result } = renderHook(() => useTemplateUnitEvaluator());
 
@@ -161,12 +164,14 @@ describe('useTemplateUnitEvaluator', () => {
   });
 
   it('evaluates rjsfConfig.* with multiple nested widget namespaces', async () => {
-    configApi.getOptionalString.mockImplementation((path: string) => {
-      const configs: Record<string, string> = {
-        'orchestrator.rjsf-widgets.cloud-run.xParams.name': 'cloud-run',
-      };
-      return configs[path];
-    });
+    (configApi.getOptionalString as jest.Mock).mockImplementation(
+      (path: string) => {
+        const configs: Record<string, string> = {
+          'orchestrator.rjsf-widgets.cloud-run.xParams.name': 'cloud-run',
+        };
+        return configs[path];
+      },
+    );
 
     const { result } = renderHook(() => useTemplateUnitEvaluator());
 
@@ -176,7 +181,7 @@ describe('useTemplateUnitEvaluator', () => {
   });
 
   it('returns undefined for missing nested paths in rjsfConfig', async () => {
-    configApi.getOptionalString.mockReturnValue(undefined);
+    (configApi.getOptionalString as jest.Mock).mockReturnValue(undefined);
 
     const { result } = renderHook(() => useTemplateUnitEvaluator());
 
@@ -186,14 +191,16 @@ describe('useTemplateUnitEvaluator', () => {
   });
 
   it('supports mixed flat and nested keys in rjsfConfig', async () => {
-    configApi.getOptionalString.mockImplementation((path: string) => {
-      const configs: Record<string, string> = {
-        'orchestrator.rjsf-widgets.defaultEnvironment': 'production',
-        'orchestrator.rjsf-widgets.app-registration.xParams.name':
-          'app-registration',
-      };
-      return configs[path];
-    });
+    (configApi.getOptionalString as jest.Mock).mockImplementation(
+      (path: string) => {
+        const configs: Record<string, string> = {
+          'orchestrator.rjsf-widgets.defaultEnvironment': 'production',
+          'orchestrator.rjsf-widgets.app-registration.xParams.name':
+            'app-registration',
+        };
+        return configs[path];
+      },
+    );
 
     const { result } = renderHook(() => useTemplateUnitEvaluator());
 
