@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
 
+## 4.1.0
+
+### Minor Changes
+
+- 6c8f76d: Removed public `iaSavedPromptsManagePermission` from the common package. Saved-prompts backend routes now require `intelligent-assistant.chat.use`. Operators should drop `intelligent-assistant.saved-prompts.manage` from RBAC CSVs; `chat.use` is enough.
+
+### Patch Changes
+
+- c0d97e4: Removed unused `@langchain/core` and `@langchain/openai` dependencies left over after the backend switched from an in-process LangChain client to the Lightspeed Core HTTP proxy.
+- e5deac5: AI Notebooks will use markitdown to clean up data before vectorizing documents
+- Updated dependencies [6c8f76d]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.1.0
+
 ## 4.0.0
 
 ### Major Changes
