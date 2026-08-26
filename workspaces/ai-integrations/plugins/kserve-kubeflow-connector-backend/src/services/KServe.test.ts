@@ -21,6 +21,8 @@ import {
   SERVER_TYPE_ANNOTATION,
   MODEL_PREFIX_ANNOTATION,
   DEFAULT_ANNOTATION,
+  OWNER_ANNOTATION,
+  LIFECYCLE_ANNOTATION,
 } from './KServe';
 import type { InferenceService } from './types';
 import { CATALOG_SOURCE_ANNOTATION, CATALOG_MODEL_ANNOTATION } from './Catalog';
@@ -479,17 +481,19 @@ describe('callBackstagePrinters', () => {
     );
   });
 
-  it('should propagate system, serverType, and default annotations to modelServer', async () => {
+  it('should propagate system, serverType, default, owner, and lifecycle annotations to modelServer', async () => {
     const is = makeInferenceService({
       annotations: {
         [SYSTEM_ANNOTATION]: 'my-system',
         [SERVER_TYPE_ANNOTATION]: 'custom-server',
         [DEFAULT_ANNOTATION]: 'preferred-model',
+        [OWNER_ANNOTATION]: 'team-ai',
+        [LIFECYCLE_ANNOTATION]: 'experimental',
       },
     });
 
     const result = await callBackstagePrinters(
-      'owner',
+      'default-owner',
       'production',
       is,
       false,
@@ -506,12 +510,16 @@ describe('callBackstagePrinters', () => {
     expect(result.modelServer!.annotations![DEFAULT_ANNOTATION]).toBe(
       'preferred-model',
     );
+    expect(result.modelServer!.annotations![OWNER_ANNOTATION]).toBe('team-ai');
+    expect(result.modelServer!.annotations![LIFECYCLE_ANNOTATION]).toBe(
+      'experimental',
+    );
   });
 
-  it('should not set modelServer annotations when none of the new annotations are present', async () => {
+  it('should not set modelServer annotations when none of the propagated annotations are present', async () => {
     const is = makeInferenceService({
       annotations: {
-        'rhdh.io/owner': 'custom-owner',
+        'rhdh.io/description': 'Custom description',
       },
     });
 

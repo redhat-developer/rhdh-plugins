@@ -530,6 +530,70 @@ describe('Model Catalog Generator', () => {
     expect((entities[0].spec as any).models.default).toBe('preferredmodel');
   });
 
+  it('should override owner from rhdh.io/owner annotation', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'owner-override-service',
+        owner: 'default-owner',
+        description: 'Service with owner annotation',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/owner': 'team-ai',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'default-owner',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).owner).toBe('user:team-ai');
+    // Control annotation must not leak into metadata
+    expect(entities[0].metadata.annotations).toBeUndefined();
+  });
+
+  it('should override lifecycle from rhdh.io/lifecycle annotation', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'lifecycle-override-service',
+        owner: 'example-user',
+        description: 'Service with lifecycle annotation',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/lifecycle': 'experimental',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).lifecycle).toBe('experimental');
+    // Control annotation must not leak into metadata
+    expect(entities[0].metadata.annotations).toBeUndefined();
+  });
+
   it('should sanitize multiple whitespace characters in rhdh.io/default annotation value', () => {
     const modelCatalog: ModelCatalog = {
       modelServer: {
@@ -624,17 +688,19 @@ describe('Model Catalog Generator', () => {
     expect((entities[0].spec as any).system).toBeUndefined();
   });
 
-  it('should set all three annotation overrides together', () => {
+  it('should set all five annotation overrides together', () => {
     const modelCatalog: ModelCatalog = {
       modelServer: {
         name: 'all-overrides-service',
-        owner: 'example-user',
+        owner: 'default-owner',
         description: 'Service with all annotation overrides',
         lifecycle: 'production',
         annotations: {
           'rhdh.io/system': 'ai-platform',
           'rhdh.io/serverType': 'openai-v1',
           'rhdh.io/default': 'gpt-4',
+          'rhdh.io/owner': 'team-ai',
+          'rhdh.io/lifecycle': 'experimental',
         },
         API: {
           url: 'https://api.example.com',
@@ -647,13 +713,13 @@ describe('Model Catalog Generator', () => {
           name: 'gpt-3.5',
           description: 'GPT 3.5',
           lifecycle: 'production',
-          owner: 'example-user',
+          owner: 'default-owner',
         },
         {
           name: 'gpt-4',
           description: 'GPT 4',
           lifecycle: 'production',
-          owner: 'example-user',
+          owner: 'default-owner',
         },
       ],
     };
@@ -663,6 +729,8 @@ describe('Model Catalog Generator', () => {
     expect(spec.system).toBe('ai-platform');
     expect(spec.serverType).toBe('openai-v1');
     expect(spec.models.default).toBe('gpt-4');
+    expect(spec.owner).toBe('user:team-ai');
+    expect(spec.lifecycle).toBe('experimental');
     // Control annotations must not leak into metadata
     expect(entities[0].metadata.annotations).toBeUndefined();
   });

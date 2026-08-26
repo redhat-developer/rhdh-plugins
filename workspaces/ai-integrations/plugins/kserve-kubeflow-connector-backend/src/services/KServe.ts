@@ -32,6 +32,8 @@ export const SYSTEM_ANNOTATION = `${ANNOTATION_PREFIX}system`;
 export const SERVER_TYPE_ANNOTATION = `${ANNOTATION_PREFIX}serverType`;
 export const MODEL_PREFIX_ANNOTATION = `${ANNOTATION_PREFIX}model-`;
 export const DEFAULT_ANNOTATION = `${ANNOTATION_PREFIX}default`;
+export const OWNER_ANNOTATION = `${ANNOTATION_PREFIX}owner`;
+export const LIFECYCLE_ANNOTATION = `${ANNOTATION_PREFIX}lifecycle`;
 
 const FRAMEWORK_SKLEARN = 'sklearn';
 const FRAMEWORK_XGBOOST = 'xgboost';
@@ -246,8 +248,8 @@ function generateModelCatalog(
     }
   }
 
-  // Propagate system, serverType, and default annotations to the
-  // ModelServer so ModelCatalogGenerator can map them to entity fields.
+  // Propagate system, serverType, default, owner, and lifecycle annotations
+  // to the ModelServer so ModelCatalogGenerator can map them to entity fields.
   const serverAnnotations: Record<string, string> = {};
   if (is.metadata.annotations) {
     const systemVal = is.metadata.annotations[SYSTEM_ANNOTATION];
@@ -260,6 +262,12 @@ function generateModelCatalog(
     const defaultVal = is.metadata.annotations[DEFAULT_ANNOTATION];
     if (defaultVal)
       serverAnnotations[DEFAULT_ANNOTATION] = sanitizeName(defaultVal);
+
+    const ownerVal = is.metadata.annotations[OWNER_ANNOTATION];
+    if (ownerVal) serverAnnotations[OWNER_ANNOTATION] = sanitizeName(ownerVal);
+
+    const lifecycleVal = is.metadata.annotations[LIFECYCLE_ANNOTATION];
+    if (lifecycleVal) serverAnnotations[LIFECYCLE_ANNOTATION] = lifecycleVal;
   }
 
   const modelServer: ModelServer = {

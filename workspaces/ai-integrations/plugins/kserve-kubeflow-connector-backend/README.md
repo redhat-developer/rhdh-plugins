@@ -144,6 +144,26 @@ metadata:
     rhdh.io/default: gpt-4
 ```
 
+### `rhdh.io/owner`
+
+Overrides the `owner` field on the generated Model and ModelServer objects. Without this annotation, the owner falls back to the configured default owner.
+
+```yaml
+metadata:
+  annotations:
+    rhdh.io/owner: team-ai
+```
+
+### `rhdh.io/lifecycle`
+
+Overrides the `lifecycle` field on the generated Model and ModelServer objects. Without this annotation, the lifecycle falls back to the configured default lifecycle.
+
+```yaml
+metadata:
+  annotations:
+    rhdh.io/lifecycle: experimental
+```
+
 ### `rhdh.io/model-*`
 
 When one or more `rhdh.io/model-` prefixed annotations are present, the plugin creates a Model object for each annotation value instead of deriving a single model from the InferenceService name. The suffix after `model-` is a user-chosen key; the annotation value becomes the model name.
@@ -157,7 +177,7 @@ metadata:
 
 Without any `rhdh.io/model-*` annotations, a single model is created using the InferenceService namespace and name (e.g. `vllm-my-service`).
 
-> **Note:** All four `rhdh.io/` control annotations are consumed during entity generation and are **not** propagated to the entity's `metadata.annotations`.
+> **Note:** All six `rhdh.io/` control annotations are consumed during entity generation and are **not** propagated to the entity's `metadata.annotations`.
 
 ## Development
 

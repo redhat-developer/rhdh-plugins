@@ -23,6 +23,8 @@ const TECHDOCS_KEY = 'techdocs';
 const SYSTEM_ANNOTATION = 'rhdh.io/system';
 const SERVER_TYPE_ANNOTATION = 'rhdh.io/serverType';
 const DEFAULT_ANNOTATION = 'rhdh.io/default';
+const OWNER_ANNOTATION = 'rhdh.io/owner';
+const LIFECYCLE_ANNOTATION = 'rhdh.io/lifecycle';
 
 function isModelCatalog(o: any): o is ModelCatalog {
   return 'models' in o || 'modelServer' in o;
@@ -89,6 +91,8 @@ export function GenerateCatalogEntities(
   delete annotations[SYSTEM_ANNOTATION];
   delete annotations[SERVER_TYPE_ANNOTATION];
   delete annotations[DEFAULT_ANNOTATION];
+  delete annotations[OWNER_ANNOTATION];
+  delete annotations[LIFECYCLE_ANNOTATION];
 
   // Collect techdocs from models — use the first one found
   for (const model of models) {
@@ -118,6 +122,8 @@ export function GenerateCatalogEntities(
   const systemOverride = modelServer.annotations?.[SYSTEM_ANNOTATION];
   const serverTypeOverride = modelServer.annotations?.[SERVER_TYPE_ANNOTATION];
   const defaultOverride = modelServer.annotations?.[DEFAULT_ANNOTATION];
+  const ownerOverride = modelServer.annotations?.[OWNER_ANNOTATION];
+  const lifecycleOverride = modelServer.annotations?.[LIFECYCLE_ANNOTATION];
 
   const entity: AiModelServerApiEntity = {
     apiVersion: 'backstage.io/v1alpha1',
@@ -131,8 +137,8 @@ export function GenerateCatalogEntities(
     },
     spec: {
       type: 'ai-model-server',
-      lifecycle: modelServer.lifecycle,
-      owner: `user:${modelServer.owner}`,
+      lifecycle: lifecycleOverride ?? modelServer.lifecycle,
+      owner: `user:${ownerOverride ?? modelServer.owner}`,
       ...(systemOverride && { system: systemOverride }),
       serverType: serverTypeOverride ?? modelServer.API?.type ?? 'unknown',
       serverUrl: modelServer.API?.url ?? '',

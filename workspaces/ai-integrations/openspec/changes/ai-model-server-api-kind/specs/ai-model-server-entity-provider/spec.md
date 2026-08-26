@@ -77,13 +77,15 @@ The entity MUST include an `auth-required` tag when `modelServer.authentication`
 
 ### Requirement: Annotation-driven field overrides
 
-Three `rhdh.io/` annotations on `modelServer.annotations` act as control annotations that drive spec-level fields on the generated `AiModelServerAPI` entity. These annotations MUST NOT appear in the entity's `metadata.annotations` — they are consumed during generation and deleted before the entity is emitted.
+Five `rhdh.io/` annotations on `modelServer.annotations` act as control annotations that drive spec-level fields on the generated `AiModelServerAPI` entity. These annotations MUST NOT appear in the entity's `metadata.annotations` — they are consumed during generation and deleted before the entity is emitted.
 
 | Annotation           | Target field          | Behavior when present                           | Behavior when absent                                  |
 | -------------------- | --------------------- | ----------------------------------------------- | ----------------------------------------------------- |
 | `rhdh.io/system`     | `spec.system`         | Set to the annotation value                     | `spec.system` is omitted                              |
 | `rhdh.io/serverType` | `spec.serverType`     | Overrides the API type                          | Falls back to `modelServer.API.type` (or `'unknown'`) |
 | `rhdh.io/default`    | `spec.models.default` | Overrides with the annotation's sanitized value | Falls back to the first model's sanitized name        |
+| `rhdh.io/owner`      | `spec.owner`          | Overrides with the annotation's sanitized value | Falls back to `modelServer.owner`                     |
+| `rhdh.io/lifecycle`  | `spec.lifecycle`      | Set to the annotation value                     | Falls back to `modelServer.lifecycle`                 |
 
 #### Scenario: System set by annotation
 
@@ -115,11 +117,31 @@ Three `rhdh.io/` annotations on `modelServer.annotations` act as control annotat
 - **WHEN** `modelServer.annotations` does not contain `rhdh.io/default` and models are `['ibm-granite-20b', 'mistral-7b']`
 - **THEN** the entity has `spec.models.default: 'ibm-granite-20b'`
 
-#### Scenario: All three overrides applied together
+#### Scenario: Owner overridden by annotation
 
-- **WHEN** `modelServer.annotations` contains `rhdh.io/system: 'ai-platform'`, `rhdh.io/serverType: 'openai-v1'`, and `rhdh.io/default: 'gpt-4'`
-- **THEN** the entity has `spec.system: 'ai-platform'`, `spec.serverType: 'openai-v1'`, and `spec.models.default: 'gpt-4'`
-- **AND** none of the three annotations appear in `metadata.annotations`
+- **WHEN** `modelServer.annotations` contains `rhdh.io/owner: 'team-ai'` and `modelServer.owner` is `'default-owner'`
+- **THEN** the entity has `spec.owner: 'team-ai'` (the annotation value takes precedence, sanitized)
+
+#### Scenario: Owner falls back to modelServer when annotation absent
+
+- **WHEN** `modelServer.annotations` does not contain `rhdh.io/owner` and `modelServer.owner` is `'default-owner'`
+- **THEN** the entity has `spec.owner: 'default-owner'`
+
+#### Scenario: Lifecycle overridden by annotation
+
+- **WHEN** `modelServer.annotations` contains `rhdh.io/lifecycle: 'experimental'` and `modelServer.lifecycle` is `'production'`
+- **THEN** the entity has `spec.lifecycle: 'experimental'` (the annotation value takes precedence)
+
+#### Scenario: Lifecycle falls back to modelServer when annotation absent
+
+- **WHEN** `modelServer.annotations` does not contain `rhdh.io/lifecycle` and `modelServer.lifecycle` is `'production'`
+- **THEN** the entity has `spec.lifecycle: 'production'`
+
+#### Scenario: All five overrides applied together
+
+- **WHEN** `modelServer.annotations` contains `rhdh.io/system: 'ai-platform'`, `rhdh.io/serverType: 'openai-v1'`, `rhdh.io/default: 'gpt-4'`, `rhdh.io/owner: 'team-ai'`, and `rhdh.io/lifecycle: 'experimental'`
+- **THEN** the entity has `spec.system: 'ai-platform'`, `spec.serverType: 'openai-v1'`, `spec.models.default: 'gpt-4'`, `spec.owner: 'team-ai'`, and `spec.lifecycle: 'experimental'`
+- **AND** none of the five annotations appear in `metadata.annotations`
 
 ---
 
