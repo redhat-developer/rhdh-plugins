@@ -132,12 +132,12 @@ The following decisions are resolved and are not re-litigated here:
 Each mapping carries a confidence level reflecting the maturity of the
 upstream target:
 
-| Level       | Meaning                                                   |
-| ----------- | --------------------------------------------------------- |
-| High        | Upstream kind shipped and stable; kind already aligned    |
-| Medium-High | Upstream kind shipped; field/name alignment work remains  |
-| Medium      | Downstream committed; upstream alignment pending          |
-| Low         | No solid upstream kind yet, or mapping is speculative     |
+| Level       | Meaning                                                  |
+| ----------- | -------------------------------------------------------- |
+| High        | Upstream kind shipped and stable; kind already aligned   |
+| Medium-High | Upstream kind shipped; field/name alignment work remains |
+| Medium      | Downstream committed; upstream alignment pending         |
+| Low         | No solid upstream kind yet, or mapping is speculative    |
 
 ## Current-to-Upstream Mapping Table
 
@@ -147,14 +147,14 @@ Mapping tables reconciled via
 [#4188](https://github.com/redhat-developer/rhdh-plugins/issues/4188) /
 [#4189](https://github.com/redhat-developer/rhdh-plugins/pull/4189).
 
-| Category       | Current Kind | Current `spec.type` | Current Annotation                        | RHDH 2.1 Target                                                                                                                                                                       | Confidence  |
-| -------------- | ------------ | ------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| `mcp-server`   | API          | `mcp-server`        | `rhdh.io/ai-asset-category: mcp-server`   | Same — `McpServerApiEntity` ([#34016](https://github.com/backstage/backstage/pull/34016), merged)                                                                                     | High        |
-| `skill`        | AiResource   | `skill`             | `rhdh.io/ai-asset-category: skill`        | `AiResource` ([#34261](https://github.com/backstage/backstage/pull/34261) merged; [#33575](https://github.com/backstage/backstage/issues/33575) lineage)                              | Medium-High |
-| `rule`         | AiResource   | `rule`              | `rhdh.io/ai-asset-category: rule`         | `AiResource` ([#34261](https://github.com/backstage/backstage/pull/34261) merged; [#33575](https://github.com/backstage/backstage/issues/33575) lineage)                              | Medium-High |
-| `model-server` | API          | `ai-model-server`   | `rhdh.io/ai-asset-category: model-server` | `AiModelServerAPI` ([#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211)); byte-for-byte with upstream [#34476](https://github.com/backstage/backstage/pull/34476)     | Medium      |
-| `ai-model`     | —            | —                   | —                                         | Part of `AiModelServerAPI` (models are a list of model names within the model-server entity); no separate entity kind                                                                 | Medium      |
-| `skill-bundle` | AiResource   | `ai-skill-bundle`   | `rhdh.io/ai-asset-category: skill-bundle` | No upstream kind                                                                                                                                                                      | Low         |
+| Category       | Current Kind | Current `spec.type` | Current Annotation                        | RHDH 2.1 Target                                                                                                                                                                           | Confidence  |
+| -------------- | ------------ | ------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `mcp-server`   | API          | `mcp-server`        | `rhdh.io/ai-asset-category: mcp-server`   | Same — `McpServerApiEntity` ([#34016](https://github.com/backstage/backstage/pull/34016), merged)                                                                                         | High        |
+| `skill`        | AiResource   | `skill`             | `rhdh.io/ai-asset-category: skill`        | `AiResource` ([#34261](https://github.com/backstage/backstage/pull/34261) merged; [#33575](https://github.com/backstage/backstage/issues/33575) lineage)                                  | Medium-High |
+| `rule`         | AiResource   | `rule`              | `rhdh.io/ai-asset-category: rule`         | `AiResource` ([#34261](https://github.com/backstage/backstage/pull/34261) merged; [#33575](https://github.com/backstage/backstage/issues/33575) lineage)                                  | Medium-High |
+| `model-server` | API          | `ai-model-server`   | `rhdh.io/ai-asset-category: model-server` | `AiModelServerAPI` ([#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211)); byte-for-byte with upstream [#34476](https://github.com/backstage/backstage/pull/34476)         | Medium      |
+| `ai-model`     | —            | —                   | —                                         | Part of `AiModelServerAPI` (models are a list of model names within the model-server entity); no separate entity kind                                                                     | Medium      |
+| `skill-bundle` | AiResource   | `ai-skill-bundle`   | `rhdh.io/ai-asset-category: skill-bundle` | No upstream kind                                                                                                                                                                          | Low         |
 | `agent`        | AiResource   | `agent`             | `rhdh.io/ai-asset-category: agent`        | `AiResource` / `agent` ([#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164), merged); boost pivot via [#4260](https://github.com/redhat-developer/rhdh-plugins/pull/4260) | Medium      |
 
 ### Notes
@@ -231,14 +231,14 @@ Decision 1 prose still spells `AIResource`.
 
 **Field-level transforms:**
 
-| Field            | Current                            | Target                        | Action                                                              |
-| ---------------- | ---------------------------------- | ----------------------------- | ------------------------------------------------------------------- |
-| `kind`           | `AiResource` (canonical)           | `AiResource`                  | Already aligned; fix any docs/emitters still writing `AIResource`   |
-| `spec.type`      | `skill`                            | `skill` (unchanged)           | No change                                                           |
-| `spec.lifecycle` | May be missing                     | Required on `AiResource`      | Ensure lifecycle is populated                                       |
-| `spec.owner`     | May be missing                     | Required on `AiResource`      | Ensure owner is populated                                           |
-| `spec.dependsOn` | Optional / SDK-specific            | Skill typed variant relations | Align with upstream skill `dependsOn` (defaultKind `AiResource`)    |
-| `apiVersion`     | Current                            | Upstream `AiResource` version | Update to match upstream apiVersion                                 |
+| Field            | Current                  | Target                        | Action                                                            |
+| ---------------- | ------------------------ | ----------------------------- | ----------------------------------------------------------------- |
+| `kind`           | `AiResource` (canonical) | `AiResource`                  | Already aligned; fix any docs/emitters still writing `AIResource` |
+| `spec.type`      | `skill`                  | `skill` (unchanged)           | No change                                                         |
+| `spec.lifecycle` | May be missing           | Required on `AiResource`      | Ensure lifecycle is populated                                     |
+| `spec.owner`     | May be missing           | Required on `AiResource`      | Ensure owner is populated                                         |
+| `spec.dependsOn` | Optional / SDK-specific  | Skill typed variant relations | Align with upstream skill `dependsOn` (defaultKind `AiResource`)  |
+| `apiVersion`     | Current                  | Upstream `AiResource` version | Update to match upstream apiVersion                               |
 
 **Notes:**
 
@@ -256,13 +256,13 @@ canonical upstream name (same as skill).
 
 **Field-level transforms:**
 
-| Field            | Current                            | Target                        | Action                                                              |
-| ---------------- | ---------------------------------- | ----------------------------- | ------------------------------------------------------------------- |
-| `kind`           | `AiResource` (canonical)           | `AiResource`                  | Already aligned; fix any docs/emitters still writing `AIResource`   |
-| `spec.type`      | `rule`                             | `rule` (unchanged)            | No change                                                           |
-| `spec.lifecycle` | May be missing                     | Required on `AiResource`      | Ensure lifecycle is populated                                       |
-| `spec.owner`     | May be missing                     | Required on `AiResource`      | Ensure owner is populated                                           |
-| `apiVersion`     | Current                            | Upstream `AiResource` version | Update to match upstream apiVersion                                 |
+| Field            | Current                  | Target                        | Action                                                            |
+| ---------------- | ------------------------ | ----------------------------- | ----------------------------------------------------------------- |
+| `kind`           | `AiResource` (canonical) | `AiResource`                  | Already aligned; fix any docs/emitters still writing `AIResource` |
+| `spec.type`      | `rule`                   | `rule` (unchanged)            | No change                                                         |
+| `spec.lifecycle` | May be missing           | Required on `AiResource`      | Ensure lifecycle is populated                                     |
+| `spec.owner`     | May be missing           | Required on `AiResource`      | Ensure owner is populated                                         |
+| `apiVersion`     | Current                  | Upstream `AiResource` version | Update to match upstream apiVersion                               |
 
 **Notes:**
 
@@ -279,15 +279,15 @@ for RHDH 2.1: `kind: API`, `spec.type: ai-model-server`.
 
 **Field-level transforms:**
 
-| Field             | Current (Decision 1)    | Target (AiModelServerAPI)     | Action                                                       |
-| ----------------- | ----------------------- | ----------------------------- | ------------------------------------------------------------ |
-| `kind`            | `Resource`              | `API`                         | Kind change from Resource to API                             |
-| `spec.type`       | `ai-model-server`       | `ai-model-server` (unchanged) | No change                                                    |
-| `spec.lifecycle`  | May not be present      | Required for API entities     | Populate lifecycle field                                     |
-| `spec.owner`      | Existing                | Existing (unchanged)          | No change                                                    |
-| `spec.definition` | Resource-style definition | API-style definition        | Restructure definition format per API entity spec            |
-| `spec.system`     | Optional                | Optional (unchanged)          | No change                                                    |
-| Model list        | N/A                     | List of model names           | Models are expressed within the model-server entity, not separately |
+| Field             | Current (Decision 1)      | Target (AiModelServerAPI)     | Action                                                              |
+| ----------------- | ------------------------- | ----------------------------- | ------------------------------------------------------------------- |
+| `kind`            | `Resource`                | `API`                         | Kind change from Resource to API                                    |
+| `spec.type`       | `ai-model-server`         | `ai-model-server` (unchanged) | No change                                                           |
+| `spec.lifecycle`  | May not be present        | Required for API entities     | Populate lifecycle field                                            |
+| `spec.owner`      | Existing                  | Existing (unchanged)          | No change                                                           |
+| `spec.definition` | Resource-style definition | API-style definition          | Restructure definition format per API entity spec                   |
+| `spec.system`     | Optional                  | Optional (unchanged)          | No change                                                           |
+| Model list        | N/A                       | List of model names           | Models are expressed within the model-server entity, not separately |
 
 **Notes:**
 
@@ -377,39 +377,39 @@ RHDH 2.1 from
 
 ### Catalog UI Filters
 
-| Category       | Current Filter                                                  | Post-Migration Filter                                                                                                                              | Impact                                                                    |
-| -------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `mcp-server`   | `kind: API` + `rhdh.io/ai-asset-category: mcp-server`          | Same (no kind change)                                                                                                                              | None                                                                      |
-| `skill`        | `kind: AiResource` + `rhdh.io/ai-asset-category: skill`        | Same (kind already aligned upstream)                                                                                                               | None — annotation still useful for category distinction                   |
-| `rule`         | `kind: AiResource` + `rhdh.io/ai-asset-category: rule`         | Same (kind already aligned upstream)                                                                                                               | None                                                                      |
-| `skill-bundle` | `kind: AiResource` + `rhdh.io/ai-asset-category: skill-bundle` | No change planned                                                                                                                                  | None (until upstream kind exists)                                         |
-| `model-server` | `kind: API` + `spec.type: ai-model-server`                     | Same — `AiModelServerAPI` ([#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211))                                                    | Filters already use `kind: API`; adjust from prior `kind: Resource` usage |
-| `ai-model`     | —                                                               | Part of `AiModelServerAPI` entity (model list); no separate filter                                                                                 | N/A                                                                       |
+| Category       | Current Filter                                                 | Post-Migration Filter                                                                                                                                          | Impact                                                                    |
+| -------------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `mcp-server`   | `kind: API` + `rhdh.io/ai-asset-category: mcp-server`          | Same (no kind change)                                                                                                                                          | None                                                                      |
+| `skill`        | `kind: AiResource` + `rhdh.io/ai-asset-category: skill`        | Same (kind already aligned upstream)                                                                                                                           | None — annotation still useful for category distinction                   |
+| `rule`         | `kind: AiResource` + `rhdh.io/ai-asset-category: rule`         | Same (kind already aligned upstream)                                                                                                                           | None                                                                      |
+| `skill-bundle` | `kind: AiResource` + `rhdh.io/ai-asset-category: skill-bundle` | No change planned                                                                                                                                              | None (until upstream kind exists)                                         |
+| `model-server` | `kind: API` + `spec.type: ai-model-server`                     | Same — `AiModelServerAPI` ([#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211))                                                                | Filters already use `kind: API`; adjust from prior `kind: Resource` usage |
+| `ai-model`     | —                                                              | Part of `AiModelServerAPI` entity (model list); no separate filter                                                                                             | N/A                                                                       |
 | `agent`        | `kind: AiResource` + `spec.type: agent`                        | Same — committed via [#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164) / [#4260](https://github.com/redhat-developer/rhdh-plugins/pull/4260) | Filters already use `kind: AiResource, spec.type: agent`                  |
 
 ### Entity References
 
-| Category       | Current Entity Ref             | Post-Migration Entity Ref                                | Impact                                                                                                                                                                                                                                                  |
-| -------------- | ------------------------------ | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `mcp-server`   | `api:default/my-mcp-server`    | `api:default/my-mcp-server`                              | None                                                                                                                                                                                                                                                    |
-| `skill`        | `airesource:default/my-skill`  | `airesource:default/my-skill`                            | None (Backstage lowercases kind in entity refs)                                                                                                                                                                                                         |
-| `rule`         | `airesource:default/my-rule`   | `airesource:default/my-rule`                             | None (same lowercasing behavior)                                                                                                                                                                                                                        |
-| `skill-bundle` | `airesource:default/my-bundle` | `airesource:default/my-bundle`                           | None                                                                                                                                                                                                                                                    |
-| `model-server` | `api:default/my-server`        | `api:default/my-server`                                  | None — `AiModelServerAPI` is already `kind: API`                                                                                                                                                                                                        |
-| `ai-model`     | —                              | Part of model-server entity; no standalone ref           | N/A                                                                                                                                                                                                                                                     |
-| `agent`        | `airesource:default/my-agent`  | `airesource:default/my-agent`                            | None — already `kind: AiResource` per #4164                                                                                                                                                                                                             |
+| Category       | Current Entity Ref             | Post-Migration Entity Ref                      | Impact                                           |
+| -------------- | ------------------------------ | ---------------------------------------------- | ------------------------------------------------ |
+| `mcp-server`   | `api:default/my-mcp-server`    | `api:default/my-mcp-server`                    | None                                             |
+| `skill`        | `airesource:default/my-skill`  | `airesource:default/my-skill`                  | None (Backstage lowercases kind in entity refs)  |
+| `rule`         | `airesource:default/my-rule`   | `airesource:default/my-rule`                   | None (same lowercasing behavior)                 |
+| `skill-bundle` | `airesource:default/my-bundle` | `airesource:default/my-bundle`                 | None                                             |
+| `model-server` | `api:default/my-server`        | `api:default/my-server`                        | None — `AiModelServerAPI` is already `kind: API` |
+| `ai-model`     | —                              | Part of model-server entity; no standalone ref | N/A                                              |
+| `agent`        | `airesource:default/my-agent`  | `airesource:default/my-agent`                  | None — already `kind: AiResource` per #4164      |
 
 ### API Queries
 
-| Category       | Current Query                                                                                                | Post-Migration Query                                                          | Impact                              |
-| -------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- | ----------------------------------- |
-| `mcp-server`   | `GET /api/catalog/entities?filter=kind=API,spec.type=mcp-server`                                             | Same                                                                          | None                                |
-| `skill`        | `GET /api/catalog/entities?filter=kind=AiResource,spec.type=skill`                                           | Same                                                                          | None                                |
-| `rule`         | `GET /api/catalog/entities?filter=kind=AiResource,spec.type=rule`                                            | Same                                                                          | None                                |
-| `model-server` | `GET /api/catalog/entities?filter=kind=API,spec.type=ai-model-server`                                        | Same — `AiModelServerAPI` from [#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211) | None post-pivot                     |
-| `ai-model`     | N/A                                                                                                          | Part of model-server entity                                                   | N/A                                 |
-| `skill-bundle` | `GET /api/catalog/entities?filter=kind=AiResource,spec.type=ai-skill-bundle`                                 | Same                                                                          | None                                |
-| `agent`        | `GET /api/catalog/entities?filter=kind=AiResource,spec.type=agent`                                           | Same — committed via #4164                                                    | None post-pivot                     |
+| Category       | Current Query                                                                | Post-Migration Query                                                                               | Impact          |
+| -------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | --------------- |
+| `mcp-server`   | `GET /api/catalog/entities?filter=kind=API,spec.type=mcp-server`             | Same                                                                                               | None            |
+| `skill`        | `GET /api/catalog/entities?filter=kind=AiResource,spec.type=skill`           | Same                                                                                               | None            |
+| `rule`         | `GET /api/catalog/entities?filter=kind=AiResource,spec.type=rule`            | Same                                                                                               | None            |
+| `model-server` | `GET /api/catalog/entities?filter=kind=API,spec.type=ai-model-server`        | Same — `AiModelServerAPI` from [#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211) | None post-pivot |
+| `ai-model`     | N/A                                                                          | Part of model-server entity                                                                        | N/A             |
+| `skill-bundle` | `GET /api/catalog/entities?filter=kind=AiResource,spec.type=ai-skill-bundle` | Same                                                                                               | None            |
+| `agent`        | `GET /api/catalog/entities?filter=kind=AiResource,spec.type=agent`           | Same — committed via #4164                                                                         | None post-pivot |
 
 ## Backward Compatibility Strategy
 
@@ -501,16 +501,16 @@ GET /api/catalog/entities?filter=kind=API,spec.type=ai-model-server
 
 ## Upstream Tracking
 
-| Upstream Reference                                                              | Status  | Relevance                                                     |
-| ------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------- |
-| [backstage#34016](https://github.com/backstage/backstage/pull/34016)            | Merged  | `McpServerApiEntity` — MCP server kind                        |
-| [backstage#34261](https://github.com/backstage/backstage/pull/34261)            | Merged  | `AiResource` kind implementation                              |
+| Upstream Reference                                                              | Status  | Relevance                                                      |
+| ------------------------------------------------------------------------------- | ------- | -------------------------------------------------------------- |
+| [backstage#34016](https://github.com/backstage/backstage/pull/34016)            | Merged  | `McpServerApiEntity` — MCP server kind                         |
+| [backstage#34261](https://github.com/backstage/backstage/pull/34261)            | Merged  | `AiResource` kind implementation                               |
 | [backstage#33575](https://github.com/backstage/backstage/issues/33575)          | Open    | RFC / lineage for AI catalog kinds (`AIContext` RFC)           |
-| [backstage#34476](https://github.com/backstage/backstage/pull/34476)            | Open PR | `API` / `ai-model-server` candidate (byte-for-byte with #4211)|
-| [rhdh-plugins#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164) | Merged  | Downstream `AiResource` agent type (RHIDP-15865)              |
-| [rhdh-plugins#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211) | Open PR | `AiModelServerAPI` — committed 2.1 model-server target        |
-| [rhdh-plugins#4246](https://github.com/redhat-developer/rhdh-plugins/pull/4246) | Open PR | `AiResourceAgentProcessor`                                    |
-| [rhdh-plugins#4260](https://github.com/redhat-developer/rhdh-plugins/pull/4260) | Open PR | Boost pivot to `AiResource` / `AiModelServerAPI`              |
+| [backstage#34476](https://github.com/backstage/backstage/pull/34476)            | Open PR | `API` / `ai-model-server` candidate (byte-for-byte with #4211) |
+| [rhdh-plugins#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164) | Merged  | Downstream `AiResource` agent type (RHIDP-15865)               |
+| [rhdh-plugins#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211) | Open PR | `AiModelServerAPI` — committed 2.1 model-server target         |
+| [rhdh-plugins#4246](https://github.com/redhat-developer/rhdh-plugins/pull/4246) | Open PR | `AiResourceAgentProcessor`                                     |
+| [rhdh-plugins#4260](https://github.com/redhat-developer/rhdh-plugins/pull/4260) | Open PR | Boost pivot to `AiResource` / `AiModelServerAPI`               |
 
 ## Out of Scope
 
