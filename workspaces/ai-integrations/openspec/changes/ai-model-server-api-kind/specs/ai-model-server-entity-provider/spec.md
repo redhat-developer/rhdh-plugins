@@ -79,11 +79,11 @@ The entity MUST include an `auth-required` tag when `modelServer.authentication`
 
 Three `rhdh.io/` annotations on `modelServer.annotations` act as control annotations that drive spec-level fields on the generated `AiModelServerAPI` entity. These annotations MUST NOT appear in the entity's `metadata.annotations` — they are consumed during generation and deleted before the entity is emitted.
 
-| Annotation | Target field | Behavior when present | Behavior when absent |
-|---|---|---|---|
-| `rhdh.io/system` | `spec.system` | Set to the annotation value | `spec.system` is omitted |
-| `rhdh.io/serverType` | `spec.serverType` | Overrides the API type | Falls back to `modelServer.API.type` (or `'unknown'`) |
-| `rhdh.io/default` | `spec.models.default` | Overrides with the annotation's sanitized value | Falls back to the first model's sanitized name |
+| Annotation           | Target field          | Behavior when present                           | Behavior when absent                                  |
+| -------------------- | --------------------- | ----------------------------------------------- | ----------------------------------------------------- |
+| `rhdh.io/system`     | `spec.system`         | Set to the annotation value                     | `spec.system` is omitted                              |
+| `rhdh.io/serverType` | `spec.serverType`     | Overrides the API type                          | Falls back to `modelServer.API.type` (or `'unknown'`) |
+| `rhdh.io/default`    | `spec.models.default` | Overrides with the annotation's sanitized value | Falls back to the first model's sanitized name        |
 
 #### Scenario: System set by annotation
 
