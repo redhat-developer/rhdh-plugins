@@ -376,7 +376,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service/
     "description": "The number of open pull requests.",
     "type": "number",
     "history": true,
-    "defaultVisualization": "value"
+    "defaultVisualization": "donut"
   },
   "points": [
     { "value": 8, "timestamp": "2026-04-27T23:10:00.000Z" },
@@ -507,6 +507,7 @@ curl -X GET "{{url}}/api/scorecard/aggregations/avgDeploymentFrequency/time-seri
     "type": "number",
     "unit": "/week",
     "history": true,
+    "visualization": "sparkline",
     "aggregationType": "average"
   },
   "points": [
@@ -551,12 +552,14 @@ curl -X GET "{{url}}/api/scorecard/aggregations/avgDeploymentFrequency/time-seri
 
 ### `GET /aggregations/:aggregationId/metadata`
 
-Returns **title**, **description**, **type**, **unit**, **history**, and **aggregationType** for the aggregation without computing full aggregate counts. Includes **`filter`** when the KPI is a scalar type with **`filter.status`** configured. Uses the same resolution rules as `GET /aggregations/:aggregationId` (KPI config vs metric id fallback).
+Returns **title**, **description**, **type**, **unit**, **history**, **visualization**, **aggregationType** for the aggregation without computing full aggregate counts. Includes **`filter`** when the KPI is a scalar type with **`filter.status`** configured. Uses the same resolution rules as `GET /aggregations/:aggregationId` (KPI config vs metric id fallback).
 
 ```bash
 curl -X GET "{{url}}/api/scorecard/aggregations/openIssuesKpi/metadata" \
   -H "Authorization: Bearer <token>"
 ```
+
+For endpoint details, see [aggregation.md](./docs/aggregation.md#get-aggregationsaggregationidmetadata).
 
 ### `GET /metrics/:metricId/catalog/aggregations` (deprecated; removal planned)
 

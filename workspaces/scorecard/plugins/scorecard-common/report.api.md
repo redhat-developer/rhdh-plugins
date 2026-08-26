@@ -63,6 +63,7 @@ export type AggregationMetadata = {
   type: MetricType;
   unit?: string;
   history?: boolean;
+  visualization?: ScorecardVisualizationType;
   aggregationType: AggregationType;
   filter?: AggregationConfigFilter;
 };
@@ -98,12 +99,6 @@ export const aggregationTypes: Readonly<{
 export type CollectorConfig = {
   id: string;
   input?: Record<string, JsonValue>;
-};
-
-// @public
-export type CollectorMetadata = {
-  id: string;
-  description: string;
 };
 
 // @public
@@ -150,12 +145,9 @@ export type Metric<T extends MetricType = MetricType> = {
   thresholds: ThresholdConfig;
   unit?: string;
   history?: boolean;
-  defaultVisualization?: MetricDefaultVisualization;
+  defaultVisualization?: ScorecardVisualizationType;
   collectorIds?: string[];
 };
-
-// @public
-export type MetricDefaultVisualization = 'value' | 'sparkline';
 
 // @public (undocumented)
 export type MetricResult = {
@@ -167,7 +159,7 @@ export type MetricResult = {
     type: MetricType;
     unit?: string;
     history?: boolean;
-    defaultVisualization?: MetricDefaultVisualization;
+    defaultVisualization?: ScorecardVisualizationType;
     collectorIds?: string[];
   };
   result: {
@@ -196,7 +188,7 @@ export type MetricTimeSeriesResponse = {
     type: MetricType;
     unit?: string;
     history?: boolean;
-    defaultVisualization?: MetricDefaultVisualization;
+    defaultVisualization?: ScorecardVisualizationType;
     collectorIds?: string[];
   };
 };
@@ -227,12 +219,6 @@ export type ScalarAggregatedMetricTimeSeriesResponse = {
   points: ScalarAggregatedTimeSeriesPoint[];
   thresholds: ThresholdConfig;
   aggregationChartDisplayColor: string | null;
-};
-
-// @public
-export type TimeSeriesPointError = {
-  message: string;
-  count: number;
 };
 
 // @public
@@ -292,6 +278,16 @@ export const ScorecardThresholdRuleColors: {
   readonly ERROR: 'error.main';
 };
 
+// @public
+export type ScorecardVisualizationType =
+  (typeof ScorecardVisualizationTypes)[keyof typeof ScorecardVisualizationTypes];
+
+// @public (undocumented)
+export const ScorecardVisualizationTypes: {
+  readonly DONUT: 'donut';
+  readonly SPARKLINE: 'sparkline';
+};
+
 // @public (undocumented)
 export type StatusGroupedAggregationResult = Omit<
   AggregatedMetric,
@@ -323,6 +319,12 @@ export type ThresholdRule = {
   expression: string;
   color?: string;
   icon?: string;
+};
+
+// @public
+export type TimeSeriesPointError = {
+  message: string;
+  count: number;
 };
 
 // @public (undocumented)

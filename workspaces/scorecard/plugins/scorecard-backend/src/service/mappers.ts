@@ -76,6 +76,7 @@ export class AggregatedMetricMapper {
       type: metric.type,
       unit: metric.unit,
       history: metric.history,
+      visualization: metric.defaultVisualization,
       title: aggregationConfig.title,
       description: aggregationConfig.description,
       aggregationType: aggregationConfig.type,
@@ -101,7 +102,7 @@ export class AggregatedMetricMapper {
     };
   }
 
-  static toScalarTimeSeriesPoint(
+  static toScalarAggregatedTimeSeriesPoint(
     row: DbScalarTimeSeriesPoint,
   ): ScalarAggregatedTimeSeriesPoint {
     const successCount = row.successCount;

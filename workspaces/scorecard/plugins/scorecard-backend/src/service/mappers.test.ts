@@ -154,6 +154,7 @@ describe('AggregatedMetricMapper', () => {
         type: 'number',
         unit: undefined,
         history: undefined,
+        visualization: undefined,
         aggregationType: aggregationTypes.statusGrouped,
       });
     });
@@ -175,6 +176,7 @@ describe('AggregatedMetricMapper', () => {
         type: 'number',
         unit: undefined,
         history: undefined,
+        visualization: undefined,
         aggregationType: aggregationTypes.weightedStatusScore,
       });
     });
@@ -206,11 +208,12 @@ describe('AggregatedMetricMapper', () => {
       expect(result).not.toHaveProperty('filter');
     });
 
-    it('should include unit and history when defined on the metric', () => {
+    it('should include unit, history and visualization when defined on the metric', () => {
       const metricWithUnitAndHistory: Metric = {
         ...mockMetric,
         unit: 'h',
         history: true,
+        defaultVisualization: 'sparkline',
       };
 
       const aggregationConfig = mockStatusGroupedAggregationConfig({
@@ -229,6 +232,7 @@ describe('AggregatedMetricMapper', () => {
         type: 'number',
         unit: 'h',
         history: true,
+        visualization: 'sparkline',
         aggregationType: aggregationTypes.statusGrouped,
       });
     });
@@ -236,6 +240,14 @@ describe('AggregatedMetricMapper', () => {
 
   describe('toAggregatedMetricResult', () => {
     const thresholds: ThresholdConfig = DEFAULT_NUMBER_THRESHOLDS;
+    const toAggregationMetadataSpy = jest.spyOn(
+      AggregatedMetricMapper,
+      'toAggregationMetadata',
+    );
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
 
     it('should wrap a statusGrouped-shaped result and aggregation metadata from config', () => {
       const aggregationConfig = mockStatusGroupedAggregationConfig({
@@ -260,6 +272,7 @@ describe('AggregatedMetricMapper', () => {
         aggregationConfig,
       );
 
+      expect(toAggregationMetadataSpy).toHaveBeenCalledTimes(1);
       expect(result).toEqual({
         id: 'test.metric',
         status: 'success',
@@ -269,6 +282,7 @@ describe('AggregatedMetricMapper', () => {
           type: 'number',
           unit: undefined,
           history: undefined,
+          visualization: undefined,
           aggregationType: 'statusGrouped',
         },
         result: {
@@ -311,6 +325,7 @@ describe('AggregatedMetricMapper', () => {
         aggregationConfig,
       );
 
+      expect(toAggregationMetadataSpy).toHaveBeenCalledTimes(1);
       expect(result.metadata.aggregationType).toBe(
         aggregationTypes.weightedStatusScore,
       );
@@ -337,6 +352,7 @@ describe('AggregatedMetricMapper', () => {
         aggregationConfig,
       );
 
+      expect(toAggregationMetadataSpy).toHaveBeenCalledTimes(1);
       expect(result.metadata.filter).toEqual({ status: 'error' });
     });
 
@@ -357,11 +373,85 @@ describe('AggregatedMetricMapper', () => {
         aggregationConfig,
       );
 
+      expect(toAggregationMetadataSpy).toHaveBeenCalledTimes(1);
       expect(result.metadata).not.toHaveProperty('filter');
     });
   });
 
+  describe('toScalarAggregatedTimeSeriesPoint', () => {
+    it('should omit errors when none are present', () => {
+      expect(
+        AggregatedMetricMapper.toScalarAggregatedTimeSeriesPoint({
+          utcDay: '2024-01-01',
+          value: 12,
+          successCount: 3,
+          errorCount: 0,
+          total: 3,
+          errors: [],
+        }),
+      ).toEqual({
+        value: 12,
+        successCount: 3,
+        errorCount: 0,
+        total: 3,
+        status: 'success',
+        timestamp: '2024-01-01T00:00:00.000Z',
+      });
+    });
+
+    it('should map a successful day', () => {
+      expect(
+        AggregatedMetricMapper.toScalarAggregatedTimeSeriesPoint({
+          utcDay: '2024-01-01',
+          value: 12,
+          successCount: 3,
+          errorCount: 1,
+          total: 4,
+          errors: [{ message: 'boom', count: 1 }],
+        }),
+      ).toEqual({
+        value: 12,
+        successCount: 3,
+        errorCount: 1,
+        total: 4,
+        status: 'success',
+        errors: [{ message: 'boom', count: 1 }],
+        timestamp: '2024-01-01T00:00:00.000Z',
+      });
+    });
+
+    it('should map an error-only day with null value and status error', () => {
+      expect(
+        AggregatedMetricMapper.toScalarAggregatedTimeSeriesPoint({
+          utcDay: '2024-01-01',
+          value: null,
+          successCount: 0,
+          errorCount: 2,
+          total: 2,
+          errors: [{ message: 'boom', count: 2 }],
+        }),
+      ).toEqual({
+        value: null,
+        successCount: 0,
+        errorCount: 2,
+        total: 2,
+        status: 'error',
+        errors: [{ message: 'boom', count: 2 }],
+        timestamp: '2024-01-01T00:00:00.000Z',
+      });
+    });
+  });
+
   describe('toScalarAggregatedMetricTimeSeriesResponse', () => {
+    const toAggregationMetadataSpy = jest.spyOn(
+      AggregatedMetricMapper,
+      'toAggregationMetadata',
+    );
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
     it('should wrap points with aggregation id, thresholds, and aggregationChartDisplayColor', () => {
       const aggregationConfig = mockScalarAggregationConfig(
         aggregationTypes.sum,
@@ -400,68 +490,33 @@ describe('AggregatedMetricMapper', () => {
         aggregationChartDisplayColor: 'warning.main',
       });
     });
-  });
 
-  describe('toScalarTimeSeriesPoint', () => {
-    it('should omit errors when none are present', () => {
-      expect(
-        AggregatedMetricMapper.toScalarTimeSeriesPoint({
-          utcDay: '2024-01-01',
-          value: 12,
-          successCount: 3,
-          errorCount: 0,
-          total: 3,
-          errors: [],
-        }),
-      ).toEqual({
-        value: 12,
-        successCount: 3,
-        errorCount: 0,
-        total: 3,
-        status: 'success',
-        timestamp: '2024-01-01T00:00:00.000Z',
-      });
-    });
+    it('should wrap points with metadata using `toAggregatedMetadata`', () => {
+      const aggregationConfig = mockScalarAggregationConfig(
+        aggregationTypes.sum,
+        {
+          id: 'totalOpenPrs',
+        },
+      );
 
-    it('should map a successful day', () => {
-      expect(
-        AggregatedMetricMapper.toScalarTimeSeriesPoint({
-          utcDay: '2024-01-01',
-          value: 12,
-          successCount: 3,
-          errorCount: 1,
-          total: 4,
-          errors: [{ message: 'boom', count: 1 }],
-        }),
-      ).toEqual({
-        value: 12,
-        successCount: 3,
-        errorCount: 1,
-        total: 4,
-        status: 'success',
-        errors: [{ message: 'boom', count: 1 }],
-        timestamp: '2024-01-01T00:00:00.000Z',
-      });
-    });
+      const result =
+        AggregatedMetricMapper.toScalarAggregatedMetricTimeSeriesResponse(
+          mockMetric,
+          aggregationConfig,
+          [],
+          DEFAULT_NUMBER_THRESHOLDS,
+          null,
+        );
 
-    it('should map an error-only day with null value and status error', () => {
-      expect(
-        AggregatedMetricMapper.toScalarTimeSeriesPoint({
-          utcDay: '2024-01-01',
-          value: null,
-          successCount: 0,
-          errorCount: 2,
-          total: 2,
-          errors: [{ message: 'boom', count: 2 }],
-        }),
-      ).toEqual({
-        value: null,
-        successCount: 0,
-        errorCount: 2,
-        total: 2,
-        status: 'error',
-        errors: [{ message: 'boom', count: 2 }],
-        timestamp: '2024-01-01T00:00:00.000Z',
+      expect(toAggregationMetadataSpy).toHaveBeenCalledTimes(1);
+      expect(result.metadata).toEqual({
+        description: 'Scalar aggregation KPI',
+        history: undefined,
+        title: 'Scalar KPI',
+        type: 'number',
+        unit: undefined,
+        visualization: undefined,
+        aggregationType: aggregationTypes.sum,
       });
     });
   });

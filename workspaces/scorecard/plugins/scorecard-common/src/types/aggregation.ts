@@ -16,6 +16,7 @@
 
 import { aggregationTypes } from '../constants/aggregations';
 import { MetricType } from './Metric';
+import { ScorecardVisualizationType } from './scorecard';
 import { ThresholdConfig } from './threshold';
 
 /**
@@ -78,6 +79,7 @@ export type AggregationMetadata = {
   type: MetricType;
   unit?: string;
   history?: boolean;
+  visualization?: ScorecardVisualizationType;
   aggregationType: AggregationType;
   filter?: AggregationConfigFilter;
 };

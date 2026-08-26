@@ -87,6 +87,8 @@ export class AggregatedMetricLoader {
         filter,
       );
 
-    return rows.map(row => AggregatedMetricMapper.toScalarTimeSeriesPoint(row));
+    return rows.map(row =>
+      AggregatedMetricMapper.toScalarAggregatedTimeSeriesPoint(row),
+    );
   }
 }

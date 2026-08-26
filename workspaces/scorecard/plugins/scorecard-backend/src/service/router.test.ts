@@ -651,7 +651,7 @@ describe('createRouter', () => {
         type: 'number',
         unit: undefined,
         history: true,
-        defaultVisualization: 'value',
+        defaultVisualization: 'donut',
       },
       points: [
         { value: 8, timestamp: '2024-01-01T20:00:00.000Z' },

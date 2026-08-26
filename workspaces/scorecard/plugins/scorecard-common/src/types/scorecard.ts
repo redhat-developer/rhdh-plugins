@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
-export * from './Metric';
-export * from './threshold';
-export * from './aggregation';
-export * from './collector';
-export * from './scorecard';
+export const ScorecardVisualizationTypes = {
+  DONUT: 'donut',
+  SPARKLINE: 'sparkline',
+} as const;
+
+/**
+ * Scorecard data visualization type
+ * @public
+ */
+export type ScorecardVisualizationType =
+  (typeof ScorecardVisualizationTypes)[keyof typeof ScorecardVisualizationTypes];

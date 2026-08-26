@@ -266,7 +266,7 @@ Use this endpoint for all new integrations.
 - **`aggregationId`** may be a key under **`scorecard.aggregationKPIs`** in app-config (see the [backend README](../README.md#aggregation-kpis-homepage-and-get-aggregations)), which supplies **title**, **description**, **type**, **metricId**, and type-specific **`options`** (for example **`options.statusScores`** for **`weightedStatusScore`**, or optional **`options.thresholds`** for scalar types and **`weightedStatusScore`**).
 - If there is **no** `scorecard.aggregationKPIs.<aggregationId>` block, the backend still responds successfully: it treats **`aggregationId` as the `metricId`**. The default type is **`average`** when the metric’s **`defaultVisualization`** is **`sparkline`**, otherwise **`statusGrouped`**. A **warning** is logged on the server so missing KPI config is visible in operator logs. To get a custom **title**, **`weightedStatusScore`** or **scalar** type, or other KPI options, you must add that block; a typo in the id falls through to this default and can look like “wrong” aggregation behavior in the UI, so check logs and app-config.
 
-The response shape includes **`id`**, **`status`**, **`metadata`** (title, description, type, unit, aggregation type, and **`filter`** when configured), and **`result`**. The shape of **`result`** depends on the aggregation type:
+The response shape includes **`id`**, **`status`**, **`metadata`** (title, description, type, unit, visualization, aggregation type, and **`filter`** when configured), and **`result`**. The shape of **`result`** depends on the aggregation type:
 
 - **`statusGrouped`**: counts per threshold rule, **`total`**, **`thresholds`**, **`entitiesConsidered`**, **`calculationErrorCount`**, **`timestamp`**.
 - **`weightedStatusScore`**: same as status-grouped, plus **`weightedStatusScore`** (portfolio percentage in \[0, 100\], one decimal), **`weightedStatusSum`**, **`weightedStatusMaxPossible`**, and **`aggregationChartDisplayColor`** (see backend README). The homepage card shows a donut gauge for this type instead of a multi-slice status pie.
@@ -387,7 +387,7 @@ Requires:
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **`id`**                           | Aggregation id (KPI key or metric id).                                                                                                                                                                                                                                              |
 | **`metricId`**                     | Backing metric id.                                                                                                                                                                                                                                                                  |
-| **`metadata`**                     | Same metadata as the snapshot route (`title`, `description`, `type`, `unit`, `aggregationType`, and `filter` when configured).                                                                                                                                                      |
+| **`metadata`**                     | Same metadata as the snapshot route (`title`, `description`, `type`, `unit`, `visualization`, `aggregationType`, and `filter` when configured).                                                                                                                                     |
 | **`points`**                       | List of UTC days that have at least one stored row. Each point has **`value`** (or **`null` when `successCount` is 0**), **`successCount`**, **`errorCount`**, **`total`**, **`status`** (`success` / `error`), optional **`errors`**, and **`timestamp`** (start of that UTC day). |
 | **`thresholds`**                   | Number-style rules for classifying **`value`**; from KPI **`options.thresholds`** or **`DEFAULT_NUMBER_THRESHOLDS`** when omitted. Not entity annotation overrides.                                                                                                                 |
 | **`aggregationChartDisplayColor`** | Color of the sparkline stroke from the **last successful** point’s matching threshold rule **`color`**. **`null`** when no day has a value or the matching rule has no **`color`**.                                                                                                 |
@@ -462,6 +462,7 @@ Example response for KPI without filter and one UTC day 2026-08-24:
     "type": "number",
     "unit": "/week",
     "history": true,
+    "visualization": "sparkline",
     "aggregationType": "average"
   },
   "points": [
