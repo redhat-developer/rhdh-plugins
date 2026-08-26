@@ -70,7 +70,6 @@ const useStyles = makeStyles(theme => ({
 
 interface AgentRow extends AgentMetrics {
   id: string;
-  isAdversarial?: boolean;
 }
 
 const ToolCallsCell = ({
@@ -140,35 +139,21 @@ const AgentDetailPanel = ({ row }: { row: AgentRow }) => {
   );
 };
 
-export const PhaseTelemetry = ({
-  telemetry,
-  adversarialTelemetry,
-}: {
-  telemetry?: Telemetry;
-  adversarialTelemetry?: Telemetry;
-}) => {
+export const PhaseTelemetry = ({ telemetry }: { telemetry?: Telemetry }) => {
   const { t } = useTranslation();
   const classes = useStyles();
   const theme = useTheme();
   const [selectedAgent, setSelectedAgent] = useState<AgentRow | null>(null);
 
   const agentRows = useMemo((): AgentRow[] => {
-    const regular = telemetry?.agents
-      ? Object.entries(telemetry.agents).map(([id, metrics]) => ({
-          id,
-          ...metrics,
-          isAdversarial: false,
-        }))
-      : [];
-    const adversarial = adversarialTelemetry?.agents
-      ? Object.entries(adversarialTelemetry.agents).map(([id, metrics]) => ({
-          id: `adversarial-${id}`,
-          ...metrics,
-          isAdversarial: true,
-        }))
-      : [];
-    return [...regular, ...adversarial];
-  }, [telemetry, adversarialTelemetry]);
+    if (!telemetry?.agents) {
+      return [];
+    }
+    return Object.entries(telemetry.agents).map(([id, metrics]) => ({
+      id,
+      ...metrics,
+    }));
+  }, [telemetry]);
 
   const columns = useMemo((): TableColumn<AgentRow>[] => {
     return [
@@ -231,11 +216,6 @@ export const PhaseTelemetry = ({
             <Box className={classes.drawerHeader}>
               <Box>
                 <Typography variant="h6">{selectedAgent.name}</Typography>
-                {selectedAgent.isAdversarial && (
-                  <Typography variant="caption" color="textSecondary">
-                    {t('modulePage.phases.adversarialAgentLabel')}
-                  </Typography>
-                )}
               </Box>
               <IconButton
                 size="small"

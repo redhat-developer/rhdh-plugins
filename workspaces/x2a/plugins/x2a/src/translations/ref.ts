@@ -135,6 +135,9 @@ export const x2aPluginMessages = {
       runAdversarialReview: 'Run Adversarial Review',
       adversarialReview: 'Adversarial Review',
       adversarialNoRuns: 'No runs yet',
+      adversarialRunning: 'Adversarial review is running…',
+      adversarialCriticalAgentsWarning:
+        'Critical adversarial agents are configured but have not been run for this phase.',
       adversarialAgentLabel: 'adversarial',
       adversarialCriticalFindings: 'Critical Findings',
       adversarialWarningFindings: 'Warning Findings',

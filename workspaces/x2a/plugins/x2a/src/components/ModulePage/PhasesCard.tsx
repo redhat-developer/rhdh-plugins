@@ -158,7 +158,6 @@ export const PhasesCard = ({
           moduleId={moduleId}
           onRunPhase={onRunPhase}
           onCancelPhase={onCancelPhase}
-          adversarialTelemetry={adversarialAnalyzePhase?.telemetry}
         />
         {onRunAdversarial && (
           <Box mt={2}>
@@ -192,7 +191,6 @@ export const PhasesCard = ({
           moduleId={moduleId}
           onRunPhase={onRunPhase}
           onCancelPhase={onCancelPhase}
-          adversarialTelemetry={adversarialMigratePhase?.telemetry}
         />
         {onRunAdversarial && (
           <Box mt={2}>

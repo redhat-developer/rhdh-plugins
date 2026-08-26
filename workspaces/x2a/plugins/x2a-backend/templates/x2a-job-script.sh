@@ -709,6 +709,17 @@ case "${PHASE}" in
       ARTIFACTS+=("adversarial_report_json:$(cat /app/agent-adversarial-report.json)")
     fi
 
+    echo ""
+    echo "=== Output directory contents ==="
+    ls -la "${OUTPUT_DIR}/"
+
+    if [[ -f "${REPORT_MD}" ]]; then
+      echo ""
+      echo "=== Adversarial report (${ACTUAL_PHASE}) ==="
+      cat "${REPORT_MD}"
+      echo ""
+    fi
+
     ARTIFACTS+=("adversarial_report:${PROJECT_DIR}/modules/${MODULE_NAME}/adversarial-report-${ACTUAL_PHASE}.md")
     ;;
 

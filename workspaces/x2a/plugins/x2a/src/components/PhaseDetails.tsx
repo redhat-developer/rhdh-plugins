@@ -30,7 +30,6 @@ import {
   MigrationPhase,
   ModulePhase,
   Phase,
-  Telemetry,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import millify from 'millify';
@@ -175,7 +174,6 @@ export const PhaseDetails = (
     projectId: string;
     onRunPhase?: (phase: MigrationPhase) => void;
     onCancelPhase?: (phase: MigrationPhase) => void;
-    adversarialTelemetry?: Telemetry;
   } & OptionalModuleId,
 ) => {
   const { t } = useTranslation();
@@ -184,14 +182,7 @@ export const PhaseDetails = (
   const empty = t('module.phases.none');
   const [showLog, setShowLog] = useState(false);
 
-  const {
-    phase,
-    projectId,
-    phaseName,
-    onRunPhase,
-    onCancelPhase,
-    adversarialTelemetry,
-  } = props;
+  const { phase, projectId, phaseName, onRunPhase, onCancelPhase } = props;
   const moduleId = 'moduleId' in props ? props.moduleId : undefined;
 
   const durationSeconds = phase
@@ -215,16 +206,13 @@ export const PhaseDetails = (
   const canRunPhase = phase?.status !== 'running';
 
   const tokenTotals = useMemo(() => {
-    const all = [
-      ...Object.values(phase?.telemetry?.agents ?? {}),
-      ...Object.values(adversarialTelemetry?.agents ?? {}),
-    ];
+    const all = Object.values(phase?.telemetry?.agents ?? {});
     if (all.length === 0) return undefined;
     return {
       inputTokens: all.reduce((s, a) => s + (a.inputTokens ?? 0), 0),
       outputTokens: all.reduce((s, a) => s + (a.outputTokens ?? 0), 0),
     };
-  }, [phase?.telemetry, adversarialTelemetry]);
+  }, [phase?.telemetry]);
 
   const fetchLog = useCallback(
     () =>
@@ -364,7 +352,7 @@ export const PhaseDetails = (
         </Grid>
       )}
 
-      {(phase?.telemetry || adversarialTelemetry) && (
+      {phase?.telemetry && (
         <>
           <Grid item xs={12}>
             <Grid container alignItems="baseline" spacing={2}>
@@ -387,10 +375,7 @@ export const PhaseDetails = (
             </Grid>
           </Grid>
           <Grid item xs={12}>
-            <PhaseTelemetry
-              telemetry={phase?.telemetry}
-              adversarialTelemetry={adversarialTelemetry}
-            />
+            <PhaseTelemetry telemetry={phase?.telemetry} />
           </Grid>
         </>
       )}

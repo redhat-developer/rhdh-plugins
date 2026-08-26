@@ -328,6 +328,9 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Adversarielle Überprüfung starten',
     'modulePage.phases.adversarialReview': 'Adversarielle Überprüfung',
     'modulePage.phases.adversarialNoRuns': 'Noch keine Läufe',
+    'modulePage.phases.adversarialRunning': 'Adversarielle Überprüfung läuft…',
+    'modulePage.phases.adversarialCriticalAgentsWarning':
+      'Kritische adversarielle Agenten sind konfiguriert, wurden aber für diese Phase noch nicht ausgeführt.',
     'modulePage.phases.adversarialAgentLabel': 'adversariell',
     'modulePage.phases.adversarialCriticalFindings': 'Kritische Befunde',
     'modulePage.phases.adversarialWarningFindings': 'Warnungsbefunde',

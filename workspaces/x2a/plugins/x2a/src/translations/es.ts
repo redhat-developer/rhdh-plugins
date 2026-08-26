@@ -334,6 +334,10 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'modulePage.phases.runAdversarialReview': 'Ejecutar revisión adversarial',
     'modulePage.phases.adversarialReview': 'Revisión Adversarial',
     'modulePage.phases.adversarialNoRuns': 'Sin ejecuciones aún',
+    'modulePage.phases.adversarialRunning':
+      'La revisión adversarial está en curso…',
+    'modulePage.phases.adversarialCriticalAgentsWarning':
+      'Los agentes adversariales críticos están configurados pero no se han ejecutado para esta fase.',
     'modulePage.phases.adversarialAgentLabel': 'adversarial',
     'modulePage.phases.adversarialCriticalFindings': 'Hallazgos Críticos',
     'modulePage.phases.adversarialWarningFindings': 'Hallazgos de Advertencia',
