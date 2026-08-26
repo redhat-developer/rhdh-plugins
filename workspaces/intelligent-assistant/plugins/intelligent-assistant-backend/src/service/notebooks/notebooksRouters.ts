@@ -69,103 +69,6 @@ export interface NotebooksRouterOptions {
   permissions: PermissionsService;
 }
 
-/**
- * A citation/source in the legacy `referenced_documents` shape expected by the
- * frontend (see `transformDocumentsToSources` in the intelligent-assistant
- * plugin). Only `doc_title` and `doc_url` are consumed; `doc_description` is
- * optional.
- */
-interface ReferencedDocument {
-  doc_title: string;
-  doc_url: string;
-  doc_description?: string;
-}
-
-/**
- * Extracts referenced documents (file_search citations) from a Responses API
- * `response.completed` payload so they can be relayed to the frontend as a
- * legacy `end` event.
- *
- * The Responses API surfaces file_search results in two places:
- *  - a `file_search_call` output item carrying the matched `results`
- *    (each with `file_id`, `filename`, `text`, and `attributes`), and
- *  - `file_citation` annotations on the assistant `message` output text.
- *
- * We prefer the set of files actually cited via annotations; if the model
- * produced no annotations we fall back to all file_search results so the
- * sources chip is still populated. Documents are de-duplicated by file id
- * (falling back to filename/title).
- */
-const extractReferencedDocuments = (response: any): ReferencedDocument[] => {
-  const output: any[] = Array.isArray(response?.output) ? response.output : [];
-
-  // Map of file_id -> file_search result metadata.
-  const resultsByFileId = new Map<string, any>();
-  for (const item of output) {
-    if (item?.type !== 'file_search_call') continue;
-    const results: any[] = Array.isArray(item?.results) ? item.results : [];
-    for (const result of results) {
-      const fileId = result?.file_id ?? result?.id;
-      if (fileId) resultsByFileId.set(fileId, result);
-    }
-  }
-
-  // File ids/filenames actually cited in the assistant message text.
-  const citedFileIds = new Set<string>();
-  for (const item of output) {
-    if (item?.type !== 'message') continue;
-    const content: any[] = Array.isArray(item?.content) ? item.content : [];
-    for (const part of content) {
-      const annotations: any[] = Array.isArray(part?.annotations)
-        ? part.annotations
-        : [];
-      for (const annotation of annotations) {
-        if (annotation?.type !== 'file_citation') continue;
-        const fileId = annotation?.file_id ?? annotation?.filename;
-        if (fileId) citedFileIds.add(fileId);
-      }
-    }
-  }
-
-  const toReferencedDocument = (
-    fileId: string,
-    result: any,
-  ): ReferencedDocument => {
-    const attributes = result?.attributes ?? {};
-    return {
-      doc_title:
-        attributes?.title ??
-        attributes?.doc_title ??
-        result?.filename ??
-        fileId,
-      doc_url: attributes?.url ?? attributes?.doc_url ?? result?.doc_url ?? '',
-      doc_description: attributes?.description ?? attributes?.doc_description,
-    };
-  };
-
-  const documents: ReferencedDocument[] = [];
-  const seen = new Set<string>();
-  const pushDoc = (fileId: string, result: any) => {
-    const doc = toReferencedDocument(fileId, result);
-    const key = fileId || doc.doc_url || doc.doc_title;
-    if (!key || seen.has(key)) return;
-    seen.add(key);
-    documents.push(doc);
-  };
-
-  if (citedFileIds.size > 0) {
-    for (const fileId of citedFileIds) {
-      pushDoc(fileId, resultsByFileId.get(fileId));
-    }
-  } else {
-    for (const [fileId, result] of resultsByFileId) {
-      pushDoc(fileId, result);
-    }
-  }
-
-  return documents;
-};
-
 export async function createNotebooksRouter(
   options: NotebooksRouterOptions,
 ): Promise<Router> {
@@ -332,17 +235,14 @@ export async function createNotebooksRouter(
             };
             this.push(`data: ${JSON.stringify(legacy)}\n\n`);
           } else if (eventType === 'response.completed') {
-            // Extract citations/sources from tool calls (file_search results)
-            // and relay them as a legacy `end` event so the frontend can
-            // populate the sources chip while streaming (without a refresh).
-            const referenced_documents = extractReferencedDocuments(
-              parsed?.response,
+            // Log the full response to see what we're getting
+            logger.info(
+              `Full response.completed event: ${JSON.stringify(parsed?.response, null, 2)}`,
             );
-            const legacy = {
-              event: 'end',
-              data: { referenced_documents },
-            };
-            this.push(`data: ${JSON.stringify(legacy)}\n\n`);
+
+            // Extract citations/sources from tool calls (file_search results)
+
+            // this.push(`data: ${JSON.stringify(legacy)}\n\n`);
           } else {
             // Log unhandled event types to help identify what we're missing
             logger.debug(`Unhandled SSE event type: ${eventType}`, parsed);
