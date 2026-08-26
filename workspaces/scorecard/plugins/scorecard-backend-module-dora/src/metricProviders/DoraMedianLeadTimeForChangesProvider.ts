@@ -27,18 +27,17 @@ import {
   deploymentPullRequestsCollectorInputSchema,
   deploymentPullRequestsCollectorOutputSchema,
 } from './schemas/pullRequestSchemas';
-import {
-  deploymentsCollectorInputSchema,
-  deploymentsCollectorOutputSchema,
-} from './schemas/deploymentSchemas';
 import { calculateMedian } from './utils/calculationUtils';
 import {
   DEFAULT_DORA_MEDIAN_LEAD_TIME_THRESHOLDS,
   type DoraMedianLeadTimeForChangesConfig,
   parseDoraMedianLeadTimeForChangesConfig,
 } from './DoraConfig';
+import {
+  collectSuccessfulProductionDeploymentsWithPreWindowBoundary,
+  insufficientSuccessfulProductionDeploymentsMessage,
+} from './utils/preWindowDeploymentUtils';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
-import { isSuccessfulProductionDeployment } from './utils/deploymentFilterUtils';
 
 type DoraMedianLeadTimeForChangesProviderOptions = {
   collectorsService: ScorecardCollectorsService;
@@ -113,34 +112,25 @@ export class DoraMedianLeadTimeForChangesProvider
     const from = new Date();
     from.setDate(to.getDate() - DORA_TIME_WINDOW_DAYS);
 
-    const deploymentsCollected = await this.collectorsService.collect<
-      typeof deploymentsCollectorInputSchema,
-      typeof deploymentsCollectorOutputSchema
-    >({
-      collectorId: this.config.deploymentsCollector.id,
-      contract: {
-        inputSchema: deploymentsCollectorInputSchema,
-        outputSchema: deploymentsCollectorOutputSchema,
-      },
-      entity,
-      input: {
-        ...this.config.deploymentsCollector.input,
-        from: from.toISOString(),
-        to: to.toISOString(),
-      },
-    });
+    const { inWindow, deployments } =
+      await collectSuccessfulProductionDeploymentsWithPreWindowBoundary({
+        collectorsService: this.collectorsService,
+        collectorId: this.config.deploymentsCollector.id,
+        collectorInput: this.config.deploymentsCollector.input,
+        entity,
+        windowFrom: from,
+        windowTo: to,
+        productionEnvironments: this.config.productionEnvironments,
+        logger: this.logger,
+        metricProviderId: this.getProviderId(),
+      });
 
-    // Deployments are expected to be returned sorted ascending by createdAt.
-    const deployments = deploymentsCollected.deployments.filter(deployment =>
-      isSuccessfulProductionDeployment(
-        deployment,
-        this.config.productionEnvironments,
-      ),
-    );
-
-    if (deployments.length < 2) {
+    if (inWindow.length === 0 || deployments.length < 2) {
       throw new Error(
-        `Unable to calculate median lead time for changes: need at least 2 successful production deployments in the last ${DORA_TIME_WINDOW_DAYS} days, found ${deployments.length}`,
+        insufficientSuccessfulProductionDeploymentsMessage(
+          'median lead time for changes',
+          inWindow.length,
+        ),
       );
     }
 

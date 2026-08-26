@@ -24,10 +24,6 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { DORA_TIME_WINDOW_DAYS } from '../constants';
 import {
-  deploymentsCollectorInputSchema,
-  deploymentsCollectorOutputSchema,
-} from './schemas/deploymentSchemas';
-import {
   incidentsCollectorInputSchema,
   incidentsCollectorOutputSchema,
 } from './schemas/incidentSchemas';
@@ -36,7 +32,11 @@ import {
   type DoraChangeFailureRateConfig,
   parseDoraChangeFailureRateConfig,
 } from './DoraConfig';
-import { isSuccessfulProductionDeployment } from './utils/deploymentFilterUtils';
+import {
+  collectSuccessfulProductionDeploymentsWithPreWindowBoundary,
+  getChangeFailureRateIncidentFrom,
+  insufficientSuccessfulProductionDeploymentsMessage,
+} from './utils/preWindowDeploymentUtils';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 
 type DoraChangeFailureRateProviderOptions = {
@@ -110,34 +110,28 @@ export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
     const from = new Date();
     from.setDate(to.getDate() - DORA_TIME_WINDOW_DAYS);
 
-    const deploymentsCollected = await this.collectorsService.collect<
-      typeof deploymentsCollectorInputSchema,
-      typeof deploymentsCollectorOutputSchema
-    >({
+    const {
+      inWindow,
+      predecessor,
+      deployments: successfulProductionDeployments,
+    } = await collectSuccessfulProductionDeploymentsWithPreWindowBoundary({
+      collectorsService: this.collectorsService,
       collectorId: this.config.deploymentsCollector.id,
-      contract: {
-        inputSchema: deploymentsCollectorInputSchema,
-        outputSchema: deploymentsCollectorOutputSchema,
-      },
+      collectorInput: this.config.deploymentsCollector.input,
       entity,
-      input: {
-        ...this.config.deploymentsCollector.input,
-        from: from.toISOString(),
-        to: to.toISOString(),
-      },
+      windowFrom: from,
+      windowTo: to,
+      productionEnvironments: this.config.productionEnvironments,
+      logger: this.logger,
+      metricProviderId: this.getProviderId(),
     });
 
-    const successfulProductionDeployments =
-      deploymentsCollected.deployments.filter(deployment =>
-        isSuccessfulProductionDeployment(
-          deployment,
-          this.config.productionEnvironments,
-        ),
-      );
-
-    if (successfulProductionDeployments.length < 2) {
+    if (inWindow.length === 0 || successfulProductionDeployments.length < 2) {
       throw new Error(
-        `Unable to calculate change failure rate: need at least 2 successful production deployments in the last ${DORA_TIME_WINDOW_DAYS} days, found ${successfulProductionDeployments.length}`,
+        insufficientSuccessfulProductionDeploymentsMessage(
+          'change failure rate',
+          inWindow.length,
+        ),
       );
     }
 
@@ -153,7 +147,7 @@ export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
       entity,
       input: {
         ...this.config.incidentsCollector.input,
-        from: from.toISOString(),
+        from: getChangeFailureRateIncidentFrom(from, predecessor),
         to: to.toISOString(),
       },
     });

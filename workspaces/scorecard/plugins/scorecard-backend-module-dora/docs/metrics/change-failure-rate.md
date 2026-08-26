@@ -8,16 +8,28 @@
 Change Failure Rate measures how often production deployments lead to failures that require incident response.
 
 The metric computes the percentage of successful production deployment intervals that contain at least one incident, out of all evaluated successful production deployment intervals.
-Only successful production deployments that happen within the metric's 30-day computation window are evaluated.
+The 30-day window decides which successful production deployments are **in-window**.
 Deployments are processed as chronological pairs (`deployment` -> `nextDeployment`), and each pair defines an interval:
 `[deployment.createdAt, nextDeployment.createdAt)`.
 
 For each interval, if at least one incident has `createdAt` in that interval, the deployment is treated as failed.
 The result is: `(deploymentsWithIncidents / evaluatedDeployments) * 100`.
 
-The metric is **deployment-interval based**, not incident-window based: only incidents that fall between two successful production deployments are scored. An incident after the latest successful production deployment in the 30-day window is not counted in that run, even if it was created within the DORA 30-day window. It is attributed in a later DORA calculation to the interval closed by the next successful production deployment (the first deployment that follows).
+### Pre-window predecessor
 
-If fewer than two successful production deployments exist in the window, or there are no evaluable intervals (adjacent deployments share the same `createdAt`), calculation fails with an error.
+To attribute incidents that fall **before** the first in-window deployment, the metric also loads the latest successful production deployment **before** the window start (`windowFrom`) from the deployments collector.
+
+That predecessor is the start of the interval that **ends** at the first in-window deploy: `[predecessor.createdAt, firstInWindow.createdAt)`.
+When a predecessor exists, incidents are collected from `predecessor.createdAt` (not only from `windowFrom`), so incidents in that leading gap are counted.
+
+- Predecessor exists: one in-window successful production deployment is enough to form that interval.
+- No predecessor: behavior is unchanged. Two successful production deployments in the 30-day window are still required, and incident collection starts at `windowFrom`.
+
+The predecessor lookup is a second deployments-collector call with `from` at `1970-01-01T00:00:00.000Z` and `to` immediately before `windowFrom`, plus optional `fetchItemsLimit` (100). Default GitHub collectors honor that cap and keep the newest in-range rows. If those rows are all failed or non-production, the predecessor is omitted. Custom collectors that ignore the cap may return a larger history.
+
+The metric is **deployment-interval based**, not incident-window based: only incidents that fall between two successful production deployments are scored. An incident **after** the latest successful production deployment in the 30-day window is still not counted in that run, even if it was created within the DORA 30-day window. It is attributed in a later DORA calculation to the interval closed by the next successful production deployment (the first deployment that follows).
+
+If there is no measurable interval (no predecessor and fewer than two successful production deployments in the window, or adjacent deployments share the same `createdAt`), calculation fails with an error.
 
 ## Scope and limitation
 
@@ -90,6 +102,8 @@ Required input:
 - `from: string` (ISO datetime)
 - `to: string` (ISO datetime)
 
+The metric may call this collector twice: once for the 30-day window, and once for the pre-window predecessor range. Extra input fields (for example `fetchItemsLimit`) are allowed; they do not replace `from` / `to`.
+
 Required output:
 
 - `deployments: Array<{ id: string; commitSha: string; environment?: string; createdAt: string; result: 'success' | 'failure' | '' }>`
@@ -128,6 +142,8 @@ Required input:
 
 - `from: string` (ISO datetime)
 - `to: string` (ISO datetime)
+
+When a pre-window predecessor exists, `from` is that deployment's `createdAt` (which can be earlier than the 30-day window start). Otherwise `from` is the window start.
 
 Required output:
 
