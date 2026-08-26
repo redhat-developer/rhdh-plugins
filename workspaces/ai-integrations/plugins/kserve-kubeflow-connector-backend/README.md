@@ -23,6 +23,91 @@ backend.add(
 );
 ```
 
+## Configuration
+
+This plugin follows the same convention you'll see in the Backstage community plugins with respect to providing the information needed to connect to a Kubernetes cluster. There are two basic categories.
+
+In both cases, you need to make sure the `ServiceAccount` referenced has sufficient permissions to access:
+
+- `InferenceServices`
+- `Routes` (unless you specific the `KUBEFLOW_MODEL_CATALOG_URL`)
+- `ServiceAccounts`
+
+### Backstage Kubernetes Plugin Already Configured
+
+If access to the cluster hosting KServe and Kubeflow is already set up, point the plugin's configuration to that Backstage Kubernetes plugin configuration.
+
+```yaml
+catalog:
+  rules:
+    - allow:
+        [
+          Component,
+          System,
+          API,
+          AiModelServerAPI,
+          Resource,
+          Location,
+          User,
+          Group,
+          AiResource,
+        ]
+  providers:
+    modelCatalog:
+      # The field underneath should list the connector plugin ID that the entity provider accesses through the discovery service
+      kserve-kubeflow-connector:
+        cluster-1:
+          name: my-k8s-cluster
+          kubernetesPluginRef: my-k8s-cluster
+          default-owner: '${OWNER:-default-owner}'
+          default-lifecycle: '${LIFECYCLE:-production}'
+kubernetes:
+  serviceLocatorMethod:
+    type: 'multiTenant'
+  clusterLocatorMethods:
+    - type: 'config'
+      clusters:
+        - name: my-k8s-cluster
+          url: '${K8S_CLUSTER_URL}'
+          serviceAccountToken: '${K8S_SA_TOKEN}'
+          authProvider: serviceAccount
+          skipTLSVerify: false
+          caData: '${K8S_CA_DATA:-}'
+```
+
+### No prior use of Backstage Kubernetes Plugin, nor references to the clusters you need if used
+
+You can essentially replicate the configuration the Backstage Kubernetes Plugin employs to collect connection information.
+
+```yaml
+catalog:
+  rules:
+    - allow:
+        [
+          Component,
+          System,
+          API,
+          AiModelServerAPI,
+          Resource,
+          Location,
+          User,
+          Group,
+          AiResource,
+        ]
+  providers:
+    modelCatalog:
+      # The field underneath should list the connector plugin ID that the entity provider accesses through the discovery service
+      kserve-kubeflow-connector:
+        cluster-1:
+          name: my-k8s-cluster
+          url: '${K8S_CLUSTER_URL:-}'
+          serviceAccountToken: '${K8S_SA_TOKEN:-}'
+          skipTLSVerify: false
+          caData: '${K8S_CA_DATA:-}'
+          default-owner: '${OWNER:-default-owner}'
+          default-lifecycle: '${LIFECYCLE:-production}'
+```
+
 ## Supported `rhdh.io/` annotations
 
 The plugin reads the following annotations from InferenceService resources to control how `AiModelServerAPI` entities are generated. Add these annotations to the `metadata.annotations` section of your InferenceService.
