@@ -84,6 +84,12 @@ Registering the same `kind: API` + `specType: ai-model-server` combination in rh
 
 **Rationale**: Aligns with upstream. Models are listed in `spec.models.available`. Tags, links, annotations, and techdocs from the model server, API, and first model are merged into the single entity.
 
+**Data flow**: The kserve connector reads InferenceService resources and produces a `ModelCatalog` containing a `ModelServer` and an array of `Model` objects. `ModelCatalogGenerator` transforms each `ModelCatalog` into a single `AiModelServerAPI` entity. Two annotation-driven mechanisms extend this flow:
+
+1. **Field overrides** — When `rhdh.io/system`, `rhdh.io/serverType`, `rhdh.io/default` `rhdh.io/owner`, or `rhdh.io/lifecycle1 annotations are present on the InferenceService, the kserve connector propagates them to `modelServer.annotations`. `ModelCatalogGenerator` reads these control annotations and maps them to spec-level fields (`spec.system`, `spec.serverType`, `spec.models.default`, `spec.owner`, `spec.lifecycle`respectively), then deletes them from the annotation set so they do not appear in the emitted entity's`metadata.annotations`.
+
+2. **Model generation from annotations** — When one or more `rhdh.io/model-*` annotations are present on the InferenceService, the kserve connector creates a `Model` object for each annotation value instead of deriving a single model from the InferenceService name. The resulting models flow through `ModelCatalogGenerator` into `spec.models.available` in the same way as the default single-model path.
+
 ## Risks / Trade-offs
 
 | Risk                                                                  | Mitigation                                                                                            |
