@@ -35,7 +35,6 @@ import {
   iaMcpUsePermission,
   iaNotebooksUsePermission,
   iaPermissions,
-  iaSavedPromptsManagePermission,
   iaSkillsAccessPermission,
 } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
@@ -646,19 +645,19 @@ export async function createRouter(
   router.get(
     '/v1/saved-prompts/config',
     generalRateLimiter,
-    requirePermission(iaSavedPromptsManagePermission),
+    requirePermission(iaChatUsePermission),
     apiProxy, // SKIP_USER_ID_ENDPOINTS prevents user_id injection for this endpoint
   );
   router.get(
     '/v1/saved-prompts',
     generalRateLimiter,
-    requirePermission(iaSavedPromptsManagePermission),
+    requirePermission(iaChatUsePermission),
     apiProxy,
   );
   router.delete(
     '/v1/saved-prompts/:prompt_id',
     generalRateLimiter,
-    requirePermission(iaSavedPromptsManagePermission),
+    requirePermission(iaChatUsePermission),
     apiProxy,
   );
 
@@ -715,7 +714,7 @@ export async function createRouter(
   router.post(
     '/v1/saved-prompts',
     generalRateLimiter,
-    requirePermission(iaSavedPromptsManagePermission),
+    requirePermission(iaChatUsePermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
