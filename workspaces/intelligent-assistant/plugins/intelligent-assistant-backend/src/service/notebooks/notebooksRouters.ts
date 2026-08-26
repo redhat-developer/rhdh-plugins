@@ -139,8 +139,7 @@ const extractReferencedDocuments = (response: any): ReferencedDocument[] => {
         result?.filename ??
         fileId,
       doc_url: attributes?.url ?? attributes?.doc_url ?? result?.doc_url ?? '',
-      doc_description:
-        attributes?.description ?? attributes?.doc_description ?? result?.text,
+      doc_description: attributes?.description ?? attributes?.doc_description,
     };
   };
 
