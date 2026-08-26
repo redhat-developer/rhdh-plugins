@@ -28,10 +28,10 @@ import { CATALOG_SOURCE_ANNOTATION, CATALOG_MODEL_ANNOTATION } from './Catalog';
 
 const ANNOTATION_PREFIX = 'rhdh.io/';
 
-export const SYSTEM_ANNOTATION = 'rhdh.io/system';
-export const SERVER_TYPE_ANNOTATION = 'rhdh.io/serverType';
-export const MODEL_PREFIX_ANNOTATION = 'rhdh.io/model-';
-export const DEFAULT_ANNOTATION = 'rhdh.io/default';
+export const SYSTEM_ANNOTATION = `${ANNOTATION_PREFIX}system`;
+export const SERVER_TYPE_ANNOTATION = `${ANNOTATION_PREFIX}serverType`;
+export const MODEL_PREFIX_ANNOTATION = `${ANNOTATION_PREFIX}model-`;
+export const DEFAULT_ANNOTATION = `${ANNOTATION_PREFIX}default`;
 
 const FRAMEWORK_SKLEARN = 'sklearn';
 const FRAMEWORK_XGBOOST = 'xgboost';
@@ -222,6 +222,10 @@ function generateModelCatalog(
     },
   };
 
+  // Sort annotation-derived models by name for deterministic ordering,
+  // since Object.entries() order is not guaranteed across K8s API responses.
+  modelPrefixModels.sort((a, b) => a.name.localeCompare(b.name));
+
   const models = modelPrefixModels.length > 0 ? modelPrefixModels : [model];
 
   const apiTypeStr = getStringPropVal(PropertyKeys.APITypeKey, is);
@@ -254,7 +258,8 @@ function generateModelCatalog(
       serverAnnotations[SERVER_TYPE_ANNOTATION] = serverTypeVal;
 
     const defaultVal = is.metadata.annotations[DEFAULT_ANNOTATION];
-    if (defaultVal) serverAnnotations[DEFAULT_ANNOTATION] = defaultVal;
+    if (defaultVal)
+      serverAnnotations[DEFAULT_ANNOTATION] = sanitizeName(defaultVal);
   }
 
   const modelServer: ModelServer = {

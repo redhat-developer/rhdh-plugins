@@ -588,4 +588,50 @@ describe('callBackstagePrinters', () => {
     expect(result.models).toHaveLength(1);
     expect(result.models[0].name).toBe('vllm-test-model');
   });
+
+  it('should sanitize rhdh.io/default annotation value via sanitizeName', async () => {
+    const is = makeInferenceService({
+      annotations: {
+        [DEFAULT_ANNOTATION]: 'IBM_Granite_8B',
+      },
+    });
+
+    const result = await callBackstagePrinters(
+      'owner',
+      'production',
+      is,
+      false,
+      logger,
+    );
+
+    // sanitizeName lowercases and replaces non-alphanumeric with dashes,
+    // ensuring the default value matches the format of model names in
+    // spec.models.available.
+    expect(result.modelServer!.annotations![DEFAULT_ANNOTATION]).toBe(
+      'ibm-granite-8b',
+    );
+  });
+
+  it('should sort model- prefix models by name for deterministic order', async () => {
+    const is = makeInferenceService({
+      annotations: {
+        [`${MODEL_PREFIX_ANNOTATION}z-model`]: 'zebra-model',
+        [`${MODEL_PREFIX_ANNOTATION}a-model`]: 'alpha-model',
+        [`${MODEL_PREFIX_ANNOTATION}m-model`]: 'middle-model',
+      },
+    });
+
+    const result = await callBackstagePrinters(
+      'owner',
+      'production',
+      is,
+      false,
+      logger,
+    );
+
+    expect(result.models).toHaveLength(3);
+    expect(result.models[0].name).toBe('alpha-model');
+    expect(result.models[1].name).toBe('middle-model');
+    expect(result.models[2].name).toBe('zebra-model');
+  });
 });
