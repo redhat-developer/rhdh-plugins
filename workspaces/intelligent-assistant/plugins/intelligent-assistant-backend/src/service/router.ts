@@ -159,25 +159,16 @@ async function buildMcpHeaders(
   return Object.keys(headers).length > 0 ? JSON.stringify(headers) : '';
 }
 
-/**
- * How long a single vision probe is allowed to run before it is aborted.
- * Keeps a slow/hanging LCS from stalling the caller (e.g. GET /v1/models).
- */
+/** Abort a vision probe that runs longer than this. */
 const VISION_PROBE_TIMEOUT_MS = 10_000;
 
 /**
- * Determine whether a model supports vision (JPEG image input).
- *
- * Result is memoised in {@link ModelCapabilitiesCache} (per-pod, 24h TTL), so
- * each `provider/model` pair is only probed once per pod until the entry
- * expires. On a cache hit the cached value is returned without contacting LCS.
- *
- * On a miss a tiny test-inference request is sent to LCS `/v1/responses`:
- * a 2xx response means the model accepted the image (vision-capable), any
- * other status means it did not. Both outcomes are cached.
- *
- * Network/timeout errors are re-thrown (nothing is cached) so callers can
- * decide how to surface an unreachable upstream.
+ * Whether a model supports vision (JPEG input), memoised in
+ * {@link ModelCapabilitiesCache}. A cache hit skips LCS; a miss sends a minimal
+ * test-inference to `/v1/responses`, where a 2xx means vision-capable. `true` is
+ * cached for 24h, `false` only briefly, since LCS returns the same 5xx for a
+ * genuinely non-vision model and for a transient error. Network/timeout errors
+ * are re-thrown (nothing cached).
  */
 async function probeModelVisionSupport(
   lcsBaseUrl: string,
@@ -671,13 +662,10 @@ export async function createRouter(
 
   // ─── Proxy Routes ───────────────────────────────────────────────────
 
-  // Unlike the other proxy routes, GET /v1/models is served by a dedicated
-  // handler so the response can be enriched with each model's vision capability
-  // (`supportsVision`). This lets the frontend learn image support directly from
-  // the model list and removes the need for a per-user /v1/validate-model-vision
-  // round-trip. Vision probes are memoised per-pod (24h TTL), so a given model is
-  // only probed once until its cache entry expires. Like the proxy, /v1/models is
-  // in SKIP_USER_ID_ENDPOINTS, so no user_id is forwarded to LCS.
+  // GET /v1/models has a dedicated handler (not the shared proxy) so each model
+  // can be enriched with `supportsVision`, letting the frontend gate image input
+  // without a per-user /v1/validate-model-vision call. Like the proxy, no user_id
+  // is forwarded to LCS.
   router.get(
     '/v1/models',
     generalRateLimiter,
@@ -695,7 +683,6 @@ export async function createRouter(
         const data = (await upstream.json()) as {
           models?: Array<{
             identifier: string;
-            provider_id: string;
             api_model_type?: string;
           }>;
         };
@@ -703,11 +690,13 @@ export async function createRouter(
 
         const enriched = await Promise.all(
           models.map(async model => {
-            // Only LLMs can be vision-capable; never probe embeddings etc.
+            // Only LLMs can be vision-capable; skip probing embeddings etc.
             if (model.api_model_type !== 'llm') {
               return { ...model, supportsVision: false };
             }
-            const cacheKey = `${model.provider_id}/${model.identifier}`;
+            // `identifier` is already the `provider/model` key LCS and
+            // /v1/validate-model-vision use — do not re-prefix with provider_id.
+            const cacheKey = model.identifier;
             try {
               const supportsVision = await probeModelVisionSupport(
                 lcsBaseUrl,
@@ -715,9 +704,7 @@ export async function createRouter(
               );
               return { ...model, supportsVision };
             } catch (error) {
-              // A single unreachable/timed-out probe must not fail the whole
-              // list; report the model as non-vision and leave it uncached so a
-              // later request can retry.
+              // One failed probe must not fail the whole list.
               logger.warn(
                 `Vision probe failed for ${cacheKey}: ${
                   error instanceof Error ? error.message : String(error)

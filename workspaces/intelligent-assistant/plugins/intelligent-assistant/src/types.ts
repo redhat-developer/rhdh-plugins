@@ -72,10 +72,8 @@ export interface LCSModel {
   provider_resource_id: string;
   model_type: LCSModelType;
   /**
-   * Whether the model supports vision (JPEG image) input. Populated by the
-   * backend GET /v1/models handler; absent if the backend could not determine
-   * capability. Lets the frontend gate image attachments without a separate
-   * per-model /v1/validate-model-vision round-trip.
+   * Whether the model supports vision (JPEG image) input, set by the backend
+   * GET /v1/models handler; absent if capability could not be determined.
    */
   supportsVision?: boolean;
 }

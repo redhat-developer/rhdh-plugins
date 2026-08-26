@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+// `true` is stable, so cache it for a day. `false` is cached only briefly: LCS
+// returns the same 5xx for a non-vision model and a transient error, so a short
+// TTL lets a real model recover without re-probing on every request.
+export const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+export const NEGATIVE_CACHE_TTL_MS = 20 * 60 * 1000;
 
 export const ModelCapabilitiesCache = {
   cache: {} as Record<string, { value: boolean; expiry: number }>,
@@ -29,10 +33,12 @@ export const ModelCapabilitiesCache = {
     return entry.value;
   },
 
-  set(model: string, supportsVision: boolean): void {
+  set(model: string, supportsVision: boolean, ttlMs?: number): void {
     this.cache[model] = {
       value: supportsVision,
-      expiry: Date.now() + CACHE_TTL_MS,
+      expiry:
+        Date.now() +
+        (ttlMs ?? (supportsVision ? CACHE_TTL_MS : NEGATIVE_CACHE_TTL_MS)),
     };
   },
 

@@ -223,8 +223,8 @@ describe('intelligent-assistant router tests', () => {
     });
 
     it('reuses the cache and does not re-probe an already-validated model', async () => {
-      // Model 0 from the default handler: provider_id 'openai', identifier 'openai/gpt-4-turbo'
-      ModelCapabilitiesCache.set('openai/openai/gpt-4-turbo', true);
+      // Cache key is the model identifier used directly.
+      ModelCapabilitiesCache.set('openai/gpt-4-turbo', true);
 
       let probeCount = 0;
       server.use(
