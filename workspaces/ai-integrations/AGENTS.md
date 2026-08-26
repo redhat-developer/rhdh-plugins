@@ -49,6 +49,10 @@ mismatch.
 
 - When a task is driven by local implementation specs, check `openspec/changes/` for proposal, design, tasks, and behavioral requirements
 - Prefer local workspace OpenSpec materials over external copies when both exist
+- When implementing a feature that changes behavior documented in `openspec/changes/`, update the affected documentation as part of the same commit:
+  - If the change adds or modifies behavior covered by a spec.md (behavioral requirements with scenarios), update the spec to include new requirements and scenarios that reflect the implemented behavior
+  - If the change affects the data flow or architecture described in a design.md, update the relevant section to match the new implementation
+  - If the change adds user-facing configuration (new annotations, config keys, API surface), update the affected plugin's README with usage documentation
 
 ## Backstage Backend Conventions
 
