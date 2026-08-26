@@ -86,7 +86,7 @@ const StarredItem: FC<SectionComponentProps> = ({
         </Tooltip>
       }
       sx={{
-        '&:hover .star-icon, &:focus-within .star-icon': {
+        '&:hover .star-icon, &:has(:focus-visible) .star-icon': {
           visibility: 'visible',
         },
       }}
@@ -98,7 +98,7 @@ const StarredItem: FC<SectionComponentProps> = ({
         disableRipple
         disableTouchRipple
         role="menuitem"
-        sx={{ py: 0.5 }}
+        sx={{ py: 0.5, pr: 6 }}
       >
         {Icon && (
           <ListItemIcon sx={{ minWidth: 36 }}>

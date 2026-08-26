@@ -218,8 +218,16 @@ test('Verify Starred items functionality', async () => {
         - menuitem "example-website COMPONENT":
           - paragraph: example-website
           - paragraph: COMPONENT
-        - button "${translations.starred.removeTooltip}"
     `);
+
+  const starredMenuItem = page.getByRole('menuitem', {
+    name: 'example-website COMPONENT',
+  });
+  await starredMenuItem.hover();
+  await expect(
+    page.getByRole('button', { name: translations.starred.removeTooltip }),
+  ).toBeVisible();
+
   await page.keyboard.press('Escape');
 });
 

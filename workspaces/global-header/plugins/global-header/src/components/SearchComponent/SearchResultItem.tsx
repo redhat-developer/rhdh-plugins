@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { MouseEvent } from 'react';
 import { Link } from '@backstage/core-components';
 import ListItem from '@mui/material/ListItem';
 import Box from '@mui/material/Box';
@@ -56,7 +56,7 @@ export const SearchResultItem = ({
               underline: 'none',
             })}
         sx={{ py: 1 }}
-        onClick={(e: React.MouseEvent) => {
+        onClick={(e: MouseEvent) => {
           if (!isNoResultsFound) {
             analytics.captureEvent('discover', result?.document.title ?? '', {
               attributes: { to: result?.document.location ?? '#' },
