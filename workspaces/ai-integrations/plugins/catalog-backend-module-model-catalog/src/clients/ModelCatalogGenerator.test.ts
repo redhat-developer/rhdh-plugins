@@ -530,6 +530,73 @@ describe('Model Catalog Generator', () => {
     expect((entities[0].spec as any).models.default).toBe('preferredmodel');
   });
 
+  it('should sanitize multiple whitespace characters in rhdh.io/default annotation value', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'multi-space-default-service',
+        owner: 'example-user',
+        description: 'Service with multiple spaces in default annotation',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/default': 'model with spaces',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'model-a',
+          description: 'First model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    // All whitespace characters are stripped by sanitizeMetadataName
+    expect((entities[0].spec as any).models.default).toBe('modelwithspaces');
+    // Control annotation must not leak into metadata
+    expect(entities[0].metadata.annotations).toBeUndefined();
+  });
+
+  it('should preserve special characters in rhdh.io/default annotation value', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'special-chars-default-service',
+        owner: 'example-user',
+        description: 'Service with special characters in default annotation',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/default': 'gpt-4/turbo v2.0',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'model-a',
+          description: 'First model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    // sanitizeMetadataName only strips whitespace; special characters
+    // (slashes, dots) pass through unchanged
+    expect((entities[0].spec as any).models.default).toBe('gpt-4/turbov2.0');
+    // Control annotation must not leak into metadata
+    expect(entities[0].metadata.annotations).toBeUndefined();
+  });
+
   it('should not set system when rhdh.io/system annotation is absent', () => {
     const modelCatalog: ModelCatalog = {
       modelServer: {
