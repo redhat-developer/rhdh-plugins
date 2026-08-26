@@ -42,7 +42,7 @@ const mockSkillEntity: Entity = {
 
 const mockAgentEntity: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
-  kind: 'Component',
+  kind: 'AiResource',
   metadata: {
     name: 'developer-assistant',
     namespace: 'default',
@@ -50,7 +50,7 @@ const mockAgentEntity: Entity = {
     tags: [],
   },
   spec: {
-    type: 'ai-agent',
+    type: 'agent',
     lifecycle: 'experimental',
     owner: 'team-ai',
   },
@@ -116,7 +116,7 @@ describe('AiAssetCard', () => {
     expect(rendered.getByText('developer-assistant')).toBeInTheDocument();
   });
 
-  it('renders Agents category for ai-agent type', async () => {
+  it('renders Agents category for agent type', async () => {
     const rendered = await renderInTestApp(
       <AiAssetCard entity={mockAgentEntity} />,
     );

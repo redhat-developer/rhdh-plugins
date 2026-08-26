@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-boost-toolscope
 
+## 0.2.0
+
+### Minor Changes
+
+- 238427a: Entity-Provider SDK — Types, Interfaces, Annotation Validation
+
 ## 0.1.2
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-boost-backend-module-ogx",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "license": "Apache-2.0",
   "description": "OGX provider module for the boost AI platform",
   "main": "src/index.ts",

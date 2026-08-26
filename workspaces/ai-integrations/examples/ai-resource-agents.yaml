@@ -3,7 +3,7 @@
 #
 # Shape follows the upstream skill/rule discriminated-type pattern from
 # @backstage/catalog-model alpha (kind: AiResource, spec.type: agent)
-# plus RHDH optional extensions (spec.scope for AIResourceExtensionsProcessor).
+# plus RHDH optional extensions (spec.scope for AiResourceExtensionsProcessor).
 #
 # Demonstrates a router + specialist multi-agent handoff pattern using only
 # the design D3 field set (no Augment-only keys).

@@ -1,5 +1,27 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent
 
+## 0.4.0
+
+### Minor Changes
+
+- 0c396f8: switch ai-model-server and ai-resource-agent from catalog model layer's addModelSource to addProcessor
+
+## 0.3.0
+
+### Minor Changes
+
+- 6ddfd98: Add `AiResourceAgentProcessor` to validate agent-specific fields on
+  `kind: AiResource` entities with `spec.type: agent` at catalog ingestion.
+  Register the processor alongside the existing agent catalog model source.
+- 6ddfd98: Make `spec.instructions` optional on agent AiResource entities so agents
+  with a baked-in default prompt can be registered without a catalog-side
+  system prompt.
+
+### Patch Changes
+
+- Updated dependencies [6ddfd98]
+  - @red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@0.3.0
+
 ## 0.2.1
 
 ### Patch Changes

@@ -17,9 +17,9 @@ import { type Entity, stringifyEntityRef } from '@backstage/catalog-model';
 import { GithubRepository } from './types';
 import { GITHUB_PROJECT_ANNOTATION } from './constants';
 
-export const getRepositoryInformationFromEntity = (
+export function getRepositoryInformationFromEntity(
   entity: Entity,
-): GithubRepository => {
+): GithubRepository {
   const projectSlug = entity.metadata.annotations?.[GITHUB_PROJECT_ANNOTATION];
   if (!projectSlug) {
     throw new Error(
@@ -39,4 +39,4 @@ export const getRepositoryInformationFromEntity = (
   }
 
   return { owner, repo };
-};
+}

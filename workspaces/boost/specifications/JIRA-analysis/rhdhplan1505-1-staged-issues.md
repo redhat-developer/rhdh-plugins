@@ -19,7 +19,15 @@ Each issue is scoped for a single fullsend `/fs-code` run. Frontend admin UI iss
 - RHIDP-15167 (RHDHPLAN-1509) depends on RHIDP-15335 (Issue 5 — Health API), creating a cross-feature dependency chain that must be resolved by building the API (Issue 5) first
 - Issues 7, 13, 14 (RHIDP-15317, RHIDP-15318, RHIDP-15319 — MCP Registry Connector productization under RHDHPLAN-1510) depend on RHIDP-15655 (Implement MCP Registry entity provider, RHDHPLAN-393). The upstream community entity provider must exist before the productization wrapper can configure its endpoint (Issue 7), integrate TLS/credentials (Issue 13), or intercept entity emission for annotation enrichment (Issue 14). RHIDP-15321 (RHOAI version normalization, also in Issue 7) and Issues 15–16 (RHOAI connector) have no RHDHPLAN-393 dependency — they query RHOAI's own MCP catalog API independently.
 
-**Maximum parallelism:** All 7 Tier 0 issues can start simultaneously. Within Tier 1, issues [17–19] (Neo4j) are independent of [9–12] (OCI) and [13–16] (MCP/RHOAI); issues [23–24] (RBAC frontend) and [26] (Ingestion Health UI) are also independent of the connector issues. Within Tier 2, issues [25] (RBAC Admin UI) and [27–29] (Ingestion/Analytics UI) can run in parallel.
+**Maximum parallelism:**
+
+- All 7 original Tier 0 issues can start simultaneously.
+- Follow-up slots under those parents (`4.1`/`4.2`, `6.1`/`6.2`/`6.3`) do **not** bump the 29-issue numbering.
+- Issue 4.1 (#4223 / PR #4225) was **closed without merging**; RHIDP-15302 design work lives on issue 4 (PR #4221).
+- Issue 4.2 is independent of issue 4.
+- `6.1`/`6.2`/`6.3` are unblocked now that issue 6 (#4044) is closed and are independent of each other.
+- Within Tier 1, issues [17–19] (Neo4j) are independent of [9–12] (OCI) and [13–16] (MCP/RHOAI); issues [23–24] (RBAC frontend) and [26] (Ingestion Health UI) are also independent of the connector issues.
+- Within Tier 2, issues [25] (RBAC Admin UI) and [27–29] (Ingestion/Analytics UI) can run in parallel.
 
 **Jira-to-GitHub issue mapping is not 1:1.** GitHub issues are scoped for single fullsend `/fs-code` runs, while Jira stories are scoped by feature deliverable. When a Jira story defines an interface or foundation that later issues adopt or extend, the story's work naturally splits across dependency tiers — you define the annotation scheme in Tier 0 before providers can emit those annotations in Tier 1. The alternative (combining tiers into one larger issue) would defeat single-fullsend scoping and block parallelism. Five RHIDP stories have work split this way; three additional stories are referenced after completion as dependencies. The Jira story cannot be closed until the "Completed" issue finishes.
 
@@ -34,12 +42,15 @@ But as we progress, if further break up of a story is more seamless, we'll pursu
 | RHIDP-15280 (Audit Logging)                   | Issue 21 — define + emit audit events                                           | Issue 29 — analytics REST API consuming audit data   | —                                             |
 | RHIDP-15306 (Admin Permission + Default-Deny) | Issue 3 — define `ai-catalog.admin` permission                                  | Issue 20 — implement default-deny config             | —                                             |
 | RHIDP-15316 (Shared Infra)                    | Issue 1 — build `@red-hat-developer-hub/backstage-plugin-boost-connector-utils` | Issue 1                                              | Issues 13, 16 (integrate CA bundle utility)   |
-| RHIDP-15335 (Health API)                      | Issue 5 — health API + data model                                               | Issue 26 — force sync routes using health data       | —                                             |
+| RHIDP-15335 (Health API)                      | Issue 5 — health API + data model                                               | Issue 26 — force sync routes using health data       | Issue 6.3 (#4285, runtimeEnabled handoff)     |
 | RHIDP-15259 (SDK Interface)                   | Issue 2 — define `AIAssetEntityProvider` interface                              | Issue 2                                              | Issue 8 (providers compile against interface) |
+| RHIDP-15302 (Migration Design)                | Issue 4 (#4042) / PR #4221 — `migration-plan.md` (8.1–8.4)                      | Issue 4 (#4042) — architect sign-off (8.5–8.6)       | Issue 4.1 (#4223/#4225) closed without merge  |
+| RHIDP-15346 / 15347 (Annotation Spec + CLI)   | Issue 4.2 (#4220) — split from original issue 4                                 | Issue 4.2                                            | —                                             |
+| RHIDP-15340 (Connector Config Schemas)        | Issue 6 (#4044) — Zod leaves + resolver                                         | Issues 6.1 (#4313), 6.2 (#4286)                      | Issue 6.3 (#4285, health reader)              |
 
 ---
 
-# Tier 0 — No Dependencies (7 issues, all parallelizable)
+# Tier 0 — No Dependencies (7 original issues, plus 4.x / 6.x follow-up slots)
 
 ---
 
@@ -191,15 +202,15 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4041
 **RHIDP Stories:** RHIDP-15271, RHIDP-15272, RHIDP-15306 (permission definitions), RHIDP-15312
 **Feature:** RHDHPLAN-1508 — Epic RHIDP-15270
 
-Define AI Catalog permission constants (`ai-catalog.asset.read`, `ai-catalog.asset.read.usage-docs`, `ai-catalog.admin`), implement graduated visibility backend enforcement (Tier 1 entity-level + Tier 2 field-level filtering), and implement conditional permission rules (`isAiAssetCategory`, `isFromConnector`, `isInTenant`) with `toQuery()` support. The default-deny config implementation is in Issue 20.
+Define AI Catalog permission constants (`ai-catalog.asset.access`, `ai-catalog.asset.access.usage-docs`, `ai-catalog.admin`), implement graduated visibility backend enforcement (Tier 1 entity-level + Tier 2 field-level filtering), and implement conditional permission rules (`isAiAssetCategory`, `isFromConnector`, `isInTenant`) with `toQuery()` support. The default-deny config implementation is in Issue 20.
 
 ### Tasks
 
 From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 1 (RHIDP-15271, RHIDP-15306):
 
 - 1.1 Define `AI_CATALOG_ASSET_RESOURCE_TYPE` constant in `boost-common/src/permissions.ts`
-- 1.2 Define `ai-catalog.asset.read` resource permission
-- 1.3 Define `ai-catalog.asset.read.usage-docs` resource permission
+- 1.2 Define `ai-catalog.asset.access` resource permission
+- 1.3 Define `ai-catalog.asset.access.usage-docs` resource permission
 - 1.4 Define `ai-catalog.admin` basic permission
 - 1.5 Export all permission constants and resource type
 - 1.6 Register all 3 permissions via `permissionsRegistry.addPermissions()`
@@ -229,71 +240,99 @@ From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 4 (RHIDP-1531
 
 ---
 
-## Upstream Schema Alignment — Annotation Spec, Migration Design & Tooling (issue 4 of 29)
+## Upstream Schema Alignment — Migration Design & Sign-off (issue 4 of 29)
 
 https://github.com/redhat-developer/rhdh-plugins/issues/4042
 
-**Labels:** `ready-to-code`
-**Dependencies:** None
-**RHIDP Stories:** RHIDP-15346, RHIDP-15347, RHIDP-15302
-**Feature:** RHDHPLAN-1513 — Epic RHIDP-15334 + RHDHPLAN-1507 — Epic RHIDP-15258
+**Status:** OPEN (active PR [#4221](https://github.com/redhat-developer/rhdh-plugins/pull/4221))
+**Labels:** `documentation`, `ready-to-code`, `workspace/boost`
+**Depends on:** Mapping reconciliation (#4188 / #4189) — done. Does **not** depend on Issue 4.1.
+**RHIDP Stories:** RHIDP-15302
+**Feature:** RHDHPLAN-1507 — Epic RHIDP-15258
 
-Document the annotation specification mapping `rhdh.io/ai-asset-*` annotations to upstream Backstage RFCs (#32062 McpServer, #33060 ai-model/ai-model-server), with confidence levels and transformation rules. Create the `@red-hat-developer-hub/backstage-plugin-boost-migration-readiness` CLI scaffold for dry-run migration assessments. Create the migration design document with mapping tables and backward compatibility strategy. This is readiness assessment — actual migration is future work.
+**Narrowed from the original “issue 4 of 29” bundle.** This issue covers **RHIDP-15302 only**: the migration design document (tasks 8.1–8.4) **and** RHDH architect / tech-lead sign-off (8.5–8.6). That matches the current [#4042 body](https://github.com/redhat-developer/rhdh-plugins/issues/4042).
 
-> **Deferral note:** This issue bundles RHDHPLAN-1507 work (RHIDP-15302 — migration design doc) with RHDHPLAN-1513 work (RHIDP-15346/15347 — annotation spec mapping and migration CLI). If RHDHPLAN-1513 is deferred from 2.1, this issue must be split: RHIDP-15302 stays (it is RHDHPLAN-1507 scope), RHIDP-15346 and RHIDP-15347 defer with RHDHPLAN-1513. See `RHDHPLAN-1513-defer-from-2-1-staging-and-jira-impact.md` for full deferral analysis.
+RHIDP-15346 (annotation specification publish) and RHIDP-15347 (migration-readiness CLI) were **split out** to Issue 4.2 (#4220). A parallel 8.1–8.4 split (#4223 / PR #4225) was started and then **closed without merging** (2026-08-19). The canonical design SoT is OpenSpec `migration-plan.md` via PR #4221, with a thin `specifications/` pointer (no duplicate mapping tables). 4.2 does not block this issue.
+
+**Prerequisites (done):**
+
+- Gate decisions: [#4042 comment](https://github.com/redhat-developer/rhdh-plugins/issues/4042#issuecomment-5204217995)
+- Mapping table reconciliation: [#4188](https://github.com/redhat-developer/rhdh-plugins/issues/4188) / [#4189](https://github.com/redhat-developer/rhdh-plugins/pull/4189)
+
+This is **readiness design**, not executing migration and not building the CLI.
+
+### Remaining (after 4.2 / #4220 is split out)
+
+From `openspec/changes/ai-catalog-entity-model/tasks.md` group 8 (RHIDP-15302):
+
+- 8.1–8.4 Migration design document — **this issue**, PR [#4221](https://github.com/redhat-developer/rhdh-plugins/pull/4221) (`openspec/.../migration-readiness/migration-plan.md` as SoT; `specifications/ai-asset-upstream-migration-design.md` is a pointer only). Held pending related catalog entity-type PRs (#4164, #4211) so the plan stays aligned.
+- 8.5 Obtain RHDH architect / tech-lead sign-off (not upstream maintainer required) — **after #4221 merges**; unsigned placeholder in the plan until then
+- 8.6 Document sign-off in the design doc (reviewer, role, date, status)
+
+### Out of scope (moved)
+
+- RHIDP-15346 annotation specification publish → Issue 4.2 (#4220)
+- RHIDP-15347 migration-readiness CLI → Issue 4.2 (#4220)
+- Duplicate full design doc on the #4223 / #4225 track — **closed without merging** (2026-08-19)
+- Actual entity migration / catalog processor
+- Re-opening Decision 1 or MCP Option 3
+
+### Specifications
+
+- `openspec/changes/ai-catalog-entity-model/specs/migration-readiness/spec.md`
+- `openspec/changes/ai-catalog-entity-model/specs/migration-readiness/migration-plan.md` (canonical SoT on PR #4221)
+
+---
+
+## Upstream Schema Alignment — Migration Design Document (issue 4.1 of 29) — CLOSED without merge
+
+https://github.com/redhat-developer/rhdh-plugins/issues/4223
+
+**Status:** CLOSED (2026-08-19) without merging PR [#4225](https://github.com/redhat-developer/rhdh-plugins/pull/4225)
+**Parent:** Split from #4042 (issue 4 of 29), then folded back
+
+Parallel experiment for RHIDP-15302 tasks 8.1–8.4 (full `specifications/ai-asset-upstream-migration-design.md`). Replaced by Issue 4 / PR [#4221](https://github.com/redhat-developer/rhdh-plugins/pull/4221) (`migration-plan.md` as OpenSpec SoT, thin specifications pointer). Kept here only so the 4.1 number is explained.
+
+---
+
+## Upstream Schema Alignment — Annotation Spec & Migration-Readiness CLI (issue 4.2 of 29)
+
+https://github.com/redhat-developer/rhdh-plugins/issues/4220
+
+**Status:** OPEN
+**Labels:** `feature`, `triaged`, `workspace/boost`
+**Depends on:** None (independent of Issue 4). Mapping reconciliation (#4188 / #4189) — done.
+**RHIDP Stories:** RHIDP-15346, RHIDP-15347
+**Feature:** RHDHPLAN-1513 — Epic RHIDP-15334
+**Parent:** Split from #4042 (issue 4 of 29)
+
+Publish the annotation/mapping specification under `workspaces/boost/specifications/` and implement the read-only `@red-hat-developer-hub/backstage-plugin-boost-migration-readiness` CLI using the post-#4189 tables. Does **not** block Issue 4 (#4042) sign-off.
+
+> **Deferral note:** This is the RHDHPLAN-1513 slice that was originally bundled into issue 4. If RHDHPLAN-1513 is deferred from 2.1, defer this slot (RHIDP-15346/15347) with it. RHIDP-15302 stays on Issue 4 (RHDHPLAN-1507). See `RHDHPLAN-1513-defer-from-2-1-staging-and-jira-impact.md` for full deferral analysis.
 
 ### Tasks
 
 From `openspec/changes/upstream-schema-alignment/tasks.md` group 1 (RHIDP-15346):
 
-- 1.1 Document all `rhdh.io/ai-asset-category` values
-- 1.2 Document `rhdh.io/ai-asset-version` annotation format and normalization rules
-- 1.3 Document `rhdh.io/ai-asset-source` annotation format
-- 1.4 Document entity kind + `spec.type` mapping table
-- 1.5 Map each entity type to RFC #32062 (McpServer) target
-- 1.6 Map each entity type to RFC #33060 (ai-model/ai-model-server) targets
-- 1.7 Assign confidence levels to each mapping
-- 1.8 Document fields requiring transformation per entity type
-- 1.9 Add explicit "Future Work" section
-- 1.10 Add header with draft status and last-updated date
-- 1.11 Cross-reference `agent-creation-discovery/catalog-entities` spec
-- 1.12 Publish spec in `workspaces/boost/specifications/` directory
+- 1.1–1.12 Document and publish annotation/mapping spec (seven categories; MCP kind already aligned via backstage#34016 — field/module/fallback only, **not** `kind: McpServer`)
 
-From `openspec/changes/upstream-schema-alignment/tasks.md` group 2 (RHIDP-15347):
+From `openspec/changes/upstream-schema-alignment/tasks.md` groups 2–5 (RHIDP-15347):
 
-- 2.1 Create `@red-hat-developer-hub/backstage-plugin-boost-migration-readiness` CLI package structure
-- 2.2 Set up TypeScript configuration and build pipeline
-- 2.3 Implement catalog API client for entity enumeration
-- 2.4 Filter entities by `rhdh.io/ai-asset-category` annotation presence
-- 2.5 Implement per-entity mapping logic using annotation spec rules
-- 2.6 Generate per-entity report (current → target, transformations, confidence)
-- 2.7 Implement JSON output formatter
-- 2.8 Implement human-readable output formatter
-- 2.9 Handle entities with missing annotation (exclude gracefully)
-- 2.10 Handle entities with partial annotations (include with warning)
-- 2.11 CLI argument parsing (`--catalog-url`, `--output-format`, `--filter`)
-- 2.12 Add footer message: "This is a migration-readiness assessment"
+- 2.1–2.12 CLI package, catalog client, mapping logic, JSON + text formatters, missing/partial handling, args, assessment footer
+- 3.1–3.10 Tests
+- 4.1–4.8 Package README / usage / confidence / future-work messaging
+- 5.1–5.5 Cross-refs (RHDHPLAN-1507 / #4042 RHIDP-15302, RFCs, related stories)
 
-From `openspec/changes/upstream-schema-alignment/tasks.md` groups 3–5:
+### Out of scope
 
-- 3.1–3.10 Testing (mapping logic, confidence, transformations, mock catalog, edge cases)
-- 4.1–4.8 Documentation (README, usage, output interpretation, confidence levels, future work)
-- 5.1–5.5 Cross-references (RHDHPLAN-1507, RFCs, RHIDP-15302/15303)
-
-From `openspec/changes/ai-catalog-entity-model/tasks.md` group 8 (RHIDP-15302):
-
-- 8.1 Create migration design document with mapping table: current → target upstream kind
-- 8.2 Document transformation rules for each AI asset category
-- 8.3 Identify consumer-facing changes: catalog UI filters, entity refs, API queries
-- 8.4 Document backward compatibility strategy
-- 8.5 Obtain upstream Backstage maintainer or RHDH architect sign-off
-- 8.6 Document sign-off in spec
+- RHIDP-15302 migration design + sign-off → Issue 4 (#4042) / PR #4221 (not #4223 / #4225)
+- Actual catalog entity migration / processor
+- `vector-store` / `ai-tool` categories
 
 ### Specifications
 
 - `openspec/changes/upstream-schema-alignment/specs/annotation-specification/spec.md`
 - `openspec/changes/upstream-schema-alignment/specs/migration-readiness-tooling/spec.md`
-- `openspec/changes/ai-catalog-entity-model/specs/migration-readiness/spec.md`
 
 ---
 
@@ -354,12 +393,21 @@ From `openspec/changes/ingestion-health-dashboard/tasks.md` group 3 (RHIDP-15337
 
 https://github.com/redhat-developer/rhdh-plugins/issues/4044
 
-**Labels:** `ready-to-code`
+**Status:** CLOSED
+**Labels:** `feature`, `triaged`, `workspace/boost`
 **Dependencies:** None
 **RHIDP Stories:** RHIDP-15340
 **Feature:** RHDHPLAN-1513 — Epic RHIDP-15332
 
-Define Zod connector config schemas for existing Backstage entity-provider connectors (Jira, GitHub, GitLab) covering `boost.connectors` fields only — all fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `ai-catalog.providers.<id>.*` and are excluded from this schema entirely). MCP/RHOAI/OCI connectors use `ai-catalog.providers.<id>.*` startup registration (YAML-only `enabled`); runtime `boost.connectors` Zod/hot-reload for those connectors is out of scope for this staging plan; the Issue 6 → 22 → 28 chain stays Jira/GitHub/GitLab. Extend `RuntimeConfigResolver` to support connector config scope with two-layer merge (YAML baseline + DB overrides), 30s TTL cache with immediate invalidation, and schema validation during merge. Hot-reload propagation to connectors is in Issue 22; admin UI is in Issue 28.
+**Done.** Registered Zod connector config leaves for Jira, GitHub, and GitLab (`boost.connectors` fields only — all `configScope: db-overridable`) and extended `RuntimeConfigResolver` with two-layer merge (YAML baseline + DB overrides), 30s TTL cache with immediate invalidation, and schema validation during merge. MCP/RHOAI/OCI runtime `boost.connectors` Zod/hot-reload remains out of scope; the Issue 6 → 22 → 28 chain stays Jira/GitHub/GitLab.
+
+Deferred OpenSpec slices (do **not** re-open this issue for them):
+
+- Task **1.8** (optional-field defaults at resolve time) → Issue 6.1 (#4313)
+- Task **2.8** / group 9 (`__schemaVersion` leaf + migration) → Issue 6.2 (#4286, closed)
+- Health `runtimeEnabled` handoff → Issue 6.3 (#4285)
+
+Hot-reload propagation to connectors is Issue 22 (depends on 6 **and** 6.1); admin UI is Issue 28.
 
 **Config note:** `ai-catalog.providers.<id>.enabled` controls **startup registration** (YAML-only). `boost.connectors.<id>.enabled` controls **runtime sync-skip** (db-overridable). Do not treat them as the same flag — see `openspec/changes/connector-config-hot-reload/design.md`.
 
@@ -374,7 +422,7 @@ From `openspec/changes/connector-config-hot-reload/tasks.md` group 1 (RHIDP-1534
 - 1.5 Add URL validation for `endpoint` field
 - 1.6 Add positive number validation for numeric fields
 - 1.7 Add cron expression validation for `schedule.cron`
-- 1.8 Define default values in schemas
+- ~~1.8 Define default values in schemas~~ — deferred to Issue 6.1 (#4313). Applied as `ConfigFieldMeta.defaultValue` at resolve time, **not** Zod `.default()`.
 - 1.9 Add schema versioning field
 - 1.10 Add unit tests for schema validation
 
@@ -387,13 +435,103 @@ From `openspec/changes/connector-config-hot-reload/tasks.md` group 2 (RHIDP-1534
 - 2.5 Implement immediate cache invalidation on DB override write
 - 2.6 Add Zod schema validation during merge
 - 2.7 Implement `configScope` enforcement: reject DB override writes for `yaml-only` fields
-- 2.8 Add schema version migration logic for backward compatibility
+- ~~2.8 Add schema version migration logic for backward compatibility~~ — deferred to Issue 6.2 (#4286, closed)
 - 2.9 Add unit tests for two-layer merge
 - 2.10 Add integration tests for `RuntimeConfigResolver` with connector schemas
 
 ### Specifications
 
 - `openspec/changes/connector-config-hot-reload/specs/config-schemas/spec.md`
+
+---
+
+## Connector Config — Apply optional-field defaults at resolve time (issue 6.1 of 29)
+
+https://github.com/redhat-developer/rhdh-plugins/issues/4313
+
+**Status:** OPEN (PR [#4314](https://github.com/redhat-developer/rhdh-plugins/pull/4314))
+**Labels:** `enhancement`, `feature`, `triaged`, `ai-integrations`
+**Depends on:** Issue 6 (#4044, closed — connector leaves + resolver exist)
+**Unblocks:** Issue 22 (#4060) — hot-reload consumers must not invent their own fallbacks for unset optional numerics
+**RHIDP Stories:** RHIDP-15340 (deferred slice from #4044)
+**Feature:** RHDHPLAN-1513 — Epic RHIDP-15332
+**Parent:** Deferred from #4044 (issue 6 of 29)
+
+#4044 registered connector Zod leaves and extended `RuntimeConfigResolver`, but **did not apply OpenSpec task 1.8 defaults**. Apply them as a read-time fallback after the two-layer cache merge: DB override → YAML baseline → field default → `undefined`.
+
+**Do not** add Zod `.default()` — that would collapse “unset” during `validateConfigValue` and break resolver precedence.
+
+Default values (exact):
+
+| Key pattern                                  | Default          | Notes                |
+| -------------------------------------------- | ---------------- | -------------------- |
+| `boost.connectors.<id>.schedule.intervalMs`  | `300000` (5 min) | jira, github, gitlab |
+| `boost.connectors.<id>.batchSize`            | `100`            | jira, github, gitlab |
+| `boost.connectors.jira.timeout.connectionMs` | `30000` (30 s)   | Jira only            |
+
+Fields **without** defaults (`enabled`, `endpoint`, `schedule.cron`) stay `undefined` when absent.
+
+### Out of scope
+
+- Validation rules (HTTPS, `.int()`, `.max()`, cron) — already landed in #4044
+- `__schemaVersion` leaves or migration — Issue 6.2 (#4286)
+- Provider / hot-reload wiring — Issue 22 (#4060)
+- Admin UI — Issue 28 (#4066)
+
+### Specifications
+
+- `openspec/changes/connector-config-hot-reload/tasks.md` — task 1.8
+- `openspec/changes/connector-config-hot-reload/specs/config-schemas/spec.md` — Requirement: Default Values
+
+---
+
+## Connector Config — Schema versioning leaf and migration (issue 6.2 of 29)
+
+https://github.com/redhat-developer/rhdh-plugins/issues/4286
+
+**Status:** CLOSED (PR [#4315](https://github.com/redhat-developer/rhdh-plugins/pull/4315) merged)
+**Labels:** `feature`, `triaged`, `workspace/boost`
+**Depends on:** Issue 6 (#4044, closed). Independent of Issue 6.1.
+**RHIDP Stories:** RHIDP-15340 (deferred slice) + OpenSpec group 9
+**Feature:** RHDHPLAN-1513 — Epic RHIDP-15332
+**Parent:** Deferred from #4044 (issue 6 of 29)
+
+**Done.** Registered per-connector `boost.connectors.<id>.__schemaVersion` (`configScope: db-only`) and migration when stored connector schema version is below current (OpenSpec task 2.8 / group 9). Isolated from #4044 because there was no prior connector override data to migrate at first ship.
+
+### Specifications
+
+- `openspec/changes/connector-config-hot-reload/specs/config-schemas/spec.md` (Schema Versioning)
+- `openspec/changes/connector-config-hot-reload/tasks.md` group 9
+
+---
+
+## Ingestion Health — Wire ConnectorConfigReader runtimeEnabled to RuntimeConfigResolver (issue 6.3 of 29)
+
+https://github.com/redhat-developer/rhdh-plugins/issues/4285
+
+**Status:** OPEN (PR [#4316](https://github.com/redhat-developer/rhdh-plugins/pull/4316))
+**Labels:** `feature`, `triaged`, `workspace/boost`
+**Depends on:** Issue 6 (#4044, closed — connector leaf keys registered). Independent of Issues 6.1 and 6.2.
+**Unblocks:** correct health `enabled` / `?includeDisabled` under DB overrides; soft prerequisite for connector admin UX that relies on health reflecting runtime toggles (Issues 5 / 26)
+**RHIDP / Feature:** RHDHPLAN-1513 — follows #4043 handoff contract
+**Parent:** Deferred from #4044 (issue 6 of 29)
+
+After #4044, `boost.connectors.<id>.enabled` is db-overridable via `RuntimeConfigResolver`, but `ConnectorConfigReader` still reads both enabled flags from YAML/`ConfigApi` only. This slot injects the resolver, makes discovery async (`listCandidates()` is synchronous today; `resolve()` is async), and updates `HealthStatusService` / routes / tests.
+
+Startup `ai-catalog.providers.<id>.enabled` stays YAML/`ConfigApi`. `runtimeEnabled` ← `await resolver.resolve('boost.connectors.<id>.enabled')` with default `true` when unset.
+
+### Out of scope
+
+- Registering connector Zod leaves — Issue 6 (#4044)
+- Provider hot-reload — Issue 22 (#4060)
+- Admin UI / admin config HTTP API — Issue 28 (#4066)
+- Schema migration / `__schemaVersion` — Issue 6.2 (#4286)
+
+### Specifications / refs
+
+- [#4043 implementation gate](https://github.com/redhat-developer/rhdh-plugins/issues/4043#issuecomment-5252823127) — “Contract #4044 must preserve / complete”
+- `plugins/boost-backend/src/ingestion/ConnectorConfigReader.ts`
+- `openspec/changes/connector-config-hot-reload/design.md` (namespace table)
 
 ---
 
@@ -1043,7 +1181,7 @@ Group 4 (Disconnected Cluster Support):
 https://github.com/redhat-developer/rhdh-plugins/issues/4060
 
 **Labels:** `ready-to-code`
-**Depends on:** Issue 6 (Zod schemas, RuntimeConfigResolver)
+**Depends on:** Issue 6 (#4044 — Zod schemas, RuntimeConfigResolver) **and** Issue 6.1 (#4313 — resolve-time defaults for optional numeric fields)
 **RHIDP Stories:** RHIDP-15341
 **Feature:** RHDHPLAN-1513 — Epic RHIDP-15332
 
@@ -1085,7 +1223,7 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4061
 **RHIDP Stories:** RHIDP-15310
 **Feature:** RHDHPLAN-1508 — Epic RHIDP-15270
 
-Implement backend skill filtering using batch `authorizeConditional()` for `ai-catalog.asset.read`, add `totalSkills`/`visibleSkills` fields to SkillBundle API response, ensure filtered-out skill references are not exposed, and implement frontend "N of M skills visible" count display with restricted-access placeholder for fully restricted bundles.
+Implement backend skill filtering using batch `authorizeConditional()` for `ai-catalog.asset.access`, add `totalSkills`/`visibleSkills` fields to SkillBundle API response, ensure filtered-out skill references are not exposed, and implement frontend "N of M skills visible" count display with restricted-access placeholder for fully restricted bundles.
 
 ### Tasks
 
@@ -1115,7 +1253,7 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4062
 **Feature:** RHDHPLAN-1508 — Epic RHIDP-15270
 **Cross-feature dependency:** RHIDP-15273 depends on RHIDP-15167 (RHDHPLAN-1509 — Entity page extensions). Graduated visibility wraps RHIDP-15167's entity page components with `RequirePermission` gating. Cannot gate what hasn't been built yet.
 
-Wrap Tier 2 sections in asset detail page with `<RequirePermission permission={aiCatalogAssetReadUsageDocsPermission}>`, create restricted-access placeholder for denied fields, implement filtered counts on asset list page, and add `usePermission` hook check for `ai-catalog.admin` to show/hide admin links.
+Wrap Tier 2 sections in asset detail page with `<RequirePermission permission={aiCatalogAssetAccessUsageDocsPermission}>`, create restricted-access placeholder for denied fields, implement filtered counts on asset list page, and add `usePermission` hook check for `ai-catalog.admin` to show/hide admin links.
 
 ### Tasks
 
@@ -1141,7 +1279,7 @@ https://github.com/redhat-developer/rhdh-plugins/issues/4064
 **RHIDP Stories:** RHIDP-15336, RHIDP-15339
 **Feature:** RHDHPLAN-1513 — Epic RHIDP-15331
 
-Implement `IngestionHealthPanel.tsx` with per-connector health cards (PatternFly Card/Label), status badges (healthy/degraded/failing/disabled), timestamps, error summaries with diagnostic guidance, "Force Sync" buttons, disabled connector visual treatment (grey badge, no error indicators), disconnected-cluster differentiation, and health data polling via `useSWR` with 30s refresh. Includes Force Sync backend routes, connector provider integration, and RBAC gating for the health API endpoint (deferred from Issue 5).
+Implement `IngestionHealthPanel.tsx` with per-connector health cards (PatternFly Card/Label), status badges (healthy/degraded/failing/disabled), timestamps, error summaries with diagnostic guidance, "Force Sync" buttons, disabled connector visual treatment (grey badge, no error indicators), disconnected-cluster differentiation, and health data polling via `useSWR` with 30s refresh. Includes Force Sync backend routes, connector provider integration, and RBAC gating for the health API endpoint (deferred from Issue 5). Issue 6.3 (#4285) should land so health `enabled` / `?includeDisabled` honors DB overrides of `boost.connectors.<id>.enabled`.
 
 ### Tasks
 
@@ -1369,9 +1507,14 @@ Tier 0 (no dependencies — all parallel):
   [1] Cross-Connector Shared Infrastructure
   [2] Entity-Provider SDK Types & Interfaces
   [3] AI Catalog Permissions & Conditional Rules
-  [4] Upstream Schema Alignment
+  [4] Upstream Schema Alignment (#4042 / PR #4221)
+  [4.1] CLOSED without merge (#4223 / #4225)
+  [4.2] Annotation spec + migration CLI (#4220)
   [5] Ingestion Health API & Error Classification
-  [6] Connector Config Zod Schemas
+  [6] Connector Config Zod Schemas           (CLOSED)
+  [6.1] Resolve-time field defaults (#4313)  → [6]
+  [6.2] __schemaVersion + migration (#4286)  → [6]  (CLOSED)
+  [6.3] Health runtimeEnabled handoff (#4285) → [6]
   [7] MCP Mirror Endpoint + RHOAI Version Normalization
 
 Tier 1 (depends on Tier 0):
@@ -1389,10 +1532,10 @@ Tier 1 (depends on Tier 0):
   [19] Neo4j Docs + Observability        → [17], [18]
   [20] Version Policy Cascade + Default-Deny → [3]
   [21] RBAC Audit Logging                → [3]
-  [22] Hot-Reload Propagation            → [6]
+  [22] Hot-Reload Propagation            → [6], [6.1]
   [23] SkillBundle RBAC Filtering        → [3]
   [24] Graduated Visibility Frontend     → [3], RHIDP-15167 (RHDHPLAN-1509)
-  [26] Ingestion Health Admin UI         → [3], [5]
+  [26] Ingestion Health Admin UI         → [3], [5]  (6.3 soft prereq)
 
 Tier 2 (depends on Tier 1):
   [25] RBAC Admin UI                     → [3], [20]

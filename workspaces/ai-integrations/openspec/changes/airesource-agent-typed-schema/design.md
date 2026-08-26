@@ -70,7 +70,7 @@ The “Research reference” column records where the catalog field was derived 
 | Research reference (SDK `AgentConfiguration`) | AiResource                       | Required | Notes                                                                                                                         |
 | --------------------------------------------- | -------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | `name`                                        | `metadata.name`                  | Yes      | No `spec.name`; optional `metadata.title` for display                                                                         |
-| `instructions`                                | `spec.instructions`              | Yes      | Non-empty string only (no function form in YAML)                                                                              |
+| `instructions`                                | `spec.instructions`              | No       | Optional string (no function form in YAML). Omit when the agent image/runtime already bakes in a default prompt.              |
 | `handoffDescription`                          | `spec.handoffDescription`        | No       | string                                                                                                                        |
 | `model`                                       | `spec.model`                     | No       | string model id                                                                                                               |
 | `handoffs`                                    | `spec.handoffs`                  | No       | `string[]`, opaque (no entity-ref format check)                                                                               |
@@ -94,9 +94,9 @@ The “Research reference” column records where the catalog field was derived 
 
 ### D5 — Schema + processor in this OpenSpec; agent-only processor rules
 
-**Choice**: Deliver types, examples, schema tests, **and** catalog processor validation for agent-specific fields. Processor does **not** re-validate core entity fields (`owner`, `lifecycle`, etc.) beyond existing catalog behavior.
+**Choice**: Deliver types, examples, schema tests, **and** catalog processor validation for agent-specific fields. The agent processor (`AiResourceAgentProcessor`) lives in `catalog-backend-module-ai-resource-agent`, not in `AiResourceExtensionsProcessor`. The extensions processor remains scope/OCI only. Processor does **not** re-validate core entity fields (`owner`, `lifecycle`, etc.) beyond existing catalog behavior.
 
-**Rationale**: Epic cohesion (15867 + 15868 share one field set). Keep processor focused on agent fields.
+**Rationale**: Epic cohesion (15867 + 15868 share one field set). Keep processor focused on agent fields. Agent validation belongs with the agent packages, matching the packaging approach from #4128.
 
 ### D6 — Dual-track documentation (rhdh-plugins + upstream)
 
@@ -108,7 +108,7 @@ The “Research reference” column records where the catalog field was derived 
 
 **Choice**: Provide at least one example (or fixture set) with a router-style agent (`handoffs` + `handoffDescription` on specialists) using only D3 fields—not Augment-only keys.
 
-**Rationale**: Exercises required `instructions` and optional handoff/`modelSettings` fields in a realistic catalog authoring scenario.
+**Rationale**: Exercises optional `instructions` and handoff/`modelSettings` fields in a realistic catalog authoring scenario.
 
 ### D8 — Correct plural type examples in sibling discovery OpenSpec
 
@@ -132,14 +132,14 @@ The “Research reference” column records where the catalog field was derived 
 - Per-type validators / guards: `skillAiResourceEntityV1alpha1Validator`, `ruleAiResourceEntityV1alpha1Validator`, `isSkillAiResourceEntity`, `isRuleAiResourceEntity`
 - Kind registration via `aiResourceEntityModel` / `catalogModuleAiResourceEntityModel`
 
-Agent should follow that pattern: add an `AgentAiResourceEntity…` (name TBD) member of the AiResource union (or an RHDH-local extension layer that mirrors it until upstream accepts agent), with a `KindValidator` + type guard keyed on `spec.type: 'agent'`.
+Agent should follow that pattern: add an `AgentAiResourceEntity…` (name TBD) member of the AiResource union (or an RHDH-local extension layer that mirrors it until upstream accepts agent), with a `KindValidator` + type guard keyed on `spec.type: ‘agent’`.
 
 **Secondary reference — MCP server API discriminated extension** (same catalog-model alpha surface):
 
-- `McpServerApiEntity` with `spec.type: 'mcp-server'`, `mcpServerApiEntityValidator`, `isMcpServerApiEntity`, `mcpServerApiEntityModel`
+- `McpServerApiEntity` with `spec.type: ‘mcp-server’`, `mcpServerApiEntityValidator`, `isMcpServerApiEntity`, `mcpServerApiEntityModel`
 - Shows how Backstage extends an existing kind with a typed `spec.type` branch (useful precedent for dual-track / upstream PR work)
 
-**Local RHDH extension precedent**: this workspace’s `AIResourceExtensionsProcessor` for `spec.scope` / OCI checks—agent **field** validation (RHIDP-15868) should extend that processor path for agent-specific rules, while the **typed schema** itself follows the catalog-model validator pattern above.
+**Agent packaging**: Agent schema, `KindValidator`, type guard, and `CatalogModelLayer` live in `catalog-model-ai-resource-agent`. Agent-specific field validation (RHIDP-15868) lives in `catalog-backend-module-ai-resource-agent` as `AiResourceAgentProcessor`, registered alongside the model source in the same backend module. The `AiResourceExtensionsProcessor` in `catalog-backend-module-ai-resource-extensions` remains scope/OCI only and does not contain agent-specific rules. Kind spelling is `AiResource` (matching #4128 / the agent model packages).
 
 **Rationale**: Without these pointers, implementers (human or coding agent) will invent ad-hoc types that diverge from skill/rule and force manual rework. Gabe’s review feedback on this PR.
 

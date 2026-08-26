@@ -37,14 +37,14 @@ const skill: Entity = {
 
 const agent: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
-  kind: 'Component',
+  kind: 'AiResource',
   metadata: {
     name: 'dev-assistant',
     namespace: 'default',
     tags: ['agent'],
     annotations: { 'rhdh.io/ai-asset-source': 'kagenti' },
   },
-  spec: { type: 'ai-agent', lifecycle: 'experimental', owner: 'team-ml' },
+  spec: { type: 'agent', lifecycle: 'experimental', owner: 'team-ml' },
 };
 
 const entities = [skill, agent];
@@ -55,17 +55,15 @@ describe('builtinFilters', () => {
       const options = categoryFilterDefinition.getOptions(entities);
       expect(options.length).toBeGreaterThanOrEqual(5);
       expect(options.find(o => o.id === 'skill')).toBeDefined();
-      expect(options.find(o => o.id === 'ai-agent')).toBeDefined();
+      expect(options.find(o => o.id === 'agent')).toBeDefined();
     });
 
     it('matches entity by spec.type', () => {
       expect(categoryFilterDefinition.matchEntity(skill, ['skill'])).toBe(true);
-      expect(categoryFilterDefinition.matchEntity(skill, ['ai-agent'])).toBe(
+      expect(categoryFilterDefinition.matchEntity(skill, ['agent'])).toBe(
         false,
       );
-      expect(categoryFilterDefinition.matchEntity(agent, ['ai-agent'])).toBe(
-        true,
-      );
+      expect(categoryFilterDefinition.matchEntity(agent, ['agent'])).toBe(true);
     });
 
     it('matches case-insensitively', () => {

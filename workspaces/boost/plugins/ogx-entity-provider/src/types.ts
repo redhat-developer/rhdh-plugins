@@ -70,12 +70,18 @@ export interface OgxAgentConfig {
   name: string;
   /** Optional description. */
   description?: string;
+  /** System prompt / instructions for the agent. */
+  instructions?: string;
   /** The model this agent uses. */
   model?: string;
   /** Tool identifiers the agent has access to. */
   tools?: string[];
   /** Handoff target agent IDs. */
-  handoffTargets?: string[];
+  handoffs?: string[];
+  /** Description of when to hand off to this agent (used by router agents). */
+  handoffDescription?: string;
+  /** Whether this agent uses RAG retrieval. */
+  enableRAG?: boolean;
   /** Identity of the user who created/registered the agent. */
   createdBy?: string;
   /** Lifecycle stage of the agent. */
@@ -96,6 +102,10 @@ export interface OgxEntityProviderConfig {
   modelRefreshIntervalSeconds?: number;
   /** Upstream refresh interval in seconds for agent entities (default: 300 = 5m). */
   agentRefreshIntervalSeconds?: number;
+  /** ID of the default/entry-point agent. */
+  defaultAgent?: string;
+  /** Maximum number of agent turns in a conversation. */
+  maxAgentTurns?: number;
   /** Static agent configurations from YAML/admin config. */
   agents?: OgxAgentConfig[];
 }

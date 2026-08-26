@@ -29,7 +29,7 @@ import {
   ActiveDropdown,
   ActiveMultiSelect,
 } from './widgets';
-import { useGetExtraErrors } from './utils';
+import { useGetExtraErrors, useGetExtraErrorsForField } from './utils';
 
 const customValidate = (
   _formData: JsonObject | undefined,
@@ -53,6 +53,7 @@ const FormDecoratorContent = ({
   FormComponent: ComponentType<FormDecoratorProps>;
 } & OrchestratorFormContextProps) => {
   const getExtraErrors = useGetExtraErrors();
+  const getExtraErrorsForField = useGetExtraErrorsForField();
 
   return (
     <FormComponent
@@ -60,6 +61,7 @@ const FormDecoratorContent = ({
       formContext={props}
       customValidate={customValidate}
       getExtraErrors={getExtraErrors}
+      getExtraErrorsForField={getExtraErrorsForField}
     />
   );
 };

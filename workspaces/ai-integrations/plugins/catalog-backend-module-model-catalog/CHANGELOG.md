@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog
 
+## 1.0.1
+
+### Patch Changes
+
+- f7984e7: add remaining unit tests needed for feature readiness
+
 ## 1.0.0
 
 ### Major Changes

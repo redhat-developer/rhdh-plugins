@@ -156,5 +156,142 @@ export interface Config {
      * @visibility secret
      */
     encryptionSecret?: string;
+
+    /** Ingestion health and sync-attempt retention. */
+    ingestion?: {
+      healthRetention?: {
+        /**
+         * Maximum sync attempts retained per connector (default: 100).
+         * @configScope yaml-only
+         */
+        maxAttemptsPerConnector?: number;
+      };
+    };
+
+    /**
+     * Runtime connector sync settings (db-overridable).
+     * Distinct from `ai-catalog.providers.<id>.enabled` (startup registration).
+     */
+    connectors?: {
+      /** Jira connector runtime configuration. */
+      jira?: {
+        /**
+         * Whether Jira runtime syncing is enabled (default: true).
+         * @configScope db-overridable
+         */
+        enabled?: boolean;
+        /**
+         * HTTPS endpoint URL for the Jira instance.
+         * @configScope db-overridable
+         */
+        endpoint?: string;
+        /** Jira sync schedule configuration. */
+        schedule?: {
+          /**
+           * Sync interval in milliseconds (default: 300000).
+           * @configScope db-overridable
+           */
+          intervalMs?: number;
+          /**
+           * Standard 5-field cron expression for sync schedule.
+           * @configScope db-overridable
+           */
+          cron?: string;
+        };
+        /**
+         * Number of items per sync batch (default: 100).
+         * @configScope db-overridable
+         */
+        batchSize?: number;
+        /** Jira timeout configuration. */
+        timeout?: {
+          /**
+           * Connection timeout in milliseconds (default: 30000).
+           * @configScope db-overridable
+           */
+          connectionMs?: number;
+        };
+        /**
+         * Per-connector schema version (internal metadata).
+         * @configScope db-only
+         */
+        __schemaVersion?: number;
+      };
+      /** GitHub connector runtime configuration. */
+      github?: {
+        /**
+         * Whether GitHub runtime syncing is enabled (default: true).
+         * @configScope db-overridable
+         */
+        enabled?: boolean;
+        /**
+         * HTTPS endpoint URL for the GitHub API.
+         * @configScope db-overridable
+         */
+        endpoint?: string;
+        /** GitHub sync schedule configuration. */
+        schedule?: {
+          /**
+           * Sync interval in milliseconds (default: 300000).
+           * @configScope db-overridable
+           */
+          intervalMs?: number;
+        };
+        /**
+         * Number of items per sync batch (default: 100).
+         * @configScope db-overridable
+         */
+        batchSize?: number;
+        /**
+         * Per-connector schema version (internal metadata).
+         * @configScope db-only
+         */
+        __schemaVersion?: number;
+      };
+      /** GitLab connector runtime configuration. */
+      gitlab?: {
+        /**
+         * Whether GitLab runtime syncing is enabled (default: true).
+         * @configScope db-overridable
+         */
+        enabled?: boolean;
+        /**
+         * HTTPS endpoint URL for the GitLab API.
+         * @configScope db-overridable
+         */
+        endpoint?: string;
+        /** GitLab sync schedule configuration. */
+        schedule?: {
+          /**
+           * Sync interval in milliseconds (default: 300000).
+           * @configScope db-overridable
+           */
+          intervalMs?: number;
+        };
+        /**
+         * Number of items per sync batch (default: 100).
+         * @configScope db-overridable
+         */
+        batchSize?: number;
+        /**
+         * Per-connector schema version (internal metadata).
+         * @configScope db-only
+         */
+        __schemaVersion?: number;
+      };
+      /**
+       * Open index signature preserving backward compatibility.
+       * Allows arbitrary connector IDs beyond the three typed entries.
+       */
+      [connectorId: string]:
+        | {
+            /**
+             * Whether runtime syncing is enabled (default: true).
+             * @configScope db-overridable
+             */
+            enabled?: boolean;
+          }
+        | undefined;
+    };
   };
 }

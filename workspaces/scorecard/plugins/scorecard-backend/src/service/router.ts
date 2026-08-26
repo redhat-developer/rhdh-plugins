@@ -17,6 +17,7 @@ import {
   AuthenticationError,
   InputError,
   NotAllowedError,
+  NotFoundError,
 } from '@backstage/errors';
 import express from 'express';
 import Router from 'express-promise-router';
@@ -36,6 +37,7 @@ import {
 } from '../permissions/permissionUtils';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { validateMetricIdsQueryParams } from '../middlewares/validateMetricIdsQueryParams';
+import { validateTimeSeriesQueryParams } from '../middlewares/validateTimeSeriesQueryParams';
 import { getEntitiesOwnedByUser } from '../utils/getEntitiesOwnedByUser';
 import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
 import { AggregatedMetricMapper } from './mappers';
@@ -45,6 +47,7 @@ import { scorecardMetricReadPermission } from '@red-hat-developer-hub/backstage-
 import { validateDatasourceQueryParams } from '../middlewares/validateDatasourceQueryParams';
 import { AggregationsService } from './aggregations/AggregationsService';
 import { ThresholdResolver } from '../threshold/ThresholdResolver';
+import type { ScorecardCollectorsService } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 export type ScorecardRouterOptions = {
   service: {
@@ -57,6 +60,7 @@ export type ScorecardRouterOptions = {
   permissions: PermissionsService;
   logger: LoggerService;
   thresholdResolver: ThresholdResolver;
+  collectorsService: ScorecardCollectorsService;
 };
 
 export async function createRouter({
@@ -67,6 +71,7 @@ export async function createRouter({
   permissions,
   logger,
   thresholdResolver,
+  collectorsService,
 }: ScorecardRouterOptions): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -104,6 +109,40 @@ export async function createRouter({
     },
   );
 
+  router.get('/metrics/:metricId/collectors', async (req, res) => {
+    const { metricId } = req.params;
+
+    const { conditions } = await authorizeConditional(
+      await httpAuth.credentials(req),
+      permissions,
+      scorecardMetricReadPermission,
+    );
+
+    const metric = metricProvidersRegistry.getMetric(metricId);
+    const authorizedMetrics = filterAuthorizedMetrics([metric], conditions);
+
+    if (authorizedMetrics.length === 0) {
+      throw new NotAllowedError(
+        `To view the scorecard metrics, your administrator must grant you the required permission.`,
+      );
+    }
+
+    const collectors = (metric.collectorIds ?? []).map(collectorId => {
+      try {
+        return collectorsService.getCollectorMetadata(collectorId);
+      } catch (error) {
+        if (error instanceof NotFoundError) {
+          throw new Error(
+            `Metric '${metricId}' is configured to use collector '${collectorId}', but that collector is not registered.`,
+          );
+        }
+        throw error;
+      }
+    });
+
+    res.json({ collectors });
+  });
+
   router.get(
     '/metrics/catalog/:kind/:namespace/:name',
     validateMetricIdsQueryParams,
@@ -133,6 +172,34 @@ export async function createRouter({
         conditions,
       );
       res.json(results);
+    },
+  );
+
+  router.get(
+    '/metrics/catalog/:kind/:namespace/:name/time-series',
+    validateTimeSeriesQueryParams,
+    async (req, res) => {
+      const { metricId, from, to } = req.query;
+
+      const { conditions } = await authorizeConditional(
+        await httpAuth.credentials(req),
+        permissions,
+        scorecardMetricReadPermission,
+      );
+
+      const { kind, namespace, name } = req.params;
+      const entityRef = stringifyEntityRef({ kind, namespace, name });
+
+      await checkEntityAccess(entityRef, req, permissions, httpAuth);
+
+      const result = await catalogMetricService.getEntityMetricTimeSeries(
+        entityRef,
+        metricId as string,
+        new Date(from as string),
+        new Date(to as string),
+        conditions,
+      );
+      res.json(result);
     },
   );
 

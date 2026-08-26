@@ -84,6 +84,54 @@ ai-catalog:
         timeout: { minutes: 15 }
 
 # --------------------------------------------------------------------------
+# Ingestion Health Configuration
+# --------------------------------------------------------------------------
+# Config root: boost.ingestion
+# Controls sync attempt retention and health status computation.
+#
+# Two distinct enable flags (do not conflate):
+# - ai-catalog.providers.<id>.enabled — startup registration (YAML-only)
+# - boost.connectors.<id>.enabled — runtime sync-skip (db-overridable; default true)
+
+# boost:
+#   ingestion:
+#     healthRetention:
+#       # Maximum sync attempts retained per connector (default: 100).
+#       # Older records beyond this limit are cleaned up daily.
+#       maxAttemptsPerConnector: 100
+#   connectors:
+#     jira:
+#       enabled: true                        # runtime sync-skip (default true)
+#       endpoint: https://jira.example.com   # HTTPS required
+#       schedule:
+#         intervalMs: 300000                 # 5 minutes (default)
+#         cron: '*/10 * * * *'              # optional; takes precedence over intervalMs
+#       batchSize: 100                       # items per sync batch (default)
+#       timeout:
+#         connectionMs: 30000                # connection timeout (default)
+#     github:
+#       enabled: true                        # runtime sync-skip (default true)
+#       endpoint: https://api.github.com     # HTTPS required
+#       schedule:
+#         intervalMs: 300000                 # 5 minutes (default)
+#       batchSize: 100                       # items per sync batch (default)
+#     gitlab:
+#       enabled: false                       # skip scheduled syncs without restarting
+#       endpoint: https://gitlab.example.com # HTTPS required
+#       schedule:
+#         intervalMs: 600000                 # 10 minutes
+#       batchSize: 50
+#
+# ai-catalog:
+#   providers:
+#     github:
+#       enabled: true   # startup registration (default true)
+#     gitlab:
+#       enabled: true
+#     jira:
+#       enabled: true
+
+# --------------------------------------------------------------------------
 # Air-Gapped Deployment Variant
 # --------------------------------------------------------------------------
 # Use this variant when the RHDH instance has no internet access.

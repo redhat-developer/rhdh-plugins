@@ -23,9 +23,39 @@ import type { JsonValue } from '@backstage/types';
 import { AdminConfigService } from './AdminConfigService';
 import {
   boostConfigFields,
+  BOOST_CONNECTOR_SCHEMA_VERSION,
+  CONNECTOR_IDS,
+  getFieldDefault,
   isSensitiveField,
   type BoostConfigKey,
+  type ConnectorId,
 } from './schemas';
+
+/**
+ * A migration function that transforms stored DB overrides for a
+ * connector from one schema version to the next. Receives the
+ * connector ID and the admin config service for reading/writing
+ * individual leaf values. Returns when the migration is complete.
+ *
+ * @public
+ */
+export type ConnectorMigrationFn = (
+  connectorId: ConnectorId,
+  adminConfigService: AdminConfigService,
+) => Promise<void>;
+
+/**
+ * Registry of connector schema migrations keyed by the **source**
+ * version they upgrade from. For example, a migration registered
+ * under key `1` upgrades v1 → v2.
+ *
+ * Migrations are applied sequentially: v1 → v2 → v3 etc. Each
+ * migration must leave the data valid under the next version's
+ * schema.
+ *
+ * @public
+ */
+export type ConnectorMigrationRegistry = Map<number, ConnectorMigrationFn>;
 
 /**
  * Cache key for the merged effective config.
@@ -64,6 +94,9 @@ export interface RuntimeConfigResolverOptions {
  * 30-second TTL via Backstage `cacheService`, with immediate
  * invalidation on write.
  *
+ * Field defaults from `ConfigFieldMeta.defaultValue` are applied at
+ * read time on a per-call copy and are never written to the cache.
+ *
  * This is the single cache layer for config resolution — no duplicate
  * wrapper caches.
  *
@@ -83,25 +116,57 @@ export class RuntimeConfigResolver {
   }
 
   /**
-   * Resolve a single config value. Checks DB override first, then
-   * YAML baseline. The merged result is cached for 30 seconds.
+   * Resolve a single config value. Precedence:
+   * 1. DB override (highest)
+   * 2. YAML baseline
+   * 3. Field default from schema metadata (lowest)
    *
    * @param key - The config field key.
-   * @returns The resolved value, or `undefined` if not set anywhere.
+   * @returns The resolved value, or `undefined` if not set anywhere
+   *   and no field default is defined.
    */
   async resolve(key: BoostConfigKey): Promise<unknown | undefined> {
     const effectiveConfig = await this.getEffectiveConfig();
-    return effectiveConfig.get(key);
+    // Match resolveAll(): the effective map omits unset keys and never
+    // stores `undefined`, so `has(key)` is the presence check.
+    if (effectiveConfig.has(key)) {
+      return effectiveConfig.get(key);
+    }
+    return getFieldDefault(key);
   }
 
   /**
    * Resolve all config values. Returns a map of key → resolved value
-   * with DB overrides taking precedence over YAML baseline.
+   * with precedence: DB override → YAML baseline → field default.
+   *
+   * The returned Map is a fresh snapshot for this call only (defaults
+   * are layered on top of a copy of the effective config and are never
+   * written back to the cache) — safe for callers to mutate or retain
+   * without affecting subsequent resolver calls.
+   *
+   * Note: the returned map does not indicate *which* layer a value
+   * came from — synthesized field defaults are indistinguishable from
+   * real DB overrides or YAML baseline values. Consumers that need to
+   * make that distinction (e.g. an admin UI showing "using default"
+   * vs. "explicitly set", see issue #4066) will need a separate
+   * mechanism (e.g. a per-key `source` tag) — not implemented here.
    *
    * @returns Map of all resolved config values.
    */
   async resolveAll(): Promise<Map<string, unknown>> {
-    return this.getEffectiveConfig();
+    const effective = await this.getEffectiveConfig();
+    // Layer 3: apply field defaults for keys not already set. `effective`
+    // is a fresh Map from getEffectiveConfig() (see method docs above),
+    // so mutating it here is safe and never leaks into the cache.
+    for (const key of Object.keys(boostConfigFields) as BoostConfigKey[]) {
+      if (!effective.has(key)) {
+        const fieldDefault = getFieldDefault(key);
+        if (fieldDefault !== undefined) {
+          effective.set(key, fieldDefault);
+        }
+      }
+    }
+    return effective;
   }
 
   /**
@@ -127,8 +192,10 @@ export class RuntimeConfigResolver {
   }
 
   /**
-   * Remove a config override and invalidate the cache so the YAML
-   * baseline is restored.
+   * Remove a config override and invalidate the cache. The next
+   * {@link RuntimeConfigResolver.resolve} returns the YAML baseline if
+   * set, otherwise the field default (or `undefined` if the field has
+   * none).
    *
    * @param key - The config field key.
    * @internal
@@ -136,6 +203,132 @@ export class RuntimeConfigResolver {
   async remove(key: BoostConfigKey): Promise<void> {
     await this.adminConfigService.removeOverride(key);
     await this.invalidate();
+  }
+
+  /**
+   * Run connector schema migrations on startup.
+   *
+   * For each known connector, reads the stored `__schemaVersion`
+   * leaf from the DB. If missing, writes v1 explicitly (pre-versioning
+   * data is treated as v1) and then applies any registered migrations
+   * up to `BOOST_CONNECTOR_SCHEMA_VERSION`. The stored version is
+   * stamped after each successful step so a later failure can resume.
+   *
+   * Migration functions must be idempotent: a function that throws
+   * after partial leaf writes will re-run on the next startup.
+   *
+   * A failure for one connector is logged and does not skip the
+   * remaining connectors; the first error is rethrown after all
+   * connectors have been attempted.
+   *
+   * @param migrations - Optional registry of version-keyed migration
+   *   functions. When omitted (or empty), only the version stamp is
+   *   written/bumped — no data transforms are applied.
+   */
+  async migrateConnectorSchemas(
+    migrations?: ConnectorMigrationRegistry,
+  ): Promise<void> {
+    let firstError: unknown;
+
+    for (const connectorId of CONNECTOR_IDS) {
+      try {
+        await this.migrateOneConnector(connectorId, migrations);
+      } catch (error) {
+        this.logger.error(
+          `Connector "${connectorId}" schema migration failed`,
+          error as Error,
+        );
+        firstError ??= error;
+      }
+    }
+
+    // Invalidate cache after migrations may have changed DB values.
+    // Preserve a connector migration error if invalidation also fails.
+    try {
+      await this.invalidate();
+    } catch (invalidateError) {
+      this.logger.error(
+        'Failed to invalidate config cache after connector schema migration',
+        invalidateError as Error,
+      );
+      firstError ??= invalidateError;
+    }
+
+    if (firstError) {
+      throw firstError;
+    }
+  }
+
+  /**
+   * Migrate a single connector's stored schema version.
+   *
+   * @internal
+   */
+  private async migrateOneConnector(
+    connectorId: ConnectorId,
+    migrations?: ConnectorMigrationRegistry,
+  ): Promise<void> {
+    const versionKey =
+      `boost.connectors.${connectorId}.__schemaVersion` as BoostConfigKey;
+
+    const stored = await this.adminConfigService.getOverride(versionKey);
+    let storedVersion = typeof stored === 'number' ? stored : undefined;
+
+    if (storedVersion === undefined) {
+      this.logger.info(
+        `Connector "${connectorId}" has no stored schema version — ` +
+          `treating as v1, writing v1`,
+      );
+      await this.adminConfigService.setOverride(versionKey, 1);
+      storedVersion = 1;
+    }
+
+    if (storedVersion > BOOST_CONNECTOR_SCHEMA_VERSION) {
+      this.logger.warn(
+        `Connector "${connectorId}" schema v${storedVersion} is ahead of ` +
+          `current v${BOOST_CONNECTOR_SCHEMA_VERSION} (possible downgrade) — ` +
+          `skipping migration`,
+      );
+      return;
+    }
+
+    if (storedVersion === BOOST_CONNECTOR_SCHEMA_VERSION) {
+      this.logger.debug(
+        `Connector "${connectorId}" schema v${storedVersion} is current`,
+      );
+      return;
+    }
+
+    this.logger.info(
+      `Connector "${connectorId}" schema v${storedVersion} → ` +
+        `v${BOOST_CONNECTOR_SCHEMA_VERSION}: running migrations`,
+    );
+
+    for (
+      let fromVersion = storedVersion;
+      fromVersion < BOOST_CONNECTOR_SCHEMA_VERSION;
+      fromVersion++
+    ) {
+      const migrationFn = migrations?.get(fromVersion);
+      if (migrationFn) {
+        await migrationFn(connectorId, this.adminConfigService);
+        this.logger.info(
+          `Connector "${connectorId}": migrated v${fromVersion} → ` +
+            `v${fromVersion + 1}`,
+        );
+      } else {
+        this.logger.debug(
+          `Connector "${connectorId}": no migration registered for ` +
+            `v${fromVersion} → v${fromVersion + 1} (no-op)`,
+        );
+      }
+      await this.adminConfigService.setOverride(versionKey, fromVersion + 1);
+    }
+
+    this.logger.info(
+      `Connector "${connectorId}" schema version bumped to ` +
+        `v${BOOST_CONNECTOR_SCHEMA_VERSION}`,
+    );
   }
 
   /**

@@ -47,6 +47,7 @@ export type OrchestratorFormContextProps = {
   handleFetchStarted?: () => void;
   handleFetchEnded?: () => void;
   onSamlSsoError?: (error: Error) => void;
+  validatingFields?: ReadonlySet<string>;
 };
 
 /**
@@ -84,6 +85,11 @@ export type FormDecoratorProps = Pick<
     formData: JsonObject,
     uiSchema: OrchestratorFormContextProps['uiSchema'],
   ) => Promise<ErrorSchema<JsonObject>> | undefined;
+  getExtraErrorsForField?: (
+    formData: JsonObject,
+    fieldPath: string,
+    uiSchemaProperty: JsonObject,
+  ) => Promise<ErrorSchema<JsonObject>>;
 };
 
 /**

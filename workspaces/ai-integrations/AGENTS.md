@@ -12,10 +12,33 @@
 - Dev environment: `yarn dev`
 - Debug: `yarn dev:debug`
 
+## Pre-commit Validation
+
+Before committing, run `yarn tsc` in the workspace root to catch type errors.
+CI runs `yarn tsc:full` (non-incremental), so type failures will block the PR.
+
+Common pitfall: calling a method through an interface type (e.g.,
+`CatalogProcessor`) may require more arguments than the concrete class
+declares. Unit tests pass regardless because JavaScript ignores
+extra/missing arguments — only the TypeScript compiler catches the
+mismatch.
+
 ## Key Conventions
 
 - Follows standard Backstage plugin structure: frontend plugin, backend plugin, and common shared library
 - Backend module (e.g. `catalog-backend-module-model-catalog`) extend Backstage catalog plugin
+
+## Test File Conventions
+
+- `module.test.ts` should be a minimal smoke test (~25 lines) verifying the
+  module export is defined and, optionally, that it registers the expected
+  processors/providers on the extension point via `startTestBackend`.
+- Processor behavior tests (validation logic, ingestion paths, error handling)
+  belong in dedicated test files named after the class under test (e.g.,
+  `AiResourceExtensionsProcessor.test.ts`).
+- When test helpers like entity factory functions are needed by multiple test
+  files, extract them into a shared `testUtils.ts` in the same `src/`
+  directory.
 
 ## Architecture (only non-obvious parts)
 

@@ -20,3 +20,4 @@
  * @packageDocumentation
  */
 export { catalogModuleAiResourceAgent as default } from './module';
+export { AiResourceAgentProcessor } from './AiResourceAgentProcessor';

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import {
@@ -492,6 +492,15 @@ export const WorkflowRunsTabContent = ({
     [runItems, orderDirection],
   );
 
+  const applyBackendSortRef = useRef(applyBackendSort);
+  applyBackendSortRef.current = applyBackendSort;
+
+  const stableApplyBackendSort = useCallback(
+    (item1: WorkflowRunDetail, item2: WorkflowRunDetail): number =>
+      applyBackendSortRef.current(item1, item2),
+    [],
+  );
+
   const columns = useMemo(
     (): TableColumn<WorkflowRunDetail>[] => [
       {
@@ -523,7 +532,7 @@ export const WorkflowRunsTabContent = ({
             {
               title: t('table.headers.workflowName'),
               field: 'processName',
-              customSort: applyBackendSort,
+              customSort: stableApplyBackendSort,
               render: (data: WorkflowRunDetail) => (
                 <Link to={workflowPageLink({ workflowId: data.workflowId })}>
                   {data.processName}
@@ -575,7 +584,7 @@ export const WorkflowRunsTabContent = ({
       {
         title: t('table.headers.started'),
         field: 'start',
-        customSort: applyBackendSort,
+        customSort: stableApplyBackendSort,
         render: (data: WorkflowRunDetail) =>
           formatStartedRelative(data.startIso),
       },
@@ -596,7 +605,7 @@ export const WorkflowRunsTabContent = ({
       workflowInstanceLink,
       workflowId,
       workflowPageLink,
-      applyBackendSort,
+      stableApplyBackendSort,
       entityInstanceLink,
       name,
       kind,
@@ -605,6 +614,32 @@ export const WorkflowRunsTabContent = ({
       logsEnabled,
       handleViewLogs,
     ],
+  );
+
+  const [columnOrder, setColumnOrder] = useState<number[] | null>(null);
+
+  useEffect(() => {
+    setColumnOrder(null);
+  }, [columns.length]);
+
+  const orderedColumns = useMemo(() => {
+    if (!columnOrder || columnOrder.length !== columns.length) return columns;
+    return columnOrder.map(i => columns[i]);
+  }, [columns, columnOrder]);
+
+  const handleColumnDragged = useCallback(
+    (sourceIndex: number, destinationIndex: number) => {
+      setColumnOrder(prev => {
+        const order =
+          prev && prev.length === columns.length
+            ? [...prev]
+            : columns.map((_, i) => i);
+        const [moved] = order.splice(sourceIndex, 1);
+        order.splice(destinationIndex, 0, moved);
+        return order;
+      });
+    },
+    [columns],
   );
 
   const actions = useMemo((): TableProps<WorkflowRunDetail>['actions'] => {
@@ -807,18 +842,19 @@ export const WorkflowRunsTabContent = ({
               <OverrideBackstageTable
                 removeOutline
                 isLoading={loading}
-                columns={columns}
+                columns={orderedColumns}
                 data={filteredData}
                 actions={actions}
                 options={{
                   paging: false,
-                  actionsColumnIndex: columns.length,
+                  actionsColumnIndex: orderedColumns.length,
                 }}
+                onColumnDragged={handleColumnDragged}
                 onOrderChange={(
                   orderBy_: number,
                   orderDirection_: 'asc' | 'desc',
                 ) => {
-                  const field = columns[orderBy_].field;
+                  const field = orderedColumns[orderBy_].field;
                   if (!field) {
                     throw new Error(`Failed to find column number ${orderBy_}`);
                   }

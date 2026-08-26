@@ -5,7 +5,8 @@ RHDH sign-in page (multi-provider) and OIDC / Keycloak / PingFederate / Auth0 / 
 ## Usage
 
 - **Dynamic loading**: default export is a `FrontendModule` suitable for `@backstage/frontend-dynamic-feature-loader`.
-- **Static / alpha**: import from `@red-hat-developer-hub/backstage-plugin-app-auth/alpha` for `appAuthModule`, `signInTranslationRef`, and auth API refs. The sign-in page UI is registered by the module via `SignInPageBlueprint` and lazy-loaded — it is not a public alpha export.
+- **Static**: import from `@red-hat-developer-hub/backstage-plugin-app-auth` for `appAuthModule` and auth API refs. The sign-in page UI is registered by the module via `SignInPageBlueprint` and lazy-loaded — it is not a public export.
+- **Translations (alpha)**: import from `@red-hat-developer-hub/backstage-plugin-app-auth/alpha` for `signInTranslationRef`.
 
 ## Config
 

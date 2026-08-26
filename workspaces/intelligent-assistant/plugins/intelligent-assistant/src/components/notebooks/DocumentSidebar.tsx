@@ -29,7 +29,12 @@ import {
   TextInput,
   Tooltip,
 } from '@patternfly/react-core';
-import { EllipsisVIcon, PlusCircleIcon } from '@patternfly/react-icons';
+import {
+  AddCircleOIcon,
+  EllipsisVIcon,
+  PenIcon,
+  TrashIcon,
+} from '@patternfly/react-icons';
 
 import { NOTEBOOK_MAX_FILES, NOTEBOOK_MAX_TITLE_LENGTH } from '../../const';
 import { useInlineEdit } from '../../hooks/notebooks/useInlineEdit';
@@ -119,6 +124,12 @@ const useStyles = makeStyles(theme => ({
       backgroundColor:
         'var(--pf-t--global--background--color--action--plain--hover)',
     },
+    '&:hover .doc-kebab': {
+      visibility: 'visible',
+    },
+    '&:focus-within .doc-kebab': {
+      visibility: 'visible',
+    },
   },
   fileIcon: {
     flexShrink: 0,
@@ -186,6 +197,7 @@ const useStyles = makeStyles(theme => ({
   kebabToggle: {
     padding: 0,
     flexShrink: 0,
+    visibility: 'hidden' as const,
   },
   kebabDropdownMenu: {
     '& .pf-v6-c-menu__list': {
@@ -376,9 +388,9 @@ export const DocumentSidebar = ({
 
       <div className={classes.documentsRow}>
         <Typography className={classes.documentCount}>
-          {t('notebook.view.documents.count', {
+          {(t as Function)('notebook.view.documents.count', {
             count: totalCount,
-          } as any)}
+          })}
         </Typography>
         {isAddDisabled ? (
           <Tooltip
@@ -393,7 +405,7 @@ export const DocumentSidebar = ({
               <Button
                 variant="link"
                 className={classes.addButton}
-                icon={<PlusCircleIcon />}
+                icon={<AddCircleOIcon />}
                 isDisabled
               >
                 {t('notebook.view.documents.add')}
@@ -404,7 +416,7 @@ export const DocumentSidebar = ({
           <Button
             variant="link"
             className={classes.addButton}
-            icon={<PlusCircleIcon />}
+            icon={<AddCircleOIcon />}
             onClick={onAddDocument}
           >
             {t('notebook.view.documents.add')}
@@ -483,7 +495,12 @@ export const DocumentSidebar = ({
                     <MenuToggle
                       ref={toggleRef}
                       variant="plain"
-                      className={classes.kebabToggle}
+                      className={`${classes.kebabToggle} doc-kebab`}
+                      style={
+                        openMenuDocId === doc.document_id
+                          ? { visibility: 'visible' }
+                          : undefined
+                      }
                       isExpanded={openMenuDocId === doc.document_id}
                       onClick={event => {
                         event.stopPropagation();
@@ -500,6 +517,7 @@ export const DocumentSidebar = ({
                   <DropdownList>
                     <DropdownItem
                       key="rename"
+                      icon={<PenIcon />}
                       onClick={event => {
                         event.stopPropagation();
                         startEditing(doc.document_id, doc.title);
@@ -509,6 +527,7 @@ export const DocumentSidebar = ({
                     </DropdownItem>
                     <DropdownItem
                       key="delete"
+                      icon={<TrashIcon />}
                       onClick={event => {
                         event.stopPropagation();
                         setOpenMenuDocId(null);

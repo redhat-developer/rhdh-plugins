@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  ErrorBuilder,
-  NO_CLIENT_PROVIDED,
-  NO_DATA_INDEX_URL,
-  NO_LOG_STORAGE_URL,
-  SWF_BACKEND_NOT_INITED,
-} from './errorBuilder';
+import { ErrorBuilder, NO_DATA_INDEX_URL } from './errorBuilder';
 
 describe('ErrorBuilder', () => {
   describe('NewBackendError', () => {
@@ -47,16 +41,6 @@ describe('ErrorBuilder', () => {
     });
   });
 
-  describe('GET_NO_LOG_STORAGE_URL_ERR', () => {
-    it('should return an error with NO_LOG_STORAGE_URL name', () => {
-      const error = ErrorBuilder.GET_NO_LOG_STORAGE_URL_ERR();
-
-      expect(error).toBeInstanceOf(Error);
-      expect(error.name).toBe(NO_LOG_STORAGE_URL);
-      expect(error.message).toBe('No log storage url specified or found');
-    });
-  });
-
   describe('GET_NO_DATA_INDEX_URL_ERR', () => {
     it('should return an error with NO_DATA_INDEX_URL name', () => {
       const error = ErrorBuilder.GET_NO_DATA_INDEX_URL_ERR();
@@ -64,28 +48,6 @@ describe('ErrorBuilder', () => {
       expect(error).toBeInstanceOf(Error);
       expect(error.name).toBe(NO_DATA_INDEX_URL);
       expect(error.message).toBe('No data index url specified or found');
-    });
-  });
-
-  describe('GET_NO_CLIENT_PROVIDED_ERR', () => {
-    it('should return an error with NO_CLIENT_PROVIDED name', () => {
-      const error = ErrorBuilder.GET_NO_CLIENT_PROVIDED_ERR();
-
-      expect(error).toBeInstanceOf(Error);
-      expect(error.name).toBe(NO_CLIENT_PROVIDED);
-      expect(error.message).toBe('No or null graphql client');
-    });
-  });
-
-  describe('GET_SWF_BACKEND_NOT_INITED', () => {
-    it('should return an error with SWF_BACKEND_NOT_INITED name', () => {
-      const error = ErrorBuilder.GET_SWF_BACKEND_NOT_INITED();
-
-      expect(error).toBeInstanceOf(Error);
-      expect(error.name).toBe(SWF_BACKEND_NOT_INITED);
-      expect(error.message).toBe(
-        'The SonataFlow backend is not initialized, call initialize() method before trying to get the workflows.',
-      );
     });
   });
 });

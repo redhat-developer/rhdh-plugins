@@ -44,32 +44,24 @@ export class NotebookAddDocumentModalPage {
     );
   }
 
-  separatorBetweenDragZoneAndBrowse(): Locator {
-    return this.dialog().getByText(this.t['notebook.upload.modal.separator'], {
-      exact: true,
-    });
+  supportedFormatsLabel(): Locator {
+    return this.dialog().getByText(
+      this.t['notebook.upload.modal.supportedFormats'],
+    );
   }
 
-  browseFilesButton(): Locator {
-    return this.dialog().getByRole('button', {
-      name: this.t['notebook.upload.modal.browseButton'],
-      exact: true,
-    });
-  }
-
-  acceptedFileTypesParagraph(): Locator {
-    return this.dialog().getByText(this.t['notebook.upload.modal.infoText'], {
-      exact: true,
-    });
+  maxFileSizeText(): Locator {
+    return this.dialog().getByText(this.t['notebook.upload.modal.maxFileSize']);
   }
 
   addFilesButton(stagedCount: number): Locator {
-    const label = substituteNotebookTemplate(
-      this.t['notebook.upload.modal.addButton'],
-      {
-        count: stagedCount,
-      },
-    );
+    const label =
+      stagedCount > 0
+        ? substituteNotebookTemplate(
+            this.t['notebook.upload.modal.addButton'],
+            { count: stagedCount },
+          )
+        : this.t['notebook.upload.modal.addButtonEmpty'];
     return this.dialog().getByRole('button', { name: label });
   }
 
@@ -82,9 +74,8 @@ export class NotebookAddDocumentModalPage {
   /** Drop-zone copy, “or”, browse button, accepted file types paragraph. */
   async expectUploadAreaFullyDescribed(): Promise<void> {
     await expect(this.dragAndDropInstructions()).toBeVisible();
-    await expect(this.separatorBetweenDragZoneAndBrowse()).toBeVisible();
-    await expect(this.browseFilesButton()).toBeVisible();
-    await expect(this.acceptedFileTypesParagraph()).toBeVisible();
+    await expect(this.supportedFormatsLabel()).toBeVisible();
+    await expect(this.maxFileSizeText()).toBeVisible();
   }
 
   async expectModalTitleBarMatchesAriaSnapshot(): Promise<void> {
@@ -102,7 +93,7 @@ export class NotebookAddDocumentModalPage {
   async selectFilesViaBrowsePicker(filePaths: string[]): Promise<void> {
     const [fileChooser] = await Promise.all([
       this.page.waitForEvent('filechooser'),
-      this.browseFilesButton().click(),
+      this.dragAndDropInstructions().click(),
     ]);
     await fileChooser.setFiles(filePaths);
   }
@@ -132,7 +123,7 @@ export class NotebookAddDocumentModalPage {
   }
 
   errorAlert(): Locator {
-    return this.dialog().getByRole('alert');
+    return this.dialog().locator('[data-ouia-component-type="PF6/Alert"]');
   }
 
   async expectValidationAlertsInclude(text: string): Promise<void> {
