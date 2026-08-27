@@ -25,6 +25,10 @@ Deployments that want different SCM wiring can omit this module and supply their
 
 In **RHDH**, this module is expected to ship and load **dynamically** alongside `app-auth`, not via edits to `app-next`.
 
+### Static `app-defaults` wiring
+
+The sample app imports **`appDefaultsModule`** from `@red-hat-developer-hub/backstage-plugin-app-defaults`. That module registers the app drawer, the extensible template card, and the common RHDH icon catalog (`IconBundleBlueprint`, IDs matching legacy `CommonIcons`). In **RHDH**, the same module is loaded **dynamically**; the sample app mounts it statically so `yarn start` exercises the production path.
+
 ### Config for `app-auth`
 
 - **`auth.environment`**: set to `development` locally so the RHDH sign-in page includes the **guest** provider (needed for [`App.test.tsx`](packages/app/src/App.test.tsx) inline `APP_CONFIG`, [`app-config.yaml`](app-config.yaml) for `yarn start` / Playwright, and typical dev flows).

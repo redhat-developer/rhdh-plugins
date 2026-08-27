@@ -44,6 +44,9 @@
   },
   "dependencies": {
     "@backstage/frontend-plugin-api": "^0.17.2",
+    "@backstage/plugin-app-react": "^0.2.4",
+    "@mui/icons-material": "^5.17.1",
+    "@mui/material": "5.18.0",
     "@red-hat-developer-hub/backstage-plugin-app-react": "workspace:^"
   },
   "peerDependencies": {
@@ -51,6 +54,7 @@
   },
   "devDependencies": {
     "@backstage/cli": "^0.36.3",
+    "@backstage/frontend-test-utils": "^0.6.1",
     "@backstage/test-utils": "^1.7.19",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^16.0.0",

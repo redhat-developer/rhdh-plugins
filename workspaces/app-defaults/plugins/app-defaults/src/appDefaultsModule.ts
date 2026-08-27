@@ -20,15 +20,17 @@ import {
   templateCardExtension,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
+import { commonIconsExtension } from './icons/commonIconsExtension';
+
 /**
  * RHDH app module for `pluginId: 'app'`.
- * Provides the application drawer system and the extensible scaffolder
- * template card for dockable panel and template card action extensions.
+ * Provides the application drawer, the extensible scaffolder template card,
+ * and the common RHDH icon catalog (`IconBundleBlueprint`).
  * Default-export this module for dynamic frontend loading.
  *
  * @public
  */
 export const appDefaultsModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [appDrawerExtension, templateCardExtension],
+  extensions: [appDrawerExtension, templateCardExtension, commonIconsExtension],
 });
