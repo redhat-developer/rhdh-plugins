@@ -55,7 +55,7 @@ import {
   EntitySection,
   TemplateSection,
   DynamicCustomizableHomePage,
-} from '../src/plugin';
+} from '../src/legacy/plugin';
 import { homepageTranslations } from '../src/translations';
 import { HomePageCardMountPoint, QuickAccessLink } from '../src/types';
 import defaultQuickAccess from './quickaccess-default.json';

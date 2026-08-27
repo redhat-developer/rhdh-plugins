@@ -28,6 +28,13 @@ import { CATALOG_SOURCE_ANNOTATION, CATALOG_MODEL_ANNOTATION } from './Catalog';
 
 const ANNOTATION_PREFIX = 'rhdh.io/';
 
+export const SYSTEM_ANNOTATION = `${ANNOTATION_PREFIX}system`;
+export const SERVER_TYPE_ANNOTATION = `${ANNOTATION_PREFIX}serverType`;
+export const MODEL_PREFIX_ANNOTATION = `${ANNOTATION_PREFIX}model-`;
+export const DEFAULT_ANNOTATION = `${ANNOTATION_PREFIX}default`;
+export const OWNER_ANNOTATION = `${ANNOTATION_PREFIX}owner`;
+export const LIFECYCLE_ANNOTATION = `${ANNOTATION_PREFIX}lifecycle`;
+
 const FRAMEWORK_SKLEARN = 'sklearn';
 const FRAMEWORK_XGBOOST = 'xgboost';
 const FRAMEWORK_TENSORFLOW = 'tensorflow';
@@ -170,6 +177,34 @@ function generateModelCatalog(
     }
   }
 
+  // Build models from rhdh.io/model-* annotations when present,
+  // otherwise fall back to a single model named after the InferenceService.
+  const modelPrefixModels: Model[] = [];
+  if (is.metadata.annotations) {
+    for (const [k, v] of Object.entries(is.metadata.annotations)) {
+      if (k.startsWith(MODEL_PREFIX_ANNOTATION)) {
+        modelPrefixModels.push({
+          name: sanitizeName(v),
+          owner: sanitizeName(ownerValue),
+          lifecycle: lifecycleValue,
+          description: description,
+          tags: getTags(is),
+          artifactLocationURL: getArtifactLocationURL(is),
+          ethics: getStringPropVal(PropertyKeys.EthicsKey, is),
+          howToUseURL: getStringPropVal(PropertyKeys.HowToUseKey, is),
+          support: getStringPropVal(PropertyKeys.SupportKey, is),
+          training: getStringPropVal(PropertyKeys.TrainingKey, is),
+          usage: getStringPropVal(PropertyKeys.UsageKey, is),
+          license: getStringPropVal(PropertyKeys.LicenseKey, is),
+          annotations: {
+            'model-name': is.metadata.name,
+            ...(techdocsUrl ? { [PropertyKeys.TechDocsKey]: techdocsUrl } : {}),
+          },
+        });
+      }
+    }
+  }
+
   const model: Model = {
     name: name,
     owner: sanitizeName(ownerValue),
@@ -189,6 +224,12 @@ function generateModelCatalog(
     },
   };
 
+  // Sort annotation-derived models by name for deterministic ordering,
+  // since Object.entries() order is not guaranteed across K8s API responses.
+  modelPrefixModels.sort((a, b) => a.name.localeCompare(b.name));
+
+  const models = modelPrefixModels.length > 0 ? modelPrefixModels : [model];
+
   const apiTypeStr = getStringPropVal(PropertyKeys.APITypeKey, is);
   let apiType = APIType.Openapi;
   if (apiTypeStr) {
@@ -207,6 +248,28 @@ function generateModelCatalog(
     }
   }
 
+  // Propagate system, serverType, default, owner, and lifecycle annotations
+  // to the ModelServer so ModelCatalogGenerator can map them to entity fields.
+  const serverAnnotations: Record<string, string> = {};
+  if (is.metadata.annotations) {
+    const systemVal = is.metadata.annotations[SYSTEM_ANNOTATION];
+    if (systemVal) serverAnnotations[SYSTEM_ANNOTATION] = systemVal;
+
+    const serverTypeVal = is.metadata.annotations[SERVER_TYPE_ANNOTATION];
+    if (serverTypeVal)
+      serverAnnotations[SERVER_TYPE_ANNOTATION] = serverTypeVal;
+
+    const defaultVal = is.metadata.annotations[DEFAULT_ANNOTATION];
+    if (defaultVal)
+      serverAnnotations[DEFAULT_ANNOTATION] = sanitizeName(defaultVal);
+
+    const ownerVal = is.metadata.annotations[OWNER_ANNOTATION];
+    if (ownerVal) serverAnnotations[OWNER_ANNOTATION] = sanitizeName(ownerVal);
+
+    const lifecycleVal = is.metadata.annotations[LIFECYCLE_ANNOTATION];
+    if (lifecycleVal) serverAnnotations[LIFECYCLE_ANNOTATION] = lifecycleVal;
+  }
+
   const modelServer: ModelServer = {
     name: sanitizeName(name),
     owner: sanitizeName(ownerValue),
@@ -216,6 +279,9 @@ function generateModelCatalog(
     usage: getStringPropVal(PropertyKeys.UsageKey, is),
     tags: getTagsFromLabels(is),
     authentication: authentication,
+    ...(Object.keys(serverAnnotations).length > 0 && {
+      annotations: serverAnnotations,
+    }),
     API: {
       type: apiType,
       spec: getStringPropVal(PropertyKeys.APISpecKey, is) || 'TBD',
@@ -225,7 +291,7 @@ function generateModelCatalog(
   };
 
   return {
-    models: [model],
+    models,
     modelServer: modelServer,
   };
 }

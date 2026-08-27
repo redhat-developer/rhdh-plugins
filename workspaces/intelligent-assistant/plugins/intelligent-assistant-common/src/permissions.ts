@@ -72,16 +72,6 @@ export const iaNotebooksManagePermission = createPermission({
   attributes: {},
 });
 
-/** This permission is used to list, create, and delete saved prompts and read saved-prompts config
- * @public
- */
-export const iaSavedPromptsManagePermission = createPermission({
-  name: 'intelligent-assistant.saved-prompts.manage',
-  attributes: {
-    action: 'update',
-  },
-});
-
 /** This permission is used to view the list of configured skills
  * @public
  */
@@ -103,6 +93,5 @@ export const iaPermissions = [
   iaMcpManagePermission,
   iaNotebooksManagePermission,
   iaNotebooksUsePermission,
-  iaSavedPromptsManagePermission,
   iaSkillsAccessPermission,
 ];

@@ -13,4 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { homepageTranslationsModule as default } from './alpha';
+export { homepageTranslationsModule as default } from './index';

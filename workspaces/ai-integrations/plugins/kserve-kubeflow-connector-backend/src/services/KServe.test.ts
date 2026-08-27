@@ -15,7 +15,15 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
-import { callBackstagePrinters } from './KServe';
+import {
+  callBackstagePrinters,
+  SYSTEM_ANNOTATION,
+  SERVER_TYPE_ANNOTATION,
+  MODEL_PREFIX_ANNOTATION,
+  DEFAULT_ANNOTATION,
+  OWNER_ANNOTATION,
+  LIFECYCLE_ANNOTATION,
+} from './KServe';
 import type { InferenceService } from './types';
 import { CATALOG_SOURCE_ANNOTATION, CATALOG_MODEL_ANNOTATION } from './Catalog';
 
@@ -471,5 +479,167 @@ describe('callBackstagePrinters', () => {
     expect(result.modelServer!.homepageURL).toBe(
       'https://homepage.example.com',
     );
+  });
+
+  it('should propagate system, serverType, default, owner, and lifecycle annotations to modelServer', async () => {
+    const is = makeInferenceService({
+      annotations: {
+        [SYSTEM_ANNOTATION]: 'my-system',
+        [SERVER_TYPE_ANNOTATION]: 'custom-server',
+        [DEFAULT_ANNOTATION]: 'preferred-model',
+        [OWNER_ANNOTATION]: 'team-ai',
+        [LIFECYCLE_ANNOTATION]: 'experimental',
+      },
+    });
+
+    const result = await callBackstagePrinters(
+      'default-owner',
+      'production',
+      is,
+      false,
+      logger,
+    );
+
+    expect(result.modelServer!.annotations).toBeDefined();
+    expect(result.modelServer!.annotations![SYSTEM_ANNOTATION]).toBe(
+      'my-system',
+    );
+    expect(result.modelServer!.annotations![SERVER_TYPE_ANNOTATION]).toBe(
+      'custom-server',
+    );
+    expect(result.modelServer!.annotations![DEFAULT_ANNOTATION]).toBe(
+      'preferred-model',
+    );
+    expect(result.modelServer!.annotations![OWNER_ANNOTATION]).toBe('team-ai');
+    expect(result.modelServer!.annotations![LIFECYCLE_ANNOTATION]).toBe(
+      'experimental',
+    );
+  });
+
+  it('should not set modelServer annotations when none of the propagated annotations are present', async () => {
+    const is = makeInferenceService({
+      annotations: {
+        'rhdh.io/description': 'Custom description',
+      },
+    });
+
+    const result = await callBackstagePrinters(
+      'owner',
+      'production',
+      is,
+      false,
+      logger,
+    );
+
+    expect(result.modelServer!.annotations).toBeUndefined();
+  });
+
+  it('should create models from model- prefix annotations', async () => {
+    const is = makeInferenceService({
+      annotations: {
+        [`${MODEL_PREFIX_ANNOTATION}granite`]: 'ibm-granite-8b',
+        [`${MODEL_PREFIX_ANNOTATION}llama`]: 'meta-llama-3',
+      },
+    });
+
+    const result = await callBackstagePrinters(
+      'owner',
+      'production',
+      is,
+      false,
+      logger,
+    );
+
+    expect(result.models).toHaveLength(2);
+    const modelNames = result.models.map(m => m.name);
+    expect(modelNames).toContain('ibm-granite-8b');
+    expect(modelNames).toContain('meta-llama-3');
+  });
+
+  it('should not create default model when model- prefix annotations exist', async () => {
+    const is = makeInferenceService({
+      name: 'my-inference-service',
+      namespace: 'ns',
+      annotations: {
+        [`${MODEL_PREFIX_ANNOTATION}granite`]: 'ibm-granite-8b',
+      },
+    });
+
+    const result = await callBackstagePrinters(
+      'owner',
+      'production',
+      is,
+      false,
+      logger,
+    );
+
+    expect(result.models).toHaveLength(1);
+    expect(result.models[0].name).toBe('ibm-granite-8b');
+    // The default name ns_my-inference-service should NOT be present
+    expect(result.models[0].name).not.toBe('ns-my-inference-service');
+  });
+
+  it('should create default model when no model- prefix annotations exist', async () => {
+    const is = makeInferenceService({
+      name: 'test-model',
+      namespace: 'vllm',
+    });
+
+    const result = await callBackstagePrinters(
+      'owner',
+      'production',
+      is,
+      false,
+      logger,
+    );
+
+    expect(result.models).toHaveLength(1);
+    expect(result.models[0].name).toBe('vllm-test-model');
+  });
+
+  it('should sanitize rhdh.io/default annotation value via sanitizeName', async () => {
+    const is = makeInferenceService({
+      annotations: {
+        [DEFAULT_ANNOTATION]: 'IBM_Granite_8B',
+      },
+    });
+
+    const result = await callBackstagePrinters(
+      'owner',
+      'production',
+      is,
+      false,
+      logger,
+    );
+
+    // sanitizeName lowercases and replaces non-alphanumeric with dashes,
+    // ensuring the default value matches the format of model names in
+    // spec.models.available.
+    expect(result.modelServer!.annotations![DEFAULT_ANNOTATION]).toBe(
+      'ibm-granite-8b',
+    );
+  });
+
+  it('should sort model- prefix models by name for deterministic order', async () => {
+    const is = makeInferenceService({
+      annotations: {
+        [`${MODEL_PREFIX_ANNOTATION}z-model`]: 'zebra-model',
+        [`${MODEL_PREFIX_ANNOTATION}a-model`]: 'alpha-model',
+        [`${MODEL_PREFIX_ANNOTATION}m-model`]: 'middle-model',
+      },
+    });
+
+    const result = await callBackstagePrinters(
+      'owner',
+      'production',
+      is,
+      false,
+      logger,
+    );
+
+    expect(result.models).toHaveLength(3);
+    expect(result.models[0].name).toBe('alpha-model');
+    expect(result.models[1].name).toBe('middle-model');
+    expect(result.models[2].name).toBe('zebra-model');
   });
 });

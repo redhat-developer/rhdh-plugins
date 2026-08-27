@@ -13,6 +13,7 @@ dynamicPlugins:
       mountPoints:
         - mountPoint: home.page/cards
           importName: Headline
+          module: Legacy
           config:
             layouts:
               xl: { h: 1 }

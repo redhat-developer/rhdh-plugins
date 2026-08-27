@@ -23,7 +23,8 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./alpha": "./src/alpha/index.ts",
+    "./alpha": "./src/alpha.ts",
+    "./legacy": "./src/legacy.ts",
     "./homepage-translations-module": "./src/homepageTranslationsModuleExport.ts",
     "./package.json": "./package.json"
   },
@@ -31,7 +32,10 @@
   "typesVersions": {
     "*": {
       "alpha": [
-        "src/alpha/index.ts"
+        "src/alpha.ts"
+      ],
+      "legacy": [
+        "src/legacy.ts"
       ],
       "homepage-translations-module": [
         "src/homepageTranslationsModuleExport.ts"
@@ -39,6 +43,15 @@
       "package.json": [
         "package.json"
       ]
+    }
+  },
+  "scalprum": {
+    "name": "red-hat-developer-hub.backstage-plugin-homepage",
+    "exposedModules": {
+      "PluginRoot": "./src/index.ts",
+      "Alpha": "./src/alpha.ts",
+      "Legacy": "./src/legacy.ts",
+      "HomepageTranslationsModule": "./src/homepageTranslationsModuleExport.ts"
     }
   },
   "scripts": {
@@ -76,7 +89,7 @@
   "peerDependencies": {
     "react": "16.13.1 || ^17.0.0 || ^18.2.0",
     "react-dom": "*",
-    "react-router-dom": "6.30.4"
+    "react-router-dom": "6.30.6"
   },
   "devDependencies": {
     "@backstage/cli": "^0.36.5",

@@ -40,7 +40,14 @@ export function buildListModulesOutputSchema(z: typeof zod) {
         .string()
         .optional()
         .describe('ISO 8601 when the job finished, if complete.'),
-      phase: z.enum(['init', 'analyze', 'migrate', 'publish']),
+      phase: z.enum([
+        'init',
+        'analyze',
+        'migrate',
+        'publish',
+        'adversarial-analyze',
+        'adversarial-migrate',
+      ]),
       k8sJobName: z.string(),
       status: jobPhaseStatus,
       errorDetails: z.string().optional(),

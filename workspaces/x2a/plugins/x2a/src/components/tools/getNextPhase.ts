@@ -17,24 +17,27 @@ import {
   MigrationPhase,
   Module,
   ModulePhase,
+  Phase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { getLastPhaseReached } from './getLastPhaseReached';
 
-const nextPhases: Record<MigrationPhase, ModulePhase | undefined> = {
+const nextPhases: Partial<Record<MigrationPhase, ModulePhase>> = {
   init: 'analyze',
   analyze: 'migrate',
   migrate: 'publish',
-  publish: undefined,
 };
 
 export const getNextPhase = (module: Module): ModulePhase | undefined => {
   const lastJob = getLastPhaseReached(module, true);
   const lastPhase: MigrationPhase = lastJob?.phase || 'init';
 
-  if (lastJob?.status === 'error' && lastPhase !== 'init') {
-    // If the last is in error, let the user to rerun it.
-    return lastPhase;
+  if (
+    lastJob?.status === 'error' &&
+    Phase.modulePhaseValues().includes(lastPhase as ModulePhase)
+  ) {
+    // If the last regular phase is in error, let the user rerun it.
+    return lastPhase as ModulePhase;
   }
 
   return nextPhases[lastPhase];

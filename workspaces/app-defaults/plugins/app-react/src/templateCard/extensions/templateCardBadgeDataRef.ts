@@ -22,7 +22,7 @@ import type { TemplateCardBadgeData } from '../types';
  * Extension data ref carrying a badge component from a plugin to the
  * template card.
  *
- * @alpha
+ * @public
  */
 export const templateCardBadgeDataRef =
   createExtensionDataRef<TemplateCardBadgeData>().with({

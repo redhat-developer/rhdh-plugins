@@ -18,7 +18,7 @@ import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import {
   TemplateCardActionBlueprint,
   TemplateCardBadgeBlueprint,
-} from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-app-react';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Tooltip from '@mui/material/Tooltip';
