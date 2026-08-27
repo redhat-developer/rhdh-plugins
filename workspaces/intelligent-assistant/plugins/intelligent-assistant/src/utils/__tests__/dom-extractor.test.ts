@@ -17,9 +17,13 @@
 import { extractPageContext } from '../dom-extractor';
 import { redactText } from '../sensitive-data-redactor';
 
-jest.mock('../sensitive-data-redactor', () => ({
-  redactText: jest.fn(text => text),
-}));
+jest.mock('../sensitive-data-redactor', () => {
+  const actual = jest.requireActual('../sensitive-data-redactor');
+  return {
+    ...actual,
+    redactText: jest.fn(text => text),
+  };
+});
 
 const mockRedactText = redactText as unknown as jest.Mock;
 
@@ -195,7 +199,7 @@ describe('extractPageContext', () => {
     expect(result).toContain('Title: Red Hat Catalog');
   });
 
-  it('should extract active tab from aria-selected tab', () => {
+  it('should extract active tab and all tabs as a section', () => {
     setRootHtml(`
       <div role="tablist">
         <a role="tab" aria-selected="false">Tree</a>
@@ -206,16 +210,22 @@ describe('extractPageContext', () => {
     `);
     const result = extractPageContext();
 
-    expect(result).toContain('Tab: Text');
+    expect(result).toContain('CurrentTab: Text');
+    expect(result).toContain('## Tabs');
+    expect(result).toContain('- Tree');
+    expect(result).toContain('- Text [active]');
+    expect(result).toContain('- Detailed');
+    // Tab labels removed from clone — should not appear in ## Content
+    expect(result).not.toMatch(/## Content[\s\S]*Tree/);
   });
 
-  it('should not include Plugin/Title/Tab lines when elements are absent', () => {
+  it('should not include Plugin/Title/CurrentTab lines when elements are absent', () => {
     setRootHtml('<p>Simple page</p>');
     const result = extractPageContext();
 
     expect(result).not.toContain('Plugin:');
     expect(result).not.toContain('Title:');
-    expect(result).not.toContain('Tab:');
+    expect(result).not.toContain('CurrentTab:');
   });
 
   it('should extract breadcrumbs from legacy aria-label="breadcrumb"', () => {
@@ -422,9 +432,9 @@ describe('extractPageContext', () => {
     expect(matches.length).toBe(1);
   });
 
-  // ── Form fields ──
+  // ── Form fields (hybrid HTML) ──
 
-  it('should extract MUI form fields with labels and helper text', () => {
+  it('should extract MUI form fields as cleaned HTML with labels and helper text', () => {
     setRootHtml(`
       <div class="MuiFormControl-root">
         <label>Project Name</label>
@@ -435,12 +445,12 @@ describe('extractPageContext', () => {
     `);
     const result = extractPageContext();
 
-    expect(result).toContain('## Form Fields');
-    expect(result).toContain('- Project Name');
-    expect(result).toContain('(Must be unique)');
+    expect(result).toContain('## Form Fields (HTML)');
+    expect(result).toContain('<label>Project Name</label>');
+    expect(result).toContain('Must be unique');
   });
 
-  it('should extract BUI TextField via bui-TextField class', () => {
+  it('should extract BUI TextField as cleaned HTML via bui-TextField class', () => {
     setRootHtml(`
       <div class="bui-TextField TextField_bui-TextField__abc123">
         <label>Description</label>
@@ -451,12 +461,12 @@ describe('extractPageContext', () => {
     `);
     const result = extractPageContext();
 
-    expect(result).toContain('## Form Fields');
-    expect(result).toContain('- Description');
-    expect(result).toContain('(Optional field)');
+    expect(result).toContain('## Form Fields (HTML)');
+    expect(result).toContain('<label>Description</label>');
+    expect(result).toContain('Optional field');
   });
 
-  it('should capture live input values from the DOM', () => {
+  it('should capture live input values in form HTML from the DOM', () => {
     setRootHtml(`
       <div class="MuiFormControl-root">
         <label>Service Name</label>
@@ -470,10 +480,11 @@ describe('extractPageContext', () => {
     input.value = 'my-backend-svc';
     const result = extractPageContext();
 
-    expect(result).toContain('- Service Name: my-backend-svc');
+    expect(result).toContain('## Form Fields (HTML)');
+    expect(result).toContain('value="my-backend-svc"');
   });
 
-  it('should skip form fields without labels', () => {
+  it('should include labeled form fields and omit hidden-only controls in HTML', () => {
     setRootHtml(`
       <div class="MuiFormControl-root">
         <input type="hidden" />
@@ -486,7 +497,7 @@ describe('extractPageContext', () => {
     `);
     const result = extractPageContext();
 
-    expect(result).toContain('- Visible Field');
+    expect(result).toContain('<label>Visible Field</label>');
     expect(result).not.toContain('- :');
   });
 
@@ -794,7 +805,9 @@ const y = 2;</pre>
 
     expect(result).toContain('Plugin: Catalog');
     expect(result).toContain('Title: Red Hat Catalog');
-    expect(result).toContain('Tab: Overview');
+    expect(result).toContain('CurrentTab: Overview');
+    expect(result).toContain('## Tabs');
+    expect(result).toContain('- Overview [active]');
     expect(result).toContain('## Alerts');
     expect(result).toContain('Warning: 2 pipelines failing');
     expect(result).toContain('## Headings');
@@ -901,9 +914,9 @@ const y = 2;</pre>
     expect(result).toContain('- My Org: All');
   });
 
-  // ── Form Fields: Select visible text ──
+  // ── Form Fields: Select visible text (HTML) ──
 
-  it('should show visible Select text instead of hidden UUID', () => {
+  it('should include visible Select text in form HTML instead of hidden UUID', () => {
     setRootHtml(`
       <div class="MuiFormControl-root">
         <label>Kind</label>
@@ -917,14 +930,15 @@ const y = 2;</pre>
     `);
     const result = extractPageContext();
 
-    expect(result).toContain('## Form Fields');
-    expect(result).toContain('- Kind: All');
+    expect(result).toContain('## Form Fields (HTML)');
+    expect(result).toContain('<label>Kind</label>');
+    expect(result).toContain('All');
     expect(result).not.toContain('c30bbd28');
   });
 
-  // ── Form Fields: Autocomplete chips ──
+  // ── Form Fields: Autocomplete chips (HTML) ──
 
-  it('should read Autocomplete chip labels as the value', () => {
+  it('should include Autocomplete chip labels in form HTML', () => {
     setRootHtml(`
       <div class="MuiFormControl-root MuiTextField-root">
         <label for="categories-picker">Categories</label>
@@ -941,8 +955,9 @@ const y = 2;</pre>
     `);
     const result = extractPageContext();
 
-    expect(result).toContain('## Form Fields');
-    expect(result).toContain('- Categories: service, backend');
+    expect(result).toContain('## Form Fields (HTML)');
+    expect(result).toContain('service');
+    expect(result).toContain('backend');
   });
 
   // ── Form Fields: Checkbox group ──
@@ -972,9 +987,9 @@ const y = 2;</pre>
     expect(result).not.toContain('production');
   });
 
-  // ── Form Fields: No label fallback to placeholder ──
+  // ── Form Fields: placeholder in HTML ──
 
-  it('should use placeholder as label when no label element exists', () => {
+  it('should include placeholder in form HTML when no label element exists', () => {
     setRootHtml(`
       <div class="MuiFormControl-root">
         <div class="MuiInputBase-root">
@@ -984,8 +999,9 @@ const y = 2;</pre>
     `);
     const result = extractPageContext();
 
-    expect(result).toContain('## Form Fields');
-    expect(result).toContain('- Filter by name: my-component');
+    expect(result).toContain('## Form Fields (HTML)');
+    expect(result).toContain('placeholder="Filter by name"');
+    expect(result).toContain('value="my-component"');
   });
 
   // ── Status in Table ──
@@ -1021,9 +1037,9 @@ const y = 2;</pre>
     expect(result).toContain('- ok: Running');
   });
 
-  // ── Empty Form Fields ──
+  // ── Empty Form Fields (HTML) ──
 
-  it('should show (empty) for form fields with a label but no value', () => {
+  it('should include empty form fields with labels in HTML output', () => {
     setRootHtml(`
       <div class="MuiFormControl-root">
         <label>Username</label>
@@ -1034,11 +1050,12 @@ const y = 2;</pre>
     `);
     const result = extractPageContext();
 
-    expect(result).toContain('## Form Fields');
-    expect(result).toContain('- Username: (empty)');
+    expect(result).toContain('## Form Fields (HTML)');
+    expect(result).toContain('<label>Username</label>');
+    expect(result).toContain('value=""');
   });
 
-  it('should show (empty) for form field with placeholder as label and no value', () => {
+  it('should include form field with placeholder in HTML when value is empty', () => {
     setRootHtml(`
       <div class="MuiFormControl-root">
         <div class="MuiInputBase-root">
@@ -1048,8 +1065,8 @@ const y = 2;</pre>
     `);
     const result = extractPageContext();
 
-    expect(result).toContain('## Form Fields');
-    expect(result).toContain('- Filter: (empty)');
+    expect(result).toContain('## Form Fields (HTML)');
+    expect(result).toContain('placeholder="Filter"');
   });
 
   // ── Filter vs Form Field categorization ──
@@ -1138,8 +1155,8 @@ const y = 2;</pre>
 
     expect(result).toContain('## Filters');
     expect(result).toContain('- Kind: Component');
-    expect(result).toContain('## Form Fields');
-    expect(result).toContain('- Name: my-service');
+    expect(result).toContain('## Form Fields (HTML)');
+    expect(result).toContain('value="my-service"');
   });
 
   // ── Pagination: actionable only ──
@@ -1190,7 +1207,7 @@ const y = 2;</pre>
 
   // ── Multi-select Autocomplete ──
 
-  it('should resolve label via label[for] when label is a sibling of the Autocomplete', () => {
+  it('should resolve label via label[for] in form HTML for Autocomplete', () => {
     setRootHtml(`
       <div class="MuiBox-root">
         <label for="categories-picker">Categories</label>
@@ -1211,11 +1228,12 @@ const y = 2;</pre>
     `);
     const result = extractPageContext();
 
-    expect(result).toContain('## Form Fields');
-    expect(result).toContain('- Categories: service, plugin');
+    expect(result).toContain('## Form Fields (HTML)');
+    expect(result).toContain('service');
+    expect(result).toContain('plugin');
   });
 
-  it('should resolve label from ancestor wrapping label for multi-select Autocomplete', () => {
+  it('should include ancestor wrapping label content in form HTML for multi-select Autocomplete', () => {
     setRootHtml(`
       <div class="MuiBox-root">
         <label class="MuiTypography-root MuiTypography-body1">
@@ -1241,11 +1259,13 @@ const y = 2;</pre>
     `);
     const result = extractPageContext();
 
-    expect(result).toContain('## Form Fields');
-    expect(result).toContain('- Tags: aap, argocd, backend-plugin');
+    expect(result).toContain('## Form Fields (HTML)');
+    expect(result).toContain('aap');
+    expect(result).toContain('argocd');
+    expect(result).toContain('backend-plugin');
   });
 
-  it('should resolve label from preceding sibling of Autocomplete root', () => {
+  it('should include preceding sibling label context in form HTML for Autocomplete', () => {
     setRootHtml(`
       <div class="MuiBox-root">
         <span class="MuiTypography-root">Owner</span>
@@ -1263,7 +1283,421 @@ const y = 2;</pre>
     `);
     const result = extractPageContext();
 
-    expect(result).toContain('## Form Fields');
-    expect(result).toContain('- Owner: team-alpha');
+    expect(result).toContain('## Form Fields (HTML)');
+    expect(result).toContain('team-alpha');
+  });
+
+  // ── Sensitive field redaction ──
+
+  it('should redact password fields in form HTML output', () => {
+    setRootHtml(`
+      <div class="MuiFormControl-root">
+        <label>API Token</label>
+        <input type="password" value="super-secret-token" />
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Form Fields (HTML)');
+    expect(result).toContain('[REDACTED]');
+    expect(result).not.toContain('super-secret-token');
+  });
+
+  it('should redact sensitive search input values', () => {
+    setRootHtml(`
+      <div class="MuiFormControl-root">
+        <input placeholder="Search API key" type="text" value="ghp_abcdefghijklmnopqrstuvwxyz1234567890" />
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Search');
+    expect(result).toContain('[REDACTED]');
+    expect(result).not.toContain('ghp_abcdefghijklmnopqrstuvwxyz1234567890');
+  });
+
+  it('should return empty string when extraction throws', () => {
+    setRootHtml('<p>content</p>');
+    const originalQuerySelector = document.querySelector.bind(document);
+    jest.spyOn(document, 'querySelector').mockImplementation(selector => {
+      if (selector === '#root') {
+        throw new Error('DOM error');
+      }
+      return originalQuerySelector(selector);
+    });
+
+    const result = extractPageContext();
+    expect(result).toBe('');
+
+    jest.restoreAllMocks();
+  });
+
+  // ── JSS-hashed MUI class names ──
+
+  it('should extract form fields when MUI classes have JSS hash suffixes', () => {
+    setRootHtml(`
+      <div class="MuiFormControl-root-12213 MuiTextField-root-12217">
+        <label class="MuiFormLabel-root-12226" for="root_userId">The user ID</label>
+        <input id="root_userId" type="text" value="user:default/guest">
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Form Fields (HTML)');
+    expect(result).toContain('The user ID');
+    expect(result).toContain('value="user:default/guest"');
+  });
+
+  it('should extract stepper state with v5-MuiStepper hashed class names', () => {
+    setRootHtml(`
+      <div class="v5-MuiStepper-root v5-MuiStepper-horizontal">
+        <span class="v5-MuiStepLabel-label Mui-active">
+          <h2>Workflow input data</h2>
+        </span>
+        <span class="v5-MuiStepLabel-label Mui-disabled">
+          <h2>Review</h2>
+        </span>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Stepper');
+    expect(result).toContain('Workflow input data [active]');
+    expect(result).toContain('Review');
+  });
+
+  // ── RJSF whole-form extraction ──
+
+  it('should serialize entire RJSF form as HTML with live input values', () => {
+    setRootHtml(`
+      <form class="rjsf" novalidate="">
+        <div class="form-group field field-string">
+          <div class="MuiFormControl-root-12213 MuiTextField-root-12217">
+            <label for="root_userId">The user ID that triggers the workflow</label>
+            <input id="root_userId" name="root_userId" type="text" value="user:default/guest">
+          </div>
+        </div>
+        <div class="form-group field field-integer">
+          <div class="MuiFormControl-root-12213 MuiTextField-root-12217">
+            <label for="root_iterationNum">The iteration number</label>
+            <input id="root_iterationNum" name="root_iterationNum" type="number" value="">
+          </div>
+        </div>
+        <div class="form-group field field-array">
+          <h5>Recipients</h5>
+          <div class="MuiFormControl-root-12213 MuiTextField-root-12217">
+            <label for="root_recipients_0">Recipient</label>
+            <input id="root_recipients_0" name="root_recipients_0" type="text" value="user:default/jsmith">
+          </div>
+        </div>
+      </form>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Form Fields (HTML)');
+    expect(result).toContain('<form');
+    expect(result).toContain('The user ID that triggers the workflow');
+    expect(result).toContain('value="user:default/guest"');
+    expect(result).toContain('Recipients');
+    expect(result).toContain('value="user:default/jsmith"');
+    expect(result).not.toContain('## Content');
+    expect(result).not.toContain('Back');
+  });
+});
+
+// ── Card Extraction ──
+
+describe('extractPageContext - cards', () => {
+  it('should group content by card when 3+ cards exist in a grid layout', () => {
+    setRootHtml(`
+      <div class="MuiGrid-container">
+        <div class="MuiPaper-root MuiPaper-elevation1">
+          <h5>Active users</h5>
+          <p>Average peak active user count was 1 per week.</p>
+        </div>
+        <div class="MuiPaper-root MuiPaper-elevation1">
+          <h5>Total users</h5>
+          <p>1 of 100 have logged in</p>
+        </div>
+        <div class="MuiPaper-root MuiPaper-elevation1">
+          <h5>All templates</h5>
+          <table>
+            <tr><th>Name</th><th>Executions</th></tr>
+            <tr><td>ArgoCD template</td><td>5</td></tr>
+          </table>
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Cards');
+    expect(result).toContain('### Active users');
+    expect(result).toContain('Average peak active user count was 1 per week.');
+    expect(result).toContain('### Total users');
+    expect(result).toContain('1 of 100 have logged in');
+    expect(result).toContain('### All templates');
+    expect(result).toContain('| Name | Executions |');
+    expect(result).toContain('| ArgoCD template | 5 |');
+  });
+
+  it('should extract chart legend series names', () => {
+    setRootHtml(`
+      <div class="MuiGrid-container">
+        <div class="MuiPaper-root">
+          <h5>Active users</h5>
+          <svg class="recharts-surface"></svg>
+          <div class="recharts-legend-wrapper">
+            <p>Returning users</p>
+            <p>New users</p>
+          </div>
+        </div>
+        <div class="MuiPaper-root">
+          <h5>Card B</h5>
+          <p>Content B</p>
+        </div>
+        <div class="MuiPaper-root">
+          <h5>Card C</h5>
+          <p>Content C</p>
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('### Active users');
+    expect(result).toContain('Chart: Returning users, New users');
+  });
+
+  it('should show empty state text inside cards', () => {
+    setRootHtml(`
+      <div class="MuiGrid-container">
+        <div class="MuiPaper-root">
+          <h5>Top searches</h5>
+          <p>No results for this date range.</p>
+        </div>
+        <div class="MuiPaper-root">
+          <h5>Card 2</h5>
+          <p>Data here</p>
+        </div>
+        <div class="MuiPaper-root">
+          <h5>Card 3</h5>
+          <p>More data</p>
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('### Top searches');
+    expect(result).toContain('No results for this date range.');
+  });
+
+  it('should extract cards even with fewer than 3 (threshold is 1)', () => {
+    setRootHtml(`
+      <div class="MuiGrid-container">
+        <div class="MuiPaper-root">
+          <h5>Single Card</h5>
+          <p>Some content</p>
+        </div>
+        <div class="MuiPaper-root">
+          <h5>Another Card</h5>
+          <p>More content</p>
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Cards');
+    expect(result).toContain('### Single Card');
+    expect(result).toContain('### Another Card');
+  });
+
+  it('should remove card content from downstream extractors', () => {
+    setRootHtml(`
+      <div class="MuiGrid-container">
+        <div class="MuiPaper-root">
+          <h5>Card A</h5>
+          <table><tr><td>Row 1</td></tr></table>
+        </div>
+        <div class="MuiPaper-root">
+          <h5>Card B</h5>
+          <p>Text B</p>
+        </div>
+        <div class="MuiPaper-root">
+          <h5>Card C</h5>
+          <p>Text C</p>
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Cards');
+    // Table in card should not appear again in ## Tables
+    expect(result).not.toContain('## Tables');
+    // Card text should not appear in ## Content
+    const contentSection = result.split('## Content')[1] || '';
+    expect(contentSection).not.toContain('Text B');
+    expect(contentSection).not.toContain('Text C');
+  });
+
+  it('should work with MuiMasonry-root layout', () => {
+    setRootHtml(`
+      <div class="MuiMasonry-root">
+        <div class="MuiPaper-root"><h5>Card 1</h5><p>Data 1</p></div>
+        <div class="MuiPaper-root"><h5>Card 2</h5><p>Data 2</p></div>
+        <div class="MuiPaper-root"><h5>Card 3</h5><p>Data 3</p></div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Cards');
+    expect(result).toContain('### Card 1');
+    expect(result).toContain('### Card 2');
+    expect(result).toContain('### Card 3');
+  });
+
+  it('should detect cards via fallback when no layout container matches', () => {
+    setRootHtml(`
+      <div class="jss-random-hash">
+        <article class="bui-Card"><h3>About</h3><p>Description here</p></article>
+        <article class="bui-Card"><h3>Dependencies</h3><p>None found</p></article>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Cards');
+    expect(result).toContain('### About');
+    expect(result).toContain('### Dependencies');
+  });
+
+  it('should extract structured key-value pairs from card grids', () => {
+    setRootHtml(`
+      <div class="MuiGrid-container">
+        <div class="MuiCard-root">
+          <h5>About</h5>
+          <div>
+            <div><h2>Description</h2><p>Role for developers</p></div>
+            <div><h2>Modified By</h2><p>user:default/admin</p></div>
+            <div><h2>Owner</h2><p>team-platform</p></div>
+          </div>
+        </div>
+        <div class="MuiCard-root">
+          <h5>Status</h5>
+          <p>Active</p>
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Cards');
+    expect(result).toContain('### About');
+    expect(result).toContain('Description: Role for developers');
+    expect(result).toContain('Modified By: user:default/admin');
+    expect(result).toContain('Owner: team-platform');
+  });
+
+  it('should not include card-internal headings in ## Headings', () => {
+    setRootHtml(`
+      <h1>My Page</h1>
+      <div class="MuiGrid-container">
+        <div class="MuiPaper-root">
+          <h5>About</h5>
+          <div><h2>Owner</h2><p>team-a</p></div>
+          <div><h2>Type</h2><p>service</p></div>
+        </div>
+        <div class="MuiPaper-root">
+          <h5>Relations</h5>
+          <p>No relations</p>
+        </div>
+      </div>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Cards');
+    expect(result).toContain('## Headings');
+    expect(result).toContain('- My Page');
+    // Internal card h2s should NOT appear as headings
+    const headingsSection =
+      result.split('## Headings')[1]?.split('##')[0] || '';
+    expect(headingsSection).not.toContain('Owner');
+    expect(headingsSection).not.toContain('Type');
+  });
+});
+
+describe('extractPageContext - BUI tabs', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    document.body.innerHTML = '';
+    document.body.className = '';
+  });
+
+  it('should detect BUI-style navigation tabs via nav[aria-label]', () => {
+    setRootHtml(`
+      <nav aria-label="Content navigation">
+        <ul role="list">
+          <li><a href="/overview" aria-current="page">Overview</a></li>
+          <li><a href="/docs">TechDocs</a></li>
+          <li><a href="/k8s">Kubernetes</a></li>
+        </ul>
+      </nav>
+      <p>Page content</p>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Tabs');
+    expect(result).toContain('- Overview [active]');
+    expect(result).toContain('- TechDocs');
+    expect(result).toContain('- Kubernetes');
+  });
+
+  it('should prefer role="tablist" over BUI nav if both present', () => {
+    setRootHtml(`
+      <div role="tablist">
+        <a role="tab" aria-selected="true">Tab A</a>
+        <a role="tab" aria-selected="false">Tab B</a>
+      </div>
+      <nav aria-label="Content navigation">
+        <ul role="list">
+          <li><a href="/x" aria-current="page">Nav X</a></li>
+          <li><a href="/y">Nav Y</a></li>
+        </ul>
+      </nav>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Tabs');
+    expect(result).toContain('- Tab A [active]');
+    expect(result).toContain('- Tab B');
+    // BUI nav items should not appear in ## Tabs section
+    const tabsSection = result.split('## Tabs')[1]?.split('##')[0] || '';
+    expect(tabsSection).not.toContain('Nav X');
+    expect(tabsSection).not.toContain('Nav Y');
+  });
+});
+
+describe('extractPageContext - pagination', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    document.body.innerHTML = '';
+    document.body.className = '';
+  });
+
+  it('should strip pagination footer from tables', () => {
+    setRootHtml(`
+      <table>
+        <thead><tr><th>Name</th><th>Type</th></tr></thead>
+        <tbody><tr><td>Alice</td><td>User</td></tr></tbody>
+        <tfoot>
+          <tr><td colspan="2">
+            <span class="MuiTablePagination-root">Rows per page: 5 1-3 of 3</span>
+          </td></tr>
+        </tfoot>
+      </table>
+    `);
+    const result = extractPageContext();
+
+    expect(result).toContain('## Tables');
+    expect(result).toContain('| Name | Type |');
+    expect(result).toContain('| Alice | User |');
+    expect(result).not.toContain('Rows per page');
+    expect(result).not.toContain('1-3 of 3');
   });
 });

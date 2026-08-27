@@ -1153,15 +1153,19 @@ export const LightspeedChat = ({
     const allAttachments = getAttachments(fileContents);
 
     if (screenContextEnabled && domExtractionEnabled) {
-      const domContext = extractPageContext({
-        maxChars: domExtractionMaxChars,
-      });
-      if (domContext) {
-        allAttachments.push({
-          attachment_type: 'configuration',
-          content_type: 'text/plain',
-          content: domContext,
+      try {
+        const domContext = extractPageContext({
+          maxChars: domExtractionMaxChars,
         });
+        if (domContext) {
+          allAttachments.push({
+            attachment_type: 'configuration',
+            content_type: 'text/plain',
+            content: domContext,
+          });
+        }
+      } catch {
+        // DOM extraction failure is non-fatal; proceed without page context
       }
     }
 

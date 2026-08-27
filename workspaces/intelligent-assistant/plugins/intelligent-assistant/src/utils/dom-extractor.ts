@@ -14,29 +14,69 @@
  * limitations under the License.
  */
 
-import { redactText } from './sensitive-data-redactor';
+import {
+  ACCORDION_DETAILS_SELECTOR,
+  ACCORDION_ROOT_SELECTOR,
+  ACCORDION_SUMMARY_CONTENT_SELECTOR,
+  ACTIVE_NAV_SELECTOR,
+  ACTIVE_TAB_SELECTOR,
+  ALERT_SELECTOR,
+  BREADCRUMB_SELECTOR,
+  BUI_NAV_ITEM_SELECTOR,
+  BUI_NAV_SELECTOR,
+  CARD_ITEM_SELECTOR,
+  CARD_LAYOUT_SELECTOR,
+  CARD_ROOT_SELECTOR,
+  CARD_TITLE_SELECTOR,
+  CHIP_LABEL_SELECTOR,
+  DIALOG_CONTENT_SELECTOR,
+  DIALOG_TITLE_SELECTOR,
+  DOCKED_DRAWER_BODY_CLASS,
+  DRAWER_PAPER_SELECTOR,
+  EMPTY_STATE_BODY_SELECTOR,
+  EMPTY_STATE_SELECTOR,
+  FILTER_BOX_SELECTOR,
+  FILTER_CONTAINER_SELECTOR,
+  FILTER_NAV_SELECTOR,
+  FORM_CONTROL_LABEL_SELECTOR,
+  FORM_CONTROL_SELECTOR,
+  FORM_HTML_STRIP_SELECTOR,
+  FORM_LABEL_SELECTOR,
+  LIST_ITEM_TEXT_PRIMARY_SELECTOR,
+  LIST_ITEM_TEXT_ROOT_SELECTOR,
+  LIST_ITEM_TEXT_SECONDARY_SELECTOR,
+  MENU_SELECTOR,
+  MODAL_DIALOG_SELECTOR,
+  NOISE_SELECTOR,
+  PAGE_TITLE_SELECTOR,
+  PAGINATION_ACTIONS_SELECTOR,
+  PAGINATION_ROOT_SELECTOR,
+  PLUGIN_NAME_SELECTOR,
+  RECHARTS_LEGEND_SELECTOR,
+  RJSF_FORM_SELECTOR,
+  SEARCH_INPUT_SELECTOR,
+  SELECT_DISPLAY_SELECTOR,
+  SELECTED_ITEM_SELECTOR,
+  SHADOW_HOST_SELECTOR,
+  SHADOW_NOISE_SELECTOR,
+  STATUS_INDICATOR_SELECTOR,
+  STEPPER_ACTIVE_CLASS,
+  STEPPER_COMPLETED_CLASS,
+  STEPPER_LABEL_SELECTOR,
+  STEPPER_ROOT_SELECTOR,
+  TAB_LIST_SELECTOR,
+  TAB_SELECTOR,
+} from './dom-selectors';
+import { isSensitiveElement, redactText } from './sensitive-data-redactor';
 
 const DEFAULT_MAX_CHARS = 8000;
 const MAX_TABLE_ROWS = 50;
 const MAX_TABLES = 10;
-
-const NOISE_SELECTOR = [
-  '.pf-chatbot',
-  'script',
-  'style',
-  'noscript',
-  'svg',
-  'canvas',
-  'img',
-  'video',
-  'iframe',
-  '[aria-hidden="true"]:not([aria-label^="Status"])',
-  '[data-screen-capture-exclude]',
-  '[hidden]',
-  'footer',
-  '.MuiCollapse-hidden',
-  '[data-testid="techdocs-native-shadowroot"]',
-].join(', ');
+const MAX_CARDS = 10;
+const MAX_CARD_CHARS = 500;
+const MIN_CARDS_THRESHOLD = 1;
+const MAX_FORM_HTML_CHARS = 4000;
+const SENSITIVE_VALUE = '[REDACTED]';
 
 export interface DomExtractionOptions {
   /** Maximum characters in the output (default: 8000) */
@@ -52,12 +92,20 @@ export interface DomExtractionOptions {
  * Extraction priority:
  *   header > overlay > search inputs > filters >
  *   alerts > stepper > headings > status >
- *   forms > tables > description lists > empty state > pagination >
+ *   forms (HTML) > tables > description lists > empty state > pagination >
  *   body text > shadow DOM.
  *
  * Stops appending when maxChars budget is reached.
  */
 export function extractPageContext(options?: DomExtractionOptions): string {
+  try {
+    return extractPageContextInternal(options);
+  } catch {
+    return '';
+  }
+}
+
+function extractPageContextInternal(options?: DomExtractionOptions): string {
   const maxChars = options?.maxChars ?? DEFAULT_MAX_CHARS;
 
   const root = document.querySelector('#root');
@@ -94,29 +142,27 @@ export function extractPageContext(options?: DomExtractionOptions): string {
   const headerLines = [`Page: ${window.location.pathname}`];
 
   const pluginName = document
-    .querySelector('.bui-PluginHeaderToolbarName')
+    .querySelector(PLUGIN_NAME_SELECTOR)
     ?.textContent?.trim();
   if (pluginName) {
     headerLines.push(`Plugin: ${pluginName}`);
   }
 
   const pageTitle = document
-    .querySelector('.bui-HeaderTitle')
+    .querySelector(PAGE_TITLE_SELECTOR)
     ?.textContent?.trim();
   if (pageTitle) {
     headerLines.push(`Title: ${pageTitle}`);
   }
 
   const activeTab = document
-    .querySelector('[role="tab"][aria-selected="true"]')
+    .querySelector(ACTIVE_TAB_SELECTOR)
     ?.textContent?.trim();
   if (activeTab) {
-    headerLines.push(`Tab: ${activeTab}`);
+    headerLines.push(`CurrentTab: ${activeTab}`);
   }
 
-  const breadcrumb = document.querySelector(
-    '[aria-label="breadcrumb"], .MuiBreadcrumbs-root, [class*="bui-HeaderBreadcrumb"]',
-  );
+  const breadcrumb = document.querySelector(BREADCRUMB_SELECTOR);
   if (breadcrumb) {
     const crumbs = Array.from(breadcrumb.querySelectorAll('li, a, p'))
       .map(el => el.textContent?.trim())
@@ -127,7 +173,7 @@ export function extractPageContext(options?: DomExtractionOptions): string {
   }
 
   const activeNav = document
-    .querySelector('[aria-current="page"]')
+    .querySelector(ACTIVE_NAV_SELECTOR)
     ?.textContent?.trim();
   if (activeNav) {
     headerLines.push(`Nav: ${activeNav}`);
@@ -146,82 +192,94 @@ export function extractPageContext(options?: DomExtractionOptions): string {
     return redactText(sections.join('\n\n'));
   }
 
-  // 3. Search inputs (from live DOM, before nav removal strips the header)
+  // 3. Search inputs (live DOM — cloneNode does not preserve input values)
   const searchText = extractSearchInputs();
   if (searchText && !appendSection(searchText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 4. Filter sections (accordion lists, menu pickers — from live DOM)
+  // 4. Filter sections (live DOM — needs live checked/selected state)
   const filterText = extractFilterSections();
   if (filterText && !appendSection(filterText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 5. Remove navigation noise (after breadcrumb/search extraction above)
+  // 5. Tabs (all tabs including active marker)
+  const tabsText = extractTabs(clone);
+  if (tabsText && !appendSection(tabsText)) {
+    return redactText(sections.join('\n\n'));
+  }
+
+  // 6. Remove navigation noise (after breadcrumb/search extraction above)
   clone.querySelectorAll('nav, [role="navigation"]').forEach(el => el.remove());
 
-  // 6. Alerts / Toasts
+  // 7. Alerts / Toasts
   const alertText = extractAlerts(clone);
   if (alertText && !appendSection(alertText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 7. Stepper state
+  // 8. Stepper state
   const stepperText = extractStepperState(clone);
   if (stepperText && !appendSection(stepperText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 8. Headings
+  // 9. Cards (dashboard grouped extraction — before headings so card-internal h2/h3 don't leak)
+  const cardsText = extractCards(clone);
+  if (cardsText && !appendSection(cardsText)) {
+    return redactText(sections.join('\n\n'));
+  }
+
+  // 10. Headings
   const headingsText = extractHeadings(clone);
   if (headingsText && !appendSection(headingsText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 9. Status indicators
+  // 11. Status indicators
   const statusText = extractStatusIndicators(clone);
   if (statusText && !appendSection(statusText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 10. Form fields
+  // 12. Form fields (hybrid HTML — preserves label/input structure)
   const formsText = extractFormFields(clone);
   if (formsText && !appendSection(formsText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 11. Tables (also captures StructuredMetadataTable)
+  // 13. Tables (also captures StructuredMetadataTable)
   const tablesText = extractTables(clone);
   if (tablesText && !appendSection(tablesText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 12. Description lists (dl/dt/dd key-value pairs)
+  // 14. Description lists (dl/dt/dd key-value pairs)
   const dlText = extractDescriptionLists(clone);
   if (dlText && !appendSection(dlText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 13. Empty states
+  // 15. Empty states
   const emptyText = extractEmptyState(clone);
   if (emptyText && !appendSection(emptyText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 14. Pagination context
+  // 16. Pagination context
   const paginationText = extractPagination(clone);
   if (paginationText && !appendSection(paginationText)) {
     return redactText(sections.join('\n\n'));
   }
 
-  // 15. Body text (TreeWalker) -- fills remaining budget
+  // 17. Body text (TreeWalker) -- fills remaining budget
   const bodyText = extractBodyText(clone, maxChars - charCount);
   if (bodyText) {
     appendSection(bodyText);
   }
 
-  // 16. TechDocs Shadow DOM (if present on the live DOM)
+  // 18. TechDocs Shadow DOM (if present on the live DOM)
   const shadowText = extractShadowDomContent();
   if (shadowText) {
     appendSection(shadowText);
@@ -232,18 +290,13 @@ export function extractPageContext(options?: DomExtractionOptions): string {
 }
 
 function extractActiveOverlay(): string {
-  // Modal dialog -- MUI Dialog and BUI Dialog both render role="dialog"
-  const dialog = document.querySelector('[role="dialog"][aria-modal="true"]');
+  const dialog = document.querySelector(MODAL_DIALOG_SELECTOR);
   if (dialog) {
     const title = dialog
-      .querySelector(
-        '.MuiDialogTitle-root, [class*="MuiDialogTitle"], [class*="bui-DialogHeaderTitle"]',
-      )
+      .querySelector(DIALOG_TITLE_SELECTOR)
       ?.textContent?.trim();
     const content = collapseWhitespace(
-      dialog.querySelector(
-        '.MuiDialogContent-root, [class*="MuiDialogContent"], [class*="bui-DialogBody"]',
-      )?.textContent || '',
+      dialog.querySelector(DIALOG_CONTENT_SELECTOR)?.textContent || '',
     );
     const lines = ['## Active Dialog'];
     if (title) lines.push(`Title: ${title}`);
@@ -251,9 +304,8 @@ function extractActiveOverlay(): string {
     return lines.length > 1 ? lines.join('\n') : '';
   }
 
-  // Persistent drawer (BUI ApplicationDrawer)
-  if (document.body.classList.contains('docked-drawer-open')) {
-    const drawerPaper = document.querySelector('.MuiDrawer-paper');
+  if (document.body.classList.contains(DOCKED_DRAWER_BODY_CLASS)) {
+    const drawerPaper = document.querySelector(DRAWER_PAPER_SELECTOR);
     if (drawerPaper && !drawerPaper.querySelector('.pf-chatbot')) {
       const text = collapseWhitespace(drawerPaper.textContent || '');
       if (text) {
@@ -266,9 +318,7 @@ function extractActiveOverlay(): string {
 }
 
 function extractAlerts(root: HTMLElement): string {
-  const alerts = root.querySelectorAll(
-    '[role="alert"], [aria-live="assertive"], [class*="MuiAlert-root"], [class*="bui-Alert"]',
-  );
+  const alerts = root.querySelectorAll(ALERT_SELECTOR);
   if (alerts.length === 0) return '';
 
   const lines: string[] = ['## Alerts'];
@@ -284,17 +334,18 @@ function extractAlerts(root: HTMLElement): string {
 }
 
 function extractStepperState(root: HTMLElement): string {
-  const steppers = root.querySelectorAll('.MuiStepper-root');
+  const steppers = root.querySelectorAll(STEPPER_ROOT_SELECTOR);
   if (steppers.length === 0) return '';
 
   const lines: string[] = ['## Stepper'];
   steppers.forEach(stepper => {
-    const labels = stepper.querySelectorAll('.MuiStepLabel-label');
+    const labels = stepper.querySelectorAll(STEPPER_LABEL_SELECTOR);
     labels.forEach(label => {
       const text = label.textContent?.trim();
       if (!text) return;
-      const isActive = label.classList.contains('Mui-active');
-      const isCompleted = label.classList.contains('Mui-completed');
+      const className = label.className || '';
+      const isActive = className.includes(STEPPER_ACTIVE_CLASS);
+      const isCompleted = className.includes(STEPPER_COMPLETED_CLASS);
       let marker = '';
       if (isActive) marker = ' [active]';
       else if (isCompleted) marker = ' [done]';
@@ -302,6 +353,42 @@ function extractStepperState(root: HTMLElement): string {
     });
     stepper.remove();
   });
+  return lines.length > 1 ? lines.join('\n') : '';
+}
+
+function extractTabs(root: HTMLElement): string {
+  const lines: string[] = ['## Tabs'];
+
+  // Strategy 1: Standard role="tablist" + role="tab"
+  const tabLists = root.querySelectorAll(TAB_LIST_SELECTOR);
+  tabLists.forEach(tabList => {
+    const tabs = tabList.querySelectorAll(TAB_SELECTOR);
+    tabs.forEach(tab => {
+      const text = collapseWhitespace(tab.textContent || '');
+      if (!text) return;
+      const isSelected = tab.getAttribute('aria-selected') === 'true';
+      lines.push(`- ${text}${isSelected ? ' [active]' : ''}`);
+    });
+    tabList.remove();
+  });
+
+  // Strategy 2: BUI-style nav with <a aria-current="page"> links
+  if (lines.length <= 1) {
+    const navs = root.querySelectorAll(BUI_NAV_SELECTOR);
+    for (const nav of Array.from(navs)) {
+      const links = nav.querySelectorAll(BUI_NAV_ITEM_SELECTOR);
+      if (links.length < 2) continue;
+      links.forEach(link => {
+        const text = collapseWhitespace(link.textContent || '');
+        if (!text) return;
+        const isActive = link.getAttribute('aria-current') === 'page';
+        lines.push(`- ${text}${isActive ? ' [active]' : ''}`);
+      });
+      nav.remove();
+      break;
+    }
+  }
+
   return lines.length > 1 ? lines.join('\n') : '';
 }
 
@@ -323,8 +410,177 @@ function extractHeadings(root: HTMLElement): string {
   return lines.length > 1 ? lines.join('\n') : '';
 }
 
+function extractCards(root: HTMLElement): string {
+  try {
+    let cardElements: Element[] = [];
+
+    const hasTitle = (el: Element) => !!el.querySelector(CARD_TITLE_SELECTOR);
+
+    // Strategy 1: Find cards within a recognized layout container
+    const layouts = root.querySelectorAll(CARD_LAYOUT_SELECTOR);
+    for (const layout of Array.from(layouts)) {
+      const directCards = Array.from(layout.children).filter(el => {
+        try {
+          return el.matches(CARD_ITEM_SELECTOR) && hasTitle(el);
+        } catch {
+          return false;
+        }
+      });
+      if (directCards.length >= MIN_CARDS_THRESHOLD) {
+        cardElements = directCards;
+        break;
+      }
+      // Also check one level deeper (grid item > card)
+      const nestedCards: Element[] = [];
+      for (const child of Array.from(layout.children)) {
+        for (const grandchild of Array.from(child.children)) {
+          try {
+            if (
+              grandchild.matches(CARD_ITEM_SELECTOR) &&
+              hasTitle(grandchild)
+            ) {
+              nestedCards.push(grandchild);
+            }
+          } catch {
+            /* skip */
+          }
+        }
+      }
+      if (nestedCards.length >= MIN_CARDS_THRESHOLD) {
+        cardElements = nestedCards;
+        break;
+      }
+    }
+
+    // Strategy 2: Fallback — find all card items in root regardless of layout container
+    if (cardElements.length < MIN_CARDS_THRESHOLD) {
+      const allCards = Array.from(
+        root.querySelectorAll(CARD_ITEM_SELECTOR),
+      ).filter(el => {
+        // Exclude nested cards (card within card)
+        if (el.parentElement?.closest(CARD_ITEM_SELECTOR)) return false;
+        return hasTitle(el);
+      });
+      if (allCards.length >= MIN_CARDS_THRESHOLD) {
+        cardElements = allCards;
+      }
+    }
+
+    if (cardElements.length < MIN_CARDS_THRESHOLD) return '';
+
+    const sections: string[] = ['## Cards'];
+    let totalChars = 0;
+    let cardCount = 0;
+
+    for (const card of cardElements) {
+      if (cardCount >= MAX_CARDS) break;
+
+      const titleEl = card.querySelector(CARD_TITLE_SELECTOR);
+      const title = collapseWhitespace(titleEl?.textContent || '').replace(
+        /\s*\*$/,
+        '',
+      );
+      if (!title) {
+        card.remove();
+        continue;
+      }
+
+      const cardLines: string[] = [`### ${title}`];
+
+      // Extract chart legend (before SVG removal in body text)
+      const legendItems = card.querySelectorAll(RECHARTS_LEGEND_SELECTOR);
+      if (legendItems.length > 0) {
+        const seriesNames = Array.from(legendItems)
+          .map(el => collapseWhitespace(el.textContent || ''))
+          .filter(Boolean);
+        if (seriesNames.length > 0) {
+          cardLines.push(`Chart: ${seriesNames.join(', ')}`);
+        }
+      }
+
+      // Remove noise from within card for text extraction
+      card
+        .querySelectorAll('svg, button, [aria-hidden="true"], hr, tfoot')
+        .forEach(el => el.remove());
+      // Remove the title element itself to avoid duplication
+      titleEl?.remove();
+
+      // Extract table if present
+      const table = card.querySelector('table');
+      if (table) {
+        const rows = table.querySelectorAll('tr');
+        const tableLines: string[] = [];
+        let rowCount = 0;
+        rows.forEach(row => {
+          if (rowCount >= MAX_TABLE_ROWS) return;
+          const cells = row.querySelectorAll('th, td');
+          const cellTexts = Array.from(cells).map(cell =>
+            collapseWhitespace(cell.textContent || ''),
+          );
+          if (cellTexts.some(Boolean)) {
+            tableLines.push(`| ${cellTexts.join(' | ')} |`);
+          }
+          rowCount++;
+        });
+        if (tableLines.length > 0) {
+          cardLines.push(tableLines.join('\n'));
+        }
+        table.remove();
+      }
+
+      // Extract structured key-value pairs from h2/h3 + value grids (e.g. About cards)
+      const innerHeadings = card.querySelectorAll('h2, h3');
+      if (innerHeadings.length >= 2) {
+        let extractedKV = false;
+        innerHeadings.forEach(h => {
+          const key = collapseWhitespace(h.textContent || '');
+          if (!key) return;
+          // Get value from next sibling or parent container (after heading)
+          const parent = h.parentElement;
+          if (!parent) return;
+          const cloned = parent.cloneNode(true) as HTMLElement;
+          const hClone = cloned.querySelector(h.tagName.toLowerCase());
+          hClone?.remove();
+          const val = collapseWhitespace(cloned.textContent || '') || '--';
+          cardLines.push(`${key}: ${val}`);
+          extractedKV = true;
+          h.remove();
+        });
+        if (extractedKV) {
+          // Remove already-extracted content from raw text pass
+          innerHeadings.forEach(h => h.remove());
+        }
+      }
+
+      // Extract remaining text content (stats, summaries, empty states)
+      const textContent = collapseWhitespace(card.textContent || '');
+      if (textContent && textContent !== title) {
+        cardLines.push(textContent);
+      }
+
+      const cardText = cardLines.join('\n');
+      if (totalChars + cardText.length > MAX_CARD_CHARS * MAX_CARDS) break;
+
+      sections.push(
+        cardText.length > MAX_CARD_CHARS
+          ? cardText.slice(0, MAX_CARD_CHARS)
+          : cardText,
+      );
+      totalChars += Math.min(cardText.length, MAX_CARD_CHARS);
+      cardCount++;
+      card.remove();
+    }
+
+    return sections.length > 1 ? sections.join('\n\n') : '';
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.log('[DOM Cards] Error in extractCards:', e);
+    return '';
+  }
+}
+
 function extractStatusIndicators(root: HTMLElement): string {
-  const indicators = root.querySelectorAll('[aria-label^="Status"]');
+  const indicators = root.querySelectorAll(STATUS_INDICATOR_SELECTOR);
   if (indicators.length === 0) return '';
 
   const lines: string[] = ['## Status'];
@@ -344,156 +600,229 @@ function extractStatusIndicators(root: HTMLElement): string {
 }
 
 function extractFormFields(root: HTMLElement): string {
-  const FORM_SELECTOR =
-    '.MuiFormControl-root, .MuiTextField-root, [class*="bui-TextField"]';
-  const liveControls = Array.from(document.querySelectorAll(FORM_SELECTOR));
-  const cloneControls = root.querySelectorAll(FORM_SELECTOR);
-  if (liveControls.length === 0) return '';
+  const htmlParts: string[] = [];
+  let totalChars = 0;
 
-  // Only process leaf-level controls (those not containing another matched control)
-  const leafControls = liveControls.filter(
-    control => !control.querySelector(FORM_SELECTOR),
+  const appendHtml = (html: string): boolean => {
+    if (!html) return false;
+    if (totalChars + html.length > MAX_FORM_HTML_CHARS) {
+      const remaining = MAX_FORM_HTML_CHARS - totalChars;
+      if (remaining > 100) {
+        htmlParts.push(html.slice(0, remaining));
+        totalChars = MAX_FORM_HTML_CHARS;
+      }
+      return false;
+    }
+    htmlParts.push(html);
+    totalChars += html.length;
+    return true;
+  };
+
+  // Strategy 1: serialize whole RJSF / standard forms (preserves array fields, nesting)
+  // Search live DOM first (allows syncing runtime input values), then fallback to clone
+  const liveForms = document.querySelectorAll(RJSF_FORM_SELECTOR);
+  const cloneForms = root.querySelectorAll(RJSF_FORM_SELECTOR);
+  const forms = liveForms.length > 0 ? liveForms : cloneForms;
+  const formsSource = liveForms.length > 0 ? 'live' : 'clone';
+  // eslint-disable-next-line no-console
+  console.debug('[DOM Forms] Strategy 1:', {
+    selector: RJSF_FORM_SELECTOR,
+    liveFound: liveForms.length,
+    cloneFound: cloneForms.length,
+    using: formsSource,
+  });
+  if (forms.length > 0) {
+    forms.forEach((form, idx) => {
+      if (form.closest(FILTER_CONTAINER_SELECTOR)) {
+        // eslint-disable-next-line no-console
+        console.debug(
+          `[DOM Forms] Form ${idx} skipped: inside filter container`,
+        );
+        return;
+      }
+      try {
+        const html = serializeFormControlHtml(form as HTMLElement);
+        // eslint-disable-next-line no-console
+        console.debug(`[DOM Forms] Form ${idx} serialized:`, {
+          length: html.length,
+          preview: html.slice(0, 200),
+        });
+        appendHtml(html);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.debug(`[DOM Forms] Form ${idx} serialization error:`, e);
+      }
+    });
+    if (htmlParts.length > 0) {
+      root.querySelectorAll(RJSF_FORM_SELECTOR).forEach(el => el.remove());
+      return `## Form Fields (HTML)\n${htmlParts.join('\n')}`;
+    }
+  }
+
+  // Strategy 2: individual leaf form controls
+  const liveControls = Array.from(
+    document.querySelectorAll(FORM_CONTROL_SELECTOR),
+  );
+  const cloneControls = Array.from(
+    root.querySelectorAll(FORM_CONTROL_SELECTOR),
+  );
+  // Use live controls when available (allows syncLiveValuesToClone), fall back to clone
+  const controlsSource = liveControls.length > 0 ? liveControls : cloneControls;
+  // eslint-disable-next-line no-console
+  console.debug('[DOM Forms] Strategy 2:', {
+    selector: FORM_CONTROL_SELECTOR,
+    liveCount: liveControls.length,
+    cloneCount: cloneControls.length,
+    using: liveControls.length > 0 ? 'live' : 'clone',
+  });
+  if (controlsSource.length === 0) return '';
+
+  const leafControls = controlsSource.filter(
+    control => !control.querySelector(FORM_CONTROL_SELECTOR),
   );
 
-  const lines: string[] = ['## Form Fields'];
-  const seen = new Set<string>();
-
   leafControls.forEach(control => {
-    // Skip controls already captured by extractFilterSections
-    if (control.closest('[data-testid*="filter"]')) return;
+    if (control.closest(FILTER_CONTAINER_SELECTOR)) return;
+    if (control.closest(RJSF_FORM_SELECTOR)) return;
 
-    // Skip search inputs already captured by extractSearchInputs
-    const searchInput = control.querySelector(
-      'input[placeholder*="earch" i], input[aria-label*="earch" i]',
-    );
+    const searchInput = control.querySelector(SEARCH_INPUT_SELECTOR);
     if (
       searchInput &&
       !control.querySelector(
-        '.MuiSelect-select, .MuiChip-label, input[type="checkbox"]',
+        `${SELECT_DISPLAY_SELECTOR}, ${CHIP_LABEL_SELECTOR}, input[type="checkbox"]`,
       )
-    )
+    ) {
       return;
+    }
 
-    const { label, value } = resolveFormField(control as HTMLElement);
-    if (!label) return;
-    const key = `${label}:${value}`;
-    if (seen.has(key)) return;
-    seen.add(key);
-
-    const helper = control
-      .querySelector('.MuiFormHelperText-root, [slot="description"]')
-      ?.textContent?.trim();
-    let line = `- ${label}: ${value || '(empty)'}`;
-    if (helper) line += ` (${helper})`;
-    lines.push(line);
+    try {
+      appendHtml(serializeFormControlHtml(control as HTMLElement));
+    } catch {
+      // individual control serialization failure is non-fatal
+    }
   });
-  cloneControls.forEach(el => el.remove());
-  return lines.length > 1 ? lines.join('\n') : '';
+
+  root.querySelectorAll(FORM_CONTROL_SELECTOR).forEach(el => el.remove());
+  return htmlParts.length > 0
+    ? `## Form Fields (HTML)\n${htmlParts.join('\n')}`
+    : '';
 }
 
-function resolveFormField(control: HTMLElement): {
-  label: string;
-  value: string;
-} {
-  // --- Label resolution ---
-  let label = '';
-  const labelEl = control.querySelector('label');
-  if (labelEl) {
-    label = labelEl.textContent?.trim() || '';
-  }
-  if (!label) {
-    // Autocomplete pattern: label wraps the autocomplete as a parent
-    const parentLabel = control.closest('label');
-    if (parentLabel) {
-      const span = parentLabel.querySelector(':scope > span');
-      label =
-        span?.textContent?.trim() ||
-        parentLabel.childNodes[0]?.textContent?.trim() ||
-        '';
+function serializeFormControlHtml(control: HTMLElement): string {
+  const clone = control.cloneNode(true) as HTMLElement;
+
+  clone.querySelectorAll(FORM_HTML_STRIP_SELECTOR).forEach(el => el.remove());
+
+  syncLiveValuesToClone(control, clone);
+  redactSensitiveInClone(clone);
+  stripPresentationAttributes(clone);
+  unwrapNoiseDivs(clone);
+
+  const html = clone.outerHTML.replace(/\s+/g, ' ').trim();
+  // eslint-disable-next-line no-console
+  console.debug('[DOM Forms] serializeFormControlHtml result:', {
+    inputTag: control.tagName,
+    inputClass: control.className?.slice(0, 80),
+    outputLength: html.length,
+  });
+  return html.length > 0 ? html : '';
+}
+
+function syncLiveValuesToClone(
+  liveRoot: HTMLElement,
+  cloneRoot: HTMLElement,
+): void {
+  const liveInputs = liveRoot.querySelectorAll('input, textarea, select');
+  const cloneInputs = cloneRoot.querySelectorAll('input, textarea, select');
+
+  liveInputs.forEach((liveEl, i) => {
+    const cloneEl = cloneInputs[i] as
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | undefined;
+    if (!cloneEl) return;
+
+    if (cloneEl instanceof HTMLSelectElement) {
+      cloneEl.value = (liveEl as HTMLSelectElement).value;
+    } else if (
+      cloneEl instanceof HTMLInputElement &&
+      (cloneEl.type === 'checkbox' || cloneEl.type === 'radio')
+    ) {
+      cloneEl.checked = (liveEl as HTMLInputElement).checked;
+      if (cloneEl.checked) {
+        cloneEl.setAttribute('checked', '');
+      } else {
+        cloneEl.removeAttribute('checked');
+      }
+    } else {
+      const liveValue = (liveEl as HTMLInputElement | HTMLTextAreaElement)
+        .value;
+      cloneEl.value = liveValue;
+      cloneEl.setAttribute('value', liveValue);
     }
-  }
-  if (!label) {
-    // label[for] pointing at an input inside this control
-    const input = control.querySelector('input[id]') as HTMLInputElement | null;
-    if (input?.id) {
-      const forLabel = document.querySelector(
-        `label[for="${input.id}"]`,
-      ) as HTMLElement | null;
-      if (forLabel) {
-        label = forLabel.textContent?.trim() || '';
+  });
+}
+
+function redactSensitiveInClone(root: HTMLElement): void {
+  root.querySelectorAll('input, textarea, select').forEach(el => {
+    if (isSensitiveElement(el, document)) {
+      (el as HTMLInputElement).value = SENSITIVE_VALUE;
+      el.setAttribute('value', SENSITIVE_VALUE);
+      if ((el as HTMLInputElement).type === 'checkbox') {
+        (el as HTMLInputElement).checked = false;
+        el.removeAttribute('checked');
       }
     }
-  }
-  if (!label) {
-    // Sibling label preceding the Autocomplete ancestor
-    const autocomplete = control.closest('.MuiAutocomplete-root');
-    if (autocomplete) {
-      const prev = autocomplete.previousElementSibling;
-      if (
-        prev?.tagName === 'LABEL' ||
-        prev?.matches?.('[class*="MuiTypography"]')
-      ) {
-        label = prev.textContent?.trim() || '';
+  });
+}
+
+function stripPresentationAttributes(root: HTMLElement): void {
+  root.removeAttribute('class');
+  root.removeAttribute('style');
+  root.querySelectorAll('*').forEach(el => {
+    el.removeAttribute('class');
+    el.removeAttribute('style');
+    el.removeAttribute('data-testid');
+  });
+}
+
+/**
+ * Recursively unwraps wrapper divs/spans that have no semantic meaning
+ * (no id, no aria-*, no role). Replaces the wrapper with its children in-place.
+ * This flattens MUI's deeply nested grid/box structure to reduce HTML size.
+ */
+function unwrapNoiseDivs(root: HTMLElement): void {
+  const isSemanticTag = (tag: string) => !['DIV', 'SPAN'].includes(tag);
+
+  const hasSemanticAttrs = (el: Element) =>
+    el.hasAttribute('id') ||
+    el.hasAttribute('role') ||
+    el.hasAttribute('aria-label') ||
+    el.hasAttribute('aria-describedby') ||
+    el.hasAttribute('for') ||
+    el.hasAttribute('novalidate');
+
+  let changed = true;
+  while (changed) {
+    changed = false;
+    const wrappers = root.querySelectorAll('div, span');
+    for (const el of Array.from(wrappers)) {
+      if (isSemanticTag(el.tagName)) continue;
+      if (hasSemanticAttrs(el)) continue;
+      if (el === root) continue;
+
+      const parent = el.parentNode;
+      if (!parent) continue;
+
+      while (el.firstChild) {
+        parent.insertBefore(el.firstChild, el);
       }
+      parent.removeChild(el);
+      changed = true;
     }
   }
-  if (!label) {
-    const input = control.querySelector('input');
-    label =
-      control.closest('[aria-label]')?.getAttribute('aria-label') ||
-      input?.getAttribute('aria-label') ||
-      input?.getAttribute('placeholder') ||
-      '';
-  }
-
-  // --- Value resolution (chips > select display > checkbox group > input) ---
-
-  // Autocomplete chips (multi-select)
-  const chips = control.querySelectorAll('.MuiChip-label');
-  if (chips.length > 0) {
-    const chipValues = Array.from(chips)
-      .map(c => c.textContent?.trim())
-      .filter(Boolean);
-    return { label, value: chipValues.join(', ') };
-  }
-
-  // MUI Select visible text
-  const selectDisplay = control.querySelector(
-    '.MuiSelect-select:not(.MuiTablePagination-select)',
-  );
-  if (selectDisplay) {
-    return { label, value: selectDisplay.textContent?.trim() || '' };
-  }
-
-  // Checkbox group — collect checked values
-  const checkboxes = control.querySelectorAll('input[type="checkbox"]');
-  if (checkboxes.length > 0) {
-    const checked: string[] = [];
-    checkboxes.forEach(cb => {
-      const input = cb as HTMLInputElement;
-      if (input.checked) {
-        const cbLabel =
-          cb
-            .closest('label')
-            ?.querySelector('.MuiFormControlLabel-label')
-            ?.textContent?.trim() || input.value;
-        checked.push(cbLabel);
-      }
-    });
-    return { label, value: checked.join(', ') };
-  }
-
-  // Standard input/textarea
-  const input = control.querySelector(
-    'input:not([type="checkbox"]):not([type="radio"]):not([aria-hidden="true"]), textarea, select',
-  ) as HTMLInputElement | null;
-  return { label, value: input?.value || '' };
 }
 
 function extractSearchInputs(): string {
-  const searchInputs = document.querySelectorAll(
-    'input[placeholder*="earch" i], input[aria-label*="earch" i], [aria-label="search" i] input',
-  );
+  const searchInputs = document.querySelectorAll(SEARCH_INPUT_SELECTOR);
   if (searchInputs.length === 0) return '';
 
   const lines: string[] = ['## Search'];
@@ -502,12 +831,17 @@ function extractSearchInputs(): string {
   searchInputs.forEach(el => {
     const input = el as HTMLInputElement;
     if (input.type === 'hidden') return;
-    const value = input.value;
+
     const label =
       input.getAttribute('placeholder') ||
       input.getAttribute('aria-label') ||
       input.closest('[aria-label]')?.getAttribute('aria-label') ||
       'Search';
+
+    const value = isSensitiveElement(input, document)
+      ? SENSITIVE_VALUE
+      : input.value;
+
     const key = `${label}:${value}`;
     if (!seen.has(key)) {
       seen.add(key);
@@ -520,32 +854,31 @@ function extractSearchInputs(): string {
 function extractFilterSections(): string {
   const lines: string[] = ['## Filters'];
 
-  // Pattern 1: Accordion filter lists (SearchType.Accordion)
-  // Selected item has Mui-selected inside a nav[aria-label="filter by type"]
-  const filterNavs = document.querySelectorAll(
-    'nav[aria-label*="filter"], .MuiAccordionDetails-root nav',
-  );
+  const filterNavs = document.querySelectorAll(FILTER_NAV_SELECTOR);
   filterNavs.forEach(nav => {
     const heading =
       nav
-        .closest('.MuiAccordion-root')
+        .closest(ACCORDION_ROOT_SELECTOR)
         ?.previousElementSibling?.textContent?.trim() ||
       nav
-        .closest('.MuiAccordionDetails-root')
-        ?.closest('.MuiAccordion-root')
-        ?.querySelector('.MuiAccordionSummary-content')
+        .closest(ACCORDION_DETAILS_SELECTOR)
+        ?.closest(ACCORDION_ROOT_SELECTOR)
+        ?.querySelector(ACCORDION_SUMMARY_CONTENT_SELECTOR)
         ?.textContent?.trim();
     const groupLabel =
       heading ||
-      nav.closest('.MuiBox-root')?.querySelector('h2')?.textContent?.trim();
+      nav
+        .closest(FILTER_BOX_SELECTOR)
+        ?.querySelector('h2')
+        ?.textContent?.trim();
 
-    const selected = nav.querySelector('.Mui-selected');
+    const selected = nav.querySelector(SELECTED_ITEM_SELECTOR);
     if (selected) {
       const primary = selected
-        .querySelector('.MuiListItemText-primary')
+        .querySelector(LIST_ITEM_TEXT_PRIMARY_SELECTOR)
         ?.textContent?.trim();
       const secondary = selected
-        .querySelector('.MuiListItemText-secondary')
+        .querySelector(LIST_ITEM_TEXT_SECONDARY_SELECTOR)
         ?.textContent?.trim();
       const text = secondary ? `${primary} (${secondary})` : primary;
       if (groupLabel && text) {
@@ -554,18 +887,17 @@ function extractFilterSections(): string {
     }
   });
 
-  // Pattern 2: Menu pickers (role="menu" with Mui-selected — catalog pickers)
-  const menus = document.querySelectorAll('ul[role="menu"]');
+  const menus = document.querySelectorAll(MENU_SELECTOR);
   menus.forEach(menu => {
     const groupLabel =
       menu.getAttribute('aria-label') ||
       (
-        menu.closest('.MuiCard-root')?.previousElementSibling as HTMLElement
+        menu.closest(CARD_ROOT_SELECTOR)?.previousElementSibling as HTMLElement
       )?.textContent?.trim();
-    const selected = menu.querySelector('.Mui-selected');
+    const selected = menu.querySelector(SELECTED_ITEM_SELECTOR);
     if (selected) {
       const selectedText = selected
-        .querySelector('p, .MuiListItemText-root')
+        .querySelector(`p, ${LIST_ITEM_TEXT_ROOT_SELECTOR}`)
         ?.textContent?.trim();
       if (groupLabel && selectedText) {
         lines.push(`- ${groupLabel}: ${selectedText}`);
@@ -573,8 +905,7 @@ function extractFilterSections(): string {
     }
   });
 
-  // Pattern 3: Form controls inside data-testid*="filter" containers (Select, Checkbox)
-  const filterContainers = document.querySelectorAll('[data-testid*="filter"]');
+  const filterContainers = document.querySelectorAll(FILTER_CONTAINER_SELECTOR);
   filterContainers.forEach(container => {
     const resolved = resolveFilterControl(container as HTMLElement);
     if (resolved && resolved.label) {
@@ -588,16 +919,11 @@ function extractFilterSections(): string {
 function resolveFilterControl(
   container: HTMLElement,
 ): { label: string; value: string } | null {
-  const labelEl = container.querySelector(
-    'label, .MuiFormLabel-root, .MuiInputLabel-root',
-  );
+  const labelEl = container.querySelector(`label, ${FORM_LABEL_SELECTOR}`);
   let label =
     labelEl?.textContent?.trim() || container.getAttribute('aria-label') || '';
 
-  // MUI Select visible text
-  const selectDisplay = container.querySelector(
-    '.MuiSelect-select:not(.MuiTablePagination-select)',
-  );
+  const selectDisplay = container.querySelector(SELECT_DISPLAY_SELECTOR);
   if (selectDisplay) {
     if (!label) {
       label =
@@ -607,8 +933,7 @@ function resolveFilterControl(
     return { label, value: selectDisplay.textContent?.trim() || '' };
   }
 
-  // Autocomplete chips
-  const chips = container.querySelectorAll('.MuiChip-label');
+  const chips = container.querySelectorAll(CHIP_LABEL_SELECTOR);
   if (chips.length > 0) {
     const chipValues = Array.from(chips)
       .map(c => c.textContent?.trim())
@@ -616,7 +941,6 @@ function resolveFilterControl(
     return { label, value: chipValues.join(', ') };
   }
 
-  // Checkbox group
   const checkboxes = container.querySelectorAll('input[type="checkbox"]');
   if (checkboxes.length > 0) {
     const checked: string[] = [];
@@ -626,7 +950,7 @@ function resolveFilterControl(
         const cbLabel =
           cb
             .closest('label')
-            ?.querySelector('.MuiFormControlLabel-label')
+            ?.querySelector(FORM_CONTROL_LABEL_SELECTOR)
             ?.textContent?.trim() || input.value;
         checked.push(cbLabel);
       }
@@ -634,7 +958,6 @@ function resolveFilterControl(
     return { label, value: checked.join(', ') };
   }
 
-  // Standard input/textarea (not search)
   const input = container.querySelector(
     'input:not([type="checkbox"]):not([type="radio"]):not([aria-hidden="true"]):not([placeholder*="earch" i]), textarea',
   ) as HTMLInputElement | null;
@@ -642,7 +965,10 @@ function resolveFilterControl(
     if (!label) {
       label = input.getAttribute('placeholder') || '';
     }
-    return { label, value: input.value || '' };
+    const value = isSensitiveElement(input, document)
+      ? SENSITIVE_VALUE
+      : input.value || '';
+    return { label, value };
   }
 
   return null;
@@ -661,17 +987,25 @@ function extractTables(root: HTMLElement): string {
       return;
     }
 
+    // Strip pagination footers and empty spacer rows
+    table.querySelectorAll('tfoot').forEach(el => el.remove());
+    table
+      .querySelectorAll('[class*="TablePagination"]')
+      .forEach(el => el.remove());
+
     const rows = table.querySelectorAll('tr');
     const tableLines: string[] = [];
     let rowCount = 0;
 
     rows.forEach(row => {
       if (rowCount >= MAX_TABLE_ROWS) return;
+      // Skip empty spacer rows (height-only, no content)
+      if (!row.querySelector('th, td') || row.children.length === 0) return;
       const cells = row.querySelectorAll('th, td');
       const cellTexts = Array.from(cells).map(cell =>
         collapseWhitespace(cell.textContent || ''),
       );
-      if (cellTexts.some(t => t)) {
+      if (cellTexts.some(Boolean)) {
         tableLines.push(`| ${cellTexts.join(' | ')} |`);
       }
       rowCount++;
@@ -708,12 +1042,12 @@ function extractDescriptionLists(root: HTMLElement): string {
 }
 
 function extractEmptyState(root: HTMLElement): string {
-  const emptyState = root.querySelector('[class*="BackstageEmptyState"]');
+  const emptyState = root.querySelector(EMPTY_STATE_SELECTOR);
   if (!emptyState) return '';
 
   const title = emptyState.querySelector('h5')?.textContent?.trim();
   const desc = emptyState
-    .querySelector('[class*="body1"]')
+    .querySelector(EMPTY_STATE_BODY_SELECTOR)
     ?.textContent?.trim();
   const lines = ['## Empty State'];
   if (title) lines.push(`Title: ${title}`);
@@ -723,17 +1057,12 @@ function extractEmptyState(root: HTMLElement): string {
 }
 
 function extractPagination(root: HTMLElement): string {
-  const paginations = root.querySelectorAll(
-    '.MuiTablePagination-root, [class*="TablePagination"], [class*="bui-TablePagination"]',
-  );
+  const paginations = root.querySelectorAll(PAGINATION_ROOT_SELECTOR);
   if (paginations.length === 0) return '';
 
   const lines: string[] = [];
   paginations.forEach(pg => {
-    // Only extract pagination that has actionable navigation buttons
-    const hasActions = pg.querySelector(
-      '.MuiTablePagination-actions button:not([disabled]), [class*="PaginationActions"] button:not([disabled])',
-    );
+    const hasActions = pg.querySelector(PAGINATION_ACTIONS_SELECTOR);
     if (hasActions) {
       const text = collapseWhitespace(pg.textContent || '');
       if (text) lines.push(`Pagination: ${text}`);
@@ -788,9 +1117,7 @@ function extractBodyText(root: HTMLElement, budget: number): string {
 }
 
 function extractShadowDomContent(): string {
-  const shadowHosts = document.querySelectorAll(
-    '[data-testid="techdocs-native-shadowroot"], [class*="shadowDom" i]',
-  );
+  const shadowHosts = document.querySelectorAll(SHADOW_HOST_SELECTOR);
   if (shadowHosts.length === 0) return '';
 
   const lines: string[] = ['## Documentation'];
@@ -809,7 +1136,7 @@ function extractShadowDomContent(): string {
     if (!container) return;
 
     container
-      .querySelectorAll('style, script, link, noscript, svg, img, template')
+      .querySelectorAll(SHADOW_NOISE_SELECTOR)
       .forEach(el => el.remove());
 
     const headings = container.querySelectorAll('h1, h2, h3, h4');
