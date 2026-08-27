@@ -240,6 +240,8 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'modulePage.phases.runAdversarialReview': string;
     readonly 'modulePage.phases.adversarialReview': string;
     readonly 'modulePage.phases.adversarialNoRuns': string;
+    readonly 'modulePage.phases.adversarialRunning': string;
+    readonly 'modulePage.phases.adversarialCriticalAgentsWarning': string;
     readonly 'modulePage.phases.adversarialAgentLabel': string;
     readonly 'modulePage.phases.adversarialCriticalFindings': string;
     readonly 'modulePage.phases.adversarialWarningFindings': string;

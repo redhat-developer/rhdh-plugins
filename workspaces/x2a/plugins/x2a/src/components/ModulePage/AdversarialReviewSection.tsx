@@ -26,13 +26,17 @@ import {
   ButtonGroup,
   Divider,
   Grid,
+  Tooltip,
   Typography,
   makeStyles,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import WarningIcon from '@material-ui/icons/Warning';
 import {
+  AdversarialAgent,
   ArtifactKind,
   Job,
+  JobStatus,
   MigrationPhase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
@@ -42,6 +46,7 @@ import { useClientService } from '../../ClientService';
 import { ArtifactLink } from '../ArtifactLink';
 import { ItemField } from '../ItemField';
 import { PhaseStatus } from '../PhaseStatus';
+import { TelemetrySection } from '../PhaseTelemetry';
 import {
   canCancelPhase,
   downloadLogFile,
@@ -79,6 +84,14 @@ const useStyles = makeStyles(theme => ({
     flex: '1 1 300px',
     minWidth: 0,
   },
+  criticalWarningIcon: {
+    color: theme.palette.warning.main ?? '#f57c00',
+    fontSize: '1.1rem',
+    verticalAlign: 'middle',
+  },
+  warningTooltip: {
+    fontSize: theme.typography.body2.fontSize,
+  },
 }));
 
 export const AdversarialReviewSection = ({
@@ -110,6 +123,10 @@ export const AdversarialReviewSection = ({
   const empty = t('module.phases.none');
   const [showLog, setShowLog] = useState(false);
   const [selectedAgentIds, setSelectedAgentIds] = useState<string[]>([]);
+  const [hasCriticalAgents, setHasCriticalAgents] = useState(false);
+  const handleAgentsLoaded = useCallback((agents: AdversarialAgent[]) => {
+    setHasCriticalAgents(agents.some(a => a.critical));
+  }, []);
 
   const fetchLog = useCallback(
     () =>
@@ -167,202 +184,224 @@ export const AdversarialReviewSection = ({
 
   if (!job && !canRun) return null;
 
+  const jobStatus = job?.status ? JobStatus.from(job.status) : undefined;
+  const isActive = jobStatus?.isActive() ?? false;
+
   return (
-    <Accordion>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Box className={classes.accordionSummaryContent}>
-          <Typography variant="subtitle2">
-            {t('modulePage.phases.adversarialReview')}
-          </Typography>
-          {job ? (
-            <>
-              <PhaseStatus status={job.status} />
-              {reportJson && (
-                <Typography variant="body2" color="textSecondary">
-                  {reportJson.total_critical_findings}{' '}
-                  {t('modulePage.phases.adversarialCriticalFindings')} &middot;{' '}
-                  {reportJson.total_findings -
-                    reportJson.total_critical_findings}{' '}
-                  {t('modulePage.phases.adversarialWarningFindings')}
-                </Typography>
-              )}
-              <Typography variant="body2" color="textSecondary">
-                {duration}
-              </Typography>
-            </>
-          ) : (
-            <Typography variant="body2" color="textSecondary">
-              {t('modulePage.phases.adversarialNoRuns')}
+    <Box>
+      {isActive && <Progress />}
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Box className={classes.accordionSummaryContent}>
+            <Typography variant="subtitle2">
+              {t('modulePage.phases.adversarialReview')}
             </Typography>
-          )}
-        </Box>
-      </AccordionSummary>
+            {job ? (
+              <>
+                <PhaseStatus status={job.status} />
+                {reportJson && (
+                  <Typography variant="body2" color="textSecondary">
+                    {reportJson.total_critical_findings}{' '}
+                    {t('modulePage.phases.adversarialCriticalFindings')}{' '}
+                    &middot;{' '}
+                    {reportJson.total_findings -
+                      reportJson.total_critical_findings}{' '}
+                    {t('modulePage.phases.adversarialWarningFindings')}
+                  </Typography>
+                )}
+                <Typography variant="body2" color="textSecondary">
+                  {duration}
+                </Typography>
+              </>
+            ) : (
+              <>
+                <Typography variant="body2" color="textSecondary">
+                  {t('modulePage.phases.adversarialNoRuns')}
+                </Typography>
+                {canRun && hasCriticalAgents && (
+                  <Tooltip
+                    title={t(
+                      'modulePage.phases.adversarialCriticalAgentsWarning',
+                    )}
+                    classes={{ tooltip: classes.warningTooltip }}
+                  >
+                    <WarningIcon className={classes.criticalWarningIcon} />
+                  </Tooltip>
+                )}
+              </>
+            )}
+          </Box>
+        </AccordionSummary>
 
-      <AccordionDetails className={classes.accordionDetails}>
-        {onRunAdversarial && canRun && (
-          <>
-            <Box className={classes.runRow}>
-              <Box className={classes.selectorWrapper}>
-                <AdversarialAgentsSelector
-                  selectedAgentIds={selectedAgentIds}
-                  onSelectionChange={setSelectedAgentIds}
-                  phase={runPhase}
-                />
-              </Box>
-              <Button
-                variant="outlined"
-                color="default"
-                size="small"
-                disabled={selectedAgentIds.length === 0}
-                onClick={() => onRunAdversarial(runPhase, selectedAgentIds)}
-              >
-                {t('modulePage.phases.runAdversarialReview')}
-              </Button>
-            </Box>
-            {job && <Divider style={{ margin: '16px 0' }} />}
-          </>
-        )}
-
-        {job && (
-          <Grid container spacing={3}>
-            <Grid item xs={2}>
-              <ItemField
-                label={t('modulePage.phases.status')}
-                value={<PhaseStatus status={job.status} />}
-              />
-            </Grid>
-            <Grid item xs={10}>
-              <ItemField
-                label={t('modulePage.phases.errorDetails')}
-                value={job.errorDetails || empty}
-              />
-            </Grid>
-
-            <Grid item xs={3}>
-              <ItemField
-                label={t('artifact.types.adversarial_report')}
-                value={
-                  <ArtifactLink
-                    artifact={reportArtifact}
-                    targetRepoUrl={targetRepoUrl}
-                    targetRepoBranch={targetRepoBranch}
+        <AccordionDetails className={classes.accordionDetails}>
+          {onRunAdversarial && canRun && (
+            <>
+              <Box className={classes.runRow}>
+                <Box className={classes.selectorWrapper}>
+                  <AdversarialAgentsSelector
+                    selectedAgentIds={selectedAgentIds}
+                    onSelectionChange={setSelectedAgentIds}
+                    onAgentsLoaded={handleAgentsLoaded}
+                    phase={runPhase}
                   />
-                }
-              />
-            </Grid>
-            <Grid item xs={3}>
-              <ItemField
-                label={t('modulePage.phases.adversarialCriticalFindings')}
-                value={
-                  reportJson !== undefined
-                    ? String(reportJson.total_critical_findings)
-                    : empty
-                }
-              />
-            </Grid>
-            <Grid item xs={3}>
-              <ItemField
-                label={t('modulePage.phases.adversarialWarningFindings')}
-                value={
-                  reportJson !== undefined
-                    ? String(
-                        reportJson.total_findings -
-                          reportJson.total_critical_findings,
-                      )
-                    : empty
-                }
-              />
-            </Grid>
-            <Grid item xs={3} />
-
-            <Grid item xs={3}>
-              <ItemField
-                label={t('modulePage.phases.startedAt')}
-                value={job.startedAt ? humanizeDate(job.startedAt) : empty}
-              />
-            </Grid>
-            <Grid item xs={3}>
-              <ItemField
-                label={t('modulePage.phases.duration')}
-                value={duration}
-              />
-            </Grid>
-            <Grid item xs={3}>
-              <ItemField
-                label={t('modulePage.phases.attempts')}
-                value={String(attemptCount)}
-              />
-            </Grid>
-            <Grid item xs={3}>
-              <ItemField
-                label={t('modulePage.phases.totalElapsed')}
-                value={totalDuration || empty}
-              />
-            </Grid>
-
-            <Grid item xs={3}>
-              <ItemField
-                label={t('modulePage.phases.k8sJobName')}
-                value={job.k8sJobName || empty}
-              />
-            </Grid>
-            <Grid item xs={3}>
-              <ItemField
-                label={t('modulePage.phases.id')}
-                value={job.id || empty}
-              />
-            </Grid>
-            <Grid item xs={3}>
-              <ItemField
-                label={t('modulePage.phases.commitId')}
-                value={job.commitId || empty}
-              />
-            </Grid>
-            <Grid item xs={3} />
-
-            <Grid item xs={12}>
-              <ButtonGroup>
+                </Box>
                 <Button
                   variant="outlined"
+                  color="default"
                   size="small"
-                  onClick={() => setShowLog(prev => !prev)}
+                  disabled={selectedAgentIds.length === 0}
+                  onClick={() => onRunAdversarial(runPhase, selectedAgentIds)}
                 >
-                  {showLog
-                    ? t('modulePage.phases.hideLog')
-                    : t('modulePage.phases.viewLog')}
+                  {t('modulePage.phases.runAdversarialReview')}
                 </Button>
-                {canCancelPhase(job.status) && onCancel && (
-                  <Button variant="outlined" onClick={onCancel}>
-                    {t('modulePage.phases.cancel')}
-                  </Button>
-                )}
-              </ButtonGroup>
-            </Grid>
+              </Box>
+              {job && <Divider style={{ margin: '16px 0' }} />}
+            </>
+          )}
 
-            {showLog && (
-              <Grid item xs={12}>
-                {logLoading && <Progress />}
-                {logError && (
-                  <Typography color="error">{logError.message}</Typography>
-                )}
-                {logText !== undefined && (
-                  <div className={classes.logViewerWrapper}>
-                    <LogViewer
-                      text={logViewerText}
-                      onDownloadLog={() =>
-                        downloadLogFile(
-                          logText || '',
-                          `${adversarialPhaseName}-${projectId}`,
-                        )
-                      }
-                    />
-                  </div>
-                )}
+          {job && (
+            <Grid container spacing={3}>
+              <Grid item xs={2}>
+                <ItemField
+                  label={t('modulePage.phases.status')}
+                  value={<PhaseStatus status={job.status} />}
+                />
               </Grid>
-            )}
-          </Grid>
-        )}
-      </AccordionDetails>
-    </Accordion>
+              <Grid item xs={10}>
+                <ItemField
+                  label={t('modulePage.phases.errorDetails')}
+                  value={job.errorDetails || empty}
+                />
+              </Grid>
+
+              <Grid item xs={3}>
+                <ItemField
+                  label={t('artifact.types.adversarial_report')}
+                  value={
+                    <ArtifactLink
+                      artifact={reportArtifact}
+                      targetRepoUrl={targetRepoUrl}
+                      targetRepoBranch={targetRepoBranch}
+                    />
+                  }
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <ItemField
+                  label={t('modulePage.phases.adversarialCriticalFindings')}
+                  value={
+                    reportJson !== undefined
+                      ? String(reportJson.total_critical_findings)
+                      : empty
+                  }
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <ItemField
+                  label={t('modulePage.phases.adversarialWarningFindings')}
+                  value={
+                    reportJson !== undefined
+                      ? String(
+                          reportJson.total_findings -
+                            reportJson.total_critical_findings,
+                        )
+                      : empty
+                  }
+                />
+              </Grid>
+              <Grid item xs={3} />
+
+              <Grid item xs={3}>
+                <ItemField
+                  label={t('modulePage.phases.startedAt')}
+                  value={job.startedAt ? humanizeDate(job.startedAt) : empty}
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <ItemField
+                  label={t('modulePage.phases.duration')}
+                  value={duration}
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <ItemField
+                  label={t('modulePage.phases.attempts')}
+                  value={String(attemptCount)}
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <ItemField
+                  label={t('modulePage.phases.totalElapsed')}
+                  value={totalDuration || empty}
+                />
+              </Grid>
+
+              <Grid item xs={3}>
+                <ItemField
+                  label={t('modulePage.phases.k8sJobName')}
+                  value={job.k8sJobName || empty}
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <ItemField
+                  label={t('modulePage.phases.id')}
+                  value={job.id || empty}
+                />
+              </Grid>
+              <Grid item xs={3}>
+                <ItemField
+                  label={t('modulePage.phases.commitId')}
+                  value={job.commitId || empty}
+                />
+              </Grid>
+              <Grid item xs={3} />
+
+              <Grid item xs={12}>
+                <ButtonGroup>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => setShowLog(prev => !prev)}
+                  >
+                    {showLog
+                      ? t('modulePage.phases.hideLog')
+                      : t('modulePage.phases.viewLog')}
+                  </Button>
+                  {canCancelPhase(job.status) && onCancel && (
+                    <Button variant="outlined" onClick={onCancel}>
+                      {t('modulePage.phases.cancel')}
+                    </Button>
+                  )}
+                </ButtonGroup>
+              </Grid>
+
+              {showLog && (
+                <Grid item xs={12}>
+                  {logLoading && <Progress />}
+                  {logError && (
+                    <Typography color="error">{logError.message}</Typography>
+                  )}
+                  {logText !== undefined && (
+                    <div className={classes.logViewerWrapper}>
+                      <LogViewer
+                        text={logViewerText}
+                        onDownloadLog={() =>
+                          downloadLogFile(
+                            logText || '',
+                            `${adversarialPhaseName}-${projectId}`,
+                          )
+                        }
+                      />
+                    </div>
+                  )}
+                </Grid>
+              )}
+
+              <TelemetrySection telemetry={job.telemetry} />
+            </Grid>
+          )}
+        </AccordionDetails>
+      </Accordion>
+    </Box>
   );
 };

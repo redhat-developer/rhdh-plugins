@@ -30,10 +30,7 @@ import {
   MigrationPhase,
   ModulePhase,
   Phase,
-  Telemetry,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
-
-import millify from 'millify';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { useLogStream } from '../hooks/useLogStream';
@@ -47,7 +44,7 @@ import {
   humanizeDate,
   secondsBetween,
 } from './tools';
-import { PhaseTelemetry } from './PhaseTelemetry';
+import { TelemetrySection } from './PhaseTelemetry';
 import { PhaseStatus } from './PhaseStatus';
 
 const useStyles = makeStyles(theme => ({
@@ -175,7 +172,6 @@ export const PhaseDetails = (
     projectId: string;
     onRunPhase?: (phase: MigrationPhase) => void;
     onCancelPhase?: (phase: MigrationPhase) => void;
-    adversarialTelemetry?: Telemetry;
   } & OptionalModuleId,
 ) => {
   const { t } = useTranslation();
@@ -184,14 +180,7 @@ export const PhaseDetails = (
   const empty = t('module.phases.none');
   const [showLog, setShowLog] = useState(false);
 
-  const {
-    phase,
-    projectId,
-    phaseName,
-    onRunPhase,
-    onCancelPhase,
-    adversarialTelemetry,
-  } = props;
+  const { phase, projectId, phaseName, onRunPhase, onCancelPhase } = props;
   const moduleId = 'moduleId' in props ? props.moduleId : undefined;
 
   const durationSeconds = phase
@@ -213,18 +202,6 @@ export const PhaseDetails = (
       : undefined;
 
   const canRunPhase = phase?.status !== 'running';
-
-  const tokenTotals = useMemo(() => {
-    const all = [
-      ...Object.values(phase?.telemetry?.agents ?? {}),
-      ...Object.values(adversarialTelemetry?.agents ?? {}),
-    ];
-    if (all.length === 0) return undefined;
-    return {
-      inputTokens: all.reduce((s, a) => s + (a.inputTokens ?? 0), 0),
-      outputTokens: all.reduce((s, a) => s + (a.outputTokens ?? 0), 0),
-    };
-  }, [phase?.telemetry, adversarialTelemetry]);
 
   const fetchLog = useCallback(
     () =>
@@ -364,36 +341,7 @@ export const PhaseDetails = (
         </Grid>
       )}
 
-      {(phase?.telemetry || adversarialTelemetry) && (
-        <>
-          <Grid item xs={12}>
-            <Grid container alignItems="baseline" spacing={2}>
-              <Grid item>
-                <Typography variant="h6">
-                  {t('modulePage.phases.telemetry.title')}
-                </Typography>
-              </Grid>
-              {tokenTotals && (
-                <Grid item>
-                  <Typography variant="body2" color="textSecondary">
-                    {millify(tokenTotals.inputTokens)}{' '}
-                    {t('modulePage.phases.telemetry.totalInputTokens')}
-                    {' · '}
-                    {millify(tokenTotals.outputTokens)}{' '}
-                    {t('modulePage.phases.telemetry.totalOutputTokens')}
-                  </Typography>
-                </Grid>
-              )}
-            </Grid>
-          </Grid>
-          <Grid item xs={12}>
-            <PhaseTelemetry
-              telemetry={phase?.telemetry}
-              adversarialTelemetry={adversarialTelemetry}
-            />
-          </Grid>
-        </>
-      )}
+      <TelemetrySection telemetry={phase?.telemetry} />
     </Grid>
   );
 };

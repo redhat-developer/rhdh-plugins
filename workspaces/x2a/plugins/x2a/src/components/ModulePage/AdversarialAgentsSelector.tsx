@@ -25,12 +25,14 @@ import { extractResponseError, isHttpSuccessResponse } from '../tools';
 interface AdversarialAgentsSelectorProps {
   selectedAgentIds: string[];
   onSelectionChange: (agentIds: string[]) => void;
+  onAgentsLoaded?: (agents: AdversarialAgent[]) => void;
   phase?: 'analyze' | 'migrate';
 }
 
 export const AdversarialAgentsSelector = ({
   selectedAgentIds,
   onSelectionChange,
+  onAgentsLoaded,
   phase,
 }: AdversarialAgentsSelectorProps) => {
   const [agents, setAgents] = useState<AdversarialAgent[]>([]);
@@ -57,7 +59,9 @@ export const AdversarialAgentsSelector = ({
           return;
         }
         const data = await response.json();
-        setAgents(data.agents || []);
+        const loaded: AdversarialAgent[] = data.agents || [];
+        setAgents(loaded);
+        onAgentsLoaded?.(loaded);
       } catch {
         setError(t('modulePage.phases.adversarialAgents.loadingError'));
       } finally {
@@ -65,7 +69,7 @@ export const AdversarialAgentsSelector = ({
       }
     };
     fetchAgents();
-  }, [client, t, phase]);
+  }, [client, t, phase, onAgentsLoaded]);
 
   if (error) {
     return <Alert severity="error">{error}</Alert>;
