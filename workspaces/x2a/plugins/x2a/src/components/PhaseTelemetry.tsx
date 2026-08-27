@@ -235,3 +235,53 @@ export const PhaseTelemetry = ({ telemetry }: { telemetry?: Telemetry }) => {
     </>
   );
 };
+
+/**
+ * Telemetry heading with aggregated token totals and the per-agent table.
+ * Renders as `<Grid item>` children, so it must be placed inside a
+ * `<Grid container>`. Returns null when there is no telemetry.
+ */
+export const TelemetrySection = ({ telemetry }: { telemetry?: Telemetry }) => {
+  const { t } = useTranslation();
+
+  const tokenTotals = useMemo(() => {
+    const all = Object.values(telemetry?.agents ?? {});
+    if (all.length === 0) return undefined;
+    return {
+      inputTokens: all.reduce((s, a) => s + (a.inputTokens ?? 0), 0),
+      outputTokens: all.reduce((s, a) => s + (a.outputTokens ?? 0), 0),
+    };
+  }, [telemetry]);
+
+  if (!telemetry) {
+    return null;
+  }
+
+  return (
+    <>
+      <Grid item xs={12}>
+        <Grid container alignItems="baseline" spacing={2}>
+          <Grid item>
+            <Typography variant="h6">
+              {t('modulePage.phases.telemetry.title')}
+            </Typography>
+          </Grid>
+          {tokenTotals && (
+            <Grid item>
+              <Typography variant="body2" color="textSecondary">
+                {millify(tokenTotals.inputTokens)}{' '}
+                {t('modulePage.phases.telemetry.totalInputTokens')}
+                {' · '}
+                {millify(tokenTotals.outputTokens)}{' '}
+                {t('modulePage.phases.telemetry.totalOutputTokens')}
+              </Typography>
+            </Grid>
+          )}
+        </Grid>
+      </Grid>
+      <Grid item xs={12}>
+        <PhaseTelemetry telemetry={telemetry} />
+      </Grid>
+    </>
+  );
+};

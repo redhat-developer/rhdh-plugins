@@ -40,15 +40,13 @@ import {
   MigrationPhase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
-import millify from 'millify';
-
 import { useTranslation } from '../../hooks/useTranslation';
 import { useLogStream } from '../../hooks/useLogStream';
 import { useClientService } from '../../ClientService';
 import { ArtifactLink } from '../ArtifactLink';
 import { ItemField } from '../ItemField';
 import { PhaseStatus } from '../PhaseStatus';
-import { PhaseTelemetry } from '../PhaseTelemetry';
+import { TelemetrySection } from '../PhaseTelemetry';
 import {
   canCancelPhase,
   downloadLogFile,
@@ -173,15 +171,6 @@ export const AdversarialReviewSection = ({
       return undefined;
     }
   }, [job]);
-
-  const tokenTotals = useMemo(() => {
-    const all = Object.values(job?.telemetry?.agents ?? {});
-    if (all.length === 0) return undefined;
-    return {
-      inputTokens: all.reduce((s, a) => s + (a.inputTokens ?? 0), 0),
-      outputTokens: all.reduce((s, a) => s + (a.outputTokens ?? 0), 0),
-    };
-  }, [job?.telemetry]);
 
   const durationSeconds = job ? getEffectiveDurationSeconds(job) : undefined;
   const duration =
@@ -408,33 +397,7 @@ export const AdversarialReviewSection = ({
                 </Grid>
               )}
 
-              {job.telemetry && (
-                <>
-                  <Grid item xs={12}>
-                    <Grid container alignItems="baseline" spacing={2}>
-                      <Grid item>
-                        <Typography variant="h6">
-                          {t('modulePage.phases.telemetry.title')}
-                        </Typography>
-                      </Grid>
-                      {tokenTotals && (
-                        <Grid item>
-                          <Typography variant="body2" color="textSecondary">
-                            {millify(tokenTotals.inputTokens)}{' '}
-                            {t('modulePage.phases.telemetry.totalInputTokens')}
-                            {' · '}
-                            {millify(tokenTotals.outputTokens)}{' '}
-                            {t('modulePage.phases.telemetry.totalOutputTokens')}
-                          </Typography>
-                        </Grid>
-                      )}
-                    </Grid>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <PhaseTelemetry telemetry={job.telemetry} />
-                  </Grid>
-                </>
-              )}
+              <TelemetrySection telemetry={job.telemetry} />
             </Grid>
           )}
         </AccordionDetails>
