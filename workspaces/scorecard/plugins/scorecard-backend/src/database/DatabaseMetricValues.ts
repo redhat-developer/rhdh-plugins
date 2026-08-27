@@ -70,6 +70,14 @@ type ScalarAggregationRowResult = {
 
 export class DatabaseMetricValues {
   private readonly tableName = 'metric_values';
+  private readonly dbClient: Knex;
+  private readonly isPostgres: boolean;
+
+  constructor(dbClient: Knex) {
+    this.dbClient = dbClient;
+    const clientName: string = (dbClient as any).client?.config?.client ?? '';
+    this.isPostgres = clientName === 'pg' || clientName.includes('postgres');
+  }
 
   /**
    * `value` is a JSON column. Depending on database/driver, a "missing" metric value can
@@ -77,14 +85,6 @@ export class DatabaseMetricValues {
    */
   private static readonly metricValueIsMissingExpr =
     "(value IS NULL OR CAST(value AS TEXT) = 'null')";
-
-  constructor(private readonly dbClient: Knex<any, any[]>) {}
-
-  private get isPostgres(): boolean {
-    const clientName: string =
-      (this.dbClient as any).client?.config?.client ?? '';
-    return clientName === 'pg' || clientName.includes('postgres');
-  }
 
   /**
    * UTC calendar day as `YYYY-MM-DD`. Postgres `timestamp` is treated as UTC;
@@ -460,7 +460,7 @@ export class DatabaseMetricValues {
    *
    * Query plan (single round-trip):
    * 1. `latest_ids`: latest id per (entity, UTC day) in [from, to].
-   * 2. `daily`: aggrefated value / successCount / errorCount grouped by that utc_day.
+   * 2. `daily`: aggregated value / successCount / errorCount grouped by that utc_day.
    *    Optional `filter.status` keeps matching successes and all calculation errors.
    * 3. `error_counts`: unique error_message counts, left-joined onto daily.
    */

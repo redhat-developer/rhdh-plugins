@@ -2485,9 +2485,13 @@ describe('DatabaseMetricValues', () => {
       },
     );
 
-    it.each([databases.eachSupportedId()[1]])(
+    it.each(databases.eachSupportedId())(
       'should bucket by UTC day when Postgres session TimeZone is non-UTC - %p',
       async databaseId => {
+        if (databaseId !== 'POSTGRES_15') {
+          return;
+        }
+
         const { client } = await createDatabase(databaseId);
 
         // Knex dateTime is timestamptz. TO_CHAR(timestamptz) uses session

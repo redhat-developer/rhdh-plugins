@@ -264,7 +264,7 @@ Returns a **KPI snapshot**: the current aggregated value of a scorecard KPI acro
 Use this endpoint for all new integrations.
 
 - **`aggregationId`** may be a key under **`scorecard.aggregationKPIs`** in app-config (see the [backend README](../README.md#aggregation-kpis-homepage-and-get-aggregations)), which supplies **title**, **description**, **type**, **metricId**, and type-specific **`options`** (for example **`options.statusScores`** for **`weightedStatusScore`**, or optional **`options.thresholds`** for scalar types and **`weightedStatusScore`**).
-- If there is **no** `scorecard.aggregationKPIs.<aggregationId>` block, the backend still responds successfully: it treats **`aggregationId` as the `metricId`**. The default type is **`average`** when the metric’s **`defaultVisualization`** is **`sparkline`**, otherwise **`statusGrouped`**. A **warning** is logged on the server so missing KPI config is visible in operator logs. To get a custom **title**, **`weightedStatusScore`** or **scalar** type, or other KPI options, you must add that block; a typo in the id falls through to this default and can look like “wrong” aggregation behavior in the UI, so check logs and app-config.
+- If there is **no** `scorecard.aggregationKPIs.<aggregationId>` block, the backend still responds successfully: it treats **`aggregationId` as the `metricId`**. The default type is **`average`** when the metric’s **`defaultVisualization`** is **`sparkline`**, otherwise **`statusGrouped`**. An **info** is logged on the server so missing KPI config is visible in operator logs. To get a custom **title**, **`weightedStatusScore`** or **scalar** type, or other KPI options, you must add that block; a typo in the id falls through to this default and can look like “wrong” aggregation behavior in the UI, so check logs and app-config.
 
 The response shape includes **`id`**, **`status`**, **`metadata`** (title, description, type, unit, visualization, aggregation type, and **`filter`** when configured), and **`result`**. The shape of **`result`** depends on the aggregation type:
 
@@ -501,7 +501,7 @@ Example response for KPI without filter and one UTC day 2026-08-24:
       }
     ]
   },
-  "aggregationChartDisplayColor": "warning.main" // from value of last successful point classified againts KPI thresholds
+  "aggregationChartDisplayColor": "warning.main"
 }
 ```
 

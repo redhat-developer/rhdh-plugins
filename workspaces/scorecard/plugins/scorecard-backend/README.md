@@ -486,7 +486,7 @@ Only [scalar](./docs/aggregation.md/#scalar-types) aggregation types are support
 
 #### Authentication / permissions
 
-Requires user authentication, `scorecard.metric.read` permission, and `catalog.entity.read`permission for each aggregated entity.
+Requires user authentication, `scorecard.metric.read` permission, and `catalog.entity.read` permission for each aggregated entity.
 
 #### Example Request
 
@@ -546,7 +546,7 @@ curl -X GET "{{url}}/api/scorecard/aggregations/avgDeploymentFrequency/time-seri
       }
     ]
   },
-  "aggregationChartDisplayColor": "warning.main" // from value of last successful point classified againts KPI thresholds
+  "aggregationChartDisplayColor": "warning.main"
 }
 ```
 
