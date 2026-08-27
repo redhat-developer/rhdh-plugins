@@ -13,9 +13,9 @@
 
 All metric IDs use `lowerCamelCase` with a `<provider>.<metricName>` format:
 
-- Provider prefix is lowercase: `github`, `jira`, `sonarqube`, `dependabot`, `openssf`, `filecheck`
+- Provider prefix is lowercase: `github`, `jira`, `sonarqube`, `dependabot`, `openssf`, `filecheck`, `dora`
 - Metric name is lowerCamelCase: `openPRs`, `qualityGate`, `ciiBestPractices`
-- Full ID examples: `github.openPRs`, `sonarqube.qualityGate`, `openssf.ciiBestPractices`
+- Full ID examples: `github.openPRs`, `sonarqube.qualityGate`, `openssf.ciiBestPractices`, `dora.deploymentFrequency`
 
 Never use snake_case for metric IDs. SonarQube API keys (e.g.,
 `security_rating`, `code_smells`) are external API field names and remain
@@ -34,6 +34,15 @@ snake_case in the API layer only -- they are not metric IDs.
 | Metric ID         | Type   | Source                      |
 | ----------------- | ------ | --------------------------- |
 | `jira.openIssues` | number | `JiraOpenIssuesProvider.ts` |
+
+### DORA (4 metrics)
+
+| Metric ID                       | Type   | Unit    | Source                                    |
+| ------------------------------- | ------ | ------- | ----------------------------------------- |
+| `dora.deploymentFrequency`      | number | `/week` | `DoraDeploymentFrequencyProvider.ts`      |
+| `dora.medianLeadTimeForChanges` | number | `h`     | `DoraMedianLeadTimeForChangesProvider.ts` |
+| `dora.meanTimeToRestore`        | number | `h`     | `DoraMeanTimeToRestoreProvider.ts`        |
+| `dora.changeFailureRate`        | number | `%`     | `DoraChangeFailureRateProvider.ts`        |
 
 ### Dependabot (4 metrics)
 
@@ -133,8 +142,9 @@ Every data source implements `MetricProvider<T extends MetricType>` from
   `app-config.yaml` under `scorecard.metricProviders.<providerId>`.
 - `getProviderDatasourceId()` — identifies the external data source.
 - `getMetrics()` — returns `Metric<T>[]`. Each `Metric` has an `id`,
-  `title`, `description`, `type` (`"number"` or `"boolean"`), and a
-  `thresholds` field providing the default `ThresholdConfig`.
+  `title`, `description`, `type` (`"number"` or `"boolean"`), a
+  `thresholds` field providing the default `ThresholdConfig`, and an
+  optional `unit` display suffix (e.g. `"h"`, `"%"`, `"/week"`).
 - `calculateMetrics(entity)` — computes metric values for a catalog
   entity. Returns `Map<string, MetricValue<T>>` keyed by metric ID.
 - `getCatalogFilter()` — returns the catalog entity filter that
@@ -150,11 +160,15 @@ or all `"boolean"`).
 each metric, stored per **metric ID** in `ThresholdResolver.configuredThresholds`.
 Higher tiers override lower tiers:
 
-1. **Entity annotations** (highest priority) — per-entity overrides set
-   via catalog annotations with the prefix
+1. **Entity annotations** (highest priority, when allowed) — per-entity
+   overrides set via catalog annotations with the prefix
    `scorecard.io/<metricId>.thresholds.rules.<key>` (full metric ID).
    Merged on top of resolved thresholds by
-   `mergeEntityAndMetricThresholds()`.
+   `mergeEntityAndMetricThresholds()`. Applied only when
+   `areThresholdAnnotationOverridesAllowed()` returns true for the
+   metric ID (`scorecard.entityAnnotations.enabled` and
+   `scorecard.entityAnnotations.thresholds.enabled` / `except`);
+   otherwise this tier is skipped.
 2. **`app-config.yaml` overrides** (middle priority) — administrator
    overrides by configuration, most specific level wins
    (metric > provider), complete replace of metric defaults.
@@ -188,14 +202,15 @@ When reviewing changes to `ThresholdResolver`, the `Metric` type,
 
 ### Key files
 
-| File                                | Package                               | Role                                                        |
-| ----------------------------------- | ------------------------------------- | ----------------------------------------------------------- |
-| `ThresholdResolver.ts`              | `scorecard-backend`                   | Resolves thresholds using the three-tier chain              |
-| `Metric.ts`                         | `scorecard-common`                    | Defines `Metric`, `MetricType`, and `MetricValue` types     |
-| `MetricProvider.ts`                 | `scorecard-node`                      | Defines the `MetricProvider<T>` interface                   |
-| `mergeEntityAndMetricThresholds.ts` | `scorecard-backend`                   | Merges entity annotation overrides with metric thresholds   |
-| `getThresholdsFromConfig.ts`        | `scorecard-node`                      | Reads and validates threshold config from `app-config.yaml` |
-| `DependabotConfig.ts`               | `scorecard-backend-module-dependabot` | Dependabot provider metric and threshold definitions        |
-| `SonarQubeConfig.ts`                | `scorecard-backend-module-sonarqube`  | SonarQube provider metric and threshold definitions         |
-| `OpenSSFConfig.ts`                  | `scorecard-backend-module-openssf`    | OpenSSF provider metric and threshold definitions           |
-| `FilecheckConfig.ts`                | `scorecard-backend-module-filecheck`  | Filecheck provider metric and threshold definitions         |
+| File                                | Package                               | Role                                                              |
+| ----------------------------------- | ------------------------------------- | ----------------------------------------------------------------- |
+| `ThresholdResolver.ts`              | `scorecard-backend`                   | Resolves thresholds using the three-tier chain                    |
+| `Metric.ts`                         | `scorecard-common`                    | Defines `Metric`, `MetricType`, and `MetricValue` types           |
+| `MetricProvider.ts`                 | `scorecard-node`                      | Defines the `MetricProvider<T>` interface                         |
+| `mergeEntityAndMetricThresholds.ts` | `scorecard-backend`                   | Merges entity annotation overrides with metric thresholds         |
+| `getThresholdsFromConfig.ts`        | `scorecard-node`                      | Reads and validates threshold config from `app-config.yaml`       |
+| `DependabotConfig.ts`               | `scorecard-backend-module-dependabot` | Dependabot provider metric and threshold definitions              |
+| `SonarQubeConfig.ts`                | `scorecard-backend-module-sonarqube`  | SonarQube provider metric and threshold definitions               |
+| `OpenSSFConfig.ts`                  | `scorecard-backend-module-openssf`    | OpenSSF provider metric and threshold definitions                 |
+| `FilecheckConfig.ts`                | `scorecard-backend-module-filecheck`  | Filecheck provider metric and threshold definitions               |
+| `DoraConfig.ts`                     | `scorecard-backend-module-dora`       | DORA provider config, collector wiring, and threshold definitions |

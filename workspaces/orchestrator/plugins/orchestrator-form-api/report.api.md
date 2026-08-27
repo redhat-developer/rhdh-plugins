@@ -25,6 +25,11 @@ export type FormDecoratorProps = Pick<
     formData: JsonObject,
     uiSchema: OrchestratorFormContextProps['uiSchema'],
   ) => Promise<ErrorSchema<JsonObject>> | undefined;
+  getExtraErrorsForField?: (
+    formData: JsonObject,
+    fieldPath: string,
+    uiSchemaProperty: JsonObject,
+  ) => Promise<ErrorSchema<JsonObject>>;
 };
 
 // @public
@@ -54,6 +59,7 @@ export type OrchestratorFormContextProps = {
   handleFetchStarted?: () => void;
   handleFetchEnded?: () => void;
   onSamlSsoError?: (error: Error) => void;
+  validatingFields?: ReadonlySet<string>;
 };
 
 // @public
@@ -91,7 +97,7 @@ export const useOrchestratorFormApiOrDefault: () => OrchestratorFormApi;
 
 // Warnings were encountered during analysis:
 //
-// src/api.d.ts:132:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
+// src/api.d.ts:134:22 - (ae-undocumented) Missing documentation for "useOrchestratorFormApiOrDefault".
 
 // (No @packageDocumentation comment for this package)
 ```

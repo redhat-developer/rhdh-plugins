@@ -13,18 +13,6 @@ proxy:
     followRedirects: true
 
 backend:
-  # Used for enabling authentication, secret is shared by all backend plugins
-  # See https://backstage.io/docs/auth/service-to-service-auth for
-  # information on the format
-  # auth:
-  #   keys:
-  #     - secret: ${BACKEND_SECRET}
-  auth:
-    externalAccess:
-      - type: static
-        options:
-          token: '${RHDH_TOKEN}'
-          subject: admin-curl-access
   baseUrl: http://localhost:7007
   listen:
     port: 7007
@@ -50,7 +38,6 @@ backend:
       - host: '*.mozilla.org'
       - host: '*.openshift.com'
       - host: '*.openshiftapps.com'
-      - host: '${RHDH_BRIDGE_HOST:-localhost}'
 
 integrations:
   github:
@@ -98,7 +85,17 @@ catalog:
     pullRequestBranchName: backstage-integration
   rules:
     - allow:
-        [Component, System, API, Resource, Location, User, Group, AiResource]
+        [
+          Component,
+          System,
+          API,
+          AiModelServerAPI,
+          Resource,
+          Location,
+          User,
+          Group,
+          AiResource,
+        ]
   locations:
     # Local org + AiResource examples for entity-page verification (RHIDP-14558).
     # Paths are relative to the backend process cwd (typically packages/backend).
@@ -118,6 +115,14 @@ catalog:
       target: ../../examples/ai-resource-oci.yaml
       rules:
         - allow: [AiResource]
+    - type: file
+      target: ../../examples/ai-resource-agents.yaml
+      rules:
+        - allow: [AiResource]
+    - type: file
+      target: ../../examples/ai-model-server-api.yaml
+      rules:
+        - allow: [AiModelServerAPI]
   providers:
     modelCatalog:
       # The field underneath should list the connector plugin ID that the entity provider accesses through

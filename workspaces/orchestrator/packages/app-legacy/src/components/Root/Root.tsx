@@ -40,7 +40,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import GroupIcon from '@mui/icons-material/People';
 import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
-import { OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator';
+import { OrchestratorIcon } from '@red-hat-developer-hub/backstage-plugin-orchestrator/legacy';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 import { Administration } from '@backstage-community/plugin-rbac';
 import {

@@ -64,12 +64,12 @@ NFS Blueprint extensions that render on existing catalog entity pages for AI ass
 
 #### Scenario: RBAC gated — permission granted
 
-- **WHEN** the user has the `ai-catalog.asset.read.usage-docs` permission (or the permission is not yet registered)
+- **WHEN** the user has the `ai-catalog.asset.access.usage-docs` permission (or the permission is not yet registered)
 - **THEN** the Usage tab shows full usage content
 
 #### Scenario: RBAC gated — permission denied
 
-- **WHEN** the user has `ai-catalog.asset.read` but not `ai-catalog.asset.read.usage-docs`
+- **WHEN** the user has `ai-catalog.asset.access` but not `ai-catalog.asset.access.usage-docs`
 - **THEN** the Usage tab shows a "Contact owner for access" affordance instead of usage content
 
 #### Scenario: Tab visibility

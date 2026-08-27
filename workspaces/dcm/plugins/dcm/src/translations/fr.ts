@@ -47,6 +47,9 @@ const dcmTranslationFr: TranslationMessages<
     'common.rows': 'lignes',
     'common.previousPage': 'Précédent',
     'common.nextPage': 'Suivant',
+    'common.next': 'Suivant',
+    'common.back': 'Retour',
+    'common.loadingMore': 'Chargement\u2026',
     'deleteDialog.title': 'Supprimer {{resourceLabel}}',
     'deleteDialog.confirmButton': 'Supprimer',
     'deleteDialog.cancelButton': 'Annuler',
@@ -163,11 +166,13 @@ const dcmTranslationFr: TranslationMessages<
     'catalogItems.deleteLabel': '\u00e9l\u00e9ment du catalogue',
     'catalogItems.columns.displayName': 'Nom affich\u00e9',
     'catalogItems.columns.apiVersion': 'Version API',
-    'catalogItems.columns.serviceType': 'Type de service',
+    'catalogItems.columns.resources': 'Ressources',
     'catalogItems.columns.fields': 'Champs',
     'catalogItems.columns.created': 'Cr\u00e9\u00e9',
     'catalogItems.fieldCount_one': '1 champ',
     'catalogItems.fieldCount_other': '{{count}} champs',
+    'catalogItems.resourceCount_one': '1 ressource',
+    'catalogItems.resourceCount_other': '{{count}} ressources',
     'catalogItems.form.importButton': 'Importer depuis un fichier',
     'catalogItems.form.importTooltip':
       'Remplir le formulaire depuis une d\u00e9finition JSON ou YAML',
@@ -212,6 +217,24 @@ const dcmTranslationFr: TranslationMessages<
     'catalogItems.form.schemaMustBeObject':
       'Doit \u00eatre un objet JSON, pas un tableau ni une valeur primitive',
     'catalogItems.form.schemaInvalidJson': 'Syntaxe JSON invalide',
+    'catalogItems.wizard.tabOverview': 'Aper\u00e7u',
+    'catalogItems.wizard.tabApi': 'API',
+    'catalogItems.wizard.tabResources': 'Ressources',
+    'catalogItems.wizard.resourcesDescription':
+      'Ajoutez une ou plusieurs ressources. Chaque ressource r\u00e9f\u00e9rence un type de service et d\u00e9finit ses propres champs.',
+    'catalogItems.wizard.resourcesRequired':
+      'Au moins une ressource est requise.',
+    'catalogItems.wizard.addResourceButton': 'Ajouter une ressource',
+    'catalogItems.wizard.removeResource': 'Supprimer la ressource',
+    'catalogItems.wizard.unnamedResource': '(sans nom)',
+    'catalogItems.wizard.resourceNameLabel': 'Nom de la ressource *',
+    'catalogItems.wizard.resourceNameHelper':
+      'Identifiant unique au sein de cet \u00e9l\u00e9ment du catalogue \u2014 p.\u00a0ex. app, ordersDb',
+    'catalogItems.wizard.requiresResourcesLabel': 'Ressources requises',
+    'catalogItems.wizard.requiresResourcesHelper':
+      'S\u00e9lectionnez les ressources devant \u00eatre provisionn\u00e9es avant celle-ci',
+    'catalogItems.wizard.apiVersionImmutable':
+      'La version API ne peut pas \u00eatre modifi\u00e9e apr\u00e8s la cr\u00e9ation',
     'instances.emptyTitle': 'Aucune instance provisionn\u00e9e',
     'instances.emptyDescription':
       'Les instances d\u2019\u00e9l\u00e9ments du catalogue repr\u00e9sentent des services provisonn\u00e9s.',
@@ -234,7 +257,7 @@ const dcmTranslationFr: TranslationMessages<
     'instances.rehydrateDialogConfirm': 'R\u00e9hydrater',
     'instances.columns.displayName': 'Nom affich\u00e9',
     'instances.columns.catalogItem': '\u00c9l\u00e9ment du catalogue',
-    'instances.columns.resourceId': 'ID de ressource',
+    'instances.columns.resourceIds': 'IDs de ressource',
     'instances.columns.apiVersion': 'Version API',
     'instances.columns.created': 'Cr\u00e9\u00e9',
     'instances.form.displayNameLabel': 'Nom affich\u00e9 *',
@@ -255,6 +278,7 @@ const dcmTranslationFr: TranslationMessages<
       '(champs modifiables d\u00e9finis par cet \u00e9l\u00e9ment du catalogue)',
     'instances.form.noEditableFields':
       'Cet \u00e9l\u00e9ment du catalogue n\u2019a pas de champs modifiables.',
+    'instances.wizard.tabOverview': 'Aper\u00e7u',
     'resources.emptyTitle': 'Aucune ressource trouv\u00e9e',
     'resources.emptyDescription':
       'Les instances de types de service provisonn\u00e9es via DCM appara\u00eetront ici.',
@@ -320,6 +344,16 @@ const dcmTranslationFr: TranslationMessages<
       'Doit suivre le format v<nombre>[alpha|beta][nombre] \u2014 ex. v1, v1alpha1',
     'validation.catalogItem.serviceTypeRequired':
       'Le type de service est obligatoire',
+    'validation.catalogItem.resourceNameRequired':
+      'Le nom de la ressource est obligatoire',
+    'validation.catalogItem.resourceNameDuplicate':
+      'Le nom de la ressource doit \u00eatre unique au sein de l\u2019\u00e9l\u00e9ment du catalogue',
+    'validation.catalogItem.resourceNamePattern':
+      'Seules les lettres, les chiffres, les tirets et les underscores sont autoris\u00e9s (doit commencer par une lettre)',
+    'validation.catalogItem.requiresResourcesCycle':
+      'D\u00e9pendance circulaire d\u00e9tect\u00e9e \u2014 cette ressource se requiert indirectement elle-m\u00eame',
+    'validation.catalogItem.resourcesRequired':
+      'Au moins une ressource est requise',
     'validation.catalogItem.duplicatePath':
       'Chemin dupliqu\u00e9 \u2014 les chemins doivent \u00eatre uniques',
     'validation.catalogItem.invalidJson':

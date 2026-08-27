@@ -37,6 +37,7 @@ import {
   DEFAULT_NUMBER_THRESHOLDS,
   Metric,
   MetricResult,
+  MetricTimeSeriesResponse,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { CatalogMetricService } from './CatalogMetricService';
 import { NotFoundError } from '@backstage/errors';
@@ -72,6 +73,7 @@ import * as permissionUtilsModule from '../permissions/permissionUtils';
 import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
 import { AggregatedMetricMapper } from './mappers';
 import { ThresholdResolver } from '../threshold/ThresholdResolver';
+import type { ScorecardCollectorsService } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 function createTestAggregationsService(
   database: DatabaseMetricValues,
@@ -108,6 +110,7 @@ describe('createRouter', () => {
   let aggregationsService: AggregationsService;
   let thresholdResolver: ThresholdResolver;
   let mockLogger: ReturnType<typeof mockServices.logger.mock>;
+  let collectorsService: ScorecardCollectorsService;
   let httpAuthMock: ServiceMock<
     import('@backstage/backend-plugin-api').HttpAuthService
   >;
@@ -125,6 +128,12 @@ describe('createRouter', () => {
     );
     const catalog = catalogServiceMock.mock();
     mockLogger = mockServices.logger.mock();
+    collectorsService = {
+      init: jest.fn(),
+      hasCollector: jest.fn(),
+      getCollectorMetadata: jest.fn(),
+      collect: jest.fn(),
+    };
     catalogMetricService = new CatalogMetricService({
       catalog,
       registry: metricProvidersRegistry,
@@ -163,6 +172,7 @@ describe('createRouter', () => {
       permissions: permissionsMock,
       logger: mockServices.logger.mock(),
       thresholdResolver,
+      collectorsService,
     });
     app = express();
     app.use(router);
@@ -316,6 +326,130 @@ describe('createRouter', () => {
       expect(response.body.error.name).toBe('InputError');
       expect(response.body.error.message).toBe(
         'Cannot filter by both metricIds and datasource',
+      );
+    });
+  });
+
+  describe('GET /metrics/:metricId/collectors', () => {
+    beforeEach(() => {
+      metricProvidersRegistry.register(
+        new MockNumberProvider(
+          'dora.changeFailureRate',
+          'dora',
+          'DORA - Change Failure Rate',
+          'Change failure rate description.',
+          4,
+          ['github:deployments', 'jira:incidents'],
+        ),
+      );
+      metricProvidersRegistry.register(
+        new MockNumberProvider('github.openPRs', 'github', 'GitHub Open PRs'),
+      );
+
+      (collectorsService.getCollectorMetadata as jest.Mock).mockImplementation(
+        (collectorId: string) => {
+          if (collectorId === 'github:deployments') {
+            return {
+              id: 'github:deployments',
+              description:
+                'Collects data from GitHub Deployments for production deployment events.',
+            };
+          }
+          if (collectorId === 'jira:incidents') {
+            return {
+              id: 'jira:incidents',
+              description: 'Collects Jira incidents.',
+            };
+          }
+          throw new NotFoundError(
+            `No collector registered for collector ID '${collectorId}'.`,
+          );
+        },
+      );
+    });
+
+    it('returns collectors for a composite metric', async () => {
+      const response = await request(app).get(
+        '/metrics/dora.changeFailureRate/collectors',
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        collectors: [
+          {
+            id: 'github:deployments',
+            description:
+              'Collects data from GitHub Deployments for production deployment events.',
+          },
+          {
+            id: 'jira:incidents',
+            description: 'Collects Jira incidents.',
+          },
+        ],
+      });
+      expect(collectorsService.getCollectorMetadata).toHaveBeenCalledWith(
+        'github:deployments',
+      );
+      expect(collectorsService.getCollectorMetadata).toHaveBeenCalledWith(
+        'jira:incidents',
+      );
+    });
+
+    it('returns an empty collectors list when the metric has no collectors', async () => {
+      const response = await request(app).get(
+        '/metrics/github.openPRs/collectors',
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ collectors: [] });
+      expect(collectorsService.getCollectorMetadata).not.toHaveBeenCalled();
+    });
+
+    it('returns 404 when the metric is not found', async () => {
+      const response = await request(app).get(
+        '/metrics/non.existent.metric/collectors',
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.body.error.name).toBe('NotFoundError');
+    });
+
+    it('returns 403 when the user is not allowed to read the metric', async () => {
+      permissionsMock.authorizeConditional.mockResolvedValue([
+        CONDITIONAL_POLICY_DECISION,
+      ]);
+
+      const response = await request(app).get(
+        '/metrics/dora.changeFailureRate/collectors',
+      );
+
+      expect(response.status).toBe(403);
+      expect(response.body.error.name).toBe('NotAllowedError');
+    });
+
+    it('returns 500 when a collector ID on the metric is not registered', async () => {
+      (collectorsService.getCollectorMetadata as jest.Mock).mockImplementation(
+        (collectorId: string) => {
+          if (collectorId === 'github:deployments') {
+            return {
+              id: 'github:deployments',
+              description: 'Collects GitHub deployments.',
+            };
+          }
+          throw new NotFoundError(
+            `No collector registered for collector ID '${collectorId}'.`,
+          );
+        },
+      );
+
+      const response = await request(app).get(
+        '/metrics/dora.changeFailureRate/collectors',
+      );
+
+      expect(response.status).toBe(500);
+      expect(response.body.error.name).not.toBe('NotFoundError');
+      expect(response.body.error.message).toContain(
+        "Metric 'dora.changeFailureRate' is configured to use collector 'jira:incidents', but that collector is not registered.",
       );
     });
   });
@@ -505,6 +639,155 @@ describe('createRouter', () => {
     });
   });
 
+  describe('GET /metrics/catalog/:kind/:namespace/:name/time-series', () => {
+    const mockTimeSeriesResponse: MetricTimeSeriesResponse = {
+      metricId: 'github.openPRs',
+      entityRef: 'component:default/my-service',
+      metadata: {
+        title: 'GitHub open PRs',
+        description: 'The number of open pull requests.',
+        type: 'number',
+        unit: undefined,
+        history: true,
+        defaultVisualization: 'value',
+      },
+      points: [
+        { value: 8, timestamp: '2024-01-01T20:00:00.000Z' },
+        { value: 7, timestamp: '2024-01-02T12:00:00.000Z' },
+      ],
+    };
+
+    const timeSeriesPath =
+      '/metrics/catalog/component/default/my-service/time-series';
+    const validQuery =
+      'metricId=github.openPRs&from=2024-01-01T00:00:00.000Z&to=2024-01-31T23:59:59.000Z';
+
+    beforeEach(() => {
+      jest
+        .spyOn(catalogMetricService, 'getEntityMetricTimeSeries')
+        .mockResolvedValue(mockTimeSeriesResponse);
+    });
+
+    it('should return 403 Unauthorized when DENY permissions', async () => {
+      permissionsMock.authorizeConditional.mockResolvedValue([
+        { result: AuthorizeResult.DENY },
+      ]);
+      const result = await request(app).get(`${timeSeriesPath}?${validQuery}`);
+
+      expect(result.statusCode).toBe(403);
+      expect(result.body.error.name).toEqual('NotAllowedError');
+    });
+
+    it('should return time series for a specific entity and metric', async () => {
+      const response = await request(app).get(
+        `${timeSeriesPath}?${validQuery}`,
+      );
+
+      expect(response.status).toBe(200);
+      expect(
+        catalogMetricService.getEntityMetricTimeSeries,
+      ).toHaveBeenCalledWith(
+        'component:default/my-service',
+        'github.openPRs',
+        new Date('2024-01-01T00:00:00.000Z'),
+        new Date('2024-01-31T23:59:59.000Z'),
+        undefined,
+      );
+      expect(response.body).toEqual(mockTimeSeriesResponse);
+    });
+
+    it('should check entity access before returning time series', async () => {
+      const checkEntityAccessSpy = jest.spyOn(
+        permissionUtilsModule,
+        'checkEntityAccess',
+      );
+      const response = await request(app).get(
+        `${timeSeriesPath}?${validQuery}`,
+      );
+
+      expect(response.status).toBe(200);
+      expect(checkEntityAccessSpy).toHaveBeenCalledWith(
+        'component:default/my-service',
+        expect.any(Object),
+        permissionsMock,
+        httpAuthMock,
+      );
+    });
+
+    it('should filter authorized metrics when CONDITIONAL permission', async () => {
+      permissionsMock.authorizeConditional.mockResolvedValue([
+        CONDITIONAL_POLICY_DECISION,
+      ]);
+      const response = await request(app).get(
+        `${timeSeriesPath}?${validQuery}`,
+      );
+
+      expect(response.status).toBe(200);
+      expect(
+        catalogMetricService.getEntityMetricTimeSeries,
+      ).toHaveBeenCalledWith(
+        'component:default/my-service',
+        'github.openPRs',
+        new Date('2024-01-01T00:00:00.000Z'),
+        new Date('2024-01-31T23:59:59.000Z'),
+        {
+          anyOf: [
+            {
+              rule: 'HAS_METRIC_ID',
+              resourceType: 'scorecard-metric',
+              params: { metricIds: ['github.openPRs', 'github.openIssues'] },
+            },
+          ],
+        },
+      );
+    });
+
+    it('should return 404 NotFoundError when entity is not found', async () => {
+      jest
+        .spyOn(catalogMetricService, 'getEntityMetricTimeSeries')
+        .mockRejectedValue(
+          new NotFoundError('Entity not found: component:default/non-existent'),
+        );
+
+      const response = await request(app).get(
+        `/metrics/catalog/component/default/non-existent/time-series?${validQuery}`,
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.body.error.name).toBe('NotFoundError');
+      expect(response.body.error.message).toContain('Entity not found');
+    });
+
+    it('should return 400 InputError when query parameters are missing', async () => {
+      const response = await request(app).get(timeSeriesPath);
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.name).toBe('InputError');
+      expect(response.body.error.message).toContain('Invalid query parameters');
+    });
+
+    it('should return 400 InputError when from is after to', async () => {
+      const response = await request(app).get(
+        `${timeSeriesPath}?metricId=github.openPRs&from=2024-02-01T00:00:00.000Z&to=2024-01-01T00:00:00.000Z`,
+      );
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.name).toBe('InputError');
+    });
+
+    it('should return 400 InputError when range exceeds 365 days', async () => {
+      const response = await request(app).get(
+        `${timeSeriesPath}?metricId=github.openPRs&from=2024-01-01T00:00:00.000Z&to=2025-01-01T00:00:00.001Z`,
+      );
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.name).toBe('InputError');
+      expect(response.body.error.message).toContain(
+        'time range must not exceed 365 days',
+      );
+    });
+  });
+
   describe('GET /metrics/:metricId/catalog/aggregations', () => {
     const mockAggregatedMetric: AggregatedMetric = {
       values: {
@@ -525,6 +808,7 @@ describe('createRouter', () => {
         title: 'GitHub Open PRs',
         description: 'Mock number description.',
         type: 'number',
+        unit: undefined,
         history: undefined,
         aggregationType: 'statusGrouped',
       },
@@ -614,6 +898,7 @@ describe('createRouter', () => {
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        collectorsService,
       });
       aggregationApp = express();
       aggregationApp.use(router);
@@ -841,6 +1126,7 @@ describe('createRouter', () => {
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        collectorsService,
       });
       const batchApp = express();
       batchApp.use(batchAggregationRouter);
@@ -886,6 +1172,7 @@ describe('createRouter', () => {
         title: 'GitHub Open PRs',
         description: 'Mock number description.',
         type: 'number',
+        unit: undefined,
         history: undefined,
         aggregationType: 'statusGrouped',
       },
@@ -1002,6 +1289,7 @@ describe('createRouter', () => {
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        collectorsService,
       });
       aggregationsApp = express();
       aggregationsApp.use(router);
@@ -1089,6 +1377,7 @@ describe('createRouter', () => {
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        collectorsService,
       });
       const batchApp = express();
       batchApp.use(batchRouter);
@@ -1161,6 +1450,7 @@ describe('createRouter', () => {
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        collectorsService,
       });
       const kpiApp = express();
       kpiApp.use(router);
@@ -1229,6 +1519,7 @@ describe('createRouter', () => {
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        collectorsService,
       });
       const kpiApp = express();
       kpiApp.use(router);
@@ -1304,6 +1595,7 @@ describe('createRouter', () => {
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        collectorsService,
       });
       const kpiApp = express();
       kpiApp.use(router);
@@ -1395,6 +1687,7 @@ describe('createRouter', () => {
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        collectorsService,
       });
       const kpiApp = express();
       kpiApp.use(router);
@@ -1476,6 +1769,7 @@ describe('createRouter', () => {
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        collectorsService,
       });
       metaApp = express();
       metaApp.use(router);
@@ -1492,6 +1786,7 @@ describe('createRouter', () => {
         title: 'Custom KPI title',
         description: 'Custom KPI description',
         type: 'number',
+        unit: undefined,
         history: undefined,
         aggregationType: 'statusGrouped',
       });
@@ -1522,6 +1817,7 @@ describe('createRouter', () => {
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        collectorsService,
       });
       const batchMetaApp = express();
       batchMetaApp.use(router);
@@ -1565,6 +1861,7 @@ describe('createRouter', () => {
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        collectorsService,
       });
 
       const svcApp = express();
@@ -1615,6 +1912,7 @@ describe('createRouter', () => {
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        collectorsService,
       });
       const filteredMetaApp = express();
       filteredMetaApp.use(router);
@@ -1661,6 +1959,7 @@ describe('createRouter', () => {
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        collectorsService,
       });
       const scalarMetaApp = express();
       scalarMetaApp.use(router);
@@ -1750,6 +2049,7 @@ describe('createRouter', () => {
         permissions: permissionsMock,
         logger: mockServices.logger.mock(),
         thresholdResolver,
+        collectorsService,
       });
 
       drillDownApp = express();

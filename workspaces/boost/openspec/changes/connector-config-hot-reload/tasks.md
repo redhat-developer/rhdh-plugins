@@ -3,14 +3,14 @@
 ## 1. Zod Schema Definitions (P0) — RHIDP-15340
 
 - [ ] 1.1 Define Jira connector config Zod schema with `boost.connectors` fields only: `enabled` (boolean), `endpoint` (URL), `schedule.intervalMs` (number), `schedule.cron` (string), `batchSize` (number), `timeout.connectionMs` (number). Note: `tls.caFile`, `credentials.*`, and `namespace` are `ai-catalog.providers` fields — not part of the `boost.connectors` schema.
-- [ ] 1.2 All `boost.connectors` fields are `configScope: db-overridable` (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `ai-catalog.providers.<id>.*`)
+- [ ] 1.2 All user-facing `boost.connectors` fields are `configScope: db-overridable`; `__schemaVersion` is `configScope: db-only` internal metadata (deployment-time fields like `credentials.*`, `tls.*`, and `namespace` live under `ai-catalog.providers.<id>.*`)
 - [ ] 1.3 Define GitHub connector config Zod schema with connector-appropriate field subset (`enabled`, `endpoint`, `schedule.intervalMs`, `batchSize`)
 - [ ] 1.4 Define GitLab connector config Zod schema with connector-appropriate field subset (`enabled`, `endpoint`, `schedule.intervalMs`, `batchSize`)
 - [ ] 1.5 Add URL validation for `endpoint` field (must be valid https:// URL)
 - [ ] 1.6 Add positive number validation for `schedule.intervalMs`, `batchSize`, `timeout.connectionMs`
 - [ ] 1.7 Add cron expression validation for `schedule.cron` (via cron parser library)
 - [ ] 1.8 Define default values in schemas: `schedule.intervalMs: 300000` (5 min), `batchSize: 100`, `timeout.connectionMs: 30000`
-- [ ] 1.9 Add schema versioning field: `schemaVersion: 1` in each schema
+- [ ] 1.9 Add per-connector leaf `boost.connectors.<id>.__schemaVersion` (`configScope: db-only`, current value `BOOST_CONNECTOR_SCHEMA_VERSION`)
 - [ ] 1.10 Add unit tests for schema validation (valid configs pass, invalid configs rejected with correct error messages)
 
 ## 2. RuntimeConfigResolver Extension (P0) — RHIDP-15340
@@ -86,7 +86,7 @@
 ## 8. Documentation (P2)
 
 - [ ] 8.1 Document `RuntimeConfigResolver` extension for connector config in architecture docs
-- [ ] 8.2 Document `configScope` annotations and their meaning (`yaml-only`, `db-overridable`). Note: runtime operational state lives in the health store (`boost_sync_attempts` table), not the config resolver.
+- [ ] 8.2 Document `configScope` annotations and their meaning (`yaml-only`, `db-overridable`, `db-only`). Note: runtime operational state lives in the health store (`boost_sync_attempts` table), not the config resolver. `__schemaVersion` is `db-only` internal metadata.
 - [ ] 8.3 Document connector config admin UI usage (how to toggle, change endpoint/schedule)
 - [ ] 8.4 Document propagation latency: 30s TTL + reconciliation interval
 - [ ] 8.5 Document credential rotation workflow and latency (≤60s kubelet + reconciliation interval)

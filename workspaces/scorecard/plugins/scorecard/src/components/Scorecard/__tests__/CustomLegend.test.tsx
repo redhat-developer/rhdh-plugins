@@ -74,6 +74,21 @@ describe('CustomLegend', () => {
     expect(screen.getByText(/>40/)).toBeInTheDocument();
   });
 
+  it('should append metric unit to threshold expressions', () => {
+    render(<CustomLegend thresholds={thresholds} unit="h" />);
+
+    expect(screen.getByText(/<=10 h/)).toBeInTheDocument();
+    expect(screen.getByText(/<=20 h/)).toBeInTheDocument();
+    expect(screen.getByText(/<=40 h/)).toBeInTheDocument();
+    expect(screen.getByText(/>40 h/)).toBeInTheDocument();
+  });
+
+  it('should append slash units without a leading space', () => {
+    render(<CustomLegend thresholds={thresholds} unit="/week" />);
+
+    expect(screen.getByText(/<=10\/week/)).toBeInTheDocument();
+  });
+
   it('should render color boxes', () => {
     const { container } = render(<CustomLegend thresholds={thresholds} />);
 

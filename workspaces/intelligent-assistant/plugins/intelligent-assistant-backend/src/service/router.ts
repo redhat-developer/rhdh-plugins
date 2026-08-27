@@ -32,9 +32,9 @@ import {
   iaChatManagePermission,
   iaChatUsePermission,
   iaMcpManagePermission,
-  iaMcpReadPermission,
+  iaMcpUsePermission,
+  iaNotebooksUsePermission,
   iaPermissions,
-  iaSavedPromptsManagePermission,
   iaSkillsAccessPermission,
 } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
@@ -318,7 +318,7 @@ export async function createRouter(
   router.get(
     '/mcp-servers',
     generalRateLimiter,
-    requirePermission(iaMcpReadPermission),
+    requirePermission(iaMcpUsePermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -359,7 +359,7 @@ export async function createRouter(
   router.post(
     '/mcp-servers/validate',
     generalRateLimiter,
-    requirePermission(iaMcpReadPermission),
+    requirePermission(iaMcpUsePermission),
     async (req, res) => {
       try {
         const { url, token } = req.body;
@@ -566,6 +566,7 @@ export async function createRouter(
   router.get(
     '/notebook-conversation-ids',
     generalRateLimiter,
+    requirePermission(iaNotebooksUsePermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -644,19 +645,19 @@ export async function createRouter(
   router.get(
     '/v1/saved-prompts/config',
     generalRateLimiter,
-    requirePermission(iaSavedPromptsManagePermission),
+    requirePermission(iaChatUsePermission),
     apiProxy, // SKIP_USER_ID_ENDPOINTS prevents user_id injection for this endpoint
   );
   router.get(
     '/v1/saved-prompts',
     generalRateLimiter,
-    requirePermission(iaSavedPromptsManagePermission),
+    requirePermission(iaChatUsePermission),
     apiProxy,
   );
   router.delete(
     '/v1/saved-prompts/:prompt_id',
     generalRateLimiter,
-    requirePermission(iaSavedPromptsManagePermission),
+    requirePermission(iaChatUsePermission),
     apiProxy,
   );
 
@@ -713,7 +714,7 @@ export async function createRouter(
   router.post(
     '/v1/saved-prompts',
     generalRateLimiter,
-    requirePermission(iaSavedPromptsManagePermission),
+    requirePermission(iaChatUsePermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);

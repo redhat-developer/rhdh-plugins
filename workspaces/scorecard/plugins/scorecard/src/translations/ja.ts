@@ -95,6 +95,19 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.weightedStatusScoreLegendTooltipRowTotal': '合計スコア {{total}}',
     'metric.drillDownCalculationFailures':
       'このメトリクスの計算中に 1 つ以上のエンティティーが失敗しました。',
+    'metric.dora.deploymentFrequency.description':
+      '過去 30 日間にコードが本番環境に正常にデプロイされた頻度を追跡します。エリートパフォーマーはオンデマンドでデプロイします (1 日に複数回)。',
+    'metric.dora.deploymentFrequency.title': 'DORA - デプロイ頻度',
+    'metric.dora.medianLeadTimeForChanges.description':
+      '過去 30 日間におけるコードコミットから本番デプロイまでの時間を測定します。エリートパフォーマーのリードタイムは 24 時間未満です。',
+    'metric.dora.medianLeadTimeForChanges.title':
+      'DORA - 変更のリードタイム中央値',
+    'metric.dora.changeFailureRate.description':
+      '過去 30 日間に本番環境での障害を引き起こしたデプロイの割合を監視します。エリートパフォーマーは変更失敗率を 5% 未満に維持します。',
+    'metric.dora.changeFailureRate.title': 'DORA - 変更失敗率',
+    'metric.dora.meanTimeToRestore.description':
+      '過去 30 日間におけるインシデント後のサービス復旧までの平均時間を追跡します。エリートパフォーマーは 1 時間未満でサービスを復旧します。',
+    'metric.dora.meanTimeToRestore.title': 'DORA - 平均復旧時間',
     'metric.filecheck.description':
       'リポジトリー内に {{name}} ファイルが存在するかどうかを確認します。',
     'metric.filecheck.title': 'ファイルチェック: {{name}}',
@@ -167,10 +180,13 @@ const scorecardTranslationJa = createTranslationMessages({
     'permissionRequired.description':
       'スコアカードプラグインを表示するには、管理者に連絡して {{permission}} 権限を付与してもらうよう依頼してください。',
     'permissionRequired.title': '権限がありません',
+    'thresholds.elite': 'エリート',
     'thresholds.entities_one': '{{count}} 個のエンティティー',
     'thresholds.entities_other': '{{count}} 個のエンティティー',
     'thresholds.error': 'エラー',
     'thresholds.exist': '存在する',
+    'thresholds.low': '低',
+    'thresholds.medium': '中',
     'thresholds.missing': 'なし',
     'thresholds.noEntities': '{{category}} 状態のエンティティーはありません',
     'thresholds.success': '成功',

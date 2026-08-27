@@ -18,9 +18,13 @@ import {
   BOOST_PLUGIN_ID,
   BOOST_AGENT_RESOURCE_TYPE,
   BOOST_TOOL_RESOURCE_TYPE,
+  AI_CATALOG_ASSET_RESOURCE_TYPE,
   BOOST_RULE_IS_OWNER,
   BOOST_RULE_IS_NOT_CREATOR,
   BOOST_RULE_HAS_LIFECYCLE_STAGE,
+  AI_CATALOG_RULE_IS_AI_ASSET_CATEGORY,
+  AI_CATALOG_RULE_IS_FROM_CONNECTOR,
+  AI_CATALOG_RULE_IS_IN_TENANT,
   boostAgentPermissions,
   boostToolPermissions,
   boostEntityPermissions,
@@ -34,6 +38,11 @@ import {
   boostAgentPromotePermission,
   boostToolPromotePermission,
   boostKagentiAdminPermission,
+  aiCatalogPermissions,
+  aiCatalogResourcePermissions,
+  aiCatalogAssetAccessPermission,
+  aiCatalogAssetAccessUsageDocsPermission,
+  aiCatalogAdminPermission,
 } from './index';
 
 import type {
@@ -59,6 +68,10 @@ describe('boost-common', () => {
     it('exports boost-tool resource type', () => {
       expect(BOOST_TOOL_RESOURCE_TYPE).toBe('boost-tool');
     });
+
+    it('exports ai-catalog-asset resource type', () => {
+      expect(AI_CATALOG_ASSET_RESOURCE_TYPE).toBe('ai-catalog-asset');
+    });
   });
 
   describe('conditional rule names', () => {
@@ -72,6 +85,18 @@ describe('boost-common', () => {
 
     it('exports HAS_LIFECYCLE_STAGE rule name', () => {
       expect(BOOST_RULE_HAS_LIFECYCLE_STAGE).toBe('HAS_LIFECYCLE_STAGE');
+    });
+
+    it('exports isAiAssetCategory rule name', () => {
+      expect(AI_CATALOG_RULE_IS_AI_ASSET_CATEGORY).toBe('isAiAssetCategory');
+    });
+
+    it('exports isFromConnector rule name', () => {
+      expect(AI_CATALOG_RULE_IS_FROM_CONNECTOR).toBe('isFromConnector');
+    });
+
+    it('exports isInTenant rule name', () => {
+      expect(AI_CATALOG_RULE_IS_IN_TENANT).toBe('isInTenant');
     });
   });
 
@@ -165,11 +190,65 @@ describe('boost-common', () => {
     it('exports boost.admin permission', () => {
       expect(boostAdminPermission.name).toBe('boost.admin');
     });
+
+    it('exports ai-catalog.admin permission', () => {
+      expect(aiCatalogAdminPermission.name).toBe('ai-catalog.admin');
+    });
+  });
+
+  describe('AI catalog permissions', () => {
+    it('exports exactly 3 AI catalog permissions', () => {
+      expect(aiCatalogPermissions).toHaveLength(3);
+    });
+
+    it('ai-catalog.asset.access is resource-scoped', () => {
+      expect(aiCatalogAssetAccessPermission.name).toBe(
+        'ai-catalog.asset.access',
+      );
+      expect(aiCatalogAssetAccessPermission.resourceType).toBe(
+        AI_CATALOG_ASSET_RESOURCE_TYPE,
+      );
+      expect(aiCatalogAssetAccessPermission.attributes.action).toBe('read');
+    });
+
+    it('ai-catalog.asset.access.usage-docs is resource-scoped', () => {
+      expect(aiCatalogAssetAccessUsageDocsPermission.name).toBe(
+        'ai-catalog.asset.access.usage-docs',
+      );
+      expect(aiCatalogAssetAccessUsageDocsPermission.resourceType).toBe(
+        AI_CATALOG_ASSET_RESOURCE_TYPE,
+      );
+      expect(aiCatalogAssetAccessUsageDocsPermission.attributes.action).toBe(
+        'read',
+      );
+    });
+
+    it('ai-catalog.admin is a basic permission', () => {
+      expect(aiCatalogAdminPermission.name).toBe('ai-catalog.admin');
+      expect(aiCatalogAdminPermission.attributes.action).toBe('update');
+      expect(
+        'resourceType' in aiCatalogAdminPermission &&
+          aiCatalogAdminPermission.resourceType,
+      ).toBeFalsy();
+    });
+
+    it('exports 2 AI catalog resource permissions', () => {
+      expect(aiCatalogResourcePermissions).toHaveLength(2);
+      for (const perm of aiCatalogResourcePermissions) {
+        expect(perm.resourceType).toBe(AI_CATALOG_ASSET_RESOURCE_TYPE);
+      }
+    });
+
+    it('AI catalog permissions use ai-catalog.* naming', () => {
+      for (const perm of aiCatalogPermissions) {
+        expect(perm.name).toMatch(/^ai-catalog\./);
+      }
+    });
   });
 
   describe('combined permissions', () => {
-    it('includes all 23 permissions (16 resource + 5 functional + 2 gate)', () => {
-      expect(boostPermissions).toHaveLength(23);
+    it('includes all 26 permissions (16 entity + 5 functional + 2 gate + 3 ai-catalog)', () => {
+      expect(boostPermissions).toHaveLength(26);
     });
 
     it('all permission names are unique', () => {

@@ -50,11 +50,26 @@ export interface CatalogItem {
 
 /** Spec section of a {@link CatalogItem}. */
 export interface CatalogItemSpec {
-  service_type?: string;
+  /** One or more named resources — each declares a service type and field configs. */
+  resources?: CatalogResource[];
+}
+
+/**
+ * A named resource within a {@link CatalogItemSpec}.
+ * `name` and `service_type` are immutable after creation.
+ */
+export interface CatalogResource {
+  /** Unique identifier within the catalog item (e.g. "app", "ordersDb"). */
+  name: string;
+  /** The service type for this resource (e.g. "vm", "three-tier-app-demo"). */
+  service_type: string;
+  /** Names of other resources that must be ready before this one is provisioned. */
+  requires_resources?: string[];
+  /** Field configurations for this resource. */
   fields?: FieldConfiguration[];
 }
 
-/** A single field within a {@link CatalogItemSpec}. */
+/** A single field within a {@link CatalogResource}. */
 export interface FieldConfiguration {
   path: string;
   display_name?: string;
@@ -77,8 +92,6 @@ export interface CatalogItemInstance {
   api_version: string;
   display_name: string;
   spec: CatalogItemInstanceSpec;
-  /** External resource identifier (readOnly). */
-  resource_id?: string;
   path?: string;
   create_time?: string;
   update_time?: string;
@@ -88,10 +101,14 @@ export interface CatalogItemInstance {
 export interface CatalogItemInstanceSpec {
   catalog_item_id: string;
   user_values: UserValue[];
+  /** External resource identifiers assigned by the Placement Manager (readOnly). */
+  resource_ids?: string[];
 }
 
 /** A user-supplied value for a field in a {@link CatalogItemInstanceSpec}. */
 export interface UserValue {
+  /** The resource name within the catalog item this value targets. */
+  resource: string;
   path: string;
   value: unknown;
 }

@@ -117,6 +117,7 @@ export const ScorecardEntityContentGridView = ({
           value={metric.result?.value}
           metricType={metric.metadata.type}
           thresholds={metric.result?.thresholdResult}
+          unit={metric.metadata.unit}
           isMetricDataError={metricDataError}
           metricDataError={metric?.error}
           isThresholdError={thresholdErrorState}

@@ -49,7 +49,7 @@ export const ANNOTATION_BOOST_LIFECYCLE_STAGE =
 
 /**
  * Entity provider that polls the Kagenti API for agents and emits them
- * as Backstage catalog entities with kind: Component, spec.type: ai-agent.
+ * as Backstage catalog entities with kind: AiResource, spec.type: agent.
  *
  * Implements the two-layer polling model: this provider refreshes its
  * upstream data on a configurable interval (default 5m), caching the
@@ -164,7 +164,7 @@ export class KagentiAgentEntityProvider implements EntityProvider {
   }
 
   /**
-   * Convert a Kagenti agent card into a Backstage Component entity.
+   * Convert a Kagenti agent card into a Backstage AiResource entity.
    */
   private agentToEntity(agent: AgentCard): Entity {
     const entityName = sanitizeEntityName(
@@ -192,7 +192,7 @@ export class KagentiAgentEntityProvider implements EntityProvider {
 
     return {
       apiVersion: 'backstage.io/v1alpha1',
-      kind: 'Component',
+      kind: 'AiResource',
       metadata: {
         name: entityName,
         title: agent.name,
@@ -203,9 +203,10 @@ export class KagentiAgentEntityProvider implements EntityProvider {
         },
       },
       spec: {
-        type: 'ai-agent',
+        type: 'agent',
         lifecycle: mapLifecycleStage(agent.lifecycleStage),
         owner: mapOwner(agent.createdBy),
+        instructions: agent.description ?? `Kagenti agent: ${agent.name}`,
       },
     };
   }

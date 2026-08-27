@@ -16,21 +16,21 @@ AiResource entities that represent agents MUST declare `spec.type` with the exac
 
 ---
 
-### Requirement: Required agent fields
+### Requirement: Agent instructions field
 
-An agent-shaped AiResource (`spec.type: agent`) MUST include `spec.instructions` as a non-empty string. Entity identity uses `metadata.name` (there is no separate `spec.name`). Standard catalog fields such as `spec.owner` and `spec.lifecycle` remain normal AiResource/entity expectations and are not redefined by this agent schema capability.
+An agent-shaped AiResource (`spec.type: agent`) MAY omit `spec.instructions` when the agent image/runtime already provides a default prompt. When present, `spec.instructions` MUST be a string. Entity identity uses `metadata.name` (there is no separate `spec.name`). Standard catalog fields such as `spec.owner` and `spec.lifecycle` remain normal AiResource/entity expectations and are not redefined by this agent schema capability.
 
 These are schema-layer requirements for agent authoring and tests; catalog processor behavior for agent-specific fields is specified under `ai-resource-agent-ingestion`.
 
 #### Scenario: Minimal valid agent accepted
 
-- **WHEN** an AiResource entity declares `spec.type: agent`, non-empty `spec.instructions`, and a valid `metadata.name`
+- **WHEN** an AiResource entity declares `spec.type: agent` and a valid `metadata.name` (with or without `spec.instructions`)
 - **THEN** the agent schema accepts the entity
 
-#### Scenario: Missing instructions rejected
+#### Scenario: Missing instructions accepted
 
-- **WHEN** an AiResource entity declares `spec.type: agent` but omits `spec.instructions` or sets it to an empty string
-- **THEN** the agent schema rejects the entity with an error that names `spec.instructions`
+- **WHEN** an AiResource entity declares `spec.type: agent` but omits `spec.instructions`
+- **THEN** the agent schema accepts the entity
 
 #### Scenario: Wrong-type instructions rejected
 
@@ -43,7 +43,7 @@ These are schema-layer requirements for agent authoring and tests; catalog proce
 
 The agent schema MUST allow the optional agent fields defined in this change’s `design.md` mapping table (under `spec` / `metadata`, not agent-specific annotations). Optional field membership and shapes SHALL follow that mapping rather than a divergent inventory in code.
 
-At minimum, the mapping’s optional catalog fields include: `spec.handoffDescription`, `spec.model`, `spec.handoffs` (`string[]`), `spec.tools` (`string[]`), `spec.toolUseBehavior`, `spec.resetToolChoice`, `spec.modelSettings` (`temperature`, `maxTokens`, `toolChoice` only for v1), and `spec.outputSchema`.
+At minimum, the mapping’s optional catalog fields include: `spec.instructions`, `spec.handoffDescription`, `spec.model`, `spec.handoffs` (`string[]`), `spec.tools` (`string[]`), `spec.toolUseBehavior`, `spec.resetToolChoice`, `spec.modelSettings` (`temperature`, `maxTokens`, `toolChoice` only for v1), and `spec.outputSchema`.
 
 #### Scenario: Optional fields from mapping accepted
 
@@ -91,23 +91,23 @@ The rhdh-plugins agent schema implementation MUST NOT import `@openai/agents-cor
 
 ### Requirement: Examples and fixtures for agent entities
 
-The workspace MUST provide example catalog YAML and/or test fixtures that demonstrate a representative agent entity covering required fields and a non-empty subset of optional fields from the design mapping (including at least one of `handoffs` or `modelSettings`).
+The workspace MUST provide example catalog YAML and/or test fixtures that demonstrate a representative agent entity covering required core fields and a non-empty subset of optional fields from the design mapping (including at least one of `handoffs` or `modelSettings`).
 
 #### Scenario: Example catalog YAML exists
 
 - **WHEN** a developer opens the workspace examples (or equivalent fixtures) for agent AiResources
-- **THEN** at least one `kind: AiResource` document with `spec.type: agent` and non-empty `spec.instructions` is present
+- **THEN** at least one `kind: AiResource` document with `spec.type: agent` is present
 
 #### Scenario: Fixture usable by schema tests
 
 - **WHEN** schema/unit tests run
-- **THEN** they load a representative agent fixture (or inline equivalent) that exercises required and optional fields
+- **THEN** they load a representative agent fixture (or inline equivalent) that exercises core and optional fields
 
 ---
 
 ### Requirement: Schema-layer validation tests
 
-Unit or schema tests MUST cover acceptance of valid agent entities and rejection of clearly invalid shapes at the schema layer (missing required agent fields, wrong `spec.type` for agent validation, wrong types on optional fields).
+Unit or schema tests MUST cover acceptance of valid agent entities and rejection of clearly invalid shapes at the schema layer (wrong `spec.type` for agent validation, wrong types on optional fields).
 
 #### Scenario: Valid agent test passes
 
@@ -116,7 +116,7 @@ Unit or schema tests MUST cover acceptance of valid agent entities and rejection
 
 #### Scenario: Invalid agent test fails closed
 
-- **WHEN** the agent schema test suite runs against an agent entity missing `spec.instructions`
+- **WHEN** the agent schema test suite runs against an agent entity with a wrong-type optional field (for example `spec.handoffs` as a non-array)
 - **THEN** the suite asserts a schema validation failure
 
 ---

@@ -201,6 +201,12 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'modal.save': 'Sauvegarder',
     'modal.title.edit': 'Modifier la pièce jointe',
     'modal.title.preview': 'Aperçu de la pièce jointe',
+    'notebook.document.rename': 'Renommer',
+    'notebook.document.rename.tooltip': 'Cliquez pour renommer',
+    'notebook.document.rename.error':
+      'Échec du renommage de "{{documentName}}".',
+    'notebook.document.rename.conflict': 'Le nom existe déjà.',
+    'notebook.document.rename.tooLong': 'Nom trop long (max 255).',
     'notebook.document.delete': 'Supprimer',
     'notebook.document.delete.action': 'Supprimer',
     'notebook.document.delete.description':
@@ -208,10 +214,19 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'notebook.document.delete.success':
       '« {{documentName}} » supprimé avec succès.',
     'notebook.document.delete.title': 'Supprimer la ressource ?',
-    'notebook.overwrite.modal.action': 'Écraser',
+    'notebook.overwrite.modal.action': 'Charger ({{count}})',
+    'notebook.overwrite.modal.back': 'Retour',
     'notebook.overwrite.modal.description':
-      'Les fichiers suivants existent déjà dans ce carnet. Voulez-vous les écraser avec les nouvelles versions ?',
-    'notebook.overwrite.modal.title': 'Écraser les fichiers ?',
+      '{{duplicateCount}} fichiers existent déjà dans ce carnet. {{newCount}} nouvelles ressources seront ajoutées quand même.',
+    'notebook.overwrite.modal.ignore': 'Ignorer les fichiers en double',
+    'notebook.overwrite.modal.replace': 'Remplacer les fichiers existants',
+    'notebook.overwrite.modal.title': 'Le fichier existe déjà',
+    'notebook.overwrite.modal.title.one': 'Le fichier existe déjà',
+    'notebook.overwrite.modal.title.other': 'Les fichiers existent déjà',
+    'notebook.overwrite.modal.description.one':
+      '{{duplicateCount}} fichier existe déjà dans ce carnet. {{newCount}} nouvelles ressources seront ajoutées quand même.',
+    'notebook.overwrite.modal.description.other':
+      '{{duplicateCount}} fichiers existent déjà dans ce carnet. {{newCount}} nouvelles ressources seront ajoutées quand même.',
     'notebook.upload.error.fileTooLarge':
       'Erreur de chargement : la taille du fichier dépasse la limite de 25 Mo.',
     'notebook.upload.error.tooManyFiles':
@@ -220,18 +235,24 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
       'Erreur de chargement : type(s) de fichier non pris en charge. Veuillez charger uniquement des types de fichiers pris en charge.',
     'notebook.upload.failed': 'Échec du chargement de "{{fileName}}".',
     'notebook.upload.modal.addButton': 'Ajouter ({{count}})',
+    'notebook.upload.modal.addButtonEmpty': 'Ajouter',
     'notebook.upload.modal.browseButton': 'Charger',
-    'notebook.upload.modal.dragDropTitle': 'Glissez-déposez les fichiers ici',
+    'notebook.upload.modal.dragDropTitle':
+      'Glissez-déposez les fichiers ici ou cliquez pour parcourir',
     'notebook.upload.modal.infoText':
       'Types de fichiers acceptés : .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.maxFileSize':
+      'La taille maximale du fichier est de 25 Mo.',
+    'notebook.upload.modal.supportedFormats': 'Formats pris en charge :',
     'notebook.upload.modal.removeFile': 'Supprimer {{fileName}}',
     'notebook.upload.modal.selectedFiles':
       '{{count}} sur {{max}} fichiers sélectionnés',
     'notebook.upload.modal.separator': 'ou',
-    'notebook.upload.modal.title': 'Ajouter une ressource au carnet',
+    'notebook.upload.modal.title': 'Ajouter des ressources',
     'notebook.view.close': 'Fermer le carnet',
     'notebook.view.documents.add': 'Ajouter',
-    'notebook.view.documents.count': '{{count}} Ressources',
+    'notebook.view.documents.count_one': '{{count}} Ressource',
+    'notebook.view.documents.count_other': '{{count}} Ressources',
     'notebook.view.documents.maxReached':
       'Maximum 10 ressources autorisées. Supprimez une ressource pour en charger une nouvelle.',
     'notebook.view.documents.uploading': 'Chargement de la ressource',
@@ -243,11 +264,11 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'notebook.view.sidebar.expand': 'Développer la barre latérale',
     'notebook.view.sidebar.resize': 'Redimensionner la barre latérale',
     'notebook.view.title': 'Carnet sans titre',
-    'notebook.view.upload.action': 'Charger une ressource',
+    'notebook.view.upload.action': 'Ajouter une ressource',
     'notebook.view.processing.description':
       'Vos fichiers sont en cours d’indexation. Vous pourrez poser des questions une fois le traitement terminé.',
     'notebook.view.processing.heading': 'Traitement des ressources...',
-    'notebook.view.upload.heading': 'Chargez une ressource pour commencer',
+    'notebook.view.upload.heading': 'Ajoutez une ressource pour commencer',
     'notebooks.actions.delete': 'Supprimer',
     'notebooks.actions.rename': 'Renommer',
     'notebooks.card.openAria': 'Ouvrir le carnet {{name}}',
@@ -256,7 +277,8 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
       'Vous ne verrez plus ce carnet ici. Cela supprimera également l’activité associée comme les requêtes, réponses et retours depuis votre activité.',
     'notebooks.delete.title': 'Supprimer {{name}} ?',
     'notebooks.delete.toast': 'Carnet supprimé !',
-    'notebooks.documents': 'Ressources',
+    'notebooks.documents_one': '{{count}} Ressource',
+    'notebooks.documents_other': '{{count}} Ressources',
     'notebooks.empty.action': 'Créer un nouveau carnet',
     'notebooks.empty.description':
       'Créez un nouveau carnet pour organiser vos sources et générer des informations alimentées par l’IA.',

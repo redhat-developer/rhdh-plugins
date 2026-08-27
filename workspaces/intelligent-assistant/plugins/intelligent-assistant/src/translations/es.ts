@@ -198,6 +198,11 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'modal.save': 'Guardar',
     'modal.title.edit': 'Modificar archivo adjunto',
     'modal.title.preview': 'Previsualizar archivo adjunto',
+    'notebook.document.rename': 'Renombrar',
+    'notebook.document.rename.tooltip': 'Clic para renombrar',
+    'notebook.document.rename.error': 'Error al renombrar "{{documentName}}".',
+    'notebook.document.rename.conflict': 'El nombre ya existe.',
+    'notebook.document.rename.tooLong': 'Nombre demasiado largo (máx 255).',
     'notebook.document.delete': 'Eliminar',
     'notebook.document.delete.action': 'Eliminar',
     'notebook.document.delete.description':
@@ -205,10 +210,19 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'notebook.document.delete.success':
       '«{{documentName}}» se eliminó correctamente.',
     'notebook.document.delete.title': '¿Eliminar recurso?',
-    'notebook.overwrite.modal.action': 'Sobrescribir',
+    'notebook.overwrite.modal.action': 'Subir ({{count}})',
+    'notebook.overwrite.modal.back': 'Atrás',
     'notebook.overwrite.modal.description':
-      'Los siguientes archivos ya existen en este cuaderno. ¿Desea sobrescribirlos con las nuevas versiones?',
-    'notebook.overwrite.modal.title': '¿Sobrescribir archivos?',
+      '{{duplicateCount}} archivos ya existen en este cuaderno. {{newCount}} nuevos recursos se agregarán de todos modos.',
+    'notebook.overwrite.modal.ignore': 'Ignorar archivos duplicados',
+    'notebook.overwrite.modal.replace': 'Reemplazar archivos existentes',
+    'notebook.overwrite.modal.title': 'El archivo ya existe',
+    'notebook.overwrite.modal.title.one': 'El archivo ya existe',
+    'notebook.overwrite.modal.title.other': 'Los archivos ya existen',
+    'notebook.overwrite.modal.description.one':
+      '{{duplicateCount}} archivo ya existe en este cuaderno. {{newCount}} nuevos recursos se agregarán de todos modos.',
+    'notebook.overwrite.modal.description.other':
+      '{{duplicateCount}} archivos ya existen en este cuaderno. {{newCount}} nuevos recursos se agregarán de todos modos.',
     'notebook.upload.error.fileTooLarge':
       'Error de carga: el tamaño del archivo supera el límite de 25 MB.',
     'notebook.upload.error.tooManyFiles':
@@ -217,19 +231,24 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
       'Error de carga: se encontraron tipos de archivo no compatibles. Suba solo tipos de archivo compatibles.',
     'notebook.upload.failed': 'Error al subir "{{fileName}}".',
     'notebook.upload.modal.addButton': 'Agregar ({{count}})',
+    'notebook.upload.modal.addButtonEmpty': 'Agregar',
     'notebook.upload.modal.browseButton': 'Subir',
     'notebook.upload.modal.dragDropTitle':
-      'Arrastra y suelta los archivos aquí',
+      'Arrastra y suelta los archivos aquí, o haz clic para explorar',
     'notebook.upload.modal.infoText':
       'Tipos de archivo aceptados: .md, .txt, .pdf, .json, .yaml, .log',
+    'notebook.upload.modal.maxFileSize':
+      'El tamaño máximo del archivo es 25 MB.',
+    'notebook.upload.modal.supportedFormats': 'Formatos compatibles:',
     'notebook.upload.modal.removeFile': 'Eliminar {{fileName}}',
     'notebook.upload.modal.selectedFiles':
       '{{count}} de {{max}} archivos seleccionados',
     'notebook.upload.modal.separator': 'o',
-    'notebook.upload.modal.title': 'Agregar un recurso al cuaderno',
+    'notebook.upload.modal.title': 'Agregar recursos',
     'notebook.view.close': 'Cerrar cuaderno',
     'notebook.view.documents.add': 'Agregar',
-    'notebook.view.documents.count': '{{count}} Recursos',
+    'notebook.view.documents.count_one': '{{count}} Recurso',
+    'notebook.view.documents.count_other': '{{count}} Recursos',
     'notebook.view.documents.maxReached':
       'Se permiten un máximo de 10 recursos. Elimina un recurso para subir uno nuevo.',
     'notebook.view.documents.uploading': 'Subiendo recurso',
@@ -240,11 +259,11 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'notebook.view.sidebar.expand': 'Expandir barra lateral',
     'notebook.view.sidebar.resize': 'Redimensionar barra lateral',
     'notebook.view.title': 'Cuaderno sin título',
-    'notebook.view.upload.action': 'Subir un recurso',
+    'notebook.view.upload.action': 'Agregar un recurso',
     'notebook.view.processing.description':
       'Sus archivos están siendo indexados. Puede comenzar a hacer preguntas una vez que se complete el procesamiento.',
     'notebook.view.processing.heading': 'Procesando recursos...',
-    'notebook.view.upload.heading': 'Sube un recurso para empezar',
+    'notebook.view.upload.heading': 'Agrega un recurso para empezar',
     'notebooks.actions.delete': 'Eliminar',
     'notebooks.actions.rename': 'Renombrar',
     'notebooks.card.openAria': 'Abrir el cuaderno {{name}}',
@@ -253,7 +272,8 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
       'Ya no verás este cuaderno aquí. Esto también eliminará actividad relacionada como solicitudes, respuestas y comentarios de tu actividad.',
     'notebooks.delete.title': '¿Eliminar {{name}}?',
     'notebooks.delete.toast': '¡Cuaderno eliminado!',
-    'notebooks.documents': 'Recursos',
+    'notebooks.documents_one': '{{count}} Recurso',
+    'notebooks.documents_other': '{{count}} Recursos',
     'notebooks.empty.action': 'Crear un cuaderno nuevo',
     'notebooks.empty.description':
       'Crea un nuevo cuaderno para organizar tus fuentes y generar información con IA.',

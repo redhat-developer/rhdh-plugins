@@ -92,7 +92,6 @@
     "@types/react-dom": "^18",
     "@types/react": "^18",
     "infinispan": "0.15.0",
-    "langsmith": "^0.7.0",
     "react-router-dom": "6.30.4",
     "react-router": "6.30.4",
     "refractor@npm:3.6.0/prismjs": "^1.30.0"

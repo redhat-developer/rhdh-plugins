@@ -11,4 +11,5 @@ dynamicPlugins:
       dynamicRoutes:
         - path: /
           importName: DynamicCustomizableHomePage
+          module: Legacy
 ```

@@ -1,0 +1,174 @@
+# Reference App-Config for AI Catalog Connectors
+#
+# This file demonstrates the configurable fields for Boost AI catalog
+# connectors under ai-catalog.providers (RHOAI MCP Catalog, OCI Skill
+# Registry). Copy the relevant sections into your app-config.yaml and
+# adjust values for your deployment environment.
+#
+# Note: MCP Registry lives under RHDHPLAN-393 with its own independent
+# config namespace — it is not configured under ai-catalog.providers.
+#
+# Config root: ai-catalog.providers.<connectorId>
+# Each connector reads its own Config subtree — shared utilities do not
+# hard-code config paths.
+#
+# See also: workspaces/boost/plugins/boost-connector-utils/README.md
+
+# --------------------------------------------------------------------------
+# Internet-Connected Deployment (default)
+# --------------------------------------------------------------------------
+
+ai-catalog:
+  providers:
+    # --- RHOAI MCP Catalog Connector ---
+    rhoai:
+      mcpCatalog:
+        # Whether this connector is registered at startup (default: true)
+        enabled: true
+
+        # Cross-cluster RHOAI MCP catalog API endpoint (required, must be HTTPS)
+        endpoint: https://mcp-catalog.rhoai-cluster.example.com
+
+        # TLS configuration for custom CA bundles (optional)
+        tls:
+          # Path to a PEM file mounted from a K8s Secret/ConfigMap
+          caFile: /etc/rhdh/ca-bundles/rhoai-ca.pem
+
+          # Option 2: PEM content from an environment variable
+          # The env var is populated by K8s via Secret mount
+          # caSecret:
+          #   $env: RHOAI_CA_BUNDLE
+
+        # RHOAI credentials via mounted K8s Secret (required)
+        # Values MUST use $env references — empty credentials are rejected at startup
+        auth:
+          clientId:
+            $env: RHOAI_CLIENT_ID
+          clientSecret:
+            $env: RHOAI_CLIENT_SECRET
+
+        # Sync schedule (optional)
+        schedule:
+          frequency: { minutes: 15 }
+          timeout: { minutes: 5 }
+
+    # --- OCI Skill Registry Connector ---
+    ociSkill:
+      # Whether this connector is registered at startup (default: true)
+      enabled: true
+
+      # Multiple OCI registries can be configured
+      registries:
+        - # Public or internal OCI registry URL (required, must be HTTPS)
+          url: https://quay.io
+          # OCI namespace containing skill artifacts
+          namespace: skills
+          # Path to K8s pull secret in Docker config.json format (optional)
+          pullSecretPath: /var/run/secrets/quay-pull-secret/.dockerconfigjson
+
+        - url: https://harbor.internal.example.com
+          namespace: ai-assets
+          pullSecretPath: /var/run/secrets/harbor-pull-secret/.dockerconfigjson
+          # Per-registry TLS configuration
+          tls:
+            caFile: /etc/ssl/certs/harbor-ca.crt
+
+      # Discovery settings (optional)
+      discovery:
+        # Parallel manifest fetch concurrency (default: 20)
+        concurrency: 20
+
+      # Sync schedule (optional)
+      schedule:
+        frequency: { minutes: 30 }
+        timeout: { minutes: 15 }
+
+# --------------------------------------------------------------------------
+# Ingestion Health Configuration
+# --------------------------------------------------------------------------
+# Config root: boost.ingestion
+# Controls sync attempt retention and health status computation.
+#
+# Two distinct enable flags (do not conflate):
+# - ai-catalog.providers.<id>.enabled — startup registration (YAML-only)
+# - boost.connectors.<id>.enabled — runtime sync-skip (db-overridable; default true)
+
+# boost:
+#   ingestion:
+#     healthRetention:
+#       # Maximum sync attempts retained per connector (default: 100).
+#       # Older records beyond this limit are cleaned up daily.
+#       maxAttemptsPerConnector: 100
+#   connectors:
+#     jira:
+#       enabled: true                        # runtime sync-skip (default true)
+#       endpoint: https://jira.example.com   # HTTPS required
+#       schedule:
+#         intervalMs: 300000                 # 5 minutes (default)
+#         cron: '*/10 * * * *'              # optional; takes precedence over intervalMs
+#       batchSize: 100                       # items per sync batch (default)
+#       timeout:
+#         connectionMs: 30000                # connection timeout (default)
+#     github:
+#       enabled: true                        # runtime sync-skip (default true)
+#       endpoint: https://api.github.com     # HTTPS required
+#       schedule:
+#         intervalMs: 300000                 # 5 minutes (default)
+#       batchSize: 100                       # items per sync batch (default)
+#     gitlab:
+#       enabled: false                       # skip scheduled syncs without restarting
+#       endpoint: https://gitlab.example.com # HTTPS required
+#       schedule:
+#         intervalMs: 600000                 # 10 minutes
+#       batchSize: 50
+#
+# ai-catalog:
+#   providers:
+#     github:
+#       enabled: true   # startup registration (default true)
+#     gitlab:
+#       enabled: true
+#     jira:
+#       enabled: true
+
+# --------------------------------------------------------------------------
+# Air-Gapped Deployment Variant
+# --------------------------------------------------------------------------
+# Use this variant when the RHDH instance has no internet access.
+# All endpoints point to internal mirrors. No public endpoint traffic
+# will occur.
+#
+# Uncomment and replace the section above with this configuration:
+#
+# ai-catalog:
+#   providers:
+#     # --- RHOAI MCP Catalog (internal cluster) ---
+#     rhoai:
+#       mcpCatalog:
+#         enabled: true
+#         endpoint: https://mcp-catalog.rhoai.internal.example.com
+#         tls:
+#           caFile: /etc/ssl/certs/internal-ca-bundle.pem
+#         auth:
+#           clientId:
+#             $env: RHOAI_CLIENT_ID
+#           clientSecret:
+#             $env: RHOAI_CLIENT_SECRET
+#         schedule:
+#           frequency: { minutes: 15 }
+#           timeout: { minutes: 5 }
+#
+#     # --- OCI Skill Registry (internal Harbor/Quay mirror) ---
+#     ociSkill:
+#       enabled: true
+#       registries:
+#         - url: https://harbor.internal.example.com
+#           namespace: ai-skills
+#           pullSecretPath: /var/run/secrets/harbor-pull-secret/.dockerconfigjson
+#           tls:
+#             caFile: /etc/ssl/certs/internal-ca-bundle.pem
+#       discovery:
+#         concurrency: 10
+#       schedule:
+#         frequency: { minutes: 30 }
+#         timeout: { minutes: 15 }

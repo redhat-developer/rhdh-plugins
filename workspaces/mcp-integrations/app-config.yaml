@@ -11,6 +11,7 @@ backend:
       - 'software-catalog-mcp-extras'
       - 'techdocs-mcp-extras'
       - 'scaffolder-mcp-extras'
+      - 'kubernetes-mcp-extras'
       - 'catalog'
       - 'scaffolder'
   # Used for enabling authentication, secret is shared by all backend plugins

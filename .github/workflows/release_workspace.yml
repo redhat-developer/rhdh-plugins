@@ -95,7 +95,7 @@ jobs:
 
       - name: Update Version Packages (${{ inputs.workspace }}) PR
         id: changesets-pr
-        if: steps.release_check.outputs.needs_release != 'true' || inputs.force_release != true
+        if: steps.release_check.outputs.needs_release != 'true' && inputs.force_release != true
         uses: backstage/changesets-action@a39baf18913e669734ffb00c2fd9900472cfa240 # v2.3.2
         with:
           title: Version Packages (${{ inputs.workspace }})

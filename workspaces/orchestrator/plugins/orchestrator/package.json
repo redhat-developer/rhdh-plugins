@@ -1,19 +1,23 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-orchestrator",
-  "version": "5.10.0",
+  "version": "6.0.0",
   "license": "Apache-2.0",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "src/index.tsx",
+  "types": "src/index.tsx",
   "exports": {
-    ".": "./src/index.ts",
-    "./alpha": "./src/alpha.tsx",
+    ".": "./src/index.tsx",
+    "./alpha": "./src/alpha.ts",
+    "./legacy": "./src/legacyExports.ts",
     "./orchestrator-translations-module": "./src/orchestratorTranslationsModuleExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "alpha": [
-        "src/alpha.tsx"
+        "src/alpha.ts"
+      ],
+      "legacy": [
+        "src/legacyExports.ts"
       ],
       "orchestrator-translations-module": [
         "src/orchestratorTranslationsModuleExport.ts"
@@ -67,8 +71,7 @@
     "test": "backstage-cli package test --passWithNoTests --coverage",
     "clean": "backstage-cli package clean",
     "prepack": "backstage-cli package prepack",
-    "postpack": "backstage-cli package postpack",
-    "export-dynamic": "janus-cli package export-dynamic-plugin --in-place"
+    "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
     "@backstage/core-components": "^0.18.11",
@@ -109,7 +112,6 @@
     "@backstage/plugin-user-settings": "^0.9.4",
     "@backstage/test-utils": "^1.7.19",
     "@backstage/ui": "^0.16.0",
-    "@janus-idp/cli": "3.7.0",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.11",
     "@testing-library/dom": "^10.0.0",
@@ -135,8 +137,9 @@
   "scalprum": {
     "name": "red-hat-developer-hub.backstage-plugin-orchestrator",
     "exposedModules": {
-      "PluginRoot": "./src/index.ts",
-      "Alpha": "./src/alpha.tsx"
+      "PluginRoot": "./src/index.tsx",
+      "Legacy": "./src/legacyExports.ts",
+      "OrchestratorTranslationsModule": "./src/orchestratorTranslationsModuleExport.ts"
     }
   },
   "maintainers": [

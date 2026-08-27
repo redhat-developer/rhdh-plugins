@@ -159,7 +159,7 @@ export class ModelCatalogResourceEntityProvider implements EntityProvider {
       throw new Error('Not initialized');
     }
     this.logger.info(
-      `Discovering ResourceEntities from Model Server ${this.name}`,
+      `Discovering AiModelServerAPI entities from Model Server ${this.name}`,
     );
 
     /** [5]: Fetch the model catalog keys from the bridge and fetch the corresponding catalog entries. */

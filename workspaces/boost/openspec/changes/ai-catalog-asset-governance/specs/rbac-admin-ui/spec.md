@@ -34,7 +34,7 @@ The admin UI MUST support viewing and managing AI Catalog visibility policies.
 - **WHEN** an admin opens the RBAC admin page
 - **THEN** the page displays:
   - Current default posture (allow/deny) and its scope (global, per-category, per-connector)
-  - Active conditional policies affecting `ai-catalog.asset.read` and `ai-catalog.asset.read.usage-docs`
+  - Active conditional policies affecting `ai-catalog.asset.access` and `ai-catalog.asset.access.usage-docs`
   - Roles with AI Catalog permissions and their member counts
 - **AND** policies are fetched from the RBAC REST API (`GET /api/permission/policies`, `GET /api/permission/roles`)
 
@@ -42,7 +42,7 @@ The admin UI MUST support viewing and managing AI Catalog visibility policies.
 
 - **WHEN** an admin creates a new policy via the UI
 - **THEN** the admin can select:
-  - Target permission (`ai-catalog.asset.read` or `ai-catalog.asset.read.usage-docs`)
+  - Target permission (`ai-catalog.asset.access` or `ai-catalog.asset.access.usage-docs`)
   - Policy decision (ALLOW or DENY)
   - Condition rule (isAiAssetCategory, isFromConnector, isInTenant)
   - Rule parameters (category name, connector name, or tenant name)

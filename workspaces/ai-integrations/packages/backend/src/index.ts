@@ -79,7 +79,17 @@ backend.add(
 backend.add(import('@backstage/plugin-catalog-backend-module-ai-model'));
 backend.add(
   import(
-    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-catalog-backend-module-ai-resource-extensions'
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions'
+  ),
+);
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent'
+  ),
+);
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server'
   ),
 );
 backend.add(

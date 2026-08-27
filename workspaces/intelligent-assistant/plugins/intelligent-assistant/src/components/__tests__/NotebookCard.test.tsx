@@ -75,9 +75,15 @@ describe('NotebookCard', () => {
     expect(screen.getByText('My Notebook')).toBeInTheDocument();
   });
 
-  it('should render the document count', () => {
+  it('should use singular form for single document count', () => {
+    const singleDocNotebook = { ...mockNotebook, document_count: 1 };
+    render(<NotebookCard {...defaultProps} notebook={singleDocNotebook} />);
+    expect(screen.getByText('1 Resource')).toBeInTheDocument();
+  });
+
+  it('should use plural form for multiple document count', () => {
     render(<NotebookCard {...defaultProps} />);
-    expect(screen.getByText(/2/)).toBeInTheDocument();
+    expect(screen.getByText('2 Resources')).toBeInTheDocument();
   });
 
   it('should call onClick with notebook when card is clicked', () => {
@@ -223,8 +229,9 @@ describe('NotebookCard', () => {
     });
   });
 
-  it('should render document_count from the notebook session', () => {
-    render(<NotebookCard {...defaultProps} />);
-    expect(screen.getByText(/2/)).toBeInTheDocument();
+  it('should use plural form for zero document count', () => {
+    const zeroDocNotebook = { ...mockNotebook, document_count: 0 };
+    render(<NotebookCard {...defaultProps} notebook={zeroDocNotebook} />);
+    expect(screen.getByText('0 Resources')).toBeInTheDocument();
   });
 });
