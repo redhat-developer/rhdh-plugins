@@ -127,7 +127,7 @@ export class DatabaseMetricValues {
    * @param to The end of the time range (inclusive).
    * @returns Knex QueryBuilder is resolving to [{ id: NUM, utc_day: 'YYYY-MM-DD' }]
    */
-  private getLatestIdsPerUTCDaySubquery(
+  private getLatestIdsPerUtcDaySubquery(
     catalogEntityRefs: string[],
     metricId: string,
     from: Date,
@@ -485,7 +485,7 @@ export class DatabaseMetricValues {
       successSql,
     );
 
-    const latestIdsPerEntityPerUTCDay = this.getLatestIdsPerUTCDaySubquery(
+    const latestIdsPerEntityPerUTCDay = this.getLatestIdsPerUtcDaySubquery(
       catalogEntityRefs,
       metricId,
       from,
