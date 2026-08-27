@@ -89,6 +89,7 @@
     "@backstage/core-app-api": "^1.20.2",
     "@backstage/dev-utils": "^1.1.24",
     "@backstage/frontend-defaults": "^0.5.3",
+    "@backstage/frontend-test-utils": "^0.6.1",
     "@backstage/test-utils": "^1.7.19",
     "@backstage/ui": "^0.16.0",
     "@playwright/test": "1.62.0",
