@@ -21,7 +21,7 @@ import {
   toDoraDeploymentRow,
   type DbDoraDeploymentRow,
 } from './mappers';
-import { DbDoraDeployment, DbDoraDeploymentCreate } from './types';
+import type { DbDoraDeployment, DbDoraDeploymentCreate } from './types';
 
 export interface DoraDeploymentsStore {
   upsert(deployments: DbDoraDeploymentCreate[]): Promise<void>;

@@ -21,7 +21,7 @@ import {
   toDoraPullRequestRow,
   type DbDoraPullRequestRow,
 } from './mappers';
-import { DbDoraPullRequest, DbDoraPullRequestCreate } from './types';
+import type { DbDoraPullRequest, DbDoraPullRequestCreate } from './types';
 
 export interface DoraPullRequestsStore {
   upsert(pullRequests: DbDoraPullRequestCreate[]): Promise<void>;

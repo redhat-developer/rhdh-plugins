@@ -21,7 +21,7 @@ import {
   toDoraIncidentRow,
   type DbDoraIncidentRow,
 } from './mappers';
-import { DbDoraIncident, DbDoraIncidentCreate } from './types';
+import type { DbDoraIncident, DbDoraIncidentCreate } from './types';
 
 export interface DoraIncidentsStore {
   upsert(incidents: DbDoraIncidentCreate[]): Promise<void>;
