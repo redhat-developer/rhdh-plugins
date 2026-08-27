@@ -21,5 +21,6 @@
  */
 
 export { appDefaultsModule } from './appDefaultsModule';
+export { appDrawerExtension, appDrawerModule } from './appDrawerModule';
 
 export { appDefaultsModule as default } from './appDefaultsModule';

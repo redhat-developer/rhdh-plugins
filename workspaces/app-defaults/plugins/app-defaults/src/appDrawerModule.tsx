@@ -19,9 +19,8 @@ import {
   createFrontendModule,
 } from '@backstage/frontend-plugin-api';
 import { AppRootWrapperBlueprint } from '@backstage/plugin-app-react';
-
-import { ApplicationDrawer } from '../../legacy/ApplicationDrawer';
-import { appDrawerContentDataRef } from './appDrawerContentDataRef';
+import { appDrawerContentDataRef } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { ApplicationDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react/legacy';
 
 /**
  * Wrapper extension that renders the ApplicationDrawer around the app content.
