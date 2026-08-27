@@ -315,8 +315,11 @@ test.describe('Orchestrator workflow runs', () => {
       await expect(
         sharedPage.getByLabel(`Step 4 ${translations.common.review}`),
       ).not.toHaveClass(/Mui-disabled/);
-      for (const input of Object.values(newComponentInputs) &&
-        Object.values(javaMetadata)) {
+      const allInputs = [
+        ...Object.values(newComponentInputs),
+        ...Object.values(javaMetadata),
+      ];
+      for (const input of allInputs) {
         await expect(sharedPage.getByText(input)).toBeVisible();
       }
     });
