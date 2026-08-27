@@ -33,6 +33,8 @@ import {
   Telemetry,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
+import millify from 'millify';
+
 import { useTranslation } from '../hooks/useTranslation';
 import { formatDuration } from './tools';
 import { ItemField } from './ItemField';
@@ -117,13 +119,15 @@ const AgentDetailPanel = ({ row }: { row: AgentRow }) => {
       <Grid item xs={6}>
         <ItemField
           label={t('modulePage.phases.telemetry.inputTokens')}
-          value={row.inputTokens?.toLocaleString() ?? '-'}
+          value={row.inputTokens !== undefined ? millify(row.inputTokens) : '-'}
         />
       </Grid>
       <Grid item xs={6}>
         <ItemField
           label={t('modulePage.phases.telemetry.outputTokens')}
-          value={row.outputTokens?.toLocaleString() ?? '-'}
+          value={
+            row.outputTokens !== undefined ? millify(row.outputTokens) : '-'
+          }
         />
       </Grid>
       <Grid item xs={12}>
