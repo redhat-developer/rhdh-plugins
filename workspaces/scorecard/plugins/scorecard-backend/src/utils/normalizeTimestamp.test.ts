@@ -14,41 +14,7 @@
  * limitations under the License.
  */
 
-import { normalizeTimestamp, parseTimestamp } from './normalizeTimestamp';
-
-describe('parseTimestamp', () => {
-  const dateString = '2023-01-01T00:00:00.000Z';
-
-  it('should return the same Date instance when input is a Date', () => {
-    const timestamp = new Date(dateString);
-    expect(parseTimestamp(timestamp)).toBe(timestamp);
-  });
-
-  it('should parse ISO string timestamps', () => {
-    expect(parseTimestamp(dateString)).toEqual(new Date(dateString));
-  });
-
-  it('should parse numeric epoch timestamps', () => {
-    const epoch = Date.parse(dateString);
-    expect(parseTimestamp(epoch)).toEqual(new Date(dateString));
-  });
-
-  it('should throw for empty string', () => {
-    expect(() => parseTimestamp('')).toThrow(/empty string/);
-  });
-
-  it('should throw for invalid string', () => {
-    expect(() => parseTimestamp('not-a-date')).toThrow(/Invalid timestamp/);
-  });
-
-  it('should throw for undefined', () => {
-    expect(() => parseTimestamp(undefined)).toThrow(/expected Date/);
-  });
-
-  it('should throw for null', () => {
-    expect(() => parseTimestamp(null)).toThrow(/expected Date/);
-  });
-});
+import { normalizeTimestamp } from './normalizeTimestamp';
 
 describe('normalizeTimestamp', () => {
   const dateString = '2023-01-01T00:00:00.000Z';

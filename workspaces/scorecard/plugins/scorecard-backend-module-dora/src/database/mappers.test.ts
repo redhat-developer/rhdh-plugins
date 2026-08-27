@@ -15,7 +15,6 @@
  */
 
 import {
-  asDate,
   fromDoraDeploymentRow,
   fromDoraIncidentRow,
   fromDoraPullRequestRow,
@@ -25,31 +24,6 @@ import {
 } from './mappers';
 
 describe('mappers', () => {
-  describe('asDate', () => {
-    it('returns the same Date instance when given a Date', () => {
-      const value = new Date('2026-06-01T00:00:00.000Z');
-      expect(asDate(value)).toBe(value);
-    });
-
-    it('parses ISO strings into Date', () => {
-      expect(asDate('2026-06-01T00:00:00.000Z').toISOString()).toBe(
-        '2026-06-01T00:00:00.000Z',
-      );
-    });
-
-    it('throws for empty strings', () => {
-      expect(() => asDate('')).toThrow(/Invalid timestamp/);
-    });
-
-    it('throws for invalid date strings', () => {
-      expect(() => asDate('not-a-date')).toThrow(/Invalid timestamp/);
-    });
-
-    it('throws for invalid Date instances', () => {
-      expect(() => asDate(new Date(Number.NaN))).toThrow(/Invalid timestamp/);
-    });
-  });
-
   describe('deployments', () => {
     it('maps create model to snake_case row fields', () => {
       const createdAt = new Date('2026-06-10T10:00:00.000Z');

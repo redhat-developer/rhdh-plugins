@@ -66,6 +66,9 @@ export interface MetricProvider<T extends MetricType = MetricType> {
 }
 
 // @public
+export function parseDate(value: Date | string | number): Date;
+
+// @public
 export function parseThresholdExpression(
   expression: string,
   targetType: MetricType,

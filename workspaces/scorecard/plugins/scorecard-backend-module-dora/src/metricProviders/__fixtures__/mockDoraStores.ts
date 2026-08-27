@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
+import { parseDate } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import type { DoraDeploymentsStore } from '../../database/DatabaseDoraDeployments';
 import type { DoraIncidentsStore } from '../../database/DatabaseDoraIncidents';
 import type { DoraPullRequestsStore } from '../../database/DatabaseDoraPullRequests';
-import { asDate } from '../../database/mappers';
 import type {
   DbDoraDeployment,
   DbDoraIncident,
@@ -42,7 +42,7 @@ export function dbDeployment(partial: {
     originalDeploymentId: partial.originalDeploymentId ?? partial.id,
     commitSha: partial.commitSha,
     environment: partial.environment ?? null,
-    createdAt: asDate(partial.createdAt),
+    createdAt: parseDate(partial.createdAt),
   };
 }
 
@@ -60,12 +60,12 @@ export function dbIncident(partial: {
     catalogEntityRef: partial.catalogEntityRef ?? DEFAULT_ENTITY_REF,
     collectorId: partial.collectorId ?? 'jira:incidents',
     originalIncidentId: partial.originalIncidentId ?? partial.id,
-    createdAt: asDate(partial.createdAt),
-    updatedAt: asDate(partial.updatedAt),
+    createdAt: parseDate(partial.createdAt),
+    updatedAt: parseDate(partial.updatedAt),
     resolutionAt:
       partial.resolutionAt === undefined || partial.resolutionAt === null
         ? null
-        : asDate(partial.resolutionAt),
+        : parseDate(partial.resolutionAt),
   };
 }
 
@@ -82,7 +82,7 @@ export function dbPullRequest(partial: {
     catalogEntityRef: partial.catalogEntityRef ?? DEFAULT_ENTITY_REF,
     collectorId: partial.collectorId ?? 'github:deploymentPullRequests',
     originalPrId: partial.originalPrId ?? partial.id,
-    firstCommitAt: asDate(partial.firstCommitAt),
+    firstCommitAt: parseDate(partial.firstCommitAt),
     deploymentId: partial.deploymentId,
   };
 }

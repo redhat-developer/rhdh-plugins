@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { parseDate } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import type {
   DbDoraDeployment,
   DbDoraDeploymentCreate,
@@ -75,7 +76,7 @@ export function fromDoraDeploymentRow(
     originalDeploymentId: row.original_deployment_id,
     commitSha: row.commit_sha,
     environment: row.environment,
-    createdAt: asDate(row.created_at),
+    createdAt: parseDate(row.created_at),
   };
 }
 
@@ -98,9 +99,9 @@ export function fromDoraIncidentRow(row: DbDoraIncidentRow): DbDoraIncident {
     catalogEntityRef: row.catalog_entity_ref,
     collectorId: row.collector_id,
     originalIncidentId: row.original_incident_id,
-    createdAt: asDate(row.created_at),
-    updatedAt: asDate(row.updated_at),
-    resolutionAt: row.resolution_at ? asDate(row.resolution_at) : null,
+    createdAt: parseDate(row.created_at),
+    updatedAt: parseDate(row.updated_at),
+    resolutionAt: row.resolution_at ? parseDate(row.resolution_at) : null,
   };
 }
 
@@ -124,15 +125,7 @@ export function fromDoraPullRequestRow(
     catalogEntityRef: row.catalog_entity_ref,
     collectorId: row.collector_id,
     originalPrId: row.original_pr_id,
-    firstCommitAt: asDate(row.first_commit_at),
+    firstCommitAt: parseDate(row.first_commit_at),
     deploymentId: row.deployment_id,
   };
-}
-
-export function asDate(value: Date | string): Date {
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    throw new Error(`Invalid timestamp: ${String(value)}`);
-  }
-  return date;
 }

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+import { parseDate } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { type Knex } from 'knex';
-import { asDate } from './mappers';
 
 export interface DoraLastSyncStore {
   getLastSyncedAt(
@@ -52,7 +52,7 @@ export class DatabaseDoraLastSync implements DoraLastSyncStore {
       return undefined;
     }
 
-    return asDate(row.last_synced_at);
+    return parseDate(row.last_synced_at);
   }
 
   async setLastSyncedAt(

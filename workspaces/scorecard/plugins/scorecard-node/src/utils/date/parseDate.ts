@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-export { parseDate } from './date/parseDate';
-export { parseThresholdExpression } from './thresholds/parseThresholdExpression';
-export { validateThresholdNumberIntervals } from './thresholds/intervals/validateThresholdNumberIntervals';
-export {
-  validateThresholdsForMetric,
-  validateThresholdsForAggregation,
-} from './thresholds/validateThresholds';
-export { getThresholdsFromConfig } from './thresholds/getThresholdsFromConfig';
-export type {
-  ComparisonSign,
-  ComparisonOperator,
-  RangeOperator,
-} from './types';
+/**
+ * Parses a value into a `Date` object.
+ * @public
+ */
+export function parseDate(value: Date | string | number): Date {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    throw new Error(`Invalid timestamp: ${String(value)}`);
+  }
+  return date;
+}
