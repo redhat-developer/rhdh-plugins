@@ -102,6 +102,12 @@ export type CollectorConfig = {
 };
 
 // @public
+export type CollectorMetadata = {
+  id: string;
+  description: string;
+};
+
+// @public
 export const DEFAULT_NUMBER_THRESHOLDS: ThresholdConfig;
 
 // @public
