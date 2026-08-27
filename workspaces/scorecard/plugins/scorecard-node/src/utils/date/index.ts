@@ -14,10 +14,5 @@
  * limitations under the License.
  */
 
-import { daysToMilliseconds } from './utils';
-
-describe('daysToMilliseconds', () => {
-  it('should convert days to milliseconds', () => {
-    expect(daysToMilliseconds(1)).toBe(86400000);
-  });
-});
+export { daysToMilliseconds } from './daysToMilliseconds';
+export { parseDate } from './parseDate';

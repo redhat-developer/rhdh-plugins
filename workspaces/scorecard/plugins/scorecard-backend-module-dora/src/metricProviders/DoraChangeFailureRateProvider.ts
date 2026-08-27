@@ -19,9 +19,11 @@ import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import {
+  daysToMilliseconds,
+  MetricProvider,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { DORA_TIME_WINDOW_DAYS } from '../constants';
-import { daysToMilliseconds } from '../scheduler/utils';
 import type { DoraDataService } from '../service/DoraDataService';
 import type { DoraSyncService } from '../service/DoraSyncService';
 import {

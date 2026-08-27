@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export { parseDate } from './date/parseDate';
+export { daysToMilliseconds, parseDate } from './date';
 export { parseThresholdExpression } from './thresholds/parseThresholdExpression';
 export { validateThresholdNumberIntervals } from './thresholds/intervals/validateThresholdNumberIntervals';
 export {

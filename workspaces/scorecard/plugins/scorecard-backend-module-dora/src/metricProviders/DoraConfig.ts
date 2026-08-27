@@ -15,11 +15,13 @@
  */
 
 import type { Config } from '@backstage/config';
+import type { JsonValue } from '@backstage/types';
 import {
   CollectorConfig,
   ScorecardThresholdRuleColors,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { daysToMilliseconds } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import {
   DORA_DEFAULT_DATA_RETENTION_DAYS,
   DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
@@ -30,8 +32,6 @@ import {
   DORA_DEFAULT_STALE_AFTER_MS,
   DORA_TIME_WINDOW_DAYS,
 } from '../constants';
-import type { JsonValue } from '@backstage/types';
-import { daysToMilliseconds } from '../scheduler/utils';
 
 export type DoraDeploymentFrequencyConfig = {
   deploymentsCollector: CollectorConfig;

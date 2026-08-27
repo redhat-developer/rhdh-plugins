@@ -19,12 +19,12 @@ import {
   SchedulerService,
   SchedulerServiceTaskScheduleDefinition,
 } from '@backstage/backend-plugin-api';
+import { daysToMilliseconds } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { randomUUID } from 'node:crypto';
+import { DORA_CLEANUP_EXPIRED_DATA_TASK_ID } from '../constants';
 import type { DoraDeploymentsStore } from '../database/DatabaseDoraDeployments';
 import type { DoraIncidentsStore } from '../database/DatabaseDoraIncidents';
 import type { DoraPullRequestsStore } from '../database/DatabaseDoraPullRequests';
-import { DORA_CLEANUP_EXPIRED_DATA_TASK_ID } from '../constants';
-import { daysToMilliseconds } from './utils';
 
 type Options = {
   scheduler: SchedulerService;

@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
-export function daysToMilliseconds(days: number) {
-  return days * 24 * 60 * 60 * 1000;
-}
+import { daysToMilliseconds } from './daysToMilliseconds';
+
+describe('daysToMilliseconds', () => {
+  it('converts days to milliseconds', () => {
+    expect(daysToMilliseconds(1)).toBe(86400000);
+  });
+});

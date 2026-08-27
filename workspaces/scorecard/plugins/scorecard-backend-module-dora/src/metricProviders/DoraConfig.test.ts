@@ -15,6 +15,7 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
+import { daysToMilliseconds } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import {
   DORA_DEFAULT_DATA_RETENTION_DAYS,
   DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
@@ -25,7 +26,6 @@ import {
   DORA_DEFAULT_STALE_AFTER_MS,
   DORA_TIME_WINDOW_DAYS,
 } from '../constants';
-import { daysToMilliseconds } from '../scheduler/utils';
 import {
   parseDoraChangeFailureRateConfig,
   parseDoraDataRetentionDays,

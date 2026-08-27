@@ -49,6 +49,9 @@ export type ComparisonOperator = {
 // @public
 export type ComparisonSign = '>=' | '<=' | '>' | '<' | '==' | '!=';
 
+// @public (undocumented)
+export function daysToMilliseconds(days: number): number;
+
 // @public
 export function getThresholdsFromConfig(
   config: Config,
