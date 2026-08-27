@@ -18,6 +18,11 @@ import {
   type TestDatabaseId,
   TestDatabases,
 } from '@backstage/backend-test-utils';
+import {
+  DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+  DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+  DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+} from '../constants';
 import { createTestDatabase } from '../database/__fixtures__';
 import { DefaultDoraDataService } from './DoraDataService';
 
@@ -51,7 +56,7 @@ describe('DefaultDoraDataService', () => {
       async databaseId => {
         const { deploymentsDb, dataService } = await createService(databaseId);
         const entityRef = 'component:default/service-a';
-        const collectorId = 'github:deployments';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
         const deploymentId = 'dep-1';
 
         await deploymentsDb.upsert([
@@ -92,7 +97,7 @@ describe('DefaultDoraDataService', () => {
       async databaseId => {
         const { incidentsDb, dataService } = await createService(databaseId);
         const entityRef = 'component:default/service-a';
-        const collectorId = 'jira:incidents';
+        const collectorId = DORA_DEFAULT_INCIDENTS_COLLECTOR_ID;
 
         await incidentsDb.upsert([
           {
@@ -133,8 +138,9 @@ describe('DefaultDoraDataService', () => {
         const { deploymentsDb, pullRequestsDb, dataService } =
           await createService(databaseId);
         const entityRef = 'component:default/service-a';
-        const deploymentsCollectorId = 'github:deployments';
-        const prCollectorId = 'github:deploymentPullRequests';
+        const deploymentsCollectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+        const prCollectorId =
+          DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID;
 
         await deploymentsDb.upsert([
           {

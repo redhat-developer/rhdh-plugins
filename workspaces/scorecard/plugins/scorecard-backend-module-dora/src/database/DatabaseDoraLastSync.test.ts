@@ -15,6 +15,10 @@
  */
 
 import { TestDatabases } from '@backstage/backend-test-utils';
+import {
+  DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+  DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+} from '../constants';
 import { createTestDatabase } from './__fixtures__';
 
 jest.setTimeout(60000);
@@ -32,7 +36,7 @@ describe('DatabaseDoraLastSync', () => {
           await databases.init(databaseId),
         );
         const entityRef = 'component:default/service-a';
-        const collectorId = 'github:deployments';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
 
         expect(
           await lastSync.getLastSyncedAt(entityRef, collectorId),
@@ -59,7 +63,7 @@ describe('DatabaseDoraLastSync', () => {
           await databases.init(databaseId),
         );
         const entityRef = 'component:default/service-a';
-        const collectorId = 'github:deployments';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
 
         await lastSync.setLastSyncedAt(
           entityRef,
@@ -87,7 +91,7 @@ describe('DatabaseDoraLastSync', () => {
           await databases.init(databaseId),
         );
         const entityRef = 'component:default/service-a';
-        const collectorId = 'github:deployments';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
 
         await lastSync.setLastSyncedAt(
           entityRef,
@@ -115,8 +119,8 @@ describe('DatabaseDoraLastSync', () => {
           await databases.init(databaseId),
         );
         const entityRef = 'component:default/service-a';
-        const collectorId = 'github:deployments';
-        const otherCollectorId = 'jira:incidents';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+        const otherCollectorId = DORA_DEFAULT_INCIDENTS_COLLECTOR_ID;
 
         await lastSync.setLastSyncedAt(
           entityRef,

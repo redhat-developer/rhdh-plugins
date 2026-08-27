@@ -15,6 +15,7 @@
  */
 
 import { TestDatabases } from '@backstage/backend-test-utils';
+import { DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID } from '../constants';
 import { createTestDatabase } from './__fixtures__';
 import { DatabaseDoraDeployments } from './DatabaseDoraDeployments';
 
@@ -29,7 +30,7 @@ async function seedDeployment(
   } = {},
 ) {
   const entityRef = options.entityRef ?? 'component:default/service-a';
-  const deploymentsCollectorId = 'github:deployments';
+  const deploymentsCollectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
   const originalDeploymentId = options.originalDeploymentId ?? 'dep-1';
   const createdAt = options.createdAt ?? new Date('2026-06-10T10:00:00.000Z');
   await deploymentsDb.upsert([

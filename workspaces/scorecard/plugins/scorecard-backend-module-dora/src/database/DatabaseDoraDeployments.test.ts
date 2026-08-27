@@ -15,6 +15,7 @@
  */
 
 import { TestDatabases } from '@backstage/backend-test-utils';
+import { DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID } from '../constants';
 import { createTestDatabase } from './__fixtures__';
 
 jest.setTimeout(60000);
@@ -32,7 +33,7 @@ describe('DatabaseDoraDeployments', () => {
           await databases.init(databaseId),
         );
         const entityRef = 'component:default/service-a';
-        const collectorId = 'github:deployments';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
 
         await deployments.upsert([
           {
@@ -73,7 +74,7 @@ describe('DatabaseDoraDeployments', () => {
           await databases.init(databaseId),
         );
         const entityRef = 'component:default/service-a';
-        const collectorId = 'github:deployments';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
 
         await deployments.upsert([
           {
@@ -120,7 +121,7 @@ describe('DatabaseDoraDeployments', () => {
         await deployments.upsert([
           {
             catalogEntityRef: entityRef,
-            collectorId: 'github:deployments',
+            collectorId: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
             originalDeploymentId: 'dep-1',
             commitSha: 'sha-1',
             environment: 'production',
@@ -138,7 +139,7 @@ describe('DatabaseDoraDeployments', () => {
 
         const githubRows = await deployments.readByEntityCollectorAndWindow(
           entityRef,
-          'github:deployments',
+          DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
           new Date('2026-06-01T00:00:00.000Z'),
           new Date('2026-06-30T00:00:00.000Z'),
         );
@@ -175,7 +176,7 @@ describe('DatabaseDoraDeployments', () => {
           await databases.init(databaseId),
         );
         const entityRef = 'component:default/service-a';
-        const collectorId = 'github:deployments';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
 
         await deployments.upsert([
           {
@@ -235,7 +236,7 @@ describe('DatabaseDoraDeployments', () => {
           await databases.init(databaseId),
         );
         const entityRef = 'component:default/service-a';
-        const collectorId = 'github:deployments';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
 
         await deployments.upsert([
           {

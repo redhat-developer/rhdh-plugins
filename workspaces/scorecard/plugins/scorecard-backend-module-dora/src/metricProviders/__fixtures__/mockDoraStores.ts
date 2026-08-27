@@ -15,6 +15,11 @@
  */
 
 import { parseDate } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import {
+  DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+  DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+  DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+} from '../../constants';
 import type { DoraDeploymentsStore } from '../../database/DatabaseDoraDeployments';
 import type { DoraIncidentsStore } from '../../database/DatabaseDoraIncidents';
 import type { DoraPullRequestsStore } from '../../database/DatabaseDoraPullRequests';
@@ -38,7 +43,7 @@ export function dbDeployment(partial: {
   return {
     id: partial.id,
     catalogEntityRef: partial.catalogEntityRef ?? DEFAULT_ENTITY_REF,
-    collectorId: partial.collectorId ?? 'github:deployments',
+    collectorId: partial.collectorId ?? DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
     originalDeploymentId: partial.originalDeploymentId ?? partial.id,
     commitSha: partial.commitSha,
     environment: partial.environment ?? null,
@@ -58,7 +63,7 @@ export function dbIncident(partial: {
   return {
     id: partial.id,
     catalogEntityRef: partial.catalogEntityRef ?? DEFAULT_ENTITY_REF,
-    collectorId: partial.collectorId ?? 'jira:incidents',
+    collectorId: partial.collectorId ?? DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
     originalIncidentId: partial.originalIncidentId ?? partial.id,
     createdAt: parseDate(partial.createdAt),
     updatedAt: parseDate(partial.updatedAt),
@@ -80,7 +85,8 @@ export function dbPullRequest(partial: {
   return {
     id: partial.id,
     catalogEntityRef: partial.catalogEntityRef ?? DEFAULT_ENTITY_REF,
-    collectorId: partial.collectorId ?? 'github:deploymentPullRequests',
+    collectorId:
+      partial.collectorId ?? DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
     originalPrId: partial.originalPrId ?? partial.id,
     firstCommitAt: parseDate(partial.firstCommitAt),
     deploymentId: partial.deploymentId,

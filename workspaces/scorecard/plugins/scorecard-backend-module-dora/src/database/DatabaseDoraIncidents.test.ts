@@ -15,6 +15,7 @@
  */
 
 import { TestDatabases } from '@backstage/backend-test-utils';
+import { DORA_DEFAULT_INCIDENTS_COLLECTOR_ID } from '../constants';
 import { createTestDatabase } from './__fixtures__';
 
 jest.setTimeout(60000);
@@ -32,7 +33,7 @@ describe('DatabaseDoraIncidents', () => {
           await databases.init(databaseId),
         );
         const entityRef = 'component:default/service-a';
-        const collectorId = 'jira:incidents';
+        const collectorId = DORA_DEFAULT_INCIDENTS_COLLECTOR_ID;
 
         await incidents.upsert([
           {
@@ -73,7 +74,7 @@ describe('DatabaseDoraIncidents', () => {
           await databases.init(databaseId),
         );
         const entityRef = 'component:default/service-a';
-        const collectorId = 'jira:incidents';
+        const collectorId = DORA_DEFAULT_INCIDENTS_COLLECTOR_ID;
 
         await incidents.upsert([
           {
@@ -133,7 +134,7 @@ describe('DatabaseDoraIncidents', () => {
           await databases.init(databaseId),
         );
         const entityRef = 'component:default/service-a';
-        const collectorId = 'jira:incidents';
+        const collectorId = DORA_DEFAULT_INCIDENTS_COLLECTOR_ID;
 
         await incidents.upsert([
           {
@@ -185,7 +186,7 @@ describe('DatabaseDoraIncidents', () => {
           await databases.init(databaseId),
         );
         const entityRef = 'component:default/service-a';
-        const collectorId = 'jira:incidents';
+        const collectorId = DORA_DEFAULT_INCIDENTS_COLLECTOR_ID;
 
         await incidents.upsert([
           {
