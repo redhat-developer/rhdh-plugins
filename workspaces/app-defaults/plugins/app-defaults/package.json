@@ -43,8 +43,21 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
+    "@backstage/catalog-client": "^1.16.1",
+    "@backstage/core-components": "^0.18.11",
+    "@backstage/core-plugin-api": "^1.12.7",
     "@backstage/frontend-plugin-api": "^0.17.2",
-    "@red-hat-developer-hub/backstage-plugin-app-react": "workspace:^"
+    "@backstage/plugin-api-docs": "^0.14.2",
+    "@backstage/plugin-catalog": "^2.0.6",
+    "@backstage/plugin-catalog-graph": "^0.6.5",
+    "@backstage/plugin-catalog-react": "^3.1.0",
+    "@backstage/plugin-scaffolder": "^1.38.0",
+    "@backstage/plugin-techdocs": "^1.17.7",
+    "@backstage/plugin-techdocs-common": "^0.1.1",
+    "@backstage/ui": "^0.16.0",
+    "@mui/material": "5.18.0",
+    "@red-hat-developer-hub/backstage-plugin-app-react": "workspace:^",
+    "@remixicon/react": ">=4.6.0 <4.9.0"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"

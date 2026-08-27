@@ -9,38 +9,38 @@ import { TranslationRef } from '@backstage/frontend-plugin-api';
 export const signInTranslationRef: TranslationRef<
   'plugin.app-auth.sign-in',
   {
-    readonly 'signIn.page.title': 'Select a sign-in method';
+    readonly 'signIn.config.missingAuthEnvironment.description': 'Set {{ authEnvKey }} in your app configuration (for example {{ devEnv }} for local use or {{ prodEnv }} in deployed environments). Without it, the app cannot safely determine which sign-in options to offer.';
     readonly 'signIn.config.missingAuthEnvironment.error': 'Missing required app configuration: auth.environment must be set';
     readonly 'signIn.config.missingAuthEnvironment.panelTitle': 'Sign-in is not available';
-    readonly 'signIn.config.missingAuthEnvironment.description': 'Set {{ authEnvKey }} in your app configuration (for example {{ devEnv }} for local use or {{ prodEnv }} in deployed environments). Without it, the app cannot safely determine which sign-in options to offer.';
-    readonly 'signIn.providers.auth0.title': 'Auth0';
-    readonly 'signIn.providers.auth0.message': 'Sign in using Auth0';
-    readonly 'signIn.providers.atlassian.title': 'Atlassian';
-    readonly 'signIn.providers.atlassian.message': 'Sign in using Atlassian';
-    readonly 'signIn.providers.microsoft.title': 'Microsoft';
-    readonly 'signIn.providers.microsoft.message': 'Sign in using Microsoft';
-    readonly 'signIn.providers.bitbucket.title': 'Bitbucket';
-    readonly 'signIn.providers.bitbucket.message': 'Sign in using Bitbucket';
-    readonly 'signIn.providers.bitbucketServer.title': 'Bitbucket Server';
-    readonly 'signIn.providers.bitbucketServer.message': 'Sign in using Bitbucket Server';
-    readonly 'signIn.providers.github.title': 'GitHub';
-    readonly 'signIn.providers.github.message': 'Sign in using GitHub';
-    readonly 'signIn.providers.gitlab.title': 'GitLab';
-    readonly 'signIn.providers.gitlab.message': 'Sign in using GitLab';
-    readonly 'signIn.providers.google.title': 'Google';
-    readonly 'signIn.providers.google.message': 'Sign in using Google';
+    readonly 'signIn.page.title': 'Select a sign-in method';
     readonly 'signIn.providers.oidc.title': 'OIDC';
     readonly 'signIn.providers.oidc.message': 'Sign in using OIDC';
     readonly 'signIn.providers.keycloak.title': 'Keycloak';
     readonly 'signIn.providers.keycloak.message': 'Sign in using Keycloak';
     readonly 'signIn.providers.pingfederate.title': 'PingFederate';
     readonly 'signIn.providers.pingfederate.message': 'Sign in using PingFederate';
+    readonly 'signIn.providers.auth0.title': 'Auth0';
+    readonly 'signIn.providers.auth0.message': 'Sign in using Auth0';
+    readonly 'signIn.providers.saml.title': 'SAML';
+    readonly 'signIn.providers.saml.message': 'Sign in using SAML';
+    readonly 'signIn.providers.github.title': 'GitHub';
+    readonly 'signIn.providers.github.message': 'Sign in using GitHub';
+    readonly 'signIn.providers.gitlab.title': 'GitLab';
+    readonly 'signIn.providers.gitlab.message': 'Sign in using GitLab';
+    readonly 'signIn.providers.bitbucket.title': 'Bitbucket';
+    readonly 'signIn.providers.bitbucket.message': 'Sign in using Bitbucket';
+    readonly 'signIn.providers.atlassian.title': 'Atlassian';
+    readonly 'signIn.providers.atlassian.message': 'Sign in using Atlassian';
+    readonly 'signIn.providers.microsoft.title': 'Microsoft';
+    readonly 'signIn.providers.microsoft.message': 'Sign in using Microsoft';
+    readonly 'signIn.providers.bitbucketServer.title': 'Bitbucket Server';
+    readonly 'signIn.providers.bitbucketServer.message': 'Sign in using Bitbucket Server';
+    readonly 'signIn.providers.google.title': 'Google';
+    readonly 'signIn.providers.google.message': 'Sign in using Google';
     readonly 'signIn.providers.okta.title': 'Okta';
     readonly 'signIn.providers.okta.message': 'Sign in using Okta';
     readonly 'signIn.providers.onelogin.title': 'OneLogin';
     readonly 'signIn.providers.onelogin.message': 'Sign in using OneLogin';
-    readonly 'signIn.providers.saml.title': 'SAML';
-    readonly 'signIn.providers.saml.message': 'Sign in using SAML';
   }
 >;
 ```
