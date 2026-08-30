@@ -16,7 +16,7 @@
 
 import type { Knex } from 'knex';
 
-const EXTENDED_PHASES = [
+const PHASES = [
   'init',
   'analyze',
   'migrate',
@@ -51,16 +51,7 @@ function createJobsTable(
   table.timestamp('started_at').notNullable();
   table.timestamp('finished_at');
   table.string('status').notNullable().defaultTo('pending').checkIn(statuses);
-  table
-    .string('phase')
-    .notNullable()
-    .defaultTo('init')
-    .checkIn(EXTENDED_PHASES);
-  table.text('error_details');
-  table.text('telemetry');
-  table.string('k8s_job_name');
-  table.string('callback_token');
-  table.string('commit_id').nullable();
+  table.string('phase').notNullable().defaultTo('init').checkIn(PHASES);
   table
     .uuid('project_id')
     .notNullable()
@@ -75,6 +66,11 @@ function createJobsTable(
     .inTable('modules')
     .onDelete('CASCADE')
     .index();
+  table.text('error_details');
+  table.text('telemetry');
+  table.string('k8s_job_name');
+  table.string('callback_token');
+  table.string('commit_id').nullable();
   table.index('started_at');
   table.index('finished_at');
   table.index('status');
@@ -126,7 +122,6 @@ export async function up(knex: Knex): Promise<void> {
 
 /**
  * Reverts the jobs.status CHECK constraint to exclude 'stale'.
- * Note: rows with status='stale' will be lost on SQLite (cannot exist after revert).
  *
  * @public
  */

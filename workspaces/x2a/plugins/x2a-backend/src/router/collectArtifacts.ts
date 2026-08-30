@@ -355,7 +355,7 @@ async function invalidateDownstreamPhases(
     });
 
     const lastJob = jobs[0];
-    if (lastJob && JobStatus.from(lastJob.status).isFinished()) {
+    if (lastJob && JobStatus.from(lastJob.status).isSuccess()) {
       jobsToStale.push(lastJob.id);
     }
   }
