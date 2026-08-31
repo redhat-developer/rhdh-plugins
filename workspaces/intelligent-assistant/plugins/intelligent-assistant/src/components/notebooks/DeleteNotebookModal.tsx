@@ -183,7 +183,7 @@ export const DeleteNotebookModal = ({
         <Button
           variant="contained"
           color="error"
-          className={classes.deleteButton}
+          sx={pillButtonSx}
           onClick={handleDelete}
         >
           {t('notebooks.delete.action')}
@@ -191,7 +191,7 @@ export const DeleteNotebookModal = ({
         <Button
           key="cancel"
           variant="outlined"
-          className={classes.cancelButton}
+          sx={pillButtonSx}
           onClick={onClose}
         >
           {t('common.cancel')}

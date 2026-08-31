@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { Divider } from '@material-ui/core';
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
 import { FileDetailsLabel } from '@patternfly/chatbot';
 
 import { useFileAttachmentContext } from './AttachmentContext';
@@ -53,7 +54,7 @@ const FilePreview = () => {
     <>
       {fileContents.length > 0 && <Divider />}
       {fileContents && (
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <Box sx={{ display: 'flex', gap: '10px' }}>
           {fileContents.map((file, index) => (
             <FileDetailsLabel
               key={index}
@@ -65,7 +66,7 @@ const FilePreview = () => {
               }}
             />
           ))}
-        </div>
+        </Box>
       )}
     </>
   );

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core';
+import GlobalStyles from '@mui/material/GlobalStyles';
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { AttachmentEdit } from '@patternfly/chatbot/dist/dynamic/AttachmentEdit';
 import { PreviewAttachment } from '@patternfly/chatbot/dist/dynamic/PreviewAttachment';
@@ -22,13 +22,8 @@ import { PreviewAttachment } from '@patternfly/chatbot/dist/dynamic/PreviewAttac
 import { useTranslation } from '../hooks/useTranslation';
 import { useFileAttachmentContext } from './AttachmentContext';
 
-const useStyles = makeStyles(() => ({
-  modalFooter: {
-    '&>button': {
-      width: '12% !important',
-    },
-  },
-}));
+const MODAL_FOOTER_CLASS = 'ia-attachment-modal-footer';
+
 const Attachment = () => {
   const {
     currentFileContent,
@@ -36,7 +31,6 @@ const Attachment = () => {
     modalState,
     setCurrentFileContent,
   } = useFileAttachmentContext();
-  const classes = useStyles();
   const { t } = useTranslation();
 
   if (!currentFileContent) {
@@ -53,6 +47,13 @@ const Attachment = () => {
 
   return (
     <>
+      <GlobalStyles
+        styles={{
+          [`.${MODAL_FOOTER_CLASS} > button`]: {
+            width: '12% !important',
+          },
+        }}
+      />
       <PreviewAttachment
         key={previewModalKey}
         code={currentFileContent?.content}
@@ -61,7 +62,7 @@ const Attachment = () => {
         secondaryActionButtonText={t('modal.close')}
         primaryActionButtonText={t('modal.edit')}
         title={t('modal.title.preview')}
-        modalFooterClassName={classes.modalFooter}
+        modalFooterClassName={MODAL_FOOTER_CLASS}
         onEdit={() => {
           setIsPreviewModalOpen(false);
           setIsEditModalOpen(true);
@@ -81,7 +82,7 @@ const Attachment = () => {
         title={t('modal.title.edit')}
         secondaryActionButtonText={t('modal.cancel')}
         primaryActionButtonText={t('modal.save')}
-        modalFooterClassName={classes.modalFooter}
+        modalFooterClassName={MODAL_FOOTER_CLASS}
         onSave={(_event, content) => {
           setCurrentFileContent({
             ...currentFileContent,

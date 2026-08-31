@@ -16,7 +16,7 @@
 
 import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 
-import { Typography } from '@material-ui/core';
+import Typography from '@mui/material/Typography';
 import { Button } from '@patternfly/react-core';
 import { AddCircleOIcon } from '@patternfly/react-icons';
 import { CatalogIcon } from '@patternfly/react-icons/dist/esm/icons';
@@ -74,7 +74,7 @@ export const NotebooksTab = ({
         </Typography>
         <Typography
           variant="body2"
-          color="textSecondary"
+          color="text.secondary"
           className={classes.notebooksDescription}
         >
           {t('notebooks.empty.description')}
