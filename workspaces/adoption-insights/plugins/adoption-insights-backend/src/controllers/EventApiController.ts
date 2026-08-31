@@ -35,7 +35,11 @@ import {
 } from '@backstage/backend-plugin-api';
 import { getLicensedUsersCount } from '../utils/config';
 import { TechDocsCount, TopTechDocsCount } from '../types/event';
-import { buildTechDocsMetadataUrl } from '../utils/techdocsMetadata';
+import {
+  buildTechDocsMetadataUrl,
+  isSafeTechDocsEntitySegment,
+  TechDocsEntityParts,
+} from '../utils/techdocsMetadata';
 
 function readTechDocsSiteName(payload: unknown): string | undefined {
   if (
@@ -202,8 +206,8 @@ class EventApiController {
   }
 
   async getTechdocsMetadata(result: TopTechDocsCount) {
-    const baseUrl = await this.discovery.getBaseUrl('techdocs');
-    const rowsToFetch: { row: TechDocsCount; url: string }[] = [];
+    const rowsToFetch: { row: TechDocsCount; parts: TechDocsEntityParts }[] =
+      [];
 
     for (const row of result.data) {
       if (!row.namespace || !row.kind || !row.name) {
@@ -211,38 +215,76 @@ class EventApiController {
         continue;
       }
 
-      const url = buildTechDocsMetadataUrl(baseUrl, {
+      const parts: TechDocsEntityParts = {
         namespace: row.namespace,
         kind: row.kind,
         name: row.name,
-      });
-      if (!url) {
+      };
+      if (
+        !isSafeTechDocsEntitySegment(parts.namespace) ||
+        !isSafeTechDocsEntitySegment(parts.kind) ||
+        !isSafeTechDocsEntitySegment(parts.name)
+      ) {
         this.logger.warn(
           'Skipping TechDocs metadata fetch for unsafe entity path',
           {
-            namespace: row.namespace,
-            kind: row.kind,
-            name: row.name,
+            namespace: parts.namespace,
+            kind: parts.kind,
+            name: parts.name,
           },
         );
         row.site_name = row.name;
         continue;
       }
 
-      rowsToFetch.push({ row, url });
+      rowsToFetch.push({ row, parts });
     }
 
     if (rowsToFetch.length === 0) {
       return;
     }
 
-    const { token } = await this.auth.getPluginRequestToken({
-      onBehalfOf: await this.auth.getOwnServiceCredentials(),
-      targetPluginId: 'techdocs',
-    });
+    let baseUrl: string;
+    let token: string;
+    try {
+      baseUrl = await this.discovery.getBaseUrl('techdocs');
+      ({ token } = await this.auth.getPluginRequestToken({
+        onBehalfOf: await this.auth.getOwnServiceCredentials(),
+        targetPluginId: 'techdocs',
+      }));
+    } catch (error) {
+      this.logger.warn(
+        'Failed to prepare TechDocs metadata lookup; falling back to entity names',
+        {
+          error: error instanceof Error ? error.message : String(error),
+        },
+      );
+      for (const { row } of rowsToFetch) {
+        row.site_name = row.name;
+      }
+      return;
+    }
+
+    const fetchTargets: { row: TechDocsCount; url: string }[] = [];
+    for (const { row, parts } of rowsToFetch) {
+      const url = buildTechDocsMetadataUrl(baseUrl, parts);
+      if (!url) {
+        this.logger.warn(
+          'Skipping TechDocs metadata fetch for unsafe entity path',
+          {
+            namespace: parts.namespace,
+            kind: parts.kind,
+            name: parts.name,
+          },
+        );
+        row.site_name = row.name;
+        continue;
+      }
+      fetchTargets.push({ row, url });
+    }
 
     await Promise.all(
-      rowsToFetch.map(({ row, url }) =>
+      fetchTargets.map(({ row, url }) =>
         fetch(url, {
           headers: {
             Accept: 'application/json',
@@ -251,6 +293,27 @@ class EventApiController {
         })
           .then(async response => {
             if (!response.ok) {
+              if (response.status === 404) {
+                this.logger.debug(
+                  'TechDocs metadata not found; falling back to entity name',
+                  {
+                    kind: row.kind,
+                    name: row.name,
+                    namespace: row.namespace,
+                    status: response.status,
+                  },
+                );
+              } else {
+                this.logger.warn(
+                  'TechDocs metadata request failed; falling back to entity name',
+                  {
+                    kind: row.kind,
+                    name: row.name,
+                    namespace: row.namespace,
+                    status: response.status,
+                  },
+                );
+              }
               row.site_name = row.name;
               return;
             }

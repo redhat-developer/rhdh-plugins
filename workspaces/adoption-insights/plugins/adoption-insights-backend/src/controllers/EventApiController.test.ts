@@ -94,6 +94,7 @@ describe('trackEvents', () => {
   let mockProcessorAddEvent: jest.Spied<EventBatchProcessor['addEvent']>;
 
   beforeEach(() => {
+    jest.clearAllMocks();
     controller = createController();
 
     mockProcessIncomingEvents = jest.spyOn(
@@ -235,11 +236,11 @@ describe('trackEvents', () => {
 
 describe('GetInsights', () => {
   beforeEach(() => {
+    jest.clearAllMocks();
     controller = createController();
     jest
       .mocked(mockAuth.getOwnServiceCredentials)
       .mockResolvedValue(mockCredentials.service());
-    jest.mocked(mockAuth.getPluginRequestToken).mockClear();
     jest.mocked(mockAuth.getPluginRequestToken).mockResolvedValue({
       token: 'mock-service-token',
     });
@@ -426,6 +427,7 @@ describe('GetInsights', () => {
     await controller.getTechdocsMetadata(result);
 
     expect(fetch).not.toHaveBeenCalled();
+    expect(mockDiscovery.getBaseUrl).not.toHaveBeenCalled();
     expect(mockAuth.getPluginRequestToken).not.toHaveBeenCalled();
     expect(result.data[0].site_name).toBe('');
   });
@@ -480,8 +482,118 @@ describe('GetInsights', () => {
     await controller.getTechdocsMetadata(result);
 
     expect(fetch).not.toHaveBeenCalled();
+    expect(mockDiscovery.getBaseUrl).not.toHaveBeenCalled();
     expect(mockAuth.getPluginRequestToken).not.toHaveBeenCalled();
     expect(result.data[0].site_name).toBe('docs');
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      'Skipping TechDocs metadata fetch for unsafe entity path',
+      expect.objectContaining({
+        namespace: '..',
+        kind: 'component',
+        name: 'docs',
+      }),
+    );
+  });
+
+  it('should fall back to entity names when discovery fails', async () => {
+    setupTechdocsTest('app-docs');
+    jest
+      .mocked(mockDiscovery.getBaseUrl)
+      .mockRejectedValue(new Error('discovery misconfigured'));
+    const result = getTechdocsResult('test-component');
+
+    await controller.getTechdocsMetadata(result);
+
+    expect(fetch).not.toHaveBeenCalled();
+    expect(result.data[0].site_name).toBe('test-component');
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      'Failed to prepare TechDocs metadata lookup; falling back to entity names',
+      expect.objectContaining({
+        error: 'discovery misconfigured',
+      }),
+    );
+  });
+
+  it('should fall back to entity names when plugin token minting fails', async () => {
+    setupTechdocsTest('app-docs');
+    jest
+      .mocked(mockAuth.getPluginRequestToken)
+      .mockRejectedValue(new Error('signing key unavailable'));
+    const result = getTechdocsResult('test-component');
+
+    await controller.getTechdocsMetadata(result);
+
+    expect(fetch).not.toHaveBeenCalled();
+    expect(result.data[0].site_name).toBe('test-component');
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      'Failed to prepare TechDocs metadata lookup; falling back to entity names',
+      expect.objectContaining({
+        error: 'signing key unavailable',
+      }),
+    );
+  });
+
+  it('should not fail the insights request when TechDocs token minting fails', async () => {
+    req.query = {
+      ...req.query,
+      type: 'top_techdocs',
+    };
+    const result = getTechdocsResult('test-component');
+    mockEventDb.getTopTechDocsViews.mockResolvedValue(result as any);
+    jest
+      .mocked(mockAuth.getPluginRequestToken)
+      .mockRejectedValue(new Error('signing key unavailable'));
+
+    await controller.getInsights(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      res as Response,
+    );
+
+    expect(res.status).not.toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith(result);
+    expect(result.data[0].site_name).toBe('test-component');
+  });
+
+  it('should debug-log when TechDocs metadata returns 404', async () => {
+    setupTechdocsTest('app-docs');
+    (fetch as jest.Mock).mockResolvedValue(
+      new global.Response('not found', { status: 404 }),
+    );
+    const result = getTechdocsResult('test-component');
+
+    await controller.getTechdocsMetadata(result);
+
+    expect(result.data[0].site_name).toBe('test-component');
+    expect(mockLogger.debug).toHaveBeenCalledWith(
+      'TechDocs metadata not found; falling back to entity name',
+      expect.objectContaining({
+        status: 404,
+        name: 'test-component',
+      }),
+    );
+    expect(mockLogger.warn).not.toHaveBeenCalledWith(
+      'TechDocs metadata request failed; falling back to entity name',
+      expect.anything(),
+    );
+  });
+
+  it('should warn when TechDocs metadata returns a non-404 error status', async () => {
+    setupTechdocsTest('app-docs');
+    (fetch as jest.Mock).mockResolvedValue(
+      new global.Response('forbidden', { status: 403 }),
+    );
+    const result = getTechdocsResult('test-component');
+
+    await controller.getTechdocsMetadata(result);
+
+    expect(result.data[0].site_name).toBe('test-component');
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      'TechDocs metadata request failed; falling back to entity name',
+      expect.objectContaining({
+        status: 403,
+        name: 'test-component',
+      }),
+    );
   });
 
   it('should fall back to entity name when TechDocs metadata returns a non-OK status', async () => {

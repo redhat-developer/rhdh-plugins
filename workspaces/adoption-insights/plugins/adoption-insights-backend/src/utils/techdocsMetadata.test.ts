@@ -16,6 +16,7 @@
 import {
   buildTechDocsMetadataUrl,
   isSafeTechDocsEntitySegment,
+  isTechDocsMetadataUrlContained,
 } from './techdocsMetadata';
 
 const TECHDOCS_BASE = 'http://example.com/api/techdocs';
@@ -48,6 +49,35 @@ describe('isSafeTechDocsEntitySegment', () => {
 
   it('rejects over-long segments', () => {
     expect(isSafeTechDocsEntitySegment(`a${'b'.repeat(256)}`)).toBe(false);
+  });
+});
+
+describe('isTechDocsMetadataUrlContained', () => {
+  it('accepts a URL under the metadata prefix', () => {
+    expect(
+      isTechDocsMetadataUrlContained(
+        `${TECHDOCS_BASE}/metadata/techdocs/default/component/docs`,
+        TECHDOCS_BASE,
+      ),
+    ).toBe(true);
+  });
+
+  it('rejects a URL whose normalized path escapes the metadata prefix', () => {
+    expect(
+      isTechDocsMetadataUrlContained(
+        `${TECHDOCS_BASE}/metadata/techdocs/../catalog/entities`,
+        TECHDOCS_BASE,
+      ),
+    ).toBe(false);
+  });
+
+  it('returns false for an unparseable base URL', () => {
+    expect(
+      isTechDocsMetadataUrlContained(
+        `${TECHDOCS_BASE}/metadata/techdocs/default/component/docs`,
+        'not a url',
+      ),
+    ).toBe(false);
   });
 });
 
@@ -94,5 +124,15 @@ describe('buildTechDocsMetadataUrl', () => {
       name: 'catalog',
     });
     expect(url).toBeUndefined();
+  });
+
+  it('returns undefined when the discovery base is not a valid URL', () => {
+    expect(
+      buildTechDocsMetadataUrl('not a url', {
+        namespace: 'default',
+        kind: 'component',
+        name: 'docs',
+      }),
+    ).toBeUndefined();
   });
 });

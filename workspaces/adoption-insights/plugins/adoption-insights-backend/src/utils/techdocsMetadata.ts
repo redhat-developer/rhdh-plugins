@@ -43,6 +43,23 @@ export function isSafeTechDocsEntitySegment(value: string): boolean {
 }
 
 /**
+ * Returns true when `url` stays under the TechDocs metadata path for `base`
+ * after URL parsing / path normalization (defense against traversal).
+ */
+export function isTechDocsMetadataUrlContained(
+  url: string,
+  base: string,
+): boolean {
+  try {
+    const parsed = new URL(url);
+    const basePath = new URL(base).pathname.replace(/\/$/, '');
+    return parsed.pathname.startsWith(`${basePath}/metadata/techdocs/`);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Builds the TechDocs metadata URL for an entity. Returns `undefined` when any
  * path segment is unsafe so callers must skip the outbound request.
  */
@@ -67,7 +84,7 @@ export function buildTechDocsMetadataUrl(
   )}/${encodeURIComponent(kind)}/${encodeURIComponent(name)}`;
   const url = `${base}${path}`;
 
-  if (!url.startsWith(`${base}/metadata/techdocs/`)) {
+  if (!isTechDocsMetadataUrlContained(url, base)) {
     return undefined;
   }
   return url;
