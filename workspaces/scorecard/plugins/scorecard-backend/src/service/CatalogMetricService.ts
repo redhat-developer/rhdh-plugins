@@ -27,7 +27,6 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { Entity } from '@backstage/catalog-model';
 import { normalizeOwnerRef } from '../utils/normalizeOwnerRef';
-import { formatUtcDate } from '../utils/formatUtcDate';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
   NotAllowedError,
@@ -193,8 +192,9 @@ export class CatalogMetricService {
   /**
    * Get a daily time series for one metric on one catalog entity.
    *
-   * Buckets samples by UTC calendar day and keeps the latest row (`MAX(id)`) per day.
-   * Calculation failures and null values are excluded from `points`.
+   * Returns at most one point per UTC calendar day: the latest sample
+   * (`MAX(id)`), whether success or calculation error. Calculation failures
+   * use `value: null` and `error`.
    *
    * @param entityRef - Entity reference in format "kind:namespace/name"
    * @param metricId - Metric ID to fetch
@@ -226,32 +226,26 @@ export class CatalogMetricService {
       );
     }
 
-    const rows = await this.database.readEntityMetricValuesInRange(
+    const rows = await this.database.readLatestEntityMetricValuesPerUtcDay(
       entityRef,
       metricId,
       from,
       to,
     );
 
-    const latestByUtcDay = new Map<string, DbMetricValue>();
-    for (const row of rows) {
-      if (row.value === null || isMetricCalculationError(row)) {
-        continue;
+    const points: MetricTimeSeriesPoint[] = rows.map(row => {
+      if (isMetricCalculationError(row)) {
+        return {
+          value: null,
+          timestamp: row.timestamp.toISOString(),
+          error: row.errorMessage!,
+        };
       }
-      const dayKey = formatUtcDate(row.timestamp);
-      const existing = latestByUtcDay.get(dayKey);
-      // Postgres may return bigIncrements as strings; compare numerically.
-      if (!existing || Number(row.id) > Number(existing.id)) {
-        latestByUtcDay.set(dayKey, row);
-      }
-    }
-
-    const points: MetricTimeSeriesPoint[] = Array.from(latestByUtcDay.values())
-      .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
-      .map(row => ({
-        value: row.value as NonNullable<typeof row.value>,
+      return {
+        value: row.value,
         timestamp: row.timestamp.toISOString(),
-      }));
+      };
+    });
 
     return {
       metricId: metric.id,
