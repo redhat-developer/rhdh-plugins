@@ -117,6 +117,24 @@ describe('createComponents', () => {
     );
   });
 
+  it('makes NFS BUI main a flex column so nested Containers can grow', () => {
+    const actual = createComponents({ palette: customDarkTheme() });
+    const root = actual.BackstageSidebarPage?.styleOverrides?.root as
+      | Record<string, unknown>
+      | undefined;
+    const desktop = root?.['@media (min-width: 600px)'] as
+      | Record<string, unknown>
+      | undefined;
+    expect(desktop?.['& > main:not([data-backstage-core-page])']).toEqual(
+      expect.objectContaining({
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+        minHeight: 0,
+      }),
+    );
+  });
+
   it('paints BUI content Containers with mainSectionBackgroundColor', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     const root = actual.BackstageSidebarPage?.styleOverrides?.root as
