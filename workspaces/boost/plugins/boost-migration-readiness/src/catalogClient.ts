@@ -39,6 +39,45 @@ function validateCatalogUrl(catalogUrl: string): URL {
 }
 
 /**
+ * Resolve the catalog entities endpoint relative to a validated base URL,
+ * preserving any path prefix (e.g. a reverse proxy mount point like
+ * `/backstage`). `URL`'s relative resolution drops the last path segment
+ * of the base unless it ends in `/`, so a trailing slash is enforced
+ * before resolving.
+ *
+ * @internal
+ */
+function resolveEntitiesEndpoint(validatedBase: URL): URL {
+  const baseHref = validatedBase.href.endsWith('/')
+    ? validatedBase.href
+    : `${validatedBase.href}/`;
+  return new URL('api/catalog/entities', baseHref);
+}
+
+/**
+ * Narrow an unknown JSON payload to `CatalogEntity[]` at runtime. The
+ * check is intentionally shallow (array of objects with a string `kind`
+ * and an object `metadata`) — enough to catch a misconfigured catalog
+ * returning a wrapped or error payload, without re-implementing full
+ * catalog entity schema validation here.
+ *
+ * @internal
+ */
+function isCatalogEntityArray(payload: unknown): payload is CatalogEntity[] {
+  return (
+    Array.isArray(payload) &&
+    payload.every(
+      item =>
+        typeof item === 'object' &&
+        item !== null &&
+        typeof (item as Record<string, unknown>).kind === 'string' &&
+        typeof (item as Record<string, unknown>).metadata === 'object' &&
+        (item as Record<string, unknown>).metadata !== null,
+    )
+  );
+}
+
+/**
  * Fetch all entities from the Backstage catalog API.
  *
  * This is a read-only operation — no writes, deletions, or
@@ -57,10 +96,7 @@ export async function fetchEntities(
   const { catalogUrl, token, filter } = options;
 
   const validatedBase = validateCatalogUrl(catalogUrl);
-
-  // Use the validated URL's origin to construct the endpoint,
-  // ensuring only validated http/https URLs reach the network call.
-  const url = new URL('/api/catalog/entities', validatedBase.origin);
+  const url = resolveEntitiesEndpoint(validatedBase);
   if (filter) {
     url.searchParams.set('filter', filter);
   }
@@ -72,10 +108,13 @@ export async function fetchEntities(
     headers.Authorization = `Bearer ${token}`;
   }
 
-  const response = await fetch(url.toString(), {
-    method: 'GET',
-    headers,
-  });
+  // catalogUrl is a CLI-operator-supplied target, not attacker-controlled
+  // input relayed on their behalf: this is a user-invoked, read-only CLI
+  // tool, and validateCatalogUrl() above already restricts the target to
+  // http/https before it reaches this call. SSRF is not applicable to a
+  // locally-run tool querying the catalog the operator explicitly asked
+  // it to query.
+  const response = await fetch(url.toString(), { method: 'GET', headers }); // NOSONAR
 
   if (!response.ok) {
     throw new Error(
@@ -83,5 +122,11 @@ export async function fetchEntities(
     );
   }
 
-  return (await response.json()) as CatalogEntity[];
+  const payload: unknown = await response.json();
+  if (!isCatalogEntityArray(payload)) {
+    throw new Error(
+      'Catalog API returned an unexpected response shape: expected an array of entities.',
+    );
+  }
+  return payload;
 }

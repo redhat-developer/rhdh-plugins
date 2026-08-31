@@ -148,6 +148,34 @@ describe('fetchEntities', () => {
       const calledUrl = mockFetch.mock.calls[0][0] as string;
       expect(calledUrl).not.toContain('filter=');
     });
+
+    it('preserves a path prefix on the catalog URL (reverse proxy mount)', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => [],
+      });
+
+      await fetchEntities({ catalogUrl: 'http://localhost:7007/backstage' });
+
+      const calledUrl = mockFetch.mock.calls[0][0] as string;
+      expect(calledUrl).toBe(
+        'http://localhost:7007/backstage/api/catalog/entities',
+      );
+    });
+
+    it('preserves a path prefix that already ends with a slash', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => [],
+      });
+
+      await fetchEntities({ catalogUrl: 'http://localhost:7007/backstage/' });
+
+      const calledUrl = mockFetch.mock.calls[0][0] as string;
+      expect(calledUrl).toBe(
+        'http://localhost:7007/backstage/api/catalog/entities',
+      );
+    });
   });
 
   describe('response handling', () => {
@@ -193,6 +221,28 @@ describe('fetchEntities', () => {
       ).rejects.toThrow(
         'Catalog API request failed: 500 Internal Server Error',
       );
+    });
+
+    it('throws when the response is not an array', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({ items: [] }),
+      });
+
+      await expect(
+        fetchEntities({ catalogUrl: 'http://localhost:7007' }),
+      ).rejects.toThrow('unexpected response shape');
+    });
+
+    it('throws when array items are missing required entity fields', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => [{ notAnEntity: true }],
+      });
+
+      await expect(
+        fetchEntities({ catalogUrl: 'http://localhost:7007' }),
+      ).rejects.toThrow('unexpected response shape');
     });
   });
 });
