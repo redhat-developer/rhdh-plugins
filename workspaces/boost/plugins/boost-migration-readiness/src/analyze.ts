@@ -20,6 +20,7 @@ import {
   AI_ASSET_SOURCE_ANNOTATION,
   AIAssetCategorySchema,
 } from '@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk';
+import type { AIAssetCategory } from '@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk';
 import { MAPPING_RULES } from './mappings';
 import type { CatalogEntity, EntityAssessment, MigrationReport } from './types';
 
@@ -66,7 +67,11 @@ export function analyzeEntities(entities: CatalogEntity[]): MigrationReport {
       assessments.push({
         entityRef: buildEntityRef(entity),
         name: entity.metadata.name,
-        category: categoryValue as any,
+        // Scoped to AIAssetCategory (not `any`) so any downstream lookup
+        // keyed on `category` (e.g. MAPPING_RULES[assessment.category])
+        // is still checked against the real category union, even though
+        // this particular value is known to be unrecognized at runtime.
+        category: categoryValue as AIAssetCategory,
         currentKind: entity.kind,
         currentSpecType: entity.spec?.type ?? '',
         targetKind: undefined,
@@ -105,11 +110,16 @@ export function analyzeEntities(entities: CatalogEntity[]): MigrationReport {
       currentKind === mapping.targetKind &&
       currentSpecType.toLowerCase() === mapping.currentSpecType.toLowerCase();
 
-    // Check for kind/type mismatch against expected mapping
+    // Check for kind/type mismatch against expected mapping. Skip when the
+    // entity is already aligned with the upstream target — comparing an
+    // already-migrated entity against the pre-migration "current" mapping
+    // would otherwise raise a contradictory warning alongside alreadyAligned.
     if (
-      currentKind.toLowerCase() !== mapping.currentKind.toLowerCase() ||
-      (currentSpecType &&
-        currentSpecType.toLowerCase() !== mapping.currentSpecType.toLowerCase())
+      !alreadyAligned &&
+      (currentKind.toLowerCase() !== mapping.currentKind.toLowerCase() ||
+        (currentSpecType &&
+          currentSpecType.toLowerCase() !==
+            mapping.currentSpecType.toLowerCase()))
     ) {
       warnings.push(
         `Kind/type mismatch: entity has kind=${currentKind}, spec.type=${currentSpecType} ` +

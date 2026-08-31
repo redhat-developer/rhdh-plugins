@@ -267,6 +267,35 @@ describe('analyzeEntities', () => {
     );
   });
 
+  it('does not warn of a kind/type mismatch when already aligned', () => {
+    // A model-server entity already migrated to the upstream target kind
+    // (API) while keeping its current spec.type would otherwise trigger
+    // both alreadyAligned=true and a contradictory mismatch warning, since
+    // its kind ('API') differs from the pre-migration mapping.currentKind
+    // ('Resource').
+    const entities = [
+      makeEntity({
+        kind: 'API',
+        metadata: {
+          name: 'already-migrated-model-server',
+          annotations: {
+            'rhdh.io/ai-asset-category': 'model-server',
+            'rhdh.io/ai-asset-version': '1.0.0',
+            'rhdh.io/ai-asset-source': 'rhoai',
+          },
+        },
+        spec: { type: 'ai-model-server' },
+      }),
+    ];
+
+    const report = analyzeEntities(entities);
+    expect(report.entities).toHaveLength(1);
+    expect(report.entities[0].alreadyAligned).toBe(true);
+    expect(report.entities[0].warnings).not.toContainEqual(
+      expect.stringContaining('Kind/type mismatch'),
+    );
+  });
+
   it('handles entities with unrecognized category values', () => {
     const entities = [
       makeEntity({
