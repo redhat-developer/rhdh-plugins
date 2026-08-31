@@ -139,4 +139,41 @@ describe('AiCatalogPage', () => {
       screen.getByText(`${msg.toolbar.allPrefix} (2)`),
     ).toBeInTheDocument();
   });
+
+  it('shows empty filtered state when search matches nothing', async () => {
+    mockCatalogApi.getEntities.mockResolvedValue({ items: mockEntities });
+    await renderInTestApp(
+      <TestApiProvider
+        apis={[[catalogApiRef, mockCatalogApi as unknown as CatalogApi]]}
+      >
+        <AiCatalogPage filters={defaultFilters} />
+      </TestApiProvider>,
+      { routeEntries: ['/?q=no-such-asset'] },
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(msg.emptyFiltered.title)).toBeInTheDocument();
+    });
+    expect(
+      screen.getByText(msg.emptyFiltered.clearFilters),
+    ).toBeInTheDocument();
+  });
+
+  it('renders table view when view=table is in the URL', async () => {
+    mockCatalogApi.getEntities.mockResolvedValue({ items: mockEntities });
+    await renderInTestApp(
+      <TestApiProvider
+        apis={[[catalogApiRef, mockCatalogApi as unknown as CatalogApi]]}
+      >
+        <AiCatalogPage filters={defaultFilters} />
+      </TestApiProvider>,
+      { routeEntries: ['/?view=table'] },
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Code Review Skill')).toBeInTheDocument();
+    });
+    expect(screen.getByText(msg.table.name)).toBeInTheDocument();
+    expect(screen.getByLabelText(msg.toolbar.viewTable)).toBeInTheDocument();
+  });
 });
