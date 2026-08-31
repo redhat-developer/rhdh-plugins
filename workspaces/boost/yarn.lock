@@ -8864,7 +8864,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk@workspace:plugins/boost-entity-provider-sdk":
+"@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk@workspace:^, @red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk@workspace:plugins/boost-entity-provider-sdk":
   version: 0.0.0-use.local
   resolution: "@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk@workspace:plugins/boost-entity-provider-sdk"
   dependencies:
@@ -8872,6 +8872,17 @@ __metadata:
     "@backstage/cli": "npm:^0.36.3"
     "@backstage/plugin-catalog-node": "npm:^2.2.2"
     zod: "npm:^3.23.8"
+  languageName: unknown
+  linkType: soft
+
+"@red-hat-developer-hub/backstage-plugin-boost-migration-readiness@workspace:plugins/boost-migration-readiness":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-boost-migration-readiness@workspace:plugins/boost-migration-readiness"
+  dependencies:
+    "@backstage/cli": "npm:^0.36.3"
+    "@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk": "workspace:^"
+  bin:
+    boost-migration-readiness: dist/cli.cjs.js
   languageName: unknown
   linkType: soft
 
