@@ -15,7 +15,7 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
-import type { ReconcilerConfig } from './types';
+import type { ReconcilerConfig, InferenceService } from './types';
 
 /* eslint-disable no-var */
 var mockLoadFromDefault: jest.Mock;
@@ -326,6 +326,94 @@ describe('InformerService', () => {
       expect(result).toBeDefined();
       expect(result.on).toBeDefined();
       expect(result.start).toBeDefined();
+    });
+
+    it('should detect annotation-only changes via resourceVersion', async () => {
+      const config: ReconcilerConfig = {};
+
+      await setupInformer(config, logger);
+
+      // Get the 'add' and 'update' handlers registered on the informer
+      const addHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'add',
+      )?.[1];
+      const updateHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'update',
+      )?.[1];
+      expect(addHandler).toBeDefined();
+      expect(updateHandler).toBeDefined();
+
+      // A ready InferenceService with resourceVersion '1000' and owner annotation
+      const baseIS: InferenceService = {
+        apiVersion: 'serving.kserve.io/v1beta1',
+        kind: 'InferenceService',
+        metadata: {
+          name: 'rv-test-model',
+          namespace: 'rv-test-ns',
+          resourceVersion: '1000',
+          annotations: {
+            'rhdh.io/owner': 'team-alpha',
+          },
+        },
+        spec: {
+          predictor: {
+            model: {
+              modelFormat: { name: 'vllm' },
+            },
+          },
+        },
+        status: {
+          conditions: [
+            {
+              type: 'Ready',
+              status: 'True',
+              lastTransitionTime: '2024-01-01T00:00:00Z',
+            },
+            {
+              type: 'IngressReady',
+              status: 'True',
+              lastTransitionTime: '2024-01-01T00:00:00Z',
+            },
+            {
+              type: 'PredictorReady',
+              status: 'True',
+              lastTransitionTime: '2024-01-01T00:00:00Z',
+            },
+          ],
+          modelStatus: { transitionStatus: 'UpToDate' },
+          url: 'https://rv-test-model.rv-test-ns.example.com',
+        },
+      };
+
+      // First reconciliation — creates the catalog entry
+      await addHandler(baseIS);
+
+      const importKey = 'rv-test-ns/rv-test-model';
+      const catalogV1 = getModelCatalog(importKey);
+      expect(catalogV1).toBeDefined();
+      expect(catalogV1!.modelServer!.owner).toBe('team-alpha');
+
+      // Updated IS: only annotations changed (owner), same status timestamps,
+      // but resourceVersion incremented by Kubernetes
+      const updatedIS: InferenceService = {
+        ...baseIS,
+        metadata: {
+          ...baseIS.metadata,
+          resourceVersion: '1001',
+          annotations: {
+            'rhdh.io/owner': 'team-beta',
+          },
+        },
+      };
+
+      // Second reconciliation — should detect change via resourceVersion
+      await updateHandler(updatedIS);
+
+      const catalogV2 = getModelCatalog(importKey);
+      expect(catalogV2).toBeDefined();
+      // The owner should be updated to 'team-beta', proving the annotation
+      // change was detected despite identical status condition timestamps
+      expect(catalogV2!.modelServer!.owner).toBe('team-beta');
     });
   });
 });
