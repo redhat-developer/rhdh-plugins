@@ -9192,6 +9192,7 @@ __metadata:
     "@backstage/catalog-model": "npm:^1.9.0"
     "@backstage/cli": "npm:^0.36.3"
     "@backstage/plugin-catalog-node": "npm:^2.2.2"
+    "@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk": "workspace:^"
   languageName: unknown
   linkType: soft
 

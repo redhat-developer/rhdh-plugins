@@ -5,6 +5,7 @@
 ```ts
 import type { CatalogProcessor } from '@backstage/plugin-catalog-node';
 import type { Entity } from '@backstage/catalog-model';
+import type { EntityProviderConnection } from '@backstage/plugin-catalog-node';
 import { z } from 'zod';
 
 // @public
@@ -48,12 +49,57 @@ export interface AIAssetEntityProvider {
 export class AIAssetValidator implements CatalogProcessor {}
 
 // @public
+export interface ApplyDeltaOptions {
+  added: Entity[];
+  nextCursor?: string;
+  removed: Array<{
+    entityRef: string;
+  }>;
+  updated?: Entity[];
+}
+
+// @public
+export interface CursorState {
+  cursor: string;
+  lastSyncTimestamp: string;
+}
+
+// @public
+export interface CursorStore {
+  delete(providerId: string): Promise<void>;
+  get(providerId: string): Promise<CursorState | undefined>;
+  set(providerId: string, state: CursorState): Promise<void>;
+}
+
+// @public
 export interface DeltaResult {
   added: Entity[];
   nextCursor?: string;
   removed: Array<{
     entityRef: string;
   }>;
+}
+
+// @public
+export class DeltaSyncManager {
+  constructor(options: DeltaSyncManagerOptions);
+  applyDelta(options: ApplyDeltaOptions): Promise<void>;
+  clearCursor(): Promise<void>;
+  getCursor(): Promise<string | undefined>;
+}
+
+// @public
+export interface DeltaSyncManagerOptions {
+  connection: EntityProviderConnection;
+  cursorStore: CursorStore;
+  locationKey: string;
+}
+
+// @public
+export class InMemoryCursorStore implements CursorStore {
+  delete(providerId: string): Promise<void>;
+  get(providerId: string): Promise<CursorState | undefined>;
+  set(providerId: string, state: CursorState): Promise<void>;
 }
 
 // @public

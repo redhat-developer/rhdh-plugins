@@ -2,7 +2,7 @@
 
 ## Why
 
-The AI Catalog in Red Hat Developer Hub needs a standardized entity model to classify, track, and manage AI assets — agents, skills, MCP servers, models, and model servers — as first-class catalog entities. Today's Backstage catalog has no normalization scheme for these assets. External registries (Kagenti, LlamaStack, OCI skill repositories) use different categorization and version schemes, creating integration friction.
+The AI Catalog in Red Hat Developer Hub needs a standardized entity model to classify, track, and manage AI assets — agents, skills, MCP servers, models, and model servers — as first-class catalog entities. Today's Backstage catalog has no normalization scheme for these assets. External registries (Kagenti, OGX, OCI skill repositories) use different categorization and version schemes, creating integration friction.
 
 Enterprise deployments require operational quality from day one: air-gapped environments with custom CAs and K8s Secret-only credentials, delta sync to minimize catalog churn, and performance resilience at 5,000+ entities without degrading catalog latency. The entity model must also be migration-ready for upstream Backstage entity kinds (e.g., `McpServerApiEntity` via [#34016](https://github.com/backstage/backstage/pull/34016), `AiResource` via [#33575](https://github.com/backstage/backstage/issues/33575)) so that RHDH can transition from custom annotations to first-class kinds without breaking consumers.
 
