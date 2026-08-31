@@ -30,7 +30,7 @@ This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirm
 ## Goals
 
 - Standardized annotation scheme for all AI asset categories: agents, skills, MCP servers, models, model servers
-- Entity provider SDK enabling clean connector implementations (Kagenti, LlamaStack, OCI skill registry)
+- Entity provider SDK enabling clean connector implementations (Kagenti, OGX, OCI skill registry)
 - Delta sync support via Backstage's built-in `applyMutation({ type: 'delta' })` API
 - Air-gapped deployment readiness: custom CA bundles, K8s Secret-only credentials, configurable endpoints
 - Performance resilience: 5,000+ entities with ≤10% p95 latency degradation
@@ -40,7 +40,7 @@ This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirm
 
 - Creating new upstream Backstage entity kinds (we use AIResource for skills/rules per RHDHPLAN-1113, API for MCP servers, and existing kinds for agents/models pending RHDHPLAN-1113/RHDHPLAN-404)
 - Changing Backstage catalog core behavior or mutation APIs
-- Implementing specific connectors (Kagenti/LlamaStack) — covered in separate changes
+- Implementing specific connectors (Kagenti/OGX) — covered in separate changes
 - Neo4j knowledge graph ingestion pipeline — covered in `neo4j-knowledge-graph` change
 - OCI skill registry connector — covered in `oci-skill-registry` change
 
@@ -128,7 +128,7 @@ Startup validation rejects plaintext credentials with descriptive error: `Plaint
 
 **Configurable endpoints:** All registry endpoint URLs configurable via app-config. No hardcoded SaaS URLs. Startup validation verifies URLs are syntactically valid.
 
-Reference app-config pattern applies to all connectors (Kagenti, LlamaStack, OCI skill registry).
+Reference app-config pattern applies to all connectors (Kagenti, OGX, OCI skill registry).
 
 ### Decision 5: Performance SLAs and error resilience _(Distributed: load testing → RHIDP-15294, error resilience → RHIDP-15316)_
 
