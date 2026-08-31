@@ -74,3 +74,5 @@ yarn test:all
 # Build all plugins
 yarn build:all
 ```
+
+<!-- Vertex smoke: temporary Fullsend Review path-filter trigger. Safe to revert. -->
