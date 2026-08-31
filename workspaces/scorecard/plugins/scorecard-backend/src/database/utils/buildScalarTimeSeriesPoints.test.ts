@@ -53,38 +53,4 @@ describe('buildScalarTimeSeriesPoints', () => {
       },
     ]);
   });
-
-  it('omits days with no successes and no calculation errors', () => {
-    expect(
-      buildScalarTimeSeriesPoints([
-        {
-          utc_day: '2024-01-02',
-          value: 1,
-          success_count: 1,
-          error_count: 0,
-          total: 1,
-          error_message: null,
-          error_msg_count: null,
-        },
-        {
-          utc_day: '2024-01-03',
-          value: null,
-          success_count: 0,
-          error_count: 0,
-          total: 0,
-          error_message: null,
-          error_msg_count: null,
-        },
-      ]),
-    ).toEqual([
-      {
-        utcDay: '2024-01-02',
-        value: 1,
-        successCount: 1,
-        errorCount: 0,
-        total: 1,
-        errors: [],
-      },
-    ]);
-  });
 });

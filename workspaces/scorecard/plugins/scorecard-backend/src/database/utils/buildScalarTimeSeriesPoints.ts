@@ -72,7 +72,5 @@ export function buildScalarTimeSeriesPoints(
     );
   }
 
-  return [...pointsByDay.values()].filter(
-    point => point.successCount > 0 || point.errorCount > 0,
-  );
+  return Array.from(pointsByDay.values());
 }

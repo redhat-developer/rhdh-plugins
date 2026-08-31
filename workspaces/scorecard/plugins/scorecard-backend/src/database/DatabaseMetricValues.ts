@@ -87,8 +87,11 @@ export class DatabaseMetricValues {
     "(value IS NULL OR CAST(value AS TEXT) = 'null')";
 
   /**
-   * UTC calendar day as `YYYY-MM-DD`. Postgres `timestamp` is treated as UTC;
-   * SQLite stores Unix milliseconds.
+   * UTC calendar day as `YYYY-MM-DD`.
+   * Postgres: Knex dateTime is timestamptz on Postgres. TO_CHAR(timestamptz, ...) formats in
+   *   the session TimeZone, so non-UTC sessions bucket by local calendar day. Convert
+   *   to UTC wall-clock first so grouping matches Date#getUTC* (UTC sessions unchanged).
+   * SQLite: stores Unix milliseconds.
    */
   private getUtcDayExpr(): string {
     return this.isPostgres
@@ -117,10 +120,12 @@ export class DatabaseMetricValues {
   }
 
   /**
-   * Get the latest ids subquery in time range for a metric and each entity in catalogEntityRefs.
+   * Get the latest ids subquery in time range per UTC calendar day for a metric
+   * and each entity in catalogEntityRefs.
    *
-   * Groups `metric_values` by `(catalog_entity_ref, UTC day)` and picks `MAX(id)`
-   * regardless if calculation is success or error.
+   * For each UTC day in `[from, to]` and catalogEntity in catalogEntityRefs: picks
+   * the sample with the highest `id` among rows that are either a real value or a
+   * calculation error. Days with only null-without-error rows are omitted.
    * @param catalogEntityRefs An array of catalog entity references to filter the metric values by.
    * @param metricId The ID of the metric to retrieve latest IDs for.
    * @param from The start of the time range (inclusive).
@@ -135,16 +140,23 @@ export class DatabaseMetricValues {
   ): Knex.QueryBuilder {
     const utcDayExpr = this.getUtcDayExpr();
 
+    const missing = DatabaseMetricValues.metricValueIsMissingExpr;
+    const chosenIdExpr = `MAX(CASE
+      WHEN NOT ${missing} OR (error_message IS NOT NULL AND ${missing})
+      THEN id
+    END)`;
+
     return this.dbClient(this.tableName)
       .select(
-        this.dbClient.raw('MAX(id) as id'),
+        this.dbClient.raw(`${chosenIdExpr} as id`),
         this.dbClient.raw(`${utcDayExpr} as utc_day`),
       )
       .where('metric_id', metricId)
       .whereIn('catalog_entity_ref', catalogEntityRefs)
       .where('timestamp', '>=', from)
       .where('timestamp', '<=', to)
-      .groupByRaw(`catalog_entity_ref, ${utcDayExpr}`);
+      .groupByRaw(`catalog_entity_ref, ${utcDayExpr}`)
+      .havingRaw(`${chosenIdExpr} IS NOT NULL`);
   }
 
   /**
@@ -295,12 +307,7 @@ export class DatabaseMetricValues {
     from: Date,
     to: Date,
   ): Promise<DbMetricValue[]> {
-    // Knex dateTime is timestamptz on Postgres. TO_CHAR(timestamptz, ...) formats in
-    // the session TimeZone, so non-UTC sessions bucket by local calendar day. Convert
-    // to UTC wall-clock first so grouping matches Date#getUTC* (UTC sessions unchanged).
-    const utcDayExpr = this.isPostgres
-      ? "TO_CHAR(timestamp AT TIME ZONE 'UTC', 'YYYY-MM-DD')"
-      : "strftime('%Y-%m-%d', timestamp / 1000, 'unixepoch')";
+    const utcDayExpr = this.getUtcDayExpr();
 
     const missing = DatabaseMetricValues.metricValueIsMissingExpr;
     const chosenIdExpr = `MAX(CASE
@@ -456,7 +463,7 @@ export class DatabaseMetricValues {
 
   /**
    * Scalar aggregation of the latest row per entity per UTC day (success and errors).
-   * Days with no stored rows are omitted.
+   * Days with no stored rows are omitted. Ordered by utc_day.
    *
    * Query plan (single round-trip):
    * 1. `latest_ids`: latest id per (entity, UTC day) in [from, to].
