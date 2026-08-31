@@ -97,8 +97,8 @@ export interface EntityAssessment {
   entityRef: string;
   /** Display name of the entity. */
   name: string;
-  /** AI asset category from annotation. */
-  category: AIAssetCategory;
+  /** AI asset category from annotation (may be an unrecognized string). */
+  category: AIAssetCategory | string;
   /** Current Backstage entity kind. */
   currentKind: string;
   /** Current spec.type value. */

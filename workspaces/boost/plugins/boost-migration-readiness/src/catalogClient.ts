@@ -72,7 +72,10 @@ function isCatalogEntityArray(payload: unknown): payload is CatalogEntity[] {
         item !== null &&
         typeof (item as Record<string, unknown>).kind === 'string' &&
         typeof (item as Record<string, unknown>).metadata === 'object' &&
-        (item as Record<string, unknown>).metadata !== null,
+        (item as Record<string, unknown>).metadata !== null &&
+        typeof (
+          (item as Record<string, unknown>).metadata as Record<string, unknown>
+        ).name === 'string',
     )
   );
 }

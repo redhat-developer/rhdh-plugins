@@ -20,7 +20,6 @@ import {
   AI_ASSET_SOURCE_ANNOTATION,
   AIAssetCategorySchema,
 } from '@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk';
-import type { AIAssetCategory } from '@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk';
 import { MAPPING_RULES } from './mappings';
 import type { CatalogEntity, EntityAssessment, MigrationReport } from './types';
 
@@ -51,8 +50,10 @@ export function analyzeEntities(entities: CatalogEntity[]): MigrationReport {
     const annotations = entity.metadata.annotations ?? {};
     const categoryValue = annotations[AI_ASSET_CATEGORY_ANNOTATION];
 
-    // Exclude entities without the category annotation
-    if (!categoryValue) {
+    // Exclude entities without the category annotation. Check for
+    // undefined explicitly (not falsy) so empty strings fall through
+    // to safeParse and produce an "Unrecognized category" warning.
+    if (categoryValue === undefined) {
       continue;
     }
 
@@ -67,11 +68,11 @@ export function analyzeEntities(entities: CatalogEntity[]): MigrationReport {
       assessments.push({
         entityRef: buildEntityRef(entity),
         name: entity.metadata.name,
-        // Scoped to AIAssetCategory (not `any`) so any downstream lookup
-        // keyed on `category` (e.g. MAPPING_RULES[assessment.category])
-        // is still checked against the real category union, even though
-        // this particular value is known to be unrecognized at runtime.
-        category: categoryValue as AIAssetCategory,
+        // Store the raw string — EntityAssessment.category is typed as
+        // `AIAssetCategory | string`, so consumers who key into
+        // MAPPING_RULES must narrow the type first instead of silently
+        // getting `undefined` from a runtime miss.
+        category: categoryValue,
         currentKind: entity.kind,
         currentSpecType: entity.spec?.type ?? '',
         targetKind: undefined,

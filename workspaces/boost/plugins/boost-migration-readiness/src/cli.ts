@@ -75,10 +75,15 @@ function parseArgs(argv: string[]): {
     process.stderr.write(`Unknown output format '${fmt}'. Using 'text'.\n`);
   }
 
+  // Support BACKSTAGE_TOKEN env var as an alternative to --token so the
+  // token is not visible in process listings (ps aux). The explicit
+  // --token flag takes precedence when both are provided.
+  const token = values['--token'] ?? process.env.BACKSTAGE_TOKEN;
+
   return {
     catalogUrl: values['--catalog-url'],
     outputFormat,
-    token: values['--token'],
+    token,
     filter: values['--filter'],
   };
 }
@@ -96,6 +101,7 @@ Options:
   --catalog-url <url>       Backstage catalog API base URL (required)
   --output-format <format>  Output format: 'json' or 'text' (default: text)
   --token <token>           Bearer token for catalog API authentication
+                            (or set BACKSTAGE_TOKEN env var)
   --filter <filter>         Filter string to narrow entity results
   --help, -h                Show this help message
 `,

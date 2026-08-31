@@ -234,6 +234,25 @@ describe('fetchEntities', () => {
       ).rejects.toThrow('unexpected response shape');
     });
 
+    it('throws when array items have metadata without a name', async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: async () => [{ kind: 'API', metadata: {} }],
+      });
+
+      await expect(
+        fetchEntities({ catalogUrl: 'http://localhost:7007' }),
+      ).rejects.toThrow('unexpected response shape');
+    });
+
+    it('throws on network-level fetch failure', async () => {
+      mockFetch.mockRejectedValue(new TypeError('fetch failed'));
+
+      await expect(
+        fetchEntities({ catalogUrl: 'http://localhost:7007' }),
+      ).rejects.toThrow('fetch failed');
+    });
+
     it('throws when array items are missing required entity fields', async () => {
       mockFetch.mockResolvedValue({
         ok: true,

@@ -33,6 +33,8 @@ export type {
   MigrationReport,
 } from './types';
 
+export type { AIAssetCategory } from '@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk';
+
 export { MAPPING_RULES } from './mappings';
 export { analyzeEntities } from './analyze';
 export { fetchEntities } from './catalogClient';

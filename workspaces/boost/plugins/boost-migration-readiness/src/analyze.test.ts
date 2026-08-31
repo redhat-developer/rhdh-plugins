@@ -296,6 +296,27 @@ describe('analyzeEntities', () => {
     );
   });
 
+  it('warns on empty-string category annotation instead of silently excluding', () => {
+    const entities = [
+      makeEntity({
+        kind: 'Component',
+        metadata: {
+          name: 'empty-category',
+          annotations: {
+            'rhdh.io/ai-asset-category': '',
+          },
+        },
+      }),
+    ];
+
+    const report = analyzeEntities(entities);
+    expect(report.entities).toHaveLength(1);
+    expect(report.entities[0].warnings).toContainEqual(
+      expect.stringContaining('Unrecognized'),
+    );
+    expect(report.entities[0].confidence).toBe('low');
+  });
+
   it('handles entities with unrecognized category values', () => {
     const entities = [
       makeEntity({
