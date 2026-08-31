@@ -34,6 +34,9 @@ import { LightspeedFABIcon, LightspeedFABOpenIcon } from './LightspeedIcon';
 
 const publishFabAnchor = (fab: HTMLElement) => {
   const rect = fab.getBoundingClientRect();
+  if (rect.width < 1 || rect.height < 1) {
+    return;
+  }
   const root = document.documentElement;
   root.style.setProperty(
     LIGHTSPEED_FAB_ANCHOR_VARS.insetBlockEnd,

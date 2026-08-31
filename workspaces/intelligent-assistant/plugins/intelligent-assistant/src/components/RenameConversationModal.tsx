@@ -93,7 +93,10 @@ export const RenameConversationModal = ({
       aria-describedby="rename-modal-confirmation"
       fullWidth
     >
-      <DialogTitle sx={{ p: '16px 20px', fontStyle: 'inherit' }}>
+      <DialogTitle
+        id="rename-modal"
+        sx={{ p: '16px 20px', fontStyle: 'inherit' }}
+      >
         <Box
           sx={{
             display: 'flex',
