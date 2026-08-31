@@ -109,7 +109,7 @@ describe('formatText', () => {
     ['High', 'Confidence: High'],
     ['Medium–High', 'Confidence: Medium–High'],
     ['transformations header', 'Transformations:'],
-  ] as [string, string[]][])(
+  ] as [string, string][])(
     'includes %s',
     (_label: string, expected: string) => {
       const output = formatText(sampleReport);
