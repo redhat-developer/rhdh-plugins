@@ -11920,7 +11920,7 @@ __metadata:
     "@types/lodash": "npm:^4.17.5"
     cross-fetch: "npm:^4.0.0"
     lodash: "npm:^4.17.21"
-    msw: "npm:^2.3.4"
+    msw: "npm:^2.15.0"
     ts-morph: "npm:^23.0.0"
     uri-template: "npm:^2.0.0"
     yaml: "npm:^2.4.2"
@@ -11954,7 +11954,7 @@ __metadata:
     "@testing-library/user-event": "npm:^14.0.0"
     date-fns: "npm:^3.6.0"
     lodash: "npm:^4.18.1"
-    msw: "npm:^2.3.4"
+    msw: "npm:^2.15.0"
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
     react-intl: "npm:^6.6.8"
@@ -29428,7 +29428,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"msw@npm:^2.15.0, msw@npm:^2.3.4":
+"msw@npm:^2.15.0":
   version: 2.15.0
   resolution: "msw@npm:2.15.0"
   dependencies:
