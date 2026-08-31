@@ -38,17 +38,17 @@ import {
 const PROVIDER_ID = 'ogx-agent-entity-provider';
 
 /**
- * Annotation key for the boost lifecycle stage.
+ * Annotation key for the ai-catalog lifecycle stage.
  *
  * @internal
  */
-export const ANNOTATION_BOOST_LIFECYCLE_STAGE =
-  'boost.redhat.com/lifecycle-stage';
+export const ANNOTATION_AI_CATALOG_LIFECYCLE_STAGE =
+  'ai-catalog.rhdh.com/lifecycle-stage';
 
 /**
  * Entity provider that reads configured agents from YAML/admin config
- * and emits them as Backstage catalog entities with kind: Component,
- * spec.type: ai-agent.
+ * and emits them as Backstage catalog entities with kind: AiResource,
+ * spec.type: agent.
  *
  * Unlike the model provider which polls an API, agent configurations
  * come from app-config.yaml and are read once at init time.
@@ -106,7 +106,7 @@ export class OgxAgentEntityProvider implements EntityProvider {
   }
 
   /**
-   * Convert an OGX agent config into a Backstage Component entity.
+   * Convert an OGX agent config into a Backstage AiResource entity.
    */
   private agentToEntity(agent: OgxAgentConfig): Entity {
     const entityName = sanitizeEntityName(`ogx-agent-${agent.id}`);
@@ -117,40 +117,46 @@ export class OgxAgentEntityProvider implements EntityProvider {
     };
 
     if (agent.lifecycleStage) {
-      annotations[ANNOTATION_BOOST_LIFECYCLE_STAGE] = agent.lifecycleStage;
+      annotations[ANNOTATION_AI_CATALOG_LIFECYCLE_STAGE] = agent.lifecycleStage;
     }
 
     if (agent.model) {
-      annotations['boost.redhat.com/model'] = agent.model;
+      annotations['ai-catalog.rhdh.com/model'] = agent.model;
     }
 
-    // Build dependsOn relations for handoff targets
-    const dependsOn: string[] = [];
-    if (agent.handoffTargets) {
-      for (const target of agent.handoffTargets) {
-        dependsOn.push(
-          `component:default/${sanitizeEntityName(`ogx-agent-${target}`)}`,
+    // Build handoffs for agent-to-agent delegation targets
+    const handoffs: string[] = [];
+    if (agent.handoffs) {
+      for (const target of agent.handoffs) {
+        handoffs.push(
+          `airesource:default/${sanitizeEntityName(`ogx-agent-${target}`)}`,
         );
       }
     }
 
     return {
       apiVersion: 'backstage.io/v1alpha1',
-      kind: 'Component',
+      kind: 'AiResource',
       metadata: {
         name: entityName,
         title: agent.name,
         description: agent.description ?? `OGX agent: ${agent.name}`,
         annotations,
         labels: {
-          'boost.redhat.com/provider': 'ogx',
+          'ai-catalog.rhdh.com/provider': 'ogx',
         },
       },
       spec: {
-        type: 'ai-agent',
+        type: 'agent',
         lifecycle: mapLifecycleStage(agent.lifecycleStage),
         owner: mapOwner(agent.createdBy),
-        ...(dependsOn.length > 0 && { dependsOn }),
+        instructions:
+          agent.instructions ?? agent.description ?? `OGX agent: ${agent.name}`,
+        ...(handoffs.length > 0 && { handoffs }),
+        ...(agent.handoffDescription && {
+          handoffDescription: agent.handoffDescription,
+        }),
+        ...(agent.enableRAG !== undefined && { enableRAG: agent.enableRAG }),
       },
     };
   }

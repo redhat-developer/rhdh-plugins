@@ -63,8 +63,8 @@ export const intelligentAssistantMessages = {
   'notebook.view.documents.count_one': '{{count}} Resource',
   'notebook.view.documents.count_other': '{{count}} Resources',
   'notebook.view.documents.add': 'Add',
-  'notebook.view.upload.heading': 'Upload a resource to get started',
-  'notebook.view.upload.action': 'Upload a resource',
+  'notebook.view.upload.heading': 'Add a resource to get started',
+  'notebook.view.upload.action': 'Add a resource',
   'notebook.view.processing.heading': 'Processing resources...',
   'notebook.view.processing.description':
     'Your files are being indexed. You can start asking questions once processing is complete.',
@@ -82,14 +82,18 @@ export const intelligentAssistantMessages = {
   'notebook.upload.failed': '"{{fileName}}" upload failed.',
 
   // Notebook upload modal
-  'notebook.upload.modal.title': 'Add a resource to Notebook',
-  'notebook.upload.modal.dragDropTitle': 'Drag and drop files here',
+  'notebook.upload.modal.title': 'Add resources',
+  'notebook.upload.modal.dragDropTitle':
+    'Drag and drop files here, or click to browse',
   'notebook.upload.modal.browseButton': 'Upload',
   'notebook.upload.modal.separator': 'or',
   'notebook.upload.modal.infoText':
     'Accepted file types: .md, .txt, .pdf, .json, .yaml, .log',
+  'notebook.upload.modal.supportedFormats': 'Supported formats:',
+  'notebook.upload.modal.maxFileSize': 'Maximum file size is 25 MB.',
   'notebook.upload.modal.selectedFiles': '{{count}} of {{max}} files selected',
   'notebook.upload.modal.addButton': 'Add ({{count}})',
+  'notebook.upload.modal.addButtonEmpty': 'Add',
   'notebook.upload.modal.removeFile': 'Remove {{fileName}}',
   'notebook.upload.error.unsupportedType':
     'Upload error: Unsupported file type(s) found. Please upload only supported file types.',
@@ -99,10 +103,19 @@ export const intelligentAssistantMessages = {
     'Upload error: Maximum of {{max}} files allowed.',
 
   // Notebook overwrite modal
-  'notebook.overwrite.modal.title': 'Overwrite Files?',
+  'notebook.overwrite.modal.title': 'File already exists',
+  'notebook.overwrite.modal.title.one': 'File already exists',
+  'notebook.overwrite.modal.title.other': 'Files already exist',
   'notebook.overwrite.modal.description':
-    'The following files already exist in this notebook. Do you want to overwrite them with the new versions?',
-  'notebook.overwrite.modal.action': 'Overwrite',
+    '{{duplicateCount}} files already exist in this notebook. {{newCount}} new resources will be added regardless.',
+  'notebook.overwrite.modal.description.one':
+    '{{duplicateCount}} file already exists in this notebook. {{newCount}} new resources will be added regardless.',
+  'notebook.overwrite.modal.description.other':
+    '{{duplicateCount}} files already exist in this notebook. {{newCount}} new resources will be added regardless.',
+  'notebook.overwrite.modal.replace': 'Replace existing files',
+  'notebook.overwrite.modal.ignore': 'Ignore duplicated files',
+  'notebook.overwrite.modal.action': 'Upload ({{count}})',
+  'notebook.overwrite.modal.back': 'Back',
   'notebook.document.rename': 'Rename',
   'notebook.document.rename.tooltip': 'Click to rename',
   'notebook.document.rename.error': 'Failed to rename "{{documentName}}".',

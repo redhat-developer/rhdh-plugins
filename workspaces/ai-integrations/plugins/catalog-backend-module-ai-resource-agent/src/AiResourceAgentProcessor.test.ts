@@ -208,6 +208,49 @@ describe('AiResourceAgentProcessor', () => {
     });
   });
 
+  describe('validateEntityKind', () => {
+    it('should return true for a valid AiResource agent entity', async () => {
+      const entity = makeAiResource({
+        type: 'agent',
+        lifecycle: 'production',
+        owner: 'ai-platform-team',
+        instructions: 'You are a test agent.',
+      });
+      const result = await processor.validateEntityKind(entity);
+      expect(result).toBe(true);
+    });
+
+    it('should return false for a non-AiResource kind', async () => {
+      const entity: Entity = {
+        apiVersion: 'backstage.io/v1alpha1',
+        kind: 'Component',
+        metadata: { name: 'my-component' },
+        spec: { type: 'service', lifecycle: 'production', owner: 'team-a' },
+      };
+      const result = await processor.validateEntityKind(entity);
+      expect(result).toBe(false);
+    });
+
+    it('should return false for AiResource with non-agent spec.type', async () => {
+      const entity = makeAiResource({
+        type: 'skill',
+        lifecycle: 'production',
+        owner: 'team',
+      });
+      const result = await processor.validateEntityKind(entity);
+      expect(result).toBe(false);
+    });
+
+    it('should return false for AiResource with no spec.type', async () => {
+      const entity = makeAiResource({
+        lifecycle: 'production',
+        owner: 'team',
+      });
+      const result = await processor.validateEntityKind(entity);
+      expect(result).toBe(false);
+    });
+  });
+
   describe('non-AiResource entities', () => {
     it('should pass through Component entities unchanged', async () => {
       const entity: Entity = {

@@ -15,14 +15,27 @@
  */
 
 /**
- * Shared UI components and hooks for the RHDH app shell.
+ * Shared UI components and extension APIs for the RHDH app shell.
  *
  * @packageDocumentation
  */
 
+export { AppDrawerContentBlueprint } from './drawer';
+export { appDrawerContentDataRef } from './drawer';
+export { appDrawerExtension, appDrawerModule } from './drawer';
+
 export { useAppDrawer } from './drawer';
-export { ApplicationDrawer } from './drawer';
-export { DrawerPanel } from './drawer';
+export type { AppDrawerContent, AppDrawerApi } from './drawer';
 export type { ApplicationDrawerProps } from './drawer';
 export type { DrawerPanelProps } from './drawer';
-export type { AppDrawerContent, AppDrawerApi } from './drawer';
+
+export { TemplateCardActionBlueprint } from './templateCard';
+export { templateCardActionDataRef } from './templateCard';
+export { TemplateCardBadgeBlueprint } from './templateCard';
+export { templateCardBadgeDataRef } from './templateCard';
+export { templateCardExtension, templateCardModule } from './templateCard';
+export type {
+  TemplateCardActionData,
+  TemplateCardActionProps,
+  TemplateCardBadgeData,
+} from './templateCard';

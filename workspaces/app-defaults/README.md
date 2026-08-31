@@ -13,17 +13,21 @@ yarn start
 
 ### Static `app-auth` wiring
 
-The sample app in [`packages/app`](packages/app) loads RHDH sign-in and OIDC/Auth0/SAML frontend APIs by importing **`appAuthModule`** from `@red-hat-developer-hub/backstage-plugin-app-auth/alpha` and passing it to `createApp({ features: [...] })`. That mirrors how you can mount the module **statically** for local development and tests.
+The sample app in [`packages/app`](packages/app) loads RHDH sign-in and OIDC/Auth0/SAML frontend APIs by importing **`appAuthModule`** from `@red-hat-developer-hub/backstage-plugin-app-auth` and passing it to `createApp({ features: [...] })`. That mirrors how you can mount the module **statically** for local development and tests.
 
 In **RHDH**, the same module is intended to be loaded **dynamically** via `@backstage/frontend-dynamic-feature-loader` and your export/overlays pipeline—not by editing the product `app-next` shell.
 
 ### Static `app-integrations` wiring
 
-The sample app imports **`appIntegrationsModule`** from `@red-hat-developer-hub/backstage-plugin-app-integrations/alpha` and adds it to `createApp({ features: [...] })` (after `appAuthModule`). It registers **`scmIntegrationsApiRef`** and **`scmAuthApiRef`** on `pluginId: 'app'`, matching the classic RHDH [`packages/app` `apis.ts`](https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/apis.ts) SCM factories—so catalog import, scaffolder, and similar features get the same default SCM auth behavior.
+The sample app imports **`appIntegrationsModule`** from `@red-hat-developer-hub/backstage-plugin-app-integrations` and adds it to `createApp({ features: [...] })` (after `appAuthModule`). It registers **`scmIntegrationsApiRef`** and **`scmAuthApiRef`** on `pluginId: 'app'`, matching the classic RHDH [`packages/app` `apis.ts`](https://github.com/redhat-developer/rhdh/blob/main/packages/app/src/apis.ts) SCM factories—so catalog import, scaffolder, and similar features get the same default SCM auth behavior.
 
 Deployments that want different SCM wiring can omit this module and supply their own dynamic (or static) module that registers those refs instead.
 
 In **RHDH**, this module is expected to ship and load **dynamically** alongside `app-auth`, not via edits to `app-next`.
+
+### Static `app-defaults` wiring
+
+The sample app imports **`appDefaultsModule`** from `@red-hat-developer-hub/backstage-plugin-app-defaults`. That module registers the app drawer, the extensible template card, and the common RHDH icon catalog (`IconBundleBlueprint`, IDs matching legacy `CommonIcons`). In **RHDH**, the same module is loaded **dynamically**; the sample app mounts it statically so `yarn start` exercises the production path.
 
 ### Config for `app-auth`
 

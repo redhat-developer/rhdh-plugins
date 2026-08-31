@@ -30,3 +30,4 @@ export const BOOST_PLUGIN_ID = 'boost';
 export * from './types';
 export * from './permissions';
 export * from './ingestion-health';
+export * from './aiAssetTaxonomy';

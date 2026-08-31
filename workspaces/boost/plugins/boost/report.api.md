@@ -470,6 +470,8 @@ export const boostTranslationRef: TranslationRef<
     readonly 'catalog.tab.usageViewTechDocs': string;
     readonly 'catalog.tab.usageExternalLinks': string;
     readonly 'catalog.tab.usageNoDocumentation': string;
+    readonly 'catalog.tab.usagePermissionDenied': string;
+    readonly 'catalog.tab.usageContactOwner': string;
     readonly 'catalog.toolbar.search': string;
     readonly 'catalog.toolbar.allPrefix': string;
     readonly 'catalog.toolbar.viewGrid': string;
@@ -482,6 +484,10 @@ export const boostTranslationRef: TranslationRef<
     readonly 'catalog.card.copied': string;
     readonly 'catalog.card.copyAriaLabel': string;
     readonly 'catalog.card.adoptionDownloadZip': string;
+    readonly 'catalog.card.modelsAvailableTitle': string;
+    readonly 'catalog.card.instructionsTitle': string;
+    readonly 'catalog.card.handoffDescriptionTitle': string;
+    readonly 'catalog.card.ragEnabledLabel': string;
     readonly 'catalog.empty.title': string;
     readonly 'catalog.empty.description': string;
     readonly 'catalog.empty.learnMore': string;

@@ -22,6 +22,7 @@ import type {
 import type { JsonValue } from '@backstage/types';
 import { RuntimeConfigResolver } from './RuntimeConfigResolver';
 import { AdminConfigService } from './AdminConfigService';
+import { CONNECTOR_IDS, BOOST_CONNECTOR_SCHEMA_VERSION } from './schemas';
 
 function createMockLogger(): LoggerService {
   return {
@@ -361,6 +362,651 @@ describe('RuntimeConfigResolver', () => {
       // Should now return YAML baseline
       value = await resolver.resolve('boost.model.baseUrl');
       expect(value).toBe('https://yaml.example.com/api');
+    });
+  });
+
+  describe('connector config resolution', () => {
+    it('resolves connector enabled from YAML baseline when no DB override', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            jira: { enabled: true },
+          },
+        },
+      });
+
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      const value = await resolver.resolve('boost.connectors.jira.enabled');
+      expect(value).toBe(true);
+    });
+
+    it('DB override takes precedence for connector enabled', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            jira: { enabled: true },
+          },
+        },
+      });
+
+      const dbOverrides = new Map([['boost.connectors.jira.enabled', false]]);
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(dbOverrides),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      const value = await resolver.resolve('boost.connectors.jira.enabled');
+      expect(value).toBe(false);
+    });
+
+    it('resolves connector endpoint from YAML baseline', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            github: {
+              endpoint: 'https://api.github.com',
+            },
+          },
+        },
+      });
+
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      const value = await resolver.resolve('boost.connectors.github.endpoint');
+      expect(value).toBe('https://api.github.com');
+    });
+
+    it('resolves connector numeric fields from YAML baseline', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            jira: {
+              schedule: { intervalMs: 600000 },
+              batchSize: 50,
+              timeout: { connectionMs: 15000 },
+            },
+          },
+        },
+      });
+
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      expect(
+        await resolver.resolve('boost.connectors.jira.schedule.intervalMs'),
+      ).toBe(600000);
+      expect(await resolver.resolve('boost.connectors.jira.batchSize')).toBe(
+        50,
+      );
+      expect(
+        await resolver.resolve('boost.connectors.jira.timeout.connectionMs'),
+      ).toBe(15000);
+    });
+
+    it('returns undefined for unset connector fields', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      const value = await resolver.resolve('boost.connectors.jira.enabled');
+      expect(value).toBeUndefined();
+    });
+
+    it('caches connector config with 30s TTL', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            gitlab: { enabled: true },
+          },
+        },
+      });
+
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      await resolver.resolve('boost.connectors.gitlab.enabled');
+
+      expect(cache.set).toHaveBeenCalledWith(
+        'effective-config',
+        expect.any(Object),
+        { ttl: 30_000 },
+      );
+    });
+
+    it('immediate invalidation causes fresh resolve', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            jira: { enabled: true },
+          },
+        },
+      });
+
+      let dbOverrides = new Map<string, unknown>();
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockImplementation(async () => dbOverrides),
+        setOverride: jest.fn().mockImplementation(async () => {
+          dbOverrides = new Map([['boost.connectors.jira.enabled', false]]);
+        }),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      // Initial resolve: YAML baseline
+      let value = await resolver.resolve('boost.connectors.jira.enabled');
+      expect(value).toBe(true);
+
+      // Write DB override and invalidate
+      await resolver.set('boost.connectors.jira.enabled', false);
+
+      // Resolve again: should return DB override
+      value = await resolver.resolve('boost.connectors.jira.enabled');
+      expect(value).toBe(false);
+    });
+
+    it('resolves multiple connector types simultaneously', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            jira: { enabled: true, batchSize: 200 },
+            github: { enabled: false },
+            gitlab: { enabled: true },
+          },
+        },
+      });
+
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      const allConfig = await resolver.resolveAll();
+
+      expect(allConfig.get('boost.connectors.jira.enabled')).toBe(true);
+      expect(allConfig.get('boost.connectors.jira.batchSize')).toBe(200);
+      expect(allConfig.get('boost.connectors.github.enabled')).toBe(false);
+      expect(allConfig.get('boost.connectors.gitlab.enabled')).toBe(true);
+    });
+  });
+
+  describe('migrateConnectorSchemas', () => {
+    it('writes v1 when no __schemaVersion exists', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+        getOverride: jest.fn().mockResolvedValue(undefined),
+        setOverride: jest.fn().mockResolvedValue(undefined),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      await resolver.migrateConnectorSchemas();
+
+      for (const connectorId of CONNECTOR_IDS) {
+        expect(adminConfigService.setOverride).toHaveBeenCalledWith(
+          `boost.connectors.${connectorId}.__schemaVersion`,
+          1,
+        );
+      }
+    });
+
+    it('treats missing version as v1 (logged)', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+        getOverride: jest.fn().mockResolvedValue(undefined),
+        setOverride: jest.fn().mockResolvedValue(undefined),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      await resolver.migrateConnectorSchemas();
+
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining('treating as v1'),
+      );
+    });
+
+    it('skips migration when stored version equals current', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+        getOverride: jest
+          .fn()
+          .mockResolvedValue(BOOST_CONNECTOR_SCHEMA_VERSION),
+        setOverride: jest.fn().mockResolvedValue(undefined),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      await resolver.migrateConnectorSchemas();
+
+      expect(adminConfigService.setOverride).not.toHaveBeenCalled();
+    });
+
+    it('warns and skips when stored version is ahead of current', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+        getOverride: jest.fn().mockResolvedValue(99),
+        setOverride: jest.fn().mockResolvedValue(undefined),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      await resolver.migrateConnectorSchemas();
+
+      expect(adminConfigService.setOverride).not.toHaveBeenCalled();
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('possible downgrade'),
+      );
+    });
+
+    it('invalidates cache after migration completes', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+        getOverride: jest.fn().mockResolvedValue(undefined),
+        setOverride: jest.fn().mockResolvedValue(undefined),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      await resolver.migrateConnectorSchemas();
+
+      expect(cache.delete).toHaveBeenCalledWith('effective-config');
+    });
+
+    it('handles each connector independently', async () => {
+      const config = createMockConfig({});
+
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+        getOverride: jest.fn().mockImplementation(async (key: string) => {
+          if (key === 'boost.connectors.jira.__schemaVersion') {
+            return BOOST_CONNECTOR_SCHEMA_VERSION;
+          }
+          if (key === 'boost.connectors.gitlab.__schemaVersion') {
+            return BOOST_CONNECTOR_SCHEMA_VERSION;
+          }
+          return undefined;
+        }),
+        setOverride: jest.fn().mockResolvedValue(undefined),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      await resolver.migrateConnectorSchemas();
+
+      expect(adminConfigService.setOverride).toHaveBeenCalledTimes(1);
+      expect(adminConfigService.setOverride).toHaveBeenCalledWith(
+        'boost.connectors.github.__schemaVersion',
+        1,
+      );
+    });
+  });
+
+  describe('field defaults', () => {
+    it('returns field default when DB and YAML are both unset', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      expect(
+        await resolver.resolve('boost.connectors.jira.schedule.intervalMs'),
+      ).toBe(300000);
+      expect(
+        await resolver.resolve('boost.connectors.github.schedule.intervalMs'),
+      ).toBe(300000);
+      expect(
+        await resolver.resolve('boost.connectors.gitlab.schedule.intervalMs'),
+      ).toBe(300000);
+    });
+
+    it('returns batchSize default when DB and YAML are both unset', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      expect(await resolver.resolve('boost.connectors.jira.batchSize')).toBe(
+        100,
+      );
+      expect(await resolver.resolve('boost.connectors.github.batchSize')).toBe(
+        100,
+      );
+      expect(await resolver.resolve('boost.connectors.gitlab.batchSize')).toBe(
+        100,
+      );
+    });
+
+    it('returns timeout.connectionMs default for Jira when unset', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      expect(
+        await resolver.resolve('boost.connectors.jira.timeout.connectionMs'),
+      ).toBe(30000);
+    });
+
+    it('YAML value takes precedence over field default', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            jira: {
+              schedule: { intervalMs: 600000 },
+              batchSize: 50,
+              timeout: { connectionMs: 15000 },
+            },
+          },
+        },
+      });
+
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      expect(
+        await resolver.resolve('boost.connectors.jira.schedule.intervalMs'),
+      ).toBe(600000);
+      expect(await resolver.resolve('boost.connectors.jira.batchSize')).toBe(
+        50,
+      );
+      expect(
+        await resolver.resolve('boost.connectors.jira.timeout.connectionMs'),
+      ).toBe(15000);
+    });
+
+    it('DB override takes precedence over YAML and field default', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            jira: {
+              schedule: { intervalMs: 600000 },
+              batchSize: 50,
+            },
+          },
+        },
+      });
+
+      const dbOverrides = new Map<string, unknown>([
+        ['boost.connectors.jira.schedule.intervalMs', 120000],
+        ['boost.connectors.jira.batchSize', 25],
+      ]);
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(dbOverrides),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      expect(
+        await resolver.resolve('boost.connectors.jira.schedule.intervalMs'),
+      ).toBe(120000);
+      expect(await resolver.resolve('boost.connectors.jira.batchSize')).toBe(
+        25,
+      );
+    });
+
+    it('falls back to default after removeOverride when no YAML', async () => {
+      const config = createMockConfig({});
+
+      let dbOverrides = new Map<string, unknown>([
+        ['boost.connectors.jira.batchSize', 25],
+      ]);
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockImplementation(async () => dbOverrides),
+        removeOverride: jest.fn().mockImplementation(async () => {
+          dbOverrides = new Map();
+        }),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      // DB override is present
+      expect(await resolver.resolve('boost.connectors.jira.batchSize')).toBe(
+        25,
+      );
+
+      // Remove override and invalidate
+      await resolver.remove('boost.connectors.jira.batchSize');
+
+      // Should fall back to field default
+      expect(await resolver.resolve('boost.connectors.jira.batchSize')).toBe(
+        100,
+      );
+    });
+
+    it('returns undefined for fields without defaults', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      // enabled, endpoint, schedule.cron have no defaults
+      expect(
+        await resolver.resolve('boost.connectors.jira.enabled'),
+      ).toBeUndefined();
+      expect(
+        await resolver.resolve('boost.connectors.jira.endpoint'),
+      ).toBeUndefined();
+      expect(
+        await resolver.resolve('boost.connectors.jira.schedule.cron'),
+      ).toBeUndefined();
+    });
+
+    it('resolveAll includes field defaults for unset keys', async () => {
+      const config = createMockConfig({});
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(new Map()),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      const allConfig = await resolver.resolveAll();
+
+      // Defaults should be present
+      expect(allConfig.get('boost.connectors.jira.schedule.intervalMs')).toBe(
+        300000,
+      );
+      expect(allConfig.get('boost.connectors.jira.batchSize')).toBe(100);
+      expect(allConfig.get('boost.connectors.jira.timeout.connectionMs')).toBe(
+        30000,
+      );
+      expect(allConfig.get('boost.connectors.github.schedule.intervalMs')).toBe(
+        300000,
+      );
+      expect(allConfig.get('boost.connectors.github.batchSize')).toBe(100);
+      expect(allConfig.get('boost.connectors.gitlab.schedule.intervalMs')).toBe(
+        300000,
+      );
+      expect(allConfig.get('boost.connectors.gitlab.batchSize')).toBe(100);
+
+      // Fields without defaults should NOT be present
+      expect(allConfig.has('boost.connectors.jira.enabled')).toBe(false);
+      expect(allConfig.has('boost.connectors.jira.endpoint')).toBe(false);
+      expect(allConfig.has('boost.connectors.jira.schedule.cron')).toBe(false);
+    });
+
+    it('resolveAll does not override YAML or DB values with defaults', async () => {
+      const config = createMockConfig({
+        boost: {
+          connectors: {
+            jira: {
+              schedule: { intervalMs: 600000 },
+            },
+          },
+        },
+      });
+
+      const dbOverrides = new Map<string, unknown>([
+        ['boost.connectors.jira.batchSize', 250],
+      ]);
+      const adminConfigService = {
+        getAllOverrides: jest.fn().mockResolvedValue(dbOverrides),
+      } as unknown as AdminConfigService;
+
+      const resolver = new RuntimeConfigResolver({
+        cache,
+        config,
+        adminConfigService,
+        logger,
+      });
+
+      const allConfig = await resolver.resolveAll();
+
+      // YAML value beats default
+      expect(allConfig.get('boost.connectors.jira.schedule.intervalMs')).toBe(
+        600000,
+      );
+      // DB override beats default
+      expect(allConfig.get('boost.connectors.jira.batchSize')).toBe(250);
+      // No YAML or DB — default applied
+      expect(allConfig.get('boost.connectors.jira.timeout.connectionMs')).toBe(
+        30000,
+      );
     });
   });
 });

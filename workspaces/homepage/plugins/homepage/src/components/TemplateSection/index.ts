@@ -14,5 +14,3 @@
  * limitations under the License.
  */
 export { TemplateSectionContent } from './TemplateSection';
-export { TemplateSection } from '../legacy/HomePageLegacyCards';
-export { TemplateSection as default } from '../legacy/HomePageLegacyCards';

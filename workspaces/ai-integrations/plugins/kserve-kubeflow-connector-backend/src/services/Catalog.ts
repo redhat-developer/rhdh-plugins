@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-// Model Catalog client code extracted from the former Kfmr.ts module.
-// Provides catalog route discovery and model card fetching via the
+// Catalog route discovery and model card fetching via the
 // KubeFlow Model Catalog API (/api/model_catalog/v1alpha1).
 
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import {
   type ReconcilerConfig,
   type Route,
@@ -27,7 +27,6 @@ import {
   route_plural,
 } from './types';
 
-// Catalog API constants (renamed from KFMR_CATALOG_BASE_URI)
 export const CATALOG_BASE_URI = '/api/model_catalog/v1alpha1';
 export const GET_CATALOG_MODEL_URI = '/sources/%s/models/%s';
 
@@ -36,7 +35,6 @@ export const CATALOG_MODEL_ANNOTATION = 'rhdh.io/catalog-model';
 
 /**
  * Minimal client interface for the KubeFlow Model Catalog API.
- * Retains only catalog-related operations from the former KFMRClient.
  */
 export interface CatalogClient {
   rootCatalogURL: string;
@@ -56,21 +54,17 @@ export async function setupCatalogRoute(
   config: ReconcilerConfig,
 ): Promise<void> {
   if (config.catalogRoute) {
-    console.log('setupCatalogRoute: catalog route already discovered');
+    config.logger?.debug('setupCatalogRoute: catalog route already discovered');
     return;
   }
 
-  if (
-    config.catalogUrl !== undefined &&
-    config.catalogUrl !== null &&
-    config.catalogUrl.length > 0
-  ) {
-    console.log('setupCatalogRoute: catalog url configured');
+  if (config.catalogUrl) {
+    config.logger?.debug('setupCatalogRoute: catalog url configured');
     return;
   }
 
   if (!config.routeClient) {
-    console.log('setupCatalogRoute: no route client available');
+    config.logger?.debug('setupCatalogRoute: no route client available');
     return;
   }
 
@@ -95,7 +89,7 @@ export async function setupCatalogRoute(
 
     for (const route of routes) {
       if (route.metadata.name.includes('catalog')) {
-        console.log(
+        config.logger?.debug(
           `setupCatalogRoute: found catalog route ${route.metadata.name}`,
         );
         config.catalogRoute = route;
@@ -103,9 +97,12 @@ export async function setupCatalogRoute(
       }
     }
 
-    console.log('setupCatalogRoute: no catalog route found');
+    config.logger?.debug('setupCatalogRoute: no catalog route found');
   } catch (error) {
-    console.error('setupCatalogRoute: error listing routes by label:', error);
+    config.logger?.error(
+      'setupCatalogRoute: error listing routes by label',
+      error as Error,
+    );
   }
 }
 
@@ -117,6 +114,7 @@ export async function fetchModelCard(
   sourceId: string,
   modelName: string,
   token: string,
+  logger?: LoggerService,
 ): Promise<string | undefined> {
   const encodedSourceId = encodeURIComponent(sourceId);
   const encodedModelName = encodeURIComponent(modelName);
@@ -142,7 +140,7 @@ export async function fetchModelCard(
     );
   }
 
-  console.log(`fetchModelCard: GET request to ${url} returned ok`);
+  logger?.debug(`fetchModelCard: GET request to ${url} returned ok`);
   const data: CatalogModel = await response.json();
   return data.readme;
 }
@@ -156,18 +154,16 @@ export function createCatalogClient(
   catalogRoute: Route | undefined,
   token: string,
   catalogUrl?: string,
+  logger?: LoggerService,
 ): CatalogClient | undefined {
   let rootCatalogURL: string;
 
-  if (catalogUrl && catalogUrl.length > 0) {
+  if (catalogUrl) {
     rootCatalogURL = `${catalogUrl}${CATALOG_BASE_URI}`;
-  } else if (
-    catalogRoute?.status?.ingress &&
-    catalogRoute.status.ingress.length > 0
-  ) {
+  } else if (catalogRoute?.status?.ingress?.length) {
     rootCatalogURL = `https://${catalogRoute.status.ingress[0].host}${CATALOG_BASE_URI}`;
   } else {
-    console.log(
+    logger?.debug(
       'createCatalogClient: no catalog URL or route ingress available',
     );
     return undefined;
@@ -176,6 +172,6 @@ export function createCatalogClient(
   return {
     rootCatalogURL,
     getModelCard: (sourceId: string, modelName: string) =>
-      fetchModelCard(rootCatalogURL, sourceId, modelName, token),
+      fetchModelCard(rootCatalogURL, sourceId, modelName, token, logger),
   };
 }

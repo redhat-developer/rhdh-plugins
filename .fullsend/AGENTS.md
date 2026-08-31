@@ -21,3 +21,15 @@ the base branch version
 run `yarn install` followed by `yarn dedupe` in the workspace directory.
 This produces a clean lockfile that incorporates both the base branch
 dependencies and your changes.
+
+When creating a changeset, select the bump level based on the change
+type:
+
+- `patch` for bug fixes, refactors, chores, and internal improvements
+  with no user-facing behavior change.
+- `minor` for new features or capabilities visible to plugin consumers.
+- `major` for breaking API changes (removed exports, changed interfaces,
+  dropped support).
+
+Match the bump level to the issue's stated intent (title prefix,
+constraints), not the size of the diff.

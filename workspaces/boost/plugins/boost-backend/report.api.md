@@ -27,6 +27,7 @@ import { Permission } from '@backstage/plugin-permission-common';
 import { PermissionCondition } from '@backstage/plugin-permission-common';
 import { PermissionCriteria } from '@backstage/plugin-permission-common';
 import type { PermissionsService } from '@backstage/backend-plugin-api';
+import { PolicyDecision } from '@backstage/plugin-permission-common';
 import type { ProviderDescriptor } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { Request as Request_2 } from 'express';
 import type { RequestHandler } from 'express';
@@ -86,6 +87,50 @@ export interface AgentRoutesOptions {
 }
 
 // @public
+export interface AiCatalogAsset {
+  category?: string;
+  config?: Record<string, unknown>;
+  connectionEndpoints?: Record<string, string>;
+  deploymentParameters?: Record<string, unknown>;
+  description?: string;
+  id: string;
+  lifecycleStage?: string;
+  name: string;
+  tags?: string[];
+  usageDocs?: string;
+  versionCount?: number;
+}
+
+// @public
+export interface AiCatalogAssetLoader {
+  findById(id: string): Promise<AiCatalogAsset | undefined>;
+  list(options?: {
+    isAuthorized?: (resource: AiCatalogAssetResource) => boolean;
+  }): Promise<AiCatalogAsset[]>;
+}
+
+// @public
+export interface AiCatalogAssetResource {
+  // (undocumented)
+  metadata: {
+    annotations?: Record<string, string>;
+    namespace?: string;
+  };
+}
+
+// @public
+export interface AiCatalogRoutesOptions {
+  assetLoader: AiCatalogAssetLoader;
+  httpAuth: HttpAuthService;
+  isResourceAuthorized: (
+    decision: PolicyDecision,
+    resource: AiCatalogAssetResource,
+  ) => boolean;
+  logger: LoggerService;
+  permissions: PermissionsService;
+}
+
+// @public
 export function authorizeLifecycleAction(
   permission: Permission,
   _resourceLoader: ResourceLoader,
@@ -119,7 +164,10 @@ export interface BackendApprovalStoreOptions {
 }
 
 // @public
-export const BOOST_CONFIG_SCHEMA_VERSION = 3;
+export const BOOST_CONFIG_SCHEMA_VERSION = 5;
+
+// @public
+export const BOOST_CONNECTOR_SCHEMA_VERSION = 1;
 
 // @public
 export const boostAiProviderServiceFactory: ServiceFactory<
@@ -152,9 +200,11 @@ export const boostConfigFields: {
     readonly description: string;
   };
   readonly 'boost.security.mode': {
-    readonly schema: z.ZodEnum<
-      ['development-only-no-auth', 'plugin-only', 'full']
-    >;
+    readonly schema: z.ZodEnum<{
+      'development-only-no-auth': 'development-only-no-auth';
+      'plugin-only': 'plugin-only';
+      full: 'full';
+    }>;
     readonly configScope: ConfigScope;
     readonly description: string;
   };
@@ -169,7 +219,12 @@ export const boostConfigFields: {
     readonly description: string;
   };
   readonly 'boost.agentApproval.mode': {
-    readonly schema: z.ZodOptional<z.ZodEnum<['built-in', 'sonataflow']>>;
+    readonly schema: z.ZodOptional<
+      z.ZodEnum<{
+        'built-in': 'built-in';
+        sonataflow: 'sonataflow';
+      }>
+    >;
     readonly configScope: ConfigScope;
     readonly description: string;
   };
@@ -221,6 +276,98 @@ export const boostConfigFields: {
     readonly configScope: ConfigScope;
     readonly description: string;
   };
+  readonly 'boost.connectors.jira.__schemaVersion': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.github.__schemaVersion': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.gitlab.__schemaVersion': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.jira.enabled': {
+    readonly schema: z.ZodOptional<z.ZodBoolean>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.jira.endpoint': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: `HTTPS endpoint URL for the ${string} ${string}. Must use HTTPS.`;
+  };
+  readonly 'boost.connectors.jira.schedule.intervalMs': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+    readonly defaultValue: 300000;
+  };
+  readonly 'boost.connectors.jira.schedule.cron': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.jira.batchSize': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+    readonly defaultValue: 100;
+  };
+  readonly 'boost.connectors.jira.timeout.connectionMs': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+    readonly defaultValue: 30000;
+  };
+  readonly 'boost.connectors.github.enabled': {
+    readonly schema: z.ZodOptional<z.ZodBoolean>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.github.endpoint': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: `HTTPS endpoint URL for the ${string} ${string}. Must use HTTPS.`;
+  };
+  readonly 'boost.connectors.github.schedule.intervalMs': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+    readonly defaultValue: 300000;
+  };
+  readonly 'boost.connectors.github.batchSize': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+    readonly defaultValue: 100;
+  };
+  readonly 'boost.connectors.gitlab.enabled': {
+    readonly schema: z.ZodOptional<z.ZodBoolean>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+  };
+  readonly 'boost.connectors.gitlab.endpoint': {
+    readonly schema: z.ZodOptional<z.ZodString>;
+    readonly configScope: ConfigScope;
+    readonly description: `HTTPS endpoint URL for the ${string} ${string}. Must use HTTPS.`;
+  };
+  readonly 'boost.connectors.gitlab.schedule.intervalMs': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+    readonly defaultValue: 300000;
+  };
+  readonly 'boost.connectors.gitlab.batchSize': {
+    readonly schema: z.ZodOptional<z.ZodNumber>;
+    readonly configScope: ConfigScope;
+    readonly description: string;
+    readonly defaultValue: 100;
+  };
 };
 
 // @public
@@ -248,6 +395,7 @@ export interface ClassifyOptions {
 // @public
 export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
   configScope: ConfigScope;
+  defaultValue?: z.output<T>;
   description: string;
   schema: T;
   sensitive?: boolean;
@@ -255,6 +403,9 @@ export interface ConfigFieldMeta<T extends z.ZodTypeAny = z.ZodTypeAny> {
 
 // @public
 export type ConfigScope = 'yaml-only' | 'db-overridable' | 'db-only';
+
+// @public
+export const CONNECTOR_IDS: readonly ['jira', 'github', 'gitlab'];
 
 // @public
 export interface ConnectorCandidate {
@@ -267,14 +418,27 @@ export interface ConnectorCandidate {
 // @public
 export class ConnectorConfigReader {
   constructor(options: ConnectorConfigReaderOptions);
-  listCandidates(): ConnectorCandidate[];
+  listCandidates(): Promise<ConnectorCandidate[]>;
 }
 
 // @public
 export interface ConnectorConfigReaderOptions {
   config: RootConfigService;
   logger: LoggerService;
+  resolver: RuntimeConfigResolver;
 }
+
+// @public
+export type ConnectorId = (typeof CONNECTOR_IDS)[number];
+
+// @public
+export type ConnectorMigrationFn = (
+  connectorId: ConnectorId,
+  adminConfigService: AdminConfigService,
+) => Promise<void>;
+
+// @public
+export type ConnectorMigrationRegistry = Map<number, ConnectorMigrationFn>;
 
 // @public
 export class ConversationAgentCache {
@@ -361,6 +525,9 @@ export function createAgentResourceLoader(): ResourceLoader;
 
 // @public
 export function createAgentRoutes(options: AgentRoutesOptions): Router;
+
+// @public
+export function createAiCatalogRoutes(options: AiCatalogRoutesOptions): Router;
 
 // @public
 export function createChatRoutes(options: ChatRoutesOptions): Router;
@@ -546,6 +713,9 @@ export type ResourceLoader = (req: Request_2) => Promise<
 export class RuntimeConfigResolver {
   constructor(options: RuntimeConfigResolverOptions);
   invalidate(): Promise<void>;
+  migrateConnectorSchemas(
+    migrations?: ConnectorMigrationRegistry,
+  ): Promise<void>;
   resolve(key: BoostConfigKey): Promise<unknown | undefined>;
   resolveAll(): Promise<Map<string, unknown>>;
 }

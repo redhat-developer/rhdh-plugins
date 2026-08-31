@@ -81,14 +81,56 @@ failures or config-surface drift.
    `@visibility` JSDoc annotations matching the field's scope
 2. Register the field in `src/config/schemas.ts` under
    `boostConfigFields` with a Zod schema, `configScope`, and
-   `description`
-3. Bump `BOOST_CONFIG_SCHEMA_VERSION` in `src/config/schemas.ts`
+   `description`. Optional `defaultValue` is the read-time fallback
+   (DB → YAML → field default); do not use Zod `.default()` — that
+   collapses "unset" during `validateConfigValue` and breaks resolver
+   precedence.
+3. Bump `BOOST_CONFIG_SCHEMA_VERSION` in `src/config/schemas.ts`.
+   Per-connector `__schemaVersion` leaves (`configScope: db-only`) are
+   the versioning machinery itself and do not require bumping this
+   constant.
 4. Add example usage in `examples/app-config.connectors.yaml` (or
    the appropriate `app-config.*.yaml` example file)
-5. Run `yarn build:api-reports` and commit the updated
-   `report.api.md`
+5. Run `yarn tsc:full && yarn build:api-reports:only` and commit the
+   updated `report.api.md`
 
 When reviewing PRs that add or modify `boost.*` config keys, verify all five registration steps above were completed.
+
+### Wiring startup logic
+
+When adding a new initialization, migration, or validation method to
+`RuntimeConfigResolver`, `AdminConfigService`, or any plugin-scoped
+service:
+
+1. Implement the method with unit tests.
+2. Wire it into the corresponding `plugin.ts` module setup — verify
+   the method is actually called during startup.
+3. If the method must run before other initialization (e.g., migration
+   before config reads), place the call in the correct order within
+   the setup function.
+4. Confirm the plugin still starts cleanly by running the full test
+   suite.
+
+### Migration patterns
+
+Connector schema migrations (`migrateConnectorSchemas` in
+`RuntimeConfigResolver`) follow these robustness requirements:
+
+- **Per-step version stamping:** After each successful migration step
+  (e.g., v1 to v2), stamp the new version immediately. This makes
+  migrations resumable — a failure at v2-to-v3 does not re-run v1-to-v2
+  on the next startup.
+- **Per-entity error isolation:** Wrap each connector's migration in
+  try/catch. A failure migrating one connector (e.g., jira) must not
+  prevent migration of others (github, gitlab). Accumulate the first
+  error and rethrow after all connectors are attempted.
+- **Preserve original errors:** When post-migration cleanup (e.g.,
+  cache invalidation) also fails, preserve the original migration
+  error. Use `firstError ??= cleanupError` so the root cause is not
+  masked.
+- **Missing version = v1:** Treat a missing `__schemaVersion` as v1
+  (the initial version), not as the current version. Write v1
+  explicitly and fall through to the migration loop.
 
 ### Package structure
 
@@ -124,7 +166,7 @@ const endpoint = safeGetOptionalString(config, 'endpoint');
 - Config namespace: `boost.*` (e.g., `boost.features.agentCreation`, `boost.security.mode`)
 - Permission names — two namespaces by design:
   - `boost.*` — application-layer agent/tool operations: `boost.agent.*`, `boost.tool.*`, `boost.kagenti.admin`, `boost.access`, `boost.admin`
-  - `ai-catalog.*` — catalog-layer RBAC for AI asset visibility and governance: `ai-catalog.asset.read`, `ai-catalog.asset.read.usage-docs`, `ai-catalog.admin`
+  - `ai-catalog.*` — catalog-layer RBAC for AI asset visibility and governance: `ai-catalog.asset.access`, `ai-catalog.asset.access.usage-docs`, `ai-catalog.admin` (uses `access` rather than `read` per issue #4041's naming decision; the underlying `attributes.action` stays `'read'`)
 - Config: `ai-catalog.rbac.*` for catalog RBAC config (e.g., `ai-catalog.rbac.defaultPolicy`)
 - Resource types: `boost-agent`, `boost-tool`, `ai-catalog-asset`
 - DB tables: `boost_admin_config`, `boost_sessions`, `boost_messages`, `boost_feedback`
@@ -143,27 +185,60 @@ Every feature ships with tests. Integration tests use real database and cache ba
 - WCAG 2.1 AA accessibility
 - Feature flags via `boost.features.*` in `app-config.yaml`
 
+## Documentation conventions
+
+### Relative markdown links
+
+When creating or modifying relative links (`../` paths) between files in different directory subtrees (especially between `openspec/` and `specifications/`), verify each link resolves to an existing file. Count the directory levels from the source file to the nearest common ancestor directory, then from the ancestor to the target. Use `ls` or `stat` on the resolved path to confirm it exists before committing.
+
+The `openspec/changes/` tree can be 5–7 levels deep under `workspaces/boost/`, while `specifications/` is only 1 level deep — miscounting `../` levels between these subtrees is the most common documentation error.
+
+For example, a file at `openspec/changes/area/specs/group/spec.md` (6 levels deep) linking to `specifications/design.md` (1 level deep) requires 6 `../` segments to reach `workspaces/boost/`, then `specifications/design.md`:
+
+```
+../../../../../../specifications/design.md
+```
+
+Always verify:
+
+```bash
+# From the directory containing the source file, check the link resolves:
+ls <relative-path-from-link>
+```
+
 ## Build & verify
 
-| Task                | Command                              |
-| ------------------- | ------------------------------------ |
-| Full build          | `yarn build:all`                     |
-| Type-check          | `yarn tsc:full`                      |
-| Lint                | `yarn lint:all`                      |
-| Test                | `CI=true yarn test --watchAll=false` |
-| API reports         | `yarn build:api-reports`             |
-| OpenSpec validation | `yarn openspec:validate`             |
+| Task                | Command                                        |
+| ------------------- | ---------------------------------------------- |
+| Full build          | `yarn build:all`                               |
+| Type-check          | `yarn tsc:full`                                |
+| Lint                | `yarn lint:all`                                |
+| Prettier            | `yarn prettier:fix`                            |
+| Test                | `CI=true yarn test --watchAll=false`           |
+| API reports         | `yarn tsc:full && yarn build:api-reports:only` |
+| OpenSpec validation | `yarn openspec:validate`                       |
 
 **After modifying any file that affects the public API surface** (including
 `translations/ref.ts`, exported types, or API routes), run
-`yarn build:api-reports` and commit the updated `report.api.md`.
+`yarn tsc:full && yarn build:api-reports:only` and commit the updated
+`report.api.md`. Always use the two-step sequence (`tsc:full` then
+`build:api-reports:only`), not the all-in-one `build:api-reports:only`
+variant without the `:only` suffix — the all-in-one command performs its
+own TypeScript compilation with different member ordering that does not
+match CI. The `:only` command reads from the `dist-types` produced by
+`tsc:full`, which matches the CI pipeline.
 
 ## Import conventions
 
 - **Icons**: use `@remixicon/react` (e.g., `RiCheckLine`, `RiDownload2Line`).
   Do NOT use `@mui/icons-material` — the plugin migrated in PR #3929.
-- **Entity type comparisons**: always normalize with `.toLowerCase()` before
-  comparing `spec.type` values (see `isAiAsset.ts`, `categoryMeta.ts`).
+- **Entity type comparisons**: always normalize with `.toLowerCase()` (or
+  `.toLocaleLowerCase('en-US')` in `boost-common`, per its lint rule) before
+  comparing `spec.type` values (see `boost-common/src/aiAssetTaxonomy.ts`,
+  `categoryMeta.ts`). The AI asset kind/`spec.type` taxonomy
+  (`AI_ASSET_SPEC_TYPES`, `isAiAsset`, `buildAiAssetCatalogFilter`) lives in
+  `boost-common` as the single source of truth for both `boost` and
+  `boost-backend` — do not re-duplicate it in either plugin.
 
 ## What not to do
 
@@ -176,7 +251,7 @@ Every feature ships with tests. Integration tests use real database and cache ba
 
 ## Before committing
 
-- Run `yarn prettier:check` from the workspace root. If it fails, run `yarn prettier:fix` and stage the corrected files.
+- Run `yarn prettier:fix` from the workspace root and stage any reformatted files.
 - If public exports or function signatures changed, run `yarn build:api-reports:only --ci`.
 
 ## Scripts directory

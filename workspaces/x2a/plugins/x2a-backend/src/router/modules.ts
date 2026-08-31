@@ -19,6 +19,7 @@ import express from 'express';
 import { InputError, NotFoundError } from '@backstage/errors';
 
 import {
+  type MigrationPhase,
   type ModulePhase,
   JobStatus,
   Phase,
@@ -312,9 +313,10 @@ export function registerModuleRoutes(
       );
 
       const cancelModuleRequestSchema = z.object({
-        phase: z.enum(
-          Phase.modulePhaseValues() as [ModulePhase, ...ModulePhase[]],
-        ),
+        phase: z.enum([
+          ...Phase.modulePhaseValues(),
+          ...Phase.adversarialPhases().map(p => p.value),
+        ] as [string, ...string[]]),
       });
 
       const parsedBody = cancelModuleRequestSchema
@@ -351,7 +353,7 @@ export function registerModuleRoutes(
       const jobs = await x2aDatabase.listJobs({
         projectId,
         moduleId,
-        phase,
+        phase: phase as MigrationPhase,
         lastJobOnly: true,
       });
 

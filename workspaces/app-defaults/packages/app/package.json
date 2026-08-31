@@ -44,6 +44,7 @@
     "@mui/icons-material": "^5.18.0",
     "@mui/material": "^5.18.0",
     "@red-hat-developer-hub/backstage-plugin-app-auth": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-app-defaults": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-app-integrations": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-app-react": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-global-header": "^1.21.0",
@@ -55,7 +56,7 @@
   },
   "devDependencies": {
     "@backstage/frontend-test-utils": "^0.6.1",
-    "@playwright/test": "1.62.0",
+    "@playwright/test": "1.62.1",
     "@testing-library/dom": "^10.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^16.0.0",

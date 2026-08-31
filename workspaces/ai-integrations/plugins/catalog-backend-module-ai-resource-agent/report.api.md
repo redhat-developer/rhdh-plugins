@@ -19,6 +19,8 @@ export class AiResourceAgentProcessor implements CatalogProcessor {
     _location: LocationSpec,
     _emit: CatalogProcessorEmit,
   ): Promise<Entity>;
+  // (undocumented)
+  validateEntityKind(entity: Entity): Promise<boolean>;
 }
 
 // @public

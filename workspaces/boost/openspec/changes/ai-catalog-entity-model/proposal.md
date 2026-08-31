@@ -34,7 +34,7 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 
 > _Consolidated into RHIDP-15258 (Entity-Provider SDK). Single story RHIDP-15255 covers all 3 annotations._
 
-- `rhdh.io/ai-asset-category` annotation with five defined values: `agent`, `skill`, `mcp-server`, `ai-model`, `model-server`
+- `rhdh.io/ai-asset-category` annotation with seven defined values: `agent`, `skill`, `rule`, `skill-bundle`, `mcp-server`, `ai-model`, `model-server`
 - `rhdh.io/ai-asset-version` annotation with documented normalization rules (semver pass-through, date-based → semver, commit hash → version string)
 - `rhdh.io/ai-asset-source` annotation for provenance tracking (`connector-name/registry-instance-id`)
 - CatalogProcessor validator rejects entities with missing/invalid annotations at ingestion time
@@ -89,10 +89,10 @@ Boost builds this as a foundational layer: a standardized annotation scheme, a s
 
 ## Impact
 
-- `plugins/boost-backend/src/entity-provider-sdk/` — SDK package source
-- `plugins/boost-backend/src/catalog/processors/` — Annotation validator processor
-- `plugins/boost-backend-module-kagenti/src/provider/` — Kagenti provider implements SDK
-- `plugins/boost-backend-module-llamastack/src/provider/` — LlamaStack provider implements SDK
+- `plugins/boost-entity-provider-sdk/` — SDK package (types, annotations, validation, adapter interfaces)
+- `plugins/boost-entity-provider-sdk/src/AIAssetValidator.ts` — CatalogProcessor annotation validator
+- `plugins/kagenti-entity-provider/` — Kagenti provider implements SDK
+- `plugins/ogx-entity-provider/` — OGX provider implements SDK
 - `plugins/boost-backend-module-oci-skill/src/provider/` — OCI skill connector provider implements SDK
 - Reference app-config examples for air-gapped deployment
 - Load testing harness for catalog performance validation

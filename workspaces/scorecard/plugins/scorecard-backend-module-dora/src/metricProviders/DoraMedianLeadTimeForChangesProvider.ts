@@ -92,6 +92,10 @@ export class DoraMedianLeadTimeForChangesProvider
         unit: 'h',
         history: true,
         defaultVisualization: 'sparkline',
+        collectorIds: [
+          this.config.deploymentsCollector.id,
+          this.config.deploymentPullRequestsCollector.id,
+        ],
       },
     ];
   }

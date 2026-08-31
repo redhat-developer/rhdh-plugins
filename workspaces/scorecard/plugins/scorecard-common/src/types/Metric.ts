@@ -50,6 +50,11 @@ export type Metric<T extends MetricType = MetricType> = {
   unit?: string;
   history?: boolean;
   defaultVisualization?: MetricDefaultVisualization;
+  /**
+   * Collector IDs used to gather data for this metric, extracted from
+   * provider config at startup. Omitted when the metric does not use collectors.
+   */
+  collectorIds?: string[];
 };
 
 /**
@@ -65,6 +70,7 @@ export type MetricResult = {
     unit?: string;
     history?: boolean;
     defaultVisualization?: MetricDefaultVisualization;
+    collectorIds?: string[];
   };
   result: {
     value: MetricValue | null;
@@ -127,13 +133,18 @@ export type EntityMetricDetailResponse = {
 };
 
 /**
- * A single sample in a metric time series (latest successful value for a UTC day).
+ * A single sample in a metric time series (latest value for a UTC day).
+ * Success points have a non-null `value`. When the latest sample is a
+ * calculation failure, `value` is `null` and `error` is set to the failure
+ * message.
  * @public
  */
 export type MetricTimeSeriesPoint = {
-  value: MetricValue;
+  value: MetricValue | null;
   /** ISO-8601 timestamp of the chosen sample */
   timestamp: string;
+  /** Present when this point is a calculation failure */
+  error?: string;
 };
 
 /**
@@ -151,5 +162,6 @@ export type MetricTimeSeriesResponse = {
     unit?: string;
     history?: boolean;
     defaultVisualization?: MetricDefaultVisualization;
+    collectorIds?: string[];
   };
 };

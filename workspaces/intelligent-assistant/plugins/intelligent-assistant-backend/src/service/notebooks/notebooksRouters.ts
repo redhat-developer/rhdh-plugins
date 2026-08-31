@@ -21,10 +21,14 @@ import type {
   UserInfoService,
 } from '@backstage/backend-plugin-api';
 import { Config } from '@backstage/config';
+import type { BasicPermission } from '@backstage/plugin-permission-common';
 
 import express, { Router } from 'express';
 
-import { iaNotebooksUsePermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+import {
+  iaNotebooksManagePermission,
+  iaNotebooksUsePermission,
+} from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import { Readable, Transform } from 'stream';
 
@@ -45,8 +49,9 @@ import {
   getIdentity,
 } from '../middleware/getIdentity';
 import { userPermissionAuthorization } from '../permission';
-import { isValidFileType, parseFileContent } from './documents/documentHelpers';
+import { isValidFileType } from './documents/documentHelpers';
 import { DocumentService } from './documents/documentService';
+import { convertToMarkdown } from './documents/markitdownClient';
 import { SessionService } from './sessions/sessionService';
 import {
   createDocumentListResponse,
@@ -110,19 +115,17 @@ export async function createNotebooksRouter(
     logger,
   );
 
-  const requireNotebooksPermission = async (
-    req: any,
-    res: any,
-    next: any,
-  ): Promise<void> => {
-    try {
-      const { credentials } = getIdentity(req);
-      await authorizer.authorizeUser(iaNotebooksUsePermission, credentials);
-      next();
-    } catch (error) {
-      handleError(logger, res, error, 'Permission denied');
-    }
-  };
+  const requirePermission =
+    (permission: BasicPermission) =>
+    async (req: any, res: any, next: any): Promise<void> => {
+      try {
+        const { credentials } = getIdentity(req);
+        await authorizer.authorizeUser(permission, credentials);
+        next();
+      } catch (error) {
+        handleError(logger, res, error, 'Permission denied');
+      }
+    };
 
   const requireSessionOwnership =
     () => async (req: any, res: any, next: any) => {
@@ -277,7 +280,7 @@ export async function createNotebooksRouter(
   notebooksRouter.post(
     '/v1/sessions',
     generalRateLimiter,
-    requireNotebooksPermission,
+    requirePermission(iaNotebooksUsePermission),
     withAuth(async (req, res, userId) => {
       const { name, description, metadata } = req.body;
       if (!name) {
@@ -297,7 +300,7 @@ export async function createNotebooksRouter(
   notebooksRouter.get(
     '/v1/sessions',
     generalRateLimiter,
-    requireNotebooksPermission,
+    requirePermission(iaNotebooksUsePermission),
     withAuth(async (_req, res, userId) => {
       const sessions = await sessionService.listSessions(userId);
       res.json(createSessionListResponse(sessions));
@@ -307,7 +310,7 @@ export async function createNotebooksRouter(
   notebooksRouter.get(
     '/v1/sessions/:sessionId',
     generalRateLimiter,
-    requireNotebooksPermission,
+    requirePermission(iaNotebooksUsePermission),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       const session = await sessionService.readSession(sessionId, userId);
@@ -320,7 +323,7 @@ export async function createNotebooksRouter(
   notebooksRouter.put(
     '/v1/sessions/:sessionId',
     generalRateLimiter,
-    requireNotebooksPermission,
+    requirePermission(iaNotebooksManagePermission),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       const { name, description, metadata } = req.body;
@@ -338,7 +341,7 @@ export async function createNotebooksRouter(
   notebooksRouter.delete(
     '/v1/sessions/:sessionId',
     generalRateLimiter,
-    requireNotebooksPermission,
+    requirePermission(iaNotebooksManagePermission),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
       await sessionService.deleteSession(sessionId, userId);
@@ -354,7 +357,7 @@ export async function createNotebooksRouter(
   notebooksRouter.get(
     '/v1/sessions/:sessionId/documents',
     generalRateLimiter,
-    requireNotebooksPermission,
+    requirePermission(iaNotebooksUsePermission),
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId } = req.params;
@@ -370,7 +373,7 @@ export async function createNotebooksRouter(
   notebooksRouter.put(
     '/v1/sessions/:sessionId/documents',
     expensiveRateLimiter,
-    requireNotebooksPermission,
+    requirePermission(iaNotebooksUsePermission),
     upload.single('file') as any,
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;
@@ -395,11 +398,18 @@ export async function createNotebooksRouter(
         handleError(logger, res, 'Session not found');
         return;
       }
-      const parsedDocument = await parseFileContent(logger, fileType, req.file);
-      const fileId = await documentService.uploadFile(
-        parsedDocument.content,
-        title,
+
+      if (!req.file) {
+        handleError(logger, res, 'No file uploaded');
+        return;
+      }
+
+      const markdown = await convertToMarkdown(
+        req.file.buffer,
+        req.file.originalname,
+        fileType,
       );
+      const fileId = await documentService.uploadFile(markdown, title);
 
       res.status(HTTP_STATUS_ACCEPTED).json({
         status: 'processing',
@@ -408,7 +418,7 @@ export async function createNotebooksRouter(
         message: 'Resource upload started',
       });
 
-      // Upload document to vector store in background
+      // Attach file to vector store in background
       const docName = newTitle || title;
       documentService
         .upsertDocument(sessionId, title, { fileType, fileId, newTitle })
@@ -422,7 +432,7 @@ export async function createNotebooksRouter(
   notebooksRouter.get(
     '/v1/sessions/:sessionId/documents/:documentId/status',
     generalRateLimiter,
-    requireNotebooksPermission,
+    requirePermission(iaNotebooksUsePermission),
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId, documentId } = req.params;
@@ -442,7 +452,7 @@ export async function createNotebooksRouter(
   notebooksRouter.patch(
     '/v1/sessions/:sessionId/documents/:documentId',
     generalRateLimiter,
-    requireNotebooksPermission,
+    requirePermission(iaNotebooksManagePermission),
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId, documentId } = req.params;
@@ -479,7 +489,7 @@ export async function createNotebooksRouter(
   notebooksRouter.delete(
     '/v1/sessions/:sessionId/documents/:documentId',
     generalRateLimiter,
-    requireNotebooksPermission,
+    requirePermission(iaNotebooksManagePermission),
     requireSessionOwnership(),
     withAuth(async (req, res) => {
       const { sessionId, documentId } = req.params;
@@ -505,7 +515,7 @@ export async function createNotebooksRouter(
   notebooksRouter.post(
     '/v1/sessions/:sessionId/query',
     expensiveRateLimiter,
-    requireNotebooksPermission,
+    requirePermission(iaNotebooksUsePermission),
     express.json({ limit: EXPRESS_JSON_BODY_LIMIT }),
     withAuth(async (req, res, userId) => {
       const { sessionId } = req.params;

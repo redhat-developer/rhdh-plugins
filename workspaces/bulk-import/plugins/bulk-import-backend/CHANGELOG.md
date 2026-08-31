@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import-backend
 
+## 8.0.3
+
+### Patch Changes
+
+- 9ff7395: Updated dependency `js-yaml` to `^4.3.1`.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@8.0.3
+
 ## 8.0.2
 
 ### Patch Changes

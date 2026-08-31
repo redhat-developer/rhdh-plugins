@@ -20,8 +20,8 @@ import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
 import { PathParams } from '@backstage/core-plugin-api';
 import { ReactElement } from 'react';
-import { RouteRef } from '@backstage/core-plugin-api';
-import { RouteRef as RouteRef_2 } from '@backstage/frontend-plugin-api';
+import { RouteRef } from '@backstage/frontend-plugin-api';
+import { RouteRef as RouteRef_2 } from '@backstage/core-plugin-api';
 import { SubRouteRef } from '@backstage/core-plugin-api';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
@@ -29,7 +29,7 @@ import { TranslationResource } from '@backstage/frontend-plugin-api';
 // @public
 const _default: OverridableFrontendPlugin<
   {
-    root: RouteRef<undefined>;
+    root: RouteRef_2<undefined>;
     workflow: SubRouteRef<PathParams<'/workflows/:workflowId'>>;
     workflowRuns: SubRouteRef<PathParams<'/workflows/:workflowId/runs'>>;
     workflowInstance: SubRouteRef<PathParams<'/instances/:instanceId'>>;
@@ -78,7 +78,7 @@ const _default: OverridableFrontendPlugin<
       output:
         | ExtensionDataRef<string, 'core.routing.path', {}>
         | ExtensionDataRef<
-            RouteRef_2<AnyRouteRefParams>,
+            RouteRef<AnyRouteRefParams>,
             'core.routing.ref',
             {
               optional: true;
@@ -133,7 +133,7 @@ const _default: OverridableFrontendPlugin<
           | (string & {});
         icon?: string | ReactElement;
         loader: () => Promise<JSX.Element>;
-        routeRef?: RouteRef_2;
+        routeRef?: RouteRef;
         filter?: string | FilterPredicate | ((entity: Entity) => boolean);
       };
     }>;
@@ -152,7 +152,7 @@ const _default: OverridableFrontendPlugin<
         | ExtensionDataRef<string, 'core.routing.path', {}>
         | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
         | ExtensionDataRef<
-            RouteRef_2<AnyRouteRefParams>,
+            RouteRef<AnyRouteRefParams>,
             'core.routing.ref',
             {
               optional: true;
@@ -177,7 +177,7 @@ const _default: OverridableFrontendPlugin<
           | ConfigurableExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
           | ConfigurableExtensionDataRef<string, 'core.routing.path', {}>
           | ConfigurableExtensionDataRef<
-              RouteRef_2<AnyRouteRefParams>,
+              RouteRef<AnyRouteRefParams>,
               'core.routing.ref',
               {
                 optional: true;
@@ -209,13 +209,189 @@ const _default: OverridableFrontendPlugin<
         title?: string;
         icon?: IconElement;
         loader?: () => Promise<JSX_2.Element>;
-        routeRef?: RouteRef_2;
+        routeRef?: RouteRef;
         noHeader?: boolean;
       };
     }>;
   }
 >;
 export default _default;
+
+// @public
+export const orchestratorApi: OverridableExtensionDefinition<{
+  kind: 'api';
+  name: undefined;
+  config: {};
+  configInput: {};
+  output: ExtensionDataRef<AnyApiFactory, 'core.api.factory', {}>;
+  inputs: {};
+  params: <
+    TApi,
+    TImpl extends TApi,
+    TDeps extends { [name in string]: unknown },
+  >(
+    params: ApiFactory<TApi, TImpl, TDeps>,
+  ) => ExtensionBlueprintParams<AnyApiFactory>;
+}>;
+
+// @public
+export const orchestratorEntityContent: OverridableExtensionDefinition<{
+  kind: 'entity-content';
+  name: 'workflows';
+  config: {
+    path: string | undefined;
+    title: string | undefined;
+    filter: FilterPredicate | undefined;
+    group: string | false | undefined;
+    icon: string | undefined;
+  };
+  configInput: {
+    path?: string | undefined;
+    title?: string | undefined;
+    filter?: FilterPredicate | undefined;
+    group?: string | false | undefined;
+    icon?: string | undefined;
+  };
+  output:
+    | ExtensionDataRef<string, 'core.routing.path', {}>
+    | ExtensionDataRef<
+        RouteRef<AnyRouteRefParams>,
+        'core.routing.ref',
+        {
+          optional: true;
+        }
+      >
+    | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
+    | ExtensionDataRef<
+        (entity: Entity) => boolean,
+        'catalog.entity-filter-function',
+        {
+          optional: true;
+        }
+      >
+    | ExtensionDataRef<
+        string,
+        'catalog.entity-filter-expression',
+        {
+          optional: true;
+        }
+      >
+    | ExtensionDataRef<string, 'catalog.entity-content-title', {}>
+    | ExtensionDataRef<
+        string,
+        'catalog.entity-content-group',
+        {
+          optional: true;
+        }
+      >
+    | ExtensionDataRef<
+        string | ReactElement<any, string | JSXElementConstructor<any>>,
+        'catalog.entity-content-icon',
+        {
+          optional: true;
+        }
+      >;
+  inputs: {};
+  params: {
+    defaultPath?: [Error: `Use the 'path' param instead`];
+    path: string;
+    defaultTitle?: [Error: `Use the 'title' param instead`];
+    title: string;
+    defaultGroup?: [Error: `Use the 'group' param instead`];
+    group?:
+      | (
+          | 'operation'
+          | 'overview'
+          | 'documentation'
+          | 'development'
+          | 'deployment'
+          | 'observability'
+        )
+      | (string & {});
+    icon?: string | ReactElement;
+    loader: () => Promise<JSX.Element>;
+    routeRef?: RouteRef;
+    filter?: string | FilterPredicate | ((entity: Entity) => boolean);
+  };
+}>;
+
+// @public
+export const orchestratorPage: OverridableExtensionDefinition<{
+  kind: 'page';
+  name: undefined;
+  config: {
+    path: string | undefined;
+    title: string | undefined;
+  };
+  configInput: {
+    path?: string | undefined;
+    title?: string | undefined;
+  };
+  output:
+    | ExtensionDataRef<string, 'core.routing.path', {}>
+    | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
+    | ExtensionDataRef<
+        RouteRef<AnyRouteRefParams>,
+        'core.routing.ref',
+        {
+          optional: true;
+        }
+      >
+    | ExtensionDataRef<
+        string,
+        'core.title',
+        {
+          optional: true;
+        }
+      >
+    | ExtensionDataRef<
+        IconElement,
+        'core.icon',
+        {
+          optional: true;
+        }
+      >;
+  inputs: {
+    pages: ExtensionInput<
+      | ConfigurableExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
+      | ConfigurableExtensionDataRef<string, 'core.routing.path', {}>
+      | ConfigurableExtensionDataRef<
+          RouteRef<AnyRouteRefParams>,
+          'core.routing.ref',
+          {
+            optional: true;
+          }
+        >
+      | ConfigurableExtensionDataRef<
+          string,
+          'core.title',
+          {
+            optional: true;
+          }
+        >
+      | ConfigurableExtensionDataRef<
+          IconElement,
+          'core.icon',
+          {
+            optional: true;
+          }
+        >,
+      {
+        singleton: false;
+        optional: false;
+        internal: false;
+      }
+    >;
+  };
+  params: {
+    path: string;
+    title?: string;
+    icon?: IconElement;
+    loader?: () => Promise<JSX_2.Element>;
+    routeRef?: RouteRef;
+    noHeader?: boolean;
+  };
+}>;
 
 // @public
 export const orchestratorTranslationRef: TranslationRef<

@@ -55,7 +55,7 @@ const createMetricValue = (overrides: {
   entityRef: string;
   metricId?: string;
   timestamp?: Date;
-  value?: number | null;
+  value?: number | boolean | null;
   status?: string | null;
   errorMessage?: string | null;
 }) => ({
@@ -196,9 +196,9 @@ describe('DatabaseMetricValues', () => {
     );
   });
 
-  describe('readEntityMetricValuesInRange', () => {
+  describe('readLatestEntityMetricValuesPerUtcDay', () => {
     it.each(databases.eachSupportedId())(
-      'should return rows in range ordered by timestamp then id - %p',
+      'should return one row per UTC day with highest id - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
         const entityRef = 'component:default/test-service';
@@ -248,7 +248,7 @@ describe('DatabaseMetricValues', () => {
           ].map(toMetricValueRow),
         );
 
-        const result = await db.readEntityMetricValuesInRange(
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
           entityRef,
           metricId,
           new Date('2023-01-01T00:00:00Z'),
@@ -263,7 +263,7 @@ describe('DatabaseMetricValues', () => {
     );
 
     it.each(databases.eachSupportedId())(
-      'should include multiple samples on the same UTC day - %p',
+      'should keep only the highest id among samples on the same UTC day - %p',
       async databaseId => {
         const { client, db } = await createDatabase(databaseId);
         const entityRef = 'component:default/test-service';
@@ -286,18 +286,18 @@ describe('DatabaseMetricValues', () => {
           ].map(toMetricValueRow),
         );
 
-        const result = await db.readEntityMetricValuesInRange(
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
           entityRef,
           metricId,
           new Date('2023-01-01T00:00:00Z'),
           new Date('2023-01-01T23:59:59Z'),
         );
 
-        expect(result).toHaveLength(2);
-        expect(result[0].value).toBe(8);
-        expect(result[1].value).toBe(9);
-        // Postgres returns bigIncrements as strings; SQLite returns numbers
-        expect(Number(result[1].id)).toBeGreaterThan(Number(result[0].id));
+        expect(result).toHaveLength(1);
+        expect(result[0].value).toBe(9);
+        expect(result[0].timestamp.toISOString()).toBe(
+          '2023-01-01T20:00:00.000Z',
+        );
       },
     );
 
@@ -339,7 +339,7 @@ describe('DatabaseMetricValues', () => {
           ].map(toMetricValueRow),
         );
 
-        const result = await db.readEntityMetricValuesInRange(
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
           entityRef,
           metricId,
           from,
@@ -351,11 +351,180 @@ describe('DatabaseMetricValues', () => {
     );
 
     it.each(databases.eachSupportedId())(
+      'should treat UTC midnight as a new day matching getUTC* - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 1,
+              timestamp: new Date('2026-04-27T23:30:00.000Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 2,
+              timestamp: new Date('2026-04-28T00:15:00.000Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2026-04-27T00:00:00.000Z'),
+          new Date('2026-04-28T23:59:59.999Z'),
+        );
+
+        expect(result).toHaveLength(2);
+        expect(result.map(r => r.value)).toEqual([1, 2]);
+        expect(result[0].timestamp.toISOString()).toBe(
+          '2026-04-27T23:30:00.000Z',
+        );
+        expect(result[1].timestamp.toISOString()).toBe(
+          '2026-04-28T00:15:00.000Z',
+        );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should bucket by UTC day when Postgres session TimeZone is non-UTC - %p',
+      async databaseId => {
+        if (databaseId !== 'POSTGRES_15') {
+          return;
+        }
+
+        const { client } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        // Knex dateTime → timestamptz. TO_CHAR(timestamptz) uses the session TimeZone,
+        // so America/New_York would put both of these UTC instants on local 2026-04-27.
+        // Keep SET LOCAL + queries on one connection via a transaction.
+        await client.transaction(async trx => {
+          await trx.raw(`SET LOCAL TIME ZONE 'America/New_York'`);
+
+          await trx('metric_values').insert(
+            [
+              createMetricValue({
+                entityRef,
+                metricId,
+                value: 1,
+                timestamp: new Date('2026-04-27T23:30:00.000Z'),
+              }),
+              createMetricValue({
+                entityRef,
+                metricId,
+                value: 2,
+                timestamp: new Date('2026-04-28T00:15:00.000Z'),
+              }),
+            ].map(toMetricValueRow),
+          );
+
+          const db = new DatabaseMetricValues(trx);
+          const result = await db.readLatestEntityMetricValuesPerUtcDay(
+            entityRef,
+            metricId,
+            new Date('2026-04-27T00:00:00.000Z'),
+            new Date('2026-04-28T23:59:59.999Z'),
+          );
+
+          expect(result).toHaveLength(2);
+          expect(result.map(r => r.value)).toEqual([1, 2]);
+          expect(result[0].timestamp.toISOString()).toBe(
+            '2026-04-27T23:30:00.000Z',
+          );
+          expect(result[1].timestamp.toISOString()).toBe(
+            '2026-04-28T00:15:00.000Z',
+          );
+        });
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should map JSON literal null with error_message as calculation error - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert([
+          {
+            catalog_entity_ref: entityRef,
+            metric_id: metricId,
+            // Simulates a JSON literal null (not SQL NULL), seen in production DB rows.
+            value: 'null',
+            timestamp: new Date('2023-01-01T10:00:00Z'),
+            error_message: 'GitHub API 500',
+            status: null,
+          },
+        ]);
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2023-01-01T00:00:00Z'),
+          new Date('2023-01-01T23:59:59Z'),
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].value).toBeNull();
+        expect(result[0].errorMessage).toBe('GitHub API 500');
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should treat 0 and boolean false as successes - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 0,
+              timestamp: new Date('2023-01-01T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: false,
+              timestamp: new Date('2023-01-02T10:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2023-01-01T00:00:00Z'),
+          new Date('2023-01-02T23:59:59Z'),
+        );
+
+        expect(result).toHaveLength(2);
+        expect(result[0].value).toBe(0);
+        // Boolean false must not be treated as a missing value. Knex/better-sqlite3
+        // may round-trip JSON `false` as `0`; either form is a successful sample.
+        expect(result[1].value).not.toBeNull();
+        expect(result[1].errorMessage).toBeNull();
+        expect([false, 0]).toContain(result[1].value);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
       'should return empty array when no data in range - %p',
       async databaseId => {
         const { db } = await createDatabase(databaseId);
 
-        const result = await db.readEntityMetricValuesInRange(
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
           'component:default/test-service',
           'github.metric1',
           new Date('2023-01-01T00:00:00Z'),
@@ -363,6 +532,175 @@ describe('DatabaseMetricValues', () => {
         );
 
         expect(result).toEqual([]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should include latest calculation error for error-only days - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: null,
+              status: null,
+              errorMessage: 'GitHub API 500',
+              timestamp: new Date('2023-01-01T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: null,
+              status: null,
+              errorMessage: 'timeout',
+              timestamp: new Date('2023-01-01T16:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2023-01-01T00:00:00Z'),
+          new Date('2023-01-01T23:59:59Z'),
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].value).toBeNull();
+        expect(result[0].errorMessage).toBe('timeout');
+        expect(result[0].timestamp.toISOString()).toBe(
+          '2023-01-01T16:00:00.000Z',
+        );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should prefer a later error over an earlier success on the same UTC day - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 5,
+              timestamp: new Date('2023-01-01T09:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: null,
+              status: null,
+              errorMessage: 'fail',
+              timestamp: new Date('2023-01-01T21:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2023-01-01T00:00:00Z'),
+          new Date('2023-01-01T23:59:59Z'),
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].value).toBeNull();
+        expect(result[0].errorMessage).toBe('fail');
+        expect(result[0].timestamp.toISOString()).toBe(
+          '2023-01-01T21:00:00.000Z',
+        );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should prefer a later success over an earlier error on the same UTC day - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: null,
+              status: null,
+              errorMessage: 'fail',
+              timestamp: new Date('2023-01-01T09:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 3,
+              timestamp: new Date('2023-01-01T18:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2023-01-01T00:00:00Z'),
+          new Date('2023-01-01T23:59:59Z'),
+        );
+
+        expect(result).toHaveLength(1);
+        expect(result[0].value).toBe(3);
+        expect(result[0].errorMessage).toBeNull();
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should omit days that only have null without error_message - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+        const entityRef = 'component:default/test-service';
+        const metricId = 'github.metric1';
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 8,
+              timestamp: new Date('2023-01-01T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: null,
+              status: null,
+              errorMessage: null,
+              timestamp: new Date('2023-01-02T10:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef,
+              metricId,
+              value: 7,
+              timestamp: new Date('2023-01-03T10:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readLatestEntityMetricValuesPerUtcDay(
+          entityRef,
+          metricId,
+          new Date('2023-01-01T00:00:00Z'),
+          new Date('2023-01-03T23:59:59Z'),
+        );
+
+        expect(result).toHaveLength(2);
+        expect(result.map(r => r.value)).toEqual([8, 7]);
       },
     );
   });

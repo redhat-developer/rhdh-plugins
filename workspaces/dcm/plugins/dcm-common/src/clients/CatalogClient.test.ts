@@ -27,8 +27,8 @@ const MOCK_INSTANCE: CatalogItemInstance = {
   spec: {
     catalog_item_id: 'ci-1',
     user_values: [],
+    resource_ids: ['res-new'],
   },
-  resource_id: 'res-new',
 };
 
 function makeClient(fetchFn: jest.Mock) {

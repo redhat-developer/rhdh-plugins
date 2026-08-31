@@ -38,7 +38,7 @@ Deployers MUST be able to override inherited policies for individual version ent
 
 #### Scenario: Version override takes precedence
 
-- **WHEN** a deployer configures a version-specific policy via RBAC (e.g., DENY `ai-catalog.asset.read` for version `v2.0-beta`)
+- **WHEN** a deployer configures a version-specific policy via RBAC (e.g., DENY `ai-catalog.asset.access` for version `v2.0-beta`)
 - **THEN** the version-specific policy takes precedence over the inherited asset-level policy
 - **AND** the `policyDecisionPrecedence` config controls evaluation order (default: version-specific first)
 

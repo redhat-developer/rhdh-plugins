@@ -1,8 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent
 
-A Backstage catalog backend module that registers the agent-shaped
-`AiResource` catalog model and validates agent-specific fields at
-ingestion.
+A Backstage catalog backend module that validates agent-shaped
+`AiResource` entities at ingestion time.
+
+Uses `catalogProcessingExtensionPoint.addProcessor()` so the catalog's
+built-in kind processor (`BuiltinKindsEntityProcessor`) remains active
+for standard kinds (User, Group, Component, etc.).
 
 This package is intentionally separate from
 `catalog-backend-module-ai-resource-extensions`, which owns shared RHDH
@@ -10,12 +13,11 @@ extensions such as `spec.scope` and OCI `source-location` checks.
 
 ## What it registers
 
-On init the module:
+On init the module registers `AiResourceAgentProcessor`, which:
 
-1. Adds the agent catalog model source (`agentAiResourceEntityModel`) for
-   `kind: AiResource`, `spec.type: agent`
-2. Registers `AiResourceAgentProcessor` for agent field validation during
-   catalog processing
+1. Validates `kind: AiResource`, `spec.type: agent` entities via
+   `validateEntityKind`
+2. Validates agent-specific fields via `preProcessEntity`
 
 ## Validation
 
@@ -49,7 +51,7 @@ companion `catalog-model-ai-resource-agent` package.
 | Package                                                   | Responsibility                                     |
 | --------------------------------------------------------- | -------------------------------------------------- |
 | `catalog-model-ai-resource-agent`                         | Types, JSON schema, KindValidator                  |
-| `catalog-backend-module-ai-resource-agent` (this package) | Model registration + agent processor               |
+| `catalog-backend-module-ai-resource-agent` (this package) | Agent kind validation + field-level processor      |
 | `catalog-backend-module-ai-resource-extensions`           | RHDH `spec.scope` + OCI source-location validation |
 
 ## Examples
@@ -59,7 +61,7 @@ for router + specialist agent catalog entities.
 
 ## Public API
 
-| Export                                   | Description                                                 |
-| ---------------------------------------- | ----------------------------------------------------------- |
-| `catalogModuleAiResourceAgent` (default) | Backend module that registers the agent model and processor |
-| `AiResourceAgentProcessor`               | `CatalogProcessor` for agent-specific field validation      |
+| Export                                   | Description                                            |
+| ---------------------------------------- | ------------------------------------------------------ |
+| `catalogModuleAiResourceAgent` (default) | Backend module that registers the agent processor      |
+| `AiResourceAgentProcessor`               | `CatalogProcessor` for agent-specific field validation |

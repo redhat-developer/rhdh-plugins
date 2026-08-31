@@ -20,13 +20,20 @@ import {
 } from '@backstage/plugin-catalog-node';
 import { Entity } from '@backstage/catalog-model';
 import { LocationSpec } from '@backstage/plugin-catalog-common';
+import { agentAiResourceEntityV1alpha1Validator } from '@red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent';
 import { collectAgentErrors } from './collectAgentErrors';
 
 /**
  * A CatalogProcessor that validates agent-specific fields on
  * AiResource entities with `spec.type: 'agent'`.
  *
- * Validates:
+ * Implements `validateEntityKind` so the catalog's built-in kind
+ * processor remains active for standard kinds. The previous
+ * `addModelSource` approach caused the built-in processor to be
+ * replaced entirely, breaking validation of User, Group, Component,
+ * and other standard entity kinds.
+ *
+ * Also validates via `preProcessEntity`:
  * - `spec.instructions`: optional; must be a string if present
  * - `spec.handoffs` / `spec.tools`: must be arrays if present
  * - `spec.resetToolChoice`: must be boolean if present
@@ -44,6 +51,13 @@ import { collectAgentErrors } from './collectAgentErrors';
 export class AiResourceAgentProcessor implements CatalogProcessor {
   getProcessorName(): string {
     return 'AiResourceAgentProcessor';
+  }
+
+  async validateEntityKind(entity: Entity): Promise<boolean> {
+    if (entity.kind !== 'AiResource' || entity.spec?.type !== 'agent') {
+      return false;
+    }
+    return agentAiResourceEntityV1alpha1Validator.check(entity);
   }
 
   async preProcessEntity(

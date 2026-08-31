@@ -40,12 +40,17 @@ export {
   RuntimeConfigResolver,
   boostConfigFields,
   BOOST_CONFIG_SCHEMA_VERSION,
+  BOOST_CONNECTOR_SCHEMA_VERSION,
+  CONNECTOR_IDS,
   validateConfigValue,
   isDbWritable,
   isSensitiveField,
   type AdminConfigServiceOptions,
   type RuntimeConfigResolverOptions,
+  type ConnectorMigrationFn,
+  type ConnectorMigrationRegistry,
   type BoostConfigKey,
+  type ConnectorId,
   type ConfigScope,
   type ConfigFieldMeta,
 } from './config';
@@ -110,3 +115,10 @@ export {
   type ConversationRoutesOptions,
   type RateLimiterOptions,
 } from './chat';
+export {
+  createAiCatalogRoutes,
+  type AiCatalogAssetLoader,
+  type AiCatalogAsset,
+  type AiCatalogRoutesOptions,
+  type AiCatalogAssetResource,
+} from './ai-catalog';
