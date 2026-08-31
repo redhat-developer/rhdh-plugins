@@ -23,6 +23,7 @@ import { UserSettingsThemeToggle } from '@backstage/plugin-user-settings';
 import { FormComponents } from './FormComponents';
 import { TableExample } from './TableExample';
 import { CardsExample } from './CardExample';
+import { OtherExample } from './OtherExample';
 
 export const BUITestPage = () => {
   const { pathname } = useLocation();
@@ -52,6 +53,11 @@ export const BUITestPage = () => {
             label: 'Card Example',
             href: '/bui-tests/card-example',
           },
+          {
+            id: 'other-example',
+            label: 'Other Example',
+            href: '/bui-tests/other-example',
+          },
         ]}
       />
       <Container>
@@ -64,6 +70,9 @@ export const BUITestPage = () => {
           </TabPanel>
           <TabPanel id="card-example">
             <CardsExample />
+          </TabPanel>
+          <TabPanel id="other-example">
+            <OtherExample />
           </TabPanel>
         </Tabs>
       </Container>
