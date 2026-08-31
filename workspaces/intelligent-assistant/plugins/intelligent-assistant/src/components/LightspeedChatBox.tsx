@@ -60,7 +60,7 @@ const StyledMessageBox = styled(MessageBox, {
   ...(isNewChat
     ? {
         flex: 'none',
-        height: 'auto',
+        height: 'auto !important',
         overflow: 'visible',
       }
     : {

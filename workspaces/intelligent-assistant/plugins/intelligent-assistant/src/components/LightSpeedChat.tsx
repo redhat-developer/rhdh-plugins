@@ -34,11 +34,11 @@ import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import {type Theme } from '@mui/material/styles';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
-import Typography from '@mui/material/Typography';
 import {
   Chatbot,
   ChatbotAlert,
@@ -1740,7 +1740,7 @@ export const LightspeedChat = ({
             <Tab
               disableRipple
               label={
-                <Typography
+                <Box
                   component="span"
                   sx={{
                     display: 'inline-flex',
@@ -1759,7 +1759,7 @@ export const LightspeedChat = ({
                   >
                     {t('tabs.notebooks.devPreview')}
                   </Label>
-                </Typography>
+                </Box>
               }
               aria-label={t('tabs.notebooks')}
             />
