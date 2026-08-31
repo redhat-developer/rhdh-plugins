@@ -113,6 +113,13 @@ describe('OgxAgentEntityProvider', () => {
     expect(entity.metadata.annotations['ai-catalog.rhdh.com/model']).toBe(
       'meta-llama/Llama-3.1-8B-Instruct',
     );
+    expect(entity.metadata.annotations[AI_ASSET_CATEGORY_ANNOTATION]).toBe(
+      'agent',
+    );
+    expect(entity.metadata.annotations[AI_ASSET_SOURCE_ANNOTATION]).toBe('ogx');
+    expect(entity.metadata.annotations[AI_ASSET_VERSION_ANNOTATION]).toBe(
+      '0.0.0-unknown',
+    );
   });
 
   it('should include all three required AI asset annotations', async () => {

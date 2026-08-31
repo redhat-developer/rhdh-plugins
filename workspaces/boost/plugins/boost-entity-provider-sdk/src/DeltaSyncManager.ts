@@ -130,7 +130,7 @@ export interface DeltaSyncManagerOptions {
  *   locationKey: 'my-provider',
  * });
  *
- * const cursor = await manager.getCursor('my-provider');
+ * const cursor = await manager.getCursor();
  * if (!cursor) {
  *   // First run — perform full refresh
  *   await connection.applyMutation({ type: 'full', entities: [...] });
@@ -201,31 +201,36 @@ export class DeltaSyncManager {
   }
 
   /**
-   * Retrieve the last persisted sync cursor for a provider.
+   * Retrieve the last persisted sync cursor.
    *
    * Returns `undefined` when no cursor has been stored (first sync
    * or after {@link DeltaSyncManager.clearCursor}). Providers should
    * treat a missing cursor as a signal to perform a full refresh.
    *
-   * @param providerId - The unique provider identifier.
+   * Uses the `locationKey` supplied at construction time — the same
+   * key used by {@link DeltaSyncManager.applyDelta} to persist the
+   * cursor — so the read is always consistent with the write.
+   *
    * @returns The cursor string, or `undefined` if none exists.
    */
-  async getCursor(providerId: string): Promise<string | undefined> {
-    const state = await this.cursorStore.get(providerId);
+  async getCursor(): Promise<string | undefined> {
+    const state = await this.cursorStore.get(this.locationKey);
     return state?.cursor;
   }
 
   /**
-   * Clear the persisted cursor for a provider, forcing a full
-   * refresh on the next polling cycle.
+   * Clear the persisted cursor, forcing a full refresh on the next
+   * polling cycle.
    *
    * Call this when the connector rejects the cursor (e.g. HTTP 412
    * Precondition Failed) to trigger fallback to full refresh.
    *
-   * @param providerId - The unique provider identifier.
+   * Uses the `locationKey` supplied at construction time — the same
+   * key used by {@link DeltaSyncManager.applyDelta} to persist the
+   * cursor — so the delete is always consistent with the write.
    */
-  async clearCursor(providerId: string): Promise<void> {
-    await this.cursorStore.delete(providerId);
+  async clearCursor(): Promise<void> {
+    await this.cursorStore.delete(this.locationKey);
   }
 }
 

@@ -84,8 +84,8 @@ export interface DeltaResult {
 export class DeltaSyncManager {
   constructor(options: DeltaSyncManagerOptions);
   applyDelta(options: ApplyDeltaOptions): Promise<void>;
-  clearCursor(providerId: string): Promise<void>;
-  getCursor(providerId: string): Promise<string | undefined>;
+  clearCursor(): Promise<void>;
+  getCursor(): Promise<string | undefined>;
 }
 
 // @public

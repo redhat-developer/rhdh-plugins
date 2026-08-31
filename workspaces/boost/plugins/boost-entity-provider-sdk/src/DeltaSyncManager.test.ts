@@ -108,7 +108,7 @@ describe('DeltaSyncManager', () => {
       nextCursor: 'etag-abc123',
     });
 
-    const cursor = await manager.getCursor('test-provider');
+    const cursor = await manager.getCursor();
     expect(cursor).toBe('etag-abc123');
   });
 
@@ -134,18 +134,18 @@ describe('DeltaSyncManager', () => {
       removed: [],
     });
 
-    const cursor = await manager.getCursor('test-provider');
+    const cursor = await manager.getCursor();
     expect(cursor).toBe('cursor-initial');
   });
 
-  it('should return undefined for unknown providerId', async () => {
+  it('should return undefined when no cursor has been stored', async () => {
     const manager = new DeltaSyncManager({
       connection: mockConnection,
       cursorStore,
       locationKey: 'test-provider',
     });
 
-    const cursor = await manager.getCursor('unknown-provider');
+    const cursor = await manager.getCursor();
     expect(cursor).toBeUndefined();
   });
 
@@ -163,11 +163,11 @@ describe('DeltaSyncManager', () => {
       removed: [],
       nextCursor: 'etag-xyz',
     });
-    expect(await manager.getCursor('test-provider')).toBe('etag-xyz');
+    expect(await manager.getCursor()).toBe('etag-xyz');
 
     // Clear it — simulates invalid cursor fallback
-    await manager.clearCursor('test-provider');
-    expect(await manager.getCursor('test-provider')).toBeUndefined();
+    await manager.clearCursor();
+    expect(await manager.getCursor()).toBeUndefined();
   });
 
   it('should handle mixed additions, updates, and removals', async () => {
@@ -199,7 +199,7 @@ describe('DeltaSyncManager', () => {
     expect(mutation.removed[0].entityRef).toBe('component:default/old-agent-1');
     expect(mutation.removed[1].entityRef).toBe('component:default/old-agent-2');
 
-    expect(await manager.getCursor('my-provider')).toBe('page-token-42');
+    expect(await manager.getCursor()).toBe('page-token-42');
   });
 
   it('should store lastSyncTimestamp alongside cursor', async () => {

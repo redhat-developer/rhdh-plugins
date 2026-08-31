@@ -145,7 +145,7 @@ const manager = new DeltaSyncManager({
 });
 
 // Check for existing cursor
-const cursor = await manager.getCursor('my-provider');
+const cursor = await manager.getCursor();
 
 if (!cursor) {
   // First run or cursor cleared — full refresh
@@ -175,7 +175,7 @@ try {
   await manager.applyDelta({ ...delta });
 } catch (err) {
   if (isCursorInvalid(err)) {
-    await manager.clearCursor('my-provider');
+    await manager.clearCursor();
     // Next poll cycle will see no cursor and do a full refresh
   }
 }
