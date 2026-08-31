@@ -70,6 +70,15 @@ backend.add(
   import('@backstage/plugin-catalog-backend-module-scaffolder-entity-model'),
 );
 backend.add(import('@backstage/plugin-catalog-backend-module-ai-model'));
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server'),
+);
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent'),
+);
+backend.add(
+  import('@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-extensions'),
+);
 backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
 
 // techdocs

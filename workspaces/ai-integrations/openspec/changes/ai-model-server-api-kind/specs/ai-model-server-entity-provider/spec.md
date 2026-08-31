@@ -18,12 +18,17 @@
 
 ### Requirement: Models collected into spec.models.available
 
-Model names from the `ModelCatalog.models` array MUST be collected into `spec.models.available` as a string array. When models are present, `spec.models.default` MUST be set to the first model's name.
+Model names from the `ModelCatalog.models` array MUST be collected into `spec.models.available` as a string array. When models are present, `spec.models.default` MUST be set according to override precedence: if `modelServer.annotations` contains the `rhdh.io/default` annotation, its sanitized value is used; otherwise, the first model's sanitized name is used.
 
-#### Scenario: Multiple models listed
+#### Scenario: Multiple models listed (no override)
 
-- **WHEN** a `ModelCatalog` contains models `['ibm-granite-20b', 'mistral-7b']`
+- **WHEN** a `ModelCatalog` contains models `['ibm-granite-20b', 'mistral-7b']` and no `rhdh.io/default` annotation
 - **THEN** the entity has `spec.models.available: ['ibm-granite-20b', 'mistral-7b']` and `spec.models.default: 'ibm-granite-20b'`
+
+#### Scenario: Default model overridden by annotation
+
+- **WHEN** a `ModelCatalog` contains models `['model-a', 'model-b']` and `modelServer.annotations` has `rhdh.io/default: 'preferred-model'`
+- **THEN** the entity has `spec.models.available: ['model-a', 'model-b']` and `spec.models.default: 'preferred-model'`
 
 #### Scenario: Empty models array
 
@@ -67,6 +72,76 @@ The entity MUST include an `auth-required` tag when `modelServer.authentication`
 
 - **WHEN** `modelServer.authentication` is `false` or undefined
 - **THEN** the entity's `metadata.tags` includes `auth-not-required` and `spec.requiresApiKey` is `false`
+
+---
+
+### Requirement: Annotation-driven field overrides
+
+Five `rhdh.io/` annotations on `modelServer.annotations` act as control annotations that drive spec-level fields on the generated `AiModelServerAPI` entity. These annotations MUST NOT appear in the entity's `metadata.annotations` — they are consumed during generation and deleted before the entity is emitted.
+
+| Annotation           | Target field          | Behavior when present                           | Behavior when absent                                  |
+| -------------------- | --------------------- | ----------------------------------------------- | ----------------------------------------------------- |
+| `rhdh.io/system`     | `spec.system`         | Set to the annotation value                     | `spec.system` is omitted                              |
+| `rhdh.io/serverType` | `spec.serverType`     | Overrides the API type                          | Falls back to `modelServer.API.type` (or `'unknown'`) |
+| `rhdh.io/default`    | `spec.models.default` | Overrides with the annotation's sanitized value | Falls back to the first model's sanitized name        |
+| `rhdh.io/owner`      | `spec.owner`          | Overrides with the annotation's sanitized value | Falls back to `modelServer.owner`                     |
+| `rhdh.io/lifecycle`  | `spec.lifecycle`      | Set to the annotation value                     | Falls back to `modelServer.lifecycle`                 |
+
+#### Scenario: System set by annotation
+
+- **WHEN** `modelServer.annotations` contains `rhdh.io/system: 'my-ai-system'`
+- **THEN** the entity has `spec.system: 'my-ai-system'`
+
+#### Scenario: System absent when annotation missing
+
+- **WHEN** `modelServer.annotations` does not contain `rhdh.io/system`
+- **THEN** the entity has no `spec.system` field
+
+#### Scenario: ServerType overridden by annotation
+
+- **WHEN** `modelServer.annotations` contains `rhdh.io/serverType: 'anthropic'` and `modelServer.API.type` is `'openapi'`
+- **THEN** the entity has `spec.serverType: 'anthropic'` (the annotation value takes precedence)
+
+#### Scenario: ServerType falls back to API type when annotation absent
+
+- **WHEN** `modelServer.annotations` does not contain `rhdh.io/serverType` and `modelServer.API.type` is `'grpc'`
+- **THEN** the entity has `spec.serverType: 'grpc'`
+
+#### Scenario: Default model overridden by annotation
+
+- **WHEN** `modelServer.annotations` contains `rhdh.io/default: 'preferred-model'` and models are `['model-a', 'model-b']`
+- **THEN** the entity has `spec.models.default: 'preferred-model'` (sanitized)
+
+#### Scenario: Default model falls back to first model when annotation absent
+
+- **WHEN** `modelServer.annotations` does not contain `rhdh.io/default` and models are `['ibm-granite-20b', 'mistral-7b']`
+- **THEN** the entity has `spec.models.default: 'ibm-granite-20b'`
+
+#### Scenario: Owner overridden by annotation
+
+- **WHEN** `modelServer.annotations` contains `rhdh.io/owner: 'team-ai'` and `modelServer.owner` is `'default-owner'`
+- **THEN** the entity has `spec.owner: 'team-ai'` (the annotation value takes precedence, sanitized)
+
+#### Scenario: Owner falls back to modelServer when annotation absent
+
+- **WHEN** `modelServer.annotations` does not contain `rhdh.io/owner` and `modelServer.owner` is `'default-owner'`
+- **THEN** the entity has `spec.owner: 'default-owner'`
+
+#### Scenario: Lifecycle overridden by annotation
+
+- **WHEN** `modelServer.annotations` contains `rhdh.io/lifecycle: 'experimental'` and `modelServer.lifecycle` is `'production'`
+- **THEN** the entity has `spec.lifecycle: 'experimental'` (the annotation value takes precedence)
+
+#### Scenario: Lifecycle falls back to modelServer when annotation absent
+
+- **WHEN** `modelServer.annotations` does not contain `rhdh.io/lifecycle` and `modelServer.lifecycle` is `'production'`
+- **THEN** the entity has `spec.lifecycle: 'production'`
+
+#### Scenario: All five overrides applied together
+
+- **WHEN** `modelServer.annotations` contains `rhdh.io/system: 'ai-platform'`, `rhdh.io/serverType: 'openai-v1'`, `rhdh.io/default: 'gpt-4'`, `rhdh.io/owner: 'team-ai'`, and `rhdh.io/lifecycle: 'experimental'`
+- **THEN** the entity has `spec.system: 'ai-platform'`, `spec.serverType: 'openai-v1'`, `spec.models.default: 'gpt-4'`, `spec.owner: 'team-ai'`, and `spec.lifecycle: 'experimental'`
+- **AND** none of the five annotations appear in `metadata.annotations`
 
 ---
 

@@ -54,6 +54,7 @@ export const createListMetricsAction = ({
               unit: z.string().optional(),
               history: z.boolean().optional(),
               defaultVisualization: z.enum(['value', 'sparkline']).optional(),
+              collectorIds: z.array(z.string()).optional(),
             }),
           ),
         }),

@@ -26,8 +26,10 @@ import {
 } from '@material-ui/core';
 import {
   Job,
+  JobStatus,
   MigrationPhase,
   ModulePhase,
+  Phase,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 
 import { useTranslation } from '../hooks/useTranslation';
@@ -42,7 +44,7 @@ import {
   humanizeDate,
   secondsBetween,
 } from './tools';
-import { PhaseTelemetry } from './PhaseTelemetry';
+import { TelemetrySection } from './PhaseTelemetry';
 import { PhaseStatus } from './PhaseStatus';
 
 const useStyles = makeStyles(theme => ({
@@ -73,7 +75,8 @@ const PhaseRunAction = ({
   const { t } = useTranslation();
   const classes = useStyles();
 
-  const previousRunSucceeded = phase?.status === 'success';
+  const previousRunSucceeded =
+    !!phase?.status && JobStatus.from(phase.status).isSuccess();
   if (!onRunPhase) {
     return null;
   }
@@ -82,12 +85,12 @@ const PhaseRunAction = ({
     if (phaseName === 'init') {
       return t('modulePage.phases.resyncMigrationPlanInstructions');
     }
-    if (phaseName === 'analyze') {
+    if (Phase.from(phaseName).isAnalyze()) {
       return previousRunSucceeded
         ? t('modulePage.phases.reanalyzeInstructions')
         : t('modulePage.phases.analyzeInstructions');
     }
-    if (phaseName === 'migrate') {
+    if (Phase.from(phaseName).isMigrate()) {
       return previousRunSucceeded
         ? t('modulePage.phases.remigrateInstructions')
         : t('modulePage.phases.migrateInstructions');
@@ -101,12 +104,12 @@ const PhaseRunAction = ({
   };
 
   const getActionText = () => {
-    if (phaseName === 'analyze') {
+    if (Phase.from(phaseName).isAnalyze()) {
       return previousRunSucceeded
         ? t('modulePage.phases.rerunAnalyze')
         : t('modulePage.phases.runAnalyze');
     }
-    if (phaseName === 'migrate') {
+    if (Phase.from(phaseName).isMigrate()) {
       return previousRunSucceeded
         ? t('modulePage.phases.rerunMigrate')
         : t('modulePage.phases.runMigrate');
@@ -338,18 +341,7 @@ export const PhaseDetails = (
         </Grid>
       )}
 
-      {phase?.telemetry && (
-        <>
-          <Grid item xs={12}>
-            <Typography variant="h6" gutterBottom>
-              {t('modulePage.phases.telemetry.title')}
-            </Typography>
-          </Grid>
-          <Grid item xs={12}>
-            <PhaseTelemetry telemetry={phase.telemetry} />
-          </Grid>
-        </>
-      )}
+      <TelemetrySection telemetry={phase?.telemetry} />
     </Grid>
   );
 };

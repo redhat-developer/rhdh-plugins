@@ -18,9 +18,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Entity } from '@backstage/catalog-model';
 import { useApi } from '@backstage/core-plugin-api';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
+import {
+  buildAiAssetCatalogFilter,
+  isAiAsset,
+} from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { FilterDefinition } from '../blueprints/AiCatalogFilterBlueprint';
 import { applyEntityFilters } from '../utils/entityHelpers';
-import { buildCatalogFilter, isAiAsset } from '../utils/isAiAsset';
 
 export interface UseAiAssetsResult {
   /** Entities after all client-side filters. */
@@ -56,7 +59,7 @@ export function useAiAssets(
     setError(undefined);
 
     catalogApi
-      .getEntities({ filter: buildCatalogFilter() })
+      .getEntities({ filter: buildAiAssetCatalogFilter() })
       .then(response => {
         if (!cancelled) {
           const items = response.items

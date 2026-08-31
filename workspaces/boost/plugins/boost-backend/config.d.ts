@@ -211,6 +211,11 @@ export interface Config {
            */
           connectionMs?: number;
         };
+        /**
+         * Per-connector schema version (internal metadata).
+         * @configScope db-only
+         */
+        __schemaVersion?: number;
       };
       /** GitHub connector runtime configuration. */
       github?: {
@@ -237,6 +242,11 @@ export interface Config {
          * @configScope db-overridable
          */
         batchSize?: number;
+        /**
+         * Per-connector schema version (internal metadata).
+         * @configScope db-only
+         */
+        __schemaVersion?: number;
       };
       /** GitLab connector runtime configuration. */
       gitlab?: {
@@ -263,6 +273,11 @@ export interface Config {
          * @configScope db-overridable
          */
         batchSize?: number;
+        /**
+         * Per-connector schema version (internal metadata).
+         * @configScope db-only
+         */
+        __schemaVersion?: number;
       };
       /**
        * Open index signature preserving backward compatibility.

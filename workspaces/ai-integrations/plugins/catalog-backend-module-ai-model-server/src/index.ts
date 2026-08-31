@@ -20,3 +20,4 @@
  * @packageDocumentation
  */
 export { catalogModuleAiModelServer as default } from './module';
+export { AiModelServerApiProcessor } from './AiModelServerApiProcessor';

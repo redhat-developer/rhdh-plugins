@@ -351,6 +351,52 @@ curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service/
 }
 ```
 
+### `GET /metrics/:metricId/collectors`
+
+Returns the collectors used as data sources for a composite metric calculation.
+
+#### Path Parameters
+
+| Parameter  | Type   | Required | Description                                                  |
+| ---------- | ------ | -------- | ------------------------------------------------------------ |
+| `metricId` | string | Yes      | Metric ID (e.g., `dora.changeFailureRate`, `github.openPRs`) |
+
+#### Permissions
+
+Requires `scorecard.metric.read` permission for the requested metric.
+
+#### Behavior
+
+- Returns `{ "collectors": [ ... ] }` with one entry per collector ID on the metric.
+- Metrics that do not use collectors (no `collectorIds`) return `{ "collectors": [] }`.
+- Unknown `metricId` returns `404 NotFoundError`.
+- Missing permission for the metric returns `403 NotAllowedError`.
+- A metric that references a collector ID that is not registered returns `500`.
+
+#### Example Request
+
+```bash
+curl -X GET "{{url}}/api/scorecard/metrics/dora.changeFailureRate/collectors" \
+  -H "Authorization: Bearer <token>"
+```
+
+#### Example Response
+
+```json
+{
+  "collectors": [
+    {
+      "id": "github:deployments",
+      "description": "Collects GitHub deployments."
+    },
+    {
+      "id": "jira:incidents",
+      "description": "Collects Jira incidents."
+    }
+  ]
+}
+```
+
 ### `GET /aggregations/:aggregationId`
 
 Returns aggregated metrics for the authenticated user across all catalog entities they own (same ownership rules as the legacy route; see [aggregation.md](./docs/aggregation.md)).

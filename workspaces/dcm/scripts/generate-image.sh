@@ -31,7 +31,7 @@ function _usage {
 Usage:
   $script_name clean
   VERSION=<semver> $script_name [oci|tgz|push]
-  VERSION=<semver> $script_name backstage-image [--push]
+  VERSION=<semver> $script_name backstage-image [--push] [--no-cache]
 
 Environment variables:
   VERSION         Required. The plugin version; also used to tag the container image.
@@ -196,10 +196,13 @@ function backstage-image {
 
   local image_tag="$REGISTRY_URL/$ORG_ID/$REPO:$VERSION"
   local do_push=false
+  local no_cache=false
 
   for arg in "${@:1}"; do
     if [[ "$arg" == "--push" ]]; then
       do_push=true
+    elif [[ "$arg" == "--no-cache" ]]; then
+      no_cache=true
     fi
   done
 
@@ -215,8 +218,14 @@ function backstage-image {
     volume_args=("--volume" "$yarn_cache_dir:/root/.yarn/berry/cache:Z")
   fi
 
+  local cache_args=()
+  if $no_cache; then
+    cache_args=("--no-cache")
+  fi
+
   echo "Building Backstage app image: $image_tag"
   "$_pocker" build \
+    "${cache_args[@]+"${cache_args[@]}"}" \
     "${volume_args[@]+"${volume_args[@]}"}" \
     --tag "$image_tag" \
     --tag "$REGISTRY_URL/$ORG_ID/$REPO:main" \
@@ -227,7 +236,8 @@ function backstage-image {
     "$_pocker" push "$image_tag"
     "$_pocker" push "$REGISTRY_URL/$ORG_ID/$REPO:main"
   else
-    echo "Image built. Run with --push to push to the registry, or use:"
+    echo "Image built. Pass --push to push to the registry, --no-cache to rebuild layers from scratch."
+    echo "  Or push manually with:"
     echo "  $_pocker push $image_tag"
   fi
   return 0

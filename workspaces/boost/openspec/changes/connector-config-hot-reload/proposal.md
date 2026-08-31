@@ -14,7 +14,7 @@ The key distinction: Backstage's built-in `ConfigApi` loads config at startup wi
 
 ### Config Schemas
 
-- Zod schema definitions for per-connector `boost.connectors.*` fields: `enabled`, `endpoint`, `schedule`, `batchSize`, `timeout` — all `configScope: db-overridable`. Deployment-time fields (`tls`, `credentials`, `namespace`) live under `ai-catalog.providers.*` and are not part of these schemas.
+- Zod schema definitions for per-connector `boost.connectors.*` fields: `enabled`, `endpoint`, `schedule`, `batchSize`, `timeout` — all user-facing fields are `configScope: db-overridable`; `__schemaVersion` is `configScope: db-only` internal metadata. Deployment-time fields (`tls`, `credentials`, `namespace`) live under `ai-catalog.providers.*` and are not part of these schemas.
 - Runtime operational state (last sync timestamp, run status) lives in the health store (`boost_sync_attempts` table), not the config resolver.
 - Schema validation rejects invalid connector config values before write
 - Integration with `RuntimeConfigResolver`'s two-layer resolution

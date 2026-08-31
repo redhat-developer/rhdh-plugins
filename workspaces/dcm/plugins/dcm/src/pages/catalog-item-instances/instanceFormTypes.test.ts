@@ -16,9 +16,10 @@
 
 import {
   validateInstanceForm,
+  validateUserValues,
   isInstanceFormValid,
   emptyInstanceForm,
-  buildUserValueRows,
+  buildResourceUserValues,
   formToInstance,
 } from './instanceFormTypes';
 import type { CatalogItem } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
@@ -128,46 +129,75 @@ describe('catalog_item_id validation', () => {
 });
 
 // ---------------------------------------------------------------------------
-// buildUserValueRows
+// buildResourceUserValues
 // ---------------------------------------------------------------------------
 
-describe('buildUserValueRows', () => {
+describe('buildResourceUserValues', () => {
   it('returns empty array when item is undefined', () => {
-    expect(buildUserValueRows(undefined)).toEqual([]);
+    expect(buildResourceUserValues(undefined)).toEqual([]);
   });
 
-  it('returns empty array when item has no spec fields', () => {
+  it('returns empty array when item has no spec resources', () => {
     const item = {} as CatalogItem;
-    expect(buildUserValueRows(item)).toEqual([]);
+    expect(buildResourceUserValues(item)).toEqual([]);
   });
 
-  it('only returns editable fields', () => {
+  it('only returns resources with editable fields', () => {
     const item: CatalogItem = {
       spec: {
-        fields: [
-          { path: 'a', editable: true, display_name: 'Field A' },
-          { path: 'b', editable: false, display_name: 'Field B' },
+        resources: [
+          {
+            name: 'app',
+            service_type: 'vm',
+            fields: [
+              { path: 'a', editable: true, display_name: 'Field A' },
+              { path: 'b', editable: false, display_name: 'Field B' },
+            ],
+          },
+          {
+            name: 'db',
+            service_type: 'postgres',
+            fields: [{ path: 'c', editable: false }],
+          },
         ],
       },
     };
-    const rows = buildUserValueRows(item);
-    expect(rows).toHaveLength(1);
-    expect(rows[0].path).toBe('a');
+    const result = buildResourceUserValues(item);
+    expect(result).toHaveLength(1);
+    expect(result[0].resourceName).toBe('app');
+    expect(result[0].values).toHaveLength(1);
+    expect(result[0].values[0].path).toBe('a');
   });
 
   it('uses path as displayName when display_name is absent', () => {
     const item: CatalogItem = {
-      spec: { fields: [{ path: 'myPath', editable: true }] },
+      spec: {
+        resources: [
+          {
+            name: 'app',
+            service_type: 'vm',
+            fields: [{ path: 'myPath', editable: true }],
+          },
+        ],
+      },
     };
-    const rows = buildUserValueRows(item);
-    expect(rows[0].displayName).toBe('myPath');
+    const result = buildResourceUserValues(item);
+    expect(result[0].values[0].displayName).toBe('myPath');
   });
 
   it('converts default value to string', () => {
     const item: CatalogItem = {
-      spec: { fields: [{ path: 'x', editable: true, default: 42 }] },
+      spec: {
+        resources: [
+          {
+            name: 'app',
+            service_type: 'vm',
+            fields: [{ path: 'x', editable: true, default: 42 }],
+          },
+        ],
+      },
     };
-    expect(buildUserValueRows(item)[0].value).toBe('42');
+    expect(buildResourceUserValues(item)[0].values[0].value).toBe('42');
   });
 });
 
@@ -179,9 +209,14 @@ describe('formToInstance', () => {
   it('maps form fields correctly', () => {
     const form = {
       ...validForm(),
-      user_values: [
-        { path: 'cpu', displayName: 'CPU', value: '4' },
-        { path: 'mem', displayName: 'Mem', value: '  ' }, // blank — should be filtered
+      resource_values: [
+        {
+          resourceName: 'app',
+          values: [
+            { path: 'cpu', displayName: 'CPU', value: '4' },
+            { path: 'mem', displayName: 'Mem', value: '  ' }, // blank — should be filtered
+          ],
+        },
       ],
     };
     const instance = formToInstance(form);
@@ -189,7 +224,11 @@ describe('formToInstance', () => {
     expect(instance.display_name).toBe('My Instance');
     expect(instance.spec.catalog_item_id).toBe('catalog-item-1');
     expect(instance.spec.user_values).toHaveLength(1);
-    expect(instance.spec.user_values[0]).toEqual({ path: 'cpu', value: '4' });
+    expect(instance.spec.user_values[0]).toEqual({
+      resource: 'app',
+      path: 'cpu',
+      value: '4',
+    });
   });
 
   it('trims whitespace from string fields', () => {
@@ -201,5 +240,184 @@ describe('formToInstance', () => {
     const instance = formToInstance(form);
     expect(instance.display_name).toBe('trimmed');
     expect(instance.api_version).toBe('v1');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Multi-resource: validateUserValues with required: true
+// ---------------------------------------------------------------------------
+
+describe('validateUserValues — required flag from schema.required === true', () => {
+  it('errors when a required field is empty', () => {
+    const rows = [
+      {
+        path: 'cpu',
+        displayName: 'CPU',
+        value: '',
+        required: true,
+      },
+    ];
+    const errs = validateUserValues(rows);
+    expect(errs[0]).toBeDefined();
+  });
+
+  it('does not error when a required field has a value', () => {
+    const rows = [
+      {
+        path: 'cpu',
+        displayName: 'CPU',
+        value: '4',
+        required: true,
+      },
+    ];
+    expect(validateUserValues(rows)).toEqual({});
+  });
+
+  it('does not error for optional empty fields', () => {
+    const rows = [
+      {
+        path: 'cpu',
+        displayName: 'CPU',
+        value: '',
+        required: false,
+      },
+    ];
+    expect(validateUserValues(rows)).toEqual({});
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Multi-resource: buildResourceUserValues + formToInstance
+// ---------------------------------------------------------------------------
+
+describe('multi-resource: buildResourceUserValues', () => {
+  it('returns one entry per resource that has editable fields', () => {
+    const item: CatalogItem = {
+      spec: {
+        resources: [
+          {
+            name: 'app',
+            service_type: 'vm',
+            fields: [
+              { path: 'replicas', editable: true },
+              { path: 'cpu', editable: true },
+            ],
+          },
+          {
+            name: 'db',
+            service_type: 'postgres',
+            fields: [{ path: 'storage', editable: true }],
+          },
+          {
+            name: 'cache',
+            service_type: 'redis',
+            fields: [{ path: 'ttl', editable: false }],
+          },
+        ],
+      },
+    };
+    const result = buildResourceUserValues(item);
+    expect(result).toHaveLength(2);
+    expect(result[0].resourceName).toBe('app');
+    expect(result[0].values).toHaveLength(2);
+    expect(result[1].resourceName).toBe('db');
+    expect(result[1].values).toHaveLength(1);
+  });
+
+  it('sets required from validation_schema.required === true', () => {
+    const item: CatalogItem = {
+      spec: {
+        resources: [
+          {
+            name: 'app',
+            service_type: 'vm',
+            fields: [
+              {
+                path: 'cpu',
+                editable: true,
+                validation_schema: {
+                  type: 'integer',
+                  required: true,
+                } as Record<string, unknown>,
+              },
+              {
+                path: 'mem',
+                editable: true,
+                validation_schema: { type: 'integer' } as Record<
+                  string,
+                  unknown
+                >,
+              },
+            ],
+          },
+        ],
+      },
+    };
+    const result = buildResourceUserValues(item);
+    expect(result[0].values[0].required).toBe(true);
+    expect(result[0].values[1].required).toBe(false);
+  });
+});
+
+describe('multi-resource: formToInstance', () => {
+  it('emits user_values tagged with correct resource names', () => {
+    const form = {
+      ...validForm(),
+      resource_values: [
+        {
+          resourceName: 'app',
+          values: [{ path: 'replicas', displayName: 'Replicas', value: '3' }],
+        },
+        {
+          resourceName: 'db',
+          values: [
+            { path: 'storage', displayName: 'Storage', value: '10' },
+            { path: 'host', displayName: 'Host', value: '' }, // blank — filtered
+          ],
+        },
+      ],
+    };
+    const instance = formToInstance(form);
+    expect(instance.spec.user_values).toHaveLength(2);
+    expect(instance.spec.user_values[0]).toEqual({
+      resource: 'app',
+      path: 'replicas',
+      value: '3',
+    });
+    expect(instance.spec.user_values[1]).toEqual({
+      resource: 'db',
+      path: 'storage',
+      value: '10',
+    });
+  });
+
+  it('isInstanceFormValid rejects form with a required field left blank', () => {
+    const form = {
+      ...validForm(),
+      resource_values: [
+        {
+          resourceName: 'app',
+          values: [
+            { path: 'cpu', displayName: 'CPU', value: '', required: true },
+          ],
+        },
+      ],
+    };
+    expect(isInstanceFormValid(form)).toBe(false);
+  });
+
+  it('isInstanceFormValid accepts form with all required fields filled', () => {
+    const form = {
+      ...validForm(),
+      resource_values: [
+        {
+          resourceName: 'app',
+          values: [
+            { path: 'cpu', displayName: 'CPU', value: '4', required: true },
+          ],
+        },
+      ],
+    };
+    expect(isInstanceFormValid(form)).toBe(true);
   });
 });

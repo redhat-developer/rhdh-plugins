@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-resource-agent
 
+## 0.4.1
+
+### Patch Changes
+
+- dbce029: Bump ai-integrations workspace to Backstage v1.54.0
+- Updated dependencies [dbce029]
+  - @red-hat-developer-hub/backstage-plugin-catalog-model-ai-resource-agent@0.3.1
+
+## 0.4.0
+
+### Minor Changes
+
+- 0c396f8: switch ai-model-server and ai-resource-agent from catalog model layer's addModelSource to addProcessor
+
 ## 0.3.0
 
 ### Minor Changes

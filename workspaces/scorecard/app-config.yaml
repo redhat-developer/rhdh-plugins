@@ -452,6 +452,21 @@ scorecard:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
+    catalog:
+      requiredAttributes:
+        options:
+          filter:
+            kind: Component
+            metadata.annotations.scorecard/example: catalog
+          metrics:
+            title:
+              title: Title is required
+              description: Every component should have a human-readable title.
+              field: metadata.title
+        schedule:
+          frequency: { minutes: 5 }
+          timeout: { minutes: 10 }
+          initialDelay: { seconds: 10 }
     filecheck:
       fileExistence:
         options:

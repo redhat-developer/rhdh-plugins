@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 import { ConfigReader } from '@backstage/config';
-// import { NotFoundError } from '@backstage/errors';
+import { NotFoundError, NotModifiedError } from '@backstage/errors';
 import { mockServices } from '@backstage/backend-test-utils';
+import { ReadUrlResponseFactory } from '@backstage/backend-defaults/urlReader';
 import {
   ModeCatalogBridgeTechdocUrlReader,
   ModelCatalogBridgeUrlReaderServiceReadTreeResponse,
@@ -258,6 +259,105 @@ describe('ModeCatalogBridgeTechdocUrlReader', () => {
       );
       // @ts-ignore
       expect(response.etag).toBe(etag);
+    });
+  });
+
+  describe('readUrl', () => {
+    const readerConfig = {
+      catalog: {
+        providers: {
+          modelCatalog: {
+            'kserve-kubeflow-connector': {
+              'cluster-1': {
+                name: 'my-cluster',
+                'kubeflow-model-catalog-url': 'https://example.com',
+                'default-owner': 'owner',
+                'default-lifecycle': 'production',
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const testUrl =
+      'http://localhost:7007/api/kserve-kubeflow-connector/modelcard/source1/modelA';
+
+    beforeEach(() => {
+      ModeCatalogBridgeTechdocUrlReader.auth = {
+        getPluginRequestToken: jest
+          .fn()
+          .mockResolvedValue({ token: 'test-token' }),
+        getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
+      } as any;
+    });
+
+    it('should return a response on success', async () => {
+      const reader = newReader(readerConfig);
+      const mockResponse = { ok: true, status: 200 };
+      global.fetch = jest.fn().mockResolvedValue(mockResponse);
+      jest.spyOn(ReadUrlResponseFactory, 'fromResponse').mockResolvedValue({
+        buffer: async () => Buffer.from('markdown content'),
+        etag: 'test-etag',
+      } as any);
+
+      const result = await reader.readUrl(testUrl);
+      expect(result).toBeDefined();
+      expect(result.etag).toBe('test-etag');
+      expect(global.fetch).toHaveBeenCalledWith(
+        testUrl,
+        expect.objectContaining({
+          method: 'GET',
+          headers: { Authorization: 'Bearer test-token' },
+        }),
+      );
+    });
+
+    it('should throw Error when no matching bridge config', async () => {
+      const reader = newReader(readerConfig);
+      await expect(
+        reader.readUrl('http://localhost:7007/api/unknown-plugin/something'),
+      ).rejects.toThrow('No matching bridge config');
+    });
+
+    it('should throw NotFoundError on 404', async () => {
+      const reader = newReader(readerConfig);
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
+      await expect(reader.readUrl(testUrl)).rejects.toThrow(NotFoundError);
+    });
+
+    it('should throw NotModifiedError on 304', async () => {
+      const reader = newReader(readerConfig);
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 304,
+        statusText: 'Not Modified',
+      });
+
+      await expect(reader.readUrl(testUrl)).rejects.toThrow(NotModifiedError);
+    });
+
+    it('should throw Error on other non-ok status', async () => {
+      const reader = newReader(readerConfig);
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
+
+      await expect(reader.readUrl(testUrl)).rejects.toThrow('could not read');
+    });
+
+    it('should throw Error when fetch rejects', async () => {
+      const reader = newReader(readerConfig);
+      global.fetch = jest.fn().mockRejectedValue(new Error('network failure'));
+
+      await expect(reader.readUrl(testUrl)).rejects.toThrow('Unable to read');
     });
   });
 

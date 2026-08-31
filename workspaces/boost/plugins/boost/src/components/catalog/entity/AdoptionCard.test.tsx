@@ -44,20 +44,20 @@ const ociEntity: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
   kind: 'Resource',
   metadata: {
-    name: 'granite-3-code',
+    name: 'custom-ai-tool',
     namespace: 'default',
     uid: 'uid-oci',
     annotations: {
-      'rhdh.io/ai-asset-source': 'model-registry',
+      'rhdh.io/ai-asset-source': 'registry',
     },
   },
   spec: {
-    type: 'ai-model',
+    type: 'ai-tool',
     lifecycle: 'production',
-    owner: 'team-ml-ops',
+    owner: 'team-integrations',
     remotes: [
       {
-        url: 'oci://registry.example.com/models/granite-3-code:latest',
+        url: 'oci://registry.example.com/tools/custom-ai-tool:latest',
         type: 'oci',
       },
     ],
@@ -145,7 +145,7 @@ describe('AdoptionCard', () => {
 
     expect(
       screen.getByText(
-        'podman pull oci://registry.example.com/models/granite-3-code:latest',
+        'podman pull oci://registry.example.com/tools/custom-ai-tool:latest',
       ),
     ).toBeInTheDocument();
     expect(screen.getByText('Copy')).toBeInTheDocument();

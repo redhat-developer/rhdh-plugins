@@ -49,7 +49,7 @@ BUI (`@backstage/ui`) is the component library for all new UI. MUI v5 as fallbac
 
 ### Decision 7: RBAC graceful degradation
 
-Permission checks for `ai-catalog.asset.read.usage-docs` default to allow when the permission is not yet registered (RHDHPLAN-1508 not built). Content is shown, and enforcement activates automatically when RBAC lands.
+Permission checks for `ai-catalog.asset.access.usage-docs` default to allow when the permission is not yet registered (RHDHPLAN-1508 not built). Content is shown, and enforcement activates automatically when RBAC lands.
 
 ### Decision 8: Extensible browse filters via data-driven FilterDefinition
 

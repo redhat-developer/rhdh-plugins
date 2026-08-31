@@ -405,6 +405,7 @@ describe('CatalogMetricService', () => {
           type: provider.getMetrics()[0].type,
           history: provider.getMetrics()[0].history,
           defaultVisualization: provider.getMetrics()[0].defaultVisualization,
+          collectorIds: provider.getMetrics()[0].collectorIds,
         }),
       );
       expect(resultMetric.result).toEqual(
@@ -504,6 +505,7 @@ describe('CatalogMetricService', () => {
         unit: metric.unit,
         history: metric.history,
         defaultVisualization: metric.defaultVisualization,
+        collectorIds: metric.collectorIds,
       });
     });
 
@@ -526,6 +528,7 @@ describe('CatalogMetricService', () => {
           unit: provider.getMetrics()[0].unit,
           history: provider.getMetrics()[0].history,
           defaultVisualization: provider.getMetrics()[0].defaultVisualization,
+          collectorIds: provider.getMetrics()[0].collectorIds,
         },
       });
       expect(mockedDatabase.readEntityMetricValuesInRange).toHaveBeenCalledWith(

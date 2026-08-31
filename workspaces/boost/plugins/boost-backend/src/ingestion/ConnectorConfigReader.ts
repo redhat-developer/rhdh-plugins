@@ -18,6 +18,8 @@ import type {
   LoggerService,
   RootConfigService,
 } from '@backstage/backend-plugin-api';
+import type { RuntimeConfigResolver } from '../config/RuntimeConfigResolver';
+import { boostConfigFields, type BoostConfigKey } from '../config/schemas';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -36,8 +38,10 @@ export interface ConnectorCandidate {
   /** Whether the provider is registered at startup (`ai-catalog.providers.<id>.enabled`). */
   startupEnabled: boolean;
   /**
-   * Whether runtime syncing is enabled (`boost.connectors.<id>.enabled`).
-   * Defaults to `true` if the key is missing.
+   * Whether runtime syncing is enabled for this connector.
+   * Resolved via {@link RuntimeConfigResolver} for
+   * `boost.connectors.<id>.enabled` (YAML baseline + DB overrides).
+   * Defaults to `true` when unset in both layers.
    */
   runtimeEnabled: boolean;
 }
@@ -50,6 +54,8 @@ export interface ConnectorCandidate {
 export interface ConnectorConfigReaderOptions {
   /** The Backstage root config service. */
   config: RootConfigService;
+  /** The runtime config resolver for DB-overridable fields. */
+  resolver: RuntimeConfigResolver;
   /** The Backstage logger service. */
   logger: LoggerService;
 }
@@ -69,22 +75,24 @@ const KNOWN_CONNECTOR_TYPES = ['github', 'gitlab', 'jira'] as const;
 // ---------------------------------------------------------------------------
 
 /**
- * Reads connector configuration from Backstage ConfigApi for health
- * API discovery.
+ * Reads connector configuration from Backstage ConfigApi and
+ * {@link RuntimeConfigResolver} for health API discovery.
  *
- * This is a seam for #4044 (connector config hot-reload). Today it
- * reads both `enabled` flags from YAML via ConfigApi. After #4044
- * lands, `runtimeEnabled` will come from `RuntimeConfigResolver`
- * (YAML + DB overrides) while `startupEnabled` stays YAML-only.
+ * `startupEnabled` is read from YAML-only (`ai-catalog.providers.<id>.enabled`)
+ * via ConfigApi. `runtimeEnabled` is resolved via
+ * {@link RuntimeConfigResolver} so that DB overrides (admin panel
+ * toggles) take effect within the 30-second cache TTL.
  *
  * @public
  */
 export class ConnectorConfigReader {
   private readonly config: RootConfigService;
+  private readonly resolver: RuntimeConfigResolver;
   private readonly logger: LoggerService;
 
   constructor(options: ConnectorConfigReaderOptions) {
     this.config = options.config;
+    this.resolver = options.resolver;
     this.logger = options.logger.child({ service: 'ConnectorConfigReader' });
   }
 
@@ -96,23 +104,24 @@ export class ConnectorConfigReader {
    *    `ai-catalog.providers.*` for in-scope types.
    * 2. Drop any ID where `ai-catalog.providers.<id>.enabled === false`
    *    (or provider block absent).
-   * 3. Set `runtimeEnabled` from `boost.connectors.<id>.enabled`
-   *    (default `true`).
+   * 3. Set `runtimeEnabled` from `RuntimeConfigResolver` resolution of
+   *    `boost.connectors.<id>.enabled` (default `true`), which merges
+   *    YAML baseline with DB overrides.
    *
    * @returns Array of connector candidates that passed startup-enabled
    *   filtering.
    */
-  listCandidates(): ConnectorCandidate[] {
+  async listCandidates(): Promise<ConnectorCandidate[]> {
     const candidates: ConnectorCandidate[] = [];
     const seen = new Set<string>();
 
     // Scan ai-catalog.providers for known connector types
     for (const connectorType of KNOWN_CONNECTOR_TYPES) {
-      this.discoverFromProviders(connectorType, candidates, seen);
+      await this.discoverFromProviders(connectorType, candidates, seen);
     }
 
     // Scan boost.connectors for any additional IDs
-    this.discoverFromBoostConnectors(candidates, seen);
+    await this.discoverFromBoostConnectors(candidates, seen);
 
     this.logger.debug(`Discovered ${candidates.length} connector candidate(s)`);
     return candidates;
@@ -121,11 +130,11 @@ export class ConnectorConfigReader {
   /**
    * Discover connectors from `ai-catalog.providers.<id>` config.
    */
-  private discoverFromProviders(
+  private async discoverFromProviders(
     connectorType: string,
     candidates: ConnectorCandidate[],
     seen: Set<string>,
-  ): void {
+  ): Promise<void> {
     try {
       const providersConfig = this.config.getOptionalConfig(
         'ai-catalog.providers',
@@ -158,8 +167,8 @@ export class ConnectorConfigReader {
         return;
       }
 
-      // Check runtime-enabled flag from boost.connectors
-      const runtimeEnabled = this.getRuntimeEnabled(connectorId);
+      // Resolve runtime-enabled flag via RuntimeConfigResolver
+      const runtimeEnabled = await this.resolveRuntimeEnabled(connectorId);
 
       candidates.push({
         connectorId,
@@ -178,10 +187,10 @@ export class ConnectorConfigReader {
    * Discover connectors from `boost.connectors.<id>` config that
    * were not already found via `ai-catalog.providers`.
    */
-  private discoverFromBoostConnectors(
+  private async discoverFromBoostConnectors(
     candidates: ConnectorCandidate[],
     seen: Set<string>,
-  ): void {
+  ): Promise<void> {
     try {
       const connectorsConfig =
         this.config.getOptionalConfig('boost.connectors');
@@ -211,7 +220,7 @@ export class ConnectorConfigReader {
           continue;
         }
 
-        const runtimeEnabled = this.getRuntimeEnabled(connectorId);
+        const runtimeEnabled = await this.resolveRuntimeEnabled(connectorId);
         const connectorType = this.inferConnectorType(connectorId);
 
         candidates.push({
@@ -256,10 +265,39 @@ export class ConnectorConfigReader {
   }
 
   /**
-   * Get the runtime-enabled flag from `boost.connectors.<id>.enabled`.
-   * Defaults to `true` if the key is missing.
+   * Resolve the runtime-enabled flag via {@link RuntimeConfigResolver}.
+   * This merges YAML baseline with DB overrides so that admin panel
+   * toggles take effect within the 30-second cache TTL.
+   *
+   * Defaults to `true` when the key is unset in both layers.
+   * Falls back to YAML-only if the key is not a registered
+   * {@link BoostConfigKey}.
    */
-  private getRuntimeEnabled(connectorId: string): boolean {
+  private async resolveRuntimeEnabled(connectorId: string): Promise<boolean> {
+    const key = `boost.connectors.${connectorId}.enabled`;
+
+    // Only use the resolver for keys registered in boostConfigFields;
+    // unregistered keys fall back to YAML-only via ConfigApi.
+    if (key in boostConfigFields) {
+      try {
+        const value = await this.resolver.resolve(key as BoostConfigKey);
+        if (typeof value === 'boolean') {
+          return value;
+        }
+        if (value !== undefined) {
+          this.logger.warn(
+            `Unexpected type for ${key}: ${typeof value}; falling back to YAML`,
+          );
+        }
+        // undefined or unexpected type → fall through to YAML ConfigApi
+      } catch (error) {
+        this.logger.warn(
+          `Failed to resolve runtime config for ${key}, falling back to YAML: ${error}`,
+        );
+      }
+    }
+
+    // Fallback: read from YAML-only via ConfigApi
     try {
       return (
         this.config.getOptionalBoolean(

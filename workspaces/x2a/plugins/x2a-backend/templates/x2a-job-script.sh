@@ -307,10 +307,13 @@ cleanup() {
 }
 
 git_clone_repos() {
-  echo "=== Cloning source repository ==="
-  ERROR_MESSAGE="Failed to clone source repository from ${SOURCE_REPO_URL}"
-  git_source_repo clone --depth=1 --single-branch \
-    --branch="${SOURCE_REPO_BRANCH}" "${SOURCE_REPO_URL}" /workspace/source
+  # Adversarial phases only read from the target repo (artifacts are already committed)
+  if [[ "${PHASE}" != adversarial-* ]]; then
+    echo "=== Cloning source repository ==="
+    ERROR_MESSAGE="Failed to clone source repository from ${SOURCE_REPO_URL}"
+    git_source_repo clone --depth=1 --single-branch \
+      --branch="${SOURCE_REPO_BRANCH}" "${SOURCE_REPO_URL}" /workspace/source
+  fi
 
   echo "=== Cloning target repository ==="
   ERROR_MESSAGE="Failed to clone target repository from ${TARGET_REPO_URL}"
@@ -382,7 +385,10 @@ git_clone_repos
 
 # Define paths
 TARGET_BASE="/workspace/target"
-SOURCE_BASE="/workspace/source"
+# SOURCE_BASE is only set for phases that clone the source repository
+if [[ "${PHASE}" != adversarial-* ]]; then
+  SOURCE_BASE="/workspace/source"
+fi
 
 # PROJECT_DIR is pre-computed by the backend (sanitized name + short UUID)
 PROJECT_PATH="${TARGET_BASE}/${PROJECT_DIR}"
@@ -655,6 +661,66 @@ case "${PHASE}" in
       echo "WARNING: Could not parse AAP project ID from publish-aap output"
       ARTIFACTS+=("ansible_project:${AAP_CONTROLLER_URL}/execution/projects")
     fi
+    ;;
+
+  adversarial-analyze | adversarial-migrate)
+    ACTUAL_PHASE="${PHASE#adversarial-}"
+    echo "=== Running adversarial review (${ACTUAL_PHASE} phase) ==="
+    OUTPUT_DIR="${PROJECT_PATH}/modules/${MODULE_NAME}"
+
+    if [[ "${ACTUAL_PHASE}" = "analyze" ]]; then
+      SOURCE_DIR="${OUTPUT_DIR}"
+    else
+      SOURCE_DIR="${OUTPUT_DIR}/ansible"
+    fi
+
+    if [[ ! -d "${SOURCE_DIR}" ]]; then
+      ERROR_MESSAGE="Source directory not found: ${SOURCE_DIR}. Ensure the ${ACTUAL_PHASE} phase completed before running adversarial review."
+      exit 1
+    fi
+
+    AGENTS_CONFIG="/config/adversarial-agents/agents.json"
+    if [[ ! -f "${AGENTS_CONFIG}" ]]; then
+      ERROR_MESSAGE="Adversarial agents config not found at ${AGENTS_CONFIG}"
+      exit 1
+    fi
+
+    if [[ ! -d /app ]] || [[ ! -f /app/app.py ]]; then
+      ERROR_MESSAGE="/app/app.py not found - x2a tool is required"
+      exit 1
+    fi
+
+    REPORT_MD="${OUTPUT_DIR}/adversarial-report-${ACTUAL_PHASE}.md"
+    REPORT_JSON_DEST="${OUTPUT_DIR}/adversarial-report-${ACTUAL_PHASE}.json"
+
+    cd /app
+    # Telemetry lands in /app (Python CWD) — outside the target git repo.
+    # Set SOURCE_BASE before run_x2a so cleanup picks up telemetry even on failure.
+    SOURCE_BASE="/app"
+
+    run_x2a uv run app.py adversarial-run \
+      --phase "${ACTUAL_PHASE}" \
+      --source-dir "${SOURCE_DIR}" \
+      --config "${AGENTS_CONFIG}" \
+      --report-path "${REPORT_MD}"
+
+    if [[ -f "/app/agent-adversarial-report.json" ]]; then
+      cp "/app/agent-adversarial-report.json" "${REPORT_JSON_DEST}"
+      ARTIFACTS+=("adversarial_report_json:$(cat /app/agent-adversarial-report.json)")
+    fi
+
+    echo ""
+    echo "=== Output directory contents ==="
+    ls -la "${OUTPUT_DIR}/"
+
+    if [[ -f "${REPORT_MD}" ]]; then
+      echo ""
+      echo "=== Adversarial report (${ACTUAL_PHASE}) ==="
+      cat "${REPORT_MD}"
+      echo ""
+    fi
+
+    ARTIFACTS+=("adversarial_report:${PROJECT_DIR}/modules/${MODULE_NAME}/adversarial-report-${ACTUAL_PHASE}.md")
     ;;
 
   *)

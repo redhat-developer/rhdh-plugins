@@ -8,7 +8,7 @@ Boost already implements 23 application-layer permissions for agent/tool lifecyc
 
 ## What Changes
 
-- **Three new AI Catalog permissions:** `ai-catalog.asset.read` (Tier 1 discovery), `ai-catalog.asset.read.usage-docs` (Tier 2 sensitive details), `ai-catalog.admin` (management actions)
+- **Three new AI Catalog permissions:** `ai-catalog.asset.access` (Tier 1 discovery), `ai-catalog.asset.access.usage-docs` (Tier 2 sensitive details), `ai-catalog.admin` (management actions)
 - **Graduated visibility model:** Two-tier field-level filtering — Tier 1 shows name/description/type/stage; Tier 2 adds usage docs, connection endpoints, configuration
 - **Frontend RequirePermission gating:** Entity detail pages gate Tier 2 sections with restricted-access placeholders; SkillBundle views show filtered skill counts
 - **Version-level policy cascade:** Asset-level policies propagate to all version entities via RBACProvider; version-specific overrides take precedence

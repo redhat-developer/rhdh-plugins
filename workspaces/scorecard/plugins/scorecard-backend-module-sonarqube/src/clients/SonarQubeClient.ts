@@ -108,12 +108,29 @@ export class SonarQubeClient {
     instanceName?: string,
   ): Promise<number> {
     this.logger.debug(`Fetching open issues count for project ${projectKey}`);
+
+    // Pre-flight: /api/issues/search returns 200 with total: 0 for inaccessible
+    // projects, so verify the component exists and is reachable first.
+    try {
+      await this.fetchApi(
+        `/api/components/show?component=${encodeURIComponent(projectKey)}`,
+        instanceName,
+      );
+    } catch (error) {
+      throw new Error(
+        `SonarQube project '${projectKey}' is not accessible or the project key is missing`,
+      );
+    }
+
+    // For a private / invisible / unauthorized project it often does not return 403.
+    // It returns HTTP 200 with an empty result set.
     const data = await this.fetchApi(
       `/api/issues/search?componentKeys=${encodeURIComponent(
         projectKey,
       )}&statuses=OPEN,CONFIRMED,REOPENED&ps=1`,
       instanceName,
     );
+
     return data.total;
   }
 
