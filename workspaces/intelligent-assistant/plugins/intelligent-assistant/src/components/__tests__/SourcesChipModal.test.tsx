@@ -18,6 +18,7 @@ import { SourcesCardProps } from '@patternfly/chatbot';
 import { fireEvent, render, screen } from '@testing-library/react';
 
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
+import { SourceWithRagId } from '../../utils/lightspeed-chatbox-utils';
 import { SourcesChipModal } from '../SourcesChipModal';
 
 jest.mock('../../hooks/useTranslation', () => ({
@@ -30,14 +31,14 @@ const mockSources: SourcesCardProps = {
       title: 'aws-bedrock-walkthrough.md',
       body: 'Documentation covering architecture, usage guidelines, and best practices.',
       link: '',
-      subtitle: 'rhdh-product-docs-1_10',
-    },
+      ragSource: 'rhdh-product-docs-1_10',
+    } as SourceWithRagId,
     {
       title: 'codecov.yml',
       body: 'Application configuration including backend, database, authentication, and catalog settings.',
       link: '',
-      subtitle: 'v1',
-    },
+      ragSource: 'v1',
+    } as SourceWithRagId,
   ],
 };
 

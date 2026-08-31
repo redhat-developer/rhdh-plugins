@@ -17,7 +17,7 @@
 import Box from '@mui/material/Box';
 import { CSSObject } from '@mui/material/styles';
 
-/** Shared pill styles for LCORE RAG `source` labels (SourcesCard subtitle + modal). */
+/** Shared pill styles for LCORE RAG `source` labels (SourcesCard header + modal). */
 export const ragSourceLabelSx: CSSObject = {
   display: 'inline-block',
   boxSizing: 'border-box',

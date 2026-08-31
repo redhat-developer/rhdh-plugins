@@ -29,6 +29,7 @@ import {
 import { InfoCircleIcon, LinkIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { SourceWithRagId } from '../utils/lightspeed-chatbox-utils';
 import { FileTypeIcon } from './notebooks/FileTypeIcon';
 import { RagSourceLabel } from './RagSourceLabel';
 
@@ -113,7 +114,7 @@ export const SourcesChipModal = ({ sources }: SourcesChipModalProps) => {
           <SourcesList isPlain aria-label={t('sources.modal.title')}>
             {sources.sources.map((source, index) => {
               const title = source.title ?? `Source ${index + 1}`;
-              const hasLabel = Boolean(source.subtitle);
+              const ragSource = (source as SourceWithRagId).ragSource;
               const titleNode = (
                 <Box
                   sx={{
@@ -133,29 +134,13 @@ export const SourcesChipModal = ({ sources }: SourcesChipModalProps) => {
                   key={`${source.title}-${index}`}
                   icon={<FileTypeIcon fileName={title} />}
                 >
-                  <Box
-                    sx={{
-                      position: 'relative',
-                      flex: 1,
-                      minWidth: 0,
-                      ...(hasLabel && {
-                        paddingRight: 'var(--pf-t--global--spacer--4xl)',
-                        paddingTop: 'var(--pf-t--global--spacer--xs)',
-                      }),
-                    }}
-                  >
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Tooltip content={title}>{titleNode}</Tooltip>
-                    {source.subtitle && (
+                    {ragSource && (
                       <Box
-                        component="span"
-                        sx={{
-                          position: 'absolute',
-                          top: 0,
-                          right: 0,
-                          zIndex: 1,
-                        }}
+                        sx={{ marginTop: 'var(--pf-t--global--spacer--xs)' }}
                       >
-                        <RagSourceLabel source={source.subtitle} />
+                        <RagSourceLabel source={ragSource} />
                       </Box>
                     )}
                     {source.body && (

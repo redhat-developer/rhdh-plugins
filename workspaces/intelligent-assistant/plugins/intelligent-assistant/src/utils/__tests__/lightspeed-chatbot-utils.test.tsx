@@ -322,15 +322,17 @@ describe('createBotMessage', () => {
         isLoading: true,
         content: 'Bot message content',
         timestamp: '2024-10-30T14:00:00Z',
-        sources: {
+        sources: expect.objectContaining({
           sources: expect.arrayContaining([
             expect.objectContaining({
               isExternal: true,
               link: expect.anything(),
               title: expect.anything(),
+              headerContent: expect.anything(),
+              ragSource: expect.anything(),
             }),
           ]),
-        },
+        }),
       }),
     );
   });
@@ -355,32 +357,36 @@ describe('transformDocumentsToSources', () => {
             isExternal: true,
             link: expect.anything(),
             title: expect.anything(),
-            subtitle: 'rhdh-product-docs-1_10',
+            ragSource: 'rhdh-product-docs-1_10',
+            headerContent: expect.anything(),
           }),
           expect.objectContaining({
             isExternal: true,
             link: expect.anything(),
             title: expect.anything(),
-            subtitle: 'v1',
+            ragSource: 'v1',
+            headerContent: expect.anything(),
           }),
         ]),
       }),
     );
   });
 
-  it('should omit subtitle when referenced document has no source', () => {
+  it('should omit headerContent when referenced document has no source', () => {
     const sources = transformDocumentsToSources([
       {
         doc_title: 'Untitled source doc',
         doc_url: 'https://example.com/doc',
       },
     ]);
-    expect(sources?.sources).toEqual([
+    expect(sources?.sources).toHaveLength(1);
+    expect(sources?.sources[0]).toEqual(
       expect.objectContaining({
         title: 'Untitled source doc',
-        subtitle: undefined,
       }),
-    ]);
+    );
+    expect(sources?.sources[0]).not.toHaveProperty('headerContent');
+    expect(sources?.sources[0]).not.toHaveProperty('ragSource');
   });
 
   it('should add document description in referenced documents into message sources', () => {

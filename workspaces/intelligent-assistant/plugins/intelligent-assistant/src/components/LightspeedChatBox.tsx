@@ -44,7 +44,6 @@ import { useTranslation } from '../hooks/useTranslation';
 import { ToolCall } from '../types';
 import { parseReasoning } from '../utils/reasoningParser';
 import { mapToPatternFlyToolCall } from '../utils/toolCallMapper';
-import { ragSourceLabelSx } from './RagSourceLabel';
 import { SourcesChipModal } from './SourcesChipModal';
 
 const DEEP_THINKING_CLASS = 'lightspeed-deep-thinking';
@@ -69,20 +68,6 @@ const StyledMessageBox = styled(MessageBox, {
 })<StyledMessageBoxProps>(
   ({ theme, $isNewChat, $hasWelcomePrompts, $showPromptSuggestions }) => ({
     maxWidth: 'unset !important',
-    '& .pf-chatbot__sources-card': {
-      position: 'relative',
-    },
-    '& .pf-chatbot__sources-card-title-container': {
-      paddingRight: 'var(--pf-t--global--spacer--4xl)',
-      paddingTop: 'var(--pf-t--global--spacer--sm)',
-    },
-    '& .pf-chatbot__sources-card-subtitle': {
-      position: 'absolute',
-      top: 'var(--pf-t--global--spacer--sm)',
-      right: 'var(--pf-t--global--spacer--sm)',
-      zIndex: 1,
-      ...ragSourceLabelSx,
-    },
     [`& .${DEEP_THINKING_CLASS}`]: {
       animation: `${deepThinkingPulse} 1.6s ease-in-out infinite`,
     },

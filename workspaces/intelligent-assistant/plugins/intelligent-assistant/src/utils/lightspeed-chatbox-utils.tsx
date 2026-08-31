@@ -22,6 +22,7 @@ import { Spinner } from '@patternfly/react-core';
 import { ThumbtackIcon } from '@patternfly/react-icons';
 import { RhUiAiInfoIcon } from '@patternfly/react-icons/dist/esm/icons/rh-ui-ai-info-icon';
 
+import { RagSourceLabel } from '../components/RagSourceLabel';
 import {
   BaseMessage,
   ConversationList,
@@ -262,6 +263,11 @@ export const getConversationsData = (
   ];
 };
 
+export type SourceWithRagId = SourcesCardProps['sources'][number] & {
+  /** Full LCORE RAG source id for chip-modal labels. */
+  ragSource?: string;
+};
+
 export const transformDocumentsToSources = (
   referenced_documents: ReferencedDocuments,
 ): SourcesCardProps | undefined => {
@@ -269,13 +275,20 @@ export const transformDocumentsToSources = (
     return undefined;
   }
   return {
-    sources: referenced_documents.map((doc: ReferencedDocument) => ({
-      body: doc.doc_description,
-      title: doc.doc_title,
-      link: doc?.doc_url,
-      isExternal: !!doc?.doc_url,
-      subtitle: doc.source,
-    })),
+    sources: referenced_documents.map(
+      (doc: ReferencedDocument): SourceWithRagId => ({
+        body: doc.doc_description,
+        title: doc.doc_title,
+        link: doc?.doc_url,
+        isExternal: !!doc?.doc_url,
+        ...(doc.source
+          ? {
+              headerContent: <RagSourceLabel source={doc.source} />,
+              ragSource: doc.source,
+            }
+          : {}),
+      }),
+    ),
   };
 };
 
