@@ -24,7 +24,7 @@
     "@backstage/types": "^1.2.2",
     "@testing-library/jest-dom": "^6.0.0",
     "@types/lodash": "^4.17.5",
-    "msw": "^2.3.4",
+    "msw": "^2.15.0",
     "ts-morph": "^23.0.0",
     "yaml": "^2.4.2"
   },
