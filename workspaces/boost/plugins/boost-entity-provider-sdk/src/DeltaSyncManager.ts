@@ -44,7 +44,7 @@ export interface CursorStore {
    * Retrieve the cursor state for a provider.
    *
    * @param providerId - The unique provider identifier
-   *   (e.g. `"kagenti/default"`).
+   *   (e.g. `"ogx/default"`).
    * @returns The persisted cursor state, or `undefined` if no cursor
    *   has been stored (first sync or after a clear).
    */
@@ -168,9 +168,16 @@ export class DeltaSyncManager {
    * Merges `added` and `updated` entities into the `added` array
    * of Backstage's delta mutation (Backstage treats updates as
    * upserts). Passes `removed` entity refs to the `removed` array.
+   * The merge does not deduplicate: if the same entity appears in
+   * both `added` and `updated`, it is passed twice, which Backstage
+   * resolves idempotently via upsert.
    *
    * After a successful mutation, persists the `nextCursor` (if
-   * provided) for the next polling cycle.
+   * provided) for the next polling cycle. Cursor persistence is
+   * at-least-once: if `applyMutation` succeeds but `cursorStore.set`
+   * throws, the mutation stands but the cursor is not advanced, so
+   * the next cycle re-applies the same delta (again idempotent via
+   * upsert). The error propagates to the caller.
    *
    * @param options - The delta to apply.
    */
@@ -249,14 +256,17 @@ export class DeltaSyncManager {
 export class InMemoryCursorStore implements CursorStore {
   private readonly store = new Map<string, CursorState>();
 
+  /** {@inheritDoc CursorStore.get} */
   async get(providerId: string): Promise<CursorState | undefined> {
     return this.store.get(providerId);
   }
 
+  /** {@inheritDoc CursorStore.set} */
   async set(providerId: string, state: CursorState): Promise<void> {
     this.store.set(providerId, state);
   }
 
+  /** {@inheritDoc CursorStore.delete} */
   async delete(providerId: string): Promise<void> {
     this.store.delete(providerId);
   }
