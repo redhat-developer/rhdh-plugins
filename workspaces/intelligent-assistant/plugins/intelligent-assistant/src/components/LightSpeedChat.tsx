@@ -34,9 +34,11 @@ import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { Button, makeStyles } from '@material-ui/core';
+import Button from '@mui/material/Button';
+import {type Theme } from '@mui/material/styles';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import Typography from '@mui/material/Typography';
 import {
   Chatbot,
   ChatbotAlert,
@@ -149,505 +151,57 @@ const ConditionalWrapper = ({
   children: React.ReactNode;
 }) => (condition ? wrapper(children) : children);
 
-const useStyles = makeStyles(theme => ({
-  body: {
-    '& h1, & h2, & h3, & h4, & h5, & h6, & p, & li': {
-      margin: 0,
-      padding: 0,
-    },
-    '& .pf-chatbot__content': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default) !important',
-    },
-    '& .pf-v6-svg > .pf-v6-icon-rh-ui': {
-      display: 'none !important',
-      width: 0,
-      height: 0,
-      overflow: 'hidden',
-    },
-  },
-  bodyCompact: {
-    height: '100% !important',
-    minHeight: '0 !important',
-    overflow: 'hidden',
-  },
-  header: {
-    padding: `${theme.spacing(3)}px ${theme.spacing(3)}px 0 ${theme.spacing(
-      3,
-    )}px !important`,
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default) !important',
-  },
-  errorContainer: {
-    padding: theme.spacing(3),
-  },
-  drawerFileDropZone: {
-    gap: 0,
-    rowGap: 0,
-    columnGap: 0,
-    '--pf-v6-c-multiple-file-upload--Gap': '0',
-    '--pf-v5-c-multiple-file-upload--Gap': '0',
-    flex: 1,
-    minWidth: 0,
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default) !important',
-  },
-  chatHeaderActions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.5),
-  },
-  compactDrawerPanel: {
-    '&.pf-v6-c-drawer__panel': {
-      width: '100%',
-      minWidth: '100%',
-      maxWidth: '100%',
-      flexBasis: '100%',
-    },
-  },
-  notebookHeaderActions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.5),
-  },
-  headerLogo: {
-    width: 48,
-    height: 48,
-    marginRight: theme.spacing(1.5),
-    flexShrink: 0,
-  },
-  headerTitle: {
-    justifyContent: 'left !important',
-  },
-  headerDivider: {
-    paddingTop: 8,
-    borderBottom: '1px solid var(--pf-t--global--border--color--default)',
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-  },
-  notebooksContainer: {
-    padding: theme.spacing(3),
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
-    overflowY: 'auto',
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-  },
-  notebooksHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: theme.spacing(1),
-    marginBottom: theme.spacing(4),
-  },
-  notebooksHeading: {
-    marginBottom: 0,
-    whiteSpace: 'nowrap',
-    fontSize: '1.25rem',
-  },
-  notebooksHeadingEmpty: {
-    '&&': {
-      marginBottom: theme.spacing(1),
-      paddingBottom: theme.spacing(1),
-    },
-  },
-  notebooksEmptyState: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    textAlign: 'center',
-  },
-  notebooksIcon: {
-    fontSize: 48,
-    color: 'var(--pf-t--global--icon--color--subtle)',
-    marginBottom: theme.spacing(1.5),
-    '& > .pf-v6-icon-rh-ui': {
-      display: 'none !important',
-    },
-  },
-  notebooksDescription: {
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(3),
-    maxWidth: 420,
-  },
-  notebooksAction: {
-    textTransform: 'none',
-    borderRadius: 999,
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3),
-  },
-  notebooksActionEmpty: {
-    textTransform: 'none',
-    borderRadius: 999,
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3),
-    marginTop: theme.spacing(3),
-  },
-  notebooksGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-    gap: theme.spacing(2),
-    width: '100%',
-    maxWidth: '100%',
-    paddingBottom: theme.spacing(3),
-    [theme.breakpoints.down('md')]: {
-      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-    },
-    [theme.breakpoints.down('sm')]: {
-      gridTemplateColumns: 'repeat(1, minmax(0, 1fr))',
-    },
-  },
-  notebooksGridCompact: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: theme.spacing(2),
-    width: '100%',
-    maxWidth: '100%',
-    paddingBottom: theme.spacing(6),
-  },
-  notebookCard: {
-    borderRadius: theme.spacing(1.5),
-    display: 'flex',
-    flexDirection: 'column',
-    '&:hover': {
-      borderColor: 'var(--pf-t--global--border--color--hover)',
-      borderWidth: '1px',
-      borderStyle: 'solid',
-      cursor: 'pointer',
-    },
-  },
-  notebookCardHeader: {
-    padding: theme.spacing(3),
-    paddingBottom: 0,
-    alignItems: 'center',
-  },
-  notebookCardDivider: {
-    borderTop: '1px solid var(--pf-t--global--border--color--default)',
-    marginTop: theme.spacing(1),
-  },
-  notebookCardBody: {
-    padding: theme.spacing(3),
-    paddingTop: theme.spacing(2),
-  },
-  notebookDocuments: {
-    paddingTop: theme.spacing(1),
-  },
-  notebookUpdated: {
-    paddingBottom: theme.spacing(3),
-    paddingTop: theme.spacing(2),
-    fontStyle: 'italic',
-  },
-  notebookTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    minWidth: 0,
-    flex: 1,
-  },
-  notebookCardHeaderActions: {
-    marginLeft: theme.spacing(1),
-  },
-  notebookTitleText: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    cursor: 'pointer',
-    borderRadius: 4,
-    padding: '2px 6px',
-    '&:hover': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--action--plain--hover)',
-    },
-  },
-  notebookMenuButton: {
-    color: theme.palette.text.secondary,
-  },
-  notebookDropdownList: {
-    paddingTop: 0,
-    paddingBottom: 0,
-    paddingInlineStart: 0,
-  },
-  notebookDropdownMenu: {
-    '--pf-v6-c-menu--PaddingBlockStart': '0',
-    '--pf-v6-c-menu--PaddingBlockEnd': '0',
-  },
-  notebookDropdownItem: {
-    justifyContent: 'flex-start',
-    textAlign: 'left',
-    paddingLeft: theme.spacing(0.5),
-    paddingRight: theme.spacing(0.5),
-  },
-  footer: {
-    '&.pf-chatbot__footer': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default) !important',
-    },
-    '&>.pf-chatbot__footer-container': {
-      width: '95% !important',
-      maxWidth: 'unset !important',
-    },
-    '& .pf-chatbot__message-bar': {
-      backgroundColor:
-        theme.palette.type === 'light'
-          ? theme.palette.grey[100]
-          : 'var(--pf-t--global--background--color--secondary--default)',
-    },
-    '& .pf-chatbot__button--stop, & .pf-chatbot__button--attach, & .pf-chatbot__button--send, & .pf-chatbot__button--microphone':
-      {
-        borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
-      },
-  },
-  fullscreenFooter: {
-    '&>.pf-chatbot__footer-container': {
-      width: '100% !important',
-      padding: `${theme.spacing(1.5)}px !important`,
-      maxWidth: 'unset !important',
-      margin: '0 auto',
-    },
-  },
-  messageBar: {
-    border: '1px solid var(--pf-t--global--border--color--default)',
-    borderRadius: 24,
-    padding: theme.spacing(0.5),
-    '&::after': {
-      display: 'none',
-    },
-  },
-  sortDropdown: {
-    padding: 0,
-    margin: 0,
-  },
-  // Outer content wrapper (library may override overflow; we rely on inner scroll wrapper).
-  chatbotContent: {
-    minHeight: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    '& .pf-chatbot__jump': {
-      left: '50% !important',
-      right: 'auto !important',
-      transform: 'translateX(-50%)',
-      visibility: 'hidden',
-      pointerEvents: 'none',
-    },
-    '& .pf-chatbot__message-contents': {
-      overflowX: 'hidden',
-      overflowWrap: 'break-word',
-      wordBreak: 'break-word',
-    },
-  },
-  chatbotContentHasOverflow: {
-    '& .pf-chatbot__jump': {
-      visibility: 'visible',
-      pointerEvents: 'auto',
-    },
-  },
-  // Inner scroll container we control: always scrollable so zoomed-in users see full content.
-  chatbotContentScroll: {
-    minHeight: 0,
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    overflowY: 'auto',
-    WebkitOverflowScrolling: 'touch',
-  },
-  chatbotContentScrollNewChat: {
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default) !important',
-  },
-  // When present, pushes welcome content to bottom (zoom out). Scroll up to see important box (zoom in).
-  chatbotContentSpacer: {
-    flex: 1,
-    minHeight: 0,
-  },
-  settingsFlat: {
-    height: '100%',
-    width: '100%',
-    flex: 1,
-    minHeight: 0,
-    '&.pf-chatbot__settings-form-container': {
-      background: 'var(--pf-t--global--background--color--floating--default)',
-      padding: 0,
-      margin: 0,
-      minHeight: 0,
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'flex-start',
-      width: '100%',
-      maxWidth: 'none',
-      overflow: 'hidden',
-      border: 'none',
-    },
-    '& .pf-chatbot__settings-form': {
-      margin: 0,
-      padding: 0,
-      background: 'var(--pf-t--global--background--color--floating--default)',
-      minHeight: 0,
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      width: '100%',
-      maxWidth: 'none',
-      border: 'none',
-    },
-    '& .pf-chatbot__settings-form-row': {
-      background: 'var(--pf-t--global--background--color--floating--default)',
-      border: 'none',
-      margin: 0,
-      padding: 0,
-      minHeight: 0,
-      flex: 1,
-      display: 'flex',
-      flexDirection: 'column',
-      width: '100%',
-      maxWidth: 'none',
-    },
-    '& .pf-chatbot__settings-label': {
-      display: 'none',
-    },
-  },
-  mcpFullscreenLayout: {
-    display: 'grid',
-    gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
-    minHeight: 0,
-    height: '100%',
-    flex: 1,
-    width: '100%',
-    minWidth: 0,
-    overflow: 'hidden',
-  },
-  mcpChatPane: {
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: 0,
-    width: '100%',
-    minWidth: 0,
-    whiteSpace: 'normal',
-    wordBreak: 'break-word',
-    overflowWrap: 'break-word',
-  },
-  mcpSettingsPane: {
-    width: '100%',
-    minWidth: 0,
-    borderLeft: `1px solid ${theme.palette.divider}`,
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: 0,
-    overflow: 'auto',
-  },
-  mcpCollapsedDrawerOrderFix: {
-    '& .pf-v6-c-drawer.pf-m-panel-left > .pf-v6-c-drawer__main > .pf-v6-c-drawer__content, & .pf-v5-c-drawer.pf-m-panel-left > .pf-v5-c-drawer__main > .pf-v5-c-drawer__content':
-      {
-        order: 'unset',
-      },
-    '& .pf-v6-c-drawer:not(.pf-m-expanded) > .pf-v6-c-drawer__main > .pf-v6-c-drawer__panel, & .pf-v5-c-drawer:not(.pf-m-expanded) > .pf-v5-c-drawer__main > .pf-v5-c-drawer__panel':
-      {
-        visibility: 'hidden',
-        opacity: 0,
-        transition: 'none !important',
-      },
-  },
-  // TODO: These PF Chatbot overrides are fragile (version-specific class names).
-  // Remove once the upstream issues are addressed:
-  // - https://github.com/patternfly/chatbot/issues/834 (custom close/collapse icon & positioning)
-  // - https://github.com/patternfly/chatbot/issues/848 (sidebar padding & spacing customization)
-  fullscreenChatLayout: {
-    display: 'flex',
-    flexDirection: 'row',
-    flex: 1,
-    minHeight: 0,
-    height: '100%',
-    width: '100%',
-    '& .pf-v6-c-drawer, & .pf-v5-c-drawer': {
-      flex: 1,
-      minWidth: 0,
-    },
-    '& .pf-v6-c-drawer__content, & .pf-v5-c-drawer__content': {
-      flex: 1,
-      minWidth: 0,
-    },
-    '& .pf-v6-c-drawer:not(.pf-m-expanded) > .pf-v6-c-drawer__main > .pf-v6-c-drawer__panel, & .pf-v5-c-drawer:not(.pf-m-expanded) > .pf-v5-c-drawer__main > .pf-v5-c-drawer__panel':
-      {
-        display: 'none',
-      },
-    // TODO(#834): Remove close button overrides once PF supports custom icon/positioning
-    '& .pf-v6-c-drawer__close, & .pf-v5-c-drawer__close': {
-      marginTop: 0,
-      marginRight: 0,
-    },
-    // TODO(#848): Remove drawer head padding overrides once PF exposes drawerHeadProps
-    '& .pf-v6-c-drawer__head, & .pf-v5-c-drawer__head': {
-      paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
-      paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
-    },
-    // TODO(#834): Remove icon replacement hack once PF supports drawerCloseButtonProps.icon
-    '& .pf-v6-c-drawer__close .pf-v6-c-button svg, & .pf-v5-c-drawer__close .pf-v5-c-button svg':
-      {
-        display: 'none',
-      },
-    '& .pf-v6-c-drawer__close .pf-v6-c-button, & .pf-v5-c-drawer__close .pf-v5-c-button':
-      {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        '&::before': {
-          content: '""',
-          display: 'block',
-          width: 24,
-          height: 24,
-          mask: COLLAPSE_PANEL_ICON_SVG,
-          WebkitMask: COLLAPSE_PANEL_ICON_SVG,
-          backgroundColor: 'currentColor',
-        },
-      },
-    // TODO(#848): Remove heading padding overrides once PF exposes drawerHeadProps
-    '& .pf-chatbot__heading-container': {
-      paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
-      paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
-    },
-    // TODO(#848): Remove menu item padding overrides once PF exposes menuItemPaddingInline
-    '& .pf-chatbot__menu-item-header > .pf-v6-c-menu__group-title': {
-      '--pf-v6-c-menu__group-title--PaddingInlineStart':
-        'var(--pf-t--global--spacer--md)',
-      '--pf-v6-c-menu__group-title--PaddingInlineEnd':
-        'var(--pf-t--global--spacer--md)',
-    },
-    '& .pf-chatbot__menu-item': {
-      cursor: 'pointer',
-      '--pf-v6-c-menu__item--PaddingInlineStart':
-        'var(--pf-t--global--spacer--md)',
-      '--pf-v6-c-menu__item--PaddingInlineEnd':
-        'var(--pf-t--global--spacer--md)',
-    },
-    // TODO(#848): Remove menu toggle hover hack once PF supports menuToggleVisibility
-    '& .pf-chatbot__menu-item .pf-v6-c-menu-toggle, & .pf-chatbot__menu-item .pf-v5-c-menu-toggle':
-      {
-        opacity: 0,
-        transition: 'opacity 0.15s ease-in-out',
-      },
-    '& .pf-chatbot__menu-item:hover .pf-v6-c-menu-toggle, & .pf-chatbot__menu-item:hover .pf-v5-c-menu-toggle':
-      {
-        opacity: 1,
-      },
-  },
-  fullscreenMainContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
-    minWidth: 0,
-    overflow: 'hidden',
-  },
-}));
+const chatClasses = {
+  body: 'ia-chat-body',
+  header: 'ia-chat-header',
+  errorContainer: 'ia-chat-errorContainer',
+  drawerFileDropZone: 'ia-chat-drawerFileDropZone',
+  headerMenu: 'ia-chat-headerMenu',
+  headerLogo: 'ia-chat-headerLogo',
+  headerTitle: 'ia-chat-headerTitle',
+  headerDivider: 'ia-chat-headerDivider',
+  notebooksContainer: 'ia-chat-notebooksContainer',
+  notebooksHeader: 'ia-chat-notebooksHeader',
+  notebooksHeading: 'ia-chat-notebooksHeading',
+  notebooksHeadingEmpty: 'ia-chat-notebooksHeadingEmpty',
+  notebooksEmptyState: 'ia-chat-notebooksEmptyState',
+  notebooksIcon: 'ia-chat-notebooksIcon',
+  notebooksDescription: 'ia-chat-notebooksDescription',
+  notebooksAction: 'ia-chat-notebooksAction',
+  notebooksActionEmpty: 'ia-chat-notebooksActionEmpty',
+  notebooksGrid: 'ia-chat-notebooksGrid',
+  notebookCard: 'ia-chat-notebookCard',
+  notebookCardHeader: 'ia-chat-notebookCardHeader',
+  notebookCardDivider: 'ia-chat-notebookCardDivider',
+  notebookCardBody: 'ia-chat-notebookCardBody',
+  notebookDocuments: 'ia-chat-notebookDocuments',
+  notebookUpdated: 'ia-chat-notebookUpdated',
+  notebookTitle: 'ia-chat-notebookTitle',
+  notebookCardHeaderActions: 'ia-chat-notebookCardHeaderActions',
+  notebookTitleText: 'ia-chat-notebookTitleText',
+  notebookMenuButton: 'ia-chat-notebookMenuButton',
+  notebookDropdownList: 'ia-chat-notebookDropdownList',
+  notebookDropdownMenu: 'ia-chat-notebookDropdownMenu',
+  notebookDropdownItem: 'ia-chat-notebookDropdownItem',
+  footer: 'ia-chat-footer',
+  fullscreenFooter: 'ia-chat-fullscreenFooter',
+  messageBar: 'ia-chat-messageBar',
+  sortDropdown: 'ia-chat-sortDropdown',
+  chatbotContent: 'ia-chat-chatbotContent',
+  chatbotContentHasOverflow: 'ia-chat-chatbotContentHasOverflow',
+  chatbotContentScroll: 'ia-chat-chatbotContentScroll',
+  chatbotContentScrollNewChat: 'ia-chat-chatbotContentScrollNewChat',
+  toastAlertGroup: 'ia-chat-toastAlertGroup',
+  toastAlert: 'ia-chat-toastAlert',
+  chatbotContentSpacer: 'ia-chat-chatbotContentSpacer',
+  settingsFlat: 'ia-chat-settingsFlat',
+  mcpFullscreenLayout: 'ia-chat-mcpFullscreenLayout',
+  mcpChatPane: 'ia-chat-mcpChatPane',
+  mcpSettingsPane: 'ia-chat-mcpSettingsPane',
+  mcpCollapsedDrawerOrderFix: 'ia-chat-mcpCollapsedDrawerOrderFix',
+  fullscreenChatLayout: 'ia-chat-fullscreenChatLayout',
+  fullscreenMainContent: 'ia-chat-fullscreenMainContent',
+} as const;
 
 type LightspeedChatProps = {
   selectedModel: string;
@@ -1791,7 +1345,7 @@ export const LightspeedChat = ({
         toggle={sortToggle}
         shouldFocusToggleOnSelect
       >
-        <SelectList className={classes.sortDropdown}>
+        <SelectList className={chatClasses.sortDropdown}>
           <SelectOption value="newest">{t('sort.newest')}</SelectOption>
           <SelectOption value="oldest">{t('sort.oldest')}</SelectOption>
           <SelectOption value="alphabeticalAsc">
@@ -1803,14 +1357,7 @@ export const LightspeedChat = ({
         </SelectList>
       </Select>
     ),
-    [
-      isSortSelectOpen,
-      selectedSort,
-      onSortSelect,
-      sortToggle,
-      t,
-      classes.sortDropdown,
-    ],
+    [isSortSelectOpen, selectedSort, onSortSelect, sortToggle, t],
   );
 
   const handleAttach = (data: File[], event: ReactDropzoneDropEvent) => {
@@ -1865,20 +1412,20 @@ export const LightspeedChat = ({
   const chatMainContent = (
     <>
       <ChatbotContent
-        className={`${classes.chatbotContent} ${
-          hasChatContentOverflow ? classes.chatbotContentHasOverflow : ''
+        className={`${chatClasses.chatbotContent} ${
+          hasChatContentOverflow ? chatClasses.chatbotContentHasOverflow : ''
         }`}
       >
         <div
           ref={contentScrollRef}
-          className={`${classes.chatbotContentScroll}${
+          className={`${chatClasses.chatbotContentScroll}${
             welcomePrompts.length > 0
-              ? ` ${classes.chatbotContentScrollNewChat}`
+              ? ` ${chatClasses.chatbotContentScrollNewChat}`
               : ''
           }`}
         >
           {welcomePrompts.length > 0 && (
-            <div className={classes.chatbotContentSpacer} aria-hidden />
+            <div className={chatClasses.chatbotContentSpacer} aria-hidden />
           )}
           <LightspeedChatBox
             userName={userName}
@@ -1902,12 +1449,12 @@ export const LightspeedChat = ({
         </div>
       </ChatbotContent>
       <ChatbotFooter
-        className={`${classes.footer} ${classes.fullscreenFooter}`}
+        className={`${chatClasses.footer} ${chatClasses.fullscreenFooter}`}
       >
         <FilePreview />
         <MessageBar
           key={messageBarKey}
-          className={classes.messageBar}
+          className={chatClasses.messageBar}
           onSendMessage={sendMessage}
           isSendButtonDisabled={isSendButtonDisabled}
           hasAttachButton
@@ -1970,16 +1517,16 @@ export const LightspeedChat = ({
 
     if (isFullscreenMode) {
       return (
-        <div className={classes.mcpFullscreenLayout}>
-          <div className={classes.mcpChatPane}>{chatMainContent}</div>
-          <div className={classes.mcpSettingsPane}>{mcpSettingsPanel}</div>
+        <div className={chatClasses.mcpFullscreenLayout}>
+          <div className={chatClasses.mcpChatPane}>{chatMainContent}</div>
+          <div className={chatClasses.mcpSettingsPane}>{mcpSettingsPanel}</div>
         </div>
       );
     }
 
     return (
       <Settings
-        className={classes.settingsFlat}
+        className={chatClasses.settingsFlat}
         fields={[
           {
             id: 'mcp-servers-settings',
@@ -2038,11 +1585,11 @@ export const LightspeedChat = ({
         displayMode={ChatbotDisplayMode.embedded}
         className={`${classes.body} ${!isFullscreenMode ? classes.bodyCompact : ''} ${
           isMcpSettingsOpen && !isChatHistoryDrawerOpen
-            ? classes.mcpCollapsedDrawerOrderFix
+            ? chatClasses.mcpCollapsedDrawerOrderFix
             : ''
         }`}
       >
-        <ChatbotHeader className={classes.header}>
+        <ChatbotHeader className={chatClasses.header}>
           <ChatbotHeaderMain>
             {showChatPanel && !isFullscreenMode && (
               <div className={classes.chatHeaderActions}>
@@ -2110,9 +1657,9 @@ export const LightspeedChat = ({
                 <RhUiAiExperienceIcon
                   style={{ width: '24px', height: '24px' }}
                   aria-label={t('icon.lightspeed.alt')}
-                  className={classes.headerLogo}
+                  className={chatClasses.headerLogo}
                 />
-                <ChatbotHeaderTitle className={classes.headerTitle}>
+                <ChatbotHeaderTitle className={chatClasses.headerTitle}>
                   <Title
                     headingLevel="h1"
                     size="2xl"
@@ -2193,11 +1740,12 @@ export const LightspeedChat = ({
             <Tab
               disableRipple
               label={
-                <span
-                  style={{
+                <Typography
+                  component="span"
+                  sx={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: 8,
+                    gap: 1,
                   }}
                 >
                   {t('tabs.notebooks')}
@@ -2211,7 +1759,7 @@ export const LightspeedChat = ({
                   >
                     {t('tabs.notebooks.devPreview')}
                   </Label>
-                </span>
+                </Typography>
               }
               aria-label={t('tabs.notebooks')}
             />
@@ -2221,7 +1769,7 @@ export const LightspeedChat = ({
           <ConditionalWrapper
             condition={isFullscreenMode}
             wrapper={children => (
-              <div className={classes.fullscreenChatLayout}>
+              <div className={chatClasses.fullscreenChatLayout}>
                 {!isChatHistoryDrawerOpen && (
                   <CollapsedHistoryStrip
                     onExpand={() => setIsChatHistoryDrawerOpen(true)}
@@ -2284,7 +1832,7 @@ export const LightspeedChat = ({
               }
               drawerContent={
                 <FileDropZone
-                  className={classes.drawerFileDropZone}
+                  className={chatClasses.drawerFileDropZone}
                   onFileDrop={(e, data) => handleAttach(data, e)}
                   displayMode={ChatbotDisplayMode.embedded}
                   infoText={t('chatbox.fileUpload.infoText')}
@@ -2292,7 +1840,7 @@ export const LightspeedChat = ({
                   onAttachRejected={onAttachRejected}
                 >
                   {showAlert && uploadError.message && (
-                    <div className={classes.errorContainer}>
+                    <div className={chatClasses.errorContainer}>
                       <ChatbotAlert
                         component="h4"
                         title={t('chatbox.fileUpload.failed')}
@@ -2393,7 +1941,7 @@ export const LightspeedChat = ({
                 <Button
                   variant="outlined"
                   color="primary"
-                  style={{ borderRadius: '20px' }}
+                  sx={{ borderRadius: '20px' }}
                   onClick={() => {
                     setActiveTab(0);
                     setShellViewTab(0);
@@ -2406,6 +1954,6 @@ export const LightspeedChat = ({
           )}
       </Chatbot>
       <Attachment />
-    </>
+      </>
   );
 };

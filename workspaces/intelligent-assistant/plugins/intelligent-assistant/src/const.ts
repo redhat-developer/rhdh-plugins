@@ -106,5 +106,20 @@ export const VALID_TOPIC_RESTRICTION_PROVIDER_IDS = [
 export const DOCKED_CONTENT_OFFSET =
   'calc(var(--docked-drawer-width, 500px) + 1.5em)';
 
+export const LIGHTSPEED_FAB_ELEMENT_ID = 'lightspeed-fab';
+export const LIGHTSPEED_OVERLAY_CHATBOT_MODAL_CLASS =
+  'ia-overlay-chatbot-modal';
+/** Gap between the FAB top edge and the overlay bottom edge. */
+export const LIGHTSPEED_OVERLAY_OFFSET_FROM_FAB = '1.5em';
+
+export const LIGHTSPEED_FAB_ANCHOR_VARS = {
+  insetBlockEnd: '--ia-fab-inset-block-end',
+  insetInlineEnd: '--ia-fab-inset-inline-end',
+  height: '--ia-fab-height',
+} as const;
+
+export const getLightspeedFabInset = (themeSpacing: string) =>
+  `calc(${themeSpacing} + 1.5em)`;
+
 export const LIGHTSPEED_PATH = '/intelligent-assistant';
 export const LIGHTSPEED_LEGACY_PATH = '/lightspeed';

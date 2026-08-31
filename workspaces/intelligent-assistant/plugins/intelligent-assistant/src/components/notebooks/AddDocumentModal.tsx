@@ -17,7 +17,6 @@
 import { useContext, useEffect, useState } from 'react';
 import { FileRejection } from 'react-dropzone';
 
-import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -26,6 +25,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
+import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import {
   Alert,
@@ -144,18 +144,16 @@ const useStyles = makeStyles(theme => ({
     fontSize: '0.75rem',
     fontWeight: 500,
     backgroundColor:
-      theme.palette.type === 'dark'
-        ? 'rgba(255, 255, 255, 0.1)'
-        : 'rgba(0, 0, 0, 0.08)',
-    color: theme.palette.text.secondary,
+      'color-mix(in srgb, var(--pf-t--global--color--brand--default) 10%, transparent)',
   },
-  maxFileSizeText: {
-    fontSize: '0.875rem',
-    color: theme.palette.text.secondary,
-    textAlign: 'center',
-    marginTop: theme.spacing(1),
+  '& .pf-v6-c-multiple-file-upload__main': {
+    border: 'none',
+    paddingBottom: 0,
   },
-  dropzoneDisabled: {
+  '& .pf-v6-c-multiple-file-upload__title-icon': {
+    fontSize: '2rem',
+  },
+  '&.ia-dropzone-disabled': {
     opacity: 0.5,
     pointerEvents: 'none',
     cursor: 'default',
@@ -163,6 +161,23 @@ const useStyles = makeStyles(theme => ({
       backgroundColor: 'transparent',
     },
   },
+}));
+
+const StyledUploadIcon = styled(UploadIcon)({
+  color: 'var(--pf-t--global--icon--color--brand--default)',
+});
+
+const FileTypeChip = styled('span')(({ theme }) => ({
+  display: 'inline-block',
+  padding: '2px 10px',
+  borderRadius: 12,
+  fontSize: '0.75rem',
+  fontWeight: 500,
+  backgroundColor:
+    theme.palette.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.1)'
+      : 'rgba(0, 0, 0, 0.08)',
+  color: theme.palette.text.secondary,
 }));
 
 const DropzoneClickArea = ({
@@ -339,7 +354,7 @@ export const AddDocumentModal = ({
         <IconButton
           aria-label={t('common.close')}
           onClick={handleClose}
-          className={classes.closeButton}
+          sx={{ color: 'text.primary' }}
           size="small"
         >
           <CloseIcon />
@@ -427,9 +442,18 @@ export const AddDocumentModal = ({
         })()}
 
         {selectedFiles.length > 0 && (
-          <Box className={classes.fileListContainer}>
-            <Box className={classes.fileListHeader}>
-              <Typography className={classes.fileCount}>
+          <Box sx={{ mt: 2, maxHeight: 200, overflowY: 'auto' }}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                mb: 1,
+              }}
+            >
+              <Typography
+                sx={{ fontSize: '0.875rem', color: 'text.secondary' }}
+              >
                 {(t as Function)('notebook.upload.modal.selectedFiles', {
                   count: selectedFiles.length,
                   max: NOTEBOOK_MAX_FILES - existingDocumentNames.length,
@@ -460,7 +484,7 @@ export const AddDocumentModal = ({
       >
         <Button
           onClick={handleAddFiles}
-          className={classes.addButton}
+          sx={{ textTransform: 'none' }}
           variant="contained"
           color="primary"
           disabled={selectedFiles.length === 0 || hasUploadsInProgress}
@@ -473,7 +497,7 @@ export const AddDocumentModal = ({
         </Button>
         <Button
           onClick={handleClose}
-          className={classes.cancelButton}
+          sx={{ textTransform: 'none' }}
           color="inherit"
         >
           {t('common.cancel')}

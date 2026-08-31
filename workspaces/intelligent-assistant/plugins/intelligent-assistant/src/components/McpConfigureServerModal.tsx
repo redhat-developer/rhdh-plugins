@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core';
+import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import {
   Alert,
@@ -53,64 +53,74 @@ import {
 import { type UseMcpConfigureModalResult } from '../hooks/useMcpConfigureModal';
 import { useTranslation } from '../hooks/useTranslation';
 
-const useStyles = makeStyles({
-  configureModal: {
-    '& .pf-v6-c-modal-box__close, & .pf-v5-c-modal-box__close': {
-      display: 'none',
-    },
-    '& .pf-v6-c-modal-box__body, & .pf-v5-c-modal-box__body': {
-      paddingTop: 0,
-    },
+const StyledModal = styled(Modal)({
+  '& .pf-v6-c-modal-box__close, & .pf-v5-c-modal-box__close': {
+    display: 'none',
   },
-  modalCloseButton: {
-    position: 'absolute',
-    top: 'var(--pf-v6-c-modal-box__close--InsetBlockStart, 1.5rem)',
-    right: 'var(--pf-v6-c-modal-box__close--InsetInlineEnd, 1.5rem)',
-    zIndex: 1,
+  '& .pf-v6-c-modal-box__body, & .pf-v5-c-modal-box__body': {
+    paddingTop: 0,
   },
-  modalInfoAlert: {
-    '--pf-v6-c-alert--m-custom--BorderColor':
-      'var(--pf-t--global--color--status--info--default)',
-    '--pf-v6-c-alert--m-custom__icon--Color':
-      'var(--pf-t--global--color--status--info--default)',
-    '& .pf-v6-c-alert__icon': {
-      alignSelf: 'start',
-      display: 'flex',
-      alignItems: 'flex-start',
-      justifyContent: 'center',
-      boxSizing: 'border-box',
-      marginBlockStart: 0,
-      paddingBlockStart: '18.620px',
-      paddingInline: 'var(--pf-t--global--spacer--md)',
-      paddingBlockEnd: 'var(--pf-t--global--spacer--md)',
-    },
+});
+
+const ModalCloseButton = styled(Button)({
+  position: 'absolute',
+  top: 'var(--pf-v6-c-modal-box__close--InsetBlockStart, 1.5rem)',
+  right: 'var(--pf-v6-c-modal-box__close--InsetInlineEnd, 1.5rem)',
+  zIndex: 1,
+});
+
+const ModalInfoAlert = styled(Alert)({
+  '--pf-v6-c-alert--m-custom--BorderColor':
+    'var(--pf-t--global--color--status--info--default)',
+  '--pf-v6-c-alert--m-custom__icon--Color':
+    'var(--pf-t--global--color--status--info--default)',
+  '& .pf-v6-c-alert__icon': {
+    alignSelf: 'start',
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    boxSizing: 'border-box',
+    marginBlockStart: 0,
+    paddingBlockStart: '18.620px',
+    paddingInline: 'var(--pf-t--global--spacer--md)',
+    paddingBlockEnd: 'var(--pf-t--global--spacer--md)',
   },
-  sectionTitle: {
-    fontSize: '0.875rem',
-    fontWeight: 600,
-  },
-  sectionDescription: {
-    color: 'var(--pf-t--global--text--color--subtle)',
-    fontSize: '0.875rem',
-  },
-  credentialRadioDescription: {
-    color: 'var(--pf-t--global--text--color--subtle)',
-    fontSize: '0.875rem',
-  },
-  statusOk: {
-    color: 'var(--pf-t--global--icon--color--status--custom--default)',
-  },
-  statusWarn: {
-    color: 'var(--pf-t--global--icon--color--status--danger--default)',
-  },
-  statusDisabled: {
-    color: 'var(--pf-t--global--icon--color--subtle)',
-  },
-  // Shape only; danger colors come from secondary + isDanger.
-  removePersonalTokenButton: {
-    borderRadius: '1.25rem',
-    boxShadow: 'none',
-  },
+});
+
+const sectionTitleSx = {
+  fontSize: '0.875rem',
+  fontWeight: 600,
+} as const;
+
+const sectionDescriptionSx = {
+  color: 'var(--pf-t--global--text--color--subtle)',
+  fontSize: '0.875rem',
+} as const;
+
+const credentialRadioDescriptionSx = {
+  color: 'var(--pf-t--global--text--color--subtle)',
+  fontSize: '0.875rem',
+} as const;
+
+const StatusOkIcon = styled(CheckCircleIcon)({
+  color: 'var(--pf-t--global--icon--color--status--custom--default)',
+});
+
+const StatusWarnIcon = styled(ExclamationCircleIcon)({
+  color: 'var(--pf-t--global--icon--color--status--danger--default)',
+});
+
+const StatusDisabledIcon = styled(InfoCircleIcon)({
+  color: 'var(--pf-t--global--icon--color--subtle)',
+});
+
+const StatusWarnKeyIcon = styled(KeyIcon)({
+  color: 'var(--pf-t--global--icon--color--status--danger--default)',
+});
+
+const RemovePersonalTokenButton = styled(Button)({
+  borderRadius: '1.25rem',
+  boxShadow: 'none',
 });
 
 type McpConfigureServerModalProps = UseMcpConfigureModalResult;
@@ -155,7 +165,6 @@ export const McpConfigureServerModal = ({
   hasSavedTokenInModal,
   hasRemovedPersonalToken,
 }: McpConfigureServerModalProps) => {
-  const classes = useStyles();
   const { t } = useTranslation();
 
   const renderStatusIcon = () => {
@@ -172,18 +181,18 @@ export const McpConfigureServerModal = ({
       );
     }
     if (modalDisplayStatus === 'disabled') {
-      return <InfoCircleIcon className={classes.statusDisabled} />;
+      return <StatusDisabledIcon />;
     }
     if (modalDisplayStatus === 'tokenRequired') {
-      return <KeyIcon className={classes.statusWarn} />;
+      return <StatusWarnKeyIcon />;
     }
     if (modalDisplayStatus === 'ok' && modalTools.length > 0) {
-      return <CheckCircleIcon className={classes.statusOk} />;
+      return <StatusOkIcon />;
     }
     if (modalToolsError || modalDisplayStatus === 'failed') {
-      return <ExclamationCircleIcon className={classes.statusWarn} />;
+      return <StatusWarnIcon />;
     }
-    return <InfoCircleIcon className={classes.statusDisabled} />;
+    return <StatusDisabledIcon />;
   };
 
   const renderToolsContent = () => {
@@ -201,10 +210,7 @@ export const McpConfigureServerModal = ({
           })}
         >
           {modalTools.map(toolName => (
-            <ListItem
-              key={toolName}
-              icon={<CheckCircleIcon className={classes.statusOk} />}
-            >
+            <ListItem key={toolName} icon={<StatusOkIcon />}>
               {toolName}
             </ListItem>
           ))}
@@ -214,7 +220,8 @@ export const McpConfigureServerModal = ({
     return (
       <Typography
         component="div"
-        className={`${classes.sectionDescription} pf-v6-u-mt-xs`}
+        className="pf-v6-u-mt-xs"
+        sx={sectionDescriptionSx}
       >
         {modalToolsEmptyText}
       </Typography>
@@ -234,12 +241,11 @@ export const McpConfigureServerModal = ({
   );
 
   return (
-    <Modal
+    <StyledModal
       variant="small"
       width={608}
       isOpen={isOpen}
       onClose={close}
-      className={classes.configureModal}
       aria-labelledby="mcp-configure-modal"
       aria-describedby="mcp-configure-modal-body"
     >
@@ -248,42 +254,38 @@ export const McpConfigureServerModal = ({
         labelId="mcp-configure-modal"
         descriptorId="mcp-configure-modal-body"
       />
-      <Button
+      <ModalCloseButton
         variant="plain"
         icon={<TimesIcon />}
         aria-label={t('mcp.settings.closeConfigureModalAriaLabel')}
-        className={classes.modalCloseButton}
         onClick={close}
       />
       <ModalBody id="mcp-configure-modal-body">
         <Stack hasGutter>
           <StackItem>
-            <Alert
+            <ModalInfoAlert
               variant="custom"
               customIcon={<InfoCircleIcon />}
               title={t('mcp.settings.modalDescription')}
-              className={classes.modalInfoAlert}
               isInline
             />
           </StackItem>
           {editingServer?.auth === 'dcr' && (
             <StackItem>
-              <Alert
+              <ModalInfoAlert
                 variant="custom"
                 customIcon={<InfoCircleIcon />}
                 title={t('mcp.settings.modalDescriptionDcr')}
-                className={classes.modalInfoAlert}
                 isInline
               />
             </StackItem>
           )}
           {hasRemovedPersonalToken && !editingServer?.hasOrgToken && (
             <StackItem>
-              <Alert
+              <ModalInfoAlert
                 variant="custom"
                 customIcon={<InfoCircleIcon />}
                 title={t('mcp.settings.modal.tokenRemovedWarning')}
-                className={classes.modalInfoAlert}
                 isInline
               />
             </StackItem>
@@ -291,7 +293,8 @@ export const McpConfigureServerModal = ({
           <StackItem>
             <Typography
               component="div"
-              className={`${classes.sectionTitle} pf-v6-u-mb-sm`}
+              sx={sectionTitleSx}
+              className="pf-v6-u-mb-sm"
             >
               {t('mcp.settings.status')}
             </Typography>
@@ -309,7 +312,8 @@ export const McpConfigureServerModal = ({
             <StackItem>
               <Typography
                 component="div"
-                className={`${classes.sectionTitle} pf-v6-u-mb-sm`}
+                className="pf-v6-u-mb-sm"
+                sx={sectionTitleSx}
               >
                 {t('mcp.settings.modal.toolsHeading' as any, {
                   count: String(modalToolCount),
@@ -327,13 +331,15 @@ export const McpConfigureServerModal = ({
               <FlexItem flex={{ default: 'flex_1' }}>
                 <Typography
                   component="div"
-                  className={`${classes.sectionTitle} pf-v6-u-mb-sm`}
+                  className="pf-v6-u-mb-sm"
+                  sx={sectionTitleSx}
                 >
                   {t('mcp.settings.enabled')}
                 </Typography>
                 <Typography
                   component="div"
-                  className={`${classes.sectionDescription} pf-v6-u-mt-xs`}
+                  className="pf-v6-u-mt-xs"
+                  sx={sectionDescriptionSx}
                 >
                   {modalEnabledDescription}
                 </Typography>
@@ -374,7 +380,8 @@ export const McpConfigureServerModal = ({
                         />
                         <Typography
                           component="div"
-                          className={`${classes.credentialRadioDescription} pf-v6-u-ml-xl pf-v6-u-mt-xs`}
+                          className="pf-v6-u-ml-xl pf-v6-u-mt-xs"
+                          sx={credentialRadioDescriptionSx}
                         >
                           {t(
                             'mcp.settings.modal.credentialMode.organizationDescription',
@@ -450,7 +457,7 @@ export const McpConfigureServerModal = ({
           {t('modal.save')}
         </Button>
         {canRemovePersonalToken && (
-          <Button
+          <RemovePersonalTokenButton
             variant="secondary"
             isDanger
             onClick={() => void removePersonalToken()}
@@ -462,15 +469,14 @@ export const McpConfigureServerModal = ({
               hasRemovedPersonalToken ||
               !hasSavedTokenInModal
             }
-            className={classes.removePersonalTokenButton}
           >
             {t('mcp.settings.removePersonalToken')}
-          </Button>
+          </RemovePersonalTokenButton>
         )}
         <Button variant="link" onClick={close}>
           {t('common.cancel')}
         </Button>
       </ModalFooter>
-    </Modal>
+    </StyledModal>
   );
 };

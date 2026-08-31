@@ -19,7 +19,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { configApiRef, fetchApiRef, useApi } from '@backstage/core-plugin-api';
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import { makeStyles } from '@material-ui/core';
+import GlobalStyles from '@mui/material/GlobalStyles';
+import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { Alert, Button, Switch, Title, Tooltip } from '@patternfly/react-core';
 import {
@@ -58,24 +59,41 @@ type McpServersSettingsProps = {
   backgroundColor?: string;
 };
 
-const useStyles = makeStyles(theme => ({
-  '@global': {
-    '.pf-v6-c-backdrop': {
-      zIndex: '1400 !important',
-    },
-    '.pf-v5-c-backdrop': {
-      zIndex: '1400 !important',
-    },
-  },
-  root: {
-    padding: 0,
-    height: '100%',
-    minHeight: 0,
-    flex: 1,
-    width: '100%',
-    overflow: 'auto',
-  },
-  headerRow: {
+const mcpClasses = {
+  headerRow: 'ia-mcp-headerRow',
+  selectedCount: 'ia-mcp-selectedCount',
+  title: 'ia-mcp-title',
+  closeButton: 'ia-mcp-closeButton',
+  nameHeaderButton: 'ia-mcp-nameHeaderButton',
+  statusHeaderButton: 'ia-mcp-statusHeaderButton',
+  sortHeaderIconActive: 'ia-mcp-sortHeaderIconActive',
+  sortHeaderIconInactive: 'ia-mcp-sortHeaderIconInactive',
+  nameHeaderText: 'ia-mcp-nameHeaderText',
+  nameCell: 'ia-mcp-nameCell',
+  statusHeader: 'ia-mcp-statusHeader',
+  statusColumnCell: 'ia-mcp-statusColumnCell',
+  rowName: 'ia-mcp-rowName',
+  nameValue: 'ia-mcp-nameValue',
+  statusCell: 'ia-mcp-statusCell',
+  statusValue: 'ia-mcp-statusValue',
+  statusOk: 'ia-mcp-statusOk',
+  statusWarn: 'ia-mcp-statusWarn',
+  statusDisabled: 'ia-mcp-statusDisabled',
+  actionButton: 'ia-mcp-actionButton',
+  tableRow: 'ia-mcp-tableRow',
+  toggleCell: 'ia-mcp-toggleCell',
+  table: 'ia-mcp-table',
+  alert: 'ia-mcp-alert',
+} as const;
+
+const StyledMcpRoot = styled('div')(({ theme }) => ({
+  padding: 0,
+  height: '100%',
+  minHeight: 0,
+  flex: 1,
+  width: '100%',
+  overflow: 'auto',
+  [`& .${mcpClasses.headerRow}`]: {
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
@@ -84,20 +102,20 @@ const useStyles = makeStyles(theme => ({
     marginLeft: theme.spacing(3),
     marginRight: theme.spacing(2),
   },
-  selectedCount: {
+  [`& .${mcpClasses.selectedCount}`]: {
     color: theme.palette.text.secondary,
     marginTop: theme.spacing(0.5),
     fontSize: '0.75rem',
   },
-  title: {
+  [`& .${mcpClasses.title}`]: {
     fontSize: '1.125rem',
   },
-  closeButton: {
-    marginTop: -theme.spacing(1),
-    marginRight: -theme.spacing(1),
+  [`& .${mcpClasses.closeButton}`]: {
+    marginTop: theme.spacing(-1),
+    marginRight: theme.spacing(-1),
     color: theme.palette.text.primary,
   },
-  nameHeaderButton: {
+  [`& .${mcpClasses.nameHeaderButton}`]: {
     paddingLeft: 0,
     paddingTop: 0,
     paddingBottom: 0,
@@ -111,7 +129,7 @@ const useStyles = makeStyles(theme => ({
     display: 'inline-flex',
     alignItems: 'center',
   },
-  statusHeaderButton: {
+  [`& .${mcpClasses.statusHeaderButton}`]: {
     paddingLeft: 0,
     paddingTop: 0,
     paddingBottom: 0,
@@ -124,68 +142,67 @@ const useStyles = makeStyles(theme => ({
     display: 'inline-flex',
     alignItems: 'center',
   },
-  sortHeaderIconActive: {
+  [`& .${mcpClasses.sortHeaderIconActive}`]: {
     color: 'var(--pf-t--global--icon--color--brand--default)',
   },
-  sortHeaderIconInactive: {
+  [`& .${mcpClasses.sortHeaderIconInactive}`]: {
     color: 'var(--pf-t--global--icon--color--subtle)',
   },
-  nameHeaderText: {
+  [`& .${mcpClasses.nameHeaderText}`]: {
     paddingLeft: '7px',
     fontSize: '0.75rem',
     lineHeight: '1.25rem',
     fontWeight: 600,
   },
-  nameCell: {
+  [`& .${mcpClasses.nameCell}`]: {
     paddingLeft: '8px !important',
   },
-  statusHeader: {
+  [`& .${mcpClasses.statusHeader}`]: {
     paddingLeft: '0 !important',
   },
-  statusColumnCell: {
+  [`& .${mcpClasses.statusColumnCell}`]: {
     paddingLeft: '0 !important',
   },
-  rowName: {
+  [`& .${mcpClasses.rowName}`]: {
     fontSize: '1rem',
     fontWeight: 500,
     whiteSpace: 'nowrap',
   },
-  nameValue: {
+  [`& .${mcpClasses.nameValue}`]: {
     fontSize: '0.875rem',
     fontWeight: 500,
   },
-  statusCell: {
+  [`& .${mcpClasses.statusCell}`]: {
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
     whiteSpace: 'nowrap',
   },
-  statusValue: {
+  [`& .${mcpClasses.statusValue}`]: {
     fontSize: '0.875rem',
   },
-  statusOk: {
+  [`& .${mcpClasses.statusOk}`]: {
     color: 'var(--pf-t--global--icon--color--status--custom--default)',
   },
-  statusWarn: {
+  [`& .${mcpClasses.statusWarn}`]: {
     color: 'var(--pf-t--global--icon--color--status--danger--default)',
   },
-  statusDisabled: {
+  [`& .${mcpClasses.statusDisabled}`]: {
     color: 'var(--pf-t--global--icon--color--subtle)',
   },
-  actionButton: {
+  [`& .${mcpClasses.actionButton}`]: {
     color: theme.palette.text.secondary,
     opacity: 0,
     transition: 'opacity 0.15s ease-in-out',
   },
-  tableRow: {
-    '&:hover $actionButton, &:focus-within $actionButton': {
+  [`& .${mcpClasses.tableRow}:hover .${mcpClasses.actionButton}, & .${mcpClasses.tableRow}:focus-within .${mcpClasses.actionButton}`]:
+    {
       opacity: 1,
     },
-  },
-  toggleCell: {
+  [`& .${mcpClasses.toggleCell}`]: {
     paddingRight: '0 !important',
   },
-  table: {
+  [`& .${mcpClasses.table}`]: {
     width: '100%',
     backgroundColor: 'transparent',
     '--pf-v6-c-table--BackgroundColor': 'transparent',
@@ -208,7 +225,7 @@ const useStyles = makeStyles(theme => ({
       verticalAlign: 'middle',
     },
   },
-  alert: {
+  [`& .${mcpClasses.alert}`]: {
     marginLeft: theme.spacing(3),
     marginRight: theme.spacing(3),
     marginBottom: theme.spacing(2),
@@ -288,7 +305,6 @@ export const McpServersSettings = ({
   onClose,
   backgroundColor,
 }: McpServersSettingsProps) => {
-  const classes = useStyles();
   const { t } = useTranslation();
   const configApi = useApi(configApiRef);
   const fetchApi = useApi(fetchApiRef);
@@ -516,24 +532,31 @@ export const McpServersSettings = ({
       <Icon
         className={
           isActive
-            ? classes.sortHeaderIconActive
-            : classes.sortHeaderIconInactive
+            ? mcpClasses.sortHeaderIconActive
+            : mcpClasses.sortHeaderIconInactive
         }
       />
     );
   };
 
   return (
-    <div
-      className={classes.root}
-      style={backgroundColor ? { backgroundColor } : undefined}
-    >
-      <div className={classes.headerRow}>
+    <StyledMcpRoot style={backgroundColor ? { backgroundColor } : undefined}>
+      <GlobalStyles
+        styles={{
+          '.pf-v6-c-backdrop': {
+            zIndex: '1400 !important',
+          },
+          '.pf-v5-c-backdrop': {
+            zIndex: '1400 !important',
+          },
+        }}
+      />
+      <div className={mcpClasses.headerRow}>
         <div>
-          <Title headingLevel="h2" size="xl" className={classes.title}>
+          <Title headingLevel="h2" size="xl" className={mcpClasses.title}>
             {t('mcp.settings.title')}
           </Title>
-          <div className={classes.selectedCount}>
+          <div className={mcpClasses.selectedCount}>
             {t('mcp.settings.selectedCount' as any, {
               selectedCount: String(selectedCount),
               totalCount: String(servers.length),
@@ -544,7 +567,7 @@ export const McpServersSettings = ({
           aria-label={t('mcp.settings.closeAriaLabel')}
           icon={<TimesIcon />}
           variant="plain"
-          className={classes.closeButton}
+          className={mcpClasses.closeButton}
           onClick={onClose}
         />
       </div>
@@ -553,7 +576,7 @@ export const McpServersSettings = ({
           variant="danger"
           isInline
           title={error}
-          className={classes.alert}
+          className={mcpClasses.alert}
         />
       )}
       {!mcpManagePermission.loading && !canManageMcp && (
@@ -561,14 +584,14 @@ export const McpServersSettings = ({
           variant="info"
           isInline
           title={t('mcp.settings.readOnlyAccess')}
-          className={classes.alert}
+          className={mcpClasses.alert}
         />
       )}
 
       <Table
         variant="compact"
         aria-label={t('mcp.settings.tableAriaLabel')}
-        className={classes.table}
+        className={mcpClasses.table}
       >
         <Thead>
           <Tr>
@@ -576,25 +599,31 @@ export const McpServersSettings = ({
             <Th>
               <Button
                 variant="link"
-                className={classes.nameHeaderButton}
+                className={mcpClasses.nameHeaderButton}
                 icon={renderSortIcon('name')}
                 iconPosition="right"
                 onClick={() => onSortColumnClick('name')}
               >
-                <Typography component="span" className={classes.nameHeaderText}>
+                <Typography
+                  component="span"
+                  className={mcpClasses.nameHeaderText}
+                >
                   {t('mcp.settings.name')}
                 </Typography>
               </Button>
             </Th>
-            <Th className={classes.statusHeader}>
+            <Th className={mcpClasses.statusHeader}>
               <Button
                 variant="link"
-                className={classes.statusHeaderButton}
+                className={mcpClasses.statusHeaderButton}
                 icon={renderSortIcon('status')}
                 iconPosition="right"
                 onClick={() => onSortColumnClick('status')}
               >
-                <Typography component="span" className={classes.nameHeaderText}>
+                <Typography
+                  component="span"
+                  className={mcpClasses.nameHeaderText}
+                >
                   {t('mcp.settings.status')}
                 </Typography>
               </Button>
@@ -616,16 +645,19 @@ export const McpServersSettings = ({
           {sortedServers.map(server => {
             const displayStatus = getDisplayStatus(server);
             const displayDetail = getDisplayDetail(server, displayStatus, t);
-            let statusClass = classes.statusWarn;
+            let statusClass:
+              | typeof mcpClasses.statusOk
+              | typeof mcpClasses.statusWarn
+              | typeof mcpClasses.statusDisabled = mcpClasses.statusWarn;
             if (displayStatus === 'ok') {
-              statusClass = classes.statusOk;
+              statusClass = mcpClasses.statusOk;
             } else if (displayStatus === 'disabled') {
-              statusClass = classes.statusDisabled;
+              statusClass = mcpClasses.statusDisabled;
             }
 
             return (
-              <Tr key={server.id} className={classes.tableRow}>
-                <Td width={10} className={classes.toggleCell}>
+              <Tr key={server.id} className={mcpClasses.tableRow}>
+                <Td width={10} className={mcpClasses.toggleCell}>
                   {(() => {
                     const isUnavailable =
                       isEnabledToggleUnavailable(displayStatus);
@@ -674,14 +706,14 @@ export const McpServersSettings = ({
                 </Td>
                 <Td
                   width={35}
-                  className={`${classes.rowName} ${classes.nameCell}`}
+                  className={`${mcpClasses.rowName} ${mcpClasses.nameCell}`}
                 >
-                  <Typography component="span" className={classes.nameValue}>
+                  <Typography component="span" className={mcpClasses.nameValue}>
                     {server.name}
                   </Typography>
                 </Td>
-                <Td width={40} className={classes.statusColumnCell}>
-                  <div className={classes.statusCell}>
+                <Td width={40} className={mcpClasses.statusColumnCell}>
+                  <div className={mcpClasses.statusCell}>
                     {getStatusIcon(displayStatus, statusClass)}
                     {displayStatus === 'failed' ? (
                       <Tooltip
@@ -692,7 +724,7 @@ export const McpServersSettings = ({
                       >
                         <Typography
                           component="span"
-                          className={classes.statusValue}
+                          className={mcpClasses.statusValue}
                         >
                           {displayDetail}
                         </Typography>
@@ -700,7 +732,7 @@ export const McpServersSettings = ({
                     ) : (
                       <Typography
                         component="span"
-                        className={classes.statusValue}
+                        className={mcpClasses.statusValue}
                       >
                         {displayDetail}
                       </Typography>
@@ -714,7 +746,7 @@ export const McpServersSettings = ({
                     })}
                     icon={<PencilAltIcon />}
                     variant="plain"
-                    className={classes.actionButton}
+                    className={mcpClasses.actionButton}
                     isDisabled={!canManageMcp}
                     onClick={() => configureModal.open(server)}
                   />
@@ -725,6 +757,6 @@ export const McpServersSettings = ({
         </Tbody>
       </Table>
       <McpConfigureServerModal {...configureModal} />
-    </div>
+    </StyledMcpRoot>
   );
 };
