@@ -131,6 +131,16 @@ jest.mock('../../../hooks/useTranslation', () => ({
           return 'Missing permission';
         case 'errors.unsupportedAggregationType':
           return 'Unsupported aggregation type';
+        case 'aggregation.min':
+          return 'Min';
+        case 'aggregation.max':
+          return 'Max';
+        case 'aggregation.sum':
+          return 'Sum';
+        case 'aggregation.count':
+          return 'Count';
+        case 'aggregation.average':
+          return 'Average';
         default:
           return key;
       }
@@ -182,11 +192,42 @@ const mockWeightedStatusScoreScorecard: AggregatedMetricResult = {
 };
 
 const mockUnsupportedAggregationScorecard: AggregatedMetricResult = {
-  ...mockScorecard,
+  id: 'unknown.kpi',
+  status: 'success',
   metadata: {
-    ...mockScorecard.metadata,
+    title: 'Unknown KPI',
+    description: 'desc',
+    type: 'number',
+    history: true,
     aggregationType:
       'futureStrategy' as AggregatedMetricResult['metadata']['aggregationType'],
+  },
+  result: {
+    total: 4,
+    timestamp: '2024-01-01T00:00:00Z',
+    entitiesConsidered: 4,
+    calculationErrorCount: 0,
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+  } as AggregatedMetricResult['result'],
+};
+
+const mockScalarAggregationScorecard: AggregatedMetricResult = {
+  id: 'totalCriticalPRs',
+  status: 'success',
+  metadata: {
+    title: 'Total Critical PRs',
+    description: 'Sum of open PRs for entities in error status.',
+    type: 'number',
+    history: true,
+    aggregationType: aggregationTypes.sum,
+  },
+  result: {
+    value: 12,
+    total: 4,
+    timestamp: '2024-01-01T00:00:00Z',
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+    entitiesConsidered: 4,
+    calculationErrorCount: 0,
   },
 };
 
@@ -445,7 +486,7 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
     ).toHaveTextContent('75%');
   });
 
-  it('should render error panel when aggregation type is not supported', () => {
+  it('should render error panel when the result shape is unrecognized', () => {
     render(
       <AggregatedMetricCard
         scorecard={mockUnsupportedAggregationScorecard}
@@ -460,5 +501,161 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
     expect(screen.getByTestId('response-error-panel')).toHaveTextContent(
       'Unsupported aggregation type (futureStrategy)',
     );
+  });
+
+  it.each([
+    aggregationTypes.sum,
+    aggregationTypes.average,
+    aggregationTypes.min,
+    aggregationTypes.max,
+    aggregationTypes.count,
+  ])(
+    'should render scalar value and threshold status for %s',
+    aggregationType => {
+      render(
+        <AggregatedMetricCard
+          scorecard={{
+            ...mockScalarAggregationScorecard,
+            metadata: {
+              ...mockScalarAggregationScorecard.metadata,
+              aggregationType,
+            },
+          }}
+          aggregationId={mockScalarAggregationScorecard.id}
+          cardTitle="Total Critical PRs"
+          description="Sum of open PRs for entities in error status."
+        />,
+        { wrapper: TestWrapper },
+      );
+
+      expect(screen.getByTestId('card-title')).toHaveTextContent(
+        'Total Critical PRs',
+      );
+      expect(screen.getByTestId('card-description')).toHaveTextContent(
+        'Sum of open PRs for entities in error status.',
+      );
+      expect(screen.getByTestId('card-subheader')).toHaveTextContent(
+        '4 entities',
+      );
+      expect(screen.getByTestId('scalar-stat-value')).toHaveTextContent('12');
+      expect(screen.getByTestId('scalar-stat-tile')).toHaveAttribute(
+        'data-threshold-status',
+        'warning',
+      );
+      expect(screen.getByTestId('scalar-stat-label')).toHaveTextContent(
+        aggregationType.charAt(0).toUpperCase() + aggregationType.slice(1),
+      );
+      expect(
+        screen.queryByTestId('responsive-pie-chart'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('response-error-panel'),
+      ).not.toBeInTheDocument();
+    },
+  );
+
+  it('should render calculation-error ratio for scalar aggregations', () => {
+    render(
+      <AggregatedMetricCard
+        scorecard={{
+          ...mockScalarAggregationScorecard,
+          result: {
+            ...mockScalarAggregationScorecard.result,
+            total: 0,
+            value: 0,
+            entitiesConsidered: 5,
+            calculationErrorCount: 5,
+          },
+        }}
+        aggregationId={mockScalarAggregationScorecard.id}
+        cardTitle="Total Critical PRs"
+        description="desc"
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByTestId('card-subheader')).toHaveTextContent(
+      '0/5 entities',
+    );
+    expect(screen.getByTestId('scalar-stat-value')).toHaveTextContent('0');
+    expect(screen.getByTestId('scalar-stat-tile')).toHaveAttribute(
+      'data-threshold-status',
+      '',
+    );
+  });
+
+  it('should skip threshold coloring when a scalar aggregation has no entities', () => {
+    render(
+      <AggregatedMetricCard
+        scorecard={{
+          ...mockScalarAggregationScorecard,
+          result: {
+            ...mockScalarAggregationScorecard.result,
+            total: 0,
+            value: 0,
+            entitiesConsidered: 0,
+            calculationErrorCount: 0,
+          },
+        }}
+        aggregationId={mockScalarAggregationScorecard.id}
+        cardTitle="Total Critical PRs"
+        description="desc"
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByTestId('scalar-stat-value')).toHaveTextContent('0');
+    expect(screen.getByTestId('scalar-stat-tile')).toHaveAttribute(
+      'data-threshold-status',
+      '',
+    );
+  });
+
+  it('should render ScalarStatCard for an unknown type when the result is scalar-shaped', () => {
+    render(
+      <AggregatedMetricCard
+        scorecard={{
+          ...mockScalarAggregationScorecard,
+          metadata: {
+            ...mockScalarAggregationScorecard.metadata,
+            aggregationType:
+              'median' as AggregatedMetricResult['metadata']['aggregationType'],
+          },
+        }}
+        aggregationId={mockScalarAggregationScorecard.id}
+        cardTitle="Median Open PRs"
+        description="Median open PR count."
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByTestId('scalar-stat-value')).toHaveTextContent('12');
+    expect(screen.getByTestId('scalar-stat-label')).toHaveTextContent('Median');
+    expect(
+      screen.queryByTestId('response-error-panel'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('should render a distribution card when the result has a values array, regardless of type name', () => {
+    render(
+      <AggregatedMetricCard
+        scorecard={{
+          ...mockScorecard,
+          metadata: {
+            ...mockScorecard.metadata,
+            aggregationType: aggregationTypes.sum,
+          },
+        }}
+        aggregationId={mockScorecard.id}
+        cardTitle="Distribution-shaped KPI"
+        description="desc"
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByTestId('responsive-pie-chart')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('response-error-panel'),
+    ).not.toBeInTheDocument();
   });
 });

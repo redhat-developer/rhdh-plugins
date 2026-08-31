@@ -9,7 +9,7 @@ For NFS, register the default `scorecardPlugin` plus `scorecardTranslationsModul
 **Features:**
 
 - **Entity scorecard tab** — View scorecard metrics on catalog entity pages (components, websites, etc.).
-- **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues). Supports **`statusGrouped`** (multi-slice pie) and **`weightedStatusScore`** (weighted health donut) KPI types configured under **`scorecard.aggregationKPIs`**. Scalar types (`sum`, `average`, `max`, `min`, `count`) are supported by the backend API but not yet rendered by the bundled homepage card (see [Homepage scorecard cards](#homepage-scorecard-cards)).
+- **Scorecard homepage card** — Show aggregated KPIs on the home page (e.g. GitHub open PRs, Jira open issues). Supports **`statusGrouped`** (multi-slice pie), **`weightedStatusScore`** (weighted health donut), and scalar types (`sum`, `average`, `max`, `min`, `count`) configured under **`scorecard.aggregationKPIs`**.
 - **Scorecard Entities page** — Drill down from an aggregated metric to see the list of entities contributing to that metric, with entity-level values and status, so you can identify services impacting the KPI and investigate issues.
 - **Metric group cards (grid layout)** — Group related metrics into cards with threshold bucket tiles, a filterable/sortable data sources dialog, and a Masonry grid layout. Enabled via app-config.yaml.
 
@@ -239,9 +239,54 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
                    sm: { w: 4, h: 6, x: 8 }
                    xs: { w: 4, h: 6, x: 8 }
                    xxs: { w: 4, h: 6, x: 8 }
+               AggregatedCardWithMaxOpenPrs:
+                 priority: 480
+                 breakpoints:
+                   xl: { w: 4, h: 6 }
+                   lg: { w: 4, h: 6 }
+                   md: { w: 4, h: 6 }
+                   sm: { w: 4, h: 6 }
+                   xs: { w: 4, h: 6 }
+                   xxs: { w: 4, h: 6 }
+               AggregatedCardWithMinOpenPrs:
+                 priority: 490
+                 breakpoints:
+                   xl: { w: 4, h: 6, x: 4 }
+                   lg: { w: 4, h: 6, x: 4 }
+                   md: { w: 4, h: 6, x: 4 }
+                   sm: { w: 4, h: 6, x: 4 }
+                   xs: { w: 4, h: 6, x: 4 }
+                   xxs: { w: 4, h: 6, x: 4 }
+               AggregatedCardWithTotalOpenBugs:
+                 priority: 500
+                 breakpoints:
+                   xl: { w: 4, h: 6, x: 8 }
+                   lg: { w: 4, h: 6, x: 8 }
+                   md: { w: 4, h: 6, x: 8 }
+                   sm: { w: 4, h: 6, x: 8 }
+                   xs: { w: 4, h: 6, x: 8 }
+                   xxs: { w: 4, h: 6, x: 8 }
+               AggregatedCardWithEntitiesWithOpenPrs:
+                 priority: 510
+                 breakpoints:
+                   xl: { w: 4, h: 6 }
+                   lg: { w: 4, h: 6 }
+                   md: { w: 4, h: 6 }
+                   sm: { w: 4, h: 6 }
+                   xs: { w: 4, h: 6 }
+                   xxs: { w: 4, h: 6 }
+               AggregatedCardWithAvgOpenPrs:
+                 priority: 520
+                 breakpoints:
+                   xl: { w: 4, h: 6, x: 4 }
+                   lg: { w: 4, h: 6, x: 4 }
+                   md: { w: 4, h: 6, x: 4 }
+                   sm: { w: 4, h: 6, x: 4 }
+                   xs: { w: 4, h: 6, x: 4 }
+                   xxs: { w: 4, h: 6, x: 4 }
    ```
 
-   The home module contributes seven widgets:
+   The home module contributes twelve widgets:
 
    - `AggregatedCardWithDeprecatedMetricId` (title: **Scorecard: With deprecated metricId property (Jira)**)
    - `AggregatedCardWithDefaultAggregation` (title: **Scorecard: With default aggregation config (GitHub)**)
@@ -250,6 +295,11 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
    - `AggregatedCardWithGithubFilecheckLicense` (title: **Scorecard: LICENSE file exists**)
    - `AggregatedCardWithGithubFilecheckCodeowners` (title: **Scorecard: CODEOWNERS file exists**)
    - `AggregatedCardWithGithubOpenPrsWeighted` (title: **Scorecard: GitHub open PRs (weighted health)**)
+   - `AggregatedCardWithMaxOpenPrs` (title: **Scorecard: Maximum open PRs**)
+   - `AggregatedCardWithMinOpenPrs` (title: **Scorecard: Minimum open PRs**)
+   - `AggregatedCardWithTotalOpenBugs` (title: **Scorecard: Total open bugs**)
+   - `AggregatedCardWithEntitiesWithOpenPrs` (title: **Scorecard: Entities with open PRs**)
+   - `AggregatedCardWithAvgOpenPrs` (title: **Scorecard: Average open PRs**)
 
    These widgets render the `ScorecardHomepageCard` component used in legacy apps, preconfigured with different aggregation/metric configurations.
 
@@ -280,6 +330,11 @@ The default `scorecardPlugin` registers the Scorecard page, API, entity tab, lay
 | `home-page-widget:scorecard/scorecard-github-filecheck-license`    | Homepage widget for file check "License".                                                                                        |
 | `home-page-widget:scorecard/scorecard-github-filecheck-codeowners` | Homepage widget for file check "Codeowners".                                                                                     |
 | `home-page-widget:scorecard/scorecard-github-open-prs-weighted`    | Homepage widget for weighted GitHub open PRs health.                                                                             |
+| `home-page-widget:scorecard/scorecard-max-open-prs`                | Homepage widget for scalar max open PRs.                                                                                         |
+| `home-page-widget:scorecard/scorecard-min-open-prs`                | Homepage widget for scalar min open PRs.                                                                                         |
+| `home-page-widget:scorecard/scorecard-total-open-bugs`             | Homepage widget for scalar sum of open bugs.                                                                                     |
+| `home-page-widget:scorecard/scorecard-entities-with-open-prs`      | Homepage widget for scalar count of entities with open PRs.                                                                      |
+| `home-page-widget:scorecard/scorecard-avg-open-prs`                | Homepage widget for scalar average open PRs.                                                                                     |
 
 ##### Migration notes (NFS graduation)
 
@@ -458,11 +513,11 @@ Supported scorecard aggregation types (see [Entity Aggregation — Aggregation t
 - [`weightedStatusScore`](../scorecard-backend/docs/aggregation.md#weighted-status-score-type) — weighted portfolio health percentage (donut); requires `options.statusScores`.
 - Scalar types ([`sum`](../scorecard-backend/docs/aggregation.md#sum-type), [`average`](../scorecard-backend/docs/aggregation.md#average-type), [`max`](../scorecard-backend/docs/aggregation.md#max-type), [`min`](../scorecard-backend/docs/aggregation.md#min-type), [`count`](../scorecard-backend/docs/aggregation.md#count-type)) — roll up latest numeric metric values; number metrics only. Optional [`filter.status`](../scorecard-backend/docs/aggregation.md#status-filter-scalar-types) limits the rollup to a threshold status.
 
-**Scalar KPI types** (`sum`, `average`, `max`, `min`, `count`) are fully supported by **`GET /aggregations/:aggregationId`**, including optional **`filter.status`** and **`options.thresholds`**. The bundled **`ScorecardHomepageCard`** / **`AggregatedMetricCard`** only renders **`statusGrouped`** and **`weightedStatusScore`**; scalar types show an unsupported-type error panel. Build a custom card to display **`result.value`** and classify it with **`result.thresholds`**.
+**Scalar KPI types** (`sum`, `average`, `max`, `min`, `count`) are fully supported by **`GET /aggregations/:aggregationId`**, including optional **`filter.status`** and **`options.thresholds`**. **`AggregatedMetricCard`** chooses the UI from the **result shape**: a numeric `value` renders **`ScalarStatCard`** (large number, optional description, aggregation-type label, threshold tile color); a `values` array renders the existing pie/donut cards; anything else shows **`UnsupportedAggregationType`**. Unknown scalar type names still render **`ScalarStatCard`** when the payload is scalar-shaped.
 
 **Terminology:** Scalar **`average`** (mean of numeric metric values) is distinct from the former weighted KPI type also named `average`, which was renamed to **`weightedStatusScore`**. Update app-config **`type: average`** entries for weighted health scoring to **`type: weightedStatusScore`** and migrate API consumers from **`result.averageScore`** to **`result.weightedStatusScore`**.
 
-The NFS example widget **`AggregatedCardWithGithubOpenPrs`** uses **`aggregationId: maxOpenPrs`** (scalar **`max`** KPI). Uncomment and configure **`maxOpenPrs`** under **`scorecard.aggregationKPIs`** in app-config to exercise the API; expect the unsupported-type panel until scalar homepage UI is added.
+Configure a scalar KPI such as **`maxOpenPrs`** under **`scorecard.aggregationKPIs`** and pass that id as **`aggregationId`** to **`ScorecardHomepageCard`** to render the aggregated value.
 
 #### Card props
 

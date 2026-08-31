@@ -16,12 +16,12 @@
 
 import {
   AggregatedMetricResult,
-  StatusGroupedAggregationResult,
+  ScalarAggregationResult,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { AggregatedMetricCardBaseProps } from '../types';
 
-export type StatusGroupedCardComponentProps = AggregatedMetricCardBaseProps & {
+export type ScalarStatCardProps = AggregatedMetricCardBaseProps & {
   scorecard: Omit<AggregatedMetricResult, 'result'> & {
-    result: StatusGroupedAggregationResult;
+    result: ScalarAggregationResult;
   };
 };

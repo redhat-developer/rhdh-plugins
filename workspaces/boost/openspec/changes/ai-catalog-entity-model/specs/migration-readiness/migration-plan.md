@@ -1,6 +1,6 @@
 # Migration Plan: RHDH AI-Asset Entities to Upstream Backstage Kinds
 
-> **Status: Draft** | **Last updated: 2026-08-26** | **Story: RHIDP-15302**
+> **Status: Draft** | **Last updated: 2026-08-31** | **Story: RHIDP-15302**
 >
 > **Epic:** RHIDP-15258 (Entity-Provider SDK) | **Feature:** RHDHPLAN-1507
 >
@@ -508,9 +508,9 @@ GET /api/catalog/entities?filter=kind=API,spec.type=ai-model-server
 | [backstage#33575](https://github.com/backstage/backstage/issues/33575)          | Open    | RFC / lineage for AI catalog kinds (`AIContext` RFC)           |
 | [backstage#34476](https://github.com/backstage/backstage/pull/34476)            | Open PR | `API` / `ai-model-server` candidate (byte-for-byte with #4211) |
 | [rhdh-plugins#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164) | Merged  | Downstream `AiResource` agent type (RHIDP-15865)               |
-| [rhdh-plugins#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211) | Open PR | `AiModelServerAPI` — committed 2.1 model-server target         |
-| [rhdh-plugins#4246](https://github.com/redhat-developer/rhdh-plugins/pull/4246) | Open PR | `AiResourceAgentProcessor`                                     |
-| [rhdh-plugins#4260](https://github.com/redhat-developer/rhdh-plugins/pull/4260) | Open PR | Boost pivot to `AiResource` / `AiModelServerAPI`               |
+| [rhdh-plugins#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211) | Merged  | `AiModelServerAPI` — committed 2.1 model-server target         |
+| [rhdh-plugins#4246](https://github.com/redhat-developer/rhdh-plugins/pull/4246) | Merged  | `AiResourceAgentProcessor`                                     |
+| [rhdh-plugins#4260](https://github.com/redhat-developer/rhdh-plugins/pull/4260) | Merged  | Boost pivot to `AiResource` / `AiModelServerAPI`               |
 
 ## Out of Scope
 

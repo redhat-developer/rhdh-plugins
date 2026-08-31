@@ -25,6 +25,16 @@ export {
 export { getLastUpdatedLabel } from './entityTableUtils';
 export { formatWithMetricUnit } from './formatMetricUnit';
 export {
+  isDistributionAggregationResult,
+  isScalarAggregationResult,
+  isScalarAggregationType,
+  isWeightedStatusScoreResult,
+} from './isScalarAggregation';
+export {
+  getMatchingThresholdKey,
+  matchesThresholdExpression,
+} from './matchThresholdRule';
+export {
   getStatusConfig,
   getTranslatedStatus,
   resolveStatusColor,
