@@ -64,6 +64,7 @@ import {
   pluginRouteRef,
   packageRouteRef,
   packageInstallRouteRef,
+  catalogTabRouteRef,
 } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
 import { usePluginPackages } from '../hooks/usePluginPackages';
@@ -314,6 +315,7 @@ export const ExtensionsPluginContent = ({
     isPackage ? packageRouteRef : pluginRouteRef,
   );
   const getIndexPath = useRouteRef(rootRouteRef);
+  const getCatalogPath = useRouteRef(catalogTabRouteRef);
   const getInstallPath = useRouteRef(
     isPackage ? packageInstallRouteRef : pluginInstallRouteRef,
   );
@@ -373,7 +375,9 @@ export const ExtensionsPluginContent = ({
         };
         setInstalledPlugins(updatedPlugins);
         handleClose();
-        navigate(isPackage ? '/extensions' : '/extensions/installed-plugins');
+        // Catalog hosts BackendRestartAlert. `/extensions/installed-plugins` is
+        // not a registered tab and can drop the alert in NFS.
+        navigate(getCatalogPath());
       }
     } catch (err: unknown) {
       // eslint-disable-next-line no-console
