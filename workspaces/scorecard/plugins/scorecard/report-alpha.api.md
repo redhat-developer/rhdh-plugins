@@ -90,6 +90,11 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.drillDownCalculationFailures': string;
     readonly 'metric.homepageEntityHealthRatio': string;
     readonly 'metric.homepageEntityCalculationHealth': string;
+    readonly 'aggregation.min': string;
+    readonly 'aggregation.max': string;
+    readonly 'aggregation.sum': string;
+    readonly 'aggregation.count': string;
+    readonly 'aggregation.average': string;
     readonly 'thresholds.success': string;
     readonly 'thresholds.warning': string;
     readonly 'thresholds.error': string;
