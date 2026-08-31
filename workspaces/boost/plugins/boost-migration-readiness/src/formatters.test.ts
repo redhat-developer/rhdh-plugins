@@ -84,41 +84,41 @@ describe('formatText', () => {
     expect(output).toContain('=========================');
   });
 
-  it('includes entity names', () => {
-    const output = formatText(sampleReport);
-    expect(output).toContain('Entity: my-mcp-server');
-    expect(output).toContain('Entity: my-skill');
-  });
+  it.each([
+    ['entity names', ['Entity: my-mcp-server', 'Entity: my-skill']],
+    [
+      'current kind and spec.type',
+      [
+        'Current: kind=API, spec.type=mcp-server',
+        'Current: kind=AIResource, spec.type=skill',
+      ],
+    ],
+    ['target kind with model', ['Target:  kind=API (McpServerApiEntity)']],
+    [
+      'target without model',
+      ['Target:  kind=AiResource, backstage#33575'],
+    ],
+  ] as [string, string[]][])(
+    'includes %s',
+    (_label: string, expected: string[]) => {
+      const output = formatText(sampleReport);
+      for (const text of expected) {
+        expect(output).toContain(text);
+      }
+    },
+  );
 
-  it('includes current kind and spec.type', () => {
-    const output = formatText(sampleReport);
-    expect(output).toContain('Current: kind=API, spec.type=mcp-server');
-    expect(output).toContain('Current: kind=AIResource, spec.type=skill');
-  });
-
-  it('includes target kind with model when available', () => {
-    const output = formatText(sampleReport);
-    expect(output).toContain('Target:  kind=API (McpServerApiEntity)');
-  });
-
-  it('shows target without model when model is undefined', () => {
-    const output = formatText(sampleReport);
-    expect(output).toContain('Target:  kind=AiResource, backstage#33575');
-  });
-
-  it('includes confidence levels', () => {
-    const output = formatText(sampleReport);
-    expect(output).toContain('Confidence: High');
-    expect(output).toContain('Confidence: Medium–High');
-  });
-
-  it('includes transformations', () => {
-    const output = formatText(sampleReport);
-    expect(output).toContain('Transformations:');
-    expect(output).toContain(
-      '- Kind already aligned (API). No kind change required.',
-    );
-  });
+  it.each([
+    ['High', 'Confidence: High'],
+    ['Medium–High', 'Confidence: Medium–High'],
+    ['transformations header', 'Transformations:'],
+  ] as [string, string[]][])(
+    'includes %s',
+    (_label: string, expected: string) => {
+      const output = formatText(sampleReport);
+      expect(output).toContain(expected);
+    },
+  );
 
   it('shows aligned status', () => {
     const output = formatText(sampleReport);

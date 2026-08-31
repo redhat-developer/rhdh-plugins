@@ -16,6 +16,28 @@
 
 import type { CatalogEntity, FetchEntitiesOptions } from './types';
 
+const ALLOWED_PROTOCOLS = new Set(['http:', 'https:']);
+
+/**
+ * Validate that a catalog URL is well-formed and uses an allowed protocol.
+ *
+ * @internal
+ */
+function validateCatalogUrl(catalogUrl: string): URL {
+  let parsed: URL;
+  try {
+    parsed = new URL(catalogUrl);
+  } catch {
+    throw new Error(`Invalid catalog URL: ${catalogUrl}`);
+  }
+  if (!ALLOWED_PROTOCOLS.has(parsed.protocol)) {
+    throw new Error(
+      `Catalog URL must use http or https protocol, got: ${parsed.protocol}`,
+    );
+  }
+  return parsed;
+}
+
 /**
  * Fetch all entities from the Backstage catalog API.
  *
@@ -28,6 +50,8 @@ export async function fetchEntities(
   options: FetchEntitiesOptions,
 ): Promise<CatalogEntity[]> {
   const { catalogUrl, token, filter } = options;
+
+  validateCatalogUrl(catalogUrl);
 
   const url = new URL('/api/catalog/entities', catalogUrl);
   if (filter) {

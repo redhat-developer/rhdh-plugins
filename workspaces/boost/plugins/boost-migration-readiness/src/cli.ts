@@ -18,6 +18,14 @@ import { fetchEntities } from './catalogClient';
 import { analyzeEntities } from './analyze';
 import { formatJson, formatText } from './formatters';
 
+/** Set of flags that consume the next argument as their value. */
+const VALUE_FLAGS = new Set([
+  '--catalog-url',
+  '--output-format',
+  '--token',
+  '--filter',
+]);
+
 /**
  * Parse CLI arguments into a typed options object.
  *
@@ -29,43 +37,50 @@ function parseArgs(argv: string[]): {
   token?: string;
   filter?: string;
 } {
-  let catalogUrl = '';
-  let outputFormat: 'json' | 'text' = 'text';
-  let token: string | undefined;
-  let filter: string | undefined;
+  const values: Record<string, string> = {};
 
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i];
-    if (arg === '--catalog-url' && i + 1 < argv.length) {
-      catalogUrl = argv[++i];
-    } else if (arg === '--output-format' && i + 1 < argv.length) {
-      const fmt = argv[++i];
-      if (fmt === 'json' || fmt === 'text') {
-        outputFormat = fmt;
-      } else {
-        process.stderr.write(`Unknown output format '${fmt}'. Using 'text'.\n`);
-      }
-    } else if (arg === '--token' && i + 1 < argv.length) {
-      token = argv[++i];
-    } else if (arg === '--filter' && i + 1 < argv.length) {
-      filter = argv[++i];
-    } else if (arg === '--help' || arg === '-h') {
+
+    if (arg === '--help' || arg === '-h') {
       printUsage();
       process.exit(0);
-    } else {
-      process.stderr.write(`Unknown argument: ${arg}\n`);
-      printUsage();
-      process.exit(1);
     }
+
+    if (VALUE_FLAGS.has(arg)) {
+      if (i + 1 >= argv.length) {
+        process.stderr.write(`Missing value for ${arg}\n`);
+        process.exit(1);
+      }
+      values[arg] = argv[++i];
+      continue;
+    }
+
+    process.stderr.write(`Unknown argument: ${arg}\n`);
+    printUsage();
+    process.exit(1);
   }
 
-  if (!catalogUrl) {
+  if (!values['--catalog-url']) {
     process.stderr.write('Error: --catalog-url is required.\n\n');
     printUsage();
     process.exit(1);
   }
 
-  return { catalogUrl, outputFormat, token, filter };
+  const fmt = values['--output-format'];
+  let outputFormat: 'json' | 'text' = 'text';
+  if (fmt === 'json' || fmt === 'text') {
+    outputFormat = fmt;
+  } else if (fmt !== undefined) {
+    process.stderr.write(`Unknown output format '${fmt}'. Using 'text'.\n`);
+  }
+
+  return {
+    catalogUrl: values['--catalog-url'],
+    outputFormat,
+    token: values['--token'],
+    filter: values['--filter'],
+  };
 }
 
 /**

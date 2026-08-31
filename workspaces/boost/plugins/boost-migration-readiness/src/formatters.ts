@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { MigrationReport } from './types';
+import type { EntityAssessment, MigrationReport } from './types';
 
 /** Footer text appended to all report outputs. */
 const FOOTER =
@@ -46,63 +46,68 @@ function displayConfidence(confidence: string): string {
 }
 
 /**
+ * Format the target line for an entity assessment.
+ *
+ * @internal
+ */
+function formatTarget(entity: EntityAssessment): string {
+  if (!entity.targetKind) {
+    return '  Target:  No upstream kind yet';
+  }
+  const modelSuffix = entity.targetModel ? ` (${entity.targetModel})` : '';
+  const rfcSuffix = entity.rfcIds.length > 0 ? `, ${entity.rfcIds[0]}` : '';
+  return `  Target:  kind=${entity.targetKind}${modelSuffix}${rfcSuffix}`;
+}
+
+/**
+ * Format a single entity assessment as text lines.
+ *
+ * @internal
+ */
+function formatEntityLines(entity: EntityAssessment): string[] {
+  const lines: string[] = [
+    `Entity: ${entity.name}`,
+    `  Current: kind=${entity.currentKind}, spec.type=${entity.currentSpecType}`,
+    formatTarget(entity),
+    `  Confidence: ${displayConfidence(entity.confidence)}`,
+  ];
+
+  if (entity.alreadyAligned) {
+    lines.push('  Status: Already aligned with upstream target');
+  }
+
+  if (entity.transformations.length > 0) {
+    lines.push(
+      '  Transformations:',
+      ...entity.transformations.map(t => `    - ${t}`),
+    );
+  }
+
+  if (entity.warnings.length > 0) {
+    lines.push('  Warnings:', ...entity.warnings.map(w => `    - ${w}`));
+  }
+
+  lines.push('');
+  return lines;
+}
+
+/**
  * Format a migration report as human-readable text.
  *
  * @public
  */
 export function formatText(report: MigrationReport): string {
-  const lines: string[] = [];
-
-  lines.push('Migration Readiness Report');
-  lines.push('=========================');
-  lines.push('');
+  const lines: string[] = ['Migration Readiness Report', '=========================', ''];
 
   if (report.entities.length === 0) {
-    lines.push('No AI asset entities found.');
-    lines.push('');
+    lines.push('No AI asset entities found.', '');
   }
 
   for (const entity of report.entities) {
-    lines.push(`Entity: ${entity.name}`);
-    lines.push(
-      `  Current: kind=${entity.currentKind}, spec.type=${entity.currentSpecType}`,
-    );
-
-    if (entity.targetKind) {
-      const modelSuffix = entity.targetModel ? ` (${entity.targetModel})` : '';
-      const rfcSuffix = entity.rfcIds.length > 0 ? `, ${entity.rfcIds[0]}` : '';
-      lines.push(
-        `  Target:  kind=${entity.targetKind}${modelSuffix}${rfcSuffix}`,
-      );
-    } else {
-      lines.push('  Target:  No upstream kind yet');
-    }
-
-    lines.push(`  Confidence: ${displayConfidence(entity.confidence)}`);
-
-    if (entity.alreadyAligned) {
-      lines.push('  Status: Already aligned with upstream target');
-    }
-
-    if (entity.transformations.length > 0) {
-      lines.push('  Transformations:');
-      for (const t of entity.transformations) {
-        lines.push(`    - ${t}`);
-      }
-    }
-
-    if (entity.warnings.length > 0) {
-      lines.push('  Warnings:');
-      for (const w of entity.warnings) {
-        lines.push(`    - ${w}`);
-      }
-    }
-
-    lines.push('');
+    lines.push(...formatEntityLines(entity));
   }
 
-  lines.push('---');
-  lines.push(FOOTER);
+  lines.push('---', FOOTER);
 
   return lines.join('\n');
 }
