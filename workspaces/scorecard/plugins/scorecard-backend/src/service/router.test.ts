@@ -1849,7 +1849,7 @@ describe('createRouter', () => {
         jest
           .spyOn(aggregationsService, 'getAggregationConfig')
           .mockReturnValue({
-            id: 'scalarKpi',
+            id: `${aggregationType}ScalarKpi`,
             title: 'Scalar KPI',
             description: 'Scalar daily aggregate',
             type: aggregationType,
@@ -1857,13 +1857,13 @@ describe('createRouter', () => {
           });
 
         const response = await request(app).get(
-          `${timeSeriesPath('scalarKpi')}?${validQuery}`,
+          `${timeSeriesPath(`${aggregationType}ScalarKpi`)}?${validQuery}`,
         );
 
         expect(response.status).toBe(200);
         expect(response.body).toEqual(
           expect.objectContaining({
-            id: 'scalarKpi',
+            id: `${aggregationType}ScalarKpi`,
             metricId: 'github.openPRs',
             metadata: expect.objectContaining({
               aggregationType,
@@ -1882,6 +1882,10 @@ describe('createRouter', () => {
             aggregationChartDisplayColor: 'warning.main',
           }),
         );
+        expect(aggregationsService.getAggregationConfig).toHaveBeenCalledWith(
+          `${aggregationType}ScalarKpi`,
+          metricProvidersRegistry,
+        );
         expect(
           mockDatabaseMetricValues.readScalarAggregatedMetricTimeSeriesByEntityRefs,
         ).toHaveBeenCalledWith(
@@ -1897,6 +1901,76 @@ describe('createRouter', () => {
         );
       },
     );
+
+    it('should use KPI filter.status and return filtered scalar time-series result', async () => {
+      jest
+        .spyOn(
+          mockDatabaseMetricValues,
+          'readScalarAggregatedMetricTimeSeriesByEntityRefs',
+        )
+        .mockResolvedValue([
+          {
+            utcDay: '2024-01-01',
+            value: 10,
+            successCount: 2,
+            errorCount: 0,
+            total: 2,
+            errors: [],
+          },
+        ]);
+
+      jest.spyOn(aggregationsService, 'getAggregationConfig').mockReturnValue({
+        id: 'averageErrorOpenPRs',
+        title: 'Average open PRs in error state',
+        description: 'Average for entities in error status within open PRs',
+        type: aggregationTypes.average,
+        metricId: 'github.openPRs',
+        filter: {
+          status: 'error',
+        },
+      });
+
+      const response = await request(app).get(
+        `${timeSeriesPath('averageErrorOpenPRs')}?${validQuery}`,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: 'averageErrorOpenPRs',
+          metricId: 'github.openPRs',
+          metadata: expect.objectContaining({
+            aggregationType: aggregationTypes.average,
+          }),
+          points: [
+            {
+              value: 10,
+              successCount: 2,
+              errorCount: 0,
+              total: 2,
+              status: 'success',
+              timestamp: '2024-01-01T00:00:00.000Z',
+            },
+          ],
+          thresholds: DEFAULT_NUMBER_THRESHOLDS,
+          aggregationChartDisplayColor: 'warning.main',
+        }),
+      );
+      expect(aggregationsService.getAggregationConfig).toHaveBeenCalledWith(
+        'averageErrorOpenPRs',
+        metricProvidersRegistry,
+      );
+      expect(
+        mockDatabaseMetricValues.readScalarAggregatedMetricTimeSeriesByEntityRefs,
+      ).toHaveBeenCalledWith(
+        ['component:default/my-service', 'component:default/my-other-service'],
+        'github.openPRs',
+        aggregationTypes.average,
+        new Date('2024-01-01T00:00:00.000Z'),
+        new Date('2024-01-31T00:00:00.000Z'),
+        { status: 'error' },
+      );
+    });
   });
 
   describe('GET /aggregations/:aggregationId/metadata', () => {
