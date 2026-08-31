@@ -35,6 +35,7 @@ export const MAPPING_RULES: Record<AIAssetCategory, MappingRule> = {
       'Kind already aligned (API). No kind change required.',
       'Adopt spec.remotes instead of spec.definition',
       'Opt in to @backstage/plugin-catalog-backend-module-ai-model',
+      'Flag fallback Resource entities (legacy) that need migration to API kind',
     ],
     rfcIds: ['backstage#34016', 'backstage#32062'],
   },
