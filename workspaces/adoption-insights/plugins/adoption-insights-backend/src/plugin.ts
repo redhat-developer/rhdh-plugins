@@ -77,6 +77,7 @@ export const adoptionInsightsPlugin = createBackendPlugin({
           config,
           auditor,
           auth,
+          httpAuth,
           discovery,
           logger,
         );

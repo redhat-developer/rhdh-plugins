@@ -104,7 +104,7 @@ If you want to run the entire project, including the frontend, run `yarn start` 
 
 `GET /api/adoption-insights/events`
 
-When `type=top_techdocs`, the backend may enrich each row with a TechDocs `site_name`. That lookup uses Backstage service-to-service authentication to the TechDocs plugin. If the lookup fails or the entity path is invalid, `site_name` falls back to the entity name.
+When `type=top_techdocs`, the backend may enrich each row with a TechDocs `site_name`. That lookup uses Backstage plugin-to-plugin authentication (`getPluginRequestToken`) on behalf of the calling user — it does not forward the caller's raw `Authorization` header. TechDocs therefore evaluates `catalog.entity.read` for that user; entities they cannot read fall back to the entity name, as do failed lookups and invalid entity paths. Rows with empty `namespace` / `kind` / `name` keep an empty `site_name` (TechDocs root).
 
 ## Query Parameters
 

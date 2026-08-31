@@ -70,6 +70,7 @@ describe('createRouter', () => {
       mockServices.rootConfig.mock(),
       mockAuditor as any,
       mockServices.auth.mock(),
+      mockServices.httpAuth.mock(),
       mockServices.discovery.mock(),
       mockServices.logger.mock(),
     );

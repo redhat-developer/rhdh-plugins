@@ -30,6 +30,7 @@ import {
   AuditorServiceEvent,
   AuthService,
   DiscoveryService,
+  HttpAuthService,
   LoggerService,
   RootConfigService,
 } from '@backstage/backend-plugin-api';
@@ -59,6 +60,7 @@ class EventApiController {
   private readonly processor: EventBatchProcessor;
   private readonly auditor: AuditorService;
   private readonly auth: AuthService;
+  private readonly httpAuth: HttpAuthService;
   private readonly discovery: DiscoveryService;
   private readonly logger: LoggerService;
 
@@ -68,6 +70,7 @@ class EventApiController {
     config: RootConfigService,
     auditor: AuditorService,
     auth: AuthService,
+    httpAuth: HttpAuthService,
     discovery: DiscoveryService,
     logger: LoggerService,
   ) {
@@ -76,6 +79,7 @@ class EventApiController {
     this.config = config;
     this.auditor = auditor;
     this.auth = auth;
+    this.httpAuth = httpAuth;
     this.discovery = discovery;
     this.logger = logger;
   }
@@ -177,7 +181,7 @@ class EventApiController {
       const result = await queryHandlers[type as QueryType]();
 
       if (type === 'top_techdocs') {
-        await this.getTechdocsMetadata(result);
+        await this.getTechdocsMetadata(req, result);
       }
 
       auditEvent.success({
@@ -205,7 +209,10 @@ class EventApiController {
     }
   }
 
-  async getTechdocsMetadata(result: TopTechDocsCount) {
+  async getTechdocsMetadata(
+    req: Request<{}, {}, {}, QueryParams>,
+    result: TopTechDocsCount,
+  ) {
     const rowsToFetch: { row: TechDocsCount; parts: TechDocsEntityParts }[] =
       [];
 
@@ -248,8 +255,11 @@ class EventApiController {
     let token: string;
     try {
       baseUrl = await this.discovery.getBaseUrl('techdocs');
+      const credentials = await this.httpAuth.credentials(req, {
+        allow: ['user'],
+      });
       ({ token } = await this.auth.getPluginRequestToken({
-        onBehalfOf: await this.auth.getOwnServiceCredentials(),
+        onBehalfOf: credentials,
         targetPluginId: 'techdocs',
       }));
     } catch (error) {

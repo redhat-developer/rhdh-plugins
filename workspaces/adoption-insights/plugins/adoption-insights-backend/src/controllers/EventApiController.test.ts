@@ -57,6 +57,7 @@ const mockAuditor = {
 } as any;
 
 const mockAuth = mockServices.auth.mock();
+const mockHttpAuth = mockServices.httpAuth.mock();
 const mockDiscovery = mockServices.discovery.mock({
   getBaseUrl: async (pluginId: string) => `http://example.com/api/${pluginId}`,
 });
@@ -69,6 +70,7 @@ const createController = () =>
     mockServices.rootConfig.mock(),
     mockAuditor,
     mockAuth,
+    mockHttpAuth,
     mockDiscovery,
     mockLogger,
   );
@@ -239,10 +241,10 @@ describe('GetInsights', () => {
     jest.clearAllMocks();
     controller = createController();
     jest
-      .mocked(mockAuth.getOwnServiceCredentials)
-      .mockResolvedValue(mockCredentials.service());
+      .mocked(mockHttpAuth.credentials)
+      .mockResolvedValue(mockCredentials.user());
     jest.mocked(mockAuth.getPluginRequestToken).mockResolvedValue({
-      token: 'mock-service-token',
+      token: 'mock-plugin-token',
     });
     jest
       .mocked(mockDiscovery.getBaseUrl)
@@ -394,10 +396,16 @@ describe('GetInsights', () => {
     setupTechdocsTest('app-docs');
     const result = getTechdocsResult('test-component');
 
-    await controller.getTechdocsMetadata(result);
+    await controller.getTechdocsMetadata(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      result,
+    );
 
+    expect(mockHttpAuth.credentials).toHaveBeenCalledWith(req, {
+      allow: ['user'],
+    });
     expect(mockAuth.getPluginRequestToken).toHaveBeenCalledWith({
-      onBehalfOf: mockCredentials.service(),
+      onBehalfOf: mockCredentials.user(),
       targetPluginId: 'techdocs',
     });
     expect(fetch).toHaveBeenCalledWith(
@@ -405,7 +413,7 @@ describe('GetInsights', () => {
       {
         headers: {
           Accept: 'application/json',
-          Authorization: 'Bearer mock-service-token',
+          Authorization: 'Bearer mock-plugin-token',
         },
       },
     );
@@ -424,10 +432,14 @@ describe('GetInsights', () => {
     setupTechdocsTest('app-docs');
     const result = getTechdocsResult('');
 
-    await controller.getTechdocsMetadata(result);
+    await controller.getTechdocsMetadata(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      result,
+    );
 
     expect(fetch).not.toHaveBeenCalled();
     expect(mockDiscovery.getBaseUrl).not.toHaveBeenCalled();
+    expect(mockHttpAuth.credentials).not.toHaveBeenCalled();
     expect(mockAuth.getPluginRequestToken).not.toHaveBeenCalled();
     expect(result.data[0].site_name).toBe('');
   });
@@ -436,7 +448,10 @@ describe('GetInsights', () => {
     setupTechdocsTest(undefined);
     const result = getTechdocsResult('deleted-document');
 
-    await controller.getTechdocsMetadata(result);
+    await controller.getTechdocsMetadata(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      result,
+    );
 
     expect(result.data[0].site_name).toBe('deleted-document');
   });
@@ -460,7 +475,10 @@ describe('GetInsights', () => {
       ],
     };
 
-    await controller.getTechdocsMetadata(result);
+    await controller.getTechdocsMetadata(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      result,
+    );
 
     expect(result.data[0].site_name).toBe('app-docs');
   });
@@ -479,10 +497,14 @@ describe('GetInsights', () => {
       ],
     };
 
-    await controller.getTechdocsMetadata(result);
+    await controller.getTechdocsMetadata(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      result,
+    );
 
     expect(fetch).not.toHaveBeenCalled();
     expect(mockDiscovery.getBaseUrl).not.toHaveBeenCalled();
+    expect(mockHttpAuth.credentials).not.toHaveBeenCalled();
     expect(mockAuth.getPluginRequestToken).not.toHaveBeenCalled();
     expect(result.data[0].site_name).toBe('docs');
     expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -502,7 +524,10 @@ describe('GetInsights', () => {
       .mockRejectedValue(new Error('discovery misconfigured'));
     const result = getTechdocsResult('test-component');
 
-    await controller.getTechdocsMetadata(result);
+    await controller.getTechdocsMetadata(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      result,
+    );
 
     expect(fetch).not.toHaveBeenCalled();
     expect(result.data[0].site_name).toBe('test-component');
@@ -521,7 +546,10 @@ describe('GetInsights', () => {
       .mockRejectedValue(new Error('signing key unavailable'));
     const result = getTechdocsResult('test-component');
 
-    await controller.getTechdocsMetadata(result);
+    await controller.getTechdocsMetadata(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      result,
+    );
 
     expect(fetch).not.toHaveBeenCalled();
     expect(result.data[0].site_name).toBe('test-component');
@@ -561,7 +589,10 @@ describe('GetInsights', () => {
     );
     const result = getTechdocsResult('test-component');
 
-    await controller.getTechdocsMetadata(result);
+    await controller.getTechdocsMetadata(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      result,
+    );
 
     expect(result.data[0].site_name).toBe('test-component');
     expect(mockLogger.debug).toHaveBeenCalledWith(
@@ -584,7 +615,10 @@ describe('GetInsights', () => {
     );
     const result = getTechdocsResult('test-component');
 
-    await controller.getTechdocsMetadata(result);
+    await controller.getTechdocsMetadata(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      result,
+    );
 
     expect(result.data[0].site_name).toBe('test-component');
     expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -603,7 +637,10 @@ describe('GetInsights', () => {
     );
     const result = getTechdocsResult('test-component');
 
-    await controller.getTechdocsMetadata(result);
+    await controller.getTechdocsMetadata(
+      req as unknown as Request<{}, {}, {}, QueryParams>,
+      result,
+    );
 
     expect(result.data[0].site_name).toBe('test-component');
   });
