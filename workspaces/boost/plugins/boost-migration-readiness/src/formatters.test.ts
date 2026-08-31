@@ -94,10 +94,7 @@ describe('formatText', () => {
       ],
     ],
     ['target kind with model', ['Target:  kind=API (McpServerApiEntity)']],
-    [
-      'target without model',
-      ['Target:  kind=AiResource, backstage#33575'],
-    ],
+    ['target without model', ['Target:  kind=AiResource, backstage#33575']],
   ] as [string, string[]][])(
     'includes %s',
     (_label: string, expected: string[]) => {

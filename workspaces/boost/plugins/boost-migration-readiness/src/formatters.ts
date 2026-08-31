@@ -70,24 +70,17 @@ function formatEntityLines(entity: EntityAssessment): string[] {
     `  Current: kind=${entity.currentKind}, spec.type=${entity.currentSpecType}`,
     formatTarget(entity),
     `  Confidence: ${displayConfidence(entity.confidence)}`,
+    ...(entity.alreadyAligned
+      ? ['  Status: Already aligned with upstream target']
+      : []),
+    ...(entity.transformations.length > 0
+      ? ['  Transformations:', ...entity.transformations.map(t => `    - ${t}`)]
+      : []),
+    ...(entity.warnings.length > 0
+      ? ['  Warnings:', ...entity.warnings.map(w => `    - ${w}`)]
+      : []),
+    '',
   ];
-
-  if (entity.alreadyAligned) {
-    lines.push('  Status: Already aligned with upstream target');
-  }
-
-  if (entity.transformations.length > 0) {
-    lines.push(
-      '  Transformations:',
-      ...entity.transformations.map(t => `    - ${t}`),
-    );
-  }
-
-  if (entity.warnings.length > 0) {
-    lines.push('  Warnings:', ...entity.warnings.map(w => `    - ${w}`));
-  }
-
-  lines.push('');
   return lines;
 }
 
@@ -97,17 +90,16 @@ function formatEntityLines(entity: EntityAssessment): string[] {
  * @public
  */
 export function formatText(report: MigrationReport): string {
-  const lines: string[] = ['Migration Readiness Report', '=========================', ''];
-
-  if (report.entities.length === 0) {
-    lines.push('No AI asset entities found.', '');
-  }
-
-  for (const entity of report.entities) {
-    lines.push(...formatEntityLines(entity));
-  }
-
-  lines.push('---', FOOTER);
+  const lines: string[] = [
+    'Migration Readiness Report',
+    '=========================',
+    '',
+    ...(report.entities.length === 0
+      ? ['No AI asset entities found.', '']
+      : report.entities.flatMap(entity => formatEntityLines(entity))),
+    '---',
+    FOOTER,
+  ];
 
   return lines.join('\n');
 }

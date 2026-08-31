@@ -44,6 +44,11 @@ function validateCatalogUrl(catalogUrl: string): URL {
  * This is a read-only operation — no writes, deletions, or
  * configuration modifications are performed.
  *
+ * **Note:** This fetches entities in a single request without
+ * pagination. Very large catalogs may benefit from paginated
+ * fetching — consider using `/api/catalog/entities/by-query`
+ * or implementing cursor-based pagination as a follow-up.
+ *
  * @public
  */
 export async function fetchEntities(
@@ -51,9 +56,11 @@ export async function fetchEntities(
 ): Promise<CatalogEntity[]> {
   const { catalogUrl, token, filter } = options;
 
-  validateCatalogUrl(catalogUrl);
+  const validatedBase = validateCatalogUrl(catalogUrl);
 
-  const url = new URL('/api/catalog/entities', catalogUrl);
+  // Use the validated URL's origin to construct the endpoint,
+  // ensuring only validated http/https URLs reach the network call.
+  const url = new URL('/api/catalog/entities', validatedBase.origin);
   if (filter) {
     url.searchParams.set('filter', filter);
   }
