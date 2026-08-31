@@ -81,8 +81,12 @@ export interface CursorStore {
 export interface ApplyDeltaOptions {
   /** Entities that were added since the last cursor. */
   added: Entity[];
-  /** Entities that were updated since the last cursor. */
-  updated: Entity[];
+  /**
+   * Entities that were updated since the last cursor.
+   * Optional — connectors that do not distinguish additions from
+   * updates may report everything via `added`. Defaults to `[]`.
+   */
+  updated?: Entity[];
   /** Entity references that were removed since the last cursor. */
   removed: Array<{ entityRef: string }>;
   /**
@@ -139,7 +143,6 @@ export interface DeltaSyncManagerOptions {
  *   const delta = await connector.fetchDelta(cursor);
  *   await manager.applyDelta({
  *     added: delta.added,
- *     updated: delta.updated,
  *     removed: delta.removed,
  *     nextCursor: delta.nextCursor,
  *   });
@@ -172,7 +175,7 @@ export class DeltaSyncManager {
    * @param options - The delta to apply.
    */
   async applyDelta(options: ApplyDeltaOptions): Promise<void> {
-    const { added, updated, removed, nextCursor } = options;
+    const { added, updated = [], removed, nextCursor } = options;
 
     // Backstage's delta API treats updates as additions (upserts)
     const allAdded = [...added, ...updated].map(entity => ({
