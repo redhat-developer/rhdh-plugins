@@ -77,9 +77,7 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'conversation.rename.confirm.action': 'Rinomina',
     'conversation.rename.confirm.title': 'Rinominare la chat?',
     'conversation.rename.placeholder': 'Nome della chat',
-    'disclaimer.withValidation':
-      'Questa funzione utilizza una tecnologia AI. Non includere nei dati immessi informazioni personali o altre informazioni sensibili. Le interazioni possono essere utilizzate per migliorare i prodotti o i servizi Red Hat.',
-    'disclaimer.withoutValidation':
+    disclaimer:
       'Questa funzione utilizza una tecnologia AI. Non includere nei dati immessi informazioni personali o altre informazioni sensibili. Le interazioni possono essere utilizzate per migliorare i prodotti o i servizi Red Hat.',
     'error.context.fileAttachment':
       "useFileAttachmentContext deve essere all'interno di un FileAttachmentContextProvider",

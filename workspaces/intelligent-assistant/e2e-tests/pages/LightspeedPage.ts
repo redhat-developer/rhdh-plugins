@@ -451,7 +451,7 @@ function getWelcomeHeader(t: LightspeedMessages): string {
   return `
     - region "Scrollable message log":
       - 'heading "Info alert: ${t['aria.important']}" [level=4]'
-      - text: ${t['disclaimer.withValidation']}
+      - text: ${t['disclaimer']}
       - heading "${greeting} ${t['chatbox.welcome.description']}" [level=1]`;
 }
 

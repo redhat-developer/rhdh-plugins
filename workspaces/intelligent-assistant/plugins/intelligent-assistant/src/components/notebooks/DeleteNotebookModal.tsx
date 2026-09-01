@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -25,6 +24,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import { makeStyles } from '@mui/styles';
 
 import { useDeleteNotebook } from '../../hooks/notebooks/useDeleteNotebook';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -183,7 +183,7 @@ export const DeleteNotebookModal = ({
         <Button
           variant="contained"
           color="error"
-          sx={pillButtonSx}
+          className={classes.deleteButton}
           onClick={handleDelete}
         >
           {t('notebooks.delete.action')}
@@ -191,7 +191,7 @@ export const DeleteNotebookModal = ({
         <Button
           key="cancel"
           variant="outlined"
-          sx={pillButtonSx}
+          className={classes.cancelButton}
           onClick={onClose}
         >
           {t('common.cancel')}

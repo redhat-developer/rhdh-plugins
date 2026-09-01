@@ -211,7 +211,7 @@ export class NotebookSurfacePage {
     await expect(this.uploadResourceHeading()).toBeVisible();
     await expect(this.uploadResourceActionButton()).toBeVisible();
     await expect(
-      this.page.getByText(this.t['disclaimer.withValidation'], { exact: true }),
+      this.page.getByText(this.t['disclaimer'], { exact: true }),
     ).toBeVisible();
 
     const disabledPrompt = this.disabledComposerPlaceholder();

@@ -15,11 +15,14 @@
  */
 
 import { PropsWithChildren } from 'react';
+
 import { makeStyles } from '@mui/styles';
-
 import { ChatbotModal } from '@patternfly/chatbot';
-import { DOCKED_CONTENT_OFFSET } from '../const';
 
+import {
+  DOCKED_CONTENT_OFFSET,
+  LIGHTSPEED_OVERLAY_CHATBOT_MODAL_CLASS,
+} from '../const';
 import { useLightspeedProviderState } from '../hooks/useLightspeedProviderState';
 import { LightspeedChatContainer } from './LightspeedChatContainer';
 import { LightspeedDrawerContext } from './LightspeedDrawerContext';
@@ -55,12 +58,12 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
         {shouldRenderOverlayModal && (
           <ChatbotModal
             isOpen
+            className={`${LIGHTSPEED_OVERLAY_CHATBOT_MODAL_CLASS} ${classes.chatbotModal}`}
             displayMode={contextValue.displayMode}
             disableFocusTrap
             onEscapePress={() => closeChatbot()}
             ouiaId="LightspeedChatbotModal"
             aria-labelledby="lightspeed-chatpopup-modal"
-            className={classes.chatbotModal}
           >
             <LightspeedChatContainer />
           </ChatbotModal>

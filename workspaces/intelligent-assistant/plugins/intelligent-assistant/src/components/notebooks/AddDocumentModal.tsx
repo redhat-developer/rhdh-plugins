@@ -25,8 +25,8 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
-import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import { makeStyles } from '@mui/styles';
 import {
   Alert,
   MultipleFileUpload,
@@ -144,16 +144,18 @@ const useStyles = makeStyles(theme => ({
     fontSize: '0.75rem',
     fontWeight: 500,
     backgroundColor:
-      'color-mix(in srgb, var(--pf-t--global--color--brand--default) 10%, transparent)',
+      theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.1)'
+        : 'rgba(0, 0, 0, 0.08)',
+    color: theme.palette.text.secondary,
   },
-  '& .pf-v6-c-multiple-file-upload__main': {
-    border: 'none',
-    paddingBottom: 0,
+  maxFileSizeText: {
+    fontSize: '0.875rem',
+    color: theme.palette.text.secondary,
+    textAlign: 'center',
+    marginTop: theme.spacing(1),
   },
-  '& .pf-v6-c-multiple-file-upload__title-icon': {
-    fontSize: '2rem',
-  },
-  '&.ia-dropzone-disabled': {
+  dropzoneDisabled: {
     opacity: 0.5,
     pointerEvents: 'none',
     cursor: 'default',
@@ -161,23 +163,6 @@ const useStyles = makeStyles(theme => ({
       backgroundColor: 'transparent',
     },
   },
-}));
-
-const StyledUploadIcon = styled(UploadIcon)({
-  color: 'var(--pf-t--global--icon--color--brand--default)',
-});
-
-const FileTypeChip = styled('span')(({ theme }) => ({
-  display: 'inline-block',
-  padding: '2px 10px',
-  borderRadius: 12,
-  fontSize: '0.75rem',
-  fontWeight: 500,
-  backgroundColor:
-    theme.palette.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.1)'
-      : 'rgba(0, 0, 0, 0.08)',
-  color: theme.palette.text.secondary,
 }));
 
 const DropzoneClickArea = ({
@@ -354,7 +339,7 @@ export const AddDocumentModal = ({
         <IconButton
           aria-label={t('common.close')}
           onClick={handleClose}
-          sx={{ color: 'text.primary' }}
+          className={classes.closeButton}
           size="small"
         >
           <CloseIcon />
@@ -442,18 +427,9 @@ export const AddDocumentModal = ({
         })()}
 
         {selectedFiles.length > 0 && (
-          <Box sx={{ mt: 2, maxHeight: 200, overflowY: 'auto' }}>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                mb: 1,
-              }}
-            >
-              <Typography
-                sx={{ fontSize: '0.875rem', color: 'text.secondary' }}
-              >
+          <Box className={classes.fileListContainer}>
+            <Box className={classes.fileListHeader}>
+              <Typography className={classes.fileCount}>
                 {(t as Function)('notebook.upload.modal.selectedFiles', {
                   count: selectedFiles.length,
                   max: NOTEBOOK_MAX_FILES - existingDocumentNames.length,
@@ -484,7 +460,7 @@ export const AddDocumentModal = ({
       >
         <Button
           onClick={handleAddFiles}
-          sx={{ textTransform: 'none' }}
+          className={classes.addButton}
           variant="contained"
           color="primary"
           disabled={selectedFiles.length === 0 || hasUploadsInProgress}
@@ -497,7 +473,7 @@ export const AddDocumentModal = ({
         </Button>
         <Button
           onClick={handleClose}
-          sx={{ textTransform: 'none' }}
+          className={classes.cancelButton}
           color="inherit"
         >
           {t('common.cancel')}
