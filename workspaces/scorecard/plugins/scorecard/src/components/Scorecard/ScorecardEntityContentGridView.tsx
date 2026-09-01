@@ -29,7 +29,11 @@ import { MetricGroupCard } from '../MetricGroupCard';
 import { dedupeMetricsById } from '../MetricGroupCard/thresholdBucketUtils';
 import { EntityScorecardContent } from './EntityScorecardContent';
 import Scorecard from './Scorecard';
-import { getStatusConfig, resolveMetricTranslation } from '../../utils';
+import {
+  getStatusConfig,
+  getTranslatedTextWithFallback,
+  resolveMetricTranslation,
+} from '../../utils';
 import { hasMetricDataError, hasThresholdError } from '../../utils/statusUtils';
 
 export const ScorecardEntityContentGridView = ({
@@ -79,8 +83,20 @@ export const ScorecardEntityContentGridView = ({
       return (
         <MetricGroupCard
           key={groupKey}
-          title={groupConfig.title}
-          description={groupConfig.description}
+          title={
+            getTranslatedTextWithFallback(
+              t,
+              groupConfig.titleKey,
+              groupConfig.title,
+            ) ?? groupConfig.title
+          }
+          description={
+            getTranslatedTextWithFallback(
+              t,
+              groupConfig.descriptionKey,
+              groupConfig.description,
+            ) ?? groupConfig.description
+          }
           metrics={metricsInGroup}
         />
       );

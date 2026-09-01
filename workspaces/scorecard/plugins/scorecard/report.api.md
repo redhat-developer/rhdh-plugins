@@ -32,8 +32,8 @@ const _default: OverridableFrontendPlugin<
   {
     root: RouteRef<undefined>;
     drillDown: RouteRef<{
-      aggregationId: string;
       metricId: string;
+      aggregationId: string;
     }>;
   },
   {},
@@ -361,6 +361,8 @@ const _default: OverridableFrontendPlugin<
             title: string;
             metrics: string[];
             description?: string | undefined;
+            titleKey?: string | undefined;
+            descriptionKey?: string | undefined;
           }
         >;
       };
@@ -372,6 +374,8 @@ const _default: OverridableFrontendPlugin<
                 title: string;
                 metrics: string[];
                 description?: string | undefined;
+                titleKey?: string | undefined;
+                descriptionKey?: string | undefined;
               }
             >
           | undefined;
@@ -395,7 +399,9 @@ export interface ScorecardLayoutProps {
     string,
     {
       title: string;
+      titleKey?: string;
       description?: string;
+      descriptionKey?: string;
       metrics: string[];
     }
   >;
