@@ -150,6 +150,32 @@ describe('formatText', () => {
     expect(output).toContain('No AI asset entities found.');
   });
 
+  it('strips DEL character (0x7f) from entity data', () => {
+    // DEL (0x7f) is a control character that should be sanitized to
+    // prevent terminal manipulation via untrusted catalog entity data.
+    const report: MigrationReport = {
+      entities: [
+        {
+          entityRef: 'api:default/del-test',
+          name: 'entity\x7fname',
+          category: 'mcp-server',
+          currentKind: 'API',
+          currentSpecType: 'mcp-server',
+          targetKind: 'API',
+          targetModel: 'McpServerApiEntity',
+          confidence: 'high',
+          transformations: [],
+          rfcIds: [],
+          alreadyAligned: true,
+          warnings: [],
+        },
+      ],
+    };
+    const output = formatText(report);
+    expect(output).not.toContain('\x7f');
+    expect(output).toContain('entityname');
+  });
+
   it('shows "No upstream kind yet" for low confidence entities', () => {
     const report: MigrationReport = {
       entities: [

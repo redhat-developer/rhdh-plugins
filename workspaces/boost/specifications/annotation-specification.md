@@ -114,9 +114,9 @@ Each AI asset category maps to a Backstage entity kind and `spec.type` value.
 The table below reflects the **actual entity model as implemented** by
 connectors. It is based on
 [ai-catalog-entity-model/design.md Decision 1](../openspec/changes/ai-catalog-entity-model/design.md)
-but supersedes the Decision 1 reference table for `agent` and `model-server`,
-where connector implementations have diverged from the original reference
-mapping (see notes column).
+but documents the current connector-emitted kinds for `agent` and
+`model-server`, which have diverged from Decision 1's reference mapping
+(see notes column).
 
 | Category       | Backstage Kind   | `spec.type`       | Notes                                                                                                             |
 | -------------- | ---------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------- |

@@ -421,6 +421,60 @@ describe('analyzeEntities', () => {
     expect(report.entities).toHaveLength(7);
   });
 
+  it('warns when spec.type is missing but the mapping expects one', () => {
+    // Edge case: entity has the correct kind for its category but spec.type
+    // is undefined. The mismatch check should still fire because the mapping
+    // expects a specific spec.type value (e.g. 'mcp-server' for mcp-server
+    // category).
+    const entities = [
+      makeEntity({
+        kind: 'API',
+        metadata: {
+          name: 'no-spec-type',
+          annotations: {
+            'rhdh.io/ai-asset-category': 'mcp-server',
+            'rhdh.io/ai-asset-version': '1.0.0',
+            'rhdh.io/ai-asset-source': 'mcp-registry',
+          },
+        },
+        // spec exists but type is undefined
+        spec: {},
+      }),
+    ];
+
+    const report = analyzeEntities(entities);
+    expect(report.entities).toHaveLength(1);
+    expect(report.entities[0].warnings).toContainEqual(
+      expect.stringContaining('Kind/type mismatch'),
+    );
+  });
+
+  it('warns when spec is undefined but the mapping expects a spec.type', () => {
+    // Entity has no spec at all — spec.type defaults to empty string.
+    // When the mapping expects a specific spec.type, a mismatch warning
+    // should fire even though the kind matches.
+    const entities = [
+      makeEntity({
+        kind: 'API',
+        metadata: {
+          name: 'no-spec',
+          annotations: {
+            'rhdh.io/ai-asset-category': 'mcp-server',
+            'rhdh.io/ai-asset-version': '1.0.0',
+            'rhdh.io/ai-asset-source': 'mcp-registry',
+          },
+        },
+        // no spec property at all
+      }),
+    ];
+
+    const report = analyzeEntities(entities);
+    expect(report.entities).toHaveLength(1);
+    expect(report.entities[0].warnings).toContainEqual(
+      expect.stringContaining('Kind/type mismatch'),
+    );
+  });
+
   it('does not include kind:McpServer rename in any assessment', () => {
     const categories = [
       { kind: 'AiResource', cat: 'agent', type: 'agent' },

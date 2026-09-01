@@ -25,7 +25,7 @@ import type { EntityAssessment, MigrationReport } from './types';
  */
 function sanitize(value: string): string {
   /* eslint-disable no-control-regex */
-  return value.replace(/\x1b\[[0-9;]*[A-Za-z]|[\x00-\x08\x0b-\x1f]/g, '');
+  return value.replace(/\x1b\[[0-9;]*[A-Za-z]|[\x00-\x08\x0b-\x1f\x7f]/g, '');
   /* eslint-enable no-control-regex */
 }
 

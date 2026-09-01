@@ -118,18 +118,18 @@ export function analyzeEntities(entities: CatalogEntity[]): MigrationReport {
     // entity is already aligned with the upstream target — comparing an
     // already-migrated entity against the pre-migration "current" mapping
     // would otherwise raise a contradictory warning alongside alreadyAligned.
-    if (
-      !alreadyAligned &&
-      (currentKind.toLowerCase() !== mapping.currentKind.toLowerCase() ||
-        (currentSpecType &&
-          currentSpecType.toLowerCase() !==
-            mapping.currentSpecType.toLowerCase()))
-    ) {
-      warnings.push(
-        `Kind/type mismatch: entity has kind=${currentKind}, spec.type=${currentSpecType} ` +
-          `but expected kind=${mapping.currentKind}, spec.type=${mapping.currentSpecType} ` +
-          `for category '${category}'.`,
-      );
+    if (!alreadyAligned) {
+      const kindMismatch =
+        currentKind.toLowerCase() !== mapping.currentKind.toLowerCase();
+      const typeMismatch =
+        currentSpecType.toLowerCase() !== mapping.currentSpecType.toLowerCase();
+      if (kindMismatch || typeMismatch) {
+        warnings.push(
+          `Kind/type mismatch: entity has kind=${currentKind}, spec.type=${currentSpecType || '(empty)'} ` +
+            `but expected kind=${mapping.currentKind}, spec.type=${mapping.currentSpecType} ` +
+            `for category '${category}'.`,
+        );
+      }
     }
 
     assessments.push({
