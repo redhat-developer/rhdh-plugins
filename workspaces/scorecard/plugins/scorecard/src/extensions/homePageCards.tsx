@@ -176,6 +176,28 @@ export const aggregatedCardWithGithubFilecheckCodeownersWidget =
   });
 
 /**
+ * NFS widget: AggregatedCardWithFilecheckReadme.
+ */
+export const aggregatedCardWithFilecheckReadmeWidget =
+  HomePageWidgetBlueprint.make({
+    name: 'scorecard-filecheck-readme',
+    params: {
+      name: 'AggregatedCardWithFilecheckReadme',
+      title: 'Scorecard: README file exists',
+      layout: defaultCardLayout,
+      componentProps: {
+        Renderer: BorderlessHomeWidgetRenderer,
+      },
+      components: lazyScorecardWidget(
+        ScorecardHomepageCardWithProvider => () =>
+          (
+            <ScorecardHomepageCardWithProvider aggregationId="filecheck.readme" />
+          ),
+      ),
+    },
+  });
+
+/**
  * NFS widget: AggregatedCardWithGithubOpenPrsWeighted.
  */
 export const aggregatedCardWithGithubOpenPrsWeightedWidget =
