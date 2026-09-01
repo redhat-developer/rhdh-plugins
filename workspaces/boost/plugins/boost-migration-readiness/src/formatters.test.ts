@@ -75,6 +75,36 @@ describe('formatJson', () => {
     expect(entity.alreadyAligned).toBe(true);
     expect(entity.warnings).toBeInstanceOf(Array);
   });
+
+  it('preserves raw entity data including control characters (machine-readable output)', () => {
+    // JSON output is machine-readable and intentionally preserves raw
+    // entity data without terminal sanitization. Consumers that display
+    // JSON values in a terminal must sanitize on their own. This test
+    // documents the intentional design choice — DEL (0x7f) is valid
+    // content in JSON strings per ECMA-262.
+    const report: MigrationReport = {
+      entities: [
+        {
+          entityRef: 'api:default/del-test',
+          name: 'entity\x7fname',
+          category: 'mcp-server',
+          currentKind: 'API',
+          currentSpecType: 'mcp-server',
+          targetKind: 'API',
+          targetModel: 'McpServerApiEntity',
+          confidence: 'high',
+          transformations: [],
+          rfcIds: [],
+          alreadyAligned: true,
+          warnings: [],
+        },
+      ],
+    };
+    const output = formatJson(report);
+    const parsed = JSON.parse(output);
+    // Raw data preserved — JSON is not terminal output
+    expect(parsed.entities[0].name).toBe('entity\x7fname');
+  });
 });
 
 describe('formatText', () => {

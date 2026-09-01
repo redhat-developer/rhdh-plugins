@@ -44,7 +44,15 @@ JSON output for machine consumption:
 boost-migration-readiness --catalog-url http://localhost:7007 --output-format json
 ```
 
-With authentication:
+With authentication (env var — recommended for production, avoids token
+exposure in process listings):
+
+```bash
+export BACKSTAGE_TOKEN=<your-token>
+boost-migration-readiness --catalog-url http://localhost:7007
+```
+
+With authentication (inline flag — token visible in `ps aux` output):
 
 ```bash
 boost-migration-readiness --catalog-url http://localhost:7007 --token $BACKSTAGE_TOKEN

@@ -30,7 +30,7 @@ Read-only CLI command that enumerates AI Asset catalog entities and reports migr
 
 - Current entity kind and `spec.type`
 - Target RFC entity kind (from annotation specification mapping)
-- Confidence level (high/medium/low)
+- Confidence level (high/medium-high/medium-low/low)
 - List of fields requiring transformation
 - Incompatibilities or warnings if applicable
 

@@ -37,6 +37,12 @@ const FOOTER =
 /**
  * Format a migration report as machine-readable JSON.
  *
+ * JSON output preserves raw entity data without terminal sanitization.
+ * Unlike {@link formatText}, control characters such as DEL (U+007F)
+ * are not stripped — `JSON.stringify` does not escape DEL per ECMA-262.
+ * Consumers that display JSON values in a terminal should sanitize
+ * the output themselves.
+ *
  * @param report - The migration report to format.
  * @returns A JSON string representation of the report.
  *
