@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { ModelCapabilitiesCache } from './attachment-validation';
+import {
+  CACHE_TTL_MS,
+  ModelCapabilitiesCache,
+  NEGATIVE_CACHE_TTL_MS,
+} from './attachment-validation';
 
 describe('ModelCapabilitiesCache', () => {
   beforeEach(() => {
@@ -63,5 +67,44 @@ describe('ModelCapabilitiesCache', () => {
 
     expect(ModelCapabilitiesCache.get('model-ttl')).toBeUndefined();
     expect(ModelCapabilitiesCache.has('model-ttl')).toBe(false);
+  });
+
+  describe('per-value TTL', () => {
+    beforeEach(() => {
+      jest.useFakeTimers().setSystemTime(0);
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('caches a positive result for the long (24h) TTL', () => {
+      ModelCapabilitiesCache.set('pos', true);
+      expect(ModelCapabilitiesCache.cache.pos.expiry).toBe(CACHE_TTL_MS);
+    });
+
+    it('caches a negative result for the short TTL', () => {
+      ModelCapabilitiesCache.set('neg', false);
+      expect(ModelCapabilitiesCache.cache.neg.expiry).toBe(
+        NEGATIVE_CACHE_TTL_MS,
+      );
+    });
+
+    it('honours an explicit ttlMs override for either value', () => {
+      ModelCapabilitiesCache.set('pos', true, 5);
+      ModelCapabilitiesCache.set('neg', false, 5);
+      expect(ModelCapabilitiesCache.cache.pos.expiry).toBe(5);
+      expect(ModelCapabilitiesCache.cache.neg.expiry).toBe(5);
+    });
+
+    it('expires a negative entry sooner than a positive one', () => {
+      ModelCapabilitiesCache.set('pos', true);
+      ModelCapabilitiesCache.set('neg', false);
+
+      jest.setSystemTime(NEGATIVE_CACHE_TTL_MS + 1);
+
+      expect(ModelCapabilitiesCache.get('neg')).toBeUndefined();
+      expect(ModelCapabilitiesCache.get('pos')).toBe(true);
+    });
   });
 });

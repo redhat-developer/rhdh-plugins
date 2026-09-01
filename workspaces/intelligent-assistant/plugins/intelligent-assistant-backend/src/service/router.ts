@@ -46,6 +46,7 @@ import {
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
   EXPRESS_JSON_BODY_LIMIT,
   TEST_VISION_JPEG,
+  VISION_PROBE_TIMEOUT_MS,
 } from './constant';
 import { McpUserSettingsStore } from './mcp-server-store';
 import {
@@ -157,9 +158,6 @@ async function buildMcpHeaders(
 
   return Object.keys(headers).length > 0 ? JSON.stringify(headers) : '';
 }
-
-/** Abort a vision probe that runs longer than this. */
-const VISION_PROBE_TIMEOUT_MS = 10_000;
 
 /**
  * Whether a model supports vision (JPEG input), memoised in
@@ -673,9 +671,12 @@ export async function createRouter(
       try {
         const upstream = await fetch(`${lcsBaseUrl}/v1/models`);
         if (!upstream.ok) {
-          response
-            .status(upstream.status)
-            .json({ error: `Failed to fetch models: HTTP ${upstream.status}` });
+          await handleLCSFetchError(
+            upstream,
+            logger,
+            'fetching models',
+            response,
+          );
           return;
         }
 

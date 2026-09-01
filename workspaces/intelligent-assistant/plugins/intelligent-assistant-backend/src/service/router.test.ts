@@ -222,6 +222,45 @@ describe('intelligent-assistant router tests', () => {
       }
     });
 
+    it('sets supportsVision:false when the vision probe errors (network/timeout)', async () => {
+      server.use(
+        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => HttpResponse.error()),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(
+        '/api/intelligent-assistant/v1/models',
+      );
+
+      expect(response.status).toBe(200);
+      for (const model of response.body.models) {
+        expect(model.supportsVision).toBe(false);
+      }
+      // A network error must not be cached, so a later probe can still succeed.
+      expect(ModelCapabilitiesCache.has('openai/gpt-4-turbo')).toBe(false);
+    });
+
+    it('propagates the upstream status when GET /v1/models fails', async () => {
+      server.use(
+        http.get(
+          `${LOCAL_LCS_ADDR}/v1/models`,
+          () =>
+            new HttpResponse(JSON.stringify({ detail: 'boom' }), {
+              status: 503,
+              headers: { 'Content-Type': 'application/json' },
+            }),
+        ),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer).get(
+        '/api/intelligent-assistant/v1/models',
+      );
+
+      expect(response.status).toBe(503);
+      expect(response.body.error).toBeDefined();
+    });
+
     it('reuses the cache and does not re-probe an already-validated model', async () => {
       // Cache key is the model identifier used directly.
       ModelCapabilitiesCache.set('openai/gpt-4-turbo', true);
@@ -1902,6 +1941,41 @@ describe('intelligent-assistant router tests', () => {
         provider: 'test-server',
         supportsVision: true,
       });
+    });
+
+    it('returns false when the model does not support vision (probe non-ok)', async () => {
+      server.use(
+        http.post(
+          `${LOCAL_LCS_ADDR}/v1/responses`,
+          () => new HttpResponse(null, { status: 400 }),
+        ),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/validate-model-vision')
+        .send({ model: 'gpt-4o', provider: 'test-server' });
+
+      expect(response.statusCode).toEqual(200);
+      expect(response.body).toEqual({
+        model: 'gpt-4o',
+        provider: 'test-server',
+        supportsVision: false,
+      });
+    });
+
+    it('returns 502 when the probe errors (network/timeout)', async () => {
+      server.use(
+        http.post(`${LOCAL_LCS_ADDR}/v1/responses`, () => HttpResponse.error()),
+      );
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/validate-model-vision')
+        .send({ model: 'gpt-4o', provider: 'test-server' });
+
+      expect(response.statusCode).toEqual(502);
+      expect(response.body.error).toContain('Unable to verify vision support');
     });
 
     it('returns 400 when model or provider is missing', async () => {
