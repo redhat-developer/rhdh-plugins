@@ -20,9 +20,9 @@ import {
   createPlugin,
   createRoutableExtension,
 } from '@backstage/core-plugin-api';
-import { adoptionInsightsApiRef } from './api';
+import { adoptionInsightsApiRef } from '../api';
 import { adoptionInsightsPlugin, AdoptionInsightsPage } from './plugin';
-import { rootRouteRef } from './routes';
+import { rootRouteRef } from '../routes';
 
 jest.mock('@backstage/core-plugin-api', () => {
   const actual = jest.requireActual('@backstage/core-plugin-api');
