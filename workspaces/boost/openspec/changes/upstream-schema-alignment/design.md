@@ -84,7 +84,7 @@ The dry-run tool runs externally against the catalog API, not as a catalog proce
 - Tool queries catalog API for entities with `rhdh.io/ai-asset-category` annotation
 - Outputs per-entity report: current kind/type → target RFC kind, fields needing transformation, confidence level, incompatibilities
 - JSON + human-readable output formats
-- CLI arguments: `--catalog-url`, `--output-format`, `--filter`
+- CLI arguments: `--catalog-url`, `--output-format`, `--filter`, `--token` (or `BACKSTAGE_TOKEN` env var)
 
 ### Decision 4: No processor extension point (yet)
 

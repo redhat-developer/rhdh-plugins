@@ -20,6 +20,12 @@ import type { AIAssetCategory } from '@red-hat-developer-hub/backstage-plugin-bo
  * Minimal catalog entity shape returned by the Backstage catalog API.
  * Only the fields needed for migration readiness analysis.
  *
+ * This lightweight interface is intentionally defined here instead of
+ * importing `Entity` from `@backstage/catalog-model`, keeping the CLI
+ * dependency-light and avoiding a transitive dependency on the full
+ * catalog model package. Sibling packages that run inside Backstage
+ * import `Entity` directly; this standalone CLI does not.
+ *
  * @public
  */
 export interface CatalogEntity {

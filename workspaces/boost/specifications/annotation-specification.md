@@ -114,15 +114,15 @@ Each AI asset category maps to a Backstage entity kind and `spec.type` value.
 This mapping is per
 [ai-catalog-entity-model/design.md Decision 1](../openspec/changes/ai-catalog-entity-model/design.md).
 
-| Category       | Backstage Kind | `spec.type`       | Notes                                               |
-| -------------- | -------------- | ----------------- | --------------------------------------------------- |
-| `agent`        | Component      | `ai-agent`        | Pending RHDHPLAN-1113 (agent entity kind)           |
-| `skill`        | AIResource     | `skill`           | AIResource per RHDHPLAN-1113                        |
-| `rule`         | AIResource     | `rule`            | AIResource per RHDHPLAN-1113                        |
-| `skill-bundle` | AIResource     | `ai-skill-bundle` | Curated skill collections; frontend browse category |
-| `mcp-server`   | API            | `mcp-server`      | Ships in RHDH 2.1 via RHDHPLAN-1510                 |
-| `ai-model`     | Resource       | `ai-model`        | Pending RHDHPLAN-404 (upstream entity schema)       |
-| `model-server` | Resource       | `ai-model-server` | Pending RHDHPLAN-404 (upstream entity schema)       |
+| Category       | Backstage Kind   | `spec.type`       | Notes                                               |
+| -------------- | ---------------- | ----------------- | --------------------------------------------------- |
+| `agent`        | AiResource       | `agent`           | Pending RHDHPLAN-1113 (agent entity kind)           |
+| `skill`        | AIResource       | `skill`           | AIResource per RHDHPLAN-1113                        |
+| `rule`         | AIResource       | `rule`            | AIResource per RHDHPLAN-1113                        |
+| `skill-bundle` | AIResource       | `ai-skill-bundle` | Curated skill collections; frontend browse category |
+| `mcp-server`   | API              | `mcp-server`      | Ships in RHDH 2.1 via RHDHPLAN-1510                 |
+| `ai-model`     | Resource         | `ai-model`        | Pending RHDHPLAN-404 (upstream entity schema)       |
+| `model-server` | AiModelServerAPI | `ai-model-server` | Pending RHDHPLAN-404 (upstream entity schema)       |
 
 > The annotation (`rhdh.io/ai-asset-category`) is the source of truth for
 > classification, not the entity kind. Connectors MAY map differently based
@@ -174,10 +174,10 @@ remains but the structural mapping is stable.
 
 ### 3.3 Model Server — Confidence: Medium/Low
 
-| Field       | Current           | Target (candidate)            |
-| ----------- | ----------------- | ----------------------------- |
-| `kind`      | `Resource`        | `API` (candidate)             |
-| `spec.type` | `ai-model-server` | `ai-model-server` (unchanged) |
+| Field       | Current            | Target (candidate)            |
+| ----------- | ------------------ | ----------------------------- |
+| `kind`      | `AiModelServerAPI` | `API` (candidate)             |
+| `spec.type` | `ai-model-server`  | `ai-model-server` (unchanged) |
 
 **Status:** Open upstream PR
 [backstage#34476](https://github.com/backstage/backstage/pull/34476) proposes
@@ -186,7 +186,7 @@ remains but the structural mapping is stable.
 
 **Transformations required:**
 
-- `Resource` → `API` kind change
+- `AiModelServerAPI` → `API` kind change
 - Field mapping for API-specific fields
 - Related: [#4211](https://github.com/redhat-developer/rhdh-plugins/pull/4211)
   (model-server API spec type)
@@ -223,10 +223,10 @@ before upstream merges.
 
 ### 3.6 Agent — Confidence: Low
 
-| Field       | Current     | Target                          |
-| ----------- | ----------- | ------------------------------- |
-| `kind`      | `Component` | No upstream kind via RFC #32062 |
-| `spec.type` | `ai-agent`  | TBD                             |
+| Field       | Current      | Target                          |
+| ----------- | ------------ | ------------------------------- |
+| `kind`      | `AiResource` | No upstream kind via RFC #32062 |
+| `spec.type` | `agent`      | TBD                             |
 
 **Status:** No upstream kind via RFC
 [#32062](https://github.com/backstage/backstage/issues/32062) (that RFC is
@@ -235,7 +235,7 @@ MCP-only). Agent entity kind ownership tracked under RHDHPLAN-1113.
 **Recommendation:** Continue using current mapping; track agent-kind ownership.
 
 **Related:** [#4164](https://github.com/redhat-developer/rhdh-plugins/pull/4164)
-(agent typed schema), [RHIDP-15865](https://redhat.atlassian.net/browse/RHIDP-15865).
+(agent typed schema), RHIDP-15865.
 
 **Confidence rationale:** No upstream kind proposed; agent-kind definition
 depends on RHDHPLAN-1113.
@@ -273,7 +273,7 @@ actual migration is future work.
 
 ### Model Server (Medium/Low confidence)
 
-- `kind`: `Resource` → `API` (if upstream PR merges as proposed)
+- `kind`: `AiModelServerAPI` → `API` (if upstream PR merges as proposed)
 - API-specific field additions (`spec.lifecycle`, API definition fields)
 
 ### AI Model / Skill Bundle / Agent (Low confidence)

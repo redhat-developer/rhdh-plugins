@@ -91,6 +91,12 @@ function isCatalogEntityArray(payload: unknown): payload is CatalogEntity[] {
  * fetching — consider using `/api/catalog/entities/by-query`
  * or implementing cursor-based pagination as a follow-up.
  *
+ * @param options - Catalog URL, optional auth token, and optional filter.
+ * @returns Array of catalog entities matching the filter criteria.
+ * @throws Error if the catalog URL is invalid or uses a non-http(s) protocol.
+ * @throws Error if the catalog API returns a non-200 response.
+ * @throws Error if the response shape is not an array of entities.
+ *
  * @public
  */
 export async function fetchEntities(

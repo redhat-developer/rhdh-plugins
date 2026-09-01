@@ -16,13 +16,31 @@
 
 import type { EntityAssessment, MigrationReport } from './types';
 
-/** Footer text appended to all report outputs. */
+/**
+ * Strip ANSI escape sequences and ASCII control characters (except
+ * newline and tab) from an untrusted string before terminal output.
+ *
+ * @internal
+ */
+function sanitize(value: string): string {
+  /* eslint-disable no-control-regex */
+  return value.replace(
+    /\x1b\[[0-9;]*[A-Za-z]|[\x00-\x08\x0b\x0c\x0e-\x1f]/g,
+    '',
+  );
+  /* eslint-enable no-control-regex */
+}
+
+/** Footer text appended to all report outputs. @internal */
 const FOOTER =
   'This is a migration-readiness assessment.\n' +
   'Actual migration is future work pending upstream RFC finalization.';
 
 /**
  * Format a migration report as machine-readable JSON.
+ *
+ * @param report - The migration report to format.
+ * @returns A JSON string representation of the report.
  *
  * @public
  */
@@ -55,7 +73,8 @@ function formatTarget(entity: EntityAssessment): string {
     return '  Target:  No upstream kind yet';
   }
   const modelSuffix = entity.targetModel ? ` (${entity.targetModel})` : '';
-  const rfcSuffix = entity.rfcIds.length > 0 ? `, ${entity.rfcIds[0]}` : '';
+  const rfcSuffix =
+    entity.rfcIds.length > 0 ? `, ${entity.rfcIds.join(', ')}` : '';
   return `  Target:  kind=${entity.targetKind}${modelSuffix}${rfcSuffix}`;
 }
 
@@ -66,8 +85,8 @@ function formatTarget(entity: EntityAssessment): string {
  */
 function formatEntityLines(entity: EntityAssessment): string[] {
   const lines: string[] = [
-    `Entity: ${entity.name}`,
-    `  Current: kind=${entity.currentKind}, spec.type=${entity.currentSpecType}`,
+    `Entity: ${sanitize(entity.name)}`,
+    `  Current: kind=${sanitize(entity.currentKind)}, spec.type=${sanitize(entity.currentSpecType)}`,
     formatTarget(entity),
     `  Confidence: ${displayConfidence(entity.confidence)}`,
     ...(entity.alreadyAligned
@@ -86,6 +105,9 @@ function formatEntityLines(entity: EntityAssessment): string[] {
 
 /**
  * Format a migration report as human-readable text.
+ *
+ * @param report - The migration report to format.
+ * @returns A human-readable text representation of the report.
  *
  * @public
  */

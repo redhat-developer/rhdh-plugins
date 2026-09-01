@@ -86,7 +86,9 @@ Read-only CLI command that enumerates AI Asset catalog entities and reports migr
 {
   "entities": [
     {
+      "entityRef": "api:default/my-mcp-server",
       "name": "my-mcp-server",
+      "category": "mcp-server",
       "currentKind": "API",
       "currentSpecType": "mcp-server",
       "targetKind": "API",
@@ -96,10 +98,15 @@ Read-only CLI command that enumerates AI Asset catalog entities and reports migr
         "Kind already aligned (API). No kind change required.",
         "Adopt spec.remotes instead of spec.definition",
         "Opt in to @backstage/plugin-catalog-backend-module-ai-model"
-      ]
+      ],
+      "rfcIds": ["backstage#34016", "backstage#32062"],
+      "alreadyAligned": true,
+      "warnings": []
     },
     {
+      "entityRef": "airesource:default/my-skill",
       "name": "my-skill",
+      "category": "skill",
       "currentKind": "AIResource",
       "currentSpecType": "skill",
       "targetKind": "AiResource",
@@ -107,7 +114,10 @@ Read-only CLI command that enumerates AI Asset catalog entities and reports migr
       "transformations": [
         "Kind/name casing alignment: AIResource → AiResource",
         "Field alignment per upstream AiResource schema"
-      ]
+      ],
+      "rfcIds": ["backstage#33575"],
+      "alreadyAligned": false,
+      "warnings": []
     }
   ]
 }

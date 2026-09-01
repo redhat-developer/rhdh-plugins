@@ -23,12 +23,12 @@ npx @red-hat-developer-hub/backstage-plugin-boost-migration-readiness \
 
 ### Options
 
-| Option            | Description                                 | Default |
-| ----------------- | ------------------------------------------- | ------- |
-| `--catalog-url`   | Backstage catalog API base URL (required)   | —       |
-| `--output-format` | Output format: `json` or `text`             | `text`  |
+| Option            | Description                                                                                                                                       | Default |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `--catalog-url`   | Backstage catalog API base URL (required)                                                                                                         | —       |
+| `--output-format` | Output format: `json` or `text`                                                                                                                   | `text`  |
 | `--token`         | Bearer token for catalog API authentication. Alternatively, set the `BACKSTAGE_TOKEN` environment variable (the `--token` flag takes precedence). | —       |
-| `--filter`        | Filter string to narrow entity results      | —       |
+| `--filter`        | Filter string to narrow entity results                                                                                                            | —       |
 
 ### Examples
 
@@ -65,13 +65,13 @@ boost-migration-readiness --catalog-url http://localhost:7007 --token $BACKSTAGE
 
 The tool assesses all seven AI asset categories:
 
-- `agent` — AI agents (Component kind)
+- `agent` — AI agents (AiResource kind)
 - `skill` — Reusable AI skills (AIResource kind)
 - `rule` — AI decision rules (AIResource kind)
 - `skill-bundle` — Curated skill collections (AIResource kind)
 - `mcp-server` — Model Context Protocol servers (API kind)
 - `ai-model` — AI/ML models (Resource kind)
-- `model-server` — Inference endpoints (Resource kind)
+- `model-server` — Inference endpoints (AiModelServerAPI kind)
 
 ## Programmatic API
 

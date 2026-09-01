@@ -117,7 +117,7 @@ describe('analyzeEntities', () => {
   it('assesses a model-server entity with medium-low confidence', () => {
     const entities = [
       makeEntity({
-        kind: 'Resource',
+        kind: 'AiModelServerAPI',
         metadata: {
           name: 'my-model-server',
           annotations: {
@@ -181,7 +181,7 @@ describe('analyzeEntities', () => {
   it('assesses an agent entity with low confidence', () => {
     const entities = [
       makeEntity({
-        kind: 'Component',
+        kind: 'AiResource',
         metadata: {
           name: 'my-agent',
           annotations: {
@@ -190,7 +190,7 @@ describe('analyzeEntities', () => {
             'rhdh.io/ai-asset-source': 'kagenti',
           },
         },
-        spec: { type: 'ai-agent' },
+        spec: { type: 'agent' },
       }),
     ];
 
@@ -272,7 +272,7 @@ describe('analyzeEntities', () => {
     // (API) while keeping its current spec.type would otherwise trigger
     // both alreadyAligned=true and a contradictory mismatch warning, since
     // its kind ('API') differs from the pre-migration mapping.currentKind
-    // ('Resource').
+    // ('AiModelServerAPI').
     const entities = [
       makeEntity({
         kind: 'API',
@@ -381,13 +381,17 @@ describe('analyzeEntities', () => {
 
   it('processes all seven categories in a mixed list', () => {
     const categories = [
-      { kind: 'Component', cat: 'agent', type: 'ai-agent' },
+      { kind: 'AiResource', cat: 'agent', type: 'agent' },
       { kind: 'AIResource', cat: 'skill', type: 'skill' },
       { kind: 'AIResource', cat: 'rule', type: 'rule' },
       { kind: 'AIResource', cat: 'skill-bundle', type: 'ai-skill-bundle' },
       { kind: 'API', cat: 'mcp-server', type: 'mcp-server' },
       { kind: 'Resource', cat: 'ai-model', type: 'ai-model' },
-      { kind: 'Resource', cat: 'model-server', type: 'ai-model-server' },
+      {
+        kind: 'AiModelServerAPI',
+        cat: 'model-server',
+        type: 'ai-model-server',
+      },
     ];
 
     const entities = categories.map(c =>
@@ -419,13 +423,17 @@ describe('analyzeEntities', () => {
 
   it('does not include kind:McpServer rename in any assessment', () => {
     const categories = [
-      { kind: 'Component', cat: 'agent', type: 'ai-agent' },
+      { kind: 'AiResource', cat: 'agent', type: 'agent' },
       { kind: 'AIResource', cat: 'skill', type: 'skill' },
       { kind: 'AIResource', cat: 'rule', type: 'rule' },
       { kind: 'AIResource', cat: 'skill-bundle', type: 'ai-skill-bundle' },
       { kind: 'API', cat: 'mcp-server', type: 'mcp-server' },
       { kind: 'Resource', cat: 'ai-model', type: 'ai-model' },
-      { kind: 'Resource', cat: 'model-server', type: 'ai-model-server' },
+      {
+        kind: 'AiModelServerAPI',
+        cat: 'model-server',
+        type: 'ai-model-server',
+      },
     ];
 
     const entities = categories.map(c =>

@@ -41,6 +41,9 @@ function buildEntityRef(entity: CatalogEntity): string {
  * This function is strictly read-only — it only inspects entity data
  * and produces a report.
  *
+ * @param entities - Array of catalog entities to analyze.
+ * @returns A migration readiness report containing per-entity assessments.
+ *
  * @public
  */
 export function analyzeEntities(entities: CatalogEntity[]): MigrationReport {

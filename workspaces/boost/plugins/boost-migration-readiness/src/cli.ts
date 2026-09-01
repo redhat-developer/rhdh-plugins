@@ -40,19 +40,31 @@ function parseArgs(argv: string[]): {
   const values: Record<string, string> = {};
 
   for (let i = 2; i < argv.length; i++) {
-    const arg = argv[i];
+    let arg = argv[i];
 
     if (arg === '--help' || arg === '-h') {
       printUsage();
       process.exit(0);
     }
 
+    // Support --flag=value syntax: split on the first '=' and treat
+    // the left side as the flag and the right side as its value.
+    let inlineValue: string | undefined;
+    const eqIndex = arg.indexOf('=');
+    if (eqIndex > 0 && arg.startsWith('--')) {
+      inlineValue = arg.slice(eqIndex + 1);
+      arg = arg.slice(0, eqIndex);
+    }
+
     if (VALUE_FLAGS.has(arg)) {
-      if (i + 1 >= argv.length) {
+      if (inlineValue !== undefined) {
+        values[arg] = inlineValue;
+      } else if (i + 1 >= argv.length) {
         process.stderr.write(`Missing value for ${arg}\n`);
         process.exit(1);
+      } else {
+        values[arg] = argv[++i];
       }
-      values[arg] = argv[++i];
       continue;
     }
 
@@ -110,6 +122,8 @@ Options:
 
 /**
  * CLI entry point.
+ *
+ * @internal
  */
 async function main(): Promise<void> {
   const opts = parseArgs(process.argv);

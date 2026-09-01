@@ -64,13 +64,13 @@ export const MAPPING_RULES: Record<AIAssetCategory, MappingRule> = {
     rfcIds: ['backstage#33575'],
   },
   'model-server': {
-    currentKind: 'Resource',
+    currentKind: 'AiModelServerAPI',
     currentSpecType: 'ai-model-server',
     targetKind: 'API',
     targetModel: undefined,
     confidence: 'medium-low',
     transformations: [
-      'Kind change: Resource → API (if upstream PR merges)',
+      'Kind change: AiModelServerAPI → API (if upstream PR merges)',
       'Field mapping for API-specific fields',
     ],
     rfcIds: ['backstage#34476', 'backstage#33060'],
@@ -96,8 +96,8 @@ export const MAPPING_RULES: Record<AIAssetCategory, MappingRule> = {
     rfcIds: [],
   },
   agent: {
-    currentKind: 'Component',
-    currentSpecType: 'ai-agent',
+    currentKind: 'AiResource',
+    currentSpecType: 'agent',
     targetKind: undefined,
     targetModel: undefined,
     confidence: 'low',
