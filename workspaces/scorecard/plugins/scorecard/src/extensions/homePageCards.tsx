@@ -176,13 +176,13 @@ export const aggregatedCardWithGithubFilecheckCodeownersWidget =
   });
 
 /**
- * NFS widget: AggregatedCardWithFilecheckReadme.
+ * NFS widget: AggregatedCardWithGithubFilecheckReadme.
  */
-export const aggregatedCardWithFilecheckReadmeWidget =
+export const aggregatedCardWithGithubFilecheckReadmeWidget =
   HomePageWidgetBlueprint.make({
-    name: 'scorecard-filecheck-readme',
+    name: 'scorecard-github-filecheck-readme',
     params: {
-      name: 'AggregatedCardWithFilecheckReadme',
+      name: 'AggregatedCardWithGithubFilecheckReadme',
       title: 'Scorecard: README file exists',
       layout: defaultCardLayout,
       componentProps: {
