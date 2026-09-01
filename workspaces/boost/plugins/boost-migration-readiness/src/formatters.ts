@@ -19,15 +19,13 @@ import type { EntityAssessment, MigrationReport } from './types';
 /**
  * Strip ANSI escape sequences and ASCII control characters (except
  * newline and tab) from an untrusted string before terminal output.
+ * Covers carriage return (\r) to prevent terminal line overwriting.
  *
  * @internal
  */
 function sanitize(value: string): string {
   /* eslint-disable no-control-regex */
-  return value.replace(
-    /\x1b\[[0-9;]*[A-Za-z]|[\x00-\x08\x0b\x0c\x0e-\x1f]/g,
-    '',
-  );
+  return value.replace(/\x1b\[[0-9;]*[A-Za-z]|[\x00-\x08\x0b-\x1f]/g, '');
   /* eslint-enable no-control-regex */
 }
 
@@ -93,10 +91,13 @@ function formatEntityLines(entity: EntityAssessment): string[] {
       ? ['  Status: Already aligned with upstream target']
       : []),
     ...(entity.transformations.length > 0
-      ? ['  Transformations:', ...entity.transformations.map(t => `    - ${t}`)]
+      ? [
+          '  Transformations:',
+          ...entity.transformations.map(t => `    - ${sanitize(t)}`),
+        ]
       : []),
     ...(entity.warnings.length > 0
-      ? ['  Warnings:', ...entity.warnings.map(w => `    - ${w}`)]
+      ? ['  Warnings:', ...entity.warnings.map(w => `    - ${sanitize(w)}`)]
       : []),
     '',
   ];

@@ -13,10 +13,10 @@ Read-only CLI command that enumerates AI Asset catalog entities and reports migr
 ## Scenario: CLI enumerates AI Asset entities from catalog API
 
 **GIVEN** a Backstage catalog with AI Asset entities  
-**WHEN** the dry-run CLI is executed: `npx @red-hat-developer-hub/backstage-plugin-boost-migration-readiness --catalog-url <url>`  
+**WHEN** the dry-run CLI is executed: `npx @red-hat-developer-hub/backstage-plugin-boost-migration-readiness --catalog-url <url> [--token <token>]`  
 **THEN** the tool:
 
-- Queries the catalog API for all entities
+- Queries the catalog API for all entities (authenticated via `--token` flag or `BACKSTAGE_TOKEN` environment variable when provided; the flag takes precedence)
 - Filters entities that have `rhdh.io/ai-asset-category` annotation
 - Returns a list of AI Asset entities with their current kind and `spec.type`
 
@@ -97,7 +97,8 @@ Read-only CLI command that enumerates AI Asset catalog entities and reports migr
       "transformations": [
         "Kind already aligned (API). No kind change required.",
         "Adopt spec.remotes instead of spec.definition",
-        "Opt in to @backstage/plugin-catalog-backend-module-ai-model"
+        "Opt in to @backstage/plugin-catalog-backend-module-ai-model",
+        "Flag fallback Resource entities (legacy) that need migration to API kind"
       ],
       "rfcIds": ["backstage#34016", "backstage#32062"],
       "alreadyAligned": true,
@@ -137,16 +138,18 @@ Migration Readiness Report
 
 Entity: my-mcp-server
   Current: kind=API, spec.type=mcp-server
-  Target:  kind=API (McpServerApiEntity, backstage#34016)
+  Target:  kind=API (McpServerApiEntity), backstage#34016, backstage#32062
   Confidence: High
+  Status: Already aligned with upstream target
   Transformations:
     - Kind already aligned (API). No kind change required.
     - Adopt spec.remotes instead of spec.definition
     - Opt in to @backstage/plugin-catalog-backend-module-ai-model
+    - Flag fallback Resource entities (legacy) that need migration to API kind
 
 Entity: my-skill
   Current: kind=AIResource, spec.type=skill
-  Target:  kind=AiResource (upstream shipped, #33575)
+  Target:  kind=AiResource, backstage#33575
   Confidence: Medium–High
   Transformations:
     - Kind/name casing alignment: AIResource → AiResource
@@ -154,7 +157,7 @@ Entity: my-skill
 
 ---
 This is a migration-readiness assessment.
-Actual migration is future work pending upstream stabilization.
+Actual migration is future work pending upstream RFC finalization.
 ```
 
 ---
