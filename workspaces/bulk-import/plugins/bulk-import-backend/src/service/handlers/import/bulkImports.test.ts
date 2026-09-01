@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
+import type {
+  HttpAuthService,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 import { mockServices } from '@backstage/backend-test-utils';
 import { NotFoundError } from '@backstage/errors';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
@@ -1695,7 +1698,7 @@ describe('bulkimports.ts unit tests', () => {
     const mockUserCredentials = { principal: { type: 'user' } };
     const mockHttpAuth = {
       credentials: async () => mockUserCredentials,
-    };
+    } as unknown as HttpAuthService;
 
     it('should return workflow status when repository and workflow exist', async () => {
       const mockOrchestratorRepositoryDao = {
