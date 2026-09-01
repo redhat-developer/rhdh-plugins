@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-global-header
 
+## 2.0.1
+
+### Patch Changes
+
+- 62277a6: Honor `app.branding.fullLogo` in the default header by removing hardcoded RHDH logos, resolving branding via `useBrandingFullLogo` in `CompanyLogo` (with types extracted to fix a circular dependency).
+- 3e1316d: Fix accessibility violations: resolve nested interactive controls in search results and starred dropdown, add missing accessible names, and fix aria-expanded attribute
+- 1a55424: Offset Backstage UI dialogs such as Inspect Entity below the sticky global header so their title and close control stay visible.
+
 ## 2.0.0
 
 ### Major Changes
