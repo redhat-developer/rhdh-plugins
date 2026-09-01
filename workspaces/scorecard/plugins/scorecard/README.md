@@ -133,7 +133,9 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
              groups:
                codeQuality:
                  title: 'Code Quality'
+                 titleKey: groups.codeQuality.title
                  description: 'SonarQube code quality metrics'
+                 descriptionKey: groups.codeQuality.description
                  metrics:
                    - sonarqube.reliabilityIssues
                    - sonarqube.codeCoverage
@@ -147,11 +149,13 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
 
    **Groups config schema:**
 
-   | Field         | Type       | Required | Description                                          |
-   | ------------- | ---------- | -------- | ---------------------------------------------------- |
-   | `title`       | `string`   | Yes      | Display title for the group card.                    |
-   | `description` | `string`   | No       | Optional description shown below the title.          |
-   | `metrics`     | `string[]` | Yes      | Ordered list of metric IDs to include in this group. |
+   | Field            | Type       | Required | Description                                                                                      |
+   | ---------------- | ---------- | -------- | ------------------------------------------------------------------------------------------------ |
+   | `title`          | `string`   | Yes      | Display title for the group card. Used when `titleKey` is omitted or the translation is missing. |
+   | `titleKey`       | `string`   | No       | Translation key under `plugin.scorecard` (for example `groups.codeQuality.title`).               |
+   | `description`    | `string`   | No       | Optional description shown below the title. Used when `descriptionKey` is omitted or missing.    |
+   | `descriptionKey` | `string`   | No       | Translation key under `plugin.scorecard` (for example `groups.codeQuality.description`).         |
+   | `metrics`        | `string[]` | Yes      | Ordered list of metric IDs to include in this group.                                             |
 
    **Behavior:**
 
@@ -605,14 +609,19 @@ Translation keys follow this pattern:
 
 - **Metric titles**: `metric.{metric-id}.title`
 - **Metric descriptions**: `metric.{metric-id}.description`
+- **Layout group titles**: set `titleKey` on the group in app-config (for example `groups.codeQuality.title`)
+- **Layout group descriptions**: set `descriptionKey` on the group (for example `groups.codeQuality.description`)
 
-Use the same pattern with a **KPI id** as `{metric-id}` when localizing **`aggregationKPIs`** titles (for example **`metric.openIssuesKpi.title`**).
+Use the same `metric.{id}.{field}` pattern with a **KPI id** as `{metric-id}` when localizing **`aggregationKPIs`** titles (for example **`metric.openIssuesKpi.title`**).
+
+Group titles and descriptions do **not** use the `metric.{id}.{field}` convention. They are customer-defined in `scorecard-layout` config, so you pass explicit `titleKey` / `descriptionKey` values. Provide translations in plugin locale files or via RHDH `i18n.overrides` under `plugin.scorecard`. If a key is omitted or not found, the UI shows the group's `title` / `description` strings and never the raw key.
 
 ### 3. Fallback Behavior
 
 If a translation key is not found, the plugin will automatically fall back to:
 
 - The original `title` and `description` values from the metric definition
+- For layout groups: the `title` and `description` values from app-config
 - For thresholds: capitalized versions of the threshold keys
 
 ### Example: Adding GitHub Open PRs Translation
