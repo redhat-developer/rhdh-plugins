@@ -9511,6 +9511,7 @@ __metadata:
     "@testing-library/react": "npm:^16.0.0"
     cross-fetch: "npm:^4.0.0"
     react: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
+    zod: "npm:^3.25.76 || ^4.0.0"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
   languageName: unknown
