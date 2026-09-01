@@ -75,7 +75,7 @@ export const ActiveBoolean: Widget<
   const isReadOnly = !!props?.schema.readOnly;
 
   const defaultValueSelector = uiProps['fetch:response:value']?.toString();
-  const staticDefault = uiProps['fetch:response:default'];
+  const staticDefault = coerceToBoolean(uiProps['fetch:response:default']);
   const hasStaticDefault = staticDefault !== undefined;
   const skipInitialValue = uiProps['fetch:skipInitialValue'] === true;
   const hasFetchUrl = !!uiProps['fetch:url'];

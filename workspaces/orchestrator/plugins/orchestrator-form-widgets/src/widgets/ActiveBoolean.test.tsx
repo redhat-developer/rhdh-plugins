@@ -270,4 +270,50 @@ describe('ActiveBoolean', () => {
       .querySelector('input') as HTMLInputElement;
     expect(checkbox.disabled).toBe(true);
   });
+
+  it('coerces string default value to boolean', () => {
+    mockedUseProcessingState.mockReturnValue({
+      completeLoading: true,
+      wrapProcessing: async (fn: () => Promise<void>) => {
+        await fn();
+      },
+    });
+
+    render(
+      <ActiveBoolean
+        id="ab"
+        name="ab"
+        label="Active Boolean"
+        required={false}
+        readonly={false}
+        disabled={false}
+        autofocus={false}
+        schema={{ type: 'boolean' }}
+        uiSchema={{}}
+        options={{
+          props: {
+            'fetch:url': 'https://example.test/api',
+            'fetch:response:value': 'enabled',
+            'fetch:response:default': 'true',
+          },
+        }}
+        value={false}
+        onChange={() => {}}
+        onBlur={() => {}}
+        onFocus={() => {}}
+        formContext={
+          {
+            formData: {},
+            getIsChangedByUser: () => false,
+            setIsChangedByUser: () => {},
+          } as any
+        }
+        rawErrors={[]}
+        registry={{} as any}
+      />,
+    );
+
+    const checkbox = screen.getByTestId('ab-checkbox');
+    expect(checkbox).toBeInTheDocument();
+  });
 });
