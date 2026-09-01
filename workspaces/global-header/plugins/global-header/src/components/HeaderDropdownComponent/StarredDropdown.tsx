@@ -28,11 +28,12 @@ import {
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import Star from '@mui/icons-material/Star';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 
 import { useTheme } from '@mui/material/styles';
-import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -67,50 +68,54 @@ const StarredItem: FC<SectionComponentProps> = ({
   const rhdhPalette = (theme.palette as any).rhdh;
 
   return (
-    <MenuItem
-      component={Link}
-      to={`/catalog/${namespace || 'default'}/${kind}/${name}`}
-      onClick={handleClose}
-      disableRipple
-      disableTouchRipple
+    <ListItem
+      disablePadding
+      secondaryAction={
+        <Tooltip title={t('starred.removeTooltip')}>
+          <IconButton
+            className="star-icon"
+            onClick={() => toggleStarredEntity(entityRef)}
+            aria-label={t('starred.removeTooltip')}
+            sx={{
+              visibility: 'hidden',
+              color: rhdhPalette?.general?.starredItemsColor ?? '#F3BA37',
+            }}
+          >
+            <AppIcon id="star" Fallback={Star} />
+          </IconButton>
+        </Tooltip>
+      }
       sx={{
-        '&:hover .star-icon, &:focus-visible .star-icon': {
+        '&:hover .star-icon, &:has(:focus-visible) .star-icon': {
           visibility: 'visible',
         },
       }}
     >
-      {Icon && (
-        <ListItemIcon sx={{ minWidth: 36 }}>
-          <Icon />
-        </ListItemIcon>
-      )}
-      <ListItemText
-        primary={
-          <Typography sx={{ color: theme.palette.text.primary }}>
-            {primaryTitle || secondaryTitle}
-          </Typography>
-        }
-        secondary={kind.toLocaleUpperCase()}
-        // inset={!Icon}
-        sx={{ ml: 1, mr: 1 }}
-      />
-      <Tooltip title={t('starred.removeTooltip')}>
-        <IconButton
-          className="star-icon"
-          onClick={e => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleStarredEntity(entityRef);
-          }}
-          sx={{
-            visibility: 'hidden',
-            color: rhdhPalette?.general?.starredItemsColor ?? '#F3BA37',
-          }}
-        >
-          <AppIcon id="star" Fallback={Star} />
-        </IconButton>
-      </Tooltip>
-    </MenuItem>
+      <ListItemButton
+        component={Link}
+        to={`/catalog/${namespace || 'default'}/${kind}/${name}`}
+        onClick={handleClose}
+        disableRipple
+        disableTouchRipple
+        role="menuitem"
+        sx={{ py: 0.5, pr: 6 }}
+      >
+        {Icon && (
+          <ListItemIcon sx={{ minWidth: 36 }}>
+            <Icon />
+          </ListItemIcon>
+        )}
+        <ListItemText
+          primary={
+            <Typography sx={{ color: theme.palette.text.primary }}>
+              {primaryTitle || secondaryTitle}
+            </Typography>
+          }
+          secondary={kind.toLocaleUpperCase()}
+          sx={{ ml: 1, mr: 1 }}
+        />
+      </ListItemButton>
+    </ListItem>
   );
 };
 

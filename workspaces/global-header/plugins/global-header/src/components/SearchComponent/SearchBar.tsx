@@ -132,6 +132,7 @@ export const SearchBar = (props: SearchBarProps) => {
                 results={results}
                 renderProps={renderProps}
                 searchLink={searchLink}
+                noResultsText={t('search.noResults')}
               />
             )}
             ListboxProps={{
