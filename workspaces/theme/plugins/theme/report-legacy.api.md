@@ -17,9 +17,43 @@ export type BackstageThemePalette = UnifiedThemeOptions['palette'];
 // @public (undocumented)
 export interface Branding {
   // (undocumented)
+  customCSS?: string;
+  // (undocumented)
   theme?: {
     [key: string]: ThemeConfig;
   };
+}
+
+// @public
+export interface BUITokens {
+  // (undocumented)
+  backgroundColor?: string;
+  // (undocumented)
+  borderColor?: string;
+  // (undocumented)
+  error?: string;
+  // (undocumented)
+  focusRing?: string;
+  // (undocumented)
+  fontFamily?: string;
+  // (undocumented)
+  fontFamilyMonospace?: string;
+  // (undocumented)
+  foregroundDisabled?: string;
+  // (undocumented)
+  foregroundPrimary?: string;
+  // (undocumented)
+  foregroundSecondary?: string;
+  // (undocumented)
+  info?: string;
+  // (undocumented)
+  primary?: string;
+  // (undocumented)
+  shadow?: string;
+  // (undocumented)
+  success?: string;
+  // (undocumented)
+  warning?: string;
 }
 
 // @public (undocumented)
@@ -108,6 +142,10 @@ export interface RHDHThemePalette {
 
 // @public (undocumented)
 export interface ThemeConfig {
+  // (undocumented)
+  bui?: {
+    tokens?: BUITokens;
+  };
   // (undocumented)
   defaultPageTheme?: string;
   // (undocumented)
