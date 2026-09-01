@@ -9,6 +9,7 @@
     "./alpha": "./src/alpha.ts",
     "./legacy": "./src/legacyExports.ts",
     "./orchestrator-translations-module": "./src/orchestratorTranslationsModuleExport.ts",
+    "./orchestrator-template-card-module": "./src/orchestratorTemplateCardModuleExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -21,6 +22,9 @@
       ],
       "orchestrator-translations-module": [
         "src/orchestratorTranslationsModuleExport.ts"
+      ],
+      "orchestrator-template-card-module": [
+        "src/orchestratorTemplateCardModuleExport.ts"
       ],
       "package.json": [
         "package.json"
@@ -83,10 +87,12 @@
     "@backstage/plugin-catalog-react": "^3.2.2",
     "@backstage/plugin-permission-common": "^0.9.10",
     "@backstage/plugin-permission-react": "^0.5.4",
+    "@backstage/plugin-scaffolder-react": "^2.0.2",
     "@backstage/types": "^1.2.2",
     "@dagrejs/dagre": "^2.0.4",
     "@mui/icons-material": "^5.17.1",
     "@mui/material": "^5.17.1",
+    "@red-hat-developer-hub/backstage-plugin-app-react": "^0.2.0",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-api": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-form-react": "workspace:^",
@@ -117,6 +123,7 @@
     "@testing-library/dom": "^10.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^15.0.0",
+    "@testing-library/user-event": "^14.0.0",
     "@types/json-schema": "7.0.15",
     "@types/luxon": "^3.7.1",
     "@types/react": "^18.2.58",
@@ -139,7 +146,8 @@
     "exposedModules": {
       "PluginRoot": "./src/index.tsx",
       "Legacy": "./src/legacyExports.ts",
-      "OrchestratorTranslationsModule": "./src/orchestratorTranslationsModuleExport.ts"
+      "OrchestratorTranslationsModule": "./src/orchestratorTranslationsModuleExport.ts",
+      "OrchestratorTemplateCardModule": "./src/orchestratorTemplateCardModuleExport.ts"
     }
   },
   "maintainers": [

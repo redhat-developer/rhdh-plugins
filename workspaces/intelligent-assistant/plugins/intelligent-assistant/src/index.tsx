@@ -107,7 +107,7 @@ const intelligentAssistantDrawer = AppDrawerContentBlueprint.make({
   params: {
     id: LIGHTSPEED_APP_DRAWER_ID,
     element: <LightspeedChatContainerElement />,
-    resizable: false,
+    resizable: true,
     defaultWidth: 400,
     priority: 100,
   },

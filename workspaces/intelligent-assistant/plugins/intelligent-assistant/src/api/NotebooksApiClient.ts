@@ -235,6 +235,7 @@ export class NotebooksApiClient implements NotebooksAPI {
   async querySession(
     sessionId: string,
     query: string,
+    options?: { signal?: AbortSignal },
   ): Promise<ReadableStreamDefaultReader<Uint8Array>> {
     const baseUrl = await this.getBaseUrl();
     const response = await this.fetchApi.fetch(
@@ -243,6 +244,7 @@ export class NotebooksApiClient implements NotebooksAPI {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query }),
+        signal: options?.signal,
       },
     );
 
