@@ -140,9 +140,12 @@ describe('mergePlugin — OCI {{inherit}} matching several plugins of the same i
   it('refuses to resolve rather than silently adopting the older candidate', async () => {
     const all = await seedTwoPlugins();
 
-    // This is the guard behind "{{inherit}} never resolves to a version older
-    // than the include provides": with two candidates there is no defensible
-    // answer, and picking `matches[0]` would be free to land on OLDER.
+    // "{{inherit}} never resolves to a version older than the include
+    // provides" is not directly assertable: with one candidate the resolution
+    // adopts exactly that candidate's version, so the property holds by
+    // construction. The only way it could break is a future shortcut that
+    // picks `matches[0]` out of several candidates and lands on OLDER, which
+    // is what this guard — and this test — prevent.
     //
     // Asserting the message, not just the type: dropping this guard makes the
     // merge fail later with the "no resolved tag or digest" error instead,
@@ -167,6 +170,11 @@ describe('mergePlugin — OCI {{inherit}} matching a base without a version', ()
     // `mergeOciPlugin` always assigns `plugin.version` before storing a plugin,
     // so this state is not reachable through the merger itself — hence the
     // `Internal:` prefix. The map is seeded by hand to exercise the guard.
+    //
+    // This locks the guard's message given the broken state, not the invariant
+    // that produces it: if the merger ever stopped assigning `version` before
+    // storing, this test would still pass and the guard would fire in
+    // production instead. Do not read it as protecting that invariant.
     const all: PluginMap = {
       [KEY_A]: { package: `${REGISTRY}:${NEWER}!plugin-a` },
     };
