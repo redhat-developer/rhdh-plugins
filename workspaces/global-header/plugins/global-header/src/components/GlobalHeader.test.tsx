@@ -64,4 +64,16 @@ describe('GlobalHeader', () => {
 
     expect(document.getElementById('global-header')).toBeInTheDocument();
   });
+
+  it('injects BUI dialog overlay offset styles', () => {
+    render(
+      <GlobalHeaderProvider components={[]} menuItems={[]}>
+        <GlobalHeader />
+      </GlobalHeaderProvider>,
+    );
+
+    expect(
+      document.querySelector('style[data-rhdh-global-header-dialog-offset]'),
+    ).toBeInTheDocument();
+  });
 });
