@@ -145,6 +145,77 @@ Connector schema migrations (`migrateConnectorSchemas` in
 | `boost-backend-module-kagenti` | Kagenti provider module                                                                       |
 | `ogx-entity-provider`          | Independently deployable catalog entity provider                                              |
 | `kagenti-entity-provider`      | Independently deployable catalog entity provider                                              |
+| `boost-migration-readiness`    | Migration-readiness CLI tool (`node-library` role with custom CLI build)                      |
+
+### CLI binary packages
+
+When a `node-library` package has a `bin` entry in `package.json`, the
+Backstage `backstage-cli package build` command (node-library role) only
+produces library output (`dist/index.cjs.js`, `dist/index.esm.js`,
+`dist/index.d.ts`). It does not bundle standalone CLI binaries. A custom
+build step is required to produce the executable referenced by `bin`.
+
+**Pattern — esbuild build script:**
+
+1. Create `scripts/build-cli.js` in the package directory. Use esbuild to
+   bundle the CLI entry point into a single CJS file targeting Node:
+
+   ```js
+   const { build } = require('esbuild');
+
+   build({
+     entryPoints: ['src/cli.ts'],
+     outfile: 'dist/cli.cjs.js',
+     bundle: true,
+     platform: 'node',
+     format: 'cjs',
+     packages: 'external',
+     banner: { js: '#!/usr/bin/env node' },
+     logLevel: 'info',
+   }).catch(() => {
+     process.exit(1);
+   });
+   ```
+
+   Key options:
+   - `packages: 'external'` — bundle only local (relative-import) modules;
+     leave npm packages to be resolved from `node_modules` at runtime, same
+     as the node-library build output.
+   - `banner` — adds the shebang line so the file is directly executable.
+   - `platform: 'node'` and `format: 'cjs'` — match the node-library
+     output format.
+
+2. Add `esbuild` as a `devDependency` in `package.json`.
+
+3. Wire the CLI build into the `build` script so it runs after the
+   standard library build:
+
+   ```json
+   {
+     "scripts": {
+       "build": "backstage-cli package build && node scripts/build-cli.js"
+     }
+   }
+   ```
+
+4. Set the `bin` field to point to the bundled output:
+
+   ```json
+   {
+     "bin": {
+       "<command-name>": "dist/cli.cjs.js"
+     }
+   }
+   ```
+
+5. Keep the CLI entry point (`src/cli.ts`) separate from the library
+   entry point (`src/index.ts`). Do not re-export CLI code from
+   `index.ts` — the CLI calls `main()` at module scope, which would
+   run as a side effect of importing the library.
+
+**Canonical example:**
+`plugins/boost-migration-readiness/scripts/build-cli.js` and its
+`package.json` demonstrate this pattern end-to-end.
 
 ### ConfigReader `getOptionalString()` edge case
 
