@@ -54,6 +54,24 @@ export function resolveMetricTranslation(
 }
 
 /**
+ * Gets a translated text with a fallback.
+ * @param t - The translation function.
+ * @param translationKey - The translation key.
+ * @param fallbackText - The fallback text.
+ * @returns The translated text.
+ */
+export function getTranslatedTextWithFallback(
+  t: ScorecardTranslationFunction,
+  translationKey: string | undefined,
+  fallbackText: string | undefined,
+): string | undefined {
+  if (!translationKey) return fallbackText;
+
+  const translated = t(translationKey as any, {});
+  return translated !== translationKey ? translated : fallbackText;
+}
+
+/**
  * Extracts the plugin name from a metric ID.
  * The plugin name is the first segment of the metric ID.
  * E.g. filecheck.codeowners -> Filecheck

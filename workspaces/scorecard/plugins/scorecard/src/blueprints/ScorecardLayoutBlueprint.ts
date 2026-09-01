@@ -33,7 +33,13 @@ export interface ScorecardLayoutProps {
    */
   groups: Record<
     string,
-    { title: string; description?: string; metrics: string[] }
+    {
+      title: string;
+      titleKey?: string;
+      description?: string;
+      descriptionKey?: string;
+      metrics: string[];
+    }
   >;
 }
 
@@ -72,7 +78,9 @@ export const ScorecardEntityContentLayoutBlueprint = createExtensionBlueprint({
           .record(
             schema.object({
               title: schema.string(),
+              titleKey: schema.string().optional(),
               description: schema.string().optional(),
+              descriptionKey: schema.string().optional(),
               metrics: schema.array(schema.string()),
             }),
           )

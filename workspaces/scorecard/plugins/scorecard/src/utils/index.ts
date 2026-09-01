@@ -43,4 +43,5 @@ export { getThresholdRuleColor, getThresholdRuleIcon } from './thresholdUtils';
 export {
   resolveMetricTranslation,
   extractPluginName,
+  getTranslatedTextWithFallback,
 } from './translationUtils';
