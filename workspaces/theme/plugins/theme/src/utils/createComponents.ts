@@ -768,6 +768,16 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
               {
                 "& main, & [class*='MuiLinearProgress-root']": {
                   marginTop: '0 !important',
+                  // Top inset is cancelled under the in-flow masthead; only
+                  // reserve the bottom pageInset so the well matches the sides.
+                  minHeight: `calc(100vh - ${GLOBAL_HEADER_OFFSET} - ${general.pageInset}) !important`,
+                  maxHeight: `calc(100vh - ${GLOBAL_HEADER_OFFSET} - ${general.pageInset}) !important`,
+                },
+                // NFS BUI main keeps minHeight: 0 (RHDHBUGS-3543). Cap with one
+                // inset instead of two so flex:1 can fill the remaining column.
+                '& main:not([data-backstage-core-page])': {
+                  minHeight: '0 !important',
+                  maxHeight: `calc(100% - ${general.pageInset}) !important`,
                 },
               },
           },
