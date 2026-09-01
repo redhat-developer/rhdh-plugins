@@ -23,7 +23,7 @@ export const LIGHTSPEED_APP_DRAWER_ID = 'intelligent-assistant';
 // Translation keys for disclaimers
 export const FUNCTION_DISCLAIMER_WITHOUT_QUESTION_VALIDATION_KEY =
   'disclaimer.withoutValidation';
-export const FUNCTION_DISCLAIMER_KEY = 'disclaimer.withValidation';
+export const FUNCTION_DISCLAIMER_KEY = 'disclaimer';
 
 const createPrompt = (titleKey: string, messageKey: string) => {
   return { titleKey, messageKey };

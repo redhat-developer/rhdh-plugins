@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-const makeStylesMessage =
-  'Use @mui/material sx/styled instead of makeStyles/withStyles.';
-
 const materialUiMigrationEslintConfig = {
   restrictedImports: [
     {
@@ -25,7 +22,8 @@ const materialUiMigrationEslintConfig = {
     },
     {
       name: '@material-ui/core/styles',
-      message: makeStylesMessage,
+      message:
+        'Use @mui/styles, @mui/material (sx/styled), or Backstage UI instead of Material UI v4.',
     },
     {
       name: '@material-ui/lab',
@@ -33,12 +31,8 @@ const materialUiMigrationEslintConfig = {
     },
     {
       name: '@material-ui/styles',
-      message: makeStylesMessage,
-    },
-    {
-      name: '@mui/styles',
-      message: makeStylesMessage,
-      importNames: ['makeStyles', 'withStyles', 'createStyles'],
+      message:
+        'Use @mui/styles, @mui/material (sx/styled), or Backstage UI instead of Material UI v4.',
     },
   ],
   // `*` does not match `/`, so `@material-ui/*` misses `@material-ui/core/styles`.

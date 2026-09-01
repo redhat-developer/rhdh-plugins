@@ -18,8 +18,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { makeStyles, Typography } from '@material-ui/core';
-import { useTheme } from '@material-ui/core/styles';
+import { useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+import { makeStyles } from '@mui/styles';
 import { ChatbotContent, ChatbotFooter, MessageBar } from '@patternfly/chatbot';
 import {
   Alert,
@@ -234,7 +235,7 @@ const useStyles = makeStyles(theme => ({
     },
     '& .pf-chatbot__message-bar': {
       backgroundColor:
-        theme.palette.type === 'light'
+        theme.palette.mode === 'light'
           ? theme.palette.grey[100]
           : 'var(--pf-t--global--background--color--secondary--default)',
     },
@@ -297,7 +298,7 @@ export const NotebookView = ({
   const classes = useStyles();
   const theme = useTheme();
   const botAvatar =
-    theme.palette.type === 'dark' ? botAvatarDark : botAvatarLight;
+    theme.palette.mode === 'dark' ? botAvatarDark : botAvatarLight;
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const configApi = useApi(configApiRef);
@@ -673,7 +674,7 @@ export const NotebookView = ({
     <div className={classes.notebookDisclaimerStrip}>
       <div className={classes.notebookDisclaimerInner}>
         <Alert isInline variant="info" title={t('aria.important')}>
-          {t('disclaimer.withoutValidation')}
+          {t('disclaimer')}
         </Alert>
       </div>
     </div>

@@ -16,13 +16,13 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
-import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import { makeStyles } from '@mui/styles';
 import { Alert, Button } from '@patternfly/react-core';
 import { ExclamationTriangleIcon } from '@patternfly/react-icons';
 

@@ -14,43 +14,42 @@
  * limitations under the License.
  */
 
-import type { Theme } from '@material-ui/core/styles';
+import type { Theme } from '@mui/material/styles';
 
-export const notebookDialogStyles = (theme: Theme) =>
-  ({
-    dialogPaper: {
-      borderRadius: 24,
-      maxWidth: 578,
-    },
-    dialogPaperCompact: {
-      borderRadius: 12,
-      maxWidth: '300px',
-    },
-    dialogTitle: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '24px 24px 16px',
-    },
-    dialogTitleCompact: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '16px 16px 12px !important',
-    },
-    titleText: {
-      fontWeight: 500,
-      fontSize: '1.25rem',
-      lineHeight: '1.625rem',
-      letterSpacing: '-0.25px',
-    },
-    closeButton: {
-      color: theme.palette.text.primary,
-    },
-    dialogContent: {
-      padding: '0 24px 24px',
-    },
-    dialogContentCompact: {
-      padding: '0 16px 16px !important',
-    },
-  }) as const;
+export const notebookDialogStyles = (theme: Theme) => ({
+  dialogPaper: {
+    borderRadius: '24px',
+    maxWidth: 578,
+  },
+  dialogPaperCompact: {
+    borderRadius: '12px',
+    maxWidth: '300px',
+  },
+  dialogTitle: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '24px 24px 16px',
+  },
+  dialogTitleCompact: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '16px 16px 12px !important',
+  },
+  titleText: {
+    fontWeight: 500,
+    fontSize: '1.25rem',
+    lineHeight: '1.625rem',
+    letterSpacing: '-0.25px',
+  },
+  closeButton: {
+    color: theme.palette.text.primary,
+  },
+  dialogContent: {
+    padding: '0 24px 24px',
+  },
+  dialogContentCompact: {
+    padding: '0 16px 16px !important',
+  },
+});
