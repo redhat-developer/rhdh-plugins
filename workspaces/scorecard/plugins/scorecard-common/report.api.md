@@ -260,6 +260,7 @@ export const SCORECARD_THRESHOLD_RULE_COLOR_VALUES: (
   | 'success.main'
   | 'warning.main'
   | 'error.main'
+  | 'info.main'
 )[];
 
 // @public
@@ -285,6 +286,7 @@ export const ScorecardThresholdRuleColors: {
   readonly SUCCESS: 'success.main';
   readonly WARNING: 'warning.main';
   readonly ERROR: 'error.main';
+  readonly INFO: 'info.main';
 };
 
 // @public

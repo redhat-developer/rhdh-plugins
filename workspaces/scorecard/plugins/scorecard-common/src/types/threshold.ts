@@ -103,7 +103,14 @@ export const DEFAULT_NUMBER_THRESHOLDS: ThresholdConfig = {
  * @public
  */
 export const INFORMATIONAL_NUMBER_THRESHOLD: ThresholdConfig = {
-  rules: [{ key: 'info', expression: '>=0', color: 'info.main' }],
+  rules: [
+    {
+      key: 'info',
+      expression: '>=0',
+      color: 'info.main',
+      icon: 'scorecardInfoStatusIcon',
+    },
+  ],
 };
 
 /**
@@ -117,6 +124,7 @@ export const ScorecardThresholdRuleColors = {
   SUCCESS: 'success.main',
   WARNING: 'warning.main',
   ERROR: 'error.main',
+  INFO: 'info.main',
 } as const;
 
 /**
