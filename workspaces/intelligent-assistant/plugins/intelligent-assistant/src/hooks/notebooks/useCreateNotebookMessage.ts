@@ -23,6 +23,7 @@ import { notebooksApiRef } from '../../api/notebooksApi';
 export type CreateNotebookMessageVariables = {
   prompt: string;
   sessionId: string;
+  signal?: AbortSignal;
 };
 
 export const useCreateNotebookMessage = (): UseMutationResult<
@@ -36,12 +37,13 @@ export const useCreateNotebookMessage = (): UseMutationResult<
     mutationFn: async ({
       prompt,
       sessionId,
+      signal,
     }: CreateNotebookMessageVariables) => {
       if (!sessionId) {
         throw new Error('Failed to generate AI response');
       }
 
-      return await notebooksApi.querySession(sessionId, prompt);
+      return await notebooksApi.querySession(sessionId, prompt, { signal });
     },
     onError: error => {
       // eslint-disable-next-line

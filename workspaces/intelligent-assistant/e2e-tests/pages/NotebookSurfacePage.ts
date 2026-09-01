@@ -54,14 +54,27 @@ export class NotebookSurfacePage {
 
   async gotoFullscreenNotebooksTab(): Promise<void> {
     await openLightspeed(this.page);
-    await this.page
-      .getByRole('button', { name: this.t['aria.options.label'] })
-      .click();
-    await this.page
-      .getByRole('menuitem', {
-        name: this.t['settings.displayMode.fullscreen'],
-      })
-      .click();
+
+    // Fullscreen is persisted. Re-clicking the menu item still sets the
+    // notebook mode-switch flag even when display mode does not change, which
+    // makes the next editor close skip auto-delete of empty untitled notebooks.
+    const fullscreenTitle = this.page.getByRole('heading', {
+      name: this.t['chatbox.header.title'],
+    });
+    const alreadyFullscreen = await fullscreenTitle.isVisible();
+
+    if (!alreadyFullscreen) {
+      await this.page
+        .getByRole('button', { name: this.t['aria.options.label'] })
+        .click();
+      await this.page
+        .getByRole('menuitem', {
+          name: this.t['settings.displayMode.fullscreen'],
+        })
+        .click();
+      await expect(fullscreenTitle).toBeVisible();
+    }
+
     await this.page
       .getByRole('tab', { name: this.t['tabs.notebooks'] })
       .click();
