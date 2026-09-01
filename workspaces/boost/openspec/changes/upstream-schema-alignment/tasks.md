@@ -29,7 +29,7 @@
 - [ ] 2.8 Implement human-readable output formatter
 - [ ] 2.9 Handle entities with missing `rhdh.io/ai-asset-category` annotation (exclude gracefully)
 - [ ] 2.10 Handle entities with partial annotations (include with warning)
-- [ ] 2.11 CLI argument parsing (`--catalog-url`, `--output-format`, `--filter`)
+- [ ] 2.11 CLI argument parsing (`--catalog-url`, `--output-format`, `--filter`, `--token`)
 - [ ] 2.12 Add footer message: "This is a migration-readiness assessment. Actual migration is future work pending RFC finalization."
 
 ## 3. Testing (P1)
