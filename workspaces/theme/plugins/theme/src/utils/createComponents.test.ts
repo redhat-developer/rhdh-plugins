@@ -137,6 +137,35 @@ describe('createComponents', () => {
     );
   });
 
+  it('uses a single pageInset under the in-flow masthead so the bottom well matches the sides', () => {
+    const actual = createComponents({ palette: customDarkTheme() });
+    const overrides = actual.RHDHPageWithoutFixHeight?.styleOverrides as
+      | Record<string, unknown>
+      | undefined;
+    const root = overrides?.root as Record<string, unknown> | undefined;
+    const desktop = root?.['@media (min-width: 600px)'] as
+      | Record<string, unknown>
+      | undefined;
+    const withHeader = desktop?.[
+      '#rhdh-above-sidebar-header-container:has(*) ~ #rhdh-sidebar-layout'
+    ] as Record<string, unknown> | undefined;
+    expect(withHeader?.["& main, & [class*='MuiLinearProgress-root']"]).toEqual(
+      expect.objectContaining({
+        marginTop: '0 !important',
+        minHeight:
+          'calc(100vh - var(--rhdh-global-header-height, 0px) - 1.5rem) !important',
+        maxHeight:
+          'calc(100vh - var(--rhdh-global-header-height, 0px) - 1.5rem) !important',
+      }),
+    );
+    expect(withHeader?.['& main:not([data-backstage-core-page])']).toEqual(
+      expect.objectContaining({
+        minHeight: '0 !important',
+        maxHeight: 'calc(100% - 1.5rem) !important',
+      }),
+    );
+  });
+
   it('makes NFS BUI main a flex column without unlocking viewport height', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     const root = actual.BackstageSidebarPage?.styleOverrides?.root as
