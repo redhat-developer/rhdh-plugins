@@ -121,9 +121,10 @@ describe('createComponents', () => {
 
   it('uses a single pageInset under the in-flow masthead so the bottom well matches the sides', () => {
     const actual = createComponents({ palette: customDarkTheme() });
-    const root = actual.RHDHPageWithoutFixHeight?.styleOverrides?.root as
+    const overrides = actual.RHDHPageWithoutFixHeight?.styleOverrides as
       | Record<string, unknown>
       | undefined;
+    const root = overrides?.root as Record<string, unknown> | undefined;
     const desktop = root?.['@media (min-width: 600px)'] as
       | Record<string, unknown>
       | undefined;
