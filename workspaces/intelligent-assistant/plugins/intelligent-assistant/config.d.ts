@@ -94,6 +94,27 @@ export interface Config {
          */
         enabled?: boolean;
       };
+      /**
+       * DOM text extraction configuration
+       * @visibility frontend
+       */
+      'dom-extraction'?: {
+        /**
+         * Enable/disable DOM text extraction within Screen Context.
+         * When enabled, extracts structured page content (headings, tables, alerts, text)
+         * and sends it as context alongside the user's message.
+         * @default true
+         * @visibility frontend
+         */
+        enabled?: boolean;
+        /**
+         * Maximum characters to extract from the page.
+         * Higher values provide richer context but consume more LLM tokens.
+         * @default 8000
+         * @visibility frontend
+         */
+        maxChars?: number;
+      };
     };
   };
 }
