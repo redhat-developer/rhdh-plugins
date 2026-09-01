@@ -18,3 +18,4 @@ spec:
     - ./components/openssf-scorecard-only.yaml
     - ./components/sonarqube-scorecard-only.yaml
     - ./components/dora-scorecard.yaml
+    - ./components/scalar-aggregation-portfolio.yaml

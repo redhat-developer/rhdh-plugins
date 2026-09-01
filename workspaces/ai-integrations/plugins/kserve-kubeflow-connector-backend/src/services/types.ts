@@ -53,6 +53,7 @@ export interface InferenceService {
     name: string;
     namespace: string;
     uid?: string;
+    resourceVersion?: string;
     labels?: { [key: string]: string };
     annotations?: { [key: string]: string };
   };

@@ -16,35 +16,39 @@
 
 type IconProps = {
   className?: string;
+  size?: number;
 };
 
-export const SidebarCollapseIcon = ({ className }: IconProps) => (
+export const SidebarCollapseIcon = ({ className, size = 24 }: IconProps) => (
   <svg
     className={className}
-    width="24"
-    height="24"
+    width={size}
+    height={size}
     viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
+    style={{ display: 'block' }}
   >
     <path d="M16 21V3H14V21H16ZM12 17V7L7 12L12 17Z" fill="currentColor" />
   </svg>
 );
 
-export const SidebarExpandIcon = ({ className }: IconProps) => (
+export const SidebarExpandIcon = ({ className, size = 24 }: IconProps) => (
   <svg
     className={className}
-    width="24"
-    height="24"
+    width={size}
+    height={size}
     viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
+    style={{ display: 'block' }}
   >
     <path d="M9 21V3H11V21H9ZM13 17V7L18 12L13 17Z" fill="currentColor" />
   </svg>
 );
 
-type AddCircleFilledIconProps = IconProps & {
+type AddCircleFilledIconProps = {
+  className?: string;
   disabled?: boolean;
 };
 

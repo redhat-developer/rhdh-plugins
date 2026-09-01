@@ -33,6 +33,8 @@ network_policies:
         access: read-write
     binaries:
       - path: "**/claude"
+      # Claude Code 2.1+ ships the bun compile as claude.exe; **/claude does not match it.
+      - path: "**/claude.exe"
       - path: "**/node"
 
   github_api:

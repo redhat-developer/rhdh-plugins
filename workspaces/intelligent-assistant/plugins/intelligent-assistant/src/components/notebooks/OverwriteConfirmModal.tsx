@@ -27,23 +27,16 @@ import { Alert, Button } from '@patternfly/react-core';
 import { ExclamationTriangleIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { getScopedDialogProps } from '../../utils/scoped-dialog-utils';
 import { FileTypeIcon } from './FileTypeIcon';
+import { notebookDialogStyles } from './notebookDialogStyles';
 
 const useStyles = makeStyles(theme => ({
-  dialogPaper: {
-    borderRadius: 24,
-    maxWidth: 578,
-  },
-  dialogTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '24px 24px 16px',
-  },
-  titleText: {
-    fontWeight: 500,
-    fontSize: '1.25rem',
-    lineHeight: '1.625rem',
+  ...notebookDialogStyles(theme),
+  titleTextCompact: {
+    fontWeight: 600,
+    fontSize: '1rem',
+    lineHeight: '1.375rem',
     letterSpacing: '-0.25px',
   },
   closeButton: {
@@ -51,6 +44,9 @@ const useStyles = makeStyles(theme => ({
   },
   dialogContent: {
     padding: '0 24px 24px',
+  },
+  dialogContentCompact: {
+    padding: '0 16px 16px',
   },
   warningAlert: {
     '--pf-v6-c-alert--PaddingBlockEnd': '0',
@@ -91,6 +87,14 @@ const useStyles = makeStyles(theme => ({
     borderRadius: 8,
     marginBottom: theme.spacing(1),
   },
+  fileItemCompact: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    padding: `${theme.spacing(1)}px 0`,
+    borderBottom:
+      '1px solid var(--pf-t--global--border--color--default, #c7c7c7)',
+  },
   fileName: {
     flex: 1,
     minWidth: 0,
@@ -111,6 +115,11 @@ const useStyles = makeStyles(theme => ({
     padding: '16px 24px',
     gap: theme.spacing(1),
   },
+  dialogActionsCompact: {
+    justifyContent: 'flex-start',
+    padding: '12px 16px !important',
+    gap: theme.spacing(1),
+  },
 }));
 
 type OverwriteConfirmModalProps = {
@@ -120,6 +129,7 @@ type OverwriteConfirmModalProps = {
   onBack: () => void;
   allFiles: File[];
   duplicateFileNames: string[];
+  isCompact?: boolean;
 };
 
 export const OverwriteConfirmModal = ({
@@ -129,6 +139,7 @@ export const OverwriteConfirmModal = ({
   onBack,
   allFiles,
   duplicateFileNames,
+  isCompact = false,
 }: OverwriteConfirmModalProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
@@ -159,17 +170,26 @@ export const OverwriteConfirmModal = ({
     onClose();
   };
 
+  const scopedProps = getScopedDialogProps(isCompact);
+
   return (
     <Dialog
       open={isOpen}
       onClose={handleClose}
       aria-labelledby="overwrite-confirm-modal-title"
+      {...scopedProps}
       PaperProps={{
-        className: classes.dialogPaper,
+        className: isCompact ? classes.dialogPaperCompact : classes.dialogPaper,
+        ...scopedProps.PaperProps,
       }}
     >
-      <DialogTitle className={classes.dialogTitle}>
-        <Typography component="h2" className={classes.titleText}>
+      <DialogTitle
+        className={isCompact ? classes.dialogTitleCompact : classes.dialogTitle}
+      >
+        <Typography
+          component="h2"
+          className={isCompact ? classes.titleTextCompact : classes.titleText}
+        >
           {(t as Function)(
             duplicateFiles.length === 1
               ? 'notebook.overwrite.modal.title.one'
@@ -182,11 +202,15 @@ export const OverwriteConfirmModal = ({
           className={classes.closeButton}
           size="small"
         >
-          <CloseIcon />
+          <CloseIcon fontSize={isCompact ? 'small' : 'medium'} />
         </IconButton>
       </DialogTitle>
 
-      <DialogContent className={classes.dialogContent}>
+      <DialogContent
+        className={
+          isCompact ? classes.dialogContentCompact : classes.dialogContent
+        }
+      >
         <Alert
           variant="warning"
           isInline
@@ -225,7 +249,10 @@ export const OverwriteConfirmModal = ({
 
         <ul className={classes.fileList}>
           {allFiles.map(file => (
-            <li key={file.name} className={classes.fileItem}>
+            <li
+              key={file.name}
+              className={isCompact ? classes.fileItemCompact : classes.fileItem}
+            >
               <FileTypeIcon fileName={file.name} />
               <Typography className={classes.fileName}>{file.name}</Typography>
               {duplicateSet.has(file.name) && (
@@ -236,7 +263,11 @@ export const OverwriteConfirmModal = ({
         </ul>
       </DialogContent>
 
-      <div className={classes.dialogActions}>
+      <div
+        className={
+          isCompact ? classes.dialogActionsCompact : classes.dialogActions
+        }
+      >
         <Button
           variant="primary"
           onClick={handleConfirm}

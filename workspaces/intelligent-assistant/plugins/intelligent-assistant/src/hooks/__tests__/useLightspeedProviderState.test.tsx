@@ -386,7 +386,7 @@ describe('useLightspeedProviderState', () => {
       });
     });
 
-    it('resets shellViewTab to Chat when leaving embedded for overlay while on Notebooks', async () => {
+    it('preserves shellViewTab when leaving embedded for overlay while on Notebooks', async () => {
       renderWithRouter(['/catalog']);
 
       screen.getByTestId('set-shell-notebooks-tab').click();
@@ -406,7 +406,7 @@ describe('useLightspeedProviderState', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('pathname')).toHaveTextContent('/catalog');
-        expect(screen.getByTestId('shell-view-tab')).toHaveTextContent('0');
+        expect(screen.getByTestId('shell-view-tab')).toHaveTextContent('1');
       });
     });
   });

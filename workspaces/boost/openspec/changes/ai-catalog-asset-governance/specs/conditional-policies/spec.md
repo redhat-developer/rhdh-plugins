@@ -46,6 +46,13 @@ A conditional rule MUST filter AI assets by their source connector.
 - **THEN** they configure a DENY policy with `isFromConnector({ connector: 'external-vendor' })`
 - **AND** assets from that connector are excluded from list results and detail pages for affected users
 
+#### Scenario: Exact-match contract (no connector-type prefix matching)
+
+- **WHEN** the `rhdh.io/ai-asset-source` annotation carries a composite value such as `'kagenti/default'` (connector type + instance ID, as used by some `boost-entity-provider-sdk`-based providers)
+- **THEN** `isFromConnector({ connector: 'kagenti' })` does **NOT** match it — `connector` MUST be the full, exact annotation value (e.g. `isFromConnector({ connector: 'kagenti/default' })`)
+- **AND** a deployment with multiple instances of the same connector type requires one policy per instance to scope by type
+- **RATIONALE:** every custom conditional permission rule in this repo (`isAiAssetCategory`, `extensions-backend`'s `hasAnnotation`, `scorecard-backend`'s `hasMetricId`, `orchestrator-backend`'s `isWorkflowId`, `homepage-backend`'s `hasWidgetId`/`hasTag`) does flat, exact-value matching with no parsing of structured/composite identifiers — this rule follows that same repo-wide convention for consistency. See [#4376](https://github.com/redhat-developer/rhdh-plugins/issues/4376) for the discussion; revisit only if a real deployment needs type-level scoping across multiple connector instances.
+
 ### Requirement: isInTenant Rule
 
 A conditional rule MUST filter AI assets by tenant identity for multi-tenant deployments.
