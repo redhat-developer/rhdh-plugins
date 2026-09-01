@@ -27,7 +27,7 @@ npx @red-hat-developer-hub/backstage-plugin-boost-migration-readiness \
 | ----------------- | ------------------------------------------- | ------- |
 | `--catalog-url`   | Backstage catalog API base URL (required)   | —       |
 | `--output-format` | Output format: `json` or `text`             | `text`  |
-| `--token`         | Bearer token for catalog API authentication | —       |
+| `--token`         | Bearer token for catalog API authentication. Alternatively, set the `BACKSTAGE_TOKEN` environment variable (the `--token` flag takes precedence). | —       |
 | `--filter`        | Filter string to narrow entity results      | —       |
 
 ### Examples
