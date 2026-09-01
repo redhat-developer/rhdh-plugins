@@ -17,11 +17,13 @@
 import type {
   AuthService,
   DiscoveryService,
+  HttpAuthService,
   LoggerService,
 } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
 import { NotFoundError } from '@backstage/errors';
 
+import type { Request } from 'express';
 import gitUrlParse from 'git-url-parse';
 
 import {
@@ -984,6 +986,8 @@ export async function findOrchestratorImportStatusByRepo(
     orchestratorWorkflowDao: OrchestratorWorkflowDao;
     discovery: DiscoveryService;
     auth: AuthService;
+    httpAuth: HttpAuthService;
+    req: Request;
   },
   repoUrl: string,
   skipWorkflows?: boolean,
@@ -1020,7 +1024,7 @@ export async function findOrchestratorImportStatusByRepo(
       if (workflow.instanceId) {
         const baseUrl = await deps.discovery.getBaseUrl('orchestrator');
         const { token } = await deps.auth.getPluginRequestToken({
-          onBehalfOf: await deps.auth.getOwnServiceCredentials(),
+          onBehalfOf: await deps.httpAuth.credentials(deps.req),
           targetPluginId: 'orchestrator',
         });
         const orchestratorApi = new DefaultApi(new Configuration(), baseUrl);

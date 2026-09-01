@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-import type { AuthService } from '@backstage/backend-plugin-api';
+import type {
+  AuthService,
+  HttpAuthService,
+} from '@backstage/backend-plugin-api';
 import { DiscoveryApi } from '@backstage/plugin-permission-common';
+
+import type { Request } from 'express';
 
 import { DefaultApi } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -44,9 +49,12 @@ describe('execute-orchestrator-workflow', () => {
   >;
   let mockDiscovery: DiscoveryApi;
   let mockAuth: AuthService;
+  let mockHttpAuth: HttpAuthService;
   let mockGithubApiService: GithubApiService;
   let mockGitlabApiService: GitlabApiService;
   let mockOrchestratorApi: jest.Mocked<DefaultApi>;
+  const mockReq = {} as Request;
+  const mockUserCredentials = { principal: { type: 'user' } };
 
   beforeEach(() => {
     mockOrchestratorWorkflowDao = {
@@ -72,8 +80,11 @@ describe('execute-orchestrator-workflow', () => {
       getPluginRequestToken: jest.fn().mockResolvedValue({
         token: 'orchestrator-token',
       }),
-      getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
     } as unknown as AuthService;
+
+    mockHttpAuth = {
+      credentials: jest.fn().mockResolvedValue(mockUserCredentials),
+    } as unknown as HttpAuthService;
 
     mockGithubApiService = {
       getAppInstallationCredentials: jest.fn(),
@@ -101,6 +112,8 @@ describe('execute-orchestrator-workflow', () => {
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
         auth: mockAuth,
+        httpAuth: mockHttpAuth,
+        req: mockReq,
         requestBody: [],
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -127,6 +140,8 @@ describe('execute-orchestrator-workflow', () => {
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
         auth: mockAuth,
+        httpAuth: mockHttpAuth,
+        req: mockReq,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -172,6 +187,8 @@ describe('execute-orchestrator-workflow', () => {
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
         auth: mockAuth,
+        httpAuth: mockHttpAuth,
+        req: mockReq,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -181,9 +198,10 @@ describe('execute-orchestrator-workflow', () => {
 
       expect(result.statusCode).toBe(202);
       expect(mockAuth.getPluginRequestToken).toHaveBeenCalledWith({
-        onBehalfOf: expect.anything(),
+        onBehalfOf: mockUserCredentials,
         targetPluginId: 'orchestrator',
       });
+      expect(mockHttpAuth.credentials).toHaveBeenCalledWith(mockReq);
       expect(
         mockGithubApiService.getAppInstallationCredentials,
       ).toHaveBeenCalledWith('https://github.com/test-org/test-repo');
@@ -258,6 +276,8 @@ describe('execute-orchestrator-workflow', () => {
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
         auth: mockAuth,
+        httpAuth: mockHttpAuth,
+        req: mockReq,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -317,6 +337,8 @@ describe('execute-orchestrator-workflow', () => {
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
         auth: mockAuth,
+        httpAuth: mockHttpAuth,
+        req: mockReq,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -372,6 +394,8 @@ describe('execute-orchestrator-workflow', () => {
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
         auth: mockAuth,
+        httpAuth: mockHttpAuth,
+        req: mockReq,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -419,6 +443,8 @@ describe('execute-orchestrator-workflow', () => {
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
         auth: mockAuth,
+        httpAuth: mockHttpAuth,
+        req: mockReq,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -461,6 +487,8 @@ describe('execute-orchestrator-workflow', () => {
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
         auth: mockAuth,
+        httpAuth: mockHttpAuth,
+        req: mockReq,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -522,6 +550,8 @@ describe('execute-orchestrator-workflow', () => {
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
         auth: mockAuth,
+        httpAuth: mockHttpAuth,
+        req: mockReq,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -582,6 +612,8 @@ describe('execute-orchestrator-workflow', () => {
           orchestratorWorkflowId: 'test-workflow-id',
           discovery: mockDiscovery,
           auth: mockAuth,
+          httpAuth: mockHttpAuth,
+          req: mockReq,
           requestBody,
           orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
           orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
@@ -652,6 +684,8 @@ describe('execute-orchestrator-workflow', () => {
         orchestratorWorkflowId: 'test-workflow-id',
         discovery: mockDiscovery,
         auth: mockAuth,
+        httpAuth: mockHttpAuth,
+        req: mockReq,
         requestBody,
         orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
         orchestratorRepositoryDao: mockOrchestratorRepositoryDao,

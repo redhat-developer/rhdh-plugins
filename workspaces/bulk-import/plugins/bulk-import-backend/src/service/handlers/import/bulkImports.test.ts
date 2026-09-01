@@ -1691,6 +1691,12 @@ describe('bulkimports.ts unit tests', () => {
   });
 
   describe('findOrchestratorImportStatusByRepo', () => {
+    const mockReq = {} as import('express').Request;
+    const mockUserCredentials = { principal: { type: 'user' } };
+    const mockHttpAuth = {
+      credentials: async () => mockUserCredentials,
+    };
+
     it('should return workflow status when repository and workflow exist', async () => {
       const mockOrchestratorRepositoryDao = {
         findRepositoryByUrl: jest.fn().mockResolvedValue({
@@ -1731,7 +1737,6 @@ describe('bulkimports.ts unit tests', () => {
         getPluginRequestToken: jest.fn().mockResolvedValue({
           token: 'orchestrator-token',
         }),
-        getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
       } as any;
 
       const result = await findOrchestratorImportStatusByRepo(
@@ -1741,13 +1746,15 @@ describe('bulkimports.ts unit tests', () => {
           orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
           discovery: mockDiscovery,
           auth: mockAuth,
+          httpAuth: mockHttpAuth,
+          req: mockReq,
         },
         'https://github.com/test-org/test-repo',
       );
 
       expect(result.statusCode).toBe(200);
       expect(mockAuth.getPluginRequestToken).toHaveBeenCalledWith({
-        onBehalfOf: expect.anything(),
+        onBehalfOf: mockUserCredentials,
         targetPluginId: 'orchestrator',
       });
       expect(result.responseBody?.workflow?.workflowId).toBe(
@@ -1779,7 +1786,6 @@ describe('bulkimports.ts unit tests', () => {
 
       const mockAuth = {
         getPluginRequestToken: jest.fn(),
-        getOwnServiceCredentials: jest.fn(),
       } as any;
 
       const result = await findOrchestratorImportStatusByRepo(
@@ -1789,6 +1795,8 @@ describe('bulkimports.ts unit tests', () => {
           orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
           discovery: mockDiscovery,
           auth: mockAuth,
+          httpAuth: mockHttpAuth,
+          req: mockReq,
         },
         'https://github.com/test-org/test-repo',
       );
@@ -1823,7 +1831,6 @@ describe('bulkimports.ts unit tests', () => {
 
       const mockAuth = {
         getPluginRequestToken: jest.fn(),
-        getOwnServiceCredentials: jest.fn(),
       } as any;
 
       const result = await findOrchestratorImportStatusByRepo(
@@ -1833,6 +1840,8 @@ describe('bulkimports.ts unit tests', () => {
           orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
           discovery: mockDiscovery,
           auth: mockAuth,
+          httpAuth: mockHttpAuth,
+          req: mockReq,
         },
         'https://github.com/test-org/test-repo',
       );
@@ -1882,7 +1891,6 @@ describe('bulkimports.ts unit tests', () => {
         getPluginRequestToken: jest.fn().mockResolvedValue({
           token: 'orchestrator-token',
         }),
-        getOwnServiceCredentials: jest.fn().mockResolvedValue({}),
       } as any;
 
       const result = await findOrchestratorImportStatusByRepo(
@@ -1892,6 +1900,8 @@ describe('bulkimports.ts unit tests', () => {
           orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
           discovery: mockDiscovery,
           auth: mockAuth,
+          httpAuth: mockHttpAuth,
+          req: mockReq,
         },
         'https://github.com/test-org/test-repo',
         true,
