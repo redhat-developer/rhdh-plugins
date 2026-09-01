@@ -22,6 +22,7 @@ describe('buildScalarTimeSeriesPoints', () => {
       buildScalarTimeSeriesPoints([
         {
           utc_day: '2024-01-01',
+          max_timestamp: '2024-01-01T18:00:00.000Z',
           value: 10,
           success_count: 2,
           error_count: 3,
@@ -31,6 +32,7 @@ describe('buildScalarTimeSeriesPoints', () => {
         },
         {
           utc_day: '2024-01-01',
+          max_timestamp: '2024-01-01T18:00:00.000Z',
           value: 10,
           success_count: 2,
           error_count: 3,
@@ -41,7 +43,7 @@ describe('buildScalarTimeSeriesPoints', () => {
       ]),
     ).toEqual([
       {
-        utcDay: '2024-01-01',
+        maxTimestamp: new Date('2024-01-01T18:00:00.000Z'),
         value: 10,
         successCount: 2,
         errorCount: 3,

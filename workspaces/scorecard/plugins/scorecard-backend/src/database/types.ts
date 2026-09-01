@@ -72,7 +72,7 @@ export type DbTimeSeriesPointError = {
 };
 
 export type DbScalarTimeSeriesPoint = {
-  utcDay: string;
+  maxTimestamp: Date;
   value: number | null;
   successCount: number;
   errorCount: number;

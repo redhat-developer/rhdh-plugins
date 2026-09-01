@@ -2304,7 +2304,7 @@ describe('DatabaseMetricValues', () => {
 
         expect(result).toEqual([
           {
-            utcDay: '2024-01-02',
+            maxTimestamp: new Date('2024-01-02T00:00:00Z'),
             value: 7,
             successCount: 1,
             errorCount: 0,
@@ -2312,7 +2312,7 @@ describe('DatabaseMetricValues', () => {
             errors: [],
           },
           {
-            utcDay: '2024-01-03',
+            maxTimestamp: new Date('2024-01-03T10:00:00Z'),
             value: 13,
             successCount: 1,
             errorCount: 0,
@@ -2360,7 +2360,7 @@ describe('DatabaseMetricValues', () => {
 
         expect(result).toEqual([
           {
-            utcDay: '2024-01-01',
+            maxTimestamp: new Date('2024-01-01T10:00:00Z'),
             value: 14,
             successCount: 1,
             errorCount: 0,
@@ -2422,7 +2422,7 @@ describe('DatabaseMetricValues', () => {
 
         expect(result).toEqual([
           {
-            utcDay: '2024-01-01',
+            maxTimestamp: new Date('2024-01-01T11:00:00Z'),
             value: 27,
             successCount: 2,
             errorCount: 0,
@@ -2430,12 +2430,124 @@ describe('DatabaseMetricValues', () => {
             errors: [],
           },
           {
-            utcDay: '2024-01-02',
+            maxTimestamp: new Date('2024-01-02T10:00:00Z'),
             value: 40,
             successCount: 1,
             errorCount: 0,
             total: 1,
             errors: [],
+          },
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return max timestamp across all values in a day point - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const aBaseTimestamp = new Date('2024-01-01T08:00:00Z');
+        const aLastTimestamp = new Date('2024-01-01T20:00:00Z');
+        const bLaterTimestampLastInserted = new Date('2024-01-01T15:00:00Z');
+
+        await client('metric_values').insert(
+          [
+            // earlier A value, not in aggregation
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 1,
+              timestamp: aBaseTimestamp,
+            }),
+            // last A value
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 10,
+              timestamp: aLastTimestamp,
+            }),
+            // last B value, timestamp before A
+            createMetricValue({
+              entityRef: 'component:default/b',
+              value: 3,
+              timestamp: bLaterTimestampLastInserted,
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a', 'component:default/b'],
+            'github.metric1',
+            'sum',
+            from,
+            to,
+          );
+
+        expect(result).toEqual([
+          {
+            maxTimestamp: aLastTimestamp,
+            value: 13,
+            successCount: 2,
+            errorCount: 0,
+            total: 2,
+            errors: [],
+          },
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return max timestamp across all values in a day point including calculation errors - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const aBaseTimestamp = new Date('2024-01-01T08:00:00Z');
+        const aLastErrorTimestamp = new Date('2024-01-01T20:00:00Z');
+        const bLaterTimestampLastInserted = new Date('2024-01-01T15:00:00Z');
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 1,
+              timestamp: aBaseTimestamp,
+            }),
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: null,
+              errorMessage: 'boom',
+              status: null,
+              timestamp: aLastErrorTimestamp,
+            }),
+            createMetricValue({
+              entityRef: 'component:default/b',
+              value: null,
+              errorMessage: 'timeout',
+              status: null,
+              timestamp: bLaterTimestampLastInserted,
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a', 'component:default/b'],
+            'github.metric1',
+            'sum',
+            from,
+            to,
+          );
+
+        expect(result).toEqual([
+          {
+            maxTimestamp: aLastErrorTimestamp,
+            value: null,
+            successCount: 0,
+            errorCount: 2,
+            total: 2,
+            errors: [
+              { message: 'boom', count: 1 },
+              { message: 'timeout', count: 1 },
+            ],
           },
         ]);
       },
@@ -2474,7 +2586,7 @@ describe('DatabaseMetricValues', () => {
 
         expect(result).toEqual([
           {
-            utcDay: '2024-01-01',
+            maxTimestamp: new Date('2024-01-01T18:00:00Z'),
             value: null,
             successCount: 0,
             errorCount: 1,
@@ -2530,7 +2642,7 @@ describe('DatabaseMetricValues', () => {
           // TO_CHAR uses UTC TimeZone instead of session TimeZone
           expect(result).toEqual([
             {
-              utcDay: '2026-04-28',
+              maxTimestamp: new Date('2026-04-28T04:30:00.000Z'),
               value: 3,
               successCount: 2,
               errorCount: 0,
@@ -2625,7 +2737,7 @@ describe('DatabaseMetricValues', () => {
 
           expect(result).toEqual([
             {
-              utcDay: '2024-01-01',
+              maxTimestamp: new Date('2024-01-01T12:00:00Z'),
               value: null,
               successCount: 0,
               errorCount: 1,
@@ -2697,7 +2809,7 @@ describe('DatabaseMetricValues', () => {
 
         expect(result).toEqual([
           {
-            utcDay: '2024-01-01',
+            maxTimestamp: new Date('2024-01-01T12:00:00Z'),
             value: 10,
             successCount: 1,
             errorCount: 4,
@@ -2745,7 +2857,7 @@ describe('DatabaseMetricValues', () => {
 
         expect(result).toEqual([
           {
-            utcDay: '2024-01-02',
+            maxTimestamp: new Date('2024-01-02T12:00:00Z'),
             value: 4,
             successCount: 1,
             errorCount: 0,
@@ -2783,7 +2895,7 @@ describe('DatabaseMetricValues', () => {
 
         expect(result).toEqual([
           {
-            utcDay: '2024-01-01',
+            maxTimestamp: new Date('2024-01-01T12:00:00Z'),
             value: null,
             successCount: 0,
             errorCount: 1,
@@ -2822,7 +2934,7 @@ describe('DatabaseMetricValues', () => {
 
         expect(result).toEqual([
           {
-            utcDay: '2024-01-01',
+            maxTimestamp: new Date('2024-01-01T12:00:00Z'),
             value: 8,
             successCount: 1,
             errorCount: 0,
@@ -2859,7 +2971,7 @@ describe('DatabaseMetricValues', () => {
 
         expect(result).toEqual([
           {
-            utcDay: '2024-01-01',
+            maxTimestamp: new Date('2024-01-01T12:00:00Z'),
             value: 0,
             successCount: 1,
             errorCount: 0,
@@ -2929,7 +3041,7 @@ describe('DatabaseMetricValues', () => {
             'sum',
             [
               {
-                utcDay: '2024-01-01',
+                maxTimestamp: new Date('2024-01-01T18:00:00Z'),
                 value: 60,
                 successCount: 2,
                 errorCount: 1,
@@ -2937,7 +3049,7 @@ describe('DatabaseMetricValues', () => {
                 errors: [{ message: 'boom', count: 1 }],
               },
               {
-                utcDay: '2024-01-02',
+                maxTimestamp: new Date('2024-01-02T12:00:00Z'),
                 value: 5,
                 successCount: 1,
                 errorCount: 1,
@@ -2950,7 +3062,7 @@ describe('DatabaseMetricValues', () => {
             'average',
             [
               {
-                utcDay: '2024-01-01',
+                maxTimestamp: new Date('2024-01-01T18:00:00Z'),
                 value: 30,
                 successCount: 2,
                 errorCount: 1,
@@ -2958,7 +3070,7 @@ describe('DatabaseMetricValues', () => {
                 errors: [{ message: 'boom', count: 1 }],
               },
               {
-                utcDay: '2024-01-02',
+                maxTimestamp: new Date('2024-01-02T12:00:00Z'),
                 value: 5,
                 successCount: 1,
                 errorCount: 1,
@@ -2971,7 +3083,7 @@ describe('DatabaseMetricValues', () => {
             'count',
             [
               {
-                utcDay: '2024-01-01',
+                maxTimestamp: new Date('2024-01-01T18:00:00Z'),
                 value: 2,
                 successCount: 2,
                 errorCount: 1,
@@ -2979,7 +3091,7 @@ describe('DatabaseMetricValues', () => {
                 errors: [{ message: 'boom', count: 1 }],
               },
               {
-                utcDay: '2024-01-02',
+                maxTimestamp: new Date('2024-01-02T12:00:00Z'),
                 value: 1,
                 successCount: 1,
                 errorCount: 1,
@@ -2992,7 +3104,7 @@ describe('DatabaseMetricValues', () => {
             'max',
             [
               {
-                utcDay: '2024-01-01',
+                maxTimestamp: new Date('2024-01-01T18:00:00Z'),
                 value: 40,
                 successCount: 2,
                 errorCount: 1,
@@ -3000,7 +3112,7 @@ describe('DatabaseMetricValues', () => {
                 errors: [{ message: 'boom', count: 1 }],
               },
               {
-                utcDay: '2024-01-02',
+                maxTimestamp: new Date('2024-01-02T12:00:00Z'),
                 value: 5,
                 successCount: 1,
                 errorCount: 1,
@@ -3013,7 +3125,7 @@ describe('DatabaseMetricValues', () => {
             'min',
             [
               {
-                utcDay: '2024-01-01',
+                maxTimestamp: new Date('2024-01-01T18:00:00Z'),
                 value: 20,
                 successCount: 2,
                 errorCount: 1,
@@ -3021,7 +3133,7 @@ describe('DatabaseMetricValues', () => {
                 errors: [{ message: 'boom', count: 1 }],
               },
               {
-                utcDay: '2024-01-02',
+                maxTimestamp: new Date('2024-01-02T12:00:00Z'),
                 value: 5,
                 successCount: 1,
                 errorCount: 1,
@@ -3087,7 +3199,7 @@ describe('DatabaseMetricValues', () => {
             'sum',
             'error',
             {
-              utcDay: '2024-01-01',
+              maxTimestamp: new Date('2024-01-01T12:00:00Z'),
               value: 35,
               successCount: 2,
               errorCount: 0,
@@ -3099,7 +3211,7 @@ describe('DatabaseMetricValues', () => {
             'count',
             'error',
             {
-              utcDay: '2024-01-01',
+              maxTimestamp: new Date('2024-01-01T12:00:00Z'),
               value: 2,
               successCount: 2,
               errorCount: 0,
@@ -3111,7 +3223,7 @@ describe('DatabaseMetricValues', () => {
             'max',
             'error',
             {
-              utcDay: '2024-01-01',
+              maxTimestamp: new Date('2024-01-01T12:00:00Z'),
               value: 25,
               successCount: 2,
               errorCount: 0,
@@ -3123,7 +3235,7 @@ describe('DatabaseMetricValues', () => {
             'min',
             'error',
             {
-              utcDay: '2024-01-01',
+              maxTimestamp: new Date('2024-01-01T12:00:00Z'),
               value: 10,
               successCount: 2,
               errorCount: 0,
@@ -3135,7 +3247,7 @@ describe('DatabaseMetricValues', () => {
             'average',
             'error',
             {
-              utcDay: '2024-01-01',
+              maxTimestamp: new Date('2024-01-01T12:00:00Z'),
               value: 17.5,
               successCount: 2,
               errorCount: 0,
@@ -3147,7 +3259,7 @@ describe('DatabaseMetricValues', () => {
             'sum',
             'success',
             {
-              utcDay: '2024-01-01',
+              maxTimestamp: new Date('2024-01-01T12:00:00Z'),
               value: 40,
               successCount: 1,
               errorCount: 0,
@@ -3208,7 +3320,7 @@ describe('DatabaseMetricValues', () => {
               entityRef: 'component:default/b',
               value: 40,
               status: 'success',
-              timestamp: new Date('2024-01-01T12:00:00Z'),
+              timestamp: new Date('2024-01-01T13:00:00Z'),
             }),
             createMetricValue({
               entityRef: 'component:default/c',
@@ -3232,12 +3344,109 @@ describe('DatabaseMetricValues', () => {
 
         expect(result).toEqual([
           {
-            utcDay: '2024-01-01',
+            maxTimestamp: new Date('2024-01-01T12:00:00Z'),
             value: 10,
             successCount: 1,
             errorCount: 1,
             total: 2,
             errors: [{ message: 'boom', count: 1 }],
+          },
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should return empty points when filter.status matches no successes and there are no calculation errors - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 10,
+              status: 'success',
+              timestamp: new Date('2024-01-01T20:00:00Z'),
+            }),
+            createMetricValue({
+              entityRef: 'component:default/b',
+              value: 40,
+              status: 'error',
+              timestamp: new Date('2024-01-01T18:00:00Z'),
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            ['component:default/a', 'component:default/b'],
+            'github.metric1',
+            'sum',
+            from,
+            to,
+            { status: 'warning' },
+          );
+
+        expect(result).toEqual([]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should use max timestamp from calculation errors when filter.status excludes all successes - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const excludedSuccessTimestamp = new Date('2024-01-01T20:00:00Z');
+        const errorTimestamp = new Date('2024-01-01T10:00:00Z');
+        const errorLaterTimestamp = new Date('2024-01-01T11:00:00Z');
+
+        await client('metric_values').insert(
+          [
+            createMetricValue({
+              entityRef: 'component:default/a',
+              value: 10,
+              status: 'success',
+              timestamp: excludedSuccessTimestamp,
+            }),
+            createMetricValue({
+              entityRef: 'component:default/b',
+              value: null,
+              errorMessage: 'boom',
+              status: null,
+              timestamp: errorLaterTimestamp,
+            }),
+            createMetricValue({
+              entityRef: 'component:default/c',
+              value: null,
+              errorMessage: 'boom',
+              status: null,
+              timestamp: errorTimestamp,
+            }),
+          ].map(toMetricValueRow),
+        );
+
+        const result =
+          await db.readScalarAggregatedMetricTimeSeriesByEntityRefs(
+            [
+              'component:default/a',
+              'component:default/b',
+              'component:default/c',
+            ],
+            'github.metric1',
+            'sum',
+            from,
+            to,
+            { status: 'error' },
+          );
+
+        expect(result).toEqual([
+          {
+            maxTimestamp: errorLaterTimestamp,
+            value: null,
+            successCount: 0,
+            errorCount: 2,
+            total: 2,
+            errors: [{ message: 'boom', count: 2 }],
           },
         ]);
       },

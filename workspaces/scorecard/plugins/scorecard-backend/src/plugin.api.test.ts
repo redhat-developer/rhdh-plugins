@@ -517,7 +517,7 @@ describe('scorecard plugin with scalar aggregationKPI', () => {
             errorCount: 0,
             total: 1,
             status: 'success',
-            timestamp: '2024-01-01T00:00:00.000Z',
+            timestamp: '2024-01-01T12:00:00.000Z',
           },
           {
             value: 16,
@@ -525,7 +525,7 @@ describe('scorecard plugin with scalar aggregationKPI', () => {
             errorCount: 0,
             total: 2,
             status: 'success',
-            timestamp: '2024-01-02T00:00:00.000Z',
+            timestamp: '2024-01-02T12:10:00.000Z',
           },
         ],
         aggregationChartDisplayColor: 'warning.main',

@@ -382,7 +382,7 @@ describe('AggregatedMetricMapper', () => {
     it('should omit errors when none are present', () => {
       expect(
         AggregatedMetricMapper.toScalarAggregatedTimeSeriesPoint({
-          utcDay: '2024-01-01',
+          maxTimestamp: new Date('2024-01-01T18:30:00Z'),
           value: 12,
           successCount: 3,
           errorCount: 0,
@@ -395,14 +395,14 @@ describe('AggregatedMetricMapper', () => {
         errorCount: 0,
         total: 3,
         status: 'success',
-        timestamp: '2024-01-01T00:00:00.000Z',
+        timestamp: '2024-01-01T18:30:00.000Z',
       });
     });
 
     it('should map a successful day', () => {
       expect(
         AggregatedMetricMapper.toScalarAggregatedTimeSeriesPoint({
-          utcDay: '2024-01-01',
+          maxTimestamp: new Date('2024-01-01T18:30:00Z'),
           value: 12,
           successCount: 3,
           errorCount: 1,
@@ -416,14 +416,14 @@ describe('AggregatedMetricMapper', () => {
         total: 4,
         status: 'success',
         errors: [{ message: 'boom', count: 1 }],
-        timestamp: '2024-01-01T00:00:00.000Z',
+        timestamp: '2024-01-01T18:30:00.000Z',
       });
     });
 
     it('should map an error-only day with null value and status error', () => {
       expect(
         AggregatedMetricMapper.toScalarAggregatedTimeSeriesPoint({
-          utcDay: '2024-01-01',
+          maxTimestamp: new Date('2024-01-01T18:30:00Z'),
           value: null,
           successCount: 0,
           errorCount: 2,
@@ -437,7 +437,7 @@ describe('AggregatedMetricMapper', () => {
         total: 2,
         status: 'error',
         errors: [{ message: 'boom', count: 2 }],
-        timestamp: '2024-01-01T00:00:00.000Z',
+        timestamp: '2024-01-01T18:30:00.000Z',
       });
     });
   });

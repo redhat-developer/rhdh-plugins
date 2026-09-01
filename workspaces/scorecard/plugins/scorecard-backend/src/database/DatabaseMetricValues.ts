@@ -467,7 +467,7 @@ export class DatabaseMetricValues {
    *
    * Query plan (single round-trip):
    * 1. `latest_ids`: latest id per (entity, UTC day) in [from, to].
-   * 2. `daily`: aggregated value / successCount / errorCount grouped by that utc_day.
+   * 2. `daily`: aggregated value / successCount / errorCount / max timestamp grouped by that utc_day.
    *    Optional `filter.status` keeps matching successes and all calculation errors.
    * 3. `error_counts`: unique error_message counts, left-joined onto daily.
    */
@@ -510,6 +510,7 @@ export class DatabaseMetricValues {
         this.dbClient.raw(
           `SUM(CASE WHEN ${calculationErrorExpr} THEN 1 ELSE 0 END) as error_count`,
         ),
+        this.dbClient.raw('MAX(timestamp) as max_timestamp'),
       )
       .groupBy('latest_ids.utc_day');
 
@@ -542,6 +543,7 @@ export class DatabaseMetricValues {
         'daily.success_count as success_count',
         'daily.error_count as error_count',
         this.dbClient.raw('(daily.success_count + daily.error_count) as total'),
+        'daily.max_timestamp as max_timestamp',
         'error_counts.error_message as error_message',
         this.dbClient.raw('error_counts.count as error_msg_count'),
       )

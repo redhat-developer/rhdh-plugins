@@ -15,6 +15,7 @@
  */
 
 import type { DbScalarTimeSeriesPoint } from '../types';
+import { parseTimestamp } from '../../utils/normalizeTimestamp';
 
 /**
  * One row from the scalar time-series query:
@@ -22,6 +23,7 @@ import type { DbScalarTimeSeriesPoint } from '../types';
  */
 export type DbScalarTimeSeriesQueryRow = {
   utc_day: string;
+  max_timestamp: Date | string | number;
   value: number | string | null;
   success_count: number | string;
   error_count: number | string;
@@ -33,7 +35,7 @@ export type DbScalarTimeSeriesQueryRow = {
 /**
  * Group left-joined query rows into one {@link DbScalarTimeSeriesPoint} per UTC day.
  * Coerces driver numeric types, attaches error messages, sorts them by count then
- * message, and drops days with no successes and no calculation errors.
+ * message.
  */
 export function buildScalarTimeSeriesPoints(
   rows: DbScalarTimeSeriesQueryRow[],
@@ -48,7 +50,7 @@ export function buildScalarTimeSeriesPoints(
       const rawValue = Number(row.value);
       const rawTotal = Number(row.total);
       point = {
-        utcDay: row.utc_day,
+        maxTimestamp: parseTimestamp(row.max_timestamp),
         value: successCount > 0 && Number.isFinite(rawValue) ? rawValue : null,
         successCount,
         errorCount,

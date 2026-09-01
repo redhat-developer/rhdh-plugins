@@ -31,7 +31,6 @@ import type {
   DbScalarTimeSeriesPoint,
 } from '../database/types';
 import { ValidatedAggregationConfig } from '../validation/schemas/aggregationConfigSchemas';
-import { formatUtcDateAsStartOfDayIso } from '../utils/formatUtcDate';
 import { normalizeTimestamp } from '../utils/normalizeTimestamp';
 
 export class AggregatedMetricMapper {
@@ -116,7 +115,7 @@ export class AggregatedMetricMapper {
       errorCount,
       total: row.total,
       status,
-      timestamp: formatUtcDateAsStartOfDayIso(row.utcDay),
+      timestamp: row.maxTimestamp.toISOString(),
       ...(row.errors.length > 0 ? { errors: row.errors } : {}),
     };
   }

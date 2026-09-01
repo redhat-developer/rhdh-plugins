@@ -172,7 +172,7 @@ describe('AggregatedMetricLoader', () => {
   describe('loadScalarMetricTimeSeriesByEntityRefs', () => {
     const dbRows = [
       {
-        utcDay: '2024-01-01',
+        maxTimestamp: new Date('2024-01-01T18:30:00Z'),
         value: 12,
         successCount: 3,
         errorCount: 0,
@@ -180,7 +180,7 @@ describe('AggregatedMetricLoader', () => {
         errors: [],
       },
       {
-        utcDay: '2024-01-02',
+        maxTimestamp: new Date('2024-01-02T09:15:00Z'),
         value: 5,
         successCount: 3,
         errorCount: 0,
@@ -244,7 +244,7 @@ describe('AggregatedMetricLoader', () => {
           errorCount: 0,
           total: 3,
           status: 'success',
-          timestamp: '2024-01-01T00:00:00.000Z',
+          timestamp: '2024-01-01T18:30:00.000Z',
         },
         {
           value: 5,
@@ -252,7 +252,7 @@ describe('AggregatedMetricLoader', () => {
           errorCount: 0,
           total: 3,
           status: 'success',
-          timestamp: '2024-01-02T00:00:00.000Z',
+          timestamp: '2024-01-02T09:15:00.000Z',
         },
       ]);
     });

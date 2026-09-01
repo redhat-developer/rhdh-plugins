@@ -1837,7 +1837,7 @@ describe('createRouter', () => {
           )
           .mockResolvedValue([
             {
-              utcDay: '2024-01-01',
+              maxTimestamp: new Date('2024-01-01T10:30:00.000Z'),
               value: 12,
               successCount: 3,
               errorCount: 0,
@@ -1875,7 +1875,7 @@ describe('createRouter', () => {
                 errorCount: 0,
                 total: 3,
                 status: 'success',
-                timestamp: '2024-01-01T00:00:00.000Z',
+                timestamp: '2024-01-01T10:30:00.000Z',
               },
             ],
             thresholds: DEFAULT_NUMBER_THRESHOLDS,
@@ -1910,7 +1910,7 @@ describe('createRouter', () => {
         )
         .mockResolvedValue([
           {
-            utcDay: '2024-01-01',
+            maxTimestamp: new Date('2024-01-01T10:30:00.000Z'),
             value: 10,
             successCount: 2,
             errorCount: 0,
@@ -1949,7 +1949,7 @@ describe('createRouter', () => {
               errorCount: 0,
               total: 2,
               status: 'success',
-              timestamp: '2024-01-01T00:00:00.000Z',
+              timestamp: '2024-01-01T10:30:00.000Z',
             },
           ],
           thresholds: DEFAULT_NUMBER_THRESHOLDS,
