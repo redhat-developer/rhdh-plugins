@@ -41,6 +41,9 @@ Implementation of the HTTP endpoints is out of the scope of this library, they a
   - [ActiveMultiSelect widget](#activemultiselect-widget)
     - [ActiveMultiSelect Data Fetching and validation](#activemultiselect-data-fetching-and-validation)
     - [ActiveMultiSelect widget ui:props](#activemultiselect-widget-uiprops)
+  - [ActiveBoolean widget](#activeboolean-widget)
+    - [ActiveBoolean Data Fetching](#activeboolean-data-fetching)
+    - [ActiveBoolean widget ui:props](#activeboolean-widget-uiprops)
   - [ActiveText widget](#activetext-widget)
     - [ActiveText Data Fetching](#activetext-data-fetching)
     - [Dynamic Text Templating](#dynamic-text-templating)
@@ -434,6 +437,69 @@ The widget supports following `ui:props`:
 - validate:body
 - validate:retrigger
 - ui:allowNewItems
+
+[Check more details](#content-of-uiprops)
+
+## ActiveBoolean widget
+
+Referenced as: `"ui:widget": "ActiveBoolean"`.
+
+A smart boolean component based on the [@mui/material/Checkbox](https://mui.com/material-ui/api/checkbox/) keeping look&feel with other RJSF-default fields.
+
+This widget enables boolean (checkbox) fields to dynamically fetch their values from external APIs and respond to form changes, following the same patterns as other Active widgets.
+
+### ActiveBoolean Data Fetching
+
+When instantiated, it loads (prefetch) the **default** value using a single HTTP call based on the `fetch:*` from the `ui:props`.
+
+Once fetched, the `fetch:response:value` selector is used to pick the default value.
+This selector is expected to resolve into a boolean value, or a value that can be coerced to boolean:
+
+- Boolean values: `true`, `false`
+- String values: `"true"`, `"false"`, `"1"`, `"0"` (case-insensitive)
+- Numeric values: `1` (true), `0` (false), any non-zero number (true)
+
+The data are further re-fetched if the value of one of the `fetch:retrigger` referenced values is changed.
+If the `fetch:retrigger` is omitted, the fetch is issued just once to preload the data.
+
+Because a checkbox's default value only applies when the field is initially unchecked, any changes to the returned value in subsequent requests are ignored if the user has already interacted with the field.
+If you want to keep the field unchanged until the user interacts with it, set `fetch:skipInitialValue` to `true`.
+
+**Example:**
+
+```json
+"enableFeature": {
+  "type": "boolean",
+  "title": "Enable Advanced Features",
+  "ui:widget": "ActiveBoolean",
+  "ui:props": {
+    "fetch:url": "https://api.example.com/feature-flags?tenant=$${{current.tenantId}}",
+    "fetch:response:value": "features.advanced.enabled",
+    "fetch:response:default": false,
+    "fetch:retrigger": ["current.tenantId"]
+  }
+}
+```
+
+### ActiveBoolean widget ui:props
+
+The widget supports following `ui:props`:
+
+- fetch:url
+- fetch:headers
+- fetch:method
+- fetch:body
+- fetch:retrigger
+- fetch:clearOnRetrigger
+- fetch:retry:maxAttempts
+- fetch:retry:delay
+- fetch:retry:backoff
+- fetch:retry:statusCodes
+- fetch:error:ignoreUnready
+- fetch:error:silent
+- fetch:skipInitialValue
+- fetch:response:value
+- fetch:response:default
 
 [Check more details](#content-of-uiprops)
 
