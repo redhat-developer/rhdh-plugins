@@ -5,7 +5,8 @@ RHDH default **SCM integrations** wiring for the **new frontend system**: `scmIn
 ## Usage
 
 - **Dynamic loading**: default export is a `FrontendModule` suitable for `@backstage/frontend-dynamic-feature-loader`.
-- **Static / alpha**: import from `@red-hat-developer-hub/backstage-plugin-app-integrations/alpha` for `appIntegrationsModule` and `mergeScmAuthFromDeps` (and `ScmAuthFactoryDeps` if you need the same merge logic outside the module).
+- **Static**: import from `@red-hat-developer-hub/backstage-plugin-app-integrations` for `appIntegrationsModule`.
+- **Alpha utilities**: import from `@red-hat-developer-hub/backstage-plugin-app-integrations/alpha` for `mergeScmAuthFromDeps` and `ScmAuthFactoryDeps` (if you need the same merge logic outside the module).
 
 ## Config
 

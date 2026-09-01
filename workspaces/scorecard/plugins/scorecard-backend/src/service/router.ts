@@ -17,6 +17,7 @@ import {
   AuthenticationError,
   InputError,
   NotAllowedError,
+  NotFoundError,
 } from '@backstage/errors';
 import express from 'express';
 import Router from 'express-promise-router';
@@ -46,6 +47,7 @@ import { scorecardMetricReadPermission } from '@red-hat-developer-hub/backstage-
 import { validateDatasourceQueryParams } from '../middlewares/validateDatasourceQueryParams';
 import { AggregationsService } from './aggregations/AggregationsService';
 import { ThresholdResolver } from '../threshold/ThresholdResolver';
+import type { ScorecardCollectorsService } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 export type ScorecardRouterOptions = {
   service: {
@@ -58,6 +60,7 @@ export type ScorecardRouterOptions = {
   permissions: PermissionsService;
   logger: LoggerService;
   thresholdResolver: ThresholdResolver;
+  collectorsService: ScorecardCollectorsService;
 };
 
 export async function createRouter({
@@ -68,6 +71,7 @@ export async function createRouter({
   permissions,
   logger,
   thresholdResolver,
+  collectorsService,
 }: ScorecardRouterOptions): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -104,6 +108,40 @@ export async function createRouter({
       return res.json({ metrics: metricProvidersRegistry.listMetrics() });
     },
   );
+
+  router.get('/metrics/:metricId/collectors', async (req, res) => {
+    const { metricId } = req.params;
+
+    const { conditions } = await authorizeConditional(
+      await httpAuth.credentials(req),
+      permissions,
+      scorecardMetricReadPermission,
+    );
+
+    const metric = metricProvidersRegistry.getMetric(metricId);
+    const authorizedMetrics = filterAuthorizedMetrics([metric], conditions);
+
+    if (authorizedMetrics.length === 0) {
+      throw new NotAllowedError(
+        `To view the scorecard metrics, your administrator must grant you the required permission.`,
+      );
+    }
+
+    const collectors = (metric.collectorIds ?? []).map(collectorId => {
+      try {
+        return collectorsService.getCollectorMetadata(collectorId);
+      } catch (error) {
+        if (error instanceof NotFoundError) {
+          throw new Error(
+            `Metric '${metricId}' is configured to use collector '${collectorId}', but that collector is not registered.`,
+          );
+        }
+        throw error;
+      }
+    });
+
+    res.json({ collectors });
+  });
 
   router.get(
     '/metrics/catalog/:kind/:namespace/:name',

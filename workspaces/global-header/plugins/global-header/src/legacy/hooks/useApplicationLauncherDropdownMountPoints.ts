@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { defaultApplicationLauncherDropdownMountPoints } from '../defaultMountPoints/defaultMountPoints';
+import { defaultApplicationLauncherDropdownMountPoints } from '../defaultMountPoints/defaultDropdownMountPoints';
 import { ApplicationLauncherDropdownMountPoint, ScalprumState } from '../types';
 import { useScalprum } from '@scalprum/react-core';
 

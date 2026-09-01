@@ -34,22 +34,32 @@ describe('Phase', () => {
       expect(Phase.from('publish')).toBe(Phase.PUBLISH);
     });
 
+    it('returns Phase.ADVERSARIAL_ANALYZE for "adversarial-analyze"', () => {
+      expect(Phase.from('adversarial-analyze')).toBe(Phase.ADVERSARIAL_ANALYZE);
+    });
+
+    it('returns Phase.ADVERSARIAL_MIGRATE for "adversarial-migrate"', () => {
+      expect(Phase.from('adversarial-migrate')).toBe(Phase.ADVERSARIAL_MIGRATE);
+    });
+
     it('throws for an invalid phase', () => {
       expect(() => Phase.from('invalid')).toThrow(
-        'Invalid migration phase: "invalid". Valid: init, analyze, migrate, publish',
+        'Invalid migration phase: "invalid". Valid: init, analyze, migrate, publish, adversarial-analyze, adversarial-migrate',
       );
     });
   });
 
   describe('all', () => {
-    it('returns 4 phases in ordinal order', () => {
+    it('returns all 6 phases in ordinal order', () => {
       const all = Phase.all();
-      expect(all).toHaveLength(4);
+      expect(all).toHaveLength(6);
       expect(all).toEqual([
         Phase.INIT,
         Phase.ANALYZE,
         Phase.MIGRATE,
         Phase.PUBLISH,
+        Phase.ADVERSARIAL_ANALYZE,
+        Phase.ADVERSARIAL_MIGRATE,
       ]);
     });
   });
@@ -66,9 +76,34 @@ describe('Phase', () => {
     });
   });
 
+  describe('adversarialPhases', () => {
+    it('returns the two adversarial phases', () => {
+      expect(Phase.adversarialPhases()).toEqual([
+        Phase.ADVERSARIAL_ANALYZE,
+        Phase.ADVERSARIAL_MIGRATE,
+      ]);
+    });
+  });
+
+  describe('adversarialAgentPhaseValues', () => {
+    it('returns ["analyze", "migrate"]', () => {
+      expect(Phase.adversarialAgentPhaseValues()).toEqual([
+        'analyze',
+        'migrate',
+      ]);
+    });
+  });
+
   describe('values', () => {
     it('returns raw string values for all phases', () => {
-      expect(Phase.values()).toEqual(['init', 'analyze', 'migrate', 'publish']);
+      expect(Phase.values()).toEqual([
+        'init',
+        'analyze',
+        'migrate',
+        'publish',
+        'adversarial-analyze',
+        'adversarial-migrate',
+      ]);
     });
   });
 
@@ -102,6 +137,16 @@ describe('Phase', () => {
       expect(Phase.PUBLISH.isModulePhase()).toBe(true);
       expect(Phase.PUBLISH.isProjectPhase()).toBe(false);
     });
+
+    it('ADVERSARIAL_ANALYZE is a module phase', () => {
+      expect(Phase.ADVERSARIAL_ANALYZE.isModulePhase()).toBe(true);
+      expect(Phase.ADVERSARIAL_ANALYZE.isProjectPhase()).toBe(false);
+    });
+
+    it('ADVERSARIAL_MIGRATE is a module phase', () => {
+      expect(Phase.ADVERSARIAL_MIGRATE.isModulePhase()).toBe(true);
+      expect(Phase.ADVERSARIAL_MIGRATE.isProjectPhase()).toBe(false);
+    });
   });
 
   describe('ordinal', () => {
@@ -110,6 +155,8 @@ describe('Phase', () => {
       expect(Phase.ANALYZE.ordinal).toBe(1);
       expect(Phase.MIGRATE.ordinal).toBe(2);
       expect(Phase.PUBLISH.ordinal).toBe(3);
+      expect(Phase.ADVERSARIAL_ANALYZE.ordinal).toBe(4);
+      expect(Phase.ADVERSARIAL_MIGRATE.ordinal).toBe(5);
     });
   });
 
@@ -119,6 +166,8 @@ describe('Phase', () => {
       expect(Phase.ANALYZE.toString()).toBe('analyze');
       expect(Phase.MIGRATE.toString()).toBe('migrate');
       expect(Phase.PUBLISH.toString()).toBe('publish');
+      expect(Phase.ADVERSARIAL_ANALYZE.toString()).toBe('adversarial-analyze');
+      expect(Phase.ADVERSARIAL_MIGRATE.toString()).toBe('adversarial-migrate');
     });
   });
 

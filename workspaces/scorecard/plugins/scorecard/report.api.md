@@ -158,6 +158,15 @@ const _default: OverridableFrontendPlugin<
         filter?: string | FilterPredicate | ((entity: Entity) => boolean);
       };
     }>;
+    'home-page-widget:scorecard/scorecard-avg-open-prs': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-avg-open-prs';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
     'home-page-widget:scorecard/scorecard-default-aggregation': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
       name: 'scorecard-default-aggregation';
@@ -170,6 +179,15 @@ const _default: OverridableFrontendPlugin<
     'home-page-widget:scorecard/scorecard-deprecated-metric-id': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
       name: 'scorecard-deprecated-metric-id';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-entities-with-open-prs': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-entities-with-open-prs';
       config: {};
       configInput: {};
       output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
@@ -215,6 +233,33 @@ const _default: OverridableFrontendPlugin<
     'home-page-widget:scorecard/scorecard-jira-open-issues': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
       name: 'scorecard-jira-open-issues';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-max-open-prs': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-max-open-prs';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-min-open-prs': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-min-open-prs';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-total-open-bugs': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-total-open-bugs';
       config: {};
       configInput: {};
       output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
@@ -431,6 +476,11 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.drillDownCalculationFailures': string;
     readonly 'metric.homepageEntityHealthRatio': string;
     readonly 'metric.homepageEntityCalculationHealth': string;
+    readonly 'aggregation.min': string;
+    readonly 'aggregation.max': string;
+    readonly 'aggregation.sum': string;
+    readonly 'aggregation.count': string;
+    readonly 'aggregation.average': string;
     readonly 'thresholds.success': string;
     readonly 'thresholds.warning': string;
     readonly 'thresholds.error': string;

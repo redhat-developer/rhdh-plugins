@@ -345,9 +345,6 @@ p, role:default/team_a, intelligent-assistant.notebooks.manage, use, allow
 p, role:default/team_a, mcp.tools.use, use, allow
 p, role:default/team_a, mcp.tools.manage, use, allow
 
-# Required for saved prompts
-p, role:default/team_a, intelligent-assistant.saved-prompts.manage, update, allow
-
 g, user:default/<your-user-name>, role:default/team_a
 
 ```

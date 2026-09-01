@@ -15,9 +15,11 @@
  */
 
 /**
- * Stub package root export for API reporting and bundlers. This plugin targets
- * the new frontend system only; use `./alpha` for public APIs.
+ * RHDH app module for the new frontend system.
  *
  * @packageDocumentation
  */
-export default {};
+
+export { appDefaultsModule } from './appDefaultsModule';
+
+export { appDefaultsModule as default } from './appDefaultsModule';

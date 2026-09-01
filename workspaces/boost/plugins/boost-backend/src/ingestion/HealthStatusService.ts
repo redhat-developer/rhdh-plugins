@@ -89,8 +89,9 @@ export class HealthStatusService {
   async getHealthStatuses(
     includeDisabled: boolean = false,
   ): Promise<ConnectorHealthStatus[]> {
-    // Step 1: Discover candidates from config
-    const candidates = this.configReader.listCandidates();
+    // Step 1: Discover candidates from config (async — resolves
+    // runtimeEnabled via RuntimeConfigResolver for DB overrides)
+    const candidates = await this.configReader.listCandidates();
 
     // Step 2: Filter out disabled connectors unless includeDisabled
     const filtered = includeDisabled

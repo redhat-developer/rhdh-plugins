@@ -18,7 +18,7 @@ import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 
 import { Typography } from '@material-ui/core';
 import { Button } from '@patternfly/react-core';
-import { PlusCircleIcon } from '@patternfly/react-icons';
+import { AddCircleOIcon } from '@patternfly/react-icons';
 import { CatalogIcon } from '@patternfly/react-icons/dist/esm/icons';
 
 import { intelligentAssistantTranslationRef } from '../../translations/ref';
@@ -59,7 +59,7 @@ export const NotebooksTab = ({
         <Button
           variant="primary"
           className={classes.notebooksAction}
-          icon={<PlusCircleIcon />}
+          icon={<AddCircleOIcon />}
           onClick={onCreateNotebook}
         >
           {t('notebooks.empty.action')}

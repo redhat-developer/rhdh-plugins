@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog
 
+## 1.0.2
+
+### Patch Changes
+
+- dbce029: Bump ai-integrations workspace to Backstage v1.54.0
+- Updated dependencies [dbce029]
+  - @red-hat-developer-hub/backstage-plugin-catalog-model-ai-model-server@0.2.1
+
 ## 1.0.1
 
 ### Patch Changes

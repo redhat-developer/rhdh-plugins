@@ -13,4 +13,4 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { adoptionInsightsTranslationsModule as default } from './alpha';
+export { adoptionInsightsTranslationsModule as default } from './index';

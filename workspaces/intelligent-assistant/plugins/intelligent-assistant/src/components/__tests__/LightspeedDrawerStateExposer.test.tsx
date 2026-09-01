@@ -43,6 +43,8 @@ describe('LightspeedDrawerStateExposer', () => {
     setDraftFileContents: jest.fn(),
     shellViewTab: 0,
     setShellViewTab: jest.fn(),
+    activeNotebookId: undefined,
+    setActiveNotebookId: jest.fn(),
     ...overrides,
   });
 

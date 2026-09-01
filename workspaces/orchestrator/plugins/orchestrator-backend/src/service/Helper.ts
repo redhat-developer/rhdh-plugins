@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
-import type { Config } from '@backstage/config';
-
-import fs from 'fs-extra';
-
 import {
   ProcessInstance,
   ProcessInstanceState,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
-
-import os from 'os';
 
 export async function retryAsyncFunction<T>(args: {
   asyncFn: () => Promise<T | undefined>;
@@ -40,30 +33,6 @@ export async function retryAsyncFunction<T>(args: {
     await new Promise(resolve => setTimeout(resolve, args.delayMs));
   }
   throw new Error('Exceeded maximum number of retries for async function');
-}
-
-export async function getWorkingDirectory(
-  config: Config,
-  logger: LoggerService,
-): Promise<string> {
-  if (!config.has('backend.workingDirectory')) {
-    return os.tmpdir();
-  }
-
-  const workingDirectory = config.getString('backend.workingDirectory');
-  try {
-    // Check if working directory exists and is writable
-    await fs.access(workingDirectory, fs.constants.F_OK | fs.constants.W_OK);
-    logger.info(`using working directory: ${workingDirectory}`);
-  } catch (err: any) {
-    logger.error(
-      `working directory ${workingDirectory} ${
-        err.code === 'ENOENT' ? 'does not exist' : 'is not writable'
-      }`,
-    );
-    throw err;
-  }
-  return workingDirectory;
 }
 
 export async function executeWithRetry(

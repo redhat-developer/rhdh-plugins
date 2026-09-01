@@ -28,6 +28,7 @@ import {
   ActiveText,
   ActiveDropdown,
   ActiveMultiSelect,
+  ActiveBoolean,
 } from './widgets';
 import { useGetExtraErrors, useGetExtraErrorsForField } from './utils';
 
@@ -44,6 +45,7 @@ const widgets = {
   ActiveText,
   ActiveDropdown,
   ActiveMultiSelect,
+  ActiveBoolean,
 };
 
 const FormDecoratorContent = ({

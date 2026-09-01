@@ -47,34 +47,21 @@ import {
   getNotebookAcceptedFileTypes,
   validateFiles,
 } from '../../utils/notebook-upload-utils';
+import { getScopedDialogProps } from '../../utils/scoped-dialog-utils';
 import { FileListItem } from './FileListItem';
+import { notebookDialogStyles } from './notebookDialogStyles';
 
 const UNIQUE_FILE_TYPE_LABELS = [
   ...new Set(Object.values(NOTEBOOK_EXTENSION_TO_FILE_TYPE)),
 ].map(t => t.toUpperCase());
 
 const useStyles = makeStyles(theme => ({
-  dialogPaper: {
-    borderRadius: 24,
-    maxWidth: 578,
-  },
-  dialogTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '24px 24px 16px',
-  },
-  titleText: {
-    fontWeight: 500,
-    fontSize: '1.25rem',
-    lineHeight: '1.625rem',
+  ...notebookDialogStyles(theme),
+  titleTextCompact: {
+    fontWeight: 600,
+    fontSize: '1.125rem',
+    lineHeight: '1.5rem',
     letterSpacing: '-0.25px',
-  },
-  closeButton: {
-    color: theme.palette.text.primary,
-  },
-  dialogContent: {
-    padding: '0 24px 24px',
   },
   errorAlert: {
     marginBottom: theme.spacing(2),
@@ -120,6 +107,11 @@ const useStyles = makeStyles(theme => ({
   },
   dialogActions: {
     padding: '16px 24px',
+    justifyContent: 'flex-start',
+    gap: theme.spacing(1),
+  },
+  dialogActionsCompact: {
+    padding: '12px 16px !important',
     justifyContent: 'flex-start',
     gap: theme.spacing(1),
   },
@@ -218,6 +210,7 @@ type AddDocumentModalProps = {
   onDuplicatesFound?: (duplicateFiles: File[], allFiles: File[]) => void;
   filesToAdd?: File[];
   onFilesAdded?: () => void;
+  isCompact?: boolean;
 };
 
 export const AddDocumentModal = ({
@@ -232,13 +225,13 @@ export const AddDocumentModal = ({
   onDuplicatesFound,
   filesToAdd,
   onFilesAdded,
+  isCompact = false,
 }: AddDocumentModalProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
   const uploadMutation = useUploadDocument();
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-
   const totalExistingAndSelected =
     existingDocumentNames.length + selectedFiles.length;
   const remainingSlots = NOTEBOOK_MAX_FILES - totalExistingAndSelected;
@@ -319,17 +312,26 @@ export const AddDocumentModal = ({
     onClose();
   };
 
+  const scopedProps = getScopedDialogProps(isCompact);
+
   return (
     <Dialog
       open={isOpen}
       onClose={handleClose}
       aria-labelledby="add-document-modal-title"
+      {...scopedProps}
       PaperProps={{
-        className: classes.dialogPaper,
+        className: isCompact ? classes.dialogPaperCompact : classes.dialogPaper,
+        ...scopedProps.PaperProps,
       }}
     >
-      <DialogTitle className={classes.dialogTitle}>
-        <Typography component="h2" className={classes.titleText}>
+      <DialogTitle
+        className={isCompact ? classes.dialogTitleCompact : classes.dialogTitle}
+      >
+        <Typography
+          component="h2"
+          className={isCompact ? classes.titleTextCompact : classes.titleText}
+        >
           {t('notebook.upload.modal.title')}
           {selectedFiles.length > 0 &&
             ` (${selectedFiles.length}/${NOTEBOOK_MAX_FILES - existingDocumentNames.length})`}
@@ -344,7 +346,11 @@ export const AddDocumentModal = ({
         </IconButton>
       </DialogTitle>
 
-      <DialogContent className={classes.dialogContent}>
+      <DialogContent
+        className={
+          isCompact ? classes.dialogContentCompact : classes.dialogContent
+        }
+      >
         {validationErrors.length > 0 && (
           <Alert
             variant="danger"
@@ -447,7 +453,11 @@ export const AddDocumentModal = ({
         )}
       </DialogContent>
 
-      <DialogActions className={classes.dialogActions}>
+      <DialogActions
+        className={
+          isCompact ? classes.dialogActionsCompact : classes.dialogActions
+        }
+      >
         <Button
           onClick={handleAddFiles}
           className={classes.addButton}

@@ -30,18 +30,18 @@ The SDK MUST provide a delta sync framework accepting connector-reported additio
 
 ### Requirement: Sync Cursor Persistence
 
-Sync cursors MUST be persisted across polling cycles so providers can resume incremental sync.
+Sync cursors MUST be persisted across polling cycles so providers can resume incremental sync. Persistence is delegated to a pluggable `CursorStore` interface: the SDK ships an `InMemoryCursorStore` for development and testing, and a durable (e.g. database-backed) implementation is the responsibility of the consuming backend plugin, which supplies it via `DeltaSyncManagerOptions.cursorStore`.
 
 #### Scenario: Cursor persisted after successful delta sync (RHIDP-15262)
 
 - **WHEN** a delta sync completes successfully with `nextCursor: 'etag-abc123'`
-- **THEN** the cursor is persisted in the catalog database as a provider-scoped key-value pair: `{ providerId: 'kagenti/default', cursor: 'etag-abc123', lastSyncTimestamp: '2026-07-08T10:00:00Z' }`
+- **THEN** the cursor is persisted via the configured `CursorStore`, keyed by the manager's construction-time `locationKey`, as a `CursorState`: `{ cursor: 'etag-abc123', lastSyncTimestamp: '2026-07-08T10:00:00Z' }` (e.g. for `providerId: 'ogx/default'`)
 - **AND** on the next polling cycle, the provider reads the cursor and passes it to the connector's delta API
 
 #### Scenario: Cursor retrieved on next poll (RHIDP-15262)
 
 - **WHEN** the provider starts a new polling cycle
-- **THEN** it calls `deltaSyncManager.getCursor(providerId)` which returns the last persisted cursor
+- **THEN** it calls `deltaSyncManager.getCursor()` which returns the last persisted cursor for the manager's `locationKey`
 - **AND** the provider passes the cursor to the connector (e.g., `If-None-Match: etag-abc123` header or `?cursor=etag-abc123` query param)
 
 ### Requirement: Fallback to Full Refresh

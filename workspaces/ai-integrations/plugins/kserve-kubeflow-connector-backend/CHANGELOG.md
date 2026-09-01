@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend
 
+## 0.1.4
+
+### Patch Changes
+
+- bc92626: Use metadata.resourceVersion instead of status condition timestamps to detect InferenceService changes, fixing missed annotation-only updates.
+
+## 0.1.3
+
+### Patch Changes
+
+- dbce029: Bump ai-integrations workspace to Backstage v1.54.0
+
 ## 0.1.2
 
 ### Patch Changes

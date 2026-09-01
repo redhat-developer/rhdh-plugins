@@ -15,8 +15,8 @@
  */
 
 export { useAppDrawer } from './hooks/useAppDrawer';
-export { ApplicationDrawer } from './components/ApplicationDrawer';
-export { DrawerPanel } from './components/DrawerPanel';
+export { ApplicationDrawer } from '../legacy/ApplicationDrawer';
+export { DrawerPanel } from '../legacy/DrawerPanel';
 
 export { appDrawerContentDataRef } from './extensions/appDrawerContentDataRef';
 export { AppDrawerContentBlueprint } from './extensions/AppDrawerContentBlueprint';
@@ -25,6 +25,6 @@ export {
   appDrawerModule,
 } from './extensions/appDrawerModule';
 
-export type { ApplicationDrawerProps } from './components/ApplicationDrawer';
-export type { DrawerPanelProps } from './components/DrawerPanel';
+export type { ApplicationDrawerProps } from '../legacy/ApplicationDrawer';
+export type { DrawerPanelProps } from '../legacy/DrawerPanel';
 export type { AppDrawerContent, AppDrawerApi } from './types';

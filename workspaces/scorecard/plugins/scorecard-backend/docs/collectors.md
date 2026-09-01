@@ -18,6 +18,8 @@ Collector APIs are provided by `@red-hat-developer-hub/backstage-plugin-scorecar
 - `ScorecardCollectorsService`
 - `scorecardCollectorsServiceRef`
 
+`ScorecardCollectorsService` is resolved through `scorecardCollectorsServiceRef` and a default factory.
+
 ## Collector ID convention
 
 Collector IDs follow the `datasource:name` format (e.g.,`github:deployments`, `github:workflowRuns`).

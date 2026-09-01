@@ -58,6 +58,11 @@
     "prettier": "^2.3.2",
     "typescript": "~5.3.0"
   },
+  "dependenciesMeta": {
+    "better-sqlite3": {
+      "built": true
+    }
+  },
   "resolutions": {
     "isolated-vm": "6.1.2",
     "better-sqlite3": "^12.0.0",
@@ -65,7 +70,9 @@
     "@types/react-dom": "^18",
     "fsevents": "~2.3.2",
     "@backstage/backend-app-api": "1.4.1",
-    "@backstage/backend-plugin-api": "1.6.2"
+    "@backstage/backend-plugin-api": "1.6.2",
+    "basic-ftp": "^5.3.1",
+    "js-cookie": "^3.0.7"
   },
   "prettier": "@spotify/prettier-config",
   "lint-staged": {

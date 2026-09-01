@@ -27,7 +27,7 @@ import {
 import useAsync from 'react-use/lib/useAsync';
 import { stringify } from 'yaml';
 
-import { defaultWidgetsApiRef } from '@red-hat-developer-hub/backstage-plugin-homepage';
+import { defaultWidgetsApiRef } from '@red-hat-developer-hub/backstage-plugin-homepage/legacy';
 
 export const DebugHomepageDefaultWidgets = () => {
   const defaultWidgetsApi = useApi(defaultWidgetsApiRef);

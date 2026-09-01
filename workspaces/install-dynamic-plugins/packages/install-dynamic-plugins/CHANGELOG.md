@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/cli-module-install-dynamic-plugins
 
+## 0.4.1
+
+### Patch Changes
+
+- f5c02e3: Fix `ref://` plugin references being ignored when the referenced plugin is disabled by default
+
 ## 0.4.0
 
 ### Minor Changes

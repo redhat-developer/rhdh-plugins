@@ -81,6 +81,7 @@ export class DoraDeploymentFrequencyProvider
         unit: '/week',
         history: true,
         defaultVisualization: 'sparkline',
+        collectorIds: [this.config.deploymentsCollector.id],
       },
     ];
   }

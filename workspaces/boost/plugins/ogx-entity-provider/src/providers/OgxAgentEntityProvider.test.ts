@@ -21,6 +21,12 @@ import type {
 import { mockServices } from '@backstage/backend-test-utils';
 import type { EntityProviderConnection } from '@backstage/plugin-catalog-node';
 
+import {
+  AI_ASSET_CATEGORY_ANNOTATION,
+  AI_ASSET_SOURCE_ANNOTATION,
+  AI_ASSET_VERSION_ANNOTATION,
+} from '@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk';
+
 import { OgxAgentEntityProvider } from './OgxAgentEntityProvider';
 import type { OgxEntityProviderConfig } from '../types';
 
@@ -106,6 +112,76 @@ describe('OgxAgentEntityProvider', () => {
     expect(entity.metadata.title).toBe('Code Assistant');
     expect(entity.metadata.annotations['ai-catalog.rhdh.com/model']).toBe(
       'meta-llama/Llama-3.1-8B-Instruct',
+    );
+    expect(entity.metadata.annotations[AI_ASSET_CATEGORY_ANNOTATION]).toBe(
+      'agent',
+    );
+    expect(entity.metadata.annotations[AI_ASSET_SOURCE_ANNOTATION]).toBe('ogx');
+    expect(entity.metadata.annotations[AI_ASSET_VERSION_ANNOTATION]).toBe(
+      '0.0.0-unknown',
+    );
+  });
+
+  it('should include all three required AI asset annotations', async () => {
+    const config: OgxEntityProviderConfig = {
+      baseUrl: 'http://localhost:8321',
+      agents: [
+        {
+          id: 'annotated-agent',
+          name: 'Annotated Agent',
+          version: '1.2.3',
+        },
+      ],
+    };
+
+    const provider = new OgxAgentEntityProvider({
+      config,
+      logger: mockServices.logger.mock(),
+      taskRunner,
+    });
+
+    await provider.connect(mockConnection);
+    await taskRunner.runAll();
+
+    const mutation = (mockConnection.applyMutation as jest.Mock).mock
+      .calls[0][0];
+    const entity = mutation.entities[0].entity;
+
+    expect(entity.metadata.annotations[AI_ASSET_CATEGORY_ANNOTATION]).toBe(
+      'agent',
+    );
+    expect(entity.metadata.annotations[AI_ASSET_SOURCE_ANNOTATION]).toBe('ogx');
+    expect(entity.metadata.annotations[AI_ASSET_VERSION_ANNOTATION]).toBe(
+      '1.2.3',
+    );
+  });
+
+  it('should normalize version when no explicit version is set', async () => {
+    const config: OgxEntityProviderConfig = {
+      baseUrl: 'http://localhost:8321',
+      agents: [
+        {
+          id: 'no-version-agent',
+          name: 'No Version',
+        },
+      ],
+    };
+
+    const provider = new OgxAgentEntityProvider({
+      config,
+      logger: mockServices.logger.mock(),
+      taskRunner,
+    });
+
+    await provider.connect(mockConnection);
+    await taskRunner.runAll();
+
+    const mutation = (mockConnection.applyMutation as jest.Mock).mock
+      .calls[0][0];
+    const entity = mutation.entities[0].entity;
+
+    expect(entity.metadata.annotations[AI_ASSET_VERSION_ANNOTATION]).toBe(
+      '0.0.0-unknown',
     );
   });
 

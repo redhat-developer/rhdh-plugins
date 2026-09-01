@@ -47,6 +47,9 @@ const dcmTranslationEs: TranslationMessages<
     'common.rows': 'filas',
     'common.previousPage': 'Anterior',
     'common.nextPage': 'Siguiente',
+    'common.next': 'Siguiente',
+    'common.back': 'Atrás',
+    'common.loadingMore': 'Cargando m\u00e1s\u2026',
     'deleteDialog.title': 'Eliminar {{resourceLabel}}',
     'deleteDialog.confirmButton': 'Eliminar',
     'deleteDialog.cancelButton': 'Cancelar',
@@ -158,11 +161,13 @@ const dcmTranslationEs: TranslationMessages<
     'catalogItems.deleteLabel': 'elemento del cat\u00e1logo',
     'catalogItems.columns.displayName': 'Nombre visible',
     'catalogItems.columns.apiVersion': 'Versi\u00f3n de API',
-    'catalogItems.columns.serviceType': 'Tipo de servicio',
+    'catalogItems.columns.resources': 'Recursos',
     'catalogItems.columns.fields': 'Campos',
     'catalogItems.columns.created': 'Creado',
     'catalogItems.fieldCount_one': '1 campo',
     'catalogItems.fieldCount_other': '{{count}} campos',
+    'catalogItems.resourceCount_one': '1 recurso',
+    'catalogItems.resourceCount_other': '{{count}} recursos',
     'catalogItems.form.importButton': 'Importar desde archivo',
     'catalogItems.form.importTooltip':
       'Rellenar el formulario desde una definici\u00f3n JSON o YAML',
@@ -207,6 +212,23 @@ const dcmTranslationEs: TranslationMessages<
     'catalogItems.form.schemaMustBeObject':
       'Debe ser un objeto JSON, no un array ni un primitivo',
     'catalogItems.form.schemaInvalidJson': 'Sintaxis JSON no v\u00e1lida',
+    'catalogItems.wizard.tabOverview': 'Resumen',
+    'catalogItems.wizard.tabApi': 'API',
+    'catalogItems.wizard.tabResources': 'Recursos',
+    'catalogItems.wizard.resourcesDescription':
+      'A\u00f1ada uno o m\u00e1s recursos. Cada recurso hace referencia a un tipo de servicio y define sus propias configuraciones de campo.',
+    'catalogItems.wizard.resourcesRequired': 'Se requiere al menos un recurso.',
+    'catalogItems.wizard.addResourceButton': 'A\u00f1adir recurso',
+    'catalogItems.wizard.removeResource': 'Eliminar recurso',
+    'catalogItems.wizard.unnamedResource': '(sin nombre)',
+    'catalogItems.wizard.resourceNameLabel': 'Nombre del recurso *',
+    'catalogItems.wizard.resourceNameHelper':
+      'Identificador \u00fanico dentro de este elemento del cat\u00e1logo \u2014 p.\u00a0ej. app, ordersDb',
+    'catalogItems.wizard.requiresResourcesLabel': 'Recursos requeridos',
+    'catalogItems.wizard.requiresResourcesHelper':
+      'Seleccione los recursos que deben aprovisionarse antes que este',
+    'catalogItems.wizard.apiVersionImmutable':
+      'La versi\u00f3n de API no puede cambiarse tras la creaci\u00f3n',
     'instances.emptyTitle': 'No hay instancias aprovisionadas',
     'instances.emptyDescription':
       'Las instancias de elementos del cat\u00e1logo representan servicios aprovisionados.',
@@ -229,7 +251,7 @@ const dcmTranslationEs: TranslationMessages<
     'instances.rehydrateDialogConfirm': 'Rehidratar',
     'instances.columns.displayName': 'Nombre visible',
     'instances.columns.catalogItem': 'Elemento del cat\u00e1logo',
-    'instances.columns.resourceId': 'ID de recurso',
+    'instances.columns.resourceIds': 'IDs de recurso',
     'instances.columns.apiVersion': 'Versi\u00f3n de API',
     'instances.columns.created': 'Creado',
     'instances.form.displayNameLabel': 'Nombre visible *',
@@ -250,6 +272,7 @@ const dcmTranslationEs: TranslationMessages<
       '(campos editables definidos por este elemento del cat\u00e1logo)',
     'instances.form.noEditableFields':
       'Este elemento del cat\u00e1logo no tiene campos editables.',
+    'instances.wizard.tabOverview': 'Resumen',
     'resources.emptyTitle': 'No se encontraron recursos',
     'resources.emptyDescription':
       'Las instancias de tipos de servicio aprovisionadas a trav\u00e9s de DCM aparecer\u00e1n aqu\u00ed.',
@@ -313,6 +336,16 @@ const dcmTranslationEs: TranslationMessages<
       'Debe seguir el patr\u00f3n v<n\u00famero>[alpha|beta][n\u00famero] \u2014 p. ej. v1, v1alpha1',
     'validation.catalogItem.serviceTypeRequired':
       'El tipo de servicio es obligatorio',
+    'validation.catalogItem.resourceNameRequired':
+      'El nombre del recurso es obligatorio',
+    'validation.catalogItem.resourceNameDuplicate':
+      'El nombre del recurso debe ser \u00fanico dentro del elemento del cat\u00e1logo',
+    'validation.catalogItem.resourceNamePattern':
+      'Solo se permiten letras, n\u00fameros, guiones y guiones bajos (debe comenzar con una letra)',
+    'validation.catalogItem.requiresResourcesCycle':
+      'Dependencia circular detectada \u2014 este recurso se requiere indirectamente a s\u00ed mismo',
+    'validation.catalogItem.resourcesRequired':
+      'Se requiere al menos un recurso',
     'validation.catalogItem.duplicatePath':
       'Ruta duplicada \u2014 las rutas deben ser \u00fanicas',
     'validation.catalogItem.invalidJson':
