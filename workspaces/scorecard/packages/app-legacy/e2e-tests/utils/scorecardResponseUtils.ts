@@ -286,7 +286,11 @@ export const emptyOpenPrsWeightedAggregatedResponse = {
   },
 };
 
-/** Deliberately unknown `aggregationType` for UnsupportedAggregationType UI tests. */
+/**
+ * Unrecognized result shape for UnsupportedAggregationType UI tests.
+ * Cards dispatch on payload shape, so an unknown type name with a weighted
+ * `values[]` result still renders the weighted card. Omit `value` and `values`.
+ */
 export const openPrsWeightedUnsupportedAggregationResponse = {
   id: 'github.openPRs',
   status: 'success' as const,
@@ -294,7 +298,13 @@ export const openPrsWeightedUnsupportedAggregationResponse = {
     ...openPrsWeightedKpiMetadataResponse,
     aggregationType: 'customUnknownAggregationKind',
   },
-  result: openPrsWeightedAggregatedResponse.result,
+  result: {
+    total: 10,
+    timestamp: '2026-01-24T14:10:32.858Z',
+    entitiesConsidered: 10,
+    calculationErrorCount: 0,
+    thresholds: DEFAULT_NUMBER_THRESHOLDS,
+  },
 };
 
 // Aggregated scorecard mocks: 10 GitHub entities, 10 Jira entities (totals in `result`)

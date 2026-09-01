@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { buildPagination, buildPaginationTmp } from './pagination';
+import { buildPaginationTmp } from '../service/api/test-utils';
+import { buildPagination } from './pagination';
 
 describe('buildPagination()', () => {
   it('should build the correct pagination obj when no query parameters are passed', () => {
@@ -78,7 +79,6 @@ describe('buildPagination()', () => {
     });
   });
 });
-
 describe('buildPaginationTmp()', () => {
   it('should return empty pagination when no input is provided', () => {
     expect(buildPaginationTmp(undefined)).toEqual({

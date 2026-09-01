@@ -47,6 +47,7 @@ Cards commonly uses the [InfoCard](https://backstage.io/storybook/?path=/story/l
          mountPoints:
            - mountPoint: home.page/cards
              importName: YourHomePageCard
+             module: Legacy
              config:
                layout: ...
                props: ...

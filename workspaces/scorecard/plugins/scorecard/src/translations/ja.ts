@@ -117,6 +117,11 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.homepageEntityCalculationHealth':
       'メトリクス計算エラーのないエンティティー: {{healthy}} / {{total}}',
     'metric.homepageEntityHealthRatio': '{{healthy}}/{{total}} エンティティー',
+    'aggregation.min': '最小',
+    'aggregation.max': '最大',
+    'aggregation.sum': '合計',
+    'aggregation.count': '件数',
+    'aggregation.average': '平均',
     'metric.jira.openIssues.description':
       'Jira で現在オープン状態になっている、重大かつ進行を妨げている課題の数を明示します。',
     'metric.jira.openIssues.title':

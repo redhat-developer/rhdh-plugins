@@ -13,8 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { coreExtensionData } from '@backstage/frontend-plugin-api';
+import { createExtensionTester } from '@backstage/frontend-test-utils';
+
 import plugin, { adoptionInsightsTranslationsModule } from './alpha';
 import translationsModuleDefault from './adoptionInsightsTranslationsModuleExport';
+import { rootRouteRef } from './routes';
 
 describe('adoption-insights alpha', () => {
   it('should export a valid frontend plugin', () => {
@@ -40,5 +44,29 @@ describe('adoption-insights alpha', () => {
 
   it('should export the translations module as default for NFS discovery', () => {
     expect(translationsModuleDefault).toBe(adoptionInsightsTranslationsModule);
+  });
+});
+
+describe('adoption-insights NFS wiring', () => {
+  // Everything above stays green against a plugin that contributes nothing:
+  // dropping the page from `extensions` leaves `$$type`, `id` and `routes`
+  // untouched, and the app then boots clean with no Adoption Insights anywhere
+  // — no error, no warning. These read the values the app actually resolves.
+  it('declares the path, title and route ref the app renders the page under', () => {
+    const tester = createExtensionTester(
+      plugin.getExtension('page:adoption-insights'),
+    );
+
+    expect(tester.get(coreExtensionData.routePath)).toBe('/adoption-insights');
+    expect(tester.get(coreExtensionData.title)).toBe('Adoption Insights');
+    expect(tester.get(coreExtensionData.routeRef)).toBe(rootRouteRef);
+  });
+
+  it('registers the page and the API extension on the plugin', () => {
+    // The API carries no extension data to assert, so this lookup is the only
+    // thing standing between it and being dropped from `extensions` — at which
+    // point the page renders and every request it makes fails.
+    expect(plugin.getExtension('page:adoption-insights')).toBeDefined();
+    expect(plugin.getExtension('api:adoption-insights')).toBeDefined();
   });
 });

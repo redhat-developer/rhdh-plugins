@@ -28,6 +28,13 @@ import {
 } from '@backstage/catalog-model';
 import type { Entity } from '@backstage/catalog-model';
 
+import {
+  AI_ASSET_CATEGORY_ANNOTATION,
+  AI_ASSET_SOURCE_ANNOTATION,
+  AI_ASSET_VERSION_ANNOTATION,
+  normalizeAIAssetVersion,
+} from '@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk';
+
 import type {
   OgxEntityProviderConfig,
   OgxModelListResponse,
@@ -159,6 +166,12 @@ export class OgxModelEntityProvider implements EntityProvider {
         annotations: {
           [ANNOTATION_LOCATION]: `${PROVIDER_ID}:${entityName}`,
           [ANNOTATION_ORIGIN_LOCATION]: `${PROVIDER_ID}:${entityName}`,
+          [AI_ASSET_CATEGORY_ANNOTATION]: 'model-server',
+          [AI_ASSET_SOURCE_ANNOTATION]: 'ogx',
+          [AI_ASSET_VERSION_ANNOTATION]: normalizeAIAssetVersion(
+            this.config.serverVersion ?? '0.0.0-unknown',
+            { entityRef: `aimodelserverapi:default/${entityName}` },
+          ),
         },
         labels: {
           'ai-catalog.rhdh.com/provider': 'ogx',

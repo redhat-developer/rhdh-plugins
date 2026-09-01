@@ -15,9 +15,13 @@
  */
 
 export * from '../models/AAPCredentials.model';
+export * from '../models/AdversarialAgent.model';
+export * from '../models/AdversarialAgentsGet200Response.model';
+export * from '../models/AdversarialAgentsPostRequest.model';
 export * from '../models/AgentMetrics.model';
 export * from '../models/Artifact.model';
 export * from '../models/ArtifactType.model';
+export * from '../models/CancellablePhase.model';
 export * from '../models/GitRepoAuth.model';
 export * from '../models/Job.model';
 export * from '../models/JobStatusEnum.model';
@@ -31,6 +35,8 @@ export * from '../models/ProjectStatus.model';
 export * from '../models/ProjectStatusState.model';
 export * from '../models/ProjectsGet200Response.model';
 export * from '../models/ProjectsPostRequest.model';
+export * from '../models/ProjectsProjectIdAdversarialRunPost202Response.model';
+export * from '../models/ProjectsProjectIdAdversarialRunPostRequest.model';
 export * from '../models/ProjectsProjectIdCollectArtifactsPost200Response.model';
 export * from '../models/ProjectsProjectIdCollectArtifactsPostRequest.model';
 export * from '../models/ProjectsProjectIdDelete200Response.model';

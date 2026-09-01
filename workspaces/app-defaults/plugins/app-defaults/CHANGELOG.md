@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-app-defaults
 
+## 0.1.0
+
+### Minor Changes
+
+- 74e0af0: Added extensible TemplateCard with NFS extension points for customizing the scaffolder template card action button and contributing badges.
+
+### Patch Changes
+
+- Updated dependencies [74e0af0]
+  - @red-hat-developer-hub/backstage-plugin-app-react@0.2.0
+
 ## 0.0.3
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-homepage
 
+## 1.18.0
+
+### Minor Changes
+
+- a98b8cd: Backstage version bump to v1.54.0
+
+### Patch Changes
+
+- fb31c7c: Updated dependency `react-grid-layout` to `1.5.4`.
+- Updated dependencies [a98b8cd]
+  - @red-hat-developer-hub/backstage-plugin-homepage-common@0.5.0
+
 ## 1.17.1
 
 ### Patch Changes

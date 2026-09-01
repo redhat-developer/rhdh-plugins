@@ -302,7 +302,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service?
 
 ### `GET /metrics/catalog/:kind/:namespace/:name/time-series`
 
-Returns daily time-series points for one metric on a catalog entity. Each point is the latest successful sample (`MAX(id)`) for that UTC calendar day. Calculation failures and null values are omitted. Returns `200` with `points: []` when the entity and metric are authorized but no data exists in the range.
+Returns daily time-series points for one metric on a catalog entity. Each point is the latest sample (`MAX(id)` among success or calculation-error rows) for that UTC calendar day. On a mixed day the later sample wins, so a later error is returned as `{ "value": null, "error": "..." }` (and clients can gap a sparkline). Days with no rows (or only null without `error_message`) are omitted. Returns `200` with `points: []` when the entity and metric are authorized but no data exists in the range.
 
 #### Path Parameters
 
@@ -346,7 +346,58 @@ curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service/
   },
   "points": [
     { "value": 8, "timestamp": "2026-04-27T23:10:00.000Z" },
-    { "value": 7, "timestamp": "2026-04-28T22:55:00.000Z" }
+    {
+      "value": null,
+      "timestamp": "2026-04-28T16:00:00.000Z",
+      "error": "GitHub API 500"
+    },
+    { "value": 7, "timestamp": "2026-04-29T22:55:00.000Z" }
+  ]
+}
+```
+
+### `GET /metrics/:metricId/collectors`
+
+Returns the collectors used as data sources for a composite metric calculation.
+
+#### Path Parameters
+
+| Parameter  | Type   | Required | Description                                                  |
+| ---------- | ------ | -------- | ------------------------------------------------------------ |
+| `metricId` | string | Yes      | Metric ID (e.g., `dora.changeFailureRate`, `github.openPRs`) |
+
+#### Permissions
+
+Requires `scorecard.metric.read` permission for the requested metric.
+
+#### Behavior
+
+- Returns `{ "collectors": [ ... ] }` with one entry per collector ID on the metric.
+- Metrics that do not use collectors (no `collectorIds`) return `{ "collectors": [] }`.
+- Unknown `metricId` returns `404 NotFoundError`.
+- Missing permission for the metric returns `403 NotAllowedError`.
+- A metric that references a collector ID that is not registered returns `500`.
+
+#### Example Request
+
+```bash
+curl -X GET "{{url}}/api/scorecard/metrics/dora.changeFailureRate/collectors" \
+  -H "Authorization: Bearer <token>"
+```
+
+#### Example Response
+
+```json
+{
+  "collectors": [
+    {
+      "id": "github:deployments",
+      "description": "Collects GitHub deployments."
+    },
+    {
+      "id": "jira:incidents",
+      "description": "Collects Jira incidents."
+    }
   ]
 }
 ```

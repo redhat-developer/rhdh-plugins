@@ -30,9 +30,6 @@ export const iaNotebooksUsePermission: BasicPermission;
 export const iaPermissions: BasicPermission[];
 
 // @public
-export const iaSavedPromptsManagePermission: BasicPermission;
-
-// @public
 export const iaSkillsAccessPermission: BasicPermission;
 
 // @public

@@ -13,18 +13,6 @@ proxy:
     followRedirects: true
 
 backend:
-  # Used for enabling authentication, secret is shared by all backend plugins
-  # See https://backstage.io/docs/auth/service-to-service-auth for
-  # information on the format
-  # auth:
-  #   keys:
-  #     - secret: ${BACKEND_SECRET}
-  auth:
-    externalAccess:
-      - type: static
-        options:
-          token: '${RHDH_TOKEN}'
-          subject: admin-curl-access
   baseUrl: http://localhost:7007
   listen:
     port: 7007
@@ -50,7 +38,6 @@ backend:
       - host: '*.mozilla.org'
       - host: '*.openshift.com'
       - host: '*.openshiftapps.com'
-      - host: '${RHDH_BRIDGE_HOST:-localhost}'
 
 integrations:
   github:

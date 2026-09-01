@@ -1074,7 +1074,7 @@ test.describe('Scorecard Plugin Tests', () => {
       });
     });
 
-    test.describe('Unsupported aggregation type', () => {
+    test.describe('Unsupported aggregation shape', () => {
       const aggregationMetadata =
         AGGREGATED_CARDS_METADATA.githubOpenPrsWeightedKpi;
 
@@ -1086,7 +1086,7 @@ test.describe('Scorecard Plugin Tests', () => {
         });
       });
 
-      test('Shows unsupported message when aggregationType is unknown', async () => {
+      test('Shows unsupported message when the result shape is unrecognized', async () => {
         const card = homePage.getCard(aggregationMetadata.id);
         await expect(card).toContainText(
           translations.errors.unsupportedAggregationType,

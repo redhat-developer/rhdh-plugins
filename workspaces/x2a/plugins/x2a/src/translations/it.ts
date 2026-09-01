@@ -108,6 +108,8 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'module.phases.analyze': 'Analizzare',
     'module.phases.migrate': 'Migrare',
     'module.phases.publish': 'Pubblicare',
+    'module.phases.adversarial-analyze': 'Analisi Avversariale',
+    'module.phases.adversarial-migrate': 'Migrazione Avversariale',
     'module.summary.total': 'Totale',
     'module.summary.finished': 'Completato',
     'module.summary.waiting': 'In attesa',
@@ -209,6 +211,8 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'modulePage.phases.telemetry.outputTokens': 'Token di output',
     'modulePage.phases.telemetry.toolCalls':
       'Conteggio delle chiamate agli strumenti',
+    'modulePage.phases.telemetry.totalInputTokens': 'Token di input totali',
+    'modulePage.phases.telemetry.totalOutputTokens': 'Token di output totali',
     'modulePage.phases.resyncMigrationPlanInstructions':
       "Sincronizza l'elenco dei moduli con il piano di migrazione.",
     'time.duration.daysAndHours': '{{days}}g {{hours}}h',
@@ -328,6 +332,86 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'rulesPage.dialog.cancel': 'Annulla',
     'rulesPage.dialog.createError': 'Errore nella creazione della regola',
     'rulesPage.dialog.updateError': "Errore nell'aggiornamento della regola",
+    'modulePage.phases.runAdversarialReview': 'Esegui revisione avversariale',
+    'modulePage.phases.adversarialReview': 'Revisione Avversariale',
+    'modulePage.phases.adversarialNoRuns': 'Nessuna esecuzione ancora',
+    'modulePage.phases.adversarialRunning':
+      'La revisione avversariale è in corso…',
+    'modulePage.phases.adversarialCriticalAgentsWarning':
+      'Gli agenti avversariali critici sono configurati ma non sono stati ancora eseguiti per questa fase.',
+    'modulePage.phases.adversarialAgentLabel': 'avversariale',
+    'modulePage.phases.adversarialCriticalFindings': 'Risultati Critici',
+    'modulePage.phases.adversarialWarningFindings': 'Risultati di Avviso',
+    'modulePage.phases.adversarialAgents.title': 'Agenti Avversariali',
+    'modulePage.phases.adversarialAgents.placeholder': 'Scegliere gli agenti…',
+    'modulePage.phases.adversarialAgents.noAgentsAvailable':
+      'Nessun agente avversariale disponibile per questa fase. Creare agenti nella pagina Agenti Avversariali.',
+    'modulePage.phases.adversarialAgents.loadingError':
+      'Errore nel caricamento degli agenti avversariali',
+    'modulePage.phases.adversarialRunError':
+      "Errore nell'avvio della revisione avversariale",
+    'artifact.types.adversarial_report': 'Report Avversariale',
+    'artifact.types.adversarial_report_json': 'Report Avversariale (JSON)',
+    'adversarialAgentsPage.title': 'Agenti Avversariali',
+    'adversarialAgentsPage.subtitle':
+      'Gestire gli agenti IA che esaminano i risultati della migrazione per individuare problemi di sicurezza, lacune funzionali e problemi di correttezza.',
+    'adversarialAgentsPage.manageAdversarialAgents':
+      'Gestisci agenti avversariali',
+    'adversarialAgentsPage.addAgent': 'Aggiungi agente',
+    'adversarialAgentsPage.notAllowed':
+      "Non si dispone dell'autorizzazione per gestire gli agenti avversariali.",
+    'adversarialAgentsPage.table.name': 'Nome',
+    'adversarialAgentsPage.table.prompt': 'Prompt',
+    'adversarialAgentsPage.table.phases': 'Fasi',
+    'adversarialAgentsPage.table.severity': 'Gravità',
+    'adversarialAgentsPage.table.critical': 'Critico',
+    'adversarialAgentsPage.table.warning': 'Avviso',
+    'adversarialAgentsPage.table.createdAt': 'Creato',
+    'adversarialAgentsPage.table.createdBy': 'Creato da',
+    'adversarialAgentsPage.table.editAgent': 'Modifica agente',
+    'adversarialAgentsPage.table.deleteAgent': 'Elimina agente',
+    'adversarialAgentsPage.table.noAgents':
+      'Nessun agente avversariale definito.',
+    'adversarialAgentsPage.table.fetchError':
+      'Errore nel recupero degli agenti avversariali',
+    'adversarialAgentsPage.deleteConfirm.title':
+      'Eliminare l\'agente "{{name}}"?',
+    'adversarialAgentsPage.deleteConfirm.message':
+      'Questa azione non può essere annullata.',
+    'adversarialAgentsPage.deleteConfirm.confirm': 'Elimina',
+    'adversarialAgentsPage.deleteConfirm.cancel': 'Annulla',
+    'adversarialAgentsPage.deleteConfirm.deleteError':
+      "Errore nell'eliminazione dell'agente",
+    'adversarialAgentsPage.dialog.createTitle': 'Crea agente avversariale',
+    'adversarialAgentsPage.dialog.editTitle': 'Modifica agente avversariale',
+    'adversarialAgentsPage.dialog.nameField': 'Nome',
+    'adversarialAgentsPage.dialog.namePlaceholder':
+      'es., Verifica escalation privilegi',
+    'adversarialAgentsPage.dialog.promptField': 'Prompt',
+    'adversarialAgentsPage.dialog.promptPlaceholder':
+      'Descrivere cosa deve verificare questo agente...',
+    'adversarialAgentsPage.dialog.promptHelper':
+      'Essere specifici su cosa cercare e come segnalare i risultati (50-5000 caratteri)',
+    'adversarialAgentsPage.dialog.promptCharacterCount':
+      '/5000 caratteri (min 50)',
+    'adversarialAgentsPage.dialog.phasesField': 'Fasi del flusso di lavoro',
+    'adversarialAgentsPage.dialog.phasesHelper':
+      'Selezionare le fasi del flusso di lavoro in cui viene eseguito questo agente',
+    'adversarialAgentsPage.dialog.phaseAnalyze': 'Analizzare',
+    'adversarialAgentsPage.dialog.phaseMigrate': 'Migrare',
+    'adversarialAgentsPage.dialog.criticalField': 'Agente critico',
+    'adversarialAgentsPage.dialog.criticalHelper':
+      'Gli agenti critici producono risultati di gravità critica; gli agenti non critici producono avvisi',
+    'adversarialAgentsPage.dialog.nameValidation':
+      'Il nome deve contenere tra 3 e 100 caratteri',
+    'adversarialAgentsPage.dialog.phasesValidation':
+      'È richiesta almeno una fase',
+    'adversarialAgentsPage.dialog.save': 'Salva',
+    'adversarialAgentsPage.dialog.cancel': 'Annulla',
+    'adversarialAgentsPage.dialog.createError':
+      "Errore nella creazione dell'agente",
+    'adversarialAgentsPage.dialog.updateError':
+      "Errore nell'aggiornamento dell'agente",
   },
 });
 

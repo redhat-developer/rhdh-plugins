@@ -46,9 +46,11 @@ import { ThemeConfig } from '../types';
  * https://github.com/backstage/backstage/blob/master/packages/theme/src/unified/UnifiedThemeProvider.tsx#L94-L100
  */
 const ThemeProvider = ({
+  themeName,
   theme,
   children,
 }: {
+  themeName: string;
   theme: UnifiedTheme;
   children: ReactNode;
 }) => {
@@ -78,7 +80,7 @@ const ThemeProvider = ({
   const customCSS = branding?.customCSS ?? '';
 
   return (
-    <UnifiedThemeProvider theme={theme}>
+    <UnifiedThemeProvider themeName={themeName} theme={theme}>
       <StyledEngineProvider injectFirst>
         <Mui5Provider theme={mui5Theme}>
           {/*
@@ -100,27 +102,42 @@ const ThemeProvider = ({
 };
 
 export const createThemeProvider = (
+  themeName: string,
   theme: UnifiedTheme,
 ): AppTheme['Provider'] =>
   function RHDHThemeProvider({ children }) {
-    return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+    return (
+      <ThemeProvider themeName={themeName} theme={theme}>
+        {children}
+      </ThemeProvider>
+    );
   };
 
 export const createThemeProviderForThemeConfig = (
+  themeName: string,
   themeConfig: ThemeConfig,
 ): AppTheme['Provider'] =>
   function RHDHThemeProviderForThemeConfig({ children }) {
     const theme = useTheme(themeConfig);
-    return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+    return (
+      <ThemeProvider themeName={themeName} theme={theme}>
+        {children}
+      </ThemeProvider>
+    );
   };
 
 export const createThemeProviderForThemeName = (
   themeName: string,
+  themeNameForConfig = themeName,
 ): AppTheme['Provider'] =>
   function RHDHThemeProviderForThemeName({ children }) {
-    const themeConfig = useThemeConfig(themeName);
+    const themeConfig = useThemeConfig(themeNameForConfig);
     const theme = useTheme(themeConfig);
-    return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+    return (
+      <ThemeProvider themeName={themeName} theme={theme}>
+        {children}
+      </ThemeProvider>
+    );
   };
 
 const resolveActiveKey = (
@@ -172,7 +189,11 @@ export const createSharedThemeProvider = (
     const themeFromHook = useTheme(resolvedConfig);
 
     const theme = entry.theme ?? themeFromHook;
-    return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+    return (
+      <ThemeProvider theme={theme} themeName={entry.name ?? key}>
+        {children}
+      </ThemeProvider>
+    );
   }
   return RHDHSharedThemeProvider;
 };

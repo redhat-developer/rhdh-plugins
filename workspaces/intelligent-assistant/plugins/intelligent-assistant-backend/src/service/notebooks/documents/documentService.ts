@@ -25,7 +25,6 @@ import {
 } from '../../constant';
 import { SessionDocument, UpsertResult } from '../types/notebooksTypes';
 import { VectorStoresOperator } from '../VectorStoresOperator';
-import { toFile } from './fileParser';
 
 /**
  * Service for managing documents within notebook sessions using File-Based API
@@ -92,21 +91,22 @@ export class DocumentService {
   }
 
   /**
-   * Upload a file to the Files API
-   * @param content - File content as string
+   * Upload markdown content to the Files API
+   * @param content - Markdown content string
    * @param title - File title/name
    * @returns File ID from the Files API
    * @throws Error if upload fails
    */
   async uploadFile(content: string, title: string): Promise<string> {
     try {
-      // Determine MIME type from file type or default to text/plain
-      const mimeType = 'text/plain';
-      const txtFilename = `${title.replace(/\.[^.]+$/, '')}.txt`;
+      const mdFilename = `${title.replace(/\.[^.]+$/, '')}.md`;
+
       const file = await this.client.files.create({
-        file: await toFile(Buffer.from(content, 'utf-8'), txtFilename, {
-          type: mimeType,
-        }),
+        file: {
+          name: mdFilename,
+          buffer: Buffer.from(content, 'utf-8'),
+          type: 'text/markdown',
+        },
         purpose: 'assistants',
       });
 
@@ -115,11 +115,9 @@ export class DocumentService {
       );
       return file.id;
     } catch (error) {
-      // Preserve the original error type and message
       if (error instanceof Error) {
         throw error;
       }
-      // For non-Error objects, wrap with context
       throw new Error(`Failed to upload file: ${String(error)}`);
     }
   }

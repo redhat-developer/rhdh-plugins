@@ -180,7 +180,20 @@ flag_management:
     - name: e2e-intelligent-assistant
       paths:
         - workspaces/intelligent-assistant/
-    - name: e2e-orchestrator
+    # Replaces e2e-orchestrator, which was deleted on this project some time
+    # after 2026-08-17. Codecov flag deletion is a soft delete with no inverse:
+    # the API exposes deleteFlag and nothing to undo it, the UI offers no
+    # restore, and the name cannot be reused. The old flag's data is still in
+    # the report (142 files, 49.51% at main HEAD b37abc01) but hidden from every
+    # UI surface, so orchestrator's E2E coverage was invisible on this
+    # dashboard. The suffix is not a plugin version — it exists only because the
+    # plain name is burned. Uploaded by rhdh-plugin-export-overlays'
+    # scripts/upload-coverage-upstream.sh, which carries the matching override
+    # (redhat-developer/rhdh-plugin-export-overlays#3360). Land this entry
+    # BEFORE that one: without it the flag still publishes, it just falls back
+    # to default_rules and registers here permanently unscoped, and a flag
+    # registered on this project cannot be removed by the overlay side.
+    - name: e2e-orchestrator-plugin
       paths:
         - workspaces/orchestrator/
     - name: e2e-quickstart
