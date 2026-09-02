@@ -70,11 +70,15 @@ const LLM_INF_SVC_Ready_CONDITION = 'Ready';
 function buildImportKeyAndURI(
   namespace: string,
   name: string,
+  isLLM: boolean = false,
 ): [string, string] {
   const sanitizedNs = sanitizeName(namespace);
   const sanitizedName = sanitizeName(name);
-  const importKey = `${sanitizedNs}/${sanitizedName}`;
-  const uri = `/models/${importKey}`;
+  // Prefix with resource kind to avoid key collision when an InferenceService and
+  // LLMInferenceService share the same namespace/name.
+  const prefix = isLLM ? 'llm:' : 'is:';
+  const importKey = `${prefix}${sanitizedNs}/${sanitizedName}`;
+  const uri = `/models/${sanitizedNs}/${sanitizedName}`;
   return [importKey, uri];
 }
 
@@ -85,6 +89,7 @@ async function getAuthentication(
   namespace: string,
   inferenceServiceName: string,
   logger: LoggerService,
+  kind: string = 'InferenceService',
 ): Promise<boolean> {
   if (!coreClient) {
     logger.debug(
@@ -97,14 +102,13 @@ async function getAuthentication(
     const response = await coreClient.listNamespacedServiceAccount(namespace);
     const found = response.body.items.some(sa =>
       sa.metadata?.ownerReferences?.some(
-        ref =>
-          ref.kind === 'InferenceService' && ref.name === inferenceServiceName,
+        ref => ref.kind === kind && ref.name === inferenceServiceName,
       ),
     );
 
     if (found) {
       logger.debug(
-        `getAuthentication: Found ServiceAccount with InferenceService owner reference for ${namespace}/${inferenceServiceName}`,
+        `getAuthentication: Found ServiceAccount with ${kind} owner reference for ${namespace}/${inferenceServiceName}`,
       );
     }
 
@@ -196,11 +200,19 @@ async function listLLMInferenceServices(
       } LLMInferenceServices from API`,
     );
     return items || [];
-  } catch (error) {
-    logger.error(
-      'listLLMInferenceServices: Error listing from API',
-      error as Error,
-    );
+  } catch (error: any) {
+    const statusCode = error?.statusCode ?? error?.response?.statusCode;
+    if (statusCode === 404 || statusCode === 503) {
+      // CRD not installed on this cluster — not an error condition
+      logger.warn(
+        `listLLMInferenceServices: LLMInferenceService CRD not available (${statusCode}), skipping`,
+      );
+    } else {
+      logger.error(
+        'listLLMInferenceServices: Error listing from API',
+        error as Error,
+      );
+    }
     return [];
   }
 }
@@ -318,6 +330,7 @@ async function reconcileInferenceService(
     namespace,
     name,
     logger,
+    kind,
   );
 
   logger.debug(`Calling backstage printers for ${namespace}/${name}`);
@@ -334,7 +347,7 @@ async function reconcileInferenceService(
     } models and ${catalogData.modelServer ? 1 : 0} model servers`,
   );
 
-  const [importKey] = buildImportKeyAndURI(namespace, name);
+  const [importKey] = buildImportKeyAndURI(namespace, name, isLLM);
   logger.debug(`Built importKey: ${importKey}`);
 
   logger.debug(
@@ -558,6 +571,7 @@ async function innerStart(
       const [importKey] = buildImportKeyAndURI(
         is.metadata.namespace,
         is.metadata.name,
+        true,
       );
       logger.debug(
         `innerStart: Adding importKey ${importKey} for KServe LLMInferenceService ${is.metadata.namespace}/${is.metadata.name}`,
@@ -699,11 +713,10 @@ function registerInformerHandlers(
 ): void {
   const logger = config.logger!;
   const kind = isLLM ? 'LLMInferenceService' : 'InferenceService';
-  const prefix = isLLM ? 'LLM ' : '';
 
   informer.on('add', async (obj: InferenceService) => {
     logger.debug(
-      `${prefix}Added: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
+      `${kind} Added: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
     );
     try {
       await reconcileInferenceService(obj, config, isLLM);
@@ -717,7 +730,7 @@ function registerInformerHandlers(
 
   informer.on('update', async (obj: InferenceService) => {
     logger.debug(
-      `${prefix}Updated: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
+      `${kind} Updated: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
     );
     try {
       await reconcileInferenceService(obj, config, isLLM);
@@ -731,7 +744,7 @@ function registerInformerHandlers(
 
   informer.on('delete', async (obj: InferenceService) => {
     logger.debug(
-      `${prefix}Deleted: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
+      `${kind} Deleted: ${obj.metadata.name} in namespace ${obj.metadata.namespace}`,
     );
     try {
       logger.debug(

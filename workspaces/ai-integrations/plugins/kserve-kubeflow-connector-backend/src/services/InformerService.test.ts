@@ -79,6 +79,13 @@ jest.mock('./Catalog', () => ({
   CATALOG_SOURCE_ANNOTATION: 'rhdh.io/catalog-source',
 }));
 
+jest.mock('./KServe', () => ({
+  callBackstagePrinters: jest.fn().mockResolvedValue({
+    models: [{ name: 'test-model' }],
+    modelServer: { name: 'test-server' },
+  }),
+}));
+
 import {
   setupInformer,
   getDiscoveryUris,
@@ -330,6 +337,173 @@ describe('InformerService', () => {
       expect(result).toBeDefined();
       expect(result.on).toBeDefined();
       expect(result.start).toBeDefined();
+    });
+  });
+
+  describe('LLMInferenceService informer handlers', () => {
+    function makeLLMInferenceService(ready: boolean) {
+      return {
+        apiVersion: 'serving.kserve.io/v1alpha2',
+        kind: 'LLMInferenceService',
+        metadata: { name: 'tiny-llama', namespace: 'deploy-models' },
+        spec: { model: { name: 'tiny-llama', uri: 's3://bucket/model' } },
+        status: ready
+          ? {
+              conditions: [{ type: 'Ready', status: 'True' }],
+              url: 'https://llm.example.com',
+            }
+          : {
+              conditions: [
+                { type: 'Ready', status: 'False', reason: 'Pending' },
+              ],
+            },
+      };
+    }
+
+    // LLM informer is the second makeInformer call — its handlers occupy calls 4–7
+    function getLLMHandler(event: string) {
+      const calls = mockInformerOn.mock.calls as any[][];
+      return calls.filter(c => c[0] === event)[1]?.[1];
+    }
+
+    it('add handler: does not reconcile when LLMInferenceService is not ready', async () => {
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      const handler = getLLMHandler('add');
+      expect(handler).toBeDefined();
+      await handler(makeLLMInferenceService(false));
+
+      expect(logger.info).not.toHaveBeenCalledWith(
+        expect.stringContaining('Successfully reconciled LLMInferenceService'),
+      );
+    });
+
+    it('add handler: reconciles when LLMInferenceService is ready', async () => {
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      const handler = getLLMHandler('add');
+      expect(handler).toBeDefined();
+      await handler(makeLLMInferenceService(true));
+
+      expect(logger.info).toHaveBeenCalledWith(
+        'Successfully reconciled LLMInferenceService: deploy-models/tiny-llama',
+      );
+    });
+
+    it('update handler: reconciles when LLMInferenceService is ready', async () => {
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      const handler = getLLMHandler('update');
+      expect(handler).toBeDefined();
+      await handler(makeLLMInferenceService(true));
+
+      expect(logger.info).toHaveBeenCalledWith(
+        'Successfully reconciled LLMInferenceService: deploy-models/tiny-llama',
+      );
+    });
+
+    it('error handler: logs error and restarts LLM informer', async () => {
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      const handler = getLLMHandler('error');
+      expect(handler).toBeDefined();
+      handler(new Error('connection refused'));
+
+      expect(logger.error).toHaveBeenCalledWith(
+        'LLMInferenceService Informer error',
+        expect.any(Error),
+      );
+      jest.runAllTimers();
+      // 2 starts from setup + 1 restart triggered by error handler
+      expect(mockInformerStart).toHaveBeenCalledTimes(3);
+    });
+  });
+
+  describe('isLLMInferenceServiceReady (via LLM add handler)', () => {
+    async function getLLMAddHandler() {
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+      const calls = mockInformerOn.mock.calls as any[][];
+      return calls.filter(c => c[0] === 'add')[1]?.[1];
+    }
+
+    it('does not reconcile when status is missing', async () => {
+      const handler = await getLLMAddHandler();
+      await handler({
+        apiVersion: 'serving.kserve.io/v1alpha2',
+        kind: 'LLMInferenceService',
+        metadata: { name: 'test', namespace: 'ns' },
+        spec: {},
+      });
+      expect(logger.info).not.toHaveBeenCalledWith(
+        expect.stringContaining('Successfully reconciled'),
+      );
+    });
+
+    it('does not reconcile when Ready condition is absent', async () => {
+      const handler = await getLLMAddHandler();
+      await handler({
+        apiVersion: 'serving.kserve.io/v1alpha2',
+        kind: 'LLMInferenceService',
+        metadata: { name: 'test', namespace: 'ns' },
+        spec: {},
+        status: { conditions: [{ type: 'SomeOther', status: 'True' }] },
+      });
+      expect(logger.info).not.toHaveBeenCalledWith(
+        expect.stringContaining('Successfully reconciled'),
+      );
+    });
+
+    it('does not reconcile when Ready=True but no URL', async () => {
+      const handler = await getLLMAddHandler();
+      await handler({
+        apiVersion: 'serving.kserve.io/v1alpha2',
+        kind: 'LLMInferenceService',
+        metadata: { name: 'test', namespace: 'ns' },
+        spec: {},
+        status: { conditions: [{ type: 'Ready', status: 'True' }] },
+      });
+      expect(logger.info).not.toHaveBeenCalledWith(
+        expect.stringContaining('Successfully reconciled'),
+      );
+    });
+  });
+
+  describe('listLLMInferenceServices: CRD not installed', () => {
+    it('warns (not errors) when the CRD returns 404', async () => {
+      mockMakeApiClient.mockReturnValue({
+        listNamespacedCustomObject: jest.fn().mockImplementation(
+          (group: string) => {
+            if (group === 'serving.kserve.io') {
+              const err: any = new Error('Not Found');
+              err.statusCode = 404;
+              return Promise.reject(err);
+            }
+            return Promise.resolve({ body: { items: [] } });
+          },
+        ),
+        listClusterCustomObject: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [] } }),
+        listNamespacedServiceAccount: jest
+          .fn()
+          .mockResolvedValue({ body: { items: [] } }),
+      });
+
+      const config: ReconcilerConfig = {};
+      await setupInformer(config, logger);
+
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.stringContaining('CRD not available (404)'),
+      );
+      expect(logger.error).not.toHaveBeenCalledWith(
+        expect.stringContaining('listLLMInferenceServices: Error listing from API'),
+        expect.anything(),
+      );
     });
   });
 });

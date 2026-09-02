@@ -63,7 +63,7 @@ function getDescription(is: InferenceService): string {
   return `KServe instance ${is.metadata.namespace}:${is.metadata.name}`;
 }
 
-const PREDICTOR_FRAMEWORK_KEYS: Array<[string, string]> = [
+const PREDICTOR_FRAMEWORK_KEYS: ReadonlyArray<[string, string]> = [
   ['sklearn', FRAMEWORK_SKLEARN],
   ['xgboost', FRAMEWORK_XGBOOST],
   ['tensorflow', FRAMEWORK_TENSORFLOW],
