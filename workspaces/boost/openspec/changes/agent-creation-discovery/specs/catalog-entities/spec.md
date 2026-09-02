@@ -6,7 +6,7 @@
 > This file documents entity-provider deployment for the agent-creation-discovery
 > change. For AI-asset category definitions, `spec.type` values, and upstream
 > kind mappings (the seven readiness categories), see
-> [ai-catalog-entity-model/design.md Decision 1](../../../ai-catalog-entity-model/design.md).
+> [ai-catalog-entity-model/design.md Decision 1](../../../ai-catalog-entity-model/design.md#decision-1-annotation-independence-from-entity-kinds).
 > The `vector-store` and `ai-tool` rows in the table below are vestiges of the
 > Augment POC and are **not** in RHDHPLAN-1507 / RHDHPLAN-1513 readiness scope
 > (confirmed in [#4042 gate comment §0](https://github.com/redhat-developer/rhdh-plugins/issues/4042#issuecomment-5204217995)).
@@ -15,7 +15,7 @@
 > which cross-references Decision 1 as primary and `AI_ASSET_SPEC_TYPES` for
 > browse taxonomy including non-annotation types.
 
-AI agents, models, MCP servers, and vector stores are modeled as Backstage catalog entities. This replaces in-memory caches with catalog-managed lifecycle, providing discoverability, ownership, search, and RBAC integration.
+AI agents, models, MCP servers, and vector stores are modeled as Backstage catalog entities. Vector stores are catalog-browse / provider-deployment only — not a RHDHPLAN-1507 / RHDHPLAN-1513 annotation category. This replaces in-memory caches with catalog-managed lifecycle, providing discoverability, ownership, search, and RBAC integration.
 
 NOTE: These recommendations align with in-flight upstream Backstage initiatives:
 
@@ -101,7 +101,7 @@ MCP servers MUST be represented as catalog entities.
 
 ### Requirement: Vector Store Catalog Entities
 
-RAG vector stores MUST be represented as catalog entities.
+RAG vector stores MUST be represented as catalog entities for browse and provider-deployment. This is not an AI-asset annotation category for RHDHPLAN-1507 / RHDHPLAN-1513 readiness.
 
 #### Scenario: Core plugin emits vector store entities
 
