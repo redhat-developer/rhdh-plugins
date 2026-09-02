@@ -1,6 +1,6 @@
 # Contributing in `workspaces/extensions`
 
-Repository-wide process (forks, changesets, API reports) is in the [rhdh-plugins CONTRIBUTING guide](../../../CONTRIBUTING.md). This file is the workspace index for plugin `dev/` harnesses and scoped commands.
+Repository-wide process (forks, changesets, API reports) is in the [rhdh-plugins CONTRIBUTING guide](../../CONTRIBUTING.md). This file is the workspace index for plugin `dev/` harnesses and scoped commands.
 
 Operator install stays in each package README. Harness runbooks live next to the packages:
 
