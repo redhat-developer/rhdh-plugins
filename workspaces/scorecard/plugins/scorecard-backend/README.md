@@ -235,37 +235,8 @@ scorecard:
 | `options`     | **Optional:** extra configuration attributes required to further configure the aggregated card for a specific type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 - **Path**: `scorecard.aggregationKPIs.<aggregationId>`.
-- If **`aggregationKPIs` is omitted** or a given id is not listed, aggregation KPIs still work, See [Default aggregation](#default-aggregation).
+- If **`aggregationKPIs` is omitted** or a given id is not listed, aggregation KPIs still work, See [Default aggregation](./docs/aggregation.md#default-aggregation).
 - **Startup validation**: the backend validates every **`scorecard.aggregationKPIs`** entry when the plugin loads. Invalid configuration (including **`weightedStatusScore`** KPIs without **`options.statusScores`**, non-count scalar types on boolean metrics, invalid **`filter.status`** keys on scalar types, bad threshold expressions, or unregistered **`metricId`**) causes the backend to **fail to start** with a clear error. At runtime, some edge cases may still be logged (for example skipping a KPI with unusable weights); prefer correcting app-config. See [aggregation.md](./docs/aggregation.md#configuration-validation).
-
-### Default aggregation
-
-You do not need a KPI block for every metric. If the aggregation id is **not** a key under **`scorecard.aggregationKPIs`**, Scorecard treats it as a **metric id** (for example `github.openPRs`). Title and description for aggregation come from the metric itself.
-
-The aggregation type is then:
-
-- **`average`** when the metric’s **`defaultVisualization`** is **`sparkline`**
-- **`statusGrouped`** otherwise
-
-The Scorecard **backend plugin logger** logs an **info** the first time an aggregation id is resolved with no matching KPI.
-
-```text
-No "scorecard.aggregationKPIs.dora.deploymentFrequency" block in app-config; using default type "average" with metricId="dora.deploymentFrequency" (same as aggregation id). Add a KPI entry if you meant a custom title, description, or type.
-```
-
-Add a **`scorecard.aggregationKPIs`** entry when you need a custom title, a different type (for example **`sum`** or **`weightedStatusScore`**), **`filter`**, or **`options`**:
-
-```yaml
-scorecard:
-  aggregationKPIs:
-    avgDeploymentFrequency:
-      title: Average Deployment Frequency
-      description: This KPI provides average weekly production deploys over a 30-day window per entity.
-      type: average
-      metricId: dora.deploymentFrequency
-```
-
-This default applies to **`GET /aggregations/:aggregationId`**, **`GET /aggregations/:aggregationId/time-series`**, and **`GET /aggregations/:aggregationId/metadata`**. Time-series only accepts scalar types, so a default **`statusGrouped`** metric id returns **`400`**; a sparkline metric’s default **`average`** works without extra config.
 
 **Homepage cards** are configured in the app (for example Dynamic Home Page mount points). They should pass **`aggregationId`** matching a key in `aggregationKPIs` or the metric id for the default case. See the [Scorecard frontend plugin README](../scorecard/README.md#homepage-scorecard-cards).
 
@@ -469,7 +440,7 @@ curl -X GET "{{url}}/api/scorecard/aggregations/github.openPRs" \
 
 Returns a **daily** history of a **scalar** KPI (`sum`, `average`, `max`, `min`, or `count`) across entities you own. Each response point is one UTC day: Scorecard takes **latest stored row** for each owned entity that day (including calculation failures), then rolls successful values up with the KPI’s aggregation type. Optional **`filter.status`** applies only to successes. UTC days with no rows are omitted; a day with only failures is included with **`value: null`**, **`status: error`** and **`errors`** list.
 
-Only [scalar](./docs/aggregation.md/#scalar-types) aggregation types are supported. **`statusGrouped`** and **`weightedStatusScore`** return **`400 Bad Request`**. See [aggregation.md](./docs/aggregation.md#get-aggregationsaggregationidtime-series) for details.
+Only [scalar](./docs/aggregation.md#scalar-types) aggregation types are supported. **`statusGrouped`** and **`weightedStatusScore`** return **`400 Bad Request`**. See [aggregation.md](./docs/aggregation.md#get-aggregationsaggregationidtime-series) for details.
 
 #### Path Parameters
 
