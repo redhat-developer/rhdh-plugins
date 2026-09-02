@@ -17,7 +17,12 @@
 import type { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 
-import { mockApis, MockErrorApi, TestApiProvider } from '@backstage/test-utils';
+import {
+  mockApis,
+  MockConfigApi,
+  MockErrorApi,
+  TestApiProvider,
+} from '@backstage/test-utils';
 
 import { fireEvent, render } from '@testing-library/react';
 import { ExtensionsPluginContent } from './ExtensionsPluginContent';
@@ -28,7 +33,7 @@ import { usePluginPackages } from '../hooks/usePluginPackages';
 import { ExtensionsPluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
-import { errorApiRef } from '@backstage/core-plugin-api';
+import { configApiRef, errorApiRef } from '@backstage/core-plugin-api';
 import { translationApiRef } from '@backstage/core-plugin-api/alpha';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '../queryclient';
@@ -113,6 +118,7 @@ const renderWithProviders = (ui: ReactNode) =>
       apis={[
         [extensionsApiRef, mockExtensionsApi],
         [errorApiRef, new MockErrorApi()],
+        [configApiRef, new MockConfigApi({})],
         [translationApiRef, mockApis.translation()],
       ]}
     >

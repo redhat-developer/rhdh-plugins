@@ -49,9 +49,6 @@ p, role:default/team_a, intelligent-assistant.notebooks.manage, use, allow
 p, role:default/team_a, mcp.tools.use, use, allow
 p, role:default/team_a, mcp.tools.manage, use, allow
 
-# Required for saved prompts
-p, role:default/team_a, intelligent-assistant.saved-prompts.manage, update, allow
-
 g, user:default/<your-user-name>, role:default/team_a
 
 ```
@@ -162,6 +159,29 @@ Lightspeed is a front-end plugin that enables you to interact with any LLM serve
 ### Display modes and chat continuity
 
 Intelligent assistant supports multiple **display modes** from Settings (for example overlay, docked, embedded, and fullscreen). Switching modes can remount the chat surface; your **current conversation** and **tool-call metadata** for that thread stay with the session so the active chat is not reset. Live streaming text may not update continuously across a mode switch until the assistant response finishes loading.
+
+### Screen Context
+
+When enabled, the assistant automatically captures structured page context from the current RHDH viewport and attaches it to each message. This provides the LLM with headings, tables, alerts, form fields, filters, and other on-screen content for more accurate, context-aware responses.
+
+Configure in `app-config.yaml`:
+
+```yaml
+intelligent-assistant:
+  screen-context:
+    enabled: true # Master switch for screen context (default: false)
+    screenshots:
+      enabled: true # Screenshot capture within screen context (default: true)
+    dom-extraction:
+      enabled: true # DOM text extraction (default: true when screen-context is on)
+      maxChars: 8000 # Max characters extracted per page (default: 8000)
+```
+
+- `screen-context.enabled` — enables the full screen-context feature (DOM extraction and optional screenshots).
+- `screen-context.dom-extraction.enabled` — toggles DOM text extraction independently of screenshots.
+- `screen-context.dom-extraction.maxChars` — caps the extracted text size to control LLM token usage.
+
+Form fields are emitted as cleaned HTML to preserve label/input structure; all other sections are plain text.
 
 ### MCP servers settings
 

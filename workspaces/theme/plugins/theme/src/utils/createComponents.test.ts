@@ -117,6 +117,32 @@ describe('createComponents', () => {
     );
   });
 
+  it('makes NFS BUI main a flex column so nested Containers can grow', () => {
+    const actual = createComponents({ palette: customDarkTheme() });
+    const root = actual.BackstageSidebarPage?.styleOverrides?.root as
+      | Record<string, unknown>
+      | undefined;
+    const desktop = root?.['@media (min-width: 600px)'] as
+      | Record<string, unknown>
+      | undefined;
+    expect(desktop?.['& > main:not([data-backstage-core-page])']).toEqual(
+      expect.objectContaining({
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 1,
+        minHeight: 0,
+      }),
+    );
+  });
+
+  it('offsets BUI dialogs below the masthead so Inspect Entity stays visible', () => {
+    const actual = createComponents({});
+    const overrides = actual.MuiCssBaseline?.styleOverrides;
+    expect(typeof overrides).toBe('function');
+    expect(String(overrides)).toContain('bui-DialogOverlay');
+    expect(String(overrides)).toContain('--rhdh-global-header-height');
+  });
+
   it('paints BUI content Containers with mainSectionBackgroundColor', () => {
     const actual = createComponents({ palette: customDarkTheme() });
     const root = actual.BackstageSidebarPage?.styleOverrides?.root as

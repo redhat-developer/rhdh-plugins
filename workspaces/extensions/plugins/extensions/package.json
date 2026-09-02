@@ -21,6 +21,7 @@
       "@red-hat-developer-hub/backstage-plugin-extensions-common"
     ]
   },
+  "configSchema": "config.d.ts",
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
@@ -89,6 +90,7 @@
   },
   "files": [
     "app-config.dynamic.yaml",
+    "config.d.ts",
     "dist"
   ]
 }

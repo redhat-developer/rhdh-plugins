@@ -53,3 +53,12 @@ export {
   SkillBundleMetadataSchema,
   type SkillBundleMetadata,
 } from './SkillBundleMetadata';
+
+export {
+  DeltaSyncManager,
+  InMemoryCursorStore,
+  type CursorState,
+  type CursorStore,
+  type ApplyDeltaOptions,
+  type DeltaSyncManagerOptions,
+} from './DeltaSyncManager';

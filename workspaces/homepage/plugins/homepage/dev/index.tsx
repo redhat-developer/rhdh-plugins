@@ -48,7 +48,7 @@ import {
 import {
   homePageModule,
   homepageTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-homepage/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-homepage';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 import { quickAccessApiRef } from '../src/api';
 import { visitsApiRef } from '@backstage/plugin-home';

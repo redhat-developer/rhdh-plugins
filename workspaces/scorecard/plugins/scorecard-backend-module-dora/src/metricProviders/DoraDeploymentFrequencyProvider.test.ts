@@ -57,6 +57,9 @@ describe('DoraDeploymentFrequencyProvider', () => {
       );
       expect(metrics[0].defaultVisualization).toBe('sparkline');
       expect(metrics[0].unit).toBe('/week');
+      expect(metrics[0].collectorIds).toEqual([
+        DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+      ]);
     });
   });
 

@@ -72,7 +72,8 @@ export function fromMetricValueRow(row: MetricValueRowWithId): DbMetricValue {
     id: row.id,
     catalogEntityRef: row.catalog_entity_ref,
     metricId: row.metric_id,
-    value: row.value,
+    // JSON columns may surface literal null as the text 'null' rather than SQL NULL.
+    value: (row.value as unknown) === 'null' ? null : row.value,
     timestamp: parseTimestamp(row.timestamp),
     errorMessage: row.error_message,
     status: row.status,

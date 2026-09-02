@@ -186,6 +186,14 @@ export const scorecardMessages = {
       '{{healthy}} / {{total}} entities without metric calculation errors',
   },
 
+  aggregation: {
+    min: 'Min',
+    max: 'Max',
+    sum: 'Sum',
+    count: 'Count',
+    average: 'Average',
+  },
+
   // Threshold translations
   thresholds: {
     success: 'Success',

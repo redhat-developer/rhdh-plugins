@@ -42,6 +42,7 @@ import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerConte
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import FileAttachmentContextProvider from '../AttachmentContext';
 import { LightspeedChat } from '../LightSpeedChat';
+import { NotebookStreamProvider } from '../notebooks/NotebookStreamProvider';
 
 const identityApi = {
   async getCredentials() {
@@ -209,16 +210,18 @@ const setupLightspeedChat = (initialPath = '/intelligent-assistant') => (
     >
       <FileAttachmentContextProvider>
         <QueryClientProvider client={queryClient}>
-          <LightspeedChat
-            selectedModel="granite"
-            profileLoading={false}
-            handleSelectedModel={() => {}}
-            topicRestrictionEnabled={false}
-            selectedProvider="openai"
-            models={[]}
-            avatar="test"
-            userName="user:test"
-          />
+          <NotebookStreamProvider>
+            <LightspeedChat
+              selectedModel="granite"
+              profileLoading={false}
+              handleSelectedModel={() => {}}
+              topicRestrictionEnabled={false}
+              selectedProvider="openai"
+              models={[]}
+              avatar="test"
+              userName="user:test"
+            />
+          </NotebookStreamProvider>
         </QueryClientProvider>
       </FileAttachmentContextProvider>
     </TestApiProvider>
@@ -258,6 +261,8 @@ describe('LightspeedChat', () => {
       consumePendingOverlayThreadHandoff: jest.fn(() => false),
       shellViewTab: 0,
       setShellViewTab: jest.fn(),
+      activeNotebookId: undefined,
+      setActiveNotebookId: jest.fn(),
     });
 
     localStorage.clear();
@@ -677,6 +682,8 @@ describe('LightspeedChat', () => {
         consumePendingOverlayThreadHandoff: jest.fn(() => false),
         shellViewTab: 1,
         setShellViewTab: jest.fn(),
+        activeNotebookId: undefined,
+        setActiveNotebookId: jest.fn(),
       });
 
       render(setupLightspeedChat('/intelligent-assistant/notebooks'));
@@ -701,7 +708,7 @@ describe('LightspeedChat', () => {
       );
     });
 
-    it('should not render Chat/Notebooks tabs in overlay mode', async () => {
+    it('should render Chat/Notebooks tabs in overlay mode', async () => {
       mockUseLightspeedDrawerContext.mockReturnValue({
         isChatbotActive: true,
         toggleChatbot: jest.fn(),
@@ -718,6 +725,8 @@ describe('LightspeedChat', () => {
         consumePendingOverlayThreadHandoff: jest.fn(() => false),
         shellViewTab: 0,
         setShellViewTab: jest.fn(),
+        activeNotebookId: undefined,
+        setActiveNotebookId: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -726,15 +735,13 @@ describe('LightspeedChat', () => {
         expect(screen.getByLabelText('Options')).toBeInTheDocument();
       });
 
+      expect(screen.getByRole('tab', { name: 'Chat' })).toBeInTheDocument();
       expect(
-        screen.queryByRole('tab', { name: 'Chat' }),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.queryByRole('tab', { name: 'Notebooks' }),
-      ).not.toBeInTheDocument();
+        screen.getByRole('tab', { name: 'Notebooks' }),
+      ).toBeInTheDocument();
     });
 
-    it('should not render Chat/Notebooks tabs in docked mode', async () => {
+    it('should render Chat/Notebooks tabs in docked mode', async () => {
       mockUseLightspeedDrawerContext.mockReturnValue({
         isChatbotActive: true,
         toggleChatbot: jest.fn(),
@@ -751,6 +758,8 @@ describe('LightspeedChat', () => {
         consumePendingOverlayThreadHandoff: jest.fn(() => false),
         shellViewTab: 0,
         setShellViewTab: jest.fn(),
+        activeNotebookId: undefined,
+        setActiveNotebookId: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -759,12 +768,10 @@ describe('LightspeedChat', () => {
         expect(screen.getByLabelText('Options')).toBeInTheDocument();
       });
 
+      expect(screen.getByRole('tab', { name: 'Chat' })).toBeInTheDocument();
       expect(
-        screen.queryByRole('tab', { name: 'Chat' }),
-      ).not.toBeInTheDocument();
-      expect(
-        screen.queryByRole('tab', { name: 'Notebooks' }),
-      ).not.toBeInTheDocument();
+        screen.getByRole('tab', { name: 'Notebooks' }),
+      ).toBeInTheDocument();
     });
 
     it('should show current display mode as selected in full-screen mode', async () => {
@@ -784,6 +791,8 @@ describe('LightspeedChat', () => {
         consumePendingOverlayThreadHandoff: jest.fn(() => false),
         shellViewTab: 0,
         setShellViewTab: jest.fn(),
+        activeNotebookId: undefined,
+        setActiveNotebookId: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -818,6 +827,8 @@ describe('LightspeedChat', () => {
         consumePendingOverlayThreadHandoff: jest.fn(() => false),
         shellViewTab: 0,
         setShellViewTab: jest.fn(),
+        activeNotebookId: undefined,
+        setActiveNotebookId: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -852,6 +863,8 @@ describe('LightspeedChat', () => {
         consumePendingOverlayThreadHandoff: jest.fn(() => false),
         shellViewTab: 0,
         setShellViewTab: jest.fn(),
+        activeNotebookId: undefined,
+        setActiveNotebookId: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -946,6 +959,8 @@ describe('LightspeedChat', () => {
         consumePendingOverlayThreadHandoff: jest.fn(() => false),
         shellViewTab: 0,
         setShellViewTab: jest.fn(),
+        activeNotebookId: undefined,
+        setActiveNotebookId: jest.fn(),
       });
     });
 
@@ -982,6 +997,8 @@ describe('LightspeedChat', () => {
         consumePendingOverlayThreadHandoff: jest.fn(() => false),
         shellViewTab: 1,
         setShellViewTab: jest.fn(),
+        activeNotebookId: undefined,
+        setActiveNotebookId: jest.fn(),
       });
 
       render(setupLightspeedChat('/intelligent-assistant'));
@@ -1057,6 +1074,8 @@ describe('LightspeedChat', () => {
         consumePendingOverlayThreadHandoff: jest.fn(() => false),
         shellViewTab: 0,
         setShellViewTab: jest.fn(),
+        activeNotebookId: undefined,
+        setActiveNotebookId: jest.fn(),
       });
 
       render(setupLightspeedChat('/intelligent-assistant/notebooks'));
@@ -1092,6 +1111,8 @@ describe('LightspeedChat', () => {
         consumePendingOverlayThreadHandoff: jest.fn(() => false),
         shellViewTab: 0,
         setShellViewTab: jest.fn(),
+        activeNotebookId: undefined,
+        setActiveNotebookId: jest.fn(),
       });
     });
 

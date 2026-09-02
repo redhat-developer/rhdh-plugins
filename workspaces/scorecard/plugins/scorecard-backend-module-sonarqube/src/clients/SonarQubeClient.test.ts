@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { ConfigReader } from '@backstage/config';
 import { SonarQubeClient } from './SonarQubeClient';
 import { mockServices } from '@backstage/backend-test-utils';
 
@@ -22,10 +21,12 @@ const mockFetch = jest.fn();
 globalThis.fetch = mockFetch;
 
 describe('SonarQubeClient', () => {
-  const config = new ConfigReader({
-    sonarqube: {
-      baseUrl: 'https://sonarcloud.io',
-      apiKey: 'test-key',
+  const config = mockServices.rootConfig({
+    data: {
+      sonarqube: {
+        baseUrl: 'https://sonarcloud.io',
+        apiKey: 'test-key',
+      },
     },
   });
   const logger = mockServices.logger.mock();
@@ -83,19 +84,106 @@ describe('SonarQubeClient', () => {
   });
 
   describe('getOpenIssuesCount', () => {
-    it('returns the total count of open issues', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ total: 42 }),
-      });
+    it('returns the total count of open issues after verifying project access', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ component: { key: 'my-project' } }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            total: 42,
+            paging: { pageIndex: 1, pageSize: 1, total: 42 },
+          }),
+        });
 
       const result = await client.getOpenIssuesCount('my-project');
 
       expect(result).toBe(42);
-      expect(mockFetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        1,
+        'https://sonarcloud.io/api/components/show?component=my-project',
+        expect.any(Object),
+      );
+      expect(mockFetch).toHaveBeenNthCalledWith(
+        2,
         'https://sonarcloud.io/api/issues/search?componentKeys=my-project&statuses=OPEN,CONFIRMED,REOPENED&ps=1',
         expect.any(Object),
       );
+    });
+
+    it('throws when project access check fails and does not search issues', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
+      await expect(client.getOpenIssuesCount('my-project')).rejects.toThrow(
+        "SonarQube project 'my-project' is not accessible or the project key is missing",
+      );
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://sonarcloud.io/api/components/show?component=my-project',
+        expect.any(Object),
+      );
+    });
+
+    it('propagates API errors from issues search after access check succeeds', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ component: { key: 'my-project' } }),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 503,
+          statusText: 'Service Unavailable',
+        });
+
+      await expect(client.getOpenIssuesCount('my-project')).rejects.toThrow(
+        /SonarQube API error: 503 Service Unavailable/,
+      );
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+
+    it('returns 0 when the project is accessible and has no open issues', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ component: { key: 'my-project' } }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            total: 0,
+            paging: { pageIndex: 1, pageSize: 1, total: 0 },
+          }),
+        });
+
+      const result = await client.getOpenIssuesCount('my-project');
+
+      expect(result).toBe(0);
+    });
+
+    it('returns the top-level total field from the issues search response', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ component: { key: 'my-project' } }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({
+            total: 99,
+            paging: { pageIndex: 1, pageSize: 1, total: 7 },
+          }),
+        });
+
+      const result = await client.getOpenIssuesCount('my-project');
+
+      expect(result).toBe(99);
     });
   });
 
@@ -141,10 +229,12 @@ describe('SonarQubeClient', () => {
   });
 
   it('strips trailing slash from baseUrl', () => {
-    const configWithSlash = new ConfigReader({
-      sonarqube: {
-        baseUrl: 'https://sonarcloud.io/',
-        apiKey: 'test-key',
+    const configWithSlash = mockServices.rootConfig({
+      data: {
+        sonarqube: {
+          baseUrl: 'https://sonarcloud.io/',
+          apiKey: 'test-key',
+        },
       },
     });
     const clientWithSlash = new SonarQubeClient(configWithSlash, logger);
@@ -163,7 +253,7 @@ describe('SonarQubeClient', () => {
   });
 
   it('defaults baseUrl to https://sonarcloud.io when not configured', async () => {
-    const emptyConfig = new ConfigReader({});
+    const emptyConfig = mockServices.rootConfig({ data: {} });
     const defaultClient = new SonarQubeClient(emptyConfig, logger);
 
     mockFetch.mockResolvedValueOnce({
@@ -180,8 +270,10 @@ describe('SonarQubeClient', () => {
   });
 
   it('sends no Authorization header when apiKey is not configured', async () => {
-    const noKeyConfig = new ConfigReader({
-      sonarqube: { baseUrl: 'https://sonarcloud.io' },
+    const noKeyConfig = mockServices.rootConfig({
+      data: {
+        sonarqube: { baseUrl: 'https://sonarcloud.io' },
+      },
     });
     const noKeyClient = new SonarQubeClient(noKeyConfig, logger);
 
@@ -199,22 +291,24 @@ describe('SonarQubeClient', () => {
   });
 
   describe('named instances', () => {
-    const multiConfig = new ConfigReader({
-      sonarqube: {
-        baseUrl: 'https://sonarcloud.io',
-        apiKey: 'default-key',
-        instances: [
-          {
-            name: 'internal',
-            baseUrl: 'https://sonar.internal.com',
-            apiKey: 'internal-key',
-            authType: 'Bearer',
-          },
-          {
-            name: 'public',
-            baseUrl: 'https://sonarcloud.io',
-          },
-        ],
+    const multiConfig = mockServices.rootConfig({
+      data: {
+        sonarqube: {
+          baseUrl: 'https://sonarcloud.io',
+          apiKey: 'default-key',
+          instances: [
+            {
+              name: 'internal',
+              baseUrl: 'https://sonar.internal.com',
+              apiKey: 'internal-key',
+              authType: 'Bearer',
+            },
+            {
+              name: 'public',
+              baseUrl: 'https://sonarcloud.io',
+            },
+          ],
+        },
       },
     });
 

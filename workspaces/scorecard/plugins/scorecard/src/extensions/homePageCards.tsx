@@ -196,3 +196,99 @@ export const aggregatedCardWithGithubOpenPrsWeightedWidget =
       ),
     },
   });
+
+/**
+ * NFS widget: AggregatedCardWithMaxOpenPrs (scalar max).
+ */
+export const aggregatedCardWithMaxOpenPrsWidget = HomePageWidgetBlueprint.make({
+  name: 'scorecard-max-open-prs',
+  params: {
+    name: 'AggregatedCardWithMaxOpenPrs',
+    title: 'Scorecard: Maximum open PRs',
+    layout: defaultCardLayout,
+    componentProps: {
+      Renderer: BorderlessHomeWidgetRenderer,
+    },
+    components: lazyScorecardWidget(ScorecardHomepageCardWithProvider => () => (
+      <ScorecardHomepageCardWithProvider aggregationId="maxOpenPrs" />
+    )),
+  },
+});
+
+/**
+ * NFS widget: AggregatedCardWithMinOpenPrs (scalar min).
+ */
+export const aggregatedCardWithMinOpenPrsWidget = HomePageWidgetBlueprint.make({
+  name: 'scorecard-min-open-prs',
+  params: {
+    name: 'AggregatedCardWithMinOpenPrs',
+    title: 'Scorecard: Minimum open PRs',
+    layout: defaultCardLayout,
+    componentProps: {
+      Renderer: BorderlessHomeWidgetRenderer,
+    },
+    components: lazyScorecardWidget(ScorecardHomepageCardWithProvider => () => (
+      <ScorecardHomepageCardWithProvider aggregationId="minOpenPrs" />
+    )),
+  },
+});
+
+/**
+ * NFS widget: AggregatedCardWithTotalOpenBugs (scalar sum).
+ */
+export const aggregatedCardWithTotalOpenBugsWidget =
+  HomePageWidgetBlueprint.make({
+    name: 'scorecard-total-open-bugs',
+    params: {
+      name: 'AggregatedCardWithTotalOpenBugs',
+      title: 'Scorecard: Total open bugs',
+      layout: defaultCardLayout,
+      componentProps: {
+        Renderer: BorderlessHomeWidgetRenderer,
+      },
+      components: lazyScorecardWidget(
+        ScorecardHomepageCardWithProvider => () =>
+          <ScorecardHomepageCardWithProvider aggregationId="totalOpenBugs" />,
+      ),
+    },
+  });
+
+/**
+ * NFS widget: AggregatedCardWithEntitiesWithOpenPrs (scalar count).
+ */
+export const aggregatedCardWithEntitiesWithOpenPrsWidget =
+  HomePageWidgetBlueprint.make({
+    name: 'scorecard-entities-with-open-prs',
+    params: {
+      name: 'AggregatedCardWithEntitiesWithOpenPrs',
+      title: 'Scorecard: Entities with open PRs',
+      layout: defaultCardLayout,
+      componentProps: {
+        Renderer: BorderlessHomeWidgetRenderer,
+      },
+      components: lazyScorecardWidget(
+        ScorecardHomepageCardWithProvider => () =>
+          (
+            <ScorecardHomepageCardWithProvider aggregationId="entitiesWithOpenPrs" />
+          ),
+      ),
+    },
+  });
+
+/**
+ * NFS widget: AggregatedCardWithAvgOpenPrs (scalar average).
+ */
+export const aggregatedCardWithAvgOpenPrsWidget = HomePageWidgetBlueprint.make({
+  name: 'scorecard-avg-open-prs',
+  params: {
+    name: 'AggregatedCardWithAvgOpenPrs',
+    title: 'Scorecard: Average open PRs',
+    layout: defaultCardLayout,
+    componentProps: {
+      Renderer: BorderlessHomeWidgetRenderer,
+    },
+    components: lazyScorecardWidget(ScorecardHomepageCardWithProvider => () => (
+      <ScorecardHomepageCardWithProvider aggregationId="avgOpenPrs" />
+    )),
+  },
+});

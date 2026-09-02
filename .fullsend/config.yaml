@@ -12,6 +12,8 @@ agents:
       source: rhdh/harness/code.yaml
     - name: fix
       source: rhdh/harness/fix.yaml
+    - name: review
+      source: rhdh/harness/review.yaml
 roles:
     - triage
     - coder

@@ -99,6 +99,8 @@ function baseContextValue(): LightspeedDrawerContextType {
     consumePendingOverlayThreadHandoff: jest.fn(() => false),
     shellViewTab: 0,
     setShellViewTab: jest.fn(),
+    activeNotebookId: undefined,
+    setActiveNotebookId: jest.fn(),
   };
 }
 

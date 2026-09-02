@@ -54,17 +54,13 @@ RUN tar xzf skeleton.tar.gz && rm skeleton.tar.gz
 COPY --from=build /app/package.json /app/yarn.lock /app/.yarnrc.yml ./
 COPY --from=build /app/.yarn ./.yarn
 
-# FIX 2: REMOVED the inline Node script that was muting postinstall scripts.
-# FIX 3: Run production install allowing native C++ compilation to happen naturally.
 RUN YARN_ENABLE_IMMUTABLE_INSTALLS=false \
     YARN_CACHE_FOLDER=/root/.yarn/berry/cache \
     yarn workspaces focus --all --production
 
-# FIX 4: Explicitly force a targeted native compilation for your runtime environment
-RUN yarn workspace backend exec node-gyp rebuild || true
-
-# Clean up yarn cache after native build is done
-RUN rm -rf "$(yarn cache dir)"
+# Purge build tools and yarn cache — no longer needed at runtime
+RUN apt-get purge -y --auto-remove python3 make g++ \
+    && rm -rf /var/lib/apt/lists/* "$(yarn cache dir)"
 
 COPY --from=build /app/packages/app/package.json packages/app/package.json
 RUN ln -sf ../packages/app node_modules/app

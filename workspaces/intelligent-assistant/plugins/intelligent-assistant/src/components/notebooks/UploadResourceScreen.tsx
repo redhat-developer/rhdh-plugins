@@ -72,7 +72,6 @@ export const UploadResourceScreen = ({
 }: UploadResourceScreenProps) => {
   const classes = useStyles();
   const { t } = useTranslation();
-
   return (
     <div className={classes.container}>
       <CatalogIcon className={classes.icon} />
@@ -97,6 +96,7 @@ export const UploadResourceScreen = ({
             variant="secondary"
             className={classes.uploadButton}
             icon={<AddCircleOIcon />}
+            iconPosition="start"
             onClick={onUploadClick}
           >
             {t('notebook.view.upload.action')}

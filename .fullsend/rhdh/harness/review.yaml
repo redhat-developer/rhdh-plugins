@@ -1,0 +1,3 @@
+base: https://raw.githubusercontent.com/fullsend-ai/agents/4bbe4f50ed8e33c60539eaa30ddc320edf8bcda0/harness/review.yaml#sha256=08456e534c7d1251b3a3b2bc1236643403809ecab27832c273764769f219a45b
+image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
+policy: rhdh/policies/review.yaml

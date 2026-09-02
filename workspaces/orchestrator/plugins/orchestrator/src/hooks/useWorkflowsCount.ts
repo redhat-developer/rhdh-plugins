@@ -172,7 +172,3 @@ export const useWorkflowOverviews = (
 export const useAllWorkflowOverviews = (
   options: Omit<UseWorkflowOverviewsOptions, 'page' | 'pageSize'> = {},
 ): WorkflowOverviewsState => useWorkflowOverviews(options);
-
-export const useWorkflowsCount = (
-  options: Omit<UseWorkflowOverviewsOptions, 'page' | 'pageSize'> = {},
-): number | undefined => useAllWorkflowOverviews(options).count;

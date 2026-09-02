@@ -15,6 +15,7 @@
  */
 
 import { createExtensionBlueprint } from '@backstage/frontend-plugin-api';
+import { z } from 'zod';
 
 import { appDrawerContentDataRef } from './appDrawerContentDataRef';
 
@@ -46,7 +47,7 @@ import { appDrawerContentDataRef } from './appDrawerContentDataRef';
  * });
  * ```
  *
- * @alpha
+ * @public
  */
 export const AppDrawerContentBlueprint = createExtensionBlueprint({
   kind: 'app-drawer-content',
@@ -55,12 +56,10 @@ export const AppDrawerContentBlueprint = createExtensionBlueprint({
   dataRefs: {
     content: appDrawerContentDataRef,
   },
-  config: {
-    schema: {
-      defaultWidth: z => z.number().optional(),
-      resizable: z => z.boolean().optional(),
-      priority: z => z.number().optional(),
-    },
+  configSchema: {
+    defaultWidth: z.number().optional(),
+    resizable: z.boolean().optional(),
+    priority: z.number().optional(),
   },
   *factory(
     params: {

@@ -134,13 +134,17 @@ test.describe('Intelligent assistant conversation', () => {
       await verifySidePanelConversation(sharedPage, translations);
     });
 
-    test('Verify scroll controls in Conversation', async ({
-      browser,
-    }, testInfo) => {
+    test('Verify scroll controls in Conversation', async ({}, testInfo) => {
       await mockChatHistory(sharedPage, demoChatContent);
+      await sharedPage.reload();
+      await sharedPage.locator('.pf-chatbot__messagebox').waitFor({
+        state: 'visible',
+      });
+      await sharedPage.waitForSelector('.pf-chatbot__message--bot', {
+        timeout: 10_000,
+      });
 
       const message = demoChatContent[0].messages[0].content;
-      await sendMessage(message, sharedPage, translations, false);
 
       const jumpTopButton = sharedPage.getByRole('button', {
         name: translations['aria.scroll.up'],
@@ -154,17 +158,22 @@ test.describe('Intelligent assistant conversation', () => {
       await jumpTopButton.click();
       await sharedPage.waitForTimeout(500);
       await expect(
-        sharedPage.locator('span').filter({ hasText: message }),
+        sharedPage
+          .locator('.pf-chatbot__message--user')
+          .filter({ hasText: message })
+          .first(),
       ).toBeVisible();
 
       await verifySidePanelConversation(sharedPage, translations);
       await expect(jumpBottomButton).toBeVisible();
       await jumpBottomButton.click();
 
-      const responseMessage = sharedPage
-        .locator('div.pf-chatbot__message-response')
-        .last();
-      await expect(responseMessage).toHaveText(/OpenShift deployment/);
+      await expect(
+        sharedPage
+          .locator('div.pf-chatbot__message-response')
+          .filter({ hasText: /OpenShift deployment/ })
+          .first(),
+      ).toBeVisible();
     });
 
     test('Filter and switch conversations', async () => {

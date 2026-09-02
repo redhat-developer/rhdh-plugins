@@ -39,6 +39,7 @@ import {
   ProjectsGet,
   RuleEntity,
   type RuleSnapshot,
+  AdversarialAgentEntity,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import {
   x2aDatabaseServiceRef,
@@ -48,6 +49,7 @@ import {
   type CreateJobInput,
 } from '@red-hat-developer-hub/backstage-plugin-x2a-node';
 
+import { AdversarialAgentOperations } from './adversarialAgentOperations';
 import { JobOperations } from './jobOperations';
 import { ModuleOperations } from './moduleOperations';
 import { ProjectOperations } from './projectOperations';
@@ -81,6 +83,7 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
   readonly #moduleOps: ModuleOperations;
   readonly #jobOps: JobOperations;
   readonly #ruleOps: RuleOperations;
+  readonly #adversarialAgentOps: AdversarialAgentOperations;
 
   static create(options: { logger: LoggerService; dbClient: Knex }) {
     return new X2ADatabaseService(options.logger, options.dbClient);
@@ -92,6 +95,10 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
     this.#moduleOps = new ModuleOperations(logger, dbClient);
     this.#jobOps = new JobOperations(logger, dbClient);
     this.#ruleOps = new RuleOperations(logger, dbClient);
+    this.#adversarialAgentOps = new AdversarialAgentOperations(
+      logger,
+      dbClient,
+    );
   }
 
   /**
@@ -344,35 +351,66 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
 
     if (!skipEnrichment) {
       // Fetch last jobs
-      const lastAnalyzeJobsOfModule = await this.listJobs({
-        projectId: module.projectId,
-        moduleId: id,
-        phase: 'analyze',
-        lastJobOnly: true,
-      });
-      const lastMigrateJobsOfModule = await this.listJobs({
-        projectId: module.projectId,
-        moduleId: id,
-        phase: 'migrate',
-        lastJobOnly: true,
-      });
-      const lastPublishJobsOfModule = await this.listJobs({
-        projectId: module.projectId,
-        moduleId: id,
-        phase: 'publish',
-        lastJobOnly: true,
-      });
+      const [
+        lastAnalyzeJobs,
+        lastMigrateJobs,
+        lastPublishJobs,
+        lastAdversarialAnalyzeJobs,
+        lastAdversarialMigrateJobs,
+      ] = await Promise.all([
+        this.listJobs({
+          projectId: module.projectId,
+          moduleId: id,
+          phase: 'analyze',
+          lastJobOnly: true,
+        }),
+        this.listJobs({
+          projectId: module.projectId,
+          moduleId: id,
+          phase: 'migrate',
+          lastJobOnly: true,
+        }),
+        this.listJobs({
+          projectId: module.projectId,
+          moduleId: id,
+          phase: 'publish',
+          lastJobOnly: true,
+        }),
+        this.listJobs({
+          projectId: module.projectId,
+          moduleId: id,
+          phase: 'adversarial-analyze',
+          lastJobOnly: true,
+        }),
+        this.listJobs({
+          projectId: module.projectId,
+          moduleId: id,
+          phase: 'adversarial-migrate',
+          lastJobOnly: true,
+        }),
+      ]);
 
       // Update module with last jobs
-      module.analyze = removeSensitiveFromJob(lastAnalyzeJobsOfModule[0]);
-      module.migrate = removeSensitiveFromJob(lastMigrateJobsOfModule[0]);
-      module.publish = removeSensitiveFromJob(lastPublishJobsOfModule[0]);
+      module.analyze = removeSensitiveFromJob(lastAnalyzeJobs[0]);
+      module.migrate = removeSensitiveFromJob(lastMigrateJobs[0]);
+      module.publish = removeSensitiveFromJob(lastPublishJobs[0]);
+      module.adversarialAnalyze = removeSensitiveFromJob(
+        lastAdversarialAnalyzeJobs[0],
+      );
+      module.adversarialMigrate = removeSensitiveFromJob(
+        lastAdversarialMigrateJobs[0],
+      );
 
       // Attach attempt stats per phase
-      const phases = ['analyze', 'migrate', 'publish'] as const;
+      const phaseJobPairs: Array<[MigrationPhase, Job | undefined]> = [
+        ['analyze', module.analyze],
+        ['migrate', module.migrate],
+        ['publish', module.publish],
+        ['adversarial-analyze', module.adversarialAnalyze],
+        ['adversarial-migrate', module.adversarialMigrate],
+      ];
       await Promise.all(
-        phases.map(async phase => {
-          const job = module[phase];
+        phaseJobPairs.map(async ([phase, job]) => {
           if (job) {
             const stats = await this.#jobOps.getPhaseAttemptStats({
               projectId: module.projectId,
@@ -607,6 +645,45 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
     projectId: string;
   }): Promise<RuleSnapshot[]> {
     return this.#ruleOps.getAcceptedRulesForProject(args);
+  }
+
+  // Adversarial Agents
+
+  async createAdversarialAgent(input: {
+    name: string;
+    prompt: string;
+    phases: string[];
+    critical: boolean;
+    createdBy: string;
+  }): Promise<AdversarialAgentEntity> {
+    return this.#adversarialAgentOps.createAdversarialAgent(input);
+  }
+
+  async listAdversarialAgents(filters?: {
+    phase?: string;
+    ids?: string[];
+  }): Promise<AdversarialAgentEntity[]> {
+    return this.#adversarialAgentOps.listAdversarialAgents(filters);
+  }
+
+  async getAdversarialAgent(opts: {
+    id: string;
+  }): Promise<AdversarialAgentEntity | undefined> {
+    return this.#adversarialAgentOps.getAdversarialAgent(opts);
+  }
+
+  async updateAdversarialAgent(opts: {
+    id: string;
+    name: string;
+    prompt: string;
+    phases: string[];
+    critical: boolean;
+  }): Promise<AdversarialAgentEntity | undefined> {
+    return this.#adversarialAgentOps.updateAdversarialAgent(opts);
+  }
+
+  async deleteAdversarialAgent(opts: { id: string }): Promise<number> {
+    return this.#adversarialAgentOps.deleteAdversarialAgent(opts);
   }
 }
 

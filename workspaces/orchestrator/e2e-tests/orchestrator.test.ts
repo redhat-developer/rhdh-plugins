@@ -15,7 +15,11 @@
  */
 
 import { test, expect, Page, type BrowserContext } from '@playwright/test';
-import { Orchestrator } from './pages/orchestrator';
+import {
+  Orchestrator,
+  type NewComponentInputs,
+  type JavaMetadata,
+} from './pages/orchestrator';
 import { runAccessibilityTests } from './utils/accessibility';
 import { OrchestratorHelper } from './utils/helper';
 import { OrchestratorMessages, getTranslations } from './utils/translations';
@@ -247,6 +251,77 @@ test.describe('Orchestrator workflow runs', () => {
         .click();
       await orchestratorHelper.clickButton(translations.workflow.buttons.run);
       await orchestratorHelper.verifyBreadcrumbLink('Hello World Workflow');
+    });
+
+    test('Backward navigation in multi-step stepper', async () => {
+      const workflowName = 'Quarkus Backend application';
+      const newComponentInputs: NewComponentInputs = {
+        organizationName: 'test-name',
+        repositoryName: 'test-repo',
+        description: 'test-description',
+        owner: 'test-owner',
+        system: 'test-system',
+        port: '8000',
+      };
+      const javaMetadata: JavaMetadata = {
+        groupId: 'test-group',
+        artifactId: 'test-artifact',
+        javaPackageNamespace: 'test-package',
+        version: '1.0.0',
+      };
+
+      await orchestrator.searchWorkflow(workflowName);
+      await orchestrator.openWorkflowFromTable(workflowName);
+      await orchestrator.verifyWorkflowDetails();
+      await orchestrator.clickRunWorkflowFromDetails();
+      await orchestrator.fillNewComponentInputs(newComponentInputs);
+      await orchestratorHelper.clickButton(translations.common.next);
+      await expect(
+        sharedPage.getByRole('button', {
+          name: 'Step 1 Provide information about the new component',
+        }),
+      ).toBeEnabled();
+      await orchestrator.fillJavaMetadata(javaMetadata);
+      await sharedPage
+        .getByRole('button', {
+          name: 'Step 1 Provide information about the new component',
+        })
+        .click();
+      await orchestrator.verifyNewComponentInputs(newComponentInputs);
+      await expect(
+        sharedPage.getByRole('button', {
+          name: 'Step 2 Provide information about the Java metadata',
+        }),
+      ).not.toBeVisible();
+      await expect(
+        sharedPage.getByLabel(
+          'Step 2 Provide information about the Java metadata',
+        ),
+      ).toBeVisible();
+      await orchestratorHelper.clickButton(translations.common.next);
+      await expect(
+        sharedPage.getByLabel(
+          'Step 2 Provide information about the Java metadata',
+        ),
+      ).not.toHaveClass(/Mui-disabled/);
+      await orchestratorHelper.clickButton(translations.common.next);
+      await orchestratorHelper.clickButton(translations.common.back);
+      await orchestrator.verifyJavaMetadata(javaMetadata);
+      await orchestratorHelper.clickButton(translations.common.next);
+      await expect(
+        sharedPage.getByLabel(`Step 4 ${translations.common.review}`),
+      ).toHaveClass(/Mui-disabled/);
+      await orchestratorHelper.clickButton(translations.common.next);
+      await expect(
+        sharedPage.getByLabel(`Step 4 ${translations.common.review}`),
+      ).not.toHaveClass(/Mui-disabled/);
+      const allInputs = [
+        ...Object.values(newComponentInputs),
+        ...Object.values(javaMetadata),
+      ];
+      for (const input of allInputs) {
+        await expect(sharedPage.getByText(input)).toBeVisible();
+      }
     });
   });
 

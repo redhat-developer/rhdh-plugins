@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-backend
 
+## 8.13.0
+
+### Minor Changes
+
+- 279803c: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- c7f1b5d: trim unused production exports and dead symbols
+- Updated dependencies [279803c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.10.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-node@1.5.0
+
 ## 8.12.1
 
 ### Patch Changes

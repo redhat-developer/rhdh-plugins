@@ -77,9 +77,25 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           ? (backstageOverrides(theme) as CSSObject)
           : (backstageOverrides as CSSObject);
 
+      // Sticky AppBar is z-index 1100. BUI Dialog overlay is 1000 and
+      // InspectEntityDialog uses height 100vh, so the masthead covers the
+      // title and close control (RHDHBUGS-3603). 64px fallback matches the
+      // MUI Toolbar default when --rhdh-global-header-height is unset.
+      const dialogMastheadOffset = 'var(--rhdh-global-header-height, 64px)';
+
       return {
         ...backstageStyles,
         '@font-face': redHatFontFaces,
+        ':root:has(#global-header) [class*="bui-DialogOverlay"]': {
+          top: `${dialogMastheadOffset} !important`,
+          height: `calc(100% - ${dialogMastheadOffset}) !important`,
+          zIndex: 1300,
+        },
+        ':root:has(#global-header) [class*="bui-DialogOverlay"] > [class*="bui-Dialog"]':
+          {
+            height: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
+            maxHeight: `calc(100vh - ${dialogMastheadOffset} - 3rem) !important`,
+          },
         body: {
           ...(backstageStyles.body as CSSObject),
           fontFamily: redHatFonts.text,
@@ -110,6 +126,9 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
           '&.MuiTypography-h1': {
             fontWeight: 'normal',
           },
+        },
+        button: {
+          textTransform: 'none',
         },
       },
     };
@@ -751,6 +770,13 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
         },
       },
     };
+    components.BackstageIconLinkVertical = {
+      styleOverrides: {
+        label: {
+          textTransform: 'none',
+        },
+      },
+    };
     components.BackstageSidebarPage = {
       styleOverrides: {
         root: {
@@ -789,11 +815,28 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
               // Prevent overflow in the main container due to the margin
               maxHeight: `calc(100vh - 2 * ${general.pageInset})`,
             },
+            // NFS BUI entity pages wrap PluginHeader + tabs + Container in a
+            // classless <main>. BUI Container is flex: 1 1 0% but that only
+            // grows when main is a flex column — otherwise Topology / Scorecard
+            // stay content-height inside a tall well (RHDHBUGS-3543). Do not
+            // override Backstage Page, which uses display:grid on <main>.
+            '& > main:not([data-backstage-core-page])': {
+              display: 'flex',
+              flexDirection: 'column',
+              flex: 1,
+              minHeight: 0,
+              maxHeight: `calc(100% - 2 * ${general.pageInset})`,
+            },
             // NFS / BUI pages use Container instead of <main>. Match the content
             // well color (same token as BackstageContent) and rely on flex: 1
             // from BUI rather than 100vh so PluginHeader siblings are not overflowed.
             "& > [class*='bui-Container']:not([class*='bui-Header'])": {
               backgroundColor: general.mainSectionBackgroundColor,
+            },
+            // When a BackstagePage-root is present, the MUI page already has
+            // its own header; hide the sibling BUI PluginHeader to avoid duplication.
+            "&:has([class*='BackstagePage-root']) > .bui-PluginHeader": {
+              display: 'none',
             },
             // Settings and other pages render BackstageContent as <article>.
             // Grow it to fill the flex column so pageInset doesn't show as a band.

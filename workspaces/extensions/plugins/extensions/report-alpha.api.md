@@ -246,6 +246,7 @@ export const extensionsTranslationRef: TranslationRef<
     readonly 'metadata.about': string;
     readonly 'metadata.highlights': string;
     readonly 'metadata.category': string;
+    readonly 'metadata.catalogSource': string;
     readonly 'metadata.by': string;
     readonly 'metadata.comma': string;
     readonly 'metadata.versions': string;
@@ -365,6 +366,7 @@ export const extensionsTranslationRef: TranslationRef<
     readonly 'search.clearFilter': string;
     readonly 'search.category': string;
     readonly 'search.supportType': string;
+    readonly 'search.catalogSource': string;
     readonly 'search.noResults': string;
     readonly 'search.filterBy': string;
     readonly 'search.clearFilters': string;

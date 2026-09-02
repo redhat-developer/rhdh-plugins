@@ -41,15 +41,15 @@
     "clean-dynamic-sources": "yarn clean && rm -Rf node_modules"
   },
   "dependencies": {
-    "@backstage/backend-defaults": "^0.17.3",
-    "@backstage/backend-plugin-api": "^1.9.2",
-    "@backstage/plugin-auth-backend": "^0.29.1",
-    "@backstage/plugin-auth-backend-module-github-provider": "^0.5.4",
-    "@backstage/plugin-auth-node": "^0.7.2",
+    "@backstage/backend-defaults": "^0.17.8",
+    "@backstage/backend-plugin-api": "^1.10.0",
+    "@backstage/plugin-auth-backend": "^0.30.0",
+    "@backstage/plugin-auth-backend-module-github-provider": "^0.5.6",
+    "@backstage/plugin-auth-node": "^0.7.4",
     "express": "^4.17.1"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.36.3",
+    "@backstage/cli": "^0.36.5",
     "@backstage/types": "^1.2.2",
     "prettier": "3.9.6",
     "typescript": "5.6.3"
