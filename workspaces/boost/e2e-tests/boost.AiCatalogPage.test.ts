@@ -120,7 +120,7 @@ test.describe('Boost AI Catalog', () => {
   test('renders the AI Catalog heading after guest sign-in', async ({
     page,
   }, testInfo) => {
-    await mockCatalogEntities(page, [skillEntity]);
+    await mockCatalogEntities(page, []);
     await signInAsGuest(page);
 
     await expect(
@@ -131,6 +131,7 @@ test.describe('Boost AI Catalog', () => {
     await expect(
       page.getByRole('heading', { name: 'AI Catalog' }),
     ).toBeVisible();
+    await expect(page.getByText('No AI assets available')).toBeVisible();
     await runAccessibilityTests(page, testInfo);
   });
 
