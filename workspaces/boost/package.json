@@ -40,6 +40,7 @@
     "directory": "workspaces/boost"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
     "@backstage/cli": "^0.36.3",
     "@backstage/cli-defaults": "^0.1.0",
     "@backstage/e2e-test-utils": "^0.1.2",

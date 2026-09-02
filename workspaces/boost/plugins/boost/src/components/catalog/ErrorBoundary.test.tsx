@@ -15,7 +15,7 @@
  */
 
 import { renderInTestApp } from '@backstage/test-utils';
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import type { ReactElement } from 'react';
 
 import { ErrorBoundary } from './ErrorBoundary';
@@ -24,10 +24,20 @@ function Boom(): ReactElement {
   throw new Error('catalog render exploded');
 }
 
+let shouldThrow = true;
+
+function BoomUntilRetry(): ReactElement {
+  if (shouldThrow) {
+    throw new Error('catalog render exploded');
+  }
+  return <div>catalog recovered</div>;
+}
+
 describe('ErrorBoundary', () => {
   let consoleError: jest.SpyInstance;
 
   beforeEach(() => {
+    shouldThrow = true;
     consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
@@ -53,6 +63,20 @@ describe('ErrorBoundary', () => {
 
     expect(screen.getByText('Failed to load AI assets')).toBeInTheDocument();
     expect(screen.getByText('catalog render exploded')).toBeInTheDocument();
-    expect(screen.getByText('Retry')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+  });
+
+  it('renders children again after Retry', async () => {
+    await renderInTestApp(
+      <ErrorBoundary title="Failed to load AI assets" retryLabel="Retry">
+        <BoomUntilRetry />
+      </ErrorBoundary>,
+    );
+
+    expect(screen.getByText('catalog render exploded')).toBeInTheDocument();
+    shouldThrow = false;
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(screen.getByText('catalog recovered')).toBeInTheDocument();
+    expect(screen.queryByText('catalog render exploded')).toBeNull();
   });
 });

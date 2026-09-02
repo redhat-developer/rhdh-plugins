@@ -47,6 +47,24 @@ const emptyEntity: Entity = {
   spec: { type: 'skill', lifecycle: 'production', owner: 'team-ai' },
 };
 
+const skillWithAgentFields: Entity = {
+  apiVersion: 'backstage.io/v1alpha1',
+  kind: 'AiResource',
+  metadata: {
+    name: 'code-review-skill',
+    namespace: 'default',
+    description: 'Reviews pull requests for common issues.',
+  },
+  spec: {
+    type: 'skill',
+    lifecycle: 'production',
+    owner: 'team-ai',
+    instructions: 'Be concise.',
+    handoffDescription: 'Routes coding questions',
+    enableRAG: true,
+  },
+};
+
 const agentEntity: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
   kind: 'AiResource',
@@ -86,8 +104,15 @@ describe('SummaryCard', () => {
 
   it('renders nothing when there is no summary content', async () => {
     const { container } = await renderWithEntity(emptyEntity);
-    expect(screen.queryByText(msg.card.summaryTitle)).toBeNull();
-    expect(container.querySelector('[class*="card"]')).toBeNull();
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('hides agent-only fields on a skill even when those spec keys are set', async () => {
+    await renderWithEntity(skillWithAgentFields);
+    expect(screen.getByText(msg.card.summaryTitle)).toBeInTheDocument();
+    expect(screen.queryByText(msg.card.instructionsTitle)).toBeNull();
+    expect(screen.queryByText(msg.card.handoffDescriptionTitle)).toBeNull();
+    expect(screen.queryByText(msg.card.ragEnabledLabel)).toBeNull();
   });
 
   it('renders agent-only fields and available models', async () => {
