@@ -21,6 +21,7 @@ import {
   createExtensionDataRef,
   ExtensionBoundary,
 } from '@backstage/frontend-plugin-api';
+import { z } from 'zod';
 
 /**
  * Props for custom Scorecard entity-tab layout components.
@@ -65,20 +66,18 @@ export const ScorecardEntityContentLayoutBlueprint = createExtensionBlueprint({
   dataRefs: {
     title: scorecardLayoutTitleDataRef,
   },
-  config: {
-    schema: {
-      groups: schema =>
-        schema
-          .record(
-            schema.object({
-              title: schema.string(),
-              description: schema.string().optional(),
-              metrics: schema.array(schema.string()),
-            }),
-          )
-          .optional()
-          .default({}),
-    },
+  configSchema: {
+    groups: z
+      .record(
+        z.string(),
+        z.object({
+          title: z.string(),
+          description: z.string().optional(),
+          metrics: z.array(z.string()),
+        }),
+      )
+      .optional()
+      .default({}),
   },
   *factory(
     params: {
