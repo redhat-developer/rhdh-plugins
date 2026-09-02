@@ -570,8 +570,8 @@ From `openspec/changes/rhoai-connector/tasks.md` group 7 (RHIDP-15321):
 - 7.1 Define version normalization rules
 - 7.2 Implement `normalizeVersion(rawVersion)` utility — semver normalization, strip `v` prefix, handle `latest`/`nightly`
 - 7.3 Populate `rhdh.io/ai-asset-version` annotation with normalized version
-- 7.4 Handle missing version metadata: set `"unknown"` with DEBUG log
-- 7.5 Handle invalid version strings: set `"unknown"` with WARNING log
+- 7.4 Handle missing version metadata: pass through `normalizeAIAssetVersion()` → `"0.0.0-unknown"` with DEBUG log
+- 7.5 Handle invalid version strings: pass through `normalizeAIAssetVersion()` → `"0.0.0-unknown"` with WARNING log
 - 7.6 Unit tests for version normalization
 - 7.7 Integration test: emitted entities carry correct annotation
 
@@ -866,7 +866,7 @@ From `openspec/changes/mcp-registry-connector/tasks.md` group 3 (RHIDP-15319):
 - 3.4 Add `rhdh.io/ai-asset-category: "mcp-server"` annotation
 - 3.5 Add `rhdh.io/ai-asset-source: "mcp-registry"` annotation
 - 3.6 Implement version metadata extraction from MCP server manifest
-- 3.7 Add `rhdh.io/ai-asset-version` annotation (extracted or "unknown")
+- 3.7 Add `rhdh.io/ai-asset-version` annotation (extracted via `normalizeAIAssetVersion()`; missing/unrecognized → `"0.0.0-unknown"`)
 - 3.8 Add graceful degradation: enrichment failure logs warning, emits entity without annotations
 - 3.9 Add preservation logic: do not overwrite existing AI Asset annotations
 - 3.10 Add DEBUG-level logging for enriched entities

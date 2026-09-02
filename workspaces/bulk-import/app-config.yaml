@@ -64,10 +64,14 @@ integrations:
       # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information
       # about setting up the GitHub integration here: https://backstage.io/docs/integrations/github/locations#configuration
       token: ${GITHUB_TOKEN}
-    ### Example for how to add your GitHub Enterprise instance using the API:
-    # - host: ghe.example.net
-    #   apiBaseUrl: https://ghe.example.net/api/v3
-    #   token: ${GHE_TOKEN}
+  # github:
+  #   - host: github.com
+  #     apps:
+  #       - appId: ${GITHUB_APP_APP_ID}
+  #         clientId: ${GITHUB_APP_CLIENT_ID}
+  #         clientSecret: ${GITHUB_APP_CLIENT_SECRET}
+  #         webhookSecret: ${GITHUB_APP_WEBHOOK_SECRET}
+  #         privateKey: ${GITHUB_APP_PRIVATE_KEY}
 
 proxy: {}
   ### Example for how to add a proxy endpoint for the frontend.
@@ -142,14 +146,27 @@ permission:
   # setting this to `false` will disable permissions
   enabled: false
   rbac:
+    # Paths are relative to packages/backend (yarn start cwd).
+    policies-csv-file: ../../examples/rbac-policy.csv
+    conditionalPoliciesFile: ../../examples/conditional-policies.yaml
+    policyFileReload: true
     pluginsWithPermission:
       - catalog
       - scaffolder
       - bulk-import
+      - orchestrator
+    admin:
+      users:
+        - name: user:development/guest
 # scaffolder template execution configuration. Disabled by default.
 # bulkImport:
 #   importTemplate: template:default/create-pr-with-catalog-info
 #   importAPI: scaffolder
+
+# Orchestrator configuration
+# bulkImport:
+#   orchestratorWorkflow: universal-pr
+#   importAPI: orchestrator
 
 orchestrator:
   sonataFlowService:
