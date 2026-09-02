@@ -14,7 +14,7 @@
 - [ ] 1.8 Document fields requiring transformation per entity type
 - [ ] 1.9 Add explicit "Future Work" section framing actual migration as separate effort
 - [ ] 1.10 Add header with draft status and last-updated date
-- [ ] 1.11 Cross-reference `agent-creation-discovery/catalog-entities` spec
+- [ ] 1.11 Cross-reference `agent-creation-discovery/catalog-entities` spec (supplementary — provider-deployment context only; Decision 1 is the mapping SoT)
 - [ ] 1.12 Publish spec in `workspaces/boost/specifications/` directory
 
 ## 2. Dry-Run Tooling Scaffold (P1) — RHIDP-15347
@@ -59,7 +59,7 @@
 ## 5. Cross-References and Dependencies (P2)
 
 - [ ] 5.1 Cross-reference RHDHPLAN-1507's `ai-catalog-entity-model` change
-- [ ] 5.2 Cross-reference `agent-creation-discovery/catalog-entities` spec
+- [ ] 5.2 Cross-reference `agent-creation-discovery/catalog-entities` spec (supplementary — provider-deployment context only; Decision 1 is the mapping SoT)
 - [ ] 5.3 Link to upstream targets: [#34016](https://github.com/backstage/backstage/pull/34016) (McpServerApiEntity), [#33575](https://github.com/backstage/backstage/issues/33575) (AiResource), [#34476](https://github.com/backstage/backstage/pull/34476) (model-server candidate)
 - [ ] 5.4 Cross-reference RHDHPLAN-1507 RHIDP-15302 and RHIDP-15303 (migration-readiness stories in the entity model epic)
 - [ ] 5.5 Update `ai-catalog-entity-model` change to reference this specification
