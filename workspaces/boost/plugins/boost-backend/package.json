@@ -18,6 +18,7 @@
       "@red-hat-developer-hub/backstage-plugin-boost-common",
       "@red-hat-developer-hub/backstage-plugin-boost-connector-utils",
       "@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk",
+      "@red-hat-developer-hub/backstage-plugin-boost-migration-readiness",
       "@red-hat-developer-hub/backstage-plugin-boost-node",
       "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit",
       "@red-hat-developer-hub/backstage-plugin-boost-toolscope"

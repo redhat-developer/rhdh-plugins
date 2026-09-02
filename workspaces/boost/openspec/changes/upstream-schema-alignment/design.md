@@ -84,7 +84,7 @@ The dry-run tool runs externally against the catalog API, not as a catalog proce
 - Tool queries catalog API for entities with `rhdh.io/ai-asset-category` annotation
 - Outputs per-entity report: current kind/type → target RFC kind, fields needing transformation, confidence level, incompatibilities
 - JSON + human-readable output formats
-- CLI arguments: `--catalog-url`, `--output-format`, `--filter`
+- CLI arguments: `--catalog-url`, `--output-format`, `--filter`, `--token` (or `BACKSTAGE_TOKEN` env var)
 
 ### Decision 4: No processor extension point (yet)
 
@@ -103,7 +103,7 @@ The tooling scaffold and spec document are NOT the migration. The actual migrati
 **How to apply:**
 
 - The specification document includes a "Future Work" section explicitly listing: actual entity migration, catalog processor for automated migration, entity kind transition plan
-- The dry-run tool output includes a footer: "This is a migration-readiness assessment. Actual migration is future work pending upstream stabilization."
+- The dry-run tool output includes a footer: "This is a migration-readiness assessment. Actual migration is future work pending upstream RFC finalization."
 - Customer-facing messaging emphasizes readiness assessment, not migration execution
 
 ## Risks
