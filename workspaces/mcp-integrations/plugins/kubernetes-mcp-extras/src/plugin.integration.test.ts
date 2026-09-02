@@ -14,11 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  mockCredentials,
-  mockServices,
-  startTestBackend,
-} from '@backstage/backend-test-utils';
+import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
 import { createServiceFactory } from '@backstage/backend-plugin-api';
 import { actionsRegistryServiceRef } from '@backstage/backend-plugin-api/alpha';
 import { mcpKubernetesExtrasPlugin } from './plugin';
