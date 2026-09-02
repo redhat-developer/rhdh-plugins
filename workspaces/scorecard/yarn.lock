@@ -1808,7 +1808,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/catalog-client@npm:^1.12.1, @backstage/catalog-client@npm:^1.15.1, @backstage/catalog-client@npm:^1.16.0, @backstage/catalog-client@npm:^1.16.1":
+"@backstage/catalog-client@npm:^1.12.1, @backstage/catalog-client@npm:^1.15.1, @backstage/catalog-client@npm:^1.16.1":
   version: 1.16.1
   resolution: "@backstage/catalog-client@npm:1.16.1"
   dependencies:
@@ -3525,7 +3525,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-home-react@npm:^0.1.27, @backstage/plugin-home-react@npm:^0.1.39, @backstage/plugin-home-react@npm:^0.1.41":
+"@backstage/plugin-home-react@npm:^0.1.27, @backstage/plugin-home-react@npm:^0.1.41":
   version: 0.1.41
   resolution: "@backstage/plugin-home-react@npm:0.1.41"
   dependencies:
@@ -3548,7 +3548,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-home@npm:^0.9.7, @backstage/plugin-home@npm:^0.9.9":
+"@backstage/plugin-home@npm:^0.9.9":
   version: 0.9.9
   resolution: "@backstage/plugin-home@npm:0.9.9"
   dependencies:
@@ -4224,7 +4224,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-search-react@npm:^1.11.5, @backstage/plugin-search-react@npm:^1.11.7":
+"@backstage/plugin-search-react@npm:^1.11.7":
   version: 1.11.7
   resolution: "@backstage/plugin-search-react@npm:1.11.7"
   dependencies:
@@ -4481,7 +4481,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-user-settings@npm:^0.9.4, @backstage/plugin-user-settings@npm:^0.9.6":
+"@backstage/plugin-user-settings@npm:^0.9.6":
   version: 0.9.6
   resolution: "@backstage/plugin-user-settings@npm:0.9.6"
   dependencies:
@@ -9649,43 +9649,44 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-homepage-common@npm:^0.4.0":
-  version: 0.4.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-homepage-common@npm:0.4.0"
+"@red-hat-developer-hub/backstage-plugin-homepage-common@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-homepage-common@npm:0.5.0"
   dependencies:
-    "@backstage/plugin-permission-common": "npm:^0.9.9"
-  checksum: 10c0/9640865f5f5a3d157318f8933cb04f00316f5bfcbda9df5d38defa0dbf10fcab327a15121382c2f2d0aa5b4019ccfee426abf6166d08980955e79ced1510c9cf
+    "@backstage/plugin-permission-common": "npm:^0.9.10"
+  checksum: 10c0/17a1e74c8df7308b64cc0a8f21a0c01fff13df2c3e8f64f836d25b16063c186523140a0ea00ae0d38b816f8d9e1af6c1f0c7157dad26c910605ceee591e1390e
   languageName: node
   linkType: hard
 
-"@red-hat-developer-hub/backstage-plugin-homepage@npm:1.17.1, @red-hat-developer-hub/backstage-plugin-homepage@npm:^1.17.0":
-  version: 1.17.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-homepage@npm:1.17.1"
+"@red-hat-developer-hub/backstage-plugin-homepage@npm:^1.18.0":
+  version: 1.18.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-homepage@npm:1.18.0"
   dependencies:
-    "@backstage/catalog-client": "npm:^1.16.0"
-    "@backstage/catalog-model": "npm:^1.9.0"
-    "@backstage/core-compat-api": "npm:^0.5.12"
-    "@backstage/core-components": "npm:^0.18.11"
-    "@backstage/core-plugin-api": "npm:^1.12.7"
-    "@backstage/frontend-plugin-api": "npm:^0.17.2"
-    "@backstage/plugin-app-react": "npm:^0.2.4"
-    "@backstage/plugin-catalog-react": "npm:^3.1.0"
-    "@backstage/plugin-home": "npm:^0.9.7"
-    "@backstage/plugin-home-react": "npm:^0.1.39"
-    "@backstage/plugin-search-react": "npm:^1.11.5"
-    "@backstage/plugin-user-settings": "npm:^0.9.4"
+    "@backstage/catalog-client": "npm:^1.16.1"
+    "@backstage/catalog-model": "npm:^1.10.0"
+    "@backstage/core-compat-api": "npm:^0.5.14"
+    "@backstage/core-components": "npm:^0.18.13"
+    "@backstage/core-plugin-api": "npm:^1.12.9"
+    "@backstage/frontend-plugin-api": "npm:^0.18.0"
+    "@backstage/plugin-app-react": "npm:^0.2.6"
+    "@backstage/plugin-catalog-react": "npm:^3.2.1"
+    "@backstage/plugin-home": "npm:^0.9.9"
+    "@backstage/plugin-home-react": "npm:^0.1.41"
+    "@backstage/plugin-search-react": "npm:^1.11.7"
+    "@backstage/plugin-user-settings": "npm:^0.9.6"
     "@backstage/theme": "npm:^0.7.3"
     "@mui/icons-material": "npm:5.18.0"
     "@mui/material": "npm:5.18.0"
-    "@red-hat-developer-hub/backstage-plugin-homepage-common": "npm:^0.4.0"
+    "@red-hat-developer-hub/backstage-plugin-homepage-common": "npm:^0.5.0"
     "@scalprum/react-core": "npm:0.11.3"
-    react-grid-layout: "npm:1.5.3"
+    react-grid-layout: "npm:1.5.4"
     react-use: "npm:17.6.1"
+    zod: "npm:^3.25.76 || ^4.0.0"
   peerDependencies:
     react: 16.13.1 || ^17.0.0 || ^18.2.0
     react-dom: "*"
     react-router-dom: 6.30.4
-  checksum: 10c0/66f7ef0a486b56a190cb81a5304e7d55e43b3c634d28c6314333863636b07f2da3ba0e0f34ce11ee4b4e7903cda4fa3b1a58d8e1177ef5ed95c7c59e7d17827b
+  checksum: 10c0/0355cf285351942098ba4fcdf490653db2504aabc26472eff0c8473a6c481da30e3cf1467d6f1cc5307d27d4389236740c7252fc125be615106e53123f26660b
   languageName: node
   linkType: hard
 
@@ -14785,7 +14786,7 @@ __metadata:
     "@mui/styles": "npm:5.18.0"
     "@openshift/dynamic-plugin-sdk": "npm:^5.0.1"
     "@playwright/test": "npm:1.61.1"
-    "@red-hat-developer-hub/backstage-plugin-homepage": "npm:^1.17.0"
+    "@red-hat-developer-hub/backstage-plugin-homepage": "npm:^1.18.0"
     "@red-hat-developer-hub/backstage-plugin-scorecard": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.15.0"
@@ -14841,7 +14842,7 @@ __metadata:
     "@backstage/ui": "npm:^0.17.1"
     "@mui/icons-material": "npm:^5.18.0"
     "@mui/material": "npm:^5.18.0"
-    "@red-hat-developer-hub/backstage-plugin-homepage": "npm:1.17.1"
+    "@red-hat-developer-hub/backstage-plugin-homepage": "npm:^1.18.0"
     "@red-hat-developer-hub/backstage-plugin-scorecard": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.15.0"
@@ -29671,9 +29672,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-grid-layout@npm:1.5.3":
-  version: 1.5.3
-  resolution: "react-grid-layout@npm:1.5.3"
+"react-grid-layout@npm:1.5.4":
+  version: 1.5.4
+  resolution: "react-grid-layout@npm:1.5.4"
   dependencies:
     clsx: "npm:^2.1.1"
     fast-equals: "npm:^4.0.3"
@@ -29684,7 +29685,7 @@ __metadata:
   peerDependencies:
     react: ">= 16.3.0"
     react-dom: ">= 16.3.0"
-  checksum: 10c0/e7ddacff138e7e83121b7356411a38056fa628dcd77ee8dfa5d5290fda76c2bafdc757578ed5cf4617731696e959ba8570f391b509e597f6563158ed2dd8dbb9
+  checksum: 10c0/f99791c8cdb1dae3c192789e83607207d271d390321d8cccca08739ab0f44cc78a873caf5f6b8961b673ddf2f52c0c2d50de1974a9a2b9c4843a75a9761663f6
   languageName: node
   linkType: hard
 
