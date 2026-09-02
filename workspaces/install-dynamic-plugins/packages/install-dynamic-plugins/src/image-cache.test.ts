@@ -303,15 +303,15 @@ MANIFEST
     ]);
   });
 
-  it('names the image when the manifest declares no layers', async () => {
-    const cache = cacheWith({ manifest: '{"layers":[]}' });
-    await expect(cache.getTarball(IMAGE)).rejects.toThrow(
-      `OCI manifest for ${IMAGE} has no layers`,
-    );
-  });
-
-  it('names the image when the manifest has no layers key at all', async () => {
-    const cache = cacheWith({ manifest: '{}' });
+  // One error, two manifest shapes that reach it through the same optional
+  // chain. Measured: dropping either case changes no covered branch, so they
+  // are a table of equivalent inputs rather than two independent tests — the
+  // form oci-key.test.ts already uses for its invalidCases.
+  it.each([
+    ['declares an empty layer list', '{"layers":[]}'],
+    ['has no layers key at all', '{}'],
+  ])('names the image when the manifest %s', async (_, manifest) => {
+    const cache = cacheWith({ manifest });
     await expect(cache.getTarball(IMAGE)).rejects.toThrow(
       `OCI manifest for ${IMAGE} has no layers`,
     );
