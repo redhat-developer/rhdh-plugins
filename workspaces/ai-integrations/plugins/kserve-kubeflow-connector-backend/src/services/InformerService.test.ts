@@ -87,6 +87,7 @@ import {
   getDiscoveryUris,
   getModelCatalog,
   getModelCard,
+  _resetForTesting,
 } from './InformerService';
 
 describe('InformerService', () => {
@@ -95,6 +96,7 @@ describe('InformerService', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.clearAllMocks();
+    _resetForTesting();
     mockInformerList.mockReturnValue([]);
     mockGetCurrentUser.mockReturnValue({ token: 'test-token' });
     mockGetUsers.mockReturnValue([]);
