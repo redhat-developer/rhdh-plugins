@@ -42,7 +42,7 @@ describe('CopyButton', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows checkmark and Copied! tooltip after a successful copy', async () => {
+  it('shows checkmark icon after a successful copy', async () => {
     writeTextMock.mockResolvedValue(undefined);
     render(<CopyButton text="https://example.com" />);
 
@@ -52,11 +52,12 @@ describe('CopyButton', () => {
       expect(writeTextMock).toHaveBeenCalledWith('https://example.com'),
     );
 
-    // After success the button title changes — MUI Tooltip sets aria-label on
-    // the element passed to it; we can verify the icon switch via aria-label
-    // on the wrapping Tooltip span via title attribute propagation.
-    // A simpler check: the error icon must NOT be present.
-    expect(screen.queryByTestId('ErrorOutlineIcon')).not.toBeInTheDocument();
+    // After success the CheckIcon must be present
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-testid="CopyButton-check"]'),
+      ).toBeInTheDocument(),
+    );
   });
 
   it('shows error icon after a failed clipboard write', async () => {
@@ -69,12 +70,11 @@ describe('CopyButton', () => {
       expect(writeTextMock).toHaveBeenCalledWith('https://example.com'),
     );
 
-    // After failure the ErrorOutlineIcon should be rendered
+    // After failure the ErrorOutlineIcon must be present
     await waitFor(() =>
       expect(
-        document.querySelector('[data-testid="ErrorOutlineIcon"]') ||
-          document.querySelector('.MuiSvgIcon-root'),
-      ).toBeTruthy(),
+        document.querySelector('[data-testid="CopyButton-error"]'),
+      ).toBeInTheDocument(),
     );
   });
 

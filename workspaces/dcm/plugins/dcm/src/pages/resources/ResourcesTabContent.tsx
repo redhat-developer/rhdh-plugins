@@ -100,6 +100,9 @@ export function ResourcesTabContent() {
           ),
       },
       {
+        // TODO(FLPATH-4773): Rename column to "Environment" once the Resources
+        // API replaces provider_name with an agent/environment reference, and
+        // mark resources as degraded when the associated agent is unavailable.
         title: t('resources.columns.provider'),
         field: 'provider_name',
         render: inst => (

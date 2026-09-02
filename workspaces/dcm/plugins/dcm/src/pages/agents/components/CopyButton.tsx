@@ -40,34 +40,46 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
+type CopyState = 'idle' | 'copied' | 'failed';
+
 /** Icon button that copies text to the clipboard and shows a brief checkmark. */
 export function CopyButton({ text }: Readonly<{ text: string }>) {
   const classes = useStyles();
   const { t } = useTranslation();
-  const [copied, setCopied] = useState(false);
-  const [copyFailed, setCopyFailed] = useState(false);
+  const [state, setState] = useState<CopyState>('idle');
 
   const handleCopy = () => {
     globalThis.navigator.clipboard
       .writeText(text)
       .then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
+        setState('copied');
+        setTimeout(() => setState('idle'), 2000);
       })
       .catch(() => {
-        setCopyFailed(true);
-        setTimeout(() => setCopyFailed(false), 2000);
+        setState('failed');
+        setTimeout(() => setState('idle'), 2000);
       });
   };
 
   let tooltipTitle = t('copyButton.copy');
-  if (copied) tooltipTitle = t('copyButton.copied');
-  else if (copyFailed) tooltipTitle = t('copyButton.failed');
+  if (state === 'copied') tooltipTitle = t('copyButton.copied');
+  else if (state === 'failed') tooltipTitle = t('copyButton.failed');
 
   let icon = <FileCopyOutlinedIcon className={classes.copyIcon} />;
-  if (copied) icon = <CheckIcon className={classes.copiedIcon} />;
-  else if (copyFailed)
-    icon = <ErrorOutlineIcon className={classes.failedIcon} />;
+  if (state === 'copied')
+    icon = (
+      <CheckIcon
+        className={classes.copiedIcon}
+        data-testid="CopyButton-check"
+      />
+    );
+  else if (state === 'failed')
+    icon = (
+      <ErrorOutlineIcon
+        className={classes.failedIcon}
+        data-testid="CopyButton-error"
+      />
+    );
 
   return (
     <Tooltip title={tooltipTitle} placement="top">
