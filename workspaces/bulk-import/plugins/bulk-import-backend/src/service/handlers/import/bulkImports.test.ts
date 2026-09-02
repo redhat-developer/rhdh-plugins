@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import type { LoggerService } from '@backstage/backend-plugin-api';
+import type {
+  HttpAuthService,
+  LoggerService,
+} from '@backstage/backend-plugin-api';
 import { mockServices } from '@backstage/backend-test-utils';
 import { NotFoundError } from '@backstage/errors';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
@@ -1691,6 +1694,12 @@ describe('bulkimports.ts unit tests', () => {
   });
 
   describe('findOrchestratorImportStatusByRepo', () => {
+    const mockReq = {} as import('express').Request;
+    const mockUserCredentials = { principal: { type: 'user' } };
+    const mockHttpAuth = {
+      credentials: async () => mockUserCredentials,
+    } as unknown as HttpAuthService;
+
     it('should return workflow status when repository and workflow exist', async () => {
       const mockOrchestratorRepositoryDao = {
         findRepositoryByUrl: jest.fn().mockResolvedValue({
@@ -1727,18 +1736,30 @@ describe('bulkimports.ts unit tests', () => {
 
       (DefaultApi as jest.Mock).mockImplementation(() => mockOrchestratorApi);
 
+      const mockAuth = {
+        getPluginRequestToken: jest.fn().mockResolvedValue({
+          token: 'orchestrator-token',
+        }),
+      } as any;
+
       const result = await findOrchestratorImportStatusByRepo(
         {
           logger,
           orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
           orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
           discovery: mockDiscovery,
+          auth: mockAuth,
+          httpAuth: mockHttpAuth,
+          req: mockReq,
         },
         'https://github.com/test-org/test-repo',
-        'token',
       );
 
       expect(result.statusCode).toBe(200);
+      expect(mockAuth.getPluginRequestToken).toHaveBeenCalledWith({
+        onBehalfOf: mockUserCredentials,
+        targetPluginId: 'orchestrator',
+      });
       expect(result.responseBody?.workflow?.workflowId).toBe(
         'workflow-instance-123',
       );
@@ -1766,15 +1787,21 @@ describe('bulkimports.ts unit tests', () => {
         getBaseUrl: jest.fn(),
       } as any;
 
+      const mockAuth = {
+        getPluginRequestToken: jest.fn(),
+      } as any;
+
       const result = await findOrchestratorImportStatusByRepo(
         {
           logger,
           orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
           orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
           discovery: mockDiscovery,
+          auth: mockAuth,
+          httpAuth: mockHttpAuth,
+          req: mockReq,
         },
         'https://github.com/test-org/test-repo',
-        'token',
       );
 
       expect(result.statusCode).toBe(404);
@@ -1805,15 +1832,21 @@ describe('bulkimports.ts unit tests', () => {
           .mockRejectedValue(new Error('Discovery service error')),
       } as any;
 
+      const mockAuth = {
+        getPluginRequestToken: jest.fn(),
+      } as any;
+
       const result = await findOrchestratorImportStatusByRepo(
         {
           logger,
           orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
           orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
           discovery: mockDiscovery,
+          auth: mockAuth,
+          httpAuth: mockHttpAuth,
+          req: mockReq,
         },
         'https://github.com/test-org/test-repo',
-        'token',
       );
 
       expect(result.statusCode).toBe(200);
@@ -1857,15 +1890,23 @@ describe('bulkimports.ts unit tests', () => {
 
       (DefaultApi as jest.Mock).mockImplementation(() => mockOrchestratorApi);
 
+      const mockAuth = {
+        getPluginRequestToken: jest.fn().mockResolvedValue({
+          token: 'orchestrator-token',
+        }),
+      } as any;
+
       const result = await findOrchestratorImportStatusByRepo(
         {
           logger,
           orchestratorRepositoryDao: mockOrchestratorRepositoryDao,
           orchestratorWorkflowDao: mockOrchestratorWorkflowDao,
           discovery: mockDiscovery,
+          auth: mockAuth,
+          httpAuth: mockHttpAuth,
+          req: mockReq,
         },
         'https://github.com/test-org/test-repo',
-        'token',
         true,
       );
 
