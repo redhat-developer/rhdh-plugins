@@ -302,9 +302,11 @@ actual migration is future work.
   transformations will be designed after upstream kinds stabilize.
 - **Mapping updates** — this document will be updated as upstream RFCs evolve
   and confidence levels change.
-- **Version fallback resolution** — whether to use `0.0.0-unknown` vs
-  `"unknown"` for unrecognized version formats (currently `0.0.0-unknown`
-  per SDK behavior).
+- **Version fallback — resolved.** `0.0.0-unknown` is the single
+  fallback for missing or unrecognized version formats, produced by
+  `normalizeAIAssetVersion()` (SDK). All connector OpenSpecs are
+  aligned; connectors MUST NOT use a local `"unknown"` fallback.
+  See [#4531](https://github.com/redhat-developer/rhdh-plugins/issues/4531).
 - **Connector alignment** — expand `rhdh.io/ai-asset-source` vocabulary as
   new connectors are implemented (e.g., `mcp-registry-connector`,
   `rhoai-connector`).
