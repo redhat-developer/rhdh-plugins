@@ -13,9 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { chmodSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { InstallException } from './errors';
 import { OciImageCache } from './image-cache';
 import { ociPluginKey } from './oci-key';
@@ -201,5 +208,161 @@ MANIFEST
         `The image might not contain the '${ANNOTATION}' annotation. ` +
         'Please ensure it was packaged using the @red-hat-developer-hub/cli plugin package command.',
     );
+  });
+});
+
+describe('OciImageCache.getTarball', () => {
+  const LAYER = 'deadbeefcafe';
+  const GOOD_MANIFEST = `{"layers":[{"digest":"sha256:${LAYER}"}]}`;
+
+  let skopeoDir: string;
+  let cacheDir: string;
+  let logPath: string;
+
+  beforeEach(() => {
+    skopeoDir = mkdtempSync(join(tmpdir(), 'fake-skopeo-copy-'));
+    cacheDir = mkdtempSync(join(tmpdir(), 'oci-cache-'));
+    logPath = join(skopeoDir, 'invocations.log');
+  });
+
+  afterEach(() => {
+    for (const dir of [skopeoDir, cacheDir]) {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  /** Every `skopeo` invocation, one per line, in call order. */
+  function invocations(): string[] {
+    if (!existsSync(logPath)) return [];
+    return readFileSync(logPath, 'utf8').split('\n').filter(Boolean);
+  }
+
+  /**
+   * Fake `skopeo` that materialises a `manifest.json` and the layer blob at the
+   * `dir:` destination, the way a real `copy` does. Same technique as
+   * `extra-catalog-index.test.ts`, plus the invocation log from
+   * `skopeo.test.ts` so the dedup tests can count forks.
+   *
+   * With `failFirstCall` the first invocation exits non-zero and every later
+   * one succeeds, which is what a transient registry error looks like.
+   */
+  function makeCopyingSkopeo(opts: {
+    manifest?: string;
+    failFirstCall?: boolean;
+  }): Skopeo {
+    const binPath = join(skopeoDir, 'skopeo');
+    const marker = join(skopeoDir, 'first-call-done');
+    const failBlock = opts.failFirstCall
+      ? `if [ ! -f "${marker}" ]; then
+  touch "${marker}"
+  echo 'simulated transport failure' >&2
+  exit 1
+fi
+`
+      : '';
+    writeFileSync(
+      binPath,
+      `#!/bin/sh
+echo "$@" >> "${logPath}"
+${failBlock}DST=""
+for arg in "$@"; do
+  case "$arg" in
+    dir:*) DST="\${arg#dir:}" ;;
+  esac
+done
+mkdir -p "$DST"
+: > "$DST/${LAYER}"
+cat > "$DST/manifest.json" <<'MANIFEST'
+${opts.manifest ?? GOOD_MANIFEST}
+MANIFEST
+`,
+    );
+    chmodSync(binPath, 0o755);
+    return new Skopeo(binPath);
+  }
+
+  function cacheWith(opts: {
+    manifest?: string;
+    failFirstCall?: boolean;
+  }): OciImageCache {
+    return new OciImageCache(makeCopyingSkopeo(opts), cacheDir);
+  }
+
+  it('copies the image and returns the path to its single layer blob', async () => {
+    const cache = cacheWith({});
+
+    const tarball = await cache.getTarball(IMAGE);
+
+    // The directory is keyed by sha256 of the resolved ref, so assert the leaf
+    // and the containment rather than re-deriving the hash here.
+    expect(basename(tarball)).toBe(LAYER);
+    expect(tarball.startsWith(cacheDir)).toBe(true);
+    expect(existsSync(tarball)).toBe(true);
+    expect(invocations()).toEqual([
+      `copy --override-os=linux --override-arch=amd64 ${DOCKER_URL} dir:${dirname(tarball)}`,
+    ]);
+  });
+
+  it('names the image when the manifest declares no layers', async () => {
+    const cache = cacheWith({ manifest: '{"layers":[]}' });
+    await expect(cache.getTarball(IMAGE)).rejects.toThrow(
+      `OCI manifest for ${IMAGE} has no layers`,
+    );
+  });
+
+  it('names the image when the manifest has no layers key at all', async () => {
+    const cache = cacheWith({ manifest: '{}' });
+    await expect(cache.getTarball(IMAGE)).rejects.toThrow(
+      `OCI manifest for ${IMAGE} has no layers`,
+    );
+  });
+
+  it('names the offending digest when a layer digest carries no algorithm', async () => {
+    const cache = cacheWith({ manifest: '{"layers":[{"digest":"nocolon"}]}' });
+    const failing = cache.getTarball(IMAGE);
+
+    await expect(failing).rejects.toBeInstanceOf(InstallException);
+    await expect(failing).rejects.toThrow(
+      `Malformed layer digest nocolon in ${IMAGE}`,
+    );
+  });
+
+  it('shares one skopeo copy between concurrent callers for the same image', async () => {
+    const cache = cacheWith({});
+
+    // The multi-plugin overlay case the class docblock is written for: several
+    // plugins in one image, all asking for the tarball at once.
+    const [a, b, c] = await Promise.all([
+      cache.getTarball(IMAGE),
+      cache.getTarball(IMAGE),
+      cache.getTarball(IMAGE),
+    ]);
+
+    expect(invocations()).toHaveLength(1);
+    expect(b).toBe(a);
+    expect(c).toBe(a);
+  });
+
+  it('still copies once per image when two different images are requested', async () => {
+    const cache = cacheWith({});
+    const other = 'oci://registry.io/org/other:2.0';
+
+    await Promise.all([cache.getTarball(IMAGE), cache.getTarball(other)]);
+
+    // Delimits the previous test: the cache keys on the image, it does not
+    // collapse every caller onto one download.
+    expect(invocations()).toHaveLength(2);
+  });
+
+  it('evicts a failed download so the next caller retries instead of replaying the rejection', async () => {
+    const cache = cacheWith({ failFirstCall: true });
+
+    await expect(cache.getTarball(IMAGE)).rejects.toThrow(
+      'simulated transport failure',
+    );
+    // Without the eviction the rejected promise stays in the map and every
+    // later caller gets the first failure back, forever.
+    await expect(cache.getTarball(IMAGE)).resolves.toContain(LAYER);
+    expect(invocations()).toHaveLength(2);
   });
 });
