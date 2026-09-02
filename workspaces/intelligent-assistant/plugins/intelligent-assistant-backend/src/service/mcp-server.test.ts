@@ -450,48 +450,6 @@ describe('MCP server management endpoints', () => {
       expect(enableRes.body.server.auth).toBe('dcr');
       expect(enableRes.body.server.hasToken).toBe(true);
     });
-
-    it('ignores token field for DCR servers', async () => {
-      const backendServer = await startBackendServer(MCP_CONFIG_DCR);
-      const patchRes = await request(backendServer)
-        .patch('/api/intelligent-assistant/mcp-servers/no-token-server')
-        .send({ token: MOCK_MCP_VALID_TOKEN });
-
-      expect(patchRes.status).toBe(200);
-      expect(patchRes.body.validation).toBeUndefined();
-      expect(patchRes.body.server).toMatchObject({
-        name: 'no-token-server',
-        auth: 'dcr',
-        hasToken: true,
-        hasUserToken: false,
-        hasOrgToken: false,
-        status: 'unknown',
-      });
-
-      const listRes = await request(backendServer).get(
-        '/api/intelligent-assistant/mcp-servers',
-      );
-      const dcrServer = listRes.body.servers.find(
-        (s: { name: string }) => s.name === 'no-token-server',
-      );
-      expect(dcrServer.hasUserToken).toBe(false);
-      expect(dcrServer.hasToken).toBe(true);
-      expect(dcrServer.auth).toBe('dcr');
-    });
-
-    it('applies enabled while ignoring token for DCR servers', async () => {
-      const backendServer = await startBackendServer(MCP_CONFIG_DCR);
-      const patchRes = await request(backendServer)
-        .patch('/api/intelligent-assistant/mcp-servers/no-token-server')
-        .send({ enabled: false, token: MOCK_MCP_VALID_TOKEN });
-
-      expect(patchRes.status).toBe(200);
-      expect(patchRes.body.server.enabled).toBe(false);
-      expect(patchRes.body.server.hasUserToken).toBe(false);
-      expect(patchRes.body.server.hasToken).toBe(true);
-      expect(patchRes.body.server.auth).toBe('dcr');
-      expect(patchRes.body.validation).toBeUndefined();
-    });
   });
 
   // ─── POST /mcp-servers/validate (generic) ─────────────────────────

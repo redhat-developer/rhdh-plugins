@@ -513,21 +513,18 @@ export async function createRouter(
           return;
         }
 
-        // DCR servers mint per-request tokens; a PATCH token is ignored.
-        const persistToken = server.auth !== 'dcr' && hasTokenField;
-
         const setting = await settingsStore.upsert(name, userEntityRef, {
           enabled: hasEnabledField ? enabled : undefined,
-          token: persistToken ? token : undefined,
+          token: hasTokenField ? token : undefined,
         });
 
         let validation: McpValidationResult | undefined;
         let serverUrl = resolveServerUrl(server.name);
-        if (persistToken && token && !serverUrl) {
+        if (token && !serverUrl) {
           await refreshLcsUrlCache();
           serverUrl = resolveServerUrl(server.name);
         }
-        if (persistToken && token && serverUrl) {
+        if (token && serverUrl) {
           validation = await mcpValidator.validate(serverUrl, token);
           const newStatus: McpServerStatus = validation.valid
             ? 'connected'
