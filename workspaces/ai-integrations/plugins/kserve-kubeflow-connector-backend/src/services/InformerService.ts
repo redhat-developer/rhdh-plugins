@@ -417,10 +417,16 @@ async function innerStart(
         is.metadata.namespace,
         is.metadata.name,
       );
-      logger.debug(
-        `innerStart: Adding importKey ${importKey} for KServe InferenceService ${is.metadata.namespace}/${is.metadata.name}`,
-      );
-      keys.add(importKey);
+      if (isInferenceServiceReady(is, logger)) {
+        logger.debug(
+          `innerStart: Adding importKey ${importKey} for ready KServe InferenceService ${is.metadata.namespace}/${is.metadata.name}`,
+        );
+        keys.add(importKey);
+      } else {
+        logger.debug(
+          `innerStart: Skipping importKey ${importKey} for non-ready KServe InferenceService ${is.metadata.namespace}/${is.metadata.name}`,
+        );
+      }
     }
   } catch (error) {
     logger.error(
