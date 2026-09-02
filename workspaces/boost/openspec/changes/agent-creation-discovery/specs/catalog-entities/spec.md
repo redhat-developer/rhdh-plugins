@@ -6,7 +6,7 @@
 > This file documents entity-provider deployment for the agent-creation-discovery
 > change. For AI-asset category definitions, `spec.type` values, and upstream
 > kind mappings (the seven readiness categories), see
-> [ai-catalog-entity-model/design.md Decision 1](../../../../ai-catalog-entity-model/design.md).
+> [ai-catalog-entity-model/design.md Decision 1](../../../ai-catalog-entity-model/design.md).
 > The `vector-store` and `ai-tool` rows in the table below are vestiges of the
 > Augment POC and are **not** in RHDHPLAN-1507 / RHDHPLAN-1513 readiness scope
 > (confirmed in [#4042 gate comment §0](https://github.com/redhat-developer/rhdh-plugins/issues/4042#issuecomment-5204217995)).
