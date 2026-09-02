@@ -2,6 +2,19 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
+> **⚠ Not the source of truth for AI-asset categories or upstream mapping.**
+> This file documents entity-provider deployment for the agent-creation-discovery
+> change. For AI-asset category definitions, `spec.type` values, and upstream
+> kind mappings (the seven readiness categories), see
+> [ai-catalog-entity-model/design.md Decision 1](../../../../ai-catalog-entity-model/design.md).
+> The `vector-store` and `ai-tool` rows in the table below are vestiges of the
+> Augment POC and are **not** in RHDHPLAN-1507 / RHDHPLAN-1513 readiness scope
+> (confirmed in [#4042 gate comment §0](https://github.com/redhat-developer/rhdh-plugins/issues/4042#issuecomment-5204217995)).
+> See also the published
+> [annotation specification](../../../../../specifications/annotation-specification.md),
+> which cross-references Decision 1 as primary and `AI_ASSET_SPEC_TYPES` for
+> browse taxonomy including non-annotation types.
+
 AI agents, models, MCP servers, and vector stores are modeled as Backstage catalog entities. This replaces in-memory caches with catalog-managed lifecycle, providing discoverability, ownership, search, and RBAC integration.
 
 NOTE: These recommendations align with in-flight upstream Backstage initiatives:
@@ -17,8 +30,8 @@ The specifications below use existing Backstage kinds (`Resource`, `Component`) 
 | AI Agents | `Component` | `ai-agent` | — | Future: `AIContext` when upstream lands |
 | AI Models | `Resource` | `ai-model` | — | Future: `API` v1alpha2 discriminated union |
 | MCP Servers | `API` | `mcp-server` | `Resource` | Upstream `McpServerApiEntity` available via `@backstage/plugin-catalog-backend-module-ai-model` ([backstage#34016](https://github.com/backstage/backstage/pull/34016), merged). Uses `spec.remotes: {type, url}[]` instead of `spec.definition`. Fall back to `kind: Resource, spec.type: mcp-server` if the catalog model module is not installed. |
-| Vector Stores | `Resource` | `vector-store` | — | No upstream equivalent planned |
-| Kagenti Tools | `Resource` | `ai-tool` | — | No upstream equivalent planned |
+| Vector Stores | `Resource` | `vector-store` | — | **Supplementary / historical** — Augment POC vestige; not an AI-asset annotation category for RHDHPLAN-1507 / RHDHPLAN-1513 readiness. Retained for catalog browse (`AI_ASSET_SPEC_TYPES`) only. |
+| Kagenti Tools | `Resource` | `ai-tool` | — | **Supplementary / historical** — Augment POC vestige; not an AI-asset annotation category for RHDHPLAN-1507 / RHDHPLAN-1513 readiness. Retained for catalog browse (`AI_ASSET_SPEC_TYPES`) only. |
 
 **Note on MCP Server entity kind:** When `@backstage/plugin-catalog-backend-module-ai-model` is installed, MCP servers use `kind: API, spec.type: mcp-server` with `spec.remotes` for transport endpoints. The `McpEntityProvider` should detect whether the model module is available and emit the appropriate kind. Use `isMcpServerApiEntity` type guard from `@backstage/catalog-model` when available.
 
