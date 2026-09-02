@@ -28,6 +28,7 @@ export interface DoraPullRequestsStore {
   readByEntityCollectorAndDeployment(
     catalogEntityRef: string,
     collectorId: string,
+    collectorInputHash: string,
     deploymentId: string,
   ): Promise<DbDoraPullRequest[]>;
   /**
@@ -57,6 +58,7 @@ export class DatabaseDoraPullRequests implements DoraPullRequestsStore {
       .onConflict([
         'catalog_entity_ref',
         'collector_id',
+        'collector_input_hash',
         'original_pr_id',
         'deployment_id',
       ])
@@ -66,12 +68,14 @@ export class DatabaseDoraPullRequests implements DoraPullRequestsStore {
   async readByEntityCollectorAndDeployment(
     catalogEntityRef: string,
     collectorId: string,
+    collectorInputHash: string,
     deploymentId: string,
   ): Promise<DbDoraPullRequest[]> {
     const rows = await this.dbClient<DbDoraPullRequestRow>(this.tableName)
       .select('*')
       .where('catalog_entity_ref', catalogEntityRef)
       .andWhere('collector_id', collectorId)
+      .andWhere('collector_input_hash', collectorInputHash)
       .andWhere('deployment_id', deploymentId)
       .orderBy('first_commit_at', 'asc');
 

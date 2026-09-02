@@ -111,6 +111,7 @@ export const scorecardModuleDora = createBackendModule({
           deployments: deploymentsDb,
           incidents: incidentsDb,
           pullRequests: pullRequestsDb,
+          lastSync: lastSyncDb,
         }).start();
       },
     });

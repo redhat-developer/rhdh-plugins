@@ -15,13 +15,14 @@
  */
 
 import type { Config } from '@backstage/config';
-import type { JsonValue } from '@backstage/types';
+import type { JsonObject } from '@backstage/types';
 import {
-  CollectorConfig,
   ScorecardThresholdRuleColors,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { daysToMilliseconds } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { collectorInputHash } from '../service/collectorHash';
+import type { DoraCollectorConfig } from '../service/types';
 import {
   DORA_DEFAULT_DATA_RETENTION_DAYS,
   DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
@@ -34,23 +35,23 @@ import {
 } from '../constants';
 
 export type DoraDeploymentFrequencyConfig = {
-  deploymentsCollector: CollectorConfig;
+  deploymentsCollector: DoraCollectorConfig;
   productionEnvironments: string[];
 };
 
 export type DoraMedianLeadTimeForChangesConfig = {
-  deploymentsCollector: CollectorConfig;
-  deploymentPullRequestsCollector: CollectorConfig;
+  deploymentsCollector: DoraCollectorConfig;
+  deploymentPullRequestsCollector: DoraCollectorConfig;
   productionEnvironments: string[];
 };
 
 export type DoraMeanTimeToRestoreConfig = {
-  incidentsCollector: CollectorConfig;
+  incidentsCollector: DoraCollectorConfig;
 };
 
 export type DoraChangeFailureRateConfig = {
-  deploymentsCollector: CollectorConfig;
-  incidentsCollector: CollectorConfig;
+  deploymentsCollector: DoraCollectorConfig;
+  incidentsCollector: DoraCollectorConfig;
   productionEnvironments: string[];
 };
 
@@ -159,17 +160,23 @@ export const DEFAULT_DORA_MEAN_TIME_TO_RESTORE_THRESHOLDS: ThresholdConfig =
     ],
   };
 
-function parseCollectorConfig(
+/**
+ * Parses a collector `id` and static `input` object from config and attaches
+ * `inputHash`. Shared by all DORA metric provider parsers.
+ */
+export function parseCollectorConfig(
   config: Config,
   collectorConfigPath: string,
   defaultId: string,
-): CollectorConfig {
+): DoraCollectorConfig {
+  const input =
+    config
+      .getOptionalConfig(`${collectorConfigPath}.input`)
+      ?.get<JsonObject>() ?? {};
   return {
     id: config.getOptionalString(`${collectorConfigPath}.id`) ?? defaultId,
-    input:
-      config.getOptional<Record<string, JsonValue>>(
-        `${collectorConfigPath}.input`,
-      ) ?? {},
+    input,
+    inputHash: collectorInputHash(input),
   };
 }
 

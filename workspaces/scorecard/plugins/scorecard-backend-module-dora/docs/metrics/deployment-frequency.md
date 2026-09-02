@@ -124,6 +124,8 @@ scorecard:
                 workflowName: Custom deployment
 ```
 
+Updating `workflowName` in your configuration creates a new data identity and triggers a full 30-day data refresh.
+
 ### Use custom deployments collector
 
 ```yaml

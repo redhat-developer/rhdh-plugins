@@ -175,6 +175,8 @@ scorecard:
               id: github:deploymentPullRequests
 ```
 
+Updating `workflowName` in your configuration creates a new data identity and triggers a full 30-day data refresh.
+
 ### Use custom collectors
 
 ```yaml

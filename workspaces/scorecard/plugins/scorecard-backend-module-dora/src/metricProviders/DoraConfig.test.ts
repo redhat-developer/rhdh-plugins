@@ -27,6 +27,7 @@ import {
   DORA_TIME_WINDOW_DAYS,
 } from '../constants';
 import {
+  parseCollectorConfig,
   parseDoraChangeFailureRateConfig,
   parseDoraDataRetentionDays,
   parseDoraDeploymentFrequencyConfig,
@@ -34,8 +35,74 @@ import {
   parseDoraMedianLeadTimeForChangesConfig,
   parseDoraSyncConfig,
 } from './DoraConfig';
+import { collectorInputHash } from '../service/collectorHash';
 
 describe('DoraConfig', () => {
+  describe('parseCollectorConfig', () => {
+    const exampleCollectorConfigPath = 'collectors.test';
+    const exampleCollectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+
+    it('returns defaults when unset', () => {
+      expect(
+        parseCollectorConfig(
+          mockServices.rootConfig({ data: {} }),
+          exampleCollectorConfigPath,
+          exampleCollectorId,
+        ),
+      ).toEqual({
+        id: exampleCollectorId,
+        input: {},
+        inputHash: collectorInputHash({}),
+      });
+    });
+
+    it('parses id and input', () => {
+      expect(
+        parseCollectorConfig(
+          mockServices.rootConfig({
+            data: {
+              collectors: {
+                test: {
+                  id: 'custom:deployments',
+                  input: { workflowName: 'Deploy' },
+                },
+              },
+            },
+          }),
+          exampleCollectorConfigPath,
+          exampleCollectorId,
+        ),
+      ).toEqual({
+        id: 'custom:deployments',
+        input: { workflowName: 'Deploy' },
+        inputHash: collectorInputHash({ workflowName: 'Deploy' }),
+      });
+    });
+
+    it.each([
+      ['a string', 'Deploy'],
+      ['a number', 1],
+      ['a boolean', true],
+      ['an array', ['Deploy']],
+    ])('throws when collector input is invalid: %s', (_name, input) => {
+      expect(() =>
+        parseCollectorConfig(
+          mockServices.rootConfig({
+            data: {
+              collectors: {
+                test: { input },
+              },
+            },
+          }),
+          exampleCollectorConfigPath,
+          exampleCollectorId,
+        ),
+      ).toThrow(
+        /Invalid type in config for key 'collectors\.test\.input' in 'mock-config', got .+, wanted object/,
+      );
+    });
+  });
+
   describe('parseDoraDeploymentFrequencyConfig', () => {
     it('returns defaults when unset', () => {
       expect(
@@ -48,6 +115,7 @@ describe('DoraConfig', () => {
         deploymentsCollector: {
           id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
           input: {},
+          inputHash: collectorInputHash({}),
         },
         productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
       });
@@ -82,6 +150,7 @@ describe('DoraConfig', () => {
         deploymentsCollector: {
           id: 'custom:deployments',
           input: { workflowName: 'Deploy' },
+          inputHash: collectorInputHash({ workflowName: 'Deploy' }),
         },
         productionEnvironments: ['prod', 'live'],
       });
@@ -122,10 +191,12 @@ describe('DoraConfig', () => {
         deploymentsCollector: {
           id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
           input: {},
+          inputHash: collectorInputHash({}),
         },
         deploymentPullRequestsCollector: {
           id: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
           input: {},
+          inputHash: collectorInputHash({}),
         },
         productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
       });
@@ -164,10 +235,12 @@ describe('DoraConfig', () => {
         deploymentsCollector: {
           id: 'custom:deployments',
           input: { flag: true },
+          inputHash: collectorInputHash({ flag: true }),
         },
         deploymentPullRequestsCollector: {
           id: 'custom:deployment-prs',
           input: { label: 'prs' },
+          inputHash: collectorInputHash({ label: 'prs' }),
         },
         productionEnvironments: ['prod'],
       });
@@ -186,6 +259,7 @@ describe('DoraConfig', () => {
         incidentsCollector: {
           id: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
           input: {},
+          inputHash: collectorInputHash({}),
         },
       });
     });
@@ -218,6 +292,7 @@ describe('DoraConfig', () => {
         incidentsCollector: {
           id: 'custom:incidents',
           input: { project: 'OPS' },
+          inputHash: collectorInputHash({ project: 'OPS' }),
         },
       });
     });
@@ -235,10 +310,12 @@ describe('DoraConfig', () => {
         deploymentsCollector: {
           id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
           input: {},
+          inputHash: collectorInputHash({}),
         },
         incidentsCollector: {
           id: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
           input: {},
+          inputHash: collectorInputHash({}),
         },
         productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
       });
@@ -277,10 +354,12 @@ describe('DoraConfig', () => {
         deploymentsCollector: {
           id: 'custom:deployments',
           input: { workflowName: 'Deploy' },
+          inputHash: collectorInputHash({ workflowName: 'Deploy' }),
         },
         incidentsCollector: {
           id: 'custom:incidents',
           input: { project: 'OPS' },
+          inputHash: collectorInputHash({ project: 'OPS' }),
         },
         productionEnvironments: ['prod', 'live'],
       });

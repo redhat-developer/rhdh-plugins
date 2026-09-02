@@ -28,6 +28,7 @@ export type DbDoraDeploymentRow = {
   id: string;
   catalog_entity_ref: string;
   collector_id: string;
+  collector_input_hash: string;
   original_deployment_id: string;
   commit_sha: string;
   environment: string | null;
@@ -38,6 +39,7 @@ export type DbDoraIncidentRow = {
   id: string;
   catalog_entity_ref: string;
   collector_id: string;
+  collector_input_hash: string;
   original_incident_id: string;
   created_at: Date | string;
   updated_at: Date | string;
@@ -48,6 +50,7 @@ export type DbDoraPullRequestRow = {
   id: string;
   catalog_entity_ref: string;
   collector_id: string;
+  collector_input_hash: string;
   original_pr_id: string;
   first_commit_at: Date | string;
   deployment_id: string;
@@ -59,6 +62,7 @@ export function toDoraDeploymentRow(
   return {
     catalog_entity_ref: deployment.catalogEntityRef,
     collector_id: deployment.collectorId,
+    collector_input_hash: deployment.collectorInputHash,
     original_deployment_id: deployment.originalDeploymentId,
     commit_sha: deployment.commitSha,
     environment: deployment.environment ?? null,
@@ -73,6 +77,7 @@ export function fromDoraDeploymentRow(
     id: row.id,
     catalogEntityRef: row.catalog_entity_ref,
     collectorId: row.collector_id,
+    collectorInputHash: row.collector_input_hash,
     originalDeploymentId: row.original_deployment_id,
     commitSha: row.commit_sha,
     environment: row.environment,
@@ -86,6 +91,7 @@ export function toDoraIncidentRow(
   return {
     catalog_entity_ref: incident.catalogEntityRef,
     collector_id: incident.collectorId,
+    collector_input_hash: incident.collectorInputHash,
     original_incident_id: incident.originalIncidentId,
     created_at: incident.createdAt,
     updated_at: incident.updatedAt,
@@ -98,6 +104,7 @@ export function fromDoraIncidentRow(row: DbDoraIncidentRow): DbDoraIncident {
     id: row.id,
     catalogEntityRef: row.catalog_entity_ref,
     collectorId: row.collector_id,
+    collectorInputHash: row.collector_input_hash,
     originalIncidentId: row.original_incident_id,
     createdAt: parseDate(row.created_at),
     updatedAt: parseDate(row.updated_at),
@@ -111,6 +118,7 @@ export function toDoraPullRequestRow(
   return {
     catalog_entity_ref: pullRequest.catalogEntityRef,
     collector_id: pullRequest.collectorId,
+    collector_input_hash: pullRequest.collectorInputHash,
     original_pr_id: pullRequest.originalPrId,
     first_commit_at: pullRequest.firstCommitAt,
     deployment_id: pullRequest.deploymentId,
@@ -124,6 +132,7 @@ export function fromDoraPullRequestRow(
     id: row.id,
     catalogEntityRef: row.catalog_entity_ref,
     collectorId: row.collector_id,
+    collectorInputHash: row.collector_input_hash,
     originalPrId: row.original_pr_id,
     firstCommitAt: parseDate(row.first_commit_at),
     deploymentId: row.deployment_id,

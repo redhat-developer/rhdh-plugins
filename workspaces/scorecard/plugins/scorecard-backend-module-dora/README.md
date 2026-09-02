@@ -122,7 +122,7 @@ You can replace default collector IDs via `app-config.yaml` as long as your coll
 - `dora.meanTimeToRestore` [collector contracts](./docs/metrics/mean-time-to-restore.md#collectors)
 - `dora.changeFailureRate` [collector contracts](./docs/metrics/change-failure-rate.md#collectors)
 
-Collector inputs are merged with provider-generated required inputs. This lets you pass extra collector-specific fields (for example `workflowName` when using a workflow-runs based collector) as long as required contract fields are still supported.
+Collector inputs are merged with provider-generated required inputs. This lets you pass extra collector-specific fields (for example `workflowName` when using a workflow-runs based collector) as long as required contract fields are still supported. Changing a collector's `input` starts a new data identity and refetches the full 30-day window.
 
 ```yaml
 scorecard:
@@ -176,8 +176,8 @@ scorecard:
       deploymentLookbackMs: 172800000 # 48 hours
 ```
 
-- `dataRetentionDays`: how long source rows (deployments, incidents, and pull requests linked to expired deployments) are retained before cleanup. Must be at least `30` (the DORA metric computation window). Default: `365`.
+- `dataRetentionDays`: how long source rows (deployments, incidents, pull requests linked to expired deployments and sync watermarks) are retained before cleanup. Must be at least `30` (the DORA metric computation window). Default: `365`.
 - `staleAfterMs`: freshness threshold in milliseconds for deployments and incidents; if the last sync is within this window, those collectors are not refreshed. Must be greater than or equal to `0`. Set to `0` to always refresh. Default: `60000`. Pull request sync is not gated by `staleAfterMs`; PRs are fetched once per deployment when none are stored yet.
 - `deploymentLookbackMs`: when refreshing deployments, re-query from `max(windowFrom, lastSync − lookback)` by created time so deployments that succeed shortly after the previous lastSync watermark are not missed. Must be greater than or equal to `0` and at most `30` days. Set to `0` for watermark-only incremental refresh. Default: `172800000` (48 hours). Does not apply to incidents.
 
-The module schedules a daily background task, `scorecard-dora:cleanup-expired-data`, that deletes deployments, incidents, and pull requests linked to expired deployments older than `dataRetentionDays`.
+The module schedules a daily background task, `scorecard-dora:cleanup-expired-data`, that deletes deployments, incidents, pull requests linked to expired deployments and sync watermarks older than `dataRetentionDays`.

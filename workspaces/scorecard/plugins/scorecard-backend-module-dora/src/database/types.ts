@@ -17,6 +17,7 @@
 export type DbDoraDeploymentCreate = {
   catalogEntityRef: string;
   collectorId: string;
+  collectorInputHash: string;
   originalDeploymentId: string;
   commitSha: string;
   environment?: string | null;
@@ -27,6 +28,7 @@ export type DbDoraDeployment = {
   id: string;
   catalogEntityRef: string;
   collectorId: string;
+  collectorInputHash: string;
   originalDeploymentId: string;
   commitSha: string;
   environment: string | null;
@@ -36,6 +38,7 @@ export type DbDoraDeployment = {
 export type DbDoraIncidentCreate = {
   catalogEntityRef: string;
   collectorId: string;
+  collectorInputHash: string;
   originalIncidentId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -46,6 +49,7 @@ export type DbDoraIncident = {
   id: string;
   catalogEntityRef: string;
   collectorId: string;
+  collectorInputHash: string;
   originalIncidentId: string;
   createdAt: Date;
   updatedAt: Date;
@@ -55,6 +59,7 @@ export type DbDoraIncident = {
 export type DbDoraPullRequestCreate = {
   catalogEntityRef: string;
   collectorId: string;
+  collectorInputHash: string;
   originalPrId: string;
   firstCommitAt: Date;
   deploymentId: string;
@@ -64,6 +69,7 @@ export type DbDoraPullRequest = {
   id: string;
   catalogEntityRef: string;
   collectorId: string;
+  collectorInputHash: string;
   originalPrId: string;
   firstCommitAt: Date;
   deploymentId: string;

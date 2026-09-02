@@ -16,8 +16,10 @@
 
 import type { CollectorConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
+export type DoraCollectorConfig = CollectorConfig & { inputHash: string };
+
 export type CollectorCallOptions = {
-  collector: CollectorConfig;
+  collector: DoraCollectorConfig;
 };
 
 export type WindowOptions = {

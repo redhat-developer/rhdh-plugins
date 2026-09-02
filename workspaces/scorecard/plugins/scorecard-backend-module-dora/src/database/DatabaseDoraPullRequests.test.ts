@@ -16,10 +16,13 @@
 
 import { TestDatabases } from '@backstage/backend-test-utils';
 import { DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID } from '../constants';
+import { collectorInputHash } from '../service/collectorHash';
 import { createTestDatabase } from './__fixtures__';
 import { DatabaseDoraDeployments } from './DatabaseDoraDeployments';
 
 jest.setTimeout(60000);
+
+const EMPTY_INPUT_HASH = collectorInputHash({});
 
 async function seedDeployment(
   deploymentsDb: DatabaseDoraDeployments,
@@ -37,6 +40,7 @@ async function seedDeployment(
     {
       catalogEntityRef: entityRef,
       collectorId: deploymentsCollectorId,
+      collectorInputHash: EMPTY_INPUT_HASH,
       originalDeploymentId,
       commitSha: 'sha-1',
       environment: 'production',
@@ -46,6 +50,7 @@ async function seedDeployment(
   const rows = await deploymentsDb.readByEntityCollectorAndWindow(
     entityRef,
     deploymentsCollectorId,
+    EMPTY_INPUT_HASH,
     new Date('2020-01-01T00:00:00.000Z'),
     new Date('2030-01-01T00:00:00.000Z'),
   );
@@ -77,6 +82,7 @@ describe('DatabaseDoraPullRequests', () => {
           {
             catalogEntityRef: entityRef,
             collectorId: prCollectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-1',
             firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
             deploymentId: deployment.id,
@@ -86,6 +92,7 @@ describe('DatabaseDoraPullRequests', () => {
         const rows = await pullRequests.readByEntityCollectorAndDeployment(
           entityRef,
           prCollectorId,
+          EMPTY_INPUT_HASH,
           deployment.id,
         );
 
@@ -94,6 +101,7 @@ describe('DatabaseDoraPullRequests', () => {
             id: expect.any(String),
             catalogEntityRef: entityRef,
             collectorId: prCollectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-1',
             firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
             deploymentId: deployment.id,
@@ -115,16 +123,18 @@ describe('DatabaseDoraPullRequests', () => {
           {
             catalogEntityRef: entityRef,
             collectorId: prCollectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-1',
             firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
             deploymentId: deployment.id,
           },
         ]);
-        // Conflict on (catalog_entity_ref, collector_id, original_pr_id, deployment_id) for firstCommitAt
+        // Conflict on (catalog_entity_ref, collector_id, collector_input_hash, original_pr_id, deployment_id) for firstCommitAt
         await pullRequests.upsert([
           {
             catalogEntityRef: entityRef,
             collectorId: prCollectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-1',
             firstCommitAt: new Date('2026-06-09T12:00:00.000Z'),
             deploymentId: deployment.id,
@@ -134,6 +144,7 @@ describe('DatabaseDoraPullRequests', () => {
         const rows = await pullRequests.readByEntityCollectorAndDeployment(
           entityRef,
           prCollectorId,
+          EMPTY_INPUT_HASH,
           deployment.id,
         );
 
@@ -141,6 +152,59 @@ describe('DatabaseDoraPullRequests', () => {
         expect(rows[0].firstCommitAt.toISOString()).toBe(
           '2026-06-09T12:00:00.000Z',
         );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'treats the same original id with different input hashes as distinct - %p',
+      async databaseId => {
+        const { deployments, pullRequests } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const { entityRef, deployment } = await seedDeployment(deployments);
+        const prCollectorId = 'github:deploymentRangePullRequests';
+        const otherHash = collectorInputHash({ label: 'other' });
+
+        await pullRequests.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId: prCollectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalPrId: 'pr-1',
+            firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
+            deploymentId: deployment.id,
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId: prCollectorId,
+            collectorInputHash: otherHash,
+            originalPrId: 'pr-1',
+            firstCommitAt: new Date('2026-06-09T11:00:00.000Z'),
+            deploymentId: deployment.id,
+          },
+        ]);
+
+        const emptyInputRows =
+          await pullRequests.readByEntityCollectorAndDeployment(
+            entityRef,
+            prCollectorId,
+            EMPTY_INPUT_HASH,
+            deployment.id,
+          );
+        const otherInputRows =
+          await pullRequests.readByEntityCollectorAndDeployment(
+            entityRef,
+            prCollectorId,
+            otherHash,
+            deployment.id,
+          );
+
+        expect(
+          emptyInputRows.map(row => row.firstCommitAt.toISOString()),
+        ).toEqual(['2026-06-09T10:00:00.000Z']);
+        expect(
+          otherInputRows.map(row => row.firstCommitAt.toISOString()),
+        ).toEqual(['2026-06-09T11:00:00.000Z']);
       },
     );
 
@@ -169,6 +233,7 @@ describe('DatabaseDoraPullRequests', () => {
           {
             catalogEntityRef: entityRef,
             collectorId: prCollectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-1',
             firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
             deploymentId: deployment.id,
@@ -176,6 +241,7 @@ describe('DatabaseDoraPullRequests', () => {
           {
             catalogEntityRef: entityRef,
             collectorId: prCollectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-2',
             firstCommitAt: new Date('2026-06-09T11:00:00.000Z'),
             deploymentId: deployment.id,
@@ -185,6 +251,7 @@ describe('DatabaseDoraPullRequests', () => {
         const rows = await pullRequests.readByEntityCollectorAndDeployment(
           entityRef,
           prCollectorId,
+          EMPTY_INPUT_HASH,
           deployment.id,
         );
 
@@ -220,6 +287,7 @@ describe('DatabaseDoraPullRequests', () => {
           {
             catalogEntityRef: entityRef,
             collectorId: prCollectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-old',
             firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
             deploymentId: oldDeployment.id,
@@ -227,6 +295,7 @@ describe('DatabaseDoraPullRequests', () => {
           {
             catalogEntityRef: entityRef,
             collectorId: prCollectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-new',
             firstCommitAt: new Date('2026-06-09T11:00:00.000Z'),
             deploymentId: newDeployment.id,
@@ -243,6 +312,7 @@ describe('DatabaseDoraPullRequests', () => {
             await pullRequests.readByEntityCollectorAndDeployment(
               entityRef,
               prCollectorId,
+              EMPTY_INPUT_HASH,
               oldDeployment.id,
             )
           ).map(row => row.originalPrId),
@@ -252,6 +322,7 @@ describe('DatabaseDoraPullRequests', () => {
             await pullRequests.readByEntityCollectorAndDeployment(
               entityRef,
               prCollectorId,
+              EMPTY_INPUT_HASH,
               newDeployment.id,
             )
           ).map(row => row.originalPrId),

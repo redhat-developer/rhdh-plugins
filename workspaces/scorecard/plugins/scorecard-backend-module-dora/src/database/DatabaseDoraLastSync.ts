@@ -21,6 +21,7 @@ export interface DoraLastSyncStore {
   getLastSyncedAt(
     catalogEntityRef: string,
     collectorId: string,
+    collectorInputHash: string,
   ): Promise<Date | undefined>;
   /**
    * Records a successful sync watermark. Only advances when the new value
@@ -29,8 +30,10 @@ export interface DoraLastSyncStore {
   setLastSyncedAt(
     catalogEntityRef: string,
     collectorId: string,
+    collectorInputHash: string,
     lastSyncedAt: Date,
   ): Promise<void>;
+  deleteOlderThan(olderThan: Date): Promise<number>;
 }
 
 export class DatabaseDoraLastSync implements DoraLastSyncStore {
@@ -41,10 +44,12 @@ export class DatabaseDoraLastSync implements DoraLastSyncStore {
   async getLastSyncedAt(
     catalogEntityRef: string,
     collectorId: string,
+    collectorInputHash: string,
   ): Promise<Date | undefined> {
     const row = await this.dbClient(this.tableName)
       .where('catalog_entity_ref', catalogEntityRef)
       .andWhere('collector_id', collectorId)
+      .andWhere('collector_input_hash', collectorInputHash)
       .select('last_synced_at')
       .first();
 
@@ -58,6 +63,7 @@ export class DatabaseDoraLastSync implements DoraLastSyncStore {
   async setLastSyncedAt(
     catalogEntityRef: string,
     collectorId: string,
+    collectorInputHash: string,
     lastSyncedAt: Date,
   ): Promise<void> {
     // Single-statement upsert: insert when missing, otherwise only advance when
@@ -66,10 +72,21 @@ export class DatabaseDoraLastSync implements DoraLastSyncStore {
       .insert({
         catalog_entity_ref: catalogEntityRef,
         collector_id: collectorId,
+        collector_input_hash: collectorInputHash,
         last_synced_at: lastSyncedAt,
       })
-      .onConflict(['catalog_entity_ref', 'collector_id'])
+      .onConflict([
+        'catalog_entity_ref',
+        'collector_id',
+        'collector_input_hash',
+      ])
       .merge(['last_synced_at'])
       .where(`${this.tableName}.last_synced_at`, '<', lastSyncedAt);
+  }
+
+  async deleteOlderThan(olderThan: Date): Promise<number> {
+    return await this.dbClient(this.tableName)
+      .where('last_synced_at', '<', olderThan)
+      .del();
   }
 }

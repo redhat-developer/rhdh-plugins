@@ -16,9 +16,12 @@
 
 import { TestDatabases } from '@backstage/backend-test-utils';
 import { DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID } from '../constants';
+import { collectorInputHash } from '../service/collectorHash';
 import { createTestDatabase } from './__fixtures__';
 
 jest.setTimeout(60000);
+
+const EMPTY_INPUT_HASH = collectorInputHash({});
 
 describe('DatabaseDoraDeployments', () => {
   const databases = TestDatabases.create({
@@ -39,6 +42,7 @@ describe('DatabaseDoraDeployments', () => {
           {
             catalogEntityRef: entityRef,
             collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-1',
             commitSha: 'sha-1',
             environment: 'production',
@@ -49,6 +53,7 @@ describe('DatabaseDoraDeployments', () => {
         const rows = await deployments.readByEntityCollectorAndWindow(
           entityRef,
           collectorId,
+          EMPTY_INPUT_HASH,
           new Date('2026-06-01T00:00:00.000Z'),
           new Date('2026-06-30T00:00:00.000Z'),
         );
@@ -58,6 +63,7 @@ describe('DatabaseDoraDeployments', () => {
             id: expect.any(String),
             catalogEntityRef: entityRef,
             collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-1',
             commitSha: 'sha-1',
             environment: 'production',
@@ -80,17 +86,19 @@ describe('DatabaseDoraDeployments', () => {
           {
             catalogEntityRef: entityRef,
             collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-1',
             commitSha: 'sha-1',
             environment: 'production',
             createdAt: new Date('2026-06-10T10:00:00.000Z'),
           },
         ]);
-        // Conflict on (catalog_entity_ref, collector_id, original_deployment_id) for commitSha
+        // Conflict on (catalog_entity_ref, collector_id, collector_input_hash, original_deployment_id) for commitSha
         await deployments.upsert([
           {
             catalogEntityRef: entityRef,
             collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-1',
             commitSha: 'sha-1-updated',
             environment: 'production',
@@ -101,6 +109,7 @@ describe('DatabaseDoraDeployments', () => {
         const rows = await deployments.readByEntityCollectorAndWindow(
           entityRef,
           collectorId,
+          EMPTY_INPUT_HASH,
           new Date('2026-06-01T00:00:00.000Z'),
           new Date('2026-06-30T00:00:00.000Z'),
         );
@@ -122,6 +131,7 @@ describe('DatabaseDoraDeployments', () => {
           {
             catalogEntityRef: entityRef,
             collectorId: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-1',
             commitSha: 'sha-1',
             environment: 'production',
@@ -130,6 +140,7 @@ describe('DatabaseDoraDeployments', () => {
           {
             catalogEntityRef: entityRef,
             collectorId: 'github:deploymentWorkflowRuns',
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-1',
             commitSha: 'sha-other',
             environment: 'production',
@@ -140,12 +151,14 @@ describe('DatabaseDoraDeployments', () => {
         const githubRows = await deployments.readByEntityCollectorAndWindow(
           entityRef,
           DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+          EMPTY_INPUT_HASH,
           new Date('2026-06-01T00:00:00.000Z'),
           new Date('2026-06-30T00:00:00.000Z'),
         );
         const workflowRows = await deployments.readByEntityCollectorAndWindow(
           entityRef,
           'github:deploymentWorkflowRuns',
+          EMPTY_INPUT_HASH,
           new Date('2026-06-01T00:00:00.000Z'),
           new Date('2026-06-30T00:00:00.000Z'),
         );
@@ -154,6 +167,59 @@ describe('DatabaseDoraDeployments', () => {
         expect(githubRows[0].commitSha).toBe('sha-1');
         expect(workflowRows).toHaveLength(1);
         expect(workflowRows[0].commitSha).toBe('sha-other');
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'treats the same original id with different input hashes as distinct - %p',
+      async databaseId => {
+        const { deployments } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+        const otherHash = collectorInputHash({ workflowName: 'Deploy B' });
+
+        await deployments.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-1',
+            commitSha: 'sha-a',
+            environment: 'production',
+            createdAt: new Date('2026-06-10T10:00:00.000Z'),
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: otherHash,
+            originalDeploymentId: 'dep-1',
+            commitSha: 'sha-b',
+            environment: 'production',
+            createdAt: new Date('2026-06-20T10:00:00.000Z'),
+          },
+        ]);
+
+        const emptyInputRows = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          EMPTY_INPUT_HASH,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+        const otherInputRows = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          otherHash,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+
+        expect(emptyInputRows).toHaveLength(1);
+        expect(emptyInputRows[0].commitSha).toBe('sha-a');
+        expect(otherInputRows).toHaveLength(1);
+        expect(otherInputRows[0].commitSha).toBe('sha-b');
       },
     );
 
@@ -182,6 +248,7 @@ describe('DatabaseDoraDeployments', () => {
           {
             catalogEntityRef: entityRef,
             collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-before',
             commitSha: 'sha-before',
             environment: 'production',
@@ -190,6 +257,7 @@ describe('DatabaseDoraDeployments', () => {
           {
             catalogEntityRef: entityRef,
             collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-1',
             commitSha: 'sha-1',
             environment: 'production',
@@ -198,6 +266,7 @@ describe('DatabaseDoraDeployments', () => {
           {
             catalogEntityRef: entityRef,
             collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-2',
             commitSha: 'sha-2',
             environment: 'production',
@@ -206,6 +275,7 @@ describe('DatabaseDoraDeployments', () => {
           {
             catalogEntityRef: entityRef,
             collectorId: 'github:deploymentWorkflowRuns',
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-other',
             commitSha: 'sha-other',
             environment: 'production',
@@ -216,6 +286,7 @@ describe('DatabaseDoraDeployments', () => {
         const rows = await deployments.readByEntityCollectorAndWindow(
           entityRef,
           collectorId,
+          EMPTY_INPUT_HASH,
           new Date('2026-06-01T00:00:00.000Z'),
           new Date('2026-06-30T00:00:00.000Z'),
         );
@@ -242,6 +313,7 @@ describe('DatabaseDoraDeployments', () => {
           {
             catalogEntityRef: entityRef,
             collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-old',
             commitSha: 'sha-old',
             environment: 'production',
@@ -250,6 +322,7 @@ describe('DatabaseDoraDeployments', () => {
           {
             catalogEntityRef: entityRef,
             collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-new',
             commitSha: 'sha-new',
             environment: 'production',
@@ -263,6 +336,7 @@ describe('DatabaseDoraDeployments', () => {
         const remaining = await deployments.readByEntityCollectorAndWindow(
           entityRef,
           collectorId,
+          EMPTY_INPUT_HASH,
           new Date('2025-01-01T00:00:00.000Z'),
           new Date('2026-12-31T00:00:00.000Z'),
         );

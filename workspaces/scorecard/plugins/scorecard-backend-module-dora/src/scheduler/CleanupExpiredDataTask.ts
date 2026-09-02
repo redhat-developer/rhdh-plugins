@@ -24,6 +24,7 @@ import { randomUUID } from 'node:crypto';
 import { DORA_CLEANUP_EXPIRED_DATA_TASK_ID } from '../constants';
 import type { DoraDeploymentsStore } from '../database/DatabaseDoraDeployments';
 import type { DoraIncidentsStore } from '../database/DatabaseDoraIncidents';
+import type { DoraLastSyncStore } from '../database/DatabaseDoraLastSync';
 import type { DoraPullRequestsStore } from '../database/DatabaseDoraPullRequests';
 
 type Options = {
@@ -33,6 +34,7 @@ type Options = {
   deployments: DoraDeploymentsStore;
   incidents: DoraIncidentsStore;
   pullRequests: DoraPullRequestsStore;
+  lastSync: DoraLastSyncStore;
 };
 
 export class CleanupExpiredDataTask {
@@ -42,6 +44,7 @@ export class CleanupExpiredDataTask {
   private readonly deployments: DoraDeploymentsStore;
   private readonly incidents: DoraIncidentsStore;
   private readonly pullRequests: DoraPullRequestsStore;
+  private readonly lastSync: DoraLastSyncStore;
 
   private static readonly CLEANUP_SCHEDULE: SchedulerServiceTaskScheduleDefinition =
     {
@@ -57,6 +60,7 @@ export class CleanupExpiredDataTask {
     this.deployments = options.deployments;
     this.incidents = options.incidents;
     this.pullRequests = options.pullRequests;
+    this.lastSync = options.lastSync;
   }
 
   async start(): Promise<void> {
@@ -92,10 +96,11 @@ export class CleanupExpiredDataTask {
       olderThan,
     );
     const deletedIncidents = await this.incidents.deleteOlderThan(olderThan);
+    const deletedLastSync = await this.lastSync.deleteOlderThan(olderThan);
 
     logger.info(
       `Deleted ${deletedDeployments} deployments, ${deletedIncidents} incidents, ` +
-        `${deletedPullRequests} pull requests older than ${this.dataRetentionDays} days`,
+        `${deletedPullRequests} pull requests, ${deletedLastSync} sync watermarks older than ${this.dataRetentionDays} days`,
     );
   }
 }

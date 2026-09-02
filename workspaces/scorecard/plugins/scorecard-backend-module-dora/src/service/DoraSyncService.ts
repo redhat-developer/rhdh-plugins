@@ -99,7 +99,7 @@ export class DefaultDoraSyncService implements DoraSyncService {
     options: WindowOptions & CollectorCallOptions,
   ): Promise<void> {
     const catalogEntityRef = stringifyEntityRef(entity);
-    const key = `${catalogEntityRef}\0${options.collector.id}`;
+    const key = `${catalogEntityRef}\0${options.collector.id}\0${options.collector.inputHash}`;
     return coalesceInFlight(this.inflightDeployments, key, () =>
       this.doSyncDeployments(entity, options, catalogEntityRef),
     );
@@ -111,9 +111,11 @@ export class DefaultDoraSyncService implements DoraSyncService {
     catalogEntityRef: string,
   ): Promise<void> {
     const collectorId = options.collector.id;
+    const collectorInputHash = options.collector.inputHash;
     const lastSyncedAt = await this.lastSyncDb.getLastSyncedAt(
       catalogEntityRef,
       collectorId,
+      collectorInputHash,
     );
     if (isWithinStaleWindow(lastSyncedAt, this.config.staleAfterMs)) {
       this.logger.debug(
@@ -150,6 +152,7 @@ export class DefaultDoraSyncService implements DoraSyncService {
         .map(deployment => ({
           catalogEntityRef,
           collectorId,
+          collectorInputHash,
           originalDeploymentId: deployment.id,
           commitSha: deployment.commitSha,
           environment: deployment.environment ?? null,
@@ -160,6 +163,7 @@ export class DefaultDoraSyncService implements DoraSyncService {
     await this.lastSyncDb.setLastSyncedAt(
       catalogEntityRef,
       collectorId,
+      collectorInputHash,
       options.windowTo,
     );
   }
@@ -175,7 +179,7 @@ export class DefaultDoraSyncService implements DoraSyncService {
     options: WindowOptions & CollectorCallOptions,
   ): Promise<void> {
     const catalogEntityRef = stringifyEntityRef(entity);
-    const key = `${catalogEntityRef}\0${options.collector.id}`;
+    const key = `${catalogEntityRef}\0${options.collector.id}\0${options.collector.inputHash}`;
     return coalesceInFlight(this.inflightIncidents, key, () =>
       this.doSyncIncidents(entity, options, catalogEntityRef),
     );
@@ -187,9 +191,11 @@ export class DefaultDoraSyncService implements DoraSyncService {
     catalogEntityRef: string,
   ): Promise<void> {
     const collectorId = options.collector.id;
+    const collectorInputHash = options.collector.inputHash;
     const lastSyncedAt = await this.lastSyncDb.getLastSyncedAt(
       catalogEntityRef,
       collectorId,
+      collectorInputHash,
     );
     if (isWithinStaleWindow(lastSyncedAt, this.config.staleAfterMs)) {
       this.logger.debug(
@@ -221,6 +227,7 @@ export class DefaultDoraSyncService implements DoraSyncService {
       collected.incidents.map(incident => ({
         catalogEntityRef,
         collectorId,
+        collectorInputHash,
         originalIncidentId: incident.id,
         createdAt: new Date(incident.createdAt),
         updatedAt: new Date(incident.updatedAt),
@@ -233,6 +240,7 @@ export class DefaultDoraSyncService implements DoraSyncService {
     await this.lastSyncDb.setLastSyncedAt(
       catalogEntityRef,
       collectorId,
+      collectorInputHash,
       options.windowTo,
     );
   }
@@ -253,7 +261,7 @@ export class DefaultDoraSyncService implements DoraSyncService {
     },
   ): Promise<void> {
     const catalogEntityRef = stringifyEntityRef(entity);
-    const key = `${catalogEntityRef}\0${options.collector.id}\0${options.deploymentId}`;
+    const key = `${catalogEntityRef}\0${options.collector.id}\0${options.collector.inputHash}\0${options.deploymentId}`;
     return coalesceInFlight(this.inflightPullRequests, key, () =>
       this.doSyncPullRequestsForDeployment(entity, options, catalogEntityRef),
     );
@@ -269,11 +277,13 @@ export class DefaultDoraSyncService implements DoraSyncService {
     catalogEntityRef: string,
   ): Promise<void> {
     const collectorId = options.collector.id;
+    const collectorInputHash = options.collector.inputHash;
 
     const existing =
       await this.pullRequestsDb.readByEntityCollectorAndDeployment(
         catalogEntityRef,
         collectorId,
+        collectorInputHash,
         options.deploymentId,
       );
     if (existing.length > 0) {
@@ -301,6 +311,7 @@ export class DefaultDoraSyncService implements DoraSyncService {
       collected.pullRequests.map(pullRequest => ({
         catalogEntityRef,
         collectorId,
+        collectorInputHash,
         originalPrId: pullRequest.id,
         firstCommitAt: new Date(pullRequest.firstCommitAt),
         deploymentId: options.deploymentId,

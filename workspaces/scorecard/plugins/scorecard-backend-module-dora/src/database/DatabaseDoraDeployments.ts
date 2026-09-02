@@ -28,6 +28,7 @@ export interface DoraDeploymentsStore {
   readByEntityCollectorAndWindow(
     catalogEntityRef: string,
     collectorId: string,
+    collectorInputHash: string,
     from: Date,
     to: Date,
   ): Promise<DbDoraDeployment[]>;
@@ -54,6 +55,7 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
       .onConflict([
         'catalog_entity_ref',
         'collector_id',
+        'collector_input_hash',
         'original_deployment_id',
       ])
       .merge(['commit_sha', 'environment', 'created_at']);
@@ -62,6 +64,7 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
   async readByEntityCollectorAndWindow(
     catalogEntityRef: string,
     collectorId: string,
+    collectorInputHash: string,
     from: Date,
     to: Date,
   ): Promise<DbDoraDeployment[]> {
@@ -69,6 +72,7 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
       .select('*')
       .where('catalog_entity_ref', catalogEntityRef)
       .andWhere('collector_id', collectorId)
+      .andWhere('collector_input_hash', collectorInputHash)
       .andWhere('created_at', '>=', from)
       .andWhere('created_at', '<=', to)
       .orderBy('created_at', 'asc');

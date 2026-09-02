@@ -28,6 +28,7 @@ export interface DoraIncidentsStore {
   readByEntityCollectorAndWindow(
     catalogEntityRef: string,
     collectorId: string,
+    collectorInputHash: string,
     from: Date,
     to: Date,
   ): Promise<DbDoraIncident[]>;
@@ -54,6 +55,7 @@ export class DatabaseDoraIncidents implements DoraIncidentsStore {
       .onConflict([
         'catalog_entity_ref',
         'collector_id',
+        'collector_input_hash',
         'original_incident_id',
       ])
       .merge(['created_at', 'updated_at', 'resolution_at']);
@@ -62,6 +64,7 @@ export class DatabaseDoraIncidents implements DoraIncidentsStore {
   async readByEntityCollectorAndWindow(
     catalogEntityRef: string,
     collectorId: string,
+    collectorInputHash: string,
     from: Date,
     to: Date,
   ): Promise<DbDoraIncident[]> {
@@ -69,6 +72,7 @@ export class DatabaseDoraIncidents implements DoraIncidentsStore {
       .select('*')
       .where('catalog_entity_ref', catalogEntityRef)
       .andWhere('collector_id', collectorId)
+      .andWhere('collector_input_hash', collectorInputHash)
       .andWhere('created_at', '>=', from)
       .andWhere('created_at', '<=', to)
       .orderBy('created_at', 'asc');

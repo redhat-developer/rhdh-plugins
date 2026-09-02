@@ -58,6 +58,7 @@ export class DefaultDoraDataService implements DoraDataService {
     return this.deploymentsDb.readByEntityCollectorAndWindow(
       catalogEntityRef,
       options.collector.id,
+      options.collector.inputHash,
       options.windowFrom,
       options.windowTo,
     );
@@ -70,6 +71,7 @@ export class DefaultDoraDataService implements DoraDataService {
     return this.incidentsDb.readByEntityCollectorAndWindow(
       catalogEntityRef,
       options.collector.id,
+      options.collector.inputHash,
       options.windowFrom,
       options.windowTo,
     );
@@ -84,6 +86,7 @@ export class DefaultDoraDataService implements DoraDataService {
     return this.pullRequestsDb.readByEntityCollectorAndDeployment(
       catalogEntityRef,
       options.collector.id,
+      options.collector.inputHash,
       options.deploymentId,
     );
   }

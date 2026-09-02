@@ -19,9 +19,12 @@ import {
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
 } from '../constants';
+import { collectorInputHash } from '../service/collectorHash';
 import { createTestDatabase } from './__fixtures__';
 
 jest.setTimeout(60000);
+
+const EMPTY_INPUT_HASH = collectorInputHash({});
 
 describe('DatabaseDoraLastSync', () => {
   const databases = TestDatabases.create({
@@ -39,18 +42,27 @@ describe('DatabaseDoraLastSync', () => {
         const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
 
         expect(
-          await lastSync.getLastSyncedAt(entityRef, collectorId),
+          await lastSync.getLastSyncedAt(
+            entityRef,
+            collectorId,
+            EMPTY_INPUT_HASH,
+          ),
         ).toBeUndefined();
 
         await lastSync.setLastSyncedAt(
           entityRef,
           collectorId,
+          EMPTY_INPUT_HASH,
           new Date('2026-06-10T00:00:00.000Z'),
         );
 
         expect(
           (
-            await lastSync.getLastSyncedAt(entityRef, collectorId)
+            await lastSync.getLastSyncedAt(
+              entityRef,
+              collectorId,
+              EMPTY_INPUT_HASH,
+            )
           )?.toISOString(),
         ).toBe('2026-06-10T00:00:00.000Z');
       },
@@ -68,17 +80,23 @@ describe('DatabaseDoraLastSync', () => {
         await lastSync.setLastSyncedAt(
           entityRef,
           collectorId,
+          EMPTY_INPUT_HASH,
           new Date('2026-06-10T00:00:00.000Z'),
         );
         await lastSync.setLastSyncedAt(
           entityRef,
           collectorId,
+          EMPTY_INPUT_HASH,
           new Date('2026-06-09T00:00:00.000Z'),
         );
 
         expect(
           (
-            await lastSync.getLastSyncedAt(entityRef, collectorId)
+            await lastSync.getLastSyncedAt(
+              entityRef,
+              collectorId,
+              EMPTY_INPUT_HASH,
+            )
           )?.toISOString(),
         ).toBe('2026-06-10T00:00:00.000Z');
       },
@@ -96,17 +114,23 @@ describe('DatabaseDoraLastSync', () => {
         await lastSync.setLastSyncedAt(
           entityRef,
           collectorId,
+          EMPTY_INPUT_HASH,
           new Date('2026-06-10T00:00:00.000Z'),
         );
         await lastSync.setLastSyncedAt(
           entityRef,
           collectorId,
+          EMPTY_INPUT_HASH,
           new Date('2026-06-15T00:00:00.000Z'),
         );
 
         expect(
           (
-            await lastSync.getLastSyncedAt(entityRef, collectorId)
+            await lastSync.getLastSyncedAt(
+              entityRef,
+              collectorId,
+              EMPTY_INPUT_HASH,
+            )
           )?.toISOString(),
         ).toBe('2026-06-15T00:00:00.000Z');
       },
@@ -125,24 +149,119 @@ describe('DatabaseDoraLastSync', () => {
         await lastSync.setLastSyncedAt(
           entityRef,
           collectorId,
+          EMPTY_INPUT_HASH,
           new Date('2026-06-15T00:00:00.000Z'),
         );
         await lastSync.setLastSyncedAt(
           entityRef,
           otherCollectorId,
+          EMPTY_INPUT_HASH,
           new Date('2026-06-01T00:00:00.000Z'),
         );
 
         expect(
           (
-            await lastSync.getLastSyncedAt(entityRef, otherCollectorId)
+            await lastSync.getLastSyncedAt(
+              entityRef,
+              otherCollectorId,
+              EMPTY_INPUT_HASH,
+            )
           )?.toISOString(),
         ).toBe('2026-06-01T00:00:00.000Z');
         expect(
           (
-            await lastSync.getLastSyncedAt(entityRef, collectorId)
+            await lastSync.getLastSyncedAt(
+              entityRef,
+              collectorId,
+              EMPTY_INPUT_HASH,
+            )
           )?.toISOString(),
         ).toBe('2026-06-15T00:00:00.000Z');
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'keeps last synced at independent per input hash - %p',
+      async databaseId => {
+        const { lastSync } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+        const otherHash = collectorInputHash({ workflowName: 'Deploy B' });
+
+        await lastSync.setLastSyncedAt(
+          entityRef,
+          collectorId,
+          EMPTY_INPUT_HASH,
+          new Date('2026-06-15T00:00:00.000Z'),
+        );
+        await lastSync.setLastSyncedAt(
+          entityRef,
+          collectorId,
+          otherHash,
+          new Date('2026-06-01T00:00:00.000Z'),
+        );
+
+        expect(
+          (
+            await lastSync.getLastSyncedAt(entityRef, collectorId, otherHash)
+          )?.toISOString(),
+        ).toBe('2026-06-01T00:00:00.000Z');
+        expect(
+          (
+            await lastSync.getLastSyncedAt(
+              entityRef,
+              collectorId,
+              EMPTY_INPUT_HASH,
+            )
+          )?.toISOString(),
+        ).toBe('2026-06-15T00:00:00.000Z');
+      },
+    );
+  });
+
+  describe('deleteOlderThan', () => {
+    it.each(databases.eachSupportedId())(
+      'deletes watermarks older than the cutoff - %p',
+      async databaseId => {
+        const { lastSync } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+        const staleHash = collectorInputHash({ workflowName: 'old' });
+
+        await lastSync.setLastSyncedAt(
+          entityRef,
+          collectorId,
+          EMPTY_INPUT_HASH,
+          new Date('2026-06-10T00:00:00.000Z'),
+        );
+        await lastSync.setLastSyncedAt(
+          entityRef,
+          collectorId,
+          staleHash,
+          new Date('2025-01-01T00:00:00.000Z'),
+        );
+
+        const deleted = await lastSync.deleteOlderThan(
+          new Date('2026-01-01T00:00:00.000Z'),
+        );
+
+        expect(deleted).toBe(1);
+        expect(
+          await lastSync.getLastSyncedAt(entityRef, collectorId, staleHash),
+        ).toBeUndefined();
+        expect(
+          (
+            await lastSync.getLastSyncedAt(
+              entityRef,
+              collectorId,
+              EMPTY_INPUT_HASH,
+            )
+          )?.toISOString(),
+        ).toBe('2026-06-10T00:00:00.000Z');
       },
     );
   });

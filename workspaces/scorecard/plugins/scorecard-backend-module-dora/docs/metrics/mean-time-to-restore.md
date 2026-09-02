@@ -96,6 +96,8 @@ scorecard:
               #   issueType: ServiceIncident
 ```
 
+Updating `issueType` in your configuration creates a new data identity and triggers a full 30-day data refresh.
+
 For more details about the `jira:incidents` collector, see the [scorecard-backend-module-jira README](../../../scorecard-backend-module-jira/README.md).
 
 ### Use custom incidents collector

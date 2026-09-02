@@ -15,6 +15,7 @@
  */
 
 import { parseDate } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { collectorInputHash } from '../../service/collectorHash';
 import {
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
@@ -22,6 +23,7 @@ import {
 } from '../../constants';
 import type { DoraDeploymentsStore } from '../../database/DatabaseDoraDeployments';
 import type { DoraIncidentsStore } from '../../database/DatabaseDoraIncidents';
+import type { DoraLastSyncStore } from '../../database/DatabaseDoraLastSync';
 import type { DoraPullRequestsStore } from '../../database/DatabaseDoraPullRequests';
 import type {
   DbDoraDeployment,
@@ -30,6 +32,7 @@ import type {
 } from '../../database/types';
 
 const DEFAULT_ENTITY_REF = 'component:default/mock';
+const EMPTY_INPUT_HASH = collectorInputHash({});
 
 export function dbDeployment(partial: {
   id: string;
@@ -38,12 +41,14 @@ export function dbDeployment(partial: {
   createdAt: string | Date;
   catalogEntityRef?: string;
   collectorId?: string;
+  collectorInputHash?: string;
   originalDeploymentId?: string;
 }): DbDoraDeployment {
   return {
     id: partial.id,
     catalogEntityRef: partial.catalogEntityRef ?? DEFAULT_ENTITY_REF,
     collectorId: partial.collectorId ?? DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+    collectorInputHash: partial.collectorInputHash ?? EMPTY_INPUT_HASH,
     originalDeploymentId: partial.originalDeploymentId ?? partial.id,
     commitSha: partial.commitSha,
     environment: partial.environment ?? null,
@@ -58,12 +63,14 @@ export function dbIncident(partial: {
   resolutionAt?: string | Date | null;
   catalogEntityRef?: string;
   collectorId?: string;
+  collectorInputHash?: string;
   originalIncidentId?: string;
 }): DbDoraIncident {
   return {
     id: partial.id,
     catalogEntityRef: partial.catalogEntityRef ?? DEFAULT_ENTITY_REF,
     collectorId: partial.collectorId ?? DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+    collectorInputHash: partial.collectorInputHash ?? EMPTY_INPUT_HASH,
     originalIncidentId: partial.originalIncidentId ?? partial.id,
     createdAt: parseDate(partial.createdAt),
     updatedAt: parseDate(partial.updatedAt),
@@ -80,6 +87,7 @@ export function dbPullRequest(partial: {
   deploymentId: string;
   catalogEntityRef?: string;
   collectorId?: string;
+  collectorInputHash?: string;
   originalPrId?: string;
 }): DbDoraPullRequest {
   return {
@@ -87,6 +95,7 @@ export function dbPullRequest(partial: {
     catalogEntityRef: partial.catalogEntityRef ?? DEFAULT_ENTITY_REF,
     collectorId:
       partial.collectorId ?? DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+    collectorInputHash: partial.collectorInputHash ?? EMPTY_INPUT_HASH,
     originalPrId: partial.originalPrId ?? partial.id,
     firstCommitAt: parseDate(partial.firstCommitAt),
     deploymentId: partial.deploymentId,
@@ -109,4 +118,10 @@ export const mockDoraPullRequestsStore: jest.Mocked<DoraPullRequestsStore> = {
   upsert: jest.fn(),
   readByEntityCollectorAndDeployment: jest.fn(),
   deleteForDeploymentsOlderThan: jest.fn(),
+};
+
+export const mockDoraLastSyncStore: jest.Mocked<DoraLastSyncStore> = {
+  getLastSyncedAt: jest.fn(),
+  setLastSyncedAt: jest.fn(),
+  deleteOlderThan: jest.fn(),
 };

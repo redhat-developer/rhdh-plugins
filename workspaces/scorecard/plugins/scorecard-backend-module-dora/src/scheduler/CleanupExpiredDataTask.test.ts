@@ -24,6 +24,7 @@ import { DORA_CLEANUP_EXPIRED_DATA_TASK_ID } from '../constants';
 import {
   mockDoraDeploymentsStore,
   mockDoraIncidentsStore,
+  mockDoraLastSyncStore,
   mockDoraPullRequestsStore,
 } from '../metricProviders/__fixtures__';
 import { CleanupExpiredDataTask } from './CleanupExpiredDataTask';
@@ -43,6 +44,7 @@ describe('CleanupExpiredDataTask', () => {
     mockLogger = mockServices.logger.mock();
     mockDoraDeploymentsStore.deleteOlderThan.mockResolvedValue(0);
     mockDoraIncidentsStore.deleteOlderThan.mockResolvedValue(0);
+    mockDoraLastSyncStore.deleteOlderThan.mockResolvedValue(0);
     mockDoraPullRequestsStore.deleteForDeploymentsOlderThan.mockResolvedValue(
       0,
     );
@@ -62,6 +64,7 @@ describe('CleanupExpiredDataTask', () => {
       deployments: mockDoraDeploymentsStore,
       incidents: mockDoraIncidentsStore,
       pullRequests: mockDoraPullRequestsStore,
+      lastSync: mockDoraLastSyncStore,
     });
   });
 
@@ -99,6 +102,7 @@ describe('CleanupExpiredDataTask', () => {
       );
       mockDoraDeploymentsStore.deleteOlderThan.mockResolvedValue(3);
       mockDoraIncidentsStore.deleteOlderThan.mockResolvedValue(4);
+      mockDoraLastSyncStore.deleteOlderThan.mockResolvedValue(2);
 
       await (task as any).cleanupExpiredData(mockLogger);
     });
@@ -115,6 +119,9 @@ describe('CleanupExpiredDataTask', () => {
       expect(mockDoraIncidentsStore.deleteOlderThan).toHaveBeenCalledWith(
         expectedDate,
       );
+      expect(mockDoraLastSyncStore.deleteOlderThan).toHaveBeenCalledWith(
+        expectedDate,
+      );
     });
 
     it('deletes pull requests before deployments', () => {
@@ -129,7 +136,7 @@ describe('CleanupExpiredDataTask', () => {
 
     it('logs deleted counts', () => {
       expect(mockLogger.info).toHaveBeenCalledWith(
-        'Deleted 3 deployments, 4 incidents, 5 pull requests older than 30 days',
+        'Deleted 3 deployments, 4 incidents, 5 pull requests, 2 sync watermarks older than 30 days',
       );
     });
   });

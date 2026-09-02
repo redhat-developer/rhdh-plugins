@@ -23,10 +23,13 @@ import {
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
 } from '../constants';
+import { collectorInputHash } from './collectorHash';
 import { createTestDatabase } from '../database/__fixtures__';
 import { DefaultDoraDataService } from './DoraDataService';
 
 jest.setTimeout(60000);
+
+const EMPTY_INPUT_HASH = collectorInputHash({});
 
 describe('DefaultDoraDataService', () => {
   const databases = TestDatabases.create({
@@ -63,6 +66,7 @@ describe('DefaultDoraDataService', () => {
           {
             catalogEntityRef: entityRef,
             collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: deploymentId,
             commitSha: 'sha-1',
             environment: 'production',
@@ -74,13 +78,18 @@ describe('DefaultDoraDataService', () => {
           dataService.readDeployments(entityRef, {
             windowFrom: new Date('2026-06-01T00:00:00.000Z'),
             windowTo: new Date('2026-06-30T00:00:00.000Z'),
-            collector: { id: collectorId },
+            collector: {
+              id: collectorId,
+              input: {},
+              inputHash: EMPTY_INPUT_HASH,
+            },
           }),
         ).resolves.toEqual([
           {
             id: expect.any(String),
             catalogEntityRef: entityRef,
             collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: deploymentId,
             commitSha: 'sha-1',
             environment: 'production',
@@ -103,6 +112,7 @@ describe('DefaultDoraDataService', () => {
           {
             catalogEntityRef: entityRef,
             collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalIncidentId: 'INC-1',
             createdAt: new Date('2026-06-11T10:00:00.000Z'),
             updatedAt: new Date('2026-06-11T12:00:00.000Z'),
@@ -114,13 +124,18 @@ describe('DefaultDoraDataService', () => {
           dataService.readIncidents(entityRef, {
             windowFrom: new Date('2026-06-01T00:00:00.000Z'),
             windowTo: new Date('2026-06-30T00:00:00.000Z'),
-            collector: { id: collectorId },
+            collector: {
+              id: collectorId,
+              input: {},
+              inputHash: EMPTY_INPUT_HASH,
+            },
           }),
         ).resolves.toEqual([
           {
             id: expect.any(String),
             catalogEntityRef: entityRef,
             collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalIncidentId: 'INC-1',
             createdAt: new Date('2026-06-11T10:00:00.000Z'),
             updatedAt: new Date('2026-06-11T12:00:00.000Z'),
@@ -146,6 +161,7 @@ describe('DefaultDoraDataService', () => {
           {
             catalogEntityRef: entityRef,
             collectorId: deploymentsCollectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-1',
             commitSha: 'sha-1',
             environment: 'production',
@@ -155,6 +171,7 @@ describe('DefaultDoraDataService', () => {
         const [deployment] = await deploymentsDb.readByEntityCollectorAndWindow(
           entityRef,
           deploymentsCollectorId,
+          EMPTY_INPUT_HASH,
           new Date('2026-06-01T00:00:00.000Z'),
           new Date('2026-06-30T00:00:00.000Z'),
         );
@@ -163,6 +180,7 @@ describe('DefaultDoraDataService', () => {
           {
             catalogEntityRef: entityRef,
             collectorId: prCollectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-1',
             firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
             deploymentId: deployment.id,
@@ -171,7 +189,11 @@ describe('DefaultDoraDataService', () => {
 
         await expect(
           dataService.readPullRequestsForDeployment(entityRef, {
-            collector: { id: prCollectorId },
+            collector: {
+              id: prCollectorId,
+              input: {},
+              inputHash: EMPTY_INPUT_HASH,
+            },
             deploymentId: deployment.id,
           }),
         ).resolves.toEqual([
@@ -179,6 +201,7 @@ describe('DefaultDoraDataService', () => {
             id: expect.any(String),
             catalogEntityRef: entityRef,
             collectorId: prCollectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-1',
             firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
             deploymentId: deployment.id,
