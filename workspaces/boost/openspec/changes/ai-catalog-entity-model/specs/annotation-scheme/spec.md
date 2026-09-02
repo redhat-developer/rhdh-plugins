@@ -86,7 +86,8 @@ All AI asset entities MUST carry the `rhdh.io/ai-asset-source` annotation identi
 
 - **WHEN** an entity provider emits an entity
 - **THEN** the entity has `metadata.annotations['rhdh.io/ai-asset-source']` in format: `connector-name/registry-instance-id`
-- **AND** `connector-name` is one of: `kagenti`, `ogx`, `oci-skill-registry`
+- **AND** `connector-name` is one of: `kagenti`, `ogx`, `oci-skill-registry`, `mcp-registry`, `rhoai`
+- **AND** additional connector names may be added when new connectors ship; the SDK today only requires a non-empty string
 - **AND** `registry-instance-id` is the app-config provider instance ID (e.g., `default`, `prod-kagenti`, `dev-skills`)
 
 #### Scenario: Kagenti provider source annotation (RHIDP-15255)
@@ -98,6 +99,16 @@ All AI asset entities MUST carry the `rhdh.io/ai-asset-source` annotation identi
 
 - **WHEN** the OCI skill registry provider with instance ID `default` emits an entity
 - **THEN** the entity has `rhdh.io/ai-asset-source: oci-skill-registry/default`
+
+#### Scenario: MCP Registry provider source annotation (RHIDP-15255)
+
+- **WHEN** the MCP Registry provider with instance ID `mcpRegistryPrimary` emits an entity
+- **THEN** the entity has `rhdh.io/ai-asset-source: mcp-registry/mcpRegistryPrimary`
+
+#### Scenario: RHOAI provider source annotation (RHIDP-15255)
+
+- **WHEN** the RHOAI provider with instance ID `default` emits an entity
+- **THEN** the entity has `rhdh.io/ai-asset-source: rhoai/default`
 
 #### Scenario: Audit traceability via source annotation (RHIDP-15255)
 
