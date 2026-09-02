@@ -130,14 +130,12 @@ test.describe('Scorecard Plugin Tests', () => {
       await expect(
         page.getByText(translations.permissionRequired.title),
       ).toBeVisible({ timeout: 10000 });
-      await expect(
-        page.getByText(
-          evaluateMessage(
-            translations.permissionRequired.description,
-            'scorecard.metric.read',
-          ),
+      await expect(page.getByRole('article')).toContainText(
+        evaluateMessage(
+          translations.permissionRequired.description,
+          'scorecard.metric.read',
         ),
-      ).toBeVisible();
+      );
 
       await runAccessibilityTests(page, testInfo);
     });
