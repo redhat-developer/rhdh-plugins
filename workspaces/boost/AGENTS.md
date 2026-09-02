@@ -332,6 +332,13 @@ Example: linking to `### Decision 1: Annotation independence from entity kinds`:
 
 Do not link to the document root when the display text references a specific section.
 
+Always verify the heading exists in the target file:
+
+```bash
+# From the repo root or the directory containing the target file:
+grep -n '### Decision 1' <path-to-target-file>
+```
+
 ## Build & verify
 
 | Task                | Command                                        |
