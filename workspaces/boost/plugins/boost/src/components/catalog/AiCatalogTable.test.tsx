@@ -50,7 +50,9 @@ describe('AiCatalogTable', () => {
 
     expect(screen.getByText(msg.table.name)).toBeInTheDocument();
     expect(screen.getByText(msg.table.type)).toBeInTheDocument();
-    expect(screen.getByText('Code Review Skill')).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: 'Code Review Skill' }),
+    ).toHaveAttribute('href', '/catalog/default/airesource/code-review-skill');
     expect(screen.getByText('Skills')).toBeInTheDocument();
     expect(screen.getByText('team-ai')).toBeInTheDocument();
     expect(screen.getByText('github')).toBeInTheDocument();

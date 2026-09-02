@@ -14,28 +14,19 @@
  * limitations under the License.
  */
 
-import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
+import {
+  mockCredentials,
+  startTestBackend,
+} from '@backstage/backend-test-utils';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import type { AddressInfo } from 'node:net';
 
 import { boostPlugin } from './plugin';
 
 describe('boostPlugin integration', () => {
-  it('boots the plugin and serves unauthenticated GET /api/boost/health', async () => {
+  it('serves GET /api/boost/health without credentials', async () => {
     const backend = await startTestBackend({
-      features: [
-        boostPlugin,
-        catalogServiceMock.factory({ entities: [] }),
-        mockServices.rootConfig.factory({
-          data: {
-            boost: {
-              security: {
-                mode: 'development-only-no-auth',
-              },
-            },
-          },
-        }),
-      ],
+      features: [boostPlugin, catalogServiceMock.factory({ entities: [] })],
     });
 
     try {
@@ -44,7 +35,12 @@ describe('boostPlugin integration', () => {
         address && typeof address === 'object' ? address.port : undefined;
       expect(port).toBeDefined();
 
-      const response = await fetch(`http://127.0.0.1:${port}/api/boost/health`);
+      const response = await fetch(
+        `http://127.0.0.1:${port}/api/boost/health`,
+        {
+          headers: { Authorization: mockCredentials.none.header() },
+        },
+      );
       expect(response.status).toBe(200);
       await expect(response.json()).resolves.toEqual({ status: 'ok' });
     } finally {

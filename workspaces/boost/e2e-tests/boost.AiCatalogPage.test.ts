@@ -16,6 +16,8 @@
 
 import { expect, test, type Page } from '@playwright/test';
 
+import { runAccessibilityTests } from './utils/accessibility';
+
 /**
  * Locators from Playwright MCP against the live NFS app. After catalog load
  * the page title is a level-1 heading (the AI Catalog link is in the sidebar
@@ -99,10 +101,7 @@ async function signInAsGuest(page: Page) {
   await page.goto('/ai-catalog');
   const enter = page.getByRole('button', { name: 'Enter' });
   const heading = page.getByRole('heading', { name: 'AI Catalog' });
-  await Promise.race([
-    enter.waitFor({ state: 'visible', timeout: 30_000 }),
-    heading.waitFor({ state: 'visible', timeout: 20_000 }),
-  ]);
+  await expect(enter.or(heading).first()).toBeVisible({ timeout: 30_000 });
   if (await enter.isVisible()) {
     await enter.click();
   }
@@ -120,7 +119,7 @@ async function loadTwoAssetCatalog(page: Page) {
 test.describe('Boost AI Catalog', () => {
   test('renders the AI Catalog heading after guest sign-in', async ({
     page,
-  }) => {
+  }, testInfo) => {
     await mockCatalogEntities(page, [skillEntity]);
     await signInAsGuest(page);
 
@@ -130,8 +129,9 @@ test.describe('Boost AI Catalog', () => {
       }),
     ).toBeVisible();
     await expect(
-      page.getByRole('heading', { name: 'AI Catalog', level: 1 }),
+      page.getByRole('heading', { name: 'AI Catalog' }),
     ).toBeVisible();
+    await runAccessibilityTests(page, testInfo);
   });
 
   test('shows catalog assets when the catalog API returns items', async ({

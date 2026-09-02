@@ -20,6 +20,7 @@ export default defineConfig({
   timeout: 2 * 60 * 1000,
   expect: { timeout: 10_000 },
   retries: process.env.CI ? 2 : 0,
+  testDir: 'e2e-tests',
   reporter: [
     ['list'],
     ['html', { open: 'never', outputFolder: 'e2e-test-report' }],
@@ -43,7 +44,6 @@ export default defineConfig({
   projects: [
     {
       name: 'en',
-      testDir: 'e2e-tests',
       use: { channel: 'chrome', locale: 'en' },
     },
   ],
