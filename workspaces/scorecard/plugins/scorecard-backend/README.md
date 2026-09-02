@@ -203,6 +203,11 @@ scorecard:
       description: Mean open issues count per entity
       type: average
       metricId: jira.openIssues
+    avgDeploymentFrequency:
+      title: Average deployment frequency
+      description: Mean weekly production deploys across catalog entities you own.
+      type: average
+      metricId: dora.deploymentFrequency
     entitiesWithOpenPrs:
       title: Entities with Open PRs
       description: Count of entities with a stored open-prs value
@@ -230,7 +235,7 @@ scorecard:
 | `options`     | **Optional:** extra configuration attributes required to further configure the aggregated card for a specific type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 - **Path**: `scorecard.aggregationKPIs.<aggregationId>`.
-- If **`aggregationKPIs` is omitted** or a given id is not listed, **`GET /aggregations/:aggregationId`** still works when **`aggregationId` equals the metric id** (e.g. `github.openPRs`): the backend uses that metric with the default `statusGrouped` aggregation and metric-defined title/description.
+- If **`aggregationKPIs` is omitted** or a given id is not listed, aggregation KPIs still work, See [Default aggregation](./docs/aggregation.md#default-aggregation).
 - **Startup validation**: the backend validates every **`scorecard.aggregationKPIs`** entry when the plugin loads. Invalid configuration (including **`weightedStatusScore`** KPIs without **`options.statusScores`**, non-count scalar types on boolean metrics, invalid **`filter.status`** keys on scalar types, bad threshold expressions, or unregistered **`metricId`**) causes the backend to **fail to start** with a clear error. At runtime, some edge cases may still be logged (for example skipping a KPI with unusable weights); prefer correcting app-config. See [aggregation.md](./docs/aggregation.md#configuration-validation).
 
 **Homepage cards** are configured in the app (for example Dynamic Home Page mount points). They should pass **`aggregationId`** matching a key in `aggregationKPIs` or the metric id for the default case. See the [Scorecard frontend plugin README](../scorecard/README.md#homepage-scorecard-cards).
@@ -342,7 +347,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service/
     "description": "The number of open pull requests.",
     "type": "number",
     "history": true,
-    "defaultVisualization": "value"
+    "defaultVisualization": "donut"
   },
   "points": [
     { "value": 8, "timestamp": "2026-04-27T23:10:00.000Z" },
@@ -408,10 +413,7 @@ Returns aggregated metrics for the authenticated user across all catalog entitie
 
 Response **`result`** shape depends on **`metadata.aggregationType`**: status counts for **`statusGrouped`**, weighted score fields for **`weightedStatusScore`**, or scalar fields for **`sum`** / **`average`** / **`max`** / **`min`** / **`count`** — see [Scalar result fields](./docs/aggregation.md#scalar-result-fields). Scalar KPIs may also return **`metadata.filter`** when **`filter.status`** is configured.
 
-The **`aggregationId`** is either:
-
-- A key under **`scorecard.aggregationKPIs`** in app-config (KPI-specific title, description, type, and `metricId`), or
-- The **metric id** itself when no KPI entry exists (default **statusGrouped** behavior).
+The **`aggregationId`** is a key under **`scorecard.aggregationKPIs`**, or a metric id when no KPI is configured. See [Default aggregation](#default-aggregation).
 
 #### Path Parameters
 
@@ -434,14 +436,101 @@ curl -X GET "{{url}}/api/scorecard/aggregations/github.openPRs" \
   -H "Authorization: Bearer <token>"
 ```
 
+### `GET /aggregations/:aggregationId/time-series`
+
+Returns a **daily** history of a **scalar** KPI (`sum`, `average`, `max`, `min`, or `count`) across entities you own. Each response point is one UTC day: Scorecard takes **latest stored row** for each owned entity that day (including calculation failures), then rolls successful values up with the KPI’s aggregation type. Optional **`filter.status`** applies only to successes. UTC days with no rows are omitted; a day with only failures is included with **`value: null`**, **`status: error`** and **`errors`** list.
+
+Only [scalar](./docs/aggregation.md#scalar-types) aggregation types are supported. **`statusGrouped`** and **`weightedStatusScore`** return **`400 Bad Request`**. See [aggregation.md](./docs/aggregation.md#get-aggregationsaggregationidtime-series) for details.
+
+#### Path Parameters
+
+| Parameter       | Type   | Required | Description                                                                                                          |
+| --------------- | ------ | -------- | -------------------------------------------------------------------------------------------------------------------- |
+| `aggregationId` | string | Yes      | Same as `GET /aggregations/:aggregationId`. Must resolve to a scalar type (`sum`, `average`, `max`, `min`, `count`). |
+
+#### Query Parameters
+
+| Parameter | Type   | Required | Description                                                          |
+| --------- | ------ | -------- | -------------------------------------------------------------------- |
+| `from`    | string | Yes      | Inclusive range start (ISO-8601)                                     |
+| `to`      | string | Yes      | Inclusive range end (ISO-8601); must be `>= from`; max span 365 days |
+
+#### Authentication / permissions
+
+Requires user authentication, `scorecard.metric.read` permission, and `catalog.entity.read` permission for each aggregated entity.
+
+#### Example Request
+
+```bash
+curl -X GET "{{url}}/api/scorecard/aggregations/avgDeploymentFrequency/time-series?from=2026-08-24T00:00:00.000Z&to=2026-08-24T23:59:59.999Z" \
+  -H "Authorization: Bearer <token>"
+```
+
+### Example Response
+
+```json
+{
+  "id": "avgDeploymentFrequency",
+  "metricId": "dora.deploymentFrequency",
+  "metadata": {
+    "title": "Average Deployment Frequency",
+    "description": "This KPI provides average weekly production deploys over a 30-day window per entity.",
+    "type": "number",
+    "unit": "/week",
+    "history": true,
+    "visualization": "sparkline",
+    "aggregationType": "average"
+  },
+  "points": [
+    {
+      "value": 6.8,
+      "successCount": 4,
+      "errorCount": 3,
+      "total": 7,
+      "status": "success",
+      "timestamp": "2026-08-24T00:00:00.000Z",
+      "errors": [
+        { "message": "GitHub API error", "count": 2 },
+        { "message": "timeout", "count": 1 }
+      ]
+    }
+  ],
+  "thresholds": {
+    "rules": [
+      {
+        "key": "elite",
+        "expression": ">=7",
+        "color": "success.main",
+        "icon": "scorecardSuccessStatusIcon"
+      },
+      {
+        "key": "medium",
+        "expression": "1-7",
+        "color": "warning.main",
+        "icon": "scorecardWarningStatusIcon"
+      },
+      {
+        "key": "error",
+        "expression": "<1",
+        "color": "error.main",
+        "icon": "scorecardErrorStatusIcon"
+      }
+    ]
+  },
+  "aggregationChartDisplayColor": "warning.main"
+}
+```
+
 ### `GET /aggregations/:aggregationId/metadata`
 
-Returns **title**, **description**, **type**, **unit**, **history**, and **aggregationType** for the aggregation without computing full aggregate counts. Includes **`filter`** when the KPI is a scalar type with **`filter.status`** configured. Uses the same resolution rules as `GET /aggregations/:aggregationId` (KPI config vs metric id fallback).
+Returns **title**, **description**, **type**, **unit**, **history**, **visualization**, **aggregationType** for the aggregation without computing full aggregate counts. Includes **`filter`** when the KPI is a scalar type with **`filter.status`** configured. Uses the same resolution rules as `GET /aggregations/:aggregationId` (KPI config vs metric id fallback).
 
 ```bash
 curl -X GET "{{url}}/api/scorecard/aggregations/openIssuesKpi/metadata" \
   -H "Authorization: Bearer <token>"
 ```
+
+For endpoint details, see [aggregation.md](./docs/aggregation.md#get-aggregationsaggregationidmetadata).
 
 ### `GET /metrics/:metricId/catalog/aggregations` (deprecated; removal planned)
 

@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-import type { AggregationOptions } from './types';
+import { InputError } from '@backstage/errors';
+import type { AggregationOptions, AggregationTimeSeriesOptions } from './types';
 import { parseValidatedAggregationConfig } from '../../utils/aggregation/parseValidatedAggregationConfig';
 import {
   type AggregatedMetricResult,
+  type AggregatedMetricTimeSeriesResponse,
   type AggregationType,
   aggregationTypes,
+  scalarAggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { Config } from '@backstage/config';
 import { AGGREGATION_KPIS_CONFIG_PATH } from '../../constants';
@@ -40,7 +43,6 @@ export type AggregationsServiceOptions = {
 
 export class AggregationsService {
   private readonly config: Config;
-  private readonly database: DatabaseMetricValues;
   private readonly strategyRegistry: Map<AggregationType, AggregationStrategy>;
   private readonly logger: LoggerService;
   private readonly aggregationKpisConfigCache: Map<
@@ -51,10 +53,9 @@ export class AggregationsService {
   constructor(options: AggregationsServiceOptions) {
     this.config = options.config;
     this.logger = options.logger;
-    this.database = options.database;
     this.aggregationKpisConfigCache = new Map();
     this.strategyRegistry = createAggregationStrategyRegistry(
-      new AggregatedMetricLoader(this.database),
+      new AggregatedMetricLoader(options.database),
       this.logger,
     );
   }
@@ -74,20 +75,24 @@ export class AggregationsService {
     );
 
     if (!config) {
-      this.logger.warn(
+      const metric = metricProviderRegistry.getMetric(aggregationId);
+      const defaultType =
+        metric.defaultVisualization === 'sparkline'
+          ? aggregationTypes.average
+          : aggregationTypes.statusGrouped;
+
+      this.logger.info(
         `No "${AGGREGATION_KPIS_CONFIG_PATH}.${aggregationId}" block in app-config; ` +
-          `using default type "${aggregationTypes.statusGrouped}" with metricId="${aggregationId}" ` +
+          `using default type "${defaultType}" with metricId="${aggregationId}" ` +
           '(same as aggregation id). Add a KPI entry if you meant a custom title, description, or type.',
       );
-
-      const metric = metricProviderRegistry.getMetric(aggregationId);
 
       const fallbackConfig: ValidatedAggregationConfig = {
         id: aggregationId,
         metricId: aggregationId,
         title: metric.title,
         description: metric.description,
-        type: aggregationTypes.statusGrouped,
+        type: defaultType,
       };
       this.aggregationKpisConfigCache.set(aggregationId, fallbackConfig);
 
@@ -107,16 +112,34 @@ export class AggregationsService {
   async getAggregatedMetricByEntityRefs(
     options: AggregationOptions,
   ): Promise<AggregatedMetricResult> {
-    const { aggregationConfig } = options;
+    return this.getStrategy(options.aggregationConfig.type).aggregate(options);
+  }
 
-    const strategy = this.strategyRegistry.get(aggregationConfig.type);
+  async getAggregatedMetricTimeSeries(
+    options: AggregationTimeSeriesOptions,
+  ): Promise<AggregatedMetricTimeSeriesResponse> {
+    const strategy = this.getStrategy(options.aggregationConfig.type);
 
-    if (!strategy) {
-      throw new Error(
-        `Unsupported aggregation type: ${aggregationConfig.type}`,
+    if (!strategy.aggregateTimeSeries) {
+      throw new InputError(
+        `Aggregation type "${
+          options.aggregationConfig.type
+        }" does not support time-series. Currently only scalar types (${scalarAggregationTypes.join(
+          ', ',
+        )}) are supported.`,
       );
     }
 
-    return strategy.aggregate(options);
+    return strategy.aggregateTimeSeries(options);
+  }
+
+  private getStrategy(type: AggregationType): AggregationStrategy {
+    const strategy = this.strategyRegistry.get(type);
+
+    if (!strategy) {
+      throw new Error(`Unsupported aggregation type: ${type}`);
+    }
+
+    return strategy;
   }
 }

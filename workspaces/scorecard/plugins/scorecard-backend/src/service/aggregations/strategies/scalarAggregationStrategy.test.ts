@@ -24,7 +24,10 @@ import { ScalarAggregationStrategy } from './ScalarAggregationStrategy';
 import * as aggregationUtils from '../../../utils/aggregation/isScalarAggregationConfig';
 import { AggregatedMetricMapper } from '../../mappers';
 import { mockScalarAggregationResult } from '../../../../__fixtures__/mockAggregatedMetricResult';
-import { mockHigherIsBetterThresholds } from '../../../../__fixtures__/mockThresholds';
+import {
+  mockHigherIsBetterThresholds,
+  mockLowerIsBetterThresholds,
+} from '../../../../__fixtures__/mockThresholds';
 import { mockGithubOpenPrsMetric } from '../../../../__fixtures__/mockMetric';
 
 jest.mock('../../../utils/aggregation/isScalarAggregationConfig');
@@ -54,6 +57,7 @@ describe('ScalarAggregationStrategy', () => {
     loadScalarMetricByEntityRefs: jest
       .fn()
       .mockResolvedValue(loadedScalarMetric),
+    loadScalarMetricTimeSeriesByEntityRefs: jest.fn(),
   } as unknown as AggregatedMetricLoader;
 
   const strategy = new ScalarAggregationStrategy(loader, 'sum');
@@ -106,7 +110,7 @@ describe('ScalarAggregationStrategy', () => {
     );
   });
 
-  it('should use default thresholds when no provided', async () => {
+  it('should use default thresholds when custom not provided', async () => {
     const defaultAggregationConfig = mockScalarAggregationConfig(
       aggregationTypes.sum,
       {
@@ -127,6 +131,21 @@ describe('ScalarAggregationStrategy', () => {
       metric,
       { ...loadedScalarMetric, thresholds: DEFAULT_NUMBER_THRESHOLDS },
       defaultAggregationConfig,
+    );
+  });
+
+  it('should use KPI options.thresholds when provided', async () => {
+    await strategy.aggregate({
+      metric,
+      entityRefs,
+      thresholds: mockLowerIsBetterThresholds, // thresholds from metric are not used
+      aggregationConfig,
+    });
+
+    expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+      metric,
+      { ...loadedScalarMetric, thresholds: mockHigherIsBetterThresholds },
+      aggregationConfig,
     );
   });
 
@@ -204,6 +223,178 @@ describe('ScalarAggregationStrategy', () => {
         aggregationType: aggregationTypes.sum,
       },
       result: mockScalarAggregationResult,
+    });
+  });
+
+  describe('aggregateTimeSeries', () => {
+    const from = new Date('2024-01-01T00:00:00Z');
+    const to = new Date('2024-01-31T00:00:00Z');
+    const loadedPoints = [
+      {
+        value: 12,
+        successCount: 3,
+        errorCount: 0,
+        total: 3,
+        status: 'success' as const,
+        timestamp: '2024-01-01T00:00:00.000Z',
+      },
+    ];
+
+    beforeEach(() => {
+      (
+        loader.loadScalarMetricTimeSeriesByEntityRefs as jest.Mock
+      ).mockResolvedValue(loadedPoints);
+    });
+
+    it('should throw when aggregationFn is not a scalar type', async () => {
+      spyMethods.isScalarAggregationConfigSpy.mockReturnValue(false);
+
+      await expect(() =>
+        strategy.aggregateTimeSeries({
+          metric,
+          entityRefs,
+          thresholds: mockHigherIsBetterThresholds,
+          aggregationConfig,
+          from,
+          to,
+        }),
+      ).rejects.toThrow(/Expected a scalar aggregation config/);
+    });
+
+    it('should use default thresholds when custom not provided', async () => {
+      const defaultAggregationConfig = mockScalarAggregationConfig(
+        aggregationTypes.sum,
+        {
+          id: 'totalOpenPrs',
+          metricId: metric.id,
+          options: {},
+        },
+      );
+
+      const result = await strategy.aggregateTimeSeries({
+        metric,
+        entityRefs,
+        thresholds: mockLowerIsBetterThresholds,
+        aggregationConfig: defaultAggregationConfig,
+        from,
+        to,
+      });
+
+      expect(result.thresholds).toEqual(DEFAULT_NUMBER_THRESHOLDS);
+      expect(result.aggregationChartDisplayColor).toBe('warning.main');
+    });
+
+    it('should use KPI options.thresholds when provided', async () => {
+      const result = await strategy.aggregateTimeSeries({
+        metric,
+        entityRefs,
+        thresholds: mockLowerIsBetterThresholds,
+        aggregationConfig,
+        from,
+        to,
+      });
+
+      expect(result.thresholds).toEqual(mockHigherIsBetterThresholds);
+      expect(result.thresholds).not.toEqual(mockLowerIsBetterThresholds);
+      expect(result.aggregationChartDisplayColor).toBe('red');
+    });
+
+    it('should load scalar time series and classify the latest point', async () => {
+      const result = await strategy.aggregateTimeSeries({
+        metric,
+        entityRefs,
+        thresholds: mockHigherIsBetterThresholds,
+        aggregationConfig,
+        from,
+        to,
+      });
+
+      expect(
+        loader.loadScalarMetricTimeSeriesByEntityRefs,
+      ).toHaveBeenCalledWith(entityRefs, metric.id, 'sum', from, to, undefined);
+      expect(result).toEqual({
+        id: aggregationConfig.id,
+        metricId: metric.id,
+        points: loadedPoints,
+        metadata: expect.objectContaining({
+          aggregationType: aggregationTypes.sum,
+        }),
+        thresholds: mockHigherIsBetterThresholds,
+        aggregationChartDisplayColor: 'red',
+      });
+    });
+
+    it('should classify the last successful point when a later day is only errors', async () => {
+      (
+        loader.loadScalarMetricTimeSeriesByEntityRefs as jest.Mock
+      ).mockResolvedValue([
+        ...loadedPoints,
+        {
+          value: null,
+          successCount: 0,
+          errorCount: 1,
+          total: 1,
+          status: 'error' as const,
+          errors: [{ message: 'boom', count: 1 }],
+          timestamp: '2024-01-02T00:00:00.000Z',
+        },
+      ]);
+
+      const result = await strategy.aggregateTimeSeries({
+        metric,
+        entityRefs,
+        thresholds: mockHigherIsBetterThresholds,
+        aggregationConfig,
+        from,
+        to,
+      });
+
+      expect(result.aggregationChartDisplayColor).toBe('red');
+    });
+
+    it('should set aggregationChartDisplayColor to null when there are no points', async () => {
+      (
+        loader.loadScalarMetricTimeSeriesByEntityRefs as jest.Mock
+      ).mockResolvedValue([]);
+
+      const result = await strategy.aggregateTimeSeries({
+        metric,
+        entityRefs,
+        thresholds: mockHigherIsBetterThresholds,
+        aggregationConfig,
+        from,
+        to,
+      });
+
+      expect(result.points).toEqual([]);
+      expect(result.aggregationChartDisplayColor).toBeNull();
+      expect(result.thresholds).toEqual(mockHigherIsBetterThresholds);
+    });
+
+    it('should forward filter.status to the scalar time-series loader', async () => {
+      const filteredConfig = mockScalarAggregationConfig(aggregationTypes.sum, {
+        id: 'totalCriticalPrs',
+        metricId: metric.id,
+        filter: { status: 'error' },
+        options: {
+          thresholds: mockHigherIsBetterThresholds,
+        },
+      });
+
+      await strategy.aggregateTimeSeries({
+        metric,
+        entityRefs,
+        thresholds: mockHigherIsBetterThresholds,
+        aggregationConfig: filteredConfig,
+        from,
+        to,
+      });
+
+      expect(
+        loader.loadScalarMetricTimeSeriesByEntityRefs,
+      ).toHaveBeenCalledWith(entityRefs, metric.id, 'sum', from, to, {
+        status: 'error',
+      });
     });
   });
 });

@@ -49,7 +49,7 @@ describe('createListMetricsAction', () => {
         title: 'Code Coverage',
         description: 'Test coverage percentage',
         type: 'number' as const,
-        defaultVisualization: 'value' as const,
+        defaultVisualization: 'donut' as const,
       },
     ];
     (mockRegistry.listMetrics as jest.Mock).mockReturnValue(metrics);

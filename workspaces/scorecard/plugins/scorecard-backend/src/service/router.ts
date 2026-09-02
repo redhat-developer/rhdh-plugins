@@ -37,7 +37,10 @@ import {
 } from '../permissions/permissionUtils';
 import { stringifyEntityRef } from '@backstage/catalog-model';
 import { validateMetricIdsQueryParams } from '../middlewares/validateMetricIdsQueryParams';
-import { validateTimeSeriesQueryParams } from '../middlewares/validateTimeSeriesQueryParams';
+import {
+  validateAggregationTimeSeriesQueryParams,
+  validateTimeSeriesQueryParams,
+} from '../middlewares/validateTimeSeriesQueryParams';
 import { getEntitiesOwnedByUser } from '../utils/getEntitiesOwnedByUser';
 import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
 import { AggregatedMetricMapper } from './mappers';
@@ -402,6 +405,64 @@ export async function createRouter({
 
       res.json(
         AggregatedMetricMapper.toAggregationMetadata(metric, aggregationConfig),
+      );
+    },
+  );
+
+  router.get(
+    '/aggregations/:aggregationId/time-series',
+    validateAggregationIdParam,
+    validateAggregationTimeSeriesQueryParams,
+    async (req, res) => {
+      const { aggregationId } = req.params;
+      const { from, to } = req.query;
+
+      const credentials = await httpAuth.credentials(req, { allow: ['user'] });
+
+      const { conditions } = await authorizeConditional(
+        credentials,
+        permissions,
+        scorecardMetricReadPermission,
+      );
+
+      const userEntityRef = await getUserEntityRef(credentials);
+
+      const aggregationConfig = aggregationsService.getAggregationConfig(
+        aggregationId,
+        metricProvidersRegistry,
+      );
+
+      const metric = metricProvidersRegistry.getMetric(
+        aggregationConfig.metricId,
+      );
+
+      const entitiesOwnedByAUser = await getEntitiesOwnedByUser(userEntityRef, {
+        catalog,
+        credentials,
+      });
+
+      for (const entityRef of entitiesOwnedByAUser) {
+        await checkEntityAccess(entityRef, req, permissions, httpAuth);
+      }
+
+      const authorizedMetrics = filterAuthorizedMetrics([metric], conditions);
+      if (authorizedMetrics.length === 0) {
+        throw new NotAllowedError(
+          `To view the aggregation of a scorecard metric, your administrator must grant you the required permission.`,
+        );
+      }
+
+      const thresholds = thresholdResolver.resolveMetricThresholds(metric);
+
+      res.json(
+        await aggregationsService.getAggregatedMetricTimeSeries({
+          metric,
+          thresholds,
+          aggregationConfig,
+          entityRefs: entitiesOwnedByAUser,
+          from: new Date(from as string),
+          to: new Date(to as string),
+        }),
       );
     },
   );
