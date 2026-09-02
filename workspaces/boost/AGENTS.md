@@ -277,6 +277,21 @@ Always verify:
 ls <relative-path-from-link>
 ```
 
+### Fragment anchors for heading references
+
+When a markdown link's display text names a specific heading (e.g., "Decision 1",
+"Section 3"), include the GitHub-style fragment anchor in the URL. Read the target
+file, find the matching heading, and convert it to a fragment using GitHub's rules:
+lowercase, spaces to hyphens, strip punctuation.
+
+Example: linking to `### Decision 1: Annotation independence from entity kinds`:
+
+```
+[Decision 1](../path/to/design.md#decision-1-annotation-independence-from-entity-kinds)
+```
+
+Do not link to the document root when the display text references a specific section.
+
 ## Build & verify
 
 | Task                | Command                                        |
