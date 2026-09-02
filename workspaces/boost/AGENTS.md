@@ -244,6 +244,11 @@ const endpoint = safeGetOptionalString(config, 'endpoint');
 - Extension point: `boostProviderExtensionPoint`
 - Service ref: `boostAiProviderServiceRef`
 - Plugin ID: `boost` (used in `createBackendModule({ pluginId: 'boost', ... })`)
+- Entity kind names (exact casing from `boost-common/src/aiAssetTaxonomy.ts`):
+  - `AiResource` — agents, skills, rules (NOT `AIResource`)
+  - `AiModelServerAPI` — model servers (`spec.type: ai-model-server`)
+  - `API` — MCP servers (`spec.type: mcp-server`)
+  - `Resource` — tools (`spec.type: ai-tool`), vector stores (`spec.type: vector-store`)
 
 ### Testing
 
