@@ -42,6 +42,41 @@ When implementing an issue:
 3. Find the matching change in `openspec/changes/` for design decisions, task breakdown, and behavioral specs
 4. The `specs/` subdirectories contain acceptance criteria as scenarios — implementation must satisfy these
 
+### OpenSpec scenario step discipline
+
+Each bullet in a scenario (GIVEN/WHEN/THEN/AND) must be a testable assertion — something a test can verify at runtime. Do not place non-normative notes inside scenario step lists. These belong in prose paragraphs above or below the scenario block:
+
+- SDK caveats (e.g., "SDK only requires non-empty string")
+- Extensibility disclaimers (e.g., "additional values may be added")
+- Design rationale or cross-references
+- RFC-2119 constraints that apply broadly rather than to one scenario
+
+**Wrong** — non-normative note as a scenario step:
+
+```
+#### Scenario: Source annotation format
+- WHEN an entity provider emits an entity
+- THEN the entity has the annotation in format: connector-name/registry-instance-id
+- AND connector-name is one of: kagenti, ogx
+- AND additional connector names may be added; the SDK only requires a non-empty string   <-- not testable
+- AND registry-instance-id is the app-config provider instance ID
+```
+
+**Right** — note in a prose paragraph outside the scenario:
+
+```
+Additional connector names may be added when new connectors ship. The SDK today
+only requires a non-empty string and MUST NOT enum-validate connector-name.
+
+#### Scenario: Source annotation format
+- WHEN an entity provider emits an entity
+- THEN the entity has the annotation in format: connector-name/registry-instance-id
+- AND connector-name is one of: kagenti, ogx
+- AND registry-instance-id is the app-config provider instance ID
+```
+
+When writing new scenarios or reviewing spec file changes, verify that every AND/THEN bullet is a concrete assertion, not contextual guidance for human readers.
+
 ## Architecture rules
 
 ### Backstage-native services only
