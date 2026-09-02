@@ -219,8 +219,9 @@ function enrichWithAiAssetAnnotations(entity: Entity): Entity {
       ...entity.metadata,
       annotations: {
         'rhdh.io/ai-asset-category': 'mcp-server',
-        'rhdh.io/ai-asset-version':
-          normalizeAIAssetVersion(extractVersion(entity) || ''),
+        'rhdh.io/ai-asset-version': normalizeAIAssetVersion(
+          extractVersion(entity) || '',
+        ),
         'rhdh.io/ai-asset-source': `mcp-registry/${connectorId}`,
         ...entity.metadata.annotations,
       },
