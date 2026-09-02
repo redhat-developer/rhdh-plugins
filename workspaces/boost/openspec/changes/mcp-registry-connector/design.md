@@ -203,7 +203,7 @@ metadata:
     rhdh.io/ai-asset-category: mcp-server
 
     # Version metadata (extracted from MCP server manifest if available)
-    rhdh.io/ai-asset-version: '1.0.0' # or "unknown" if not available
+    rhdh.io/ai-asset-version: '1.0.0' # normalized via normalizeAIAssetVersion(); missing/unrecognized → "0.0.0-unknown"
 
     # Source identifier — connector type + config key (e.g., "mcp-registry/mcpRegistry")
     rhdh.io/ai-asset-source: mcp-registry/<instance-id>
@@ -220,7 +220,7 @@ function enrichWithAiAssetAnnotations(entity: Entity): Entity {
       annotations: {
         'rhdh.io/ai-asset-category': 'mcp-server',
         'rhdh.io/ai-asset-version':
-          normalizeAIAssetVersion(extractVersion(entity)) || 'unknown',
+          normalizeAIAssetVersion(extractVersion(entity) || ''),
         'rhdh.io/ai-asset-source': `mcp-registry/${connectorId}`,
         ...entity.metadata.annotations,
       },
