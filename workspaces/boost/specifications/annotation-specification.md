@@ -89,13 +89,13 @@ identifies the connector type and `registry-instance-id` is the app-config
 provider instance key (e.g., `default`, `prod-kagenti`). Known
 `connector-name` values:
 
-| Token                | Connector                                |
-| -------------------- | ---------------------------------------- |
-| `kagenti`            | Kagenti agentic framework connector      |
-| `ogx`                | OGX connector (formerly LlamaStack)      |
-| `oci-skill-registry` | OCI skill registry connector             |
-| `mcp-registry`       | MCP Registry connector                   |
-| `rhoai`              | Red Hat OpenShift AI connector           |
+| Token                | Connector                           |
+| -------------------- | ----------------------------------- |
+| `kagenti`            | Kagenti agentic framework connector |
+| `ogx`                | OGX connector (formerly LlamaStack) |
+| `oci-skill-registry` | OCI skill registry connector        |
+| `mcp-registry`       | MCP Registry connector              |
+| `rhoai`              | Red Hat OpenShift AI connector      |
 
 Additional connector names may be added when new connectors ship. The
 CatalogProcessor/SDK today only requires a non-empty string.
