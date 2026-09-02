@@ -82,12 +82,13 @@ All AI asset entities MUST carry the `rhdh.io/ai-asset-version` annotation with 
 
 All AI asset entities MUST carry the `rhdh.io/ai-asset-source` annotation identifying the connector and registry instance.
 
+Additional connector names may be added when new connectors ship. The CatalogProcessor/SDK today only requires a non-empty string and MUST NOT enum-validate `connector-name`.
+
 #### Scenario: Source annotation format (RHIDP-15255)
 
 - **WHEN** an entity provider emits an entity
 - **THEN** the entity has `metadata.annotations['rhdh.io/ai-asset-source']` in format: `connector-name/registry-instance-id`
 - **AND** `connector-name` is one of: `kagenti`, `ogx`, `oci-skill-registry`, `mcp-registry`, `rhoai`
-- **AND** additional connector names may be added when new connectors ship; the SDK today only requires a non-empty string
 - **AND** `registry-instance-id` is the app-config provider instance ID (e.g., `default`, `prod-kagenti`, `dev-skills`)
 
 #### Scenario: Kagenti provider source annotation (RHIDP-15255)

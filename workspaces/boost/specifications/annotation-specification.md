@@ -1,6 +1,6 @@
 # RHDH AI Asset Annotation Specification
 
-> **Status: Draft** | **Last updated: 2026-08-31**
+> **Status: Draft** | **Last updated: 2026-09-02**
 >
 > **Epic:** RHIDP-15334 (Upstream Schema Alignment Readiness)
 > **Story:** RHIDP-15346 (Annotation specification document)
@@ -100,11 +100,10 @@ provider instance key (e.g., `default`, `prod-kagenti`). Known
 Additional connector names may be added when new connectors ship. The
 CatalogProcessor/SDK today only requires a non-empty string.
 
-> **RBAC note:** `isFromConnector` policy matching ([#4376][4376]) uses
+> **RBAC note:** `isFromConnector` policy matching
+> ([#4376](https://github.com/redhat-developer/rhdh-plugins/issues/4376)) uses
 > the **full** annotation value (e.g., `rhoai/default`). Bare connector
 > names and composite values are different policy keys.
-
-[4376]: https://github.com/redhat-developer/rhdh-plugins/issues/4376
 
 **Example:**
 
