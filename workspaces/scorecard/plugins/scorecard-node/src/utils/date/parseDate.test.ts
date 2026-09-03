@@ -29,7 +29,6 @@ describe('parseDate', () => {
 
   it('parses numeric epoch into Date', () => {
     const epoch = Date.parse(dateString);
-    console.log(epoch);
     expect(parseDate(epoch)).toEqual(new Date(dateString));
   });
 

@@ -191,6 +191,17 @@ describe('DoraDeploymentFrequencyProvider', () => {
       expect(results.get('dora.deploymentFrequency')).toBe(0);
     });
 
+    it('should throw when the deployments collector is unable to fetch data', async () => {
+      mockDoraSyncService.syncDeployments.mockRejectedValueOnce(
+        new Error('unable to fetch data'),
+      );
+
+      await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
+        'unable to fetch data',
+      );
+      expect(mockDoraDataService.readDeployments).not.toHaveBeenCalled();
+    });
+
     it('should treat configured productionEnvironments as production', async () => {
       mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({

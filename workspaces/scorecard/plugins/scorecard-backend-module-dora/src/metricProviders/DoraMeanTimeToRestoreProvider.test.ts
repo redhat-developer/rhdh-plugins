@@ -199,6 +199,17 @@ describe('DoraMeanTimeToRestoreProvider', () => {
       expect(results.get('dora.meanTimeToRestore')).toBe(3);
     });
 
+    it('should throw when the incidents collector is unable to fetch data', async () => {
+      mockDoraSyncService.syncIncidents.mockRejectedValueOnce(
+        new Error('unable to fetch data'),
+      );
+
+      await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
+        'unable to fetch data',
+      );
+      expect(mockDoraDataService.readIncidents).not.toHaveBeenCalled();
+    });
+
     it('should throw when no resolved incidents are found', async () => {
       mockDoraDataService.readIncidents.mockResolvedValueOnce([
         dbIncident({

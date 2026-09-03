@@ -321,6 +321,29 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       );
     });
 
+    it('should throw when the deployments collector is unable to fetch data', async () => {
+      mockDoraSyncService.syncDeployments.mockRejectedValueOnce(
+        new Error('unable to fetch data'),
+      );
+
+      await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
+        'unable to fetch data',
+      );
+      expect(
+        mockDoraSyncService.syncPullRequestsForDeployment,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should throw when the pull requests collector is unable to any fetch data', async () => {
+      mockDoraSyncService.syncPullRequestsForDeployment.mockRejectedValueOnce(
+        new Error('unable to fetch data'),
+      );
+
+      await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
+        'Unable to calculate median lead time for changes: no pull requests with a measurable lead time were found between deployments',
+      );
+    });
+
     it('should throw when fewer than 2 successful production deployments are found', async () => {
       mockDoraDataService.readDeployments.mockResolvedValueOnce([]);
 

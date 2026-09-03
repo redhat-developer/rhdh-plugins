@@ -312,6 +312,26 @@ describe('DoraChangeFailureRateProvider', () => {
       expect(results.get('dora.changeFailureRate')).toBe(50); // 1 of 2 intervals
     });
 
+    it('should throw when the deployments collector is unable to fetch data', async () => {
+      mockDoraSyncService.syncDeployments.mockRejectedValueOnce(
+        new Error('unable to fetch data'),
+      );
+
+      await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
+        'unable to fetch data',
+      );
+    });
+
+    it('should throw when the incidents collector is unable to fetch data', async () => {
+      mockDoraSyncService.syncIncidents.mockRejectedValueOnce(
+        new Error('unable to fetch data'),
+      );
+
+      await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
+        'unable to fetch data',
+      );
+    });
+
     it('should throw when fewer than 2 successful production deployments are found', async () => {
       mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({
