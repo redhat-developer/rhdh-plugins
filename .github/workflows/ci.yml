@@ -183,6 +183,23 @@ jobs:
         if: ${{ hashFiles(format('workspaces/{0}/playwright.config.ts', matrix.workspace)) != '' }}
         run: yarn playwright test
 
+      - name: Upload scoped CI failure evidence
+        if: ${{ failure() && !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fullsend-ci-evidence-${{ matrix.workspace }}-node-${{ matrix.node-version }}-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 7
+          if-no-files-found: warn
+          include-hidden-files: true
+          path: |
+            ${{ runner.temp }}/test-results/${{ matrix.workspace }}/**
+            workspaces/${{ matrix.workspace }}/playwright-report/**
+            workspaces/${{ matrix.workspace }}/test-results/**
+            workspaces/${{ matrix.workspace }}/e2e-test-report*/**
+            workspaces/${{ matrix.workspace }}/e2e-test-results*/**
+            workspaces/${{ matrix.workspace }}/node_modules/.cache/e2e-test-report*/**
+            workspaces/${{ matrix.workspace }}/node_modules/.cache/e2e-test-results*/**
+
       - name: ensure clean working directory
         run: |
           if files=$(git ls-files --exclude-standard --others --modified) && [[ -z "$files" ]]; then
