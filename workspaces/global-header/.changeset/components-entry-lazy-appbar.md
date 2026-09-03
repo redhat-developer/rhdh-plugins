@@ -9,3 +9,5 @@
 Building-block UI lives on the `/components` package subpath (`src/componentsExport.ts`) so the AppBar and heavy MUI UI stay off the root NFS sync chunk. Other plugins import it at compile/export time into their own async chunks (via a blueprint `loader`); it is not a host-loaded Module Federation feature. The root entry still registers outlined system icons via `IconBundleBlueprint` (twelve `@mui/icons-material` modules — much smaller than the full AppBar bundle).
 
 `globalHeaderModule` registers system icon ids (`article`, `bugReport`, `quiz`, `forum`, `dashboard`, etc.) as outlined MUI SVGs for config and default extensions.
+
+On-mount header widgets (AppBar, logo, search input, spacers, icon buttons, dropdown _triggers_) share a single async chunk via `src/components/onMountHeaderBundle.ts`. Dropdown menus, starred lists, and search-result rows stay on separate `import()` split points so they are not required for first paint.

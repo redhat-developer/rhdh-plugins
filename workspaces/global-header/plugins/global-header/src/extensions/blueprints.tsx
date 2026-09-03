@@ -136,7 +136,7 @@ function createDataDrivenToolbarLoader(
   return async () => {
     if (params.link) {
       const { HeaderIconButton } = await import(
-        '../components/HeaderIconButton/HeaderIconButton'
+        '../components/onMountHeaderBundle'
       );
       return () => (
         <HeaderIconButton

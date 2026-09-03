@@ -21,7 +21,7 @@ import type { Config } from '@backstage/config';
 import type { GlobalHeaderComponentData } from '../types';
 
 const LazyHeaderIconButton = lazy(() =>
-  import('../components/HeaderIconButton/HeaderIconButton').then(m => ({
+  import('../components/onMountHeaderBundle').then(m => ({
     default: m.HeaderIconButton,
   })),
 );

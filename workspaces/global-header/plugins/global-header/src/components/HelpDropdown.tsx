@@ -18,6 +18,7 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { HEADER_TOOLBAR_ICON_SIZE } from '../icons/headerToolbarIcon';
 import { DropdownEmptyState } from './HeaderDropdownComponent/DropdownEmptyState';
 import { GlobalHeaderDropdown } from './GlobalHeaderDropdown';
 
@@ -34,7 +35,7 @@ export const HelpDropdown = () => {
       trackValidity
       isIconButton
       tooltip={t('help.tooltip')}
-      buttonContent={<HelpOutlineIcon />}
+      buttonContent={<HelpOutlineIcon fontSize={HEADER_TOOLBAR_ICON_SIZE} />}
       buttonProps={{ color: 'inherit' }}
       emptyState={
         <DropdownEmptyState

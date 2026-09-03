@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import AppsIcon from '@mui/icons-material/Apps';
+import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined';
 import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { HEADER_TOOLBAR_ICON_SIZE } from '../icons/headerToolbarIcon';
 import { DropdownEmptyState } from './HeaderDropdownComponent/DropdownEmptyState';
 import { GlobalHeaderDropdown } from './GlobalHeaderDropdown';
 
@@ -34,7 +35,7 @@ export const ApplicationLauncherDropdown = () => {
       target="app-launcher"
       isIconButton
       tooltip={t('applicationLauncher.tooltip')}
-      buttonContent={<AppsIcon />}
+      buttonContent={<AppsOutlinedIcon fontSize={HEADER_TOOLBAR_ICON_SIZE} />}
       emptyState={
         <DropdownEmptyState
           title={t('applicationLauncher.noLinksTitle')}
