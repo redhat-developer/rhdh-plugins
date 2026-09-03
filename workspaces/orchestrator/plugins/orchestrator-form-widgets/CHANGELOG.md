@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator-form-widgets
 
+## 2.2.0
+
+### Minor Changes
+
+- 6e943b6: Add ActiveBoolean widget for dynamic boolean form fields with fetch capabilities
+
+### Patch Changes
+
+- Updated dependencies [213b75e]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.11.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.11.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.12.1
+
 ## 2.1.0
 
 ### Minor Changes

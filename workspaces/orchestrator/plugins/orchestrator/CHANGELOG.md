@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 6.2.0
+
+### Minor Changes
+
+- 089172b: Disable the scaffolder Choose button for unavailable orchestrator workflow templates via the app-defaults TemplateCard action extension.
+
+### Patch Changes
+
+- Updated dependencies [213b75e]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.11.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.11.1
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.12.1
+
 ## 6.1.0
 
 ### Minor Changes
