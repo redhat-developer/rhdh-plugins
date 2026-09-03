@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-boost
 
+## 0.5.2
+
+### Patch Changes
+
+- 5192aef: Add RBAC permission gating to the Usage tab. Users without `ai-catalog.asset.access.usage-docs` see a "contact owner" fallback instead of usage documentation.
+
 ## 0.5.1
 
 ### Patch Changes
