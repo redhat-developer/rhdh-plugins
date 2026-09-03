@@ -25,6 +25,7 @@ var mockGetUsers: jest.Mock;
 var mockMakeApiClient: jest.Mock;
 var mockInformerOn: jest.Mock;
 var mockInformerStart: jest.Mock;
+var mockInformerList: jest.Mock;
 /* eslint-enable no-var */
 
 jest.mock('@kubernetes/client-node', () => {
@@ -45,6 +46,7 @@ jest.mock('@kubernetes/client-node', () => {
   });
   const _informerOn = jest.fn();
   const _informerStart = jest.fn().mockResolvedValue(undefined);
+  const _informerList = jest.fn().mockReturnValue([]);
 
   mockLoadFromDefault = _loadFromDefault;
   mockLoadFromOptions = _loadFromOptions;
@@ -53,6 +55,7 @@ jest.mock('@kubernetes/client-node', () => {
   mockMakeApiClient = _makeApiClient;
   mockInformerOn = _informerOn;
   mockInformerStart = _informerStart;
+  mockInformerList = _informerList;
 
   return {
     KubeConfig: jest.fn().mockImplementation(() => ({
@@ -65,7 +68,7 @@ jest.mock('@kubernetes/client-node', () => {
     makeInformer: jest.fn().mockReturnValue({
       on: _informerOn,
       start: _informerStart,
-      list: jest.fn().mockReturnValue([]),
+      list: _informerList,
     }),
     CustomObjectsApi: jest.fn(),
     CoreV1Api: jest.fn(),
@@ -91,6 +94,7 @@ import {
   getDiscoveryUris,
   getModelCatalog,
   getModelCard,
+  _resetForTesting,
 } from './InformerService';
 
 describe('InformerService', () => {
@@ -99,6 +103,8 @@ describe('InformerService', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.clearAllMocks();
+    _resetForTesting();
+    mockInformerList.mockReturnValue([]);
     mockGetCurrentUser.mockReturnValue({ token: 'test-token' });
     mockGetUsers.mockReturnValue([]);
     mockMakeApiClient.mockReturnValue({
@@ -425,6 +431,208 @@ describe('InformerService', () => {
       // The owner should be updated to 'team-beta', proving the annotation
       // change was detected despite identical status condition timestamps
       expect(catalogV2!.modelServer!.owner).toBe('team-beta');
+    });
+
+    it('should clean up catalog entries for stopped InferenceServices', async () => {
+      const config: ReconcilerConfig = {};
+
+      await setupInformer(config, logger);
+
+      const addHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'add',
+      )?.[1];
+      const deleteHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'delete',
+      )?.[1];
+      expect(addHandler).toBeDefined();
+      expect(deleteHandler).toBeDefined();
+
+      // A ready InferenceService
+      const readyIS: InferenceService = {
+        apiVersion: 'serving.kserve.io/v1beta1',
+        kind: 'InferenceService',
+        metadata: {
+          name: 'model-1',
+          namespace: 'test-ns',
+          resourceVersion: '100',
+        },
+        spec: {
+          predictor: {
+            model: {
+              modelFormat: { name: 'vllm' },
+            },
+          },
+        },
+        status: {
+          conditions: [
+            {
+              type: 'Ready',
+              status: 'True',
+              lastTransitionTime: '2024-01-01T00:00:00Z',
+            },
+            {
+              type: 'IngressReady',
+              status: 'True',
+              lastTransitionTime: '2024-01-01T00:00:00Z',
+            },
+            {
+              type: 'PredictorReady',
+              status: 'True',
+              lastTransitionTime: '2024-01-01T00:00:00Z',
+            },
+          ],
+          modelStatus: { transitionStatus: 'UpToDate' },
+          url: 'https://model-1.test-ns.example.com',
+        },
+      };
+
+      // Add the ready IS to create a catalog entry
+      await addHandler(readyIS);
+      expect(getModelCatalog('test-ns/model-1')).toBeDefined();
+
+      // Create a stopped version of the same IS (Ready=False, no URL)
+      const stoppedIS: InferenceService = {
+        ...readyIS,
+        metadata: {
+          ...readyIS.metadata,
+          resourceVersion: '200',
+          annotations: {
+            'serving.kserve.io/stop': 'true',
+          },
+        },
+        status: {
+          conditions: [
+            {
+              type: 'Ready',
+              status: 'False',
+              lastTransitionTime: '2024-01-01T01:00:00Z',
+              reason: 'Stopped',
+            },
+            {
+              type: 'IngressReady',
+              status: 'True',
+              lastTransitionTime: '2024-01-01T00:00:00Z',
+            },
+            {
+              type: 'PredictorReady',
+              status: 'True',
+              lastTransitionTime: '2024-01-01T00:00:00Z',
+            },
+          ],
+          modelStatus: { transitionStatus: 'UpToDate' },
+        },
+      };
+
+      // Mock the informer list to return only the stopped IS
+      mockInformerList.mockReturnValue([stoppedIS]);
+
+      // Trigger delete handler which calls innerStart for cleanup
+      await deleteHandler(stoppedIS);
+
+      // The catalog entry should be deleted since the IS is no longer ready
+      expect(getModelCatalog('test-ns/model-1')).toBeUndefined();
+    });
+
+    it('should preserve ready IS entries while cleaning up stopped ones', async () => {
+      const config: ReconcilerConfig = {};
+
+      await setupInformer(config, logger);
+
+      const addHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'add',
+      )?.[1];
+      const deleteHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'delete',
+      )?.[1];
+      expect(addHandler).toBeDefined();
+      expect(deleteHandler).toBeDefined();
+
+      const makeReadyIS = (name: string, rv: string): InferenceService => ({
+        apiVersion: 'serving.kserve.io/v1beta1',
+        kind: 'InferenceService',
+        metadata: {
+          name,
+          namespace: 'test-ns',
+          resourceVersion: rv,
+        },
+        spec: {
+          predictor: {
+            model: {
+              modelFormat: { name: 'vllm' },
+            },
+          },
+        },
+        status: {
+          conditions: [
+            {
+              type: 'Ready',
+              status: 'True',
+              lastTransitionTime: '2024-01-01T00:00:00Z',
+            },
+            {
+              type: 'IngressReady',
+              status: 'True',
+              lastTransitionTime: '2024-01-01T00:00:00Z',
+            },
+            {
+              type: 'PredictorReady',
+              status: 'True',
+              lastTransitionTime: '2024-01-01T00:00:00Z',
+            },
+          ],
+          modelStatus: { transitionStatus: 'UpToDate' },
+          url: `https://${name}.test-ns.example.com`,
+        },
+      });
+
+      const readyIS1 = makeReadyIS('model-1', '100');
+      const readyIS2 = makeReadyIS('model-2', '101');
+
+      // Add both ready ISs to create catalog entries
+      await addHandler(readyIS1);
+      await addHandler(readyIS2);
+      expect(getModelCatalog('test-ns/model-1')).toBeDefined();
+      expect(getModelCatalog('test-ns/model-2')).toBeDefined();
+
+      // Create a stopped version of model-2
+      const stoppedIS2: InferenceService = {
+        ...readyIS2,
+        metadata: {
+          ...readyIS2.metadata,
+          resourceVersion: '200',
+        },
+        status: {
+          conditions: [
+            {
+              type: 'Ready',
+              status: 'False',
+              lastTransitionTime: '2024-01-01T01:00:00Z',
+            },
+            {
+              type: 'IngressReady',
+              status: 'True',
+              lastTransitionTime: '2024-01-01T00:00:00Z',
+            },
+            {
+              type: 'PredictorReady',
+              status: 'True',
+              lastTransitionTime: '2024-01-01T00:00:00Z',
+            },
+          ],
+          modelStatus: { transitionStatus: 'UpToDate' },
+        },
+      };
+
+      // Mock informer list: model-1 still ready, model-2 stopped
+      mockInformerList.mockReturnValue([readyIS1, stoppedIS2]);
+
+      // Trigger delete handler for cleanup
+      await deleteHandler(stoppedIS2);
+
+      // model-1 entry should be preserved
+      expect(getModelCatalog('test-ns/model-1')).toBeDefined();
+      // model-2 entry should be deleted
+      expect(getModelCatalog('test-ns/model-2')).toBeUndefined();
     });
   });
 

@@ -37,6 +37,7 @@ export const mockDatabaseMetricValues = {
   cleanupExpiredMetrics: jest.fn(),
   readAggregatedMetricByEntityRefs: jest.fn(),
   readScalarAggregatedMetricByEntityRefs: jest.fn(),
+  readScalarAggregatedMetricTimeSeriesByEntityRefs: jest.fn(),
   readEntityMetricsWithFilters: jest.fn(),
 } as unknown as jest.Mocked<DatabaseMetricValues>;
 
@@ -80,6 +81,8 @@ export const buildMockDatabaseMetricValues = ({
     cleanupExpiredMetrics,
     readAggregatedMetricByEntityRefs,
     readScalarAggregatedMetricByEntityRefs,
+    readScalarAggregatedMetricTimeSeriesByEntityRefs:
+      mockDatabaseMetricValues.readScalarAggregatedMetricTimeSeriesByEntityRefs,
     readEntityMetricsWithFilters,
   } as unknown as jest.Mocked<DatabaseMetricValues>;
 };

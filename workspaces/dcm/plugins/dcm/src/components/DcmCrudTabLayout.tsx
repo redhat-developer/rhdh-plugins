@@ -29,6 +29,7 @@ import {
 } from '@material-ui/core';
 import SyncIcon from '@material-ui/icons/Sync';
 import { Dispatch, SetStateAction } from 'react';
+import type React from 'react';
 import MuiAlert from '@material-ui/lab/Alert';
 import type { BoxProps } from '@material-ui/core/Box';
 import { DcmDataCenterTabEmptyState } from './DcmDataCenterTabEmptyState';
@@ -92,6 +93,18 @@ export type DcmCrudTabLayoutProps<T extends object> = Readonly<{
 
   // ── Card header ──────────────────────────────────────────────────────────
   entityLabel: string;
+
+  // ── Extra toolbar content ────────────────────────────────────────────────
+  /** Optional content rendered alongside the primary action button in the toolbar row. */
+  toolbarExtra?: React.ReactNode;
+
+  /**
+   * When true, the global illustration empty-state is suppressed so that the
+   * toolbar (and any `toolbarExtra` controls) remains visible.  Use this when
+   * the caller has an active filter that may be the cause of the empty result —
+   * the user needs to be able to change the filter without a full page reload.
+   */
+  hasActiveFilter?: boolean;
 
   // ── Refresh ──────────────────────────────────────────────────────────────
   /** When provided, a refresh icon button is shown next to the search field. */
@@ -159,6 +172,8 @@ export function DcmCrudTabLayout<T extends object>({
   onPrimaryAction,
   illustrationSrc,
   entityLabel,
+  toolbarExtra,
+  hasActiveFilter,
   onRefresh,
   refreshing,
 }: DcmCrudTabLayoutProps<T>) {
@@ -191,9 +206,15 @@ export function DcmCrudTabLayout<T extends object>({
   // empty (i.e. not just an empty cursor page on page 2+). If hasPrev is true
   // the user deleted the last row on a non-first page — fall through to the
   // table view so cursor controls remain accessible.
-  if (items.length === 0 && !cursorPagination?.hasPrev) {
+  // When a filter is active the empty result may be filter-induced; skip the
+  // illustration empty-state so the toolbar (with the filter control) stays
+  // visible and the user can clear the filter without a full page reload.
+  if (items.length === 0 && !cursorPagination?.hasPrev && !hasActiveFilter) {
     return (
       <>
+        {toolbarExtra && (
+          <Box className={classes.toolbarRow}>{toolbarExtra}</Box>
+        )}
         {actionError && (
           <ActionErrorAlert
             message={actionError}
@@ -218,6 +239,7 @@ export function DcmCrudTabLayout<T extends object>({
         <Button variant="contained" color="primary" onClick={onPrimaryAction}>
           {primaryActionLabel}
         </Button>
+        {toolbarExtra}
       </Box>
       <InfoCard
         title={

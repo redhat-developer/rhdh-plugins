@@ -1,6 +1,6 @@
 # RHDH AI Asset Annotation Specification
 
-> **Status: Draft** | **Last updated: 2026-08-31**
+> **Status: Draft** | **Last updated: 2026-09-02**
 >
 > **Epic:** RHIDP-15334 (Upstream Schema Alignment Readiness)
 > **Story:** RHIDP-15346 (Annotation specification document)
@@ -81,29 +81,36 @@ metadata:
 
 ### 1.3 `rhdh.io/ai-asset-source`
 
-**Purpose:** Records the provenance of the AI asset — which connector or
-registry ingested it into the catalog.
+**Purpose:** Records the provenance of the AI asset — which connector and
+registry instance ingested it into the catalog.
 
-**Format:** String identifier for the source connector or registry. Known
-connectors:
+**Format:** `connector-name/registry-instance-id`, where `connector-name`
+identifies the connector type and `registry-instance-id` is the app-config
+provider instance key (e.g., `default`, `prod-kagenti`). Known
+`connector-name` values:
 
-| Source value   | Description                         |
-| -------------- | ----------------------------------- |
-| `kagenti`      | Kagenti agentic framework connector |
-| `llamastack`   | Llama Stack connector               |
-| `oci`          | OCI skill registry connector        |
-| `mcp-registry` | MCP registry connector              |
-| `rhoai`        | Red Hat OpenShift AI connector      |
+| Token                | Connector                           |
+| -------------------- | ----------------------------------- |
+| `kagenti`            | Kagenti agentic framework connector |
+| `ogx`                | OGX connector (formerly LlamaStack) |
+| `oci-skill-registry` | OCI skill registry connector        |
+| `mcp-registry`       | MCP Registry connector              |
+| `rhoai`              | Red Hat OpenShift AI connector      |
 
-Additional connector names may be registered as connectors are implemented.
-The format is lowercase kebab-case.
+Additional connector names may be added when new connectors ship. The
+CatalogProcessor/SDK today only requires a non-empty string.
+
+> **RBAC note:** `isFromConnector` policy matching
+> ([#4376](https://github.com/redhat-developer/rhdh-plugins/issues/4376)) uses
+> the **full** annotation value (e.g., `rhoai/default`). Bare connector
+> names and composite values are different policy keys.
 
 **Example:**
 
 ```yaml
 metadata:
   annotations:
-    rhdh.io/ai-asset-source: kagenti
+    rhdh.io/ai-asset-source: kagenti/default
 ```
 
 ---
@@ -307,9 +314,6 @@ actual migration is future work.
   `normalizeAIAssetVersion()` (SDK). All connector OpenSpecs are
   aligned; connectors MUST NOT use a local `"unknown"` fallback.
   See [#4531](https://github.com/redhat-developer/rhdh-plugins/issues/4531).
-- **Connector alignment** — expand `rhdh.io/ai-asset-source` vocabulary as
-  new connectors are implemented (e.g., `mcp-registry-connector`,
-  `rhoai-connector`).
 
 ---
 

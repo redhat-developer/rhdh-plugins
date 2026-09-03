@@ -26,3 +26,8 @@ export type AggregationOptions = {
   thresholds: ThresholdConfig;
   aggregationConfig: ValidatedAggregationConfig;
 };
+
+export type AggregationTimeSeriesOptions = AggregationOptions & {
+  from: Date;
+  to: Date;
+};

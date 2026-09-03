@@ -509,6 +509,7 @@ async function innerStart(
   await setupCatalogRoute(config);
 
   const keys = new Set<string>();
+  const activeModelCardKeys = new Set<string>();
 
   logger.debug('innerStart: Listing all KServe InferenceServices');
 
@@ -527,10 +528,26 @@ async function innerStart(
         is.metadata.namespace,
         is.metadata.name,
       );
-      logger.debug(
-        `innerStart: Adding importKey ${importKey} for KServe InferenceService ${is.metadata.namespace}/${is.metadata.name}`,
-      );
-      keys.add(importKey);
+      if (isInferenceServiceReady(is, logger)) {
+        logger.debug(
+          `innerStart: Adding importKey ${importKey} for ready KServe InferenceService ${is.metadata.namespace}/${is.metadata.name}`,
+        );
+        keys.add(importKey);
+        // Track model card keys for ready ISes with catalog annotations
+        if (is.metadata.annotations) {
+          const catalogSource =
+            is.metadata.annotations[CATALOG_SOURCE_ANNOTATION];
+          const catalogModel =
+            is.metadata.annotations[CATALOG_MODEL_ANNOTATION];
+          if (catalogSource && catalogModel) {
+            activeModelCardKeys.add(`${catalogSource}/${catalogModel}`);
+          }
+        }
+      } else {
+        logger.debug(
+          `innerStart: Skipping importKey ${importKey} for non-ready KServe InferenceService ${is.metadata.namespace}/${is.metadata.name}`,
+        );
+      }
     }
   } catch (error) {
     logger.error(
@@ -593,6 +610,28 @@ async function innerStart(
     );
   }
 
+  // Clean up stale entries from modelCards
+  const modelCardKeysToDelete: string[] = [];
+  for (const mcKey of modelCards.keys()) {
+    if (!activeModelCardKeys.has(mcKey)) {
+      logger.debug(
+        `innerStart: Model card key ${mcKey} no longer exists in current keys, marking for deletion`,
+      );
+      modelCardKeysToDelete.push(mcKey);
+    }
+  }
+
+  for (const keyToDelete of modelCardKeysToDelete) {
+    modelCards.delete(keyToDelete);
+    logger.debug(`innerStart: Deleted stale model card entry: ${keyToDelete}`);
+  }
+
+  if (modelCardKeysToDelete.length > 0) {
+    logger.info(
+      `innerStart: Cleaned up ${modelCardKeysToDelete.length} stale model card entries`,
+    );
+  }
+
   logger.debug('innerStart: Reconciliation sync complete');
 }
 
@@ -614,6 +653,12 @@ export function getModelCatalog(id: string): ModelCatalog | undefined {
 
 export function getModelCard(id: string): string | undefined {
   return modelCards.get(id)?.content;
+}
+
+/** @internal Clears module-level maps so tests run in isolation. */
+export function _resetForTesting(): void {
+  modelCatalog.clear();
+  modelCards.clear();
 }
 
 function buildKubeConfig(

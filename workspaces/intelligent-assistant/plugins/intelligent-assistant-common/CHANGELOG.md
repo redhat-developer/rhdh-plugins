@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common
 
+## 4.2.0
+
+### Minor Changes
+
+- 5238698: Backstage version bump to v1.54.5
+
 ## 4.1.0
 
 ### Minor Changes
