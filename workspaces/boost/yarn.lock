@@ -3089,7 +3089,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/config@npm:^1.3.6, @backstage/config@npm:^1.3.8":
+"@backstage/config@npm:^1.3.2, @backstage/config@npm:^1.3.6, @backstage/config@npm:^1.3.8":
   version: 1.3.8
   resolution: "@backstage/config@npm:1.3.8"
   dependencies:
@@ -9043,6 +9043,7 @@ __metadata:
     "@backstage/cli": "npm:^0.36.5"
     "@backstage/plugin-catalog-node": "npm:^2.2.4"
     "@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk": "workspace:^"
+    undici: "npm:^6.21.1"
   languageName: unknown
   linkType: soft
 
@@ -29758,7 +29759,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^6.25.0":
+"undici@npm:^6.21.1, undici@npm:^6.25.0":
   version: 6.28.0
   resolution: "undici@npm:6.28.0"
   checksum: 10c0/3029a70df06b38b5b2f30732932a1e92544c753cd82c8abdf0d35afad48e0ba91612e79fe3a442dbbb9434d6a9eba2b714d5ea28984c903dda2b5d5444f38354

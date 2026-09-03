@@ -114,8 +114,10 @@ export const catalogModuleOgxEntityProvider = createBackendModule({
 
 /**
  * Read OGX entity provider configuration from app-config.yaml.
+ *
+ * @internal Exported for testing only.
  */
-function readOgxEntityProviderConfig(
+export function readOgxEntityProviderConfig(
   config: typeof coreServices.rootConfig extends { T: infer T } ? T : never,
 ): OgxEntityProviderConfig {
   // Try the entity-provider-specific config first
@@ -134,6 +136,8 @@ function readOgxEntityProviderConfig(
       defaultAgent: epConfig.getOptionalString('defaultAgent'),
       maxAgentTurns: epConfig.getOptionalNumber('maxAgentTurns'),
       agents: readAgentConfigs(epConfig),
+      caData: epConfig.getOptionalString('caData'),
+      skipTLSVerify: epConfig.getOptionalBoolean('skipTLSVerify'),
     };
   }
 
@@ -147,6 +151,8 @@ function readOgxEntityProviderConfig(
       defaultAgent: providerConfig.getOptionalString('defaultAgent'),
       maxAgentTurns: providerConfig.getOptionalNumber('maxAgentTurns'),
       agents: readAgentConfigs(providerConfig),
+      caData: providerConfig.getOptionalString('caData'),
+      skipTLSVerify: providerConfig.getOptionalBoolean('skipTLSVerify'),
     };
   }
 
