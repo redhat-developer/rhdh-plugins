@@ -75,7 +75,6 @@ boost:
       baseUrl: ${BOOST_OGX_URL:-http://localhost:8321}
       defaultAgent: router
       maxAgentTurns: 10
-      #   <PEM-encoded CA certificate or bundle for the OGX endpoint>
       #   -----END CERTIFICATE-----
       # skipTLSVerify: false  # Set to true only for development
       agents:
