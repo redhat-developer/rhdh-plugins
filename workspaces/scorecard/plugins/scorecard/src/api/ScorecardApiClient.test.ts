@@ -307,4 +307,257 @@ describe('ScorecardApiClient', () => {
       );
     });
   });
+
+  describe('getAggregationTimeSeries', () => {
+    const validTimeSeries = {
+      id: 'avgDeploymentFrequency',
+      metricId: 'dora.deploymentFrequency',
+      points: [
+        {
+          value: 10,
+          successCount: 5,
+          errorCount: 0,
+          total: 5,
+          status: 'success',
+          timestamp: '2026-08-23T00:00:00.000Z',
+        },
+      ],
+      metadata: {
+        title: 'Average Deployment Frequency',
+        description: 'Average weekly production deploys',
+        type: 'number',
+        history: true,
+        visualization: 'sparkline',
+        aggregationType: 'average',
+      },
+      thresholds: { rules: [] },
+      aggregationChartDisplayColor: 'warning.main',
+    };
+
+    const range = {
+      from: '2026-07-24T00:00:00.000Z',
+      to: '2026-08-23T00:00:00.000Z',
+    };
+
+    it('should build the time-series URL from aggregationId and range', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => validTimeSeries,
+      });
+
+      const result = await client.getAggregationTimeSeries({
+        aggregationId: 'avgDeploymentFrequency',
+        ...range,
+      });
+
+      expect(fetchApi.fetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/scorecard/aggregations/avgDeploymentFrequency/time-series?from=2026-07-24T00%3A00%3A00.000Z&to=2026-08-23T00%3A00%3A00.000Z',
+      );
+      expect(result).toEqual(validTimeSeries);
+    });
+
+    it('should throw when aggregationId is empty', async () => {
+      await expect(
+        client.getAggregationTimeSeries({
+          aggregationId: '',
+          ...range,
+        }),
+      ).rejects.toThrow(
+        'Aggregation ID is required for aggregation time-series lookup',
+      );
+      expect(fetchApi.fetch).not.toHaveBeenCalled();
+    });
+
+    it('should throw when from or to is missing', async () => {
+      await expect(
+        client.getAggregationTimeSeries({
+          aggregationId: 'avgDeploymentFrequency',
+          from: '',
+          to: range.to,
+        }),
+      ).rejects.toThrow(
+        'from and to are required for aggregation time-series lookup',
+      );
+      expect(fetchApi.fetch).not.toHaveBeenCalled();
+    });
+
+    it('should throw when the response is not a time-series object', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => [],
+      });
+
+      await expect(
+        client.getAggregationTimeSeries({
+          aggregationId: 'avgDeploymentFrequency',
+          ...range,
+        }),
+      ).rejects.toThrow(
+        'Invalid response format from aggregation time-series API',
+      );
+    });
+
+    it('should throw on non-OK response', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+        text: async () => 'not scalar',
+      });
+
+      await expect(
+        client.getAggregationTimeSeries({
+          aggregationId: 'openPrsKpi',
+          ...range,
+        }),
+      ).rejects.toThrow(
+        'Failed to fetch aggregation time series: 400 Bad Request. not scalar',
+      );
+    });
+  });
+
+  describe('getMetricTimeSeries', () => {
+    const validTimeSeries = {
+      metricId: 'dora.deploymentFrequency',
+      entityRef: 'component:default/svc-a',
+      points: [{ value: 8, timestamp: '2026-04-27T23:10:00.000Z' }],
+      metadata: {
+        title: 'Deployment Frequency',
+        description: 'How often we deploy',
+        type: 'number',
+        history: true,
+        defaultVisualization: 'sparkline',
+      },
+    };
+
+    const range = {
+      from: '2026-03-31T00:00:00.000Z',
+      to: '2026-04-30T00:00:00.000Z',
+    };
+
+    it('should build the time-series URL from entity, metricId, and range', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => validTimeSeries,
+      });
+
+      const result = await client.getMetricTimeSeries({
+        entity,
+        metricId: 'dora.deploymentFrequency',
+        ...range,
+      });
+
+      expect(fetchApi.fetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/scorecard/metrics/catalog/Component/default/svc-a/time-series?metricId=dora.deploymentFrequency&from=2026-03-31T00%3A00%3A00.000Z&to=2026-04-30T00%3A00%3A00.000Z',
+      );
+      expect(result).toEqual(validTimeSeries);
+    });
+
+    it('should throw when metricId is empty', async () => {
+      await expect(
+        client.getMetricTimeSeries({
+          entity,
+          metricId: '',
+          ...range,
+        }),
+      ).rejects.toThrow('Metric ID is required for time-series lookup');
+      expect(fetchApi.fetch).not.toHaveBeenCalled();
+    });
+
+    it('should throw when the response is not a time-series object', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => [],
+      });
+
+      await expect(
+        client.getMetricTimeSeries({
+          entity,
+          metricId: 'dora.deploymentFrequency',
+          ...range,
+        }),
+      ).rejects.toThrow('Invalid response format from metric time-series API');
+    });
+
+    it('should throw on non-OK response', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+        text: async () => 'nope',
+      });
+
+      await expect(
+        client.getMetricTimeSeries({
+          entity,
+          metricId: 'dora.deploymentFrequency',
+          ...range,
+        }),
+      ).rejects.toThrow(
+        'Failed to fetch metric time series: 500 Internal Server Error. nope',
+      );
+    });
+  });
+
+  describe('getMetricCollectors', () => {
+    const collectorsResponse = {
+      collectors: [
+        {
+          id: 'github:deploymentWorkflowRuns',
+          description: 'Collects deployments from GitHub Actions.',
+        },
+        {
+          id: 'jira:incidents',
+          description: 'Collects Jira incidents.',
+        },
+      ],
+    };
+
+    it('should request collectors for the metric id', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => collectorsResponse,
+      });
+
+      const result = await client.getMetricCollectors('dora.changeFailureRate');
+
+      expect(fetchApi.fetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/scorecard/metrics/dora.changeFailureRate/collectors',
+      );
+      expect(result).toEqual(collectorsResponse.collectors);
+    });
+
+    it('should throw when metric id is empty', async () => {
+      await expect(client.getMetricCollectors('')).rejects.toThrow(
+        'Metric ID is required for collectors lookup',
+      );
+      expect(fetchApi.fetch).not.toHaveBeenCalled();
+    });
+
+    it('should throw when the response is not a collectors object', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => [],
+      });
+
+      await expect(
+        client.getMetricCollectors('dora.changeFailureRate'),
+      ).rejects.toThrow('Invalid response format from metric collectors API');
+    });
+
+    it('should throw on non-OK response', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+        text: async () => 'nope',
+      });
+
+      await expect(
+        client.getMetricCollectors('dora.changeFailureRate'),
+      ).rejects.toThrow(
+        'Failed to fetch metric collectors: 500 Internal Server Error. nope',
+      );
+    });
+  });
 });
