@@ -17,6 +17,7 @@
 import { mockServices } from '@backstage/backend-test-utils';
 import { daysToMilliseconds } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import {
+  DORA_COLLECTOR_SETTINGS_KEY,
   DORA_DEFAULT_DATA_RETENTION_DAYS,
   DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
@@ -101,6 +102,115 @@ describe('DoraConfig', () => {
         /Invalid type in config for key 'collectors\.test\.input' in 'mock-config', got .+, wanted object/,
       );
     });
+
+    it(`returns correct input and hash when missing '${DORA_COLLECTOR_SETTINGS_KEY}' or empty '${DORA_COLLECTOR_SETTINGS_KEY}'`, () => {
+      const identityInput = { workflowName: 'Deploy' };
+      const expected = {
+        id: 'custom:deployments',
+        input: identityInput,
+        inputHash: collectorInputHash(identityInput),
+      };
+
+      expect(
+        parseCollectorConfig(
+          mockServices.rootConfig({
+            data: {
+              collectors: {
+                test: {
+                  id: 'custom:deployments',
+                  input: identityInput,
+                },
+              },
+            },
+          }),
+          exampleCollectorConfigPath,
+          exampleCollectorId,
+        ),
+      ).toEqual(expected);
+      expect(
+        parseCollectorConfig(
+          mockServices.rootConfig({
+            data: {
+              collectors: {
+                test: {
+                  id: 'custom:deployments',
+                  input: {
+                    ...identityInput,
+                    [DORA_COLLECTOR_SETTINGS_KEY]: {},
+                  },
+                },
+              },
+            },
+          }),
+          exampleCollectorConfigPath,
+          exampleCollectorId,
+        ),
+      ).toEqual(expected);
+    });
+
+    it(`computes inputHash from input excluding '${DORA_COLLECTOR_SETTINGS_KEY}', with flattened '${DORA_COLLECTOR_SETTINGS_KEY}' in input`, () => {
+      expect(
+        parseCollectorConfig(
+          mockServices.rootConfig({
+            data: {
+              collectors: {
+                test: {
+                  id: 'custom:deployments',
+                  input: {
+                    key1: 'value1',
+                    key2: 'value2',
+                    [DORA_COLLECTOR_SETTINGS_KEY]: {
+                      maxItems: 10000,
+                      example: ['a', 'b'],
+                    },
+                  },
+                },
+              },
+            },
+          }),
+          exampleCollectorConfigPath,
+          exampleCollectorId,
+        ),
+      ).toEqual({
+        id: 'custom:deployments',
+        input: {
+          key1: 'value1',
+          key2: 'value2',
+          maxItems: 10000,
+          example: ['a', 'b'],
+        },
+        inputHash: collectorInputHash({ key1: 'value1', key2: 'value2' }),
+      });
+    });
+
+    it.each([
+      ['a string', 'Deploy'],
+      ['a number', 1],
+      ['a boolean', true],
+      ['an array', ['Deploy']],
+    ])(
+      `throws when collector input '${DORA_COLLECTOR_SETTINGS_KEY}' is invalid: %s`,
+      (_name, input) => {
+        expect(() =>
+          parseCollectorConfig(
+            mockServices.rootConfig({
+              data: {
+                collectors: {
+                  test: {
+                    id: 'custom:deployments',
+                    input: { [DORA_COLLECTOR_SETTINGS_KEY]: input },
+                  },
+                },
+              },
+            }),
+            exampleCollectorConfigPath,
+            exampleCollectorId,
+          ),
+        ).toThrow(
+          /Invalid type in config for key 'collectors\.test\.input\.collectorSettings' in 'mock-config', got .+, wanted object/,
+        );
+      },
+    );
   });
 
   describe('parseDoraDeploymentFrequencyConfig', () => {

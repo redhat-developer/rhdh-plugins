@@ -22,6 +22,14 @@ export const DORA_TIME_WINDOW_DAYS = 30;
 export const DORA_DEFAULT_PRODUCTION_ENVIRONMENTS = ['production'];
 
 /**
+ * Specify non-identity collector inputs (like `fetchMaxItems`) under this key in
+ * `collectors.deployments.input`, `collectors.incidents.input` or `collectors.deploymentPullRequests.input`.
+ * These inputs will be excluded from collector identity, flattened in input and their change
+ * will not cause full data refetch.
+ */
+export const DORA_COLLECTOR_SETTINGS_KEY = 'collectorSettings';
+
+/**
  * Default for how long DORA source rows (deployments, incidents, and PRs linked to expired
  * deployments) are kept before cleanup. Must stay at least
  * {@link DORA_TIME_WINDOW_DAYS}. Overridable via

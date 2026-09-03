@@ -24,6 +24,7 @@ import { daysToMilliseconds } from '@red-hat-developer-hub/backstage-plugin-scor
 import { collectorInputHash } from '../service/collectorHash';
 import type { DoraCollectorConfig } from '../service/types';
 import {
+  DORA_COLLECTOR_SETTINGS_KEY,
   DORA_DEFAULT_DATA_RETENTION_DAYS,
   DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
@@ -162,7 +163,9 @@ export const DEFAULT_DORA_MEAN_TIME_TO_RESTORE_THRESHOLDS: ThresholdConfig =
 
 /**
  * Parses a collector `id` and static `input` object from config and attaches
- * `inputHash`. Shared by all DORA metric provider parsers.
+ * `inputHash` computed from input, excluding `collectorSettings`.
+ * The `collectorSettings` within the `input` object are flattened into `input`.
+ * Shared by all DORA metric provider parsers.
  */
 export function parseCollectorConfig(
   config: Config,
@@ -173,10 +176,18 @@ export function parseCollectorConfig(
     config
       .getOptionalConfig(`${collectorConfigPath}.input`)
       ?.get<JsonObject>() ?? {};
+  const { collectorSettings, ...identityInput } = input;
+  const validatedCollectorSettings =
+    config
+      .getOptionalConfig(
+        `${collectorConfigPath}.input.${DORA_COLLECTOR_SETTINGS_KEY}`,
+      )
+      ?.get<JsonObject>() ?? {};
+
   return {
     id: config.getOptionalString(`${collectorConfigPath}.id`) ?? defaultId,
-    input,
-    inputHash: collectorInputHash(input),
+    input: { ...identityInput, ...validatedCollectorSettings },
+    inputHash: collectorInputHash(identityInput),
   };
 }
 
