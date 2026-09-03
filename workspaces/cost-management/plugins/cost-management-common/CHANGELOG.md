@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/plugin-cost-management-common
 
+## 2.3.0
+
+### Minor Changes
+
+- 1fc6bbe: Backstage version bump to v1.54.6
+
+  Also includes the workspace resolutions cleanup and MSW bump from #4459.
+
 ## 2.2.1
 
 ### Patch Changes
