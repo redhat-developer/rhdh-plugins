@@ -51,8 +51,6 @@ const KUBERNETES_TOOL_NAMES = [
   'kubernetes-mcp-extras.get-kubernetes-resources-for-entity',
 ] as const;
 
-const READ_ONLY_TOOL_NAMES = [...KUBERNETES_TOOL_NAMES];
-
 function getServerPort(server: Server): number {
   const address = server.address();
   if (typeof address !== 'object' || !address || !('port' in address)) {
@@ -155,20 +153,6 @@ describe('Kubernetes MCP tools integration', () => {
     backend = await startKubernetesMcpBackend();
   });
 
-  it('exposes both kubernetes tools through MCP tools/list', async () => {
-    await withMcpClient(backend.server, async client => {
-      const result = await client.request(
-        { method: 'tools/list' },
-        ListToolsResultSchema,
-      );
-
-      const toolNames = result.tools.map(tool => tool.name);
-      expect(toolNames).toEqual(
-        expect.arrayContaining([...KUBERNETES_TOOL_NAMES]),
-      );
-    });
-  });
-
   it('marks kubernetes tools as read-only in MCP metadata', async () => {
     await withMcpClient(backend.server, async client => {
       const result = await client.request(
@@ -180,7 +164,7 @@ describe('Kubernetes MCP tools integration', () => {
         result.tools.map(tool => [tool.name, tool]),
       );
 
-      for (const toolName of READ_ONLY_TOOL_NAMES) {
+      for (const toolName of KUBERNETES_TOOL_NAMES) {
         expect(toolsByName[toolName]?.annotations?.readOnlyHint).toBe(true);
         expect(toolsByName[toolName]?.annotations?.destructiveHint).toBe(false);
         expect(toolsByName[toolName]?.inputSchema).toMatchObject({
