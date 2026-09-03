@@ -20,17 +20,13 @@ import { ResponseErrorPanel } from '@backstage/core-components';
 import Box from '@mui/material/Box';
 
 import NoScorecardsState from '../Common/NoScorecardsState';
-import Scorecard from './Scorecard';
 import { useScorecards } from '../../hooks/useScorecards';
-import { getStatusConfig, resolveMetricTranslation } from '../../utils';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
-import { useTranslation } from '../../hooks/useTranslation';
 import { CardLoading } from '../Common/CardLoading';
-import { hasMetricDataError, hasThresholdError } from '../../utils/statusUtils';
+import { EntityMetricCard } from './EntityMetricCard';
 
 const EntityScorecardContentInner = () => {
   const { data: scorecards, isLoading, error } = useScorecards();
-  const { t } = useTranslation();
 
   if (isLoading) {
     return <CardLoading />;
@@ -58,51 +54,9 @@ const EntityScorecardContentInner = () => {
       gap={2}
       sx={{ alignItems: 'start' }}
     >
-      {scorecards?.map((metric: MetricResult) => {
-        // Check if metric data unavailable
-        const isMetricDataError = hasMetricDataError(metric);
-
-        // Check if threshold has an error
-        const isThresholdError = hasThresholdError(metric);
-
-        const statusConfig = getStatusConfig({
-          evaluation: metric.result?.thresholdResult?.evaluation,
-          thresholdStatus: metric.result?.thresholdResult?.status,
-          metricStatus: metric.status,
-          thresholdRules: metric.result?.thresholdResult?.definition?.rules,
-        });
-
-        const title = resolveMetricTranslation(
-          t,
-          metric.id,
-          'title',
-          metric.metadata.title,
-        );
-        const description = resolveMetricTranslation(
-          t,
-          metric.id,
-          'description',
-          metric.metadata.description,
-        );
-
-        return (
-          <Scorecard
-            key={metric.id}
-            cardTitle={title}
-            description={description}
-            statusColor={statusConfig.color}
-            statusIcon={statusConfig.icon ?? ''}
-            value={metric.result?.value}
-            metricType={metric.metadata.type}
-            thresholds={metric.result?.thresholdResult}
-            unit={metric.metadata.unit}
-            isMetricDataError={isMetricDataError}
-            metricDataError={metric?.error}
-            isThresholdError={isThresholdError}
-            thresholdError={metric.result?.thresholdResult?.error}
-          />
-        );
-      })}
+      {scorecards?.map((metric: MetricResult) => (
+        <EntityMetricCard key={metric.id} metric={metric} />
+      ))}
     </Box>
   );
 };
