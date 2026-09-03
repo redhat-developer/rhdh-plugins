@@ -32,12 +32,9 @@ import { Agent } from 'undici';
 import { OgxModelEntityProvider } from './OgxModelEntityProvider';
 import type { OgxEntityProviderConfig } from '../types';
 
-jest.mock('undici', () => {
-  const mockAgentInstance = { mocked: true };
-  return {
-    Agent: jest.fn(() => mockAgentInstance),
-  };
-});
+jest.mock('undici', () => ({
+  Agent: jest.fn(() => ({ mocked: true })),
+}));
 
 const MockAgent = Agent as jest.MockedClass<typeof Agent>;
 
@@ -444,6 +441,156 @@ describe('OgxModelEntityProvider', () => {
       const mutation = (mockConnection.applyMutation as jest.Mock).mock
         .calls[0][0];
       expect(mutation.entities).toHaveLength(0);
+    });
+
+    it('should reuse the cached Agent across multiple refresh cycles', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: [{ id: 'model-1' }] }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: [{ id: 'model-2' }] }),
+        } as Response);
+
+      const provider = new OgxModelEntityProvider({
+        config: {
+          ...defaultConfig,
+          caData:
+            '-----BEGIN CERTIFICATE-----\nTEST\n-----END CERTIFICATE-----',
+        },
+        logger: mockServices.logger.mock(),
+        taskRunner,
+      });
+
+      await provider.connect(mockConnection);
+      await taskRunner.runAll();
+
+      // First refresh creates the Agent
+      expect(MockAgent).toHaveBeenCalledTimes(1);
+
+      // Simulate a second refresh cycle
+      await provider.run();
+
+      // Agent is reused — still only one instance created
+      expect(MockAgent).toHaveBeenCalledTimes(1);
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+
+    it('should log skipTLSVerify warning only once across multiple refresh cycles', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: [] }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: [] }),
+        } as Response);
+
+      const childWarn = jest.fn();
+      const mockLogger = {
+        ...mockServices.logger.mock(),
+        child: jest.fn().mockReturnValue({
+          info: jest.fn(),
+          warn: childWarn,
+          error: jest.fn(),
+          debug: jest.fn(),
+          child: jest.fn(),
+        }),
+      };
+
+      const provider = new OgxModelEntityProvider({
+        config: { ...defaultConfig, skipTLSVerify: true },
+        logger: mockLogger,
+        taskRunner,
+      });
+
+      await provider.connect(mockConnection);
+      await taskRunner.runAll();
+
+      // Second refresh
+      await provider.run();
+
+      // Warning emitted only once despite two refresh cycles
+      const tlsWarnings = childWarn.mock.calls.filter((call: string[]) =>
+        call[0].includes('TLS certificate verification is disabled'),
+      );
+      expect(tlsWarnings).toHaveLength(1);
+    });
+
+    it('should log an error when caData is not valid PEM', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: [] }),
+      } as Response);
+
+      const childError = jest.fn();
+      const mockLogger = {
+        ...mockServices.logger.mock(),
+        child: jest.fn().mockReturnValue({
+          info: jest.fn(),
+          warn: jest.fn(),
+          error: childError,
+          debug: jest.fn(),
+          child: jest.fn(),
+        }),
+      };
+
+      const provider = new OgxModelEntityProvider({
+        config: {
+          ...defaultConfig,
+          caData: 'not-a-valid-pem-string',
+        },
+        logger: mockLogger,
+        taskRunner,
+      });
+
+      await provider.connect(mockConnection);
+      await taskRunner.runAll();
+
+      expect(childError).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'does not contain valid PEM certificate markers',
+        ),
+      );
+      // Agent is still created — invalid PEM is a warning, not a hard stop
+      expect(MockAgent).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not log PEM error when caData has valid PEM markers', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: [] }),
+      } as Response);
+
+      const childError = jest.fn();
+      const mockLogger = {
+        ...mockServices.logger.mock(),
+        child: jest.fn().mockReturnValue({
+          info: jest.fn(),
+          warn: jest.fn(),
+          error: childError,
+          debug: jest.fn(),
+          child: jest.fn(),
+        }),
+      };
+
+      const provider = new OgxModelEntityProvider({
+        config: {
+          ...defaultConfig,
+          caData:
+            '-----BEGIN CERTIFICATE-----\nMIIBxTCC...\n-----END CERTIFICATE-----',
+        },
+        logger: mockLogger,
+        taskRunner,
+      });
+
+      await provider.connect(mockConnection);
+      await taskRunner.runAll();
+
+      expect(childError).not.toHaveBeenCalled();
     });
   });
 });
