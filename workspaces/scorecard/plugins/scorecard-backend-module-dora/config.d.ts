@@ -46,9 +46,10 @@ export interface Config {
          */
         staleAfterMs?: number;
         /**
-         * How far before the last successful deployments watermark to re-query
-         * deployments by created time. Covers status updated to success after
-         * that finishes after the previous refresh.
+         * Defines the lookback period, in milliseconds, used when re-querying deployments by
+         * creation time since the last synchronization watermark. It determines how far back
+         * to search for deployments that may have transitioned to a 'success' status after
+         * the previous refresh.
          * Must be greater than or equal to 0 and less than or equal
          * to the DORA metric computation window (30 days).
          * Set to `0` for watermark-only incremental refresh (no lookback).

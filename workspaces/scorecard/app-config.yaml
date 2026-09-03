@@ -372,6 +372,7 @@ scorecard:
   #   dora:
   #     dataRetentionDays: 365
   #     staleAfterMs: 60000
+  #     deploymentLookbackMs: 172800000
 
   metricProviders:
     jira:
