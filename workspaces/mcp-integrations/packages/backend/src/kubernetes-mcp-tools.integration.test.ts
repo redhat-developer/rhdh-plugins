@@ -19,12 +19,7 @@ import {
   mockServices,
   startTestBackend,
 } from '@backstage/backend-test-utils';
-import { metricsServiceMock } from '@backstage/backend-test-utils/alpha';
 import mcpPlugin from '@backstage/plugin-mcp-actions-backend';
-import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
-import softwareCatalogMcpExtrasPlugin from '@red-hat-developer-hub/backstage-plugin-software-catalog-mcp-extras';
-import mcpTechdocsExtrasPlugin from '@red-hat-developer-hub/backstage-plugin-techdocs-mcp-extras';
-import mcpScaffolderExtrasPlugin from '@red-hat-developer-hub/backstage-plugin-scaffolder-mcp-extras';
 import mcpKubernetesExtrasPlugin from '@red-hat-developer-hub/backstage-plugin-kubernetes-mcp-extras';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
@@ -42,12 +37,6 @@ type CallToolResult = {
 
 type StartKubernetesMcpBackendOptions = {
   pluginSources?: string[];
-};
-
-const TECHDOCS_CONFIG = {
-  builder: 'local',
-  generator: { runIn: 'local' },
-  publisher: { type: 'local' },
 };
 
 const MCP_TRANSPORT_RECONNECTION_OPTIONS = {
@@ -80,7 +69,6 @@ function createBackendConfig(pluginSources: string[]) {
         pluginSources,
       },
     },
-    techdocs: TECHDOCS_CONFIG,
   };
 }
 
@@ -89,17 +77,12 @@ async function startKubernetesMcpBackend({
 }: StartKubernetesMcpBackendOptions = {}) {
   return startTestBackend({
     features: [
-      mcpPlugin,
-      softwareCatalogMcpExtrasPlugin,
-      mcpTechdocsExtrasPlugin,
-      mcpScaffolderExtrasPlugin,
       mcpKubernetesExtrasPlugin,
-      metricsServiceMock.mock().factory,
+      mcpPlugin,
       mockServices.rootConfig.factory({
         data: createBackendConfig(pluginSources),
       }),
       mockServices.auth.factory(),
-      catalogServiceMock.factory({ entities: [] }),
       mockServices.httpAuth.factory({
         defaultCredentials: mockCredentials.user('user:default/test'),
       }),
