@@ -63,6 +63,8 @@ export class OgxModelEntityProvider implements EntityProvider {
   private readonly scheduleFn: () => Promise<void>;
   private connection?: EntityProviderConnection;
   private cachedEntity: Entity | undefined;
+  /** Lazily-initialized TLS dispatcher — created once and reused across refresh cycles. */
+  private cachedTlsDispatcher: Agent | null | undefined;
 
   constructor(options: {
     config: OgxEntityProviderConfig;
@@ -132,7 +134,7 @@ export class OgxModelEntityProvider implements EntityProvider {
 
     const fetchOptions: RequestInit & { dispatcher?: Agent } = { headers };
 
-    const dispatcher = this.createTlsDispatcher();
+    const dispatcher = this.getTlsDispatcher();
     if (dispatcher) {
       fetchOptions.dispatcher = dispatcher;
     }
@@ -158,16 +160,25 @@ export class OgxModelEntityProvider implements EntityProvider {
   }
 
   /**
-   * Create a TLS-aware Undici dispatcher when caData or skipTLSVerify is set.
+   * Return the cached TLS dispatcher, creating it on first call.
    *
-   * - skipTLSVerify takes precedence: sets rejectUnauthorized=false and logs a warning.
-   * - caData alone: sets the custom CA with rejectUnauthorized=true.
+   * The dispatcher is created once and reused across refresh cycles to avoid
+   * accumulating orphaned Agents with their own connection pools.
+   *
+   * - skipTLSVerify takes precedence: sets rejectUnauthorized=false and logs a warning (once).
+   * - caData alone: validates PEM markers, then sets the custom CA with rejectUnauthorized=true.
    * - Neither: returns undefined (use default fetch behavior).
    */
-  private createTlsDispatcher(): Agent | undefined {
+  private getTlsDispatcher(): Agent | undefined {
+    // undefined = not yet initialized; null = initialized, no TLS needed
+    if (this.cachedTlsDispatcher !== undefined) {
+      return this.cachedTlsDispatcher ?? undefined;
+    }
+
     const { caData, skipTLSVerify } = this.config;
 
     if (!caData && !skipTLSVerify) {
+      this.cachedTlsDispatcher = null;
       return undefined;
     }
 
@@ -175,15 +186,23 @@ export class OgxModelEntityProvider implements EntityProvider {
       this.logger.warn(
         'TLS certificate verification is disabled for OGX endpoint — this should only be used in development environments',
       );
-      return new Agent({
+      this.cachedTlsDispatcher = new Agent({
         connect: { rejectUnauthorized: false },
       });
+      return this.cachedTlsDispatcher;
     }
 
-    // caData only — custom CA with verification enabled
-    return new Agent({
+    // caData only — validate PEM markers before passing to undici
+    if (caData && !isValidPem(caData)) {
+      this.logger.error(
+        'caData does not contain valid PEM certificate markers (expected -----BEGIN CERTIFICATE----- / -----END CERTIFICATE-----) — TLS connections to the OGX endpoint may fail',
+      );
+    }
+
+    this.cachedTlsDispatcher = new Agent({
       connect: { ca: caData, rejectUnauthorized: true },
     });
+    return this.cachedTlsDispatcher;
   }
 
   /**
@@ -249,4 +268,20 @@ export class OgxModelEntityProvider implements EntityProvider {
       });
     };
   }
+}
+
+const PEM_HEADER = '-----BEGIN CERTIFICATE-----';
+const PEM_FOOTER = '-----END CERTIFICATE-----';
+
+/**
+ * Check whether a string contains at least one complete PEM certificate block.
+ * Mirrors the logic in boost-connector-utils/src/ca-bundle.ts.
+ */
+function isValidPem(content: string): boolean {
+  if (!content.includes(PEM_HEADER) || !content.includes(PEM_FOOTER)) {
+    return false;
+  }
+  const beginCount = content.split(PEM_HEADER).length - 1;
+  const endCount = content.split(PEM_FOOTER).length - 1;
+  return beginCount > 0 && beginCount === endCount;
 }
