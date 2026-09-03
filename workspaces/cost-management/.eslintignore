@@ -1,1 +1,4 @@
 playwright.config.ts
+dist-dynamic
+dist-scalprum
+coverage

@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import {
+  default as React,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import useAsync from 'react-use/esm/useAsync';
 import {
