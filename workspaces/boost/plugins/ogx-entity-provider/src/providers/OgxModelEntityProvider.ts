@@ -35,6 +35,8 @@ import {
   normalizeAIAssetVersion,
 } from '@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk';
 
+import { Agent } from 'undici';
+
 import type {
   OgxEntityProviderConfig,
   OgxModelListResponse,
@@ -128,7 +130,14 @@ export class OgxModelEntityProvider implements EntityProvider {
       headers.Authorization = `Bearer ${this.config.apiKey}`;
     }
 
-    const response = await fetch(url, { headers });
+    const fetchOptions: RequestInit & { dispatcher?: Agent } = { headers };
+
+    const dispatcher = this.createTlsDispatcher();
+    if (dispatcher) {
+      fetchOptions.dispatcher = dispatcher;
+    }
+
+    const response = await fetch(url, fetchOptions);
 
     if (!response.ok) {
       throw new Error(`OGX API returned ${response.status} from ${url}`);
@@ -146,6 +155,35 @@ export class OgxModelEntityProvider implements EntityProvider {
     }
 
     return [];
+  }
+
+  /**
+   * Create a TLS-aware Undici dispatcher when caData or skipTLSVerify is set.
+   *
+   * - skipTLSVerify takes precedence: sets rejectUnauthorized=false and logs a warning.
+   * - caData alone: sets the custom CA with rejectUnauthorized=true.
+   * - Neither: returns undefined (use default fetch behavior).
+   */
+  private createTlsDispatcher(): Agent | undefined {
+    const { caData, skipTLSVerify } = this.config;
+
+    if (!caData && !skipTLSVerify) {
+      return undefined;
+    }
+
+    if (skipTLSVerify) {
+      this.logger.warn(
+        'TLS certificate verification is disabled for OGX endpoint — this should only be used in development environments',
+      );
+      return new Agent({
+        connect: { rejectUnauthorized: false },
+      });
+    }
+
+    // caData only — custom CA with verification enabled
+    return new Agent({
+      connect: { ca: caData, rejectUnauthorized: true },
+    });
   }
 
   /**

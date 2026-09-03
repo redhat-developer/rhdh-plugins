@@ -112,4 +112,8 @@ export interface OgxEntityProviderConfig {
   maxAgentTurns?: number;
   /** Static agent configurations from YAML/admin config. */
   agents?: OgxAgentConfig[];
+  /** PEM-encoded CA certificate or certificate bundle used to verify OGX. */
+  caData?: string;
+  /** Disable TLS certificate verification. Development use only. */
+  skipTLSVerify?: boolean;
 }

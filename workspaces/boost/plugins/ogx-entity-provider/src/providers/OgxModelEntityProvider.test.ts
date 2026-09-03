@@ -27,8 +27,19 @@ import {
   AI_ASSET_VERSION_ANNOTATION,
 } from '@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk';
 
+import { Agent } from 'undici';
+
 import { OgxModelEntityProvider } from './OgxModelEntityProvider';
 import type { OgxEntityProviderConfig } from '../types';
+
+jest.mock('undici', () => {
+  const mockAgentInstance = { mocked: true };
+  return {
+    Agent: jest.fn(() => mockAgentInstance),
+  };
+});
+
+const MockAgent = Agent as jest.MockedClass<typeof Agent>;
 
 const mockFetch = jest.fn() as jest.MockedFunction<typeof global.fetch>;
 global.fetch = mockFetch;
@@ -62,6 +73,7 @@ describe('OgxModelEntityProvider', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    MockAgent.mockClear();
     taskRunner = new TaskRunnerMock();
   });
 
@@ -245,5 +257,193 @@ describe('OgxModelEntityProvider', () => {
       .calls[0][0];
     expect(mutation.entities).toHaveLength(1);
     expect(mutation.entities[0].entity.spec.models.available).toEqual([]);
+  });
+
+  describe('TLS configuration', () => {
+    it('should not create a dispatcher when neither caData nor skipTLSVerify is set', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: [] }),
+      } as Response);
+
+      const provider = new OgxModelEntityProvider({
+        config: defaultConfig,
+        logger: mockServices.logger.mock(),
+        taskRunner,
+      });
+
+      await provider.connect(mockConnection);
+      await taskRunner.runAll();
+
+      expect(MockAgent).not.toHaveBeenCalled();
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:8321/v1/models',
+        expect.not.objectContaining({ dispatcher: expect.anything() }),
+      );
+    });
+
+    it('should configure HTTPS request with custom CA when caData is set', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: [{ id: 'model-1' }] }),
+      } as Response);
+
+      const provider = new OgxModelEntityProvider({
+        config: {
+          ...defaultConfig,
+          baseUrl: 'https://ogx.example.com',
+          caData:
+            '-----BEGIN CERTIFICATE-----\nTEST\n-----END CERTIFICATE-----',
+        },
+        logger: mockServices.logger.mock(),
+        taskRunner,
+      });
+
+      await provider.connect(mockConnection);
+      await taskRunner.runAll();
+
+      expect(MockAgent).toHaveBeenCalledWith({
+        connect: {
+          ca: '-----BEGIN CERTIFICATE-----\nTEST\n-----END CERTIFICATE-----',
+          rejectUnauthorized: true,
+        },
+      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://ogx.example.com/v1/models',
+        expect.objectContaining({
+          dispatcher: expect.anything(),
+        }),
+      );
+    });
+
+    it('should disable certificate verification when skipTLSVerify is true and logs a warning', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: [{ id: 'model-1' }] }),
+      } as Response);
+
+      const childWarn = jest.fn();
+      const mockLogger = {
+        ...mockServices.logger.mock(),
+        child: jest.fn().mockReturnValue({
+          info: jest.fn(),
+          warn: childWarn,
+          error: jest.fn(),
+          debug: jest.fn(),
+          child: jest.fn(),
+        }),
+      };
+
+      const provider = new OgxModelEntityProvider({
+        config: { ...defaultConfig, skipTLSVerify: true },
+        logger: mockLogger,
+        taskRunner,
+      });
+
+      await provider.connect(mockConnection);
+      await taskRunner.runAll();
+
+      expect(MockAgent).toHaveBeenCalledWith({
+        connect: { rejectUnauthorized: false },
+      });
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          dispatcher: expect.anything(),
+        }),
+      );
+      expect(childWarn).toHaveBeenCalledWith(
+        expect.stringContaining('TLS certificate verification is disabled'),
+      );
+    });
+
+    it('should give skipTLSVerify precedence when both fields are set', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: [] }),
+      } as Response);
+
+      const childWarn = jest.fn();
+      const mockLogger = {
+        ...mockServices.logger.mock(),
+        child: jest.fn().mockReturnValue({
+          info: jest.fn(),
+          warn: childWarn,
+          error: jest.fn(),
+          debug: jest.fn(),
+          child: jest.fn(),
+        }),
+      };
+
+      const provider = new OgxModelEntityProvider({
+        config: {
+          ...defaultConfig,
+          caData: '-----BEGIN CERTIFICATE-----\nCA\n-----END CERTIFICATE-----',
+          skipTLSVerify: true,
+        },
+        logger: mockLogger,
+        taskRunner,
+      });
+
+      await provider.connect(mockConnection);
+      await taskRunner.runAll();
+
+      expect(MockAgent).toHaveBeenCalledWith({
+        connect: { rejectUnauthorized: false },
+      });
+      expect(childWarn).toHaveBeenCalledWith(
+        expect.stringContaining('TLS certificate verification is disabled'),
+      );
+    });
+
+    it('should preserve Authorization header when TLS settings are used', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: [] }),
+      } as Response);
+
+      const provider = new OgxModelEntityProvider({
+        config: {
+          ...defaultConfig,
+          apiKey: 'secret-key',
+          caData: 'PEM-CERT',
+        },
+        logger: mockServices.logger.mock(),
+        taskRunner,
+      });
+
+      await provider.connect(mockConnection);
+      await taskRunner.runAll();
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: 'Bearer secret-key',
+          }),
+          dispatcher: expect.anything(),
+        }),
+      );
+    });
+
+    it('should retain non-2xx error handling with TLS settings', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 502,
+      } as Response);
+
+      const provider = new OgxModelEntityProvider({
+        config: { ...defaultConfig, skipTLSVerify: true },
+        logger: mockServices.logger.mock(),
+        taskRunner,
+      });
+
+      await provider.connect(mockConnection);
+      await taskRunner.runAll();
+
+      const mutation = (mockConnection.applyMutation as jest.Mock).mock
+        .calls[0][0];
+      expect(mutation.entities).toHaveLength(0);
+    });
   });
 });
