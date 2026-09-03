@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ci-triage-result.schema.json",
+  "title": "RHDH Plugins CI Triage Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "pr",
+    "run",
+    "failed_jobs",
+    "failed_tests",
+    "evidence",
+    "category",
+    "confidence",
+    "recommendation",
+    "root_cause",
+    "workspace_boundary",
+    "verification_commands",
+    "summary"
+  ],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "pr": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["number", "head_sha"],
+      "properties": {
+        "number": { "type": "integer", "minimum": 1 },
+        "head_sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+      }
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "attempt", "url"],
+      "properties": {
+        "id": { "type": "integer", "minimum": 1 },
+        "attempt": { "type": "integer", "minimum": 1 },
+        "url": { "type": "string", "format": "uri", "maxLength": 2048 }
+      }
+    },
+    "failed_jobs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "conclusion", "failed_steps"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 256 },
+          "conclusion": { "enum": ["failure", "timed_out", "action_required"] },
+          "failed_steps": {
+            "type": "array",
+            "maxItems": 100,
+            "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+          }
+        }
+      }
+    },
+    "failed_tests": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "framework", "error"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 512 },
+          "framework": { "enum": ["jest", "playwright", "other"] },
+          "file": { "type": ["string", "null"], "maxLength": 512 },
+          "error": { "type": "string", "minLength": 1, "maxLength": 4096 }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "location", "summary"],
+        "properties": {
+          "kind": {
+            "enum": [
+              "job_log",
+              "junit",
+              "playwright_report",
+              "screenshot",
+              "trace",
+              "source",
+              "api"
+            ]
+          },
+          "location": { "type": "string", "minLength": 1, "maxLength": 1024 },
+          "summary": { "type": "string", "minLength": 1, "maxLength": 2048 }
+        }
+      }
+    },
+    "category": {
+      "enum": [
+        "repository_code",
+        "repository_test",
+        "flake",
+        "external_infra",
+        "unknown"
+      ]
+    },
+    "confidence": { "enum": ["high", "medium", "low"] },
+    "recommendation": {
+      "enum": ["repair", "retry_once", "needs_human", "no_action"]
+    },
+    "root_cause": { "type": "string", "minLength": 1, "maxLength": 4096 },
+    "workspace_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "workspace", "allowed_prefix", "reason"],
+      "properties": {
+        "kind": { "enum": ["single", "root", "multiple", "ambiguous"] },
+        "workspace": {
+          "type": ["string", "null"],
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "allowed_prefix": {
+          "type": ["string", "null"],
+          "pattern": "^workspaces/[a-z0-9][a-z0-9-]*/$"
+        },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 1024 }
+      }
+    },
+    "verification_commands": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["command", "reason"],
+        "properties": {
+          "command": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "pattern": "^[^\\r\\n]+$"
+          },
+          "reason": { "type": "string", "minLength": 1, "maxLength": 1024 }
+        }
+      }
+    },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 4096 }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "recommendation": { "const": "repair" } },
+        "required": ["recommendation"]
+      },
+      "then": {
+        "properties": {
+          "category": { "enum": ["repository_code", "repository_test"] },
+          "confidence": { "const": "high" },
+          "workspace_boundary": {
+            "properties": {
+              "kind": { "const": "single" },
+              "workspace": { "type": "string" },
+              "allowed_prefix": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "recommendation": { "const": "retry_once" } },
+        "required": ["recommendation"]
+      },
+      "then": {
+        "properties": {
+          "category": { "const": "flake" },
+          "confidence": { "const": "high" }
+        }
+      }
+    }
+  ]
+}
