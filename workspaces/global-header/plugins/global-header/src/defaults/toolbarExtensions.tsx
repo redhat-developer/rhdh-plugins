@@ -18,8 +18,9 @@
  * Default toolbar component extensions (`gh-component`) for the global header.
  *
  * Heavy UI uses blueprint `loader` (ExtensionBoundary.lazyComponent).
- * Data-driven items (self-service) omit loader and let the blueprint lazy-load
- * HeaderIconButton.
+ * Default on-mount widgets all `import()` `onMountHeaderBundle` so they share one
+ * async chunk. Data-driven items (self-service) omit loader and let the
+ * blueprint lazy-load HeaderIconButton from that same module.
  *
  * @internal
  */
@@ -32,9 +33,7 @@ export const companyLogoExtension = GlobalHeaderComponentBlueprint.make({
   params: {
     priority: 200,
     loader: async () => {
-      const { CompanyLogo } = await import(
-        '../components/CompanyLogo/CompanyLogo'
-      );
+      const { CompanyLogo } = await import('../components/onMountHeaderBundle');
       return () => <CompanyLogo to="/" />;
     },
   },
@@ -47,9 +46,7 @@ export const searchExtension = GlobalHeaderComponentBlueprint.make({
     priority: 100,
     layout: { flexGrow: 1 },
     loader: () =>
-      import('../components/SearchComponent/SearchComponent').then(
-        m => m.SearchComponent,
-      ),
+      import('../components/onMountHeaderBundle').then(m => m.SearchComponent),
   },
 });
 
@@ -59,7 +56,8 @@ export const spacerExtension = GlobalHeaderComponentBlueprint.make({
   params: {
     priority: 99,
     layout: { flexGrow: 0 },
-    loader: () => import('../components/Spacer/Spacer').then(m => m.Spacer),
+    loader: () =>
+      import('../components/onMountHeaderBundle').then(m => m.Spacer),
   },
 });
 
@@ -81,9 +79,7 @@ export const starredDropdownExtension = GlobalHeaderComponentBlueprint.make({
   params: {
     priority: 85,
     loader: () =>
-      import('../components/HeaderDropdownComponent/StarredDropdown').then(
-        m => m.StarredDropdown,
-      ),
+      import('../components/onMountHeaderBundle').then(m => m.StarredDropdown),
   },
 });
 
@@ -94,7 +90,7 @@ export const applicationLauncherDropdownExtension =
     params: {
       priority: 82,
       loader: () =>
-        import('../components/ApplicationLauncherDropdown').then(
+        import('../components/onMountHeaderBundle').then(
           m => m.ApplicationLauncherDropdown,
         ),
     },
@@ -106,7 +102,7 @@ export const helpDropdownExtension = GlobalHeaderComponentBlueprint.make({
   params: {
     priority: 80,
     loader: () =>
-      import('../components/HelpDropdown').then(m => m.HelpDropdown),
+      import('../components/onMountHeaderBundle').then(m => m.HelpDropdown),
   },
 });
 
@@ -116,7 +112,7 @@ export const notificationButtonExtension = GlobalHeaderComponentBlueprint.make({
   params: {
     priority: 70,
     loader: () =>
-      import('../components/NotificationButton/NotificationButton').then(
+      import('../components/onMountHeaderBundle').then(
         m => m.NotificationButton,
       ),
   },
@@ -127,7 +123,8 @@ export const dividerExtension = GlobalHeaderComponentBlueprint.make({
   name: 'divider',
   params: {
     priority: 50,
-    loader: () => import('../components/Divider/Divider').then(m => m.Divider),
+    loader: () =>
+      import('../components/onMountHeaderBundle').then(m => m.Divider),
   },
 });
 
@@ -137,6 +134,6 @@ export const profileDropdownExtension = GlobalHeaderComponentBlueprint.make({
   params: {
     priority: 10,
     loader: () =>
-      import('../components/ProfileDropdown').then(m => m.ProfileDropdown),
+      import('../components/onMountHeaderBundle').then(m => m.ProfileDropdown),
   },
 });

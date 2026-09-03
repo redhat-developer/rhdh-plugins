@@ -18,7 +18,7 @@ import { render, screen } from '@testing-library/react';
 import { ConfigReader } from '@backstage/config';
 import { readConfigComponents } from './readConfigComponents';
 
-jest.mock('../components/HeaderIconButton/HeaderIconButton', () => ({
+jest.mock('../components/onMountHeaderBundle', () => ({
   HeaderIconButton: ({ title, to }: { title: string; to: string }) => (
     <a href={to} aria-label={title} />
   ),
