@@ -314,3 +314,69 @@ export const aggregatedCardWithAvgOpenPrsWidget = HomePageWidgetBlueprint.make({
     )),
   },
 });
+
+/**
+ * NFS widget: AggregatedCardWithAvgDeploymentFrequency (scalar sparkline).
+ */
+export const aggregatedCardWithAvgDeploymentFrequencyWidget =
+  HomePageWidgetBlueprint.make({
+    name: 'scorecard-avg-deployment-frequency',
+    params: {
+      name: 'AggregatedCardWithAvgDeploymentFrequency',
+      title: 'Scorecard: Average deployment frequency',
+      layout: defaultCardLayout,
+      componentProps: {
+        Renderer: BorderlessHomeWidgetRenderer,
+      },
+      components: lazyScorecardWidget(
+        ScorecardHomepageCardWithProvider => () =>
+          (
+            <ScorecardHomepageCardWithProvider aggregationId="avgDeploymentFrequency" />
+          ),
+      ),
+    },
+  });
+
+/**
+ * NFS widget: AggregatedCardWithAvgChangeFailureRate (scalar sparkline).
+ */
+export const aggregatedCardWithAvgChangeFailureRateWidget =
+  HomePageWidgetBlueprint.make({
+    name: 'scorecard-avg-change-failure-rate',
+    params: {
+      name: 'AggregatedCardWithAvgChangeFailureRate',
+      title: 'Scorecard: Average change failure rate',
+      layout: defaultCardLayout,
+      componentProps: {
+        Renderer: BorderlessHomeWidgetRenderer,
+      },
+      components: lazyScorecardWidget(
+        ScorecardHomepageCardWithProvider => () =>
+          (
+            <ScorecardHomepageCardWithProvider aggregationId="avgChangeFailureRate" />
+          ),
+      ),
+    },
+  });
+
+/**
+ * NFS widget: AggregatedCardWithAvgMedianLeadTimeForChanges (scalar sparkline).
+ */
+export const aggregatedCardWithAvgMedianLeadTimeForChangesWidget =
+  HomePageWidgetBlueprint.make({
+    name: 'scorecard-avg-median-lead-time-for-changes',
+    params: {
+      name: 'AggregatedCardWithAvgMedianLeadTimeForChanges',
+      title: 'Scorecard: Average median lead time for changes',
+      layout: defaultCardLayout,
+      componentProps: {
+        Renderer: BorderlessHomeWidgetRenderer,
+      },
+      components: lazyScorecardWidget(
+        ScorecardHomepageCardWithProvider => () =>
+          (
+            <ScorecardHomepageCardWithProvider aggregationId="avgMedianLeadTimeForChanges" />
+          ),
+      ),
+    },
+  });

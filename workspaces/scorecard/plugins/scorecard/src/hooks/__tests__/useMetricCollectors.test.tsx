@@ -37,7 +37,7 @@ describe('useMetricCollectors', () => {
 
   const collectors: CollectorMetadata[] = [
     {
-      id: 'github:deploymentWorkflowRuns',
+      id: 'github:doraDeploymentWorkflowRuns',
       description: 'Collects deployments from GitHub Actions.',
     },
   ];

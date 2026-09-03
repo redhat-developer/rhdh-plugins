@@ -20,7 +20,6 @@ import Masonry from '@mui/lab/Masonry';
 
 import { ScorecardLayoutProps } from '../../blueprints/ScorecardLayoutBlueprint';
 import { useScorecards } from '../../hooks/useScorecards';
-import { useTranslation } from '../../hooks/useTranslation';
 import NoScorecardsState from '../Common/NoScorecardsState';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
 import { CardLoading } from '../Common/CardLoading';
@@ -29,6 +28,7 @@ import { dedupeMetricsById } from '../MetricGroupCard/thresholdBucketUtils';
 import { EntityScorecardContent } from './EntityScorecardContent';
 import { EntityMetricCard } from './EntityMetricCard';
 import { getTranslatedTextWithFallback } from '../../utils';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export const ScorecardEntityContentGridView = ({
   groups,

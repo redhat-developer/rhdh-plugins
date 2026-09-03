@@ -102,11 +102,15 @@ const SPARKLINE_AGGREGATION_IDS = new Set([
   'avgMedianLeadTimeForChanges',
 ]);
 
-const DORA_COLLECTORS = ['github:deploymentWorkflowRuns', 'jira:incidents'];
+const DORA_COLLECTORS = [
+  'github:doraDeploymentWorkflowRuns',
+  'jira:doraIncidents',
+];
 
 const COLLECTOR_DESCRIPTIONS: Record<string, string> = {
-  'github:deploymentWorkflowRuns': 'Collects deployments from GitHub Actions.',
-  'jira:incidents': 'Collects Jira incidents.',
+  'github:doraDeploymentWorkflowRuns':
+    'Collects deployments from GitHub Actions.',
+  'jira:doraIncidents': 'Collects Jira incidents.',
 };
 
 const lastNumericPoint = (
