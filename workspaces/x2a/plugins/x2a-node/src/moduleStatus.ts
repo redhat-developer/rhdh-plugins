@@ -49,9 +49,7 @@ export function calculateModuleStatus({
     return { status: 'cancelled', errorDetails: undefined };
   }
 
-  const status: ModuleStatus = JobStatus.from(latestPhaseJob.status).isStale()
-    ? 'success'
-    : (latestPhaseJob.status as ModuleStatus);
+  const status: ModuleStatus = latestPhaseJob.status as ModuleStatus;
 
   return { status, errorDetails: latestPhaseJob.errorDetails };
 }

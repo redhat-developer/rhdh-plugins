@@ -614,6 +614,52 @@ describe('collectArtifacts routes', () => {
       expect(mockDeps.x2aDatabase.markJobsAsStale).not.toHaveBeenCalled();
     });
 
+    it('does not mark errored downstream jobs as stale', async () => {
+      const job = {
+        id: jobId,
+        projectId,
+        moduleId,
+        phase: 'analyze',
+        status: 'running',
+        startedAt: new Date(),
+        k8sJobName: 'k8s-job',
+        callbackToken,
+        artifacts: [],
+      } as any;
+
+      const erroredMigrateJob = {
+        id: 'migrate-job-id',
+        projectId,
+        moduleId,
+        phase: 'migrate' as const,
+        status: 'error',
+        artifacts: [],
+      };
+
+      mockDeps.x2aDatabase.getJob.mockResolvedValue(job);
+      mockDeps.kubeService.getJobLogs.mockResolvedValue('logs');
+      mockDeps.x2aDatabase.updateJob.mockResolvedValue(undefined);
+      mockDeps.x2aDatabase.listJobs
+        .mockResolvedValueOnce([]) // adversarial-analyze
+        .mockResolvedValueOnce([erroredMigrateJob]) // migrate — error, should not be staled
+        .mockResolvedValueOnce([]) // adversarial-migrate
+        .mockResolvedValueOnce([]); // publish
+      mockDeps.x2aDatabase.markJobsAsStale.mockResolvedValue(undefined);
+
+      const requestBody = { status: 'success', jobId, artifacts: [] };
+      const signature = signRequestBody(requestBody, callbackToken);
+
+      const res = await request(app)
+        .post(
+          `/projects/${projectId}/collectArtifacts?phase=analyze&moduleId=${moduleId}`,
+        )
+        .set('X-Callback-Signature', signature)
+        .send(requestBody);
+
+      expect(res.status).toBe(200);
+      expect(mockDeps.x2aDatabase.markJobsAsStale).not.toHaveBeenCalled();
+    });
+
     it('does not invalidate downstream jobs when phase fails', async () => {
       const job = {
         id: jobId,

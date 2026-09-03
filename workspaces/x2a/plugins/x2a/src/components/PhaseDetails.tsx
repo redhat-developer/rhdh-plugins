@@ -75,9 +75,9 @@ const PhaseRunAction = ({
   const { t } = useTranslation();
   const classes = useStyles();
 
-  const previousRunSucceeded =
-    !!phase?.status && JobStatus.from(phase.status).isSuccess();
   const isStale = !!phase?.status && JobStatus.from(phase.status).isStale();
+  const previousRunSucceeded =
+    !!phase?.status && (JobStatus.from(phase.status).isSuccess() || isStale);
   if (!onRunPhase) {
     return null;
   }

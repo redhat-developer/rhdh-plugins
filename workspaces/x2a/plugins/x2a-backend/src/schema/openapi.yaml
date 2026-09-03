@@ -1018,6 +1018,7 @@ components:
         - error
         - cancelled
         - removed
+        - stale
 
     ProjectStatusState:
       type: string

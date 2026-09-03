@@ -81,17 +81,20 @@ function createJobsTable(
 async function recreateJobsTableSqlite(
   knex: Knex,
   statuses: string[],
+  staging: string,
 ): Promise<void> {
-  // Use a unique staging name — SQLite index names are global and the prior
-  // adversarial migration left behind "jobs_new_*" index names when it
-  // renamed jobs_new → jobs, so we cannot reuse that staging table name.
-  const staging = 'jobs_status_expanded';
+  // staging must be unique across all migrations — SQLite index names are
+  // global and survive table renames, so reusing a prior staging name causes
+  // an "index already exists" error on the next recreate.
   await knex.schema.raw('PRAGMA foreign_keys = OFF');
   try {
     await knex.schema.createTable(staging, table =>
       createJobsTable(table, statuses),
     );
-    await knex.schema.raw(`INSERT INTO ${staging} SELECT * FROM jobs`);
+    await knex.schema.raw(
+      `INSERT INTO ${staging} (id, log, started_at, finished_at, status, phase, error_details, telemetry, k8s_job_name, callback_token, commit_id, project_id, module_id)` +
+        ` SELECT id, log, started_at, finished_at, status, phase, error_details, telemetry, k8s_job_name, callback_token, commit_id, project_id, module_id FROM jobs`,
+    );
     await knex.schema.dropTable('jobs');
     await knex.schema.raw(`ALTER TABLE ${staging} RENAME TO jobs`);
   } finally {
@@ -109,7 +112,11 @@ export async function up(knex: Knex): Promise<void> {
   const client = knex.client.config.client;
 
   if (client === 'better-sqlite3') {
-    await recreateJobsTableSqlite(knex, EXTENDED_STATUSES);
+    await recreateJobsTableSqlite(
+      knex,
+      EXTENDED_STATUSES,
+      'jobs_status_expanded',
+    );
   } else {
     await knex.raw(
       `ALTER TABLE jobs DROP CONSTRAINT IF EXISTS jobs_status_check`,
@@ -126,10 +133,17 @@ export async function up(knex: Knex): Promise<void> {
  * @public
  */
 export async function down(knex: Knex): Promise<void> {
+  // Stale rows must be converted before reinstating the constraint;
+  await knex('jobs').where('status', 'stale').update({ status: 'success' });
+
   const client = knex.client.config.client;
 
   if (client === 'better-sqlite3') {
-    await recreateJobsTableSqlite(knex, ORIGINAL_STATUSES);
+    await recreateJobsTableSqlite(
+      knex,
+      ORIGINAL_STATUSES,
+      'jobs_status_contracted',
+    );
   } else {
     await knex.raw(
       `ALTER TABLE jobs DROP CONSTRAINT IF EXISTS jobs_status_check`,

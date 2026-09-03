@@ -540,7 +540,8 @@ export type ModuleStatus =
   | 'success'
   | 'error'
   | 'cancelled'
-  | 'removed';
+  | 'removed'
+  | 'stale';
 
 // @public
 export function normalizeRepoUrl(url: string): string;

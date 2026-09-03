@@ -5,4 +5,4 @@
 '@red-hat-developer-hub/backstage-plugin-x2a': patch
 ---
 
-invaldating stale jobs - jobs that had a former phase ran again
+Downstream phase jobs are automatically marked as stale when an upstream phase completes successfully.

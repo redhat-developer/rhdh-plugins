@@ -1494,7 +1494,8 @@ export const spec = {
           "success",
           "error",
           "cancelled",
-          "removed"
+          "removed",
+          "stale"
         ]
       },
       "ProjectStatusState": {

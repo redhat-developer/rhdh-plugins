@@ -408,19 +408,13 @@ async function processJobCompletion(
   });
 
   if (jobStatus.isSuccess()) {
-    try {
-      await invalidateDownstreamPhases(
-        phase,
-        projectId,
-        job.moduleId,
-        x2aDatabase,
-        logger,
-      );
-    } catch (err) {
-      logger.error(
-        `Failed to invalidate downstream phases for job ${validatedRequest.jobId}: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
+    await invalidateDownstreamPhases(
+      phase,
+      projectId,
+      job.moduleId,
+      x2aDatabase,
+      logger,
+    );
   }
 
   return { message: 'Artifacts collected successfully' };
