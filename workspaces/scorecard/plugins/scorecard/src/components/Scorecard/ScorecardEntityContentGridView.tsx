@@ -16,27 +16,22 @@
 
 import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ResponseErrorPanel } from '@backstage/core-components';
-import Box from '@mui/material/Box';
 import Masonry from '@mui/lab/Masonry';
 
 import { ScorecardLayoutProps } from '../../blueprints/ScorecardLayoutBlueprint';
 import { useScorecards } from '../../hooks/useScorecards';
-import { useTranslation } from '../../hooks/useTranslation';
 import NoScorecardsState from '../Common/NoScorecardsState';
 import PermissionRequiredState from '../Common/PermissionRequiredState';
 import { CardLoading } from '../Common/CardLoading';
 import { MetricGroupCard } from '../MetricGroupCard';
 import { dedupeMetricsById } from '../MetricGroupCard/thresholdBucketUtils';
 import { EntityScorecardContent } from './EntityScorecardContent';
-import Scorecard from './Scorecard';
-import { getStatusConfig, resolveMetricTranslation } from '../../utils';
-import { hasMetricDataError, hasThresholdError } from '../../utils/statusUtils';
+import { EntityMetricCard } from './EntityMetricCard';
 
 export const ScorecardEntityContentGridView = ({
   groups,
 }: ScorecardLayoutProps) => {
   const { data: scorecards, isLoading, error } = useScorecards();
-  const { t } = useTranslation();
 
   if (isLoading) return <CardLoading />;
 
@@ -63,10 +58,8 @@ export const ScorecardEntityContentGridView = ({
         .filter((m): m is MetricResult => m !== undefined),
     );
 
-    if (metricsInOrder.length > 0) {
-      groupedMetrics.set(groupKey, metricsInOrder);
-      metricsInOrder.forEach(m => groupedMetricIds.add(m.id));
-    }
+    metricsInOrder.forEach(metric => groupedMetricIds.add(metric.id));
+    groupedMetrics.set(groupKey, metricsInOrder);
   });
 
   const ungroupedMetrics = scorecards.filter(m => !groupedMetricIds.has(m.id));
@@ -87,45 +80,9 @@ export const ScorecardEntityContentGridView = ({
     })
     .filter(Boolean);
 
-  const ungroupedCards = ungroupedMetrics.map((metric: MetricResult) => {
-    const metricDataError = hasMetricDataError(metric);
-    const thresholdErrorState = hasThresholdError(metric);
-    const statusConfig = getStatusConfig({
-      evaluation: metric.result?.thresholdResult?.evaluation,
-      thresholdStatus: metric.result?.thresholdResult?.status,
-      metricStatus: metric.status,
-      thresholdRules: metric.result?.thresholdResult?.definition?.rules,
-    });
-
-    return (
-      <Box key={metric.id} sx={{ height: 'fit-content' }}>
-        <Scorecard
-          cardTitle={resolveMetricTranslation(
-            t,
-            metric.id,
-            'title',
-            metric.metadata.title,
-          )}
-          description={resolveMetricTranslation(
-            t,
-            metric.id,
-            'description',
-            metric.metadata.description,
-          )}
-          statusColor={statusConfig.color}
-          statusIcon={statusConfig.icon ?? ''}
-          value={metric.result?.value}
-          metricType={metric.metadata.type}
-          thresholds={metric.result?.thresholdResult}
-          unit={metric.metadata.unit}
-          isMetricDataError={metricDataError}
-          metricDataError={metric?.error}
-          isThresholdError={thresholdErrorState}
-          thresholdError={metric.result?.thresholdResult?.error}
-        />
-      </Box>
-    );
-  });
+  const ungroupedCards = ungroupedMetrics.map((metric: MetricResult) => (
+    <EntityMetricCard key={metric.id} metric={metric} />
+  ));
 
   return (
     <Masonry columns={{ xs: 1, sm: 2, lg: 3 }} spacing={2} sequential>

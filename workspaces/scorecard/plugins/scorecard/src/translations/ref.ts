@@ -216,6 +216,12 @@ export const scorecardMessages = {
     unknownPlugin: 'Unknown',
     statusTooltip:
       'Value {{value}} matches threshold {{status}} {{expression}}',
+    collectorStatusTooltip:
+      'This collector provides input data only. The DORA metric value is calculated from collectors and shown on the scorecard card.',
+    collectorEmptyValue: '--',
+    collectorUnavailableStatus: 'N/A',
+    pluginGithub: 'GitHub',
+    pluginJira: 'Jira',
     columns: {
       plugin: 'PLUGIN',
       check: 'CHECK',
