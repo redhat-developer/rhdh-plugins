@@ -69,6 +69,10 @@ describe('createRouter', () => {
       mockEventBatchProcessor as any,
       mockServices.rootConfig.mock(),
       mockAuditor as any,
+      mockServices.auth.mock(),
+      mockServices.httpAuth.mock(),
+      mockServices.discovery.mock(),
+      mockServices.logger.mock(),
     );
 
     const router = await createRouter({

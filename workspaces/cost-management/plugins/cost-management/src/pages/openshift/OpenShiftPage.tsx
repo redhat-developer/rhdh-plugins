@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useMemo, useState, useCallback, useRef } from 'react';
+import { useMemo, useState, useCallback, useRef } from 'react';
 import type { ExportFormat } from '@red-hat-developer-hub/plugin-cost-management-common/clients';
 import {
   Table,

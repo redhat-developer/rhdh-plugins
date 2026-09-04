@@ -85,6 +85,10 @@ proxy:
       target: 'http://localhost:12345'
       allowedMethods: ['GET', 'POST']
       allowedHeaders: ['test-header']
+    '/dummyjson':
+      target: 'https://dummyjson.com'
+      changeOrigin: true
+      credentials: 'dangerously-allow-unauthenticated'
 
 quay:
   uiUrl: 'https://quay.io'

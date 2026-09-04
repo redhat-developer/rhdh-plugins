@@ -4,5 +4,5 @@
 
 | Name                    | Location          | Severity |
 | :---------------------- | :---------------- | :------- |
-| @backstage/core-app-api | package.json:82:6 | error    |
-| msw                     | package.json:90:6 | error    |
+| @backstage/core-app-api | package.json:84:6 | error    |
+| msw                     | package.json:95:6 | error    |
