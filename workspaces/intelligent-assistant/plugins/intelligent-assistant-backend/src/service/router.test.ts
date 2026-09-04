@@ -1800,6 +1800,10 @@ describe('intelligent-assistant router tests', () => {
     const VALID_JPEG_B64 = Buffer.from([
       0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10,
     ]).toString('base64');
+    // "RIFF" + 4-byte size + "WEBP"
+    const VALID_WEBP_B64 = Buffer.from([
+      0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50,
+    ]).toString('base64');
 
     beforeEach(() => {
       ModelCapabilitiesCache.clear();
@@ -1826,7 +1830,7 @@ describe('intelligent-assistant router tests', () => {
 
       expect(response.statusCode).toEqual(400);
       expect(response.body.error).toContain(
-        'This model does not support JPEG images',
+        'This model does not support image attachments',
       );
     });
 
@@ -1850,6 +1854,53 @@ describe('intelligent-assistant router tests', () => {
         });
 
       expect(response.statusCode).toEqual(200);
+    });
+
+    it('accepts WebP attachments when model supports vision', async () => {
+      ModelCapabilitiesCache.set('test-server/gpt-4o', true);
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/query')
+        .send({
+          model: 'gpt-4o',
+          provider: 'test-server',
+          query: 'What is this?',
+          attachments: [
+            {
+              attachment_type: 'image',
+              content_type: 'image/webp',
+              content: VALID_WEBP_B64,
+            },
+          ],
+        });
+
+      expect(response.statusCode).toEqual(200);
+    });
+
+    it('rejects image attachments with invalid magic bytes', async () => {
+      ModelCapabilitiesCache.set('test-server/gpt-4o', true);
+
+      const backendServer = await startBackendServer();
+      const response = await request(backendServer)
+        .post('/api/intelligent-assistant/v1/query')
+        .send({
+          model: 'gpt-4o',
+          provider: 'test-server',
+          query: 'What is this?',
+          attachments: [
+            {
+              attachment_type: 'image',
+              content_type: 'image/webp',
+              content: Buffer.from('not an image').toString('base64'),
+            },
+          ],
+        });
+
+      expect(response.statusCode).toEqual(400);
+      expect(response.body.error).toContain(
+        'does not contain a valid JPEG or WebP file',
+      );
     });
 
     it('accepts empty attachments regardless of vision support', async () => {
