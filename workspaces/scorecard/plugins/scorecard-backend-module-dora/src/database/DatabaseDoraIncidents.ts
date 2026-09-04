@@ -58,7 +58,7 @@ export class DatabaseDoraIncidents implements DoraIncidentsStore {
         'collector_input_hash',
         'original_incident_id',
       ])
-      .merge(['created_at', 'updated_at', 'resolution_at']);
+      .merge(['updated_at', 'resolution_at']);
   }
 
   async readByEntityCollectorAndWindow(

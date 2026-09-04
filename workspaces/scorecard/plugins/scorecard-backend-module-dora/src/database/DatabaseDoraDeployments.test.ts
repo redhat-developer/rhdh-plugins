@@ -75,7 +75,7 @@ describe('DatabaseDoraDeployments', () => {
     );
 
     it.each(databases.eachSupportedId())(
-      'merges updates on natural key conflict - %p',
+      'ignores conflicts on the natural key, preserving the immutable first row - %p',
       async databaseId => {
         const { deployments } = await createTestDatabase(
           await databases.init(databaseId),
@@ -102,8 +102,8 @@ describe('DatabaseDoraDeployments', () => {
             collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-1',
             commitSha: 'sha-1-updated',
-            environment: 'production',
-            createdAt: new Date('2026-06-10T10:00:00.000Z'),
+            environment: 'staging',
+            createdAt: new Date('2026-06-12T15:00:00.000Z'),
           },
         ]);
 
@@ -116,7 +116,12 @@ describe('DatabaseDoraDeployments', () => {
         );
 
         expect(rows).toHaveLength(1);
-        expect(rows[0].commitSha).toBe('sha-1-updated');
+        // Preserve immutable historical deployment data
+        expect(rows[0].commitSha).toBe('sha-1');
+        expect(rows[0].environment).toBe('production');
+        expect(rows[0].createdAt.toISOString()).toBe(
+          '2026-06-10T10:00:00.000Z',
+        );
       },
     );
 
@@ -432,7 +437,7 @@ describe('DatabaseDoraDeployments', () => {
             collectorId,
             collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-1',
-            commitSha: 'sha-1-updated',
+            commitSha: 'sha-1',
             environment: 'production',
             createdAt: new Date('2026-06-10T10:00:00.000Z'),
           },
@@ -445,7 +450,6 @@ describe('DatabaseDoraDeployments', () => {
           new Date('2026-06-01T00:00:00.000Z'),
           new Date('2026-06-30T00:00:00.000Z'),
         );
-        expect(afterUpsert.commitSha).toBe('sha-1-updated');
         expect(afterUpsert.pullRequestsSyncedAt).toEqual(syncedAt);
       },
     );

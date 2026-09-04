@@ -59,7 +59,9 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
         'collector_input_hash',
         'original_deployment_id',
       ])
-      .merge(['commit_sha', 'environment', 'created_at']);
+      // All columns are immutable historical facts for a given deployment
+      // created_at: we keep attributed to when the deployment first succeeded
+      .ignore();
   }
 
   async readByEntityCollectorAndWindow(

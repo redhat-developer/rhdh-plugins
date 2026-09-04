@@ -111,7 +111,7 @@ describe('DatabaseDoraPullRequests', () => {
     );
 
     it.each(databases.eachSupportedId())(
-      'merges updates on natural key conflict - %p',
+      'ignores conflicts on the natural key, preserving the immutable first row - %p',
       async databaseId => {
         const { deployments, pullRequests } = await createTestDatabase(
           await databases.init(databaseId),
@@ -149,8 +149,9 @@ describe('DatabaseDoraPullRequests', () => {
         );
 
         expect(rows).toHaveLength(1);
+        // Preserve immutable historical PR data
         expect(rows[0].firstCommitAt.toISOString()).toBe(
-          '2026-06-09T12:00:00.000Z',
+          '2026-06-09T10:00:00.000Z',
         );
       },
     );

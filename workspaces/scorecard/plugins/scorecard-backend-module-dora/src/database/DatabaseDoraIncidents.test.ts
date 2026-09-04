@@ -93,14 +93,16 @@ describe('DatabaseDoraIncidents', () => {
             resolutionAt: null,
           },
         ]);
-        // Conflict on (catalog_entity_ref, collector_id, collector_input_hash, original_incident_id) for updatedAt and resolutionAt
+        // Conflict on (catalog_entity_ref, collector_id, collector_input_hash,
+        // original_incident_id): updatedAt and resolutionAt are merged, but a
+        // (regressed) createdAt must not overwrite the immutable original.
         await incidents.upsert([
           {
             catalogEntityRef: entityRef,
             collectorId,
             collectorInputHash: EMPTY_INPUT_HASH,
             originalIncidentId: 'INC-1',
-            createdAt: new Date('2026-06-01T10:00:00.000Z'),
+            createdAt: new Date('2026-06-05T09:00:00.000Z'),
             updatedAt: new Date('2026-06-02T12:00:00.000Z'),
             resolutionAt: new Date('2026-06-02T12:00:00.000Z'),
           },
@@ -120,6 +122,9 @@ describe('DatabaseDoraIncidents', () => {
         );
         expect(rows[0].resolutionAt?.toISOString()).toBe(
           '2026-06-02T12:00:00.000Z',
+        );
+        expect(rows[0].createdAt.toISOString()).toBe(
+          '2026-06-01T10:00:00.000Z',
         );
       },
     );

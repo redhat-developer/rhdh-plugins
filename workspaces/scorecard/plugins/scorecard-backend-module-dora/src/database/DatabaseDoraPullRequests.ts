@@ -62,7 +62,8 @@ export class DatabaseDoraPullRequests implements DoraPullRequestsStore {
         'original_pr_id',
         'deployment_id',
       ])
-      .merge(['first_commit_at']);
+      // All columns are immutable historical facts for a given PR
+      .ignore();
   }
 
   async readByEntityCollectorAndDeployment(
