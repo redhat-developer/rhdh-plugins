@@ -228,6 +228,7 @@ const mockScalarAggregationScorecard: AggregatedMetricResult = {
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
     entitiesConsidered: 4,
     calculationErrorCount: 0,
+    aggregationChartDisplayColor: 'warning.main',
   },
 };
 

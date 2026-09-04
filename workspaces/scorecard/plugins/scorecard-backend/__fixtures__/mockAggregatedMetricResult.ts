@@ -53,6 +53,7 @@ export const mockScalarAggregationResult: ScalarAggregationResult = {
   timestamp: '2025-01-01T10:30:00.000Z',
   entitiesConsidered: 2,
   calculationErrorCount: 0,
+  aggregationChartDisplayColor: 'warning.main',
 };
 
 export const mockWeightedStatusScoreAggregationResult: WeightedStatusScoreAggregationResult =

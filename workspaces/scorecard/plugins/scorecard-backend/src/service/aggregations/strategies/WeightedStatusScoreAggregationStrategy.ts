@@ -18,7 +18,6 @@ import {
   type AggregatedMetric,
   type WeightedStatusScoreAggregationResult,
   type AggregatedMetricResult,
-  type ThresholdConfig,
   ThresholdRule,
   aggregationTypes,
   type StatusScoreAggregationOption,
@@ -29,7 +28,7 @@ import type { AggregatedMetricLoader } from '../AggregatedMetricLoader';
 import type { AggregationOptions } from '../types';
 import type { AggregationStrategy } from './types';
 import { LoggerService } from '@backstage/backend-plugin-api';
-import { ThresholdEvaluator } from '../../../threshold/ThresholdEvaluator';
+import { getRequiredAggregationChartDisplayColor } from '../../../utils/aggregation/getAggregationChartDisplayColor';
 
 export class WeightedStatusScoreAggregationStrategy
   implements AggregationStrategy
@@ -77,16 +76,14 @@ export class WeightedStatusScoreAggregationStrategy
         weightedSum,
       );
 
-    const aggregationChartDisplayColor = this.getAggregationChartDisplayColor(
-      weightedStatusScore,
-      headlineThresholds,
-    );
-
-    if (!aggregationChartDisplayColor) {
-      throw new Error(
-        `The color for percentage '${weightedStatusScore}' metric '${metric.id}' is not configured. Check the 'scorecard.aggregationKPIs.${aggregationConfig.id}.options.thresholds' configuration.`,
-      );
-    }
+    const aggregationChartDisplayColor =
+      aggregatedMetric.total > 0
+        ? getRequiredAggregationChartDisplayColor(
+            weightedStatusScore,
+            headlineThresholds,
+            `The color for percentage '${weightedStatusScore}' metric '${metric.id}' is not configured. Check the 'scorecard.aggregationKPIs.${aggregationConfig.id}.options.thresholds' configuration.`,
+          )
+        : null;
 
     const result = {
       total: aggregatedMetric.total,
@@ -129,21 +126,6 @@ export class WeightedStatusScoreAggregationStrategy
       weightedSum += count * (score ?? 0);
     }
     return weightedSum;
-  }
-
-  private getAggregationChartDisplayColor(
-    scorePercent: number,
-    thresholds: ThresholdConfig,
-  ): string | undefined {
-    const thresholdEvaluator = new ThresholdEvaluator();
-
-    const matchedThresholdKey = thresholdEvaluator.getFirstMatchingThreshold(
-      scorePercent,
-      'number',
-      thresholds,
-    );
-
-    return thresholds.rules.find(r => r.key === matchedThresholdKey)?.color;
   }
 
   private prepareWeightedStatusScoreValues(

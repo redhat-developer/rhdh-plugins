@@ -46,3 +46,28 @@ export const DEFAULT_WEIGHTED_STATUS_SCORE_KPI_RESULT_THRESHOLDS: ThresholdConfi
       },
     ],
   };
+
+/**
+ * Default applied by `ScalarAggregationStrategy` when `options.thresholds` is omitted
+ * from app-config. Higher value = better. Evaluated in order; first match wins.
+ */
+export const DEFAULT_SCALAR_AGGREGATION_KPI_RESULT_THRESHOLDS: ThresholdConfig =
+  {
+    rules: [
+      {
+        key: 'success',
+        expression: '<10',
+        color: ScorecardThresholdRuleColors.SUCCESS,
+      },
+      {
+        key: 'warning',
+        expression: '10-50',
+        color: ScorecardThresholdRuleColors.WARNING,
+      },
+      {
+        key: 'error',
+        expression: '>50',
+        color: ScorecardThresholdRuleColors.ERROR,
+      },
+    ],
+  };

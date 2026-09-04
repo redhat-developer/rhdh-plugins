@@ -129,7 +129,11 @@ describe('ScalarAggregationStrategy', () => {
 
     expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
       metric,
-      { ...loadedScalarMetric, thresholds: DEFAULT_NUMBER_THRESHOLDS },
+      {
+        ...loadedScalarMetric,
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        aggregationChartDisplayColor: 'error.main',
+      },
       defaultAggregationConfig,
     );
   });
@@ -144,7 +148,64 @@ describe('ScalarAggregationStrategy', () => {
 
     expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
       metric,
-      { ...loadedScalarMetric, thresholds: mockHigherIsBetterThresholds },
+      {
+        ...loadedScalarMetric,
+        thresholds: mockHigherIsBetterThresholds,
+        aggregationChartDisplayColor: 'green',
+      },
+      aggregationConfig,
+    );
+  });
+
+  it('should throw when aggregation chart display color is not configured', async () => {
+    const aggregationConfigWithoutColors = mockScalarAggregationConfig(
+      aggregationTypes.sum,
+      {
+        id: 'totalOpenPrs',
+        metricId: metric.id,
+        options: {
+          thresholds: {
+            rules: [{ key: 'success', expression: '<10' }],
+          },
+        },
+      },
+    );
+
+    await expect(() =>
+      strategy.aggregate({
+        metric,
+        entityRefs,
+        thresholds: mockHigherIsBetterThresholds,
+        aggregationConfig: aggregationConfigWithoutColors,
+      }),
+    ).rejects.toThrow(
+      `The color for value '${loadedScalarMetric.value}' metric '${metric.id}' is not configured. Check the 'scorecard.aggregationKPIs.totalOpenPrs.options.thresholds' configuration.`,
+    );
+  });
+
+  it('should set aggregationChartDisplayColor to null when total is 0', async () => {
+    (loader.loadScalarMetricByEntityRefs as jest.Mock).mockResolvedValueOnce({
+      ...loadedScalarMetric,
+      value: 0,
+      total: 0,
+    });
+
+    await strategy.aggregate({
+      metric,
+      entityRefs,
+      thresholds: mockHigherIsBetterThresholds,
+      aggregationConfig,
+    });
+
+    expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+      metric,
+      {
+        ...loadedScalarMetric,
+        value: 0,
+        total: 0,
+        thresholds: mockHigherIsBetterThresholds,
+        aggregationChartDisplayColor: null,
+      },
       aggregationConfig,
     );
   });
@@ -200,7 +261,11 @@ describe('ScalarAggregationStrategy', () => {
 
     expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
       metric,
-      { ...loadedScalarMetric, thresholds: mockHigherIsBetterThresholds },
+      {
+        ...loadedScalarMetric,
+        thresholds: mockHigherIsBetterThresholds,
+        aggregationChartDisplayColor: 'green',
+      },
       aggregationConfig,
     );
   });
