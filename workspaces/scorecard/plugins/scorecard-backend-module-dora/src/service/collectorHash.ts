@@ -31,7 +31,8 @@ function canonicalize(value: JsonValue): string {
   // hash them identically as they are semantically the same config. Keep `null` distinct as it is an intentional config value.
   const keys = Object.keys(value)
     .filter(k => value[k] !== undefined)
-    .sort((a, b) => a.localeCompare(b));
+    // Locale-independent so hashes are stable across hosts.
+    .sort();
   return `{${keys
     .map(k => `${JSON.stringify(k)}:${canonicalize(value[k]!)}`)
     .join(',')}}`;

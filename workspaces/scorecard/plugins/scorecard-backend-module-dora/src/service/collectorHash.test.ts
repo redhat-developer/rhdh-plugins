@@ -29,6 +29,17 @@ describe('collectorInputHash', () => {
     );
   });
 
+  it('Locale independent sorting, including non-ASCII keys', () => {
+    // code-unit order is n, o, ñ.
+    const withNonAsciiKeys = { ñ: 1, o: 2, n: 3 };
+    expect(collectorInputHash(withNonAsciiKeys)).toBe(
+      collectorInputHash({ n: 3, o: 2, ñ: 1 }),
+    );
+    expect(collectorInputHash(withNonAsciiKeys)).toBe(
+      'd9048c725b16fa18d1f33b638ffe2aa39368dada2f12e779317455c7d84b0cfc',
+    );
+  });
+
   it('hashes nested objects and arrays including all JSON primitives', () => {
     expect(
       collectorInputHash({
