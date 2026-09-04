@@ -361,8 +361,8 @@ export class NotebookSurfacePage {
   }
 
   deleteDocumentConfirmButton(): Locator {
-    return this.deleteDocumentConfirmDialog().locator('button', {
-      hasText: this.t['notebook.document.delete.action'],
+    return this.deleteDocumentConfirmDialog().getByRole('button', {
+      name: this.t['notebook.document.delete.action'],
       exact: true,
     });
   }
@@ -662,23 +662,17 @@ export class NotebookSurfacePage {
     const toggle = this.compactHeaderSidebarToggleButton();
     await expect(toggle).toBeVisible();
 
-    const initialLabel = await toggle.getAttribute('aria-label');
-    await toggle.click();
-    await this.page.waitForTimeout(300);
-
-    const newLabel = await toggle.getAttribute('aria-label');
-    expect(newLabel).not.toBe(initialLabel);
-
     const collapseLabel = this.t['notebook.view.sidebar.collapse'];
     const expandLabel = this.t['notebook.view.sidebar.expand'];
-    const expectedLabel =
+    const initialLabel = await toggle.getAttribute('aria-label');
+    const flippedLabel =
       initialLabel === collapseLabel ? expandLabel : collapseLabel;
-    expect(newLabel).toBe(expectedLabel);
 
     await toggle.click();
-    await this.page.waitForTimeout(300);
-    const restoredLabel = await toggle.getAttribute('aria-label');
-    expect(restoredLabel).toBe(initialLabel);
+    await expect(toggle).toHaveAttribute('aria-label', flippedLabel);
+
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-label', initialLabel!);
   }
 
   /** Expand the resource panel via the compact header toggle when collapsed. */
@@ -706,8 +700,8 @@ export class NotebookSurfacePage {
   }
 
   async cancelDeleteDocumentConfirmation(): Promise<void> {
-    const cancel = this.deleteDocumentConfirmDialog().locator('button', {
-      hasText: this.t['common.cancel'],
+    const cancel = this.deleteDocumentConfirmDialog().getByRole('button', {
+      name: this.t['common.cancel'],
       exact: true,
     });
     await cancel.click({ force: true });

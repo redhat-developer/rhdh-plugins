@@ -65,12 +65,12 @@ export class NotebookAddDocumentModalPage {
             { count: stagedCount },
           )
         : this.t['notebook.upload.modal.addButtonEmpty'];
-    return this.dialog().locator('button', { hasText: label, exact: true });
+    return this.dialog().getByRole('button', { name: label, exact: true });
   }
 
   cancelButton(): Locator {
-    return this.dialog().locator('button', {
-      hasText: this.t['common.cancel'],
+    return this.dialog().getByRole('button', {
+      name: this.t['common.cancel'],
       exact: true,
     });
   }
