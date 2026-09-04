@@ -54,7 +54,8 @@
 - [ ] 6.5 Implement `rhdh.io/ai-catalog-ingested-at` annotation stamping at ingestion time
 - [ ] 6.6 Implement configuration validation at startup (reject invalid values, warn on unknown categories/connectors)
 - [ ] 6.7 Add unit tests for default-deny posture (global, per-category, per-connector)
-- [ ] 6.8 Persist policy-change timestamp (via `AdminConfigService.setOverride()`) when admin changes default posture; read in `AICatalogRBACProvider.refresh()` to compare against `rhdh.io/ai-catalog-ingested-at`
+- [ ] 6.8 Detect default-posture config changes on startup/reload in `AICatalogRBACProvider` (compare current `ai-catalog.rbac.defaultPolicy` and per-category/per-connector values against last-observed values persisted in provider state); persist the policy-change timestamp when they differ; read it in `refresh()` to compare against `rhdh.io/ai-catalog-ingested-at` (no `AdminConfigService.setOverride()` — posture is YAML-managed, see design Decision 4/5)
+- [ ] 6.9 Implement `ai-catalog.admin` bypass: users holding `ai-catalog.admin` skip default-deny (catch-all DENY) evaluation for `ai-catalog.asset.access` and see all assets regardless of posture (verified by 10.11; see default-deny-config spec)
 
 ## 7. Audit Logging (P1) — RHIDP-15277, RHIDP-15279, RHIDP-15280
 

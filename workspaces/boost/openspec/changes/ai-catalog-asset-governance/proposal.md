@@ -2,7 +2,7 @@
 
 ## Why
 
-Enterprise AI platforms expose heterogeneous AI assets (agents, skills, models, MCP servers) through a shared catalog. Without catalog-layer RBAC, all authenticated users see all asset details — including connection strings, configuration, and usage documentation — regardless of their role. RHDHPLAN-1508 specifies a graduated visibility model, version-level policy cascade, default-deny posture configuration, and audit logging ~~and an admin UI~~ so that organizations can govern AI asset visibility with the same rigor they apply to other RHDH catalog entities.
+Enterprise AI platforms expose heterogeneous AI assets (agents, skills, models, MCP servers) through a shared catalog. Without catalog-layer RBAC, all authenticated users see all asset details — including connection strings, configuration, and usage documentation — regardless of their role. RHDHPLAN-1508 specifies a graduated visibility model, version-level policy cascade, default-deny posture configuration, ~~an admin UI,~~ and audit logging so that organizations can govern AI asset visibility with the same rigor they apply to other RHDH catalog entities.
 
 Boost already implements 23 application-layer permissions for agent/tool lifecycle governance. This change adds the complementary catalog-layer permissions that control _who can see_ AI assets, not just _who can act on_ them.
 

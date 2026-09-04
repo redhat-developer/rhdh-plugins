@@ -85,7 +85,9 @@ The `ai-catalog.rbac.defaultPolicy: allow|deny` config key is read at ingestion 
 
 Per-category defaults use conditional rules scoped to `rhdh.io/ai-asset-category` annotation values. Per-connector defaults use conditional rules scoped to a source-connector annotation.
 
-**Key design choice:** The config setting affects only _subsequently ingested_ assets — existing assets retain their current policy state. This is implemented by tagging entities with an `rhdh.io/ai-catalog-ingested-at` annotation at ingestion time and having the conditional rule check this timestamp against a policy-change timestamp. The policy-change timestamp is persisted in the database (via `AdminConfigService.setOverride()`) when an admin changes the default posture, and read by `AICatalogRBACProvider` during `refresh()` to determine which entities are "new" relative to the last policy change. See task 6.8 in tasks.md.
+**Key design choice:** The config setting affects only _subsequently ingested_ assets — existing assets retain their current policy state. This is implemented by tagging entities with an `rhdh.io/ai-catalog-ingested-at` annotation at ingestion time and having the conditional rule compare this timestamp against a policy-change timestamp.
+
+Because the default posture is YAML-managed with no admin write path (Decision 5), the policy-change timestamp is derived by **config-change detection**, not by an admin action: on startup and on config reload, `AICatalogRBACProvider` compares the current `ai-catalog.rbac.defaultPolicy` (and the per-category / per-connector values) against the last-observed values it has persisted, and records the change time when they differ. It persists the last-observed values and the change timestamp in its own provider state (not via `AdminConfigService.setOverride()`, which is reserved for admin-driven overridable config) and reads the timestamp during `refresh()` to determine which entities are "new" relative to the last policy change. See task 6.8 in tasks.md.
 
 ### Decision 5: Policy management via the existing RBAC plugin UI — no new surface
 

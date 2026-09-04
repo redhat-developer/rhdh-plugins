@@ -14,10 +14,10 @@ Management actions on AI catalog RBAC configuration MUST emit audit events.
 
 #### Scenario: Default posture change event
 
-- **WHEN** an admin changes `ai-catalog.rbac.defaultPolicy` from `allow` to `deny` (or vice versa) ~~via the admin UI~~ via YAML configuration
+- **WHEN** a deployer changes `ai-catalog.rbac.defaultPolicy` from `allow` to `deny` (or vice versa) ~~via the admin UI~~ via YAML configuration, and `AICatalogRBACProvider` detects the change on startup or config reload (see design Decision 4)
 - **THEN** an audit event is emitted with:
   - `eventName`: `ai-catalog.rbac.posture-changed`
-  - `actor`: the admin's user entity ref
+  - `actor`: `system` (the change is detected from configuration, not from an interactive admin action)
   - `previousValue`: the old posture value
   - `newValue`: the new posture value
   - `scope`: `global` | `category:<name>` | `connector:<name>`

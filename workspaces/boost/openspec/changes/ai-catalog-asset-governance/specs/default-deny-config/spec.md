@@ -33,6 +33,13 @@ A configuration key MUST control the default visibility posture for newly ingest
 - **AND** existing assets retain their current visibility policies
 - **AND** the ingestion-time boundary is tracked via the `rhdh.io/ai-catalog-ingested-at` annotation
 
+#### Scenario: Ingestion-time boundary comparison
+
+- **WHEN** `AICatalogRBACProvider.refresh()` evaluates whether an entity is subject to a newly changed deny posture
+- **THEN** it compares the entity's `rhdh.io/ai-catalog-ingested-at` annotation against the last policy-change timestamp
+- **AND** the policy-change timestamp is derived by config-change detection on startup/reload (the provider records the change time when the persisted `ai-catalog.rbac.defaultPolicy` / per-category / per-connector values differ from the current YAML values — no admin write path; see design Decision 4)
+- **AND** entities ingested at or after the policy-change timestamp receive the catch-all DENY rule, while earlier-ingested entities retain their existing policies
+
 ### Requirement: Per-Category Default Posture
 
 Deployers MUST be able to configure different default postures per asset category.
