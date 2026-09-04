@@ -4,7 +4,7 @@
 
 RHDHPLAN-1508 defines the RBAC and Versioning Policy Model for AI catalog assets in RHDH. Boost's existing security layer provides 23 application-layer permissions governing agent/tool lifecycle transitions (`boost.agent.*`, `boost.tool.*`). The AI Catalog layer adds a complementary set of permissions governing _visibility_ — which users can discover AI assets and at what level of detail.
 
-The feasibility analysis (2026-07-07) confirmed all 7 original epics are implementable within the existing Backstage permission framework and RBAC plugin capabilities. Post-consolidation (2026-07-13), the scope reduced to 4 surviving epics with 6 stories under RHIDP-15270, plus 3 additional epics (RHIDP-15274, RHIDP-15277, RHIDP-15304).
+The feasibility analysis (2026-07-07) confirmed all 7 original epics are implementable within the existing Backstage permission framework and RBAC plugin capabilities. Post-consolidation (2026-07-13), the scope reduced to 3 surviving epics with 6 stories under RHIDP-15270, plus 2 additional epics (RHIDP-15274, RHIDP-15277). The RBAC Admin UI epic (RHIDP-15304) was subsequently cancelled — see the consolidation note below and Decision 5.
 
 This design covers the catalog-layer RBAC system. It is informed by:
 
@@ -15,7 +15,7 @@ This design covers the catalog-layer RBAC system. It is informed by:
 
 ## RHDHPLAN-1508 Consolidation (2026-07-13)
 
-> Post-consolidation, 4 epics remain with the following story distribution:
+> Post-consolidation, 3 epics remain with the following story distribution (RHIDP-15304 was later cancelled):
 >
 > - **RHIDP-15270** (Graduated Visibility) — 6 stories: RHIDP-15271, 15272, 15273, 15306, 15310, 15312
 > - **RHIDP-15274** (Version-Level Policy Cascade) — 1 story: RHIDP-15275
@@ -87,17 +87,17 @@ Per-category defaults use conditional rules scoped to `rhdh.io/ai-asset-category
 
 **Key design choice:** The config setting affects only _subsequently ingested_ assets — existing assets retain their current policy state. This is implemented by tagging entities with an `rhdh.io/ai-catalog-ingested-at` annotation at ingestion time and having the conditional rule check this timestamp against a policy-change timestamp. The policy-change timestamp is persisted in the database (via `AdminConfigService.setOverride()`) when an admin changes the default posture, and read by `AICatalogRBACProvider` during `refresh()` to determine which entities are "new" relative to the last policy change. See task 6.8 in tasks.md.
 
-### ~~Decision 5: Standalone admin page, not RBAC plugin extension~~
+### Decision 5: Policy management via the existing RBAC plugin UI — no new surface
 
-~~The AI Catalog RBAC admin UI is a standalone frontend page at `/ai-catalog/admin/rbac`, gated by `ai-catalog.admin`. It calls the RBAC REST API (23+ routes) directly for all policy CRUD operations.~~
+AI Catalog policy assignment uses the **existing RBAC plugin UI**. The three AI Catalog permissions (`ai-catalog.asset.access`, `ai-catalog.asset.access.usage-docs`, `ai-catalog.admin`) and the three conditional rules (Decision 7) appear in the RBAC admin UI's permission picker exactly like existing permissions, and are assigned to roles via the existing role-management screens — **with no new UI surface**, per RHDHPLAN-1508. Default visibility posture is managed via YAML configuration (`ai-catalog.rbac.defaultPolicy`, and the per-category / per-connector keys in Decision 4), not a dedicated admin page.
 
-~~**Why standalone?** The upstream RBAC admin UI (`@backstage-community/plugin-rbac`) has no frontend extension points — no `ExtensionPoint`, no slot system, no component override mechanism. A standalone page is the standard RHDH pattern used by other features (Homepage, Scorecard, Learning Paths).~~
+~~**Original plan (cancelled):** a standalone frontend page at `/ai-catalog/admin/rbac`, gated by `ai-catalog.admin`, calling the RBAC REST API (23+ routes) directly for all policy CRUD operations. Rationale was that the upstream RBAC admin UI (`@backstage-community/plugin-rbac`) has no frontend extension points. This was cancelled because RHDHPLAN-1508 mandates no new UI surface and the existing RBAC UI already registers and manages these permissions — the standalone page would duplicate that capability.~~
 
 ### Decision 6: Audit events complement AuditorService, not replace it
 
 The RBAC plugin's `AuditorService` already covers policy/role/condition CRUD and permission evaluation events. This design adds only the events the `AuditorService` does not cover:
 
-- AI-catalog management events (posture changes, category/connector policy CRUD)
+- AI-catalog management events (default posture changes only) — ~~category/connector policy CRUD~~ policy CRUD is emitted by the RBAC plugin `AuditorService`, so the AI Catalog does not duplicate it (see audit-logging spec)
 - Ingestion sync events (provider name, counts, duration, errors)
 - Per-asset ingestion events (entity ref, operation, source provider)
 

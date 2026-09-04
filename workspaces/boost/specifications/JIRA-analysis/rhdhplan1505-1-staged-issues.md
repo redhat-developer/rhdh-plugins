@@ -2,7 +2,7 @@
 
 These issues implement the AI Catalog backend across RHDHPLAN-1507 (Entity Model & Ingestion Framework), RHDHPLAN-1508 (RBAC & Versioning Policy), RHDHPLAN-1510 (MCP Registry & RHOAI Connector), and RHDHPLAN-1513 (Ingestion Operations & Schema Alignment). Issues are grouped in dependency tiers — Tier 0 issues have no dependencies and can run in parallel; Tier 1 depends on Tier 0; Tier 2 depends on Tier 1.
 
-Each issue is scoped for a single fullsend `/fs-code` run. Frontend admin UI issues are included (RBAC Admin UI, Ingestion Health Dashboard, Connector Config Admin UI). Developer-facing discovery UI is covered by RHDHPLAN-1509 and is NOT in scope here.
+Each issue is scoped for a single fullsend `/fs-code` run. Frontend admin UI issues are included (~~RBAC Admin UI,~~ Ingestion Health Dashboard, Connector Config Admin UI). Developer-facing discovery UI is covered by RHDHPLAN-1509 and is NOT in scope here.
 
 **Feature → Epic mapping:**
 
@@ -1333,7 +1333,7 @@ From `openspec/changes/ingestion-health-dashboard/tasks.md` group 8:
 
 ---
 
-## RBAC Admin UI — Dashboard, Policy Editor, Default Posture (issue 25 of 29) ~~CANCELLED~~
+## ~~RBAC Admin UI — Dashboard, Policy Editor, Default Posture (issue 25 of 29)~~ CANCELLED
 
 ~~https://github.com/redhat-developer/rhdh-plugins/issues/4063~~
 

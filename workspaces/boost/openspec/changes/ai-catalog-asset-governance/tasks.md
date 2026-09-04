@@ -58,10 +58,10 @@
 
 ## 7. Audit Logging (P1) — RHIDP-15277, RHIDP-15279, RHIDP-15280
 
-- [ ] 7.1 Define audit event types: `posture-changed`, `policy-created`, `policy-updated`, `policy-deleted` (RHIDP-15279)
-- [ ] 7.2 Define ingestion audit events: `sync-completed`, `sync-error`, `entity-created`, `entity-updated`, `entity-deleted` (RHIDP-15280)
+- [ ] 7.1 Define audit event type: `ai-catalog.rbac.posture-changed` ~~, `policy-created`, `policy-updated`, `policy-deleted`~~ (RHIDP-15279) — policy CRUD is covered by the RBAC plugin `AuditorService`; the AI Catalog does not emit `policy-*` events (see audit-logging spec and design Decision 6)
+- [ ] 7.2 Define ingestion audit events: `ai-catalog.ingestion.sync-completed`, `ai-catalog.ingestion.sync-error`, `ai-catalog.ingestion.entity-created`, `ai-catalog.ingestion.entity-updated`, `ai-catalog.ingestion.entity-deleted` (RHIDP-15280)
 - [ ] 7.3 Implement audit event emitters using `LoggerService` with structured metadata
-- [ ] 7.4 Integrate audit events into posture change and policy CRUD flows ~~in admin UI backend routes~~ (RHIDP-15279)
+- [ ] 7.4 Integrate audit events into the posture change flow ~~and policy CRUD flows in admin UI backend routes~~ (RHIDP-15279) — policy CRUD is audited by the RBAC plugin `AuditorService`
 - [ ] 7.5 Integrate audit events into entity provider sync cycle (RHIDP-15280)
 - [ ] 7.6 Verify events do not duplicate RBAC plugin `AuditorService` coverage
 
