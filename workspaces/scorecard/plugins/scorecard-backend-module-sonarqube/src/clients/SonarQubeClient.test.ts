@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { Config } from '@backstage/config';
 import { SonarQubeClient } from './SonarQubeClient';
 import { mockServices } from '@backstage/backend-test-utils';
 
@@ -21,24 +22,26 @@ const mockFetch = jest.fn();
 globalThis.fetch = mockFetch;
 
 describe('SonarQubeClient', () => {
-  const config = mockServices.rootConfig({
-    data: {
-      sonarqube: {
-        baseUrl: 'https://sonarcloud.io',
-        apiKey: 'test-key',
-      },
-    },
-  });
-  const logger = mockServices.logger.mock();
-
+  let config: Config;
   let client: SonarQubeClient;
+  let logger: ReturnType<typeof mockServices.logger.mock>;
 
   beforeEach(() => {
     jest.clearAllMocks();
+    logger = mockServices.logger.mock();
+    config = mockServices.rootConfig({
+      data: {
+        sonarqube: {
+          baseUrl: 'https://sonarcloud.io',
+          apiKey: 'test-key',
+        },
+      },
+    });
+
     client = new SonarQubeClient(config, logger);
   });
 
-  it('sends Authorization header with base64-encoded Basic auth by default', async () => {
+  it('should send Authorization header with base64-encoded Basic auth by default', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ projectStatus: { status: 'OK' } }),
@@ -56,7 +59,7 @@ describe('SonarQubeClient', () => {
   });
 
   describe('getQualityGateStatus', () => {
-    it('returns true when quality gate status is OK', async () => {
+    it('should return true when quality gate status is OK', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ projectStatus: { status: 'OK' } }),
@@ -71,7 +74,7 @@ describe('SonarQubeClient', () => {
       );
     });
 
-    it('returns false when quality gate status is ERROR', async () => {
+    it('should return false when quality gate status is ERROR', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ projectStatus: { status: 'ERROR' } }),
@@ -84,19 +87,19 @@ describe('SonarQubeClient', () => {
   });
 
   describe('getOpenIssuesCount', () => {
-    it('returns the total count of open issues after verifying project access', async () => {
-      mockFetch
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ component: { key: 'my-project' } }),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            total: 42,
-            paging: { pageIndex: 1, pageSize: 1, total: 42 },
-          }),
-        });
+    const mockProjectAccessible = () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ component: { key: 'my-project' } }),
+      });
+    };
+
+    it('should return the total count of open issues', async () => {
+      mockProjectAccessible();
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ total: 42 }),
+      });
 
       const result = await client.getOpenIssuesCount('my-project');
 
@@ -113,7 +116,7 @@ describe('SonarQubeClient', () => {
       );
     });
 
-    it('throws when project access check fails and does not search issues', async () => {
+    it('should throw when project access check fails and does not search issues', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
@@ -130,17 +133,13 @@ describe('SonarQubeClient', () => {
       );
     });
 
-    it('propagates API errors from issues search after access check succeeds', async () => {
-      mockFetch
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ component: { key: 'my-project' } }),
-        })
-        .mockResolvedValueOnce({
-          ok: false,
-          status: 503,
-          statusText: 'Service Unavailable',
-        });
+    it('should propagate API errors from issues search after access check succeeds', async () => {
+      mockProjectAccessible();
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        statusText: 'Service Unavailable',
+      });
 
       await expect(client.getOpenIssuesCount('my-project')).rejects.toThrow(
         /SonarQube API error: 503 Service Unavailable/,
@@ -148,38 +147,30 @@ describe('SonarQubeClient', () => {
       expect(mockFetch).toHaveBeenCalledTimes(2);
     });
 
-    it('returns 0 when the project is accessible and has no open issues', async () => {
-      mockFetch
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ component: { key: 'my-project' } }),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            total: 0,
-            paging: { pageIndex: 1, pageSize: 1, total: 0 },
-          }),
-        });
+    it('should return 0 when the project is accessible and has no open issues', async () => {
+      mockProjectAccessible();
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          total: 0,
+          paging: { pageIndex: 1, pageSize: 1, total: 0 },
+        }),
+      });
 
       const result = await client.getOpenIssuesCount('my-project');
 
       expect(result).toBe(0);
     });
 
-    it('returns the top-level total field from the issues search response', async () => {
-      mockFetch
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({ component: { key: 'my-project' } }),
-        })
-        .mockResolvedValueOnce({
-          ok: true,
-          json: async () => ({
-            total: 99,
-            paging: { pageIndex: 1, pageSize: 1, total: 7 },
-          }),
-        });
+    it('should return the top-level total field from the issues search response', async () => {
+      mockProjectAccessible();
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          total: 99,
+          paging: { pageIndex: 1, pageSize: 1, total: 7 },
+        }),
+      });
 
       const result = await client.getOpenIssuesCount('my-project');
 
@@ -188,7 +179,7 @@ describe('SonarQubeClient', () => {
   });
 
   describe('getMeasures', () => {
-    it('returns measures as a record of metric key to number', async () => {
+    it('should return measures as a record of metric key to number', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -215,7 +206,7 @@ describe('SonarQubeClient', () => {
   });
 
   describe('error handling', () => {
-    it('throws when API returns non-OK response', async () => {
+    it('should throw when API returns non-OK response', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 401,
@@ -228,7 +219,7 @@ describe('SonarQubeClient', () => {
     });
   });
 
-  it('strips trailing slash from baseUrl', () => {
+  it('should strip trailing slash from baseUrl', async () => {
     const configWithSlash = mockServices.rootConfig({
       data: {
         sonarqube: {
@@ -244,7 +235,7 @@ describe('SonarQubeClient', () => {
       json: async () => ({ projectStatus: { status: 'OK' } }),
     });
 
-    clientWithSlash.getQualityGateStatus('my-project');
+    await clientWithSlash.getQualityGateStatus('my-project');
 
     expect(mockFetch).toHaveBeenCalledWith(
       'https://sonarcloud.io/api/qualitygates/project_status?projectKey=my-project',
@@ -252,8 +243,8 @@ describe('SonarQubeClient', () => {
     );
   });
 
-  it('defaults baseUrl to https://sonarcloud.io when not configured', async () => {
-    const emptyConfig = mockServices.rootConfig({ data: {} });
+  it('should default baseUrl to https://sonarcloud.io when not configured', async () => {
+    const emptyConfig = mockServices.rootConfig({});
     const defaultClient = new SonarQubeClient(emptyConfig, logger);
 
     mockFetch.mockResolvedValueOnce({
@@ -269,10 +260,12 @@ describe('SonarQubeClient', () => {
     );
   });
 
-  it('sends no Authorization header when apiKey is not configured', async () => {
+  it('should send no Authorization header when apiKey is not configured', async () => {
     const noKeyConfig = mockServices.rootConfig({
       data: {
-        sonarqube: { baseUrl: 'https://sonarcloud.io' },
+        sonarqube: {
+          baseUrl: 'https://sonarcloud.io',
+        },
       },
     });
     const noKeyClient = new SonarQubeClient(noKeyConfig, logger);
@@ -304,6 +297,12 @@ describe('SonarQubeClient', () => {
               authType: 'Bearer',
             },
             {
+              name: 'basic-instance',
+              baseUrl: 'https://sonar.basic.com',
+              apiKey: 'basic-key',
+              authType: 'Basic',
+            },
+            {
               name: 'public',
               baseUrl: 'https://sonarcloud.io',
             },
@@ -312,7 +311,7 @@ describe('SonarQubeClient', () => {
       },
     });
 
-    it('uses named instance when instanceName is provided', async () => {
+    it('should use named instance when instanceName is provided', async () => {
       const multiClient = new SonarQubeClient(multiConfig, logger);
 
       mockFetch.mockResolvedValueOnce({
@@ -330,7 +329,26 @@ describe('SonarQubeClient', () => {
       );
     });
 
-    it('uses default instance when no instanceName is provided', async () => {
+    it('should use Basic auth when named instance sets authType Basic', async () => {
+      const multiClient = new SonarQubeClient(multiConfig, logger);
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ projectStatus: { status: 'OK' } }),
+      });
+
+      await multiClient.getQualityGateStatus('my-project', 'basic-instance');
+
+      const expectedToken = Buffer.from('basic-key:').toString('base64');
+      expect(mockFetch).toHaveBeenCalledWith(
+        'https://sonar.basic.com/api/qualitygates/project_status?projectKey=my-project',
+        expect.objectContaining({
+          headers: { Authorization: `Basic ${expectedToken}` },
+        }),
+      );
+    });
+
+    it('should use default instance when no instanceName is provided', async () => {
       const multiClient = new SonarQubeClient(multiConfig, logger);
 
       mockFetch.mockResolvedValueOnce({
@@ -349,7 +367,7 @@ describe('SonarQubeClient', () => {
       );
     });
 
-    it('throws when named instance is not found', async () => {
+    it('should throw when named instance is not found', async () => {
       const multiClient = new SonarQubeClient(multiConfig, logger);
 
       await expect(
@@ -359,7 +377,17 @@ describe('SonarQubeClient', () => {
       );
     });
 
-    it('sends no Authorization header for instance without apiKey', async () => {
+    it('should throw when instanceName is set but instances array is absent', async () => {
+      const noInstancesClient = new SonarQubeClient(config, logger);
+
+      await expect(
+        noInstancesClient.getQualityGateStatus('my-project', 'unknown'),
+      ).rejects.toThrow(
+        "SonarQube instance 'unknown' not found in configuration",
+      );
+    });
+
+    it('should send no Authorization header for instance without apiKey', async () => {
       const multiClient = new SonarQubeClient(multiConfig, logger);
 
       mockFetch.mockResolvedValueOnce({
