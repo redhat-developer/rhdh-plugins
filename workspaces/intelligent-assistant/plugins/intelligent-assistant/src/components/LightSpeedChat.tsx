@@ -95,6 +95,8 @@ import {
   useNotebookSession,
   useNotebookSessions,
   usePinnedChatsSettings,
+  useSavedPrompts,
+  useSavedPromptsSettings,
   useSortSettings,
   useStopConversation,
 } from '../hooks';
@@ -121,7 +123,6 @@ import { DeleteModal } from './DeleteModal';
 import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
-import { McpServersSettings } from './McpServersSettings';
 import { MessageBarModelSelector } from './MessageBarModelSelector';
 import { DeleteNotebookModal } from './notebooks/DeleteNotebookModal';
 import { NotebookHeaderActions } from './notebooks/NotebookHeaderActions';
@@ -134,6 +135,7 @@ import {
 } from './notebooks/SidebarCollapseIcon';
 import PermissionRequiredState from './PermissionRequiredState';
 import { RenameConversationModal } from './RenameConversationModal';
+import { SettingsPanel, type SettingsTab } from './SettingsPanel';
 import { ToastAlertGroup } from './ToastAlertGroup';
 
 const COLLAPSE_PANEL_ICON_SVG = `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16 21V3H14V21H16ZM12 17V7L7 12L12 17Z' fill='black'/%3E%3C/svg%3E") no-repeat center`;
@@ -991,6 +993,12 @@ export const LightspeedChat = ({
     unpinChat,
   } = usePinnedChatsSettings(user);
 
+  const { isSavedPromptsEnabled, handleSavedPromptsToggle } =
+    useSavedPromptsSettings(user);
+
+  const [settingsInitialTab, setSettingsInitialTab] =
+    useState<SettingsTab>('mcp-servers');
+
   const { selectedSort, handleSortChange } = useSortSettings(user);
 
   const {
@@ -1063,7 +1071,10 @@ export const LightspeedChat = ({
 
   const { allowed: hasDeleteAccess } = useLightspeedDeletePermission();
   const { allowed: hasUpdateAccess } = useLightspeedUpdatePermission();
-  const samplePrompts = useWelcomePrompts();
+  const { savedPrompts } = useSavedPrompts();
+  const samplePrompts = useWelcomePrompts(
+    isSavedPromptsEnabled ? savedPrompts : undefined,
+  );
   useEffect(() => {
     if (!user || !isReady) return;
     const onOverlayLikeSurface = isFullscreenMode || !routeConversationId;
@@ -1923,10 +1934,13 @@ export const LightspeedChat = ({
     </>
   );
 
-  const mcpSettingsPanel = (
-    <McpServersSettings
+  const settingsPanel = (
+    <SettingsPanel
+      initialTab={settingsInitialTab}
       onClose={() => setIsMcpSettingsOpen(false)}
       backgroundColor={chatHeaderBgColor}
+      isSavedPromptsEnabled={isSavedPromptsEnabled}
+      onEnableSavedPrompts={() => handleSavedPromptsToggle(true)}
     />
   );
 
@@ -1939,7 +1953,7 @@ export const LightspeedChat = ({
       return (
         <div className={classes.mcpFullscreenLayout}>
           <div className={classes.mcpChatPane}>{chatMainContent}</div>
-          <div className={classes.mcpSettingsPane}>{mcpSettingsPanel}</div>
+          <div className={classes.mcpSettingsPane}>{settingsPanel}</div>
         </div>
       );
     }
@@ -1949,9 +1963,9 @@ export const LightspeedChat = ({
         className={classes.settingsFlat}
         fields={[
           {
-            id: 'mcp-servers-settings',
+            id: 'settings-panel',
             label: '',
-            field: mcpSettingsPanel,
+            field: settingsPanel,
           },
         ]}
       />
@@ -2097,12 +2111,17 @@ export const LightspeedChat = ({
             handleSelectedModel={handleSelectedModel}
             models={models}
             isPinningChatsEnabled={isPinningChatsEnabled}
+            isSavedPromptsEnabled={isSavedPromptsEnabled}
+            onSavedPromptsToggle={handleSavedPromptsToggle}
             hideModelSelector
             showChatTabOptions={!showNotebooksPanel}
             setDisplayMode={setDisplayModeFromHeader}
             displayMode={displayMode}
             onPinnedChatsToggle={handlePinningChatsToggle}
-            onMcpSettingsClick={() => setIsMcpSettingsOpen(true)}
+            onMcpSettingsClick={() => {
+              setSettingsInitialTab('mcp-servers');
+              setIsMcpSettingsOpen(true);
+            }}
           />
         </ChatbotHeader>
         {(isFullscreenMode || shouldShowTabs) && (

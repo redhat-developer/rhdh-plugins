@@ -18,19 +18,25 @@ import { useMemo } from 'react';
 
 import { ConfigApi, configApiRef, useApi } from '@backstage/core-plugin-api';
 
+import { SavedPrompt } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+
 import { DEFAULT_SAMPLE_PROMPTS, RHDH_SAMPLE_PROMPTS } from '../const';
 import { SamplePrompt, SamplePrompts } from '../types';
-import { getRandomSamplePrompts } from '../utils/prompt-utils';
+import {
+  getPriorityBasedPrompts,
+  getRandomSamplePrompts,
+} from '../utils/prompt-utils';
 import { useTopicRestrictionStatus } from './useQuestionValidation';
 import { useTranslation } from './useTranslation';
 
-export const useWelcomePrompts = (): SamplePrompts => {
+export const useWelcomePrompts = (
+  savedPrompts?: SavedPrompt[],
+): SamplePrompts => {
   const configApi: ConfigApi = useApi(configApiRef);
   const { t } = useTranslation();
   const { data: questionValidationEnabled } = useTopicRestrictionStatus();
 
   return useMemo(() => {
-    // Transform translation keys to actual prompts
     const translatePrompts = (prompts: SamplePrompts): SamplePrompts => {
       return prompts.map((prompt: SamplePrompt) => {
         if ('titleKey' in prompt && 'messageKey' in prompt) {
@@ -45,7 +51,7 @@ export const useWelcomePrompts = (): SamplePrompts => {
       });
     };
 
-    const DEFAULT_PROMPTS = questionValidationEnabled
+    const hardcodedDefaults = questionValidationEnabled
       ? translatePrompts(RHDH_SAMPLE_PROMPTS)
       : translatePrompts([...DEFAULT_SAMPLE_PROMPTS, ...RHDH_SAMPLE_PROMPTS]);
 
@@ -55,6 +61,19 @@ export const useWelcomePrompts = (): SamplePrompts => {
       title: config.getString('title') ?? '',
       message: config.getString('message') ?? '',
     }));
-    return getRandomSamplePrompts(userConfiguredPrompts, DEFAULT_PROMPTS);
-  }, [configApi, t, questionValidationEnabled]);
+
+    if (savedPrompts && savedPrompts.length > 0) {
+      const savedAsSample: SamplePrompts = savedPrompts.map(p => ({
+        title: p.name,
+        message: p.content,
+      }));
+      return getPriorityBasedPrompts(
+        userConfiguredPrompts,
+        savedAsSample,
+        hardcodedDefaults,
+      );
+    }
+
+    return getRandomSamplePrompts(userConfiguredPrompts, hardcodedDefaults);
+  }, [configApi, t, questionValidationEnabled, savedPrompts]);
 };

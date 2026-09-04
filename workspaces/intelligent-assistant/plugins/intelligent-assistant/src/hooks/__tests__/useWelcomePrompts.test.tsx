@@ -104,4 +104,41 @@ describe('useWelcomePrompts', () => {
       expect(result.current.length).toBe(3);
     });
   });
+
+  it('should use priority-based selection when saved prompts are provided', async () => {
+    (useApi as jest.Mock).mockReturnValue({
+      getOptionalBoolean: jest.fn().mockReturnValue(false),
+      getOptionalConfigArray: jest.fn().mockReturnValue(undefined),
+      isTopicRestrictionEnabled: jest.fn().mockResolvedValue(false),
+    });
+
+    const savedPrompts = [
+      {
+        id: '1',
+        name: 'Saved One',
+        content: 'Content one',
+        created_at: '2024-01-01T00:00:00Z',
+        updated_at: '2024-01-01T00:00:00Z',
+      },
+      {
+        id: '2',
+        name: 'Saved Two',
+        content: 'Content two',
+        created_at: '2024-01-02T00:00:00Z',
+        updated_at: '2024-01-02T00:00:00Z',
+      },
+    ];
+
+    const { result } = renderHook(() => useWelcomePrompts(savedPrompts), {
+      wrapper,
+    });
+
+    await waitFor(() => {
+      expect(result.current).toBeDefined();
+      expect(result.current.length).toBe(3);
+      const titles = result.current.map((p: any) => p.title);
+      expect(titles[0]).toBe('Saved One');
+      expect(titles[1]).toBe('Saved Two');
+    });
+  });
 });

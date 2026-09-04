@@ -50,6 +50,8 @@ type LightspeedChatBoxHeaderProps = {
   models: { label: string; value: string; provider: string }[];
   isPinningChatsEnabled: boolean;
   onPinnedChatsToggle: (state: boolean) => void;
+  isSavedPromptsEnabled: boolean;
+  onSavedPromptsToggle: (state: boolean) => void;
   onMcpSettingsClick: () => void;
   isModelSelectorDisabled?: boolean;
   hideModelSelector?: boolean;
@@ -87,6 +89,8 @@ export const LightspeedChatBoxHeader = ({
   models,
   isPinningChatsEnabled,
   onPinnedChatsToggle,
+  isSavedPromptsEnabled,
+  onSavedPromptsToggle,
   onMcpSettingsClick,
   isModelSelectorDisabled = false,
   hideModelSelector = false,
@@ -244,6 +248,29 @@ export const LightspeedChatBoxHeader = ({
                     onClick={() => handlePinningChatsToggle(true)}
                   >
                     {t('settings.pinned.enable')}
+                  </DropdownItem>
+                )}
+                {isSavedPromptsEnabled ? (
+                  <DropdownItem
+                    value="disableSavedPrompts"
+                    key="disableSavedPrompts"
+                    icon={<ToggleOnOutlinedIcon sx={{ marginTop: '8px' }} />}
+                    description={t('settings.savedPrompts.enabled.description')}
+                    onClick={() => onSavedPromptsToggle(false)}
+                  >
+                    {t('settings.savedPrompts.disable')}
+                  </DropdownItem>
+                ) : (
+                  <DropdownItem
+                    value="enableSavedPrompts"
+                    key="enableSavedPrompts"
+                    icon={<ToggleOffOutlinedIcon sx={{ marginTop: '8px' }} />}
+                    description={t(
+                      'settings.savedPrompts.disabled.description',
+                    )}
+                    onClick={() => onSavedPromptsToggle(true)}
+                  >
+                    {t('settings.savedPrompts.enable')}
                   </DropdownItem>
                 )}
                 <DropdownItem

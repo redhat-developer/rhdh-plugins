@@ -341,13 +341,22 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'settings.displayMode.label': 'Modo de visualización',
     'settings.displayMode.overlay': 'Superposición',
     'settings.mcp.badge': 'Nuevo',
-    'settings.mcp.label': 'Configuración de MCP',
+    'settings.mcp.label': 'Configuración de MCP y Prompts',
     'settings.pinned.disable': 'Deshabilitar chats fijados',
     'settings.pinned.disabled.description':
       'Los chats fijados están deshabilitados actualmente',
     'settings.pinned.enable': 'Habilitar chats fijados',
     'settings.pinned.enabled.description':
       'Los chats fijados están habilitados actualmente',
+    'settings.savedPrompts.disable': 'Deshabilitar prompts guardados',
+    'settings.savedPrompts.disabled.description':
+      'Los prompts guardados están deshabilitados actualmente',
+    'settings.savedPrompts.enable': 'Habilitar prompts guardados',
+    'settings.savedPrompts.enabled.description':
+      'Los prompts guardados están habilitados actualmente',
+    'savedPrompts.count.zero': 'No hay prompts guardados',
+    'savedPrompts.count_one': '1 prompt',
+    'savedPrompts.count_other': '{{count}} prompts',
     'sort.alphabeticalAsc': 'Nombre (A-Z)',
     'sort.alphabeticalDesc': 'Nombre (Z-A)',
     'sort.label': 'Ordenar conversaciones',

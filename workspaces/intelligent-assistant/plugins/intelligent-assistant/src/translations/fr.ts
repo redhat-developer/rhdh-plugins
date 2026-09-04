@@ -348,13 +348,22 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'settings.displayMode.label': "Mode d'affichage",
     'settings.displayMode.overlay': 'Superposition',
     'settings.mcp.badge': 'Nouveau',
-    'settings.mcp.label': 'Paramètres MCP',
+    'settings.mcp.label': 'Paramètres MCP et Prompts',
     'settings.pinned.disable': 'Désactiver les conversations épinglées',
     'settings.pinned.disabled.description':
       'Les conversations épinglées sont actuellement désactivées',
     'settings.pinned.enable': 'Activer les conversations épinglées',
     'settings.pinned.enabled.description':
       'Les conversation épinglées sont actuellement activées',
+    'settings.savedPrompts.disable': 'Désactiver les prompts sauvegardés',
+    'settings.savedPrompts.disabled.description':
+      'Les prompts sauvegardés sont actuellement désactivés',
+    'settings.savedPrompts.enable': 'Activer les prompts sauvegardés',
+    'settings.savedPrompts.enabled.description':
+      'Les prompts sauvegardés sont actuellement activés',
+    'savedPrompts.count.zero': 'Aucun prompt sauvegardé',
+    'savedPrompts.count_one': '1 prompt',
+    'savedPrompts.count_other': '{{count}} prompts',
     'sort.alphabeticalAsc': 'Nom (A-Z)',
     'sort.alphabeticalDesc': 'Nom (Z-A)',
     'sort.label': 'Trier les conversations',
