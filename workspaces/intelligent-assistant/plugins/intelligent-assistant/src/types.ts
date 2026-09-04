@@ -71,6 +71,11 @@ export interface LCSModel {
   type: 'model';
   provider_resource_id: string;
   model_type: LCSModelType;
+  /**
+   * Whether the model supports vision (JPEG image) input, set by the backend
+   * GET /v1/models handler; absent if capability could not be determined.
+   */
+  supportsVision?: boolean;
 }
 export interface LCSConversation {
   provider: string;
