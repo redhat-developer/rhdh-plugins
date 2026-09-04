@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { Config } from '@backstage/config';
 import { PermissionsService } from '@backstage/backend-plugin-api';
 import { ActionsRegistryService } from '@backstage/backend-plugin-api/alpha';
 import { scorecardMetricReadPermission } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -21,13 +22,16 @@ import {
   authorizeConditional,
   filterAuthorizedMetrics,
 } from '../permissions/permissionUtils';
+import { isMetricEnabledByDefault } from '../utils/metricUtils';
 
 export const createListMetricsAction = ({
   actionsRegistry,
+  config,
   permissions,
   metricProvidersRegistry,
 }: {
   actionsRegistry: ActionsRegistryService;
+  config: Config;
   permissions: PermissionsService;
   metricProvidersRegistry: MetricProvidersRegistry;
 }) => {
@@ -66,7 +70,14 @@ export const createListMetricsAction = ({
         scorecardMetricReadPermission,
       );
 
-      const allMetrics = metricProvidersRegistry.listMetrics();
+      const allMetrics = metricProvidersRegistry.listMetrics().filter(m => {
+        try {
+          const provider = metricProvidersRegistry.getProvider(m.id);
+          return isMetricEnabledByDefault(config, m, provider);
+        } catch {
+          return true;
+        }
+      });
       const metrics = filterAuthorizedMetrics(allMetrics, conditions);
 
       return { output: { metrics } };

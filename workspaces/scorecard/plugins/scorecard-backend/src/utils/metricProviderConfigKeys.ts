@@ -116,3 +116,53 @@ export function resolveThresholdsConfigPath(
   ];
   return paths.find(path => config.has(path));
 }
+
+/** Config path: `scorecard.metricProviders.<datasource>.<providerName>.enabled` */
+export function getProviderEnabledConfigPath(
+  datasourceId: string,
+  providerId: string,
+): string {
+  const providerKey = getProviderLocalConfigKey(providerId, datasourceId);
+  return `scorecard.metricProviders.${datasourceId}.${providerKey}.enabled`;
+}
+
+/** Config path: `scorecard.metricProviders.<datasource>.<providerName>.metrics.<metricName>.enabled` */
+export function getMetricEnabledConfigPath(
+  datasourceId: string,
+  providerId: string,
+  metricId: string,
+): string {
+  const providerKey = getProviderLocalConfigKey(providerId, datasourceId);
+  const metricKey = getMetricLocalConfigKey(metricId, datasourceId);
+  return (
+    `scorecard.metricProviders.${datasourceId}.${providerKey}` +
+    `.metrics.${metricKey}.enabled`
+  );
+}
+
+/**
+ * Read the provider-level `enabled` flag from config.
+ * Returns `undefined` when not set (caller uses code default).
+ */
+export function resolveProviderEnabledFromConfig(
+  config: Config,
+  datasourceId: string,
+  providerId: string,
+): boolean | undefined {
+  const path = getProviderEnabledConfigPath(datasourceId, providerId);
+  return config.getOptionalBoolean(path);
+}
+
+/**
+ * Read the metric-level `enabled` flag from config.
+ * Returns `undefined` when not set (caller uses code / provider default).
+ */
+export function resolveMetricEnabledFromConfig(
+  config: Config,
+  datasourceId: string,
+  providerId: string,
+  metricId: string,
+): boolean | undefined {
+  const path = getMetricEnabledConfigPath(datasourceId, providerId, metricId);
+  return config.getOptionalBoolean(path);
+}

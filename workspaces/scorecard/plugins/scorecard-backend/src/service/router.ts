@@ -21,6 +21,7 @@ import {
 } from '@backstage/errors';
 import express from 'express';
 import Router from 'express-promise-router';
+import type { Config } from '@backstage/config';
 import type { CatalogMetricService } from './CatalogMetricService';
 import type { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
@@ -43,6 +44,7 @@ import {
 } from '../middlewares/validateTimeSeriesQueryParams';
 import { getEntitiesOwnedByUser } from '../utils/getEntitiesOwnedByUser';
 import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
+import { isMetricEnabledByDefault } from '../utils/metricUtils';
 import { AggregatedMetricMapper } from './mappers';
 import { validateDrillDownMetricsSchema } from '../validation/validateDrillDownMetricsSchema';
 import { validateAggregationIdParam } from '../middlewares/validateAggregationIdParam';
@@ -53,6 +55,7 @@ import { ThresholdResolver } from '../threshold/ThresholdResolver';
 import type { ScorecardCollectorsService } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
 export type ScorecardRouterOptions = {
+  config: Config;
   service: {
     aggregationsService: AggregationsService;
     catalogMetricService: CatalogMetricService;
@@ -67,6 +70,7 @@ export type ScorecardRouterOptions = {
 };
 
 export async function createRouter({
+  config,
   metricProvidersRegistry,
   service,
   catalog,
@@ -81,6 +85,20 @@ export async function createRouter({
 
   const { aggregationsService, catalogMetricService } = service;
 
+  const filterEnabledMetrics = (
+    metrics: ReturnType<typeof metricProvidersRegistry.listMetrics>,
+  ) =>
+    metrics.filter(m => {
+      try {
+        const provider = metricProvidersRegistry.getProvider(m.id);
+        return isMetricEnabledByDefault(config, m, provider);
+      } catch {
+        // Provider not found — treat as enabled to avoid hiding
+        // broken registrations from the listing.
+        return true;
+      }
+    });
+
   router.get(
     '/metrics',
     validateMetricIdsQueryParams,
@@ -94,21 +112,27 @@ export async function createRouter({
 
       if (metricIds) {
         return res.json({
-          metrics: metricProvidersRegistry.listMetrics(
-            parseCommaSeparatedString(metricIds as string),
+          metrics: filterEnabledMetrics(
+            metricProvidersRegistry.listMetrics(
+              parseCommaSeparatedString(metricIds as string),
+            ),
           ),
         });
       }
 
       if (datasource) {
         return res.json({
-          metrics: metricProvidersRegistry.listMetricsByDatasource(
-            datasource as string,
+          metrics: filterEnabledMetrics(
+            metricProvidersRegistry.listMetricsByDatasource(
+              datasource as string,
+            ),
           ),
         });
       }
 
-      return res.json({ metrics: metricProvidersRegistry.listMetrics() });
+      return res.json({
+        metrics: filterEnabledMetrics(metricProvidersRegistry.listMetrics()),
+      });
     },
   );
 

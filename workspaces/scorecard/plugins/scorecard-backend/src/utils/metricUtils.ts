@@ -17,7 +17,13 @@
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import type { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { parseCommaSeparatedString } from './parseCommaSeparatedString';
+import {
+  resolveMetricEnabledFromConfig,
+  resolveProviderEnabledFromConfig,
+} from './metricProviderConfigKeys';
 
 /**
  * Check if the metric is disabled by app-config, if is disabled by the entity annotation and if it has any exception rule.
@@ -79,4 +85,61 @@ export function isMetricIdDisabled(
   }
 
   return false;
+}
+
+/**
+ * Check whether a metric is enabled by default, considering code-level
+ * defaults and config-level overrides.
+ *
+ * Resolution order (first defined value wins):
+ * 1. Config metric `enabled` — most specific config
+ * 2. Code metric `enabled` field — code-level default
+ * 3. Config provider `enabled` — provider config
+ * 4. Code provider `isEnabled()` — provider code default
+ * 5. `true` — backward-compatible default
+ *
+ * This check is independent of the global `disabledMetrics` list and
+ * entity annotations which are handled by {@link isMetricIdDisabled}.
+ */
+export function isMetricEnabledByDefault(
+  config: Config,
+  metric: Metric,
+  provider: MetricProvider,
+): boolean {
+  const datasourceId = provider.getProviderDatasourceId();
+  const providerId = provider.getProviderId();
+
+  // 1. Config metric enabled (most specific)
+  const metricConfigEnabled = resolveMetricEnabledFromConfig(
+    config,
+    datasourceId,
+    providerId,
+    metric.id,
+  );
+  if (metricConfigEnabled !== undefined) {
+    return metricConfigEnabled;
+  }
+
+  // 2. Code metric enabled
+  if (metric.enabled !== undefined) {
+    return metric.enabled;
+  }
+
+  // 3. Config provider enabled
+  const providerConfigEnabled = resolveProviderEnabledFromConfig(
+    config,
+    datasourceId,
+    providerId,
+  );
+  if (providerConfigEnabled !== undefined) {
+    return providerConfigEnabled;
+  }
+
+  // 4. Code provider isEnabled()
+  if (provider.isEnabled) {
+    return provider.isEnabled();
+  }
+
+  // 5. Default: enabled
+  return true;
 }
