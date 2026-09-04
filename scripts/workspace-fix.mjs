@@ -322,8 +322,10 @@ function isMainModule() {
 }
 
 if (isMainModule()) {
-  main(process.argv.slice(2), process.cwd()).catch(error => {
+  try {
+    await main(process.argv.slice(2), process.cwd());
+  } catch (error) {
     console.error(error.message);
     process.exit(error.exitCode ?? 1);
-  });
+  }
 }

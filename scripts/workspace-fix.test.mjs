@@ -335,11 +335,19 @@ test('runPipeline succeeds when fixers report changes as success', async () => {
   );
   const pkg = readPackageJson(cwd);
   assertWorkspaceRoot(pkg);
+  const ran = [];
   await runPipeline(
     buildSteps({
       tools: detectTools(pkg),
       config: resolveConfig(pkg, { publish: false, knip: false, check: false }),
     }),
-    { log: () => {}, run: async () => 0 },
+    {
+      log: () => {},
+      run: async step => {
+        ran.push(step.id);
+        return 0;
+      },
+    },
   );
+  assert.deepEqual(ran, ['repo-fix', 'lint-fix', 'prettier']);
 });
