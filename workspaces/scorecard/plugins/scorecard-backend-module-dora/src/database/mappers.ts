@@ -33,6 +33,7 @@ export type DbDoraDeploymentRow = {
   commit_sha: string;
   environment: string | null;
   created_at: Date | string;
+  pull_requests_synced_at?: Date | string | null;
 };
 
 export type DbDoraIncidentRow = {
@@ -82,6 +83,9 @@ export function fromDoraDeploymentRow(
     commitSha: row.commit_sha,
     environment: row.environment,
     createdAt: parseDate(row.created_at),
+    pullRequestsSyncedAt: row.pull_requests_synced_at
+      ? parseDate(row.pull_requests_synced_at)
+      : null,
   };
 }
 

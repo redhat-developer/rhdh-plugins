@@ -32,6 +32,7 @@ export interface DoraDeploymentsStore {
     from: Date,
     to: Date,
   ): Promise<DbDoraDeployment[]>;
+  markPullRequestsSynced(deploymentId: string, syncedAt: Date): Promise<void>;
   deleteOlderThan(olderThan: Date): Promise<number>;
 }
 
@@ -78,6 +79,15 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
       .orderBy('created_at', 'asc');
 
     return rows.map(fromDoraDeploymentRow);
+  }
+
+  async markPullRequestsSynced(
+    deploymentId: string,
+    syncedAt: Date,
+  ): Promise<void> {
+    await this.dbClient(this.tableName)
+      .where('id', deploymentId)
+      .update({ pull_requests_synced_at: syncedAt });
   }
 
   async deleteOlderThan(olderThan: Date): Promise<number> {

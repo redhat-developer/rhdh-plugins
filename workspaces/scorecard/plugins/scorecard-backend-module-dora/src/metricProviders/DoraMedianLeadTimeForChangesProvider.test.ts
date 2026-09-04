@@ -124,6 +124,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           deploymentId: '101',
           baseCommitSha: 'sha-previous',
           headCommitSha: 'sha-current',
+          pullRequestsSyncedAt: null,
         }),
       );
     });
@@ -196,6 +197,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           deploymentId: '101',
           baseCommitSha: 'sha-previous',
           headCommitSha: 'sha-current',
+          pullRequestsSyncedAt: null,
         }),
       );
     });
@@ -239,6 +241,38 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           deploymentId: '101',
           baseCommitSha: 'sha-previous',
           headCommitSha: 'sha-current',
+          pullRequestsSyncedAt: null,
+        }),
+      );
+    });
+
+    it('should forward the deployment pullRequestsSyncedAt marker to the sync service', async () => {
+      const syncedAt = new Date('2026-06-09T00:00:00.000Z');
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([
+        dbDeployment({
+          id: '100',
+          commitSha: 'sha-previous',
+          environment: 'production',
+          createdAt: '2026-06-06T12:00:00.000Z',
+        }),
+        dbDeployment({
+          id: '101',
+          commitSha: 'sha-current',
+          environment: 'production',
+          createdAt: '2026-06-08T12:00:00.000Z',
+          pullRequestsSyncedAt: syncedAt,
+        }),
+      ]);
+
+      await provider.calculateMetrics(mockEntity);
+
+      expect(
+        mockDoraSyncService.syncPullRequestsForDeployment,
+      ).toHaveBeenCalledWith(
+        mockEntity,
+        expect.objectContaining({
+          deploymentId: '101',
+          pullRequestsSyncedAt: syncedAt,
         }),
       );
     });

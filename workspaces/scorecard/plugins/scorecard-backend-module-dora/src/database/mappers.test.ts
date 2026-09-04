@@ -90,7 +90,39 @@ describe('mappers', () => {
         commitSha: 'sha-1',
         environment: null,
         createdAt: new Date('2026-06-10T10:00:00.000Z'),
+        pullRequestsSyncedAt: null,
       });
+    });
+
+    it('defaults missing pull_requests_synced_at to null', () => {
+      expect(
+        fromDoraDeploymentRow({
+          id: 'dep-row-1',
+          catalog_entity_ref: 'component:default/service-a',
+          collector_id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+          collector_input_hash: EMPTY_INPUT_HASH,
+          original_deployment_id: 'dep-1',
+          commit_sha: 'sha-1',
+          environment: null,
+          created_at: '2026-06-10T10:00:00.000Z',
+        }).pullRequestsSyncedAt,
+      ).toBeNull();
+    });
+
+    it('parses pull_requests_synced_at when set', () => {
+      expect(
+        fromDoraDeploymentRow({
+          id: 'dep-row-1',
+          catalog_entity_ref: 'component:default/service-a',
+          collector_id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+          collector_input_hash: EMPTY_INPUT_HASH,
+          original_deployment_id: 'dep-1',
+          commit_sha: 'sha-1',
+          environment: null,
+          created_at: '2026-06-10T10:00:00.000Z',
+          pull_requests_synced_at: '2026-06-11T10:00:00.000Z',
+        }).pullRequestsSyncedAt,
+      ).toEqual(new Date('2026-06-11T10:00:00.000Z'));
     });
   });
 

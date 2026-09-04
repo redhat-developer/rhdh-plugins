@@ -68,6 +68,7 @@ describe('DatabaseDoraDeployments', () => {
             commitSha: 'sha-1',
             environment: 'production',
             createdAt: new Date('2026-06-01T10:00:00.000Z'),
+            pullRequestsSyncedAt: null,
           },
         ]);
       },
@@ -345,6 +346,107 @@ describe('DatabaseDoraDeployments', () => {
         expect(remaining.map(row => row.originalDeploymentId)).toEqual([
           'dep-new',
         ]);
+      },
+    );
+  });
+
+  describe('markPullRequestsSynced', () => {
+    it.each(databases.eachSupportedId())(
+      'sets pullRequestsSyncedAt on the deployment - %p',
+      async databaseId => {
+        const { deployments } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+
+        await deployments.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-1',
+            commitSha: 'sha-1',
+            environment: 'production',
+            createdAt: new Date('2026-06-10T10:00:00.000Z'),
+          },
+        ]);
+        const [deployment] = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          EMPTY_INPUT_HASH,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+        expect(deployment.pullRequestsSyncedAt).toBeNull();
+
+        const syncedAt = new Date('2026-06-11T00:00:00.000Z');
+        await deployments.markPullRequestsSynced(deployment.id, syncedAt);
+
+        const [afterMark] = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          EMPTY_INPUT_HASH,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+        expect(afterMark.pullRequestsSyncedAt).toEqual(syncedAt);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'preserves pullRequestsSyncedAt when the deployment is re-upserted - %p',
+      async databaseId => {
+        const { deployments } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+
+        await deployments.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-1',
+            commitSha: 'sha-1',
+            environment: 'production',
+            createdAt: new Date('2026-06-10T10:00:00.000Z'),
+          },
+        ]);
+        const [deployment] = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          EMPTY_INPUT_HASH,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+        const syncedAt = new Date('2026-06-11T00:00:00.000Z');
+        await deployments.markPullRequestsSynced(deployment.id, syncedAt);
+
+        // Re-upserting the same deployment (natural key conflict) must not reset
+        // the marker.
+        await deployments.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-1',
+            commitSha: 'sha-1-updated',
+            environment: 'production',
+            createdAt: new Date('2026-06-10T10:00:00.000Z'),
+          },
+        ]);
+
+        const [afterUpsert] = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          EMPTY_INPUT_HASH,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+        expect(afterUpsert.commitSha).toBe('sha-1-updated');
+        expect(afterUpsert.pullRequestsSyncedAt).toEqual(syncedAt);
       },
     );
   });

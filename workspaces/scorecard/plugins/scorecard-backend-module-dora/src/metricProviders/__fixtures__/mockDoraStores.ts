@@ -43,6 +43,7 @@ export function dbDeployment(partial: {
   collectorId?: string;
   collectorInputHash?: string;
   originalDeploymentId?: string;
+  pullRequestsSyncedAt?: string | Date | null;
 }): DbDoraDeployment {
   return {
     id: partial.id,
@@ -53,6 +54,11 @@ export function dbDeployment(partial: {
     commitSha: partial.commitSha,
     environment: partial.environment ?? null,
     createdAt: parseDate(partial.createdAt),
+    pullRequestsSyncedAt:
+      partial.pullRequestsSyncedAt === undefined ||
+      partial.pullRequestsSyncedAt === null
+        ? null
+        : parseDate(partial.pullRequestsSyncedAt),
   };
 }
 
@@ -105,6 +111,7 @@ export function dbPullRequest(partial: {
 export const mockDoraDeploymentsStore: jest.Mocked<DoraDeploymentsStore> = {
   upsert: jest.fn(),
   readByEntityCollectorAndWindow: jest.fn(),
+  markPullRequestsSynced: jest.fn(),
   deleteOlderThan: jest.fn(),
 };
 

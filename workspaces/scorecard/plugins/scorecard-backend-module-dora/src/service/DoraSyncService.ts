@@ -69,6 +69,7 @@ export interface DoraSyncService {
       deploymentId: string;
       baseCommitSha: string;
       headCommitSha: string;
+      pullRequestsSyncedAt: Date | null;
     },
   ): Promise<void>;
 }
@@ -246,7 +247,7 @@ export class DefaultDoraSyncService implements DoraSyncService {
   }
 
   /**
-   * Retrieves and persists PRs for a deployment when none are stored yet.
+   * Retrieves and persists PRs for a deployment when none are stored yet and updates `deployment.pullRequestsSyncedAt`
    * `deploymentId` is the persisted deployments row id (FK).
    *
    * Concurrent syncs for the same entity, collector, and deployment share one
@@ -258,6 +259,7 @@ export class DefaultDoraSyncService implements DoraSyncService {
       deploymentId: string;
       baseCommitSha: string;
       headCommitSha: string;
+      pullRequestsSyncedAt: Date | null;
     },
   ): Promise<void> {
     const catalogEntityRef = stringifyEntityRef(entity);
@@ -273,20 +275,20 @@ export class DefaultDoraSyncService implements DoraSyncService {
       deploymentId: string;
       baseCommitSha: string;
       headCommitSha: string;
+      pullRequestsSyncedAt: Date | null;
     },
     catalogEntityRef: string,
   ): Promise<void> {
     const collectorId = options.collector.id;
     const collectorInputHash = options.collector.inputHash;
 
-    const existing =
-      await this.pullRequestsDb.readByEntityCollectorAndDeployment(
-        catalogEntityRef,
-        collectorId,
-        collectorInputHash,
-        options.deploymentId,
+    // A deployment interval (base..head commits) is historical and immutable, so
+    // once PRs have been fetched for it the answer never changes.
+    // `pullRequestsSyncedAt` being set means "already fetched".
+    if (options.pullRequestsSyncedAt !== null) {
+      this.logger.debug(
+        `Skipping DORA pull requests refresh for collector "${collectorId}" on "${catalogEntityRef}". Already synced at "${options.pullRequestsSyncedAt.toISOString()}"`,
       );
-    if (existing.length > 0) {
       return;
     }
 
@@ -316,6 +318,11 @@ export class DefaultDoraSyncService implements DoraSyncService {
         firstCommitAt: new Date(pullRequest.firstCommitAt),
         deploymentId: options.deploymentId,
       })),
+    );
+
+    await this.deploymentsDb.markPullRequestsSynced(
+      options.deploymentId,
+      new Date(),
     );
   }
 }

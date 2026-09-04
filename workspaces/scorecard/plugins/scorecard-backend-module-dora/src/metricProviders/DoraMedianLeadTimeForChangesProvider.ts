@@ -156,6 +156,7 @@ export class DoraMedianLeadTimeForChangesProvider
           deploymentId: deployment.id,
           baseCommitSha: previousDeployment.commitSha,
           headCommitSha: deployment.commitSha,
+          pullRequestsSyncedAt: deployment.pullRequestsSyncedAt,
         });
       } catch (error) {
         this.logger.warn(

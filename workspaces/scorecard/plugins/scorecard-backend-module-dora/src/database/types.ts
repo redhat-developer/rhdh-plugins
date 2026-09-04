@@ -33,6 +33,9 @@ export type DbDoraDeployment = {
   commitSha: string;
   environment: string | null;
   createdAt: Date;
+  // Set once PRs have been fetched for this deployment, null means not yet fetched.
+  // Used to avoid re-fetching zero-PR deployments every run.
+  pullRequestsSyncedAt: Date | null;
 };
 
 export type DbDoraIncidentCreate = {

@@ -25,6 +25,9 @@ exports.up = async function up(knex) {
     table.string('environment').nullable();
     // Millisecond precision so same-second deployments stay distinct for CFR/lead time.
     table.dateTime('created_at', { precision: 3 }).notNullable();
+    // Set once PRs have been fetched for this deployment, so zero-PR deployments 
+    // are not re-fetched on every provider run. NULL means "PRs not yet fetched".
+    table.dateTime('pull_requests_synced_at', { precision: 3 }).nullable();
 
     table.unique([
       'catalog_entity_ref',
