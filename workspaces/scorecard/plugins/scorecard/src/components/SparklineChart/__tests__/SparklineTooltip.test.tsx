@@ -24,7 +24,8 @@ import {
 import type { SparklineChartPoint } from '../../../utils/timeSeriesChartData';
 
 const point: SparklineChartPoint = {
-  date: 'Aug 15',
+  date: '2026-08-15T00:00:00.000Z',
+  dateLabel: 'Aug 15',
   value: 2.1,
   plotValue: 2.1,
 };
@@ -45,7 +46,8 @@ describe('getSparklineTooltipLabel', () => {
   it('uses the error message when the point has no value', () => {
     expect(
       getSparklineTooltipLabel({
-        date: 'Aug 15',
+        date: '2026-08-15T00:00:00.000Z',
+        dateLabel: 'Aug 15',
         value: null,
         plotValue: 0,
         error: 'No data',

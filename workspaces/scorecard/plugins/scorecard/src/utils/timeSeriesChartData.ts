@@ -21,7 +21,10 @@ import type {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export type SparklineChartPoint = {
+  /** Unique key for x-axis positioning (original ISO timestamp). */
   date: string;
+  /** Human-readable label shown on the x-axis and in the tooltip. */
+  dateLabel: string;
   value: number | null;
   error?: string;
   plotValue: number;
@@ -136,7 +139,8 @@ export const toSparklineChartData = (
   formatDateLabel: (timestamp: string) => string,
 ): SparklineChartPoint[] => {
   const raw = points.map(point => ({
-    date: formatDateLabel(point.timestamp),
+    date: point.timestamp,
+    dateLabel: formatDateLabel(point.timestamp),
     value: toNumericValue(point.value),
     error: point.error,
   }));

@@ -30,8 +30,18 @@ jest.mock('recharts', () => {
 });
 
 const points: SparklineChartPoint[] = [
-  { date: 'Apr 27', value: 18, plotValue: 18 },
-  { date: 'Apr 30', value: 22, plotValue: 22 },
+  {
+    date: '2026-04-27T00:00:00.000Z',
+    dateLabel: 'Apr 27',
+    value: 18,
+    plotValue: 18,
+  },
+  {
+    date: '2026-04-30T00:00:00.000Z',
+    dateLabel: 'Apr 30',
+    value: 22,
+    plotValue: 22,
+  },
 ];
 
 describe('SparklineChart', () => {
