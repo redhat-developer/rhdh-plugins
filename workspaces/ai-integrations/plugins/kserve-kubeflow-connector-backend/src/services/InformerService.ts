@@ -70,15 +70,11 @@ const LLM_INF_SVC_Ready_CONDITION = 'Ready';
 function buildImportKeyAndURI(
   namespace: string,
   name: string,
-  isLLM: boolean = false,
 ): [string, string] {
   const sanitizedNs = sanitizeName(namespace);
   const sanitizedName = sanitizeName(name);
-  // Prefix with resource kind to avoid key collision when an InferenceService and
-  // LLMInferenceService share the same namespace/name.
-  const prefix = isLLM ? 'llm:' : 'is:';
-  const importKey = `${prefix}${sanitizedNs}/${sanitizedName}`;
-  const uri = `/models/${sanitizedNs}/${sanitizedName}`;
+  const importKey = `${sanitizedNs}/${sanitizedName}`;
+  const uri = `/models/${importKey}`;
   return [importKey, uri];
 }
 
@@ -347,7 +343,7 @@ async function reconcileInferenceService(
     } models and ${catalogData.modelServer ? 1 : 0} model servers`,
   );
 
-  const [importKey] = buildImportKeyAndURI(namespace, name, isLLM);
+  const [importKey] = buildImportKeyAndURI(namespace, name);
   logger.debug(`Built importKey: ${importKey}`);
 
   logger.debug(
@@ -572,7 +568,6 @@ async function innerStart(
       const [importKey] = buildImportKeyAndURI(
         is.metadata.namespace,
         is.metadata.name,
-        true,
       );
       logger.debug(
         `innerStart: Adding importKey ${importKey} for KServe LLMInferenceService ${is.metadata.namespace}/${is.metadata.name}`,
