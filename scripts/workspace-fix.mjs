@@ -123,7 +123,8 @@ export function resolveConfig(pkg, flags) {
   };
 }
 
-export function mergeNodeOptions(existing, additional) {
+export function mergeNodeOptions(existing, additional, options = {}) {
+  const { overrideHeapLimit = false } = options;
   if (!additional) {
     return existing;
   }
@@ -131,6 +132,12 @@ export function mergeNodeOptions(existing, additional) {
     return additional;
   }
   if (existing.includes('max-old-space-size')) {
+    if (overrideHeapLimit) {
+      const replacement = additional.match(/--max-old-space-size=\d+/)?.[0];
+      if (replacement) {
+        return existing.replace(/--max-old-space-size=\d+/, replacement);
+      }
+    }
     return existing;
   }
   return `${existing} ${additional}`.trim();
@@ -145,7 +152,9 @@ export function resolveSpawnEnv(step, config, baseEnv = process.env) {
   }
   return {
     ...baseEnv,
-    NODE_OPTIONS: mergeNodeOptions(baseEnv.NODE_OPTIONS, extra),
+    NODE_OPTIONS: mergeNodeOptions(baseEnv.NODE_OPTIONS, extra, {
+      overrideHeapLimit: Boolean(config.nodeOptions),
+    }),
   };
 }
 

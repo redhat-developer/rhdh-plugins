@@ -103,6 +103,24 @@ test('mergeNodeOptions preserves an existing heap limit', () => {
   );
 });
 
+test('mergeNodeOptions appends when existing lacks a heap limit', () => {
+  assert.equal(
+    mergeNodeOptions('--inspect', DEFAULT_NODE_OPTIONS),
+    '--inspect --max-old-space-size=8192',
+  );
+});
+
+test('mergeNodeOptions replaces heap limit for workspace overrides', () => {
+  assert.equal(
+    mergeNodeOptions(
+      '--max-old-space-size=8192',
+      '--max-old-space-size=16384',
+      { overrideHeapLimit: true },
+    ),
+    '--max-old-space-size=16384',
+  );
+});
+
 test('resolveSpawnEnv sets NODE_OPTIONS for lint-fix', () => {
   const env = resolveSpawnEnv(
     { id: 'lint-fix' },
@@ -120,6 +138,18 @@ test('resolveSpawnEnv honors rhdhFix.nodeOptions', () => {
       {},
     ),
     {},
+  );
+  assert.equal(env.NODE_OPTIONS, '--max-old-space-size=16384');
+});
+
+test('resolveSpawnEnv lets rhdhFix.nodeOptions override CI NODE_OPTIONS', () => {
+  const env = resolveSpawnEnv(
+    { id: 'lint-fix' },
+    resolveConfig(
+      { rhdhFix: { nodeOptions: '--max-old-space-size=16384' } },
+      {},
+    ),
+    { NODE_OPTIONS: DEFAULT_NODE_OPTIONS },
   );
   assert.equal(env.NODE_OPTIONS, '--max-old-space-size=16384');
 });
