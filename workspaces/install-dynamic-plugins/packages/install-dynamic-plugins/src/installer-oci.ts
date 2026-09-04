@@ -42,6 +42,11 @@ function splitOciPackage(
   if (bang === -1) return null;
   const imagePart = pkg.slice(0, bang);
   const pluginPath = pkg.slice(bang + 1);
+  /* istanbul ignore next -- unreachable on the install path: OCI_REGEX rejects
+     a leading or trailing `!` (oci-key.test.ts `invalidCases`), and a package
+     with no `!` at all has one appended by the merger before it gets here
+     (merger.ts, `!plugin.package.includes('!')` and resolveInherit). Kept so
+     this function stays total if either changes. */
   if (!imagePart || !pluginPath) return null;
   return { imagePart, pluginPath };
 }
@@ -137,6 +142,9 @@ async function isAlreadyInstalled(
     return true;
   }
 
+  // Not unreachable: `dynamic-plugins.yaml` is parsed with a type assertion,
+  // not a runtime check, so a typo'd `pullPolicy` arrives here as an
+  // unrecognised string and must fall through to a re-install.
   if (pullPolicy !== PullPolicy.ALWAYS) return false;
 
   const digestFile = path.join(destination, pathInstalled, IMAGE_HASH_FILE);
@@ -144,6 +152,9 @@ async function isAlreadyInstalled(
 
   const localDigest = (await fs.readFile(digestFile, 'utf8')).trim();
   const parts = splitOciPackage(pkg);
+  /* istanbul ignore next -- unreachable for the same reason as the guard in
+     splitOciPackage: every `pkg` that reaches here carries a `!<path>`, either
+     from the user or appended by the merger. */
   if (!parts) return false;
   const remoteDigest = await imageCache.getDigest(parts.imagePart);
   if (localDigest !== remoteDigest) return false;

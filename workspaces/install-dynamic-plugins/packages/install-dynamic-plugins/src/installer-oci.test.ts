@@ -248,6 +248,32 @@ describe('installOciPlugin — floating tags (RHDHBUGS-1077)', () => {
     expect(result.pluginPath).toBeNull();
     expect(calls.getDigest).toEqual([]);
   });
+
+  it('re-installs rather than skipping when the configured pullPolicy is not a recognised value', async () => {
+    // `dynamic-plugins.yaml` is read with `parseYaml(...) as DynamicPluginsConfig`
+    // (installer.ts) — a type assertion, not a runtime check — so a typo like
+    // `pullPolicy: Never` reaches here as an unrecognised string. It must fall
+    // through to a re-install; silently skipping would strand the plugin at
+    // whatever version happened to be on disk.
+    const installed = await seedInstalled('digest-aaaa');
+    const tarball = await makeLayerTarball(PLUGIN_PATH, '{"name":"my-plugin"}');
+    const { cache, calls } = recordingImageCache({
+      digest: 'digest-aaaa',
+      tarball,
+    });
+
+    const result = await installOciPlugin(
+      ociPlugin({ pullPolicy: 'Never' as PullPolicy }),
+      destination,
+      cache,
+      installed,
+    );
+
+    expect(result.pluginPath).toBe(PLUGIN_PATH);
+    expect(calls.getTarball).toHaveLength(1);
+    // Never consults the registry for a digest it would not know how to act on.
+    expect(calls.getDigest).toEqual(['oci://registry.io/org/plugin:latest']);
+  });
 });
 
 describe('installOciPlugin — package spec handling', () => {
