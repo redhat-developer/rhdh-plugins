@@ -1481,7 +1481,8 @@ export const spec = {
           "running",
           "success",
           "error",
-          "cancelled"
+          "cancelled",
+          "stale"
         ]
       },
       "ModuleStatus": {
@@ -1493,7 +1494,8 @@ export const spec = {
           "success",
           "error",
           "cancelled",
-          "removed"
+          "removed",
+          "stale"
         ]
       },
       "ProjectStatusState": {

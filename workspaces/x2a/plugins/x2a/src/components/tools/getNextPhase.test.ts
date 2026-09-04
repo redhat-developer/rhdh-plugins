@@ -138,4 +138,25 @@ describe('getNextPhase', () => {
       expect(getNextPhase(module)).toBe('analyze');
     });
   });
+
+  describe('stale status handling', () => {
+    it('returns "migrate" when migrate is stale', () => {
+      const module: Module = {
+        ...baseModule,
+        analyze: makeJob('analyze', 'success'),
+        migrate: makeJob('migrate', 'stale'),
+      };
+      expect(getNextPhase(module)).toBe('migrate');
+    });
+
+    it('returns "migrate" when migrate and publish are stale', () => {
+      const module: Module = {
+        ...baseModule,
+        analyze: makeJob('analyze', 'success'),
+        migrate: makeJob('migrate', 'stale'),
+        publish: makeJob('publish', 'stale'),
+      };
+      expect(getNextPhase(module)).toBe('migrate');
+    });
+  });
 });

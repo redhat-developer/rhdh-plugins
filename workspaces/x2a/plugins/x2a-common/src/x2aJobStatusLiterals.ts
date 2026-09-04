@@ -29,6 +29,7 @@ export const X2A_JOB_STATUS_VALUES = [
   'success',
   'error',
   'cancelled',
+  'stale',
 ] as const satisfies readonly JobStatusEnum[];
 
 /**

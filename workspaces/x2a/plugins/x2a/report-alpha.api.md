@@ -224,7 +224,9 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'modulePage.phases.statuses.running': string;
     readonly 'modulePage.phases.statuses.success': string;
     readonly 'modulePage.phases.statuses.cancelled': string;
+    readonly 'modulePage.phases.statuses.stale': string;
     readonly 'modulePage.phases.resyncMigrationPlanInstructions': string;
+    readonly 'modulePage.phases.staleInstructions': string;
     readonly 'modulePage.phases.reanalyzeInstructions': string;
     readonly 'modulePage.phases.rerunAnalyze': string;
     readonly 'modulePage.phases.analyzeInstructions': string;
@@ -342,6 +344,7 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'module.statuses.running': string;
     readonly 'module.statuses.success': string;
     readonly 'module.statuses.cancelled': string;
+    readonly 'module.statuses.stale': string;
     readonly 'module.statuses.removed': string;
     readonly 'module.notStarted': string;
     readonly 'module.actions.runNextPhase': string;

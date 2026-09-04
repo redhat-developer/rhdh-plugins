@@ -704,4 +704,138 @@ describe('X2ADatabaseService – jobs (update & delete)', () => {
       },
     );
   });
+
+  describe('markJobsAsStale', () => {
+    it.each(supportedDatabaseIds)(
+      'marks terminal jobs as stale - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test Project',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const module = await service.createModule({
+          name: 'Test Module',
+          sourcePath: '/path',
+          projectId: project.id,
+        });
+
+        const successJob = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze' as const,
+          status: 'success',
+        });
+        const errorJob = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'migrate' as const,
+          status: 'error',
+        });
+        const cancelledJob = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'publish' as const,
+          status: 'cancelled',
+        });
+
+        await service.markJobsAsStale([
+          successJob.id,
+          errorJob.id,
+          cancelledJob.id,
+        ]);
+
+        const updatedSuccess = await service.getJob({ id: successJob.id });
+        const updatedError = await service.getJob({ id: errorJob.id });
+        const updatedCancelled = await service.getJob({ id: cancelledJob.id });
+
+        expect(updatedSuccess?.status).toBe('stale');
+        expect(updatedError?.status).toBe('stale');
+        expect(updatedCancelled?.status).toBe('stale');
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'skips active jobs (pending, running) - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+        const credentials = mockCredentials.user();
+        const project = await service.createProject(
+          {
+            name: 'Test Project',
+            description: 'D',
+            ...defaultProjectRepoFields,
+          },
+          { credentials },
+        );
+        const module = await service.createModule({
+          name: 'Test Module',
+          sourcePath: '/path',
+          projectId: project.id,
+        });
+
+        const pendingJob = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'analyze' as const,
+          status: 'pending',
+        });
+        const runningJob = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'migrate' as const,
+          status: 'running',
+        });
+        const successJob = await service.createJob({
+          projectId: project.id,
+          moduleId: module.id,
+          phase: 'publish' as const,
+          status: 'success',
+        });
+
+        await service.markJobsAsStale([
+          pendingJob.id,
+          runningJob.id,
+          successJob.id,
+        ]);
+
+        const updatedPending = await service.getJob({ id: pendingJob.id });
+        const updatedRunning = await service.getJob({ id: runningJob.id });
+        const updatedSuccess = await service.getJob({ id: successJob.id });
+
+        expect(updatedPending?.status).toBe('pending');
+        expect(updatedRunning?.status).toBe('running');
+        expect(updatedSuccess?.status).toBe('stale');
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'handles empty array - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        await expect(service.markJobsAsStale([])).resolves.toBeUndefined();
+      },
+    );
+
+    it.each(supportedDatabaseIds)(
+      'handles non-existent job IDs - %p',
+      async databaseId => {
+        const { client } = await createDatabase(databaseId);
+        const service = createService(client);
+
+        await expect(
+          service.markJobsAsStale([nonExistentId]),
+        ).resolves.toBeUndefined();
+      },
+    );
+  });
 });

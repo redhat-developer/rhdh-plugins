@@ -603,6 +603,10 @@ export class X2ADatabaseService implements X2ADatabaseServiceApi {
     return this.#jobOps.deleteJob({ id });
   }
 
+  async markJobsAsStale(jobIds: string[]): Promise<void> {
+    return this.#jobOps.markJobsAsStale(jobIds);
+  }
+
   // Rules
 
   async createRule(input: {
