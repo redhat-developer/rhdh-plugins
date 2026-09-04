@@ -70,33 +70,27 @@ function getDescription(is: InferenceService): string {
   return `KServe instance ${is.metadata.namespace}:${is.metadata.name}`;
 }
 
-function getTags(is: InferenceService): string[] {
-  const tags: string[] = [];
+const PREDICTOR_FRAMEWORK_KEYS: ReadonlyArray<[string, string]> = [
+  ['sklearn', FRAMEWORK_SKLEARN],
+  ['xgboost', FRAMEWORK_XGBOOST],
+  ['tensorflow', FRAMEWORK_TENSORFLOW],
+  ['pytorch', FRAMEWORK_PYTORCH],
+  ['triton', FRAMEWORK_TRITON],
+  ['onnx', FRAMEWORK_ONNX],
+  ['huggingface', FRAMEWORK_HUGGINGFACE],
+  ['pmml', FRAMEWORK_PMML],
+  ['lightgbm', FRAMEWORK_LIGHTGBM],
+  ['paddle', FRAMEWORK_PADDLE],
+];
 
-  if (!is) {
-    return tags;
-  }
+function getPredictorTags(predictor: any, is: InferenceService): string[] {
+  const tags: string[] = PREDICTOR_FRAMEWORK_KEYS.filter(
+    ([key]) => predictor[key],
+  ).map(([, tag]) => tag);
 
-  const predictor = is.spec.predictor;
-
-  if (predictor.sklearn) tags.push(FRAMEWORK_SKLEARN);
-  if (predictor.xgboost) tags.push(FRAMEWORK_XGBOOST);
-  if (predictor.tensorflow) tags.push(FRAMEWORK_TENSORFLOW);
-  if (predictor.pytorch) tags.push(FRAMEWORK_PYTORCH);
-  if (predictor.triton) tags.push(FRAMEWORK_TRITON);
-  if (predictor.onnx) tags.push(FRAMEWORK_ONNX);
-  if (predictor.huggingface) tags.push(FRAMEWORK_HUGGINGFACE);
-  if (predictor.pmml) tags.push(FRAMEWORK_PMML);
-  if (predictor.lightgbm) tags.push(FRAMEWORK_LIGHTGBM);
-  if (predictor.paddle) tags.push(FRAMEWORK_PADDLE);
-
-  if (predictor.model) {
-    const modelFormat = predictor.model.modelFormat;
-    let tag = modelFormat.name;
-    if (modelFormat.version) {
-      tag = `${tag}-${modelFormat.version}`;
-    }
-    tags.push(tag.toLowerCase());
+  if (predictor.model?.modelFormat) {
+    const { name, version } = predictor.model.modelFormat;
+    tags.push(version ? `${name}-${version}`.toLowerCase() : name.toLowerCase());
   }
 
   if (is.spec.explainer?.art) {
@@ -104,6 +98,25 @@ function getTags(is: InferenceService): string[] {
   }
 
   return tags;
+}
+
+function getTags(is: InferenceService): string[] {
+  if (!is) {
+    return [];
+  }
+
+  // InferenceService (v1beta1) uses spec.predictor; LLMInferenceService (v1alpha2)
+  // uses spec.model directly with no predictor field.
+  if (is.spec.predictor) {
+    return getPredictorTags(is.spec.predictor, is);
+  }
+
+  // LLMInferenceService: use the model name as a tag
+  if (is.spec.model?.name) {
+    return [sanitizeName(is.spec.model.name)];
+  }
+
+  return [];
 }
 
 function getTagsFromLabels(is: InferenceService): string[] {
@@ -122,14 +135,18 @@ function getTagsFromLabels(is: InferenceService): string[] {
 }
 
 function getArtifactLocationURL(is: InferenceService): string | undefined {
-  const model = is.spec.predictor.model;
-
-  if (model?.storageURI) {
-    return model.storageURI;
+  // InferenceService (v1beta1): storage is under spec.predictor.model
+  const predictorModel = is.spec.predictor?.model;
+  if (predictorModel?.storageURI) {
+    return predictorModel.storageURI;
+  }
+  if (predictorModel?.storage?.path) {
+    return `s3://${predictorModel.storage.path}`;
   }
 
-  if (model?.storage?.path) {
-    return `s3://${model.storage.path}`;
+  // LLMInferenceService (v1alpha2): storage URI is at spec.model.uri
+  if (is.spec.model?.uri) {
+    return is.spec.model.uri;
   }
 
   return undefined;
