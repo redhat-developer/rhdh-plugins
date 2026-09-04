@@ -80,7 +80,7 @@
     "@backstage/plugin-permission-react": "^0.5.2",
     "@backstage/ui": "^0.16.0",
     "@red-hat-developer-hub/backstage-plugin-boost-common": "workspace:^",
-    "@remixicon/react": ">=4.6.0 <4.9.0"
+    "@remixicon/react": "<4.10.0"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
