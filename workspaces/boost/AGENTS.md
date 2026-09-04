@@ -77,6 +77,31 @@ only requires a non-empty string and MUST NOT enum-validate connector-name.
 
 When writing new scenarios or reviewing spec file changes, verify that every AND/THEN bullet is a concrete assertion, not contextual guidance for human readers.
 
+### Cancelling or removing an openspec component
+
+When a spec, epic, or task is cancelled, apply strikethrough to the cancelled item and then verify all cross-file references using this checklist. Each step must be checked before the cancellation PR is considered complete.
+
+1. **Numeric counts** — Search `design.md` and `proposal.md` for cardinal numbers that reference the list containing the cancelled item (e.g., "7 epics", "4 remaining"). Decrement each count to reflect the removal. Check both prose paragraphs and blockquote summaries.
+
+2. **Cross-spec dependencies** — Check whether surviving specs in the same `specs/` directory reference the cancelled capability as a trigger, precondition, or data source. If a scenario's GIVEN/WHEN clause references the cancelled feature (e.g., "via the admin UI"), update it to reflect the replacement path (e.g., "via YAML configuration") and verify that dependent fields (actor, preconditions) are consistent with the new trigger.
+
+3. **Design decisions** — Verify that decisions in `design.md` referencing the cancelled spec are either struck through or rewritten. If a decision described trade-offs involving the cancelled approach (e.g., a standalone UI vs. an existing plugin), update the rationale to reflect that only the surviving approach remains.
+
+4. **Task dependencies** — In `tasks.md`, check that no active task depends on a cancelled task. If a surviving task listed the cancelled item as a prerequisite or input, strike or reassign that dependency.
+
+5. **Strikethrough scope** — Apply strikethrough to the item title and content, not to status labels like "CANCELLED". Striking through "CANCELLED" reads as reverting the cancellation. Correct: `~~RBAC Admin UI — Dashboard~~ CANCELLED`. Incorrect: `~~RBAC Admin UI — Dashboard — CANCELLED~~`.
+
+**Finding cross-references to a cancelled spec:**
+
+```bash
+# From the openspec change area directory, search for references to the
+# cancelled spec slug across all openspec and specification files:
+grep -rn "rbac-admin-ui\|RBAC Admin UI\|RHIDP-15304" \
+  workspaces/boost/openspec/ workspaces/boost/specifications/
+```
+
+Replace the slug, display name, and ticket ID with those of the spec being cancelled. Review each match and update or strike references as appropriate.
+
 ## Architecture rules
 
 ### Backstage-native services only
