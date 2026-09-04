@@ -62,6 +62,17 @@ describe('GithubAiAdoptionMetricProvider', () => {
       }
     });
 
+    it('should set history to true for all metrics', () => {
+      const provider = GithubAiAdoptionMetricProvider.fromConfig(
+        new ConfigReader({}),
+        { logger: mockedLogger },
+      );
+      const metrics = provider.getMetrics();
+      for (const metric of metrics) {
+        expect(metric.history).toBe(true);
+      }
+    });
+
     it('should set type to number for all metrics', () => {
       const provider = GithubAiAdoptionMetricProvider.fromConfig(
         new ConfigReader({}),
@@ -314,6 +325,30 @@ describe('GithubAiAdoptionMetricProvider', () => {
       const results = await provider.calculateMetrics(mockEntity);
 
       expect(results.get('github.aiAdoptionRate[7d]')).toBe(0);
+    });
+
+    it('should detect trailer keys with non-standard casing', async () => {
+      const now = new Date();
+      mockedGithubClientInstance.getCommitHistory.mockResolvedValue([
+        {
+          message:
+            'feat: all caps\n\nCO-AUTHORED-BY: Claude <noreply@anthropic.com>',
+          committedDate: now.toISOString(),
+        },
+        {
+          message: 'feat: lowercase\n\nassisted-by: Cursor',
+          committedDate: now.toISOString(),
+        },
+        {
+          message:
+            'feat: mixed\n\nco-Authored-By: Copilot <noreply@github.com>',
+          committedDate: now.toISOString(),
+        },
+      ]);
+
+      const results = await provider.calculateMetrics(mockEntity);
+
+      expect(results.get('github.aiAdoptionRate[7d]')).toBe(1);
     });
 
     it('should detect various AI tools case-insensitively', async () => {

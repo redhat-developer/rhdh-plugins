@@ -32,10 +32,7 @@ import {
   GithubDeploymentsQueryResponse,
   GithubCommitsPullRequestsQueryResponse,
 } from './types';
-import {
-  DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT,
-  GITHUB_BATCH_SIZE,
-} from './constants';
+import { DEFAULT_FETCH_ITEMS_LIMIT, GITHUB_BATCH_SIZE } from './constants';
 import { buildCommitsPullRequestsQuery } from './queries/buildCommitsPullRequestsQuery';
 import { mapCommitsPullRequests } from './mappers';
 
@@ -127,7 +124,7 @@ export class GithubClient {
     options?: { fetchItemsLimit?: number },
   ): Promise<GithubDeployment[]> {
     const fetchItemsLimit =
-      options?.fetchItemsLimit ?? DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT;
+      options?.fetchItemsLimit ?? DEFAULT_FETCH_ITEMS_LIMIT;
     const octokit = await this.getOctokitClient(url);
     const deployments: GithubDeployment[] = [];
     const query = `
@@ -243,7 +240,7 @@ export class GithubClient {
     options?: { fetchItemsLimit?: number },
   ): Promise<string[]> {
     const fetchItemsLimit =
-      options?.fetchItemsLimit ?? DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT;
+      options?.fetchItemsLimit ?? DEFAULT_FETCH_ITEMS_LIMIT;
     const octokit = await this.getOctokitRestClient(url);
 
     const basehead = `${baseSha}...${headSha}`;
@@ -349,7 +346,7 @@ export class GithubClient {
     options?: { fetchItemsLimit?: number },
   ): Promise<GithubWorkflowRun[]> {
     const fetchItemsLimit =
-      options?.fetchItemsLimit ?? DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT;
+      options?.fetchItemsLimit ?? DEFAULT_FETCH_ITEMS_LIMIT;
     const octokit = await this.getOctokitRestClient(url);
 
     const workflows = await octokit.paginate(
@@ -418,7 +415,7 @@ export class GithubClient {
     options?: { fetchItemsLimit?: number },
   ): Promise<GithubCommit[]> {
     const fetchItemsLimit =
-      options?.fetchItemsLimit ?? DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT;
+      options?.fetchItemsLimit ?? DEFAULT_FETCH_ITEMS_LIMIT;
     const octokit = await this.getOctokitClient(url);
     const commits: GithubCommit[] = [];
     const query = `

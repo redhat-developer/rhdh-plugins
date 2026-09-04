@@ -40,7 +40,8 @@ export const AI_ADOPTION_RATE_THRESHOLD: ThresholdConfig = {
 /**
  * Known AI tool identifiers used in commit trailers.
  * Matched case-insensitively against the value after
- * `Assisted-by: ` or `Co-Authored-By: ` / `Co-authored-by: `.
+ * `Assisted-by:` or `Co-authored-by:` (trailer keys are
+ * matched case-insensitively per the git trailer spec).
  */
 const AI_TOOL_PATTERNS: string[] = [
   'claude',
@@ -72,14 +73,13 @@ function isAiAssistedCommit(message: string): boolean {
   const lines = message.split('\n');
   for (const line of lines) {
     const trimmed = line.trim();
+    const lower = trimmed.toLowerCase();
     let value: string | undefined;
 
-    if (trimmed.startsWith('Assisted-by: ')) {
-      value = trimmed.slice('Assisted-by: '.length).trim();
-    } else if (trimmed.startsWith('Co-Authored-By: ')) {
-      value = trimmed.slice('Co-Authored-By: '.length).trim();
-    } else if (trimmed.startsWith('Co-authored-by: ')) {
-      value = trimmed.slice('Co-authored-by: '.length).trim();
+    if (lower.startsWith('assisted-by: ')) {
+      value = trimmed.slice('assisted-by: '.length).trim();
+    } else if (lower.startsWith('co-authored-by: ')) {
+      value = trimmed.slice('co-authored-by: '.length).trim();
     }
 
     if (value) {
@@ -128,6 +128,7 @@ export class GithubAiAdoptionMetricProvider
       description: `Ratio of AI-assisted commits over the last ${range}.`,
       type: 'number' as const,
       thresholds: AI_ADOPTION_RATE_THRESHOLD,
+      history: true,
     }));
   }
 
