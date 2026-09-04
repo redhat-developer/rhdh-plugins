@@ -70,6 +70,15 @@ This metric counts all pull requests that are currently in an "open" state for t
 - **Datasource**: `github`
 - **Unit**: open pull requests (count)
 
+### GitHub AI adoption rate (`github.aiAdoptionRate[7d]`, `[30d]`, `[90d]`)
+
+These metrics calculate the ratio of AI-assisted commits on the repository's default branch over 7-day, 30-day, and 90-day time windows. A commit is considered AI-assisted when it contains a `Co-authored-by` or `Assisted-by` trailer referencing a known AI tool (Claude, Copilot, Cursor, Codeium, Cody, Tabnine, Gemini, Amazon Q, Windsurf, Devin, Aider). Merge commits are excluded from the calculation.
+
+- **Metric IDs**: `github.aiAdoptionRate[7d]`, `github.aiAdoptionRate[30d]`, `github.aiAdoptionRate[90d]`
+- **Metric Provider ID**: `github.aiAdoption`
+- **Type**: Number (ratio from 0 to 1)
+- **Datasource**: `github`
+
 ## Collectors
 
 This module registers collectors to collect data from GitHub to be used by composite metric providers:
@@ -156,6 +165,24 @@ scorecard:
               expression: '>50'
 ```
 
+Default thresholds for `github.aiAdoption`:
+
+```yaml
+# app-config.yaml
+scorecard:
+  metricProviders:
+    github:
+      aiAdoption:
+        thresholds:
+          rules:
+            - key: success
+              expression: '>=0.2'
+            - key: warning
+              expression: '>=0.1'
+            - key: error
+              expression: '>=0'
+```
+
 See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom thresholds configuration.
 
 ## Configuration
@@ -169,6 +196,22 @@ scorecard:
   metricProviders:
     github:
       openPRs:
+        schedule:
+          frequency:
+            cron: '0 6 * * *'
+          timeout:
+            minutes: 5
+          initialDelay:
+            seconds: 5
+```
+
+The `aiAdoption` provider also supports an independent schedule:
+
+```yaml
+scorecard:
+  metricProviders:
+    github:
+      aiAdoption:
         schedule:
           frequency:
             cron: '0 6 * * *'

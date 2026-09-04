@@ -19,6 +19,6 @@ export const GITHUB_BATCH_SIZE = 100;
 
 /**
  * Default client-side cap for GitHub list/compare fetches (deployments,
- * deployment workflow runs, and commits between SHAs).
+ * deployment workflow runs, commits between SHAs, and commit history).
  */
-export const DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT = 1000;
+export const DEFAULT_FETCH_ITEMS_LIMIT = 1000;

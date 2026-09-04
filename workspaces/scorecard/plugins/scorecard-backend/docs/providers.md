@@ -190,7 +190,7 @@ schedule:
 
 The following are examples of existing metric providers that you can reference:
 
-- **GitHub Datasource**: [GithubOpenPRsProvider](../../scorecard-backend-module-github/src/metricProviders/GithubOpenPRsProvider.ts)
+- **GitHub Datasource**: [GithubOpenPRsProvider](../../scorecard-backend-module-github/src/metricProviders/GithubOpenPRsProvider.ts), [GithubAiAdoptionProvider](../../scorecard-backend-module-github/src/metricProviders/GithubAiAdoptionProvider.ts)
 - **Jira Datasource**: [JiraOpenIssuesProvider](../../scorecard-backend-module-jira/src/metricProviders/JiraOpenIssuesProvider.ts)
 - **OpenSSF Datasource**: [OpenSSFMetricProvider](../../scorecard-backend-module-openssf/src/metricProviders/OpenSSFMetricProvider.ts)
 - **Filecheck Datasource** (batch / multi-metric): [FilecheckMetricProvider](../../scorecard-backend-module-filecheck/src/metricProviders/FilecheckMetricProvider.ts)
