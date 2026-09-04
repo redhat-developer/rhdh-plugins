@@ -241,6 +241,7 @@ export type ScalarAggregatedTimeSeriesPoint = {
 // @public (undocumented)
 export type ScalarAggregationResult = ScalarAggregatedMetric & {
   thresholds: ThresholdConfig;
+  aggregationChartDisplayColor: string | null;
 };
 
 // @public
@@ -339,7 +340,7 @@ export type WeightedStatusScoreAggregationResult =
     weightedStatusScore: number;
     weightedStatusSum: number;
     weightedStatusMaxPossible: number;
-    aggregationChartDisplayColor: string;
+    aggregationChartDisplayColor: string | null;
   };
 
 // (No @packageDocumentation comment for this package)

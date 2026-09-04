@@ -348,6 +348,7 @@ describe('AggregatedMetricMapper', () => {
           calculationErrorCount: 1,
           timestamp: '2024-01-15T10:00:00.000Z',
           thresholds,
+          aggregationChartDisplayColor: 'warning.main',
         },
         aggregationConfig,
       );
@@ -369,6 +370,7 @@ describe('AggregatedMetricMapper', () => {
           calculationErrorCount: 1,
           timestamp: '2024-01-15T10:00:00.000Z',
           thresholds,
+          aggregationChartDisplayColor: 'warning.main',
         },
         aggregationConfig,
       );

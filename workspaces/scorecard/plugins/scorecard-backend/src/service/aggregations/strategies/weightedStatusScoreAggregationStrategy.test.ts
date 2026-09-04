@@ -193,6 +193,40 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
     );
   });
 
+  it('should set aggregationChartDisplayColor to null when total is 0', async () => {
+    (
+      loader.loadStatusGroupedMetricByEntityRefs as jest.Mock
+    ).mockResolvedValueOnce({
+      ...loadedStatusGroupedMetric,
+      values: {},
+      total: 0,
+    });
+
+    await strategy.aggregate({
+      metric,
+      entityRefs,
+      thresholds: mockHigherIsBetterThresholds,
+      aggregationConfig,
+    });
+
+    expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+      metric,
+      {
+        ...mappedWeightedResult,
+        values: [
+          { name: 'success', count: 0, score: 100 },
+          { name: 'error', count: 0, score: 0 },
+        ],
+        weightedStatusScore: 0,
+        weightedStatusSum: 0,
+        weightedStatusMaxPossible: 0,
+        aggregationChartDisplayColor: null,
+        total: 0,
+      },
+      aggregationConfig,
+    );
+  });
+
   it('should get aggregation result', async () => {
     const result = await strategy.aggregate({
       metric,
