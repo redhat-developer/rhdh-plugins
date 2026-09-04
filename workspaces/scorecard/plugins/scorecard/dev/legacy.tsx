@@ -40,6 +40,8 @@ import type {
   Metric,
   EntityMetricDetailResponse,
   AggregationMetadata,
+  MetricTimeSeriesResponse,
+  AggregatedMetricTimeSeriesResponse,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { CatalogEntityPage } from '@backstage/plugin-catalog';
 
@@ -54,7 +56,12 @@ import {
 } from '../src/plugin';
 import { scorecardTranslations } from '../src/translations';
 import { scorecardApiRef } from '../src/api';
-import type { ScorecardApi } from '../src/api/types';
+import type {
+  GetAggregationTimeSeriesOptions,
+  GetMetricTimeSeriesOptions,
+  ScorecardApi,
+  ScorecardOptions,
+} from '../src/api/types';
 import type { GetAggregatedScorecardEntitiesOptions } from '../src/components/types';
 import {
   mockAggregatedScorecardData,
@@ -63,7 +70,6 @@ import {
 } from '../__fixtures__/scorecardData';
 import { mockAggregatedScorecardEntitiesData } from '../__fixtures__/aggregatedScorecardEntitiesData';
 import { mockCatalogApi } from './mocks';
-import { ScorecardOptions } from '../src/api/types';
 
 const mockComponentEntity: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
@@ -95,13 +101,74 @@ class MockScorecardApi implements ScorecardApi {
   }
 
   async getAggregationMetadata(
-    _aggregationId: string,
+    aggregationId: string,
   ): Promise<AggregationMetadata> {
+    if (
+      aggregationId === 'avgDeploymentFrequency' ||
+      aggregationId.startsWith('dora.')
+    ) {
+      return {
+        title: 'Average Deployment Frequency',
+        description:
+          'This KPI provides average weekly production deploys over a 30-day window per entity.',
+        type: 'number',
+        unit: '/week',
+        history: true,
+        visualization: 'sparkline',
+        aggregationType: 'average',
+      };
+    }
+
     return {
       title: 'GitHub open issues',
       description: 'GitHub open issues',
       type: 'number',
       aggregationType: 'statusGrouped',
+    };
+  }
+
+  async getAggregationTimeSeries({
+    aggregationId,
+  }: GetAggregationTimeSeriesOptions): Promise<AggregatedMetricTimeSeriesResponse> {
+    return {
+      id: aggregationId,
+      metricId: 'dora.deploymentFrequency',
+      metadata: {
+        title: 'Average Deployment Frequency',
+        description:
+          'This KPI provides average weekly production deploys over a 30-day window per entity.',
+        type: 'number',
+        unit: '/week',
+        history: true,
+        visualization: 'sparkline',
+        aggregationType: 'average',
+      },
+      points: [
+        {
+          value: 10,
+          successCount: 5,
+          errorCount: 0,
+          total: 5,
+          status: 'success',
+          timestamp: '2026-08-23T00:00:00.000Z',
+        },
+        {
+          value: 6.8,
+          successCount: 4,
+          errorCount: 3,
+          total: 7,
+          status: 'success',
+          timestamp: '2026-08-24T00:00:00.000Z',
+        },
+      ],
+      thresholds: {
+        rules: [
+          { key: 'elite', expression: '>=7', color: 'success.main' },
+          { key: 'medium', expression: '1-7', color: 'warning.main' },
+          { key: 'error', expression: '<1', color: 'error.main' },
+        ],
+      },
+      aggregationChartDisplayColor: 'warning.main',
     };
   }
 
@@ -130,6 +197,43 @@ class MockScorecardApi implements ScorecardApi {
       options.page ?? 1,
       options.pageSize ?? 10,
     ) as EntityMetricDetailResponse;
+  }
+
+  async getMetricTimeSeries({
+    entity,
+    metricId,
+  }: GetMetricTimeSeriesOptions): Promise<MetricTimeSeriesResponse> {
+    return {
+      metricId,
+      entityRef: `${entity.kind}:${entity.metadata.namespace}/${entity.metadata.name}`,
+      points: [
+        { value: 8, timestamp: '2026-04-27T23:10:00.000Z' },
+        { value: 7, timestamp: '2026-04-28T22:55:00.000Z' },
+      ],
+      metadata: {
+        title: metricId,
+        description: '',
+        type: 'number',
+        history: true,
+        defaultVisualization: 'sparkline',
+      },
+    };
+  }
+
+  async getMetricCollectors(metricId: string) {
+    if (metricId.startsWith('dora.')) {
+      return [
+        {
+          id: 'github:deploymentWorkflowRuns',
+          description: 'Collects deployments from GitHub Actions.',
+        },
+        {
+          id: 'jira:incidents',
+          description: 'Collects Jira incidents.',
+        },
+      ];
+    }
+    return [];
   }
 }
 
