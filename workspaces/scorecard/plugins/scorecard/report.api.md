@@ -33,8 +33,8 @@ const _default: OverridableFrontendPlugin<
   {
     root: RouteRef<undefined>;
     drillDown: RouteRef<{
-      metricId: string;
       aggregationId: string;
+      metricId: string;
     }>;
   },
   {},
@@ -58,8 +58,8 @@ const _default: OverridableFrontendPlugin<
       config: {
         allowedFilters:
           | {
-              type?: string | undefined;
               kind?: string | undefined;
+              type?: string | undefined;
             }[]
           | undefined;
         path: string | undefined;
@@ -71,8 +71,8 @@ const _default: OverridableFrontendPlugin<
       configInput: {
         allowedFilters?:
           | {
-              type?: string | undefined;
               kind?: string | undefined;
+              type?: string | undefined;
             }[]
           | undefined;
         path?: string | undefined | undefined;
@@ -122,8 +122,12 @@ const _default: OverridableFrontendPlugin<
           >;
       inputs: {
         layouts: ExtensionInput<
-          | ConfigurableExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
-          | ConfigurableExtensionDataRef<string, 'scorecard.layout-title', {}>,
+          | ConfigurableExtensionDataRef<string, 'scorecard.layout-title', {}>
+          | ConfigurableExtensionDataRef<
+              JSX_2.Element,
+              'core.reactElement',
+              {}
+            >,
           {
             singleton: false;
             optional: true;
