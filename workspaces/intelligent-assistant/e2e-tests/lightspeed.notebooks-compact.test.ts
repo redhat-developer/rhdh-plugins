@@ -16,7 +16,10 @@
 
 import { test, expect, type Page } from '@playwright/test';
 
-import { NotebookSurfacePage } from './pages/NotebookSurfacePage';
+import {
+  NotebookSurfacePage,
+  NOTEBOOK_UNTITLED_GRID_NAME,
+} from './pages/NotebookSurfacePage';
 import type { LightspeedMessages } from './utils/translations';
 import { bootstrapLightspeedE2ePage } from './utils/lightspeedE2eSetup';
 import {
@@ -52,20 +55,22 @@ for (const mode of ['Overlay', 'Dock to window'] as const) {
       const boot = await bootstrapLightspeedE2ePage(browser);
       sharedPage = boot.page;
       translations = boot.translations;
-      notebooks = new NotebookSurfacePage(sharedPage, translations);
+      notebooks = new NotebookSurfacePage(
+        sharedPage,
+        translations,
+        boot.locale,
+      );
     });
 
     test('tabs are visible and notebooks tab selectable', async () => {
       await switchToCompactNotebooks(sharedPage, translations, mode);
 
-      await expect(
-        sharedPage.getByRole('tab', { name: translations['tabs.chat'] }),
-      ).toBeVisible();
-      const notebooksTab = sharedPage.getByRole('tab', {
-        name: translations['tabs.notebooks'],
-      });
-      await expect(notebooksTab).toBeVisible();
-      await expect(notebooksTab).toHaveAttribute('aria-selected', 'true');
+      await expect(notebooks.chatTab()).toBeVisible();
+      await expect(notebooks.notebooksTab()).toBeVisible();
+      await expect(notebooks.notebooksTab()).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
     });
 
     test('empty notebook list shows create action', async () => {
@@ -80,148 +85,81 @@ for (const mode of ['Overlay', 'Dock to window'] as const) {
     });
 
     test('header actions visible in compact mode: close, add, sidebar toggle', async () => {
-      const header = sharedPage.locator('.pf-chatbot__header');
-
-      await expect(
-        header.getByRole('button', {
-          name: translations['notebook.view.close'],
-        }),
-      ).toBeVisible();
-      await expect(
-        header.getByRole('button', {
-          name: translations['notebook.view.documents.add'],
-        }),
-      ).toBeVisible();
-
-      const collapseLabel = translations['notebook.view.sidebar.collapse'];
-      const expandLabel = translations['notebook.view.sidebar.expand'];
-      const sidebarToggle = header.getByRole('button', {
-        name: new RegExp(`${collapseLabel}|${expandLabel}`),
-      });
-      await expect(sidebarToggle).toBeVisible();
+      await notebooks.expectCompactHeaderActionsVisible();
     });
 
     test('NotebookView topBar close button hidden in compact mode', async () => {
-      const closeButtons = sharedPage.getByRole('button', {
-        name: translations['notebook.view.close'],
-      });
-      await expect(closeButtons).toHaveCount(1);
+      await notebooks.expectSingleNotebookCloseButton();
     });
 
     test('upload modal opens and renders within panel', async () => {
-      const header = sharedPage.locator('.pf-chatbot__header');
-      const addButton = header.getByRole('button', {
-        name: translations['notebook.view.documents.add'],
-      });
-      await addButton.click();
+      await notebooks.clickCompactHeaderAddDocument();
 
-      // In compact mode, disablePortal renders the MUI Dialog inline. The
-      // ChatbotModal already has role="dialog", so scope to the MUI one.
-      const dialog = sharedPage.locator(
-        '[role="dialog"][aria-labelledby="add-document-modal-title"]',
-      );
-      await expect(dialog).toBeVisible({ timeout: 10_000 });
-      await expect(dialog.locator('#add-document-modal-title')).toBeVisible();
-      await expect(
-        dialog.locator(
-          `text=${translations['notebook.upload.modal.dragDropTitle']}`,
-        ),
-      ).toBeVisible();
-
-      await dialog
-        .locator('button', { hasText: translations['modal.cancel'] })
-        .click();
+      const uploadModal = notebooks.uploadDocumentModal();
+      await expect(uploadModal.dialog()).toBeVisible({ timeout: 10_000 });
+      await uploadModal.expectUploadAreaFullyDescribed();
+      await uploadModal.dismiss();
     });
 
     test('sidebar toggle mirrors icon direction', async () => {
-      const header = sharedPage.locator('.pf-chatbot__header');
-      const collapseLabel = translations['notebook.view.sidebar.collapse'];
-      const expandLabel = translations['notebook.view.sidebar.expand'];
-
-      const toggle = header.getByRole('button', {
-        name: new RegExp(`${collapseLabel}|${expandLabel}`),
-      });
-      await expect(toggle).toBeVisible();
-
-      const initialLabel = await toggle.getAttribute('aria-label');
-
-      await toggle.click();
-      await sharedPage.waitForTimeout(300);
-
-      const newLabel = await toggle.getAttribute('aria-label');
-      expect(newLabel).not.toBe(initialLabel);
-
-      const expectedLabel =
-        initialLabel === collapseLabel ? expandLabel : collapseLabel;
-      expect(newLabel).toBe(expectedLabel);
-
-      await toggle.click();
-      await sharedPage.waitForTimeout(300);
-      const restoredLabel = await toggle.getAttribute('aria-label');
-      expect(restoredLabel).toBe(initialLabel);
+      await notebooks.toggleCompactSidebarAndExpectLabelFlip();
     });
 
     test('file picker works in compact upload modal', async ({}, testInfo) => {
       const { absolutePath } = localeNotebookUpload1Path(testInfo.project.name);
 
-      const header = sharedPage.locator('.pf-chatbot__header');
-      await header
-        .getByRole('button', {
-          name: translations['notebook.view.documents.add'],
-        })
-        .click();
-
-      const dialog = sharedPage.locator(
-        '[role="dialog"][aria-labelledby="add-document-modal-title"]',
+      await notebooks.clickCompactHeaderAddDocument();
+      const uploadModal = notebooks.uploadDocumentModal();
+      await expect(uploadModal.dialog()).toBeVisible({ timeout: 10_000 });
+      await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+      await uploadModal.expectStagedFileCountCaptionVisible(
+        1,
+        NOTEBOOK_SESSION_MAX_DOCUMENTS,
       );
-      await expect(dialog).toBeVisible({ timeout: 10_000 });
+      await uploadModal.clickCancel();
+    });
 
-      const fileInput = dialog.locator('input[type="file"]');
-      await fileInput.setInputFiles([absolutePath]);
+    test('header add: upload completes and resource appears in panel', async ({}, testInfo) => {
+      const { absolutePath, fileName } = localeNotebookUpload1Path(
+        testInfo.project.name,
+      );
 
-      const stagedCaption = translations['notebook.upload.modal.selectedFiles']
-        .replace('{{count}}', '1')
-        .replace('{{max}}', String(NOTEBOOK_SESSION_MAX_DOCUMENTS));
-      await expect(dialog.locator(`text=${stagedCaption}`)).toBeVisible({
-        timeout: 5_000,
-      });
+      await notebooks.clickCompactHeaderAddDocument();
+      const uploadModal = notebooks.uploadDocumentModal();
+      await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+      await uploadModal.clickAddFilesForStagedCount(1);
+      await notebooks.ensureDocumentSidebarExpanded();
+      await notebooks.expectDocumentFileListedInSidebar(fileName);
+    });
 
-      await dialog
-        .locator('button', { hasText: translations['modal.cancel'] })
-        .click();
+    test('remove resource modal renders within panel', async () => {
+      await notebooks.ensureDocumentSidebarExpanded();
+      await notebooks.openDeleteFirstDocumentConfirmation();
+      await notebooks.cancelDeleteDocumentConfirmation();
+      await notebooks.deleteFirstListedDocumentFromSidebarOverflowMenu();
+      await notebooks.expectNotebookEditorUploadResourceButtonVisible();
     });
 
     test('switch tabs preserves notebook state', async () => {
-      await sharedPage
-        .getByRole('tab', { name: translations['tabs.chat'] })
-        .click();
-      await expect(
-        sharedPage.getByRole('tab', { name: translations['tabs.chat'] }),
-      ).toHaveAttribute('aria-selected', 'true');
+      await notebooks.chatTab().click();
+      await expect(notebooks.chatTab()).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
 
-      await sharedPage
-        .getByRole('tab', { name: translations['tabs.notebooks'] })
-        .click();
-      await expect(
-        sharedPage.getByRole('tab', {
-          name: translations['tabs.notebooks'],
-        }),
-      ).toHaveAttribute('aria-selected', 'true');
+      await notebooks.notebooksTab().click();
+      await expect(notebooks.notebooksTab()).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
 
-      // Notebook editor still shows (not reverted to list view)
       await expect(notebooks.uploadResourceHeading()).toBeVisible();
     });
 
     test('close notebook via header action', async () => {
-      const header = sharedPage.locator('.pf-chatbot__header');
-      await header
-        .getByRole('button', {
-          name: translations['notebook.view.close'],
-        })
-        .click();
+      await notebooks.clickCompactHeaderCloseNotebook();
 
       await expect(notebooks.myNotebooksHeading()).toBeVisible();
-      // Empty notebooks (no uploaded documents) are auto-deleted on close
       await expect(
         notebooks.createNotebookFromEmptyStateButton(),
       ).toBeVisible();
@@ -233,45 +171,39 @@ for (const mode of ['Overlay', 'Dock to window'] as const) {
 
       await selectDisplayMode(sharedPage, translations, otherMode);
 
-      await expect(
-        sharedPage.getByRole('tab', {
-          name: translations['tabs.notebooks'],
-        }),
-      ).toHaveAttribute('aria-selected', 'true');
-
+      await expect(notebooks.notebooksTab()).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
       await expect(notebooks.myNotebooksHeading()).toBeVisible();
     });
 
     test('switch to fullscreen preserves notebooks tab', async () => {
       await selectDisplayMode(sharedPage, translations, 'Fullscreen');
 
-      await expect(
-        sharedPage.getByRole('tab', {
-          name: translations['tabs.notebooks'],
-        }),
-      ).toBeVisible();
+      await expect(notebooks.notebooksTab()).toBeVisible();
     });
 
-    test('cleanup: delete created notebook', async () => {
+    test('cleanup: delete notebook modal renders within panel', async () => {
       await selectDisplayMode(sharedPage, translations, mode);
-
-      await expect(
-        sharedPage.getByRole('tab', {
-          name: translations['tabs.notebooks'],
-        }),
-      ).toBeVisible();
-      await sharedPage
-        .getByRole('tab', { name: translations['tabs.notebooks'] })
-        .click();
+      await notebooks.notebooksTab().click();
 
       const card = notebooks.newestUntitledNotebookCard();
-      if ((await card.count()) > 0) {
-        await notebooks.notebookCardOverflowMenuButton(card).click();
-        await notebooks.deleteNotebookOverflowMenuItem().click();
-        const confirmDelete =
-          notebooks.notebookDeleteConfirmationDialog('Untitled Notebook');
-        await confirmDelete.confirmDeletion();
+      if ((await card.count()) === 0) {
+        return;
       }
+
+      await notebooks.notebookCardOverflowMenuButton(card).click();
+      await notebooks.deleteNotebookOverflowMenuItem().click();
+
+      const confirmDelete = notebooks.notebookDeleteConfirmationDialog(
+        NOTEBOOK_UNTITLED_GRID_NAME,
+      );
+      await confirmDelete.expectDialogVisible();
+      await notebooks.expectNotebookDeleteDialogWithinChatbot(
+        NOTEBOOK_UNTITLED_GRID_NAME,
+      );
+      await confirmDelete.confirmDeletion();
     });
   });
 }

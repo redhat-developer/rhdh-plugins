@@ -27,6 +27,7 @@ import {
   NOTEBOOK_EDITOR_URL_RE,
   NOTEBOOK_SESSION_MAX_DOCUMENTS,
   notebookElevenFileStagingPaths,
+  notebookTenFileStagingPaths,
   notebookUnsupportedTypeFixturePath,
 } from './utils/notebooks';
 import { substituteNotebookTemplate } from './utils/notebookTranslation';
@@ -68,6 +69,14 @@ test.describe('Intelligent assistant notebooks', () => {
     await uploadModal.expectModalTitleBarMatchesAriaSnapshot();
     await uploadModal.expectAddFilesButtonDisabled(0);
     await uploadModal.clickCancel();
+  });
+
+  test('upload modal: title close button dismisses dialog', async () => {
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.expectUploadAreaFullyDescribed();
+    await uploadModal.clickTitleClose();
+    await expect(uploadModal.dialog()).toBeHidden();
   });
 
   test('document sidebar: collapse and expand', async () => {
@@ -153,6 +162,19 @@ test.describe('Intelligent assistant notebooks', () => {
     await uploadModal.clickCancel();
   });
 
+  test('upload modal: dropzone disabled at ten staged files', async () => {
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker(notebookTenFileStagingPaths());
+    await uploadModal.expectStagedFileCountCaptionVisible(
+      NOTEBOOK_SESSION_MAX_DOCUMENTS,
+      NOTEBOOK_SESSION_MAX_DOCUMENTS,
+    );
+    await uploadModal.expectDropzoneDisabled();
+    await uploadModal.expectMaxReachedTooltipOnDropzoneHover();
+    await uploadModal.clickCancel();
+  });
+
   test('upload modal: unsupported extension rejected', async () => {
     await notebooks.clickOpenUploadDocumentModal();
     const uploadModal = notebooks.uploadDocumentModal();
@@ -182,14 +204,69 @@ test.describe('Intelligent assistant notebooks', () => {
     await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
     await uploadModal.clickAddFilesForStagedCount(1);
 
+    await expect(uploadModal.dialog()).toBeHidden({ timeout: 5_000 });
     const overwriteModal = notebooks.notebookOverwriteConfirmModal();
     await overwriteModal.expectDialogVisible();
+    await expect(sharedPage.getByRole('dialog')).toHaveCount(1);
     await overwriteModal.expectListedOverwriteFile(fileName);
     await overwriteModal.clickBack();
+
+    uploadModal = notebooks.uploadDocumentModal();
+    await expect(uploadModal.dialog()).toBeVisible();
     await uploadModal.clickCancel();
 
-    await notebooks.deleteFirstListedDocumentFromSidebarOverflowMenu();
-    await notebooks.expectNotebookEditorUploadResourceButtonVisible();
+    await notebooks.clickOpenUploadDocumentModal();
+    uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
+    await expect(uploadModal.dialog()).toBeHidden({ timeout: 5_000 });
+    await overwriteModal.expectDialogVisible();
+    await overwriteModal.clickUpload();
+    await expect(overwriteModal.dialog()).toBeHidden({ timeout: 30_000 });
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+
+    await notebooks.clickCloseNotebookEditor();
+    await notebooks.deleteNotebookCardFromGrid(NOTEBOOK_UNTITLED_GRID_NAME);
+  });
+
+  test('notebook card: zero and singular resource counts', async ({}, testInfo) => {
+    const { absolutePath, fileName } = localeNotebookUpload1Path(
+      testInfo.project.name,
+    );
+
+    await notebooks.clickPrimaryNotebookCreate();
+    const renamedName = 'Zero Docs Card';
+    await notebooks.renameNotebookSidebarTitle(renamedName);
+    await notebooks.clickCloseNotebookEditor();
+
+    const renamedCard = notebooks.notebookCardByDisplayedName(renamedName);
+    await notebooks.expectNotebookCardDisplayed(renamedName);
+    await notebooks.expectNotebookCardShowsDocumentCount(renamedCard, 0);
+
+    await renamedCard.click();
+    await notebooks.clickOpenUploadDocumentModal();
+    const uploadModal = notebooks.uploadDocumentModal();
+    await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
+    await uploadModal.clickAddFilesForStagedCount(1);
+    await notebooks.expectDocumentFileListedInSidebar(fileName);
+    await notebooks.clickCloseNotebookEditor();
+
+    await notebooks.expectNotebookCardShowsDocumentCount(
+      notebooks.notebookCardByDisplayedName(renamedName),
+      1,
+    );
+    await notebooks.deleteNotebookCardFromGrid(renamedName);
+  });
+
+  test('notebook card: overflow menu shows rename and delete icons', async () => {
+    await notebooks.clickPrimaryNotebookCreate();
+    const cardName = 'Menu Icons Card';
+    await notebooks.renameNotebookSidebarTitle(cardName);
+    await notebooks.clickCloseNotebookEditor();
+    await notebooks.expectNotebookOverflowMenuShowsRenameAndDeleteWithIcons(
+      notebooks.notebookCardByDisplayedName(cardName),
+    );
+    await notebooks.deleteNotebookCardFromGrid(cardName);
   });
 
   test('grid: close editor, rename, delete', async ({}, testInfo) => {
@@ -197,6 +274,7 @@ test.describe('Intelligent assistant notebooks', () => {
       testInfo.project.name,
     );
 
+    await notebooks.clickPrimaryNotebookCreate();
     await notebooks.clickOpenUploadDocumentModal();
     const uploadModal = notebooks.uploadDocumentModal();
     await uploadModal.selectFilesViaBrowsePicker([absolutePath]);
@@ -215,15 +293,12 @@ test.describe('Intelligent assistant notebooks', () => {
       1,
     );
 
-    await notebooks
-      .notebookCardOverflowMenuButton(notebooks.newestUntitledNotebookCard())
-      .click();
-    await notebooks.renameNotebookOverflowMenuItem().click();
-    await notebooks.renameNotebookInline(RENAMED_NOTEBOOK_TITLE);
+    await notebooks.renameNotebookCardViaOverflowMenu(
+      notebooks.newestUntitledNotebookCard(),
+      RENAMED_NOTEBOOK_TITLE,
+    );
 
-    await expect(
-      notebooks.notebookCardByDisplayedName(RENAMED_NOTEBOOK_TITLE),
-    ).toBeVisible();
+    await notebooks.expectNotebookCardDisplayed(RENAMED_NOTEBOOK_TITLE);
 
     await notebooks
       .notebookCardOverflowMenuButton(
@@ -261,24 +336,10 @@ test.describe('Intelligent assistant notebooks', () => {
     const card = notebooks.newestUntitledNotebookCard();
     await expect(card).toBeVisible();
 
-    await notebooks.clickCardTitle(card);
-    await expect(notebooks.inlineRenameInput()).toBeVisible();
-
-    const newName = 'DoubleClick Renamed';
-    await notebooks.inlineRenameInput().fill(newName);
-    await notebooks.inlineRenameInput().press('Enter');
-
-    await expect(notebooks.notebookCardByDisplayedName(newName)).toBeVisible();
-
-    await notebooks
-      .notebookCardOverflowMenuButton(
-        notebooks.notebookCardByDisplayedName(newName),
-      )
-      .click();
-    await notebooks.deleteNotebookOverflowMenuItem().click();
-    const confirmDelete = notebooks.notebookDeleteConfirmationDialog(newName);
-    await confirmDelete.confirmDeletion();
-    await notebooks.expectNotebookCardAbsent(newName);
+    const newName = 'Click Renamed';
+    await notebooks.renameNotebookCardViaTitleClick(card, newName);
+    await notebooks.expectNotebookCardDisplayed(newName);
+    await notebooks.deleteNotebookCardFromGrid(newName);
   });
 
   test('grid: Escape cancels inline rename', async ({}, testInfo) => {
@@ -299,27 +360,14 @@ test.describe('Intelligent assistant notebooks', () => {
     const card = notebooks.newestUntitledNotebookCard();
     await expect(card).toBeVisible();
 
-    await notebooks.notebookCardOverflowMenuButton(card).click();
-    await notebooks.renameNotebookOverflowMenuItem().click();
-    await expect(notebooks.inlineRenameInput()).toBeVisible();
+    await notebooks.startNotebookCardInlineRenameFromOverflow(card);
+    await notebooks.fillNotebookCardInlineRename('Should Not Save');
+    await notebooks.cancelNotebookCardInlineRenameWithEscape();
 
-    await notebooks.inlineRenameInput().fill('Should Not Save');
-    await notebooks.inlineRenameInput().press('Escape');
-
-    await expect(notebooks.inlineRenameInput()).toBeHidden();
-    await expect(
-      notebooks.notebookCardByDisplayedName(NOTEBOOK_UNTITLED_GRID_NAME),
-    ).toBeVisible();
+    await notebooks.expectNotebookCardInlineRenameInputHidden();
+    await notebooks.expectNotebookCardDisplayed(NOTEBOOK_UNTITLED_GRID_NAME);
     await notebooks.expectNotebookCardAbsent('Should Not Save');
-
-    await notebooks
-      .notebookCardOverflowMenuButton(notebooks.newestUntitledNotebookCard())
-      .click();
-    await notebooks.deleteNotebookOverflowMenuItem().click();
-    const confirmDelete = notebooks.notebookDeleteConfirmationDialog(
-      NOTEBOOK_UNTITLED_GRID_NAME,
-    );
-    await confirmDelete.confirmDeletion();
+    await notebooks.deleteNotebookCardFromGrid(NOTEBOOK_UNTITLED_GRID_NAME);
   });
 
   test('grid: blur saves inline rename', async ({}, testInfo) => {
@@ -341,24 +389,14 @@ test.describe('Intelligent assistant notebooks', () => {
     await expect(card).toBeVisible();
 
     await notebooks.clickCardTitle(card);
-    await expect(notebooks.inlineRenameInput()).toBeVisible();
+    await notebooks.expectNotebookCardInlineRenameInputVisible();
 
     const newName = 'Blur Saved Name';
-    await notebooks.inlineRenameInput().fill(newName);
-    await notebooks.myNotebooksHeading().click();
+    await notebooks.saveNotebookCardInlineRenameWithBlur(newName);
 
-    await expect(notebooks.inlineRenameInput()).toBeHidden();
-    await expect(notebooks.notebookCardByDisplayedName(newName)).toBeVisible();
-
-    await notebooks
-      .notebookCardOverflowMenuButton(
-        notebooks.notebookCardByDisplayedName(newName),
-      )
-      .click();
-    await notebooks.deleteNotebookOverflowMenuItem().click();
-    const confirmDelete = notebooks.notebookDeleteConfirmationDialog(newName);
-    await confirmDelete.confirmDeletion();
-    await notebooks.expectNotebookCardAbsent(newName);
+    await notebooks.expectNotebookCardInlineRenameInputHidden();
+    await notebooks.expectNotebookCardDisplayed(newName);
+    await notebooks.deleteNotebookCardFromGrid(newName);
   });
 
   test('grid: empty or unchanged name cancels rename', async ({}, testInfo) => {
@@ -380,63 +418,34 @@ test.describe('Intelligent assistant notebooks', () => {
     await expect(card).toBeVisible();
 
     await notebooks.clickCardTitle(card);
-    await expect(notebooks.inlineRenameInput()).toBeVisible();
+    await notebooks.expectNotebookCardInlineRenameInputVisible();
 
-    await notebooks.inlineRenameInput().fill('');
-    await notebooks.inlineRenameInput().press('Enter');
+    await notebooks.fillNotebookCardInlineRename('');
+    await notebooks.commitNotebookCardInlineRename();
 
-    await expect(notebooks.inlineRenameInput()).toBeHidden();
-    await expect(
-      notebooks.notebookCardByDisplayedName(NOTEBOOK_UNTITLED_GRID_NAME),
-    ).toBeVisible();
+    await notebooks.expectNotebookCardInlineRenameInputHidden();
+    await notebooks.expectNotebookCardDisplayed(NOTEBOOK_UNTITLED_GRID_NAME);
 
     await notebooks.clickCardTitle(notebooks.newestUntitledNotebookCard());
-    await expect(notebooks.inlineRenameInput()).toBeVisible();
-    await notebooks.inlineRenameInput().press('Enter');
+    await notebooks.expectNotebookCardInlineRenameInputVisible();
+    await notebooks.commitNotebookCardInlineRename();
 
-    await expect(notebooks.inlineRenameInput()).toBeHidden();
-    await expect(
-      notebooks.notebookCardByDisplayedName(NOTEBOOK_UNTITLED_GRID_NAME),
-    ).toBeVisible();
-
-    await notebooks
-      .notebookCardOverflowMenuButton(notebooks.newestUntitledNotebookCard())
-      .click();
-    await notebooks.deleteNotebookOverflowMenuItem().click();
-    const confirmDelete = notebooks.notebookDeleteConfirmationDialog(
-      NOTEBOOK_UNTITLED_GRID_NAME,
-    );
-    await confirmDelete.confirmDeletion();
+    await notebooks.expectNotebookCardInlineRenameInputHidden();
+    await notebooks.expectNotebookCardDisplayed(NOTEBOOK_UNTITLED_GRID_NAME);
+    await notebooks.deleteNotebookCardFromGrid(NOTEBOOK_UNTITLED_GRID_NAME);
   });
 
   test('sidebar: click title to rename inside editor', async () => {
     await notebooks.clickPrimaryNotebookCreate();
 
     await expect(notebooks.sidebarTitleText()).toBeVisible();
-    await notebooks.clickSidebarTitle();
-
-    const sidebarInput = notebooks.inlineRenameInput();
-    await expect(sidebarInput).toBeVisible();
 
     const newName = 'Sidebar Renamed';
-    await sidebarInput.fill(newName);
-    await sidebarInput.press('Enter');
-
-    await expect(notebooks.sidebarTitleText()).toContainText(newName);
+    await notebooks.renameNotebookSidebarTitle(newName);
 
     await notebooks.clickCloseNotebookEditor();
-
-    await expect(notebooks.notebookCardByDisplayedName(newName)).toBeVisible();
-
-    await notebooks
-      .notebookCardOverflowMenuButton(
-        notebooks.notebookCardByDisplayedName(newName),
-      )
-      .click();
-    await notebooks.deleteNotebookOverflowMenuItem().click();
-    const confirmDelete = notebooks.notebookDeleteConfirmationDialog(newName);
-    await confirmDelete.confirmDeletion();
-    await notebooks.expectNotebookCardAbsent(newName);
+    await notebooks.expectNotebookCardDisplayed(newName);
+    await notebooks.deleteNotebookCardFromGrid(newName);
   });
 
   test('auto-delete: empty untitled notebook is discarded on close', async () => {
@@ -488,28 +497,12 @@ test.describe('Intelligent assistant notebooks', () => {
     await notebooks.clickCreateNotebookFromEmptyList();
     await expect(sharedPage).toHaveURL(NOTEBOOK_EDITOR_URL_RE);
 
-    await notebooks.clickSidebarTitle();
-    const sidebarInput = notebooks.inlineRenameInput();
-    await expect(sidebarInput).toBeVisible();
     const renamedName = 'Renamed Persists';
-    await sidebarInput.fill(renamedName);
-    await sidebarInput.press('Enter');
+    await notebooks.renameNotebookSidebarTitle(renamedName);
 
     await notebooks.clickCloseNotebookEditor();
 
-    await expect(
-      notebooks.notebookCardByDisplayedName(renamedName),
-    ).toBeVisible();
-
-    await notebooks
-      .notebookCardOverflowMenuButton(
-        notebooks.notebookCardByDisplayedName(renamedName),
-      )
-      .click();
-    await notebooks.deleteNotebookOverflowMenuItem().click();
-    const confirmDelete =
-      notebooks.notebookDeleteConfirmationDialog(renamedName);
-    await confirmDelete.confirmDeletion();
-    await notebooks.expectNotebookCardAbsent(renamedName);
+    await notebooks.expectNotebookCardDisplayed(renamedName);
+    await notebooks.deleteNotebookCardFromGrid(renamedName);
   });
 });

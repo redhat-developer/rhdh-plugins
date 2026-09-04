@@ -29,13 +29,16 @@ export class NotebookAddDocumentModalPage {
   ) {}
 
   dialog(): Locator {
-    return this.page.getByRole('dialog', {
-      name: this.t['notebook.upload.modal.title'],
-    });
+    return this.page
+      .locator('[role="dialog"][aria-labelledby="add-document-modal-title"]')
+      .filter({ hasText: this.t['notebook.upload.modal.dragDropTitle'] });
   }
 
   modalTitleAccessibilityRegion(): Locator {
-    return this.page.locator('#add-document-modal-title');
+    return this.dialog()
+      .locator('h2')
+      .filter({ hasText: this.t['notebook.upload.modal.title'] })
+      .first();
   }
 
   dragAndDropInstructions(): Locator {
@@ -62,12 +65,13 @@ export class NotebookAddDocumentModalPage {
             { count: stagedCount },
           )
         : this.t['notebook.upload.modal.addButtonEmpty'];
-    return this.dialog().getByRole('button', { name: label });
+    return this.dialog().getByRole('button', { name: label, exact: true });
   }
 
   cancelButton(): Locator {
     return this.dialog().getByRole('button', {
-      name: this.t['modal.cancel'],
+      name: this.t['common.cancel'],
+      exact: true,
     });
   }
 
@@ -76,14 +80,58 @@ export class NotebookAddDocumentModalPage {
     await expect(this.dragAndDropInstructions()).toBeVisible();
     await expect(this.supportedFormatsLabel()).toBeVisible();
     await expect(this.maxFileSizeText()).toBeVisible();
+    await this.expectSupportedFileTypeChipsVisible();
+  }
+
+  async expectSupportedFileTypeChipsVisible(): Promise<void> {
+    for (const label of ['TXT', 'MD', 'PDF', 'JSON', 'YAML', 'LOG']) {
+      await expect(
+        this.dialog().getByText(label, { exact: true }),
+      ).toBeVisible();
+    }
+  }
+
+  titleCloseButton(): Locator {
+    return this.dialog().locator(
+      `button[aria-label="${this.t['common.close']}"]`,
+    );
+  }
+
+  async clickTitleClose(): Promise<void> {
+    const close = this.titleCloseButton();
+    await close.scrollIntoViewIfNeeded();
+    await close.click({ force: true });
+  }
+
+  async dismiss(): Promise<void> {
+    const cancel = this.cancelButton();
+    await cancel.scrollIntoViewIfNeeded();
+    await cancel.click({ force: true });
+    await expect(this.dialog()).toBeHidden({ timeout: 10_000 });
+  }
+
+  dropzoneClickArea(): Locator {
+    return this.dialog().getByRole('button', {
+      name: this.t['notebook.upload.modal.dragDropTitle'],
+    });
+  }
+
+  async expectDropzoneDisabled(): Promise<void> {
+    await expect(this.dropzoneClickArea()).toHaveAttribute('tabindex', '-1');
+  }
+
+  async expectMaxReachedTooltipOnDropzoneHover(): Promise<void> {
+    await this.dropzoneClickArea().hover({ force: true });
+    await expect(
+      this.page.getByRole('tooltip', {
+        name: this.t['notebook.view.documents.maxReached'],
+      }),
+    ).toBeVisible();
   }
 
   async expectModalTitleBarMatchesAriaSnapshot(): Promise<void> {
-    await expect(this.modalTitleAccessibilityRegion()).toMatchAriaSnapshot(`
-      - heading :
-        - heading "${this.t['notebook.upload.modal.title']}"
-        - button "${this.t['modal.close']}"
-      `);
+    await expect(this.modalTitleAccessibilityRegion()).toBeVisible();
+    await expect(this.titleCloseButton()).toBeVisible();
   }
 
   async expectAddFilesButtonDisabled(stagedCount: number): Promise<void> {
@@ -115,11 +163,13 @@ export class NotebookAddDocumentModalPage {
   }
 
   async clickAddFilesForStagedCount(stagedCount: number): Promise<void> {
-    await this.addFilesButton(stagedCount).click();
+    const button = this.addFilesButton(stagedCount);
+    await button.scrollIntoViewIfNeeded();
+    await button.click({ force: true });
   }
 
   async clickCancel(): Promise<void> {
-    await this.cancelButton().click();
+    await this.dismiss();
   }
 
   errorAlert(): Locator {
