@@ -77,14 +77,14 @@ export const SparklineChart = ({
   const errorColor = theme.palette.error.main;
   const axisTickColor = theme.palette.text.secondary;
   const markerStroke = theme.palette.background.paper;
-  const firstDate = data[0]?.date;
-  const lastDate = data[data.length - 1]?.date;
+  const firstPoint = data[0];
+  const lastPoint = data[data.length - 1];
   const xTicks: string[] = [];
-  if (firstDate) {
-    xTicks.push(firstDate);
+  if (firstPoint) {
+    xTicks.push(firstPoint.date);
   }
-  if (lastDate && lastDate !== firstDate) {
-    xTicks.push(lastDate);
+  if (lastPoint && lastPoint.date !== firstPoint?.date) {
+    xTicks.push(lastPoint.date);
   }
   const yDomain = getSparklineYDomain(data);
 
@@ -116,7 +116,7 @@ export const SparklineChart = ({
           <AreaChart
             data={data}
             margin={{
-              top: 0,
+              top: 4,
               right: 16,
               bottom: 0,
               left: 16,
@@ -140,11 +140,29 @@ export const SparklineChart = ({
               minTickGap={0}
               ticks={xTicks}
               tick={({ x, y, payload }) => {
-                const isFirst = payload.value === firstDate;
-                const isLast = payload.value === lastDate;
+                const isFirst = payload.value === firstPoint?.date;
+                const isLast = payload.value === lastPoint?.date;
 
-                if ((!isFirst && !isLast) || xTicks.length <= 1) {
+                if (!isFirst && !isLast) {
                   return <g />;
+                }
+
+                const point = data.find(d => d.date === payload.value);
+                const label = point?.dateLabel ?? payload.value;
+
+                if (xTicks.length <= 1) {
+                  return (
+                    <text
+                      x={x}
+                      y={y}
+                      dy={12}
+                      textAnchor="middle"
+                      fill={axisTickColor}
+                      fontSize={14}
+                    >
+                      {label}
+                    </text>
+                  );
                 }
 
                 return (
@@ -156,7 +174,7 @@ export const SparklineChart = ({
                     fill={axisTickColor}
                     fontSize={14}
                   >
-                    {payload.value}
+                    {label}
                   </text>
                 );
               }}

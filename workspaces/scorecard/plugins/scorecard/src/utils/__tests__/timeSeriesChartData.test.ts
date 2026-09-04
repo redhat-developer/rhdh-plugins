@@ -40,14 +40,27 @@ describe('toSparklineChartData', () => {
     );
 
     expect(result).toEqual([
-      { date: '04-27', value: 2, error: undefined, plotValue: 2 },
       {
-        date: '04-28',
+        date: '2026-04-27T00:00:00.000Z',
+        dateLabel: '04-27',
+        value: 2,
+        error: undefined,
+        plotValue: 2,
+      },
+      {
+        date: '2026-04-28T00:00:00.000Z',
+        dateLabel: '04-28',
         value: null,
         error: 'GitHub API 500',
         plotValue: 5,
       },
-      { date: '04-29', value: 8, error: undefined, plotValue: 8 },
+      {
+        date: '2026-04-29T00:00:00.000Z',
+        dateLabel: '04-29',
+        value: 8,
+        error: undefined,
+        plotValue: 8,
+      },
     ]);
   });
 
@@ -57,6 +70,8 @@ describe('toSparklineChartData', () => {
       formatDateLabel,
     );
 
+    expect(result[0].date).toBe('2026-04-27T00:00:00.000Z');
+    expect(result[0].dateLabel).toBe('04-27');
     expect(result[0].value).toBeNull();
     expect(result[0].plotValue).toBe(0);
   });
@@ -198,7 +213,9 @@ describe('toAggregationSparklinePoints', () => {
 describe('getSparklineYDomain', () => {
   it('should pad a single-value series', () => {
     expect(
-      getSparklineYDomain([{ date: 'Apr 27', value: 5, plotValue: 5 }]),
+      getSparklineYDomain([
+        { date: '2026-04-27', dateLabel: 'Apr 27', value: 5, plotValue: 5 },
+      ]),
     ).toEqual([4.5, 5.5]);
   });
 

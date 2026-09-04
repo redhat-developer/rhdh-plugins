@@ -26,13 +26,14 @@ export const getSparklineTooltipLabel = (
   point: SparklineChartPoint,
   unit?: string,
 ): string => {
+  const label = point.dateLabel;
   if (point.error) {
-    return `${point.error}${SPARKLINE_TOOLTIP_SEPARATOR}${point.date}`;
+    return `${point.error}${SPARKLINE_TOOLTIP_SEPARATOR}${label}`;
   }
   return `${formatWithMetricUnit(
     String(point.value),
     unit,
-  )}${SPARKLINE_TOOLTIP_SEPARATOR}${point.date}`;
+  )}${SPARKLINE_TOOLTIP_SEPARATOR}${label}`;
 };
 
 export const SparklineTooltip = ({
