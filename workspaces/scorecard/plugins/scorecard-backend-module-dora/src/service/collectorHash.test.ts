@@ -79,8 +79,31 @@ describe('collectorInputHash', () => {
     expect(collectorInputHash(input)).toBe(expected);
   });
 
-  it('hashes {} and undefined identically', () => {
+  it('hashes {}, undefined, and no argument identically', () => {
     expect(collectorInputHash({})).toBe(collectorInputHash(undefined));
+    expect(collectorInputHash()).toBe(collectorInputHash({}));
+  });
+
+  it('distinguishes null from its string form', () => {
+    expect(collectorInputHash({ v: null })).not.toBe(
+      collectorInputHash({ v: 'null' }),
+    );
+    expect(collectorInputHash({ a: [null, 'e'] })).not.toBe(
+      collectorInputHash({ a: ['null', 'e'] }),
+    );
+  });
+
+  it('treats an undefined-valued key the same as an absent key', () => {
+    expect(collectorInputHash({ a: 1, b: undefined })).toBe(
+      collectorInputHash({ a: 1 }),
+    );
+    expect(collectorInputHash({ v: undefined })).toBe(collectorInputHash({}));
+  });
+
+  it('distinguishes an undefined-valued key from a null-valued key', () => {
+    expect(collectorInputHash({ v: undefined })).not.toBe(
+      collectorInputHash({ v: null }),
+    );
   });
 
   it('is stable for the same input', () => {
@@ -89,7 +112,7 @@ describe('collectorInputHash', () => {
     );
   });
 
-  it('differs when static input differs', () => {
+  it('differs when input differs', () => {
     expect(collectorInputHash({ workflowName: 'A' })).toBe(
       '126230efe17333d6498ee26e0d4168e4a665816e507e325cfeafd0bb117c522d',
     );

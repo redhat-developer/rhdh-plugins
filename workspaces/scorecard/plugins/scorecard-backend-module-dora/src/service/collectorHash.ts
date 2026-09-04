@@ -17,8 +17,8 @@
 import { createHash } from 'node:crypto';
 import type { JsonObject, JsonValue } from '@backstage/types';
 
-function canonicalize(value: JsonValue | undefined): string {
-  if (value === undefined || value === null) {
+function canonicalize(value: JsonValue): string {
+  if (value === null) {
     return 'null';
   }
   if (typeof value !== 'object') {
@@ -27,14 +27,18 @@ function canonicalize(value: JsonValue | undefined): string {
   if (Array.isArray(value)) {
     return `[${value.map(canonicalize).join(',')}]`;
   }
-  const keys = Object.keys(value).sort();
+  // Mirror Backstage config semantics: an undefined-valued key is treated as an absent one,
+  // hash them identically as they are semantically the same config. Keep `null` distinct as it is an intentional config value.
+  const keys = Object.keys(value)
+    .filter(k => value[k] !== undefined)
+    .sort((a, b) => a.localeCompare(b));
   return `{${keys
-    .map(k => `${JSON.stringify(k)}:${canonicalize(value[k])}`)
+    .map(k => `${JSON.stringify(k)}:${canonicalize(value[k]!)}`)
     .join(',')}}`;
 }
 
 /**
- * Hash of the collector's static config input. `{}` and undefined hash identically.
+ * Hash of the collector's config input. `{}` and undefined hash identically.
  */
 export function collectorInputHash(input?: JsonObject): string {
   return createHash('sha256')
