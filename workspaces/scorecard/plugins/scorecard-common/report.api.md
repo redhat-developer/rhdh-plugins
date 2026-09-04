@@ -257,10 +257,10 @@ export const scalarAggregationTypes: readonly [
 
 // @public
 export const SCORECARD_THRESHOLD_RULE_COLOR_VALUES: (
+  | 'info.main'
   | 'success.main'
   | 'warning.main'
   | 'error.main'
-  | 'info.main'
 )[];
 
 // @public
