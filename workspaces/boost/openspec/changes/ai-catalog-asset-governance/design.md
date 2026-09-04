@@ -49,11 +49,11 @@ This design covers the catalog-layer RBAC system. It is informed by:
 
 Three permissions are defined using `createPermission` from `@backstage/plugin-permission-common`:
 
-| Permission                           | Action | Resource Type      | Purpose                                                      |
-| ------------------------------------ | ------ | ------------------ | ------------------------------------------------------------ |
-| `ai-catalog.asset.access`            | read   | `ai-catalog-asset` | Tier 1: basic discovery (name, description, type, stage)     |
-| `ai-catalog.asset.access.usage-docs` | read   | `ai-catalog-asset` | Tier 2: usage docs, connection endpoints, configuration      |
-| `ai-catalog.admin`                   | update | — (basic)          | Management: posture config, policy management ~~, admin UI~~ |
+| Permission                           | Action | Resource Type      | Purpose                                                                                     |
+| ------------------------------------ | ------ | ------------------ | ------------------------------------------------------------------------------------------- |
+| `ai-catalog.asset.access`            | read   | `ai-catalog-asset` | Tier 1: basic discovery (name, description, category, lifecycle stage, version count, tags) |
+| `ai-catalog.asset.access.usage-docs` | read   | `ai-catalog-asset` | Tier 2: usage docs, connection endpoints, configuration, deployment parameters              |
+| `ai-catalog.admin`                   | update | — (basic)          | Management: posture config, policy management ~~, admin UI~~                                |
 
 Both read permissions are resource-based (`resourceType: 'ai-catalog-asset'`) to support CONDITIONAL evaluation — deployers can configure category-scoped, connector-scoped, or tenant-scoped visibility via RBAC conditional policies. `ai-catalog.admin` is a basic permission (binary ALLOW/DENY) because management actions are not scoped to individual assets.
 
@@ -61,7 +61,7 @@ This follows the same pattern as boost's `boost.agent.list` upgrade to resource-
 
 ### Decision 2: Field-level filtering at the API layer, not database layer
 
-Tier 2 fields (usage documentation, connection endpoints, configuration) are filtered at the API response layer, not the database query layer. The backend fetches the full entity, checks `ai-catalog.asset.access.usage-docs` for the requesting user, and omits Tier 2 fields if DENIED.
+Tier 2 fields (usage documentation, connection endpoints, configuration, deployment parameters) are filtered at the API response layer, not the database query layer. The backend fetches the full entity, checks `ai-catalog.asset.access.usage-docs` for the requesting user, and omits Tier 2 fields if DENIED.
 
 **Why not database-level filtering?** Tier 2 filtering is field-level (omit specific fields from the response), not entity-level (omit entire entities). Database-level `toQuery()` is designed for entity-level filtering. Field-level filtering is simpler and more maintainable at the API layer.
 

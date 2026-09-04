@@ -11,7 +11,7 @@
 
 ## 2. Graduated Visibility — Backend (P0) — RHIDP-15271, RHIDP-15272
 
-- [ ] 2.1 Implement Tier 2 field-level filtering in AI asset detail endpoint (omit usage-docs, connection endpoints, config when `ai-catalog.asset.access.usage-docs` is DENIED)
+- [ ] 2.1 Implement Tier 2 field-level filtering in AI asset detail endpoint (omit usage-docs, connection endpoints, config, deployment parameters when `ai-catalog.asset.access.usage-docs` is DENIED)
 - [ ] 2.2 Implement entity-level filtering on list endpoint using `authorizeConditional()` + `toQuery()` for `ai-catalog.asset.access`
 - [ ] 2.3 Implement batch `authorizeConditional()` for Tier 2 (single check, apply uniformly to response)
 - [ ] 2.4 Add unit tests for field-level filtering (Tier 1 only, Tier 2 included, no access)

@@ -2,7 +2,7 @@
 
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 
-Three AI Catalog permissions implement a two-tier visibility model with field-level filtering. Tier 1 (discovery) shows basic metadata; Tier 2 (sensitive details) adds usage documentation, connection endpoints, and configuration. A third admin permission gates management actions.
+Three AI Catalog permissions implement a two-tier visibility model with field-level filtering. Tier 1 (discovery) shows basic metadata; Tier 2 (sensitive details) adds usage documentation, connection endpoints, configuration, and deployment parameters. A third admin permission gates management actions.
 
 **Jira references:** RHIDP-15270, RHIDP-15271, RHIDP-15272, RHIDP-15273
 
@@ -18,8 +18,8 @@ Three permissions MUST be registered via `permissionsRegistry.addPermissions()` 
 - **THEN** the following permissions are registered:
   | Permission | Action | Resource Type | Purpose |
   |---|---|---|---|
-  | `ai-catalog.asset.access` | read | `ai-catalog-asset` | Tier 1: basic discovery (name, description, type, lifecycle stage) |
-  | `ai-catalog.asset.access.usage-docs` | read | `ai-catalog-asset` | Tier 2: usage docs, connection endpoints, configuration |
+  | `ai-catalog.asset.access` | read | `ai-catalog-asset` | Tier 1: basic discovery (name, description, category, lifecycle stage, version count, tags) |
+  | `ai-catalog.asset.access.usage-docs` | read | `ai-catalog-asset` | Tier 2: usage docs, connection endpoints, configuration, deployment parameters |
   | `ai-catalog.admin` | update | — (basic) | Management actions, posture config~~, admin UI access~~ |
 - **AND** both read permissions are resource-based to support CONDITIONAL evaluation via RBAC conditional policies
 - **AND** `ai-catalog.admin` is basic (binary ALLOW/DENY) because management actions are not scoped to individual assets
@@ -66,7 +66,7 @@ Frontend components MUST gate Tier 2 sections using `RequirePermission`.
 #### Scenario: Asset detail page with restricted sections
 
 - **WHEN** the frontend renders an AI asset detail page
-- **THEN** Tier 2 sections (usage docs, connection endpoints, configuration) are wrapped in `<RequirePermission permission={aiCatalogAssetAccessUsageDocsPermission}>`
+- **THEN** Tier 2 sections (usage docs, connection endpoints, configuration, deployment parameters) are wrapped in `<RequirePermission permission={aiCatalogAssetAccessUsageDocsPermission}>`
 - **AND** when permission is denied, a restricted-access placeholder is shown instead of the section content
 - **AND** the placeholder explains what permission is needed to view the content
 
