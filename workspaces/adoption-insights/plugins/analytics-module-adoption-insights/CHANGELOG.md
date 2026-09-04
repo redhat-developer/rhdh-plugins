@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights
 
+## 1.0.0
+
+### Major Changes
+
+- b4476cf: **BREAKING:** Graduate NFS plugin exports from `/alpha` to the primary package entry point. OFS exports move to `/legacy`. Translations remain available at `/alpha`.
+
+  NFS apps should import plugins from the package root instead of `/alpha`. Legacy OFS apps should import from `/legacy`.
+
 ## 0.9.1
 
 ### Patch Changes
