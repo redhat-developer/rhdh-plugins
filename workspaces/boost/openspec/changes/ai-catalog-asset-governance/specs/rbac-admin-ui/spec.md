@@ -1,16 +1,20 @@
-# RBAC Admin UI
+# ~~RBAC Admin UI~~
 
-> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+> **Status: ~~Draft~~ CANCELLED** — ~~Pre-implementation specification. Subject to change during implementation.~~
+>
+> **This spec is no longer in scope.** RHDHPLAN-1508 explicitly states AI Catalog permissions should "appear in the RBAC admin UI's permission picker exactly like existing permissions, and can be assigned to roles via the existing role-management screens **without any new UI surface**." The existing RBAC plugin UI already provides all required policy management functionality once `ai-catalog.asset.access`, `ai-catalog.asset.access.usage-docs`, and conditional rules are registered. Building a standalone page at `/ai-catalog/admin/rbac` would duplicate that capability.
 
-Standalone admin page at `/ai-catalog/admin/rbac` for SMP Admins to manage AI Catalog visibility policies. The page calls the RBAC REST API directly and is gated by `ai-catalog.admin` permission.
+~~Standalone admin page at `/ai-catalog/admin/rbac` for SMP Admins to manage AI Catalog visibility policies. The page calls the RBAC REST API directly and is gated by `ai-catalog.admin` permission.~~
 
 **Jira references:** RHIDP-15304
 
-## ADDED Requirements
+## ~~ADDED Requirements~~
 
-### Requirement: Standalone Admin Page
+> **SUPERSEDED — DO NOT IMPLEMENT.** Every requirement and scenario below is cancelled along with this spec (RHIDP-15304). Policy management is delivered through the **existing RBAC plugin UI** and YAML configuration — see `design.md` Decision 5. No standalone page at `/ai-catalog/admin/rbac` is to be built. The struck requirements are retained only for historical traceability.
 
-A dedicated frontend page MUST provide AI Catalog RBAC management without requiring YAML editing.
+### ~~Requirement: Standalone Admin Page~~
+
+~~A dedicated frontend page MUST provide AI Catalog RBAC management without requiring YAML editing.~~
 
 #### Scenario: Page route and access control
 
@@ -25,9 +29,9 @@ A dedicated frontend page MUST provide AI Catalog RBAC management without requir
 - **THEN** a sidebar navigation item or admin panel link provides access to the RBAC admin page
 - **AND** the link is only visible to users with `ai-catalog.admin` permission (via `usePermission` hook)
 
-### Requirement: Visibility Policy Management
+### ~~Requirement: Visibility Policy Management~~
 
-The admin UI MUST support viewing and managing AI Catalog visibility policies.
+~~The admin UI MUST support viewing and managing AI Catalog visibility policies.~~
 
 #### Scenario: View current policies
 
@@ -56,9 +60,9 @@ The admin UI MUST support viewing and managing AI Catalog visibility policies.
 - **AND** on confirmation, the policy is deleted via the RBAC REST API (`DELETE /api/permission/policies`)
 - **AND** an audit event is emitted
 
-### Requirement: Default Posture Management
+### ~~Requirement: Default Posture Management~~
 
-The admin UI MUST allow viewing and changing the default posture configuration.
+~~The admin UI MUST allow viewing and changing the default posture configuration.~~
 
 #### Scenario: View default posture
 
@@ -73,9 +77,9 @@ The admin UI MUST allow viewing and changing the default posture configuration.
 - **AND** on confirmation, the configuration is updated
 - **AND** an audit event is emitted with previous and new values
 
-### Requirement: RBAC REST API Integration
+### ~~Requirement: RBAC REST API Integration~~
 
-The admin UI MUST use the existing RBAC REST API for all policy operations.
+~~The admin UI MUST use the existing RBAC REST API for all policy operations.~~
 
 #### Scenario: API routes used
 
