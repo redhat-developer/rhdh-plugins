@@ -42,6 +42,41 @@ When implementing an issue:
 3. Find the matching change in `openspec/changes/` for design decisions, task breakdown, and behavioral specs
 4. The `specs/` subdirectories contain acceptance criteria as scenarios — implementation must satisfy these
 
+### OpenSpec scenario step discipline
+
+Each bullet in a scenario (GIVEN/WHEN/THEN/AND) must be a testable assertion — something a test can verify at runtime. Do not place non-normative notes inside scenario step lists. These belong in prose paragraphs above or below the scenario block:
+
+- SDK caveats (e.g., "SDK only requires non-empty string")
+- Extensibility disclaimers (e.g., "additional values may be added")
+- Design rationale or cross-references
+- RFC-2119 constraints that apply broadly rather than to one scenario
+
+**Wrong** — non-normative note as a scenario step:
+
+```
+#### Scenario: Source annotation format
+- WHEN an entity provider emits an entity
+- THEN the entity has the annotation in format: connector-name/registry-instance-id
+- AND connector-name is one of: kagenti, ogx
+- AND additional connector names may be added; the SDK only requires a non-empty string   <-- not testable
+- AND registry-instance-id is the app-config provider instance ID
+```
+
+**Right** — note in a prose paragraph outside the scenario:
+
+```
+Additional connector names may be added when new connectors ship. The SDK today
+only requires a non-empty string and MUST NOT enum-validate connector-name.
+
+#### Scenario: Source annotation format
+- WHEN an entity provider emits an entity
+- THEN the entity has the annotation in format: connector-name/registry-instance-id
+- AND connector-name is one of: kagenti, ogx
+- AND registry-instance-id is the app-config provider instance ID
+```
+
+When writing new scenarios or reviewing spec file changes, verify that every AND/THEN bullet is a concrete assertion, not contextual guidance for human readers.
+
 ## Architecture rules
 
 ### Backstage-native services only
@@ -145,6 +180,77 @@ Connector schema migrations (`migrateConnectorSchemas` in
 | `boost-backend-module-kagenti` | Kagenti provider module                                                                       |
 | `ogx-entity-provider`          | Independently deployable catalog entity provider                                              |
 | `kagenti-entity-provider`      | Independently deployable catalog entity provider                                              |
+| `boost-migration-readiness`    | Migration-readiness CLI tool (`node-library` role with custom CLI build)                      |
+
+### CLI binary packages
+
+When a `node-library` package has a `bin` entry in `package.json`, the
+Backstage `backstage-cli package build` command (node-library role) only
+produces library output (`dist/index.cjs.js`, `dist/index.esm.js`,
+`dist/index.d.ts`). It does not bundle standalone CLI binaries. A custom
+build step is required to produce the executable referenced by `bin`.
+
+**Pattern — esbuild build script:**
+
+1. Create `scripts/build-cli.js` in the package directory. Use esbuild to
+   bundle the CLI entry point into a single CJS file targeting Node:
+
+   ```js
+   const { build } = require('esbuild');
+
+   build({
+     entryPoints: ['src/cli.ts'],
+     outfile: 'dist/cli.cjs.js',
+     bundle: true,
+     platform: 'node',
+     format: 'cjs',
+     packages: 'external',
+     banner: { js: '#!/usr/bin/env node' },
+     logLevel: 'info',
+   }).catch(() => {
+     process.exit(1);
+   });
+   ```
+
+   Key options:
+   - `packages: 'external'` — bundle only local (relative-import) modules;
+     leave npm packages to be resolved from `node_modules` at runtime, same
+     as the node-library build output.
+   - `banner` — adds the shebang line so the file is directly executable.
+   - `platform: 'node'` and `format: 'cjs'` — match the node-library
+     output format.
+
+2. Add `esbuild` as a `devDependency` in `package.json`.
+
+3. Wire the CLI build into the `build` script so it runs after the
+   standard library build:
+
+   ```json
+   {
+     "scripts": {
+       "build": "backstage-cli package build && node scripts/build-cli.js"
+     }
+   }
+   ```
+
+4. Set the `bin` field to point to the bundled output:
+
+   ```json
+   {
+     "bin": {
+       "<command-name>": "dist/cli.cjs.js"
+     }
+   }
+   ```
+
+5. Keep the CLI entry point (`src/cli.ts`) separate from the library
+   entry point (`src/index.ts`). Do not re-export CLI code from
+   `index.ts` — the CLI calls `main()` at module scope, which would
+   run as a side effect of importing the library.
+
+**Canonical example:**
+`plugins/boost-migration-readiness/scripts/build-cli.js` and its
+`package.json` demonstrate this pattern end-to-end.
 
 ### ConfigReader `getOptionalString()` edge case
 
@@ -173,6 +279,11 @@ const endpoint = safeGetOptionalString(config, 'endpoint');
 - Extension point: `boostProviderExtensionPoint`
 - Service ref: `boostAiProviderServiceRef`
 - Plugin ID: `boost` (used in `createBackendModule({ pluginId: 'boost', ... })`)
+- Entity kind names (exact casing from `boost-common/src/aiAssetTaxonomy.ts`):
+  - `AiResource` — agents, skills, rules (NOT `AIResource`)
+  - `AiModelServerAPI` — model servers (`spec.type: ai-model-server`)
+  - `API` — MCP servers (`spec.type: mcp-server`)
+  - `Resource` — tools (`spec.type: ai-tool`), vector stores (`spec.type: vector-store`)
 
 ### Testing
 
@@ -205,6 +316,21 @@ Always verify:
 # From the directory containing the source file, check the link resolves:
 ls <relative-path-from-link>
 ```
+
+### Fragment anchors for heading references
+
+When a markdown link's display text names a specific heading (e.g., "Decision 1",
+"Section 3"), include the GitHub-style fragment anchor in the URL. Read the target
+file, find the matching heading, and convert it to a fragment using GitHub's rules:
+lowercase, spaces to hyphens, strip punctuation.
+
+Example: linking to `### Decision 1: Annotation independence from entity kinds`:
+
+```
+[Decision 1](../path/to/design.md#decision-1-annotation-independence-from-entity-kinds)
+```
+
+Do not link to the document root when the display text references a specific section.
 
 ## Build & verify
 

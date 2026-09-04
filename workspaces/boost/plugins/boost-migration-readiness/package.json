@@ -1,0 +1,59 @@
+{
+  "name": "@red-hat-developer-hub/backstage-plugin-boost-migration-readiness",
+  "version": "0.2.0",
+  "license": "Apache-2.0",
+  "description": "Read-only CLI that assesses AI asset catalog entity migration readiness against upstream Backstage entity kinds",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "bin": {
+    "boost-migration-readiness": "dist/cli.cjs.js"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.cjs.js",
+    "module": "dist/index.esm.js",
+    "types": "dist/index.d.ts"
+  },
+  "backstage": {
+    "role": "node-library",
+    "pluginId": "boost",
+    "pluginPackage": "@red-hat-developer-hub/backstage-plugin-boost-migration-readiness",
+    "pluginPackages": [
+      "@red-hat-developer-hub/backstage-plugin-boost",
+      "@red-hat-developer-hub/backstage-plugin-boost-backend",
+      "@red-hat-developer-hub/backstage-plugin-boost-common",
+      "@red-hat-developer-hub/backstage-plugin-boost-connector-utils",
+      "@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk",
+      "@red-hat-developer-hub/backstage-plugin-boost-migration-readiness",
+      "@red-hat-developer-hub/backstage-plugin-boost-node",
+      "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit",
+      "@red-hat-developer-hub/backstage-plugin-boost-toolscope"
+    ]
+  },
+  "dependencies": {
+    "@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk": "workspace:^"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.36.3",
+    "esbuild": "^0.23.0"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "backstage-cli package build && node scripts/build-cli.js",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test --passWithNoTests --coverage",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack"
+  },
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/redhat-developer/rhdh-plugins.git",
+    "directory": "workspaces/boost/plugins/boost-migration-readiness"
+  },
+  "homepage": "https://red.ht/rhdh",
+  "bugs": "https://github.com/redhat-developer/rhdh-plugins/issues"
+}

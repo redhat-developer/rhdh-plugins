@@ -37,7 +37,7 @@ const INFERENCE_SERVICE_PLURAL = 'inferenceservices';
 
 interface ModelCardMetadata {
   content: string;
-  lastUpdateTimeSinceEpoch: string;
+  resourceVersion: string;
   updateCount: number;
   needToUpdate: boolean;
 }
@@ -47,7 +47,7 @@ const modelCards = new Map<string, ModelCardMetadata>();
 
 interface ModelCatalogMetadata {
   catalogData: ModelCatalog;
-  lastUpdateTimeSinceEpoch: string;
+  resourceVersion: string;
   updateCount: number;
   needToUpdate: boolean;
 }
@@ -250,11 +250,11 @@ async function reconcileInferenceService(
     config,
   );
 
-  const lastUpdateTimeSinceEpoch = getLastUpdateTime(is);
+  const resourceVersion = getResourceVersion(is);
 
   await processModelCatalog(
     importKey,
-    lastUpdateTimeSinceEpoch,
+    resourceVersion,
     modelCardKey,
     modelCard,
     catalogData,
@@ -264,25 +264,13 @@ async function reconcileInferenceService(
   logger.info(`Successfully reconciled InferenceService: ${namespace}/${name}`);
 }
 
-function getLastUpdateTime(is: InferenceService): string {
-  let lastUpdateTimeSinceEpoch = '';
-  const conditions = is.status?.conditions;
-  if (conditions) {
-    for (const condition of conditions) {
-      if (condition.lastTransitionTime) {
-        if (!lastUpdateTimeSinceEpoch) {
-          lastUpdateTimeSinceEpoch = condition.lastTransitionTime;
-          continue;
-        }
-        const lastTime = new Date(lastUpdateTimeSinceEpoch);
-        const condTime = new Date(condition.lastTransitionTime);
-        if (lastTime < condTime) {
-          lastUpdateTimeSinceEpoch = condition.lastTransitionTime;
-        }
-      }
-    }
-  }
-  return lastUpdateTimeSinceEpoch;
+// Use metadata.resourceVersion instead of status condition timestamps
+// to detect changes. Kubernetes increments resourceVersion on ANY change
+// to a resource, including metadata-only updates (e.g. annotation changes),
+// whereas status condition lastTransitionTime only changes when status
+// conditions transition.
+function getResourceVersion(is: InferenceService): string {
+  return is.metadata.resourceVersion ?? '';
 }
 
 async function fetchModelCardViaAnnotations(
@@ -322,14 +310,14 @@ async function fetchModelCardViaAnnotations(
 
 async function processModelCatalog(
   importKey: string,
-  lastUpdateTimeSinceEpoch: string,
+  resourceVersion: string,
   modelCardKey: string,
   modelCard: string | undefined,
   catalogData: ModelCatalog,
   logger: LoggerService,
 ): Promise<void> {
   logger.debug(
-    `processModelCatalog - key: ${importKey}, epoch: ${lastUpdateTimeSinceEpoch}, modelCardKey: ${modelCardKey}`,
+    `processModelCatalog - key: ${importKey}, resourceVersion: ${resourceVersion}, modelCardKey: ${modelCardKey}`,
   );
   logger.debug(
     `processModelCatalog - catalogData has ${
@@ -343,7 +331,7 @@ async function processModelCatalog(
     if (!existingCatalog) {
       const mcm: ModelCatalogMetadata = {
         catalogData: catalogData,
-        lastUpdateTimeSinceEpoch: lastUpdateTimeSinceEpoch,
+        resourceVersion: resourceVersion,
         needToUpdate: true,
         updateCount: 0,
       };
@@ -351,16 +339,14 @@ async function processModelCatalog(
       logger.debug(
         `processModelCatalog: Created new model catalog entry for key ${importKey}`,
       );
-    } else if (
-      existingCatalog.lastUpdateTimeSinceEpoch !== lastUpdateTimeSinceEpoch
-    ) {
-      existingCatalog.lastUpdateTimeSinceEpoch = lastUpdateTimeSinceEpoch;
+    } else if (existingCatalog.resourceVersion !== resourceVersion) {
+      existingCatalog.resourceVersion = resourceVersion;
       existingCatalog.catalogData = catalogData;
       existingCatalog.needToUpdate = true;
       existingCatalog.updateCount = 0;
       modelCatalog.set(importKey, existingCatalog);
       logger.debug(
-        `processModelCatalog: Updated model catalog entry for key ${importKey} (timestamp changed)`,
+        `processModelCatalog: Updated model catalog entry for key ${importKey} (resourceVersion changed)`,
       );
     } else {
       logger.debug(
@@ -375,7 +361,7 @@ async function processModelCatalog(
     if (!existingMcm) {
       const mcm: ModelCardMetadata = {
         content: modelCard || '',
-        lastUpdateTimeSinceEpoch: lastUpdateTimeSinceEpoch,
+        resourceVersion: resourceVersion,
         needToUpdate: true,
         updateCount: 0,
       };
@@ -383,16 +369,14 @@ async function processModelCatalog(
       logger.debug(
         `processModelCatalog: Created new model card entry for key ${modelCardKey}`,
       );
-    } else if (
-      existingMcm.lastUpdateTimeSinceEpoch !== lastUpdateTimeSinceEpoch
-    ) {
-      existingMcm.lastUpdateTimeSinceEpoch = lastUpdateTimeSinceEpoch;
+    } else if (existingMcm.resourceVersion !== resourceVersion) {
+      existingMcm.resourceVersion = resourceVersion;
       existingMcm.content = modelCard || existingMcm.content;
       existingMcm.needToUpdate = true;
       existingMcm.updateCount = 0;
       modelCards.set(modelCardKey, existingMcm);
       logger.debug(
-        `processModelCatalog: Updated model card entry for key ${modelCardKey} (timestamp changed)`,
+        `processModelCatalog: Updated model card entry for key ${modelCardKey} (resourceVersion changed)`,
       );
     } else {
       logger.debug(
@@ -415,6 +399,7 @@ async function innerStart(
   await setupCatalogRoute(config);
 
   const keys = new Set<string>();
+  const activeModelCardKeys = new Set<string>();
 
   logger.debug('innerStart: Listing all KServe InferenceServices');
 
@@ -433,10 +418,26 @@ async function innerStart(
         is.metadata.namespace,
         is.metadata.name,
       );
-      logger.debug(
-        `innerStart: Adding importKey ${importKey} for KServe InferenceService ${is.metadata.namespace}/${is.metadata.name}`,
-      );
-      keys.add(importKey);
+      if (isInferenceServiceReady(is, logger)) {
+        logger.debug(
+          `innerStart: Adding importKey ${importKey} for ready KServe InferenceService ${is.metadata.namespace}/${is.metadata.name}`,
+        );
+        keys.add(importKey);
+        // Track model card keys for ready ISes with catalog annotations
+        if (is.metadata.annotations) {
+          const catalogSource =
+            is.metadata.annotations[CATALOG_SOURCE_ANNOTATION];
+          const catalogModel =
+            is.metadata.annotations[CATALOG_MODEL_ANNOTATION];
+          if (catalogSource && catalogModel) {
+            activeModelCardKeys.add(`${catalogSource}/${catalogModel}`);
+          }
+        }
+      } else {
+        logger.debug(
+          `innerStart: Skipping importKey ${importKey} for non-ready KServe InferenceService ${is.metadata.namespace}/${is.metadata.name}`,
+        );
+      }
     }
   } catch (error) {
     logger.error(
@@ -469,6 +470,28 @@ async function innerStart(
     );
   }
 
+  // Clean up stale entries from modelCards
+  const modelCardKeysToDelete: string[] = [];
+  for (const mcKey of modelCards.keys()) {
+    if (!activeModelCardKeys.has(mcKey)) {
+      logger.debug(
+        `innerStart: Model card key ${mcKey} no longer exists in current keys, marking for deletion`,
+      );
+      modelCardKeysToDelete.push(mcKey);
+    }
+  }
+
+  for (const keyToDelete of modelCardKeysToDelete) {
+    modelCards.delete(keyToDelete);
+    logger.debug(`innerStart: Deleted stale model card entry: ${keyToDelete}`);
+  }
+
+  if (modelCardKeysToDelete.length > 0) {
+    logger.info(
+      `innerStart: Cleaned up ${modelCardKeysToDelete.length} stale model card entries`,
+    );
+  }
+
   logger.debug('innerStart: Reconciliation sync complete');
 }
 
@@ -490,6 +513,12 @@ export function getModelCatalog(id: string): ModelCatalog | undefined {
 
 export function getModelCard(id: string): string | undefined {
   return modelCards.get(id)?.content;
+}
+
+/** @internal Clears module-level maps so tests run in isolation. */
+export function _resetForTesting(): void {
+  modelCatalog.clear();
+  modelCards.clear();
 }
 
 function buildKubeConfig(

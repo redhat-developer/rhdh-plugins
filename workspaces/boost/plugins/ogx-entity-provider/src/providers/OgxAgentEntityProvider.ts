@@ -28,6 +28,13 @@ import {
 } from '@backstage/catalog-model';
 import type { Entity } from '@backstage/catalog-model';
 
+import {
+  AI_ASSET_CATEGORY_ANNOTATION,
+  AI_ASSET_SOURCE_ANNOTATION,
+  AI_ASSET_VERSION_ANNOTATION,
+  normalizeAIAssetVersion,
+} from '@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk';
+
 import type { OgxAgentConfig, OgxEntityProviderConfig } from '../types';
 import {
   mapLifecycleStage,
@@ -111,9 +118,17 @@ export class OgxAgentEntityProvider implements EntityProvider {
   private agentToEntity(agent: OgxAgentConfig): Entity {
     const entityName = sanitizeEntityName(`ogx-agent-${agent.id}`);
 
+    const entityRef = `airesource:default/${entityName}`;
+
     const annotations: Record<string, string> = {
       [ANNOTATION_LOCATION]: `${PROVIDER_ID}:${entityName}`,
       [ANNOTATION_ORIGIN_LOCATION]: `${PROVIDER_ID}:${entityName}`,
+      [AI_ASSET_CATEGORY_ANNOTATION]: 'agent',
+      [AI_ASSET_SOURCE_ANNOTATION]: 'ogx',
+      [AI_ASSET_VERSION_ANNOTATION]: normalizeAIAssetVersion(
+        agent.version ?? '0.0.0-unknown',
+        { entityRef },
+      ),
     };
 
     if (agent.lifecycleStage) {

@@ -17,9 +17,14 @@
 import type { ReactNode } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 
-import { mockApis, MockErrorApi, TestApiProvider } from '@backstage/test-utils';
+import {
+  mockApis,
+  MockConfigApi,
+  MockErrorApi,
+  TestApiProvider,
+} from '@backstage/test-utils';
 
-import { fireEvent, render } from '@testing-library/react';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import { ExtensionsPluginContent } from './ExtensionsPluginContent';
 import { extensionsApiRef } from '../api';
 import { usePluginConfigurationPermissions } from '../hooks/usePluginConfigurationPermissions';
@@ -28,10 +33,17 @@ import { usePluginPackages } from '../hooks/usePluginPackages';
 import { ExtensionsPluginInstallStatus } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
 import { useExtensionsConfiguration } from '../hooks/useExtensionsConfiguration';
 import { useNodeEnvironment } from '../hooks/useNodeEnvironment';
-import { errorApiRef } from '@backstage/core-plugin-api';
+import { configApiRef, errorApiRef } from '@backstage/core-plugin-api';
 import { translationApiRef } from '@backstage/core-plugin-api/alpha';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '../queryclient';
+
+const mockNavigate = jest.fn();
+
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: () => mockNavigate,
+}));
 
 jest.mock('@backstage/core-plugin-api', () => {
   const actual = jest.requireActual('@backstage/core-plugin-api');
@@ -65,6 +77,12 @@ jest.mock('../hooks/usePluginPackages', () => ({
   usePluginPackages: jest.fn(),
 }));
 
+jest.mock('../hooks/useEnablePlugin', () => ({
+  useEnablePlugin: () => ({
+    mutateAsync: jest.fn().mockResolvedValue({ status: 'OK' }),
+  }),
+}));
+
 const usePluginMock = usePlugin as jest.Mock;
 const useNodeEnvironmentMock = useNodeEnvironment as jest.Mock;
 const usePluginPackagesMock = usePluginPackages as jest.Mock;
@@ -96,6 +114,7 @@ beforeEach(() => {
       nodeEnv: 'test',
     },
   });
+  mockNavigate.mockClear();
   jest.clearAllMocks();
 });
 
@@ -113,6 +132,7 @@ const renderWithProviders = (ui: ReactNode) =>
       apis={[
         [extensionsApiRef, mockExtensionsApi],
         [errorApiRef, new MockErrorApi()],
+        [configApiRef, new MockConfigApi({})],
         [translationApiRef, mockApis.translation()],
       ]}
     >
@@ -313,5 +333,33 @@ describe('ExtensionsPluginContent', () => {
 
     expect(getByTestId('actions-button')).toBeInTheDocument();
     expect(getByTestId('disable-plugin')).toBeInTheDocument();
+  });
+
+  it('navigates to the catalog tab after disabling a plugin', async () => {
+    usePluginPackagesMock.mockReturnValue({
+      isLoading: false,
+      data: packages,
+    });
+
+    const installedPlugin = {
+      ...plugin,
+      spec: {
+        ...plugin.spec,
+        installStatus: ExtensionsPluginInstallStatus.Installed,
+      },
+    };
+
+    const { getByTestId } = renderWithProviders(
+      <ExtensionsPluginContent plugin={installedPlugin} />,
+    );
+    fireEvent.click(getByTestId('plugin-actions'));
+    fireEvent.click(getByTestId('disable-plugin'));
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalled();
+    });
+    expect(mockNavigate).not.toHaveBeenCalledWith(
+      '/extensions/installed-plugins',
+    );
   });
 });

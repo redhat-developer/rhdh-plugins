@@ -1,5 +1,22 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 6.1.0
+
+### Minor Changes
+
+- 279803c: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- 99da62c: Fix All Runs table column order resetting to default after sorting. Dragged column positions are now preserved across sort and data refetch operations.
+- 1e3a2fb: Fix Orchestrator empty state layout on wide viewports by targeting MuiGrid selectors instead of deprecated BackstageEmptyState class names.
+- c7f1b5d: trim unused production exports and dead symbols
+- 8e9abb8: Export named NFS extensions and add a Recipe A test so an unattached Workflows blueprint cannot pass silently.
+- Updated dependencies [279803c]
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-common@3.10.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-api@2.11.0
+  - @red-hat-developer-hub/backstage-plugin-orchestrator-form-react@2.12.0
+
 ## 6.0.0
 
 ### Major Changes

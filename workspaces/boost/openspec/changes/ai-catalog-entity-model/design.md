@@ -30,7 +30,7 @@ This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirm
 ## Goals
 
 - Standardized annotation scheme for all AI asset categories: agents, skills, MCP servers, models, model servers
-- Entity provider SDK enabling clean connector implementations (Kagenti, LlamaStack, OCI skill registry)
+- Entity provider SDK enabling clean connector implementations (Kagenti, OGX, OCI skill registry)
 - Delta sync support via Backstage's built-in `applyMutation({ type: 'delta' })` API
 - Air-gapped deployment readiness: custom CA bundles, K8s Secret-only credentials, configurable endpoints
 - Performance resilience: 5,000+ entities with ≤10% p95 latency degradation
@@ -40,7 +40,7 @@ This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirm
 
 - Creating new upstream Backstage entity kinds (we use AIResource for skills/rules per RHDHPLAN-1113, API for MCP servers, and existing kinds for agents/models pending RHDHPLAN-1113/RHDHPLAN-404)
 - Changing Backstage catalog core behavior or mutation APIs
-- Implementing specific connectors (Kagenti/LlamaStack) — covered in separate changes
+- Implementing specific connectors (Kagenti/OGX) — covered in separate changes
 - Neo4j knowledge graph ingestion pipeline — covered in `neo4j-knowledge-graph` change
 - OCI skill registry connector — covered in `oci-skill-registry` change
 
@@ -71,6 +71,8 @@ This mapping is documented for reference — connectors MAY map differently base
 > **RHDHPLAN-1113 / RHDHPLAN-404 dependencies (updated 2026-07-20):** The `skill`, `rule`, and `skill-bundle` categories use `AIResource` kind per RHDHPLAN-1113 (resolved). The `agent` category mapping is pending RHDHPLAN-1113 — Boost will refrain from defining agent entity kind mappings independently. The `ai-model` and `model-server` mappings are pending RHDHPLAN-404 upstream entity schema work. The `mcp-server` category maps to `API` kind with `spec.type: mcp-server` — this mapping ships in RHDH 2.1 via RHDHPLAN-1510.
 
 **Migration path:** When upstream kinds stabilize, we document field-level transformations. For example, `AiResource` casing alignment for skills: `kind: AIResource` + `spec.type: skill` + `rhdh.io/ai-asset-category: skill` → `kind: AiResource` (see [#33575](https://github.com/backstage/backstage/issues/33575)). The annotation remains for backward compatibility during the transition.
+
+> **Annotation specification (RHIDP-15346):** A formal specification for all `rhdh.io/ai-asset-*` annotations is published at [`specifications/annotation-specification.md`](../../../specifications/annotation-specification.md). It documents annotation semantics, the mapping table above, upstream mapping scenarios with confidence levels, and field-level transformations. That specification cross-references this decision as its source of truth.
 
 ### Decision 2: SDK package scope and structure
 
@@ -128,7 +130,7 @@ Startup validation rejects plaintext credentials with descriptive error: `Plaint
 
 **Configurable endpoints:** All registry endpoint URLs configurable via app-config. No hardcoded SaaS URLs. Startup validation verifies URLs are syntactically valid.
 
-Reference app-config pattern applies to all connectors (Kagenti, LlamaStack, OCI skill registry).
+Reference app-config pattern applies to all connectors (Kagenti, OGX, OCI skill registry).
 
 ### Decision 5: Performance SLAs and error resilience _(Distributed: load testing → RHIDP-15294, error resilience → RHIDP-15316)_
 

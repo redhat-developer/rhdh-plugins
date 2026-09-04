@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { ReactNode } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import {
   type AppTheme,
   appThemeApiRef,
@@ -28,9 +28,12 @@ import {
   ThemeProvider as Mui5Provider,
   Theme as Mui5Theme,
 } from '@mui/material/styles';
+import GlobalStyles from '@mui/material/GlobalStyles';
 
 import { useTheme } from '../hooks/useTheme';
 import { useThemeConfig } from '../hooks/useThemeConfig';
+import { useBranding } from '../hooks/useBranding';
+import { buiTokensToCSS } from '../utils/buiTokensToCSS';
 import { ThemeConfig } from '../types';
 
 /**
@@ -43,16 +46,41 @@ import { ThemeConfig } from '../types';
  * https://github.com/backstage/backstage/blob/master/packages/theme/src/unified/UnifiedThemeProvider.tsx#L94-L100
  */
 const ThemeProvider = ({
+  themeName,
   theme,
   children,
 }: {
+  themeName: string;
   theme: UnifiedTheme;
   children: ReactNode;
 }) => {
+  const branding = useBranding();
   const mui5Theme = theme.getTheme('v5') as Mui5Theme;
   const secondary = mui5Theme.palette.text.secondary;
+
+  const buiTokenStyles = useMemo(() => {
+    const themes = branding?.theme;
+    if (!themes) return null;
+    const styles: Record<string, Record<string, string>> = {};
+    for (const [themeName, themeConfig] of Object.entries(themes)) {
+      const tokens = themeConfig?.bui?.tokens;
+      if (!tokens) continue;
+      const cssMap = buiTokensToCSS(tokens);
+      if (Object.keys(cssMap).length === 0) continue;
+      const mode =
+        themeConfig.mode ?? (themeName.includes('dark') ? 'dark' : 'light');
+      styles[`[data-theme-mode='${mode}']`] = {
+        ...styles[`[data-theme-mode='${mode}']`],
+        ...cssMap,
+      };
+    }
+    return Object.keys(styles).length > 0 ? styles : null;
+  }, [branding?.theme]);
+
+  const customCSS = branding?.customCSS ?? '';
+
   return (
-    <UnifiedThemeProvider theme={theme}>
+    <UnifiedThemeProvider themeName={themeName} theme={theme}>
       <StyledEngineProvider injectFirst>
         <Mui5Provider theme={mui5Theme}>
           {/*
@@ -64,6 +92,8 @@ const ThemeProvider = ({
               --bui-fg-secondary: ${secondary} !important;
             }
           `}</style>
+          {buiTokenStyles && <GlobalStyles styles={buiTokenStyles} />}
+          {customCSS && <style>{customCSS}</style>}
           {children}
         </Mui5Provider>
       </StyledEngineProvider>
@@ -72,27 +102,42 @@ const ThemeProvider = ({
 };
 
 export const createThemeProvider = (
+  themeName: string,
   theme: UnifiedTheme,
 ): AppTheme['Provider'] =>
   function RHDHThemeProvider({ children }) {
-    return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+    return (
+      <ThemeProvider themeName={themeName} theme={theme}>
+        {children}
+      </ThemeProvider>
+    );
   };
 
 export const createThemeProviderForThemeConfig = (
+  themeName: string,
   themeConfig: ThemeConfig,
 ): AppTheme['Provider'] =>
   function RHDHThemeProviderForThemeConfig({ children }) {
     const theme = useTheme(themeConfig);
-    return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+    return (
+      <ThemeProvider themeName={themeName} theme={theme}>
+        {children}
+      </ThemeProvider>
+    );
   };
 
 export const createThemeProviderForThemeName = (
   themeName: string,
+  themeNameForConfig = themeName,
 ): AppTheme['Provider'] =>
   function RHDHThemeProviderForThemeName({ children }) {
-    const themeConfig = useThemeConfig(themeName);
+    const themeConfig = useThemeConfig(themeNameForConfig);
     const theme = useTheme(themeConfig);
-    return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+    return (
+      <ThemeProvider themeName={themeName} theme={theme}>
+        {children}
+      </ThemeProvider>
+    );
   };
 
 const resolveActiveKey = (
@@ -144,7 +189,11 @@ export const createSharedThemeProvider = (
     const themeFromHook = useTheme(resolvedConfig);
 
     const theme = entry.theme ?? themeFromHook;
-    return <ThemeProvider theme={theme}>{children}</ThemeProvider>;
+    return (
+      <ThemeProvider theme={theme} themeName={entry.name ?? key}>
+        {children}
+      </ThemeProvider>
+    );
   }
   return RHDHSharedThemeProvider;
 };

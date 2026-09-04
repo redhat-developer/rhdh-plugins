@@ -19,17 +19,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { makeStyles, Typography } from '@material-ui/core';
-import {
-  ChatbotContent,
-  ChatbotFooter,
-  MessageBar,
-  MessageProps,
-} from '@patternfly/chatbot';
+import { useTheme } from '@material-ui/core/styles';
+import { ChatbotContent, ChatbotFooter, MessageBar } from '@patternfly/chatbot';
 import {
   Alert,
-  AlertActionCloseButton,
-  AlertGroup,
-  AlertVariant,
   Button,
   Drawer,
   DrawerContent,
@@ -56,17 +49,21 @@ import { useRenameDocument } from '../../hooks/notebooks/useRenameDocument';
 import { useRenameNotebookWithAlert } from '../../hooks/notebooks/useRenameNotebookWithAlert';
 import { useUploadDocument } from '../../hooks/notebooks/useUploadDocument';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
-import { CreateMessageVariables } from '../../hooks/useCreateCoversationMessage';
 import { useNotebookWelcomePrompts } from '../../hooks/useNotebookWelcomePrompts';
 import { useStopConversation } from '../../hooks/useStopConversation';
 import { useTranslation } from '../../hooks/useTranslation';
+import botAvatarDark from '../../images/bot-avatar-dark.svg';
+import botAvatarLight from '../../images/bot-avatar.svg';
+import userAvatar from '../../images/user-avatar.svg';
 import { NotebookSessionMetadata, SessionDocument } from '../../types';
 import { ChatbotFootnoteWithIcon } from '../../utils/lightspeed-chatbox-utils';
 import { runFileUploads } from '../../utils/notebook-upload-runner';
 import { LightspeedChatBox } from '../LightspeedChatBox';
+import { ToastAlertGroup } from '../ToastAlertGroup';
 import { AddDocumentModal } from './AddDocumentModal';
 import { DeleteDocumentModal } from './DeleteDocumentModal';
 import { DocumentSidebar } from './DocumentSidebar';
+import { useNotebookStream } from './NotebookStreamProvider';
 import { OverwriteConfirmModal } from './OverwriteConfirmModal';
 import { AddCircleFilledIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
 import { UploadResourceScreen } from './UploadResourceScreen';
@@ -77,25 +74,22 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     flex: 1,
     minHeight: 0,
-    height: '100%',
-    backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
+    minWidth: 0,
+    width: '100%',
+    overflow: 'hidden',
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
+  },
+  drawerContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
   },
   drawerContainer: {
     flex: 1,
     minHeight: 0,
+    minWidth: 0,
     '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default) !important',
-    },
-    '& .pf-v6-c-drawer__panel-main, & .pf-v5-c-drawer__panel-main': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default) !important',
-    },
-    '& .pf-v6-c-drawer__panel-body, & .pf-v5-c-drawer__panel-body': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default) !important',
-    },
-    '& .pf-v6-c-drawer__splitter, & .pf-v5-c-drawer__splitter': {
       backgroundColor:
         'var(--pf-t--global--background--color--floating--default)',
     },
@@ -118,7 +112,8 @@ const useStyles = makeStyles(theme => ({
   mainArea: {
     display: 'flex',
     flexDirection: 'row',
-    height: '100%',
+    flex: 1,
+    minHeight: 0,
     minWidth: 0,
   },
   topBar: {
@@ -136,10 +131,16 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     flex: 1,
     minHeight: 0,
+    minWidth: 0,
   },
   drawerContentBody: {
-    backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
-    height: '100%',
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1,
+    minHeight: 0,
+    minWidth: 0,
   },
   contentColumn: {
     display: 'flex',
@@ -157,36 +158,11 @@ const useStyles = makeStyles(theme => ({
     boxSizing: 'border-box',
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default)',
-    '& .pf-v6-c-alert, & .pf-v5-c-alert': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--secondary--default) !important',
-    },
-    '& .pf-v6-c-alert__content, & .pf-v5-c-alert__content': {
-      backgroundColor: 'transparent !important',
-    },
-    '& .pf-v6-c-alert__body, & .pf-v5-c-alert__body': {
-      backgroundColor: 'transparent !important',
-    },
-    '& .pf-v6-c-alert__description, & .pf-v5-c-alert__description': {
-      backgroundColor: 'transparent !important',
-    },
   },
   notebookDisclaimerInner: {
     width: '95%',
     maxWidth: 'unset',
     margin: '0 auto',
-  },
-  toastAlertGroup: {
-    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
-    '--pf-v6-c-alert-group--m-toast--ZIndex': '9999',
-  },
-  toastAlert: {
-    maxWidth: '350px',
-    '& .pf-v6-c-alert__title': {
-      margin: 0,
-    },
   },
   welcomeContainer: {
     display: 'flex',
@@ -202,6 +178,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'column',
     minHeight: 0,
+    minWidth: 0,
     backgroundColor:
       'var(--pf-t--global--background--color--floating--default)',
   },
@@ -261,34 +238,6 @@ const useStyles = makeStyles(theme => ({
           ? theme.palette.grey[100]
           : 'var(--pf-t--global--background--color--secondary--default)',
     },
-    '& .pf-chatbot__button--stop, & .pf-chatbot__button--attach, & .pf-chatbot__button--send, & .pf-chatbot__button--microphone':
-      {
-        '--pf-v6-c-button--BorderRadius':
-          'var(--pf-t--global--border--radius--pill)',
-        borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
-      },
-  },
-  messageBar: {
-    border: '1px solid var(--pf-t--global--border--color--default)',
-    borderRadius: 24,
-    padding: theme.spacing(0.5),
-    '&::after': {
-      display: 'none',
-    },
-  },
-  addResourceButton: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    padding: 4,
-    display: 'inline-flex',
-    alignItems: 'center',
-    color: 'inherit',
-    '&:focus-visible': {
-      outline: '2px solid var(--pf-t--global--border--color--brand--default)',
-      outlineOffset: 2,
-    },
-    marginLeft: theme.spacing(2),
   },
   chatContent: {
     minHeight: 0,
@@ -296,6 +245,13 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     flex: 1,
     overflow: 'auto',
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
+    '& .pf-chatbot__message-contents': {
+      overflowX: 'hidden',
+      overflowWrap: 'break-word',
+      wordBreak: 'break-word',
+    },
   },
 }));
 
@@ -311,6 +267,12 @@ type NotebookViewProps = {
   profileLoading: boolean;
   topicRestrictionEnabled: boolean;
   onClose: () => void;
+  isCompact?: boolean;
+  sidebarCollapsed: boolean;
+  onSidebarCollapsedChange: (collapsed: boolean) => void;
+  isUploadModalOpen: boolean;
+  onUploadModalOpenChange: (open: boolean) => void;
+  onUploadsInProgressChange?: (inProgress: boolean) => void;
 };
 
 export const NotebookView = ({
@@ -325,8 +287,17 @@ export const NotebookView = ({
   profileLoading,
   topicRestrictionEnabled,
   onClose,
+  isCompact = false,
+  sidebarCollapsed,
+  onSidebarCollapsedChange,
+  isUploadModalOpen,
+  onUploadModalOpenChange,
+  onUploadsInProgressChange,
 }: NotebookViewProps) => {
   const classes = useStyles();
+  const theme = useTheme();
+  const botAvatar =
+    theme.palette.type === 'dark' ? botAvatarDark : botAvatarLight;
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const configApi = useApi(configApiRef);
@@ -342,17 +313,19 @@ export const NotebookView = ({
   const [conversationId, setConversationId] = useState(
     metadata?.conversation_id ?? TEMP_CONVERSATION_ID,
   );
-  const [isSendButtonDisabled, setIsSendButtonDisabled] = useState(false);
-  const [requestId, setRequestId] = useState('');
   const { mutate: stopConversation } = useStopConversation();
-  const wasStoppedByUserRef = useRef(false);
-  const autoDeleteRef = useRef({
-    isUntitled: false,
-    isEmpty: true,
-    noPending: true,
-    noUploading: true,
-    noChat: true,
-  });
+
+  // Streaming lives in a store above the display-mode remount boundary, so it
+  // survives overlay/docked/fullscreen switches. This view only subscribes.
+  const {
+    messages: streamMessages,
+    status: streamStatus,
+    requestId,
+    send: sendNotebookStream,
+    stop: stopNotebookStream,
+  } = useNotebookStream(sessionId);
+  const isStreaming = streamStatus === 'streaming';
+
   const [announcement, setAnnouncement] = useState<string | undefined>(
     undefined,
   );
@@ -370,81 +343,85 @@ export const NotebookView = ({
 
   const { mutateAsync: renameDocument } = useRenameDocument();
 
-  const onComplete = useCallback(
-    (message: string) => {
-      setIsSendButtonDisabled(false);
-      if (!wasStoppedByUserRef.current) {
-        setAnnouncement(`Message from Bot: ${message}`);
-      }
-      wasStoppedByUserRef.current = false;
-      queryClient.invalidateQueries({
-        queryKey: ['conversationMessages', conversationId],
-      });
-    },
-    [queryClient, conversationId],
+  // Read-only: persisted (server) messages + transform. Displayed when the
+  // store has no live/finished stream for this session. Sending is handled by
+  // the stream store, not this hook.
+  const { conversationMessages, scrollToBottomRef } = useConversationMessages(
+    conversationId,
+    userName,
+    notebookModel,
+    '',
+    avatar,
   );
 
-  const onStart = useCallback((conv_id: string) => {
-    setConversationId(conv_id);
-  }, []);
+  // Show the store's transcript whenever there is an active or finished stream
+  // for this session; otherwise fall back to persisted server messages.
+  const messages =
+    streamStatus === 'idle' ? conversationMessages : streamMessages;
 
-  const createMessageAdapter = useCallback(
-    async (vars: CreateMessageVariables) => {
-      return notebookCreateMessage({
-        prompt: vars.prompt,
-        sessionId,
-      });
-    },
-    [notebookCreateMessage, sessionId],
-  );
-
-  const onRequestIdReady = useCallback((rid: string) => {
-    setRequestId(rid);
-  }, []);
-
-  const { conversationMessages, handleInputPrompt, scrollToBottomRef } =
-    useConversationMessages(
-      conversationId,
-      userName,
-      notebookModel,
-      '',
-      avatar,
-      onComplete,
-      onStart,
-      createMessageAdapter,
-      onRequestIdReady,
-    );
-
-  const [messages, setMessages] =
-    useState<MessageProps[]>(conversationMessages);
-
+  // Keep the local conversation id in sync when the store resolves a temp
+  // conversation to its real id (written into the session query cache).
   useEffect(() => {
-    setMessages(conversationMessages);
-  }, [conversationMessages]);
+    if (
+      metadata?.conversation_id &&
+      metadata.conversation_id !== conversationId
+    ) {
+      setConversationId(metadata.conversation_id);
+    }
+  }, [metadata?.conversation_id, conversationId]);
+
+  // Announce the completed bot response for screen readers.
+  const prevStatusRef = useRef(streamStatus);
+  useEffect(() => {
+    if (prevStatusRef.current === 'streaming' && streamStatus === 'complete') {
+      const last = streamMessages[streamMessages.length - 1];
+      if (last?.role === 'bot' && last.content) {
+        setAnnouncement(`Message from Bot: ${last.content}`);
+      }
+    }
+    prevStatusRef.current = streamStatus;
+  }, [streamStatus, streamMessages]);
 
   const sendMessage = useCallback(
     (message: string | number) => {
-      wasStoppedByUserRef.current = false;
+      const text = message.toString();
+      if (!text.trim()) return;
       setAnnouncement(
-        t('conversation.announcement.userMessage' as any, {
-          prompt: message.toString(),
-        }),
+        t('conversation.announcement.userMessage' as any, { prompt: text }),
       );
-      handleInputPrompt(message.toString(), []);
-      setIsSendButtonDisabled(true);
+      sendNotebookStream({
+        prompt: text,
+        seedMessages: messages,
+        conversationId,
+        userName,
+        avatar: avatar || userAvatar,
+        botAvatar,
+        selectedModel: notebookModel,
+        createMessage: (prompt: string, options?: { signal?: AbortSignal }) =>
+          notebookCreateMessage({ prompt, sessionId, signal: options?.signal }),
+      });
     },
-    [handleInputPrompt, t],
+    [
+      sendNotebookStream,
+      messages,
+      conversationId,
+      userName,
+      avatar,
+      botAvatar,
+      notebookModel,
+      notebookCreateMessage,
+      sessionId,
+      t,
+    ],
   );
 
   const handleStopButton = useCallback(() => {
-    wasStoppedByUserRef.current = true;
     if (requestId) {
       stopConversation(requestId);
-      setRequestId('');
     }
-    setIsSendButtonDisabled(false);
+    stopNotebookStream();
     setAnnouncement(t('conversation.announcement.responseStopped'));
-  }, [requestId, stopConversation, t]);
+  }, [requestId, stopConversation, stopNotebookStream, t]);
 
   const notebookPrompts = useNotebookWelcomePrompts();
   const welcomePrompts = notebookPrompts.map(title => ({
@@ -454,8 +431,6 @@ export const NotebookView = ({
 
   const uploadMutation = useUploadDocument();
 
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [uploadingFileNames, setUploadingFileNames] = useState<string[]>([]);
   const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
   const [toastAlerts, setToastAlerts] = useState<Partial<AlertProps>[]>([]);
@@ -467,40 +442,6 @@ export const NotebookView = ({
   const [allFilesForOverwrite, setAllFilesForOverwrite] = useState<File[]>([]);
   const [isOverwriteModalOpen, setIsOverwriteModalOpen] = useState(false);
   const [filesToAddToModal, setFilesToAddToModal] = useState<File[]>([]);
-
-  autoDeleteRef.current = {
-    isUntitled: notebookName === UNTITLED_NOTEBOOK_NAME,
-    isEmpty: documents.length === 0 && completedFileNames.size === 0,
-    noPending: !pendingUploads.length,
-    noUploading: !uploadingFileNames.length,
-    noChat: conversationId === TEMP_CONVERSATION_ID,
-  };
-
-  useEffect(() => {
-    return () => {
-      const currentNotebook = autoDeleteRef.current;
-      if (
-        currentNotebook.isUntitled &&
-        currentNotebook.isEmpty &&
-        currentNotebook.noPending &&
-        currentNotebook.noUploading &&
-        currentNotebook.noChat
-      ) {
-        notebooksApi
-          .deleteSession(sessionId)
-          .then(() => {
-            queryClient.invalidateQueries({
-              queryKey: ['notebooks', 'sessions'],
-            });
-          })
-          .catch(() => {});
-      } else {
-        queryClient.invalidateQueries({
-          queryKey: ['notebooks', 'sessions'],
-        });
-      }
-    };
-  }, [notebooksApi, sessionId, queryClient]);
 
   const handleRenameDocument = useCallback(
     async (documentId: string, newTitle: string) => {
@@ -555,8 +496,8 @@ export const NotebookView = ({
     }
   }, [deleteDocumentTarget, notebooksApi, sessionId, queryClient, t]);
 
-  const handleOpenUploadModal = () => setIsUploadModalOpen(true);
-  const handleCloseUploadModal = () => setIsUploadModalOpen(false);
+  const handleOpenUploadModal = () => onUploadModalOpenChange(true);
+  const handleCloseUploadModal = () => onUploadModalOpenChange(false);
 
   const handleCloseNotebook = () => {
     onClose();
@@ -599,7 +540,7 @@ export const NotebookView = ({
   const handleDuplicatesFound = (duplicateFiles: File[], allFiles: File[]) => {
     setFilesToOverwrite(duplicateFiles);
     setAllFilesForOverwrite(allFiles);
-    setIsUploadModalOpen(false);
+    onUploadModalOpenChange(false);
     setIsOverwriteModalOpen(true);
   };
 
@@ -626,7 +567,7 @@ export const NotebookView = ({
     setFilesToAddToModal(allFilesForOverwrite);
     setFilesToOverwrite([]);
     setAllFilesForOverwrite([]);
-    setIsUploadModalOpen(true);
+    onUploadModalOpenChange(true);
   };
 
   const handleOverwriteCancel = () => {
@@ -699,12 +640,16 @@ export const NotebookView = ({
   const isAddDisabled =
     totalDocumentCount >= NOTEBOOK_MAX_FILES || hasUploadsInProgress;
 
+  useEffect(() => {
+    onUploadsInProgressChange?.(hasUploadsInProgress);
+  }, [hasUploadsInProgress, onUploadsInProgressChange]);
+
   const panelContent = (
     <DrawerPanelContent
-      isResizable
-      defaultSize="310px"
-      minSize="232px"
-      maxSize="50%"
+      isResizable={!isCompact}
+      defaultSize={isCompact ? '100%' : '310px'}
+      minSize={isCompact ? '100%' : '232px'}
+      maxSize={isCompact ? '100%' : '50%'}
       resizeAriaLabel={t('notebook.view.sidebar.resize')}
     >
       <DocumentSidebar
@@ -715,7 +660,7 @@ export const NotebookView = ({
         deletingDocumentIds={deletingDocumentIds}
         collapsed={sidebarCollapsed}
         hasUploadsInProgress={hasUploadsInProgress}
-        onToggleCollapse={() => setSidebarCollapsed(prev => !prev)}
+        onToggleCollapse={() => onSidebarCollapsedChange(!sidebarCollapsed)}
         onAddDocument={handleOpenUploadModal}
         onDeleteDocument={handleDeleteDocument}
         onRenameDocument={handleRenameDocument}
@@ -756,7 +701,7 @@ export const NotebookView = ({
             ref={scrollToBottomRef}
             welcomePrompts={[]}
             conversationId={conversationId}
-            isStreaming={isSendButtonDisabled}
+            isStreaming={isStreaming}
             topicRestrictionEnabled={topicRestrictionEnabled}
             showSourcesChipPopover
           />
@@ -796,33 +741,14 @@ export const NotebookView = ({
   };
 
   return (
-    <div className={classes.root}>
-      {toastAlerts.length > 0 && (
-        <AlertGroup
-          hasAnimations
-          isToast
-          isLiveRegion
-          className={classes.toastAlertGroup}
-        >
-          {toastAlerts.map(({ key, title, variant }) => (
-            <Alert
-              key={key}
-              variant={AlertVariant[variant ?? 'success']}
-              title={title}
-              className={classes.toastAlert}
-              timeout={2000}
-              onTimeout={() => handleRemoveToastAlert(key as React.Key)}
-              actionClose={
-                <AlertActionCloseButton
-                  title={title as string}
-                  variantLabel={`${variant ?? 'success'} alert`}
-                  onClose={() => handleRemoveToastAlert(key as React.Key)}
-                />
-              }
-            />
-          ))}
-        </AlertGroup>
-      )}
+    <div
+      className={classes.root}
+      style={isCompact ? { position: 'relative' as const } : undefined}
+    >
+      <ToastAlertGroup
+        alerts={toastAlerts}
+        onRemoveAlert={handleRemoveToastAlert}
+      />
       <Drawer
         isExpanded={!sidebarCollapsed}
         isInline
@@ -831,10 +757,11 @@ export const NotebookView = ({
       >
         <DrawerContent
           panelContent={!sidebarCollapsed ? panelContent : undefined}
+          className={classes.drawerContent}
         >
           <DrawerContentBody className={classes.drawerContentBody}>
             <div className={classes.mainArea}>
-              {sidebarCollapsed && (
+              {sidebarCollapsed && !isCompact && (
                 <div className={classes.expandStrip}>
                   <Tooltip
                     content={t('notebook.view.sidebar.expand')}
@@ -842,7 +769,7 @@ export const NotebookView = ({
                   >
                     <Button
                       variant="plain"
-                      onClick={() => setSidebarCollapsed(false)}
+                      onClick={() => onSidebarCollapsedChange(false)}
                       aria-label={t('notebook.view.sidebar.expand')}
                       size="sm"
                     >
@@ -877,17 +804,19 @@ export const NotebookView = ({
               )}
 
               <div className={classes.contentColumn}>
-                <div className={classes.topBar}>
-                  <Button
-                    variant="link"
-                    className={classes.closeButton}
-                    onClick={handleCloseNotebook}
-                    icon={<TimesIcon />}
-                    iconPosition="end"
-                  >
-                    {t('notebook.view.close')}
-                  </Button>
-                </div>
+                {!isCompact && (
+                  <div className={classes.topBar}>
+                    <Button
+                      variant="link"
+                      className={classes.closeButton}
+                      onClick={handleCloseNotebook}
+                      icon={<TimesIcon />}
+                      iconPosition="end"
+                    >
+                      {t('notebook.view.close')}
+                    </Button>
+                  </div>
+                )}
 
                 <div className={classes.mainContent}>{renderMainContent()}</div>
 
@@ -898,14 +827,14 @@ export const NotebookView = ({
                 <ChatbotFooter className={classes.footer}>
                   {(() => {
                     const addResourceAction = (
-                      <button
-                        type="button"
-                        onClick={() => handleOpenUploadModal()}
+                      <Button
+                        variant="plain"
+                        onClick={handleOpenUploadModal}
                         aria-label={t('notebook.view.documents.add')}
-                        className={classes.addResourceButton}
+                        size="sm"
                       >
-                        <PlusIcon style={{ width: 16, height: 16 }} />
-                      </button>
+                        <PlusIcon />
+                      </Button>
                     );
                     return hasNoDocuments ? (
                       <Tooltip
@@ -914,7 +843,6 @@ export const NotebookView = ({
                       >
                         <div>
                           <MessageBar
-                            className={classes.messageBar}
                             hasAttachButton={false}
                             hasMicrophoneButton={false}
                             hasStopButton={false}
@@ -934,14 +862,13 @@ export const NotebookView = ({
                       </Tooltip>
                     ) : (
                       <MessageBar
-                        className={classes.messageBar}
                         hasAttachButton={false}
                         hasMicrophoneButton
-                        hasStopButton={isSendButtonDisabled}
+                        hasStopButton={isStreaming}
                         handleStopButton={
-                          isSendButtonDisabled ? handleStopButton : undefined
+                          isStreaming ? handleStopButton : undefined
                         }
-                        isSendButtonDisabled={isSendButtonDisabled}
+                        isSendButtonDisabled={isStreaming}
                         onSendMessage={sendMessage}
                         placeholder={t('notebook.view.input.placeholder')}
                         forceMultilineLayout
@@ -980,6 +907,7 @@ export const NotebookView = ({
         onDuplicatesFound={handleDuplicatesFound}
         filesToAdd={filesToAddToModal}
         onFilesAdded={handleFilesAddedToModal}
+        isCompact={isCompact}
       />
 
       <OverwriteConfirmModal
@@ -989,6 +917,7 @@ export const NotebookView = ({
         onBack={handleOverwriteBack}
         allFiles={allFilesForOverwrite}
         duplicateFileNames={filesToOverwrite.map(f => f.name)}
+        isCompact={isCompact}
       />
 
       <DeleteDocumentModal
@@ -996,6 +925,7 @@ export const NotebookView = ({
         onClose={() => setDeleteDocumentTarget(null)}
         onConfirm={confirmDeleteDocument}
         documentName={deleteDocumentTarget?.name ?? ''}
+        isCompact={isCompact}
       />
     </div>
   );

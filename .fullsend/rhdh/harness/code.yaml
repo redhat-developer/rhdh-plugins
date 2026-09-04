@@ -1,5 +1,6 @@
 base: https://raw.githubusercontent.com/fullsend-ai/agents/4bbe4f50ed8e33c60539eaa30ddc320edf8bcda0/harness/code.yaml#sha256=050382941bb4c4a3dad5f00253de854684c0d22dd8cc1ca0a548079774470aad
 agent: rhdh/agents/code.md
+image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
 policy: rhdh/policies/code.yaml
 skills:
   - https://github.com/redhat-developer/rhdh-skill/tree/e84109919ae6085e3dcfe568c695e6dda54874ce/skills/rhdh-coding#sha256=5a4bc35476108a215091ccf1180cee68547c7668c6b193de4402674bc7b6cded

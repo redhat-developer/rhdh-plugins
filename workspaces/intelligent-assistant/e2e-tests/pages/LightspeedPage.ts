@@ -39,7 +39,10 @@ export async function selectDisplayMode(
   t: LightspeedMessages,
   mode: DisplayMode,
 ) {
-  await page.getByRole('button', { name: t['aria.options.label'] }).click();
+  await page
+    .locator('.pf-chatbot__header')
+    .getByRole('button', { name: t['aria.options.label'] })
+    .click();
   const modeMap: Record<DisplayMode, string> = {
     Overlay: t['settings.displayMode.overlay'],
     'Dock to window': t['settings.displayMode.docked'],

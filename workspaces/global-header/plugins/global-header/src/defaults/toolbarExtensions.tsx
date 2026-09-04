@@ -32,9 +32,8 @@ import { HeaderIconButton } from '../components/HeaderIconButton/HeaderIconButto
 import { ProfileDropdown } from '../components/ProfileDropdown';
 import { HelpDropdown } from '../components/HelpDropdown';
 import { ApplicationLauncherDropdown } from '../components/ApplicationLauncherDropdown';
-import { rhdhLogo } from './rhdhLogo';
 
-const CompanyLogoWrapper = () => <CompanyLogo to="/" logo={rhdhLogo} />;
+const CompanyLogoWrapper = () => <CompanyLogo to="/" />;
 
 const SelfServiceButton = () => (
   <HeaderIconButton

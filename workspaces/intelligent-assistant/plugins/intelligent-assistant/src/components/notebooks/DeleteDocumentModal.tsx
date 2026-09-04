@@ -26,18 +26,32 @@ import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
 
 import { useTranslation } from '../../hooks/useTranslation';
+import { getScopedDialogProps } from '../../utils/scoped-dialog-utils';
 import { Trans } from '../Trans';
 
 const useStyles = makeStyles(theme => ({
   dialogPaper: {
     borderRadius: 16,
   },
+  dialogPaperCompact: {
+    borderRadius: 12,
+  },
   dialogTitle: {
     padding: '16px 20px',
     fontStyle: 'inherit',
   },
+  dialogTitleCompact: {
+    padding: '12px 16px !important',
+    fontStyle: 'inherit',
+  },
   dialogContent: {
     paddingTop: 0,
+  },
+  dialogContentCompact: {
+    paddingTop: '0 !important',
+    paddingBottom: `${theme.spacing(1)}px !important`,
+    paddingLeft: `${theme.spacing(2)}px !important`,
+    paddingRight: `${theme.spacing(2)}px !important`,
   },
   titleRow: {
     display: 'flex',
@@ -58,6 +72,11 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(2.5),
     gap: theme.spacing(1),
   },
+  dialogActionsCompact: {
+    justifyContent: 'left',
+    padding: `${theme.spacing(1.5)}px !important`,
+    gap: theme.spacing(1),
+  },
   removeButton: {
     textTransform: 'none',
     borderRadius: 999,
@@ -73,6 +92,7 @@ type DeleteDocumentModalProps = {
   onClose: () => void;
   onConfirm: () => void;
   documentName: string;
+  isCompact?: boolean;
 };
 
 export const DeleteDocumentModal = ({
@@ -80,7 +100,9 @@ export const DeleteDocumentModal = ({
   onClose,
   onConfirm,
   documentName,
+  isCompact = false,
 }: DeleteDocumentModalProps) => {
+  const scopedProps = getScopedDialogProps(isCompact);
   const classes = useStyles();
   const { t } = useTranslation();
 
@@ -91,20 +113,24 @@ export const DeleteDocumentModal = ({
       aria-labelledby="delete-document-modal"
       aria-describedby="delete-document-modal-body"
       fullWidth
+      {...scopedProps}
       PaperProps={{
-        className: classes.dialogPaper,
+        className: isCompact ? classes.dialogPaperCompact : classes.dialogPaper,
+        ...scopedProps.PaperProps,
       }}
     >
-      <DialogTitle className={classes.dialogTitle}>
+      <DialogTitle
+        className={isCompact ? classes.dialogTitleCompact : classes.dialogTitle}
+      >
         <Box className={classes.titleRow}>
           <Typography component="span" className={classes.titleText}>
             {t('notebook.document.delete.title')}
           </Typography>
           <IconButton
-            aria-label="close"
+            aria-label={t('common.close')}
             onClick={onClose}
             title={t('common.close')}
-            size="large"
+            size={isCompact ? 'small' : 'large'}
             className={classes.closeButton}
           >
             <CloseIcon />
@@ -113,7 +139,9 @@ export const DeleteDocumentModal = ({
       </DialogTitle>
       <DialogContent
         id="delete-document-modal-body"
-        className={classes.dialogContent}
+        className={
+          isCompact ? classes.dialogContentCompact : classes.dialogContent
+        }
       >
         <Typography variant="body2">
           <Trans
@@ -124,7 +152,11 @@ export const DeleteDocumentModal = ({
           />
         </Typography>
       </DialogContent>
-      <DialogActions className={classes.dialogActions}>
+      <DialogActions
+        className={
+          isCompact ? classes.dialogActionsCompact : classes.dialogActions
+        }
+      >
         <Button
           variant="contained"
           color="error"

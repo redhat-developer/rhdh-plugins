@@ -27,7 +27,7 @@ const dcmTranslationIt: TranslationMessages<
   ref: dcmTranslationRef,
   messages: {
     'page.title': 'Centro dati',
-    'page.tabs.providers': 'Provider',
+    'page.tabs.agents': 'Agenti',
     'page.tabs.policies': 'Criteri',
     'page.tabs.serviceTypes': 'Tipi di servizio',
     'page.tabs.catalogItems': 'Elementi del catalogo',
@@ -55,47 +55,42 @@ const dcmTranslationIt: TranslationMessages<
     'deleteDialog.cancelButton': 'Annulla',
     'deleteDialog.body':
       'Eliminare {{resourceName}}? Questa azione non pu\u00f2 essere annullata.',
-    'providers.emptyTitle': 'Nessun provider registrato',
-    'providers.emptyDescription':
-      'Registra un provider di servizi per consentire a DCM di effettuare il provisioning di risorse su infrastrutture esterne (p.\u00a0es. OpenShift, AWS).',
-    'providers.registerButton': 'Registra',
-    'providers.entityLabel': 'Provider',
-    'providers.registerDialogTitle': 'Registra provider',
-    'providers.editDialogTitle': 'Modifica provider',
-    'providers.saveButton': 'Salva',
-    'providers.createSuccess': 'Provider registrato correttamente.',
-    'providers.updateSuccess': 'Provider aggiornato correttamente.',
-    'providers.deleteSuccess': 'Provider eliminato correttamente.',
-    'providers.deleteLabel': 'provider',
-    'providers.columns.displayName': 'Nome visualizzato',
-    'providers.columns.name': 'Nome',
-    'providers.columns.endpoint': 'Endpoint',
-    'providers.columns.serviceType': 'Tipo di servizio',
-    'providers.columns.operations': 'Operazioni',
-    'providers.columns.status': 'Stato',
-    'providers.form.nameLabel': 'Nome *',
-    'providers.form.namePlaceholder': 'es. mio-provider-k8s',
-    'providers.form.nameHelper':
+    'agents.emptyTitle': 'Nessun agente registrato',
+    'agents.emptyDescription':
+      'Gli agenti di ambiente si registrano nel piano di controllo e inviano heartbeat periodici.',
+    'agents.registerButton': 'Registra',
+    'agents.entityLabel': 'Agenti',
+    'agents.registerDialogTitle': 'Registra agente',
+    'agents.createSuccess': 'Agente registrato correttamente.',
+    'agents.columns.name': 'Nome',
+    'agents.columns.environment': 'Ambiente',
+    'agents.columns.serviceTypes': 'Tipi di servizio',
+    'agents.columns.cost': 'Costo',
+    'agents.columns.topic': 'Topic',
+    'agents.columns.health': 'Stato',
+    'agents.columns.lastHeartbeat': 'Ultimo heartbeat',
+    'agents.filter.healthLabel': 'Stato di salute',
+    'agents.filter.healthAll': 'Tutti',
+    'agents.filter.healthReady': 'Pronto',
+    'agents.filter.healthCongested': 'Congestionato',
+    'agents.filter.healthUnavailable': 'Non disponibile',
+    'agents.form.nameLabel': 'Nome *',
+    'agents.form.namePlaceholder': 'es. env-agent-west-1',
+    'agents.form.nameHelper':
       'Identificatore univoco \u2014 solo lettere minuscole, numeri e trattini',
-    'providers.form.nameHelperEditMode':
-      'Il nome del provider non pu\u00f2 essere modificato dopo la creazione',
-    'providers.form.endpointLabel': 'Endpoint *',
-    'providers.form.endpointPlaceholder': 'https://api.esempio.com',
-    'providers.form.endpointHelper':
-      'URL completo dell\u2019API del provider (p.\u00a0es. https://api.esempio.com)',
-    'providers.form.serviceTypeLabel': 'Tipo di servizio *',
-    'providers.form.serviceTypeEmpty': 'Nessun tipo di servizio disponibile',
-    'providers.form.serviceTypeSelect': 'Seleziona un tipo di servizio\u2026',
-    'providers.form.serviceTypeHelperNoTypes':
-      'Crea prima un tipo di servizio nella scheda Tipi di servizio',
-    'providers.form.serviceTypeHelperDefault':
-      'Seleziona dai tipi di servizio registrati',
-    'providers.form.schemaVersionLabel': 'Versione schema *',
-    'providers.form.schemaVersionHelper':
-      'p.\u00a0es. v1, v1alpha1, v2beta2 \u2014 solo v<numero>[alpha|beta][numero]',
-    'providers.form.operationsLabel': 'Operazioni',
-    'providers.form.operationsHelper':
-      'Seleziona le operazioni supportate da questo provider',
+    'agents.form.environmentLabel': 'Ambiente *',
+    'agents.form.environmentPlaceholder': 'es. production',
+    'agents.form.environmentHelper': "Etichetta ambiente dell'agente",
+    'agents.form.serviceTypesLabel': 'Tipi di servizio *',
+    'agents.form.serviceTypesHelper':
+      'Tipi di servizio che questo agente pu\u00f2 fornire',
+    'agents.form.costLabel': 'Costo *',
+    'agents.form.costHelper':
+      'Peso di costo relativo per le decisioni di posizionamento',
+    'agents.form.topicNameLabel': 'Nome topic *',
+    'agents.form.topicNamePlaceholder': 'es. dcm.agent.env-agent-west-1',
+    'agents.form.topicNameHelper':
+      'Nome del topic NATS \u2014 deve iniziare con dcm.agent.',
     'policies.emptyTitle': 'Nessun criterio definito',
     'policies.emptyDescription':
       'Crea criteri OPA Rego per applicare regole di governance alle risorse DCM.',
@@ -285,20 +280,17 @@ const dcmTranslationIt: TranslationMessages<
     'copyButton.copied': 'Copiato!',
     'copyButton.failed': 'Copia non riuscita',
     'copyButton.ariaLabel': 'Copia negli appunti',
-    'validation.provider.nameRequired': 'Il nome \u00e8 obbligatorio',
-    'validation.provider.namePattern':
+    'validation.agent.nameRequired': 'Il nome \u00e8 obbligatorio',
+    'validation.agent.namePattern':
       'Sono consentiti solo lettere minuscole, numeri e trattini (deve iniziare con una lettera)',
-    'validation.provider.endpointRequired': "L'endpoint \u00e8 obbligatorio",
-    'validation.provider.endpointPattern':
-      'Deve iniziare con http:// o https:// (es. https://mio-servizio:8081/api)',
-    'validation.provider.serviceTypeRequired':
-      'Il tipo di servizio \u00e8 obbligatorio',
-    'validation.provider.serviceTypeMin':
-      'Selezionare un tipo di servizio dalla lista',
-    'validation.provider.schemaVersionRequired':
-      'La versione dello schema \u00e8 obbligatoria',
-    'validation.provider.schemaVersionPattern':
-      'Deve seguire il formato v<numero>[alpha|beta][numero] \u2014 es. v1, v1alpha1, v2beta2',
+    'validation.agent.environmentRequired': "L'ambiente \u00e8 obbligatorio",
+    'validation.agent.serviceTypesRequired':
+      '\u00c8 richiesto almeno un tipo di servizio',
+    'validation.agent.costRequired': 'Il costo \u00e8 obbligatorio',
+    'validation.agent.topicNameRequired':
+      'Il nome del topic \u00e8 obbligatorio',
+    'validation.agent.topicNamePattern':
+      'Il nome del topic deve iniziare con dcm.agent.',
     'validation.policy.displayNameRequired':
       'Il nome visualizzato \u00e8 obbligatorio',
     'validation.policy.displayNameEmpty':

@@ -37,6 +37,8 @@ describe('useLightspeedDrawerContext', () => {
     consumePendingOverlayThreadHandoff: jest.fn(() => false),
     shellViewTab: 0,
     setShellViewTab: jest.fn(),
+    activeNotebookId: undefined,
+    setActiveNotebookId: jest.fn(),
   };
 
   it('should return context value when used within provider', () => {

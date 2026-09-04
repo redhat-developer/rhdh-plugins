@@ -13,28 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import type { CSSProperties } from 'react';
+
 import { Link } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
-import DefaultLogo from './DefaultLogo';
 import Box from '@mui/material/Box';
+import { defaultFullLogo } from '../../defaults/defaultFullLogo';
 import { useAppBarBackgroundScheme } from '../../hooks/useAppBarBackgroundScheme';
+import { useBrandingFullLogo } from '../../hooks/useBrandingFullLogo';
+import { CompanyLogoProps } from './types';
+
+export type { CompanyLogoProps, LogoURLs } from './types';
 
 const LogoRender = ({
-  base64Logo,
-  defaultLogo,
+  logoUri,
   width = 150,
   height = 40,
 }: {
-  base64Logo: string | undefined;
-  defaultLogo: JSX.Element;
+  logoUri: string;
   width?: number | string;
   height?: number | string;
 }) => {
-  return base64Logo ? (
+  return (
     <img
       data-testid="home-logo"
-      src={base64Logo}
+      src={logoUri}
       alt="Home logo"
       style={{
         objectFit: 'contain',
@@ -43,71 +45,7 @@ const LogoRender = ({
       }}
       width={width}
     />
-  ) : (
-    defaultLogo
   );
-};
-
-/**
- * An interface representing the URLs for light and dark variants of a logo.
- * @public
- */
-export type LogoURLs =
-  | {
-      /** The logo that will be used in global headers with a light-coloured background */
-      light: string;
-      /** The logo that will be used in global headers with a dark-coloured background */
-      dark: string;
-    }
-  | string
-  | undefined;
-
-/**
- * @public
- */
-export interface CompanyLogoProps {
-  /** An object containing the logo URLs */
-  logo?: LogoURLs;
-  /** The route to link the logo to */
-  to?: string;
-  /**
-   * The width of the logo in pixels (defaults to 150px). This prop fixes an
-   * issue where encoded SVGs without an explicit width would not render.
-   * You likely do not need to set this prop, but we recommend setting it
-   * to a value under 200px.
-   */
-  width?: string | number;
-  /**
-   * The maximum height of the logo in pixels (defaults to 40px).
-   * Note that changing this value may result in changes in the height of the global header.
-   **/
-  height?: string | number;
-  /** This prop is not used by this component. */
-  layout?: CSSProperties;
-}
-
-/**
- * Gets a themed image based on the current theme.
- */
-const useFullLogo = (logo: LogoURLs): string | undefined => {
-  const appBarBackgroundScheme = useAppBarBackgroundScheme();
-
-  const configApi = useApi(configApiRef);
-
-  /** The fullLogo config specified by app.branding.fullLogo */
-  const fullLogo = configApi.getOptional<LogoURLs>('app.branding.fullLogo');
-
-  /** The URI of the logo specified by app.branding.fullLogo */
-  const fullLogoURI =
-    typeof fullLogo === 'string'
-      ? fullLogo
-      : fullLogo?.[appBarBackgroundScheme];
-
-  /** The URI of the logo specified by CompanyLogo props */
-  const propsLogoURI =
-    typeof logo === 'string' ? logo : logo?.[appBarBackgroundScheme];
-
-  return propsLogoURI ?? fullLogoURI ?? undefined;
 };
 
 export const CompanyLogo = ({
@@ -116,7 +54,9 @@ export const CompanyLogo = ({
   height,
   to = '/',
 }: CompanyLogoProps) => {
-  const logoURL = useFullLogo(logo);
+  const appBarBackgroundScheme = useAppBarBackgroundScheme();
+  const logoURL =
+    useBrandingFullLogo(logo) ?? defaultFullLogo[appBarBackgroundScheme];
   const configApi = useApi(configApiRef);
   const fullLogoWidth = configApi.getOptional<number | string>(
     'app.branding.fullLogoWidth',
@@ -143,8 +83,7 @@ export const CompanyLogo = ({
         }}
       >
         <LogoRender
-          base64Logo={logoURL}
-          defaultLogo={<DefaultLogo />}
+          logoUri={logoURL}
           width={width ?? fullLogoWidth}
           height={height}
         />

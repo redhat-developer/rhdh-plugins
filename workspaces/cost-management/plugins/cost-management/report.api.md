@@ -4,8 +4,8 @@
 
 ```ts
 import { BackstagePlugin } from '@backstage/core-plugin-api';
+import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { PathParams } from '@backstage/core-plugin-api';
-import { default as React_2 } from 'react';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { SubRouteRef } from '@backstage/core-plugin-api';
 import { SvgIconProps } from '@material-ui/core/SvgIcon';
@@ -15,32 +15,26 @@ export const AnalyticsIcon: (
   props: SvgIconProps & {
     variant?: 'outlined' | 'filled';
   },
-) => React_2.JSX.Element;
+) => JSX_2.Element;
 
 // @public
-export const AnalyticsIconFilled: (props: SvgIconProps) => React_2.JSX.Element;
+export const AnalyticsIconFilled: (props: SvgIconProps) => JSX_2.Element;
 
 // @public
-export const AnalyticsIconOutlined: (
-  props: SvgIconProps,
-) => React_2.JSX.Element;
+export const AnalyticsIconOutlined: (props: SvgIconProps) => JSX_2.Element;
 
 // @public
 export const CostManagementIcon: (
   props: SvgIconProps & {
     variant?: 'outlined' | 'filled';
   },
-) => React_2.JSX.Element;
+) => JSX_2.Element;
 
 // @public
-export const CostManagementIconFilled: (
-  props: SvgIconProps,
-) => React_2.JSX.Element;
+export const CostManagementIconFilled: (props: SvgIconProps) => JSX_2.Element;
 
 // @public
-export const CostManagementIconOutlined: (
-  props: SvgIconProps,
-) => React_2.JSX.Element;
+export const CostManagementIconOutlined: (props: SvgIconProps) => JSX_2.Element;
 
 // Warning: (ae-forgotten-export) The symbol "OpenShiftPage_2" needs to be exported by the entry point index.d.ts
 //
@@ -62,7 +56,7 @@ export const resourceOptimizationPlugin: BackstagePlugin<
 >;
 
 // @public (undocumented)
-export function Router(): React_2.JSX.Element;
+export function Router(): JSX_2.Element;
 
 // (No @packageDocumentation comment for this package)
 ```

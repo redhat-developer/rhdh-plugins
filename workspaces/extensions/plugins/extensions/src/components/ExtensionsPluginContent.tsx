@@ -48,6 +48,7 @@ import AlertTitle from '@mui/material/AlertTitle';
 
 import {
   isExtensionsPackage,
+  isExtensionsPlugin,
   ExtensionsPackage,
   ExtensionsPlugin,
   ExtensionsPluginInstallStatus,
@@ -64,6 +65,7 @@ import {
   pluginRouteRef,
   packageRouteRef,
   packageInstallRouteRef,
+  catalogTabRouteRef,
 } from '../routes';
 import { usePlugin } from '../hooks/usePlugin';
 import { usePluginPackages } from '../hooks/usePluginPackages';
@@ -77,6 +79,7 @@ import { BadgeChip } from './Badges';
 import { PluginIcon } from './PluginIcon';
 import { Markdown } from './Markdown';
 
+import { CatalogSourceChip, CatalogSourceLabel } from './CatalogSourceLabel';
 import { Links } from './Links';
 import { ActionsMenu } from './ActionsMenu';
 import { useEnablePlugin } from '../hooks/useEnablePlugin';
@@ -314,6 +317,7 @@ export const ExtensionsPluginContent = ({
     isPackage ? packageRouteRef : pluginRouteRef,
   );
   const getIndexPath = useRouteRef(rootRouteRef);
+  const getCatalogPath = useRouteRef(catalogTabRouteRef);
   const getInstallPath = useRouteRef(
     isPackage ? packageInstallRouteRef : pluginInstallRouteRef,
   );
@@ -373,7 +377,9 @@ export const ExtensionsPluginContent = ({
         };
         setInstalledPlugins(updatedPlugins);
         handleClose();
-        navigate(isPackage ? '/extensions' : '/extensions/installed-plugins');
+        // Catalog hosts BackendRestartAlert. `/extensions/installed-plugins` is
+        // not a registered tab and can drop the alert in NFS.
+        navigate(getCatalogPath());
       }
     } catch (err: unknown) {
       // eslint-disable-next-line no-console
@@ -613,6 +619,9 @@ export const ExtensionsPluginContent = ({
                 </Typography>
               ) : null}
               {!isPackage && <BadgeChip plugin={plugin} />}
+              {isExtensionsPlugin(plugin) && (
+                <CatalogSourceChip plugin={plugin} />
+              )}
             </Stack>
           </Stack>
         </Stack>
@@ -660,6 +669,10 @@ export const ExtensionsPluginContent = ({
               value={plugin.spec?.support?.provider}
             />
 
+            {isExtensionsPlugin(plugin) && (
+              <CatalogSourceLabel plugin={plugin} />
+            )}
+
             {pluginActionButton()}
           </Grid>
           <Grid item md={9}>
@@ -667,7 +680,7 @@ export const ExtensionsPluginContent = ({
 
             <Links entity={plugin} />
 
-            {!isExtensionsPackage(plugin) && (
+            {isExtensionsPlugin(plugin) && (
               <PluginPackageTable packages={packages.data ?? []} />
             )}
           </Grid>

@@ -37,7 +37,7 @@ The vocabulary includes `rule` and `skill-bundle` in addition to the original fi
 
 - **WHEN** the Kagenti entity provider emits an agent entity
 - **THEN** the entity has `rhdh.io/ai-asset-category: agent`
-- **AND** **WHEN** the LlamaStack entity provider emits a model entity
+- **AND** **WHEN** the OGX entity provider emits a model entity
 - **THEN** the entity has `rhdh.io/ai-asset-category: ai-model`
 - **AND** **WHEN** the OCI skill registry provider emits a skill entity
 - **THEN** the entity has `rhdh.io/ai-asset-category: skill`
@@ -82,11 +82,13 @@ All AI asset entities MUST carry the `rhdh.io/ai-asset-version` annotation with 
 
 All AI asset entities MUST carry the `rhdh.io/ai-asset-source` annotation identifying the connector and registry instance.
 
+Additional connector names may be added when new connectors ship. The CatalogProcessor/SDK today only requires a non-empty string and MUST NOT enum-validate `connector-name`.
+
 #### Scenario: Source annotation format (RHIDP-15255)
 
 - **WHEN** an entity provider emits an entity
 - **THEN** the entity has `metadata.annotations['rhdh.io/ai-asset-source']` in format: `connector-name/registry-instance-id`
-- **AND** `connector-name` is one of: `kagenti`, `llamastack`, `oci-skill-registry`
+- **AND** `connector-name` is one of: `kagenti`, `ogx`, `oci-skill-registry`, `mcp-registry`, `rhoai`
 - **AND** `registry-instance-id` is the app-config provider instance ID (e.g., `default`, `prod-kagenti`, `dev-skills`)
 
 #### Scenario: Kagenti provider source annotation (RHIDP-15255)
@@ -98,6 +100,16 @@ All AI asset entities MUST carry the `rhdh.io/ai-asset-source` annotation identi
 
 - **WHEN** the OCI skill registry provider with instance ID `default` emits an entity
 - **THEN** the entity has `rhdh.io/ai-asset-source: oci-skill-registry/default`
+
+#### Scenario: MCP Registry provider source annotation (RHIDP-15255)
+
+- **WHEN** the MCP Registry provider with instance ID `mcpRegistryPrimary` emits an entity
+- **THEN** the entity has `rhdh.io/ai-asset-source: mcp-registry/mcpRegistryPrimary`
+
+#### Scenario: RHOAI provider source annotation (RHIDP-15255)
+
+- **WHEN** the RHOAI provider with instance ID `default` emits an entity
+- **THEN** the entity has `rhdh.io/ai-asset-source: rhoai/default`
 
 #### Scenario: Audit traceability via source annotation (RHIDP-15255)
 

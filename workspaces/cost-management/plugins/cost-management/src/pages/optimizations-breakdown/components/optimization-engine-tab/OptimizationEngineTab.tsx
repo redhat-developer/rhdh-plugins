@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useCallback, useMemo, useState } from 'react';
+import { default as React, useCallback, useMemo, useState } from 'react';
 import {
   Box,
   Button,

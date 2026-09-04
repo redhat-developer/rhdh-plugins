@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { defaultCreateDropdownMountPoints } from '../defaultMountPoints/defaultMountPoints';
+import { defaultCreateDropdownMountPoints } from '../defaultMountPoints/defaultDropdownMountPoints';
 import { CreateDropdownMountPoint, ScalprumState } from '../types';
 import { useScalprum } from '@scalprum/react-core';
 
