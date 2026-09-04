@@ -24,7 +24,7 @@ import {
 import { GithubDeploymentPullRequestsCollector } from './collectors/GithubDeploymentPullRequestsCollector';
 import { GithubDeploymentWorkflowRunsCollector } from './collectors/GithubDeploymentWorkflowRunsCollector';
 import { GithubDeploymentsCollector } from './collectors/GithubDeploymentsCollector';
-import { GithubAiAdoptionMetricProvider } from './metricProviders/GithubAiAdoptionMetricProvider';
+import { GithubAiAdoptionProvider } from './metricProviders/GithubAiAdoptionProvider';
 import { GithubOpenPRsProvider } from './metricProviders/GithubOpenPRsProvider';
 
 export const scorecardModuleGithub = createBackendModule({
@@ -46,7 +46,7 @@ export const scorecardModuleGithub = createBackendModule({
         );
         metrics.addMetricProvider(
           GithubOpenPRsProvider.fromConfig(config, { logger }),
-          GithubAiAdoptionMetricProvider.fromConfig(config, { logger }),
+          GithubAiAdoptionProvider.fromConfig(config, { logger }),
         );
       },
     });

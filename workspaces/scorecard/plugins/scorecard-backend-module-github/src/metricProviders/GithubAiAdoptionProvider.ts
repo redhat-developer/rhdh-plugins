@@ -39,12 +39,15 @@ export const AI_ADOPTION_RATE_THRESHOLD: ThresholdConfig = {
 
 /**
  * Known AI tool identifiers used in commit trailers.
- * Matched case-insensitively against the value after
- * `Assisted-by:` or `Co-authored-by:` (trailer keys are
- * matched case-insensitively per the git trailer spec).
+ * Matched case-insensitively against the "name" portion of the trailer
+ * value (everything before the first `<` in `Name <email>`).
+ *
+ * Trailer keys (`Assisted-by:`, `Co-authored-by:`) are matched
+ * case-insensitively per the git trailer spec.
  */
 const AI_TOOL_PATTERNS: string[] = [
   'claude',
+  'claude code',
   'cursor',
   'copilot',
   'github copilot',
@@ -53,6 +56,7 @@ const AI_TOOL_PATTERNS: string[] = [
   'tabnine',
   'gemini',
   'amazon q',
+  'amazon q developer',
   'windsurf',
   'devin',
   'aider',
@@ -69,6 +73,18 @@ function isMergeCommit(message: string): boolean {
   );
 }
 
+/**
+ * Extracts the "name" portion from a trailer value.
+ * Git trailers follow the format `Name <email>` or just `Name`.
+ * Returns the trimmed, lowercased name part before the first `<`.
+ */
+function extractTrailerName(value: string): string {
+  const angleBracketIndex = value.indexOf('<');
+  const namePart =
+    angleBracketIndex >= 0 ? value.slice(0, angleBracketIndex) : value;
+  return namePart.trim().toLowerCase();
+}
+
 function isAiAssistedCommit(message: string): boolean {
   const lines = message.split('\n');
   for (const line of lines) {
@@ -83,8 +99,8 @@ function isAiAssistedCommit(message: string): boolean {
     }
 
     if (value) {
-      const lowerValue = value.toLowerCase();
-      if (AI_TOOL_PATTERNS.some(tool => lowerValue.startsWith(tool))) {
+      const name = extractTrailerName(value);
+      if (AI_TOOL_PATTERNS.includes(name)) {
         return true;
       }
     }
@@ -92,9 +108,7 @@ function isAiAssistedCommit(message: string): boolean {
   return false;
 }
 
-export class GithubAiAdoptionMetricProvider
-  implements MetricProvider<'number'>
-{
+export class GithubAiAdoptionProvider implements MetricProvider<'number'> {
   private readonly githubClient: GithubClient;
   private readonly logger: LoggerService;
 
@@ -106,8 +120,8 @@ export class GithubAiAdoptionMetricProvider
   static fromConfig(
     config: Config,
     options: { logger: LoggerService },
-  ): GithubAiAdoptionMetricProvider {
-    return new GithubAiAdoptionMetricProvider(
+  ): GithubAiAdoptionProvider {
+    return new GithubAiAdoptionProvider(
       new GithubClient(config, options.logger),
       options.logger,
     );
@@ -117,7 +131,7 @@ export class GithubAiAdoptionMetricProvider
     return 'github';
   }
 
-  getProviderId(): string {
+  getProviderId() {
     return 'github.aiAdoption';
   }
 

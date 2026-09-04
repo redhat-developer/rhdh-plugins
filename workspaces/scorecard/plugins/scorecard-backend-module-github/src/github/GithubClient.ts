@@ -459,7 +459,14 @@ export class GithubClient {
         );
       }
 
-      const history = response.repository.defaultBranchRef?.target?.history;
+      if (!response.repository.defaultBranchRef) {
+        this.logger.warn(
+          `No default branch found for ${repository.owner}/${repository.repo}; returning empty commit history`,
+        );
+        break;
+      }
+
+      const history = response.repository.defaultBranchRef.target?.history;
       const pageCommits = history?.nodes ?? [];
 
       if (pageCommits.length === 0) {
@@ -478,9 +485,14 @@ export class GithubClient {
         }
       }
 
-      hasMorePages =
-        commits.length < fetchItemsLimit &&
-        Boolean(history?.pageInfo.hasNextPage);
+      const githubHasNextPage = Boolean(history?.pageInfo.hasNextPage);
+      if (commits.length >= fetchItemsLimit && githubHasNextPage) {
+        this.logger.warn(
+          `Reached fetchItemsLimit of ${fetchItemsLimit} for commit history in ${repository.owner}/${repository.repo}; stopping fetch`,
+        );
+      }
+
+      hasMorePages = commits.length < fetchItemsLimit && githubHasNextPage;
       after = history?.pageInfo.endCursor ?? null;
     }
 

@@ -18,10 +18,10 @@ import { mockServices } from '@backstage/backend-test-utils';
 import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import {
-  GithubAiAdoptionMetricProvider,
+  GithubAiAdoptionProvider,
   AI_ADOPTION_RATE_THRESHOLD,
   AI_ADOPTION_RATE_TIME_RANGES,
-} from './GithubAiAdoptionMetricProvider';
+} from './GithubAiAdoptionProvider';
 import { GithubClient } from '../github/GithubClient';
 
 jest.mock('@backstage/catalog-model', () => ({
@@ -33,12 +33,12 @@ jest.mock('@backstage/catalog-model', () => ({
 }));
 jest.mock('../github/GithubClient');
 
-describe('GithubAiAdoptionMetricProvider', () => {
+describe('GithubAiAdoptionProvider', () => {
   const mockedLogger = mockServices.logger.mock();
 
   describe('getMetrics', () => {
     it('should return 3 metrics for each time range', () => {
-      const provider = GithubAiAdoptionMetricProvider.fromConfig(
+      const provider = GithubAiAdoptionProvider.fromConfig(
         new ConfigReader({}),
         { logger: mockedLogger },
       );
@@ -52,7 +52,7 @@ describe('GithubAiAdoptionMetricProvider', () => {
     });
 
     it('should use AI_ADOPTION_RATE_THRESHOLD for all metrics', () => {
-      const provider = GithubAiAdoptionMetricProvider.fromConfig(
+      const provider = GithubAiAdoptionProvider.fromConfig(
         new ConfigReader({}),
         { logger: mockedLogger },
       );
@@ -63,7 +63,7 @@ describe('GithubAiAdoptionMetricProvider', () => {
     });
 
     it('should set history to true for all metrics', () => {
-      const provider = GithubAiAdoptionMetricProvider.fromConfig(
+      const provider = GithubAiAdoptionProvider.fromConfig(
         new ConfigReader({}),
         { logger: mockedLogger },
       );
@@ -74,7 +74,7 @@ describe('GithubAiAdoptionMetricProvider', () => {
     });
 
     it('should set type to number for all metrics', () => {
-      const provider = GithubAiAdoptionMetricProvider.fromConfig(
+      const provider = GithubAiAdoptionProvider.fromConfig(
         new ConfigReader({}),
         { logger: mockedLogger },
       );
@@ -87,7 +87,7 @@ describe('GithubAiAdoptionMetricProvider', () => {
 
   describe('provider identity', () => {
     it('should return github as datasource id', () => {
-      const provider = GithubAiAdoptionMetricProvider.fromConfig(
+      const provider = GithubAiAdoptionProvider.fromConfig(
         new ConfigReader({}),
         { logger: mockedLogger },
       );
@@ -95,7 +95,7 @@ describe('GithubAiAdoptionMetricProvider', () => {
     });
 
     it('should return github.aiAdoption as provider id', () => {
-      const provider = GithubAiAdoptionMetricProvider.fromConfig(
+      const provider = GithubAiAdoptionProvider.fromConfig(
         new ConfigReader({}),
         { logger: mockedLogger },
       );
@@ -103,7 +103,7 @@ describe('GithubAiAdoptionMetricProvider', () => {
     });
 
     it('should filter entities with github project-slug annotation', () => {
-      const provider = GithubAiAdoptionMetricProvider.fromConfig(
+      const provider = GithubAiAdoptionProvider.fromConfig(
         new ConfigReader({}),
         { logger: mockedLogger },
       );
@@ -131,7 +131,7 @@ describe('GithubAiAdoptionMetricProvider', () => {
   });
 
   describe('calculateMetrics', () => {
-    let provider: GithubAiAdoptionMetricProvider;
+    let provider: GithubAiAdoptionProvider;
     const mockedGithubClient = GithubClient as jest.MockedClass<
       typeof GithubClient
     >;
@@ -153,10 +153,9 @@ describe('GithubAiAdoptionMetricProvider', () => {
 
     beforeEach(() => {
       jest.clearAllMocks();
-      provider = GithubAiAdoptionMetricProvider.fromConfig(
-        new ConfigReader({}),
-        { logger: mockedLogger },
-      );
+      provider = GithubAiAdoptionProvider.fromConfig(new ConfigReader({}), {
+        logger: mockedLogger,
+      });
     });
 
     it('should return 0 for all ranges when no commits', async () => {
@@ -318,6 +317,31 @@ describe('GithubAiAdoptionMetricProvider', () => {
         {
           message:
             'feat: pair programming\n\nCo-authored-by: John Doe <john@example.com>',
+          committedDate: now.toISOString(),
+        },
+      ]);
+
+      const results = await provider.calculateMetrics(mockEntity);
+
+      expect(results.get('github.aiAdoptionRate[7d]')).toBe(0);
+    });
+
+    it('should not false-positive on human names that start with AI tool names', async () => {
+      const now = new Date();
+      mockedGithubClientInstance.getCommitHistory.mockResolvedValue([
+        {
+          message:
+            'feat: human named Claude\n\nCo-authored-by: Claude Smith <claude.smith@example.com>',
+          committedDate: now.toISOString(),
+        },
+        {
+          message:
+            'feat: human named Devin\n\nCo-authored-by: Devin Johnson <devin@example.com>',
+          committedDate: now.toISOString(),
+        },
+        {
+          message:
+            'feat: human named Cody\n\nCo-authored-by: Cody Williams <cody@example.com>',
           committedDate: now.toISOString(),
         },
       ]);
