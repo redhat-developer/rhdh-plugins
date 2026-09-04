@@ -30,6 +30,12 @@ export interface Config {
           /** How github.openPRs metric values are categorized */
           thresholds?: ThresholdConfig;
         };
+        aiAdoption?: {
+          /** How often github.aiAdoption metrics will be calculated */
+          schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
+          /** How github.aiAdoption metric values are categorized */
+          thresholds?: ThresholdConfig;
+        };
       };
     };
   };
