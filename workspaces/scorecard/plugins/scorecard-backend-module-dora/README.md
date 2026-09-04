@@ -124,7 +124,7 @@ You can replace default collector IDs via `app-config.yaml` as long as your coll
 
 Collector inputs are merged with provider-generated required inputs. This lets you pass extra collector-specific fields (for example `workflowName` when using a workflow-runs based collector) as long as required contract fields are still supported.
 
-Changing collector's `input` starts a new data identity and refetches the full 30-day window. For non-identity collector inputs (like `fetchMaxItems`), specify these in configuration under `input.collectorSettings`. Changing values within `collectorSettings` will _not_ trigger a full 30-day data refresh. Instead, these changes are treated as configuration adjustments that don’t fundamentally alter the data source being monitored. The settings are flattened directly into the `input` for the collector.
+Changing a collector's `input` starts a new data identity and refetches the full 30-day window. If some inputs should _not_ affect the collector's identity (for example an operational input like `fetchMaxItems`), list their keys under `excludeFromIdentity`. Only top-level `input` keys are supported in `excludeFromIdentity` (nested or dotted paths are not). Excluded keys are still passed to the collector as part of `input`, but changing their values will _not_ trigger a full 30-day data refresh. They are treated as configuration adjustments that don’t fundamentally alter the data source being monitored. Keys listed in `excludeFromIdentity` that are not present in `input` are ignored.
 
 ```yaml
 scorecard:
@@ -139,6 +139,11 @@ scorecard:
               input:
                 # merged with generated from/to window
                 # your collector-specific options
+                fetchMaxItems: 10000
+              # Optional: top-level `input` keys that should not affect the collector identity
+              # (changing them will not refetch the window).
+              excludeFromIdentity:
+                - fetchMaxItems
       medianLeadTimeForChanges:
         options:
           productionEnvironments: [production, prod]

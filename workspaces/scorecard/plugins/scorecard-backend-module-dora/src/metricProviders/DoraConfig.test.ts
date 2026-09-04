@@ -17,7 +17,6 @@
 import { mockServices } from '@backstage/backend-test-utils';
 import { daysToMilliseconds } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import {
-  DORA_COLLECTOR_SETTINGS_KEY,
   DORA_DEFAULT_DATA_RETENTION_DAYS,
   DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
@@ -103,12 +102,12 @@ describe('DoraConfig', () => {
       );
     });
 
-    it(`returns correct input and hash when missing '${DORA_COLLECTOR_SETTINGS_KEY}' or empty '${DORA_COLLECTOR_SETTINGS_KEY}'`, () => {
-      const identityInput = { workflowName: 'Deploy' };
+    it(`returns full input and hash when 'excludeFromIdentity' is missing or empty`, () => {
+      const input = { workflowName: 'Deploy' };
       const expected = {
         id: 'custom:deployments',
-        input: identityInput,
-        inputHash: collectorInputHash(identityInput),
+        input,
+        inputHash: collectorInputHash(input),
       };
 
       expect(
@@ -118,7 +117,7 @@ describe('DoraConfig', () => {
               collectors: {
                 test: {
                   id: 'custom:deployments',
-                  input: identityInput,
+                  input,
                 },
               },
             },
@@ -134,10 +133,8 @@ describe('DoraConfig', () => {
               collectors: {
                 test: {
                   id: 'custom:deployments',
-                  input: {
-                    ...identityInput,
-                    [DORA_COLLECTOR_SETTINGS_KEY]: {},
-                  },
+                  input,
+                  excludeFromIdentity: [],
                 },
               },
             },
@@ -148,7 +145,7 @@ describe('DoraConfig', () => {
       ).toEqual(expected);
     });
 
-    it(`computes inputHash from input excluding '${DORA_COLLECTOR_SETTINGS_KEY}', with flattened '${DORA_COLLECTOR_SETTINGS_KEY}' in input`, () => {
+    it(`computes inputHash from input excluding 'excludeFromIdentity' keys, while keeping them in input`, () => {
       expect(
         parseCollectorConfig(
           mockServices.rootConfig({
@@ -159,11 +156,10 @@ describe('DoraConfig', () => {
                   input: {
                     key1: 'value1',
                     key2: 'value2',
-                    [DORA_COLLECTOR_SETTINGS_KEY]: {
-                      maxItems: 10000,
-                      example: ['a', 'b'],
-                    },
+                    maxItems: 10000,
+                    example: ['a', 'b'],
                   },
+                  excludeFromIdentity: ['maxItems', 'example'],
                 },
               },
             },
@@ -183,14 +179,39 @@ describe('DoraConfig', () => {
       });
     });
 
+    it(`ignores 'excludeFromIdentity' keys that are not present in input`, () => {
+      const input = { workflowName: 'Deploy' };
+      expect(
+        parseCollectorConfig(
+          mockServices.rootConfig({
+            data: {
+              collectors: {
+                test: {
+                  id: 'custom:deployments',
+                  input,
+                  excludeFromIdentity: ['doesNotExist'],
+                },
+              },
+            },
+          }),
+          exampleCollectorConfigPath,
+          exampleCollectorId,
+        ),
+      ).toEqual({
+        id: 'custom:deployments',
+        input,
+        inputHash: collectorInputHash(input),
+      });
+    });
+
     it.each([
-      ['a string', 'Deploy'],
+      ['a string', 'maxItems'],
       ['a number', 1],
       ['a boolean', true],
-      ['an array', ['Deploy']],
+      ['an object', { maxItems: true }],
     ])(
-      `throws when collector input '${DORA_COLLECTOR_SETTINGS_KEY}' is invalid: %s`,
-      (_name, input) => {
+      `throws when 'excludeFromIdentity' is invalid: %s`,
+      (_name, excludeFromIdentity) => {
         expect(() =>
           parseCollectorConfig(
             mockServices.rootConfig({
@@ -198,7 +219,7 @@ describe('DoraConfig', () => {
                 collectors: {
                   test: {
                     id: 'custom:deployments',
-                    input: { [DORA_COLLECTOR_SETTINGS_KEY]: input },
+                    excludeFromIdentity,
                   },
                 },
               },
@@ -207,7 +228,7 @@ describe('DoraConfig', () => {
             exampleCollectorId,
           ),
         ).toThrow(
-          /Invalid type in config for key 'collectors\.test\.input\.collectorSettings' in 'mock-config', got .+, wanted object/,
+          /Invalid type in config for key 'collectors\.test\.excludeFromIdentity' in 'mock-config', got .+, wanted string-array/,
         );
       },
     );
