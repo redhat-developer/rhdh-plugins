@@ -48,7 +48,7 @@ import {
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { isMetricCalculationError } from '../utils/metricCalculationError';
-import { isMetricEnabledByDefault } from '../utils/metricUtils';
+import { isMetricEnabled, filterEnabledMetrics } from '../utils/metricUtils';
 import { AggregatedMetricMapper } from './mappers';
 import { DbMetricValue } from '../database/types';
 import { ThresholdResolver } from '../threshold/ThresholdResolver';
@@ -123,14 +123,12 @@ export class CatalogMetricService {
       throw new NotFoundError(`Entity not found: ${entityRef}`);
     }
 
-    const metricsToFetch = this.registry.listMetrics(metricIds).filter(m => {
-      try {
-        const provider = this.registry.getProvider(m.id);
-        return isMetricEnabledByDefault(this.config, m, provider);
-      } catch {
-        return true;
-      }
-    });
+    const metricsToFetch = filterEnabledMetrics(
+      this.config,
+      this.registry.listMetrics(metricIds),
+      metricId => this.registry.getProvider(metricId),
+      this.logger,
+    );
 
     const authorizedMetricsToFetch = filterAuthorizedMetrics(
       metricsToFetch,
@@ -232,8 +230,8 @@ export class CatalogMetricService {
 
     const metric = this.registry.getMetric(metricId);
     const provider = this.registry.getProvider(metricId);
-    if (!isMetricEnabledByDefault(this.config, metric, provider)) {
-      throw new NotFoundError(`Metric '${metricId}' is disabled`);
+    if (!isMetricEnabled(this.config, metric, provider)) {
+      throw new NotFoundError(`Metric not found: ${metricId}`);
     }
 
     const authorizedMetrics = filterAuthorizedMetrics([metric], filter);
@@ -369,8 +367,8 @@ export class CatalogMetricService {
     // Get metric metadata
     const metric = this.registry.getMetric(metricId);
     const provider = this.registry.getProvider(metricId);
-    if (!isMetricEnabledByDefault(this.config, metric, provider)) {
-      throw new NotFoundError(`Metric '${metricId}' is disabled`);
+    if (!isMetricEnabled(this.config, metric, provider)) {
+      throw new NotFoundError(`Metric not found: ${metricId}`);
     }
 
     // High-page early-exit guard

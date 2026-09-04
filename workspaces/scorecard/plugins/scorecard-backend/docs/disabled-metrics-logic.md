@@ -19,6 +19,33 @@ The following table describes the result for each combination of app-config and 
 
 `—`: means this setting is not consulted for that row.
 
+## Enabled-by-default system
+
+In addition to the `disabledMetrics` list and entity annotations described above, providers and individual metrics can be disabled **by default** in code using the `isEnabled()` method on `MetricProvider` and the `enabled` field on `Metric`. Administrators can override these defaults via `app-config.yaml`:
+
+```yaml
+scorecard:
+  metricProviders:
+    myDatasource:
+      exampleProvider:
+        enabled: false # disable the entire provider
+        metrics:
+          experimentalMetric:
+            enabled: true # re-enable a specific metric
+```
+
+The enabled-by-default resolution uses a five-level precedence chain (first defined value wins):
+
+1. **Config metric `enabled`** — most specific config override
+2. **Config provider `enabled`** — provider-level config override
+3. **Code metric `enabled` field** — code-level default
+4. **Code provider `isEnabled()`** — provider code default
+5. **`true`** — backward-compatible default
+
+Config overrides always take precedence over code defaults. Disabled metrics are excluded from scheduled data collection, API responses, and scaffolder actions. Old data for disabled metrics remains in the database.
+
+**Interaction with `disabledMetrics`:** The enabled-by-default system and the `disabledMetrics` list are independent mechanisms. A metric must pass both checks to be active: it must be enabled by the resolution chain above **and** not appear in `scorecard.disabledMetrics`. The `disabledMetrics` list is a per-entity check evaluated at collection time, while the enabled-by-default system is a global check applied at startup and request time.
+
 ## Summary
 
 - **`scorecard.disabledMetrics`**  

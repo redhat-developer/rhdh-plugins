@@ -332,6 +332,43 @@ describe('createRouter', () => {
         'Cannot filter by both metricIds and datasource',
       );
     });
+
+    it('should exclude disabled metrics from the listing', async () => {
+      const disabledConfig = mockServices.rootConfig({
+        data: {
+          scorecard: {
+            metricProviders: {
+              github: {
+                openPRs: { enabled: false },
+              },
+            },
+          },
+        },
+      });
+
+      const disabledRouter = await createRouter({
+        config: disabledConfig,
+        metricProvidersRegistry,
+        service: { aggregationsService, catalogMetricService },
+        catalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+        thresholdResolver,
+        collectorsService,
+      });
+      const disabledApp = express();
+      disabledApp.use(disabledRouter);
+      disabledApp.use(mockErrorHandler());
+
+      const response = await request(disabledApp).get('/metrics');
+
+      expect(response.status).toBe(200);
+      const metricIds = response.body.metrics.map((m: Metric) => m.id);
+      expect(metricIds).not.toContain('github.openPRs');
+      expect(metricIds).toContain('github.openIssues');
+      expect(metricIds).toContain('sonar.quality');
+    });
   });
 
   describe('GET /metrics/:metricId/collectors', () => {
@@ -429,6 +466,43 @@ describe('createRouter', () => {
 
       expect(response.status).toBe(403);
       expect(response.body.error.name).toBe('NotAllowedError');
+    });
+
+    it('returns 404 when the metric is disabled', async () => {
+      const disabledConfig = mockServices.rootConfig({
+        data: {
+          scorecard: {
+            metricProviders: {
+              dora: {
+                changeFailureRate: { enabled: false },
+              },
+            },
+          },
+        },
+      });
+
+      const disabledRouter = await createRouter({
+        config: disabledConfig,
+        metricProvidersRegistry,
+        service: { aggregationsService, catalogMetricService },
+        catalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+        thresholdResolver,
+        collectorsService,
+      });
+      const disabledApp = express();
+      disabledApp.use(disabledRouter);
+      disabledApp.use(mockErrorHandler());
+
+      const response = await request(disabledApp).get(
+        '/metrics/dora.changeFailureRate/collectors',
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.body.error.name).toBe('NotFoundError');
+      expect(response.body.error.message).not.toContain('disabled');
     });
 
     it('returns 500 when a collector ID on the metric is not registered', async () => {

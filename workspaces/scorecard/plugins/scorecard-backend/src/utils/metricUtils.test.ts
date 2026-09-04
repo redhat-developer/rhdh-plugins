@@ -17,7 +17,7 @@
 import { mockServices } from '@backstage/backend-test-utils';
 import { ConfigReader, type JsonObject } from '@backstage/config';
 import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
-import { isMetricIdDisabled, isMetricEnabledByDefault } from './metricUtils';
+import { isMetricIdDisabled, isMetricEnabled } from './metricUtils';
 import type { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import type { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 
@@ -214,7 +214,7 @@ describe('isMetricIdDisabled', () => {
   });
 });
 
-describe('isMetricEnabledByDefault', () => {
+describe('isMetricEnabled', () => {
   function createMetric(overrides: Partial<Metric> = {}): Metric {
     return {
       id: 'github.openPRs',
@@ -279,7 +279,7 @@ describe('isMetricEnabledByDefault', () => {
     const metric = createMetric();
     const provider = createProvider();
 
-    expect(isMetricEnabledByDefault(config, metric, provider)).toBe(true);
+    expect(isMetricEnabled(config, metric, provider)).toBe(true);
   });
 
   it('returns false when metric code-level enabled is false', () => {
@@ -287,7 +287,7 @@ describe('isMetricEnabledByDefault', () => {
     const metric = createMetric({ enabled: false });
     const provider = createProvider();
 
-    expect(isMetricEnabledByDefault(config, metric, provider)).toBe(false);
+    expect(isMetricEnabled(config, metric, provider)).toBe(false);
   });
 
   it('returns true when metric code-level enabled is true', () => {
@@ -295,7 +295,7 @@ describe('isMetricEnabledByDefault', () => {
     const metric = createMetric({ enabled: true });
     const provider = createProvider();
 
-    expect(isMetricEnabledByDefault(config, metric, provider)).toBe(true);
+    expect(isMetricEnabled(config, metric, provider)).toBe(true);
   });
 
   it('returns false when provider isEnabled returns false', () => {
@@ -303,7 +303,7 @@ describe('isMetricEnabledByDefault', () => {
     const metric = createMetric();
     const provider = createProvider({ isEnabled: () => false });
 
-    expect(isMetricEnabledByDefault(config, metric, provider)).toBe(false);
+    expect(isMetricEnabled(config, metric, provider)).toBe(false);
   });
 
   it('config metric enabled:true overrides code metric enabled:false', () => {
@@ -311,7 +311,7 @@ describe('isMetricEnabledByDefault', () => {
     const metric = createMetric({ enabled: false });
     const provider = createProvider();
 
-    expect(isMetricEnabledByDefault(config, metric, provider)).toBe(true);
+    expect(isMetricEnabled(config, metric, provider)).toBe(true);
   });
 
   it('config metric enabled:false overrides code metric enabled:true', () => {
@@ -319,7 +319,7 @@ describe('isMetricEnabledByDefault', () => {
     const metric = createMetric({ enabled: true });
     const provider = createProvider();
 
-    expect(isMetricEnabledByDefault(config, metric, provider)).toBe(false);
+    expect(isMetricEnabled(config, metric, provider)).toBe(false);
   });
 
   it('config provider enabled:true overrides provider isEnabled:false', () => {
@@ -327,7 +327,7 @@ describe('isMetricEnabledByDefault', () => {
     const metric = createMetric();
     const provider = createProvider({ isEnabled: () => false });
 
-    expect(isMetricEnabledByDefault(config, metric, provider)).toBe(true);
+    expect(isMetricEnabled(config, metric, provider)).toBe(true);
   });
 
   it('config provider enabled:false disables an otherwise-enabled provider', () => {
@@ -335,7 +335,7 @@ describe('isMetricEnabledByDefault', () => {
     const metric = createMetric();
     const provider = createProvider();
 
-    expect(isMetricEnabledByDefault(config, metric, provider)).toBe(false);
+    expect(isMetricEnabled(config, metric, provider)).toBe(false);
   });
 
   it('code metric enabled:true overrides provider isEnabled:false', () => {
@@ -343,7 +343,7 @@ describe('isMetricEnabledByDefault', () => {
     const metric = createMetric({ enabled: true });
     const provider = createProvider({ isEnabled: () => false });
 
-    expect(isMetricEnabledByDefault(config, metric, provider)).toBe(true);
+    expect(isMetricEnabled(config, metric, provider)).toBe(true);
   });
 
   it('config metric enabled:true overrides config provider enabled:false', () => {
@@ -351,7 +351,7 @@ describe('isMetricEnabledByDefault', () => {
     const metric = createMetric();
     const provider = createProvider();
 
-    expect(isMetricEnabledByDefault(config, metric, provider)).toBe(true);
+    expect(isMetricEnabled(config, metric, provider)).toBe(true);
   });
 
   it('config metric enabled:false takes precedence over config provider enabled:true', () => {
@@ -359,7 +359,7 @@ describe('isMetricEnabledByDefault', () => {
     const metric = createMetric();
     const provider = createProvider();
 
-    expect(isMetricEnabledByDefault(config, metric, provider)).toBe(false);
+    expect(isMetricEnabled(config, metric, provider)).toBe(false);
   });
 
   it('metric without enabled inherits provider isEnabled:false', () => {
@@ -367,7 +367,7 @@ describe('isMetricEnabledByDefault', () => {
     const metric = createMetric();
     const provider = createProvider({ isEnabled: () => false });
 
-    expect(isMetricEnabledByDefault(config, metric, provider)).toBe(false);
+    expect(isMetricEnabled(config, metric, provider)).toBe(false);
   });
 
   it('metric without enabled and provider without isEnabled defaults to true', () => {
@@ -375,6 +375,22 @@ describe('isMetricEnabledByDefault', () => {
     const metric = createMetric();
     const provider = createProvider();
 
-    expect(isMetricEnabledByDefault(config, metric, provider)).toBe(true);
+    expect(isMetricEnabled(config, metric, provider)).toBe(true);
+  });
+
+  it('config provider enabled:false overrides code metric enabled:true', () => {
+    const config = createEnabledConfig(false);
+    const metric = createMetric({ enabled: true });
+    const provider = createProvider();
+
+    expect(isMetricEnabled(config, metric, provider)).toBe(false);
+  });
+
+  it('config provider enabled:true overrides code metric enabled:false', () => {
+    const config = createEnabledConfig(true);
+    const metric = createMetric({ enabled: false });
+    const provider = createProvider();
+
+    expect(isMetricEnabled(config, metric, provider)).toBe(true);
   });
 });

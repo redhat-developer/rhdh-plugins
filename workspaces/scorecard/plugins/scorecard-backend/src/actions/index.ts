@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 import type { Config } from '@backstage/config';
-import { AuthService, PermissionsService } from '@backstage/backend-plugin-api';
+import {
+  AuthService,
+  LoggerService,
+  PermissionsService,
+} from '@backstage/backend-plugin-api';
 import { ActionsRegistryService } from '@backstage/backend-plugin-api/alpha';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
@@ -29,6 +33,7 @@ export const createScorecardActions = (options: {
   actionsRegistry: ActionsRegistryService;
   auth: AuthService;
   config: Config;
+  logger: LoggerService;
   permissions: PermissionsService;
   catalog: CatalogService;
   metricProvidersRegistry: MetricProvidersRegistry;

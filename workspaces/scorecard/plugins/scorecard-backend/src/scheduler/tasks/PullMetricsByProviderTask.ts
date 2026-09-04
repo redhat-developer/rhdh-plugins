@@ -24,10 +24,7 @@ import {
 import type { Config } from '@backstage/config';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import {
-  isMetricIdDisabled,
-  isMetricEnabledByDefault,
-} from '../../utils/metricUtils';
+import { isMetricIdDisabled, isMetricEnabled } from '../../utils/metricUtils';
 import { randomUUID } from 'node:crypto';
 import { normalizeOwnerRef } from '../../utils/normalizeOwnerRef';
 import { resolveScheduleFromConfig } from '../../utils/metricProviderConfigKeys';
@@ -129,7 +126,7 @@ export class PullMetricsByProviderTask implements SchedulerTask {
 
     const allMetrics = provider.getMetrics();
     const metrics = allMetrics.filter(m =>
-      isMetricEnabledByDefault(this.config, m, provider),
+      isMetricEnabled(this.config, m, provider),
     );
 
     if (metrics.length < allMetrics.length) {

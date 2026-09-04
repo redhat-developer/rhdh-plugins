@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 import type { Config } from '@backstage/config';
-import { PermissionsService } from '@backstage/backend-plugin-api';
+import {
+  LoggerService,
+  PermissionsService,
+} from '@backstage/backend-plugin-api';
 import { ActionsRegistryService } from '@backstage/backend-plugin-api/alpha';
 import { scorecardMetricReadPermission } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
@@ -22,18 +25,20 @@ import {
   authorizeConditional,
   filterAuthorizedMetrics,
 } from '../permissions/permissionUtils';
-import { isMetricEnabledByDefault } from '../utils/metricUtils';
+import { filterEnabledMetrics } from '../utils/metricUtils';
 
 export const createListMetricsAction = ({
   actionsRegistry,
   config,
   permissions,
   metricProvidersRegistry,
+  logger,
 }: {
   actionsRegistry: ActionsRegistryService;
   config: Config;
   permissions: PermissionsService;
   metricProvidersRegistry: MetricProvidersRegistry;
+  logger: LoggerService;
 }) => {
   actionsRegistry.register({
     name: 'list-metrics',
@@ -70,14 +75,12 @@ export const createListMetricsAction = ({
         scorecardMetricReadPermission,
       );
 
-      const allMetrics = metricProvidersRegistry.listMetrics().filter(m => {
-        try {
-          const provider = metricProvidersRegistry.getProvider(m.id);
-          return isMetricEnabledByDefault(config, m, provider);
-        } catch {
-          return true;
-        }
-      });
+      const allMetrics = filterEnabledMetrics(
+        config,
+        metricProvidersRegistry.listMetrics(),
+        metricId => metricProvidersRegistry.getProvider(metricId),
+        logger,
+      );
       const metrics = filterAuthorizedMetrics(allMetrics, conditions);
 
       return { output: { metrics } };

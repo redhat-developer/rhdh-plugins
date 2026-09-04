@@ -63,6 +63,7 @@ describe('createListMetricsAction', () => {
       config: mockServices.rootConfig({ data: {} }),
       permissions: mockPermissions,
       metricProvidersRegistry: mockRegistry,
+      logger: mockServices.logger.mock(),
     });
 
     const result = await mockActionsRegistry.invoke({
@@ -86,6 +87,7 @@ describe('createListMetricsAction', () => {
       config: mockServices.rootConfig({ data: {} }),
       permissions: mockPermissions,
       metricProvidersRegistry: mockRegistry,
+      logger: mockServices.logger.mock(),
     });
 
     await expect(
@@ -135,6 +137,7 @@ describe('createListMetricsAction', () => {
       config: mockServices.rootConfig({ data: {} }),
       permissions: mockPermissions,
       metricProvidersRegistry: mockRegistry,
+      logger: mockServices.logger.mock(),
     });
 
     const result = await mockActionsRegistry.invoke({

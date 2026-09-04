@@ -44,7 +44,7 @@ import {
 } from '../middlewares/validateTimeSeriesQueryParams';
 import { getEntitiesOwnedByUser } from '../utils/getEntitiesOwnedByUser';
 import { parseCommaSeparatedString } from '../utils/parseCommaSeparatedString';
-import { isMetricEnabledByDefault } from '../utils/metricUtils';
+import { isMetricEnabled, filterEnabledMetrics } from '../utils/metricUtils';
 import { AggregatedMetricMapper } from './mappers';
 import { validateDrillDownMetricsSchema } from '../validation/validateDrillDownMetricsSchema';
 import { validateAggregationIdParam } from '../middlewares/validateAggregationIdParam';
@@ -85,19 +85,24 @@ export async function createRouter({
 
   const { aggregationsService, catalogMetricService } = service;
 
-  const filterEnabledMetrics = (
+  const getProvider = (metricId: string) =>
+    metricProvidersRegistry.getProvider(metricId);
+
+  const filterEnabled = (
     metrics: ReturnType<typeof metricProvidersRegistry.listMetrics>,
-  ) =>
-    metrics.filter(m => {
-      try {
-        const provider = metricProvidersRegistry.getProvider(m.id);
-        return isMetricEnabledByDefault(config, m, provider);
-      } catch {
-        // Provider not found — treat as enabled to avoid hiding
-        // broken registrations from the listing.
-        return true;
-      }
-    });
+  ) => filterEnabledMetrics(config, metrics, getProvider, logger);
+
+  /**
+   * Throw NotFoundError when a metric is disabled. Call after
+   * `getMetric()` — that already throws if the ID is unregistered.
+   */
+  const assertMetricEnabled = (metricId: string) => {
+    const metric = metricProvidersRegistry.getMetric(metricId);
+    const provider = metricProvidersRegistry.getProvider(metricId);
+    if (!isMetricEnabled(config, metric, provider)) {
+      throw new NotFoundError(`Metric not found: ${metricId}`);
+    }
+  };
 
   router.get(
     '/metrics',
@@ -112,7 +117,7 @@ export async function createRouter({
 
       if (metricIds) {
         return res.json({
-          metrics: filterEnabledMetrics(
+          metrics: filterEnabled(
             metricProvidersRegistry.listMetrics(
               parseCommaSeparatedString(metricIds as string),
             ),
@@ -122,7 +127,7 @@ export async function createRouter({
 
       if (datasource) {
         return res.json({
-          metrics: filterEnabledMetrics(
+          metrics: filterEnabled(
             metricProvidersRegistry.listMetricsByDatasource(
               datasource as string,
             ),
@@ -131,13 +136,15 @@ export async function createRouter({
       }
 
       return res.json({
-        metrics: filterEnabledMetrics(metricProvidersRegistry.listMetrics()),
+        metrics: filterEnabled(metricProvidersRegistry.listMetrics()),
       });
     },
   );
 
   router.get('/metrics/:metricId/collectors', async (req, res) => {
     const { metricId } = req.params;
+
+    assertMetricEnabled(metricId);
 
     const { conditions } = await authorizeConditional(
       await httpAuth.credentials(req),
@@ -244,6 +251,8 @@ export async function createRouter({
     },
     async (req, res) => {
       const { metricId } = req.params;
+
+      assertMetricEnabled(metricId);
 
       const { conditions } = await authorizeConditional(
         await httpAuth.credentials(req),
@@ -379,6 +388,8 @@ export async function createRouter({
         metricProvidersRegistry,
       );
 
+      assertMetricEnabled(aggregationConfig.metricId);
+
       const metric = metricProvidersRegistry.getMetric(
         aggregationConfig.metricId,
       );
@@ -423,6 +434,8 @@ export async function createRouter({
         metricProvidersRegistry,
       );
 
+      assertMetricEnabled(aggregationConfig.metricId);
+
       const metric = metricProvidersRegistry.getMetric(
         aggregationConfig.metricId,
       );
@@ -455,6 +468,8 @@ export async function createRouter({
         aggregationId,
         metricProvidersRegistry,
       );
+
+      assertMetricEnabled(aggregationConfig.metricId);
 
       const metric = metricProvidersRegistry.getMetric(
         aggregationConfig.metricId,
