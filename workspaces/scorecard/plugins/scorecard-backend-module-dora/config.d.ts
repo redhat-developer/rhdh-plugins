@@ -21,8 +21,43 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export interface Config {
-  /** Configuration for scorecard dora plugin */
+  /** Configuration for scorecard dora plugin. */
   scorecard?: {
+    plugins?: {
+      /**
+       * Configuration for scorecard dora plugin.
+       */
+      dora?: {
+        /**
+         * Number of days to retain scorecard DORA source data (deployments, incidents,
+         * pull requests) in the database. Older data is cleaned up by the
+         * `scorecard-dora:cleanup-expired-data` task.
+         * Must be greater than or equal to the DORA metric computation window (30 days).
+         * @default 365
+         */
+        dataRetentionDays?: number;
+        /**
+         * Freshness threshold in milliseconds for DORA deployment and incident collector refresh.
+         * If last successful deployments or incidents sync for a collector is within this value,
+         * data refresh is skipped and existing database data is reused.
+         * Must be greater than or equal to 0.
+         * Set to `0` to always refresh.
+         * @default 60000 (1 minute)
+         */
+        staleAfterMs?: number;
+        /**
+         * Defines the lookback period, in milliseconds, used when re-querying deployments by
+         * creation time since the last synchronization watermark. It determines how far back
+         * to search for deployments that may have transitioned to a 'success' status after
+         * the previous refresh.
+         * Must be greater than or equal to 0 and less than or equal
+         * to the DORA metric computation window (30 days).
+         * Set to `0` for watermark-only incremental refresh (no lookback).
+         * @default 172800000 (48 hours)
+         */
+        deploymentLookbackMs?: number;
+      };
+    };
     metricProviders?: {
       dora?: {
         deploymentFrequency?: {

@@ -15,38 +15,49 @@
  */
 
 import type { Config } from '@backstage/config';
+import type { JsonObject } from '@backstage/types';
 import {
-  CollectorConfig,
   ScorecardThresholdRuleColors,
   ThresholdConfig,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { daysToMilliseconds } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { collectorInputHash } from '../service/collectorHash';
+import type { DoraCollectorConfig } from '../service/types';
 import {
+  DORA_DEFAULT_DATA_RETENTION_DAYS,
+  DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
   DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+  DORA_DEFAULT_STALE_AFTER_MS,
+  DORA_TIME_WINDOW_DAYS,
 } from '../constants';
-import type { JsonValue } from '@backstage/types';
 
 export type DoraDeploymentFrequencyConfig = {
-  deploymentsCollector: CollectorConfig;
+  deploymentsCollector: DoraCollectorConfig;
   productionEnvironments: string[];
 };
 
 export type DoraMedianLeadTimeForChangesConfig = {
-  deploymentsCollector: CollectorConfig;
-  deploymentPullRequestsCollector: CollectorConfig;
+  deploymentsCollector: DoraCollectorConfig;
+  deploymentPullRequestsCollector: DoraCollectorConfig;
   productionEnvironments: string[];
 };
 
 export type DoraMeanTimeToRestoreConfig = {
-  incidentsCollector: CollectorConfig;
+  incidentsCollector: DoraCollectorConfig;
 };
 
 export type DoraChangeFailureRateConfig = {
-  deploymentsCollector: CollectorConfig;
-  incidentsCollector: CollectorConfig;
+  deploymentsCollector: DoraCollectorConfig;
+  incidentsCollector: DoraCollectorConfig;
   productionEnvironments: string[];
+};
+
+export type DoraSyncConfig = {
+  staleAfterMs: number;
+  deploymentLookbackMs: number;
 };
 
 export const DEFAULT_DORA_DEPLOYMENT_FREQUENCY_THRESHOLDS: ThresholdConfig =
@@ -149,17 +160,38 @@ export const DEFAULT_DORA_MEAN_TIME_TO_RESTORE_THRESHOLDS: ThresholdConfig =
     ],
   };
 
-function parseCollectorConfig(
+/**
+ * Parses a collector `id` and static `input` object from config and attaches
+ * `inputHash` computed from `input`, excluding any top-level keys listed in
+ * `excludeFromIdentity` (nested or dotted paths are not supported). Keys in
+ * `excludeFromIdentity` are still passed to the collector as part of `input`;
+ * they are only omitted from the identity hash so changing them does not trigger
+ * a full data refetch.
+ * Shared by all DORA metric provider parsers.
+ */
+export function parseCollectorConfig(
   config: Config,
   collectorConfigPath: string,
   defaultId: string,
-): CollectorConfig {
+): DoraCollectorConfig {
+  const input =
+    config
+      .getOptionalConfig(`${collectorConfigPath}.input`)
+      ?.get<JsonObject>() ?? {};
+  const excludeFromIdentity =
+    config.getOptionalStringArray(
+      `${collectorConfigPath}.excludeFromIdentity`,
+    ) ?? [];
+
+  const identityInput = { ...input };
+  for (const key of excludeFromIdentity) {
+    delete identityInput[key];
+  }
+
   return {
     id: config.getOptionalString(`${collectorConfigPath}.id`) ?? defaultId,
-    input:
-      config.getOptional<Record<string, JsonValue>>(
-        `${collectorConfigPath}.input`,
-      ) ?? {},
+    input,
+    inputHash: collectorInputHash(identityInput),
   };
 }
 
@@ -268,4 +300,51 @@ export function parseDoraChangeFailureRateConfig(
       providerConfigPath,
     ),
   };
+}
+
+/**
+ * Parses DORA source-data retention days from the root Backstage config.
+ * Must be at least the DORA metric computation window so cleanup cannot delete
+ * in-window rows that incremental sync will not backfill.
+ */
+export function parseDoraDataRetentionDays(config: Config): number {
+  const dataRetentionDays =
+    config.getOptionalNumber('scorecard.plugins.dora.dataRetentionDays') ??
+    DORA_DEFAULT_DATA_RETENTION_DAYS;
+  if (dataRetentionDays < DORA_TIME_WINDOW_DAYS) {
+    throw new Error(
+      `scorecard.plugins.dora.dataRetentionDays must be greater than or equal to ${DORA_TIME_WINDOW_DAYS}`,
+    );
+  }
+  return dataRetentionDays;
+}
+
+/**
+ * Parses DORA sync service options from `scorecard.plugins.dora`.
+ */
+export function parseDoraSyncConfig(config: Config): DoraSyncConfig {
+  const staleAfterMs =
+    config.getOptionalNumber('scorecard.plugins.dora.staleAfterMs') ??
+    DORA_DEFAULT_STALE_AFTER_MS;
+  if (staleAfterMs < 0) {
+    throw new Error(
+      'scorecard.plugins.dora.staleAfterMs must be greater than or equal to 0',
+    );
+  }
+
+  const deploymentLookbackMs =
+    config.getOptionalNumber('scorecard.plugins.dora.deploymentLookbackMs') ??
+    DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS;
+  if (deploymentLookbackMs < 0) {
+    throw new Error(
+      'scorecard.plugins.dora.deploymentLookbackMs must be greater than or equal to 0',
+    );
+  }
+  const maxLookbackMs = daysToMilliseconds(DORA_TIME_WINDOW_DAYS);
+  if (deploymentLookbackMs > maxLookbackMs) {
+    throw new Error(
+      `scorecard.plugins.dora.deploymentLookbackMs must be less than or equal to the DORA metric computation window (${DORA_TIME_WINDOW_DAYS} days)`,
+    );
+  }
+  return { staleAfterMs, deploymentLookbackMs };
 }

@@ -88,6 +88,8 @@ Required output:
 
 - `deployments: Array<{ id: string; commitSha: string; environment?: string; createdAt: string; result: 'success' | 'failure' | '' }>`
 
+Only deployments with `result: 'success'` are included in the calculation.
+
 ## Collector configuration
 
 ### Use GitHub deployments collector (default)
@@ -121,6 +123,8 @@ scorecard:
               input:
                 workflowName: Custom deployment
 ```
+
+Updating `workflowName` in your configuration creates a new data identity and triggers a full 30-day data refresh.
 
 ### Use custom deployments collector
 

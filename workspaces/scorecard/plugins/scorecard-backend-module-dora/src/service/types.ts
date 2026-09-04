@@ -14,10 +14,15 @@
  * limitations under the License.
  */
 
-import { daysToMilliseconds } from './utils';
+import type { CollectorConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
-describe('daysToMilliseconds', () => {
-  it('should convert days to milliseconds', () => {
-    expect(daysToMilliseconds(1)).toBe(86400000);
-  });
-});
+export type DoraCollectorConfig = CollectorConfig & { inputHash: string };
+
+export type CollectorCallOptions = {
+  collector: DoraCollectorConfig;
+};
+
+export type WindowOptions = {
+  windowFrom: Date;
+  windowTo: Date;
+};

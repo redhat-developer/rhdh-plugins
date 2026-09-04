@@ -124,6 +124,8 @@ You can replace default collector IDs via `app-config.yaml` as long as your coll
 
 Collector inputs are merged with provider-generated required inputs. This lets you pass extra collector-specific fields (for example `workflowName` when using a workflow-runs based collector) as long as required contract fields are still supported.
 
+Changing a collector's `input` starts a new data identity and refetches the full 30-day window. If some inputs should _not_ affect the collector's identity (for example an operational input like `fetchMaxItems`), list their keys under `excludeFromIdentity`. Only top-level `input` keys are supported in `excludeFromIdentity` (nested or dotted paths are not). Excluded keys are still passed to the collector as part of `input`, but changing their values will _not_ trigger a full 30-day data refresh. They are treated as configuration adjustments that don’t fundamentally alter the data source being monitored. Keys listed in `excludeFromIdentity` that are not present in `input` are ignored.
+
 ```yaml
 scorecard:
   metricProviders:
@@ -137,6 +139,11 @@ scorecard:
               input:
                 # merged with generated from/to window
                 # your collector-specific options
+                fetchMaxItems: 10000
+              # Optional: top-level `input` keys that should not affect the collector identity
+              # (changing them will not refetch the window).
+              excludeFromIdentity:
+                - fetchMaxItems
       medianLeadTimeForChanges:
         options:
           productionEnvironments: [production, prod]
@@ -161,3 +168,23 @@ DORA providers follow Scorecard scheduling settings under their metric keys:
 - `scorecard.metricProviders.dora.changeFailureRate.schedule`
 
 See [providers.md](../scorecard-backend/docs/providers.md#metric-collection-scheduling) for schedule schema and defaults.
+
+## Data retention and staleness
+
+Configure DORA module data retention and collector staleness behavior under
+`scorecard.plugins.dora`:
+
+```yaml
+scorecard:
+  plugins:
+    dora:
+      dataRetentionDays: 365
+      staleAfterMs: 60000 # 1 minute
+      deploymentLookbackMs: 172800000 # 48 hours
+```
+
+- `dataRetentionDays`: how long source rows (deployments, incidents, pull requests linked to expired deployments and sync watermarks) are retained before cleanup. Must be at least `30` (the DORA metric computation window). Default: `365`.
+- `staleAfterMs`: freshness threshold in milliseconds for deployments and incidents; if the last sync is within this window, those collectors are not refreshed. Must be greater than or equal to `0`. Set to `0` to always refresh. Default: `60000`. Pull request sync is not gated by `staleAfterMs`; PRs are fetched once per deployment when none are stored yet.
+- `deploymentLookbackMs`: when refreshing deployments, re-query from `max(windowFrom, lastSync − lookback)` by created time so deployments that succeed shortly after the previous lastSync watermark are not missed. Must be greater than or equal to `0` and at most `30` days. Set to `0` for watermark-only incremental refresh. Default: `172800000` (48 hours). Does not apply to incidents.
+
+The module schedules a daily background task, `scorecard-dora:cleanup-expired-data`, that deletes deployments, incidents, pull requests linked to expired deployments and sync watermarks older than `dataRetentionDays`.

@@ -132,7 +132,7 @@ export class JiraCloudClientStrategy extends JiraClient {
       method: 'POST',
       body: {
         jql,
-        fields: ['created', 'resolutiondate'],
+        fields: ['created', 'updated', 'resolutiondate'],
       },
       responseSchema: z.object({
         issues: z.array(jiraSearchIssueSchema),

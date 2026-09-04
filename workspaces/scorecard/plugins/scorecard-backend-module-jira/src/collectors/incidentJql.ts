@@ -21,7 +21,7 @@ import {
 } from '../annotations';
 import {
   joinJqlClauses,
-  toJiraDateTime,
+  toJiraEpochMillis,
   validateJQLValue,
 } from '../clients/utils';
 import { DEFAULT_INCIDENT_ISSUE_TYPE } from '../constants';
@@ -34,18 +34,24 @@ export function buildIncidentJql(
     from: string;
     to: string;
     issueType?: string;
+    updatedSince: string;
   },
   entity: Entity,
 ): string {
-  const from = toJiraDateTime(options.from);
-  const to = toJiraDateTime(options.to);
+  // use timezone-safe JQL date comparisons
+  // otherwise we would need to look up timezone and convert (e.g. /myself, /serverInfo)
+  const from = toJiraEpochMillis(options.from);
+  const to = toJiraEpochMillis(options.to);
+  const updatedSince = toJiraEpochMillis(options.updatedSince);
   const issueType = resolveIncidentIssueType(entity, options.issueType);
 
+  // Epoch millis must be unquoted in JQL (quoted values are parsed as local datetime).
   return joinJqlClauses([
     ...Object.values(filters),
     `type = "${issueType}"`,
-    `created >= "${from}"`,
-    `created <= "${to}"`,
+    `created >= ${from}`,
+    `created <= ${to}`,
+    `updated >= ${updatedSince}`,
   ]);
 }
 

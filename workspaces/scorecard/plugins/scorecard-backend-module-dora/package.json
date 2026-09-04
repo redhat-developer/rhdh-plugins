@@ -45,6 +45,7 @@
     "@backstage/types": "^1.2.2",
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^",
+    "knex": "^3.1.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -54,7 +55,8 @@
   },
   "files": [
     "config.d.ts",
-    "dist"
+    "dist",
+    "migrations"
   ],
   "repository": {
     "type": "git",
