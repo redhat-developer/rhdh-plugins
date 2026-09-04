@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 9.0.0
+
+### Patch Changes
+
+- b9198f8: Show orchestrator import job errors, such as a missing GitHub App installation token, as alerts on the add-repositories page.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.0.0
+
 ## 8.0.3
 
 ### Patch Changes
