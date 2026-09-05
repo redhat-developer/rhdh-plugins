@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core';
+import { styled } from '@mui/material/styles';
 import { SourcesCardProps } from '@patternfly/chatbot';
 import {
   Button,
@@ -32,87 +32,90 @@ import { FileTypeIcon } from './notebooks/FileTypeIcon';
 
 const POPOVER_WIDTH = '400px';
 
-const useStyles = makeStyles(theme => ({
-  sourcesPopover: {
-    '& .pf-v6-c-popover__title': {
-      alignItems: 'flex-start',
-    },
-    '& .pf-v6-c-popover__title-text': {
-      margin: 0,
-    },
-    '& .pf-v6-c-popover__header': {
-      paddingBlockEnd: theme.spacing(2),
-    },
-    '& .pf-v6-c-popover__body': {
-      paddingBlockStart: 0,
-    },
+const StyledPopover = styled(Popover)(({ theme }) => ({
+  '& .pf-v6-c-popover__title': {
+    alignItems: 'flex-start',
   },
-  chipButton: {
-    padding: '4px 12px',
-    fontSize: '0.8125rem',
-    fontWeight: 500,
-    borderRadius: 16,
-    backgroundColor: 'transparent',
-    color: 'var(--pf-t--global--text--color--regular, #1b1d21)',
-    '&:hover': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--secondary--default, #e0e0e0)',
-    },
-    '& .pf-v6-c-button__icon': {
-      color: 'inherit',
-    },
+  '& .pf-v6-c-popover__title-text': {
+    margin: 0,
   },
-  helperText: {
-    marginBottom: theme.spacing(1.5),
-    color: 'var(--pf-t--global--text--color--subtle, #c7c7c7)',
+  '& .pf-v6-c-popover__header': {
+    paddingBlockEnd: theme.spacing(2),
   },
-  sourcesList: {
-    maxHeight: 320,
-    overflowY: 'auto' as const,
-  },
-  sourceItem: {
-    alignItems: 'center',
-    '& .pf-v6-c-list__item-text': {
-      minWidth: 0,
-    },
-  },
-  sourceContent: {
-    flex: 1,
-    minWidth: 0,
-  },
-  sourceTitle: {
-    fontSize: '0.875rem',
-    fontWeight: 500,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  sourceBody: {
-    fontSize: '0.8125rem',
-    color: 'var(--pf-t--global--text--color--subtle, #c7c7c7)',
-    marginTop: 2,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    display: '-webkit-box',
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: 'vertical',
+  '& .pf-v6-c-popover__body': {
+    paddingBlockStart: 0,
   },
 }));
+
+const ChipButton = styled(Button)({
+  padding: '4px 12px',
+  fontSize: '0.8125rem',
+  fontWeight: 500,
+  borderRadius: 16,
+  backgroundColor: 'transparent',
+  color: 'var(--pf-t--global--text--color--regular, #1b1d21)',
+  '&:hover': {
+    backgroundColor:
+      'var(--pf-t--global--background--color--secondary--default, #e0e0e0)',
+  },
+  '& .pf-v6-c-button__icon': {
+    color: 'inherit',
+  },
+});
+
+const SourcesHelperText = styled(HelperText)(({ theme }) => ({
+  marginBottom: theme.spacing(1.5),
+  color: 'var(--pf-t--global--text--color--subtle, #c7c7c7)',
+}));
+
+const SourcesList = styled(List)({
+  maxHeight: 320,
+  overflowY: 'auto',
+});
+
+const SourceItem = styled(ListItem)({
+  alignItems: 'center',
+  '& .pf-v6-c-list__item-text': {
+    minWidth: 0,
+  },
+});
+
+const SourceContent = styled('div')({
+  flex: 1,
+  minWidth: 0,
+});
+
+const SourceTitle = styled('div')({
+  fontSize: '0.875rem',
+  fontWeight: 500,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+});
+
+const SourceBody = styled('div')({
+  fontSize: '0.8125rem',
+  color: 'var(--pf-t--global--text--color--subtle, #c7c7c7)',
+  marginTop: 2,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  display: '-webkit-box',
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: 'vertical',
+});
 
 type SourcesChipModalProps = {
   sources: SourcesCardProps;
 };
 
 export const SourcesChipModal = ({ sources }: SourcesChipModalProps) => {
-  const classes = useStyles();
   const { t } = useTranslation();
 
   const count = sources.sources?.length ?? 0;
   if (count === 0) return null;
 
   return (
-    <Popover
-      className={classes.sourcesPopover}
+    <StyledPopover
       position="top-start"
       triggerAction="click"
       aria-label={t('sources.modal.title')}
@@ -124,42 +127,35 @@ export const SourcesChipModal = ({ sources }: SourcesChipModalProps) => {
       appendTo={() => document.body}
       bodyContent={
         <>
-          <HelperText className={classes.helperText}>
+          <SourcesHelperText>
             <HelperTextItem variant="indeterminate" icon={<InfoCircleIcon />}>
               {t('sources.modal.description')}
             </HelperTextItem>
-          </HelperText>
-          <List
-            isPlain
-            className={classes.sourcesList}
-            aria-label={t('sources.modal.title')}
-          >
+          </SourcesHelperText>
+          <SourcesList isPlain aria-label={t('sources.modal.title')}>
             {sources.sources.map((source, index) => {
               const title = source.title ?? `Source ${index + 1}`;
               return (
-                <ListItem
+                <SourceItem
                   key={`${source.title}-${index}`}
-                  className={classes.sourceItem}
                   icon={<FileTypeIcon fileName={title} />}
                 >
-                  <div className={classes.sourceContent}>
+                  <SourceContent>
                     <Tooltip content={title}>
-                      <div className={classes.sourceTitle}>{title}</div>
+                      <SourceTitle>{title}</SourceTitle>
                     </Tooltip>
-                    {source.body && (
-                      <div className={classes.sourceBody}>{source.body}</div>
-                    )}
-                  </div>
-                </ListItem>
+                    {source.body && <SourceBody>{source.body}</SourceBody>}
+                  </SourceContent>
+                </SourceItem>
               );
             })}
-          </List>
+          </SourcesList>
         </>
       }
     >
-      <Button variant="link" icon={<LinkIcon />} className={classes.chipButton}>
+      <ChipButton variant="link" icon={<LinkIcon />}>
         {(t as Function)('sources.chip.label', { count })}
-      </Button>
-    </Popover>
+      </ChipButton>
+    </StyledPopover>
   );
 };

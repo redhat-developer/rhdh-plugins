@@ -58,15 +58,6 @@ const mockLightspeedApi = {
   isTopicRestrictionEnabled: jest.fn().mockResolvedValue(false),
 };
 
-jest.mock('@mui/material', () => ({
-  ...jest.requireActual('@mui/material'),
-  makeStyles: () => () => {
-    return {
-      container: 'container',
-    };
-  },
-}));
-
 jest.mock('../../hooks/useAllModels', () => ({
   useAllModels: jest.fn(),
 }));

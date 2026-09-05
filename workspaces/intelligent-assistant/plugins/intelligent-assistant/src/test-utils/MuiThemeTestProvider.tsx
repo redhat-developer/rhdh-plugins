@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-import { createGenerateClassName as createGenerateClassNameV4 } from '@material-ui/core/styles';
-import { createGenerateClassName } from '@mui/styles';
+import type { ReactNode } from 'react';
 
-export const generateClassName = createGenerateClassName({
-  seed: 'intelligent-assistant',
-});
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 
-export const generateClassNameV4 = createGenerateClassNameV4({
-  seed: 'intelligent-assistant',
-});
+const theme = createTheme();
+
+export const MuiThemeTestProvider = ({ children }: { children: ReactNode }) => (
+  <ThemeProvider theme={theme}>{children}</ThemeProvider>
+);

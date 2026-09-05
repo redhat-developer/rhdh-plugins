@@ -18,8 +18,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { makeStyles, Typography } from '@material-ui/core';
-import { useTheme } from '@material-ui/core/styles';
+import { styled, useTheme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import { ChatbotContent, ChatbotFooter, MessageBar } from '@patternfly/chatbot';
 import {
   Alert,
@@ -68,190 +68,174 @@ import { OverwriteConfirmModal } from './OverwriteConfirmModal';
 import { AddCircleFilledIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
 import { UploadResourceScreen } from './UploadResourceScreen';
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
-    minWidth: 0,
-    width: '100%',
-    overflow: 'hidden',
+const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
+
+const Root = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minHeight: 0,
+  minWidth: 0,
+  width: '100%',
+  overflow: 'hidden',
+  backgroundColor: floatingBg,
+});
+
+const StyledDrawer = styled(Drawer)({
+  flex: 1,
+  minHeight: 0,
+  minWidth: 0,
+  '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
+    backgroundColor: floatingBg,
+  },
+});
+
+const StyledDrawerContent = styled(DrawerContent)({
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+});
+
+const StyledDrawerContentBody = styled(DrawerContentBody)({
+  backgroundColor: floatingBg,
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minHeight: 0,
+  minWidth: 0,
+});
+
+const MainArea = styled('div')({
+  display: 'flex',
+  flexDirection: 'row',
+  flex: 1,
+  minHeight: 0,
+  minWidth: 0,
+});
+
+const AddIconButton = styled(Button)({
+  padding: 0,
+  minWidth: 0,
+  lineHeight: 1,
+});
+
+const ExpandStrip = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  paddingTop: theme.spacing(1.5),
+  gap: theme.spacing(1),
+  borderRight: '1px solid var(--pf-t--global--border--color--default)',
+  backgroundColor: floatingBg,
+}));
+
+const ContentColumn = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minWidth: 0,
+  minHeight: 0,
+  overflow: 'hidden',
+});
+
+const TopBar = styled('div')(({ theme }) => ({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  padding: `${theme.spacing(1.5)} ${theme.spacing(2)}`,
+  backgroundColor: floatingBg,
+}));
+
+const MainContent = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minHeight: 0,
+  minWidth: 0,
+});
+
+const DisclaimerStrip = styled('div')(({ theme }) => ({
+  width: '100%',
+  maxWidth: 'unset',
+  margin: 0,
+  padding: `0 0 ${theme.spacing(1)}`,
+  boxSizing: 'border-box',
+  backgroundColor: floatingBg,
+}));
+
+const DisclaimerInner = styled('div')({
+  width: '95%',
+  maxWidth: 'unset',
+  margin: '0 auto',
+});
+
+const WelcomeContainer = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minHeight: 0,
+  overflow: 'auto',
+  backgroundColor: floatingBg,
+});
+
+const NotebookContentArea = styled('div')(({ theme }) => ({
+  width: '95%',
+  maxWidth: 'unset',
+  margin: `${theme.spacing(3)} auto 0 auto`,
+  padding: 0,
+}));
+
+const PromptSuggestions = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: theme.spacing(1),
+  width: '95%',
+  maxWidth: 'unset',
+  margin: `${theme.spacing(3)} auto ${theme.spacing(3)} auto`,
+  justifyContent: 'flex-start',
+}));
+
+const PromptPill = styled('button')(({ theme }) => ({
+  appearance: 'none',
+  background: 'transparent',
+  border: '1px solid var(--pf-t--global--border--color--default)',
+  borderRadius: '999px',
+  padding: `${theme.spacing(1)} ${theme.spacing(2.5)}`,
+  fontSize: '0.875rem',
+  color: 'var(--pf-t--global--text--color--regular)',
+  cursor: 'pointer',
+  transition: 'background-color 0.15s, border-color 0.15s',
+  '&:hover': {
     backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
+      'var(--pf-t--global--background--color--secondary--default)',
+    borderColor: 'var(--pf-t--global--border--color--hover)',
   },
-  drawerContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
+}));
+
+const StyledChatbotContent = styled(ChatbotContent)({
+  minHeight: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  overflow: 'auto',
+  backgroundColor: floatingBg,
+  '& .pf-chatbot__message-contents': {
+    overflowX: 'hidden',
+    overflowWrap: 'break-word',
+    wordBreak: 'break-word',
   },
-  drawerContainer: {
-    flex: 1,
-    minHeight: 0,
-    minWidth: 0,
-    '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default)',
-    },
+});
+
+const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
+  backgroundColor: `${floatingBg} !important`,
+  '&>.pf-chatbot__footer-container': {
+    width: '95% !important',
+    maxWidth: 'unset !important',
   },
-  expandStrip: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    paddingTop: theme.spacing(1.5),
-    gap: theme.spacing(1),
-    borderRight: '1px solid var(--pf-t--global--border--color--default)',
+  '& .pf-chatbot__message-bar': {
     backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-  },
-  addIconButton: {
-    padding: 0,
-    minWidth: 0,
-    lineHeight: 1,
-  },
-  mainArea: {
-    display: 'flex',
-    flexDirection: 'row',
-    flex: 1,
-    minHeight: 0,
-    minWidth: 0,
-  },
-  topBar: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    padding: `${theme.spacing(1.5)}px ${theme.spacing(2)}px`,
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-  },
-  closeButton: {
-    textTransform: 'none',
-  },
-  mainContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
-    minWidth: 0,
-  },
-  drawerContentBody: {
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
-    minWidth: 0,
-  },
-  contentColumn: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minWidth: 0,
-    minHeight: 0,
-    overflow: 'hidden',
-  },
-  notebookDisclaimerStrip: {
-    width: '100%',
-    maxWidth: 'unset',
-    margin: 0,
-    padding: `0 0 ${theme.spacing(1)}px`,
-    boxSizing: 'border-box',
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-  },
-  notebookDisclaimerInner: {
-    width: '95%',
-    maxWidth: 'unset',
-    margin: '0 auto',
-  },
-  welcomeContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    minHeight: 0,
-    overflow: 'auto',
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-  },
-  notebookEmptyUpload: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    minHeight: 0,
-    minWidth: 0,
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-  },
-  notebookContentArea: {
-    width: '95%',
-    maxWidth: 'unset',
-    margin: `${theme.spacing(3)}px auto 0 auto`,
-    padding: 0,
-  },
-  notebookHeading: {
-    fontSize: '2rem',
-    fontWeight: 500,
-    lineHeight: 1.25,
-    padding: `${theme.spacing(1)}px 0`,
-  },
-  notebookSummary: {
-    fontSize: '1rem',
-    lineHeight: 2,
-    color: 'var(--pf-t--global--text--color--regular)',
-    paddingTop: theme.spacing(0.5),
-  },
-  promptSuggestions: {
-    display: 'flex',
-    flexWrap: 'wrap' as const,
-    gap: theme.spacing(1),
-    width: '95%',
-    maxWidth: 'unset',
-    margin: `${theme.spacing(3)}px auto ${theme.spacing(3)}px auto`,
-    justifyContent: 'flex-start',
-  },
-  promptPill: {
-    appearance: 'none' as const,
-    background: 'transparent',
-    border: `1px solid var(--pf-t--global--border--color--default)`,
-    borderRadius: '999px',
-    padding: `${theme.spacing(1)}px ${theme.spacing(2.5)}px`,
-    fontSize: '0.875rem',
-    color: 'var(--pf-t--global--text--color--regular)',
-    cursor: 'pointer',
-    transition: 'background-color 0.15s, border-color 0.15s',
-    '&:hover': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--secondary--default)',
-      borderColor: 'var(--pf-t--global--border--color--hover)',
-    },
-  },
-  footer: {
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default) !important',
-    '&>.pf-chatbot__footer-container': {
-      width: '95% !important',
-      maxWidth: 'unset !important',
-    },
-    '& .pf-chatbot__message-bar': {
-      backgroundColor:
-        theme.palette.type === 'light'
-          ? theme.palette.grey[100]
-          : 'var(--pf-t--global--background--color--secondary--default)',
-    },
-  },
-  chatContent: {
-    minHeight: 0,
-    display: 'flex',
-    flexDirection: 'column',
-    flex: 1,
-    overflow: 'auto',
-    backgroundColor:
-      'var(--pf-t--global--background--color--floating--default)',
-    '& .pf-chatbot__message-contents': {
-      overflowX: 'hidden',
-      overflowWrap: 'break-word',
-      wordBreak: 'break-word',
-    },
+      theme.palette.mode === 'light'
+        ? theme.palette.grey[100]
+        : 'var(--pf-t--global--background--color--secondary--default)',
   },
 }));
 
@@ -294,10 +278,9 @@ export const NotebookView = ({
   onUploadModalOpenChange,
   onUploadsInProgressChange,
 }: NotebookViewProps) => {
-  const classes = useStyles();
   const theme = useTheme();
   const botAvatar =
-    theme.palette.type === 'dark' ? botAvatarDark : botAvatarLight;
+    theme.palette.mode === 'dark' ? botAvatarDark : botAvatarLight;
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const configApi = useApi(configApiRef);
@@ -670,19 +653,29 @@ export const NotebookView = ({
   );
 
   const renderNotebookDisclaimerAlert = () => (
-    <div className={classes.notebookDisclaimerStrip}>
-      <div className={classes.notebookDisclaimerInner}>
+    <DisclaimerStrip>
+      <DisclaimerInner>
         <Alert isInline variant="info" title={t('aria.important')}>
-          {t('disclaimer.withoutValidation')}
+          {t('disclaimer')}
         </Alert>
-      </div>
-    </div>
+      </DisclaimerInner>
+    </DisclaimerStrip>
   );
 
   const renderMainContent = () => {
     if (hasNoDocuments && messages.length === 0) {
       return (
-        <Typography component="span" className={classes.notebookEmptyUpload}>
+        <Typography
+          component="span"
+          sx={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
+            minWidth: 0,
+            backgroundColor: floatingBg,
+          }}
+        >
           <UploadResourceScreen
             onUploadClick={handleOpenUploadModal}
             isProcessing={uploadingFileNames.length > 0}
@@ -692,7 +685,7 @@ export const NotebookView = ({
     }
     if (messages.length > 0) {
       return (
-        <ChatbotContent className={classes.chatContent}>
+        <StyledChatbotContent>
           <LightspeedChatBox
             userName={userName}
             messages={messages}
@@ -705,64 +698,63 @@ export const NotebookView = ({
             topicRestrictionEnabled={topicRestrictionEnabled}
             showSourcesChipPopover
           />
-        </ChatbotContent>
+        </StyledChatbotContent>
       );
     }
     return (
-      <div className={classes.welcomeContainer}>
+      <WelcomeContainer>
         <div style={{ flex: 1 }} />
         {renderNotebookDisclaimerAlert()}
-        <div className={classes.notebookContentArea}>
-          <Typography className={classes.notebookHeading}>
+        <NotebookContentArea>
+          <Typography
+            sx={{ fontSize: '2rem', fontWeight: 500, lineHeight: 1.25, py: 1 }}
+          >
             {notebookName}
           </Typography>
           {topicSummary && (
-            <Typography className={classes.notebookSummary}>
+            <Typography
+              sx={{
+                fontSize: '1rem',
+                lineHeight: 2,
+                color: 'var(--pf-t--global--text--color--regular)',
+                pt: 0.5,
+              }}
+            >
               {topicSummary}
             </Typography>
           )}
-        </div>
+        </NotebookContentArea>
         {welcomePrompts.length > 0 && (
-          <div className={classes.promptSuggestions}>
+          <PromptSuggestions>
             {welcomePrompts.map(prompt => (
-              <button
+              <PromptPill
                 key={prompt.title}
                 type="button"
-                className={classes.promptPill}
                 onClick={prompt.onClick}
               >
                 {prompt.title}
-              </button>
+              </PromptPill>
             ))}
-          </div>
+          </PromptSuggestions>
         )}
-      </div>
+      </WelcomeContainer>
     );
   };
 
   return (
-    <div
-      className={classes.root}
-      style={isCompact ? { position: 'relative' as const } : undefined}
-    >
+    <Root sx={isCompact ? { position: 'relative' } : undefined}>
       <ToastAlertGroup
         alerts={toastAlerts}
         onRemoveAlert={handleRemoveToastAlert}
       />
-      <Drawer
-        isExpanded={!sidebarCollapsed}
-        isInline
-        position="start"
-        className={classes.drawerContainer}
-      >
-        <DrawerContent
+      <StyledDrawer isExpanded={!sidebarCollapsed} isInline position="start">
+        <StyledDrawerContent
           panelContent={!sidebarCollapsed ? panelContent : undefined}
-          className={classes.drawerContent}
         >
-          <DrawerContentBody className={classes.drawerContentBody}>
-            <div className={classes.mainArea}>
+          <StyledDrawerContentBody>
+            <MainArea>
               {sidebarCollapsed && !isCompact && (
-                <div className={classes.expandStrip}>
+                <ExpandStrip>
                   <Tooltip
                     content={t('notebook.view.sidebar.expand')}
                     position="right"
@@ -787,9 +779,8 @@ export const NotebookView = ({
                     position="right"
                   >
                     <Typography component="span">
-                      <Button
+                      <AddIconButton
                         variant="plain"
-                        className={classes.addIconButton}
                         onClick={
                           isAddDisabled ? undefined : handleOpenUploadModal
                         }
@@ -797,34 +788,34 @@ export const NotebookView = ({
                         isDisabled={isAddDisabled}
                       >
                         <AddCircleFilledIcon disabled={isAddDisabled} />
-                      </Button>
+                      </AddIconButton>
                     </Typography>
                   </Tooltip>
-                </div>
+                </ExpandStrip>
               )}
 
-              <div className={classes.contentColumn}>
+              <ContentColumn>
                 {!isCompact && (
-                  <div className={classes.topBar}>
+                  <TopBar>
                     <Button
                       variant="link"
-                      className={classes.closeButton}
+                      style={{ textTransform: 'none' }}
                       onClick={handleCloseNotebook}
                       icon={<TimesIcon />}
                       iconPosition="end"
                     >
                       {t('notebook.view.close')}
                     </Button>
-                  </div>
+                  </TopBar>
                 )}
 
-                <div className={classes.mainContent}>{renderMainContent()}</div>
+                <MainContent>{renderMainContent()}</MainContent>
 
                 {hasNoDocuments &&
                   messages.length === 0 &&
                   renderNotebookDisclaimerAlert()}
 
-                <ChatbotFooter className={classes.footer}>
+                <StyledChatbotFooter>
                   {(() => {
                     const addResourceAction = (
                       <Button
@@ -888,12 +879,12 @@ export const NotebookView = ({
                     );
                   })()}
                   <ChatbotFootnoteWithIcon label={t('footer.accuracy.label')} />
-                </ChatbotFooter>
-              </div>
-            </div>
-          </DrawerContentBody>
-        </DrawerContent>
-      </Drawer>
+                </StyledChatbotFooter>
+              </ContentColumn>
+            </MainArea>
+          </StyledDrawerContentBody>
+        </StyledDrawerContent>
+      </StyledDrawer>
 
       <AddDocumentModal
         isOpen={isUploadModalOpen}
@@ -927,6 +918,6 @@ export const NotebookView = ({
         documentName={deleteDocumentTarget?.name ?? ''}
         isCompact={isCompact}
       />
-    </div>
+    </Root>
   );
 };

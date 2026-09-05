@@ -22,7 +22,7 @@ import {
   useRef,
 } from 'react';
 
-import { makeStyles } from '@material-ui/core';
+import { styled } from '@mui/material/styles';
 import {
   ChatbotDisplayMode,
   ChatbotWelcomePrompt,
@@ -46,36 +46,46 @@ import { parseReasoning } from '../utils/reasoningParser';
 import { mapToPatternFlyToolCall } from '../utils/toolCallMapper';
 import { SourcesChipModal } from './SourcesChipModal';
 
-const useStyles = makeStyles(theme => ({
-  prompt: {
-    'justify-content': 'flex-end',
-  },
-  container: {
-    maxWidth: 'unset !important',
-  },
-  alert: {
-    background: 'unset !important',
-  },
-  promptSuggestions: {
-    '& div.pf-chatbot__prompt-suggestions': {
-      'flex-direction': 'column !important',
-    },
-  },
-
-  userMessageText: {
-    '& div.pf-chatbot__message--user': {
-      '& div.pf-chatbot__message-text': {
-        '& p': {
-          color: theme.palette.common.white,
+const StyledMessageBox = styled(MessageBox, {
+  shouldForwardProp: prop =>
+    prop !== 'isNewChat' &&
+    prop !== 'hasWelcomePrompts' &&
+    prop !== 'isEmbeddedMode',
+})<{
+  isNewChat: boolean;
+  hasWelcomePrompts: boolean;
+  isEmbeddedMode: boolean;
+}>(({ theme, isNewChat, hasWelcomePrompts, isEmbeddedMode }) => ({
+  maxWidth: 'unset !important',
+  ...(isNewChat
+    ? {
+        flex: 'none',
+        height: 'auto !important',
+        overflow: 'visible',
+      }
+    : {
+        flex: 1,
+        minHeight: 0,
+      }),
+  ...(hasWelcomePrompts ? { justifyContent: 'flex-end' } : {}),
+  ...(!isEmbeddedMode && hasWelcomePrompts
+    ? {
+        '& div.pf-chatbot__prompt-suggestions': {
+          flexDirection: 'column !important',
         },
+      }
+    : {}),
+  '& div.pf-chatbot__message--user': {
+    '& div.pf-chatbot__message-text': {
+      '& p': {
+        color: theme.palette.common.white,
       },
     },
   },
-  deepThinking: {
-    animation: '$deepThinking 1.6s ease-in-out infinite',
+  '& .lightspeed-deep-thinking': {
+    animation: 'lightspeedDeepThinking 1.6s ease-in-out infinite',
   },
-
-  '@keyframes deepThinking': {
+  '@keyframes lightspeedDeepThinking': {
     '0%': {
       opacity: 0.65,
     },
@@ -86,19 +96,11 @@ const useStyles = makeStyles(theme => ({
       opacity: 0.65,
     },
   },
-  // Message box fills remaining height and scrolls when there are messages.
-  messageBoxFlex: {
-    flex: 1,
-    minHeight: 0,
-  },
-  // New chat: message box sizes to content so ChatbotContent is the scroll container.
-  // overflow: visible so full height is included in parent's scrollHeight (no clipping).
-  messageBoxAutoHeight: {
-    flex: 'none',
-    height: 'auto',
-    overflow: 'visible',
-  },
 }));
+
+const DisclaimerAlert = styled(Alert)({
+  background: 'unset !important',
+});
 
 // Extended message type that includes tool calls
 interface ExtendedMessageProps extends MessageProps {
@@ -133,13 +135,11 @@ export const LightspeedChatBox = forwardRef(
       profileLoading,
       welcomePrompts,
       isStreaming,
-      topicRestrictionEnabled,
       displayMode,
       showSourcesChipPopover: showSourcesChipModal = false,
     }: LightspeedChatBoxProps,
     ref: ForwardedRef<ScrollContainerHandle | null>,
   ) => {
-    const classes = useStyles();
     const scrollQueued = useRef(false);
     const containerRef = useRef<MessageBoxHandle>(null);
     const { t } = useTranslation();
@@ -193,27 +193,15 @@ export const LightspeedChatBox = forwardRef(
       // eslint-disable-next-line
     }, [autoScroll, cmessages, containerRef]);
 
-    const messageBoxClasses = `${classes.container} ${classes.userMessageText}`;
     const isEmbeddedMode = displayMode === ChatbotDisplayMode.embedded;
 
     const isNewChat = welcomePrompts.length > 0 && messages.length === 0;
-    const getMessageBoxClassName = () => {
-      const base = isNewChat
-        ? `${messageBoxClasses} ${classes.messageBoxAutoHeight}`
-        : `${messageBoxClasses} ${classes.messageBoxFlex}`;
-      if (!welcomePrompts.length) {
-        return base;
-      }
-      const withPrompt = `${base} ${classes.prompt}`;
-      if (isEmbeddedMode) {
-        return withPrompt;
-      }
-      return `${withPrompt} ${classes.promptSuggestions}`;
-    };
 
     return (
-      <MessageBox
-        className={getMessageBoxClassName()}
+      <StyledMessageBox
+        isNewChat={isNewChat}
+        hasWelcomePrompts={welcomePrompts.length > 0}
+        isEmbeddedMode={isEmbeddedMode}
         announcement={announcement}
         ref={containerRef}
         onScrollToTopClick={scrollToTop}
@@ -224,16 +212,9 @@ export const LightspeedChatBox = forwardRef(
         jumpButtonTopTooltipProps={{ content: t('tooltip.backToTop') }}
       >
         <div>
-          <Alert
-            title={t('aria.important')}
-            variant="info"
-            isInline
-            className={classes.alert}
-          >
-            {topicRestrictionEnabled
-              ? t('disclaimer.withValidation')
-              : t('disclaimer.withoutValidation')}
-          </Alert>
+          <DisclaimerAlert title={t('aria.important')} variant="info" isInline>
+            {t('disclaimer')}
+          </DisclaimerAlert>
           <br />
         </div>
         {welcomePrompts.length ? (
@@ -283,7 +264,7 @@ export const LightspeedChatBox = forwardRef(
                   id: `deep-thinking-${index}`,
                   style: { whiteSpace: 'pre-line' },
                   className: parsedReasoning.isReasoningInProgress
-                    ? classes.deepThinking
+                    ? 'lightspeed-deep-thinking'
                     : undefined,
                 },
                 toggleContent: t('reasoning.thinking'),
@@ -372,7 +353,7 @@ export const LightspeedChatBox = forwardRef(
             />
           );
         })}
-      </MessageBox>
+      </StyledMessageBox>
     );
   },
 );

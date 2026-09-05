@@ -17,6 +17,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
+import { MuiThemeTestProvider } from '../../test-utils/MuiThemeTestProvider';
 import { OverwriteConfirmModal } from '../notebooks/OverwriteConfirmModal';
 
 jest.mock('../../hooks/useTranslation', () => ({
@@ -53,6 +54,7 @@ describe('OverwriteConfirmModal', () => {
         duplicateFileNames={duplicateFileNames}
         {...props}
       />,
+      { wrapper: MuiThemeTestProvider },
     );
 
   it('should render the modal with all files when open', () => {
@@ -182,6 +184,7 @@ describe('OverwriteConfirmModal', () => {
         allFiles={allFiles}
         duplicateFileNames={duplicateFileNames}
       />,
+      { wrapper: MuiThemeTestProvider },
     );
 
     fireEvent.click(screen.getByLabelText('Ignore duplicated files'));

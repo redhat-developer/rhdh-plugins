@@ -21,6 +21,7 @@ import {
   mockedMcpServersResponse,
   type McpServersListMock,
 } from '../fixtures/responses';
+import { waitForChatbotVisible } from '../utils/testHelper';
 import {
   LightspeedMessages,
   evaluateMessage,
@@ -31,7 +32,11 @@ export type DisplayMode = 'Overlay' | 'Dock to window' | 'Fullscreen';
 
 // Actions
 export async function openChatbot(page: Page, t: LightspeedMessages) {
-  await page.getByRole('button', { name: t['tooltip.fab.open'] }).click();
+  const closeFab = page.getByRole('button', { name: t['tooltip.fab.close'] });
+  if (!(await closeFab.isVisible().catch(() => false))) {
+    await page.getByRole('button', { name: t['tooltip.fab.open'] }).click();
+  }
+  await waitForChatbotVisible(page);
 }
 
 export async function selectDisplayMode(
@@ -446,7 +451,7 @@ function getWelcomeHeader(t: LightspeedMessages): string {
   return `
     - region "Scrollable message log":
       - 'heading "Info alert: ${t['aria.important']}" [level=4]'
-      - text: ${t['disclaimer.withValidation']}
+      - text: ${t['disclaimer']}
       - heading "${greeting} ${t['chatbox.welcome.description']}" [level=1]`;
 }
 

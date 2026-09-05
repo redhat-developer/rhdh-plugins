@@ -186,7 +186,7 @@ describe('LightspeedDrawerProvider', () => {
       'data-aria-labelledby',
       'lightspeed-chatpopup-modal',
     );
-    expect(modal.className).toBeTruthy();
+    expect(modal.className).toContain('ia-overlay-chatbot-modal');
     expect(screen.getByTestId('lightspeed-chat-container')).toBeInTheDocument();
   });
 

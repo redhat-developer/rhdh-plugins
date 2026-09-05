@@ -34,10 +34,6 @@ export class NotebookAddDocumentModalPage {
     });
   }
 
-  modalTitleAccessibilityRegion(): Locator {
-    return this.page.locator('#add-document-modal-title');
-  }
-
   dragAndDropInstructions(): Locator {
     return this.dialog().getByText(
       this.t['notebook.upload.modal.dragDropTitle'],
@@ -79,10 +75,9 @@ export class NotebookAddDocumentModalPage {
   }
 
   async expectModalTitleBarMatchesAriaSnapshot(): Promise<void> {
-    await expect(this.modalTitleAccessibilityRegion()).toMatchAriaSnapshot(`
-      - heading :
-        - heading "${this.t['notebook.upload.modal.title']}"
-        - button "${this.t['modal.close']}"
+    await expect(this.dialog()).toMatchAriaSnapshot(`
+      - heading "${this.t['notebook.upload.modal.title']}"
+      - button "${this.t['common.close']}"
       `);
   }
 

@@ -40,6 +40,7 @@ import { notebooksApiRef } from '../../api/notebooksApi';
 import { useConversations, useNotebookSessions } from '../../hooks';
 import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerContext';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
+import { MuiThemeTestProvider } from '../../test-utils/MuiThemeTestProvider';
 import FileAttachmentContextProvider from '../AttachmentContext';
 import { LightspeedChat } from '../LightSpeedChat';
 import { NotebookStreamProvider } from '../notebooks/NotebookStreamProvider';
@@ -198,34 +199,39 @@ const mockNotebooksApi = {
   }),
 };
 
-const setupLightspeedChat = (initialPath = '/intelligent-assistant') => (
-  <MemoryRouter initialEntries={[initialPath]}>
-    <TestApiProvider
-      apis={[
-        [identityApiRef, identityApi],
-        [configApiRef, configAPi],
-        [lightspeedApiRef, mockLightspeedApi],
-        [notebooksApiRef, mockNotebooksApi],
-      ]}
-    >
-      <FileAttachmentContextProvider>
-        <QueryClientProvider client={queryClient}>
-          <NotebookStreamProvider>
-            <LightspeedChat
-              selectedModel="granite"
-              profileLoading={false}
-              handleSelectedModel={() => {}}
-              topicRestrictionEnabled={false}
-              selectedProvider="openai"
-              models={[]}
-              avatar="test"
-              userName="user:test"
-            />
-          </NotebookStreamProvider>
-        </QueryClientProvider>
-      </FileAttachmentContextProvider>
-    </TestApiProvider>
-  </MemoryRouter>
+const setupLightspeedChat = (
+  initialPath = '/intelligent-assistant',
+  configApi = configAPi,
+) => (
+  <MuiThemeTestProvider>
+    <MemoryRouter initialEntries={[initialPath]}>
+      <TestApiProvider
+        apis={[
+          [identityApiRef, identityApi],
+          [configApiRef, configApi],
+          [lightspeedApiRef, mockLightspeedApi],
+          [notebooksApiRef, mockNotebooksApi],
+        ]}
+      >
+        <FileAttachmentContextProvider>
+          <QueryClientProvider client={queryClient}>
+            <NotebookStreamProvider>
+              <LightspeedChat
+                selectedModel="granite"
+                profileLoading={false}
+                handleSelectedModel={() => {}}
+                topicRestrictionEnabled={false}
+                selectedProvider="openai"
+                models={[]}
+                avatar="test"
+                userName="user:test"
+              />
+            </NotebookStreamProvider>
+          </QueryClientProvider>
+        </FileAttachmentContextProvider>
+      </TestApiProvider>
+    </MemoryRouter>
+  </MuiThemeTestProvider>
 );
 
 describe('LightspeedChat', () => {
@@ -497,7 +503,7 @@ describe('LightspeedChat', () => {
       const searchInput = screen.getByPlaceholderText('Search');
       expect(searchInput).toBeInTheDocument();
 
-      await userEvent.type(searchInput, 'Pinned Chat One');
+      fireEvent.change(searchInput, { target: { value: 'Pinned Chat One' } });
 
       expect(searchInput).toHaveValue('Pinned Chat One');
     });
@@ -513,7 +519,9 @@ describe('LightspeedChat', () => {
 
       const searchInput = screen.getByPlaceholderText('Search');
 
-      await userEvent.type(searchInput, 'NonExistentSearchTerm12345');
+      fireEvent.change(searchInput, {
+        target: { value: 'NonExistentSearchTerm12345' },
+      });
 
       expect(searchInput).toHaveValue('NonExistentSearchTerm12345');
     });
@@ -576,7 +584,9 @@ describe('LightspeedChat', () => {
 
       const searchInput = screen.getByPlaceholderText('Search');
 
-      await userEvent.type(searchInput, 'xyz123nonexistent');
+      fireEvent.change(searchInput, {
+        target: { value: 'xyz123nonexistent' },
+      });
 
       expect(searchInput).toHaveValue('xyz123nonexistent');
     });
@@ -739,6 +749,31 @@ describe('LightspeedChat', () => {
       expect(
         screen.getByRole('tab', { name: 'Notebooks' }),
       ).toBeInTheDocument();
+    });
+
+    it('should hide Chat/Notebooks tabs when notebooks are disabled', async () => {
+      const disabledConfig = mockApis.config({
+        data: {
+          'intelligent-assistant': {
+            notebooks: {
+              enabled: false,
+            },
+          },
+        },
+      });
+
+      render(setupLightspeedChat('/intelligent-assistant', disabledConfig));
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Options')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByRole('tab', { name: 'Chat' }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('tab', { name: 'Notebooks' }),
+      ).not.toBeInTheDocument();
     });
 
     it('should render Chat/Notebooks tabs in docked mode', async () => {

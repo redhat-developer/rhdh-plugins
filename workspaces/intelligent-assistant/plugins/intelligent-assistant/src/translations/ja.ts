@@ -77,9 +77,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'conversation.rename.confirm.action': '名前の変更',
     'conversation.rename.confirm.title': 'チャットの名前を変更しますか?',
     'conversation.rename.placeholder': 'チャット名',
-    'disclaimer.withValidation':
-      'この機能は AI テクノロジーを使用します。入力内容に個人情報やその他の機密情報を含めないでください。やり取りの内容は、Red Hat の製品やサービスを改善するために使用される場合があります。',
-    'disclaimer.withoutValidation':
+    disclaimer:
       'この機能は AI テクノロジーを使用します。入力内容に個人情報やその他の機密情報を含めないでください。やり取りの内容は、Red Hat の製品やサービスを改善するために使用される場合があります。',
     'error.context.fileAttachment':
       'useFileAttachmentContext が FileAttachmentContextProvider 内に収まっている必要があります',

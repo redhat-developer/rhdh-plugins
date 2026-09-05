@@ -9,6 +9,11 @@ app:
           defaultLanguage: 'en'
     - page:catalog:
         config:
+          path: /
+          title: 'Home'
+    - nav-item:home: false
+    - nav-item:catalog:
+        config:
           title: 'Home'
 
 organization:
