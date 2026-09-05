@@ -1,6 +1,6 @@
 # Knip report
 
-## Unused dependencies (17)
+## Unused dependencies (16)
 
 | Name                                             | Location          | Severity |
 | :----------------------------------------------- | :---------------- | :------- |
@@ -18,7 +18,6 @@
 | @backstage/plugin-techdocs                       | package.json:43:6 | error    |
 | @backstage/plugin-catalog                        | package.json:33:6 | error    |
 | @backstage/plugin-signals                        | package.json:42:6 | error    |
-| @backstage/plugin-home                           | package.json:36:6 | error    |
 | @backstage/plugin-org                            | package.json:39:6 | error    |
 | react-router                                     | package.json:53:6 | error    |
 
