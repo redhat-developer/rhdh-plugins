@@ -180,7 +180,7 @@ scorecard:
             - key: warning
               expression: '>=0.1'
             - key: error
-              expression: '>=0'
+              expression: '<0.1'
 ```
 
 See [threshold configuration](../scorecard-backend/docs/thresholds.md) for custom thresholds configuration.

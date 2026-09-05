@@ -33,7 +33,7 @@ export const AI_ADOPTION_RATE_THRESHOLD: ThresholdConfig = {
   rules: [
     { key: 'success', expression: '>=0.2' },
     { key: 'warning', expression: '>=0.1' },
-    { key: 'error', expression: '>=0' },
+    { key: 'error', expression: '<0.1' },
   ],
 };
 
@@ -87,8 +87,20 @@ function extractTrailerName(value: string): string {
 
 function isAiAssistedCommit(message: string): boolean {
   const lines = message.split('\n');
-  for (const line of lines) {
-    const trimmed = line.trim();
+
+  // Find the start of the trailer block (after the last blank line).
+  // Git trailers live in the final paragraph — scanning the entire
+  // message would match quoted trailers in revert descriptions.
+  let trailerStart = 0;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (lines[i].trim() === '') {
+      trailerStart = i + 1;
+      break;
+    }
+  }
+
+  for (let i = trailerStart; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
     const lower = trimmed.toLowerCase();
     let value: string | undefined;
 

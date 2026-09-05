@@ -17,6 +17,7 @@
 import { mockServices } from '@backstage/backend-test-utils';
 import { ConfigReader } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
+import { validateThresholdNumberIntervals } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import {
   GithubAiAdoptionProvider,
   AI_ADOPTION_RATE_THRESHOLD,
@@ -119,14 +120,23 @@ describe('GithubAiAdoptionProvider', () => {
       expect(AI_ADOPTION_RATE_TIME_RANGES).toEqual(['7d', '30d', '90d']);
     });
 
-    it('should define threshold with success >= 0.2, warning >= 0.1, error >= 0', () => {
+    it('should define threshold with success >= 0.2, warning >= 0.1, error < 0.1', () => {
       expect(AI_ADOPTION_RATE_THRESHOLD).toEqual({
         rules: [
           { key: 'success', expression: '>=0.2' },
           { key: 'warning', expression: '>=0.1' },
-          { key: 'error', expression: '>=0' },
+          { key: 'error', expression: '<0.1' },
         ],
       });
+    });
+
+    it('should pass threshold interval validation', () => {
+      expect(() =>
+        validateThresholdNumberIntervals(
+          AI_ADOPTION_RATE_THRESHOLD.rules,
+          'number',
+        ),
+      ).not.toThrow();
     });
   });
 
@@ -309,6 +319,22 @@ describe('GithubAiAdoptionProvider', () => {
       expect(results.get('github.aiAdoptionRate[30d]')).toBeCloseTo(1 / 3, 10);
       // 90d: 2 AI / 4 total = 0.5
       expect(results.get('github.aiAdoptionRate[90d]')).toBe(0.5);
+    });
+
+    it('should not false-positive on quoted trailers in revert descriptions', async () => {
+      const now = new Date();
+      mockedGithubClientInstance.getCommitHistory.mockResolvedValue([
+        {
+          message:
+            'Revert "feat: add feature"\n\nThis reverts commit abc123.\nOriginal trailer:\nCo-authored-by: Claude <noreply@anthropic.com>\n\nSome-other-trailer: value',
+          committedDate: now.toISOString(),
+        },
+      ]);
+
+      const results = await provider.calculateMetrics(mockEntity);
+
+      // The Co-authored-by line is in the body, not the trailing block
+      expect(results.get('github.aiAdoptionRate[7d]')).toBe(0);
     });
 
     it('should not count Co-authored-by with non-AI authors', async () => {

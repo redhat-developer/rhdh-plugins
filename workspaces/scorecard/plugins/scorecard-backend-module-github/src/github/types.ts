@@ -90,13 +90,10 @@ export type GithubCommit = {
 
 export type GithubCommitHistoryQueryResponse = GraphQlQueryResponseData & {
   repository: {
-    defaultBranchRef?: {
-      target?: {
-        history?: {
-          nodes: Array<{
-            message: string;
-            committedDate: string;
-          } | null>;
+    defaultBranchRef: {
+      target: {
+        history: {
+          nodes: Array<GithubCommit | null>;
           pageInfo: {
             hasNextPage: boolean;
             endCursor: string | null;
