@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-bui-test
 
+## 0.5.1
+
+### Patch Changes
+
+- e8c4cd7: feat: allow customers to customize BUI components via app-config (RHIDP-14510)
+
+  Adds two new `app.branding` configuration options:
+
+  - `customCSS`: raw CSS string injected as global styles (use at your own risk)
+  - `theme.{light|dark}.bui.tokens`: per-theme structured token overrides mapping to BUI CSS custom properties (`--bui-*`), allowing different values for light and dark themes
+
 ## 0.5.0
 
 ### Minor Changes

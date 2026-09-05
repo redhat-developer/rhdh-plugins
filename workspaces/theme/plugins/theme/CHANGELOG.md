@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.2.0
+
+### Minor Changes
+
+- e8c4cd7: feat: allow customers to customize BUI components via app-config (RHIDP-14510)
+
+  Adds two new `app.branding` configuration options:
+
+  - `customCSS`: raw CSS string injected as global styles (use at your own risk)
+  - `theme.{light|dark}.bui.tokens`: per-theme structured token overrides mapping to BUI CSS custom properties (`--bui-*`), allowing different values for light and dark themes
+
+### Patch Changes
+
+- 1a55424: Offset Backstage UI dialogs such as Inspect Entity below the global header so their title and close control stay visible.
+
 ## 1.1.0
 
 ### Minor Changes
