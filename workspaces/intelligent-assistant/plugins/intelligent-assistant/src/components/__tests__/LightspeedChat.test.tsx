@@ -199,13 +199,16 @@ const mockNotebooksApi = {
   }),
 };
 
-const setupLightspeedChat = (initialPath = '/intelligent-assistant') => (
+const setupLightspeedChat = (
+  initialPath = '/intelligent-assistant',
+  configApi = configAPi,
+) => (
   <MuiThemeTestProvider>
     <MemoryRouter initialEntries={[initialPath]}>
       <TestApiProvider
         apis={[
           [identityApiRef, identityApi],
-          [configApiRef, configAPi],
+          [configApiRef, configApi],
           [lightspeedApiRef, mockLightspeedApi],
           [notebooksApiRef, mockNotebooksApi],
         ]}
@@ -746,6 +749,31 @@ describe('LightspeedChat', () => {
       expect(
         screen.getByRole('tab', { name: 'Notebooks' }),
       ).toBeInTheDocument();
+    });
+
+    it('should hide Chat/Notebooks tabs when notebooks are disabled', async () => {
+      const disabledConfig = mockApis.config({
+        data: {
+          'intelligent-assistant': {
+            notebooks: {
+              enabled: false,
+            },
+          },
+        },
+      });
+
+      render(setupLightspeedChat('/intelligent-assistant', disabledConfig));
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Options')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByRole('tab', { name: 'Chat' }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('tab', { name: 'Notebooks' }),
+      ).not.toBeInTheDocument();
     });
 
     it('should render Chat/Notebooks tabs in docked mode', async () => {

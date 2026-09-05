@@ -23,69 +23,13 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/styles';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { getScopedDialogProps } from '../../utils/scoped-dialog-utils';
 import { Trans } from '../Trans';
+import { optionalStyle } from './notebookDialogStyles';
 
-const useStyles = makeStyles(theme => ({
-  dialogPaper: {
-    borderRadius: 16,
-  },
-  dialogPaperCompact: {
-    borderRadius: 12,
-  },
-  dialogTitle: {
-    padding: '16px 20px',
-    fontStyle: 'inherit',
-  },
-  dialogTitleCompact: {
-    padding: '12px 16px !important',
-    fontStyle: 'inherit',
-  },
-  dialogContent: {
-    paddingTop: 0,
-  },
-  dialogContentCompact: {
-    paddingTop: '0 !important',
-    paddingBottom: `${theme.spacing(1)}px !important`,
-    paddingLeft: `${theme.spacing(2)}px !important`,
-    paddingRight: `${theme.spacing(2)}px !important`,
-  },
-  titleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-  },
-  titleText: {
-    fontWeight: 'bold',
-  },
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.text.primary,
-  },
-  dialogActions: {
-    justifyContent: 'left',
-    padding: theme.spacing(2.5),
-    gap: theme.spacing(1),
-  },
-  dialogActionsCompact: {
-    justifyContent: 'left',
-    padding: `${theme.spacing(1.5)}px !important`,
-    gap: theme.spacing(1),
-  },
-  removeButton: {
-    textTransform: 'none',
-    borderRadius: 999,
-  },
-  cancelButton: {
-    textTransform: 'none',
-    borderRadius: 999,
-  },
-}));
+const pillButtonSx = { textTransform: 'none', borderRadius: 999 } as const;
 
 type DeleteDocumentModalProps = {
   isOpen: boolean;
@@ -103,7 +47,6 @@ export const DeleteDocumentModal = ({
   isCompact = false,
 }: DeleteDocumentModalProps) => {
   const scopedProps = getScopedDialogProps(isCompact);
-  const classes = useStyles();
   const { t } = useTranslation();
 
   return (
@@ -115,15 +58,21 @@ export const DeleteDocumentModal = ({
       fullWidth
       {...scopedProps}
       PaperProps={{
-        className: isCompact ? classes.dialogPaperCompact : classes.dialogPaper,
         ...scopedProps.PaperProps,
+        sx: [
+          { borderRadius: isCompact ? '12px' : '16px' },
+          optionalStyle(scopedProps.PaperProps?.sx),
+        ],
       }}
     >
       <DialogTitle
-        className={isCompact ? classes.dialogTitleCompact : classes.dialogTitle}
+        sx={{
+          p: isCompact ? '12px 16px !important' : '16px 20px',
+          fontStyle: 'inherit',
+        }}
       >
-        <Box className={classes.titleRow}>
-          <Typography component="span" className={classes.titleText}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography component="span" sx={{ fontWeight: 'bold' }}>
             {t('notebook.document.delete.title')}
           </Typography>
           <IconButton
@@ -131,7 +80,12 @@ export const DeleteDocumentModal = ({
             onClick={onClose}
             title={t('common.close')}
             size={isCompact ? 'small' : 'large'}
-            className={classes.closeButton}
+            sx={{
+              position: 'absolute',
+              right: 1,
+              top: 1,
+              color: 'text.primary',
+            }}
           >
             <CloseIcon />
           </IconButton>
@@ -139,9 +93,15 @@ export const DeleteDocumentModal = ({
       </DialogTitle>
       <DialogContent
         id="delete-document-modal-body"
-        className={
-          isCompact ? classes.dialogContentCompact : classes.dialogContent
-        }
+        sx={theme => ({
+          pt: 0,
+          ...(isCompact && {
+            paddingTop: '0 !important',
+            paddingBottom: `${theme.spacing(1)} !important`,
+            paddingLeft: `${theme.spacing(2)} !important`,
+            paddingRight: `${theme.spacing(2)} !important`,
+          }),
+        })}
       >
         <Typography variant="body2">
           <Trans
@@ -153,23 +113,21 @@ export const DeleteDocumentModal = ({
         </Typography>
       </DialogContent>
       <DialogActions
-        className={
-          isCompact ? classes.dialogActionsCompact : classes.dialogActions
-        }
+        sx={{
+          justifyContent: 'left',
+          p: isCompact ? '12px !important' : 2.5,
+          gap: 1,
+        }}
       >
         <Button
           variant="contained"
           color="error"
-          className={classes.removeButton}
+          sx={pillButtonSx}
           onClick={onConfirm}
         >
           {t('notebook.document.delete.action')}
         </Button>
-        <Button
-          variant="outlined"
-          className={classes.cancelButton}
-          onClick={onClose}
-        >
+        <Button variant="outlined" sx={pillButtonSx} onClick={onClose}>
           {t('common.cancel')}
         </Button>
       </DialogActions>
