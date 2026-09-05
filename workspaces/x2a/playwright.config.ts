@@ -49,25 +49,47 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
 
   reporter: [
+    ['list'],
     ['html', { open: 'never', outputFolder: `e2e-test-report-${appMode}` }],
+    ['junit', { outputFile: 'playwright-results.xml' }],
   ],
 
   use: {
+    actionTimeout: 10_000,
     baseURL: process.env.PLAYWRIGHT_URL ?? 'http://localhost:3000',
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
+    ignoreHTTPSErrors: true,
   },
 
   outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
 
   testDir: 'e2e-tests',
 
-  projects: LOCALES.map((locale, i) => ({
-    name: locale,
-    use: {
-      channel: 'chrome' as const,
-      locale,
-      baseURL: `http://localhost:${FRONTEND_PORT_BASE + i}`,
-    },
-  })),
+  projects: [
+    // Merge-gate: locale-specific tests against the local dev server
+    ...LOCALES.map((locale, i) => ({
+      name: locale,
+      testMatch: /app\.test\.ts$/,
+      use: {
+        channel: 'chrome' as const,
+        locale,
+        baseURL: `http://localhost:${FRONTEND_PORT_BASE + i}`,
+      },
+    })),
+    // Downstream E2E: requires a deployed RHDH+X2A environment.
+    // Activated by setting PLAYWRIGHT_URL to the live cluster base URL.
+    // Run with: PLAYWRIGHT_URL=https://... yarn test:e2e:live
+    ...(process.env.PLAYWRIGHT_URL
+      ? [
+          {
+            name: 'live',
+            testMatch: /^(?!app\.test\.ts$).*\.test\.ts$/,
+            use: {
+              channel: 'chrome' as const,
+            },
+          },
+        ]
+      : []),
+  ],
 });
