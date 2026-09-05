@@ -70,6 +70,6 @@ export function extractPluginName(
   fallback: string,
 ): string {
   if (!metricId) return fallback;
-  const prefix = metricId.split('.')[0] ?? metricId;
+  const prefix = metricId.split(/[.:]/)[0] ?? metricId;
   return prefix.charAt(0).toUpperCase() + prefix.slice(1);
 }

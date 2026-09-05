@@ -40,6 +40,17 @@ jest.mock('../../Common/PermissionRequiredState', () => {
   };
 });
 
+jest.mock('../EntitySparklineCard', () => ({
+  EntitySparklineCard: function MockEntitySparklineCard({
+    title,
+  }: {
+    title: string;
+    description: string;
+  }) {
+    return <div data-testid="area-chart-card" data-title={title} />;
+  },
+}));
+
 jest.mock('../Scorecard', () => {
   return function MockScorecard({
     cardTitle,
@@ -116,6 +127,10 @@ jest.mock('../../MetricGroupCard', () => ({
 
 jest.mock('../../../hooks/useScorecards', () => ({
   useScorecards: jest.fn(),
+}));
+
+jest.mock('../../../hooks/useMetricTimeSeries', () => ({
+  useMetricTimeSeries: jest.fn(),
 }));
 
 jest.mock('../../../utils', () => ({
@@ -461,5 +476,79 @@ describe('ScorecardEntityContentGridView', () => {
 
     expect(screen.getByTestId('metric-group-card')).toBeInTheDocument();
     expect(screen.getAllByTestId('scorecard-card')).toHaveLength(1);
+  });
+
+  it('should render ungrouped sparkline metrics as individual cards', () => {
+    const doraMetric = {
+      ...mockScorecardSuccessData[1],
+      id: 'dora.deploymentFrequency',
+      metadata: {
+        ...mockScorecardSuccessData[1].metadata,
+        title: 'DORA - Deployment Frequency',
+        defaultVisualization: 'sparkline' as const,
+      },
+    };
+
+    useScorecardsMock.mockReturnValue({
+      data: [mockScorecardSuccessData[0], doraMetric],
+      isLoading: false,
+      error: undefined,
+    });
+
+    const groups = {
+      codeQuality: {
+        title: 'Code Quality',
+        metrics: ['github.openPRs'],
+      },
+    };
+
+    render(<ScorecardEntityContentGridView groups={groups} />);
+
+    expect(screen.getByTestId('metric-group-card')).toBeInTheDocument();
+    expect(screen.getByTestId('area-chart-card')).toHaveAttribute(
+      'data-title',
+      'DORA - Deployment Frequency',
+    );
+    expect(screen.queryByTestId('scorecard-card')).not.toBeInTheDocument();
+  });
+
+  it('should keep sparkline metrics inside their group tile', () => {
+    const doraMetric = {
+      ...mockScorecardSuccessData[0],
+      id: 'dora.deploymentFrequency',
+      metadata: {
+        ...mockScorecardSuccessData[0].metadata,
+        title: 'DORA - Deployment Frequency',
+        defaultVisualization: 'sparkline' as const,
+      },
+    };
+
+    useScorecardsMock.mockReturnValue({
+      data: [doraMetric, mockScorecardSuccessData[1]],
+      isLoading: false,
+      error: undefined,
+    });
+
+    const groups = {
+      delivery: {
+        title: 'Delivery',
+        metrics: ['dora.deploymentFrequency', 'jira.openIssues'],
+      },
+    };
+
+    render(<ScorecardEntityContentGridView groups={groups} />);
+
+    expect(screen.getByTestId('metric-group-card')).toHaveAttribute(
+      'data-title',
+      'Delivery',
+    );
+    expect(screen.getByTestId('group-metric-count')).toHaveTextContent('2');
+    expect(
+      screen.getByTestId('group-metric-dora.deploymentFrequency'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId('group-metric-jira.openIssues'),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId('area-chart-card')).not.toBeInTheDocument();
   });
 });
