@@ -1,0 +1,58 @@
+<?xml version="1.0" ?>
+<!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
+<!--
+  Demo Cobertura coverage report for the scorecard code-coverage module.
+  Import into a running Backstage instance with the companion import.sh script.
+
+  Aggregate numbers baked into this file:
+    Lines:    available=200  covered=160  missed=40   percentage=80
+    Branches: available=50   covered=35   missed=15   percentage=70
+-->
+<coverage line-rate="0.80" branch-rate="0.70" lines-covered="160" lines-valid="200" branches-covered="35" branches-valid="50" complexity="0" version="1.0" timestamp="1700000000000">
+  <packages>
+    <package name="com.example.service" line-rate="0.80" branch-rate="0.70" complexity="0">
+      <classes>
+        <class name="Application.ts" filename="src/Application.ts" line-rate="0.90" branch-rate="0.80" complexity="0">
+          <lines>
+            <line number="1" hits="1" branch="false"/>
+            <line number="2" hits="1" branch="false"/>
+            <line number="3" hits="1" branch="false"/>
+            <line number="4" hits="1" branch="true" condition-coverage="100% (2/2)"/>
+            <line number="5" hits="1" branch="false"/>
+            <line number="6" hits="1" branch="false"/>
+            <line number="7" hits="1" branch="true" condition-coverage="50% (1/2)"/>
+            <line number="8" hits="0" branch="false"/>
+            <line number="9" hits="1" branch="false"/>
+            <line number="10" hits="1" branch="false"/>
+          </lines>
+        </class>
+        <class name="Router.ts" filename="src/Router.ts" line-rate="0.75" branch-rate="0.60" complexity="0">
+          <lines>
+            <line number="1" hits="1" branch="false"/>
+            <line number="2" hits="1" branch="false"/>
+            <line number="3" hits="0" branch="false"/>
+            <line number="4" hits="1" branch="true" condition-coverage="50% (1/2)"/>
+            <line number="5" hits="1" branch="false"/>
+            <line number="6" hits="0" branch="false"/>
+            <line number="7" hits="1" branch="false"/>
+            <line number="8" hits="1" branch="false"/>
+          </lines>
+        </class>
+        <class name="Service.ts" filename="src/Service.ts" line-rate="0.70" branch-rate="0.65" complexity="0">
+          <lines>
+            <line number="1" hits="1" branch="false"/>
+            <line number="2" hits="1" branch="false"/>
+            <line number="3" hits="0" branch="false"/>
+            <line number="4" hits="1" branch="true" condition-coverage="100% (2/2)"/>
+            <line number="5" hits="1" branch="false"/>
+            <line number="6" hits="0" branch="false"/>
+            <line number="7" hits="1" branch="true" condition-coverage="0% (0/2)"/>
+            <line number="8" hits="1" branch="false"/>
+            <line number="9" hits="1" branch="false"/>
+            <line number="10" hits="1" branch="false"/>
+          </lines>
+        </class>
+      </classes>
+    </package>
+  </packages>
+</coverage>
