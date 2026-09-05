@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-extensions-common
 
+## 0.20.0
+
+### Minor Changes
+
+- 394d88c: Add catalog source annotations to entities
+
 ## 0.19.1
 
 ## 0.19.0

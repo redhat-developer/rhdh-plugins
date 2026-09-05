@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions
 
+## 0.20.0
+
+### Minor Changes
+
+- 394d88c: Add catalog source annotations to entities
+
+### Patch Changes
+
+- e03b281: Updated dependency `js-yaml` to `^4.3.0`.
+- Updated dependencies [394d88c]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.20.0
+
 ## 0.19.1
 
 ### Patch Changes
