@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 1.0.0
+
+### Major Changes
+
+- b4476cf: **BREAKING:** Graduate NFS plugin exports from `/alpha` to the primary package entry point. OFS exports move to `/legacy`. Translations remain available at `/alpha`.
+
+  NFS apps should import plugins from the package root instead of `/alpha`. Legacy OFS apps should import from `/legacy`.
+
+### Patch Changes
+
+- e0d0d5f: Cover the new frontend system wiring with createExtensionTester: the page's path, title and route ref, and that both the page and the API extension are registered on the plugin. The existing alpha tests all pass against a plugin whose extensions array is empty, which is one of the two ways an NFS plugin fails silently.
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@1.0.0
+
 ## 0.9.1
 
 ### Patch Changes
