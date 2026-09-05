@@ -1,5 +1,31 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-common
 
+## 4.3.0
+
+### Minor Changes
+
+- 9c1936e: Add `GET /aggregations/:aggregationId/time-series` for daily scalar portfolio aggregation (`sum`, `average`, `max`, `min`, `count`). Returns aggregated metric values per UTC days. Days with no data are omitted. Aggregation type `statusGrouped` and `weightedStatusScore` return `400`. Sparkline metrics without a KPI block default to aggregation type `average`.
+
+  Adds `metadata.visualization` type to `GET /aggregations/:aggregationId/metadata` response.
+
+- fea86e8: Adds new endpoint `GET /metrics/:metricId/collectors` to list collector id and description for a metric. Composite metrics (like DORA) set optional `collectorIds` on `Metric` from config.
+
+  **BREAKING**: `ScorecardCollectorsService` now includes `getCollectorMetadata`. The default implementation behind `scorecardCollectorsServiceRef` already provides it, so no change is required unless you registered your own factory for that ref — then implement the new method.
+
+- ff6683f: Add DORA metrics and a collectors framework for composing datasource data into metrics.
+
+  - New `@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora` with Deployment Frequency, Median Lead Time for Changes, Mean Time to Restore, and Change Failure Rate
+  - New data collectors used by DORA: GitHub deployments, deployment workflow runs, and deployment pull requests; Jira incidents
+  - Metric time-series API `/metrics/catalog/:kind/:namespace/:name/time-series`
+  - Adds `defaultVisualization` to Metric metadata for sparkline
+
+- ecb789b: Select one time-series point per UTC day in the database and include error-only days in the response.
+
+  - Prefer the latest sample of the day, including calculation errors (`value: null` with `error`)
+  - Widen `MetricTimeSeriesPoint` so `value` may be null and `error` is optional
+
+- f3f71a5: Add unit to metric and display it in threshold legend
+
 ## 4.2.0
 
 ### Minor Changes

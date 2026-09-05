@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend-module-sonarqube
 
+## 4.3.0
+
+### Patch Changes
+
+- 7ddd501: Resolve issue of displaying 0 value for `sonarqube.openIssues` Scorecard SonarQube metric when the project is inaccessible.
+- Updated dependencies [9c1936e]
+- Updated dependencies [fea86e8]
+- Updated dependencies [ff6683f]
+- Updated dependencies [ecb789b]
+- Updated dependencies [f3f71a5]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.3.0
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.3.0
+
 ## 1.0.2
 
 ### Patch Changes
