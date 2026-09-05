@@ -17,6 +17,7 @@
     "clean": "backstage-cli repo clean",
     "test": "backstage-cli repo test",
     "test:all": "yarn prettier:check && yarn lint:all && backstage-cli repo test --coverage",
+    "test:e2e": "playwright test",
     "fix": "backstage-cli repo fix",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
@@ -39,6 +40,7 @@
     "directory": "workspaces/boost"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
     "@backstage/cli": "^0.36.3",
     "@backstage/cli-defaults": "^0.1.0",
     "@backstage/e2e-test-utils": "^0.1.2",
@@ -46,6 +48,7 @@
     "@changesets/cli": "^2.27.1",
     "@fission-ai/openspec": "^1.4.1",
     "@jest/environment-jsdom-abstract": "^30.3.0",
+    "@playwright/test": "1.61.1",
     "@types/jest": "^30.0.0",
     "jest": "^30.3.0",
     "jsdom": "^27.1.0",
