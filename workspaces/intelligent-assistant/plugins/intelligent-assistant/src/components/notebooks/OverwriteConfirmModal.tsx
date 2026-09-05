@@ -17,110 +17,87 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import CloseIcon from '@mui/icons-material/Close';
+import Box from '@mui/material/Box';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import IconButton from '@mui/material/IconButton';
+import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { makeStyles } from '@mui/styles';
 import { Alert, Button } from '@patternfly/react-core';
 import { ExclamationTriangleIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { getScopedDialogProps } from '../../utils/scoped-dialog-utils';
 import { FileTypeIcon } from './FileTypeIcon';
-import { notebookDialogStyles } from './notebookDialogStyles';
+import {
+  notebookDialogActionsSx,
+  notebookDialogCloseButtonSx,
+  notebookDialogContentSx,
+  notebookDialogPaperSx,
+  notebookDialogTitleSx,
+  notebookDialogTitleTextSx,
+  optionalStyle,
+} from './notebookDialogStyles';
 
-const useStyles = makeStyles(theme => ({
-  ...notebookDialogStyles(theme),
-  titleTextCompact: {
-    fontWeight: 600,
-    fontSize: '1rem',
-    lineHeight: '1.375rem',
-    letterSpacing: '-0.25px',
-  },
-  closeButton: {
-    color: theme.palette.text.primary,
-  },
-  dialogContent: {
-    padding: '0 24px 24px',
-  },
-  dialogContentCompact: {
-    padding: '0 16px 16px',
-  },
-  warningAlert: {
-    '--pf-v6-c-alert--PaddingBlockEnd': '0',
-    marginBottom: theme.spacing(2),
-    '& .pf-v6-c-alert__title': {
-      marginTop: 0,
-    },
-  },
-  radioGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(1),
-    marginBottom: theme.spacing(2),
-    '& label': {
-      display: 'flex',
-      alignItems: 'center',
-      gap: theme.spacing(1),
-      cursor: 'pointer',
-      fontSize: '0.875rem',
-    },
-    '& input[type="radio"]': {
-      cursor: 'pointer',
-    },
-  },
-  fileList: {
-    margin: 0,
-    padding: 0,
-    listStyle: 'none',
-    maxHeight: 300,
-    overflowY: 'auto',
-  },
-  fileItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    padding: `${theme.spacing(1.5)}px ${theme.spacing(1.5)}px`,
-    border: '1px solid var(--pf-t--global--border--color--default)',
-    borderRadius: 8,
-    marginBottom: theme.spacing(1),
-  },
-  fileItemCompact: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    padding: `${theme.spacing(1)}px 0`,
-    borderBottom:
-      '1px solid var(--pf-t--global--border--color--default, #c7c7c7)',
-  },
-  fileName: {
-    flex: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    fontSize: '0.875rem',
-    lineHeight: '1.25rem',
-  },
-  warningIcon: {
-    color: 'var(--pf-t--global--color--status--warning--default)',
-    fontSize: '1rem',
-    flexShrink: 0,
-  },
-  dialogActions: {
-    display: 'flex',
-    justifyContent: 'flex-start',
-    padding: '16px 24px',
-    gap: theme.spacing(1),
-  },
-  dialogActionsCompact: {
-    justifyContent: 'flex-start',
-    padding: '12px 16px !important',
-    gap: theme.spacing(1),
+const WarningAlert = styled(Alert)(({ theme }) => ({
+  '--pf-v6-c-alert--PaddingBlockEnd': '0',
+  marginBottom: theme.spacing(2),
+  '& .pf-v6-c-alert__title': {
+    marginTop: 0,
   },
 }));
+
+const RadioGroup = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(2),
+  '& label': {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    cursor: 'pointer',
+    fontSize: '0.875rem',
+  },
+  '& input[type="radio"]': {
+    cursor: 'pointer',
+  },
+}));
+
+const FileList = styled('ul')({
+  margin: 0,
+  padding: 0,
+  listStyle: 'none',
+  maxHeight: 300,
+  overflowY: 'auto',
+});
+
+const FileItem = styled('li', {
+  shouldForwardProp: prop => prop !== 'isCompact',
+})<{ isCompact?: boolean }>(({ theme, isCompact }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  ...(isCompact
+    ? {
+        padding: `${theme.spacing(1)} 0`,
+        borderBottom:
+          '1px solid var(--pf-t--global--border--color--default, #c7c7c7)',
+      }
+    : {
+        padding: theme.spacing(1.5),
+        border: '1px solid var(--pf-t--global--border--color--default)',
+        borderRadius: 8,
+        marginBottom: theme.spacing(1),
+      }),
+}));
+
+const WarningIcon = styled(ExclamationTriangleIcon)({
+  color: 'var(--pf-t--global--color--status--warning--default)',
+  fontSize: '1rem',
+  flexShrink: 0,
+});
 
 type OverwriteConfirmModalProps = {
   isOpen: boolean;
@@ -141,7 +118,6 @@ export const OverwriteConfirmModal = ({
   duplicateFileNames,
   isCompact = false,
 }: OverwriteConfirmModalProps) => {
-  const classes = useStyles();
   const { t } = useTranslation();
   const [duplicateAction, setDuplicateAction] = useState<'replace' | 'ignore'>(
     'replace',
@@ -179,16 +155,26 @@ export const OverwriteConfirmModal = ({
       aria-labelledby="overwrite-confirm-modal-title"
       {...scopedProps}
       PaperProps={{
-        className: isCompact ? classes.dialogPaperCompact : classes.dialogPaper,
         ...scopedProps.PaperProps,
+        sx: [
+          notebookDialogPaperSx(isCompact),
+          optionalStyle(scopedProps.PaperProps?.sx),
+        ],
       }}
     >
-      <DialogTitle
-        className={isCompact ? classes.dialogTitleCompact : classes.dialogTitle}
-      >
+      <DialogTitle sx={notebookDialogTitleSx(isCompact)}>
         <Typography
           component="h2"
-          className={isCompact ? classes.titleTextCompact : classes.titleText}
+          sx={
+            isCompact
+              ? {
+                  fontWeight: 600,
+                  fontSize: '1rem',
+                  lineHeight: '1.375rem',
+                  letterSpacing: '-0.25px',
+                }
+              : notebookDialogTitleTextSx(false)
+          }
         >
           {(t as Function)(
             duplicateFiles.length === 1
@@ -199,19 +185,15 @@ export const OverwriteConfirmModal = ({
         <IconButton
           aria-label={t('common.close')}
           onClick={handleClose}
-          className={classes.closeButton}
+          sx={notebookDialogCloseButtonSx}
           size="small"
         >
           <CloseIcon fontSize={isCompact ? 'small' : 'medium'} />
         </IconButton>
       </DialogTitle>
 
-      <DialogContent
-        className={
-          isCompact ? classes.dialogContentCompact : classes.dialogContent
-        }
-      >
-        <Alert
+      <DialogContent sx={notebookDialogContentSx(isCompact)}>
+        <WarningAlert
           variant="warning"
           isInline
           title={(t as Function)(
@@ -223,10 +205,9 @@ export const OverwriteConfirmModal = ({
               newCount: newFiles.length,
             },
           )}
-          className={classes.warningAlert}
         />
 
-        <div className={classes.radioGroup}>
+        <RadioGroup>
           <label>
             <input
               type="radio"
@@ -245,29 +226,32 @@ export const OverwriteConfirmModal = ({
             />
             {t('notebook.overwrite.modal.ignore')}
           </label>
-        </div>
+        </RadioGroup>
 
-        <ul className={classes.fileList}>
+        <FileList>
           {allFiles.map(file => (
-            <li
-              key={file.name}
-              className={isCompact ? classes.fileItemCompact : classes.fileItem}
-            >
+            <FileItem key={file.name} isCompact={isCompact}>
               <FileTypeIcon fileName={file.name} />
-              <Typography className={classes.fileName}>{file.name}</Typography>
-              {duplicateSet.has(file.name) && (
-                <ExclamationTriangleIcon className={classes.warningIcon} />
-              )}
-            </li>
+              <Typography
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  fontSize: '0.875rem',
+                  lineHeight: '1.25rem',
+                }}
+              >
+                {file.name}
+              </Typography>
+              {duplicateSet.has(file.name) && <WarningIcon />}
+            </FileItem>
           ))}
-        </ul>
+        </FileList>
       </DialogContent>
 
-      <div
-        className={
-          isCompact ? classes.dialogActionsCompact : classes.dialogActions
-        }
-      >
+      <Box sx={[notebookDialogActionsSx(isCompact), { display: 'flex' }]}>
         <Button
           variant="primary"
           onClick={handleConfirm}
@@ -280,7 +264,7 @@ export const OverwriteConfirmModal = ({
         <Button variant="link" onClick={onBack}>
           {t('notebook.overwrite.modal.back')}
         </Button>
-      </div>
+      </Box>
     </Dialog>
   );
 };

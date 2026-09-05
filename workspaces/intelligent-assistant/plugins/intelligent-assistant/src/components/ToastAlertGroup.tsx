@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import {
   Alert,
   AlertActionCloseButton,
@@ -23,20 +23,19 @@ import {
   type AlertProps,
 } from '@patternfly/react-core';
 
-const useStyles = makeStyles(theme => ({
-  toastAlertGroup: {
-    '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--InsetBlockStart': `${theme.spacing(2.5)}px`,
-    '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
-    '--pf-v6-c-alert-group--m-toast--ZIndex': '9999',
-  },
-  toastAlert: {
-    maxWidth: '350px',
-    '& .pf-v6-c-alert__title': {
-      margin: 0,
-    },
-  },
+const ToastAlerts = styled(AlertGroup)(({ theme }) => ({
+  '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': theme.spacing(2.5),
+  '--pf-v6-c-alert-group--m-toast--InsetBlockStart': theme.spacing(2.5),
+  '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
+  '--pf-v6-c-alert-group--m-toast--ZIndex': '9999',
 }));
+
+const ToastAlert = styled(Alert)({
+  maxWidth: '350px',
+  '& .pf-v6-c-alert__title': {
+    margin: 0,
+  },
+});
 
 type ToastAlertGroupProps = {
   alerts: Partial<AlertProps>[];
@@ -47,23 +46,15 @@ export const ToastAlertGroup = ({
   alerts,
   onRemoveAlert,
 }: ToastAlertGroupProps) => {
-  const classes = useStyles();
-
   if (alerts.length === 0) return null;
 
   return (
-    <AlertGroup
-      hasAnimations
-      isToast
-      isLiveRegion
-      className={classes.toastAlertGroup}
-    >
+    <ToastAlerts hasAnimations isToast isLiveRegion>
       {alerts.map(({ key, title, variant }) => (
-        <Alert
+        <ToastAlert
           key={key}
           variant={AlertVariant[variant ?? 'success']}
           title={title}
-          className={classes.toastAlert}
           timeout={2000}
           onTimeout={() => onRemoveAlert(key as React.Key)}
           actionClose={
@@ -75,6 +66,6 @@ export const ToastAlertGroup = ({
           }
         />
       ))}
-    </AlertGroup>
+    </ToastAlerts>
   );
 };

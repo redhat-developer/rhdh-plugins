@@ -14,42 +14,58 @@
  * limitations under the License.
  */
 
-import type { Theme } from '@mui/material/styles';
+import type { SxProps, Theme } from '@mui/material/styles';
+import type { SystemStyleObject } from '@mui/system';
 
-export const notebookDialogStyles = (theme: Theme) => ({
-  dialogPaper: {
-    borderRadius: '24px',
-    maxWidth: 578,
-  },
-  dialogPaperCompact: {
-    borderRadius: '12px',
-    maxWidth: '300px',
-  },
-  dialogTitle: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '24px 24px 16px',
-  },
-  dialogTitleCompact: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '16px 16px 12px !important',
-  },
-  titleText: {
-    fontWeight: 500,
-    fontSize: '1.25rem',
-    lineHeight: '1.625rem',
-    letterSpacing: '-0.25px',
-  },
-  closeButton: {
-    color: theme.palette.text.primary,
-  },
-  dialogContent: {
-    padding: '0 24px 24px',
-  },
-  dialogContentCompact: {
-    padding: '0 16px 16px !important',
-  },
+export const notebookDialogPaperSx = (
+  isCompact: boolean,
+): SystemStyleObject<Theme> => ({
+  borderRadius: isCompact ? '12px' : '24px',
+  maxWidth: isCompact ? 300 : 578,
 });
+
+export const notebookDialogTitleSx = (
+  isCompact: boolean,
+): SystemStyleObject<Theme> => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  p: isCompact ? '16px 16px 12px !important' : '24px 24px 16px',
+});
+
+export const notebookDialogTitleTextSx = (
+  isCompact: boolean,
+): SystemStyleObject<Theme> => ({
+  fontWeight: isCompact ? 600 : 500,
+  fontSize: isCompact ? '1.125rem' : '1.25rem',
+  lineHeight: isCompact ? '1.5rem' : '1.625rem',
+  letterSpacing: '-0.25px',
+});
+
+export const notebookDialogCloseButtonSx = {
+  color: 'text.primary',
+} as const;
+
+export const notebookDialogContentSx = (
+  isCompact: boolean,
+): SystemStyleObject<Theme> => ({
+  p: isCompact ? '0 16px 16px !important' : '0 24px 24px',
+});
+
+export const notebookDialogActionsSx = (
+  isCompact: boolean,
+): SystemStyleObject<Theme> => ({
+  justifyContent: 'flex-start',
+  p: isCompact ? '12px 16px !important' : '16px 24px',
+  gap: 1,
+});
+
+/** Narrow Dialog Paper `sx` so it can sit in an `sx={[...]}` array. */
+export const optionalStyle = (
+  sx: SxProps<Theme> | undefined,
+): SystemStyleObject<Theme> | false => {
+  if (!sx || typeof sx === 'function' || Array.isArray(sx)) {
+    return false;
+  }
+  return sx as SystemStyleObject<Theme>;
+};

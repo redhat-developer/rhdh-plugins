@@ -16,6 +16,7 @@
 
 import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 
+import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { Button } from '@patternfly/react-core';
 import { AddCircleOIcon } from '@patternfly/react-icons';
@@ -25,10 +26,102 @@ import { intelligentAssistantTranslationRef } from '../../translations/ref';
 import { NotebookSession } from '../../types';
 import { NotebookCard } from './NotebookCard';
 
+const Container = styled('div')(({ theme }) => ({
+  padding: theme.spacing(3),
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minHeight: 0,
+  overflowY: 'auto',
+  backgroundColor: 'var(--pf-t--global--background--color--floating--default)',
+}));
+
+const Header = styled('div')(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  flexWrap: 'wrap',
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(4),
+}));
+
+const Heading = styled(Typography)({
+  marginBottom: 0,
+  whiteSpace: 'nowrap',
+  fontSize: '1.25rem',
+});
+
+const EmptyHeading = styled(Typography)(({ theme }) => ({
+  '&&': {
+    marginBottom: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
+  },
+}));
+
+const EmptyState = styled('div')({
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  textAlign: 'center',
+});
+
+const EmptyIcon = styled(CatalogIcon)(({ theme }) => ({
+  fontSize: 48,
+  color: 'var(--pf-t--global--icon--color--subtle)',
+  marginBottom: theme.spacing(1.5),
+  '& > .pf-v6-icon-rh-ui': {
+    display: 'none !important',
+  },
+}));
+
+const Description = styled(Typography)(({ theme }) => ({
+  marginTop: theme.spacing(1),
+  marginBottom: theme.spacing(3),
+  maxWidth: 420,
+}));
+
+const ActionButton = styled(Button)(({ theme }) => ({
+  textTransform: 'none',
+  borderRadius: 999,
+  paddingLeft: theme.spacing(3),
+  paddingRight: theme.spacing(3),
+}));
+
+const EmptyActionButton = styled(ActionButton)(({ theme }) => ({
+  marginTop: theme.spacing(3),
+}));
+
+const Grid = styled('div', {
+  shouldForwardProp: prop => prop !== 'isCompact',
+})<{ isCompact?: boolean }>(({ theme, isCompact }) => ({
+  display: 'grid',
+  gap: theme.spacing(2),
+  width: '100%',
+  maxWidth: '100%',
+  ...(isCompact
+    ? {
+        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+        paddingBottom: theme.spacing(6),
+      }
+    : {
+        gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+        paddingBottom: theme.spacing(3),
+        [theme.breakpoints.down('md')]: {
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+        },
+        [theme.breakpoints.down('sm')]: {
+          gridTemplateColumns: 'repeat(1, minmax(0, 1fr))',
+        },
+      }),
+}));
+
 type NotebooksTabProps = {
   notebooks: NotebookSession[];
   hasNotebooks: boolean;
-  classes: Record<string, string>;
+  isCompact?: boolean;
   openNotebookMenuId: string | null;
   setOpenNotebookMenuId: React.Dispatch<React.SetStateAction<string | null>>;
   onSelectNotebook: (notebook: NotebookSession) => void;
@@ -41,7 +134,7 @@ type NotebooksTabProps = {
 export const NotebooksTab = ({
   notebooks,
   hasNotebooks,
-  classes,
+  isCompact = false,
   openNotebookMenuId,
   setOpenNotebookMenuId,
   onSelectNotebook,
@@ -50,50 +143,36 @@ export const NotebooksTab = ({
   onCreateNotebook,
   t,
 }: NotebooksTabProps) => (
-  <div className={classes.notebooksContainer}>
-    <div className={classes.notebooksHeader}>
-      <Typography variant="h6" className={classes.notebooksHeading}>
-        {t('notebooks.title')}
-      </Typography>
+  <Container>
+    <Header>
+      <Heading variant="h6">{t('notebooks.title')}</Heading>
       {hasNotebooks && (
-        <Button
+        <ActionButton
           variant="primary"
-          className={classes.notebooksAction}
           icon={<AddCircleOIcon />}
           onClick={onCreateNotebook}
         >
           {t('notebooks.empty.action')}
-        </Button>
+        </ActionButton>
       )}
-    </div>
+    </Header>
     {!hasNotebooks ? (
-      <div className={classes.notebooksEmptyState}>
-        <CatalogIcon className={classes.notebooksIcon} />
-        <Typography variant="h6" className={classes.notebooksHeadingEmpty}>
-          {t('notebooks.empty.title')}
-        </Typography>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          className={classes.notebooksDescription}
-        >
+      <EmptyState>
+        <EmptyIcon />
+        <EmptyHeading variant="h6">{t('notebooks.empty.title')}</EmptyHeading>
+        <Description variant="body2" color="text.secondary">
           {t('notebooks.empty.description')}
-        </Typography>
-        <Button
-          variant="primary"
-          className={classes.notebooksActionEmpty}
-          onClick={onCreateNotebook}
-        >
+        </Description>
+        <EmptyActionButton variant="primary" onClick={onCreateNotebook}>
           {t('notebooks.empty.action')}
-        </Button>
-      </div>
+        </EmptyActionButton>
+      </EmptyState>
     ) : (
-      <div className={classes.notebooksGrid}>
+      <Grid isCompact={isCompact}>
         {notebooks.map(notebook => (
           <NotebookCard
             key={notebook.session_id}
             notebook={notebook}
-            classes={classes}
             openNotebookMenuId={openNotebookMenuId}
             setOpenNotebookMenuId={setOpenNotebookMenuId}
             onClick={onSelectNotebook}
@@ -102,7 +181,7 @@ export const NotebooksTab = ({
             t={t}
           />
         ))}
-      </div>
+      </Grid>
     )}
-  </div>
+  </Container>
 );

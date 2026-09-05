@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+const muiV5StylesMessage =
+  'Use @mui/material (sx/styled) or Backstage UI instead. @mui/styles is deprecated (legacy JSS) and is not compatible with React 18 / StrictMode.';
+
 const materialUiMigrationEslintConfig = {
   restrictedImports: [
     {
@@ -22,8 +25,7 @@ const materialUiMigrationEslintConfig = {
     },
     {
       name: '@material-ui/core/styles',
-      message:
-        'Use @mui/styles, @mui/material (sx/styled), or Backstage UI instead of Material UI v4.',
+      message: muiV5StylesMessage,
     },
     {
       name: '@material-ui/lab',
@@ -31,12 +33,19 @@ const materialUiMigrationEslintConfig = {
     },
     {
       name: '@material-ui/styles',
-      message:
-        'Use @mui/styles, @mui/material (sx/styled), or Backstage UI instead of Material UI v4.',
+      message: muiV5StylesMessage,
+    },
+    {
+      name: '@mui/styles',
+      message: muiV5StylesMessage,
     },
   ],
   // `*` does not match `/`, so `@material-ui/*` misses `@material-ui/core/styles`.
-  restrictedImportPatterns: ['@material-ui/*', '@material-ui/*/*'],
+  restrictedImportPatterns: [
+    '@material-ui/*',
+    '@material-ui/*/*',
+    '@mui/styles/*',
+  ],
 };
 
 /**
