@@ -24,7 +24,7 @@
     "test:nfs": "APP_MODE=nfs playwright test",
     "test:e2e:ci": "yarn test:legacy && yarn test:nfs",
     "playwright": "sh -c 'if [ \"$1\" = test ] && [ $# -eq 1 ]; then yarn test:e2e:ci; else exec playwright \"$@\"; fi' _",
-    "fix": "backstage-cli repo fix",
+    "fix": "node ../../scripts/workspace-fix.mjs",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",

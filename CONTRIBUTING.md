@@ -11,6 +11,7 @@ The `redhat-developer/rhdh-plugins` repository is designed as a collaborative sp
     - [Forking the Repository](#forking-the-repository)
     - [Developing Plugins in Workspaces](#developing-plugins-in-workspaces)
   - [Coding Guidelines](#coding-guidelines)
+    - [yarn fix](#yarn-fix)
   - [Versioning](#versioning)
   - [Creating Changesets](#creating-changesets)
   - [Release](#release)
@@ -79,6 +80,27 @@ There could be times when there is a need for a more rich development environmen
 For consistency across the monorepo, we suggest following the same Yarn setup as the repository root: the Yarn release is defined in the root `package.json` and `.yarnrc.yml`, and individual workspaces generally should not pin a different Yarn version.
 
 All code is formatted with `prettier` using the configuration in the repo. If possible we recommend configuring your editor to format automatically, but you can also use the `yarn prettier --write <file>` command to format files.
+
+### yarn fix
+
+From a workspace root (`workspaces/<name>`), run `yarn fix` before you consider the work done. Do not run it from the repository root; each workspace has its own install and its own `yarn fix`.
+
+The command delegates to `backstage-cli repo fix`, then runs additional fixers when they are available. Execution order is defined in `scripts/workspace-fix.mjs`:
+
+1. `backstage-cli repo fix` (pass `--publish` with `rhdhFix.publish` or `--publish`)
+2. `sort-package-json` (skipped unless the workspace depends on it)
+3. `backstage-cli repo lint --fix`
+4. `markdownlint --fix` (skipped unless the workspace depends on it)
+5. `prettier --write .` (always last among formatters)
+6. `knip --fix` (opt-in only: `rhdhFix.knip` or `--knip`)
+
+`yarn fix` exits 0 when every run fixer succeeds, even if files changed. It exits non-zero if a fixer fails. Missing optional fixers are skipped, not treated as failures.
+
+`yarn fix --check` runs only `backstage-cli repo fix --check` (and `--publish` when configured). CI uses this mode; lint, prettier, and publish validation run as separate workflow steps.
+
+Memory-heavy fixers run with `NODE_OPTIONS=--max-old-space-size=8192`, matching CI. Workspaces that build dynamic plugin bundles should list `dist-dynamic` and `dist-scalprum` in `.eslintignore` and `.prettierignore` so `repo lint --fix` and `prettier --write` do not traverse generated output. If a workspace still runs out of memory during `repo lint --fix`, set a higher value in `rhdhFix.nodeOptions` in that workspace's `package.json`.
+
+To add a new fixer, change `scripts/workspace-fix.mjs` only. Workspace `package.json` files should keep `"fix": "node ../../scripts/workspace-fix.mjs"`. The `noop` workspace is the exception and stays a no-op.
 
 ## Versioning
 

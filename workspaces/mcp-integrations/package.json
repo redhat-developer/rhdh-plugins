@@ -21,7 +21,7 @@
     "test:all": "backstage-cli repo test --coverage",
     "test:unit": "backstage-cli repo test --testPathIgnorePatterns=integration\\.test",
     "test:integration": "backstage-cli repo test --testPathPatterns=integration\\.test --watch=false",
-    "fix": "backstage-cli repo fix",
+    "fix": "node ../../scripts/workspace-fix.mjs",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",

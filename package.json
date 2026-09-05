@@ -8,6 +8,7 @@
   },
   "scripts": {
     "create-workspace": "rhdh-repo-tools workspace create",
+    "test:workspace-fix": "node --test scripts/workspace-fix.test.mjs",
     "postinstall": "husky",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write ."

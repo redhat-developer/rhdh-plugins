@@ -1,4 +1,6 @@
 dist
+dist-dynamic
+dist-scalprum
 dist-types
 coverage
 .vscode
