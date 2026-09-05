@@ -15,7 +15,6 @@
  */
 import { useCallback, useState } from 'react';
 
-import { createStyles, makeStyles } from '@material-ui/core';
 import {
   Alert,
   AlertActionLink,
@@ -26,54 +25,80 @@ import {
   HelperTextItem,
   TextArea,
   TextInput,
+  Tooltip,
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
+import { makeStyles } from 'tss-react/mui';
 
+import { useSavedPromptActions } from '../hooks/useSavedPromptActions';
 import { useSavedPrompts } from '../hooks/useSavedPrompts';
 import { useTranslation } from '../hooks/useTranslation';
+import { DeleteSavedPromptModal } from './DeleteSavedPromptModal';
+import { SavedPromptsEmptyState } from './SavedPromptsEmptyState';
+import { SavedPromptsList } from './SavedPromptsList';
 
 type SavedPromptsSettingsProps = {
   isSavedPromptsEnabled: boolean;
   onEnableSavedPrompts: () => void;
+  onApplyToInput: (content: string) => void;
+  onSendDirectly: (content: string) => void;
+  isChatStreaming?: boolean;
 };
 
-const useStyles = makeStyles(() =>
-  createStyles({
-    root: {
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      padding: '16px 24px',
-      gap: '16px',
-    },
-    form: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '12px',
-      padding: '16px',
-      borderRadius: '8px',
-    },
-    formActions: {
-      display: 'flex',
-      gap: '8px',
-    },
-    promptCount: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      borderBottom: '1px solid var(--pf-t--global--border--color--default)',
-      paddingBottom: '12px',
-    },
-  }),
-);
+const useStyles = makeStyles()(() => ({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    padding: '16px 24px',
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+    padding: '16px',
+    borderBottom: '1px solid var(--pf-t--global--border--color--default)',
+  },
+  formActions: {
+    display: 'flex',
+    gap: '8px',
+  },
+  promptCount: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottom: '1px solid var(--pf-t--global--border--color--default)',
+    paddingBottom: '12px',
+  },
+}));
 
 export const SavedPromptsSettings = ({
   isSavedPromptsEnabled,
   onEnableSavedPrompts,
+  onApplyToInput,
+  onSendDirectly,
+  isChatStreaming = false,
 }: SavedPromptsSettingsProps) => {
-  const classes = useStyles();
+  const { classes } = useStyles();
   const { t } = useTranslation();
-  const { savedPrompts, config, createPrompt } = useSavedPrompts();
+  const { savedPrompts, config, loading, error, createPrompt, deletePrompt } =
+    useSavedPrompts();
+
+  const {
+    applyToInput,
+    sendDirectly,
+    requestDelete,
+    promptToDelete,
+    closeDeleteModal,
+    confirmDelete,
+    isDeleting,
+    deleteError,
+    isDeleteModalOpen,
+  } = useSavedPromptActions({
+    onApplyToInput,
+    onSendDirectly,
+    onDelete: deletePrompt,
+  });
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [title, setTitle] = useState('');
@@ -89,6 +114,8 @@ export const SavedPromptsSettings = ({
     !titleExceedsLimit &&
     !contentExceedsLimit;
   const isLimitReached = savedPrompts.length >= config.max_prompts_per_user;
+  const hasPrompts = savedPrompts.length > 0;
+  const showEmptyState = !loading && !error && !hasPrompts && !isFormOpen;
 
   const handleSave = useCallback(async () => {
     if (!isFormValid) return;
@@ -113,6 +140,18 @@ export const SavedPromptsSettings = ({
     setSaveError(null);
   };
 
+  const newPromptButton = (
+    <Button
+      variant="secondary"
+      size="sm"
+      isDisabled={isLimitReached || isFormOpen}
+      onClick={() => setIsFormOpen(true)}
+      style={{ borderRadius: '999px' }}
+    >
+      {t('savedPrompts.newPrompt')}
+    </Button>
+  );
+
   return (
     <div className={classes.root}>
       {!isSavedPromptsEnabled && (
@@ -130,32 +169,23 @@ export const SavedPromptsSettings = ({
         </Alert>
       )}
 
-      <div className={classes.promptCount}>
-        <span>
-          {savedPrompts.length === 0
-            ? t('savedPrompts.count.zero')
-            : (t as Function)('savedPrompts.count', {
-                count: savedPrompts.length,
-              })}
-        </span>
-        <Button
-          variant="secondary"
-          size="sm"
-          isDisabled={isLimitReached || isFormOpen}
-          onClick={() => setIsFormOpen(true)}
-          style={{ borderRadius: '999px' }}
-        >
-          {t('savedPrompts.newPrompt')}
-        </Button>
-      </div>
-
-      {isLimitReached && (
-        <Alert
-          variant="warning"
-          isInline
-          isPlain
-          title={t('savedPrompts.limitReached')}
-        />
+      {(isFormOpen || hasPrompts) && (
+        <div className={classes.promptCount}>
+          <span style={{ color: 'var(--pf-t--global--text--color--subtle)' }}>
+            {savedPrompts.length === 0
+              ? t('savedPrompts.count.zero')
+              : (t as Function)('savedPrompts.count', {
+                  count: savedPrompts.length,
+                })}
+          </span>
+          {isLimitReached ? (
+            <Tooltip content={t('savedPrompts.limitReached')}>
+              <span>{newPromptButton}</span>
+            </Tooltip>
+          ) : (
+            newPromptButton
+          )}
+        </div>
       )}
 
       {isFormOpen && (
@@ -243,6 +273,30 @@ export const SavedPromptsSettings = ({
           </div>
         </div>
       )}
+
+      {showEmptyState ? (
+        <SavedPromptsEmptyState onNewPrompt={() => setIsFormOpen(true)} />
+      ) : (
+        <SavedPromptsList
+          prompts={savedPrompts}
+          loading={loading}
+          error={error}
+          variant="settings"
+          onApplyToInput={applyToInput}
+          onSendDirectly={sendDirectly}
+          onDelete={requestDelete}
+          isSendDirectlyDisabled={isChatStreaming}
+        />
+      )}
+
+      <DeleteSavedPromptModal
+        isOpen={isDeleteModalOpen}
+        promptName={promptToDelete?.name}
+        isDeleting={isDeleting}
+        error={deleteError}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 };

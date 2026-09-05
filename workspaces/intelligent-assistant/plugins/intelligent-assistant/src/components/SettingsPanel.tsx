@@ -13,24 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState } from 'react';
-
 import { createStyles, makeStyles } from '@material-ui/core';
 import { Button, Title } from '@patternfly/react-core';
 import { TimesIcon } from '@patternfly/react-icons';
 
+import type { SettingsTab } from '../hooks/useSettingsPanelUrlState';
 import { useTranslation } from '../hooks/useTranslation';
 import { McpServersSettings } from './McpServersSettings';
 import { SavedPromptsSettings } from './SavedPromptsSettings';
 
-export type SettingsTab = 'mcp-servers' | 'saved-prompts';
+export type { SettingsTab };
 
 type SettingsPanelProps = {
-  initialTab: SettingsTab;
+  activeTab: SettingsTab;
+  onTabChange: (tab: SettingsTab) => void;
   onClose: () => void;
   backgroundColor?: string;
   isSavedPromptsEnabled: boolean;
   onEnableSavedPrompts: () => void;
+  onApplySavedPromptToInput: (content: string) => void;
+  onSendSavedPromptDirectly: (content: string) => void;
+  isChatStreaming?: boolean;
 };
 
 const useStyles = makeStyles(theme =>
@@ -83,13 +86,16 @@ const useStyles = makeStyles(theme =>
 );
 
 export const SettingsPanel = ({
-  initialTab,
+  activeTab,
+  onTabChange,
   onClose,
   backgroundColor,
   isSavedPromptsEnabled,
   onEnableSavedPrompts,
+  onApplySavedPromptToInput,
+  onSendSavedPromptDirectly,
+  isChatStreaming = false,
 }: SettingsPanelProps) => {
-  const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
   const { t } = useTranslation();
   const classes = useStyles();
 
@@ -111,14 +117,14 @@ export const SettingsPanel = ({
         <button
           type="button"
           className={`${classes.tabButton} ${activeTab === 'mcp-servers' ? classes.tabButtonActive : ''}`}
-          onClick={() => setActiveTab('mcp-servers')}
+          onClick={() => onTabChange('mcp-servers')}
         >
           {t('mcp.settings.title')}
         </button>
         <button
           type="button"
           className={`${classes.tabButton} ${activeTab === 'saved-prompts' ? classes.tabButtonActive : ''}`}
-          onClick={() => setActiveTab('saved-prompts')}
+          onClick={() => onTabChange('saved-prompts')}
         >
           {t('savedPrompts.tab.title')}
         </button>
@@ -135,6 +141,9 @@ export const SettingsPanel = ({
           <SavedPromptsSettings
             isSavedPromptsEnabled={isSavedPromptsEnabled}
             onEnableSavedPrompts={onEnableSavedPrompts}
+            onApplyToInput={onApplySavedPromptToInput}
+            onSendDirectly={onSendSavedPromptDirectly}
+            isChatStreaming={isChatStreaming}
           />
         )}
       </div>

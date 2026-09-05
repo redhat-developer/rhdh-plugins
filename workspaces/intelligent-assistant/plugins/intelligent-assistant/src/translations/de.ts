@@ -361,9 +361,21 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'settings.savedPrompts.enable': 'Gespeicherte Prompts aktivieren',
     'settings.savedPrompts.enabled.description':
       'Gespeicherte Prompts sind derzeit aktiviert',
-    'savedPrompts.count.zero': 'Keine gespeicherten Prompts',
+    'savedPrompts.count.zero': 'Keine Prompts',
     'savedPrompts.count_one': '1 Prompt',
     'savedPrompts.count_other': '{{count}} Prompts',
+    'savedPrompts.actions.apply': 'In Eingabefeld einfügen',
+    'savedPrompts.actions.send': 'Direkt senden',
+    'savedPrompts.actions.sendDisabledStreaming':
+      'Warten Sie, bis die Antwort abgeschlossen ist',
+    'savedPrompts.actions.delete': 'Löschen',
+    'savedPrompts.actions.menuAriaLabel': 'Aktionen für {{name}}',
+    'savedPrompts.delete.confirm.title': '„{{name}}“ löschen?',
+    'savedPrompts.delete.confirm.message':
+      'Dieser gespeicherte Prompt wird dauerhaft entfernt.',
+    'savedPrompts.delete.confirm.action': 'Löschen',
+    'savedPrompts.empty.description':
+      'Speichern Sie häufig verwendete Prompts, um sie in Ihren Unterhaltungen schnell wiederzuverwenden, ohne sie erneut einzugeben. Gespeicherte Prompts erscheinen auch im Chat-Verlaufsbereich für den schnellen Zugriff.',
     'sort.alphabeticalAsc': 'Name (A-Z)',
     'sort.alphabeticalDesc': 'Name (Z-A)',
     'sort.label': 'Unterhaltungen sortieren',

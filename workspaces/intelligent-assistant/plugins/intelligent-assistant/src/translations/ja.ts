@@ -348,9 +348,21 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'settings.savedPrompts.enable': '保存済みプロンプトを有効にする',
     'settings.savedPrompts.enabled.description':
       '保存済みプロンプトは現在有効です',
-    'savedPrompts.count.zero': '保存済みプロンプトはありません',
+    'savedPrompts.count.zero': 'プロンプトなし',
     'savedPrompts.count_one': '1件のプロンプト',
     'savedPrompts.count_other': '{{count}}件のプロンプト',
+    'savedPrompts.actions.apply': '入力ボックスに適用',
+    'savedPrompts.actions.send': '直接送信',
+    'savedPrompts.actions.sendDisabledStreaming':
+      '応答が完了するまでお待ちください',
+    'savedPrompts.actions.delete': '削除',
+    'savedPrompts.actions.menuAriaLabel': '{{name}} のアクション',
+    'savedPrompts.delete.confirm.title': '「{{name}}」を削除しますか?',
+    'savedPrompts.delete.confirm.message':
+      'この保存済みプロンプトは完全に削除されます。',
+    'savedPrompts.delete.confirm.action': '削除',
+    'savedPrompts.empty.description':
+      'よく使うプロンプトを保存して、会話で再入力せずにすばやく再利用できます。保存済みプロンプトは、チャット履歴パネルにも表示され、すばやくアクセスできます。',
     'sort.alphabeticalAsc': '名前（A-Z）',
     'sort.alphabeticalDesc': '名前（Z-A）',
     'sort.label': '会話を並べ替え',

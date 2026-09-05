@@ -540,13 +540,6 @@ export const McpServersSettings = ({
             })}
           </div>
         </div>
-        <Button
-          aria-label={t('mcp.settings.closeAriaLabel')}
-          icon={<TimesIcon />}
-          variant="plain"
-          className={classes.closeButton}
-          onClick={onClose}
-        />
       </div>
       {error && (
         <Alert

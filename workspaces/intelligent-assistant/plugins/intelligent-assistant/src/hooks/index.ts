@@ -33,6 +33,8 @@ export * from './notebooks/useNotebookSessions';
 export * from './usePinnedChatsSettings';
 export * from './useSavedPromptsSettings';
 export * from './useSavedPrompts';
+export * from './useSavedPromptActions';
+export * from './useSettingsPanelUrlState';
 export * from './notebooks/useRenameNotebook';
 export * from './notebooks/useRenameNotebookWithAlert';
 export * from './useSortSettings';

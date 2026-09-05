@@ -38,10 +38,22 @@ const mockGetSavedPrompts = jest.fn().mockResolvedValue([]);
 const mockCreateSavedPrompt = jest.fn();
 const mockDeleteSavedPrompt = jest.fn();
 
+const mockPrompts = [
+  {
+    id: 'sp-1',
+    name: 'Performance Optimization',
+    content: 'Analyze performance',
+    created_at: '2026-03-10T12:00:00Z',
+    updated_at: '2026-03-10T12:00:00Z',
+  },
+];
+
 describe('SavedPromptsSettings', () => {
   const defaultProps = {
     isSavedPromptsEnabled: true,
     onEnableSavedPrompts: jest.fn(),
+    onApplyToInput: jest.fn(),
+    onSendDirectly: jest.fn(),
   };
 
   beforeEach(() => {
@@ -52,13 +64,48 @@ describe('SavedPromptsSettings', () => {
       createSavedPrompt: mockCreateSavedPrompt,
       deleteSavedPrompt: mockDeleteSavedPrompt,
     });
+    mockGetSavedPrompts.mockResolvedValue([]);
   });
 
-  it('should render the prompt count and new prompt button', async () => {
+  it('should render empty state when no prompts are saved', async () => {
     render(<SavedPromptsSettings {...defaultProps} />);
     await waitFor(() => {
+      expect(
+        screen.getByTestId('saved-prompts-empty-state'),
+      ).toBeInTheDocument();
+      expect(screen.getByText('No prompts')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Save frequently used prompts to quickly reuse them in your conversations without typing them again. Saved prompts also appear in the chat history panel for quick access.',
+        ),
+      ).toBeInTheDocument();
       expect(screen.getByText('+ New prompt')).toBeInTheDocument();
     });
+  });
+
+  it('should not show prompt count header when empty state is visible', async () => {
+    render(<SavedPromptsSettings {...defaultProps} />);
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('saved-prompts-empty-state'),
+      ).toBeInTheDocument();
+    });
+    expect(screen.getByText('No prompts')).toBeInTheDocument();
+    expect(screen.queryByText('1 prompt')).not.toBeInTheDocument();
+  });
+
+  it('should show No prompts in header when create form is open with no prompts', async () => {
+    render(<SavedPromptsSettings {...defaultProps} />);
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('saved-prompts-empty-state'),
+      ).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('+ New prompt'));
+
+    expect(screen.getByText('No prompts')).toBeInTheDocument();
+    expect(screen.getByText('Title')).toBeInTheDocument();
   });
 
   it('should show disabled alert when saved prompts are disabled', async () => {
@@ -114,5 +161,81 @@ describe('SavedPromptsSettings', () => {
 
     fireEvent.click(screen.getByText('Cancel'));
     expect(screen.queryByText('Save')).not.toBeInTheDocument();
+  });
+
+  it('should return to empty state when cancel is clicked with no saved prompts', async () => {
+    render(<SavedPromptsSettings {...defaultProps} />);
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('saved-prompts-empty-state'),
+      ).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('+ New prompt'));
+    expect(screen.getByText('Save')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('saved-prompts-empty-state'),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Cancel'));
+
+    expect(screen.getByTestId('saved-prompts-empty-state')).toBeInTheDocument();
+    expect(screen.queryByText('Save')).not.toBeInTheDocument();
+  });
+
+  it('should render saved prompts list when prompts are loaded', async () => {
+    mockGetSavedPrompts.mockResolvedValue(mockPrompts);
+    render(<SavedPromptsSettings {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Performance Optimization')).toBeInTheDocument();
+      expect(screen.getByText('1 prompt')).toBeInTheDocument();
+    });
+  });
+
+  it('should show limit reached tooltip on disabled new prompt button', async () => {
+    mockGetSavedPromptsConfig.mockResolvedValue({
+      max_prompts_per_user: 1,
+      max_display_name_length: 128,
+      max_content_length: 5000,
+    });
+    mockGetSavedPrompts.mockResolvedValue(mockPrompts);
+    render(<SavedPromptsSettings {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('1 prompt')).toBeInTheDocument();
+    });
+
+    const newPromptButton = screen.getByRole('button', {
+      name: '+ New prompt',
+    });
+    expect(newPromptButton).toBeDisabled();
+    fireEvent.mouseEnter(newPromptButton.closest('span') ?? newPromptButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole('tooltip')).toHaveTextContent(
+        'Prompt limit reached. Delete an existing prompt to create a new one.',
+      );
+    });
+  });
+
+  it('should call onApplyToInput when Apply is selected from kebab menu', async () => {
+    mockGetSavedPrompts.mockResolvedValue(mockPrompts);
+    render(<SavedPromptsSettings {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Performance Optimization')).toBeInTheDocument();
+    });
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Actions for Performance Optimization',
+      }),
+    );
+    fireEvent.click(screen.getByText('Apply in input box'));
+
+    expect(defaultProps.onApplyToInput).toHaveBeenCalledWith(
+      'Analyze performance',
+    );
   });
 });

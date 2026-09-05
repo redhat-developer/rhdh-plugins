@@ -457,7 +457,7 @@ export const intelligentAssistantMessages = {
   'savedPrompts.disabled.body':
     'Saved prompts are hidden from the chat history panel. Enable them to display your prompts in the sidebar.',
   'savedPrompts.disabled.enableLink': 'Enable saved prompts',
-  'savedPrompts.count.zero': 'No saved prompts',
+  'savedPrompts.count.zero': 'No prompts',
   'savedPrompts.count_one': '1 prompt',
   'savedPrompts.count_other': '{{count}} prompts',
   'savedPrompts.newPrompt': '+ New prompt',
@@ -471,6 +471,17 @@ export const intelligentAssistantMessages = {
     'Prompt must be {{max}} characters or fewer.',
   'savedPrompts.limitReached':
     'Prompt limit reached. Delete an existing prompt to create a new one.',
+  'savedPrompts.actions.apply': 'Apply in input box',
+  'savedPrompts.actions.send': 'Send directly',
+  'savedPrompts.actions.sendDisabledStreaming': 'Wait for response to finish',
+  'savedPrompts.actions.delete': 'Delete',
+  'savedPrompts.actions.menuAriaLabel': 'Actions for {{name}}',
+  'savedPrompts.delete.confirm.title': "Delete '{{name}}'?",
+  'savedPrompts.delete.confirm.message':
+    'This saved prompt will be permanently removed.',
+  'savedPrompts.delete.confirm.action': 'Delete',
+  'savedPrompts.empty.description':
+    'Save frequently used prompts to quickly reuse them in your conversations without typing them again. Saved prompts also appear in the chat history panel for quick access.',
 };
 
 /**

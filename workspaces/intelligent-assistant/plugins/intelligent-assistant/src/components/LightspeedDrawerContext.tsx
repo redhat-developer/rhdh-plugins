@@ -18,6 +18,7 @@ import React, { createContext } from 'react';
 
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
+import type { SettingsTab } from '../hooks/useSettingsPanelUrlState';
 import { FileContent } from '../types';
 
 /**
@@ -112,6 +113,12 @@ export interface LightspeedDrawerContextType {
    */
   activeNotebookId: string | undefined;
   setActiveNotebookId: (id: string | undefined) => void;
+  /**
+   * Active settings tab when the settings panel is open; null when closed.
+   * Persisted across overlay/docked/fullscreen remounts.
+   */
+  settingsTab: SettingsTab | null;
+  setSettingsTab: (tab: SettingsTab | null) => void;
 }
 
 const CONTEXT_KEY = '__lightspeed_drawer_context__' as keyof typeof globalThis;

@@ -354,9 +354,21 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'settings.savedPrompts.enable': 'Habilitar prompts guardados',
     'settings.savedPrompts.enabled.description':
       'Los prompts guardados están habilitados actualmente',
-    'savedPrompts.count.zero': 'No hay prompts guardados',
+    'savedPrompts.count.zero': 'Sin prompts',
     'savedPrompts.count_one': '1 prompt',
     'savedPrompts.count_other': '{{count}} prompts',
+    'savedPrompts.actions.apply': 'Aplicar en el cuadro de entrada',
+    'savedPrompts.actions.send': 'Enviar directamente',
+    'savedPrompts.actions.sendDisabledStreaming':
+      'Espere a que finalice la respuesta',
+    'savedPrompts.actions.delete': 'Eliminar',
+    'savedPrompts.actions.menuAriaLabel': 'Acciones para {{name}}',
+    'savedPrompts.delete.confirm.title': '¿Eliminar «{{name}}»?',
+    'savedPrompts.delete.confirm.message':
+      'Este prompt guardado se eliminará permanentemente.',
+    'savedPrompts.delete.confirm.action': 'Eliminar',
+    'savedPrompts.empty.description':
+      'Guarde los prompts que usa con frecuencia para reutilizarlos rápidamente en sus conversaciones sin volver a escribirlos. Los prompts guardados también aparecen en el panel del historial del chat para un acceso rápido.',
     'sort.alphabeticalAsc': 'Nombre (A-Z)',
     'sort.alphabeticalDesc': 'Nombre (Z-A)',
     'sort.label': 'Ordenar conversaciones',

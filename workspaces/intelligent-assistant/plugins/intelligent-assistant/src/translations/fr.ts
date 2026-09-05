@@ -361,9 +361,21 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'settings.savedPrompts.enable': 'Activer les prompts sauvegardés',
     'settings.savedPrompts.enabled.description':
       'Les prompts sauvegardés sont actuellement activés',
-    'savedPrompts.count.zero': 'Aucun prompt sauvegardé',
+    'savedPrompts.count.zero': 'Aucun prompt',
     'savedPrompts.count_one': '1 prompt',
     'savedPrompts.count_other': '{{count}} prompts',
+    'savedPrompts.actions.apply': 'Appliquer dans la zone de saisie',
+    'savedPrompts.actions.send': 'Envoyer directement',
+    'savedPrompts.actions.sendDisabledStreaming':
+      'Attendez la fin de la réponse',
+    'savedPrompts.actions.delete': 'Supprimer',
+    'savedPrompts.actions.menuAriaLabel': 'Actions pour {{name}}',
+    'savedPrompts.delete.confirm.title': 'Supprimer « {{name}} » ?',
+    'savedPrompts.delete.confirm.message':
+      'Ce prompt sauvegardé sera définitivement supprimé.',
+    'savedPrompts.delete.confirm.action': 'Supprimer',
+    'savedPrompts.empty.description':
+      'Enregistrez les prompts fréquemment utilisés pour les réutiliser rapidement dans vos conversations sans les retaper. Les prompts sauvegardés apparaissent également dans le panneau d’historique du chat pour un accès rapide.',
     'sort.alphabeticalAsc': 'Nom (A-Z)',
     'sort.alphabeticalDesc': 'Nom (Z-A)',
     'sort.label': 'Trier les conversations',

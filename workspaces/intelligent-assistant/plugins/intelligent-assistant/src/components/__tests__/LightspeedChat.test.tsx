@@ -263,6 +263,8 @@ describe('LightspeedChat', () => {
       setShellViewTab: jest.fn(),
       activeNotebookId: undefined,
       setActiveNotebookId: jest.fn(),
+      settingsTab: null,
+      setSettingsTab: jest.fn(),
     });
 
     localStorage.clear();
@@ -684,6 +686,8 @@ describe('LightspeedChat', () => {
         setShellViewTab: jest.fn(),
         activeNotebookId: undefined,
         setActiveNotebookId: jest.fn(),
+        settingsTab: null,
+        setSettingsTab: jest.fn(),
       });
 
       render(setupLightspeedChat('/intelligent-assistant/notebooks'));
@@ -727,6 +731,8 @@ describe('LightspeedChat', () => {
         setShellViewTab: jest.fn(),
         activeNotebookId: undefined,
         setActiveNotebookId: jest.fn(),
+        settingsTab: null,
+        setSettingsTab: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -760,6 +766,8 @@ describe('LightspeedChat', () => {
         setShellViewTab: jest.fn(),
         activeNotebookId: undefined,
         setActiveNotebookId: jest.fn(),
+        settingsTab: null,
+        setSettingsTab: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -793,6 +801,8 @@ describe('LightspeedChat', () => {
         setShellViewTab: jest.fn(),
         activeNotebookId: undefined,
         setActiveNotebookId: jest.fn(),
+        settingsTab: null,
+        setSettingsTab: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -829,6 +839,8 @@ describe('LightspeedChat', () => {
         setShellViewTab: jest.fn(),
         activeNotebookId: undefined,
         setActiveNotebookId: jest.fn(),
+        settingsTab: null,
+        setSettingsTab: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -865,6 +877,8 @@ describe('LightspeedChat', () => {
         setShellViewTab: jest.fn(),
         activeNotebookId: undefined,
         setActiveNotebookId: jest.fn(),
+        settingsTab: null,
+        setSettingsTab: jest.fn(),
       });
 
       render(setupLightspeedChat());
@@ -961,6 +975,8 @@ describe('LightspeedChat', () => {
         setShellViewTab: jest.fn(),
         activeNotebookId: undefined,
         setActiveNotebookId: jest.fn(),
+        settingsTab: null,
+        setSettingsTab: jest.fn(),
       });
     });
 
@@ -999,6 +1015,8 @@ describe('LightspeedChat', () => {
         setShellViewTab: jest.fn(),
         activeNotebookId: undefined,
         setActiveNotebookId: jest.fn(),
+        settingsTab: null,
+        setSettingsTab: jest.fn(),
       });
 
       render(setupLightspeedChat('/intelligent-assistant'));
@@ -1076,6 +1094,8 @@ describe('LightspeedChat', () => {
         setShellViewTab: jest.fn(),
         activeNotebookId: undefined,
         setActiveNotebookId: jest.fn(),
+        settingsTab: null,
+        setSettingsTab: jest.fn(),
       });
 
       render(setupLightspeedChat('/intelligent-assistant/notebooks'));
@@ -1113,6 +1133,8 @@ describe('LightspeedChat', () => {
         setShellViewTab: jest.fn(),
         activeNotebookId: undefined,
         setActiveNotebookId: jest.fn(),
+        settingsTab: null,
+        setSettingsTab: jest.fn(),
       });
     });
 
