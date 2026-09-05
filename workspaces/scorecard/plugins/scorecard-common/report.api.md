@@ -117,7 +117,7 @@ export type EntityMetricDetail = {
   entityNamespace?: string;
   entityKind?: string;
   owner?: string;
-  metricValue?: number | boolean | null;
+  metricValue?: number | boolean | string | null;
   timestamp?: string;
   status?: string | null;
 };
@@ -200,13 +200,15 @@ export type MetricTimeSeriesResponse = {
 };
 
 // @public (undocumented)
-export type MetricType = 'number' | 'boolean';
+export type MetricType = 'number' | 'boolean' | 'string';
 
 // @public (undocumented)
 export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
   ? number
   : T extends 'boolean'
   ? boolean
+  : T extends 'string'
+  ? string
   : never;
 
 // @public (undocumented)

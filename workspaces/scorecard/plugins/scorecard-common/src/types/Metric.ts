@@ -20,7 +20,7 @@ import { ThresholdConfig, ThresholdResult } from './threshold';
 /**
  * @public
  */
-export type MetricType = 'number' | 'boolean';
+export type MetricType = 'number' | 'boolean' | 'string';
 
 /**
  * @public
@@ -29,6 +29,8 @@ export type MetricValue<T extends MetricType = MetricType> = T extends 'number'
   ? number
   : T extends 'boolean'
   ? boolean
+  : T extends 'string'
+  ? string
   : never;
 
 /**
@@ -83,7 +85,7 @@ export type EntityMetricDetail = {
   entityNamespace?: string;
   entityKind?: string;
   owner?: string;
-  metricValue?: number | boolean | null;
+  metricValue?: number | boolean | string | null;
   timestamp?: string;
   status?: string | null;
 };
