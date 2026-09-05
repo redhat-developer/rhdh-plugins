@@ -1,0 +1,124 @@
+name: Build container image
+
+# Reusable workflow that builds a Red Hat Developer Hub dynamic plugins
+# container image for a single workspace using the rhdh-cli.
+# Adds a quay expiration label and pushes the image to the container registry.
+
+on:
+  workflow_call:
+    inputs:
+      workspace:
+        description: Name of the workspace to build an image for
+        required: true
+        type: string
+      tags:
+        description: >-
+          Space separated list of image tags (the part after the colon).
+          The literal `${SHORT_SHA}` placeholder is replaced with the
+          short commit sha of the checked out ref. The first tag is used to
+          build the image, additional tags are added afterwards.
+          All tags should be prefixed with the workspace name.
+        required: true
+        type: string
+      registry:
+        description: Image repository the tags are pushed to (without the tag part)
+        required: false
+        type: string
+        default: quay.io/rhdh/rhdh-plugins
+      expires_after:
+        description: >-
+          Adds a `quay.expires-after` label with this value (for example `2w`)
+          so the image is removed automatically.
+        required: true
+        type: string
+        default: ''
+      ref:
+        description: Git ref (branch, tag or sha) to checkout and build from
+        required: false
+        type: string
+        default: ''
+    secrets:
+      QUAY_USERNAME:
+        description: Username used to authenticate against quay.io when pushing
+        required: false
+      QUAY_PASSWORD:
+        description: Password or token used to authenticate against quay.io when pushing
+        required: false
+
+jobs:
+  build-container-image:
+    name: Build image for ${{ inputs.workspace }}
+    if: inputs.workspace != 'noop'
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+      NODE_OPTIONS: --max-old-space-size=8192
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org/ # Needed for auth
+
+      - name: yarn install
+        working-directory: ./workspaces/${{ inputs.workspace }}
+        run: yarn install --immutable
+
+      - name: Build dynamic plugins image
+        working-directory: ./workspaces/${{ inputs.workspace }}
+        env:
+          REGISTRY: ${{ inputs.registry }}
+          TAGS: ${{ inputs.tags }}
+          EXPIRES_AFTER: ${{ inputs.expires_after }}
+        run: |
+          set -euo pipefail
+
+          # Resolve the ${SHORT_SHA} placeholder in the requested tags.
+          SHORT_SHA="$(git rev-parse --short=7 HEAD)"
+          TAGS_ONE_LINE="$(printf '%s' "${TAGS}" | tr '\n' ' ')"
+          RESOLVED_TAGS="${TAGS_ONE_LINE//\$\{SHORT_SHA\}/${SHORT_SHA}}"
+          read -ra TAG_LIST <<< "${RESOLVED_TAGS}"
+
+          if [ "${#TAG_LIST[@]}" -eq 0 ]; then
+            echo "No tags provided" >&2
+            exit 1
+          fi
+
+          PRIMARY_IMAGE="${REGISTRY}:${TAG_LIST[0]}"
+
+          echo "Building ${PRIMARY_IMAGE} with rhdh-cli"
+          npx @red-hat-developer-hub/cli@latest plugin package \
+            --tag "${PRIMARY_IMAGE}" \
+            --container-tool podman \
+            --label "quay.expires-after=${EXPIRES_AFTER}"
+
+          # Add any additional tags to the freshly built image.
+          for tag in "${TAG_LIST[@]:1}"; do
+            echo "Tagging ${REGISTRY}:${tag}"
+            podman tag "${PRIMARY_IMAGE}" "${REGISTRY}:${tag}"
+          done
+
+          # Hand the resolved tags over to the push step.
+          echo "RESOLVED_TAGS=${RESOLVED_TAGS}" >> "${GITHUB_ENV}"
+
+      - name: Push image to registry
+        env:
+          REGISTRY: ${{ inputs.registry }}
+          QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+          QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          podman login -u "${QUAY_USERNAME}" -p "${QUAY_PASSWORD}" quay.io
+
+          read -ra TAG_LIST <<< "${RESOLVED_TAGS}"
+          for tag in "${TAG_LIST[@]}"; do
+            [ -z "${tag}" ] && continue
+            echo "Pushing ${REGISTRY}:${tag}"
+            podman push "${REGISTRY}:${tag}"
+          done
