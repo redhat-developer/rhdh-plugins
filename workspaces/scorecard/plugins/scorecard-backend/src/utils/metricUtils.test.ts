@@ -15,7 +15,8 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
-import { ConfigReader, type JsonObject } from '@backstage/config';
+import { ConfigReader } from '@backstage/config';
+import type { JsonObject } from '@backstage/config';
 import { MockEntityBuilder } from '../../__fixtures__/mockEntityBuilder';
 import { isMetricIdDisabled, isMetricEnabled } from './metricUtils';
 import type { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';

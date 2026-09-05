@@ -167,17 +167,19 @@ export function filterEnabledMetrics(
   getProvider: (metricId: string) => MetricProvider,
   logger?: LoggerService,
 ): Metric[] {
-  return metrics.filter(m => {
-    try {
-      const provider = getProvider(m.id);
-      return isMetricEnabled(config, m, provider);
-    } catch (error) {
-      logger?.debug(
-        `Unable to resolve enabled state for metric '${
-          m.id
-        }', treating as enabled: ${stringifyError(error)}`,
-      );
-      return true;
-    }
-  });
+  return metrics
+    .filter(m => {
+      try {
+        const provider = getProvider(m.id);
+        return isMetricEnabled(config, m, provider);
+      } catch (error) {
+        logger?.warn(
+          `Unable to resolve enabled state for metric '${
+            m.id
+          }', treating as enabled: ${stringifyError(error)}`,
+        );
+        return true;
+      }
+    })
+    .map(({ enabled: _enabled, ...rest }) => rest as Metric);
 }

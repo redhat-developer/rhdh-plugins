@@ -229,6 +229,51 @@ describe('Scheduler', () => {
 
       expect(initializedTasks).toEqual([]);
     });
+
+    it('should skip providers whose metrics are all disabled by config', async () => {
+      const disabledConfig = mockServices.rootConfig({
+        data: {
+          scorecard: {
+            metricProviders: {
+              github: {
+                testMetric: { enabled: false },
+              },
+            },
+          },
+        },
+      });
+
+      const disabledScheduler = Scheduler.create({
+        auth: mockAuth,
+        catalog: mockCatalog,
+        config: disabledConfig,
+        logger: mockLogger,
+        scheduler: mockScheduler,
+        database: mockDatabase,
+        metricProvidersRegistry: mockRegistry,
+        thresholdEvaluator: new ThresholdEvaluator(),
+        thresholdResolver: new ThresholdResolver(
+          disabledConfig,
+          mockRegistry.listProviders(),
+        ),
+      });
+
+      (disabledScheduler as any).initializeTasksByProviders();
+
+      const initializedTasks = (disabledScheduler as any).tasks;
+
+      // Only jira.testMetric should have a task; github.testMetric is disabled
+      expect(initializedTasks).toEqual([
+        {
+          name: 'jira.testMetric',
+          task: mockPullTask,
+        },
+      ]);
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        "Skipping provider 'github.testMetric': all metrics disabled",
+      );
+    });
   });
 
   describe('startTask', () => {
