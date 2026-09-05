@@ -23,6 +23,10 @@ import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 describe('createListMetricsAction', () => {
   const mockRegistry = {
     listMetrics: jest.fn(),
+    getProvider: jest.fn().mockReturnValue({
+      getProviderId: () => 'github.openPRs',
+      getProviderDatasourceId: () => 'github',
+    }),
   } as unknown as MetricProvidersRegistry;
 
   beforeEach(() => {
@@ -56,8 +60,10 @@ describe('createListMetricsAction', () => {
 
     createListMetricsAction({
       actionsRegistry: mockActionsRegistry,
+      config: mockServices.rootConfig({ data: {} }),
       permissions: mockPermissions,
       metricProvidersRegistry: mockRegistry,
+      logger: mockServices.logger.mock(),
     });
 
     const result = await mockActionsRegistry.invoke({
@@ -78,8 +84,10 @@ describe('createListMetricsAction', () => {
 
     createListMetricsAction({
       actionsRegistry: mockActionsRegistry,
+      config: mockServices.rootConfig({ data: {} }),
       permissions: mockPermissions,
       metricProvidersRegistry: mockRegistry,
+      logger: mockServices.logger.mock(),
     });
 
     await expect(
@@ -126,8 +134,10 @@ describe('createListMetricsAction', () => {
 
     createListMetricsAction({
       actionsRegistry: mockActionsRegistry,
+      config: mockServices.rootConfig({ data: {} }),
       permissions: mockPermissions,
       metricProvidersRegistry: mockRegistry,
+      logger: mockServices.logger.mock(),
     });
 
     const result = await mockActionsRegistry.invoke({

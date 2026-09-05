@@ -153,6 +153,7 @@ export type Metric<T extends MetricType = MetricType> = {
   history?: boolean;
   defaultVisualization?: ScorecardVisualizationType;
   collectorIds?: string[];
+  enabled?: boolean;
 };
 
 // @public (undocumented)

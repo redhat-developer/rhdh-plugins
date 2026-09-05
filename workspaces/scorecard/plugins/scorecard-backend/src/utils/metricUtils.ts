@@ -17,7 +17,14 @@
 import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import type { LoggerService } from '@backstage/backend-plugin-api';
+import type { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { MetricProvider } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { parseCommaSeparatedString } from './parseCommaSeparatedString';
+import {
+  resolveMetricEnabledFromConfig,
+  resolveProviderEnabledFromConfig,
+} from './metricProviderConfigKeys';
+import { stringifyError } from '@backstage/errors';
 
 /**
  * Check if the metric is disabled by app-config, if is disabled by the entity annotation and if it has any exception rule.
@@ -79,4 +86,98 @@ export function isMetricIdDisabled(
   }
 
   return false;
+}
+
+/**
+ * Check whether a metric is enabled, considering config-level overrides
+ * and code-level defaults.
+ *
+ * Resolution order (first defined value wins):
+ * 1. Config metric `enabled` — most specific config override
+ * 2. Config provider `enabled` — provider-level config override
+ * 3. Code metric `enabled` field — code-level default
+ * 4. Code provider `isEnabled()` — provider code default
+ * 5. `true` — backward-compatible default
+ *
+ * Config overrides always take precedence over code defaults, and
+ * more-specific overrides (metric) win over less-specific ones
+ * (provider) within the same level (config or code).
+ *
+ * This check is independent of the global `disabledMetrics` list and
+ * entity annotations which are handled by {@link isMetricIdDisabled}.
+ */
+export function isMetricEnabled(
+  config: Config,
+  metric: Metric,
+  provider: MetricProvider,
+): boolean {
+  const datasourceId = provider.getProviderDatasourceId();
+  const providerId = provider.getProviderId();
+
+  // 1. Config metric enabled (most specific config override)
+  const metricConfigEnabled = resolveMetricEnabledFromConfig(
+    config,
+    datasourceId,
+    providerId,
+    metric.id,
+  );
+  if (metricConfigEnabled !== undefined) {
+    return metricConfigEnabled;
+  }
+
+  // 2. Config provider enabled (provider-level config override)
+  const providerConfigEnabled = resolveProviderEnabledFromConfig(
+    config,
+    datasourceId,
+    providerId,
+  );
+  if (providerConfigEnabled !== undefined) {
+    return providerConfigEnabled;
+  }
+
+  // 3. Code metric enabled
+  if (metric.enabled !== undefined) {
+    return metric.enabled;
+  }
+
+  // 4. Code provider isEnabled()
+  if (provider.isEnabled) {
+    return provider.isEnabled();
+  }
+
+  // 5. Default: enabled
+  return true;
+}
+
+/**
+ * Filter an array of metrics to only those that are enabled.
+ *
+ * Wraps {@link isMetricEnabled} with provider lookup and error handling.
+ * When the provider for a metric cannot be resolved, the metric is
+ * treated as enabled to avoid hiding broken registrations.
+ *
+ * @param config - Backstage config
+ * @param metrics - The metrics to filter
+ * @param getProvider - Lookup function for the metric's provider
+ * @param logger - Optional logger for diagnostics
+ */
+export function filterEnabledMetrics(
+  config: Config,
+  metrics: Metric[],
+  getProvider: (metricId: string) => MetricProvider,
+  logger?: LoggerService,
+): Metric[] {
+  return metrics.filter(m => {
+    try {
+      const provider = getProvider(m.id);
+      return isMetricEnabled(config, m, provider);
+    } catch (error) {
+      logger?.debug(
+        `Unable to resolve enabled state for metric '${
+          m.id
+        }', treating as enabled: ${stringifyError(error)}`,
+      );
+      return true;
+    }
+  });
 }

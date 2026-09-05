@@ -48,6 +48,13 @@ export type Metric<T extends MetricType = MetricType> = {
    * provider config at startup. Omitted when the metric does not use collectors.
    */
   collectorIds?: string[];
+  /**
+   * Whether this metric is enabled by default. When `false`, the metric
+   * is disabled unless the administrator explicitly enables it in
+   * `app-config.yaml`. Omitting this field (or setting it to `true`)
+   * means the metric is enabled by default.
+   */
+  enabled?: boolean;
 };
 
 /**

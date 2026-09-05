@@ -137,6 +137,7 @@ describe('createRouter', () => {
       collect: jest.fn(),
     };
     catalogMetricService = new CatalogMetricService({
+      config: mockServices.rootConfig({ data: {} }),
       catalog,
       registry: metricProvidersRegistry,
       auth: mockServices.auth(),
@@ -167,6 +168,7 @@ describe('createRouter', () => {
     });
 
     const router = await createRouter({
+      config: mockServices.rootConfig({ data: {} }),
       metricProvidersRegistry,
       service: { aggregationsService, catalogMetricService },
       catalog,
@@ -330,6 +332,43 @@ describe('createRouter', () => {
         'Cannot filter by both metricIds and datasource',
       );
     });
+
+    it('should exclude disabled metrics from the listing', async () => {
+      const disabledConfig = mockServices.rootConfig({
+        data: {
+          scorecard: {
+            metricProviders: {
+              github: {
+                openPRs: { enabled: false },
+              },
+            },
+          },
+        },
+      });
+
+      const disabledRouter = await createRouter({
+        config: disabledConfig,
+        metricProvidersRegistry,
+        service: { aggregationsService, catalogMetricService },
+        catalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+        thresholdResolver,
+        collectorsService,
+      });
+      const disabledApp = express();
+      disabledApp.use(disabledRouter);
+      disabledApp.use(mockErrorHandler());
+
+      const response = await request(disabledApp).get('/metrics');
+
+      expect(response.status).toBe(200);
+      const metricIds = response.body.metrics.map((m: Metric) => m.id);
+      expect(metricIds).not.toContain('github.openPRs');
+      expect(metricIds).toContain('github.openIssues');
+      expect(metricIds).toContain('sonar.quality');
+    });
   });
 
   describe('GET /metrics/:metricId/collectors', () => {
@@ -427,6 +466,43 @@ describe('createRouter', () => {
 
       expect(response.status).toBe(403);
       expect(response.body.error.name).toBe('NotAllowedError');
+    });
+
+    it('returns 404 when the metric is disabled', async () => {
+      const disabledConfig = mockServices.rootConfig({
+        data: {
+          scorecard: {
+            metricProviders: {
+              dora: {
+                changeFailureRate: { enabled: false },
+              },
+            },
+          },
+        },
+      });
+
+      const disabledRouter = await createRouter({
+        config: disabledConfig,
+        metricProvidersRegistry,
+        service: { aggregationsService, catalogMetricService },
+        catalog,
+        httpAuth: httpAuthMock,
+        permissions: permissionsMock,
+        logger: mockServices.logger.mock(),
+        thresholdResolver,
+        collectorsService,
+      });
+      const disabledApp = express();
+      disabledApp.use(disabledRouter);
+      disabledApp.use(mockErrorHandler());
+
+      const response = await request(disabledApp).get(
+        '/metrics/dora.changeFailureRate/collectors',
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.body.error.name).toBe('NotFoundError');
+      expect(response.body.error.message).not.toContain('disabled');
     });
 
     it('returns 500 when a collector ID on the metric is not registered', async () => {
@@ -890,6 +966,7 @@ describe('createRouter', () => {
       );
 
       const router = await createRouter({
+        config: mockServices.rootConfig({ data: {} }),
         metricProvidersRegistry,
         service: {
           aggregationsService: aggregationsServiceLocal,
@@ -1118,6 +1195,7 @@ describe('createRouter', () => {
       );
 
       const batchAggregationRouter = await createRouter({
+        config: mockServices.rootConfig({ data: {} }),
         metricProvidersRegistry,
         service: {
           aggregationsService: batchAggregationsService,
@@ -1241,6 +1319,7 @@ describe('createRouter', () => {
       mockCatalog.getEntities.mockResolvedValue({ items: [componentEntity] });
 
       mockCatalogMetricService = new CatalogMetricService({
+        config: mockServices.rootConfig({ data: {} }),
         catalog: mockCatalog,
         auth: mockServices.auth.mock({
           getOwnServiceCredentials: jest.fn().mockResolvedValue({
@@ -1281,6 +1360,7 @@ describe('createRouter', () => {
       );
 
       const router = await createRouter({
+        config: mockServices.rootConfig({ data: {} }),
         metricProvidersRegistry: metricRegistry,
         service: {
           aggregationsService: aggregationsServiceAgRoute,
@@ -1369,6 +1449,7 @@ describe('createRouter', () => {
       );
 
       const batchRouter = await createRouter({
+        config: mockServices.rootConfig({ data: {} }),
         metricProvidersRegistry: metricRegistry,
         service: {
           aggregationsService: aggregationsServiceBatch,
@@ -1420,6 +1501,7 @@ describe('createRouter', () => {
         },
       });
       const kpiService = new CatalogMetricService({
+        config: mockServices.rootConfig({ data: {} }),
         catalog: mockCatalog,
         auth: mockServices.auth.mock({
           getOwnServiceCredentials: jest.fn().mockResolvedValue({
@@ -1442,6 +1524,7 @@ describe('createRouter', () => {
       );
 
       const router = await createRouter({
+        config: mockServices.rootConfig({ data: {} }),
         metricProvidersRegistry: metricRegistry,
         service: {
           aggregationsService: aggregationsServiceKpi,
@@ -1489,6 +1572,7 @@ describe('createRouter', () => {
         },
       });
       const kpiService = new CatalogMetricService({
+        config: mockServices.rootConfig({ data: {} }),
         catalog: mockCatalog,
         auth: mockServices.auth.mock({
           getOwnServiceCredentials: jest.fn().mockResolvedValue({
@@ -1511,6 +1595,7 @@ describe('createRouter', () => {
       );
 
       const router = await createRouter({
+        config: mockServices.rootConfig({ data: {} }),
         metricProvidersRegistry: metricRegistry,
         service: {
           aggregationsService: aggregationsServiceWeightedKpi,
@@ -1551,6 +1636,7 @@ describe('createRouter', () => {
         },
       });
       const kpiService = new CatalogMetricService({
+        config: mockServices.rootConfig({ data: {} }),
         catalog: mockCatalog,
         auth: mockServices.auth.mock({
           getOwnServiceCredentials: jest.fn().mockResolvedValue({
@@ -1587,6 +1673,7 @@ describe('createRouter', () => {
       );
 
       const router = await createRouter({
+        config: mockServices.rootConfig({ data: {} }),
         metricProvidersRegistry: metricRegistry,
         service: {
           aggregationsService: aggregationsServiceSum,
@@ -1643,6 +1730,7 @@ describe('createRouter', () => {
       });
 
       const kpiService = new CatalogMetricService({
+        config: mockServices.rootConfig({ data: {} }),
         catalog: mockCatalog,
         auth: mockServices.auth.mock({
           getOwnServiceCredentials: jest.fn().mockResolvedValue({
@@ -1679,6 +1767,7 @@ describe('createRouter', () => {
       );
 
       const router = await createRouter({
+        config: mockServices.rootConfig({ data: {} }),
         metricProvidersRegistry: metricRegistry,
         service: {
           aggregationsService: aggregationsServiceFiltered,
@@ -2003,6 +2092,7 @@ describe('createRouter', () => {
       });
 
       metaCatalogMetricService = new CatalogMetricService({
+        config: mockServices.rootConfig({ data: {} }),
         catalog: metaCatalog,
         auth: mockServices.auth.mock({
           getOwnServiceCredentials: jest.fn().mockResolvedValue({
@@ -2021,6 +2111,7 @@ describe('createRouter', () => {
       );
 
       const router = await createRouter({
+        config: mockServices.rootConfig({ data: {} }),
         metricProvidersRegistry: metaRegistry,
         service: {
           aggregationsService: aggregationsMetaService,
@@ -2066,6 +2157,7 @@ describe('createRouter', () => {
       metaRegistry.register(batchProvider);
 
       const router = await createRouter({
+        config: mockServices.rootConfig({ data: {} }),
         metricProvidersRegistry: metaRegistry,
         service: {
           aggregationsService: createTestAggregationsService(
@@ -2095,6 +2187,7 @@ describe('createRouter', () => {
 
     it('returns metadata for metric id when no KPI row exists', async () => {
       const svc = new CatalogMetricService({
+        config: mockServices.rootConfig({ data: {} }),
         catalog: metaCatalog,
         auth: mockServices.auth.mock({
           getOwnServiceCredentials: jest.fn().mockResolvedValue({
@@ -2113,6 +2206,7 @@ describe('createRouter', () => {
       );
 
       const router = await createRouter({
+        config: mockServices.rootConfig({ data: {} }),
         metricProvidersRegistry: metaRegistry,
         service: {
           aggregationsService: aggregationsSvcNoKpi,
@@ -2164,6 +2258,7 @@ describe('createRouter', () => {
       );
 
       const router = await createRouter({
+        config: mockServices.rootConfig({ data: {} }),
         metricProvidersRegistry: metaRegistry,
         service: {
           aggregationsService: aggregationsMetaServiceFiltered,
@@ -2211,6 +2306,7 @@ describe('createRouter', () => {
       );
 
       const router = await createRouter({
+        config: mockServices.rootConfig({ data: {} }),
         metricProvidersRegistry: metaRegistry,
         service: {
           aggregationsService: aggregationsMetaServiceScalar,
@@ -2304,6 +2400,7 @@ describe('createRouter', () => {
 
       const mockCatalog = catalogServiceMock.mock();
       const router = await createRouter({
+        config: mockServices.rootConfig({ data: {} }),
         metricProvidersRegistry,
         service: { aggregationsService, catalogMetricService },
         catalog: mockCatalog,
