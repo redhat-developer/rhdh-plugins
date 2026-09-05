@@ -17,60 +17,58 @@
 /**
  * Default toolbar component extensions (`gh-component`) for the global header.
  *
+ * Heavy UI uses blueprint `loader` (ExtensionBoundary.lazyComponent).
+ * Default on-mount widgets all `import()` `onMountHeaderBundle` so they share one
+ * async chunk. Data-driven items (self-service) omit loader and let the
+ * blueprint lazy-load HeaderIconButton from that same module.
+ *
  * @internal
  */
 
 import { GlobalHeaderComponentBlueprint } from '../extensions/blueprints';
 
-import { SearchComponent } from '../components/SearchComponent/SearchComponent';
-import { Spacer } from '../components/Spacer/Spacer';
-import { StarredDropdown } from '../components/HeaderDropdownComponent/StarredDropdown';
-import { NotificationButton } from '../components/NotificationButton/NotificationButton';
-import { Divider } from '../components/Divider/Divider';
-import { CompanyLogo } from '../components/CompanyLogo/CompanyLogo';
-import { HeaderIconButton } from '../components/HeaderIconButton/HeaderIconButton';
-import { ProfileDropdown } from '../components/ProfileDropdown';
-import { HelpDropdown } from '../components/HelpDropdown';
-import { ApplicationLauncherDropdown } from '../components/ApplicationLauncherDropdown';
-
-const CompanyLogoWrapper = () => <CompanyLogo to="/" />;
-
-const SelfServiceButton = () => (
-  <HeaderIconButton
-    title="Self-service"
-    titleKey="create.title"
-    icon="addCircleOutline"
-    to="/create"
-  />
-);
-
 /** @public */
 export const companyLogoExtension = GlobalHeaderComponentBlueprint.make({
   name: 'company-logo',
-  params: { component: CompanyLogoWrapper, priority: 200 },
+  params: {
+    priority: 200,
+    loader: async () => {
+      const { CompanyLogo } = await import('../components/onMountHeaderBundle');
+      return () => <CompanyLogo to="/" />;
+    },
+  },
 });
 
 /** @public */
 export const searchExtension = GlobalHeaderComponentBlueprint.make({
   name: 'search',
   params: {
-    component: SearchComponent,
     priority: 100,
     layout: { flexGrow: 1 },
+    loader: () =>
+      import('../components/onMountHeaderBundle').then(m => m.SearchComponent),
   },
 });
 
 /** @public */
 export const spacerExtension = GlobalHeaderComponentBlueprint.make({
   name: 'spacer',
-  params: { component: Spacer, priority: 99, layout: { flexGrow: 0 } },
+  params: {
+    priority: 99,
+    layout: { flexGrow: 0 },
+    loader: () =>
+      import('../components/onMountHeaderBundle').then(m => m.Spacer),
+  },
 });
 
 /** @public */
 export const selfServiceButtonExtension = GlobalHeaderComponentBlueprint.make({
   name: 'self-service-button',
   params: {
-    component: SelfServiceButton,
+    title: 'Self-service',
+    titleKey: 'create.title',
+    icon: 'add',
+    link: '/create',
     priority: 90,
   },
 });
@@ -78,36 +76,64 @@ export const selfServiceButtonExtension = GlobalHeaderComponentBlueprint.make({
 /** @public */
 export const starredDropdownExtension = GlobalHeaderComponentBlueprint.make({
   name: 'starred-dropdown',
-  params: { component: StarredDropdown, priority: 85 },
+  params: {
+    priority: 85,
+    loader: () =>
+      import('../components/onMountHeaderBundle').then(m => m.StarredDropdown),
+  },
 });
 
 /** @public */
 export const applicationLauncherDropdownExtension =
   GlobalHeaderComponentBlueprint.make({
     name: 'app-launcher-dropdown',
-    params: { component: ApplicationLauncherDropdown, priority: 82 },
+    params: {
+      priority: 82,
+      loader: () =>
+        import('../components/onMountHeaderBundle').then(
+          m => m.ApplicationLauncherDropdown,
+        ),
+    },
   });
 
 /** @public */
 export const helpDropdownExtension = GlobalHeaderComponentBlueprint.make({
   name: 'help-dropdown',
-  params: { component: HelpDropdown, priority: 80 },
+  params: {
+    priority: 80,
+    loader: () =>
+      import('../components/onMountHeaderBundle').then(m => m.HelpDropdown),
+  },
 });
 
 /** @public */
 export const notificationButtonExtension = GlobalHeaderComponentBlueprint.make({
   name: 'notification-button',
-  params: { component: NotificationButton, priority: 70 },
+  params: {
+    priority: 70,
+    loader: () =>
+      import('../components/onMountHeaderBundle').then(
+        m => m.NotificationButton,
+      ),
+  },
 });
 
 /** @public */
 export const dividerExtension = GlobalHeaderComponentBlueprint.make({
   name: 'divider',
-  params: { component: Divider, priority: 50 },
+  params: {
+    priority: 50,
+    loader: () =>
+      import('../components/onMountHeaderBundle').then(m => m.Divider),
+  },
 });
 
 /** @public */
 export const profileDropdownExtension = GlobalHeaderComponentBlueprint.make({
   name: 'profile-dropdown',
-  params: { component: ProfileDropdown, priority: 10 },
+  params: {
+    priority: 10,
+    loader: () =>
+      import('../components/onMountHeaderBundle').then(m => m.ProfileDropdown),
+  },
 });

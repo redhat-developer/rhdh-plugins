@@ -14,15 +14,29 @@
  * limitations under the License.
  */
 
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentProps, ReactNode } from 'react';
 import type Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 
 import { useGlobalHeaderMenuItems } from '../extensions/GlobalHeaderContext';
 import { buildDropdownEntries } from '../utils/menuItemGrouping';
 import { useDropdownManager } from '../hooks';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent/HeaderDropdownComponent';
-import { GlobalHeaderDropdownContent } from './GlobalHeaderDropdownContent';
+
+const GlobalHeaderDropdownContent = lazy(() =>
+  import('./GlobalHeaderDropdownContent').then(m => ({
+    default: m.GlobalHeaderDropdownContent,
+  })),
+);
+
+/**
+ * Settle delays for lazy menu items.
+ * Matches the legacy OFS HelpDropdown validity tracking behaviour.
+ */
+const VALIDITY_CHECK_MS = [500, 1500] as const;
+
+type MenuValidity = 'pending' | 'valid' | 'empty';
 
 /**
  * Props for {@link GlobalHeaderDropdown}.
@@ -43,9 +57,8 @@ export interface GlobalHeaderDropdownProps {
   /** Rendered when no menu items are contributed (or all render empty when `trackValidity` is on). */
   emptyState?: ReactNode;
   /**
-   * When `true`, the dropdown checks the rendered MenuList for visible
-   * `[role="menuitem"]` elements after each render. If none are found,
-   * the `emptyState` is shown instead.
+   * When enabled, waits for lazy menu items to settle before deciding whether
+   * to display the empty state.
    */
   trackValidity?: boolean;
 }
@@ -73,21 +86,94 @@ export const GlobalHeaderDropdown = ({
   const entries = useMemo(() => buildDropdownEntries(menuItems), [menuItems]);
 
   const menuListRef = useRef<HTMLUListElement>(null);
-  const [hasVisibleItems, setHasVisibleItems] = useState(true);
+  const [menuValidity, setMenuValidity] = useState<MenuValidity>('pending');
+
   const isOpen = Boolean(anchorEl);
 
-  useLayoutEffect(() => {
-    if (!trackValidity || !isOpen || !menuListRef.current) return;
-    const found =
-      menuListRef.current.querySelector('[role="menuitem"]') !== null;
-    if (found !== hasVisibleItems) {
-      setHasVisibleItems(found);
+  useEffect(() => {
+    if (!trackValidity) {
+      return;
     }
-  }, [trackValidity, hasVisibleItems, isOpen]);
 
-  if (menuItems.length === 0 && !emptyState) return null;
+    if (!isOpen) {
+      setMenuValidity('pending');
+      return;
+    }
 
-  const showEmpty = entries.length === 0 || (trackValidity && !hasVisibleItems);
+    const list = menuListRef.current;
+    if (!list) {
+      return;
+    }
+
+    const syncFromDom = () => {
+      if (list.querySelector('[role="menuitem"]')) {
+        setMenuValidity('valid');
+      }
+    };
+
+    // Handle items that rendered synchronously.
+    syncFromDom();
+
+    const observer = new MutationObserver(syncFromDom);
+
+    observer.observe(list, {
+      childList: true,
+      subtree: true,
+    });
+
+    const concludeEmpty = () => {
+      if (!list.querySelector('[role="menuitem"]')) {
+        setMenuValidity(prev => (prev === 'valid' ? prev : 'empty'));
+      }
+    };
+
+    const timers = VALIDITY_CHECK_MS.map(ms =>
+      window.setTimeout(concludeEmpty, ms),
+    );
+
+    // eslint-disable-next-line consistent-return
+    return () => {
+      observer.disconnect();
+      timers.forEach(id => window.clearTimeout(id));
+    };
+  }, [trackValidity, isOpen]);
+
+  if (menuItems.length === 0 && !emptyState) {
+    return null;
+  }
+
+  const hasNoContributions = entries.length === 0;
+
+  const showEmptyState =
+    hasNoContributions || (trackValidity && menuValidity === 'empty');
+
+  let menuBody: ReactNode = null;
+  if (isOpen && hasNoContributions) {
+    menuBody = emptyState;
+  } else if (isOpen) {
+    menuBody = (
+      <Suspense fallback={null}>
+        {trackValidity && showEmptyState ? emptyState : null}
+        {/*
+         * Keep content mounted for lazy validity recovery. Use display:contents
+         * when visible so MenuItems stay direct DOM children of the MenuList
+         * for keyboard navigation; hide the subtree only while emptyState shows.
+         */}
+        <Box
+          component="div"
+          sx={{
+            display: trackValidity && showEmptyState ? 'none' : 'contents',
+          }}
+        >
+          <GlobalHeaderDropdownContent
+            entries={entries}
+            target={target}
+            handleClose={handleClose}
+          />
+        </Box>
+      </Suspense>
+    );
+  }
 
   return (
     <HeaderDropdownComponent
@@ -100,15 +186,7 @@ export const GlobalHeaderDropdown = ({
       anchorEl={anchorEl}
       menuListRef={trackValidity ? menuListRef : undefined}
     >
-      {showEmpty ? (
-        emptyState
-      ) : (
-        <GlobalHeaderDropdownContent
-          entries={entries}
-          target={target}
-          handleClose={handleClose}
-        />
-      )}
+      {menuBody}
     </HeaderDropdownComponent>
   );
 };

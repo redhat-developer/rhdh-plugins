@@ -15,15 +15,12 @@
  */
 
 import type { ComponentType } from 'react';
-import { createExtensionBlueprint } from '@backstage/frontend-plugin-api';
-
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
-
-import { HeaderIconButton } from '../components/HeaderIconButton/HeaderIconButton';
-import { HeaderIcon } from '../components/HeaderIcon/HeaderIcon';
-import { useTranslation } from '../hooks/useTranslation';
-import { translateWithFallback } from '../utils/translationUtils';
+import { z } from 'zod';
+import {
+  createExtensionBlueprint,
+  ExtensionBoundary,
+  type AppNode,
+} from '@backstage/frontend-plugin-api';
 
 import {
   globalHeaderComponentDataRef,
@@ -33,9 +30,10 @@ import {
 /**
  * Params accepted by {@link GlobalHeaderComponentBlueprint}.
  *
- * Supply `component` for full control (tier 2/3), or provide data fields
- * (`icon`, `title`, `link`/`onClick`) and let the framework render a
- * consistent `HeaderIconButton` automatically (tier 1).
+ * Prefer {@link ToolbarComponentParams.loader} so the implementation is loaded
+ * asynchronously (same pattern as `HomePageWidgetBlueprint` /
+ * `HomePageLayoutBlueprint`). Supply data fields (`icon`, `title`, `link` /
+ * `onClick`) with no loader/component for the built-in HeaderIconButton tier.
  *
  * @public
  */
@@ -46,6 +44,14 @@ export interface ToolbarComponentParams {
   tooltip?: string;
   link?: string;
   onClick?: () => void;
+  /**
+   * Async component loader. Prefer this over {@link ToolbarComponentParams.component}
+   * so the module graph stays off the NFS federation sync chunk.
+   */
+  loader?: () => Promise<ComponentType<any>>;
+  /**
+   * Sync component. Kept for compatibility; prefer {@link ToolbarComponentParams.loader}.
+   */
   component?: ComponentType<any>;
   priority?: number;
   /** MUI `sx`-compatible layout overrides applied by the header wrapper. */
@@ -55,17 +61,14 @@ export interface ToolbarComponentParams {
 /**
  * Params accepted by {@link GlobalHeaderMenuItemBlueprint}.
  *
- * Supply `component` for full control, or provide data fields
- * (`title`, `icon`, `link`) and let the framework render a
- * consistent `MenuItemLink` automatically.
+ * Prefer {@link MenuItemParams.loader} for custom menu item UI.
  *
- * Items with a `component` but **no** data fields (`title`, `link`, etc.)
+ * Items with a loader/component but **no** data fields (`title`, `link`, etc.)
  * are rendered directly by the dropdown — the component controls its own
- * layout and `MenuItem` wrapping (e.g. `SoftwareTemplatesSection`,
- * `LogoutButton`).
+ * layout and `MenuItem` wrapping (e.g. `LogoutButton`).
  *
- * Items with data fields (with or without a custom component) are grouped
- * by `sectionLabel` and rendered inside `MenuSection`.
+ * Items with data fields are grouped by `sectionLabel` and rendered inside
+ * `MenuSection`.
  *
  * @public
  */
@@ -78,6 +81,13 @@ export interface MenuItemParams {
   icon?: string;
   link?: string;
   onClick?: () => void;
+  /**
+   * Async component loader. Prefer this over {@link MenuItemParams.component}.
+   */
+  loader?: () => Promise<ComponentType<any>>;
+  /**
+   * Sync component. Kept for compatibility; prefer {@link MenuItemParams.loader}.
+   */
   component?: ComponentType<any>;
   priority?: number;
   /** Section label used as the grouping key and the displayed section header. */
@@ -92,43 +102,114 @@ export interface MenuItemParams {
 // Data-driven component factories
 // ---------------------------------------------------------------------------
 
-function createDataDrivenToolbarComponent(
-  params: ToolbarComponentParams,
+function resolveLazyComponent(
+  node: AppNode,
+  loader: () => Promise<ComponentType<any>>,
 ): ComponentType<any> {
-  if (params.link) {
-    const LinkButton = () => (
-      <HeaderIconButton
-        title={params.title ?? ''}
-        titleKey={params.titleKey}
-        icon={params.icon ?? ''}
-        tooltip={params.tooltip}
-        to={params.link!}
-      />
-    );
-    return LinkButton;
-  }
+  // ExtensionBoundary.lazyComponent wraps each resolved component in its own
+  // ExtensionBoundary + Suspense (Progress fallback) — suspending items do not
+  // bubble to the app-root Suspense around LazyGlobalHeader.
+  return ExtensionBoundary.lazyComponent(node, async () => {
+    const Comp = await loader();
+    return (props: any) => <Comp {...props} />;
+  });
+}
 
-  const ActionButton = () => {
-    const { t } = useTranslation();
-    const displayTitle = translateWithFallback(
-      t,
-      params.titleKey,
-      params.title,
-    );
-    return (
-      <Tooltip title={params.tooltip ?? displayTitle ?? ''}>
-        <IconButton
-          onClick={params.onClick}
-          color="inherit"
-          size="small"
-          aria-label={displayTitle ?? ''}
-        >
-          {params.icon && <HeaderIcon icon={params.icon} size="small" />}
-        </IconButton>
-      </Tooltip>
-    );
+function resolveSyncComponent(
+  node: AppNode,
+  Comp: ComponentType<any>,
+): ComponentType<any> {
+  return (props: any) => (
+    <ExtensionBoundary node={node}>
+      <Comp {...props} />
+    </ExtensionBoundary>
+  );
+}
+
+/**
+ * Data-driven toolbar UI is loaded asynchronously so HeaderIconButton / MUI
+ * stay off the blueprint module's sync graph.
+ */
+function createDataDrivenToolbarLoader(
+  params: ToolbarComponentParams,
+): () => Promise<ComponentType<any>> {
+  return async () => {
+    if (params.link) {
+      const { HeaderIconButton } = await import(
+        '../components/onMountHeaderBundle'
+      );
+      return () => (
+        <HeaderIconButton
+          title={params.title ?? ''}
+          titleKey={params.titleKey}
+          icon={params.icon ?? ''}
+          tooltip={params.tooltip}
+          to={params.link!}
+        />
+      );
+    }
+
+    const [
+      { default: IconButton },
+      { default: Tooltip },
+      { HeaderIcon },
+      { useTranslation },
+      { translateWithFallback },
+    ] = await Promise.all([
+      import('@mui/material/IconButton'),
+      import('@mui/material/Tooltip'),
+      import('../components/HeaderIcon/HeaderIcon'),
+      import('../hooks/useTranslation'),
+      import('../utils/translationUtils'),
+    ]);
+
+    return () => {
+      const { t } = useTranslation();
+      const displayTitle = translateWithFallback(
+        t,
+        params.titleKey,
+        params.title,
+      );
+      return (
+        <Tooltip title={params.tooltip ?? displayTitle ?? ''}>
+          <IconButton
+            onClick={params.onClick}
+            color="inherit"
+            size="small"
+            aria-label={displayTitle ?? ''}
+          >
+            {params.icon && <HeaderIcon icon={params.icon} size="small" />}
+          </IconButton>
+        </Tooltip>
+      );
+    };
   };
-  return ActionButton;
+}
+
+function resolveToolbarComponent(
+  params: ToolbarComponentParams,
+  node: AppNode,
+): ComponentType<any> {
+  if (params.loader) {
+    return resolveLazyComponent(node, params.loader);
+  }
+  if (params.component) {
+    return resolveSyncComponent(node, params.component);
+  }
+  return resolveLazyComponent(node, createDataDrivenToolbarLoader(params));
+}
+
+function resolveMenuItemComponent(
+  params: MenuItemParams,
+  node: AppNode,
+): ComponentType<any> | undefined {
+  if (params.loader) {
+    return resolveLazyComponent(node, params.loader);
+  }
+  if (params.component) {
+    return resolveSyncComponent(node, params.component);
+  }
+  return undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -141,10 +222,10 @@ function createDataDrivenToolbarComponent(
  * Supports three tiers:
  *
  * 1. **Data-driven** -- provide `icon`, `title`, `link` (or `onClick`) and the
- *    framework renders a consistent `HeaderIconButton` automatically.
- * 2. **Building blocks** -- provide a `component` that uses the exported
- *    `GlobalHeaderIconButton` / `GlobalHeaderDropdown` for consistent styling.
- * 3. **Fully custom** -- provide any arbitrary React component.
+ *    framework lazy-loads a consistent `HeaderIconButton`.
+ * 2. **Loader** -- provide `loader: () => import(...).then(m => m.Comp)`
+ *    (preferred for custom UI; mirrors `HomePageLayoutBlueprint`).
+ * 3. **Sync component** -- provide `component` (compatibility only).
  *
  * The `priority` can be overridden by deployers via `app-config.yaml`:
  *
@@ -166,17 +247,12 @@ export const GlobalHeaderComponentBlueprint = createExtensionBlueprint({
   },
   output: [globalHeaderComponentDataRef],
   dataRefs: { componentData: globalHeaderComponentDataRef },
-  config: {
-    schema: {
-      priority: z => z.number().optional(),
-    },
+  configSchema: {
+    priority: z.number().optional(),
   },
-  *factory(params: ToolbarComponentParams, { config }) {
-    const component =
-      params.component ?? createDataDrivenToolbarComponent(params);
-
+  *factory(params: ToolbarComponentParams, { config, node }) {
     yield globalHeaderComponentDataRef({
-      component,
+      component: resolveToolbarComponent(params, node),
       priority: config.priority ?? params.priority,
       layout: params.layout,
     });
@@ -189,6 +265,7 @@ export const GlobalHeaderComponentBlueprint = createExtensionBlueprint({
  * The `target` field routes the item to the correct dropdown (e.g. `'create'`,
  * `'profile'`, `'help'`, `'app-launcher'`, or any custom target).
  *
+ * Prefer `loader` for custom components so their modules stay async.
  * **Custom components** (only `component`, no data fields) are rendered
  * directly by the dropdown — they control their own layout and wrapping.
  *
@@ -216,29 +293,28 @@ export const GlobalHeaderMenuItemBlueprint = createExtensionBlueprint({
   },
   output: [globalHeaderMenuItemDataRef],
   dataRefs: { menuItemData: globalHeaderMenuItemDataRef },
-  config: {
-    schema: {
-      priority: z => z.number().optional(),
-      title: z => z.string().optional(),
-      titleKey: z => z.string().optional(),
-      icon: z => z.string().optional(),
-      link: z => z.string().optional(),
-      sectionLabel: z => z.string().optional(),
-      sectionLink: z => z.string().optional(),
-      sectionLinkLabel: z => z.string().optional(),
-    },
+  configSchema: {
+    priority: z.number().optional(),
+    title: z.string().optional(),
+    titleKey: z.string().optional(),
+    icon: z.string().optional(),
+    link: z.string().optional(),
+    sectionLabel: z.string().optional(),
+    sectionLink: z.string().optional(),
+    sectionLinkLabel: z.string().optional(),
   },
-  *factory(params: MenuItemParams, { config }) {
+  *factory(params: MenuItemParams, { config, node }) {
     const title = config.title ?? params.title;
     const titleKey =
       config.titleKey ?? (config.title ? undefined : params.titleKey);
     const link = config.link ?? params.link;
+    const component = resolveMenuItemComponent(params, node);
     const hasDataFields = !!(title || titleKey || link);
 
     yield globalHeaderMenuItemDataRef({
       target: params.target,
-      component: params.component,
-      type: params.component && !hasDataFields ? 'component' : 'data',
+      component,
+      type: component && !hasDataFields ? 'component' : 'data',
       title,
       titleKey,
       icon: config.icon ?? params.icon,

@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
+import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
+
 /**
- * Legacy frontend system API surface for the global header plugin.
- *
- * @deprecated Use the root import instead: `import from '@red-hat-developer-hub/backstage-plugin-global-header'`
- * @packageDocumentation
+ * Prefix MUI class names so global-header styles do not clash with the host.
+ * Imported only from lazy UI entry points (`GlobalHeader`, `/components`,
+ * `/legacy`) so MUI stays off the root NFS sync chunk.
  */
-
-import './configureMuiClassName';
-
-export * from './legacy/plugin';
-
-export * from './translations';
+ClassNameGenerator.configure(componentName =>
+  componentName.startsWith('v5-') ? componentName : `v5-${componentName}`,
+);
