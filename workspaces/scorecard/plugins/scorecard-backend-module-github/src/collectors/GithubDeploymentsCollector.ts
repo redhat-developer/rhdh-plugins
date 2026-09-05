@@ -25,6 +25,7 @@ import { getRepositoryInformationFromEntity } from '../github/utils';
 import {
   DeploymentResult,
   deploymentsSchema,
+  fetchItemsLimitSchema,
 } from './schemas/deploymentSchemas';
 
 export class GithubDeploymentsCollector
@@ -37,6 +38,7 @@ export class GithubDeploymentsCollector
   static readonly inputSchema = z.object({
     from: z.string().datetime(),
     to: z.string().datetime(),
+    fetchItemsLimit: fetchItemsLimitSchema,
   });
   static readonly outputSchema = deploymentsSchema;
 
@@ -85,6 +87,7 @@ export class GithubDeploymentsCollector
       repository,
       from,
       to,
+      { fetchItemsLimit: options.input.fetchItemsLimit },
     );
 
     return {

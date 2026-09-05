@@ -97,6 +97,7 @@ metadata:
 - **Input schema**
   - `from: string` (ISO datetime)
   - `to: string` (ISO datetime)
+  - `fetchItemsLimit?: number` (optional, 1–1000). Caps how many deployments are collected for this request. GitHub pages newest-first, so a small cap keeps the most recent in-range rows. DORA uses this on the pre-window predecessor lookup.
 - **Output schema**
   - `deployments: Array<{ id: string; commitSha: string; environment?: string; createdAt: string; result: 'success' | 'failure' | '' }>`
 - **Annotation requirements**
@@ -111,6 +112,7 @@ metadata:
   - `workflowName: string` (non-empty)
   - `from: string` (ISO datetime)
   - `to: string` (ISO datetime)
+  - `fetchItemsLimit?: number` (optional, 1–1000). Caps how many workflow runs are collected for this request. Combined with GitHub's `created` filter, a small cap keeps the most recent runs in range.
 - **Output schema**
   - `deployments: Array<{ id: string; commitSha: string; environment?: string; createdAt: string; result: 'success' | 'failure' | '' }>`
 - **Annotation requirements**

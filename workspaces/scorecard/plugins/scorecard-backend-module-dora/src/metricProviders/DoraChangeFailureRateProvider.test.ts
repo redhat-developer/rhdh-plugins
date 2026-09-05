@@ -42,6 +42,7 @@ describe('DoraChangeFailureRateProvider', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useRealTimers();
     deploymentsCollector = buildMockDeploymentsCollector({
       deployments: [
         {
@@ -262,6 +263,7 @@ describe('DoraChangeFailureRateProvider', () => {
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
         /need at least 2 successful production deployments/,
       );
+      expect(deploymentsCollector.collect).toHaveBeenCalledTimes(1);
       expect(incidentsCollector.collect).not.toHaveBeenCalled();
     });
 
@@ -447,6 +449,131 @@ describe('DoraChangeFailureRateProvider', () => {
       expect(mockLogger.warn).toHaveBeenCalledWith(
         expect.stringContaining('non-increasing createdAt'),
       );
+    });
+
+    it('should count an incident between a predecessor and the first in-window deployment', async () => {
+      jest.useFakeTimers({ now: new Date('2026-08-25T00:00:00.000Z') });
+      deploymentsCollector = buildMockDeploymentsCollector({
+        deployments: [
+          {
+            id: '101',
+            commitSha: 'sha-first',
+            environment: 'production',
+            createdAt: '2026-08-05T00:00:00.000Z',
+            result: 'success',
+          },
+        ],
+        preWindowDeployments: [
+          {
+            id: '99',
+            commitSha: 'sha-predecessor',
+            environment: 'production',
+            createdAt: '2026-07-10T00:00:00.000Z',
+            result: 'success',
+          },
+        ],
+        collectorId: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+      });
+      incidentsCollector = buildMockIncidentsCollector({
+        incidents: [
+          {
+            id: 'INC-GAP',
+            createdAt: '2026-07-28T00:00:00.000Z',
+            resolutionAt: null,
+          },
+        ],
+        collectorId: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+      });
+      ({ collectorsService, collect } = buildMockCollectorsService({
+        collectors: [deploymentsCollector, incidentsCollector],
+      }));
+      provider = DoraChangeFailureRateProvider.fromConfig(
+        new ConfigReader({}),
+        {
+          collectorsService,
+          logger: mockLogger,
+        },
+      );
+
+      const results = await provider.calculateMetrics(mockEntity);
+
+      expect(results.get('dora.changeFailureRate')).toBe(100);
+      expect(collect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          collectorId: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+          input: expect.objectContaining({
+            from: '2026-07-10T00:00:00.000Z',
+          }),
+        }),
+      );
+    });
+
+    it('should count an incident after the predecessor and before windowFrom', async () => {
+      jest.useFakeTimers({ now: new Date('2026-08-25T00:00:00.000Z') });
+      deploymentsCollector = buildMockDeploymentsCollector({
+        deployments: [
+          {
+            id: '101',
+            commitSha: 'sha-first',
+            environment: 'production',
+            createdAt: '2026-08-05T00:00:00.000Z',
+            result: 'success',
+          },
+        ],
+        preWindowDeployments: [
+          {
+            id: '99',
+            commitSha: 'sha-predecessor',
+            environment: 'production',
+            createdAt: '2026-07-10T00:00:00.000Z',
+            result: 'success',
+          },
+        ],
+        collectorId: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+      });
+      incidentsCollector = buildMockIncidentsCollector({
+        incidents: [
+          {
+            id: 'INC-PRE-WINDOW',
+            createdAt: '2026-07-15T00:00:00.000Z',
+            resolutionAt: null,
+          },
+        ],
+        collectorId: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+      });
+      ({ collectorsService } = buildMockCollectorsService({
+        collectors: [deploymentsCollector, incidentsCollector],
+      }));
+      provider = DoraChangeFailureRateProvider.fromConfig(
+        new ConfigReader({}),
+        {
+          collectorsService,
+          logger: mockLogger,
+        },
+      );
+
+      const results = await provider.calculateMetrics(mockEntity);
+
+      expect(results.get('dora.changeFailureRate')).toBe(100);
+    });
+
+    it('should throw when a single in-window deployment has no predecessor', async () => {
+      jest.mocked(deploymentsCollector.collect).mockResolvedValueOnce({
+        deployments: [
+          {
+            id: '101',
+            commitSha: 'sha-1',
+            environment: 'production',
+            createdAt: '2026-06-10T00:00:00.000Z',
+            result: 'success',
+          },
+        ],
+      });
+
+      await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
+        /need at least 2 successful production deployments.*found 1/,
+      );
+      expect(incidentsCollector.collect).not.toHaveBeenCalled();
     });
   });
 });

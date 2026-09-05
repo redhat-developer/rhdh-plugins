@@ -121,4 +121,27 @@ describe('GithubDeploymentsCollector', () => {
     });
     expect(getDeploymentsSpy).toHaveBeenCalledTimes(1);
   });
+
+  it('forwards fetchItemsLimit to the GitHub client', async () => {
+    const getDeploymentsSpy = jest
+      .spyOn(GithubClient.prototype, 'getDeployments')
+      .mockResolvedValue([]);
+
+    await collector.collect({
+      entity: testEntity,
+      input: {
+        from: '1970-01-01T00:00:00.000Z',
+        to: '2026-07-25T23:59:59.999Z',
+        fetchItemsLimit: 100,
+      },
+    });
+
+    expect(getDeploymentsSpy).toHaveBeenCalledWith(
+      'https://github.com/owner/repo',
+      { owner: 'owner', repo: 'repo' },
+      new Date('1970-01-01T00:00:00.000Z'),
+      new Date('2026-07-25T23:59:59.999Z'),
+      { fetchItemsLimit: 100 },
+    );
+  });
 });

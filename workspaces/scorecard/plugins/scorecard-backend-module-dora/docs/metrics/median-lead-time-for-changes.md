@@ -8,15 +8,27 @@
 Median Lead Time for Changes measures how long changes typically take to move from code to production.
 
 The metric computes lead time for changes from pull request first commit timestamp to production deployment timestamp, then returns the median.
+The 30-day window decides which successful production deployments are **in-window** (the deployments whose lead time is scored as the pair _head_).
 Deployments are processed as chronological pairs (`previousDeployment` -> `currentDeployment`), and pull requests are resolved for the commit range between those two deployment SHAs.
 For each pull request in that range, lead time is `currentDeployment.createdAt - pullRequest.firstCommitAt` in hours.
 The result is: `median(leadTimeHours)`.
+
+### Pre-window predecessor
+
+To score the **first** in-window deployment, the metric also loads the latest successful production deployment **before** the window start (`windowFrom`) from the deployments collector.
+
+That predecessor is used only as `baseCommitSha` for pull requests into the first in-window deploy. It is not counted as an in-window scored head.
+
+- Predecessor exists: one in-window successful production deployment is enough to form a pair.
+- No predecessor: behavior is unchanged. Two successful production deployments in the 30-day window are still required. With two or more in-window deploys, pairs are formed among those deploys only (the first in-window deploy is only a base for the next pair).
+
+The predecessor lookup is a second deployments-collector call with `from` at `1970-01-01T00:00:00.000Z` and `to` immediately before `windowFrom`, plus optional `fetchItemsLimit` (100). Default GitHub collectors honor that cap and keep the newest in-range rows. If those rows are all failed or non-production, the predecessor is omitted (same as no predecessor). Custom collectors that ignore the cap may return a larger history.
 
 ## Scope and limitation
 
 This metric assumes deployments form a single chronological stream for the entity. If deployments from multiple branches or release trains are mixed in the same stream, `previousDeployment` and `currentDeployment` can belong to different branches, which may produce incorrect lead-time pairing and noisy results.
 
-If fewer than two successful production deployments exist in the window, or no pull requests with a measurable lead time are found between deployments, calculation fails with an error for now.
+If there is no measurable pair (no predecessor and fewer than two successful production deployments in the window, or no pull requests with a measurable lead time), calculation fails with an error for now.
 
 ## Options
 
@@ -91,6 +103,8 @@ Required input:
 
 - `from: string` (ISO datetime)
 - `to: string` (ISO datetime)
+
+The metric may call this collector twice: once for the 30-day window, and once for the pre-window predecessor range. Extra input fields (for example `fetchItemsLimit`) are allowed; they do not replace `from` / `to`.
 
 Required output:
 
