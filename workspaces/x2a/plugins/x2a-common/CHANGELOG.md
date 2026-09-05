@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-x2a-common
 
+## 2.0.1
+
+### Patch Changes
+
+- 6db5c1d: implemented adversarial agents
+
 ## 2.0.0
 
 ### Major Changes
