@@ -2,16 +2,16 @@
 
 These issues implement the AI Catalog backend across RHDHPLAN-1507 (Entity Model & Ingestion Framework), RHDHPLAN-1508 (RBAC & Versioning Policy), RHDHPLAN-1510 (MCP Registry & RHOAI Connector), and RHDHPLAN-1513 (Ingestion Operations & Schema Alignment). Issues are grouped in dependency tiers — Tier 0 issues have no dependencies and can run in parallel; Tier 1 depends on Tier 0; Tier 2 depends on Tier 1.
 
-Each issue is scoped for a single fullsend `/fs-code` run. Frontend admin UI issues are included (RBAC Admin UI, Ingestion Health Dashboard, Connector Config Admin UI). Developer-facing discovery UI is covered by RHDHPLAN-1509 and is NOT in scope here.
+Each issue is scoped for a single fullsend `/fs-code` run. Frontend admin UI issues are included (~~RBAC Admin UI,~~ Ingestion Health Dashboard, Connector Config Admin UI). Developer-facing discovery UI is covered by RHDHPLAN-1509 and is NOT in scope here.
 
 **Feature → Epic mapping:**
 
-| Feature       | Epics                                                                                                                              |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| RHDHPLAN-1507 | RHIDP-15258 (Entity Model), RHIDP-15294 (OCI Skill Registry), RHIDP-15295 (Neo4j Knowledge Graph)                                  |
-| RHDHPLAN-1508 | RHIDP-15270 (Graduated Visibility), RHIDP-15274 (Version Policy Cascade), RHIDP-15277 (Audit Logging), RHIDP-15304 (RBAC Admin UI) |
-| RHDHPLAN-1510 | RHIDP-15313 (MCP Registry), RHIDP-15314 (RHOAI Connector), RHIDP-15316 (Cross-Connector Shared Infra)                              |
-| RHDHPLAN-1513 | RHIDP-15331 (Health Dashboard), RHIDP-15332 (Hot-Reload), RHIDP-15334 (Schema Alignment)                                           |
+| Feature       | Epics                                                                                                                                  |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| RHDHPLAN-1507 | RHIDP-15258 (Entity Model), RHIDP-15294 (OCI Skill Registry), RHIDP-15295 (Neo4j Knowledge Graph)                                      |
+| RHDHPLAN-1508 | RHIDP-15270 (Graduated Visibility), RHIDP-15274 (Version Policy Cascade), RHIDP-15277 (Audit Logging), ~~RHIDP-15304 (RBAC Admin UI)~~ |
+| RHDHPLAN-1510 | RHIDP-15313 (MCP Registry), RHIDP-15314 (RHOAI Connector), RHIDP-15316 (Cross-Connector Shared Infra)                                  |
+| RHDHPLAN-1513 | RHIDP-15331 (Health Dashboard), RHIDP-15332 (Hot-Reload), RHIDP-15334 (Schema Alignment)                                               |
 
 **Cross-feature dependencies (RHDHPLAN-1509, RHDHPLAN-393):**
 
@@ -27,7 +27,7 @@ Each issue is scoped for a single fullsend `/fs-code` run. Frontend admin UI iss
 - Issue 4.2 is independent of issue 4.
 - `6.1`/`6.2`/`6.3` are unblocked now that issue 6 (#4044) is closed and are independent of each other.
 - Within Tier 1, issues [17–19] (Neo4j) are independent of [9–12] (OCI) and [13–16] (MCP/RHOAI); issues [23–24] (RBAC frontend) and [26] (Ingestion Health UI) are also independent of the connector issues.
-- Within Tier 2, issues [25] (RBAC Admin UI) and [27–29] (Ingestion/Analytics UI) can run in parallel.
+- Within Tier 2, issues [27–29] (Ingestion/Analytics UI) can run in parallel.
 
 **Jira-to-GitHub issue mapping is not 1:1.** GitHub issues are scoped for single fullsend `/fs-code` runs, while Jira stories are scoped by feature deliverable. When a Jira story defines an interface or foundation that later issues adopt or extend, the story's work naturally splits across dependency tiers — you define the annotation scheme in Tier 0 before providers can emit those annotations in Tier 1. The alternative (combining tiers into one larger issue) would defeat single-fullsend scoping and block parallelism. Five RHIDP stories have work split this way; three additional stories are referenced after completion as dependencies. The Jira story cannot be closed until the "Completed" issue finishes.
 
@@ -1333,33 +1333,33 @@ From `openspec/changes/ingestion-health-dashboard/tasks.md` group 8:
 
 ---
 
-## RBAC Admin UI — Dashboard, Policy Editor, Default Posture (issue 25 of 29)
+## ~~RBAC Admin UI — Dashboard, Policy Editor, Default Posture (issue 25 of 29)~~ CANCELLED
 
-https://github.com/redhat-developer/rhdh-plugins/issues/4063
+~~https://github.com/redhat-developer/rhdh-plugins/issues/4063~~
 
-**Labels:** `ready-to-code`
-**Depends on:** Issue 3 (permission definitions), Issue 20 (policy cascade + default-deny backend)
-**RHIDP Stories:** RHIDP-15307, RHIDP-15308, RHIDP-15309
-**Feature:** RHDHPLAN-1508 — Epic RHIDP-15304
+~~**Labels:** `ready-to-code`  
+**Depends on:** Issue 3 (permission definitions), Issue 20 (policy cascade + default-deny backend)  
+**RHIDP Stories:** RHIDP-15307, RHIDP-15308, RHIDP-15309  
+**Feature:** RHDHPLAN-1508 — Epic RHIDP-15304~~
 
-Create standalone page at `/ai-catalog/admin/rbac` with `RequirePermission` gating, implement current policies view fetching from RBAC REST API, policy creation/deletion forms with confirmation dialogs, default posture view and change controls, and sidebar navigation item with permission-based visibility.
+~~Create standalone page at `/ai-catalog/admin/rbac` with `RequirePermission` gating, implement current policies view fetching from RBAC REST API, policy creation/deletion forms with confirmation dialogs, default posture view and change controls, and sidebar navigation item with permission-based visibility.~~
 
 ### Tasks
 
-From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 8 (RHIDP-15304, RHIDP-15307, RHIDP-15308, RHIDP-15309):
+~~From `openspec/changes/ai-catalog-asset-governance/tasks.md` group 8 (RHIDP-15304, RHIDP-15307, RHIDP-15308, RHIDP-15309):~~
 
-- 8.1 Create standalone page component at `/ai-catalog/admin/rbac` with `RequirePermission` gating (RHIDP-15307)
-- 8.2 Implement current policies view from RBAC REST API (RHIDP-15307)
-- 8.3 Implement policy creation form (RHIDP-15308)
-- 8.4 Implement policy deletion with confirmation dialog (RHIDP-15308)
-- 8.5 Implement default posture view and change controls (RHIDP-15309)
-- 8.6 Add sidebar navigation item with `usePermission` visibility gating (RHIDP-15307)
-- 8.7 Add error handling for RBAC REST API failures
+- ~~8.1 Create standalone page component at `/ai-catalog/admin/rbac` with `RequirePermission` gating (RHIDP-15307)~~
+- ~~8.2 Implement current policies view from RBAC REST API (RHIDP-15307)~~
+- ~~8.3 Implement policy creation form (RHIDP-15308)~~
+- ~~8.4 Implement policy deletion with confirmation dialog (RHIDP-15308)~~
+- ~~8.5 Implement default posture view and change controls (RHIDP-15309)~~
+- ~~8.6 Add sidebar navigation item with `usePermission` visibility gating (RHIDP-15307)~~
+- ~~8.7 Add error handling for RBAC REST API failures~~
 
 ### Specifications
 
-- `openspec/changes/ai-catalog-asset-governance/specs/rbac-admin-ui/spec.md`
-- `openspec/changes/ai-catalog-asset-governance/specs/default-deny-config/spec.md`
+- ~~`openspec/changes/ai-catalog-asset-governance/specs/rbac-admin-ui/spec.md`~~
+- ~~`openspec/changes/ai-catalog-asset-governance/specs/default-deny-config/spec.md`~~
 
 ---
 
@@ -1538,7 +1538,7 @@ Tier 1 (depends on Tier 0):
   [26] Ingestion Health Admin UI         → [3], [5]  (6.3 soft prereq)
 
 Tier 2 (depends on Tier 1):
-  [25] RBAC Admin UI                     → [3], [20]
+  ~~[25] RBAC Admin UI                     → [3], [20]~~
   [27] Neo4j Sync Status Panel           → [5], [17]
   [28] Connector Config Admin UI         → [6], [22]
   [29] Analytics API + Eval Hub          → [5], [21]

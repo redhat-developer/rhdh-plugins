@@ -142,6 +142,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'module.statuses.success': 'Erfolg',
     'module.statuses.error': 'Fehler',
     'module.statuses.cancelled': 'Abgebrochen',
+    'module.statuses.stale': 'Veraltet',
     'module.statuses.removed': 'Entfernt',
     'artifact.types.migrated_sources': 'Migrierte Quellen',
     'artifact.types.project_metadata': 'Projektmetadaten',
@@ -167,6 +168,7 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.statuses.success': 'Erfolg',
     'modulePage.phases.statuses.error': 'Fehler',
     'modulePage.phases.statuses.cancelled': 'Abgebrochen',
+    'modulePage.phases.statuses.stale': 'Veraltet',
     'modulePage.phases.reanalyzeInstructions':
       'Der Modulmigrationsplan ist bereits vorhanden. Falls der gesamte Projektmigrationsplan aktualisiert wurde, lösen Sie die Analyse erneut aus, um die Änderungen widerzuspiegeln.',
     'modulePage.phases.rerunAnalyze': 'Modulmigrationsplan neu erstellen',
@@ -211,6 +213,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
     'modulePage.phases.telemetry.totalOutputTokens': 'Gesamte Ausgabe-Tokens',
     'modulePage.phases.resyncMigrationPlanInstructions':
       'Modulliste synchronisieren, um sie an den Migrationsplan anzupassen.',
+    'modulePage.phases.staleInstructions':
+      'Dieses Phasenergebnis ist veraltet, weil eine vorgelagerte Phase erneut ausgeführt wurde. Erneut ausführen, um zu aktualisieren.',
     'time.duration.daysAndHours': '{{days}}T {{hours}}Std',
     'time.duration.daysOnly': '{{days}}T',
     'time.duration.hoursAndMinutes': '{{hours}}Std {{minutes}}Min',

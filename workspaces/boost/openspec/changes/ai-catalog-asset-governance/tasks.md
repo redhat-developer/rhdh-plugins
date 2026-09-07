@@ -11,7 +11,7 @@
 
 ## 2. Graduated Visibility — Backend (P0) — RHIDP-15271, RHIDP-15272
 
-- [ ] 2.1 Implement Tier 2 field-level filtering in AI asset detail endpoint (omit usage-docs, connection endpoints, config when `ai-catalog.asset.access.usage-docs` is DENIED)
+- [ ] 2.1 Implement Tier 2 field-level filtering in AI asset detail endpoint (omit usage-docs, connection endpoints, config, deployment parameters when `ai-catalog.asset.access.usage-docs` is DENIED)
 - [ ] 2.2 Implement entity-level filtering on list endpoint using `authorizeConditional()` + `toQuery()` for `ai-catalog.asset.access`
 - [ ] 2.3 Implement batch `authorizeConditional()` for Tier 2 (single check, apply uniformly to response)
 - [ ] 2.4 Add unit tests for field-level filtering (Tier 1 only, Tier 2 included, no access)
@@ -54,26 +54,27 @@
 - [ ] 6.5 Implement `rhdh.io/ai-catalog-ingested-at` annotation stamping at ingestion time
 - [ ] 6.6 Implement configuration validation at startup (reject invalid values, warn on unknown categories/connectors)
 - [ ] 6.7 Add unit tests for default-deny posture (global, per-category, per-connector)
-- [ ] 6.8 Persist policy-change timestamp (via `AdminConfigService.setOverride()`) when admin changes default posture; read in `AICatalogRBACProvider.refresh()` to compare against `rhdh.io/ai-catalog-ingested-at`
+- [ ] 6.8 Detect default-posture config changes on startup/reload in `AICatalogRBACProvider` (compare current `ai-catalog.rbac.defaultPolicy` and per-category/per-connector values against last-observed values persisted in provider state); persist the policy-change timestamp when they differ; read it in `refresh()` to compare against `rhdh.io/ai-catalog-ingested-at` (no `AdminConfigService.setOverride()` — posture is YAML-managed, see design Decision 4/5)
+- [ ] 6.9 Implement `ai-catalog.admin` bypass: users holding `ai-catalog.admin` skip default-deny (catch-all DENY) evaluation for `ai-catalog.asset.access` and see all assets regardless of posture (verified by 10.11; see default-deny-config spec)
 
 ## 7. Audit Logging (P1) — RHIDP-15277, RHIDP-15279, RHIDP-15280
 
-- [ ] 7.1 Define audit event types: `posture-changed`, `policy-created`, `policy-updated`, `policy-deleted` (RHIDP-15279)
-- [ ] 7.2 Define ingestion audit events: `sync-completed`, `sync-error`, `entity-created`, `entity-updated`, `entity-deleted` (RHIDP-15280)
+- [ ] 7.1 Define audit event type: `ai-catalog.rbac.posture-changed` ~~, `policy-created`, `policy-updated`, `policy-deleted`~~ (RHIDP-15279) — policy CRUD is covered by the RBAC plugin `AuditorService`; the AI Catalog does not emit `policy-*` events (see audit-logging spec and design Decision 6)
+- [ ] 7.2 Define ingestion audit events: `ai-catalog.ingestion.sync-completed`, `ai-catalog.ingestion.sync-error`, `ai-catalog.ingestion.entity-created`, `ai-catalog.ingestion.entity-updated`, `ai-catalog.ingestion.entity-deleted` (RHIDP-15280)
 - [ ] 7.3 Implement audit event emitters using `LoggerService` with structured metadata
-- [ ] 7.4 Integrate audit events into posture change and policy CRUD flows in admin UI backend routes (RHIDP-15279)
+- [ ] 7.4 Integrate audit events into the posture change flow ~~and policy CRUD flows in admin UI backend routes~~ (RHIDP-15279) — policy CRUD is audited by the RBAC plugin `AuditorService`
 - [ ] 7.5 Integrate audit events into entity provider sync cycle (RHIDP-15280)
 - [ ] 7.6 Verify events do not duplicate RBAC plugin `AuditorService` coverage
 
-## 8. RBAC Admin UI (P2) — RHIDP-15304, RHIDP-15307, RHIDP-15308, RHIDP-15309
+## 8. ~~RBAC Admin UI (P2) — RHIDP-15304, RHIDP-15307, RHIDP-15308, RHIDP-15309~~
 
-- [ ] 8.1 Create standalone page component at `/ai-catalog/admin/rbac` with `RequirePermission` gating (RHIDP-15307)
-- [ ] 8.2 Implement current policies view (fetch from RBAC REST API: `GET /api/permission/policies`, `GET /api/permission/roles`) (RHIDP-15307)
-- [ ] 8.3 Implement policy creation form (permission, decision, condition rule, parameters, role) (RHIDP-15308)
-- [ ] 8.4 Implement policy deletion with confirmation dialog and impact summary (RHIDP-15308)
-- [ ] 8.5 Implement default posture view and change controls with confirmation dialog (RHIDP-15309)
-- [ ] 8.6 Add sidebar navigation item with `usePermission` visibility gating (RHIDP-15307)
-- [ ] 8.7 Add error handling for RBAC REST API failures (user-friendly messages, no internal details exposed)
+- [ ] ~~8.1 Create standalone page component at `/ai-catalog/admin/rbac` with `RequirePermission` gating (RHIDP-15307)~~
+- [ ] ~~8.2 Implement current policies view (fetch from RBAC REST API: `GET /api/permission/policies`, `GET /api/permission/roles`) (RHIDP-15307)~~
+- [ ] ~~8.3 Implement policy creation form (permission, decision, condition rule, parameters, role) (RHIDP-15308)~~
+- [ ] ~~8.4 Implement policy deletion with confirmation dialog and impact summary (RHIDP-15308)~~
+- [ ] ~~8.5 Implement default posture view and change controls with confirmation dialog (RHIDP-15309)~~
+- [ ] ~~8.6 Add sidebar navigation item with `usePermission` visibility gating (RHIDP-15307)~~
+- [ ] ~~8.7 Add error handling for RBAC REST API failures (user-friendly messages, no internal details exposed)~~
 
 ## 9. SkillBundle Filtering (P1) — RHIDP-15310, RHIDP-15273
 
@@ -95,6 +96,6 @@
 - [ ] 10.6 Verify default-deny posture applies catch-all DENY to newly ingested assets
 - [ ] 10.7 Verify per-category and per-connector posture scoping
 - [ ] 10.8 Verify audit events emit for posture changes and ingestion sync
-- [ ] 10.9 Verify admin UI creates/deletes policies via RBAC REST API
+- [ ] ~~10.9 Verify admin UI creates/deletes policies via RBAC REST API~~
 - [ ] 10.10 Verify SkillBundle filtering shows correct visible/total counts
 - [ ] 10.11 Verify `ai-catalog.admin` holders bypass default-deny for all assets

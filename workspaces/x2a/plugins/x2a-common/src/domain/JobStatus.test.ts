@@ -38,23 +38,28 @@ describe('JobStatus', () => {
       expect(JobStatus.from('cancelled')).toBe(JobStatus.CANCELLED);
     });
 
+    it('returns JobStatus.STALE for "stale"', () => {
+      expect(JobStatus.from('stale')).toBe(JobStatus.STALE);
+    });
+
     it('throws for an invalid status', () => {
       expect(() => JobStatus.from('invalid')).toThrow(
-        'Invalid job status: "invalid". Valid: pending, running, success, error, cancelled',
+        'Invalid job status: "invalid". Valid: pending, running, success, error, cancelled, stale',
       );
     });
   });
 
   describe('all', () => {
-    it('returns 5 statuses in defined order', () => {
+    it('returns 6 statuses in defined order', () => {
       const all = JobStatus.all();
-      expect(all).toHaveLength(5);
+      expect(all).toHaveLength(6);
       expect(all).toEqual([
         JobStatus.PENDING,
         JobStatus.RUNNING,
         JobStatus.SUCCESS,
         JobStatus.ERROR,
         JobStatus.CANCELLED,
+        JobStatus.STALE,
       ]);
     });
   });
@@ -67,6 +72,7 @@ describe('JobStatus', () => {
         'success',
         'error',
         'cancelled',
+        'stale',
       ]);
     });
   });
@@ -81,11 +87,12 @@ describe('JobStatus', () => {
   });
 
   describe('finishedStatuses', () => {
-    it('returns success, error, and cancelled', () => {
+    it('returns success, error, cancelled, and stale', () => {
       expect(JobStatus.finishedStatuses()).toEqual([
         JobStatus.SUCCESS,
         JobStatus.ERROR,
         JobStatus.CANCELLED,
+        JobStatus.STALE,
       ]);
     });
   });
@@ -115,6 +122,11 @@ describe('JobStatus', () => {
       expect(JobStatus.CANCELLED.isFinished()).toBe(true);
       expect(JobStatus.CANCELLED.isActive()).toBe(false);
     });
+
+    it('STALE is finished', () => {
+      expect(JobStatus.STALE.isFinished()).toBe(true);
+      expect(JobStatus.STALE.isActive()).toBe(false);
+    });
   });
 
   describe('individual predicates', () => {
@@ -142,6 +154,11 @@ describe('JobStatus', () => {
       expect(JobStatus.CANCELLED.isCancelled()).toBe(true);
       expect(JobStatus.PENDING.isCancelled()).toBe(false);
     });
+
+    it('isStale', () => {
+      expect(JobStatus.STALE.isStale()).toBe(true);
+      expect(JobStatus.SUCCESS.isStale()).toBe(false);
+    });
   });
 
   describe('toString', () => {
@@ -151,6 +168,7 @@ describe('JobStatus', () => {
       expect(JobStatus.SUCCESS.toString()).toBe('success');
       expect(JobStatus.ERROR.toString()).toBe('error');
       expect(JobStatus.CANCELLED.toString()).toBe('cancelled');
+      expect(JobStatus.STALE.toString()).toBe('stale');
     });
   });
 
@@ -175,6 +193,7 @@ describe('JobStatus', () => {
       expect(JobStatus.from('success')).toBe(JobStatus.SUCCESS);
       expect(JobStatus.from('error')).toBe(JobStatus.ERROR);
       expect(JobStatus.from('cancelled')).toBe(JobStatus.CANCELLED);
+      expect(JobStatus.from('stale')).toBe(JobStatus.STALE);
     });
   });
 });

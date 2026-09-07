@@ -170,6 +170,8 @@ export interface X2ADatabaseServiceApi {
 
   deleteJob(args: { id: string }): Promise<number>;
 
+  markJobsAsStale(jobIds: string[]): Promise<void>;
+
   // Rules
 
   createRule(input: {
