@@ -309,7 +309,7 @@ async function reconcileInferenceService(
   const logger = config.logger!;
   const kind = isLLM ? 'LLMInferenceService' : 'InferenceService';
 
-  logger.info(`Reconciling ${kind}: ${namespace}/${name}`);
+  logger.debug(`Reconciling ${kind}: ${namespace}/${name}`);
 
   const ready = isLLM
     ? isLLMInferenceServiceReady(is, logger)
@@ -320,6 +320,8 @@ async function reconcileInferenceService(
     );
     return;
   }
+
+  logger.info(`Reconciling ${kind}: ${namespace}/${name}`);
 
   const authentication = await getAuthentication(
     config.coreClient,
