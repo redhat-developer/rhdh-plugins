@@ -19,7 +19,14 @@ import '@testing-library/jest-dom';
 import { JsonObject } from '@backstage/types';
 
 import { getDefaultRegistry } from '@rjsf/core';
-import { ObjectFieldTemplateProps, UiSchema } from '@rjsf/utils';
+import {
+  createSchemaUtils,
+  IdSchema,
+  ObjectFieldTemplateProps,
+  Registry,
+  UiSchema,
+} from '@rjsf/utils';
+import validator from '@rjsf/validator-ajv8';
 import { render, screen } from '@testing-library/react';
 import type { JSONSchema7 } from 'json-schema';
 
@@ -33,7 +40,12 @@ const schema: JSONSchema7 = {
   },
 };
 
-const registry = getDefaultRegistry<JsonObject, JSONSchema7>();
+const defaults = getDefaultRegistry<JsonObject, JSONSchema7>();
+const registry: Registry<JsonObject, JSONSchema7> = {
+  ...defaults,
+  rootSchema: schema,
+  schemaUtils: createSchemaUtils(validator, schema),
+};
 
 const createProps = (
   overrides: Partial<ObjectFieldTemplateProps<JsonObject, JSONSchema7>> = {},
@@ -53,7 +65,7 @@ const createProps = (
   ],
   schema,
   uiSchema: {},
-  idSchema: { $id: 'root' },
+  idSchema: { $id: 'root' } as IdSchema<JsonObject>,
   formData: {},
   formContext: { formData: {} },
   registry,
