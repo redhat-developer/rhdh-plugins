@@ -451,11 +451,15 @@ export class JobStatus {
   // (undocumented)
   isRunning(): boolean;
   // (undocumented)
+  isStale(): boolean;
+  // (undocumented)
   isSuccess(): boolean;
   // (undocumented)
   static readonly PENDING: JobStatus;
   // (undocumented)
   static readonly RUNNING: JobStatus;
+  // (undocumented)
+  static readonly STALE: JobStatus;
   // (undocumented)
   static readonly SUCCESS: JobStatus;
   // (undocumented)
@@ -472,7 +476,8 @@ export type JobStatusEnum =
   | 'running'
   | 'success'
   | 'error'
-  | 'cancelled';
+  | 'cancelled'
+  | 'stale';
 
 // @public
 export const MAX_BACKOFF_MS: number;
@@ -535,7 +540,8 @@ export type ModuleStatus =
   | 'success'
   | 'error'
   | 'cancelled'
-  | 'removed';
+  | 'removed'
+  | 'stale';
 
 // @public
 export function normalizeRepoUrl(url: string): string;
@@ -1109,6 +1115,7 @@ export const X2A_JOB_STATUS_VALUES: readonly [
   'success',
   'error',
   'cancelled',
+  'stale',
 ];
 
 // @public

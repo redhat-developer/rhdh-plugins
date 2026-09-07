@@ -144,6 +144,7 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'module.statuses.success': 'Succès',
     'module.statuses.error': 'Erreur',
     'module.statuses.cancelled': 'Annulé',
+    'module.statuses.stale': 'Périmé',
     'module.statuses.removed': 'Supprimé',
     'artifact.types.migrated_sources': 'Sources migrées',
     'artifact.types.project_metadata': 'Métadonnées du projet',
@@ -169,6 +170,7 @@ const x2aPluginTranslationFr = createTranslationMessages({
     'modulePage.phases.statuses.success': 'Succès',
     'modulePage.phases.statuses.error': 'Erreur',
     'modulePage.phases.statuses.cancelled': 'Annulé',
+    'modulePage.phases.statuses.stale': 'Périmé',
     'modulePage.phases.reanalyzeInstructions':
       "Le plan de migration du module est déjà présent. Si le plan de migration global du projet a été mis à jour, relancez l'analyse pour refléter les changements.",
     'modulePage.phases.rerunAnalyze': 'Recréer le plan de migration du module',
@@ -214,6 +216,8 @@ const x2aPluginTranslationFr = createTranslationMessages({
       'Total des jetons de sortie',
     'modulePage.phases.resyncMigrationPlanInstructions':
       'Resynchroniser la liste des modules pour correspondre au plan de migration.',
+    'modulePage.phases.staleInstructions':
+      'Le résultat de cette phase est périmé car une phase en amont a été réexécutée. Réexécutez pour mettre à jour.',
     'time.duration.daysAndHours': '{{days}}j {{hours}}h',
     'time.duration.daysOnly': '{{days}}j',
     'time.duration.hoursAndMinutes': '{{hours}}h {{minutes}}min',
