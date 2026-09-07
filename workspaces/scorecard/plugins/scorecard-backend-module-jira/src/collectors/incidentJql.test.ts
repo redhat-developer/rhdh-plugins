@@ -35,7 +35,7 @@ describe('buildIncidentJql', () => {
     const jql = buildIncidentJql(baseFilters, options, newEntityComponent());
 
     expect(jql).toBe(
-      '(project = "INC") AND (type = "Incident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1777593600000)',
+      '(project = "INC") AND (type = "Incident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1777593600000) ORDER BY created DESC',
     );
   });
 
@@ -47,7 +47,7 @@ describe('buildIncidentJql', () => {
     );
 
     expect(jql).toBe(
-      '(project = "INC") AND (type = "ServiceIncident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1777593600000)',
+      '(project = "INC") AND (type = "ServiceIncident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1777593600000) ORDER BY created DESC',
     );
   });
 
@@ -63,7 +63,7 @@ describe('buildIncidentJql', () => {
     );
 
     expect(jql).toBe(
-      '(project = "INC") AND (component = "Payments") AND (labels = "sev-1") AND (type = "Incident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1777593600000)',
+      '(project = "INC") AND (component = "Payments") AND (labels = "sev-1") AND (type = "Incident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1777593600000) ORDER BY created DESC',
     );
   });
 
@@ -77,7 +77,7 @@ describe('buildIncidentJql', () => {
     );
 
     expect(jql).toBe(
-      '(project = "INC") AND (type = "ProductionIncident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1777593600000)',
+      '(project = "INC") AND (type = "ProductionIncident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1777593600000) ORDER BY created DESC',
     );
     expect(jql).not.toContain('(type = "ServiceIncident")');
   });
@@ -92,7 +92,14 @@ describe('buildIncidentJql', () => {
     );
 
     expect(jql).toBe(
-      '(project = "INC") AND (type = "ProductionIncident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1777593600000)',
+      '(project = "INC") AND (type = "ProductionIncident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1777593600000) ORDER BY created DESC',
     );
+  });
+
+  it('should order by created descending, outside the AND chain', () => {
+    const jql = buildIncidentJql(baseFilters, options, newEntityComponent());
+
+    expect(jql.endsWith(' ORDER BY created DESC')).toBe(true);
+    expect(jql).not.toContain('AND (ORDER BY');
   });
 });

@@ -81,7 +81,7 @@ describe('JiraIncidentsCollector', () => {
       await collector.collect({ entity: mockEntity, input });
 
       expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
-        '(project = "INC") AND (type = "Incident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1780272000000)',
+        '(project = "INC") AND (type = "Incident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1780272000000) ORDER BY created DESC',
       );
     });
 
@@ -92,7 +92,7 @@ describe('JiraIncidentsCollector', () => {
       });
 
       expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
-        '(project = "INC") AND (type = "ServiceIncident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1780272000000)',
+        '(project = "INC") AND (type = "ServiceIncident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1780272000000) ORDER BY created DESC',
       );
     });
 
@@ -107,7 +107,7 @@ describe('JiraIncidentsCollector', () => {
       });
 
       expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
-        '(project = "INC") AND (component = "Payments") AND (labels = "sev-1") AND (type = "Incident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1780272000000)',
+        '(project = "INC") AND (component = "Payments") AND (labels = "sev-1") AND (type = "Incident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1780272000000) ORDER BY created DESC',
       );
     });
 
@@ -121,7 +121,7 @@ describe('JiraIncidentsCollector', () => {
       });
 
       expect(mockJiraClient.getIssues).toHaveBeenCalledWith(
-        '(project = "INC") AND (component = "Payments") AND (type = "ServiceIncident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1780272000000)',
+        '(project = "INC") AND (component = "Payments") AND (type = "ServiceIncident") AND (created >= 1780272000000) AND (created <= 1782863999999) AND (updated >= 1780272000000) ORDER BY created DESC',
       );
     });
 

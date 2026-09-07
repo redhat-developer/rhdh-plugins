@@ -46,13 +46,17 @@ export function buildIncidentJql(
   const issueType = resolveIncidentIssueType(entity, options.issueType);
 
   // Epoch millis must be unquoted in JQL (quoted values are parsed as local datetime).
-  return joinJqlClauses([
+  const jql = joinJqlClauses([
     ...Object.values(filters),
     `type = "${issueType}"`,
     `created >= ${from}`,
     `created <= ${to}`,
     `updated >= ${updatedSince}`,
   ]);
+
+  // Stable order by created
+  // Use DESC to keep the newest data when `fetchItemsLimit` is reached
+  return `${jql} ORDER BY created DESC`;
 }
 
 function resolveIncidentIssueType(

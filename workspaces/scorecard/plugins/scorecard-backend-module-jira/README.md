@@ -219,7 +219,7 @@ Collectors in Scorecard are schema-validated at runtime. Any custom collector re
 - **Behavior**
   - Collects Jira issues matching the configured issue type (default `Incident`)
   - Does not apply the open-issues `mandatoryFilter` / global `customFilter` from app-config
-  - Client-side fetch cap: at most **1000** incidents are collected per request. Pagination stops once the cap is reached
+  - Client-side fetch cap: at most **1000** incidents are collected per request. Pagination stops once the cap is reached, the cap keeps the most recent in-window incidents
 
 Example entity annotations for `jira:incidents` collector:
 
