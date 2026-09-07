@@ -25,8 +25,11 @@ export function laterOf(windowFrom: Date, watermark: Date | undefined): Date {
  * Computes the data boundary for a collector.
  *
  * With no prior watermark, returns `windowFrom`. Otherwise returns
- * `max(windowFrom, watermark - lookbackMs)` so collected data created
+ * `max(windowFrom, min(watermark, now) - lookbackMs)` so collected data created
  * near the last watermark are re-queried.
+ *
+ * A watermark ahead of the current time cannot describe already collected data
+ * and is clamped to now, otherwise the boundary would land in the future.
  *
  * Usage:
  * - Deployments: `from` parameter when syncing deployment data
@@ -40,10 +43,15 @@ export function collectorDataBoundary(
   if (!watermark) {
     return windowFrom;
   }
+  const now = new Date();
+  const effectiveWatermark = watermark > now ? now : watermark;
   if (lookbackMs <= 0) {
-    return laterOf(windowFrom, watermark);
+    return laterOf(windowFrom, effectiveWatermark);
   }
-  return laterOf(windowFrom, new Date(watermark.getTime() - lookbackMs));
+  return laterOf(
+    windowFrom,
+    new Date(effectiveWatermark.getTime() - lookbackMs),
+  );
 }
 
 /**
@@ -56,8 +64,15 @@ export function isWithinStaleWindow(
   if (!lastSyncedAt) {
     return false;
   }
-  const now = new Date();
-  return now.getTime() - lastSyncedAt.getTime() < staleAfterMs;
+
+  const elapsedMs = new Date().getTime() - lastSyncedAt.getTime();
+
+  // A negative elapsed time makes no sense - treat data as stale and refresh
+  if (elapsedMs < 0) {
+    return false;
+  }
+
+  return elapsedMs < staleAfterMs;
 }
 
 /**

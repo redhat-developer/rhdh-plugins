@@ -72,6 +72,28 @@ describe('collectorDataBoundary', () => {
     const watermark = new Date('2026-06-15T00:00:00.000Z');
     expect(collectorDataBoundary(windowFrom, watermark, 0)).toBe(watermark);
   });
+
+  it('clamps a future watermark to now before subtracting lookback', () => {
+    // A watermark written while the clock was jumped forward would otherwise
+    // push the boundary into the future.
+    const before = Date.now();
+    const watermark = new Date(before + 7 * 24 * 60 * 60 * 1000);
+
+    const boundary = collectorDataBoundary(windowFrom, watermark, lookbackMs);
+
+    expect(boundary.getTime()).toBeGreaterThanOrEqual(before - lookbackMs);
+    expect(boundary.getTime()).toBeLessThanOrEqual(Date.now() - lookbackMs);
+  });
+
+  it('clamps a future watermark to now when lookback is zero', () => {
+    const before = Date.now();
+    const watermark = new Date(before + 7 * 24 * 60 * 60 * 1000);
+
+    const boundary = collectorDataBoundary(windowFrom, watermark, 0);
+
+    expect(boundary.getTime()).toBeGreaterThanOrEqual(before);
+    expect(boundary.getTime()).toBeLessThanOrEqual(Date.now());
+  });
 });
 
 describe('coalesceInFlight', () => {
@@ -156,6 +178,15 @@ describe('isWithinStaleWindow', () => {
 
   it('returns false when last sync is outside staleAfter', () => {
     expect(isWithinStaleWindow(new Date(Date.now() - 180_000), 60_000)).toBe(
+      false,
+    );
+  });
+
+  it('returns false when last sync is in the future', () => {
+    // A watermark written while the clock was jumped forward must not be
+    // treated as fresh, otherwise every refresh is skipped until real time
+    // catches up to it.
+    expect(isWithinStaleWindow(new Date(Date.now() + 30_000), 60_000)).toBe(
       false,
     );
   });
