@@ -105,8 +105,14 @@ export class NotebookAddDocumentModalPage {
 
   async dismiss(): Promise<void> {
     const cancel = this.cancelButton();
-    await cancel.scrollIntoViewIfNeeded();
-    await cancel.click({ force: true });
+    if (await cancel.isVisible()) {
+      await cancel.scrollIntoViewIfNeeded();
+      await cancel.click({ force: true });
+    } else {
+      // Compact scoped dialogs scroll inside the paper; footer actions can sit
+      // below the fold while the title-bar close control stays visible.
+      await this.clickTitleClose();
+    }
     await expect(this.dialog()).toBeHidden({ timeout: 10_000 });
   }
 
