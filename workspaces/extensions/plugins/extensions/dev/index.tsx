@@ -43,7 +43,8 @@ import {
   SidebarSignOutButton,
 } from '@backstage/dev-utils';
 
-import { extensionsPage, extensionsTranslationsModule } from '../src/alpha';
+import { extensionsPage } from '../src';
+import translations from '../src/translations';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 import { extensionsApiRef, dynamicPluginsInfoApiRef } from '../src/api';
 import { allRoutes } from '../src/routes';
@@ -129,7 +130,7 @@ const devNavModule = createFrontendModule({
 const app = createApp({
   features: [
     pluginHeaderActionsModule,
-    extensionsTranslationsModule,
+    translations,
     extensionsDevPlugin,
     devNavModule,
     rhdhThemeModule,

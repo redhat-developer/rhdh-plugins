@@ -1,8 +1,8 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-extensions",
   "version": "0.19.1",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "src/index.tsx",
+  "types": "src/index.tsx",
   "license": "Apache-2.0",
   "publishConfig": {
     "access": "public"
@@ -24,9 +24,10 @@
   "configSchema": "config.d.ts",
   "sideEffects": false,
   "exports": {
-    ".": "./src/index.ts",
+    ".": "./src/index.tsx",
     "./alpha": "./src/alpha/index.tsx",
-    "./extensions-translations-module": "./src/extensionsTranslationsModuleExport.ts",
+    "./legacy": "./src/legacy.ts",
+    "./translations": "./src/translations.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
@@ -34,8 +35,11 @@
       "alpha": [
         "src/alpha/index.tsx"
       ],
-      "extensions-translations-module": [
-        "src/extensionsTranslationsModuleExport.ts"
+      "legacy": [
+        "src/legacy.ts"
+      ],
+      "translations": [
+        "src/translations.ts"
       ],
       "package.json": [
         "package.json"
@@ -92,5 +96,14 @@
     "app-config.dynamic.yaml",
     "config.d.ts",
     "dist"
-  ]
+  ],
+  "scalprum": {
+    "name": "red-hat-developer-hub.backstage-plugin-extensions",
+    "exposedModules": {
+      "PluginRoot": "./src/index.tsx",
+      "Alpha": "./src/alpha/index.tsx",
+      "Legacy": "./src/legacy.ts",
+      "Translations": "./src/translations.ts"
+    }
+  }
 }

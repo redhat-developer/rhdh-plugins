@@ -52,7 +52,7 @@ import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
 
-import { DynamicExtensionsPluginRouter as Extensions } from '@red-hat-developer-hub/backstage-plugin-extensions';
+import { DynamicExtensionsPluginRouter as Extensions } from '@red-hat-developer-hub/backstage-plugin-extensions/legacy';
 import { extensionsTranslations } from '@red-hat-developer-hub/backstage-plugin-extensions/alpha';
 
 import { apis } from './apis';

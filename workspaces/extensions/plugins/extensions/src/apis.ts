@@ -21,13 +21,13 @@ import {
   fetchApiRef,
   identityApiRef,
 } from '@backstage/frontend-plugin-api';
-import { dynamicPluginsInfoApiRef, extensionsApiRef } from '../api';
+import { dynamicPluginsInfoApiRef, extensionsApiRef } from './api';
 import { ExtensionsBackendClient } from '@red-hat-developer-hub/backstage-plugin-extensions-common';
-import { DynamicPluginsInfoClient } from '../api/DynamicPluginsInfoClient';
+import { DynamicPluginsInfoClient } from './api/DynamicPluginsInfoClient';
 
 /**
  * API module providing extensions implementations.
- * @alpha
+ * @public
  */
 export const extensionApi = ApiBlueprint.make({
   name: 'extensions',
@@ -52,7 +52,7 @@ export const extensionApi = ApiBlueprint.make({
 
 /**
  * API module providing dynamic-plugins-info implementations.
- * @alpha
+ * @public
  */
 export const dynamicPluginsInfoApi = ApiBlueprint.make({
   name: 'dynamic-plugins-info',

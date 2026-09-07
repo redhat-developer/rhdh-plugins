@@ -7,9 +7,11 @@ dynamicPlugins:
           module: Alpha
       appIcons:
         - name: pluginsIcon
+          module: Legacy
           importName: PluginsIcon
       dynamicRoutes:
         - path: /extensions
+          module: Legacy
           importName: DynamicExtensionsPluginRouter
           menuItem:
             icon: pluginsIcon
