@@ -53,6 +53,18 @@ import {
   gitHubWeightedPartiallyAggregatedResponse,
 } from './utils/scorecardResponseUtils';
 import {
+  totalOpenBugsAggregatedResponse,
+  totalOpenBugsPartiallyAggregatedResponse,
+  avgOpenPrsAggregatedResponse,
+  avgOpenPrsPartiallyAggregatedResponse,
+  entitiesWithOpenPrsAggregatedResponse,
+  entitiesWithOpenPrsPartiallyAggregatedResponse,
+  maxOpenPrsAggregatedResponse,
+  maxOpenPrsPartiallyAggregatedResponse,
+  minOpenPrsAggregatedResponse,
+  minOpenPrsPartiallyAggregatedResponse,
+} from './utils/scalarAggregationTypeResponses';
+import {
   ScorecardMessages,
   evaluateMessage,
   formatLastUpdatedDate,
@@ -83,6 +95,8 @@ import {
   AGGREGATED_CARDS_METADATA,
   AGGREGATED_CARDS_METRIC_IDS,
 } from './constants/aggregations';
+import { SCALAR_AGGREGATION_KPIS } from './constants/scalarAggregations';
+import { registerScalarAggregationKpiTests } from './utils/registerScalarAggregationKpiTests';
 import { installWebpackDevOverlayGuards } from './utils/devOverlays';
 
 test.describe('Scorecard Plugin Tests', () => {
@@ -830,6 +844,70 @@ test.describe('Scorecard Plugin Tests', () => {
         );
       });
     });
+
+    const getScalarAggregationKpiTestContext = () => ({
+      page,
+      homePage,
+      scorecardDrillDownPage,
+      translations,
+      currentLocale,
+    });
+
+    registerScalarAggregationKpiTests(
+      {
+        type: 'sum',
+        aggregationMetadata: SCALAR_AGGREGATION_KPIS.totalOpenBugs,
+        route: ScorecardRoutes.TOTAL_OPEN_BUGS_AGGREGATION_ROUTE,
+        aggregatedResponse: totalOpenBugsAggregatedResponse,
+        partialResponse: totalOpenBugsPartiallyAggregatedResponse,
+        runAccessibility: true,
+      },
+      getScalarAggregationKpiTestContext,
+    );
+
+    registerScalarAggregationKpiTests(
+      {
+        type: 'average',
+        aggregationMetadata: SCALAR_AGGREGATION_KPIS.avgOpenPrs,
+        route: ScorecardRoutes.AVG_OPEN_PRS_AGGREGATION_ROUTE,
+        aggregatedResponse: avgOpenPrsAggregatedResponse,
+        partialResponse: avgOpenPrsPartiallyAggregatedResponse,
+      },
+      getScalarAggregationKpiTestContext,
+    );
+
+    registerScalarAggregationKpiTests(
+      {
+        type: 'count',
+        aggregationMetadata: SCALAR_AGGREGATION_KPIS.entitiesWithOpenPrs,
+        route: ScorecardRoutes.ENTITIES_WITH_OPEN_PRS_AGGREGATION_ROUTE,
+        aggregatedResponse: entitiesWithOpenPrsAggregatedResponse,
+        partialResponse: entitiesWithOpenPrsPartiallyAggregatedResponse,
+      },
+      getScalarAggregationKpiTestContext,
+    );
+
+    registerScalarAggregationKpiTests(
+      {
+        type: 'max',
+        aggregationMetadata: SCALAR_AGGREGATION_KPIS.maxOpenPrs,
+        route: ScorecardRoutes.MAX_OPEN_PRS_AGGREGATION_ROUTE,
+        aggregatedResponse: maxOpenPrsAggregatedResponse,
+        partialResponse: maxOpenPrsPartiallyAggregatedResponse,
+      },
+      getScalarAggregationKpiTestContext,
+    );
+
+    registerScalarAggregationKpiTests(
+      {
+        type: 'min',
+        aggregationMetadata: SCALAR_AGGREGATION_KPIS.minOpenPrs,
+        route: ScorecardRoutes.MIN_OPEN_PRS_AGGREGATION_ROUTE,
+        aggregatedResponse: minOpenPrsAggregatedResponse,
+        partialResponse: minOpenPrsPartiallyAggregatedResponse,
+      },
+      getScalarAggregationKpiTestContext,
+    );
 
     test.describe('Drill down logic', () => {
       test('GitHub scorecard: tooltips, entity drill-down, and metric sort', async () => {

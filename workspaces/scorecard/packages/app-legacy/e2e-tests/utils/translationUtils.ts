@@ -21,6 +21,7 @@ import scorecardTranslationFr from '../../../../plugins/scorecard/src/translatio
 import scorecardTranslationEs from '../../../../plugins/scorecard/src/translations/es';
 import scorecardTranslationIt from '../../../../plugins/scorecard/src/translations/it';
 import scorecardTranslationJa from '../../../../plugins/scorecard/src/translations/ja';
+import type { ScalarAggregationType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 /* eslint-enable @backstage/no-relative-monorepo-imports */
 
 export type ScorecardMessages = typeof scorecardMessages;
@@ -489,6 +490,51 @@ export function getWeightedStatusScoreCardSnapshot(
           - separator
           - paragraph: ${cardDescription}
           - application: ${weightedStatusScoreLabel}
+        `;
+}
+
+/** Snapshot for scalar-type homepage KPI cards (numeric stat tile, no threshold legend). */
+export function getScalarCardSnapshot(
+  translations: ScorecardMessages,
+  options: {
+    drillDownMetricId: 'jira.openIssues' | 'github.openPRs';
+    drillDownAggregationId?: string;
+    aggregationType: ScalarAggregationType;
+    homepageCalculationHealth?: { healthy: string; total: string };
+    cardTitle: string;
+    cardDescription: string;
+    scalarValue: string;
+  },
+): string {
+  const {
+    drillDownMetricId,
+    drillDownAggregationId,
+    aggregationType,
+    cardTitle,
+    cardDescription,
+    scalarValue,
+  } = options;
+  const aggregationSegment = drillDownAggregationId ?? drillDownMetricId;
+  const { healthy, total } = options.homepageCalculationHealth ?? {
+    healthy: '10',
+    total: '10',
+  };
+  const drillDownLinkSnapshot = getHomepageDrillDownLinkSnapshot(translations, {
+    drillDownMetricId,
+    aggregationSegment,
+    healthy,
+    total,
+  });
+  const aggregationLabel = translations.aggregation[aggregationType];
+  return `
+        - article:
+          - text: ${cardTitle}
+          ${drillDownLinkSnapshot}
+          - button
+          - separator
+          - paragraph: ${cardDescription}
+          - heading "${scalarValue}" [level=3]
+          - paragraph: ${aggregationLabel}
         `;
 }
 
