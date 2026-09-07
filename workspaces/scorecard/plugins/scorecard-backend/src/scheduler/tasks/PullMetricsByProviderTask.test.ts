@@ -22,7 +22,7 @@ import {
   MockNumberProvider,
   MockBatchBooleanProvider,
 } from '../../../__fixtures__/mockProviders';
-import { Config } from '@backstage/config';
+import type { Config } from '@backstage/config';
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import { mockDatabaseMetricValues } from '../../../__fixtures__/mockDatabaseMetricValues';
 import { ThresholdEvaluator } from '../../threshold/ThresholdEvaluator';
@@ -179,6 +179,39 @@ describe('PullMetricsByProviderTask', () => {
         id: 'github.testMetric',
         fn: expect.any(Function),
       });
+    });
+  });
+
+  describe('start - scheduled fn error handling', () => {
+    it('should log error when scheduled task fn fails without rethrowing', async () => {
+      const childLogger = {
+        error: jest.fn(),
+        info: jest.fn(),
+        debug: jest.fn(),
+        warn: jest.fn(),
+        child: jest.fn(),
+      };
+      mockLogger.child.mockReturnValue(childLogger as any);
+
+      const pullError = new Error('pull failed');
+      jest
+        .spyOn(task as any, 'pullProviderMetrics')
+        .mockRejectedValue(pullError);
+
+      await task.start();
+
+      const { fn } = mockTaskRunner.run.mock.calls[0][0];
+      await expect(fn()).resolves.toBeUndefined();
+
+      expect(mockLogger.child).toHaveBeenCalledWith({
+        class: 'PullMetricsByProviderTask',
+        taskId: 'github.testMetric',
+        taskInstanceId: expect.any(String),
+      });
+      expect(childLogger.error).toHaveBeenCalledWith(
+        'github.testMetric pulling metrics failed, Error: pull failed',
+        pullError,
+      );
     });
   });
 
@@ -419,17 +452,18 @@ describe('PullMetricsByProviderTask', () => {
       expect(createMetricValuesSpy).toHaveBeenCalledWith([]);
     });
 
-    it('should throw error if pullProviderMetrics fails', async () => {
-      (task as any).pullProviderMetrics = jest
-        .fn()
-        .mockRejectedValue(new Error('test error'));
+    it('should log and rethrow when catalog query fails', async () => {
+      mockCatalog.queryEntities
+        .mockReset()
+        .mockRejectedValue(new Error('catalog down'));
 
       await expect(
         (task as any).pullProviderMetrics(mockProvider, mockLogger),
-      ).rejects.toThrow('test error');
-      await expect(
-        (task as any).pullProviderMetrics(mockProvider, mockLogger),
-      ).rejects.toThrow('test error');
+      ).rejects.toThrow('catalog down');
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        'Failed to pull metrics for github.testMetric: Error: catalog down',
+      );
     });
 
     describe('batch providers (return multiple metrics)', () => {
@@ -555,6 +589,37 @@ describe('PullMetricsByProviderTask', () => {
               catalogEntityRef: 'component:default/test2',
               metricId: 'filecheck.license',
               errorMessage: 'GitHub API error',
+            }),
+          ]),
+        );
+      });
+
+      it('should create error record when calculateMetrics omits a metric id', async () => {
+        jest
+          .spyOn(mockBatchProvider, 'calculateMetrics')
+          .mockResolvedValue(new Map([['filecheck.readme', true]]));
+
+        const createMetricValuesSpy = jest.spyOn(
+          mockDatabaseMetricValues,
+          'createMetricValues',
+        );
+        await (task as any).pullProviderMetrics(mockBatchProvider, mockLogger);
+
+        expect(createMetricValuesSpy).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({
+              catalogEntityRef: 'component:default/test1',
+              metricId: 'filecheck.license',
+              value: undefined,
+              errorMessage:
+                "calculateMetrics() did not return an entry for metric 'filecheck.license'",
+            }),
+            expect.objectContaining({
+              catalogEntityRef: 'component:default/test2',
+              metricId: 'filecheck.license',
+              value: undefined,
+              errorMessage:
+                "calculateMetrics() did not return an entry for metric 'filecheck.license'",
             }),
           ]),
         );

@@ -261,4 +261,72 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
       result: mockWeightedStatusScoreAggregationResult,
     });
   });
+
+  it('should warn and treat unknown status scores as zero', async () => {
+    const metricWithUnknownStatus = {
+      values: { success: 2, mystery: 1 },
+      total: 3,
+      timestamp: '2025-01-01T10:30:00.000Z',
+      entitiesConsidered: 3,
+      calculationErrorCount: 0,
+    };
+
+    (loader.loadStatusGroupedMetricByEntityRefs as jest.Mock).mockResolvedValue(
+      metricWithUnknownStatus,
+    );
+
+    await strategy.aggregate({
+      metric,
+      entityRefs,
+      thresholds: mockHigherIsBetterThresholds,
+      aggregationConfig,
+    });
+
+    expect(logger.warn).toHaveBeenCalledWith(
+      `The status "mystery" is not in the statusScores for weightedStatusScore aggregation of metric "${metric.id}"`,
+    );
+    expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+      metric,
+      expect.objectContaining({
+        weightedStatusSum: 200,
+        values: [
+          { name: 'success', count: 2, score: 100 },
+          { name: 'error', count: 0, score: 0 },
+        ],
+      }),
+      aggregationConfig,
+    );
+  });
+
+  it('should return weightedStatusScore 0 when there are no entities', async () => {
+    const emptyMetric = {
+      values: {},
+      total: 0,
+      timestamp: '2025-01-01T10:30:00.000Z',
+      entitiesConsidered: 0,
+      calculationErrorCount: 0,
+    };
+
+    (loader.loadStatusGroupedMetricByEntityRefs as jest.Mock).mockResolvedValue(
+      emptyMetric,
+    );
+
+    await strategy.aggregate({
+      metric,
+      entityRefs,
+      thresholds: mockHigherIsBetterThresholds,
+      aggregationConfig,
+    });
+
+    expect(spyMethods.toAggregatedMetricResultSpy).toHaveBeenCalledWith(
+      metric,
+      expect.objectContaining({
+        weightedStatusScore: 0,
+        weightedStatusSum: 0,
+        weightedStatusMaxPossible: 0,
+        aggregationChartDisplayColor: 'error.main',
+      }),
+      aggregationConfig,
+    );
+  });
 });
