@@ -1131,6 +1131,20 @@ describe('DatabaseMetricValues', () => {
         expect(result).toBeUndefined();
       },
     );
+
+    it.each(databases.eachSupportedId())(
+      'should return undefined when catalog entity refs list is empty - %p',
+      async databaseId => {
+        const { db } = await createDatabase(databaseId);
+
+        const result = await db.readAggregatedMetricByEntityRefs(
+          [],
+          'github.metric1',
+        );
+
+        expect(result).toBeUndefined();
+      },
+    );
   });
 
   describe('readEntityMetricsWithFilters', () => {
@@ -1383,6 +1397,54 @@ describe('DatabaseMetricValues', () => {
         expect(result).toHaveLength(2);
         expect(result[0].entityKind).toBe('Component');
         expect(result[1].entityKind).toBe('Component');
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'should filter by entity namespace - %p',
+      async databaseId => {
+        const { client, db } = await createDatabase(databaseId);
+
+        const timestamp = new Date('2023-01-01T00:00:00Z');
+
+        await client('metric_values').insert(
+          [
+            {
+              catalogEntityRef: 'component:default/service1',
+              metricId: 'github.metric1',
+              value: 10,
+              timestamp,
+              status: 'error',
+              entityNamespace: 'default',
+            },
+            {
+              catalogEntityRef: 'component:production/service2',
+              metricId: 'github.metric1',
+              value: 5,
+              timestamp,
+              status: 'error',
+              entityNamespace: 'production',
+            },
+            {
+              catalogEntityRef: 'component:default/service3',
+              metricId: 'github.metric1',
+              value: 15,
+              timestamp,
+              status: 'error',
+              entityNamespace: 'default',
+            },
+          ].map(toMetricValueRow),
+        );
+
+        const result = await db.readEntityMetricsWithFilters('github.metric1', {
+          status: 'error',
+          entityNamespace: 'default',
+          pagination: { limit: 10, offset: 0 },
+        });
+
+        expect(result).toHaveLength(2);
+        expect(result[0].entityNamespace).toBe('default');
+        expect(result[1].entityNamespace).toBe('default');
       },
     );
 
