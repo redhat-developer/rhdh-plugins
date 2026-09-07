@@ -22,12 +22,17 @@ export function laterOf(windowFrom: Date, watermark: Date | undefined): Date {
 }
 
 /**
- * Computes the `from` bound for a deployments collector refresh.
+ * Computes the data boundary for a collector.
+ *
  * With no prior watermark, returns `windowFrom`. Otherwise returns
- * `max(windowFrom, watermark - lookbackMs)` so deployments created near the
- * last watermark are re-queried if they succeed afterward.
+ * `max(windowFrom, watermark - lookbackMs)` so collected data created
+ * near the last watermark are re-queried.
+ *
+ * Usage:
+ * - Deployments: `from` parameter when syncing deployment data
+ * - Incidents: `updatedSince` parameter when syncing incident data
  */
-export function deploymentSyncFrom(
+export function collectorDataBoundary(
   windowFrom: Date,
   watermark: Date | undefined,
   lookbackMs: number,
@@ -57,6 +62,8 @@ export function isWithinStaleWindow(
 
 /**
  * Shares one in-flight promise per key so concurrent callers wait on the same work.
+ * The window is excluded from the key: including ms-precision timestamps
+ * would make every key unique and disable coalescing entirely.
  */
 export function coalesceInFlight<T>(
   inflight: Map<string, Promise<T>>,

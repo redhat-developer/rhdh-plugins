@@ -67,6 +67,8 @@ Required input:
 - `to: string` (ISO datetime)
 - `updatedSince: string` (ISO datetime)
 
+Incremental refresh re-queries with `updatedSince` as `max(windowFrom, lastSync − incident lookback)` (5 minutes by default, not configurable). See [Data retention and staleness](../../README.md#data-retention-and-staleness).
+
 Required output:
 
 - `incidents: Array<{ id: string; createdAt: string; updatedAt: string; resolutionAt: string | null }>`

@@ -82,7 +82,7 @@ describe('CleanupExpiredDataTask', () => {
     it('creates a scheduled task runner with the daily schedule', () => {
       expect(mockScheduler.createScheduledTaskRunner).toHaveBeenCalledWith({
         frequency: { days: 1 },
-        timeout: { minutes: 2 },
+        timeout: { minutes: 10 },
         initialDelay: { seconds: 3 },
       });
     });

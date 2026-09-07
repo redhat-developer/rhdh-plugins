@@ -59,8 +59,10 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
         'collector_input_hash',
         'original_deployment_id',
       ])
-      // All columns are immutable historical facts for a given deployment
-      // created_at: we keep attributed to when the deployment first succeeded
+      // Immutable historical facts: keep the first stored row.
+      // `deploymentLookbackMs` re-queries recent `created_at` so a deployment
+      // that later becomes `success` can be inserted. Already-stored rows are
+      // never updated.
       .ignore();
   }
 

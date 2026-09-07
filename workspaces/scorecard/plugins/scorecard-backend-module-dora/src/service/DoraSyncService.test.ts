@@ -31,6 +31,7 @@ import {
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+  DORA_INCIDENT_LOOKBACK_MS,
 } from '../constants';
 import { collectorInputHash } from './collectorHash';
 
@@ -470,7 +471,7 @@ describe('DefaultDoraSyncService', () => {
   );
 
   it.each(databases.eachSupportedId())(
-    'syncs incidents updated since the last successful sync watermark - %p',
+    'syncs incidents updated since the last successful sync watermark minus lookback - %p',
     async databaseId => {
       const { deployments, incidents, pullRequests, lastSync } =
         await createTestDatabase(await databases.init(databaseId));
@@ -530,7 +531,9 @@ describe('DefaultDoraSyncService', () => {
           input: expect.objectContaining({
             from: windowFrom.toISOString(),
             to: secondWindowTo.toISOString(),
-            updatedSince: firstWindowTo.toISOString(),
+            updatedSince: new Date(
+              firstWindowTo.getTime() - DORA_INCIDENT_LOOKBACK_MS,
+            ).toISOString(),
           }),
         }),
       );

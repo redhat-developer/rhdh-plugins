@@ -90,6 +90,8 @@ Required output:
 
 Only deployments with `result: 'success'` are included in the calculation.
 
+Incremental refresh re-queries from `max(windowFrom, lastSync − deploymentLookbackMs)` by `createdAt` (see [Data retention and staleness](../../README.md#data-retention-and-staleness)). Lookback exists to insert deployments that became success after the previous sync. Already-stored rows are not updated.
+
 ## Collector configuration
 
 ### Use GitHub deployments collector (default)

@@ -97,14 +97,15 @@ exports.up = async function up(knex) {
       'deployment_id',
     ]);
     // Lead-time reads: PRs for one entity/collector/input/deployment
+    // Leads with deployment_id: for ON DELETE CASCADE `WHERE deployment_id = ?`cleanup lookup
     table.index(
       [
+        'deployment_id',
         'catalog_entity_ref',
         'collector_id',
         'collector_input_hash',
-        'deployment_id',
       ],
-      'dora_pull_requests_entity_collector_deployment_idx',
+      'dora_pull_requests_deployment_entity_collector_idx',
     );
   });
 

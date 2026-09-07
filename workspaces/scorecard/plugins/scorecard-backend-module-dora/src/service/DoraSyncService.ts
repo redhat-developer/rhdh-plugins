@@ -25,6 +25,7 @@ import type { DoraSyncConfig } from '../metricProviders/DoraConfig';
 import {
   DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
   DORA_DEFAULT_STALE_AFTER_MS,
+  DORA_INCIDENT_LOOKBACK_MS,
 } from '../constants';
 import {
   deploymentsCollectorInputSchema,
@@ -41,9 +42,8 @@ import {
 import type { WindowOptions, CollectorCallOptions } from './types';
 import {
   coalesceInFlight,
-  deploymentSyncFrom,
+  collectorDataBoundary,
   isWithinStaleWindow,
-  laterOf,
 } from './syncUtils';
 
 const DEFAULT_DORA_SYNC_CONFIG: DoraSyncConfig = {
@@ -91,7 +91,7 @@ export class DefaultDoraSyncService implements DoraSyncService {
 
   /**
    * Retrieves and persists deployments created after the last successful sync
-   * (minus lookback) for a given entity and collector.
+   * minus `deploymentLookbackMs` for a given entity and collector.
    *
    * Concurrent syncs for the same entity and collector share one in-flight fetch.
    */
@@ -124,7 +124,7 @@ export class DefaultDoraSyncService implements DoraSyncService {
       );
       return;
     }
-    const syncFrom = deploymentSyncFrom(
+    const syncFrom = collectorDataBoundary(
       options.windowFrom,
       lastSyncedAt,
       this.config.deploymentLookbackMs,
@@ -171,7 +171,7 @@ export class DefaultDoraSyncService implements DoraSyncService {
 
   /**
    * Retrieves and persists incidents updated after the last successful sync
-   * for a given entity and collector.
+   * minus `incidentLookbackMs` for a given entity and collector.
    *
    * Concurrent syncs for the same entity and collector share one in-flight fetch.
    */
@@ -204,7 +204,11 @@ export class DefaultDoraSyncService implements DoraSyncService {
       );
       return;
     }
-    const updatedSince = laterOf(options.windowFrom, lastSyncedAt);
+    const updatedSince = collectorDataBoundary(
+      options.windowFrom,
+      lastSyncedAt,
+      DORA_INCIDENT_LOOKBACK_MS,
+    );
 
     const collected = await this.collectorsService.collect<
       typeof incidentsCollectorInputSchema,

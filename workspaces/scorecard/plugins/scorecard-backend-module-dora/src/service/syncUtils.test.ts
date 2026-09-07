@@ -16,7 +16,7 @@
 
 import {
   coalesceInFlight,
-  deploymentSyncFrom,
+  collectorDataBoundary,
   isWithinStaleWindow,
   laterOf,
 } from './syncUtils';
@@ -44,12 +44,12 @@ describe('laterOf', () => {
   });
 });
 
-describe('deploymentSyncFrom', () => {
+describe('collectorDataBoundary', () => {
   const windowFrom = new Date('2026-06-01T00:00:00.000Z');
   const lookbackMs = 48 * 60 * 60 * 1000; // 48h
 
   it('returns windowFrom when watermark is undefined', () => {
-    expect(deploymentSyncFrom(windowFrom, undefined, lookbackMs)).toBe(
+    expect(collectorDataBoundary(windowFrom, undefined, lookbackMs)).toBe(
       windowFrom,
     );
   });
@@ -57,20 +57,20 @@ describe('deploymentSyncFrom', () => {
   it('subtracts lookback from watermark when still inside the window', () => {
     const watermark = new Date('2026-06-15T00:00:00.000Z');
     expect(
-      deploymentSyncFrom(windowFrom, watermark, lookbackMs).toISOString(),
+      collectorDataBoundary(windowFrom, watermark, lookbackMs).toISOString(),
     ).toBe('2026-06-13T00:00:00.000Z');
   });
 
   it('clamps to windowFrom when lookback would start earlier', () => {
     const watermark = new Date('2026-06-02T00:00:00.000Z');
-    expect(deploymentSyncFrom(windowFrom, watermark, lookbackMs)).toBe(
+    expect(collectorDataBoundary(windowFrom, watermark, lookbackMs)).toBe(
       windowFrom,
     );
   });
 
   it('matches watermark when lookback is zero', () => {
     const watermark = new Date('2026-06-15T00:00:00.000Z');
-    expect(deploymentSyncFrom(windowFrom, watermark, 0)).toBe(watermark);
+    expect(collectorDataBoundary(windowFrom, watermark, 0)).toBe(watermark);
   });
 });
 

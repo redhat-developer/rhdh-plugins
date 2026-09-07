@@ -37,11 +37,20 @@ export const DORA_DEFAULT_DATA_RETENTION_DAYS = 365;
 export const DORA_DEFAULT_STALE_AFTER_MS = 60_000;
 
 /**
- * Default for how far before the last deployments watermark to re-query by createdAt
- * Captures pending status updated to success after the previous refresh.
+ * Default deployments lookback, in milliseconds, when re-querying by `createdAt`
+ * since the last sync watermark (`from = max(windowFrom, lastSync − lookback)`).
+ * Catches deployments that later became `success` (created time does not move).
+ * Does not update already-stored rows; see `DatabaseDoraDeployments.upsert`.
  * Overridable via `scorecard.plugins.dora.deploymentLookbackMs`.
  */
 export const DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS = 48 * 60 * 60 * 1000;
+
+/**
+ * Incidents lookback, in milliseconds, when re-querying by `updatedAt`
+ * (`updatedSince = max(windowFrom, lastSync − lookback)`).
+ * Overlaps the previous watermark to cover clock skew and source index lag.
+ */
+export const DORA_INCIDENT_LOOKBACK_MS = 5 * 60 * 1000;
 
 export const DORA_CLEANUP_EXPIRED_DATA_TASK_ID =
   'scorecard-dora:cleanup-expired-data' as const;
