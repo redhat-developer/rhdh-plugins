@@ -56,11 +56,6 @@ const useStyles = makeStyles(theme => ({
   alert: {
     background: 'unset !important',
   },
-  promptSuggestions: {
-    '& div.pf-chatbot__prompt-suggestions': {
-      'flex-direction': 'column !important',
-    },
-  },
 
   userMessageText: {
     '& div.pf-chatbot__message--user': {
@@ -134,7 +129,6 @@ export const LightspeedChatBox = forwardRef(
       welcomePrompts,
       isStreaming,
       topicRestrictionEnabled,
-      displayMode,
       showSourcesChipPopover: showSourcesChipModal = false,
     }: LightspeedChatBoxProps,
     ref: ForwardedRef<ScrollContainerHandle | null>,
@@ -194,7 +188,6 @@ export const LightspeedChatBox = forwardRef(
     }, [autoScroll, cmessages, containerRef]);
 
     const messageBoxClasses = `${classes.container} ${classes.userMessageText}`;
-    const isEmbeddedMode = displayMode === ChatbotDisplayMode.embedded;
 
     const isNewChat = welcomePrompts.length > 0 && messages.length === 0;
     const getMessageBoxClassName = () => {
@@ -204,11 +197,7 @@ export const LightspeedChatBox = forwardRef(
       if (!welcomePrompts.length) {
         return base;
       }
-      const withPrompt = `${base} ${classes.prompt}`;
-      if (isEmbeddedMode) {
-        return withPrompt;
-      }
-      return `${withPrompt} ${classes.promptSuggestions}`;
+      return `${base} ${classes.prompt}`;
     };
 
     return (

@@ -15,23 +15,14 @@
  */
 import { useState } from 'react';
 
-import {
-  Dropdown,
-  DropdownItem,
-  DropdownList,
-  MenuToggle,
-} from '@patternfly/react-core';
-import {
-  ArrowRightIcon,
-  EllipsisHIcon,
-  PaperPlaneIcon,
-  TrashIcon,
-} from '@patternfly/react-icons';
+import { Dropdown, DropdownList, MenuToggle } from '@patternfly/react-core';
+import { EllipsisHIcon } from '@patternfly/react-icons';
 import { makeStyles } from 'tss-react/mui';
 
 import { SavedPrompt } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { SavedPromptMenuItems } from './SavedPromptMenuItems';
 
 export type SavedPromptKebabVariant = 'settings' | 'sidebar';
 
@@ -91,44 +82,15 @@ export const SavedPromptKebabMenu = ({
       )}
     >
       <DropdownList style={{ paddingInlineStart: 0 }}>
-        {variant === 'settings' && onApplyToInput && (
-          <DropdownItem
-            icon={<ArrowRightIcon />}
-            onClick={event => {
-              event.stopPropagation();
-              onApplyToInput(prompt.content);
-              closeMenu();
-            }}
-          >
-            {t('savedPrompts.actions.apply')}
-          </DropdownItem>
-        )}
-        <DropdownItem
-          icon={<PaperPlaneIcon />}
-          isDisabled={isSendDirectlyDisabled}
-          description={
-            isSendDirectlyDisabled
-              ? t('savedPrompts.actions.sendDisabledStreaming')
-              : undefined
-          }
-          onClick={event => {
-            event.stopPropagation();
-            onSendDirectly(prompt.content);
-            closeMenu();
-          }}
-        >
-          {t('savedPrompts.actions.send')}
-        </DropdownItem>
-        <DropdownItem
-          icon={<TrashIcon />}
-          onClick={event => {
-            event.stopPropagation();
-            onDelete(prompt);
-            closeMenu();
-          }}
-        >
-          {t('savedPrompts.actions.delete')}
-        </DropdownItem>
+        <SavedPromptMenuItems
+          prompt={prompt}
+          variant={variant}
+          onApplyToInput={onApplyToInput}
+          onSendDirectly={onSendDirectly}
+          onDelete={onDelete}
+          isSendDirectlyDisabled={isSendDirectlyDisabled}
+          closeMenu={closeMenu}
+        />
       </DropdownList>
     </Dropdown>
   );

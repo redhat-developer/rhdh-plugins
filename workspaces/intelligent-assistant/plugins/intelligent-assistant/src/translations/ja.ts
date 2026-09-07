@@ -67,6 +67,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
       'ユーザーからのメッセージ: {{prompt}}。ボットからのメッセージを読み込んでいます。',
     'conversation.category.pinnedChats': '固定チャット',
     'conversation.category.recent': 'チャット',
+    'conversation.category.savedPrompts': '保存済みプロンプト',
     'conversation.delete': '削除',
     'conversation.delete.confirm.action': '削除',
     'conversation.delete.confirm.message':
@@ -363,6 +364,10 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'savedPrompts.delete.confirm.action': '削除',
     'savedPrompts.empty.description':
       'よく使うプロンプトを保存して、会話で再入力せずにすばやく再利用できます。保存済みプロンプトは、チャット履歴パネルにも表示され、すばやくアクセスできます。',
+    'savedPrompts.sidebar.showAll': 'すべて表示',
+    'savedPrompts.sidebar.showLess': '表示を減らす',
+    'savedPrompts.sidebar.openSettings': '保存済みプロンプトの設定を開く',
+    'savedPrompts.sidebar.empty': '保存済みプロンプトはまだありません',
     'sort.alphabeticalAsc': '名前（A-Z）',
     'sort.alphabeticalDesc': '名前（Z-A）',
     'sort.label': '会話を並べ替え',

@@ -68,6 +68,7 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
       'Nachricht vom Benutzer: {{prompt}}. Nachricht vom Bot wird geladen.',
     'conversation.category.pinnedChats': 'Angeheftete Chats',
     'conversation.category.recent': 'Chats',
+    'conversation.category.savedPrompts': 'Gespeicherte Prompts',
     'conversation.delete': 'Löschen',
     'conversation.delete.confirm.action': 'Löschen',
     'conversation.delete.confirm.message':
@@ -376,6 +377,11 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'savedPrompts.delete.confirm.action': 'Löschen',
     'savedPrompts.empty.description':
       'Speichern Sie häufig verwendete Prompts, um sie in Ihren Unterhaltungen schnell wiederzuverwenden, ohne sie erneut einzugeben. Gespeicherte Prompts erscheinen auch im Chat-Verlaufsbereich für den schnellen Zugriff.',
+    'savedPrompts.sidebar.showAll': 'Alle anzeigen',
+    'savedPrompts.sidebar.showLess': 'Weniger anzeigen',
+    'savedPrompts.sidebar.openSettings':
+      'Einstellungen für gespeicherte Prompts öffnen',
+    'savedPrompts.sidebar.empty': 'Noch keine gespeicherten Prompts',
     'sort.alphabeticalAsc': 'Name (A-Z)',
     'sort.alphabeticalDesc': 'Name (Z-A)',
     'sort.label': 'Unterhaltungen sortieren',

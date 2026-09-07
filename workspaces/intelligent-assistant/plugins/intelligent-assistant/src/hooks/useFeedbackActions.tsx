@@ -16,11 +16,13 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 import { MessageProps } from '@patternfly/chatbot';
-import { UserFeedbackProps } from '@patternfly/chatbot/dist/cjs/Message/UserFeedback/UserFeedback';
-import { UserFeedbackCompleteProps } from '@patternfly/chatbot/dist/cjs/Message/UserFeedback/UserFeedbackComplete';
 
 import { useCaptureFeedback } from '../hooks/useCaptureFeedback';
 import { CaptureFeedback } from '../types';
+import {
+  UserFeedbackCompleteProps,
+  UserFeedbackProps,
+} from '../types/patternfly-chatbot-feedback';
 import { Sentiment, useFeedbackState } from './useFeedbackState';
 import { useFeedbackStatus } from './useFeedbackStatus';
 import { useTranslation } from './useTranslation';

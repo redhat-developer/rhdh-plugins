@@ -37,6 +37,7 @@ import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import { Button, makeStyles } from '@material-ui/core';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
+import Typography from '@mui/material/Typography';
 import {
   Chatbot,
   ChatbotAlert,
@@ -85,6 +86,7 @@ import {
 } from '../const';
 import {
   useBackstageUserIdentity,
+  useConversationHistoryGroups,
   useConversationMessages,
   useConversations,
   useIsMobile,
@@ -95,6 +97,7 @@ import {
   useNotebookSession,
   useNotebookSessions,
   usePinnedChatsSettings,
+  useSavedPromptActions,
   useSavedPrompts,
   useSavedPromptsSettings,
   useSettingsPanelUrlState,
@@ -112,6 +115,10 @@ import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
 import { ConversationSummary, NotebookSession } from '../types';
 import { getAttachments } from '../utils/attachment-utils';
 import {
+  isSavedPromptConversationId,
+  SAVED_PROMPT_CONVERSATION_ID_PREFIX,
+} from '../utils/buildConversationHistoryGroups';
+import {
   ChatbotFootnoteWithIcon,
   getCategorizeMessages,
   getFootnoteProps,
@@ -121,6 +128,7 @@ import Attachment from './Attachment';
 import { useFileAttachmentContext } from './AttachmentContext';
 import { CollapsedHistoryStrip } from './CollapsedHistoryStrip';
 import { DeleteModal } from './DeleteModal';
+import { DeleteSavedPromptModal } from './DeleteSavedPromptModal';
 import FilePreview from './FilePreview';
 import { LightspeedChatBox } from './LightspeedChatBox';
 import { LightspeedChatBoxHeader } from './LightspeedChatBoxHeader';
@@ -136,6 +144,7 @@ import {
 } from './notebooks/SidebarCollapseIcon';
 import PermissionRequiredState from './PermissionRequiredState';
 import { RenameConversationModal } from './RenameConversationModal';
+import { SavedPromptMenuItems } from './SavedPromptMenuItems';
 import { SettingsPanel } from './SettingsPanel';
 import { ToastAlertGroup } from './ToastAlertGroup';
 
@@ -167,6 +176,24 @@ const useStyles = makeStyles(theme => ({
       height: 0,
       overflow: 'hidden',
     },
+    '& .pf-chatbot__history-menu .pf-v6-c-menu__list': {
+      paddingInlineStart: 0,
+    },
+    '& .pf-chatbot__menu-show-all-toggle': {
+      cursor: 'pointer',
+    },
+    '& .pf-chatbot__menu-item-header--expandable.lightspeed-saved-prompts-group .pf-v6-c-button__text':
+      {
+        width: '100%',
+      },
+    '& .lightspeed-saved-prompts-section-gear': {
+      opacity: 0,
+      transition: 'opacity 0.15s ease-in-out',
+    },
+    '& .pf-chatbot__menu-item-header--expandable.lightspeed-saved-prompts-group:hover .lightspeed-saved-prompts-section-gear, & .pf-chatbot__menu-item-header--expandable.lightspeed-saved-prompts-group .lightspeed-saved-prompts-section-gear:focus-visible':
+      {
+        opacity: 1,
+      },
   },
   bodyCompact: {
     height: '100% !important',
@@ -442,6 +469,19 @@ const useStyles = makeStyles(theme => ({
       overflowX: 'hidden',
       overflowWrap: 'break-word',
       wordBreak: 'break-word',
+    },
+    // Responsive welcome prompts: 3 cols → 2+1 → 1 per row as chat area narrows
+    // (sidebar/settings), overriding PF viewport-based flex row at 64rem.
+    '& .pf-chatbot__prompt-suggestions': {
+      display: 'grid !important',
+      flexDirection: 'unset !important',
+      alignItems: 'stretch',
+      gap: 'var(--pf-t--global--spacer--lg)',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 12.5rem), 1fr))',
+    },
+    '& .pf-chatbot__prompt-suggestions > .pf-chatbot__prompt-suggestion': {
+      height: '100%',
+      minWidth: 0,
     },
   },
   chatbotContentHasOverflow: {
@@ -1082,7 +1122,14 @@ export const LightspeedChat = ({
 
   const { allowed: hasDeleteAccess } = useLightspeedDeletePermission();
   const { allowed: hasUpdateAccess } = useLightspeedUpdatePermission();
-  const { savedPrompts } = useSavedPrompts();
+  const {
+    savedPrompts,
+    config: savedPromptsConfig,
+    loading: savedPromptsLoading,
+    error: savedPromptsError,
+    createPrompt,
+    deletePrompt,
+  } = useSavedPrompts();
   const samplePrompts = useWelcomePrompts(
     isSavedPromptsEnabled ? savedPrompts : undefined,
   );
@@ -1255,6 +1302,29 @@ export const LightspeedChat = ({
     setDraftMessage('');
   };
 
+  const handleApplySavedPrompt = useCallback(
+    (content: string) => {
+      setDraftMessage(content);
+      setMessageBarKey(k => k + 1);
+    },
+    [setDraftMessage],
+  );
+
+  const {
+    sendDirectly: sendSavedPromptDirectly,
+    requestDelete: requestSavedPromptDelete,
+    promptToDelete,
+    closeDeleteModal: closeSavedPromptDeleteModal,
+    confirmDelete: confirmSavedPromptDelete,
+    isDeleting: isSavedPromptDeleting,
+    deleteError: savedPromptDeleteError,
+    isDeleteModalOpen: isSavedPromptDeleteModalOpen,
+  } = useSavedPromptActions({
+    onApplyToInput: handleApplySavedPrompt,
+    onSendDirectly: sendMessage,
+    onDelete: deletePrompt,
+  });
+
   const onNewChat = useCallback(() => {
     (async () => {
       if (!isFullscreenMode) {
@@ -1405,85 +1475,31 @@ export const LightspeedChat = ({
     ],
   );
 
-  const filterConversations = useCallback(
-    (targetValue: string) => {
-      const pinnedChatsKey =
-        t('conversation.category.pinnedChats') || 'Pinned chats';
-      let isNoPinnedChatsSearchResults = false;
-      let isNoRecentChatsSearchResults = false;
-      const filteredConversations = Object.entries(categorizedMessages).reduce(
-        (acc, [key, items]) => {
-          const filteredItems = items.filter(item =>
-            (item.text ?? '')
-              .toLocaleLowerCase('en-US')
-              .includes(targetValue.toLocaleLowerCase('en-US')),
-          );
-          const isPinnedCategory = key === pinnedChatsKey;
-          if (isPinnedCategory && isPinningChatsEnabled) {
-            if (filteredItems.length > 0) {
-              acc[pinnedChatsKey] = filteredItems;
-            } else {
-              isNoPinnedChatsSearchResults =
-                categorizedMessages[pinnedChatsKey].length > 0;
-              acc[pinnedChatsKey] = [
-                {
-                  id: isNoPinnedChatsSearchResults
-                    ? 'no-pinned-chats-search-results'
-                    : 'no-pinned-chats',
-                  text: isNoPinnedChatsSearchResults
-                    ? t('common.noSearchResults')
-                    : t('chatbox.emptyState.noPinnedChats'),
-                  noIcon: true,
-                  additionalProps: {
-                    isDisabled: true,
-                    style: {
-                      fontStyle: 'italic',
-                      opacity: 0.6,
-                    },
-                  },
-                },
-              ];
-            }
-          } else if (!isPinnedCategory) {
-            if (filteredItems.length > 0) {
-              acc[key] = filteredItems;
-            } else {
-              isNoRecentChatsSearchResults =
-                categorizedMessages[key].length > 0;
-
-              acc[key] = [
-                {
-                  id: isNoRecentChatsSearchResults
-                    ? 'no-recent-chats-search-results'
-                    : 'no-recent-chats',
-                  text: isNoRecentChatsSearchResults
-                    ? t('common.noSearchResults')
-                    : t('chatbox.emptyState.noRecentChats'),
-                  noIcon: true,
-                  additionalProps: {
-                    isDisabled: true,
-                    style: {
-                      fontStyle: 'italic',
-                      opacity: 0.6,
-                    },
-                  },
-                },
-              ];
-            }
-          }
-          return acc;
-        },
-        {} as any,
-      );
-      // If both sections had items but search filtered them all out, return empty object
-      // so PatternFly's default empty state shows instead of custom empty state messages
-      if (isNoPinnedChatsSearchResults && isNoRecentChatsSearchResults) {
-        return {};
-      }
-      return filteredConversations;
-    },
-    [categorizedMessages, isPinningChatsEnabled, t],
+  const getSavedPromptMenuItems = useCallback(
+    (prompt: (typeof savedPrompts)[number]) => (
+      <SavedPromptMenuItems
+        prompt={prompt}
+        variant="sidebar"
+        onSendDirectly={sendSavedPromptDirectly}
+        onDelete={requestSavedPromptDelete}
+        isSendDirectlyDisabled={streamingUiMatchesView}
+      />
+    ),
+    [sendSavedPromptDirectly, requestSavedPromptDelete, streamingUiMatchesView],
   );
+
+  const { conversationGroups, hasNoSearchResults } =
+    useConversationHistoryGroups({
+      savedPrompts,
+      categorizedMessages,
+      filterValue,
+      isSavedPromptsEnabled,
+      isPinningChatsEnabled,
+      isSettingsOpen,
+      activeSettingsTab,
+      openSettings,
+      getSavedPromptMenuItems,
+    });
 
   useEffect(() => {
     setMessages(conversationMessages);
@@ -1491,6 +1507,19 @@ export const LightspeedChat = ({
 
   const onSelectActiveItem = useCallback(
     (_: MouseEvent | undefined, selectedItem: string | number | undefined) => {
+      if (
+        selectedItem !== undefined &&
+        isSavedPromptConversationId(selectedItem)
+      ) {
+        const promptId = String(selectedItem).slice(
+          SAVED_PROMPT_CONVERSATION_ID_PREFIX.length,
+        );
+        const prompt = savedPrompts.find(({ id }) => id === promptId);
+        if (prompt) {
+          handleApplySavedPrompt(prompt.content);
+        }
+        return;
+      }
       if (!isFullscreenMode) {
         closeSettings();
         setIsChatHistoryDrawerOpen(false);
@@ -1510,6 +1539,8 @@ export const LightspeedChat = ({
       scrollToBottomRef.current?.scrollToBottom();
     },
     [
+      savedPrompts,
+      handleApplySavedPrompt,
       setConversationId,
       setUploadError,
       setFileContents,
@@ -1526,8 +1557,9 @@ export const LightspeedChat = ({
   );
 
   const getMaxPrompts = () => {
+    const count = samplePrompts?.length ?? 0;
     if (isFullscreenMode) {
-      return samplePrompts?.length; // In the Fullscreen mode, show all prompts
+      return count;
     }
     if (displayMode === ChatbotDisplayMode.docked) {
       return 2; // In the docked mode, show 2 prompts
@@ -1960,6 +1992,12 @@ export const LightspeedChat = ({
       }}
       onSendSavedPromptDirectly={sendMessage}
       isChatStreaming={streamingUiMatchesView}
+      savedPrompts={savedPrompts}
+      savedPromptsConfig={savedPromptsConfig}
+      savedPromptsLoading={savedPromptsLoading}
+      savedPromptsError={savedPromptsError}
+      onCreateSavedPrompt={createPrompt}
+      onDeleteSavedPrompt={deletePrompt}
     />
   );
 
@@ -2201,7 +2239,8 @@ export const LightspeedChat = ({
                 <Tab
                   disableRipple
                   label={
-                    <span
+                    <Typography
+                      component="span"
                       style={{
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -2219,7 +2258,7 @@ export const LightspeedChat = ({
                       >
                         {t('tabs.notebooks.devPreview')}
                       </Label>
-                    </span>
+                    </Typography>
                   }
                   aria-label={t('tabs.notebooks')}
                 />
@@ -2263,7 +2302,7 @@ export const LightspeedChat = ({
                   setIsDrawerOpen={setIsChatHistoryDrawerOpen}
                   activeItemId={viewConversationId}
                   onSelectActiveItem={onSelectActiveItem}
-                  conversations={filterConversations(filterValue)}
+                  conversations={conversationGroups}
                   onNewChat={onNewChat}
                   newChatButtonText={t('button.newChat')}
                   newChatButtonProps={{
@@ -2281,8 +2320,7 @@ export const LightspeedChat = ({
                   }}
                   searchActionEnd={sortDropdown}
                   noResultsState={
-                    filterValue &&
-                    Object.keys(filterConversations(filterValue)).length === 0
+                    filterValue && hasNoSearchResults
                       ? {
                           bodyText: t('chatbox.emptyState.noResults.body'),
                           titleText: t('chatbox.emptyState.noResults.title'),
@@ -2415,6 +2453,14 @@ export const LightspeedChat = ({
           </>
         )}
       </Chatbot>
+      <DeleteSavedPromptModal
+        isOpen={isSavedPromptDeleteModalOpen}
+        promptName={promptToDelete?.name}
+        isDeleting={isSavedPromptDeleting}
+        error={savedPromptDeleteError}
+        onClose={closeSavedPromptDeleteModal}
+        onConfirm={confirmSavedPromptDelete}
+      />
       <Attachment />
     </>
   );

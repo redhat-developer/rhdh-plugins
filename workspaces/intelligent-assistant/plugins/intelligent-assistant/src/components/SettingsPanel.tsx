@@ -17,6 +17,11 @@ import { createStyles, makeStyles } from '@material-ui/core';
 import { Button, Title } from '@patternfly/react-core';
 import { TimesIcon } from '@patternfly/react-icons';
 
+import {
+  SavedPrompt,
+  SavedPromptsConfig,
+} from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+
 import type { SettingsTab } from '../hooks/useSettingsPanelUrlState';
 import { useTranslation } from '../hooks/useTranslation';
 import { McpServersSettings } from './McpServersSettings';
@@ -34,6 +39,12 @@ type SettingsPanelProps = {
   onApplySavedPromptToInput: (content: string) => void;
   onSendSavedPromptDirectly: (content: string) => void;
   isChatStreaming?: boolean;
+  savedPrompts?: SavedPrompt[];
+  savedPromptsConfig?: SavedPromptsConfig;
+  savedPromptsLoading?: boolean;
+  savedPromptsError?: string | null;
+  onCreateSavedPrompt?: (name: string, content: string) => Promise<void>;
+  onDeleteSavedPrompt?: (promptId: string) => Promise<void>;
 };
 
 const useStyles = makeStyles(theme =>
@@ -95,6 +106,12 @@ export const SettingsPanel = ({
   onApplySavedPromptToInput,
   onSendSavedPromptDirectly,
   isChatStreaming = false,
+  savedPrompts,
+  savedPromptsConfig,
+  savedPromptsLoading,
+  savedPromptsError,
+  onCreateSavedPrompt,
+  onDeleteSavedPrompt,
 }: SettingsPanelProps) => {
   const { t } = useTranslation();
   const classes = useStyles();
@@ -114,20 +131,20 @@ export const SettingsPanel = ({
       </div>
 
       <div className={classes.tabBar}>
-        <button
-          type="button"
+        <Button
+          variant="plain"
           className={`${classes.tabButton} ${activeTab === 'mcp-servers' ? classes.tabButtonActive : ''}`}
           onClick={() => onTabChange('mcp-servers')}
         >
           {t('mcp.settings.title')}
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="plain"
           className={`${classes.tabButton} ${activeTab === 'saved-prompts' ? classes.tabButtonActive : ''}`}
           onClick={() => onTabChange('saved-prompts')}
         >
           {t('savedPrompts.tab.title')}
-        </button>
+        </Button>
       </div>
 
       <div className={classes.tabContent}>
@@ -144,6 +161,12 @@ export const SettingsPanel = ({
             onApplyToInput={onApplySavedPromptToInput}
             onSendDirectly={onSendSavedPromptDirectly}
             isChatStreaming={isChatStreaming}
+            savedPrompts={savedPrompts}
+            savedPromptsConfig={savedPromptsConfig}
+            savedPromptsLoading={savedPromptsLoading}
+            savedPromptsError={savedPromptsError}
+            onCreateSavedPrompt={onCreateSavedPrompt}
+            onDeleteSavedPrompt={onDeleteSavedPrompt}
           />
         )}
       </div>

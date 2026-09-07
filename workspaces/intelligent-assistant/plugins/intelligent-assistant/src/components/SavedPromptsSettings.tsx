@@ -15,6 +15,7 @@
  */
 import { useCallback, useState } from 'react';
 
+import Typography from '@mui/material/Typography';
 import {
   Alert,
   AlertActionLink,
@@ -30,6 +31,11 @@ import {
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 import { makeStyles } from 'tss-react/mui';
 
+import {
+  SavedPrompt,
+  SavedPromptsConfig,
+} from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+
 import { useSavedPromptActions } from '../hooks/useSavedPromptActions';
 import { useSavedPrompts } from '../hooks/useSavedPrompts';
 import { useTranslation } from '../hooks/useTranslation';
@@ -43,7 +49,30 @@ type SavedPromptsSettingsProps = {
   onApplyToInput: (content: string) => void;
   onSendDirectly: (content: string) => void;
   isChatStreaming?: boolean;
+  savedPrompts?: SavedPrompt[];
+  savedPromptsConfig?: SavedPromptsConfig;
+  savedPromptsLoading?: boolean;
+  savedPromptsError?: string | null;
+  onCreateSavedPrompt?: (name: string, content: string) => Promise<void>;
+  onDeleteSavedPrompt?: (promptId: string) => Promise<void>;
 };
+
+type SavedPromptsSettingsContentProps = SavedPromptsSettingsProps & {
+  savedPrompts: SavedPrompt[];
+  savedPromptsConfig: SavedPromptsConfig;
+  savedPromptsLoading: boolean;
+  savedPromptsError: string | null;
+  onCreateSavedPrompt: (name: string, content: string) => Promise<void>;
+  onDeleteSavedPrompt: (promptId: string) => Promise<void>;
+};
+
+const hasInjectedSavedPromptsData = (
+  props: SavedPromptsSettingsProps,
+): props is SavedPromptsSettingsContentProps =>
+  props.savedPrompts !== undefined &&
+  props.savedPromptsConfig !== undefined &&
+  props.onCreateSavedPrompt !== undefined &&
+  props.onDeleteSavedPrompt !== undefined;
 
 const useStyles = makeStyles()(() => ({
   root: {
@@ -72,17 +101,21 @@ const useStyles = makeStyles()(() => ({
   },
 }));
 
-export const SavedPromptsSettings = ({
+const SavedPromptsSettingsContent = ({
   isSavedPromptsEnabled,
   onEnableSavedPrompts,
   onApplyToInput,
   onSendDirectly,
   isChatStreaming = false,
-}: SavedPromptsSettingsProps) => {
+  savedPrompts,
+  savedPromptsConfig: config,
+  savedPromptsLoading: loading,
+  savedPromptsError: error,
+  onCreateSavedPrompt: createPrompt,
+  onDeleteSavedPrompt: deletePrompt,
+}: SavedPromptsSettingsContentProps) => {
   const { classes } = useStyles();
   const { t } = useTranslation();
-  const { savedPrompts, config, loading, error, createPrompt, deletePrompt } =
-    useSavedPrompts();
 
   const {
     applyToInput,
@@ -164,6 +197,7 @@ export const SavedPromptsSettings = ({
               {t('savedPrompts.disabled.enableLink')}
             </AlertActionLink>
           }
+          style={{ marginBottom: '12px' }}
         >
           {t('savedPrompts.disabled.body')}
         </Alert>
@@ -171,16 +205,19 @@ export const SavedPromptsSettings = ({
 
       {(isFormOpen || hasPrompts) && (
         <div className={classes.promptCount}>
-          <span style={{ color: 'var(--pf-t--global--text--color--subtle)' }}>
+          <Typography
+            component="span"
+            style={{ color: 'var(--pf-t--global--text--color--subtle)' }}
+          >
             {savedPrompts.length === 0
               ? t('savedPrompts.count.zero')
               : (t as Function)('savedPrompts.count', {
                   count: savedPrompts.length,
                 })}
-          </span>
+          </Typography>
           {isLimitReached ? (
             <Tooltip content={t('savedPrompts.limitReached')}>
-              <span>{newPromptButton}</span>
+              <Typography component="span">{newPromptButton}</Typography>
             </Tooltip>
           ) : (
             newPromptButton
@@ -299,4 +336,35 @@ export const SavedPromptsSettings = ({
       />
     </div>
   );
+};
+
+const SavedPromptsSettingsWithHook = (props: SavedPromptsSettingsProps) => {
+  const { savedPrompts, config, loading, error, createPrompt, deletePrompt } =
+    useSavedPrompts();
+
+  return (
+    <SavedPromptsSettingsContent
+      {...props}
+      savedPrompts={savedPrompts}
+      savedPromptsConfig={config}
+      savedPromptsLoading={loading}
+      savedPromptsError={error}
+      onCreateSavedPrompt={createPrompt}
+      onDeleteSavedPrompt={deletePrompt}
+    />
+  );
+};
+
+export const SavedPromptsSettings = (props: SavedPromptsSettingsProps) => {
+  if (hasInjectedSavedPromptsData(props)) {
+    return (
+      <SavedPromptsSettingsContent
+        {...props}
+        savedPromptsLoading={props.savedPromptsLoading ?? false}
+        savedPromptsError={props.savedPromptsError ?? null}
+      />
+    );
+  }
+
+  return <SavedPromptsSettingsWithHook {...props} />;
 };

@@ -30,7 +30,6 @@ import {
   PencilAltIcon,
   SortAmountDownIcon,
   SortAmountUpIcon,
-  TimesIcon,
 } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
@@ -285,7 +284,7 @@ const toUiServer = (
   auth: server.auth,
 });
 export const McpServersSettings = ({
-  onClose,
+  onClose: _onClose,
   backgroundColor,
 }: McpServersSettingsProps) => {
   const classes = useStyles();

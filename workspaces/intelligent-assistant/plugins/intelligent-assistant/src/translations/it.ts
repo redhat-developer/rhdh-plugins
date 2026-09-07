@@ -67,6 +67,7 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
       "Messaggio dall'utente: {{prompt}}. Caricamento in corso del messaggio del bot.",
     'conversation.category.pinnedChats': 'Chat fissate',
     'conversation.category.recent': 'Chat',
+    'conversation.category.savedPrompts': 'Prompt salvati',
     'conversation.delete': 'Elimina',
     'conversation.delete.confirm.action': 'Elimina',
     'conversation.delete.confirm.message':
@@ -374,6 +375,10 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'savedPrompts.delete.confirm.action': 'Elimina',
     'savedPrompts.empty.description':
       'Salva i prompt usati di frequente per riutilizzarli rapidamente nelle conversazioni senza riscriverli. I prompt salvati compaiono anche nel pannello della cronologia chat per un accesso rapido.',
+    'savedPrompts.sidebar.showAll': 'Mostra tutto',
+    'savedPrompts.sidebar.showLess': 'Mostra meno',
+    'savedPrompts.sidebar.openSettings': 'Apri impostazioni prompt salvati',
+    'savedPrompts.sidebar.empty': 'Nessun prompt salvato',
     'sort.alphabeticalAsc': 'Nome (A-Z)',
     'sort.alphabeticalDesc': 'Nome (Z-A)',
     'sort.label': 'Ordina conversazioni',

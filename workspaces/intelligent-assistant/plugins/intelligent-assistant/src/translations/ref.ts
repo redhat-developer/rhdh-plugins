@@ -338,6 +338,7 @@ export const intelligentAssistantMessages = {
   // Conversation categorization
   'conversation.category.pinnedChats': 'Pinned chats',
   'conversation.category.recent': 'Chats',
+  'conversation.category.savedPrompts': 'Saved prompts',
 
   // lightspeed settings
   'settings.pinned.enable': 'Enable pinned chats',
@@ -482,6 +483,10 @@ export const intelligentAssistantMessages = {
   'savedPrompts.delete.confirm.action': 'Delete',
   'savedPrompts.empty.description':
     'Save frequently used prompts to quickly reuse them in your conversations without typing them again. Saved prompts also appear in the chat history panel for quick access.',
+  'savedPrompts.sidebar.showAll': 'Show all',
+  'savedPrompts.sidebar.showLess': 'Show less',
+  'savedPrompts.sidebar.openSettings': 'Open saved prompts settings',
+  'savedPrompts.sidebar.empty': 'No saved prompts yet',
 };
 
 /**
