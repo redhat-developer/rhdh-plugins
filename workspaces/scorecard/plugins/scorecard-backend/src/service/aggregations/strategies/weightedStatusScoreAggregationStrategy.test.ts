@@ -113,26 +113,39 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
   });
 
   it('should throw when aggregation chart display color is not configured', async () => {
+    const customStatusThresholds = {
+      rules: [
+        { key: 'ok', expression: '>=80', color: 'green' },
+        { key: 'notOk', expression: '<80', color: 'red' },
+      ],
+    };
     const aggregationConfigWithoutColors =
       mockWeightedStatusScoreAggregationConfig({
         id: 'weightedOpenPrs',
         metricId: metric.id,
         options: {
-          statusScores: { error: 0, warning: 50, success: 100 },
+          statusScores: { notOk: 0, maybe: 50, ok: 100 },
           thresholds: {
             rules: [
-              { key: 'success', expression: '>=80' },
-              { key: 'error', expression: '<80' },
+              { key: 'ok', expression: '>=80' },
+              { key: 'notOk', expression: '<80' },
             ],
           },
         },
       });
 
+    (
+      loader.loadStatusGroupedMetricByEntityRefs as jest.Mock
+    ).mockResolvedValueOnce({
+      ...loadedStatusGroupedMetric,
+      values: { ok: 2 },
+    });
+
     await expect(() =>
       strategy.aggregate({
         metric,
         entityRefs,
-        thresholds: mockHigherIsBetterThresholds,
+        thresholds: customStatusThresholds,
         aggregationConfig: aggregationConfigWithoutColors,
       }),
     ).rejects.toThrow(

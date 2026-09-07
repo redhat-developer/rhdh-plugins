@@ -16,6 +16,7 @@
 
 import type { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdEvaluator } from '../../threshold/ThresholdEvaluator';
+import { withStandardThresholdDefaults } from './withStandardThresholdDefaults';
 
 /**
  * Get the aggregation chart display color for a given value and thresholds.
@@ -35,7 +36,13 @@ export function getAggregationChartDisplayColor(
     thresholds,
   );
 
-  return thresholds.rules.find(r => r.key === matchedThresholdKey)?.color;
+  const matchedRule = thresholds.rules.find(r => r.key === matchedThresholdKey);
+
+  if (!matchedRule) {
+    return undefined;
+  }
+
+  return withStandardThresholdDefaults(matchedRule).color;
 }
 
 export function getRequiredAggregationChartDisplayColor(

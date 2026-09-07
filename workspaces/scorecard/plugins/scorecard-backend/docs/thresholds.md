@@ -225,7 +225,7 @@ These thresholds are **not** per-entity metric rules. They apply to homepage agg
 
 - **Configuration path:** `scorecard.aggregationKPIs.<aggregationId>.options.thresholds`
 
-- **YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**). Expressions are **number**-style and are evaluated against **`result.value`**, the aggregated scalar from the KPI (see [Entity Aggregation — Scalar result fields](./aggregation.md#scalar-result-fields)). The **first** matching rule wins; its **`color`** and **`key`** can be used by custom UIs that render scalar KPIs.
+- **YAML shape:** Same as metric thresholds — a **`rules`** array of **`key`**, **`expression`**, and optional **`color`** (and optional **`icon`**). Expressions are **number**-style and are evaluated against **`result.value`**, the aggregated scalar from the KPI (see [Entity Aggregation — Scalar result fields](./aggregation.md#scalar-result-fields)). The **first** matching rule wins; its **`color`** is returned on the API as **`result.aggregationChartDisplayColor`** (or **`null`** when **`result.total`** is **0**).
 
 - **Defaults:** If **`thresholds`** is omitted from app-config under **`options`**, **`ScalarAggregationStrategy`** applies **`DEFAULT_NUMBER_THRESHOLDS`** from scorecard-common when serving an aggregation and includes them on the API as **`result.thresholds`**: **`<10`** → success, **`10-50`** → warning, **`>50`** → error.
 

@@ -32,7 +32,6 @@ import { isScalarAggregationConfig } from '../../../utils/aggregation/isScalarAg
 import { classifyNumberAgainstThresholds } from '../../../utils/aggregation/classifyNumberAgainstThresholds';
 import { ThresholdEvaluator } from '../../../threshold/ThresholdEvaluator';
 import { getRequiredAggregationChartDisplayColor } from '../../../utils/aggregation/getAggregationChartDisplayColor';
-import { DEFAULT_SCALAR_AGGREGATION_KPI_RESULT_THRESHOLDS } from '../../../constants';
 
 export class ScalarAggregationStrategy implements AggregationStrategy {
   constructor(
@@ -52,7 +51,8 @@ export class ScalarAggregationStrategy implements AggregationStrategy {
       );
     }
 
-    const { thresholds: headlineThresholds } = aggregationConfig.options ?? {};
+    const { thresholds: headlineThresholds = DEFAULT_NUMBER_THRESHOLDS } =
+      aggregationConfig.options ?? {};
 
     const {
       value,
@@ -71,8 +71,7 @@ export class ScalarAggregationStrategy implements AggregationStrategy {
       total > 0
         ? getRequiredAggregationChartDisplayColor(
             value,
-            headlineThresholds ??
-              DEFAULT_SCALAR_AGGREGATION_KPI_RESULT_THRESHOLDS,
+            headlineThresholds,
             `The color for value '${value}' metric '${metric.id}' is not configured. Check the 'scorecard.aggregationKPIs.${aggregationConfig.id}.options.thresholds' configuration.`,
           )
         : null;
@@ -84,7 +83,7 @@ export class ScalarAggregationStrategy implements AggregationStrategy {
       calculationErrorCount,
       timestamp,
       aggregationChartDisplayColor,
-      thresholds: headlineThresholds ?? DEFAULT_NUMBER_THRESHOLDS,
+      thresholds: headlineThresholds,
     } satisfies ScalarAggregationResult;
 
     return AggregatedMetricMapper.toAggregatedMetricResult(

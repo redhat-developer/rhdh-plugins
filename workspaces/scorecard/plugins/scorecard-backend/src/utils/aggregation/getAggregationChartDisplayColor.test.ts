@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { ScorecardThresholdRuleColors } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
   getAggregationChartDisplayColor,
   getRequiredAggregationChartDisplayColor,
@@ -48,10 +49,18 @@ describe('getAggregationChartDisplayColor', () => {
     ).toBeUndefined();
   });
 
-  it('should return undefined when the matching rule has no color', () => {
+  it('should return the standard default color when the matching rule omits color', () => {
     expect(
       getAggregationChartDisplayColor(5, {
         rules: [{ key: 'success', expression: '<10' }],
+      }),
+    ).toBe(ScorecardThresholdRuleColors.SUCCESS);
+  });
+
+  it('should return undefined when a custom-key rule has no color', () => {
+    expect(
+      getAggregationChartDisplayColor(5, {
+        rules: [{ key: 'elite', expression: '<10' }],
       }),
     ).toBeUndefined();
   });
@@ -90,5 +99,15 @@ describe('getRequiredAggregationChartDisplayColor', () => {
         'color is not configured',
       ),
     ).toBe('yellow');
+  });
+
+  it('should return the standard default color when the matching rule omits color', () => {
+    expect(
+      getRequiredAggregationChartDisplayColor(
+        5,
+        { rules: [{ key: 'success', expression: '<10' }] },
+        'color is not configured',
+      ),
+    ).toBe(ScorecardThresholdRuleColors.SUCCESS);
   });
 });
