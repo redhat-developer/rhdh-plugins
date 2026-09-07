@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import { aggregationTypes } from '../constants/aggregations';
+import {
+  aggregationTypes,
+  scalarAggregationTypes,
+} from '../constants/aggregations';
 import { MetricType } from './Metric';
 import { ScorecardVisualizationType } from './scorecard';
 import { ThresholdConfig } from './threshold';
@@ -24,6 +27,11 @@ import { ThresholdConfig } from './threshold';
  */
 export type AggregationType =
   (typeof aggregationTypes)[keyof typeof aggregationTypes];
+
+/**
+ * @public
+ */
+export type ScalarAggregationType = (typeof scalarAggregationTypes)[number];
 
 /**
  * @public
