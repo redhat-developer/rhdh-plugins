@@ -306,6 +306,7 @@ Example scalar response with status filter:
     "entitiesConsidered": 10,
     "calculationErrorCount": 1,
     "timestamp": "2026-02-17T10:30:00.000Z",
+    "aggregationChartDisplayColor": "rgb(224, 189, 108)",
     "thresholds": {
       "rules": [
         { "key": "success", "expression": "<100" },
