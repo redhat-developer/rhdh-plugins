@@ -30,8 +30,8 @@ import {
   DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+  DORA_DEFAULT_INCIDENT_LOOKBACK_MS,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
-  DORA_INCIDENT_LOOKBACK_MS,
 } from '../constants';
 import { collectorInputHash } from './collectorHash';
 
@@ -635,7 +635,7 @@ describe('DefaultDoraSyncService', () => {
             from: windowFrom.toISOString(),
             to: secondWindowTo.toISOString(),
             updatedSince: new Date(
-              firstWindowTo.getTime() - DORA_INCIDENT_LOOKBACK_MS,
+              firstWindowTo.getTime() - DORA_DEFAULT_INCIDENT_LOOKBACK_MS,
             ).toISOString(),
           }),
         }),
@@ -881,7 +881,7 @@ describe('DefaultDoraSyncService', () => {
         pullRequests,
         lastSync,
         logger,
-        { staleAfterMs, deploymentLookbackMs: 0 },
+        { staleAfterMs, deploymentLookbackMs: 0, incidentLookbackMs: 0 },
       );
 
       const windowTo = new Date();

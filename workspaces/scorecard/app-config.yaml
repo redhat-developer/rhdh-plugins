@@ -487,6 +487,7 @@ scorecard:
   #     dataRetentionDays: 365
   #     staleAfterMs: 60000
   #     deploymentLookbackMs: 172800000
+  #     incidentLookbackMs: 300000
 
   metricProviders:
     jira:

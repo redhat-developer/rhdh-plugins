@@ -21,6 +21,7 @@ import {
   DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+  DORA_DEFAULT_INCIDENT_LOOKBACK_MS,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
   DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
   DORA_DEFAULT_STALE_AFTER_MS,
@@ -472,6 +473,7 @@ describe('DoraConfig', () => {
       ).toEqual({
         staleAfterMs: DORA_DEFAULT_STALE_AFTER_MS,
         deploymentLookbackMs: DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
+        incidentLookbackMs: DORA_DEFAULT_INCIDENT_LOOKBACK_MS,
       });
     });
 
@@ -485,6 +487,7 @@ describe('DoraConfig', () => {
                   dora: {
                     staleAfterMs: 60000,
                     deploymentLookbackMs: 86_400_000,
+                    incidentLookbackMs: 600_000,
                   },
                 },
               },
@@ -494,10 +497,11 @@ describe('DoraConfig', () => {
       ).toEqual({
         staleAfterMs: 60000,
         deploymentLookbackMs: 86_400_000,
+        incidentLookbackMs: 600_000,
       });
     });
 
-    it('allows staleAfterMs and deploymentLookbackMs of 0', () => {
+    it('allows staleAfterMs, deploymentLookbackMs and incidentLookbackMs of 0', () => {
       expect(
         parseDoraSyncConfig(
           mockServices.rootConfig({
@@ -507,6 +511,7 @@ describe('DoraConfig', () => {
                   dora: {
                     staleAfterMs: 0,
                     deploymentLookbackMs: 0,
+                    incidentLookbackMs: 0,
                   },
                 },
               },
@@ -516,6 +521,7 @@ describe('DoraConfig', () => {
       ).toEqual({
         staleAfterMs: 0,
         deploymentLookbackMs: 0,
+        incidentLookbackMs: 0,
       });
     });
 
@@ -597,6 +603,67 @@ describe('DoraConfig', () => {
         ),
       ).toThrow(
         `scorecard.plugins.dora.deploymentLookbackMs must be less than or equal to the DORA metric computation window (${DORA_TIME_WINDOW_DAYS} days)`,
+      );
+    });
+
+    it('throws when configured incidentLookbackMs is negative', () => {
+      expect(() =>
+        parseDoraSyncConfig(
+          mockServices.rootConfig({
+            data: {
+              scorecard: {
+                plugins: {
+                  dora: {
+                    incidentLookbackMs: -1,
+                  },
+                },
+              },
+            },
+          }),
+        ),
+      ).toThrow(
+        'scorecard.plugins.dora.incidentLookbackMs must be greater than or equal to 0',
+      );
+    });
+
+    it('allows incidentLookbackMs equal to the time window', () => {
+      expect(
+        parseDoraSyncConfig(
+          mockServices.rootConfig({
+            data: {
+              scorecard: {
+                plugins: {
+                  dora: {
+                    incidentLookbackMs: daysToMilliseconds(
+                      DORA_TIME_WINDOW_DAYS,
+                    ),
+                  },
+                },
+              },
+            },
+          }),
+        ).incidentLookbackMs,
+      ).toBe(daysToMilliseconds(DORA_TIME_WINDOW_DAYS));
+    });
+
+    it('throws when configured incidentLookbackMs is greater than the time window', () => {
+      expect(() =>
+        parseDoraSyncConfig(
+          mockServices.rootConfig({
+            data: {
+              scorecard: {
+                plugins: {
+                  dora: {
+                    incidentLookbackMs:
+                      daysToMilliseconds(DORA_TIME_WINDOW_DAYS) + 1,
+                  },
+                },
+              },
+            },
+          }),
+        ),
+      ).toThrow(
+        `scorecard.plugins.dora.incidentLookbackMs must be less than or equal to the DORA metric computation window (${DORA_TIME_WINDOW_DAYS} days)`,
       );
     });
   });

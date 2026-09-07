@@ -28,6 +28,7 @@ import {
   DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+  DORA_DEFAULT_INCIDENT_LOOKBACK_MS,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
   DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
   DORA_DEFAULT_STALE_AFTER_MS,
@@ -58,6 +59,7 @@ export type DoraChangeFailureRateConfig = {
 export type DoraSyncConfig = {
   staleAfterMs: number;
   deploymentLookbackMs: number;
+  incidentLookbackMs: number;
 };
 
 export const DEFAULT_DORA_DEPLOYMENT_FREQUENCY_THRESHOLDS: ThresholdConfig =
@@ -321,6 +323,8 @@ export function parseDoraSyncConfig(config: Config): DoraSyncConfig {
     );
   }
 
+  const maxLookbackMs = daysToMilliseconds(DORA_TIME_WINDOW_DAYS);
+
   const deploymentLookbackMs =
     config.getOptionalNumber('scorecard.plugins.dora.deploymentLookbackMs') ??
     DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS;
@@ -329,11 +333,25 @@ export function parseDoraSyncConfig(config: Config): DoraSyncConfig {
       'scorecard.plugins.dora.deploymentLookbackMs must be greater than or equal to 0',
     );
   }
-  const maxLookbackMs = daysToMilliseconds(DORA_TIME_WINDOW_DAYS);
   if (deploymentLookbackMs > maxLookbackMs) {
     throw new Error(
       `scorecard.plugins.dora.deploymentLookbackMs must be less than or equal to the DORA metric computation window (${DORA_TIME_WINDOW_DAYS} days)`,
     );
   }
-  return { staleAfterMs, deploymentLookbackMs };
+
+  const incidentLookbackMs =
+    config.getOptionalNumber('scorecard.plugins.dora.incidentLookbackMs') ??
+    DORA_DEFAULT_INCIDENT_LOOKBACK_MS;
+  if (incidentLookbackMs < 0) {
+    throw new Error(
+      'scorecard.plugins.dora.incidentLookbackMs must be greater than or equal to 0',
+    );
+  }
+  if (incidentLookbackMs > maxLookbackMs) {
+    throw new Error(
+      `scorecard.plugins.dora.incidentLookbackMs must be less than or equal to the DORA metric computation window (${DORA_TIME_WINDOW_DAYS} days)`,
+    );
+  }
+
+  return { staleAfterMs, deploymentLookbackMs, incidentLookbackMs };
 }

@@ -46,11 +46,12 @@ export const DORA_DEFAULT_STALE_AFTER_MS = 60_000;
 export const DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS = 48 * 60 * 60 * 1000;
 
 /**
- * Incidents lookback, in milliseconds, when re-querying by `updatedAt`
+ * Default incidents lookback, in milliseconds, when re-querying by `updatedAt`
  * (`updatedSince = max(windowFrom, lastSync − lookback)`).
  * Overlaps the previous watermark to cover clock skew and source index lag.
+ * Overridable via `scorecard.plugins.dora.incidentLookbackMs`.
  */
-export const DORA_INCIDENT_LOOKBACK_MS = 5 * 60 * 1000;
+export const DORA_DEFAULT_INCIDENT_LOOKBACK_MS = 5 * 60 * 1000;
 
 export const DORA_CLEANUP_EXPIRED_DATA_TASK_ID =
   'scorecard-dora:cleanup-expired-data' as const;

@@ -58,6 +58,18 @@ export interface Config {
          * @default 172800000 (48 hours)
          */
         deploymentLookbackMs?: number;
+        /**
+         * Lookback in milliseconds when re-querying incidents by update time
+         * since the last synchronization watermark. It determines how far back
+         * to search for incidents that were updated around the previous refresh,
+         * covering clock skew between Scorecard and the incident source as well
+         * as source-side indexing lag.
+         * Must be greater than or equal to 0 and less than or equal
+         * to the DORA metric computation window (30 days).
+         * Set to `0` for watermark-only incremental refresh (no lookback).
+         * @default 300000 (5 minutes)
+         */
+        incidentLookbackMs?: number;
       };
     };
     metricProviders?: {

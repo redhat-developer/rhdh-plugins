@@ -24,8 +24,8 @@ import type { DoraPullRequestsStore } from '../database/DatabaseDoraPullRequests
 import type { DoraSyncConfig } from '../metricProviders/DoraConfig';
 import {
   DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
+  DORA_DEFAULT_INCIDENT_LOOKBACK_MS,
   DORA_DEFAULT_STALE_AFTER_MS,
-  DORA_INCIDENT_LOOKBACK_MS,
 } from '../constants';
 import {
   deploymentsCollectorInputSchema,
@@ -49,6 +49,7 @@ import {
 const DEFAULT_DORA_SYNC_CONFIG: DoraSyncConfig = {
   staleAfterMs: DORA_DEFAULT_STALE_AFTER_MS,
   deploymentLookbackMs: DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS,
+  incidentLookbackMs: DORA_DEFAULT_INCIDENT_LOOKBACK_MS,
 };
 
 /**
@@ -207,7 +208,7 @@ export class DefaultDoraSyncService implements DoraSyncService {
     const updatedSince = collectorDataBoundary(
       options.windowFrom,
       lastSyncedAt,
-      DORA_INCIDENT_LOOKBACK_MS,
+      this.config.incidentLookbackMs,
     );
 
     const collected = await this.collectorsService.collect<
