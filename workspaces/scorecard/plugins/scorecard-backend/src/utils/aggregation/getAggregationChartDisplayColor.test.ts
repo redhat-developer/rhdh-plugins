@@ -15,10 +15,8 @@
  */
 
 import { ScorecardThresholdRuleColors } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
-import {
-  getAggregationChartDisplayColor,
-  getRequiredAggregationChartDisplayColor,
-} from './getAggregationChartDisplayColor';
+import { ThresholdEvaluator } from '../../threshold/ThresholdEvaluator';
+import { getRequiredAggregationChartDisplayColor } from './getAggregationChartDisplayColor';
 
 const overlappingThresholds = {
   rules: [
@@ -40,52 +38,15 @@ const overlappingThresholds = {
   ],
 };
 
-describe('getAggregationChartDisplayColor', () => {
-  it('should return undefined when no rule matches', () => {
-    expect(
-      getAggregationChartDisplayColor(50, {
-        rules: [{ key: 'success', expression: '<10', color: 'green' }],
-      }),
-    ).toBeUndefined();
-  });
-
-  it('should return the standard default color when the matching rule omits color', () => {
-    expect(
-      getAggregationChartDisplayColor(5, {
-        rules: [{ key: 'success', expression: '<10' }],
-      }),
-    ).toBe(ScorecardThresholdRuleColors.SUCCESS);
-  });
-
-  it('should return undefined when a custom-key rule has no color', () => {
-    expect(
-      getAggregationChartDisplayColor(5, {
-        rules: [{ key: 'elite', expression: '<10' }],
-      }),
-    ).toBeUndefined();
-  });
-
-  it('should return the color of the first matching rule', () => {
-    expect(getAggregationChartDisplayColor(12, overlappingThresholds)).toBe(
-      'yellow',
-    );
-  });
-
-  it('should follow rule order when multiple expressions match', () => {
-    expect(
-      getAggregationChartDisplayColor(12, {
-        rules: [...overlappingThresholds.rules].reverse(),
-      }),
-    ).toBe('green');
-  });
-});
-
 describe('getRequiredAggregationChartDisplayColor', () => {
+  const evaluator = new ThresholdEvaluator();
+
   it('should throw the given error when no color matches', () => {
     expect(() =>
       getRequiredAggregationChartDisplayColor(
         50,
         { rules: [{ key: 'success', expression: '<10', color: 'green' }] },
+        evaluator,
         'color is not configured',
       ),
     ).toThrow('color is not configured');
@@ -96,6 +57,7 @@ describe('getRequiredAggregationChartDisplayColor', () => {
       getRequiredAggregationChartDisplayColor(
         12,
         overlappingThresholds,
+        evaluator,
         'color is not configured',
       ),
     ).toBe('yellow');
@@ -106,6 +68,7 @@ describe('getRequiredAggregationChartDisplayColor', () => {
       getRequiredAggregationChartDisplayColor(
         5,
         { rules: [{ key: 'success', expression: '<10' }] },
+        evaluator,
         'color is not configured',
       ),
     ).toBe(ScorecardThresholdRuleColors.SUCCESS);

@@ -269,7 +269,7 @@ Use this endpoint for all new integrations.
 The response shape includes **`id`**, **`status`**, **`metadata`** (title, description, type, unit, visualization, aggregation type, and **`filter`** when configured), and **`result`**. The shape of **`result`** depends on the aggregation type:
 
 - **`statusGrouped`**: counts per threshold rule, **`total`**, **`thresholds`**, **`entitiesConsidered`**, **`calculationErrorCount`**, **`timestamp`**.
-- **`weightedStatusScore`**: same as status-grouped, plus **`weightedStatusScore`** (portfolio percentage in \[0, 100\], one decimal), **`weightedStatusSum`**, **`weightedStatusMaxPossible`**, and **`aggregationChartDisplayColor`** (see backend README). The homepage card shows a donut gauge for this type instead of a multi-slice status pie.
+- **`weightedStatusScore`**: same as status-grouped, plus **`weightedStatusScore`** (portfolio percentage in \[0, 100\], one decimal), **`weightedStatusSum`**, **`weightedStatusMaxPossible`**, and **`aggregationChartDisplayColor`** (color from the **first** matching rule in **`thresholds`** against **`weightedStatusScore`**; **`null`** when **`total`** is **0** — see backend README). The homepage card shows a donut gauge for this type instead of a multi-slice status pie.
 - **Scalar types** (`sum`, `average`, `max`, `min`, `count`): see [Scalar result fields](#scalar-result-fields) below, including **`aggregationChartDisplayColor`**. When **`filter.status`** is configured, **`metadata.filter`** is also returned.
 
 For a daily history of a **scalar** KPI over owned entities, see [`GET /aggregations/:aggregationId/time-series`](#get-aggregationsaggregationidtime-series).

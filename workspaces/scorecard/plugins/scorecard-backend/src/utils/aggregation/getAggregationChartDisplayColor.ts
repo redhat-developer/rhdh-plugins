@@ -14,46 +14,33 @@
  * limitations under the License.
  */
 
+import { InputError } from '@backstage/errors';
 import type { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdEvaluator } from '../../threshold/ThresholdEvaluator';
-import { withStandardThresholdDefaults } from './withStandardThresholdDefaults';
+import { classifyNumberAgainstThresholds } from './classifyNumberAgainstThresholds';
 
 /**
- * Get the aggregation chart display color for a given value and thresholds.
+ * Get the required aggregation chart display color for a given value and thresholds.
  * @param value - The value to get the color for.
  * @param thresholds - The thresholds to use.
- * @returns The aggregation chart display color.
+ * @param evaluator - Threshold evaluator instance.
+ * @param errorMessage - The error message to throw if the color is not found.
+ * @returns The required aggregation chart display color.
  */
-export function getAggregationChartDisplayColor(
-  value: number,
-  thresholds: ThresholdConfig,
-): string | undefined {
-  const thresholdEvaluator = new ThresholdEvaluator();
-
-  const matchedThresholdKey = thresholdEvaluator.getFirstMatchingThreshold(
-    value,
-    'number',
-    thresholds,
-  );
-
-  const matchedRule = thresholds.rules.find(r => r.key === matchedThresholdKey);
-
-  if (!matchedRule) {
-    return undefined;
-  }
-
-  return withStandardThresholdDefaults(matchedRule).color;
-}
-
 export function getRequiredAggregationChartDisplayColor(
   value: number,
   thresholds: ThresholdConfig,
+  evaluator: ThresholdEvaluator,
   errorMessage: string,
 ): string {
-  const color = getAggregationChartDisplayColor(value, thresholds);
+  const color = classifyNumberAgainstThresholds(
+    value,
+    thresholds,
+    evaluator,
+  )?.color;
 
   if (!color) {
-    throw new Error(errorMessage);
+    throw new InputError(errorMessage);
   }
 
   return color;

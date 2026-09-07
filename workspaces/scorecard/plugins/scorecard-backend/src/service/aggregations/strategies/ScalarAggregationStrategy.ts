@@ -72,6 +72,7 @@ export class ScalarAggregationStrategy implements AggregationStrategy {
         ? getRequiredAggregationChartDisplayColor(
             value,
             headlineThresholds,
+            this.thresholdEvaluator,
             `The color for value '${value}' metric '${metric.id}' is not configured. Check the 'scorecard.aggregationKPIs.${aggregationConfig.id}.options.thresholds' configuration.`,
           )
         : null;

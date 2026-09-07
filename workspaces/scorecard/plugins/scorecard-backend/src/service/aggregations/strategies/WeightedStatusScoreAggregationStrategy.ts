@@ -28,6 +28,7 @@ import type { AggregatedMetricLoader } from '../AggregatedMetricLoader';
 import type { AggregationOptions } from '../types';
 import type { AggregationStrategy } from './types';
 import { LoggerService } from '@backstage/backend-plugin-api';
+import { ThresholdEvaluator } from '../../../threshold/ThresholdEvaluator';
 import { getRequiredAggregationChartDisplayColor } from '../../../utils/aggregation/getAggregationChartDisplayColor';
 
 export class WeightedStatusScoreAggregationStrategy
@@ -36,6 +37,7 @@ export class WeightedStatusScoreAggregationStrategy
   constructor(
     private readonly loader: AggregatedMetricLoader,
     private readonly logger: LoggerService,
+    private readonly thresholdEvaluator: ThresholdEvaluator = new ThresholdEvaluator(),
   ) {}
 
   async aggregate({
@@ -81,6 +83,7 @@ export class WeightedStatusScoreAggregationStrategy
         ? getRequiredAggregationChartDisplayColor(
             weightedStatusScore,
             headlineThresholds,
+            this.thresholdEvaluator,
             `The color for percentage '${weightedStatusScore}' metric '${metric.id}' is not configured. Check the 'scorecard.aggregationKPIs.${aggregationConfig.id}.options.thresholds' configuration.`,
           )
         : null;
