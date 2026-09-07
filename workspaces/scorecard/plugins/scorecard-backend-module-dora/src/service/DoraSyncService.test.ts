@@ -246,6 +246,109 @@ describe('DefaultDoraSyncService', () => {
   );
 
   it.each(databases.eachSupportedId())(
+    'keeps collected deployments and retries the window when the watermark write fails - %p',
+    async databaseId => {
+      const { deployments, incidents, pullRequests, lastSync } =
+        await createTestDatabase(await databases.init(databaseId));
+
+      const deploymentsCollector = buildMockDeploymentsCollector({
+        deployments: [
+          {
+            id: '100',
+            commitSha: 'sha-1',
+            environment: 'production',
+            createdAt: '2026-06-10T00:00:00.000Z',
+            result: 'success',
+          },
+        ],
+        collectorId: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+      });
+      const { collectorsService } = buildMockCollectorsService({
+        collectors: [deploymentsCollector],
+      });
+
+      const syncService = new DefaultDoraSyncService(
+        collectorsService,
+        deployments,
+        incidents,
+        pullRequests,
+        lastSync,
+        logger,
+      );
+      const dataService = new DefaultDoraDataService(
+        deployments,
+        incidents,
+        pullRequests,
+      );
+
+      const windowFrom = new Date('2026-06-01T00:00:00.000Z');
+      const windowTo = new Date('2026-06-30T00:00:00.000Z');
+      const catalogEntityRef = stringifyEntityRef(mockEntity);
+      const collector = collectorConfig(DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID);
+
+      const setLastSyncedAt = jest
+        .spyOn(lastSync, 'setLastSyncedAt')
+        .mockRejectedValueOnce(new Error('unable to write watermark'));
+
+      await expect(
+        syncService.syncDeployments(mockEntity, {
+          windowFrom,
+          windowTo,
+          collector,
+        }),
+      ).rejects.toThrow('unable to write watermark');
+
+      // Deployments are upserted before the watermark advances
+      await expect(
+        dataService.readDeployments(catalogEntityRef, {
+          windowFrom,
+          windowTo,
+          collector,
+        }),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          originalDeploymentId: '100',
+          commitSha: 'sha-1',
+        }),
+      ]);
+      expect(
+        await lastSync.getLastSyncedAt(
+          catalogEntityRef,
+          DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+          EMPTY_INPUT_HASH,
+        ),
+      ).toBeUndefined();
+
+      // Retrying re-collects the same window; the re-upsert is idempotent
+      // (`onConflict().ignore()`), so no duplicate row is created.
+      setLastSyncedAt.mockRestore();
+
+      await syncService.syncDeployments(mockEntity, {
+        windowFrom,
+        windowTo,
+        collector,
+      });
+
+      await expect(
+        dataService.readDeployments(catalogEntityRef, {
+          windowFrom,
+          windowTo,
+          collector,
+        }),
+      ).resolves.toHaveLength(1);
+      expect(
+        (
+          await lastSync.getLastSyncedAt(
+            catalogEntityRef,
+            DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+            EMPTY_INPUT_HASH,
+          )
+        )?.toISOString(),
+      ).toBe(windowTo.toISOString());
+    },
+  );
+
+  it.each(databases.eachSupportedId())(
     'treats different collector inputs as independent watermarks - %p',
     async databaseId => {
       const { deployments, incidents, pullRequests, lastSync } =
@@ -615,6 +718,124 @@ describe('DefaultDoraSyncService', () => {
       ).resolves.toEqual([
         expect.objectContaining({ originalIncidentId: 'INC-1' }),
       ]);
+    },
+  );
+
+  it.each(databases.eachSupportedId())(
+    'keeps collected incidents and retries the window when the watermark write fails - %p',
+    async databaseId => {
+      const { deployments, incidents, pullRequests, lastSync } =
+        await createTestDatabase(await databases.init(databaseId));
+
+      const incidentsCollector = buildMockIncidentsCollector({
+        incidents: [
+          {
+            id: 'INC-1',
+            createdAt: '2026-06-10T00:00:00.000Z',
+            updatedAt: '2026-06-11T00:00:00.000Z',
+            resolutionAt: null,
+          },
+        ],
+        collectorId: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+      });
+      const { collectorsService } = buildMockCollectorsService({
+        collectors: [incidentsCollector],
+      });
+
+      const syncService = new DefaultDoraSyncService(
+        collectorsService,
+        deployments,
+        incidents,
+        pullRequests,
+        lastSync,
+        logger,
+      );
+      const dataService = new DefaultDoraDataService(
+        deployments,
+        incidents,
+        pullRequests,
+      );
+
+      const windowFrom = new Date('2026-06-01T00:00:00.000Z');
+      const windowTo = new Date('2026-06-30T00:00:00.000Z');
+      const catalogEntityRef = stringifyEntityRef(mockEntity);
+      const collector = collectorConfig(DORA_DEFAULT_INCIDENTS_COLLECTOR_ID);
+
+      const setLastSyncedAt = jest
+        .spyOn(lastSync, 'setLastSyncedAt')
+        .mockRejectedValueOnce(new Error('unable to write watermark'));
+
+      await expect(
+        syncService.syncIncidents(mockEntity, {
+          windowFrom,
+          windowTo,
+          collector,
+        }),
+      ).rejects.toThrow('unable to write watermark');
+
+      // Incidents are upserted before the watermark advances
+      await expect(
+        dataService.readIncidents(catalogEntityRef, {
+          windowFrom,
+          windowTo,
+          collector,
+        }),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          originalIncidentId: 'INC-1',
+          resolutionAt: null,
+        }),
+      ]);
+      expect(
+        await lastSync.getLastSyncedAt(
+          catalogEntityRef,
+          DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+          EMPTY_INPUT_HASH,
+        ),
+      ).toBeUndefined();
+
+      // Retrying re-collects the same window; the re-upsert is idempotent
+      // (`onConflict().merge()`), so the incident is updated in place with the
+      // resolution it picked up in the meantime rather than duplicated.
+      setLastSyncedAt.mockRestore();
+      jest.mocked(incidentsCollector.collect).mockResolvedValueOnce({
+        incidents: [
+          {
+            id: 'INC-1',
+            createdAt: '2026-06-10T00:00:00.000Z',
+            updatedAt: '2026-06-12T00:00:00.000Z',
+            resolutionAt: '2026-06-12T00:00:00.000Z',
+          },
+        ],
+      });
+
+      await syncService.syncIncidents(mockEntity, {
+        windowFrom,
+        windowTo,
+        collector,
+      });
+
+      await expect(
+        dataService.readIncidents(catalogEntityRef, {
+          windowFrom,
+          windowTo,
+          collector,
+        }),
+      ).resolves.toEqual([
+        expect.objectContaining({
+          originalIncidentId: 'INC-1',
+          resolutionAt: new Date('2026-06-12T00:00:00.000Z'),
+        }),
+      ]);
+      expect(
+        (
+          await lastSync.getLastSyncedAt(
+            catalogEntityRef,
+            DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+            EMPTY_INPUT_HASH,
+          )
+        )?.toISOString(),
+      ).toBe(windowTo.toISOString());
     },
   );
 
