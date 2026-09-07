@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { useState } from 'react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { OrchestratorFormContextProps } from '@red-hat-developer-hub/backstage-plugin-orchestrator-form-api';
 import { ActiveTextInput } from './ActiveTextInput';
 import * as utils from '../utils';
 
@@ -34,6 +36,46 @@ const mockedUseTemplateUnitEvaluator =
 const mockedUseRetriggerEvaluate = utils.useRetriggerEvaluate as jest.Mock;
 const mockedUseFetch = utils.useFetch as jest.Mock;
 const mockedUseProcessingState = utils.useProcessingState as jest.Mock;
+
+type HarnessProps = { initialValue?: string };
+
+const WidgetHarness = ({ initialValue = '' }: HarnessProps) => {
+  const [value, setValue] = useState(initialValue);
+
+  return (
+    <ActiveTextInput
+      id="ati"
+      name="ati"
+      label="ATI"
+      required={false}
+      readonly={false}
+      disabled={false}
+      autofocus={false}
+      schema={{ type: 'string' }}
+      uiSchema={{}}
+      options={{
+        props: {
+          'fetch:response:value': 'observers',
+          'fetch:retrigger': ['current.step.xParams.platformProfileID'],
+          'fetch:clearOnRetrigger': true,
+        },
+      }}
+      value={value}
+      onChange={changed => setValue(changed as string)}
+      onBlur={() => {}}
+      onFocus={() => {}}
+      formContext={
+        {
+          formData: { current: { step: { xParams: {} } } },
+          getIsChangedByUser: () => false,
+          setIsChangedByUser: () => {},
+        } as unknown as OrchestratorFormContextProps
+      }
+      rawErrors={[]}
+      registry={{} as any}
+    />
+  );
+};
 
 describe('ActiveTextInput', () => {
   beforeEach(() => {
@@ -166,5 +208,22 @@ describe('ActiveTextInput', () => {
 
     expect(setIsChangedByUser).toHaveBeenCalledWith('ati', true);
     expect(onChange).toHaveBeenCalledWith('new value');
+  });
+
+  it('clears stale initial value when fetch returns an empty string', async () => {
+    mockedUseRetriggerEvaluate.mockImplementation(() => ['67890']);
+    mockedUseFetch.mockImplementation(() => ({
+      data: { observers: '' },
+      error: undefined,
+      loading: false,
+    }));
+
+    render(<WidgetHarness initialValue="group-A" />);
+
+    await waitFor(() => {
+      const input = screen.getByTestId('ati-textfield').querySelector('input');
+      expect(input).toBeInTheDocument();
+      expect(input).toHaveValue('');
+    });
   });
 });
