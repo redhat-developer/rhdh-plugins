@@ -360,11 +360,23 @@ export class NotebookSurfacePage {
       .filter({ hasText: this.t['notebook.document.delete.title'] });
   }
 
+  private deleteDocumentDialogActions(): Locator {
+    return this.deleteDocumentConfirmDialog().locator(
+      '[class*="MuiDialogActions-root"]',
+    );
+  }
+
+  private deleteDocumentFooterButton(label: string): Locator {
+    const escapedLabel = label.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    return this.deleteDocumentDialogActions().locator(
+      `button:text-is("${escapedLabel}")`,
+    );
+  }
+
   deleteDocumentConfirmButton(): Locator {
-    return this.deleteDocumentConfirmDialog().getByRole('button', {
-      name: this.t['notebook.document.delete.action'],
-      exact: true,
-    });
+    return this.deleteDocumentFooterButton(
+      this.t['notebook.document.delete.action'],
+    );
   }
 
   /** Opens the overflow menu on the first sidebar document, chooses Delete document, and confirms the deletion. */
@@ -700,10 +712,7 @@ export class NotebookSurfacePage {
   }
 
   async cancelDeleteDocumentConfirmation(): Promise<void> {
-    const cancel = this.deleteDocumentConfirmDialog().getByRole('button', {
-      name: this.t['common.cancel'],
-      exact: true,
-    });
+    const cancel = this.deleteDocumentFooterButton(this.t['common.cancel']);
     await cancel.click({ force: true });
     await expect(this.deleteDocumentConfirmDialog()).toBeHidden();
   }

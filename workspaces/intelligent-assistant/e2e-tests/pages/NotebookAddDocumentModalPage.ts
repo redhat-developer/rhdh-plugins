@@ -34,6 +34,16 @@ export class NotebookAddDocumentModalPage {
       .filter({ hasText: this.t['notebook.upload.modal.dragDropTitle'] });
   }
 
+  /** Footer actions are outside the nested-dialog a11y tree in compact modes. */
+  private dialogActions(): Locator {
+    return this.dialog().locator('[class*="MuiDialogActions-root"]');
+  }
+
+  private dialogFooterButton(label: string): Locator {
+    const escapedLabel = label.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    return this.dialogActions().locator(`button:text-is("${escapedLabel}")`);
+  }
+
   modalTitleAccessibilityRegion(): Locator {
     return this.dialog()
       .locator('h2')
@@ -65,14 +75,11 @@ export class NotebookAddDocumentModalPage {
             { count: stagedCount },
           )
         : this.t['notebook.upload.modal.addButtonEmpty'];
-    return this.dialog().getByRole('button', { name: label, exact: true });
+    return this.dialogFooterButton(label);
   }
 
   cancelButton(): Locator {
-    return this.dialog().getByRole('button', {
-      name: this.t['common.cancel'],
-      exact: true,
-    });
+    return this.dialogFooterButton(this.t['common.cancel']);
   }
 
   /** Drop-zone copy, “or”, browse button, accepted file types paragraph. */
@@ -105,21 +112,20 @@ export class NotebookAddDocumentModalPage {
 
   async dismiss(): Promise<void> {
     const cancel = this.cancelButton();
-    if (await cancel.isVisible()) {
-      await cancel.scrollIntoViewIfNeeded();
+    if (await cancel.count()) {
       await cancel.click({ force: true });
     } else {
-      // Compact scoped dialogs scroll inside the paper; footer actions can sit
-      // below the fold while the title-bar close control stays visible.
       await this.clickTitleClose();
     }
     await expect(this.dialog()).toBeHidden({ timeout: 10_000 });
   }
 
   dropzoneClickArea(): Locator {
-    return this.dialog().getByRole('button', {
-      name: this.t['notebook.upload.modal.dragDropTitle'],
-    });
+    const label = this.t['notebook.upload.modal.dragDropTitle'];
+    const escapedLabel = label.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+    return this.dialog().locator(
+      `[role="button"][aria-label="${escapedLabel}"]`,
+    );
   }
 
   async expectDropzoneDisabled(): Promise<void> {
@@ -170,7 +176,6 @@ export class NotebookAddDocumentModalPage {
 
   async clickAddFilesForStagedCount(stagedCount: number): Promise<void> {
     const button = this.addFilesButton(stagedCount);
-    await button.scrollIntoViewIfNeeded();
     await button.click({ force: true });
   }
 
