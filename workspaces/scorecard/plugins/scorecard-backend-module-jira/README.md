@@ -204,9 +204,10 @@ Collectors in Scorecard are schema-validated at runtime. Any custom collector re
 - **Input schema**
   - `from: string` (ISO datetime)
   - `to: string` (ISO datetime)
+  - `updatedSince: string` (ISO datetime)
   - `issueType?: string` (optional; default `Incident`)
 - **Output schema**
-  - `incidents: Array<{ id: string; createdAt: string; resolutionAt: string | null }>`
+  - `incidents: Array<{ id: string; createdAt: string; updatedAt: string; resolutionAt: string | null }>`
 - **Annotation requirements**
   - Uses `jira/incident-project-key` when present
   - Falls back to `jira/project-key` when `jira/incident-project-key` is not set
