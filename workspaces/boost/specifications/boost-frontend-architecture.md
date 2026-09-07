@@ -4,9 +4,9 @@
 
 `plugins/boost` is the frontend plugin for the boost workspace in RHDH (`workspaces/boost/plugins/boost`). It is a multi-domain plugin that will grow to cover AI catalog discovery, agentic chat, agent lifecycle management, and platform administration. The AI Catalog ([RHDHPLAN-1509](https://redhat.atlassian.net/browse/RHDHPLAN-1509)) is the first feature delivered.
 
-The plugin follows the NFS (New Frontend System) model with Blueprints, extending existing RHDH pages via `EntityCardBlueprint`, `EntityContentBlueprint`, etc., and adding new pages only where needed.
+The plugin follows the NFS (New Frontend System) model with Blueprints. The AI Catalog uses `PageBlueprint`, `EntityCardBlueprint`, and `EntityContentBlueprint` (Usage tab), and adds a standalone page for marketplace-style browse. Chat, admin, and other domains are future work.
 
-The boost backend already provides 30+ API routes across chat/streaming, conversations, agent lifecycle, MCP management, skills marketplace, and admin configuration. The frontend consumes these via `BoostApiClient` (for `/api/boost` routes) and the standard Backstage `catalogApiRef` (for catalog entity queries).
+The boost backend already provides 30+ API routes across chat/streaming, conversations, agent lifecycle, MCP management, skills marketplace, and admin configuration. The **AI Catalog frontend does not call those routes**; browse and entity cards use `catalogApiRef`. A Boost API client for `/api/boost` is future work, not present in `plugins/boost` today.
 
 ## Design Principles
 
@@ -60,33 +60,39 @@ Each domain boundary has an error boundary so a failure in one surface (e.g., ca
 ```
 plugins/boost/
   src/
-    index.ts                    # NFS entry point (createFrontendPlugin, all Blueprints, BUI CSS)
-    plugin.ts                   # Plugin definition and route refs
-    apis/
-      BoostApiClient.ts         # Custom API client wrapping /api/boost routes (registered via ApiBlueprint)
+    index.ts                    # NFS entry point (createFrontendPlugin)
+    plugin.tsx                  # Blueprints and plugin export
+    routes.ts
+    boostTranslationsModuleExport.ts
+    blueprints/
+      AiCatalogFilterBlueprint.ts
+    filters/
+      builtInFilterDefinitions.ts
     hooks/
       useAiAssets.ts            # Wraps catalogApiRef for AI asset queries
-      useFeatureFlags.ts
-      usePermissions.ts
+      useUrlFilters.ts
+      useTranslation.ts
     components/
       catalog/                  # AI Catalog domain (RHDHPLAN-1509)
-        AiCatalogPage.tsx       # Browse page
-        AiAssetCard.tsx         # Card component
-        AiAssetSummaryCard.tsx  # EntityCardBlueprint component
-        DownloadAdoptCard.tsx   # EntityCardBlueprint component
-        VersionListCard.tsx     # EntityCardBlueprint component
-        UsageTab.tsx            # EntityContentBlueprint component
-        filters/                # Search and filter components
-      chat/                     # Chat domain (future)
-      admin/                    # Admin domain (future)
-    translations/               # i18n resources
+        AiCatalogPage.tsx
+        AiAssetCard.tsx
+        AiCatalogTable.tsx
+        FilterSidebar.tsx
+        entity/
+          SummaryCard.tsx
+          AdoptionCard.tsx
+          VersionListCard.tsx
+          UsageTab.tsx          # EntityContentBlueprint on main
+    translations/               # English scaffold; locales are a remaining change
 ```
+
+There is no `BoostApiClient`, `useFeatureFlags`, `usePermissions`, or `chat/` / `admin/` source tree in this plugin today.
 
 ---
 
 ## Backend API Surface
 
-The frontend consumes APIs from `boost-backend` (mounted at `/api/boost`) and the standard Backstage `catalogApiRef`. All routes require user cookie auth except `/health`.
+Future Boost frontend domains will consume APIs from `boost-backend` (mounted at `/api/boost`). The AI Catalog uses `catalogApiRef` only. Backend routes below that are not catalog browse/entity-card work are marked future. All `/api/boost` routes require user cookie auth except `/health`.
 
 ### Catalog Interaction (AI Catalog feature)
 
@@ -97,13 +103,13 @@ flowchart LR
   BrowsePage[AI Catalog Browse Page] -->|"getEntities(filter: kind + type)"| CatalogAPI[catalogApiRef]
   EntityCards[Entity Page Cards] -->|"useEntity()"| CatalogAPI
   UsageTab[Usage Tab] -->|"useEntity() + permission check"| CatalogAPI
-  DownloadCard[Download Card] -->|"GET /catalog/download (new)"| BoostBackend[boost-backend]
+  AdoptionCard[Adoption Card] -->|"copy or open source URL"| Browser[Browser]
   GlobalSearch[Search Integration] -->|"search collator"| CatalogAPI
 ```
 
 **Key hook**: `useAiAssets(filters)` wraps `catalogApi.getEntities()` with filters matching the entity model:
 
-- Kind + type combinations: `AiResource` (any type), `API` with `mcp-server`, `Component` with `ai-agent`, `Resource` with `ai-model`/`ai-tool`/`vector-store`
+- Kind + type combinations: `AiResource` with `skill`/`rule`/`agent`, `AiModelServerAPI` with `ai-model-server`, `API` with `mcp-server`, and `Resource` with `ai-tool`/`vector-store`
 - Annotation filters on `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-source`
 - Metadata filters on `spec.lifecycle`, `metadata.tags`, `spec.owner`
 
@@ -197,15 +203,15 @@ Backstage v1.51.0 introduced two AI-related additions via `@backstage/plugin-cat
 
 Boost's entity model (Decision 1 in the agent-creation-discovery design) uses upstream kinds where available and existing kinds as fallback:
 
-| Category      | Entity Kind  | `spec.type`    | Notes                                                            |
-| ------------- | ------------ | -------------- | ---------------------------------------------------------------- |
-| Skills        | `AiResource` | `skill`        | Upstream. Has `disciplines`, `categories`, `agents`, `dependsOn` |
-| Rules         | `AiResource` | `rule`         | Upstream. Has `category` (required), `rationale` (required)      |
-| MCP Servers   | `API`        | `mcp-server`   | Upstream. Has `spec.remotes` list                                |
-| Agents        | `Component`  | `ai-agent`     | Boost-defined. No upstream kind yet                              |
-| Models        | `Resource`   | `ai-model`     | Boost-defined. No solid upstream kind yet                        |
-| Tools         | `Resource`   | `ai-tool`      | Boost-defined (Kagenti-specific)                                 |
-| Vector Stores | `Resource`   | `vector-store` | Boost-defined                                                    |
+| Category      | Entity Kind        | `spec.type`       | Notes                                                            |
+| ------------- | ------------------ | ----------------- | ---------------------------------------------------------------- |
+| Skills        | `AiResource`       | `skill`           | Upstream. Has `disciplines`, `categories`, `agents`, `dependsOn` |
+| Rules         | `AiResource`       | `rule`            | Upstream. Has `category` (required), `rationale` (required)      |
+| Agents        | `AiResource`       | `agent`           |                                                                  |
+| Model Servers | `AiModelServerAPI` | `ai-model-server` |                                                                  |
+| MCP Servers   | `API`              | `mcp-server`      | Upstream. Has `spec.remotes` list                                |
+| Tools         | `Resource`         | `ai-tool`         | Boost-defined (Kagenti-specific)                                 |
+| Vector Stores | `Resource`         | `vector-store`    | Boost-defined                                                    |
 
 Boost-defined entities carry `rhdh.io/ai-asset-category`, `rhdh.io/ai-asset-version`, and `rhdh.io/ai-asset-source` annotations as an interim bridge (RHDHPLAN-1507). Custom `CatalogProcessor` validators support both current and future kinds during upstream transitions.
 
@@ -255,18 +261,18 @@ The AI Catalog is the first domain. Here is how future capabilities map to surfa
 
 ## Technology Stack
 
-| Layer             | Technology                                                                                                   |
-| ----------------- | ------------------------------------------------------------------------------------------------------------ |
-| Component library | BUI (`@backstage/ui`) for new components, MUI v5 fallback where BUI lacks coverage, `@remixicon/react` icons |
-| Chat UI           | `@patternfly/chatbot` for conversational interfaces                                                          |
-| Styling           | CSS Modules with `--bui-*` CSS variables                                                                     |
-| Frontend system   | NFS Blueprints (`createFrontendPlugin`, `PageBlueprint`, `EntityCardBlueprint`, etc.)                        |
-| State             | React hooks + URL params for filters; streaming reducer for chat events                                      |
-| API               | `catalogApiRef` for entity queries; `BoostApiClient` for `/api/boost` routes; `fetchApi` for auth            |
-| Testing           | Unit: `TestApiProvider` + `renderInTestApp`; E2E: Playwright with multi-locale projects and axe-core         |
-| i18n              | `TranslationBlueprint` + `useTranslationRef`; 5 locales planned (de, es, fr, it, ja)                         |
-| Dynamic plugins   | NFS Module Federation via `rhdh-cli plugin export`; no Scalprum (NFS-only plugin)                            |
-| Accessibility     | WCAG 2.1 AA, keyboard navigation, screen reader support                                                      |
+| Layer             | Technology                                                                                                      |
+| ----------------- | --------------------------------------------------------------------------------------------------------------- |
+| Component library | BUI (`@backstage/ui`) for new components, MUI v5 fallback where BUI lacks coverage, `@remixicon/react` icons    |
+| Chat UI           | `@patternfly/chatbot` for conversational interfaces                                                             |
+| Styling           | CSS Modules with `--bui-*` CSS variables                                                                        |
+| Frontend system   | NFS Blueprints (`createFrontendPlugin`, `PageBlueprint`, `EntityCardBlueprint`, etc.)                           |
+| State             | React hooks + URL params for filters; streaming reducer for chat events                                         |
+| API               | `catalogApiRef` for catalog entity queries; `fetchApi` for authenticated fetches. No Boost API client yet       |
+| Testing           | Unit: `TestApiProvider` + `renderInTestApp`. Playwright E2E is a remaining OpenSpec (`ai-catalog-frontend-e2e`) |
+| i18n              | `TranslationBlueprint` + `useTranslationRef`; 5 locales planned (de, es, fr, it, ja)                            |
+| Dynamic plugins   | NFS Module Federation via `rhdh-cli plugin export`; no Scalprum (NFS-only plugin)                               |
+| Accessibility     | WCAG 2.1 AA, keyboard navigation, screen reader support                                                         |
 
 ---
 

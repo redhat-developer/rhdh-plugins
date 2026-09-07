@@ -1,21 +1,20 @@
-# Browse View
+# ai-catalog-browse-view Specification
 
-> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+## Purpose
 
-The AI Catalog browse page provides marketplace-style discovery for AI assets registered in the Backstage Software Catalog.
+TBD - created by archiving change ai-catalog-frontend. Update Purpose after archive.
 
 ## Requirements
 
 ### Requirement: Card Grid Display
 
-AI assets render as a card grid grouped by category.
+AI assets MUST render as a card or table list.
 
 #### Scenario: Browse page loads with assets
 
 - **WHEN** the developer navigates to `/ai-catalog`
-- **THEN** the page displays a card grid of AI asset entities from the catalog
-- **AND** cards are grouped by category (skills, rules, MCP servers, agents, models)
-- **AND** each card shows name, description, category badge, lifecycle, tags, owner, version, and source
+- **THEN** the page displays a card grid (or table) of AI asset entities from the catalog
+- **AND** each card shows Type, name, description, tags, owner, and provider
 
 #### Scenario: Card navigation to entity detail
 
@@ -32,7 +31,7 @@ AI assets render as a card grid grouped by category.
 
 ### Requirement: Keyword Search
 
-The search bar filters visible cards by keyword.
+The search bar MUST filter visible cards by keyword.
 
 #### Scenario: Search filters cards
 
@@ -48,11 +47,11 @@ The search bar filters visible cards by keyword.
 
 ### Requirement: Multi-Faceted Filters
 
-Filter controls narrow the card grid by entity metadata.
+Filter controls MUST narrow the card grid by entity metadata.
 
 #### Scenario: Filters combine as AND
 
-- **WHEN** the developer selects category "skill" AND lifecycle "production"
+- **WHEN** the developer selects type "skill" AND a tag
 - **THEN** only cards matching both criteria are shown
 
 #### Scenario: Filter state in URL
@@ -69,6 +68,8 @@ Filter controls narrow the card grid by entity metadata.
 - **AND** the full unfiltered card grid is restored
 
 ### Requirement: Loading, Empty, and Error States
+
+The page MUST provide loading, empty, and recoverable error states.
 
 #### Scenario: Loading state
 

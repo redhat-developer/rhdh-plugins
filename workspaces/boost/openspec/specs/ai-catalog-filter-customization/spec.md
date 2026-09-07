@@ -1,20 +1,14 @@
-# Filter Customization
+# ai-catalog-filter-customization Specification
 
-> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+## Purpose
 
-The AI Catalog browse page filter sidebar becomes extensible via the Backstage New Frontend System (NFS). Deployers can enable/disable built-in filters and third-party plugins can contribute new filters — all without modifying boost source code.
-
-## Design Approach
-
-Filters are **data, not components**. Each filter is a `FilterDefinition` — a plain object with a URL param name, a label, a function to extract options from entities, and a function to match an entity against selected values. The `FilterSidebar` renders a generic `<Select>` for each definition. No per-filter React components, no lazy loading, no custom data refs per field.
-
-The NFS extension system handles enable/disable/add via `app.extensions`. The `AiCatalogFilterBlueprint` wraps a `FilterDefinition` in an extension. A single custom `createExtensionDataRef` carries the whole definition object. No `config` schema — deployers control filter visibility via NFS disable (`ai-catalog-filter:boost/owner: false`) and filter render order via `priority` in params.
+TBD - created by archiving change ai-catalog-frontend. Update Purpose after archive.
 
 ## Requirements
 
 ### Requirement: FilterDefinition and AiCatalogFilterBlueprint
 
-A `FilterDefinition` interface defines the contract. A Blueprint wraps it as an NFS extension.
+A `FilterDefinition` interface MUST define the contract, and a Blueprint MUST wrap it as an NFS extension.
 
 #### Scenario: FilterDefinition provides required fields
 
@@ -42,7 +36,7 @@ A `FilterDefinition` interface defines the contract. A Blueprint wraps it as an 
 
 ### Requirement: Built-in Filters as Extensions
 
-Existing hardcoded filters are converted to `FilterDefinition` objects registered as default Blueprint extensions.
+Existing hardcoded filters MUST be converted to `FilterDefinition` objects registered as default Blueprint extensions.
 
 #### Scenario: Default filter set matches current behavior
 
@@ -59,7 +53,7 @@ Existing hardcoded filters are converted to `FilterDefinition` objects registere
 
 ### Requirement: Disable Filters via app-config
 
-Deployers can disable any built-in filter using NFS extension disable.
+Deployers MUST be able to disable any built-in filter using NFS extension disable.
 
 #### Scenario: Disable a single filter
 
@@ -86,7 +80,7 @@ Deployers can disable any built-in filter using NFS extension disable.
 
 ### Requirement: Add Custom Filters via NFS Module
 
-Third-party plugins can contribute new filters by providing a `FilterDefinition`.
+Third-party plugins MUST be able to contribute new filters by providing a `FilterDefinition`.
 
 #### Scenario: Third-party filter appears in sidebar
 
@@ -120,7 +114,7 @@ Third-party plugins can contribute new filters by providing a `FilterDefinition`
 
 ### Requirement: Dynamic Filter Architecture
 
-The filter pipeline adapts to the registered filter set.
+The filter pipeline MUST adapt to the registered filter set.
 
 #### Scenario: useUrlFilters reads registered filters dynamically
 
@@ -153,7 +147,7 @@ The filter pipeline adapts to the registered filter set.
 
 ### Requirement: Page Extension Input
 
-The AI Catalog page declares a filters input for child extensions.
+The AI Catalog page MUST declare a filters input for child extensions.
 
 #### Scenario: Page collects filter extensions
 

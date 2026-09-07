@@ -1,14 +1,14 @@
-# Translations
+# AI Catalog Translations
 
-> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+> **Status: Remaining**
 
-Add non-English translation files for the AI Catalog plugin, covering all 5 languages supported across rhdh-plugins. The i18n scaffold (TranslationBlueprint, `createTranslationRef`, English `ref.ts`) is already in place from Story 1.
+Add non-English translation files for the AI Catalog plugin, covering all 5 languages supported across rhdh-plugins. The i18n scaffold (TranslationBlueprint, `createTranslationRef`, English `ref.ts`) is already in place.
 
-## Requirements
+## ADDED Requirements
 
 ### Requirement: Translation Files for Supported Languages
 
-Each supported language has a complete translation file following the standard rhdh-plugins pattern.
+Each supported language MUST have a complete translation file following the standard rhdh-plugins pattern.
 
 #### Scenario: Translation files exist for all 5 languages
 
@@ -33,7 +33,7 @@ Each supported language has a complete translation file following the standard r
 
 ### Requirement: Complete String Coverage
 
-Every user-facing string in the plugin is translated.
+Every user-facing string in the plugin MUST be translated.
 
 #### Scenario: All browse page strings translated
 
@@ -50,8 +50,8 @@ Every user-facing string in the plugin is translated.
 #### Scenario: All entity extension strings translated
 
 - **GIVEN** a user views an AI asset entity page in French
-- **WHEN** entity cards and tabs from the boost plugin render
-- **THEN** card titles (summary, download/adopt, version list), tab labels (usage), download button text, copy button text, docker/podman labels, and "Contact owner" fallback text are all in French
+- **WHEN** entity cards from the boost plugin render
+- **THEN** Summary, Adoption, Version, and Usage tab titles and actions are all in French
 
 #### Scenario: Error and empty state strings translated
 
@@ -63,7 +63,7 @@ Every user-facing string in the plugin is translated.
 
 ### Requirement: Translation Quality
 
-Translations are accurate and consistent with RHDH conventions.
+Translations MUST be accurate and consistent with RHDH conventions.
 
 #### Scenario: Translation keys use dot-notation
 
@@ -81,7 +81,7 @@ Translations are accurate and consistent with RHDH conventions.
 
 ### Requirement: Verification
 
-Translations render correctly in the dev app.
+Translations MUST render correctly in the dev app.
 
 #### Scenario: Locale switching in dev app
 
