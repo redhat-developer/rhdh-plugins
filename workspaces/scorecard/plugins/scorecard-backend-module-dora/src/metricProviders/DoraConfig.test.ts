@@ -102,12 +102,12 @@ describe('DoraConfig', () => {
       );
     });
 
-    it(`returns full input and hash when 'excludeFromIdentity' is missing or empty`, () => {
-      const input = { workflowName: 'Deploy' };
-      const expected = {
-        id: 'custom:deployments',
-        input,
-        inputHash: collectorInputHash(input),
+    it('computes identity hash from input keys', () => {
+      const input = {
+        key1: 'value1',
+        key2: 'value2',
+        maxItems: 10000,
+        example: ['a', 'b'],
       };
 
       expect(
@@ -115,82 +115,7 @@ describe('DoraConfig', () => {
           mockServices.rootConfig({
             data: {
               collectors: {
-                test: {
-                  id: 'custom:deployments',
-                  input,
-                },
-              },
-            },
-          }),
-          exampleCollectorConfigPath,
-          exampleCollectorId,
-        ),
-      ).toEqual(expected);
-      expect(
-        parseCollectorConfig(
-          mockServices.rootConfig({
-            data: {
-              collectors: {
-                test: {
-                  id: 'custom:deployments',
-                  input,
-                  excludeFromIdentity: [],
-                },
-              },
-            },
-          }),
-          exampleCollectorConfigPath,
-          exampleCollectorId,
-        ),
-      ).toEqual(expected);
-    });
-
-    it(`computes inputHash from input excluding 'excludeFromIdentity' keys, while keeping them in input`, () => {
-      expect(
-        parseCollectorConfig(
-          mockServices.rootConfig({
-            data: {
-              collectors: {
-                test: {
-                  id: 'custom:deployments',
-                  input: {
-                    key1: 'value1',
-                    key2: 'value2',
-                    maxItems: 10000,
-                    example: ['a', 'b'],
-                  },
-                  excludeFromIdentity: ['maxItems', 'example'],
-                },
-              },
-            },
-          }),
-          exampleCollectorConfigPath,
-          exampleCollectorId,
-        ),
-      ).toEqual({
-        id: 'custom:deployments',
-        input: {
-          key1: 'value1',
-          key2: 'value2',
-          maxItems: 10000,
-          example: ['a', 'b'],
-        },
-        inputHash: collectorInputHash({ key1: 'value1', key2: 'value2' }),
-      });
-    });
-
-    it(`ignores 'excludeFromIdentity' keys that are not present in input`, () => {
-      const input = { workflowName: 'Deploy' };
-      expect(
-        parseCollectorConfig(
-          mockServices.rootConfig({
-            data: {
-              collectors: {
-                test: {
-                  id: 'custom:deployments',
-                  input,
-                  excludeFromIdentity: ['doesNotExist'],
-                },
+                test: { id: 'custom:deployments', input },
               },
             },
           }),
@@ -203,35 +128,6 @@ describe('DoraConfig', () => {
         inputHash: collectorInputHash(input),
       });
     });
-
-    it.each([
-      ['a string', 'maxItems'],
-      ['a number', 1],
-      ['a boolean', true],
-      ['an object', { maxItems: true }],
-    ])(
-      `throws when 'excludeFromIdentity' is invalid: %s`,
-      (_name, excludeFromIdentity) => {
-        expect(() =>
-          parseCollectorConfig(
-            mockServices.rootConfig({
-              data: {
-                collectors: {
-                  test: {
-                    id: 'custom:deployments',
-                    excludeFromIdentity,
-                  },
-                },
-              },
-            }),
-            exampleCollectorConfigPath,
-            exampleCollectorId,
-          ),
-        ).toThrow(
-          /Invalid type in config for key 'collectors\.test\.excludeFromIdentity' in 'mock-config', got .+, wanted string-array/,
-        );
-      },
-    );
   });
 
   describe('parseDoraDeploymentFrequencyConfig', () => {

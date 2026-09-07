@@ -162,11 +162,9 @@ export const DEFAULT_DORA_MEAN_TIME_TO_RESTORE_THRESHOLDS: ThresholdConfig =
 
 /**
  * Parses a collector `id` and static `input` object from config and attaches
- * `inputHash` computed from `input`, excluding any top-level keys listed in
- * `excludeFromIdentity` (nested or dotted paths are not supported). Keys in
- * `excludeFromIdentity` are still passed to the collector as part of `input`;
- * they are only omitted from the identity hash so changing them does not trigger
- * a full data refetch.
+ * `inputHash` computed from `input`. Every input key is part of the collector's
+ * identity, so changing any of them starts a new watermark and refetches the
+ * full window.
  * Shared by all DORA metric provider parsers.
  */
 export function parseCollectorConfig(
@@ -178,20 +176,11 @@ export function parseCollectorConfig(
     config
       .getOptionalConfig(`${collectorConfigPath}.input`)
       ?.get<JsonObject>() ?? {};
-  const excludeFromIdentity =
-    config.getOptionalStringArray(
-      `${collectorConfigPath}.excludeFromIdentity`,
-    ) ?? [];
-
-  const identityInput = { ...input };
-  for (const key of excludeFromIdentity) {
-    delete identityInput[key];
-  }
 
   return {
     id: config.getOptionalString(`${collectorConfigPath}.id`) ?? defaultId,
     input,
-    inputHash: collectorInputHash(identityInput),
+    inputHash: collectorInputHash(input),
   };
 }
 
