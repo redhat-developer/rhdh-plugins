@@ -151,18 +151,7 @@ export const SparklineChart = ({
                 const label = point?.dateLabel ?? payload.value;
 
                 if (xTicks.length <= 1) {
-                  return (
-                    <text
-                      x={x}
-                      y={y}
-                      dy={12}
-                      textAnchor="middle"
-                      fill={axisTickColor}
-                      fontSize={14}
-                    >
-                      {label}
-                    </text>
-                  );
+                  return <g />;
                 }
 
                 return (
