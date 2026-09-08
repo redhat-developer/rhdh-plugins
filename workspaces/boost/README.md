@@ -54,7 +54,7 @@ All specs are currently in **draft** status (pre-implementation). They will be m
 
 ## Compatibility
 
-This workspace is aligned with **Backstage 1.52.0** (see [`backstage.json`](backstage.json)).
+This workspace is aligned with **Backstage 1.54.4** (see [`backstage.json`](backstage.json)).
 
 ## Development
 
