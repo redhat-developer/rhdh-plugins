@@ -357,6 +357,7 @@ test.describe('Intelligent assistant conversation', () => {
       if (!(await conversation.isVisible().catch(() => false))) {
         await openChatDrawer(sharedPage, translations);
       }
+      await expect(conversation).toBeVisible({ timeout: 10000 });
       await conversation.click();
 
       const botMessage = sharedPage.locator('.pf-chatbot__message--bot').last();

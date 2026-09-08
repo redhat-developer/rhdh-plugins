@@ -58,6 +58,9 @@ export async function selectDisplayMode(
 }
 
 export async function openChatHistoryDrawer(page: Page, t: LightspeedMessages) {
+  const closeButton = page.getByRole('button', {
+    name: t['aria.closeDrawerPanel'],
+  });
   const chatHistoryMenuButton = page.getByRole('button', {
     name: t['aria.chatHistoryMenu'],
   });
@@ -65,11 +68,21 @@ export async function openChatHistoryDrawer(page: Page, t: LightspeedMessages) {
     name: t['tooltip.expandHistoryPanel'],
   });
 
-  if (await chatHistoryMenuButton.isVisible()) {
+  if (await closeButton.isVisible().catch(() => false)) {
+    return;
+  }
+
+  await expect(chatHistoryMenuButton.or(expandHistoryButton)).toBeVisible({
+    timeout: 10000,
+  });
+
+  if (await chatHistoryMenuButton.isVisible().catch(() => false)) {
     await chatHistoryMenuButton.click();
-  } else if (await expandHistoryButton.isVisible()) {
+  } else {
     await expandHistoryButton.click();
   }
+
+  await expect(closeButton).toBeVisible({ timeout: 5000 });
 }
 
 export async function closeChatHistoryDrawer(
