@@ -22,7 +22,9 @@ import { EmptyCatalogGate } from '../catalog/EmptyCatalogGate';
 /**
  * @internal
  */
-export function CustomApiDocsPage(props: { children: React.ReactNode }) {
+export function CustomApiDocsPage(
+  props: Readonly<{ children: React.ReactNode }>,
+) {
   const { t } = useTranslationRef(translationRef);
   return (
     <EmptyCatalogGate

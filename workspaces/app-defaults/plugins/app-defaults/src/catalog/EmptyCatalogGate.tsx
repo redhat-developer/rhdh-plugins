@@ -28,11 +28,13 @@ import { EmptyState } from '../components/empty-state/EmptyState';
  *
  * @internal
  */
-export function EmptyCatalogGate(props: {
-  filter?: EntityFilterQuery;
-  emptyState: EmptyStateProps;
-  children: React.ReactNode;
-}) {
+export function EmptyCatalogGate(
+  props: Readonly<{
+    filter?: EntityFilterQuery;
+    emptyState: EmptyStateProps;
+    children: React.ReactNode;
+  }>,
+) {
   const state = useCatalogEntities(props.filter);
 
   if (state.status === 'loading') {

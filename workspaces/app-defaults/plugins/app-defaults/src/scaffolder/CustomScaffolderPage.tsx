@@ -22,7 +22,9 @@ import { EmptyCatalogGate } from '../catalog/EmptyCatalogGate';
 /**
  * @internal
  */
-export function CustomScaffolderPage(props: { children: React.ReactNode }) {
+export function CustomScaffolderPage(
+  props: Readonly<{ children: React.ReactNode }>,
+) {
   const { t } = useTranslationRef(translationRef);
   return (
     <EmptyCatalogGate

@@ -22,7 +22,9 @@ import { EmptyCatalogGate } from '../catalog/EmptyCatalogGate';
 /**
  * @internal
  */
-export function CustomCatalogGraphPage(props: { children: React.ReactNode }) {
+export function CustomCatalogGraphPage(
+  props: Readonly<{ children: React.ReactNode }>,
+) {
   const { t } = useTranslationRef(translationRef);
   return (
     <EmptyCatalogGate
