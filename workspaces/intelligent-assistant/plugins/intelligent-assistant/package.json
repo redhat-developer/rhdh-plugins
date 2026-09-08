@@ -91,7 +91,7 @@
   },
   "peerDependencies": {
     "react": "^18.0.0",
-    "react-router-dom": "^6.0.0"
+    "react-router-dom": "^6.30.6"
   },
   "devDependencies": {
     "@backstage/cli": "^0.36.5",
@@ -108,7 +108,7 @@
     "prettier": "3.9.6",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "react-router-dom": "^6.0.0"
+    "react-router-dom": "^6.30.6"
   },
   "files": [
     "dist",
