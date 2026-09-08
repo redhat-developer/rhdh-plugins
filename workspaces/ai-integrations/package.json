@@ -24,6 +24,8 @@
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
+    "test:e2e": "playwright test",
+    "playwright": "bash -c 'if [[ $1 == test ]]; then yarn test:e2e; else npx playwright \"$@\"; fi' _",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install"
   },
@@ -44,6 +46,7 @@
     "@backstage/e2e-test-utils": "^0.1.2",
     "@backstage/repo-tools": "^0.19.0",
     "@changesets/cli": "^2.27.1",
+    "@playwright/test": "1.62.1",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
     "prettier": "^2.3.2",
