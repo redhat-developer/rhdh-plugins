@@ -28,12 +28,12 @@
     ]
   },
   "dependencies": {
-    "@backstage/catalog-model": "^1.9.0",
-    "@backstage/plugin-permission-common": "^0.9.9"
+    "@backstage/catalog-model": "^1.10.0",
+    "@backstage/plugin-permission-common": "^0.9.10"
   },
   "peerDependencies": {
-    "@backstage/catalog-model": "^1.9.0",
-    "@backstage/plugin-permission-common": "^0.9.9"
+    "@backstage/catalog-model": "^1.10.0",
+    "@backstage/plugin-permission-common": "^0.9.10"
   },
   "sideEffects": false,
   "scripts": {
@@ -45,7 +45,7 @@
     "postpack": "backstage-cli package postpack"
   },
   "devDependencies": {
-    "@backstage/cli": "^0.36.3"
+    "@backstage/cli": "^0.36.5"
   },
   "files": [
     "dist"
