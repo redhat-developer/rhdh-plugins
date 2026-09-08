@@ -24,27 +24,26 @@ import type { AddressInfo } from 'node:net';
 import { boostPlugin } from './plugin';
 
 describe('boostPlugin integration', () => {
+  let backend: Awaited<ReturnType<typeof startTestBackend>>;
+
+  afterEach(async () => {
+    await backend?.stop();
+  });
+
   it('serves GET /api/boost/health without credentials', async () => {
-    const backend = await startTestBackend({
+    backend = await startTestBackend({
       features: [boostPlugin, catalogServiceMock.factory({ entities: [] })],
     });
 
-    try {
-      const address = backend.server.address() as AddressInfo | string | null;
-      const port =
-        address && typeof address === 'object' ? address.port : undefined;
-      expect(port).toBeDefined();
+    const address = backend.server.address() as AddressInfo | string | null;
+    const port =
+      address && typeof address === 'object' ? address.port : undefined;
+    expect(port).toBeDefined();
 
-      const response = await fetch(
-        `http://127.0.0.1:${port}/api/boost/health`,
-        {
-          headers: { Authorization: mockCredentials.none.header() },
-        },
-      );
-      expect(response.status).toBe(200);
-      await expect(response.json()).resolves.toEqual({ status: 'ok' });
-    } finally {
-      await backend.stop();
-    }
+    const response = await fetch(`http://127.0.0.1:${port}/api/boost/health`, {
+      headers: { Authorization: mockCredentials.none.header() },
+    });
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({ status: 'ok' });
   }, 60_000);
 });

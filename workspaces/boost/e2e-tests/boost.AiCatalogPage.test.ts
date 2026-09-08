@@ -104,8 +104,8 @@ async function signInAsGuest(page: Page) {
   await expect(enter.or(heading).first()).toBeVisible({ timeout: 30_000 });
   if (await enter.isVisible()) {
     await enter.click();
+    await expect(heading).toBeVisible({ timeout: 20_000 });
   }
-  await expect(heading).toBeVisible({ timeout: 20_000 });
 }
 
 async function loadTwoAssetCatalog(page: Page) {
@@ -137,7 +137,7 @@ test.describe('Boost AI Catalog', () => {
 
   test('shows catalog assets when the catalog API returns items', async ({
     page,
-  }) => {
+  }, testInfo) => {
     await mockCatalogEntities(page, [skillEntity]);
     await signInAsGuest(page);
 
@@ -145,6 +145,7 @@ test.describe('Boost AI Catalog', () => {
       timeout: 15_000,
     });
     await expect(page.getByRole('searchbox', { name: 'Search' })).toBeVisible();
+    await runAccessibilityTests(page, testInfo);
   });
 
   test('shows the catalog error state when the catalog API fails', async ({

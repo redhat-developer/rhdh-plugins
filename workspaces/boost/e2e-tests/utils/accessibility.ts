@@ -17,15 +17,34 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, type Page, type TestInfo } from '@playwright/test';
 
+/**
+ * Upstream library false positives that cannot be fixed in the boost plugin:
+ * - nested-interactive: @backstage/ui / React Aria combobox and select triggers
+ *   nest focusable controls inside interactive parents (same as global-header).
+ */
+const DEFAULT_AXE_DISABLE_RULES = ['nested-interactive'] as const;
+
 export async function runAccessibilityTests(
   page: Page,
   testInfo: TestInfo,
   attachName = 'accessibility-scan-results.json',
+  options?: {
+    disableRules?: string[];
+  },
 ) {
-  const accessibilityScanResults = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-    .disableRules(['nested-interactive'])
-    .analyze();
+  const disableRules = options?.disableRules ?? [...DEFAULT_AXE_DISABLE_RULES];
+
+  let axeBuilder = new AxeBuilder({ page }).withTags([
+    'wcag2a',
+    'wcag2aa',
+    'wcag21a',
+    'wcag21aa',
+  ]);
+  if (disableRules.length) {
+    axeBuilder = axeBuilder.disableRules(disableRules);
+  }
+
+  const accessibilityScanResults = await axeBuilder.analyze();
 
   await testInfo.attach(attachName, {
     body: JSON.stringify(accessibilityScanResults, null, 2),
