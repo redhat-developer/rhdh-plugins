@@ -15,7 +15,7 @@
  */
 
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -27,10 +27,12 @@ import {
   assertWorkspaceRoot,
   buildSteps,
   detectTools,
+  listWorkspacePackages,
   mergeNodeOptions,
   parseArgs,
   readPackageJson,
   resolveConfig,
+  resolvePluginTarget,
   resolveSpawnEnv,
   runPipeline,
 } from './workspace-fix.mjs';
@@ -54,15 +56,35 @@ test('fixer order is documented and stable', () => {
   ]);
 });
 
-test('parseArgs accepts publish, check, and knip flags', () => {
+test('parseArgs accepts publish, check, knip, and plugin flags', () => {
   assert.deepEqual(parseArgs(['--publish', '--check', '--knip']), {
-    flags: { publish: true, check: true, knip: true, help: false },
+    flags: {
+      publish: true,
+      check: true,
+      knip: true,
+      help: false,
+      plugin: undefined,
+    },
+    extra: [],
+  });
+  assert.deepEqual(parseArgs(['--plugin', 'global-header']), {
+    flags: {
+      publish: false,
+      check: false,
+      knip: false,
+      help: false,
+      plugin: 'global-header',
+    },
     extra: [],
   });
 });
 
 test('parseArgs rejects unknown flags', () => {
   assert.throws(() => parseArgs(['--write']), /Unknown flag '--write'/);
+});
+
+test('parseArgs requires a plugin name', () => {
+  assert.throws(() => parseArgs(['--plugin']), /Missing value for --plugin/);
 });
 
 test('assertWorkspaceRoot rejects the monorepo root', () => {
@@ -85,15 +107,49 @@ test('readPackageJson fails without package.json', () => {
 });
 
 test('resolveConfig merges package.json with CLI flags', () => {
+  const cwd = mkdtempSync(join(tmpdir(), 'workspace-fix-config-'));
+  mkdirSync(join(cwd, 'plugins', 'global-header'), { recursive: true });
+  writeFileSync(join(cwd, 'plugins', 'global-header', 'package.json'), '{}');
   assert.deepEqual(
-    resolveConfig({ rhdhFix: { publish: true } }, { check: true, knip: true }),
+    resolveConfig(
+      { rhdhFix: { publish: true } },
+      { check: true, knip: true, plugin: 'global-header' },
+      cwd,
+    ),
     {
       check: true,
       publish: true,
       knip: true,
       nodeOptions: undefined,
+      plugin: { name: 'global-header', relativePath: 'plugins/global-header' },
     },
   );
+});
+
+test('resolvePluginTarget matches a short plugin suffix', () => {
+  const cwd = mkdtempSync(join(tmpdir(), 'workspace-fix-plugin-'));
+  mkdirSync(join(cwd, 'plugins', 'global-header'), { recursive: true });
+  mkdirSync(join(cwd, 'plugins', 'app-header'), { recursive: true });
+  writeFileSync(join(cwd, 'plugins', 'global-header', 'package.json'), '{}');
+  writeFileSync(join(cwd, 'plugins', 'app-header', 'package.json'), '{}');
+
+  assert.deepEqual(resolvePluginTarget(cwd, 'global-header'), {
+    name: 'global-header',
+    relativePath: 'plugins/global-header',
+  });
+  assert.deepEqual(
+    listWorkspacePackages(cwd).map(pkg => pkg.relativePath),
+    ['plugins/app-header', 'plugins/global-header'],
+  );
+});
+
+test('resolvePluginTarget rejects ambiguous short names', () => {
+  const cwd = mkdtempSync(join(tmpdir(), 'workspace-fix-ambiguous-'));
+  for (const name of ['foo-plugin-a', 'bar-plugin-a']) {
+    mkdirSync(join(cwd, 'plugins', name), { recursive: true });
+    writeFileSync(join(cwd, 'plugins', name, 'package.json'), '{}');
+  }
+  assert.throws(() => resolvePluginTarget(cwd, 'a'), /Ambiguous plugin 'a'/);
 });
 
 test('mergeNodeOptions preserves an existing heap limit', () => {
@@ -124,7 +180,10 @@ test('mergeNodeOptions replaces heap limit for workspace overrides', () => {
 test('resolveSpawnEnv sets NODE_OPTIONS for lint-fix', () => {
   const env = resolveSpawnEnv(
     { id: 'lint-fix' },
-    resolveConfig({}, { publish: false, knip: false, check: false }),
+    resolveConfig(
+      {},
+      { publish: false, knip: false, check: false, plugin: undefined },
+    ),
     {},
   );
   assert.equal(env.NODE_OPTIONS, DEFAULT_NODE_OPTIONS);
@@ -176,7 +235,7 @@ test('detectTools reads workspace dependencies', () => {
 test('buildSteps keeps documented order and default knip off', () => {
   const steps = buildSteps({
     tools: ALL_TOOLS,
-    config: { check: false, publish: false, knip: false },
+    config: { check: false, publish: false, knip: false, plugin: null },
   });
   assert.deepEqual(
     steps.map(step => step.id),
@@ -188,6 +247,34 @@ test('buildSteps keeps documented order and default knip off', () => {
 
   const repoFix = steps.find(step => step.id === 'repo-fix');
   assert.deepEqual(repoFix.args, ['backstage-cli', 'repo', 'fix']);
+});
+
+test('buildSteps scopes lint and prettier when --plugin is set', () => {
+  const plugin = {
+    name: 'global-header',
+    relativePath: 'plugins/global-header',
+  };
+  const steps = buildSteps({
+    tools: ALL_TOOLS,
+    config: { check: false, publish: false, knip: false, plugin },
+    cwd: '/tmp/workspace',
+  });
+  assert.deepEqual(steps.find(step => step.id === 'lint-fix').args, [
+    'backstage-cli',
+    'package',
+    'lint',
+    '--fix',
+    'plugins/global-header',
+  ]);
+  assert.deepEqual(steps.find(step => step.id === 'prettier').args, [
+    'prettier',
+    '--write',
+    'plugins/global-header',
+  ]);
+  assert.equal(
+    steps.find(step => step.id === 'sort-package-json').available,
+    false,
+  );
 });
 
 test('buildSteps passes --publish to repo fix and enables knip when opted in', () => {
@@ -207,7 +294,7 @@ test('buildSteps passes --publish to repo fix and enables knip when opted in', (
 test('buildSteps in check mode only runs repo fix with --check', () => {
   const steps = buildSteps({
     tools: ALL_TOOLS,
-    config: { check: true, publish: true, knip: true },
+    config: { check: true, publish: true, knip: true, plugin: null },
   });
   assert.deepEqual(
     steps.map(step => step.id),
@@ -227,7 +314,7 @@ test('runPipeline in check mode only runs repo fix', async () => {
   await runPipeline(
     buildSteps({
       tools: ALL_TOOLS,
-      config: { check: true, publish: false, knip: true },
+      config: { check: true, publish: false, knip: true, plugin: null },
     }),
     {
       log: () => {},
@@ -249,7 +336,7 @@ test('optional fixers are skipped when their packages are not installed', () => 
       markdownlint: undefined,
       knip: false,
     },
-    config: { check: false, publish: false, knip: false },
+    config: { check: false, publish: false, knip: false, plugin: null },
   });
   assert.equal(
     steps.find(step => step.id === 'sort-package-json').available,
@@ -271,7 +358,7 @@ test('runPipeline skips optional missing fixers and still succeeds', async () =>
         markdownlint: undefined,
         knip: true,
       },
-      config: { check: false, publish: false, knip: false },
+      config: { check: false, publish: false, knip: false, plugin: null },
     }),
     {
       log: msg => logs.push(msg),
@@ -292,7 +379,7 @@ test('runPipeline exits non-zero when a fixer fails', async () => {
       runPipeline(
         buildSteps({
           tools: ALL_TOOLS,
-          config: { check: false, publish: false, knip: false },
+          config: { check: false, publish: false, knip: false, plugin: null },
         }),
         {
           log: () => {},
@@ -315,7 +402,7 @@ test('runPipeline fails when a required fixer is missing', async () => {
             markdownlint: undefined,
             knip: false,
           },
-          config: { check: false, publish: false, knip: false },
+          config: { check: false, publish: false, knip: false, plugin: null },
         }),
         { log: () => {}, run: async () => 0 },
       ),
@@ -339,7 +426,11 @@ test('runPipeline succeeds when fixers report changes as success', async () => {
   await runPipeline(
     buildSteps({
       tools: detectTools(pkg),
-      config: resolveConfig(pkg, { publish: false, knip: false, check: false }),
+      config: resolveConfig(
+        pkg,
+        { publish: false, knip: false, check: false, plugin: undefined },
+        cwd,
+      ),
     }),
     {
       log: () => {},

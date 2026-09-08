@@ -98,6 +98,8 @@ The command delegates to `backstage-cli repo fix`, then runs additional fixers w
 
 `yarn fix --check` runs only `backstage-cli repo fix --check` (and `--publish` when configured). CI uses this mode; lint, prettier, and publish validation run as separate workflow steps.
 
+Pass `--plugin <name>` to limit lint, prettier, and markdownlint to one plugin or package under the workspace (for example `yarn fix --plugin global-header`). Short names match a unique `plugins/<name>` or `plugins/*-<name>` directory. `backstage-cli repo fix` still runs for the full workspace.
+
 Memory-heavy fixers run with `NODE_OPTIONS=--max-old-space-size=8192`, matching CI. Workspaces that build dynamic plugin bundles should list `dist-dynamic` and `dist-scalprum` in `.eslintignore` and `.prettierignore` so `repo lint --fix` and `prettier --write` do not traverse generated output. If a workspace still runs out of memory during `repo lint --fix`, set a higher value in `rhdhFix.nodeOptions` in that workspace's `package.json`.
 
 To add a new fixer, change `scripts/workspace-fix.mjs` only. Workspace `package.json` files should keep `"fix": "node ../../scripts/workspace-fix.mjs"`. The `noop` workspace is the exception and stays a no-op.
