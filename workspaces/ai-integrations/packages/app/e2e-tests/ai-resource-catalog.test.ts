@@ -28,7 +28,7 @@ async function gotoAiResourceCatalog(page: import('@playwright/test').Page) {
   await page.goto('/catalog?filters[kind]=airesource&filters[user]=all');
 }
 
-test.describe('AiResource catalog QE (RHIDP-14382)', () => {
+test.describe('AiResource catalog QE (RHIDP-14382 / RHIDP-14746)', () => {
   test.beforeEach(async ({ page }) => {
     await signInAsGuest(page);
   });
@@ -63,9 +63,35 @@ test.describe('AiResource catalog QE (RHIDP-14382)', () => {
     await expect(
       page.getByRole('link', { name: 'ML Platform' }).first(),
     ).toBeVisible();
+    await expect(page.getByText('Lifecycle')).toBeVisible();
+    await expect(page.getByText('production', { exact: true })).toBeVisible();
+    await expect(page.getByText('Type')).toBeVisible();
+    await expect(page.getByText('model', { exact: true })).toBeVisible();
   });
 
   test('OCI-backed AiResource entity detail page renders metadata', async ({
+    page,
+  }) => {
+    await page.goto('/catalog/default/airesource/pdf-processor-skill');
+
+    await expect(
+      page.getByRole('heading', { name: 'PDF Processor Skill' }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        'OCI-published skill that extracts and summarizes PDF documents.',
+      ),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: 'ML Platform' }).first(),
+    ).toBeVisible();
+    await expect(page.getByText('Lifecycle')).toBeVisible();
+    await expect(page.getByText('experimental', { exact: true })).toBeVisible();
+    await expect(page.getByText('skill', { exact: true })).toBeVisible();
+    await expect(page.getByText('pdf', { exact: true })).toBeVisible();
+  });
+
+  test('OCI summarization-skills entity detail page renders metadata', async ({
     page,
   }) => {
     await page.goto('/catalog/default/airesource/summarization-skills');
@@ -106,6 +132,16 @@ test.describe('AiResource catalog QE (RHIDP-14382)', () => {
     ).toBeVisible();
   });
 
+  test('global search finds OCI-backed AiResource entities by name', async ({
+    page,
+  }) => {
+    await page.goto('/search?query=pdf-processor');
+
+    await expect(
+      page.getByRole('link', { name: 'PDF Processor Skill' }),
+    ).toBeVisible();
+  });
+
   test('global search finds AiResource entities by name', async ({ page }) => {
     await page.goto('/search?query=fraud-detection');
 
@@ -113,4 +149,44 @@ test.describe('AiResource catalog QE (RHIDP-14382)', () => {
       page.getByRole('link', { name: 'fraud-detection-model' }),
     ).toBeVisible();
   });
+});
+
+// Product gaps — tracked for dev, not QE-fixable in tests alone.
+test.describe('AiResource entity page gaps (blocked on product)', () => {
+  test.beforeEach(async ({ page }) => {
+    await signInAsGuest(page);
+  });
+
+  test.fixme(
+    'AiResource without techdocs-ref hides Docs tab (openspec 4.4)',
+    async ({ page }) => {
+      await page.goto('/catalog/default/airesource/summarization-skills-pack');
+
+      await expect(page.getByRole('tab', { name: 'Docs' })).toHaveCount(0);
+    },
+  );
+
+  test.fixme(
+    'git-backed AiResource shows clickable source-location link (openspec 4.2)',
+    async ({ page }) => {
+      await page.goto('/catalog/default/airesource/fraud-detection-model');
+
+      await expect(
+        page.getByRole('link', {
+          name: /github\.com\/my-org\/fraud-detection/,
+        }),
+      ).toBeVisible();
+    },
+  );
+
+  test.fixme(
+    'OCI-backed AiResource shows copyable OCI source-location (openspec 4.2)',
+    async ({ page }) => {
+      await page.goto('/catalog/default/airesource/summarization-skills');
+
+      await expect(
+        page.getByText('oci://quay.io/my-org/summarization-skills:latest'),
+      ).toBeVisible();
+    },
+  );
 });

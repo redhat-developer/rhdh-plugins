@@ -104,7 +104,7 @@ function aiResourcesOnly(entities: Entity[]): Entity[] {
   );
 }
 
-describe('AiResource catalog discovery integration (RHIDP-14382)', () => {
+describe('AiResource catalog discovery integration (RHIDP-14382 / RHIDP-14746)', () => {
   jest.setTimeout(120_000);
 
   let server: ExtendedHttpServer;
@@ -179,6 +179,21 @@ describe('AiResource catalog discovery integration (RHIDP-14382)', () => {
     expect(entities.every(entity => entity.spec?.type === 'skill')).toBe(true);
   });
 
+  it('filters AiResource entities by spec.owner', async () => {
+    const entities = aiResourcesOnly(
+      await waitForEntities(
+        server,
+        'kind=airesource,spec.owner=team-ml-platform',
+        3,
+      ),
+    );
+
+    expect(entities).toHaveLength(3);
+    expect(
+      entities.every(entity => entity.spec?.owner === 'team-ml-platform'),
+    ).toBe(true);
+  });
+
   it('filters AiResource entities by spec.lifecycle', async () => {
     const entities = aiResourcesOnly(
       await waitForEntities(
@@ -224,5 +239,31 @@ describe('AiResource catalog discovery integration (RHIDP-14382)', () => {
 
     expect(scopedEntities).toHaveLength(1);
     expect(scopedEntities[0].metadata.name).toBe('qe-git-ai-standards');
+  });
+
+  it('persists metadata tags and spec fields on ingested entities', async () => {
+    const response = await request(server).get(
+      '/api/catalog/entities/by-name/airesource/default/qe-oci-skills-bundle',
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body.metadata.tags).toEqual(['security', 'oci']);
+    expect(response.body.spec).toMatchObject({
+      type: 'skill',
+      lifecycle: 'experimental',
+      owner: 'team-ml-platform',
+      scope: 'team',
+    });
+  });
+
+  it('stores techdocs-ref annotation when declared', async () => {
+    const response = await request(server).get(
+      '/api/catalog/entities/by-name/airesource/default/qe-oci-with-docs',
+    );
+
+    expect(response.status).toBe(200);
+    expect(
+      response.body.metadata.annotations?.['backstage.io/techdocs-ref'],
+    ).toBe('dir:.');
   });
 });
