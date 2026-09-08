@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-boost
 
+## 0.5.4
+
+### Patch Changes
+
+- a65f815: bump workspace to Backstage 1.54.6
+- Updated dependencies [a65f815]
+  - @red-hat-developer-hub/backstage-plugin-boost-common@0.4.2
+
 ## 0.5.3
 
 ### Patch Changes

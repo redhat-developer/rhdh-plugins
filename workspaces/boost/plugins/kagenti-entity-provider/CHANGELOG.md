@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-kagenti-entity-provider
 
+## 0.1.4
+
+### Patch Changes
+
+- a65f815: bump workspace to Backstage 1.54.6
+- Updated dependencies [a65f815]
+  - @red-hat-developer-hub/backstage-plugin-boost-node@0.2.3
+
 ## 0.1.3
 
 ### Patch Changes

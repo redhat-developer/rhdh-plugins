@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk
 
+## 0.3.2
+
+### Patch Changes
+
+- a65f815: bump workspace to Backstage 1.54.6
+
 ## 0.3.1
 
 ### Patch Changes
