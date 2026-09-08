@@ -17,7 +17,7 @@
 import { createTranslationRef } from '@backstage/frontend-plugin-api';
 
 /**
- * @internal
+ * @public
  */
 export const translationRef = createTranslationRef({
   id: 'plugin.app-defaults',
