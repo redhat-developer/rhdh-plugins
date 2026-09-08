@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { MutableRefObject, useCallback } from 'react';
+import { MutableRefObject, useCallback } from 'react';
 import { MTableToolbar } from '@material-table/core';
 import { withStyles } from '@material-ui/core/styles';
 

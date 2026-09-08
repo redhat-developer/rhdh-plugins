@@ -30,7 +30,7 @@ None — this is a new productization wrapper around the upstream MCP Registry e
 metadata:
   annotations:
     rhdh.io/ai-asset-category: 'mcp-server'
-    rhdh.io/ai-asset-version: '1.0.0' # Extracted from MCP server manifest or "unknown"
+    rhdh.io/ai-asset-version: '1.0.0' # Extracted from MCP server manifest, normalized via normalizeAIAssetVersion(); missing/unrecognized → "0.0.0-unknown"
     rhdh.io/ai-asset-source: 'mcp-registry/<instance-id>'
 ```
 
@@ -80,11 +80,11 @@ metadata:
 
 **WHEN** the MCP server manifest does NOT include version metadata:
 
-**THEN** the wrapper populates `rhdh.io/ai-asset-version: "unknown"`.
+**THEN** the wrapper treats the version as absent (empty string), passes it through `normalizeAIAssetVersion()`, and populates `rhdh.io/ai-asset-version: "0.0.0-unknown"`.
 
 **AND** the wrapper logs a DEBUG-level message indicating missing version metadata.
 
-**AND** the wrapper proceeds with the placeholder version annotation.
+**AND** the wrapper proceeds with the normalized fallback version annotation.
 
 ---
 
@@ -92,7 +92,7 @@ metadata:
 
 **THEN** the wrapper logs a WARNING-level message indicating invalid version.
 
-**AND** the wrapper populates `rhdh.io/ai-asset-version: "unknown"`.
+**AND** the wrapper passes the invalid value through `normalizeAIAssetVersion()`, which populates `rhdh.io/ai-asset-version: "0.0.0-unknown"`.
 
 **AND** the warning message includes the entity reference and invalid version value.
 

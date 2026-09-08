@@ -21,6 +21,7 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 
 import { useGlobalHeaderComponents } from '../extensions/GlobalHeaderContext';
+import { GLOBAL_HEADER_DIALOG_OFFSET_CSS } from './globalHeaderDialogOffset';
 
 /**
  * Global header bar. Reads toolbar items from GlobalHeaderContext
@@ -32,32 +33,37 @@ export const GlobalHeader = () => {
   const components = useGlobalHeaderComponents();
 
   return (
-    <AppBar
-      position="sticky"
-      component="nav"
-      id="global-header"
-      sx={{
-        width: 'auto',
-        marginRight: 'var(--docked-drawer-width, 0px)',
-        transition: 'margin-right 225ms cubic-bezier(0, 0, 0.2, 1)',
-      }}
-    >
-      <Toolbar
+    <>
+      <style data-rhdh-global-header-dialog-offset="">
+        {GLOBAL_HEADER_DIALOG_OFFSET_CSS}
+      </style>
+      <AppBar
+        position="sticky"
+        component="nav"
+        id="global-header"
         sx={{
-          gap: 1,
-          color: theme =>
-            (theme as any).rhdh?.general?.appBarForegroundColor ??
-            theme.palette.text.primary,
+          width: 'auto',
+          marginRight: 'var(--docked-drawer-width, 0px)',
+          transition: 'margin-right 225ms cubic-bezier(0, 0, 0.2, 1)',
         }}
       >
-        {components.map((item, index) => (
-          <ErrorBoundary key={`gh-component-${index}`}>
-            <Box sx={item.layout}>
-              <item.component />
-            </Box>
-          </ErrorBoundary>
-        ))}
-      </Toolbar>
-    </AppBar>
+        <Toolbar
+          sx={{
+            gap: 1,
+            color: theme =>
+              (theme as any).rhdh?.general?.appBarForegroundColor ??
+              theme.palette.text.primary,
+          }}
+        >
+          {components.map((item, index) => (
+            <ErrorBoundary key={`gh-component-${index}`}>
+              <Box sx={item.layout}>
+                <item.component />
+              </Box>
+            </ErrorBoundary>
+          ))}
+        </Toolbar>
+      </AppBar>
+    </>
   );
 };

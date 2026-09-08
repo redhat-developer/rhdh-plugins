@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "Apache-2.0",
   "description": "SDK for AI asset entity providers — shared types, annotation constants, validation utilities, and adapter interfaces",
   "main": "src/index.ts",
@@ -21,6 +21,7 @@
       "@red-hat-developer-hub/backstage-plugin-boost-common",
       "@red-hat-developer-hub/backstage-plugin-boost-connector-utils",
       "@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk",
+      "@red-hat-developer-hub/backstage-plugin-boost-migration-readiness",
       "@red-hat-developer-hub/backstage-plugin-boost-node",
       "@red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit",
       "@red-hat-developer-hub/backstage-plugin-boost-toolscope"

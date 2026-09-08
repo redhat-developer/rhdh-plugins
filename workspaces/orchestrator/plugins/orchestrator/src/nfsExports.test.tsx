@@ -20,8 +20,10 @@ import { resolve } from 'node:path';
 import plugin, {
   orchestratorEntityContent,
   orchestratorPage,
+  orchestratorTemplateCardModule,
   orchestratorTranslationsModule,
 } from './index';
+import templateCardModuleDefault from './orchestratorTemplateCardModuleExport';
 import translationsModuleDefault from './orchestratorTranslationsModuleExport';
 
 const ORCHESTRATOR_EXTENSION_IDS = [
@@ -73,6 +75,17 @@ describe('orchestrator NFS plugin', () => {
 
   it('should export the translations module as default for NFS discovery', () => {
     expect(translationsModuleDefault).toBe(orchestratorTranslationsModule);
+  });
+
+  it('should export a template card module targeting the app plugin', () => {
+    expect(orchestratorTemplateCardModule).toBeDefined();
+    expect(orchestratorTemplateCardModule.$$type).toBe(
+      '@backstage/FrontendModule',
+    );
+  });
+
+  it('should export the template card module as default for NFS discovery', () => {
+    expect(templateCardModuleDefault).toBe(orchestratorTemplateCardModule);
   });
 });
 

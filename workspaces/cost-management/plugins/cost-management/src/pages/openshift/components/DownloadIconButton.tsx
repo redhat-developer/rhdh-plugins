@@ -15,7 +15,6 @@
  */
 
 import Typography from '@material-ui/core/Typography';
-import React from 'react';
 
 type DownloadIconButtonProps = {
   label: string;

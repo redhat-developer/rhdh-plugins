@@ -14,24 +14,26 @@ Management actions on AI catalog RBAC configuration MUST emit audit events.
 
 #### Scenario: Default posture change event
 
-- **WHEN** an admin changes `ai-catalog.rbac.defaultPolicy` from `allow` to `deny` (or vice versa) via the admin UI
+- **WHEN** a deployer changes `ai-catalog.rbac.defaultPolicy` from `allow` to `deny` (or vice versa) ~~via the admin UI~~ via YAML configuration, and `AICatalogRBACProvider` detects the change on startup or config reload (see design Decision 4)
 - **THEN** an audit event is emitted with:
   - `eventName`: `ai-catalog.rbac.posture-changed`
-  - `actor`: the admin's user entity ref
+  - `actor`: `system` (the change is detected from configuration, not from an interactive admin action)
   - `previousValue`: the old posture value
   - `newValue`: the new posture value
   - `scope`: `global` | `category:<name>` | `connector:<name>`
   - `timestamp`: ISO 8601
 
-#### Scenario: Category/connector policy CRUD events
+#### ~~Scenario: Category/connector policy CRUD events~~
 
-- **WHEN** an admin creates, updates, or deletes a category-scoped or connector-scoped policy via the admin UI
-- **THEN** an audit event is emitted with:
-  - `eventName`: `ai-catalog.rbac.policy-created` | `policy-updated` | `policy-deleted`
-  - `actor`: the admin's user entity ref
-  - `policyTarget`: the category or connector name
-  - `policyType`: `category` | `connector`
-  - `permissionName`: the affected permission (e.g., `ai-catalog.asset.access`)
+> **Removed.** Create/update/delete of AI Catalog policies happens in the existing RBAC plugin, whose `AuditorService` already emits the policy-CRUD event (see the AuditorService Complementarity requirement below and `design.md` Decision 6). Emitting a duplicate `ai-catalog.rbac.policy-*` event would contradict that requirement, so the AI Catalog does not emit these events — the `AuditorService` is the sufficient source of record for policy CRUD.
+
+- ~~**WHEN** an admin creates, updates, or deletes a category-scoped or connector-scoped policy via the RBAC plugin~~
+- ~~**THEN** an audit event is emitted with:~~
+  - ~~`eventName`: `ai-catalog.rbac.policy-created` | `policy-updated` | `policy-deleted`~~
+  - ~~`actor`: the admin's user entity ref~~
+  - ~~`policyTarget`: the category or connector name~~
+  - ~~`policyType`: `category` | `connector`~~
+  - ~~`permissionName`: the affected permission (e.g., `ai-catalog.asset.access`)~~
 
 ### Requirement: Ingestion Sync Audit Events
 

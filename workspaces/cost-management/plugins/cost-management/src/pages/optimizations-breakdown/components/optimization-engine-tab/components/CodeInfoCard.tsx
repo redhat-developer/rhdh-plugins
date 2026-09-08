@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useMemo } from 'react';
+import { default as React, useMemo } from 'react';
 import YAML from 'yaml';
 import { CodeSnippet, InfoCard } from '@backstage/core-components';
 import { YamlCodeData } from '../../../models/YamlCodeData';

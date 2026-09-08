@@ -105,7 +105,7 @@ test('Verify Global header to be visible', async ({
     - link "${translations.notifications.title}":
       - /url: /notifications
     `);
-  await runAccessibilityTests(page, testInfo);
+  await runAccessibilityTests(page, testInfo, undefined, '#global-header');
 });
 
 test('Verify Hover texts to be visible', async () => {
@@ -146,19 +146,46 @@ test('Verify Search functionality and results', async () => {
   const { search } = getHeaderElements();
   const searchQuery = 'example-website';
   const expectedUrl = /\/example-website/;
+  const resultLocation = `/catalog/default/component/${searchQuery}`;
 
-  await search.fill(searchQuery);
+  // Stub search so this header UI test is not coupled to collator indexing.
+  await page.route('**/api/search/query**', async route => {
+    const term = new URL(route.request().url()).searchParams.get('term') ?? '';
+    if (!term.includes(searchQuery)) {
+      await route.continue();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      json: {
+        results: [
+          {
+            type: 'software-catalog',
+            document: {
+              title: searchQuery,
+              text: searchQuery,
+              location: resultLocation,
+            },
+          },
+        ],
+      },
+    });
+  });
 
-  // Wait for search results to appear
-  await expect(page.getByRole('listbox')).toBeVisible();
+  try {
+    await search.fill(searchQuery);
 
-  // Click the result link and verify navigation
-  const resultLink = page
-    .getByRole('listbox')
-    .getByRole('link', { name: searchQuery });
-  await resultLink.click();
-  await expect(page).toHaveURL(expectedUrl);
-  await expect(page.locator('h1')).toContainText(searchQuery);
+    const resultOption = page
+      .getByRole('listbox')
+      .getByRole('option', { name: searchQuery });
+
+    await expect(resultOption).toBeVisible();
+    await resultOption.click();
+    await expect(page).toHaveURL(expectedUrl);
+    await expect(page.locator('h1')).toContainText(searchQuery);
+  } finally {
+    await page.unroute('**/api/search/query**');
+  }
 });
 
 test('Verify Self-service functionality', async () => {
@@ -187,10 +214,20 @@ test('Verify Starred items functionality', async () => {
   await expect(page.getByRole('menu')).toMatchAriaSnapshot(`
     - menu:
       - text: ${translations.starred.title}
-      - menuitem "example-website COMPONENT":
-        - paragraph: example-website
-        - paragraph: COMPONENT
+      - listitem:
+        - menuitem "example-website COMPONENT":
+          - paragraph: example-website
+          - paragraph: COMPONENT
     `);
+
+  const starredMenuItem = page.getByRole('menuitem', {
+    name: 'example-website COMPONENT',
+  });
+  await starredMenuItem.hover();
+  await expect(
+    page.getByRole('button', { name: translations.starred.removeTooltip }),
+  ).toBeVisible();
+
   await page.keyboard.press('Escape');
 });
 

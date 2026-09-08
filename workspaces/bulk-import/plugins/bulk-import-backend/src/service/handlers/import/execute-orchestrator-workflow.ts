@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type {
+  AuthService,
+  HttpAuthService,
+} from '@backstage/backend-plugin-api';
 import { DiscoveryApi } from '@backstage/plugin-permission-common';
+
+import type { Request } from 'express';
 
 import {
   AuthToken,
@@ -35,7 +41,9 @@ import { sortImports } from './bulkImports';
 export type CreateWorkflowImportJobsArgs = {
   orchestratorWorkflowId: string;
   discovery: DiscoveryApi;
-  token?: string;
+  auth: AuthService;
+  httpAuth: HttpAuthService;
+  req: Request;
   requestBody: ImportRequest[];
   orchestratorWorkflowDao: OrchestratorWorkflowDao;
   orchestratorRepositoryDao: RepositoryDao<'orchestrator_repositories'>;
@@ -49,7 +57,9 @@ export async function createWorkflowImportJobs(
   const {
     orchestratorWorkflowId,
     discovery,
-    token,
+    auth,
+    httpAuth,
+    req,
     requestBody,
     orchestratorWorkflowDao,
     orchestratorRepositoryDao,
@@ -66,6 +76,10 @@ export async function createWorkflowImportJobs(
 
   const result: Components.Schemas.Import[] = [];
   const baseUrl = await discovery.getBaseUrl('orchestrator');
+  const { token } = await auth.getPluginRequestToken({
+    onBehalfOf: await httpAuth.credentials(req),
+    targetPluginId: 'orchestrator',
+  });
   const apiConfig = new Configuration();
 
   // Initialize the client
@@ -82,7 +96,7 @@ export async function createWorkflowImportJobs(
 
       const authTokens: AuthToken[] = [];
       if (approvalTool === 'GIT') {
-        const creds = await githubApiService.getCredentials(
+        const creds = await githubApiService.getAppInstallationCredentials(
           repo.repository.url,
         );
         authTokens.push({ token: creds?.token, provider: 'github' });

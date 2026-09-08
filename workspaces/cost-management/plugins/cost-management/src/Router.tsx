@@ -15,7 +15,6 @@
  */
 
 import { ErrorPage } from '@backstage/core-components';
-import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { OptimizationsPage } from './pages/optimizations/OptimizationsPage';
 import { OptimizationsBreakdownPage } from './pages/optimizations-breakdown/OptimizationsBreakdownPage';

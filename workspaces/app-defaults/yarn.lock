@@ -9550,6 +9550,7 @@ __metadata:
     "@testing-library/react": "npm:^16.0.0"
     cross-fetch: "npm:^4.0.0"
     react: "npm:^16.13.1 || ^17.0.0 || ^18.0.0"
+    zod: "npm:^3.25.76 || ^4.0.0"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
   languageName: unknown
@@ -17955,10 +17956,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-to-chromium@npm:1.5.407":
-  version: 1.5.407
-  resolution: "electron-to-chromium@npm:1.5.407"
-  checksum: 10c0/b542d12ef5c0f461300a820b3006b889f14e221f7af3f0353036b259b6d7de824ff365cb5da867309511462378c3576a522b57c3cf42f6185d35387fea3dfb23
+"electron-to-chromium@npm:1.5.419":
+  version: 1.5.419
+  resolution: "electron-to-chromium@npm:1.5.419"
+  checksum: 10c0/e9ffd64ef9c41b970ee6a822e845f03251c16a17f33f86ad29c5daf76a445c07eeb2044be5f0212cb8ea0122277f4bc8c5b7fe448372d4b5d0a7523f7f12b2c1
   languageName: node
   linkType: hard
 
@@ -21157,9 +21158,9 @@ __metadata:
   linkType: hard
 
 "immutable@npm:^3.x.x":
-  version: 3.8.3
-  resolution: "immutable@npm:3.8.3"
-  checksum: 10c0/bafa7b8371b7622bc3d128cd9e6bba3a654b968f09a237929629f43ac26f7e974a5879cd38baad0c26f6f0628753968611bf832add7bf0c44d647bf4306a2988
+  version: 3.8.4
+  resolution: "immutable@npm:3.8.4"
+  checksum: 10c0/fffbd0bf4ecf6cfed6b3444d2da740f171dd7c228d913d2cc81fc2782c10df0f6f7d822c926d38dd5fb5d91fcfce5c5482a8027817f07a5ed870b057271a3b8a
   languageName: node
   linkType: hard
 

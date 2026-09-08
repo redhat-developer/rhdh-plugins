@@ -72,6 +72,8 @@ This mapping is documented for reference — connectors MAY map differently base
 
 **Migration path:** When upstream kinds stabilize, we document field-level transformations. For example, `AiResource` casing alignment for skills: `kind: AIResource` + `spec.type: skill` + `rhdh.io/ai-asset-category: skill` → `kind: AiResource` (see [#33575](https://github.com/backstage/backstage/issues/33575)). The annotation remains for backward compatibility during the transition.
 
+> **Annotation specification (RHIDP-15346):** A formal specification for all `rhdh.io/ai-asset-*` annotations is published at [`specifications/annotation-specification.md`](../../../specifications/annotation-specification.md). It documents annotation semantics, the mapping table above, upstream mapping scenarios with confidence levels, and field-level transformations. That specification cross-references this decision as its source of truth.
+
 ### Decision 2: SDK package scope and structure
 
 Single npm package `@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk` exports:

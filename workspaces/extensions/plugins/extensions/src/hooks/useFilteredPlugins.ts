@@ -92,6 +92,19 @@ export const useFilteredPlugins = () => {
           });
         }
 
+        const catalogSources = filters
+          .filter(filter => filter.startsWith('catalog-source='))
+          .map(filter => filter.substring('catalog-source='.length));
+        if (catalogSources.length > 0) {
+          plugins = plugins.filter(plugin => {
+            const source =
+              plugin.metadata?.annotations?.[
+                ExtensionsAnnotation.CATALOG_SOURCE
+              ];
+            return source !== undefined && catalogSources.includes(source);
+          });
+        }
+
         const showCustom = filters.includes('custom');
         const supportLevels = filters
           .filter(filter => filter.startsWith('support-level='))

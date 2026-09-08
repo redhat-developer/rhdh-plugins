@@ -35,7 +35,7 @@ import {
 
 import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
 
-import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 import { lightspeedApiRef } from './api/api';
 import { LightspeedApiClient } from './api/LightspeedApiClient';

@@ -168,8 +168,46 @@ describe('usePaginatedCrudTab', () => {
     });
   });
 
-  // ── handlePageSizeChange ────────────────────────────────────────────────────
+  // ── resetAndReload ──────────────────────────────────────────────────────────
 
+  describe('resetAndReload', () => {
+    it('resets pageToken to undefined and hasPrev to false after goNext', async () => {
+      const loadFn = jest
+        .fn()
+        .mockResolvedValueOnce({ items: [...PAGE_1], nextPageToken: 'tok2' })
+        .mockResolvedValueOnce({ items: [...PAGE_2], nextPageToken: '' })
+        .mockResolvedValue({ items: [...PAGE_1], nextPageToken: 'tok2' });
+
+      const opts = makeOptions({ loadFn });
+      const { result } = renderHook(() =>
+        usePaginatedCrudTab<Item, Form>(opts),
+      );
+
+      // load page 1
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.cursorPagination.hasPrev).toBe(false);
+
+      // advance to page 2
+      act(() => result.current.goNext());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.cursorPagination.hasPrev).toBe(true);
+
+      // reset and reload
+      act(() => result.current.resetAndReload());
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      // pageToken must be undefined on the reload call
+      const resetCallArgs = (
+        loadFn.mock.calls[loadFn.mock.calls.length - 1] as [PaginatedLoadParams]
+      )[0];
+      expect(resetCallArgs.pageToken).toBeUndefined();
+
+      // hasPrev (token stack) must be cleared
+      expect(result.current.cursorPagination.hasPrev).toBe(false);
+    });
+  });
+
+  // ── handlePageSizeChange ────────────────────────────────────────────────────
   describe('handlePageSizeChange', () => {
     it('resets to page 1 (undefined token) and reloads with the new size', async () => {
       const loadFn = jest

@@ -95,7 +95,7 @@ export const HeaderDropdownComponent: FC<HeaderDropdownProps> = ({
     },
     'aria-haspopup': true,
     'aria-controls': menuId,
-    'aria-expanded': anchorEl ? true : undefined,
+    'aria-expanded': Boolean(anchorEl),
     'aria-label': tooltip,
   };
 

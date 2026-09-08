@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import { default as React } from 'react';
 import Typography from '@material-ui/core/Typography';
 import { CURRENCY_SYMBOLS } from '../../../constants/currencies';
 

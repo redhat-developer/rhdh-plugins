@@ -4,7 +4,32 @@ This plugin provides an opinionated implementation of the Backstage Analytics AP
 
 This plugin contains no other functionality.
 
+NFS is the primary package entry point. OFS (legacy) exports (`AdoptionInsightsAnalyticsApi` and `AdoptionInsightsAnalyticsApiFactory`) are available only at `./legacy`.
+
 ## Installation
+
+### NFS (New Frontend System)
+
+Install the package and add the default plugin to your app features:
+
+```sh
+# From your Backstage root directory
+yarn --cwd packages/app add @red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights
+```
+
+```tsx
+import { createApp } from '@backstage/frontend-defaults';
+import adoptionInsightsAnalyticsPlugin from '@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights';
+
+export default createApp({
+  features: [
+    adoptionInsightsAnalyticsPlugin,
+    // ... other plugins
+  ],
+});
+```
+
+### OFS (legacy frontend)
 
 1. **Install the plugin package in your Backstage app:**
 
@@ -22,7 +47,7 @@ import {
   configApiRef,
   identityApiRef,
 } from '@backstage/core-plugin-api';
-import { AdoptionInsightsAnalyticsApi } from '@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights';
+import { AdoptionInsightsAnalyticsApi } from '@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights/legacy';
 
 export const apis: AnyApiFactory[] = [
   createApiFactory({
@@ -40,7 +65,7 @@ export const apis: AnyApiFactory[] = [
 
 ```tsx
 // packages/app/src/apis.ts
-import { AdoptionInsightsAnalyticsApiFactory } from '@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights';
+import { AdoptionInsightsAnalyticsApiFactory } from '@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights/legacy';
 
 export const apis: AnyApiFactory[] = [AdoptionInsightsAnalyticsApiFactory];
 ```
@@ -72,7 +97,7 @@ import {
   configApiRef,
   identityApiRef,
 } from '@backstage/core-plugin-api';
-import { AdoptionInsightsAnalyticsApi } from '@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights';
+import { AdoptionInsightsAnalyticsApi } from '@red-hat-developer-hub/backstage-plugin-analytics-module-adoption-insights/legacy';
 
 export const apis: AnyApiFactory[] = [
   createApiFactory({

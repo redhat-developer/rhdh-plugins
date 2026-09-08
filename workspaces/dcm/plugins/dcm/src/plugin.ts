@@ -21,15 +21,15 @@ import {
   fetchApiRef,
 } from '@backstage/core-plugin-api';
 import {
+  AgentsClient,
   CatalogClient,
   PolicyManagerClient,
-  ProvidersClient,
   ResourcesClient,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 
 import {
   rootRouteRef,
-  providersRouteRef,
+  agentsRouteRef,
   policiesRouteRef,
   serviceTypesRouteRef,
   catalogItemsRouteRef,
@@ -37,9 +37,9 @@ import {
   resourcesRouteRef,
 } from './routes';
 import {
+  agentsApiRef,
   catalogApiRef,
   policyManagerApiRef,
-  providersApiRef,
   resourcesApiRef,
 } from './apis';
 
@@ -52,7 +52,7 @@ export const dcmPlugin = createPlugin({
   id: 'dcm',
   routes: {
     root: rootRouteRef,
-    providers: providersRouteRef,
+    agents: agentsRouteRef,
     policies: policiesRouteRef,
     serviceTypes: serviceTypesRouteRef,
     catalogItems: catalogItemsRouteRef,
@@ -75,10 +75,10 @@ export const dcmPlugin = createPlugin({
       },
     }),
     createApiFactory({
-      api: providersApiRef,
+      api: agentsApiRef,
       deps: { discoveryApi: discoveryApiRef, fetchApi: fetchApiRef },
       factory({ discoveryApi, fetchApi }) {
-        return new ProvidersClient({ discoveryApi, fetchApi });
+        return new AgentsClient({ discoveryApi, fetchApi });
       },
     }),
     createApiFactory({

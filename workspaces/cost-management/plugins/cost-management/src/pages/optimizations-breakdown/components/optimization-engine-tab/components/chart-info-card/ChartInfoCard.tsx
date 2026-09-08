@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useMemo } from 'react';
+import { default as React, useMemo } from 'react';
 import { InfoCard } from '@backstage/core-components';
 import type { RecommendationBoxPlots } from '@red-hat-developer-hub/plugin-cost-management-common/models';
 import {

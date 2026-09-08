@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.1.0
+
+### Minor Changes
+
+- d0fdac4: Add initial support for Backstage UI
+
+### Patch Changes
+
+- 889a5d0: Fix light-theme WCAG contrast and demo a11y issues so the theme e2e axe suite can enforce violations.
+- 1bb88d7: Make NFS BUI catalog entity `<main>` a flex column so Topology and Scorecard fill the content well instead of leaving a gap below short tab content (RHDHBUGS-3543).
+- a1601a9: Added `createSharedThemeProvider` internal utility that creates a single shared Provider for multiple themes, preventing full application remount when switching themes. All built-in RHDH themes now share one Provider.
+
 ## 1.0.2
 
 ### Patch Changes

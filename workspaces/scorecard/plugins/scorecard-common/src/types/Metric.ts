@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
+import { ScorecardVisualizationType } from './scorecard';
 import { ThresholdConfig, ThresholdResult } from './threshold';
 
 /**
  * @public
  */
 export type MetricType = 'number' | 'boolean';
-
-/**
- * Default visualization for a metric on the entity scorecard.
- * Omit / undefined means `'value'`.
- *
- * @public
- */
-export type MetricDefaultVisualization = 'value' | 'sparkline';
 
 /**
  * @public
@@ -49,7 +42,7 @@ export type Metric<T extends MetricType = MetricType> = {
   thresholds: ThresholdConfig;
   unit?: string;
   history?: boolean;
-  defaultVisualization?: MetricDefaultVisualization;
+  defaultVisualization?: ScorecardVisualizationType;
   /**
    * Collector IDs used to gather data for this metric, extracted from
    * provider config at startup. Omitted when the metric does not use collectors.
@@ -69,7 +62,7 @@ export type MetricResult = {
     type: MetricType;
     unit?: string;
     history?: boolean;
-    defaultVisualization?: MetricDefaultVisualization;
+    defaultVisualization?: ScorecardVisualizationType;
     collectorIds?: string[];
   };
   result: {
@@ -161,7 +154,7 @@ export type MetricTimeSeriesResponse = {
     type: MetricType;
     unit?: string;
     history?: boolean;
-    defaultVisualization?: MetricDefaultVisualization;
+    defaultVisualization?: ScorecardVisualizationType;
     collectorIds?: string[];
   };
 };

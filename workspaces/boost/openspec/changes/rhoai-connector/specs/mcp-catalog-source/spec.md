@@ -113,7 +113,7 @@ All emitted MCP server entities must include standard RHDH annotations.
 
 - **WHEN** the provider emits an MCP server entity
 - **THEN** it includes `metadata.annotations['rhdh.io/ai-asset-category']` set to `mcp-server`
-- **AND** it includes `metadata.annotations['rhdh.io/ai-asset-version']` set to the version extracted from the MCP server manifest via `normalizeAIAssetVersion()`, or `"unknown"` if the manifest omits version metadata
+- **AND** it includes `metadata.annotations['rhdh.io/ai-asset-version']` set to the version extracted from the MCP server manifest via `normalizeAIAssetVersion()`; missing/unrecognized → `"0.0.0-unknown"` (do not use a local `"unknown"` fallback)
 - **AND** it includes `metadata.annotations['rhdh.io/ai-asset-source']` set to `rhoai/<instance-id>`, where `<instance-id>` is the configuration key under `ai-catalog.providers` (e.g., `rhoai`)
 
 ### Requirement: Full Sync via applyMutation

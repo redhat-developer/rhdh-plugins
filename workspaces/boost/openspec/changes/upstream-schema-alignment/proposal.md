@@ -57,7 +57,7 @@ The tool is a scaffold — it establishes the structure for migration-readiness 
 | Skill Bundle | AIResource   | ai-skill-bundle   | No upstream kind                                                                                        | Low         | Stay on current mapping; track future RFCs.                                                                                                      |
 | Agent        | Component    | ai-agent          | No upstream kind via RFC #32062 (that RFC is MCP-only)                                                  | Low         | Track agent-kind ownership under RHDHPLAN-1113. Do not attribute agent kind to RFC #32062.                                                       |
 
-> **Out of scope / TBD:** `vector-store` and `ai-tool` categories are not yet confirmed as AI-asset mapping rows. See [catalog-entities spec](../agent-creation-discovery/specs/catalog-entities/spec.md) for tracking.
+> **Out of scope:** `vector-store` and `ai-tool` are not AI-asset annotation categories for RHDHPLAN-1507 / RHDHPLAN-1513 readiness (confirmed in [#4042 gate comment §0](https://github.com/redhat-developer/rhdh-plugins/issues/4042#issuecomment-5204217995)). Source of truth for the seven categories: [ai-catalog-entity-model/design.md Decision 1](../ai-catalog-entity-model/design.md#decision-1-annotation-independence-from-entity-kinds). The [catalog-entities spec](../agent-creation-discovery/specs/catalog-entities/spec.md) is supplementary context for provider-deployment.
 
 ## Impact
 

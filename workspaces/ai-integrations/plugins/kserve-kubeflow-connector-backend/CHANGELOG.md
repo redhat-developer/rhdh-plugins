@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend
 
+## 0.1.5
+
+### Patch Changes
+
+- f9ddee8: Filter the reconciliation tracking set through readiness checks so that stopped InferenceServices are excluded, allowing the cleanup logic to properly delete their stale catalog entries.
+
 ## 0.1.4
 
 ### Patch Changes

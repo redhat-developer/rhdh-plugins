@@ -33,6 +33,7 @@ interface SearchOptionProps {
   results: Result<SearchDocument>[];
   renderProps: any;
   searchLink: string;
+  noResultsText?: string;
 }
 
 export const SearchOption = ({
@@ -43,6 +44,7 @@ export const SearchOption = ({
   results,
   renderProps,
   searchLink,
+  noResultsText,
 }: SearchOptionProps) => {
   const { t } = useTranslation();
 
@@ -50,20 +52,21 @@ export const SearchOption = ({
     return (
       <Box key="all-results" id="all-results">
         <Divider sx={{ my: 0.5 }} />
-        <Link to={searchLink} underline="none">
-          <ListItem
-            {...renderProps}
-            sx={{ my: 0 }}
-            className="allResultsOption"
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Typography sx={{ flexGrow: 1 }}>
-                {t('search.allResults')}
-              </Typography>
-              <ArrowForwardIcon fontSize="small" />
-            </Box>
-          </ListItem>
-        </Link>
+        <ListItem
+          {...renderProps}
+          component={Link}
+          to={searchLink}
+          underline="none"
+          sx={{ my: 0 }}
+          className="allResultsOption"
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography sx={{ flexGrow: 1 }}>
+              {t('search.allResults')}
+            </Typography>
+            <ArrowForwardIcon fontSize="small" />
+          </Box>
+        </ListItem>
       </Box>
     );
   }
@@ -76,6 +79,7 @@ export const SearchOption = ({
       query={query}
       result={result}
       renderProps={renderProps}
+      noResultsText={noResultsText}
     />
   );
 };
