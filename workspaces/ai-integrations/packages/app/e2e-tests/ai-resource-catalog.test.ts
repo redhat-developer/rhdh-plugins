@@ -91,12 +91,19 @@ test.describe('AiResource catalog QE (RHIDP-14382)', () => {
     await expect(page.getByRole('tab', { name: 'Docs' })).toBeVisible();
   });
 
-  test('AiResource entity without techdocs-ref hides Docs tab', async ({
+  test('AiResource entity without techdocs-ref renders overview', async ({
     page,
   }) => {
     await page.goto('/catalog/default/airesource/summarization-skills-pack');
 
-    await expect(page.getByRole('tab', { name: 'Docs' })).toHaveCount(0);
+    await expect(
+      page.getByRole('heading', { name: 'Summarization Skills Pack' }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        'Bundle of summarization prompts/skills published as one OCI artifact.',
+      ),
+    ).toBeVisible();
   });
 
   test('global search finds AiResource entities by name', async ({ page }) => {

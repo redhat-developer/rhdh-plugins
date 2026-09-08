@@ -24,5 +24,7 @@ test('App should render the welcome page', async ({ page }) => {
   await enterButton.click();
 
   await expect(page).toHaveURL(/\/home/);
-  await expect(page.getByRole('link', { name: 'Catalog' })).toBeVisible();
+  await expect(
+    page.getByTestId('sidebar-root').getByRole('link', { name: 'Catalog' }),
+  ).toBeVisible();
 });

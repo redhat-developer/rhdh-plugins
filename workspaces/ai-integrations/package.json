@@ -25,7 +25,9 @@
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
     "test:e2e": "playwright test",
-    "playwright": "bash -c 'if [[ $1 == test ]]; then yarn test:e2e; else npx playwright \"$@\"; fi' _",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
+    "playwright": "sh -c 'if [ \"$1\" = test ] && [ $# -eq 1 ]; then yarn test:e2e; else exec playwright \"$@\"; fi' _",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install"
   },
