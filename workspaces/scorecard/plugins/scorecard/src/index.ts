@@ -42,6 +42,9 @@ import {
   aggregatedCardWithTotalOpenBugsWidget,
   aggregatedCardWithEntitiesWithOpenPrsWidget,
   aggregatedCardWithAvgOpenPrsWidget,
+  aggregatedCardWithAvgDeploymentFrequencyWidget,
+  aggregatedCardWithAvgChangeFailureRateWidget,
+  aggregatedCardWithAvgMedianLeadTimeForChangesWidget,
 } from './extensions/homePageCards';
 import { scorecardPage } from './extensions/scorecardPage';
 import { scorecardEntityLayoutGrid } from './extensions/scorecardLayoutExtensions';
@@ -84,6 +87,9 @@ export default createFrontendPlugin({
     aggregatedCardWithTotalOpenBugsWidget,
     aggregatedCardWithEntitiesWithOpenPrsWidget,
     aggregatedCardWithAvgOpenPrsWidget,
+    aggregatedCardWithAvgDeploymentFrequencyWidget,
+    aggregatedCardWithAvgChangeFailureRateWidget,
+    aggregatedCardWithAvgMedianLeadTimeForChangesWidget,
   ],
   routes: {
     root: rootRouteRef,

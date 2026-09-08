@@ -19,6 +19,7 @@ import { useState, useCallback, useMemo } from 'react';
 import Box from '@mui/material/Box';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
+import { useLanguage } from '../../hooks/useLanguage';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
   buildThresholdBuckets,
@@ -28,6 +29,7 @@ import { ThresholdBucketTile } from './ThresholdBucketTile';
 import { MetricGroupCardMenu } from './MetricGroupCardMenu';
 import type { MenuAction } from './MetricGroupCardMenu';
 import { DataSourcesDialog } from './DataSourcesDialog';
+import { toMetricSourceRows } from './metricSourceRows';
 import type { MetricGroupCardProps } from './types';
 import { CardWrapper } from '../Common/CardWrapper';
 
@@ -39,12 +41,17 @@ export const MetricGroupCard = ({
   metrics,
 }: MetricGroupCardProps) => {
   const { t } = useTranslation();
+  const locale = useLanguage();
   const [dataSourcesOpen, setDataSourcesOpen] = useState(false);
   const [initialFilters, setInitialFilters] = useState<string[]>([]);
   const uniqueMetrics = useMemo(() => dedupeMetricsById(metrics), [metrics]);
   const buckets = useMemo(
     () => buildThresholdBuckets(uniqueMetrics, t),
     [uniqueMetrics, t],
+  );
+  const sourceRows = useMemo(
+    () => toMetricSourceRows(uniqueMetrics, { t, locale }),
+    [uniqueMetrics, t, locale],
   );
 
   const handleOpenDataSources = useCallback(() => {
@@ -113,7 +120,8 @@ export const MetricGroupCard = ({
           open={dataSourcesOpen}
           onClose={handleCloseDataSources}
           title={title}
-          metrics={uniqueMetrics}
+          rows={sourceRows}
+          buckets={buckets}
           initialFilters={initialFilters}
         />
       )}

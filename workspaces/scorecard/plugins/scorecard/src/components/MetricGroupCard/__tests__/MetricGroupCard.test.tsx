@@ -42,6 +42,14 @@ const mockBuckets: ThresholdBucket[] = [
   },
 ];
 
+jest.mock('../../../hooks/useLanguage', () => ({
+  useLanguage: () => 'en',
+}));
+
+jest.mock('../metricSourceRows', () => ({
+  toMetricSourceRows: () => [],
+}));
+
 jest.mock('../thresholdBucketUtils', () => ({
   buildThresholdBuckets: jest.fn(() => mockBuckets),
   dedupeMetricsById: (metrics: unknown[]) => metrics,

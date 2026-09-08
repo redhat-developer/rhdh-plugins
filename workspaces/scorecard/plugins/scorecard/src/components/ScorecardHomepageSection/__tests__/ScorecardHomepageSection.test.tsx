@@ -38,6 +38,10 @@ jest.mock('../../../hooks/useAggregationMetadata', () => ({
   useAggregationMetadata: jest.fn(),
 }));
 
+jest.mock('../../../hooks/useAggregationTimeSeries', () => ({
+  useAggregationTimeSeries: jest.fn(),
+}));
+
 jest.mock('../../../hooks/useTranslation', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
@@ -51,6 +55,12 @@ jest.mock('../../AggregatedMetricCards/AggregatedMetricCard', () => ({
     scorecard: AggregatedMetricResult;
   }) => (
     <div data-testid="scorecard-homepage-card">{scorecard.metadata.title}</div>
+  ),
+}));
+
+jest.mock('../../AggregatedMetricCards/AggregatedSparklineCard', () => ({
+  AggregatedSparklineCard: ({ cardTitle }: { cardTitle: string }) => (
+    <div data-testid="aggregated-sparkline-card">{cardTitle}</div>
   ),
 }));
 
@@ -81,6 +91,9 @@ const {
 const {
   useAggregationMetadata,
 } = require('../../../hooks/useAggregationMetadata');
+const {
+  useAggregationTimeSeries,
+} = require('../../../hooks/useAggregationTimeSeries');
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <ThemeProvider theme={createTheme()}>{children}</ThemeProvider>
@@ -117,6 +130,11 @@ describe('ScorecardHomepageCard', () => {
         history: true,
         aggregationType: 'statusGrouped',
       },
+      isLoading: false,
+      error: undefined,
+    });
+    useAggregationTimeSeries.mockReturnValue({
+      data: undefined,
       isLoading: false,
       error: undefined,
     });
@@ -158,6 +176,7 @@ describe('ScorecardHomepageCard', () => {
 
     expect(useAggregatedScorecard).toHaveBeenCalledWith({
       aggregationId: 'github.openPRs',
+      enabled: true,
     });
   });
 
@@ -180,6 +199,7 @@ describe('ScorecardHomepageCard', () => {
 
     expect(useAggregatedScorecard).toHaveBeenCalledWith({
       aggregationId: 'agg.primary',
+      enabled: true,
     });
   });
 
@@ -196,6 +216,7 @@ describe('ScorecardHomepageCard', () => {
 
     expect(useAggregatedScorecard).toHaveBeenCalledWith({
       aggregationId: 'kpi.only',
+      enabled: true,
     });
   });
 
@@ -212,6 +233,7 @@ describe('ScorecardHomepageCard', () => {
 
     expect(useAggregatedScorecard).toHaveBeenCalledWith({
       aggregationId: 'github.openPRs',
+      enabled: true,
     });
   });
 
@@ -377,5 +399,188 @@ describe('ScorecardHomepageCard', () => {
 
     expect(screen.getByTestId('scorecard-homepage-card')).toBeInTheDocument();
     expect(screen.getByText('GitHub open PRs')).toBeInTheDocument();
+  });
+
+  it('should keep snapshot fetch disabled until aggregation metadata has loaded', () => {
+    useAggregationMetadata.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      error: undefined,
+    });
+    useAggregatedScorecard.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: undefined,
+    });
+
+    render(<ScorecardHomepageCard aggregationId="avgDeploymentFrequency" />, {
+      wrapper: TestWrapper,
+    });
+
+    expect(useAggregatedScorecard).toHaveBeenCalledWith({
+      aggregationId: 'avgDeploymentFrequency',
+      enabled: false,
+    });
+    expect(useAggregationTimeSeries).toHaveBeenCalledWith({
+      aggregationId: 'avgDeploymentFrequency',
+      enabled: false,
+    });
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+  });
+
+  it('should render a sparkline card from time-series when metadata visualization is sparkline', () => {
+    useAggregationMetadata.mockReturnValue({
+      data: {
+        title: 'Average Deployment Frequency',
+        description: 'Average weekly production deploys',
+        type: 'number',
+        history: true,
+        visualization: 'sparkline',
+        aggregationType: 'average',
+      },
+      isLoading: false,
+      error: undefined,
+    });
+    useAggregatedScorecard.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: undefined,
+    });
+    useAggregationTimeSeries.mockReturnValue({
+      data: {
+        id: 'avgDeploymentFrequency',
+        metricId: 'dora.deploymentFrequency',
+        metadata: {
+          title: 'Average Deployment Frequency',
+          description: 'Average weekly production deploys',
+          type: 'number',
+          history: true,
+          visualization: 'sparkline',
+          aggregationType: 'average',
+        },
+        points: [
+          {
+            value: 10,
+            successCount: 5,
+            errorCount: 0,
+            total: 5,
+            status: 'success',
+            timestamp: '2026-08-23T00:00:00.000Z',
+          },
+        ],
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        aggregationChartDisplayColor: 'success.main',
+      },
+      isLoading: false,
+      error: undefined,
+    });
+
+    render(<ScorecardHomepageCard aggregationId="avgDeploymentFrequency" />, {
+      wrapper: TestWrapper,
+    });
+
+    expect(useAggregatedScorecard).toHaveBeenCalledWith({
+      aggregationId: 'avgDeploymentFrequency',
+      enabled: false,
+    });
+    expect(useAggregationTimeSeries).toHaveBeenCalledWith({
+      aggregationId: 'avgDeploymentFrequency',
+      enabled: true,
+    });
+    expect(screen.getByTestId('aggregated-sparkline-card')).toBeInTheDocument();
+    expect(
+      screen.getByText('Average Deployment Frequency'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('scorecard-homepage-card'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('should render empty state when sparkline time-series has no points', () => {
+    useAggregationMetadata.mockReturnValue({
+      data: {
+        title: 'Average Deployment Frequency',
+        description: 'Average weekly production deploys',
+        type: 'number',
+        history: true,
+        visualization: 'sparkline',
+        aggregationType: 'average',
+      },
+      isLoading: false,
+      error: undefined,
+    });
+    useAggregatedScorecard.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: undefined,
+    });
+    useAggregationTimeSeries.mockReturnValue({
+      data: {
+        id: 'avgDeploymentFrequency',
+        metricId: 'dora.deploymentFrequency',
+        metadata: {
+          title: 'Average Deployment Frequency',
+          description: 'Average weekly production deploys',
+          type: 'number',
+          history: true,
+          visualization: 'sparkline',
+          aggregationType: 'average',
+        },
+        points: [],
+        thresholds: DEFAULT_NUMBER_THRESHOLDS,
+        aggregationChartDisplayColor: null,
+      },
+      isLoading: false,
+      error: undefined,
+    });
+
+    render(<ScorecardHomepageCard aggregationId="avgDeploymentFrequency" />, {
+      wrapper: TestWrapper,
+    });
+
+    expect(screen.getByTestId('empty-state-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('card-title')).toHaveTextContent(
+      'Average Deployment Frequency',
+    );
+    expect(screen.getByTestId('empty-state-label')).toHaveTextContent(
+      'errors.noDataFound',
+    );
+  });
+
+  it('should render empty state when sparkline time-series is missing after load', () => {
+    useAggregationMetadata.mockReturnValue({
+      data: {
+        title: 'Average Deployment Frequency',
+        description: 'Average weekly production deploys',
+        type: 'number',
+        history: true,
+        visualization: 'sparkline',
+        aggregationType: 'average',
+      },
+      isLoading: false,
+      error: undefined,
+    });
+    useAggregatedScorecard.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: undefined,
+    });
+    useAggregationTimeSeries.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: undefined,
+    });
+
+    render(<ScorecardHomepageCard aggregationId="avgDeploymentFrequency" />, {
+      wrapper: TestWrapper,
+    });
+
+    expect(screen.getByTestId('empty-state-panel')).toBeInTheDocument();
+    expect(screen.getByTestId('card-title')).toHaveTextContent(
+      'Average Deployment Frequency',
+    );
+    expect(
+      screen.queryByTestId('aggregated-sparkline-card'),
+    ).not.toBeInTheDocument();
   });
 });

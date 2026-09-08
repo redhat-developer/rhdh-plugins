@@ -16,13 +16,17 @@
 
 import { ScorecardQueryProvider } from '../../api';
 import { AggregatedMetricCard } from '../AggregatedMetricCards/AggregatedMetricCard';
+import { AggregatedSparklineCard } from '../AggregatedMetricCards/AggregatedSparklineCard';
 import { useAggregatedScorecard } from '../../hooks/useAggregatedScorecard';
+import { useAggregationMetadata } from '../../hooks/useAggregationMetadata';
+import { useAggregationTimeSeries } from '../../hooks/useAggregationTimeSeries';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ErrorStatePanel } from './ErrorStatePanel';
 import { EmptyStatePanel } from './EmptyStatePanel';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { useMetricDisplayLabels } from '../../hooks/useMetricDisplayLabels';
 import { CardLoading } from '../Common/CardLoading';
+import { isSparklineVisualization } from '../../utils/metricVisualization';
 
 /** Coerces unknown/missing values to a finite number for safe UI math (NaN → 0). */
 function toSafeFiniteNumber(value: unknown): number {
@@ -45,24 +49,58 @@ export const ScorecardHomepageCard = ({
 
   // Deprecated logic to support both metricId and aggregationId. Only aggregationId will be used in the future.
   const resolvedScorecardId = aggregationId || metricId || '';
+  const hasAggregationId = Boolean(resolvedScorecardId.trim());
 
-  const { data, isLoading, error } = useAggregatedScorecard({
+  const {
+    data: metadata,
+    isLoading: metadataLoading,
+    error: metadataError,
+  } = useAggregationMetadata({ aggregationId: resolvedScorecardId });
+
+  const isSparkline = isSparklineVisualization(metadata?.visualization);
+
+  const {
+    data,
+    isLoading: snapshotLoading,
+    error: snapshotError,
+  } = useAggregatedScorecard({
     aggregationId: resolvedScorecardId,
+    enabled: hasAggregationId ? Boolean(metadata) && !isSparkline : true,
   });
 
-  const aggregatedMetricDetails = data
-    ? ({
-        id: resolvedScorecardId,
-        title: data.metadata.title,
-        description: data.metadata.description,
-      } as Pick<Metric, 'id' | 'title' | 'description'>)
-    : undefined;
+  const {
+    data: series,
+    isLoading: seriesLoading,
+    error: seriesError,
+  } = useAggregationTimeSeries({
+    aggregationId: resolvedScorecardId,
+    enabled: Boolean(metadata) && isSparkline,
+  });
+
+  const aggregatedMetricDetails =
+    series || data || metadata
+      ? ({
+          id: resolvedScorecardId,
+          title:
+            series?.metadata.title ??
+            data?.metadata.title ??
+            metadata?.title ??
+            '',
+          description:
+            series?.metadata.description ??
+            data?.metadata.description ??
+            metadata?.description ??
+            '',
+        } as Pick<Metric, 'id' | 'title' | 'description'>)
+      : undefined;
 
   const { title, description } = useMetricDisplayLabels(
     aggregatedMetricDetails,
   );
 
   const cardDataTestId = `scorecard-homepage-card-${resolvedScorecardId}`;
+  const isLoading = metadataLoading || snapshotLoading || seriesLoading;
+  const error = metadataError || snapshotError || seriesError;
 
   if (isLoading) {
     return <CardLoading dataTestId={cardDataTestId} />;
@@ -75,6 +113,33 @@ export const ScorecardHomepageCard = ({
         showSubheader={showSubheader}
         aggregationId={resolvedScorecardId}
         cardDataTestId={cardDataTestId}
+      />
+    );
+  }
+
+  if (isSparkline) {
+    if (!series || series.points.length === 0) {
+      return (
+        <EmptyStatePanel
+          showSubheader={showSubheader}
+          cardTitle={title}
+          cardDescription={description}
+          label={t('errors.noDataFound')}
+          tooltipContent={t('errors.noDataFoundMessage')}
+          dataTestId={cardDataTestId}
+        />
+      );
+    }
+
+    return (
+      <AggregatedSparklineCard
+        series={series}
+        aggregationId={resolvedScorecardId}
+        cardTitle={title}
+        description={description}
+        showSubheader={showSubheader}
+        showInfo={showInfo}
+        dataTestId={cardDataTestId}
       />
     );
   }

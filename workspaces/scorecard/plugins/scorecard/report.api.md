@@ -158,6 +158,33 @@ const _default: OverridableFrontendPlugin<
         filter?: string | FilterPredicate | ((entity: Entity) => boolean);
       };
     }>;
+    'home-page-widget:scorecard/scorecard-avg-change-failure-rate': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-avg-change-failure-rate';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-avg-deployment-frequency': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-avg-deployment-frequency';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
+    'home-page-widget:scorecard/scorecard-avg-median-lead-time-for-changes': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-avg-median-lead-time-for-changes';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
     'home-page-widget:scorecard/scorecard-avg-open-prs': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
       name: 'scorecard-avg-open-prs';
@@ -505,6 +532,11 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'dataSourcesDialog.close': string;
     readonly 'dataSourcesDialog.unknownPlugin': string;
     readonly 'dataSourcesDialog.statusTooltip': string;
+    readonly 'dataSourcesDialog.collectorStatusTooltip': string;
+    readonly 'dataSourcesDialog.collectorEmptyValue': string;
+    readonly 'dataSourcesDialog.collectorUnavailableStatus': string;
+    readonly 'dataSourcesDialog.pluginGithub': string;
+    readonly 'dataSourcesDialog.pluginJira': string;
     readonly 'dataSourcesDialog.columns.plugin': string;
     readonly 'dataSourcesDialog.columns.check': string;
     readonly 'dataSourcesDialog.columns.value': string;
