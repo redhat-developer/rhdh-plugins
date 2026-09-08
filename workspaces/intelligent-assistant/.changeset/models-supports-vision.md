@@ -1,5 +1,4 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend': minor
 '@red-hat-developer-hub/backstage-plugin-intelligent-assistant': patch
 ---
 

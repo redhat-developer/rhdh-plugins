@@ -17,8 +17,8 @@
 // `true` is stable, so cache it for a day. `false` is cached only briefly: LCS
 // returns the same 5xx for a non-vision model and a transient error, so a short
 // TTL lets a real model recover without re-probing on every request.
-export const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-export const NEGATIVE_CACHE_TTL_MS = 20 * 60 * 1000;
+export const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+export const NEGATIVE_CACHE_TTL_MS = 20 * 60 * 1000; // 20 minutes
 
 export const ModelCapabilitiesCache = {
   cache: {} as Record<string, { value: boolean; expiry: number }>,
