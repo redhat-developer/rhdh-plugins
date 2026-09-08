@@ -23,11 +23,8 @@ import {
   type AlertProps,
 } from '@patternfly/react-core';
 
-const ToastAlerts = styled(AlertGroup)(({ theme }) => ({
-  '--pf-v6-c-alert-group--m-toast--InsetInlineEnd': theme.spacing(2.5),
-  '--pf-v6-c-alert-group--m-toast--InsetBlockStart': theme.spacing(2.5),
-  '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px',
-  '--pf-v6-c-alert-group--m-toast--ZIndex': '9999',
+const ToastAlerts = styled(AlertGroup)(() => ({
+  '--pf-v6-c-alert-group--m-toast--MaxWidth': '350px !important',
 }));
 
 const ToastAlert = styled(Alert)({

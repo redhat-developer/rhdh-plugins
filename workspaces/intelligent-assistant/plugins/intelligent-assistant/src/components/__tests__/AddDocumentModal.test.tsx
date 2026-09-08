@@ -100,6 +100,20 @@ describe('AddDocumentModal', () => {
     expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('should open the file picker when click to browse is used', () => {
+    const clickSpy = jest.spyOn(HTMLInputElement.prototype, 'click');
+    renderWithTheme(<AddDocumentModal {...defaultProps} />);
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Drag and drop files here, or click to browse',
+      }),
+    );
+
+    expect(clickSpy).toHaveBeenCalled();
+    clickSpy.mockRestore();
+  });
+
   it('should display file list when files are dropped', async () => {
     renderWithTheme(<AddDocumentModal {...defaultProps} />);
 

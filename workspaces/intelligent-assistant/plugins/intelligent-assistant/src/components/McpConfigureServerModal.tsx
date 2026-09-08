@@ -60,13 +60,12 @@ const StyledModal = styled(Modal)({
   '& .pf-v6-c-modal-box__body, & .pf-v5-c-modal-box__body': {
     paddingTop: 0,
   },
-});
-
-const ModalCloseButton = styled(Button)({
-  position: 'absolute',
-  top: 'var(--pf-v6-c-modal-box__close--InsetBlockStart, 1.5rem)',
-  right: 'var(--pf-v6-c-modal-box__close--InsetInlineEnd, 1.5rem)',
-  zIndex: 1,
+  '& .ia-mcp-modal-close': {
+    position: 'absolute',
+    insetBlockStart: 'var(--pf-v6-c-modal-box__close--InsetBlockStart, 1.5rem)',
+    insetInlineEnd: 'var(--pf-v6-c-modal-box__close--InsetInlineEnd, 1.5rem)',
+    zIndex: 1,
+  },
 });
 
 const ModalInfoAlert = styled(Alert)({
@@ -254,7 +253,8 @@ export const McpConfigureServerModal = ({
         labelId="mcp-configure-modal"
         descriptorId="mcp-configure-modal-body"
       />
-      <ModalCloseButton
+      <Button
+        className="ia-mcp-modal-close"
         variant="plain"
         icon={<TimesIcon />}
         aria-label={t('mcp.settings.closeConfigureModalAriaLabel')}

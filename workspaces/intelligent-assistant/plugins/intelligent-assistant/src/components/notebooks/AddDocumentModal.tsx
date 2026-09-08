@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import { useContext, useEffect, useState } from 'react';
+import {
+  KeyboardEvent,
+  MouseEvent,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { FileRejection } from 'react-dropzone';
 
 import CloseIcon from '@mui/icons-material/Close';
@@ -71,14 +77,13 @@ const ErrorAlert = styled(Alert)(({ theme }) => ({
   },
 }));
 
-const Dropzone = styled(MultipleFileUpload, {
+const Dropzone = styled('div', {
   shouldForwardProp: prop => prop !== 'isDropzoneDisabled',
 })<{ isDropzoneDisabled?: boolean }>(({ theme, isDropzoneDisabled }) => ({
   borderColor: 'var(--pf-t--global--border--color--brand--default)',
   borderWidth: 2,
   borderStyle: 'dashed',
   borderRadius: theme.spacing(1),
-  padding: theme.spacing(2),
   transition: 'background-color 0.2s ease',
   cursor: isDropzoneDisabled ? 'default' : 'pointer',
   ...(isDropzoneDisabled
@@ -101,6 +106,15 @@ const Dropzone = styled(MultipleFileUpload, {
   },
   '& .pf-v6-c-multiple-file-upload__title-icon': {
     fontSize: '2rem',
+  },
+}));
+
+const DropzoneClickAreaRoot = styled('div')(({ theme }) => ({
+  display: 'block',
+  padding: theme.spacing(2),
+  cursor: 'pointer',
+  '&[aria-disabled="true"]': {
+    cursor: 'default',
   },
 }));
 
@@ -131,26 +145,30 @@ const DropzoneClickArea = ({
   ariaLabel?: string;
 }) => {
   const { open } = useContext(MultipleFileUploadContext);
+  const openFilePicker = (event: MouseEvent | KeyboardEvent) => {
+    event.stopPropagation();
+    open();
+  };
   return (
-    <div
+    <DropzoneClickAreaRoot
       role="button"
       aria-label={ariaLabel}
+      aria-disabled={isDisabled}
       tabIndex={isDisabled ? -1 : 0}
-      onClick={isDisabled ? undefined : open}
+      onClick={isDisabled ? undefined : openFilePicker}
       onKeyDown={
         isDisabled
           ? undefined
           : e => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                open();
+                openFilePicker(e);
               }
             }
       }
-      style={{ cursor: isDisabled ? 'default' : 'pointer' }}
     >
       {children}
-    </div>
+    </DropzoneClickAreaRoot>
   );
 };
 
@@ -326,58 +344,60 @@ export const AddDocumentModal = ({
         {(() => {
           const isDropzoneDisabled = remainingSlots <= 0;
           const dropzoneContent = (
-            <Dropzone
-              isDropzoneDisabled={isDropzoneDisabled}
-              dropzoneProps={{
-                accept: getNotebookAcceptedFileTypes(),
-                onDropRejected: handleDropRejected,
-                disabled: isDropzoneDisabled,
-              }}
-              onFileDrop={handleFileDrop}
-            >
-              <DropzoneClickArea
-                isDisabled={isDropzoneDisabled}
-                ariaLabel={t('notebook.upload.modal.dragDropTitle')}
+            <Dropzone isDropzoneDisabled={isDropzoneDisabled}>
+              <MultipleFileUpload
+                dropzoneProps={{
+                  accept: getNotebookAcceptedFileTypes(),
+                  onDropRejected: handleDropRejected,
+                  disabled: isDropzoneDisabled,
+                  noClick: true,
+                }}
+                onFileDrop={handleFileDrop}
               >
-                <MultipleFileUploadMain
-                  titleIcon={<StyledUploadIcon />}
-                  titleText={t('notebook.upload.modal.dragDropTitle')}
-                  isUploadButtonHidden
-                />
-                <Typography
-                  sx={{
-                    fontSize: '0.875rem',
-                    color: 'text.secondary',
-                    textAlign: 'center',
-                    mt: 1,
-                  }}
+                <DropzoneClickArea
+                  isDisabled={isDropzoneDisabled}
+                  ariaLabel={t('notebook.upload.modal.dragDropTitle')}
                 >
-                  {t('notebook.upload.modal.supportedFormats')}
-                </Typography>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: 0.75,
-                    justifyContent: 'center',
-                    mt: 0.5,
-                  }}
-                >
-                  {UNIQUE_FILE_TYPE_LABELS.map(label => (
-                    <FileTypeChip key={label}>{label}</FileTypeChip>
-                  ))}
-                </Box>
-                <Typography
-                  sx={{
-                    fontSize: '0.875rem',
-                    color: 'text.secondary',
-                    textAlign: 'center',
-                    mt: 1,
-                  }}
-                >
-                  {t('notebook.upload.modal.maxFileSize')}
-                </Typography>
-              </DropzoneClickArea>
+                  <MultipleFileUploadMain
+                    titleIcon={<StyledUploadIcon />}
+                    titleText={t('notebook.upload.modal.dragDropTitle')}
+                    isUploadButtonHidden
+                  />
+                  <Typography
+                    sx={{
+                      fontSize: '0.875rem',
+                      color: 'text.secondary',
+                      textAlign: 'center',
+                      mt: 1,
+                    }}
+                  >
+                    {t('notebook.upload.modal.supportedFormats')}
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 0.75,
+                      justifyContent: 'center',
+                      mt: 0.5,
+                    }}
+                  >
+                    {UNIQUE_FILE_TYPE_LABELS.map(label => (
+                      <FileTypeChip key={label}>{label}</FileTypeChip>
+                    ))}
+                  </Box>
+                  <Typography
+                    sx={{
+                      fontSize: '0.875rem',
+                      color: 'text.secondary',
+                      textAlign: 'center',
+                      mt: 1,
+                    }}
+                  >
+                    {t('notebook.upload.modal.maxFileSize')}
+                  </Typography>
+                </DropzoneClickArea>
+              </MultipleFileUpload>
             </Dropzone>
           );
 

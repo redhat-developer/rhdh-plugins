@@ -226,16 +226,35 @@ const ErrorContainer = styled('div')(({ theme }) => ({
   padding: theme.spacing(3),
 }));
 
-const StyledFileDropZone = styled(FileDropZone)({
-  gap: 0,
-  rowGap: 0,
-  columnGap: 0,
-  '--pf-v6-c-multiple-file-upload--Gap': '0',
-  '--pf-v5-c-multiple-file-upload--Gap': '0',
+const FileDropZoneShell = styled('div')({
   flex: 1,
   minWidth: 0,
-  backgroundColor: `${floatingBg} !important`,
+  minHeight: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  '& > .pf-chatbot__dropzone': {
+    gap: 0,
+    rowGap: 0,
+    columnGap: 0,
+    '--pf-v6-c-multiple-file-upload--Gap': '0',
+    '--pf-v5-c-multiple-file-upload--Gap': '0',
+    flex: 1,
+    minWidth: 0,
+    backgroundColor: `${floatingBg} !important`,
+  },
 });
+
+// FileDropZone forwards extra props into react-dropzone. noClick keeps the
+// parent dropzone from swallowing the message-bar Attach button click.
+const ChatFileDropZone = (props: React.ComponentProps<typeof FileDropZone>) => (
+  <FileDropZoneShell>
+    <FileDropZone
+      {...({ ...props, noClick: true } as React.ComponentProps<
+        typeof FileDropZone
+      >)}
+    />
+  </FileDropZoneShell>
+);
 
 const HeaderActions = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -2130,7 +2149,7 @@ export const LightspeedChat = ({
                 searchActionEnd={sortDropdown}
                 noResultsState={noResultsState}
                 drawerContent={
-                  <StyledFileDropZone
+                  <ChatFileDropZone
                     onFileDrop={(e, data) => handleAttach(data, e)}
                     displayMode={ChatbotDisplayMode.embedded}
                     infoText={t('chatbox.fileUpload.infoText')}
@@ -2151,7 +2170,7 @@ export const LightspeedChat = ({
                       </ErrorContainer>
                     )}
                     {mainPanelContent}
-                  </StyledFileDropZone>
+                  </ChatFileDropZone>
                 }
               />
             </ConditionalWrapper>

@@ -15,18 +15,18 @@
  */
 
 import type { SxProps, Theme } from '@mui/material/styles';
-import type { SystemStyleObject } from '@mui/system';
 
-export const notebookDialogPaperSx = (
-  isCompact: boolean,
-): SystemStyleObject<Theme> => ({
+type StaticDialogSx = Exclude<
+  SxProps<Theme>,
+  readonly unknown[] | ((theme: Theme) => unknown)
+>;
+
+export const notebookDialogPaperSx = (isCompact: boolean): StaticDialogSx => ({
   borderRadius: isCompact ? '12px' : '24px',
   maxWidth: isCompact ? 300 : 578,
 });
 
-export const notebookDialogTitleSx = (
-  isCompact: boolean,
-): SystemStyleObject<Theme> => ({
+export const notebookDialogTitleSx = (isCompact: boolean): StaticDialogSx => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
@@ -35,7 +35,7 @@ export const notebookDialogTitleSx = (
 
 export const notebookDialogTitleTextSx = (
   isCompact: boolean,
-): SystemStyleObject<Theme> => ({
+): StaticDialogSx => ({
   fontWeight: isCompact ? 600 : 500,
   fontSize: isCompact ? '1.125rem' : '1.25rem',
   lineHeight: isCompact ? '1.5rem' : '1.625rem',
@@ -48,13 +48,13 @@ export const notebookDialogCloseButtonSx = {
 
 export const notebookDialogContentSx = (
   isCompact: boolean,
-): SystemStyleObject<Theme> => ({
+): StaticDialogSx => ({
   p: isCompact ? '0 16px 16px !important' : '0 24px 24px',
 });
 
 export const notebookDialogActionsSx = (
   isCompact: boolean,
-): SystemStyleObject<Theme> => ({
+): StaticDialogSx => ({
   justifyContent: 'flex-start',
   p: isCompact ? '12px 16px !important' : '16px 24px',
   gap: 1,
@@ -63,9 +63,9 @@ export const notebookDialogActionsSx = (
 /** Narrow Dialog Paper `sx` so it can sit in an `sx={[...]}` array. */
 export const optionalStyle = (
   sx: SxProps<Theme> | undefined,
-): SystemStyleObject<Theme> | false => {
+): StaticDialogSx | false => {
   if (!sx || typeof sx === 'function' || Array.isArray(sx)) {
     return false;
   }
-  return sx as SystemStyleObject<Theme>;
+  return sx as StaticDialogSx;
 };

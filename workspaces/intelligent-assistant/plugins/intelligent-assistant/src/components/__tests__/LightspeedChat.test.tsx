@@ -353,6 +353,18 @@ describe('LightspeedChat', () => {
     );
   });
 
+  it('should open the file picker when Attach is clicked', async () => {
+    render(setupLightspeedChat());
+
+    const input = screen.getByTestId('attachment-input') as HTMLInputElement;
+    const clickSpy = jest.spyOn(input, 'click');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Attach' }));
+
+    expect(clickSpy).toHaveBeenCalled();
+    clickSpy.mockRestore();
+  });
+
   it('should show an alert when unsupported file types are dropped', async () => {
     render(setupLightspeedChat());
 
