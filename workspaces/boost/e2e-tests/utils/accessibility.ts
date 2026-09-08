@@ -21,6 +21,10 @@ import { expect, type Page, type TestInfo } from '@playwright/test';
  * Upstream library false positives that cannot be fixed in the boost plugin:
  * - nested-interactive: @backstage/ui / React Aria combobox and select triggers
  *   nest focusable controls inside interactive parents (same as global-header).
+ *
+ * Tracked in https://redhat.atlassian.net/browse/RHDHBUGS-3738 — remove this
+ * suppression once the AI Catalog UI violations are fixed (including
+ * color-contrast on category badges when the catalog has assets).
  */
 const DEFAULT_AXE_DISABLE_RULES = ['nested-interactive'] as const;
 
