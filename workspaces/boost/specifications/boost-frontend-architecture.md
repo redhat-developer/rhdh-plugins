@@ -179,7 +179,8 @@ Read-only `GET /config/status` currently. Frontend-visible config keys include `
 
 ## Permissions
 
-The frontend consumes 23 permissions from `boost-common`:
+The frontend's primary Boost permission set contains 23 `boost.*` permissions
+from `boost-common`:
 
 | Scope                | Permissions                                                                                                                        |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
@@ -190,7 +191,18 @@ The frontend consumes 23 permissions from `boost-common`:
 | Infrastructure       | `boost.kagenti.admin`                                                                                                              |
 | Functional           | `boost.documents.manage`, `boost.mcp.manage`, `boost.config.manage`                                                                |
 
-For AI Catalog specifically, RHDHPLAN-1508 defines three additional permissions: `ai-catalog.asset.access`, `ai-catalog.asset.access.usage-docs`, and `ai-catalog.admin`. These are defined in `boost-common/src/permissions.ts` and included in the `boostPermissions` aggregate (registered via `permissionsRegistry.addPermissions()`).
+AI Catalog entity visibility uses Backstage Catalog's built-in
+`catalog.entity.read` permission and RHDH's configured permission/RBAC rules,
+including conditional policies. The frontend
+consumes the entities returned by the authorized Catalog API; it does not
+define duplicate `ai-catalog.*` entity permissions. A future backend API may
+add a narrowly scoped field-level authorization check only when it actually
+returns protected fields.
+
+The unreleased Boost backend and the current Usage tab still contain
+project-specific permission checks, currently named `ai-catalog.*`. These are
+current implementation examples for presentation or backend behavior, not a
+future permission-namespace requirement or the RHDH 2.1 release contract.
 
 ---
 
@@ -283,4 +295,8 @@ The AI Catalog is the first domain. Here is how future capabilities map to surfa
 - **Sample fixtures as contract**: Dev app uses `catalog-info.yaml` fixtures for all asset types — no dependency on backend entity providers being running
 - **Client-side pagination**: `getEntities` returns full dataset; client-side page slicing is sufficient for the 500-asset target at Dev Preview
 - **Default catalog search**: AI assets appear in RHDH global search via default catalog indexing; custom search collator with category labels is deferred
-- **RBAC graceful degradation**: Permission checks for `ai-catalog.asset.access.usage-docs` default to allow when the permission isn't registered (RHDHPLAN-1508 not yet built); content is shown, and enforcement activates automatically when RBAC lands
+- **RBAC graceful degradation**: Catalog entity visibility follows the
+  configured `catalog.entity.read` policy. In development previews without a
+  Catalog permission policy, the frontend consumes the standard Catalog
+  response. Future field-level restrictions must be enforced by the API that
+  returns the protected fields.

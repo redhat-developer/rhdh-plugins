@@ -4,6 +4,12 @@
 
 Admin dashboard section showing per-connector health cards with status indicators, timestamps, error summaries, Force Sync buttons. Neo4j panel with node/relationship counts, Force Neo4j Re-sync. Disconnected-cluster differentiation (disabled vs failing). Built on PatternFly design system.
 
+The health API is the authorization boundary and requires the permission
+selected for the health-administration capability (currently represented by
+`boost.admin`). The UI may hide the admin panel for users without that
+permission, but it MUST NOT use a UI check as a substitute for API
+authorization.
+
 ## ADDED Requirements
 
 ### Requirement: Per-Connector Health Cards with PatternFly Design

@@ -1,67 +1,31 @@
-# SkillBundle Filtering
+# SkillBundle Authorization
 
-> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+> **Status: Draft** — Decision-gated follow-on behavior. The authorization path
+> depends on whether skills are separate entities or nested API data.
 
-Backend read-time RBAC filtering for SkillBundle skill lists. When a SkillBundle contains skills that the requesting user cannot see (per `ai-catalog.asset.access`), those skills are filtered from the response and the UI displays an adjusted count with messaging.
-
-**Jira references:** RHIDP-15270, RHIDP-15273, RHIDP-15310
+**Jira:** RHIDP-15270, RHIDP-15273, RHIDP-15310
 
 ## ADDED Requirements
 
-### Requirement: Backend Skill Filtering
+### Requirement: Representation determines authorization
 
-SkillBundle API responses MUST filter individual skills based on the requesting user's `ai-catalog.asset.access` permission.
+The implementation MUST determine the SkillBundle representation before adding
+filtering work.
 
-#### Scenario: Full access to all skills in a bundle
+#### Scenario: Separate skill entities
 
-- **WHEN** a user with unrestricted `ai-catalog.asset.access` (ALLOW) requests a SkillBundle detail
-- **THEN** all skills in the bundle are included in the response
-- **AND** the skill count matches the total skills in the bundle
+- **WHEN** a SkillBundle references separate Catalog skill entities
+- **THEN** each skill is governed by `catalog.entity.read`
+- **AND** an unauthorized skill is absent from authorized Catalog results
 
-#### Scenario: Partial access with conditional filtering
+#### Scenario: Nested skill data
 
-- **WHEN** a user with conditional `ai-catalog.asset.access` (category-scoped or connector-scoped) requests a SkillBundle detail
-- **THEN** only skills matching the user's conditional policy are included in the response
-- **AND** the response includes `totalSkills` (full count) and `visibleSkills` (filtered count). Exposing the total count is an accepted trade-off: it reveals how many skills are hidden but not their identities. Deployers who need full opacity can use default-deny at the bundle level to hide the entire bundle.
-- **AND** skill references that were filtered out are not exposed in any form (no IDs, no names, no placeholders)
+- **WHEN** skills remain nested in a bundle API response
+- **THEN** the serving API filters the nested list before returning it
+- **AND** unauthorized skill identifiers and names are not exposed
 
-#### Scenario: No access to bundle contents
+### Requirement: Frontend reflects API filtering
 
-- **WHEN** a user without `ai-catalog.asset.access` for any skills in a SkillBundle requests the bundle
-- **THEN** the bundle metadata is shown (if the user has read access to the bundle entity itself)
-- **AND** the skills list is empty
-- **AND** a message indicates the user lacks permission to view bundle contents
-
-### Requirement: Efficient Batch Filtering
-
-Skill filtering MUST use batch permission evaluation, not per-skill checks.
-
-#### Scenario: Batch authorizeConditional for skill list
-
-- **WHEN** a SkillBundle contains N skills
-- **THEN** the backend calls `permissions.authorizeConditional()` once for `ai-catalog.asset.access`
-- **AND** the CONDITIONAL result is applied to all skills using `applyConditions()` or equivalent batch evaluation
-- **AND** the backend does NOT make N individual `permissions.authorize()` calls
-
-### Requirement: Frontend SkillBundle UX
-
-The frontend MUST display filtered skill counts and appropriate messaging.
-
-#### Scenario: Filtered count display
-
-- **WHEN** the frontend renders a SkillBundle with partially filtered skills
-- **THEN** the skill count shows "N of M skills visible" (where N = visible, M = total)
-- **AND** a tooltip or info message explains that some skills are hidden due to access policies
-
-#### Scenario: Fully restricted bundle
-
-- **WHEN** no skills in a SkillBundle are visible to the current user
-- **THEN** the frontend shows "0 of M skills visible"
-- **AND** a restricted-access placeholder replaces the skill list
-- **AND** the placeholder explains what permission is needed and how to request access
-
-#### Scenario: No restrictions applied
-
-- **WHEN** all skills in a SkillBundle are visible to the current user
-- **THEN** the frontend shows the standard skill count without additional messaging
-- **AND** no "N of M" notation is used — just the total count
+- **WHEN** a bundle API omits unauthorized nested skills
+- **THEN** the frontend renders only the returned skills
+- **AND** it does not reconstruct hidden skill data

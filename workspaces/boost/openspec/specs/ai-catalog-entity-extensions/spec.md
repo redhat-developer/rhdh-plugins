@@ -2,7 +2,18 @@
 
 ## Purpose
 
-TBD - created by archiving change ai-catalog-frontend. Update Purpose after archive.
+This specification describes the frontend entity-page extensions delivered by
+the AI Catalog plugin. Catalog entity discovery is governed by Backstage's
+built-in `catalog.entity.read` permission; the Usage tab behavior below is
+field-level presentation and must not be treated as a second entity-visibility
+permission.
+
+The current frontend may still use the existing
+`ai-catalog.asset.access.usage-docs` check as a presentation gate for the
+Usage tab. That check is transitional UI behavior: it is not the Catalog
+entity-visibility control and it is not a backend security boundary. If a
+future API returns protected fields, the API must enforce authorization at its
+response boundary.
 
 ## Requirements
 
@@ -50,14 +61,25 @@ The Version card MUST show only the current annotated version.
 The Usage tab MUST be a Boost `EntityContentBlueprint` on AI assets. It MUST NOT
 replace the Catalog TechDocs tab.
 
-#### Scenario: Permission denied
+Usage authorization is an API/data-boundary concern. If a future backend API
+returns protected usage data, that API MUST enforce field-level authorization;
+the frontend MUST NOT rely on hiding a tab as the security boundary.
 
-- **WHEN** the user is denied `ai-catalog.asset.access.usage-docs`
+#### Scenario: Existing usage presentation check denies access
+
+- **WHEN** the existing usage presentation check denies access
 - **THEN** the Usage tab shows a contact-owner affordance
 
-#### Scenario: Permission allowed
+#### Scenario: Entity visibility is independent from usage presentation
 
-- **WHEN** the user is allowed
+- **WHEN** a user is authorized to read an entity through `catalog.entity.read`
+- **AND** protected usage data is unavailable
+- **THEN** the entity remains discoverable
+- **AND** the Usage tab shows the contact-owner affordance
+
+#### Scenario: Protected usage data is available
+
+- **WHEN** protected usage data is available to the user
 - **THEN** the Usage tab may link to TechDocs if `backstage.io/techdocs-ref` is present
 - **AND** it may show `metadata.links`
 - **AND** the Catalog TechDocs tab is unchanged

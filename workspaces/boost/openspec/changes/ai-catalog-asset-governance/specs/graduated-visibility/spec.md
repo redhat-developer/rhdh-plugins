@@ -1,101 +1,50 @@
-# Graduated Visibility Permissions
+# Graduated Visibility
 
-> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+> **Status: Draft** — Entity visibility is the baseline. Field-level behavior
+> starts only if a future API returns protected fields.
 
-Three AI Catalog permissions implement a two-tier visibility model with field-level filtering. Tier 1 (discovery) shows basic metadata; Tier 2 (sensitive details) adds usage documentation, connection endpoints, configuration, and deployment parameters. A third admin permission gates management actions.
+Entity discovery uses Catalog's built-in `catalog.entity.read` permission.
+Field-level redaction is a separate API responsibility.
 
-**Jira references:** RHIDP-15270, RHIDP-15271, RHIDP-15272, RHIDP-15273
+**Jira:** RHIDP-15270, RHIDP-15271, RHIDP-15272, RHIDP-15273
 
 ## ADDED Requirements
 
-### Requirement: AI Catalog Permission Definitions
+### Requirement: Catalog entity discovery
 
-Three permissions MUST be registered via `permissionsRegistry.addPermissions()` at plugin startup.
+The Catalog integration MUST use `catalog.entity.read` for AI entity access.
 
-#### Scenario: Permission registration
+#### Scenario: Authorized entity
 
-- **WHEN** the AI Catalog backend module starts
-- **THEN** the following permissions are registered:
-  | Permission | Action | Resource Type | Purpose |
-  |---|---|---|---|
-  | `ai-catalog.asset.access` | read | `ai-catalog-asset` | Tier 1: basic discovery (name, description, category, lifecycle stage, version count, tags) |
-  | `ai-catalog.asset.access.usage-docs` | read | `ai-catalog-asset` | Tier 2: usage docs, connection endpoints, configuration, deployment parameters |
-  | `ai-catalog.admin` | update | — (basic) | Management actions, posture config~~, admin UI access~~ |
-- **AND** both read permissions are resource-based to support CONDITIONAL evaluation via RBAC conditional policies
-- **AND** `ai-catalog.admin` is basic (binary ALLOW/DENY) because management actions are not scoped to individual assets
+- **WHEN** RHDH grants `catalog.entity.read` for an AI catalog entity
+- **THEN** the entity is available through authorized Catalog queries
 
-#### Scenario: Permission constant exports
+#### Scenario: Denied entity
 
-- **WHEN** frontend or backend code needs AI Catalog permission references
-- **THEN** all permission constants are exported from `@red-hat-developer-hub/backstage-plugin-boost-common`
-- **AND** resource permissions use `createPermission` with `resourceType: 'ai-catalog-asset'`
-- **AND** a `AI_CATALOG_ASSET_RESOURCE_TYPE` constant is exported for shared reference
+- **WHEN** RHDH denies `catalog.entity.read` for an AI catalog entity
+- **THEN** the entity is excluded from authorized results
+- **AND** direct Catalog access does not expose it
 
-### Requirement: Two-Tier Field-Level Filtering
+### Requirement: Future API redaction
 
-API responses MUST omit Tier 2 fields when the requesting user lacks `ai-catalog.asset.access.usage-docs` permission.
+An API that returns protected AI asset fields MUST authorize and redact those
+fields at the response boundary.
 
-#### Scenario: Tier 1 access (discovery only)
+#### Scenario: Protected field denied
 
-- **WHEN** a user with `ai-catalog.asset.access` but without `ai-catalog.asset.access.usage-docs` requests an AI asset detail page
-- **THEN** the response includes Tier 1 fields: name, description, category, lifecycle stage, version count, tags
-- **AND** Tier 2 fields are omitted: usage documentation, connection endpoints, configuration blocks, deployment parameters
+- **WHEN** an authorized user requests an asset without access to its protected
+  field group
+- **THEN** the API omits those fields
+- **AND** the frontend renders the data as unavailable
 
-#### Scenario: Tier 2 access (full details)
+#### Scenario: No protected API
 
-- **WHEN** a user with both `ai-catalog.asset.access` and `ai-catalog.asset.access.usage-docs` requests an AI asset detail page
-- **THEN** the response includes all Tier 1 and Tier 2 fields
+- **WHEN** no API returns protected AI asset fields
+- **THEN** no field-level permission or redaction implementation is required
 
-#### Scenario: No read access
+### Requirement: No duplicate entity permission by default
 
-- **WHEN** a user without `ai-catalog.asset.access` requests an AI asset list or detail page
-- **THEN** the asset is excluded from list results
-- **AND** detail page requests return 403
-
-#### Scenario: Filtering happens at API layer, not database layer
-
-- **WHEN** a backend handler prepares an AI asset response
-- **THEN** field-level filtering for Tier 2 is applied after the full entity is loaded from the database
-- **AND** entity-level filtering (which assets appear in lists) uses `authorizeConditional()` + `toQuery()` for database-level filtering when conditional policies are configured
-- **AND** this matches the pattern used by Backstage's `AuthorizedEntitiesCatalog`
-
-### Requirement: Frontend Permission Gating
-
-Frontend components MUST gate Tier 2 sections using `RequirePermission`.
-
-#### Scenario: Asset detail page with restricted sections
-
-- **WHEN** the frontend renders an AI asset detail page
-- **THEN** Tier 2 sections (usage docs, connection endpoints, configuration, deployment parameters) are wrapped in `<RequirePermission permission={aiCatalogAssetAccessUsageDocsPermission}>`
-- **AND** when permission is denied, a restricted-access placeholder is shown instead of the section content
-- **AND** the placeholder explains what permission is needed to view the content
-
-#### Scenario: Asset list page with conditional filtering
-
-- **WHEN** the frontend renders an AI asset list page
-- **THEN** the list respects backend filtering — only assets the user can see appear in results
-- **AND** total counts reflect the filtered set, not the global count
-
-### Requirement: List Endpoint 3-Tier Evaluation
-
-AI asset list endpoints MUST support 3-tier evaluation (ALLOW/DENY/CONDITIONAL) for `ai-catalog.asset.access`.
-
-#### Scenario: Conditional list filtering
-
-- **WHEN** `ai-catalog.asset.access` is evaluated for a list endpoint (no specific resourceRef)
-- **THEN** the backend calls `permissions.authorizeConditional()` which returns one of:
-  - **ALLOW** — return all assets (no filtering)
-  - **DENY** — fall back to `ai-catalog.admin` check; if also denied, return 403 Unauthorized
-  - **CONDITIONAL** — apply conditions as database query filters via `toQuery()`
-- **AND** deployers can configure visibility rules via RBAC policies scoped to category, connector, or tenant
-
-### Requirement: Performance Considerations
-
-Permission checks MUST not degrade list endpoint performance.
-
-#### Scenario: Batch permission evaluation
-
-- **WHEN** a list endpoint returns N assets
-- **THEN** `ai-catalog.asset.access.usage-docs` is evaluated once via `authorizeConditional()`, not per-asset
-- **AND** the CONDITIONAL result applies uniformly to all assets in the response
-- **AND** if per-asset Tier 2 visibility is needed in the future, it uses `applyConditions()` with the batch result
+- **WHEN** an AI catalog entity is evaluated for discovery
+- **THEN** `catalog.entity.read` is the entity-level gate
+- **AND** no additional project-specific entity permission is required when
+  the Catalog permission model expresses the requirement

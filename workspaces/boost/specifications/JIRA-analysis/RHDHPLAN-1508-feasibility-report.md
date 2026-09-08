@@ -3,6 +3,14 @@
 **Date:** 2026-07-07
 **Purpose:** Assess whether each RHIDP epic under RHDHPLAN-1508 can be implemented within the existing Backstage permission/RBAC framework without requiring upstream changes.
 
+> **Workspace reconciliation (2026-09-08):** This is a historical feasibility
+> analysis, not the current design source of truth. The follow-on design uses
+> Backstage Catalog's built-in `catalog.entity.read` permission and RHDH's
+> existing conditional-policy support. The custom `ai-catalog.*` entity
+> permissions, custom category/source/tenant rules, ingestion-time policy
+> state, and standalone RBAC UI described in portions of this report are not
+> baseline requirements. See `openspec/changes/ai-catalog-asset-governance/`.
+
 ---
 
 ## Framework Capabilities Summary

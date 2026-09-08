@@ -14,6 +14,12 @@ The `boost-backend` plugin and Kagenti packages are development scaffolding;
 they are not released for RHDH 2.1. Browse and entity cards use
 `catalogApiRef` only and do not call a Boost backend.
 
+The unreleased backend still contains project-specific permission checks,
+currently named `ai-catalog.*`. This is an implementation example, not part of
+the RHDH 2.1 frontend/OGX authorization contract; any future backend release
+must reconcile its selected permission names with the Catalog
+`catalog.entity.read` model.
+
 The two release packages currently require supporting packages:
 `boost-common` for the frontend taxonomy and permissions, and
 `boost-entity-provider-sdk` for OGX entity annotations and version
@@ -57,12 +63,22 @@ the archived OGX spec should be updated together.
 | `ai-catalog-frontend-translations` | 1/11 — locale files    |
 | `ai-catalog-frontend-e2e`          | 0/7 — Playwright suite |
 
+## RBAC follow-on work
+
+The `ai-catalog-asset-governance` proposal, design, behavioral specs, and tasks
+now describe the follow-on RBAC model built on the current Catalog and OGX
+baseline. The model uses built-in `catalog.entity.read`, RHDH conditional
+policies, API-level field redaction where required, and the existing RBAC audit
+and administration surfaces. This is not part of the RHDH 2.1 release.
+
 ## Other OpenSpecs
 
-Keep active. Not reviewed yet. Not this catalog-frontend cleanup.
+Keep active. Their full feature scopes are not part of this catalog-frontend
+cleanup. RBAC-related references in the operational changes below have been
+aligned with the follow-on authorization model, but the feature designs
+themselves remain separate work.
 
 - `ai-catalog-entity-model`
-- `ai-catalog-asset-governance`
 - `agent-creation-discovery`
 - `ai-chat-interaction-experience`
 - `pluggable-ai-platform-architecture`
