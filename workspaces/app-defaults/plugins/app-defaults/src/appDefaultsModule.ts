@@ -15,22 +15,36 @@
  */
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import {
   appDrawerExtension,
   templateCardExtension,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 import { commonIconsExtension } from './icons/commonIconsExtension';
+import { appDefaultsTranslations } from './translations';
+
+const appDefaultsTranslation = TranslationBlueprint.make({
+  params: {
+    resource: appDefaultsTranslations,
+  },
+});
 
 /**
  * RHDH app module for `pluginId: 'app'`.
  * Provides the application drawer, the extensible scaffolder template card,
- * and the common RHDH icon catalog (`IconBundleBlueprint`).
+ * the common RHDH icon catalog (`IconBundleBlueprint`), and the plugin
+ * translations.
  * Default-export this module for dynamic frontend loading.
  *
  * @public
  */
 export const appDefaultsModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [appDrawerExtension, templateCardExtension, commonIconsExtension],
+  extensions: [
+    appDrawerExtension,
+    templateCardExtension,
+    commonIconsExtension,
+    appDefaultsTranslation,
+  ],
 });

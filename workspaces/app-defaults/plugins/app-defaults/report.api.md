@@ -36,6 +36,7 @@ import { SearchResultItemExtensionPredicate } from '@backstage/plugin-search-rea
 import { SearchResultListItemBlueprintParams } from '@backstage/plugin-search-react/alpha';
 import { SubRouteRef } from '@backstage/core-plugin-api';
 import { TechDocsAddonOptions } from '@backstage/plugin-techdocs-react';
+import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public
 export const apiDocsPluginOverride: OverridableFrontendPlugin<
@@ -548,6 +549,9 @@ export const apiDocsPluginOverride: OverridableFrontendPlugin<
 
 // @public
 export const appDefaultsModule: FrontendModule;
+
+// @public
+export const appDefaultsTranslations: TranslationResource<'plugin.app-defaults'>;
 
 // @public
 export const catalogGraphPluginOverride: OverridableFrontendPlugin<

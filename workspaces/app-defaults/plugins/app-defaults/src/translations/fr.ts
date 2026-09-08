@@ -20,7 +20,7 @@ import { translationRef } from './ref';
 /**
  * @internal
  */
-export const fr = createTranslationMessages({
+export default createTranslationMessages({
   ref: translationRef,
   messages: {
     'catalog.emptyState.title': 'Aucun élément trouvé dans le catalogue',
