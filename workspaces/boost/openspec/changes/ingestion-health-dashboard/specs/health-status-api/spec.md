@@ -10,6 +10,8 @@ existing `boost.admin` permission, granted by an RHDH RBAC role.
 
 ### Requirement: Health Status API Returns Per-Connector Health
 
+The implementation MUST satisfy the scenarios below.
+
 The API exposes connector health state for admin dashboard consumption.
 
 #### Scenario: API returns per-connector health objects
@@ -39,6 +41,8 @@ The API exposes connector health state for admin dashboard consumption.
 
 ### Requirement: Data Model Tracks Sync Attempts
 
+The implementation MUST satisfy the scenarios below.
+
 Each connector sync attempt is recorded in the database.
 
 #### Scenario: Sync attempt recorded in database
@@ -61,6 +65,8 @@ Each connector sync attempt is recorded in the database.
 
 ### Requirement: Authorization Gating
 
+The implementation MUST satisfy the scenarios below.
+
 Access to the health API is restricted to users with `boost.admin`. The
 deployment assigns that permission through its RHDH RBAC policy.
 
@@ -79,6 +85,8 @@ deployment assigns that permission through its RHDH RBAC policy.
 - **AND** the request is logged in the audit log with user identity and timestamp
 
 ### Requirement: Force Sync API Endpoint
+
+The implementation MUST satisfy the scenarios below.
 
 Admins can manually trigger connector sync outside scheduled cadence.
 
@@ -111,6 +119,8 @@ Admins can manually trigger connector sync outside scheduled cadence.
 
 ### Requirement: Neo4j Graph Sync Status API
 
+The implementation MUST satisfy the scenarios below.
+
 Neo4j Knowledge Graph Sync Adapter health exposed via dedicated endpoint.
 
 #### Scenario: Neo4j sync status retrieved
@@ -128,6 +138,8 @@ Neo4j Knowledge Graph Sync Adapter health exposed via dedicated endpoint.
 - **AND** full mode clears and rebuilds the entire graph, incremental mode syncs only catalog changes since last sync
 
 ### Requirement: Error Summary Structure
+
+The implementation MUST satisfy the scenarios below.
 
 Error summaries provide actionable diagnostic context.
 

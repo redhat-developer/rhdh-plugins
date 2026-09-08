@@ -42,5 +42,9 @@ scope requires composition.
 
 ### Requirement: No duplicate rules
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Existing conditions are sufficient
+
 - **WHEN** an access scope can be represented by existing conditions
 - **THEN** no AI Catalog-specific category, source, or tenant rule is added

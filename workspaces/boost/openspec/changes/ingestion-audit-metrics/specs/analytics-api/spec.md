@@ -5,6 +5,18 @@
 > **Coverage:** Sync history endpoint, quality scores endpoint, match coverage endpoint, Neo4j sync status, deployment-policy authorization, pagination, date range filtering
 > **Consolidation (2026-07-08):** Analytics metrics REST API scope is now part of the expanded RHIDP-15277 epic (AI Catalog RBAC Audit Logging, RHDHPLAN-1508), which includes RBAC-gated analytics data exposure alongside audit logging.
 
+## ADDED Requirements
+
+### Requirement: Consolidated traceability
+
+This file MUST remain a traceability snapshot and MUST NOT be implemented as
+an independent change; RHIDP-15277 is the authoritative owner.
+
+#### Scenario: Consolidated scope is routed to the owner
+
+- **WHEN** work is planned for the analytics API
+- **THEN** it is tracked under RHIDP-15277 rather than this change
+
 ## Scenarios
 
 ### Scenario 1: Sync history endpoint returns per-connector timeline

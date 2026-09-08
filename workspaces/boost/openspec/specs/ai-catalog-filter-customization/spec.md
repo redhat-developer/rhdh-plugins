@@ -1,8 +1,15 @@
 # ai-catalog-filter-customization Specification
 
+> **Status: Implemented** — Current RHDH 2.1 release source of truth.
+>
+> **Scope:** The `plugins/boost` filter extension contract and built-in AI
+> Catalog filters.
+
 ## Purpose
 
-TBD - created by archiving change ai-catalog-frontend. Update Purpose after archive.
+This specification describes the shipped filter extension contract used by
+the AI Catalog browse page, including `FilterDefinition` and
+`AiCatalogFilterBlueprint` integration with the Backstage frontend system.
 
 ## Requirements
 

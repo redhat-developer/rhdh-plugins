@@ -44,6 +44,10 @@ fields at the response boundary.
 
 ### Requirement: No duplicate entity permission by default
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Catalog permission is sufficient
+
 - **WHEN** an AI catalog entity is evaluated for discovery
 - **THEN** `catalog.entity.read` is the entity-level gate
 - **AND** no additional project-specific entity permission is required when

@@ -1,5 +1,8 @@
 # Proposal: MCP Registry Connector — Productization & Air-Gapped Support
 
+> **Workspace status:** Follow-on connector productization; not part of the
+> current RHDH 2.1 frontend and OGX release baseline.
+
 ## Why
 
 RHDHPLAN-393 delivers the upstream MCP Registry entity provider, enabling discovery and ingestion of Model Context Protocol servers from the public MCP Registry (`registry.modelcontextprotocol.io`). This works for internet-connected deployments where the public registry is accessible.
@@ -20,7 +23,9 @@ This change layers productization on top of the upstream connector, adding air-g
 >
 > - **RHDHPLAN-393 complementary:** This productization wrapper layers on top of RHDHPLAN-393's upstream MCP Registry connector. No ingestion duplication — RHDHPLAN-393 provides core MCP server discovery, this connector adds air-gapped support, credential management, and AI Asset annotation enrichment.
 > - **RHDHPLAN-404 dependency:** The upstream RHDHPLAN-393 connector emits API entities with `spec.type: mcp-server` (a recent Backstage addition). This productization wrapper is kind-agnostic — it enriches annotations regardless of entity kind.
-> - **MCP resource mapping deferred:** Mapping MCP resources (tools, prompts) as catalog entities is deferred for RHDH 2.1 (Christophe's consent; upstream due diligence pending). This connector focuses on MCP server entity discovery only.
+> - **MCP resource mapping is outside this current Boost release:** mapping MCP
+>   resources (tools, prompts) as catalog entities remains broader follow-on
+>   work. This connector focuses on MCP server entity discovery only.
 
 ## What Boost Builds
 

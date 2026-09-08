@@ -3,6 +3,10 @@
 > **Release boundary:** Follow-on Boost backend/admin work; not part of the
 > RHDH 2.1 frontend and OGX release baseline.
 
+> **Status:** Consolidated traceability record. The former stories in this
+> change are owned by RHIDP-15277/RHIDP-15280; this directory is not an
+> independent implementation commitment.
+
 ## Why
 
 > **RHDHPLAN-1513 Consolidation (2026-07-08):** Epic RHIDP-15333 (Ingestion Audit Logging & Metrics) was closed — its scope has been absorbed by RHIDP-15277 (AI Catalog RBAC Audit Logging) under RHDHPLAN-1508. RHDHPLAN-1513 continues with 3 surviving epics: RHIDP-15331 (Ingestion Health Dashboard), RHIDP-15332 (Connector Config Hot-Reload), and RHIDP-15334 (Upstream Schema Alignment). Orphaned stories: RHIDP-15343 → RHIDP-15280, RHIDP-15344 → RHIDP-15277 scope, RHIDP-15345 → RHIDP-15277 scope.

@@ -1,5 +1,8 @@
 # Proposal: OCI Skill Registry Connector
 
+> **Workspace status:** Follow-on OCI registry ingestion framework; not part of
+> the current RHDH 2.1 frontend and OGX release baseline.
+
 ## Why
 
 Skills are the fundamental unit of AI agent capability in the Boost platform. Teams are packaging skills as OCI container images and publishing them to internal registries (Quay, Harbor, OpenShift Internal Image Registry, Artifactory) and external SaaS registries (GHCR, Docker Hub). These skills contain a `skillcard.yaml` manifest that describes the skill's metadata, allowed tools, version, and ownership.

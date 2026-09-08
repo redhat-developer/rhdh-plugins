@@ -1,5 +1,9 @@
 # Proposal: AI Catalog frontend E2E
 
+> **Workspace status:** Remaining current-release work for `plugins/boost` in
+> RHDH 2.1. This change adds verification only; it does not expand product
+> scope or add backend integration.
+
 ## Why
 
 The browse page needs Playwright coverage for search, filters, pagination,

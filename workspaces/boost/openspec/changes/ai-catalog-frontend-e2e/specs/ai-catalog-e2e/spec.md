@@ -1,6 +1,9 @@
 # AI Catalog E2E
 
-> **Status: Remaining**
+> **Status: Remaining — current RHDH 2.1 frontend work.**
+>
+> **Scope:** Playwright coverage for `plugins/boost` and its NFS development
+> app. This does not add product behavior or backend integration.
 
 The workspace MUST provide Playwright coverage for the AI Catalog browse page.
 

@@ -1,8 +1,15 @@
 # ai-catalog-dynamic-plugin Specification
 
+> **Status: Implemented** — Current RHDH 2.1 release source of truth.
+>
+> **Scope:** Dynamic-plugin packaging for `plugins/boost` through the RHDH
+> overlay export pipeline.
+
 ## Purpose
 
-TBD - created by archiving change ai-catalog-frontend. Update Purpose after archive.
+This specification describes how the shipped `plugins/boost` frontend is
+registered and exported as an RHDH dynamic plugin through the overlay CI
+pipeline.
 
 ## Requirements
 

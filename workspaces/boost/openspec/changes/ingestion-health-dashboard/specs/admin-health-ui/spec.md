@@ -14,6 +14,8 @@ authorization.
 
 ### Requirement: Per-Connector Health Cards with PatternFly Design
 
+The implementation MUST satisfy the scenarios below.
+
 Health cards display connector status in admin panel.
 
 #### Scenario: Health card renders connector status
@@ -58,6 +60,8 @@ Health cards display connector status in admin panel.
 
 ### Requirement: Neo4j Sync Panel with Node/Relationship Counts
 
+The implementation MUST satisfy the scenarios below.
+
 Neo4j graph sync status shown as separate section.
 
 #### Scenario: Neo4j panel renders below connector cards
@@ -87,6 +91,8 @@ Neo4j graph sync status shown as separate section.
 
 ### Requirement: Disconnected-Cluster Differentiation
 
+The implementation MUST satisfy the scenarios below.
+
 Disabled connectors visually distinct from failing ones.
 
 #### Scenario: Disabled connector uses muted treatment
@@ -112,6 +118,8 @@ Disabled connectors visually distinct from failing ones.
 - **AND** sync metrics are displayed in card body
 
 ### Requirement: Loading States and Error Handling
+
+The implementation MUST satisfy the scenarios below.
 
 UI handles loading and error states gracefully.
 
@@ -141,6 +149,8 @@ UI handles loading and error states gracefully.
 
 ### Requirement: Navigation Integration
 
+The implementation MUST satisfy the scenarios below.
+
 Ingestion Health section integrated into admin panel navigation.
 
 #### Scenario: Admin panel sidebar includes Ingestion Health item
@@ -156,6 +166,8 @@ Ingestion Health section integrated into admin panel navigation.
 - **AND** the sidebar "Ingestion Health" item is highlighted as active
 
 ### Requirement: Polling for Real-Time Updates
+
+The implementation MUST satisfy the scenarios below.
 
 Health data refreshes automatically via polling.
 

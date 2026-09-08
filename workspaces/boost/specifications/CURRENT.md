@@ -1,6 +1,6 @@
 # Boost current status
 
-Release map as of 2026-09-07. After this file exists, treat it as the
+Release map as of 2026-09-08. After this file exists, treat it as the
 workspace map for what is in this release. Implemented frontend behavior
 lives in `openspec/specs/`. Active work lives in `openspec/changes/`.
 PRDs and Jira analysis are background, not current truth.
@@ -71,37 +71,45 @@ baseline. The model uses built-in `catalog.entity.read`, RHDH conditional
 policies, API-level field redaction where required, and the existing RBAC audit
 and administration surfaces. This is not part of the RHDH 2.1 release.
 
-## Other OpenSpecs
+## Status of the remaining OpenSpecs
 
-Keep active. Their full feature scopes are not part of this catalog-frontend
-cleanup. RBAC-related references in the operational changes below have been
-aligned with the follow-on authorization model, but the feature designs
-themselves remain separate work.
+The child specs under these changes are planning material. They do not expand
+the current release unless this table says so. A child spec marked
+consolidated or moved keeps that disposition even when its parent change is
+listed below.
 
-- `ai-catalog-entity-model`
-- `agent-creation-discovery`
-- `ai-chat-interaction-experience`
-- `pluggable-ai-platform-architecture`
-- `platform-operations-deployment`
-- `security-safety-governance`
-- `connector-shared-infrastructure`
-- `connector-config-hot-reload`
-- `ingestion-audit-metrics`
-- `ingestion-health-dashboard`
-- `neo4j-knowledge-graph`
-- `oci-skill-connector`
-- `oci-skill-registry`
-- `mcp-registry-connector`
-- `rhoai-connector`
-- `upstream-schema-alignment`
+| Change                               | Status and scope                                                                                                                  |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| `ai-catalog-entity-model`            | Follow-on entity-model and SDK planning; the archived `ogx-entity-provider` spec remains the current OGX release source of truth. |
+| `agent-creation-discovery`           | Follow-on agent, MCP, and catalog-entity capabilities; not current-release behavior.                                              |
+| `ai-chat-interaction-experience`     | Follow-on chat and interaction capabilities; not current-release behavior.                                                        |
+| `pluggable-ai-platform-architecture` | Follow-on provider/backend architecture; not current-release behavior.                                                            |
+| `platform-operations-deployment`     | Follow-on backend, configuration, deployment, and administration work; not current-release behavior.                              |
+| `security-safety-governance`         | Follow-on backend security and authorization work; not current-release behavior.                                                  |
+| `connector-shared-infrastructure`    | Follow-on shared connector infrastructure; not current-release behavior.                                                          |
+| `connector-config-hot-reload`        | Follow-on connector administration and backend configuration work; not current-release behavior.                                  |
+| `ingestion-audit-metrics`            | Consolidated/follow-on ingestion and analytics work; not current-release behavior.                                                |
+| `ingestion-health-dashboard`         | Follow-on backend/admin health dashboard work; not current-release behavior.                                                      |
+| `neo4j-knowledge-graph`              | Follow-on graph synchronization work; not current-release behavior.                                                               |
+| `oci-skill-connector`                | Follow-on OCI connector implementation; not current-release behavior.                                                             |
+| `oci-skill-registry`                 | Follow-on OCI registry ingestion framework; not current-release behavior.                                                         |
+| `mcp-registry-connector`             | Follow-on MCP Registry productization; not current-release behavior.                                                              |
+| `rhoai-connector`                    | Follow-on RHOAI MCP connector; not current-release behavior.                                                                      |
+| `upstream-schema-alignment`          | Follow-on upstream-kind alignment and migration-readiness work; not current-release behavior.                                     |
+
+RBAC governance is tracked separately in `ai-catalog-asset-governance` as
+follow-on design work. Its examples build on the current Catalog/OGX model but
+do not add RBAC behavior to this release.
 
 ## Cleanup progress
 
 Done: inventory; split translations and e2e; archive implemented catalog
-frontend; prefix implemented spec IDs with `ai-catalog-*`.
+frontend; prefix implemented spec IDs with `ai-catalog-*`; classify the
+remaining OpenSpecs; normalize their validation deltas; remove placeholders
+from implemented specs.
 
-Not done: review the other OpenSpecs; plugin README / AGENTS.md pointers; docs
-PR.
+Remaining: plugin README / AGENTS.md pointers; implement translations and
+e2e; open the documentation PR.
 
 Part 2 (later): implement translations and e2e, then archive each.
 OGX code stays a separate track.

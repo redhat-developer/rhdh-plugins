@@ -30,6 +30,10 @@ considered.
 
 ### Requirement: Cascade requires a demonstrated gap
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Cascade design is gated
+
 - **WHEN** direct Catalog policies cannot express required inherited access
 - **AND** an explicit asset-to-version relationship is resolvable
 - **THEN** precedence, refresh, removal, and orphan behavior are defined before

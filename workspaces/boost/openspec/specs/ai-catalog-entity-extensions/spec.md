@@ -1,5 +1,11 @@
 # ai-catalog-entity-extensions Specification
 
+> **Status: Implemented** — Current RHDH 2.1 release source of truth.
+>
+> **Scope:** `plugins/boost` entity-page cards and Usage tab. Catalog entity
+> visibility remains a Catalog/RHDH concern; this spec covers frontend
+> presentation only.
+
 ## Purpose
 
 This specification describes the frontend entity-page extensions delivered by

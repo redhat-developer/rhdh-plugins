@@ -5,6 +5,18 @@
 > **Coverage:** Audit event emission for sync lifecycle, config changes, RHDH audit log integration, disconnected cluster support  
 > **Consolidation (2026-07-08):** Ingestion sync audit events are now delivered under RHIDP-15280 (Emit audit events for entity provider ingestion sync cycles) within RHIDP-15277 (AI Catalog RBAC Audit Logging, RHDHPLAN-1508).
 
+## ADDED Requirements
+
+### Requirement: Consolidated traceability
+
+This file MUST remain a traceability snapshot and MUST NOT be implemented as
+an independent change; RHIDP-15280 is the authoritative owner.
+
+#### Scenario: Consolidated scope is routed to the owner
+
+- **WHEN** work is planned for ingestion sync audit events
+- **THEN** it is tracked under RHIDP-15280 rather than this change
+
 ## Scenarios
 
 ### Scenario 1: Sync start event emission

@@ -11,6 +11,7 @@ This workspace uses a specification-first approach. Before writing code, read th
 ```
 workspaces/boost/
 ├── specifications/                # Product requirements
+│   ├── CURRENT.md                 # Release boundary and status source of truth
 │   ├── boost-context.md           # Project rationale, 12 design principles, upstream monitoring
 │   └── prd/                       # Product Requirements Documents (one per capability area)
 │       ├── use-case-index.md      # All 25 use cases at a glance
@@ -20,6 +21,7 @@ workspaces/boost/
 │       ├── platform-operations-deployment.md
 │       └── security-safety-governance.md
 ├── openspec/                      # Implementation specifications
+│   ├── specs/                     # Implemented behavior and release source of truth
 │   └── changes/                   # One directory per capability area:
 │       ├── ai-chat-interaction-experience/
 │       ├── agent-creation-discovery/
@@ -37,10 +39,11 @@ workspaces/boost/
 
 When implementing an issue:
 
-1. Read `specifications/boost-context.md` for design principles — these are non-negotiable
-2. Find the relevant PRD in `specifications/prd/` for product requirements
-3. Find the matching change in `openspec/changes/` for design decisions, task breakdown, and behavioral specs
-4. The `specs/` subdirectories contain acceptance criteria as scenarios — implementation must satisfy these
+1. Read `specifications/CURRENT.md` to confirm the release boundary and status.
+2. Read `specifications/boost-context.md` for design principles — these are non-negotiable
+3. Find the relevant PRD in `specifications/prd/` for product requirements
+4. Find the matching change in `openspec/changes/` for active design decisions, task breakdown, and behavioral specs
+5. If the capability is already implemented, use the corresponding `openspec/specs/` document as the behavior source of truth. The `specs/` subdirectories under an active change are planning acceptance criteria and must not silently override it.
 
 ### OpenSpec scenario step discipline
 

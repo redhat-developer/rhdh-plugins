@@ -1,8 +1,16 @@
 # ogx-entity-provider Specification
 
+> **Status: Implemented** — Current RHDH 2.1 release source of truth.
+>
+> **Scope:** The independently deployable OGX model and agent entity
+> providers, including their configuration, annotations, version handling,
+> and synchronization behavior.
+
 ## Purpose
 
-TBD - created by archiving change ogx-entity-provider. Update Purpose after archive.
+This specification describes the shipped OGX entity provider: module
+registration, configuration resolution, model and agent entity mapping,
+annotation and version normalization, and full/delta synchronization behavior.
 
 ## Requirements
 

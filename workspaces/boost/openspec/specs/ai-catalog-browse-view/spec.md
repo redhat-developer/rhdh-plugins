@@ -1,8 +1,15 @@
 # ai-catalog-browse-view Specification
 
+> **Status: Implemented** — Current RHDH 2.1 release source of truth.
+>
+> **Scope:** `plugins/boost` AI Catalog browse page. This spec describes
+> shipped frontend behavior, not backend ingestion or authorization.
+
 ## Purpose
 
-TBD - created by archiving change ai-catalog-frontend. Update Purpose after archive.
+This specification describes the shipped AI Catalog browse page in
+`plugins/boost`, including entity discovery, card/table presentation, search,
+filtering, pagination, and its loading, empty, and error states.
 
 ## Requirements
 

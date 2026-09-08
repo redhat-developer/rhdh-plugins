@@ -26,6 +26,10 @@ filtering work.
 
 ### Requirement: Frontend reflects API filtering
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Frontend preserves API filtering
+
 - **WHEN** a bundle API omits unauthorized nested skills
 - **THEN** the frontend renders only the returned skills
 - **AND** it does not reconstruct hidden skill data

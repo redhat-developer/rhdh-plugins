@@ -1,6 +1,8 @@
 # AI Catalog Translations
 
-> **Status: Remaining**
+> **Status: Remaining — current RHDH 2.1 frontend work.**
+>
+> **Scope:** Locale files and translation registration for `plugins/boost`.
 
 Add non-English translation files for the AI Catalog plugin, covering all 5 languages supported across rhdh-plugins. The i18n scaffold (TranslationBlueprint, `createTranslationRef`, English `ref.ts`) is already in place.
 

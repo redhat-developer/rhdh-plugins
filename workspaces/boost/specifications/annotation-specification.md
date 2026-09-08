@@ -145,7 +145,7 @@ but documents the current connector-emitted kinds for `agent` and
 | `skill`        | AIResource       | `skill`           | AIResource per RHDHPLAN-1113                                                                                      |
 | `rule`         | AIResource       | `rule`            | AIResource per RHDHPLAN-1113                                                                                      |
 | `skill-bundle` | AIResource       | `ai-skill-bundle` | Curated skill collections; frontend browse category                                                               |
-| `mcp-server`   | API              | `mcp-server`      | Ships in RHDH 2.1 via RHDHPLAN-1510                                                                               |
+| `mcp-server`   | API              | `mcp-server`      | Tracked by broader RHDHPLAN-1510 work; not a current Boost release deliverable                                    |
 | `ai-model`     | Resource         | `ai-model`        | Pending RHDHPLAN-404 (upstream entity schema)                                                                     |
 | `model-server` | AiModelServerAPI | `ai-model-server` | Diverged from Decision 1 (`Resource`/`ai-model-server`); connectors emit `AiModelServerAPI`. Pending RHDHPLAN-404 |
 
