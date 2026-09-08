@@ -59,9 +59,9 @@ export class ScorecardPage {
     await expect(
       this.page.getByText(this.translations.emptyState.title),
     ).toBeVisible();
-    await expect(this.page.getByRole('article')).toContainText(
-      this.translations.emptyState.description,
-    );
+    await expect(
+      this.page.getByText(this.translations.emptyState.description),
+    ).toBeVisible();
     await expect(
       this.page.getByRole('link', {
         name: this.translations.emptyState.button,

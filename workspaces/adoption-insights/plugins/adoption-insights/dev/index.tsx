@@ -13,169 +13,132 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { ReactNode } from 'react';
 
-import { createDevApp } from '@backstage/dev-utils';
-import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import { TestApiProvider } from '@backstage/test-utils';
+/**
+ * New Frontend System dev mode for the Adoption Insights plugin.
+ */
 
-import { adoptionInsightsPlugin, AdoptionInsightsPage } from '../src/plugin';
-import { adoptionInsightsApiRef } from '../src/api';
-import { adoptionInsightsTranslations } from '../src/translations';
+import '@backstage/cli/asset-types';
+// eslint-disable-next-line @backstage/no-ui-css-imports-in-non-frontend
+import '@backstage/ui/css/styles.css';
+import type { ComponentProps } from 'react';
+import ReactDOM from 'react-dom/client';
+import { createApp } from '@backstage/frontend-defaults';
+import type { ApiRef } from '@backstage/core-plugin-api';
 import {
-  ActiveUsersResponse,
-  AdoptionInsightsApi,
-  APIsViewOptions,
-  CatalogEntitiesResponse,
-  PluginTrendResponse,
-  SearchesResponse,
-  TechdocsResponse,
-  TemplatesResponse,
-  UsersResponse,
-} from '../src/types';
-import { mockPluginViews } from './__data__/plugins';
-import mockCatalogEntities from './__data__/catalogEntities';
-import mockTemplates from './__data__/templates';
-import mockActiveUsers from './__data__/activeUsers';
-import mockTechdocs from './__data__/techdocs';
-import mockSearches from './__data__/searches';
-import mockUsers from './__data__/users';
-import { CatalogEntityPage } from '@backstage/plugin-catalog';
+  ApiBlueprint,
+  createFrontendModule,
+} from '@backstage/frontend-plugin-api';
+import {
+  Sidebar,
+  SidebarGroup,
+  SidebarItem,
+  SidebarScrollWrapper,
+  SidebarSpace,
+} from '@backstage/core-components';
+import { NavContentBlueprint } from '@backstage/plugin-app-react';
+import {
+  SidebarLanguageSwitcher,
+  SidebarSignOutButton,
+} from '@backstage/dev-utils';
+import { catalogApiRef } from '@backstage/plugin-catalog-react';
+import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
-import CatalogEntities from '../src/components/CatalogEntities';
-import { DateRangeProvider } from '../src/components/Header/DateRangeContext';
-import { Content, Page } from '@backstage/core-components';
-import ActiveUsers from '../src/components/ActiveUsers';
-import Templates from '../src/components/Templates';
-import Plugins from '../src/components/Plugins';
-import Techdocs from '../src/components/Techdocs';
-import Searches from '../src/components/Searches';
+import adoptionInsightsPlugin, {
+  adoptionInsightsTranslationsModule,
+} from '../src';
+import { adoptionInsightsApiRef } from '../src/api';
+import { MockAdoptionInsightsApiClient, mockCatalogApi } from './mocks';
 
-export class MockAdoptionInsightsApiClient implements AdoptionInsightsApi {
-  async getPlugins(_options: APIsViewOptions): Promise<PluginTrendResponse> {
-    return mockPluginViews;
-  }
-  async getCatalogEntities(
-    _options: APIsViewOptions,
-  ): Promise<CatalogEntitiesResponse> {
-    return mockCatalogEntities;
-  }
-  async getTemplates(_options: APIsViewOptions): Promise<TemplatesResponse> {
-    return mockTemplates;
-  }
-  async getTechdocs(_options: APIsViewOptions): Promise<TechdocsResponse> {
-    return mockTechdocs;
-  }
-  async getActiveUsers(
-    _options: APIsViewOptions,
-  ): Promise<ActiveUsersResponse> {
-    return mockActiveUsers;
-  }
-  async getSearches(_options: APIsViewOptions): Promise<SearchesResponse> {
-    return mockSearches;
-  }
-  async getUsers(_options: APIsViewOptions): Promise<UsersResponse> {
-    return mockUsers;
-  }
-  async downloadBlob(options: APIsViewOptions): Promise<void> {
-    // Simulate CSV download in dev mode - filename comes from frontend translation
-    const csvContent =
-      'date,new_users,returning_users,total_users\n2024-01-01,10,20,30\n2024-01-02,12,18,30\n2024-01-03,8,22,30';
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = options.blobName || 'active-users.csv'; // Use translated filename from frontend
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-    return Promise.resolve();
-  }
+const DEFAULT_PATH = '/adoption-insights';
+
+function makeMockApi<T>(name: string, api: ApiRef<T>, factory: () => T) {
+  return ApiBlueprint.make({
+    name,
+    params: defineParams =>
+      defineParams({
+        api,
+        deps: {},
+        factory,
+      }),
+  });
 }
 
-const AdoptionInsightsWrapper = ({ children }: { children: ReactNode }) => (
-  <TestApiProvider
-    apis={[[adoptionInsightsApiRef, new MockAdoptionInsightsApiClient()]]}
-  >
-    <Page themeId="home">
-      <Content>
-        <DateRangeProvider>{children}</DateRangeProvider>
-      </Content>
-    </Page>
-  </TestApiProvider>
-);
+function DevSidebar({
+  items,
+}: {
+  items: Array<
+    ComponentProps<typeof SidebarItem> & { to?: string; title?: string }
+  >;
+}) {
+  const insightsItem = items.find(item => item.to === DEFAULT_PATH);
+  const navItems = insightsItem
+    ? [insightsItem, ...items.filter(item => item !== insightsItem)]
+    : items;
 
-createDevApp()
-  .registerPlugin(adoptionInsightsPlugin)
-  .addThemes(getAllThemes())
-  .addTranslationResource(adoptionInsightsTranslations)
-  .setAvailableLanguages(['en', 'de', 'es', 'fr', 'it', 'ja'])
-  .setDefaultLanguage('en')
-  .addPage({
-    element: (
-      <AdoptionInsightsWrapper>
-        <AdoptionInsightsPage />
-      </AdoptionInsightsWrapper>
-    ),
-    title: 'Adoption insights Page',
-    path: '/adoption-insights',
-  })
+  return (
+    <Sidebar>
+      <SidebarScrollWrapper>
+        <SidebarGroup label="Adoption Insights">
+          {navItems.map((item, index) => (
+            <SidebarItem
+              {...item}
+              key={`${item.to ?? item.title ?? 'nav'}-${index}`}
+            />
+          ))}
+        </SidebarGroup>
+      </SidebarScrollWrapper>
+      <SidebarSpace />
+      <SidebarLanguageSwitcher />
+      <SidebarSignOutButton />
+    </Sidebar>
+  );
+}
 
-  .addPage({
-    path: '/active-users',
-    element: (
-      <AdoptionInsightsWrapper>
-        <ActiveUsers />
-      </AdoptionInsightsWrapper>
+const adoptionInsightsDevModule = createFrontendModule({
+  pluginId: 'adoption-insights',
+  extensions: [
+    makeMockApi(
+      'adoption-insights-mock',
+      adoptionInsightsApiRef,
+      () => new MockAdoptionInsightsApiClient(),
     ),
-    title: 'Active users',
-  })
-  .addPage({
-    path: '/templates',
-    element: (
-      <AdoptionInsightsWrapper>
-        <Templates />
-      </AdoptionInsightsWrapper>
-    ),
-    title: 'Top Templates',
-  })
-  .addPage({
-    path: '/plugins',
-    element: (
-      <AdoptionInsightsWrapper>
-        <Plugins />
-      </AdoptionInsightsWrapper>
-    ),
-    title: 'Top Plugins',
-  })
-  .addPage({
-    path: '/techdocs',
-    element: (
-      <AdoptionInsightsWrapper>
-        <Techdocs />
-      </AdoptionInsightsWrapper>
-    ),
-    title: 'Top TechDocs',
-  })
-  .addPage({
-    path: '/searches',
-    element: (
-      <AdoptionInsightsWrapper>
-        <Searches />
-      </AdoptionInsightsWrapper>
-    ),
-    title: 'Top Searches',
-  })
-  .addPage({
-    path: '/catalog/:kind/:namespace/:name',
-    element: (
-      <AdoptionInsightsWrapper>
-        <CatalogEntityPage key="catalog-index-page" />
-        <CatalogEntities />
-      </AdoptionInsightsWrapper>
-    ),
-    title: 'Catalog Entities',
-  })
-  .render();
+  ],
+});
+
+const catalogDevModule = createFrontendModule({
+  pluginId: 'catalog',
+  extensions: [makeMockApi('catalog', catalogApiRef, () => mockCatalogApi)],
+});
+
+const devNavModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    NavContentBlueprint.make({
+      params: {
+        component: ({ items }) => <DevSidebar items={items} />,
+      },
+    }),
+  ],
+});
+
+const app = createApp({
+  features: [
+    catalogPlugin,
+    adoptionInsightsPlugin,
+    adoptionInsightsTranslationsModule,
+    adoptionInsightsDevModule,
+    catalogDevModule,
+    rhdhThemeModule,
+    devNavModule,
+  ],
+});
+
+const root = app.createRoot();
+
+if (typeof window !== 'undefined' && window.location.pathname === '/') {
+  window.location.pathname = DEFAULT_PATH;
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(root);

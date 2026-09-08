@@ -19,7 +19,10 @@ import type { Request, Response } from 'express';
 import { validateAggregationIdParam } from './validateAggregationIdParam';
 import { validateMetricIdsQueryParams } from './validateMetricIdsQueryParams';
 import { validateDatasourceQueryParams } from './validateDatasourceQueryParams';
-import { validateTimeSeriesQueryParams } from './validateTimeSeriesQueryParams';
+import {
+  validateAggregationTimeSeriesQueryParams,
+  validateTimeSeriesQueryParams,
+} from './validateTimeSeriesQueryParams';
 
 function mockReq(overrides: Partial<Request> = {}): Request {
   return {
@@ -250,5 +253,73 @@ describe('Validators', () => {
       );
       expect(next).not.toHaveBeenCalled();
     });
+  });
+
+  describe('validateAggregationTimeSeriesQueryParams', () => {
+    const validQuery = {
+      from: '2024-01-01T00:00:00.000Z',
+      to: '2024-01-31T23:59:59.000Z',
+    };
+
+    it.each([
+      ['all query params are valid', validQuery],
+      ['from equals to', { from: validQuery.from, to: validQuery.from }],
+      [
+        'range is 365 days',
+        { from: validQuery.from, to: '2024-12-31T00:00:00.000Z' },
+      ],
+    ])('should call next when %s', (_label, queryParams) => {
+      const req = mockReq({ query: { ...queryParams } });
+
+      validateAggregationTimeSeriesQueryParams(req, res, next);
+
+      expect(next).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      ['missing from', { to: validQuery.to }, 'Required'],
+      ['missing to', { from: validQuery.from }, 'Required'],
+      ['missing from and to', {}, 'Required'],
+      [
+        'invalid from',
+        { ...validQuery, from: 'not-a-date' },
+        'Invalid query parameters',
+      ],
+      [
+        'invalid to',
+        { ...validQuery, to: 'not-a-date' },
+        'Invalid query parameters',
+      ],
+      [
+        'from is after to',
+        {
+          from: validQuery.to,
+          to: validQuery.from,
+        },
+        'from must be less than or equal to to',
+      ],
+      [
+        'range exceeds 365 days',
+        {
+          from: validQuery.from,
+          to: '2025-01-01T00:00:00.001Z',
+        },
+        'time range must not exceed 365 days',
+      ],
+    ])(
+      'should throw InputError when %s',
+      (_label, queryParams, expectedErrorMessage) => {
+        const req = mockReq({ query: { ...queryParams } });
+
+        expect(() =>
+          validateAggregationTimeSeriesQueryParams(req, res, next),
+        ).toThrow(InputError);
+        expect(() =>
+          validateAggregationTimeSeriesQueryParams(req, res, next),
+        ).toThrow(expectedErrorMessage);
+
+        expect(next).not.toHaveBeenCalled();
+      },
+    );
   });
 });

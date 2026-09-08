@@ -51,7 +51,7 @@ export interface UsePaginatedCrudTabOptions<
   loadFn: (params: PaginatedLoadParams) => Promise<T[] | PagedLoadResult<T>>;
   /**
    * `localStorage` key used to persist the selected page size (e.g.
-   * `'providers'`, `'policies'`).  Must be unique per table.
+   * `'agents'`, `'policies'`).  Must be unique per table.
    */
   storageKey: string;
 }
@@ -69,6 +69,11 @@ export interface UsePaginatedCrudTabResult<T, F extends Record<string, unknown>>
   extends UseCrudTabResult<T, F> {
   goNext: () => void;
   goPrev: () => void;
+  /**
+   * Resets cursor navigation to page 1 and triggers a reload.
+   * Use this when external filter state changes to restart from the first page.
+   */
+  resetAndReload: () => void;
   /**
    * Drop-in replacement for `crud.setSearch`. Search is client-side filtering
    * on the loaded page; cursor state (Prev/Next) is unchanged.
@@ -91,12 +96,12 @@ export interface UsePaginatedCrudTabResult<T, F extends Record<string, unknown>>
  * `handleSearchChange` themselves.
  *
  * @example
- * const crud = usePaginatedCrudTab<Provider, ProviderForm>({
+ * const crud = usePaginatedCrudTab<Agent, AgentForm>({
  *   loadFn: ({ pageToken, pageSize }) =>
- *     providersApi.listProviders({ page_token: pageToken, max_page_size: pageSize })
- *       .then(r => ({ items: r.providers ?? [], nextPageToken: r.next_page_token })),
- *   storageKey: 'providers',
- *   createFn: form => providersApi.createProvider(form),
+ *     agentsApi.listAgents({ page_token: pageToken, max_page_size: pageSize })
+ *       .then(r => ({ items: r.agents ?? [], nextPageToken: r.next_page_token })),
+ *   storageKey: 'agents',
+ *   createFn: form => agentsApi.createAgent(formToAgentRegistration(form)),
  *   ...
  * });
  *
@@ -160,6 +165,14 @@ export function usePaginatedCrudTab<T, F extends Record<string, unknown>>(
     crudReload();
   }, [crudReload]);
 
+  // Resets cursor navigation to page 1 and triggers a reload.
+  const resetAndReload = useCallback(() => {
+    currentTokenRef.current = undefined;
+    tokenStackRef.current = [];
+    setTokenStack([]);
+    crudReload();
+  }, [crudReload]);
+
   // When the page size changes, update the ref immediately (so the next reload
   // uses the new size without waiting for a re-render), reset the cursor to the
   // first page, and trigger a reload.
@@ -167,12 +180,9 @@ export function usePaginatedCrudTab<T, F extends Record<string, unknown>>(
     (newSize: number) => {
       pageSizeRef.current = newSize;
       setPageSize(newSize);
-      currentTokenRef.current = undefined;
-      tokenStackRef.current = [];
-      setTokenStack([]);
-      crudReload();
+      resetAndReload();
     },
-    [setPageSize, crudReload],
+    [setPageSize, resetAndReload],
   );
 
   // Search is client-side filtering on the already-loaded page; cursor state
@@ -188,6 +198,7 @@ export function usePaginatedCrudTab<T, F extends Record<string, unknown>>(
     ...crud,
     goNext,
     goPrev,
+    resetAndReload,
     handleSearchChange,
     handlePageSizeChange,
     cursorPagination: {

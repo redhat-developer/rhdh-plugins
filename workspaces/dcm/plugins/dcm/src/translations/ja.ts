@@ -20,8 +20,6 @@ import {
 } from '@backstage/core-plugin-api/alpha';
 import { dcmTranslationRef } from './ref';
 
-const protocol = 'http';
-
 const dcmTranslationJa: TranslationMessages<
   'plugin.dcm',
   Record<string, string>
@@ -29,7 +27,7 @@ const dcmTranslationJa: TranslationMessages<
   ref: dcmTranslationRef,
   messages: {
     'page.title': '\u30c7\u30fc\u30bf\u30bb\u30f3\u30bf\u30fc',
-    'page.tabs.providers': '\u30d7\u30ed\u30d0\u30a4\u30c0\u30fc',
+    'page.tabs.agents': '\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8',
     'page.tabs.policies': '\u30dd\u30ea\u30b7\u30fc',
     'page.tabs.serviceTypes': '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7',
     'page.tabs.catalogItems':
@@ -58,60 +56,49 @@ const dcmTranslationJa: TranslationMessages<
     'deleteDialog.cancelButton': '\u30ad\u30e3\u30f3\u30bb\u30eb',
     'deleteDialog.body':
       '{{resourceName}}\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f\u3053\u306e\u64cd\u4f5c\u306f\u5143\u306b\u623b\u305b\u307e\u305b\u3093\u3002',
-    'providers.emptyTitle':
-      '\u767b\u9332\u6e08\u307f\u30d7\u30ed\u30d0\u30a4\u30c0\u30fc\u306a\u3057',
-    'providers.emptyDescription':
-      'DCM\u304c\u5916\u90e8\u30a4\u30f3\u30d5\u30e9\u30b9\u30c8\u30e9\u30af\u30c1\u30e3\u3067\u30ea\u30bd\u30fc\u30b9\u3092\u30d7\u30ed\u30d3\u30b8\u30e7\u30cb\u30f3\u30b0\u3067\u304d\u308b\u3088\u3046\u306b\u30b5\u30fc\u30d3\u30b9\u30d7\u30ed\u30d0\u30a4\u30c0\u30fc\u3092\u767b\u9332\u3057\u3066\u304f\u3060\u3055\u3044\u3002',
-    'providers.registerButton': '\u767b\u9332',
-    'providers.entityLabel': '\u30d7\u30ed\u30d0\u30a4\u30c0\u30fc',
-    'providers.registerDialogTitle':
-      '\u30d7\u30ed\u30d0\u30a4\u30c0\u30fc\u3092\u767b\u9332',
-    'providers.editDialogTitle':
-      '\u30d7\u30ed\u30d0\u30a4\u30c0\u30fc\u3092\u7de8\u96c6',
-    'providers.saveButton': '\u4fdd\u5b58',
-    'providers.createSuccess':
-      '\u30d7\u30ed\u30d0\u30a4\u30c0\u30fc\u3092\u6b63\u5e38\u306b\u767b\u9332\u3057\u307e\u3057\u305f\u3002',
-    'providers.updateSuccess':
-      '\u30d7\u30ed\u30d0\u30a4\u30c0\u30fc\u3092\u6b63\u5e38\u306b\u66f4\u65b0\u3057\u307e\u3057\u305f\u3002',
-    'providers.deleteSuccess':
-      '\u30d7\u30ed\u30d0\u30a4\u30c0\u30fc\u3092\u6b63\u5e38\u306b\u524a\u9664\u3057\u307e\u3057\u305f\u3002',
-    'providers.deleteLabel': '\u30d7\u30ed\u30d0\u30a4\u30c0\u30fc',
-    'providers.columns.displayName': '\u8868\u793a\u540d',
-    'providers.columns.name': '\u540d\u524d',
-    'providers.columns.endpoint': '\u30a8\u30f3\u30c9\u30dd\u30a4\u30f3\u30c8',
-    'providers.columns.serviceType':
-      '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7',
-    'providers.columns.operations':
-      '\u30aa\u30da\u30ec\u30fc\u30b7\u30e7\u30f3',
-    'providers.columns.status': '\u30b9\u30c6\u30fc\u30bf\u30b9',
-    'providers.form.nameLabel': '\u540d\u524d *',
-    'providers.form.namePlaceholder': '\u4f8b: my-k8s-provider',
-    'providers.form.nameHelper':
-      '\u4e00\u610f\u306e\u30b9\u30e9\u30b0\u2014\u5c0f\u6587\u5b57\u3001\u6570\u5b57\u3001\u30cf\u30a4\u30d5\u30f3\u306e\u307f\u4f7f\u7528\u53ef\u80fd',
-    'providers.form.nameHelperEditMode':
-      '\u30d7\u30ed\u30d0\u30a4\u30c0\u30fc\u540d\u306f\u4f5c\u6210\u5f8c\u306b\u5909\u66f4\u3067\u304d\u307e\u305b\u3093',
-    'providers.form.endpointLabel':
-      '\u30a8\u30f3\u30c9\u30dd\u30a4\u30f3\u30c8 *',
-    'providers.form.endpointPlaceholder': 'https://api.example.com',
-    'providers.form.endpointHelper':
-      '\u30d7\u30ed\u30d0\u30a4\u30c0\u30fc API \u306e\u5b8c\u5168\u306a URL',
-    'providers.form.serviceTypeLabel':
+    'agents.emptyTitle':
+      '\u767b\u9332\u6e08\u307f\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u306a\u3057',
+    'agents.emptyDescription':
+      '\u74b0\u5883\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u306f\u30b3\u30f3\u30c8\u30ed\u30fc\u30eb\u30d7\u30ec\u30fc\u30f3\u306b\u767b\u9332\u3057\u3001\u5b9a\u671f\u7684\u306b\u30cf\u30fc\u30c8\u30d3\u30fc\u30c8\u3092\u9001\u4fe1\u3057\u307e\u3059\u3002',
+    'agents.registerButton': '\u767b\u9332',
+    'agents.entityLabel': '\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8',
+    'agents.registerDialogTitle':
+      '\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u3092\u767b\u9332',
+    'agents.createSuccess':
+      '\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u3092\u6b63\u5e38\u306b\u767b\u9332\u3057\u307e\u3057\u305f\u3002',
+    'agents.columns.name': '\u540d\u524d',
+    'agents.columns.environment': '\u74b0\u5883',
+    'agents.columns.serviceTypes': '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7',
+    'agents.columns.cost': '\u30b3\u30b9\u30c8',
+    'agents.columns.topic': 'Topic',
+    'agents.columns.health': '\u30d8\u30eb\u30b9',
+    'agents.columns.lastHeartbeat':
+      '\u6700\u5f8c\u306e\u30cf\u30fc\u30c8\u30d3\u30fc\u30c8',
+    'agents.filter.healthLabel':
+      '\u30d8\u30eb\u30b9\u30b9\u30c6\u30fc\u30bf\u30b9',
+    'agents.filter.healthAll': 'すべて',
+    'agents.filter.healthReady': '準備完了',
+    'agents.filter.healthCongested': '輻輳',
+    'agents.filter.healthUnavailable': '利用不可',
+    'agents.form.nameLabel': '\u540d\u524d *',
+    'agents.form.namePlaceholder': '\u4f8b: env-agent-west-1',
+    'agents.form.nameHelper':
+      '\u4e00\u610f\u306e\u30b9\u30e9\u30b0\u2014\u5c0f\u6587\u5b57\u3001\u6570\u5b57\u3001\u30cf\u30a4\u30d5\u30f3\u306e\u307f',
+    'agents.form.environmentLabel': '\u74b0\u5883 *',
+    'agents.form.environmentPlaceholder': '\u4f8b: production',
+    'agents.form.environmentHelper':
+      '\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u306e\u74b0\u5883\u30e9\u30d9\u30eb',
+    'agents.form.serviceTypesLabel':
       '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7 *',
-    'providers.form.serviceTypeEmpty':
-      '\u5229\u7528\u53ef\u80fd\u306a\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u306a\u3057',
-    'providers.form.serviceTypeSelect':
-      '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u3092\u9078\u629e\u2026',
-    'providers.form.serviceTypeHelperNoTypes':
-      '\u307e\u305a\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u30bf\u30d6\u3067\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u3092\u4f5c\u6210\u3057\u3066\u304f\u3060\u3055\u3044',
-    'providers.form.serviceTypeHelperDefault':
-      '\u767b\u9332\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u304b\u3089\u9078\u629e',
-    'providers.form.schemaVersionLabel':
-      '\u30b9\u30ad\u30fc\u30de\u30d0\u30fc\u30b8\u30e7\u30f3 *',
-    'providers.form.schemaVersionHelper': '\u4f8b: v1, v1alpha1, v2beta2',
-    'providers.form.operationsLabel':
-      '\u30aa\u30da\u30ec\u30fc\u30b7\u30e7\u30f3',
-    'providers.form.operationsHelper':
-      '\u3053\u306e\u30d7\u30ed\u30d0\u30a4\u30c0\u30fc\u304c\u30b5\u30dd\u30fc\u30c8\u3059\u308b\u30aa\u30da\u30ec\u30fc\u30b7\u30e7\u30f3\u3092\u9078\u629e',
+    'agents.form.serviceTypesHelper':
+      '\u3053\u306e\u30a8\u30fc\u30b8\u30a7\u30f3\u30c8\u304c\u63d0\u4f9b\u3067\u304d\u308b\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7',
+    'agents.form.costLabel': '\u30b3\u30b9\u30c8 *',
+    'agents.form.costHelper':
+      '\u30d7\u30ec\u30fc\u30b9\u30e1\u30f3\u30c8\u306e\u76f8\u5bfe\u30b3\u30b9\u30c8\u91cd\u307f',
+    'agents.form.topicNameLabel': 'Topic\u540d *',
+    'agents.form.topicNamePlaceholder': '\u4f8b: dcm.agent.env-agent-west-1',
+    'agents.form.topicNameHelper':
+      'NATS Topic\u540d\u2014dcm.agent.\u3067\u59cb\u307e\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
     'policies.emptyTitle': '\u30dd\u30ea\u30b7\u30fc\u306a\u3057',
     'policies.emptyDescription':
       'DCM \u30ea\u30bd\u30fc\u30b9\u306b\u5bfe\u3059\u308b\u30ac\u30d0\u30ca\u30f3\u30b9\u30eb\u30fc\u30eb\u3092\u5f37\u5236\u3059\u308b OPA Rego \u30dd\u30ea\u30b7\u30fc\u3092\u4f5c\u6210\u3057\u3066\u304f\u3060\u3055\u3044\u3002',
@@ -342,21 +329,20 @@ const dcmTranslationJa: TranslationMessages<
     'copyButton.failed': '\u30b3\u30d4\u30fc\u5931\u6557',
     'copyButton.ariaLabel':
       '\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u306b\u30b3\u30d4\u30fc',
-    'validation.provider.nameRequired':
+    'validation.agent.nameRequired':
       '\u540d\u524d\u306f\u5fc5\u9808\u3067\u3059',
-    'validation.provider.namePattern':
+    'validation.agent.namePattern':
       '\u5c0f\u6587\u5b57\u3001\u6570\u5b57\u3001\u30cf\u30a4\u30d5\u30f3\u306e\u307f\u4f7f\u7528\u3067\u304d\u307e\u3059\uff08\u6587\u5b57\u3067\u59cb\u307e\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059\uff09',
-    'validation.provider.endpointRequired':
-      '\u30a8\u30f3\u30c9\u30dd\u30a4\u30f3\u30c8\u306f\u5fc5\u9808\u3067\u3059',
-    'validation.provider.endpointPattern': `${protocol}:// \u307e\u305f\u306f https:// \u3067\u59cb\u307e\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059\uff08\u4f8b: https://my-service:8081/api\uff09`,
-    'validation.provider.serviceTypeRequired':
-      '\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u306f\u5fc5\u9808\u3067\u3059',
-    'validation.provider.serviceTypeMin':
-      '\u30ea\u30b9\u30c8\u304b\u3089\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u3092\u9078\u629e\u3057\u3066\u304f\u3060\u3055\u3044',
-    'validation.provider.schemaVersionRequired':
-      '\u30b9\u30ad\u30fc\u30de\u30d0\u30fc\u30b8\u30e7\u30f3\u306f\u5fc5\u9808\u3067\u3059',
-    'validation.provider.schemaVersionPattern':
-      'v<\u6570\u5b57>[alpha|beta][<\u6570\u5b57>] \u306e\u5f62\u5f0f\u306b\u5f93\u3063\u3066\u304f\u3060\u3055\u3044 \u2014 \u4f8b: v1, v1alpha1, v2beta2',
+    'validation.agent.environmentRequired':
+      '\u74b0\u5883\u306f\u5fc5\u9808\u3067\u3059',
+    'validation.agent.serviceTypesRequired':
+      '\u5c11\u306a\u304f\u3068\u30821\u3064\u306e\u30b5\u30fc\u30d3\u30b9\u30bf\u30a4\u30d7\u304c\u5fc5\u8981\u3067\u3059',
+    'validation.agent.costRequired':
+      '\u30b3\u30b9\u30c8\u306f\u5fc5\u9808\u3067\u3059',
+    'validation.agent.topicNameRequired':
+      'Topic\u540d\u306f\u5fc5\u9808\u3067\u3059',
+    'validation.agent.topicNamePattern':
+      'Topic\u540d\u306fdcm.agent.\u3067\u59cb\u307e\u308b\u5fc5\u8981\u304c\u3042\u308a\u307e\u3059',
     'validation.policy.displayNameRequired':
       '\u8868\u793a\u540d\u306f\u5fc5\u9808\u3067\u3059',
     'validation.policy.displayNameEmpty':

@@ -71,7 +71,7 @@
 - [ ] 3.4 Add `rhdh.io/ai-asset-category: "mcp-server"` annotation population
 - [ ] 3.5 Add `rhdh.io/ai-asset-source: "mcp-registry/<instance-id>"` annotation population (where `<instance-id>` is the configuration key under `ai-catalog.providers`, e.g., `mcpRegistry`)
 - [ ] 3.6 Implement version metadata extraction from MCP server manifest
-- [ ] 3.7 Add `rhdh.io/ai-asset-version` annotation population — extract raw version via `extractVersion(entity)`, normalize via `normalizeAIAssetVersion()` (SDK-exported from RHDHPLAN-1507), fall back to `"unknown"`
+- [ ] 3.7 Add `rhdh.io/ai-asset-version` annotation population — extract raw version via `extractVersion(entity)`, normalize via `normalizeAIAssetVersion()` (SDK-exported from RHDHPLAN-1507); missing/unrecognized → `"0.0.0-unknown"` (do not use a local `"unknown"` fallback)
 - [ ] 3.8 Add graceful degradation: enrichment failure logs warning, emits entity without annotations
 - [ ] 3.9 Add preservation logic: do not overwrite existing AI Asset annotations
 - [ ] 3.10 Add DEBUG-level logging for enriched entities

@@ -1,6 +1,6 @@
 # Migration Plan: RHDH AI-Asset Entities to Upstream Backstage Kinds
 
-> **Status: Draft** | **Last updated: 2026-08-31** | **Story: RHIDP-15302**
+> **Status: Ready for Review** | **Last updated: 2026-09-03** | **Story: RHIDP-15302**
 >
 > **Epic:** RHIDP-15258 (Entity-Provider SDK) | **Feature:** RHDHPLAN-1507
 >

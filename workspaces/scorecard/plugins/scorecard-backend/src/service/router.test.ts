@@ -35,6 +35,7 @@ import {
   AggregatedMetricResult,
   aggregationTypes,
   DEFAULT_NUMBER_THRESHOLDS,
+  scalarAggregationTypes,
   Metric,
   MetricResult,
   MetricTimeSeriesResponse,
@@ -105,6 +106,7 @@ const CONDITIONAL_POLICY_DECISION: PolicyDecision = {
 
 describe('createRouter', () => {
   let app: express.Express;
+  let catalog: ReturnType<typeof catalogServiceMock.mock>;
   let metricProvidersRegistry: MetricProvidersRegistry;
   let catalogMetricService: CatalogMetricService;
   let aggregationsService: AggregationsService;
@@ -126,7 +128,7 @@ describe('createRouter', () => {
       mockServices.rootConfig({ data: {} }),
       metricProvidersRegistry.listProviders(),
     );
-    const catalog = catalogServiceMock.mock();
+    catalog = catalogServiceMock.mock();
     mockLogger = mockServices.logger.mock();
     collectorsService = {
       init: jest.fn(),
@@ -649,7 +651,7 @@ describe('createRouter', () => {
         type: 'number',
         unit: undefined,
         history: true,
-        defaultVisualization: 'value',
+        defaultVisualization: 'donut',
       },
       points: [
         { value: 8, timestamp: '2024-01-01T20:00:00.000Z' },
@@ -1708,6 +1710,266 @@ describe('createRouter', () => {
       expect(response.body.result.value).toBe(30);
       expect(response.body.result.total).toBe(2);
       expect(response.body.result.entitiesConsidered).toBe(4);
+    });
+  });
+
+  describe('GET /aggregations/:aggregationId/time-series', () => {
+    const validQuery =
+      'from=2024-01-01T00:00:00.000Z&to=2024-01-31T00:00:00.000Z';
+    const timeSeriesPath = (aggregationId: string) =>
+      `/aggregations/${aggregationId}/time-series`;
+
+    beforeEach(() => {
+      metricProvidersRegistry.register(
+        new MockNumberProvider('github.openPRs', 'github', 'GitHub Open PRs'),
+      );
+      jest
+        .spyOn(getEntitiesOwnedByUserModule, 'getEntitiesOwnedByUser')
+        .mockResolvedValue([
+          'component:default/my-service',
+          'component:default/my-other-service',
+        ]);
+    });
+
+    it('should return 400 InputError when query parameters are missing', async () => {
+      const response = await request(app).get(timeSeriesPath('github.openPRs'));
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.name).toBe('InputError');
+      expect(response.body.error.message).toContain('Invalid query parameters');
+    });
+
+    it('should return 400 InputError when from or to is not ISO datetime', async () => {
+      const response = await request(app).get(
+        `${timeSeriesPath('github.openPRs')}?from=2024-01-01&to=2024-01-31`,
+      );
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.name).toBe('InputError');
+      expect(response.body.error.message).toContain('Invalid query parameters');
+    });
+
+    it('should return 400 InputError when from is after to', async () => {
+      const response = await request(app).get(
+        `${timeSeriesPath(
+          'github.openPRs',
+        )}?from=2024-02-01T00:00:00.000Z&to=2024-01-01T00:00:00.000Z`,
+      );
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.name).toBe('InputError');
+      expect(response.body.error.message).toContain(
+        'from must be less than or equal to to',
+      );
+    });
+
+    it('should return 400 InputError when range exceeds 365 days', async () => {
+      const response = await request(app).get(
+        `${timeSeriesPath(
+          'github.openPRs',
+        )}?from=2024-01-01T00:00:00.000Z&to=2025-01-01T00:00:00.001Z`,
+      );
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.name).toBe('InputError');
+      expect(response.body.error.message).toContain(
+        'time range must not exceed 365 days',
+      );
+    });
+
+    it('should return 404 NotFoundError when aggregation id is not found', async () => {
+      const response = await request(app).get(
+        `${timeSeriesPath('non.existent.metric')}?${validQuery}`,
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.body.error.name).toBe('NotFoundError');
+      expect(response.body.error.message).toContain(
+        'No metric provider registered',
+      );
+    });
+
+    it('should return 403 when permissions DENY', async () => {
+      permissionsMock.authorizeConditional.mockResolvedValueOnce([
+        { result: AuthorizeResult.DENY },
+      ]);
+
+      const response = await request(app).get(
+        `${timeSeriesPath('github.openPRs')}?${validQuery}`,
+      );
+
+      expect(response.status).toBe(403);
+      expect(response.body.error.name).toBe('NotAllowedError');
+    });
+
+    it('should return 401 when user entity ref is missing', async () => {
+      httpAuthMock.credentials.mockResolvedValueOnce({
+        principal: {},
+      } as any);
+
+      const response = await request(app).get(
+        `${timeSeriesPath('github.openPRs')}?${validQuery}`,
+      );
+
+      expect(response.status).toBe(401);
+      expect(response.body.error.name).toBe('AuthenticationError');
+    });
+
+    it('should return 400 InputError for statusGrouped', async () => {
+      const response = await request(app).get(
+        `${timeSeriesPath('github.openPRs')}?${validQuery}`,
+      );
+
+      expect(response.status).toBe(400);
+      expect(response.body.error.name).toBe('InputError');
+      expect(response.body.error.message).toMatch(
+        /does not support time-series/,
+      );
+    });
+
+    it.each([...scalarAggregationTypes])(
+      'should return 200 for scalar type %s',
+      async aggregationType => {
+        jest
+          .spyOn(
+            mockDatabaseMetricValues,
+            'readScalarAggregatedMetricTimeSeriesByEntityRefs',
+          )
+          .mockResolvedValue([
+            {
+              maxTimestamp: new Date('2024-01-01T10:30:00.000Z'),
+              value: 12,
+              successCount: 3,
+              errorCount: 0,
+              total: 3,
+              errors: [],
+            },
+          ]);
+
+        jest
+          .spyOn(aggregationsService, 'getAggregationConfig')
+          .mockReturnValue({
+            id: `${aggregationType}ScalarKpi`,
+            title: 'Scalar KPI',
+            description: 'Scalar daily aggregate',
+            type: aggregationType,
+            metricId: 'github.openPRs',
+          });
+
+        const response = await request(app).get(
+          `${timeSeriesPath(`${aggregationType}ScalarKpi`)}?${validQuery}`,
+        );
+
+        expect(response.status).toBe(200);
+        expect(response.body).toEqual(
+          expect.objectContaining({
+            id: `${aggregationType}ScalarKpi`,
+            metricId: 'github.openPRs',
+            metadata: expect.objectContaining({
+              aggregationType,
+            }),
+            points: [
+              {
+                value: 12,
+                successCount: 3,
+                errorCount: 0,
+                total: 3,
+                status: 'success',
+                timestamp: '2024-01-01T10:30:00.000Z',
+              },
+            ],
+            thresholds: DEFAULT_NUMBER_THRESHOLDS,
+            aggregationChartDisplayColor: 'warning.main',
+          }),
+        );
+        expect(aggregationsService.getAggregationConfig).toHaveBeenCalledWith(
+          `${aggregationType}ScalarKpi`,
+          metricProvidersRegistry,
+        );
+        expect(
+          mockDatabaseMetricValues.readScalarAggregatedMetricTimeSeriesByEntityRefs,
+        ).toHaveBeenCalledWith(
+          [
+            'component:default/my-service',
+            'component:default/my-other-service',
+          ],
+          'github.openPRs',
+          aggregationType,
+          new Date('2024-01-01T00:00:00.000Z'),
+          new Date('2024-01-31T00:00:00.000Z'),
+          undefined,
+        );
+      },
+    );
+
+    it('should use KPI filter.status and return filtered scalar time-series result', async () => {
+      jest
+        .spyOn(
+          mockDatabaseMetricValues,
+          'readScalarAggregatedMetricTimeSeriesByEntityRefs',
+        )
+        .mockResolvedValue([
+          {
+            maxTimestamp: new Date('2024-01-01T10:30:00.000Z'),
+            value: 10,
+            successCount: 2,
+            errorCount: 0,
+            total: 2,
+            errors: [],
+          },
+        ]);
+
+      jest.spyOn(aggregationsService, 'getAggregationConfig').mockReturnValue({
+        id: 'averageErrorOpenPRs',
+        title: 'Average open PRs in error state',
+        description: 'Average for entities in error status within open PRs',
+        type: aggregationTypes.average,
+        metricId: 'github.openPRs',
+        filter: {
+          status: 'error',
+        },
+      });
+
+      const response = await request(app).get(
+        `${timeSeriesPath('averageErrorOpenPRs')}?${validQuery}`,
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          id: 'averageErrorOpenPRs',
+          metricId: 'github.openPRs',
+          metadata: expect.objectContaining({
+            aggregationType: aggregationTypes.average,
+          }),
+          points: [
+            {
+              value: 10,
+              successCount: 2,
+              errorCount: 0,
+              total: 2,
+              status: 'success',
+              timestamp: '2024-01-01T10:30:00.000Z',
+            },
+          ],
+          thresholds: DEFAULT_NUMBER_THRESHOLDS,
+          aggregationChartDisplayColor: 'warning.main',
+        }),
+      );
+      expect(aggregationsService.getAggregationConfig).toHaveBeenCalledWith(
+        'averageErrorOpenPRs',
+        metricProvidersRegistry,
+      );
+      expect(
+        mockDatabaseMetricValues.readScalarAggregatedMetricTimeSeriesByEntityRefs,
+      ).toHaveBeenCalledWith(
+        ['component:default/my-service', 'component:default/my-other-service'],
+        'github.openPRs',
+        aggregationTypes.average,
+        new Date('2024-01-01T00:00:00.000Z'),
+        new Date('2024-01-31T00:00:00.000Z'),
+        { status: 'error' },
+      );
     });
   });
 

@@ -323,6 +323,108 @@ test.describe('Orchestrator workflow runs', () => {
         await expect(sharedPage.getByText(input)).toBeVisible();
       }
     });
+
+    test('ActiveBoolean widget fetches and displays dynamic boolean values', async () => {
+      const workflowName = 'Test ActiveBoolean Widget';
+
+      await orchestrator.searchWorkflow(workflowName);
+      await orchestrator.openWorkflowFromTable(workflowName);
+      await orchestrator.verifyWorkflowDetails();
+      await orchestrator.clickRunWorkflowFromDetails();
+
+      // Step 1: Basic ActiveBoolean Tests
+      await expect(
+        sharedPage.getByText('Basic ActiveBoolean Tests'),
+      ).toBeVisible({ timeout: 30_000 });
+      await expect(
+        sharedPage.getByRole('checkbox', {
+          name: /Basic Feature Flag/i,
+        }),
+      ).toBeVisible({ timeout: 30_000 });
+      // Feature with Static Default may show error due to API rate limits (429)
+      // Check for either checkbox or description heading (which always renders)
+      const featureWithDefaultCheckbox = sharedPage.getByRole('checkbox', {
+        name: /Feature with Static Default/i,
+      });
+      const featureWithDefaultHeading = sharedPage.getByRole('heading', {
+        name: /Has a static default/i,
+      });
+      await expect(
+        featureWithDefaultCheckbox.or(featureWithDefaultHeading).first(),
+      ).toBeVisible();
+      await expect(
+        sharedPage.getByRole('checkbox', {
+          name: /String to Boolean Coercion/i,
+        }),
+      ).toBeVisible();
+      await expect(
+        sharedPage.getByRole('checkbox', {
+          name: /Number to Boolean Coercion/i,
+        }),
+      ).toBeVisible();
+
+      // Navigate to Step 2: Retrigger and Dependency Tests
+      await orchestratorHelper.clickButton(translations.common.next);
+      await expect(
+        sharedPage.getByText('Retrigger and Dependency Tests'),
+      ).toBeVisible({ timeout: 30_000 });
+
+      // Verify Product ID dropdown is present with default value
+      const productIdDropdown = sharedPage.getByRole('button', {
+        name: /Product ID.*5/i,
+      });
+      await expect(productIdDropdown).toBeVisible();
+
+      // Verify Tenant-Specific Feature checkbox responds to retrigger
+      const dependentFeatureCheckbox = sharedPage.getByRole('checkbox', {
+        name: /Tenant-Specific Feature/i,
+      });
+      await expect(dependentFeatureCheckbox).toBeVisible({ timeout: 30_000 });
+
+      // Change Product ID to trigger refetch
+      await productIdDropdown.click();
+      await sharedPage.getByRole('option', { name: '10' }).click();
+      await sharedPage.waitForTimeout(2000);
+      await expect(dependentFeatureCheckbox).toBeVisible();
+
+      // Navigate to Step 3: Error Handling Tests
+      await orchestratorHelper.clickButton(translations.common.next);
+      await expect(sharedPage.getByText('Error Handling Tests')).toBeVisible({
+        timeout: 30_000,
+      });
+      await expect(
+        sharedPage.getByRole('checkbox', {
+          name: /Silent Error Handling/i,
+        }),
+      ).toBeVisible();
+      await expect(
+        sharedPage.getByRole('checkbox', {
+          name: /Feature with Retry/i,
+        }),
+      ).toBeVisible();
+
+      // Navigate to Step 4: Advanced Tests
+      await orchestratorHelper.clickButton(translations.common.next);
+      await expect(sharedPage.getByText('Advanced Tests')).toBeVisible({
+        timeout: 30_000,
+      });
+
+      // Verify Read-Only Feature Flag checkbox is present and disabled
+      const readOnlyCheckbox = sharedPage.getByRole('checkbox', {
+        name: /Read-Only Feature Flag/i,
+      });
+      await expect(readOnlyCheckbox).toBeVisible();
+      await expect(readOnlyCheckbox).toBeDisabled();
+      await orchestratorHelper.clickButton(translations.common.next);
+      await expect(
+        sharedPage.getByText(translations.run.title).first(),
+      ).toBeVisible({ timeout: 30_000 });
+      await orchestratorHelper.clickButton(translations.common.run);
+      await expect(sharedPage).toHaveURL(/\/orchestrator\/instances\/.+/, {
+        timeout: 60_000,
+      });
+      await orchestratorHelper.verifyBreadcrumbLink(workflowName);
+    });
   });
 
   test.describe('Orchestrator > All runs page', () => {

@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 4.2.0
+
+### Minor Changes
+
+- cc6ba08: Add DOM text extraction for deep context awareness — extracts structured page content (headings, tables, alerts, text) and sends as context alongside user messages
+- eb3e2d9: implement docked and overlay display modes for Notebook
+- 5238698: Backstage version bump to v1.54.5
+
+### Patch Changes
+
+- Updated dependencies [5238698]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.2.0
+
 ## 4.1.0
 
 ### Minor Changes

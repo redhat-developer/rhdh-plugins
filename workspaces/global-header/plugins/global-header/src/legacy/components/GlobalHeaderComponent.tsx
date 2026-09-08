@@ -21,6 +21,7 @@ import { ErrorBoundary } from '@backstage/core-components';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 
+import { GLOBAL_HEADER_DIALOG_OFFSET_CSS } from '../../components/globalHeaderDialogOffset';
 import { GlobalHeaderComponentMountPoint } from '../types';
 
 /**
@@ -47,24 +48,29 @@ export const GlobalHeaderComponent = ({
   }, [globalHeaderMountPoints]);
 
   return (
-    <AppBar position="sticky" component="nav" id="global-header">
-      <Toolbar
-        sx={{
-          gap: 1,
-          color: theme =>
-            (theme as any).rhdh?.general.appBarForegroundColor ??
-            theme.palette.text.primary,
-        }}
-      >
-        {mountPoints.map((mountPoint, index) => (
-          <ErrorBoundary key={`header-component-${index}`}>
-            <mountPoint.Component
-              {...mountPoint.config?.props}
-              layout={mountPoint.config?.layout}
-            />
-          </ErrorBoundary>
-        ))}
-      </Toolbar>
-    </AppBar>
+    <>
+      <style data-rhdh-global-header-dialog-offset="">
+        {GLOBAL_HEADER_DIALOG_OFFSET_CSS}
+      </style>
+      <AppBar position="sticky" component="nav" id="global-header">
+        <Toolbar
+          sx={{
+            gap: 1,
+            color: theme =>
+              (theme as any).rhdh?.general.appBarForegroundColor ??
+              theme.palette.text.primary,
+          }}
+        >
+          {mountPoints.map((mountPoint, index) => (
+            <ErrorBoundary key={`header-component-${index}`}>
+              <mountPoint.Component
+                {...mountPoint.config?.props}
+                layout={mountPoint.config?.layout}
+              />
+            </ErrorBoundary>
+          ))}
+        </Toolbar>
+      </AppBar>
+    </>
   );
 };

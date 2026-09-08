@@ -23,32 +23,51 @@ export const MAX_TIME_SERIES_RANGE_DAYS = 365;
 const MAX_TIME_SERIES_RANGE_MS =
   MAX_TIME_SERIES_RANGE_DAYS * 24 * 60 * 60 * 1000;
 
+const timeRangeSchema = z
+  .object({
+    from: z.string().datetime(),
+    to: z.string().datetime(),
+  })
+  .refine(data => new Date(data.from) <= new Date(data.to), {
+    message: 'from must be less than or equal to to',
+    path: ['from'],
+  })
+  .refine(
+    data =>
+      new Date(data.to).getTime() - new Date(data.from).getTime() <=
+      MAX_TIME_SERIES_RANGE_MS,
+    {
+      message: `time range must not exceed ${MAX_TIME_SERIES_RANGE_DAYS} days`,
+      path: ['to'],
+    },
+  );
+
 export function validateTimeSeriesQueryParams(
   req: Request,
   _res: Response,
   next: NextFunction,
 ): void {
-  const schema = z
-    .object({
+  const schema = timeRangeSchema.and(
+    z.object({
       metricId: z.string().min(1).max(255),
-      from: z.string().datetime(),
-      to: z.string().datetime(),
-    })
-    .refine(data => new Date(data.from) <= new Date(data.to), {
-      message: 'from must be less than or equal to to',
-      path: ['from'],
-    })
-    .refine(
-      data =>
-        new Date(data.to).getTime() - new Date(data.from).getTime() <=
-        MAX_TIME_SERIES_RANGE_MS,
-      {
-        message: `time range must not exceed ${MAX_TIME_SERIES_RANGE_DAYS} days`,
-        path: ['to'],
-      },
-    );
+    }),
+  );
 
   const parsed = schema.safeParse(req.query);
+
+  if (!parsed.success) {
+    throw new InputError(`Invalid query parameters: ${parsed.error.message}`);
+  }
+
+  next();
+}
+
+export function validateAggregationTimeSeriesQueryParams(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): void {
+  const parsed = timeRangeSchema.safeParse(req.query);
 
   if (!parsed.success) {
     throw new InputError(`Invalid query parameters: ${parsed.error.message}`);

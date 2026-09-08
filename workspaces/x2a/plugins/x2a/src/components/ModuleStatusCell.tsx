@@ -67,6 +67,8 @@ const StatusWithText = ({
       return <StatusRunning>{children}</StatusRunning>;
     case 'pending':
       return <StatusPending>{children}</StatusPending>;
+    case 'stale':
+      return <StatusPending>{children}</StatusPending>;
     case 'cancelled':
       return <StatusAborted>{children}</StatusAborted>;
     case 'removed':

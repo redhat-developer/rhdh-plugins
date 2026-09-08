@@ -1,0 +1,13 @@
+result: CONDITIONAL
+pluginId: orchestrator
+resourceType: orchestrator-workflow
+conditions:
+  rule: IS_ALLOWED_WORKFLOW_ID
+  resourceType: orchestrator-workflow
+  params:
+    workflowIds:
+      - universal-pr
+roleEntityRef: 'role:default/workflowUser'
+permissionMapping:
+  - read
+  - update

@@ -263,4 +263,149 @@ describe('AddRepositoriesForm', () => {
       screen.queryByTestId('add-repository-footer'),
     ).not.toBeInTheDocument();
   });
+
+  it('should show GitHub App token errors as alerts in orchestrator mode', async () => {
+    const githubAppError =
+      "Orchestrator import requires a GitHub App installation token for 'https://github.com/lholmquist/aaannnddtheenn'. " +
+      'Configure integrations.github with an App that has access to this repository; ' +
+      'classic personal access tokens are not forwarded in orchestrator mode.';
+
+    (useDrawer as jest.Mock).mockReturnValue({
+      openDrawer: false,
+      setOpenDrawer: jest.fn(),
+      setDrawerData: jest.fn(),
+    });
+    (useFormikContext as jest.Mock).mockReturnValue({
+      values: {
+        repositoryType: RepositorySelection.Repository,
+      },
+      setFieldValue: jest.fn(),
+      status: {
+        errors: {
+          'lholmquist/aaannnddtheenn': {
+            repository: {
+              name: 'aaannnddtheenn',
+              organization: 'lholmquist',
+            },
+            catalogEntityName: 'aaannnddtheenn',
+            error: {
+              message: [githubAppError],
+            },
+          },
+        },
+      },
+    });
+
+    render(
+      <Router>
+        <TestApiProvider
+          apis={[
+            [identityApiRef, mockIdentityApi],
+            [bulkImportApiRef, mockBulkImportApi],
+            [errorApiRef, new MockErrorApi()],
+            [
+              configApiRef,
+              new MockConfigApi({
+                catalog: {
+                  import: {
+                    entityFilename: 'test.yaml',
+                  },
+                },
+                integrations: {
+                  github: [
+                    {
+                      host: 'github.com',
+                      token: 'test-token',
+                    },
+                  ],
+                },
+                bulkImport: {
+                  importAPI: 'orchestrator',
+                },
+              }),
+            ],
+          ]}
+        >
+          <QueryClientProvider client={queryClient}>
+            <AddRepositories />
+          </QueryClientProvider>
+        </TestApiProvider>
+      </Router>,
+    );
+
+    expect(screen.getByTestId('orchestrator-job-errors')).toBeInTheDocument();
+    expect(screen.getByText('lholmquist/aaannnddtheenn')).toBeInTheDocument();
+    expect(screen.getByText(githubAppError)).toBeInTheDocument();
+  });
+
+  it('should not show orchestrator job error alerts in pull-request import mode', async () => {
+    const githubAppError =
+      "Orchestrator import requires a GitHub App installation token for 'https://github.com/lholmquist/aaannnddtheenn'. " +
+      'Configure integrations.github with an App that has access to this repository; ' +
+      'classic personal access tokens are not forwarded in orchestrator mode.';
+
+    (useDrawer as jest.Mock).mockReturnValue({
+      openDrawer: false,
+      setOpenDrawer: jest.fn(),
+      setDrawerData: jest.fn(),
+    });
+    (useFormikContext as jest.Mock).mockReturnValue({
+      values: {
+        repositoryType: RepositorySelection.Repository,
+      },
+      setFieldValue: jest.fn(),
+      status: {
+        errors: {
+          'lholmquist/aaannnddtheenn': {
+            repository: {
+              name: 'aaannnddtheenn',
+              organization: 'lholmquist',
+            },
+            catalogEntityName: 'aaannnddtheenn',
+            error: {
+              message: [githubAppError],
+            },
+          },
+        },
+      },
+    });
+
+    render(
+      <Router>
+        <TestApiProvider
+          apis={[
+            [identityApiRef, mockIdentityApi],
+            [bulkImportApiRef, mockBulkImportApi],
+            [errorApiRef, new MockErrorApi()],
+            [
+              configApiRef,
+              new MockConfigApi({
+                catalog: {
+                  import: {
+                    entityFilename: 'test.yaml',
+                  },
+                },
+                integrations: {
+                  github: [
+                    {
+                      host: 'github.com',
+                      token: 'test-token',
+                    },
+                  ],
+                },
+              }),
+            ],
+          ]}
+        >
+          <QueryClientProvider client={queryClient}>
+            <AddRepositories />
+          </QueryClientProvider>
+        </TestApiProvider>
+      </Router>,
+    );
+
+    expect(
+      screen.queryByTestId('orchestrator-job-errors'),
+    ).not.toBeInTheDocument();
+  });
 });
