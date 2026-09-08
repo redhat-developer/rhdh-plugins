@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-boost-common
 
+## 0.4.2
+
+### Patch Changes
+
+- a65f815: bump workspace to Backstage 1.54.6
+
 ## 0.4.1
 
 ### Patch Changes

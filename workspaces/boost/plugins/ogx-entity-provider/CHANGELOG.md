@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-llamastack-entity-provider
 
+## 0.4.2
+
+### Patch Changes
+
+- a65f815: bump workspace to Backstage 1.54.6
+- Updated dependencies [a65f815]
+  - @red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk@0.3.2
+
 ## 0.4.1
 
 ### Patch Changes

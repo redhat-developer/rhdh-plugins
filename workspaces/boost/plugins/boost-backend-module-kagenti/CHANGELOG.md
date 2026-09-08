@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti
 
+## 0.1.7
+
+### Patch Changes
+
+- a65f815: bump workspace to Backstage 1.54.6
+- Updated dependencies [a65f815]
+  - @red-hat-developer-hub/backstage-plugin-boost-common@0.4.2
+  - @red-hat-developer-hub/backstage-plugin-boost-node@0.2.3
+
 ## 0.1.6
 
 ### Patch Changes
