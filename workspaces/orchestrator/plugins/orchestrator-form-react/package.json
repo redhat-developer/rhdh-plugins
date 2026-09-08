@@ -33,7 +33,6 @@
   },
   "dependencies": {
     "@backstage/core-components": "^0.18.13",
-    "@backstage/core-plugin-api": "^1.12.9",
     "@backstage/types": "^1.2.2",
     "@mui/material": "^5.17.1",
     "@red-hat-developer-hub/backstage-plugin-orchestrator-common": "workspace:^",
@@ -52,6 +51,7 @@
   },
   "devDependencies": {
     "@backstage/cli": "^0.36.5",
+    "@spotify/prettier-config": "^15.0.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "@types/json-schema": "7.0.15",
