@@ -51,6 +51,9 @@ import {
   githubCustomAggregatedResponse,
   gitHubPartiallyAggregatedResponse,
   gitHubWeightedPartiallyAggregatedResponse,
+  licenseFileExistsAggregatedResponse,
+  githubEntitiesDrillDownWithCalculationErrorsResponse,
+  weightedKpiEntitiesDrillDownResponse,
 } from './utils/scorecardResponseUtils';
 import {
   ScorecardMessages,
@@ -471,6 +474,50 @@ test.describe('Scorecard Plugin Tests', () => {
       }
     });
 
+    test.describe('Filecheck homepage KPI - licenseFileExistsKpi', () => {
+      let card: Locator;
+      const aggregationMetadata =
+        AGGREGATED_CARDS_METADATA.licenseFileExistsKpi;
+      const aggregatedResponse = licenseFileExistsAggregatedResponse;
+
+      test.beforeAll(async () => {
+        await setupHomepageAggregationCard(page, homePage, {
+          aggregationMetadata,
+          route: ScorecardRoutes.LICENSE_FILE_EXISTS_KPI_AGGREGATION_ROUTE,
+          response: aggregatedResponse,
+        });
+        card = homePage.getCard(aggregationMetadata.id);
+      });
+
+      test('Verify title and description', async () => {
+        await expect(card).toBeVisible();
+        await expect(card).toContainText(aggregatedResponse.metadata.title);
+        await expect(card).toContainText(
+          aggregatedResponse.metadata.description,
+        );
+      });
+
+      test('Verify exist and missing threshold buckets', async () => {
+        const existLabel = translations.thresholds.exist ?? 'Exist';
+        const missingLabel = translations.thresholds.missing ?? 'Missing';
+        await expect(card.getByText(existLabel, { exact: true })).toBeVisible();
+        await expect(
+          card.getByText(missingLabel, { exact: true }),
+        ).toBeVisible();
+      });
+
+      test('Verify drill-down link', async () => {
+        await homePage.clickDrillDownLink(card);
+        await scorecardDrillDownPage.expectOnPage('filecheck.license', {
+          aggregationId: aggregationMetadata.id,
+        });
+        await scorecardDrillDownPage.expectPageTitle(
+          'filecheck.license',
+          aggregatedResponse.metadata.title,
+        );
+      });
+    });
+
     test.describe('Deprecated homepage card (metricId only)', () => {
       let card: Locator;
       const aggregationMetadata =
@@ -789,6 +836,26 @@ test.describe('Scorecard Plugin Tests', () => {
             openPrsWeightedAggregatedResponse.metadata.title,
           );
         });
+
+        test('Verify drill-down entities table', async () => {
+          await mockScorecardEntitiesDrillDown(
+            page,
+            weightedKpiEntitiesDrillDownResponse,
+            'github.openPRs',
+          );
+
+          await page.goto(
+            `/scorecard/aggregations/${aggregationMetadata.id}/metrics/github.openPRs`,
+          );
+
+          await scorecardDrillDownPage.expectOnPage('github.openPRs', {
+            aggregationId: aggregationMetadata.id,
+          });
+          await scorecardDrillDownPage.expectTableHeadersVisible();
+          await scorecardDrillDownPage.expectEntityNamesVisible([
+            'red-hat-developer-hub',
+          ]);
+        });
       });
 
       test('Verify empty aggregated response shows no data', async () => {
@@ -953,6 +1020,53 @@ test.describe('Scorecard Plugin Tests', () => {
         await test.step('Verify metric column sort', async () => {
           await scorecardDrillDownPage.verifyMetricColumnSort();
         });
+
+        await test.step('Navigate to entity from drill-down table', async () => {
+          await scorecardDrillDownPage.clickEntityLink('red-hat-developer-hub');
+        });
+      });
+
+      test('GitHub drill-down: calculation errors show warning icon and tooltip', async () => {
+        const aggregationMetadata =
+          AGGREGATED_CARDS_METADATA.githubDefaultAggregation;
+        const partialAggregationResponse = {
+          ...githubAggregatedResponse,
+          result: {
+            ...githubAggregatedResponse.result,
+            calculationErrorCount: 2,
+          },
+        };
+
+        await mockApiResponse(
+          page,
+          ScorecardRoutes.GITHUB_OPEN_PRS_METRIC_AGGREGATION_ROUTE,
+          partialAggregationResponse,
+        );
+        await mockScorecardEntitiesDrillDown(
+          page,
+          githubEntitiesDrillDownWithCalculationErrorsResponse,
+          'github.openPRs',
+        );
+
+        const entitiesResponse = page.waitForResponse(
+          res =>
+            res
+              .url()
+              .includes(
+                '/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities',
+              ) && res.status() === 200,
+        );
+
+        await page.goto(
+          `/scorecard/aggregations/${aggregationMetadata.id}/metrics/github.openPRs`,
+        );
+        await entitiesResponse;
+
+        await scorecardDrillDownPage.expectOnPage('github.openPRs', {
+          aggregationId: aggregationMetadata.id,
+        });
+        await scorecardDrillDownPage.expectDrillDownCalculationErrorWarningIcon();
+        await scorecardDrillDownPage.verifyEntitiesTableCalculationErrorTooltip();
       });
 
       test('Jira scorecard: tooltips, entity drill-down, and metric sort', async () => {

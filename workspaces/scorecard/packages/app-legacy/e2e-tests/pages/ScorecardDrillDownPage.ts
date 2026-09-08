@@ -23,10 +23,11 @@ import {
   getEntitiesPageMissingPermission,
   getEntitiesPageNoDataFound,
   getEntitiesTableHeaderLabels,
+  getHomepageEntityCalculationHealthText,
   getSomeEntitiesNotReportingTooltip,
 } from '../utils/translationUtils';
 
-type MetricId = 'github.openPRs' | 'jira.openIssues';
+type MetricId = 'github.openPRs' | 'jira.openIssues' | 'filecheck.license';
 
 export type DrillDownCardLocatorOptions = {
   aggregationId?: string;
@@ -167,19 +168,50 @@ export class ScorecardDrillDownPage {
    * When mocks report no calculation failures, the drill-down must not show the
    * calculation-warning icon next to the Entities heading.
    */
-  async expectNoDrillDownCalculationErrorWarningIcon() {
-    const heading = this.page.getByRole('heading', {
-      level: 3,
-      name: this.translations.entitiesPage.entitiesTable.title,
+  private getEntitiesTableHeading(): Locator {
+    const titlePrefix = this.translations.entitiesPage.entitiesTable.title;
+    return this.page.getByRole('heading', { level: 3 }).filter({
+      hasText: titlePrefix,
     });
-    await expect(heading.locator('svg.MuiSvgIcon-colorWarning')).toHaveCount(0);
   }
 
-  /** Verifies the "some entities not reporting" icon tooltip on the drill-down card. */
-  async verifySomeEntitiesNotReportingTooltip() {
-    const icon = this.page.getByTestId('ReportProblemOutlinedIcon');
-    await expect(icon).toBeVisible();
-    await icon.hover();
+  private getEntitiesTableCalculationWarningIcon(): Locator {
+    return this.getEntitiesTableHeading().locator('svg');
+  }
+
+  async expectNoDrillDownCalculationErrorWarningIcon() {
+    await expect(this.getEntitiesTableCalculationWarningIcon()).toHaveCount(0);
+  }
+
+  async expectDrillDownCalculationErrorWarningIcon() {
+    await expect(this.getEntitiesTableCalculationWarningIcon()).toBeVisible();
+  }
+
+  /** Verifies the calculation-error tooltip on the Entities table heading icon. */
+  async verifyEntitiesTableCalculationErrorTooltip() {
+    await this.getEntitiesTableCalculationWarningIcon().hover();
+    const tooltipText = getSomeEntitiesNotReportingTooltip(this.translations);
+    await expect(this.page.getByRole('tooltip')).toContainText(tooltipText);
+  }
+
+  /** Verifies the "some entities not reporting" tooltip on the drill-down card subheader link. */
+  async verifySomeEntitiesNotReportingTooltip(
+    metricId: MetricId,
+    options?: DrillDownCardLocatorOptions & {
+      healthy?: string;
+      total?: string;
+    },
+  ) {
+    const card = this.getDrillDownCard(metricId, options);
+    const healthy = options?.healthy ?? '8';
+    const total = options?.total ?? '10';
+    const linkText = getHomepageEntityCalculationHealthText(
+      this.translations,
+      healthy,
+      total,
+    );
+    const link = card.getByRole('link', { name: linkText });
+    await link.hover();
     const tooltipText = getSomeEntitiesNotReportingTooltip(this.translations);
     await expect(this.page.getByRole('tooltip')).toContainText(tooltipText);
   }
@@ -218,6 +250,24 @@ export class ScorecardDrillDownPage {
           .first(),
       ).toBeVisible({ timeout: 15_000 });
     }
+  }
+
+  async clickEntityLink(entitySlug: string) {
+    const entitiesTable = this.getEntitiesTable();
+    const slug = encodeURIComponent(entitySlug);
+    const link = entitiesTable
+      .locator('tbody')
+      .locator(`a[href*="/catalog/default/component/${slug}"]`)
+      .first();
+    await link.click();
+    await expect(this.page).toHaveURL(
+      new RegExp(
+        `/catalog/default/component/${slug.replace(
+          /[.*+?^${}()|[\]\\]/g,
+          '\\$&',
+        )}`,
+      ),
+    );
   }
 
   async verifyMetricColumnSort() {
