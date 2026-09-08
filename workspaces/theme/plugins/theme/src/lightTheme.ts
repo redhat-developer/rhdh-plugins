@@ -43,12 +43,15 @@ export const lightThemeOverrides: Partial<ThemeConfigPalette> = {
     // PatternFly --pf-v5-global--Color--200; AA on white and #f2f2f2 nav chrome
     secondary: '#6A6E73',
   },
-  // MUI defaults (#0288d1 / #ed6c02) fail WCAG AA on white (~3.1–3.9:1)
+  // MUI defaults (#0288d1 / #ed6c02 / #f44336) fail WCAG AA on white (~3.1–3.9:1)
   info: {
     main: '#0066CC',
   },
   warning: {
     main: '#C05600',
+  },
+  error: {
+    main: '#E22134',
   },
   background: {
     default: '#FFFFFF',
