@@ -21,6 +21,11 @@ async function signInAsGuest(page: import('@playwright/test').Page) {
   const enterButton = page.getByRole('button', { name: 'Enter' });
   await expect(enterButton).toBeVisible();
   await enterButton.click();
+  await expect(page).toHaveURL(/\/home/);
+}
+
+async function gotoAiResourceCatalog(page: import('@playwright/test').Page) {
+  await page.goto('/catalog?filters[kind]=airesource&filters[user]=all');
 }
 
 test.describe('AiResource catalog QE (RHIDP-14382)', () => {
@@ -29,7 +34,7 @@ test.describe('AiResource catalog QE (RHIDP-14382)', () => {
   });
 
   test('catalog lists git-backed AiResource entities', async ({ page }) => {
-    await page.goto('/catalog');
+    await gotoAiResourceCatalog(page);
 
     await expect(
       page.getByRole('link', { name: 'fraud-detection-model' }),
@@ -37,13 +42,13 @@ test.describe('AiResource catalog QE (RHIDP-14382)', () => {
   });
 
   test('catalog lists OCI-backed AiResource entities', async ({ page }) => {
-    await page.goto('/catalog');
+    await gotoAiResourceCatalog(page);
 
     await expect(
       page.getByRole('link', { name: 'summarization-skills' }),
     ).toBeVisible();
     await expect(
-      page.getByRole('link', { name: 'pdf-processor-skill' }),
+      page.getByRole('link', { name: 'PDF Processor Skill' }),
     ).toBeVisible();
   });
 
@@ -55,7 +60,7 @@ test.describe('AiResource catalog QE (RHIDP-14382)', () => {
     await expect(
       page.getByText('Fraud detection model trained on transaction data.'),
     ).toBeVisible();
-    await expect(page.getByText('team-ml-platform')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'ML Platform' })).toBeVisible();
   });
 
   test('OCI-backed AiResource entity detail page renders metadata', async ({
@@ -68,7 +73,7 @@ test.describe('AiResource catalog QE (RHIDP-14382)', () => {
         'Summarization prompt and skill pack published as an OCI artifact.',
       ),
     ).toBeVisible();
-    await expect(page.getByText('team-ml-platform')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'ML Platform' })).toBeVisible();
   });
 
   test('AiResource entity with techdocs-ref shows Docs tab', async ({
@@ -76,6 +81,9 @@ test.describe('AiResource catalog QE (RHIDP-14382)', () => {
   }) => {
     await page.goto('/catalog/default/airesource/code-review-skill-oci');
 
+    await expect(
+      page.getByRole('heading', { name: 'Code Review Skill (OCI)' }),
+    ).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Docs' })).toBeVisible();
   });
 
