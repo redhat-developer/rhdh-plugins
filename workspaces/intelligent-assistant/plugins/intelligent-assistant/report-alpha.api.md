@@ -54,6 +54,8 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'notebooks.documents_other': string;
     readonly 'notebooks.actions.rename': string;
     readonly 'notebooks.actions.delete': string;
+    readonly 'notebooks.manage.renameDisabled': string;
+    readonly 'notebooks.manage.deleteDisabled': string;
     readonly 'notebooks.rename.inline.tooltip': string;
     readonly 'notebooks.rename.inline.error': string;
     readonly 'notebooks.delete.title': string;
@@ -128,6 +130,9 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'permission.subject.plugin': string;
     readonly 'permission.subject.notebooks': string;
     readonly 'permission.notebooks.goBack': string;
+    readonly 'permission.chat.readOnlyUse': string;
+    readonly 'permission.chat.readOnlyUseTooltip': string;
+    readonly 'permission.chat.readOnlyPlaceholder': string;
     readonly 'lcore.notConfigured.title': string;
     readonly 'lcore.notConfigured.description': string;
     readonly 'lcore.notConfigured.developerLightspeedDocs': string;
@@ -236,6 +241,8 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'mcp.settings.selectedCount': string;
     readonly 'mcp.settings.closeAriaLabel': string;
     readonly 'mcp.settings.readOnlyAccess': string;
+    readonly 'mcp.settings.permissionDenied': string;
+    readonly 'mcp.settings.permissionDeniedDescription': string;
     readonly 'mcp.settings.tableAriaLabel': string;
     readonly 'mcp.settings.enabled': string;
     readonly 'mcp.settings.name': string;

@@ -35,6 +35,7 @@ type NotebooksTabProps = {
   onRename: (sessionId: string, newName: string) => void;
   onDelete: (sessionId: string) => void;
   onCreateNotebook: () => void;
+  canManage: boolean;
   t: TranslationFunction<typeof intelligentAssistantTranslationRef.T>;
 };
 
@@ -48,6 +49,7 @@ export const NotebooksTab = ({
   onRename,
   onDelete,
   onCreateNotebook,
+  canManage,
   t,
 }: NotebooksTabProps) => (
   <div className={classes.notebooksContainer}>
@@ -99,6 +101,7 @@ export const NotebooksTab = ({
             onClick={onSelectNotebook}
             onRename={onRename}
             onDelete={onDelete}
+            canManage={canManage}
             t={t}
           />
         ))}

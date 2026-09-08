@@ -169,6 +169,9 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'mcp.settings.personalAccessToken': 'Persönlicher Zugriffstoken',
     'mcp.settings.readOnlyAccess':
       'Sie haben schreibgeschützten Zugriff auf MCP-Server.',
+    'mcp.settings.permissionDenied': 'Zugriff auf MCP-Tools nicht gestattet',
+    'mcp.settings.permissionDeniedDescription':
+      'Sie haben nicht die Berechtigung mcp.tools.use, die zum Anzeigen und Verwenden von MCP-Tools erforderlich ist. Wenden Sie sich an Ihren Administrator, um Zugriff anzufordern.',
     'mcp.settings.removePersonalToken': 'Persönlichen Token entfernen',
     'mcp.settings.savedToken': 'Gespeicherter Token',
     'mcp.settings.selectedCount':
@@ -271,6 +274,10 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
       'Fügen Sie eine Ressource hinzu, um zu beginnen',
     'notebooks.actions.delete': 'Löschen',
     'notebooks.actions.rename': 'Umbenennen',
+    'notebooks.manage.deleteDisabled':
+      'Sie haben keine Berechtigung zum Löschen. Wenden Sie sich an Ihren Administrator, um die Berechtigung intelligent-assistant.notebooks.manage zu erhalten.',
+    'notebooks.manage.renameDisabled':
+      'Sie haben keine Berechtigung zum Umbenennen. Wenden Sie sich an Ihren Administrator, um die Berechtigung intelligent-assistant.notebooks.manage zu erhalten.',
     'notebooks.card.openAria': 'Notizbuch {{name}} öffnen',
     'notebooks.delete.action': 'Löschen',
     'notebooks.delete.message':
@@ -297,6 +304,10 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebooks.updated.yesterday': 'Vor 1 Tag aktualisiert',
     'page.subtitle': 'KI-gestützter Entwicklungsassistent',
     'page.title': 'Intelligenter Assistent',
+    'permission.chat.readOnlyPlaceholder':
+      'Nur Lesen — Nachrichten senden ist nicht gestattet',
+    'permission.chat.readOnlyUse':
+      'Sie haben nur Lesezugriff auf den Chat. Wenden Sie sich an Ihren Administrator, um die Berechtigung <permissionName/> zum Senden von Nachrichten zu erhalten.',
     'permission.notebooks.goBack': 'Zurück',
     'permission.required.description':
       'Um <subject/> anzuzeigen, wenden Sie sich an Ihren Administrator, um die Berechtigung <permissions/> zu erhalten.',

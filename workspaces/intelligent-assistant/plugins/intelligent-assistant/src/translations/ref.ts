@@ -39,6 +39,10 @@ export const intelligentAssistantMessages = {
   'notebooks.documents_other': '{{count}} Resources',
   'notebooks.actions.rename': 'Rename',
   'notebooks.actions.delete': 'Delete',
+  'notebooks.manage.renameDisabled':
+    'You do not have permission to rename. Contact your administrator to grant the intelligent-assistant.notebooks.manage permission.',
+  'notebooks.manage.deleteDisabled':
+    'You do not have permission to delete. Contact your administrator to grant the intelligent-assistant.notebooks.manage permission.',
   'notebooks.rename.inline.tooltip': 'Click to rename',
   'notebooks.rename.inline.error': 'Failed to rename "{{notebookName}}".',
   'notebooks.delete.title': 'Delete {{name}}?',
@@ -185,6 +189,12 @@ export const intelligentAssistantMessages = {
   'permission.subject.plugin': 'the intelligent assistant plugin',
   'permission.subject.notebooks': 'the intelligent assistant notebooks',
   'permission.notebooks.goBack': 'Go back',
+  'permission.chat.readOnlyUse':
+    'You have read-only access to chat. Contact your administrator to grant the <permissionName/> permission to send messages.',
+  'permission.chat.readOnlyUseTooltip':
+    'You have read-only access to chat. Contact your administrator to grant the {{permissionName}} permission to send messages.',
+  'permission.chat.readOnlyPlaceholder':
+    'Read-only — sending messages is not permitted',
 
   // LCORE / LLM (no models registered)
   'lcore.notConfigured.title': 'Connect an LLM to get started',
@@ -352,6 +362,9 @@ export const intelligentAssistantMessages = {
   'mcp.settings.selectedCount': '{{selectedCount}} of {{totalCount}} selected',
   'mcp.settings.closeAriaLabel': 'Close MCP settings',
   'mcp.settings.readOnlyAccess': 'You have read-only access to MCP servers.',
+  'mcp.settings.permissionDenied': 'Access to MCP tools is not permitted',
+  'mcp.settings.permissionDeniedDescription':
+    'You do not have the mcp.tools.use permission required to view and use MCP tools. Contact your administrator to request access.',
   'mcp.settings.tableAriaLabel': 'MCP servers table',
   'mcp.settings.enabled': 'Enabled',
   'mcp.settings.name': 'Name',

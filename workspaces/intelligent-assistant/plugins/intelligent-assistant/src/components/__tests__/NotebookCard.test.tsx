@@ -63,6 +63,7 @@ describe('NotebookCard', () => {
     onClick,
     onRename,
     onDelete,
+    canManage: true,
     t: mockT as any,
   };
 

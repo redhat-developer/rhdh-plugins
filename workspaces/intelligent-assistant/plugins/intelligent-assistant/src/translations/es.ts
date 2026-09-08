@@ -166,6 +166,9 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'mcp.settings.personalAccessToken': 'Token de acceso personal',
     'mcp.settings.readOnlyAccess':
       'Tienes acceso de solo lectura a los servidores MCP.',
+    'mcp.settings.permissionDenied': 'Acceso a herramientas MCP no permitido',
+    'mcp.settings.permissionDeniedDescription':
+      'No tienes el permiso mcp.tools.use necesario para ver y usar herramientas MCP. Contacta a tu administrador para solicitar acceso.',
     'mcp.settings.removePersonalToken': 'Eliminar token personal',
     'mcp.settings.savedToken': 'Token guardado',
     'mcp.settings.selectedCount':
@@ -266,6 +269,10 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'notebook.view.upload.heading': 'Agrega un recurso para empezar',
     'notebooks.actions.delete': 'Eliminar',
     'notebooks.actions.rename': 'Renombrar',
+    'notebooks.manage.deleteDisabled':
+      'No tienes permiso para eliminar. Contacta a tu administrador para que te otorgue el permiso intelligent-assistant.notebooks.manage.',
+    'notebooks.manage.renameDisabled':
+      'No tienes permiso para renombrar. Contacta a tu administrador para que te otorgue el permiso intelligent-assistant.notebooks.manage.',
     'notebooks.card.openAria': 'Abrir el cuaderno {{name}}',
     'notebooks.delete.action': 'Eliminar',
     'notebooks.delete.message':
@@ -291,6 +298,10 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'notebooks.updated.yesterday': 'Actualizado hace 1 día',
     'page.subtitle': 'Asistente de desarrollo con tecnología de IA',
     'page.title': 'Asistente inteligente',
+    'permission.chat.readOnlyPlaceholder':
+      'Solo lectura — no se permite enviar mensajes',
+    'permission.chat.readOnlyUse':
+      'Tienes acceso de solo lectura al chat. Contacta a tu administrador para que te otorgue el permiso <permissionName/> para enviar mensajes.',
     'permission.notebooks.goBack': 'Volver',
     'permission.required.description':
       'Para ver <subject/>, contacta a tu administrador para que te otorgue el permiso <permissions/>.',

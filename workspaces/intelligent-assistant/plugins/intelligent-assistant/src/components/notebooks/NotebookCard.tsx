@@ -29,6 +29,7 @@ import {
   DropdownList,
   MenuToggle,
   TextInput,
+  Tooltip,
 } from '@patternfly/react-core';
 import {
   CatalogIcon,
@@ -50,6 +51,7 @@ type NotebookCardProps = {
   onClick: (notebook: NotebookSession) => void;
   onRename: (sessionId: string, newName: string) => void;
   onDelete: (sessionId: string) => void;
+  canManage: boolean;
   t: TranslationFunction<typeof intelligentAssistantTranslationRef.T>;
 };
 
@@ -76,6 +78,7 @@ export const NotebookCard = ({
   onClick,
   onRename,
   onDelete,
+  canManage,
   t,
 }: NotebookCardProps) => {
   const isMenuOpen = openNotebookMenuId === notebook.session_id;
@@ -153,27 +156,39 @@ export const NotebookCard = ({
               )}
             >
               <DropdownList className={classes.notebookDropdownList}>
-                <DropdownItem
-                  className={classes.notebookDropdownItem}
-                  icon={<PenIcon />}
-                  onClick={event => {
-                    event.stopPropagation();
-                    startEditing();
-                  }}
+                <Tooltip
+                  content={t('notebooks.manage.renameDisabled')}
+                  trigger={canManage ? 'manual' : 'mouseenter focus'}
                 >
-                  {t('notebooks.actions.rename')}
-                </DropdownItem>
-                <DropdownItem
-                  className={classes.notebookDropdownItem}
-                  icon={<TrashIcon />}
-                  onClick={event => {
-                    event.stopPropagation();
-                    onDelete(notebook.session_id);
-                    setOpenNotebookMenuId(null);
-                  }}
+                  <DropdownItem
+                    className={classes.notebookDropdownItem}
+                    icon={<PenIcon />}
+                    isDisabled={!canManage}
+                    onClick={event => {
+                      event.stopPropagation();
+                      startEditing();
+                    }}
+                  >
+                    {t('notebooks.actions.rename')}
+                  </DropdownItem>
+                </Tooltip>
+                <Tooltip
+                  content={t('notebooks.manage.deleteDisabled')}
+                  trigger={canManage ? 'manual' : 'mouseenter focus'}
                 >
-                  {t('notebooks.actions.delete')}
-                </DropdownItem>
+                  <DropdownItem
+                    className={classes.notebookDropdownItem}
+                    icon={<TrashIcon />}
+                    isDisabled={!canManage}
+                    onClick={event => {
+                      event.stopPropagation();
+                      onDelete(notebook.session_id);
+                      setOpenNotebookMenuId(null);
+                    }}
+                  >
+                    {t('notebooks.actions.delete')}
+                  </DropdownItem>
+                </Tooltip>
               </DropdownList>
             </Dropdown>
           ),
@@ -197,10 +212,12 @@ export const NotebookCard = ({
             <Typography
               component="span"
               className={classes.notebookTitleText}
-              title={t('notebooks.rename.inline.tooltip')}
+              title={
+                canManage ? t('notebooks.rename.inline.tooltip') : undefined
+              }
               onClick={e => {
                 e.stopPropagation();
-                startEditing();
+                if (canManage) startEditing();
               }}
             >
               {notebook.name}
