@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-boost-backend-module-llamastack
 
+## 0.2.4
+
+### Patch Changes
+
+- 0e772a4: bump workspace to Backstage 1.54.4
+- Updated dependencies [0e772a4]
+  - @red-hat-developer-hub/backstage-plugin-boost-common@0.4.1
+  - @red-hat-developer-hub/backstage-plugin-boost-node@0.2.2
+  - @red-hat-developer-hub/backstage-plugin-boost-responses-api-toolkit@0.2.2
+
 ## 0.2.3
 
 ### Patch Changes
