@@ -108,9 +108,9 @@ const scorecardTranslationEs = createTranslationMessages({
     'metric.dora.changeFailureRate.description':
       'Supervisa el porcentaje de implementaciones que provocan un fallo en producción durante los últimos 30 días. Los mejores equipos mantienen una tasa de fallos de cambio inferior al 5 %.',
     'metric.dora.changeFailureRate.title': 'DORA - Tasa de fallos de cambio',
-    'metric.dora.meanTimeToRestore.description':
+    'metric.dora.medianTimeToRestore.description':
       'Realiza un seguimiento del tiempo medio para restaurar el servicio tras un incidente durante los últimos 30 días. Los mejores equipos restauran el servicio en menos de una hora.',
-    'metric.dora.meanTimeToRestore.title':
+    'metric.dora.medianTimeToRestore.title':
       'DORA - Tiempo medio de restauración',
     'metric.filecheck.description':
       'Comprueba si el archivo {{name}} existe en el repositorio.',

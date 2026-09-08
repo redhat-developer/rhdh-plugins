@@ -106,9 +106,9 @@ const scorecardTranslationDe = createTranslationMessages({
     'metric.dora.changeFailureRate.description':
       'Überwacht den Prozentsatz der Bereitstellungen, die in den letzten 30 Tagen einen Fehler in der Produktion verursachen. Elite-Performer halten die Änderungsfehlerrate unter 5 %.',
     'metric.dora.changeFailureRate.title': 'DORA - Änderungsfehlerrate',
-    'metric.dora.meanTimeToRestore.description':
+    'metric.dora.medianTimeToRestore.description':
       'Erfasst die durchschnittliche Zeit zur Wiederherstellung des Dienstes nach einem Vorfall über die letzten 30 Tage. Elite-Performer stellen den Dienst in weniger als einer Stunde wieder her.',
-    'metric.dora.meanTimeToRestore.title':
+    'metric.dora.medianTimeToRestore.title':
       'DORA - Mittlere Zeit bis zur Wiederherstellung',
     'metric.filecheck.description':
       'Prüft, ob die Datei {{name}} im Repository existiert.',

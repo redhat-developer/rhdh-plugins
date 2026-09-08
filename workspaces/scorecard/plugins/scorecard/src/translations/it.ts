@@ -109,9 +109,9 @@ const scorecardTranslationIt = createTranslationMessages({
       'Monitora la percentuale di deployment che causano un errore in produzione negli ultimi 30 giorni. I team di elite mantengono un tasso di fallimento delle modifiche inferiore al 5%.',
     'metric.dora.changeFailureRate.title':
       'DORA - Tasso di fallimento delle modifiche',
-    'metric.dora.meanTimeToRestore.description':
+    'metric.dora.medianTimeToRestore.description':
       "Monitora il tempo medio per ripristinare il servizio dopo un incidente negli ultimi 30 giorni. I team di elite ripristinano il servizio in meno di un'ora.",
-    'metric.dora.meanTimeToRestore.title': 'DORA - Tempo medio di ripristino',
+    'metric.dora.medianTimeToRestore.title': 'DORA - Tempo medio di ripristino',
     'metric.filecheck.description':
       'Verifica se il file {{name}} esiste nel repository.',
     'metric.filecheck.title': 'Verifica del file: {{name}}',

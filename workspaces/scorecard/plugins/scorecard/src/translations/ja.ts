@@ -105,9 +105,9 @@ const scorecardTranslationJa = createTranslationMessages({
     'metric.dora.changeFailureRate.description':
       '過去 30 日間に本番環境での障害を引き起こしたデプロイの割合を監視します。エリートパフォーマーは変更失敗率を 5% 未満に維持します。',
     'metric.dora.changeFailureRate.title': 'DORA - 変更失敗率',
-    'metric.dora.meanTimeToRestore.description':
+    'metric.dora.medianTimeToRestore.description':
       '過去 30 日間におけるインシデント後のサービス復旧までの平均時間を追跡します。エリートパフォーマーは 1 時間未満でサービスを復旧します。',
-    'metric.dora.meanTimeToRestore.title': 'DORA - 平均復旧時間',
+    'metric.dora.medianTimeToRestore.title': 'DORA - 平均復旧時間',
     'metric.filecheck.description':
       'リポジトリー内に {{name}} ファイルが存在するかどうかを確認します。',
     'metric.filecheck.title': 'ファイルチェック: {{name}}',
