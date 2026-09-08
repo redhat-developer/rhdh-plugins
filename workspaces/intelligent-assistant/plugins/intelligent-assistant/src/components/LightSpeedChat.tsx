@@ -33,8 +33,9 @@ import {
 import { useLocation, useMatch, useNavigate } from 'react-router-dom';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
+import { usePermission } from '@backstage/plugin-permission-react';
 
-import { Button, makeStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import {
@@ -76,6 +77,11 @@ import {
 } from '@patternfly/react-icons';
 import { RhUiAiExperienceIcon } from '@patternfly/react-icons/dist/esm/icons/rh-ui-ai-experience-icon';
 import { useQueryClient } from '@tanstack/react-query';
+
+import {
+  iaChatUsePermission,
+  iaMcpUsePermission,
+} from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import {
   LIGHTSPEED_PATH,
@@ -133,7 +139,6 @@ import {
   SidebarCollapseIcon,
   SidebarExpandIcon,
 } from './notebooks/SidebarCollapseIcon';
-import PermissionRequiredState from './PermissionRequiredState';
 import { RenameConversationModal } from './RenameConversationModal';
 import { ToastAlertGroup } from './ToastAlertGroup';
 
@@ -658,6 +663,7 @@ type LightspeedChatProps = {
   profileLoading: boolean;
   handleSelectedModel: (item: string) => void;
   models: { label: string; value: string; provider: string }[];
+  chatUseAllowed: boolean;
 };
 
 export const LightspeedChat = ({
@@ -669,6 +675,7 @@ export const LightspeedChat = ({
   profileLoading,
   handleSelectedModel,
   models,
+  chatUseAllowed,
 }: LightspeedChatProps) => {
   const isMobile = useIsMobile();
   const classes = useStyles();
@@ -699,7 +706,6 @@ export const LightspeedChat = ({
   const isOnNotebookRoute = Boolean(
     notebooksRouteMatch || notebookViewRouteMatch,
   );
-  const shouldShowTabs = notebooksEnabled || isOnNotebookRoute;
   const {
     displayMode,
     setDisplayMode,
@@ -737,11 +743,18 @@ export const LightspeedChat = ({
   });
   const {
     allowed: hasNotebooksAccess,
+    canManage: canManageNotebooks,
     loading: notebooksPermissionLoading,
-    iaNotebooksUsePermissionName,
   } = useLightspeedNotebooksPermission();
+  const mcpUsePermission = usePermission({
+    permission: iaMcpUsePermission,
+  });
+  const canUseMcp = mcpUsePermission.allowed;
   const notebooksPermissionResolved =
     !notebooksPermissionLoading && hasNotebooksAccess;
+  const shouldShowTabs =
+    (notebooksEnabled || isOnNotebookRoute) && notebooksPermissionResolved;
+  const chatActionsDisabled = !chatUseAllowed;
 
   const { data: notebookConversationIdsArray = [] } =
     useNotebookConversationIds();
@@ -795,6 +808,7 @@ export const LightspeedChat = ({
   const [conversationId, setConversationId] = useState<string>('');
   const [requestId, setRequestId] = useState<string>('');
   const [newChatCreated, setNewChatCreated] = useState<boolean>(false);
+  const newChatButtonDisabled = newChatCreated || chatActionsDisabled;
   const [isSendButtonDisabled, setIsSendButtonDisabled] =
     useState<boolean>(false);
   const [targetConversationId, setTargetConversationId] = useState<string>('');
@@ -1547,8 +1561,9 @@ export const LightspeedChat = ({
   const maxPrompts = getMaxPrompts();
 
   const welcomePrompts =
-    (newChatCreated && conversationMessages.length === 0) ||
-    (!conversationFound && conversationMessages.length === 0)
+    !chatActionsDisabled &&
+    ((newChatCreated && conversationMessages.length === 0) ||
+      (!conversationFound && conversationMessages.length === 0))
       ? samplePrompts?.slice(0, maxPrompts).map(prompt => {
           const p = prompt as { title: string; message: string };
           return {
@@ -1905,52 +1920,68 @@ export const LightspeedChat = ({
         className={`${classes.footer} ${classes.fullscreenFooter}`}
       >
         <FilePreview />
-        <MessageBar
-          key={messageBarKey}
-          className={classes.messageBar}
-          onSendMessage={sendMessage}
-          isSendButtonDisabled={isSendButtonDisabled}
-          hasAttachButton
-          attachButtonPosition="start"
-          handleAttach={handleAttach}
-          hasMicrophoneButton
-          value={draftMessage}
-          onChange={handleDraftMessage}
-          hasStopButton={streamingUiMatchesView}
-          handleStopButton={
-            streamingUiMatchesView ? handleStopButton : undefined
+        <Tooltip
+          content={
+            chatActionsDisabled
+              ? t('permission.chat.readOnlyUseTooltip' as any, {
+                  permissionName: iaChatUsePermission.name,
+                })
+              : undefined
           }
-          buttonProps={{
-            attach: {
-              inputTestId: 'attachment-input',
-              tooltipContent: t('tooltip.attach'),
-              'aria-label': t('tooltip.attach'),
-              icon: <PlusIcon />,
-            },
-            microphone: {
-              tooltipContent: {
-                active: t('tooltip.microphone.active'),
-                inactive: t('tooltip.microphone.inactive'),
+          trigger={chatActionsDisabled ? 'mouseenter focus' : 'manual'}
+        >
+          <MessageBar
+            key={messageBarKey}
+            className={classes.messageBar}
+            onSendMessage={sendMessage}
+            isSendButtonDisabled={isSendButtonDisabled || chatActionsDisabled}
+            isDisabled={chatActionsDisabled}
+            hasAttachButton={!chatActionsDisabled}
+            attachButtonPosition="start"
+            handleAttach={handleAttach}
+            hasMicrophoneButton={!chatActionsDisabled}
+            value={chatActionsDisabled ? '' : draftMessage}
+            onChange={chatActionsDisabled ? undefined : handleDraftMessage}
+            hasStopButton={streamingUiMatchesView}
+            handleStopButton={
+              streamingUiMatchesView ? handleStopButton : undefined
+            }
+            buttonProps={{
+              attach: {
+                inputTestId: 'attachment-input',
+                tooltipContent: t('tooltip.attach'),
+                'aria-label': t('tooltip.attach'),
+                icon: <PlusIcon />,
               },
-            },
-            send: {
-              tooltipContent: t('tooltip.send'),
-            },
-          }}
-          additionalActions={
-            <MessageBarModelSelector
-              selectedModel={selectedModel}
-              models={models}
-              onSelect={handleSelectedModel}
-              disabled={isSendButtonDisabled || messages.length > 0}
-              disabledTooltip={t('modelSelector.disabledTooltip')}
-            />
-          }
-          forceMultilineLayout
-          allowedFileTypes={supportedFileTypes}
-          onAttachRejected={onAttachRejected}
-          placeholder={t('chatbox.message.placeholder')}
-        />
+              microphone: {
+                tooltipContent: {
+                  active: t('tooltip.microphone.active'),
+                  inactive: t('tooltip.microphone.inactive'),
+                },
+              },
+              send: {
+                tooltipContent: t('tooltip.send'),
+              },
+            }}
+            additionalActions={
+              <MessageBarModelSelector
+                selectedModel={selectedModel}
+                models={models}
+                onSelect={handleSelectedModel}
+                disabled={isSendButtonDisabled || messages.length > 0}
+                disabledTooltip={t('modelSelector.disabledTooltip')}
+              />
+            }
+            forceMultilineLayout
+            allowedFileTypes={supportedFileTypes}
+            onAttachRejected={onAttachRejected}
+            placeholder={
+              chatActionsDisabled
+                ? t('permission.chat.readOnlyPlaceholder')
+                : t('chatbox.message.placeholder')
+            }
+          />
+        </Tooltip>
         <ChatbotFootnoteWithIcon {...getFootnoteProps(t)} />
       </ChatbotFooter>
     </>
@@ -2076,7 +2107,7 @@ export const LightspeedChat = ({
                     <PfButton
                       variant="plain"
                       onClick={onNewChat}
-                      isDisabled={newChatCreated}
+                      isDisabled={newChatButtonDisabled}
                       aria-label={t('tooltip.quickNewChat')}
                       size="sm"
                     >
@@ -2084,7 +2115,7 @@ export const LightspeedChat = ({
                         style={{
                           width: 18,
                           height: 18,
-                          color: newChatCreated
+                          color: newChatButtonDisabled
                             ? undefined
                             : 'var(--pf-t--global--color--brand--default)',
                         }}
@@ -2135,7 +2166,10 @@ export const LightspeedChat = ({
             setDisplayMode={setDisplayModeFromHeader}
             displayMode={displayMode}
             onPinnedChatsToggle={handlePinningChatsToggle}
-            onMcpSettingsClick={() => setIsMcpSettingsOpen(true)}
+            onMcpSettingsClick={
+              canUseMcp ? () => setIsMcpSettingsOpen(true) : undefined
+            }
+            mcpSettingsDisabled={!canUseMcp}
           />
         </ChatbotHeader>
         {(isFullscreenMode || shouldShowTabs) && (
@@ -2226,7 +2260,7 @@ export const LightspeedChat = ({
                   <CollapsedHistoryStrip
                     onExpand={() => setIsChatHistoryDrawerOpen(true)}
                     onNewChat={onNewChat}
-                    newChatDisabled={newChatCreated}
+                    newChatDisabled={newChatButtonDisabled}
                   />
                 )}
                 {children}
@@ -2260,7 +2294,7 @@ export const LightspeedChat = ({
               newChatButtonText={t('button.newChat')}
               newChatButtonProps={{
                 icon: <PenIcon />,
-                isDisabled: newChatCreated,
+                isDisabled: newChatButtonDisabled,
               }}
               handleTextInputChange={handleFilter}
               searchInputPlaceholder={t('chatbox.search.placeholder')}
@@ -2338,6 +2372,7 @@ export const LightspeedChat = ({
               isUploadModalOpen={notebookUploadModalOpen}
               onUploadModalOpenChange={setNotebookUploadModalOpen}
               onUploadsInProgressChange={setNotebookUploadsInProgress}
+              canManage={canManageNotebooks}
             />
           )}
         {showNotebooksPanel &&
@@ -2379,30 +2414,10 @@ export const LightspeedChat = ({
                 onRename={handleRenameNotebook}
                 onDelete={setDeleteNotebookId}
                 onCreateNotebook={handleCreateNotebook}
+                canManage={canManageNotebooks}
                 t={t}
               />
             </div>
-          )}
-        {showNotebooksPanel &&
-          !notebooksPermissionLoading &&
-          !hasNotebooksAccess && (
-            <PermissionRequiredState
-              subject={t('permission.subject.notebooks')}
-              permissions={[iaNotebooksUsePermissionName]}
-              action={
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  style={{ borderRadius: '20px' }}
-                  onClick={() => {
-                    setActiveTab(0);
-                    setShellViewTab(0);
-                  }}
-                >
-                  {t('permission.notebooks.goBack')}
-                </Button>
-              }
-            />
           )}
       </Chatbot>
       <Attachment />

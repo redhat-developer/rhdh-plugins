@@ -22,17 +22,18 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 export const useLightspeedViewPermission = () => {
-  const canReadChats = usePermission({
+  const canAccessChats = usePermission({
     permission: iaChatAccessPermission,
   });
 
-  const canCreateChats = usePermission({
+  const canUseChats = usePermission({
     permission: iaChatUsePermission,
   });
 
   return {
-    loading: canReadChats.loading || canCreateChats.loading,
-    allowed: canReadChats.allowed && canCreateChats.allowed,
+    loading: canAccessChats.loading || canUseChats.loading,
+    hasAccess: canAccessChats.allowed,
+    hasUse: canUseChats.allowed,
     iaChatAccessPermissionName: iaChatAccessPermission.name,
     iaChatUsePermissionName: iaChatUsePermission.name,
   };

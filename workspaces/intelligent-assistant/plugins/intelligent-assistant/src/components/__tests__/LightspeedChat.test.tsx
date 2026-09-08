@@ -220,6 +220,7 @@ const setupLightspeedChat = (initialPath = '/intelligent-assistant') => (
               models={[]}
               avatar="test"
               userName="user:test"
+              chatUseAllowed
             />
           </NotebookStreamProvider>
         </QueryClientProvider>
@@ -893,7 +894,7 @@ describe('LightspeedChat', () => {
       });
     });
 
-    it('should show permission required state when notebooks permission is denied', async () => {
+    it('should not show Notebooks tab when notebooks permission is denied', async () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
@@ -902,41 +903,9 @@ describe('LightspeedChat', () => {
         ).toBeInTheDocument();
       });
 
-      const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
-      await userEvent.click(notebooksTab);
-
-      await waitFor(() => {
-        expect(screen.getByText('Missing permissions')).toBeInTheDocument();
-        expect(
-          screen.getByRole('button', { name: 'Go back' }),
-        ).toBeInTheDocument();
-      });
-    });
-
-    it('should navigate back to chat tab when Go back is clicked', async () => {
-      render(setupLightspeedChat());
-
-      await waitFor(() => {
-        expect(
-          screen.getByText('Developer Hub Intelligent Assistant'),
-        ).toBeInTheDocument();
-      });
-
-      const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
-      await userEvent.click(notebooksTab);
-
-      await waitFor(() => {
-        expect(screen.getByText('Missing permissions')).toBeInTheDocument();
-      });
-
-      const goBackButton = screen.getByRole('button', { name: 'Go back' });
-      await userEvent.click(goBackButton);
-
-      await waitFor(() => {
-        expect(
-          screen.queryByText('Missing permissions'),
-        ).not.toBeInTheDocument();
-      });
+      expect(
+        screen.queryByRole('tab', { name: 'Notebooks' }),
+      ).not.toBeInTheDocument();
     });
   });
 

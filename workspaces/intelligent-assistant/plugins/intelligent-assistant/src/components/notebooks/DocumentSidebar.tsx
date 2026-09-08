@@ -228,6 +228,7 @@ type DocumentSidebarProps = {
   deletingDocumentIds?: Set<string>;
   collapsed: boolean;
   hasUploadsInProgress?: boolean;
+  canManage?: boolean;
   onToggleCollapse: () => void;
   onAddDocument: () => void;
   onDeleteDocument?: (documentId: string) => void;
@@ -243,6 +244,7 @@ export const DocumentSidebar = ({
   deletingDocumentIds,
   collapsed,
   hasUploadsInProgress,
+  canManage = true,
   onToggleCollapse,
   onAddDocument,
   onDeleteDocument,
@@ -368,8 +370,9 @@ export const DocumentSidebar = ({
         ) : (
           <Typography
             className={classes.title}
-            title={t('notebooks.rename.inline.tooltip')}
-            onClick={startEditingTitle}
+            title={canManage ? t('notebooks.rename.inline.tooltip') : undefined}
+            onClick={canManage ? startEditingTitle : undefined}
+            style={canManage ? undefined : { cursor: 'default' }}
           >
             {notebookName}
           </Typography>
@@ -467,8 +470,17 @@ export const DocumentSidebar = ({
               ) : (
                 <Typography
                   className={classes.fileName}
-                  title={t('notebook.document.rename.tooltip')}
-                  onClick={() => startEditing(doc.document_id, doc.title)}
+                  title={
+                    canManage
+                      ? t('notebook.document.rename.tooltip')
+                      : undefined
+                  }
+                  onClick={
+                    canManage
+                      ? () => startEditing(doc.document_id, doc.title)
+                      : undefined
+                  }
+                  style={canManage ? undefined : { cursor: 'default' }}
                 >
                   {doc.title}
                 </Typography>
@@ -515,27 +527,39 @@ export const DocumentSidebar = ({
                   )}
                 >
                   <DropdownList>
-                    <DropdownItem
-                      key="rename"
-                      icon={<PenIcon />}
-                      onClick={event => {
-                        event.stopPropagation();
-                        startEditing(doc.document_id, doc.title);
-                      }}
+                    <Tooltip
+                      content={t('notebooks.manage.renameDisabled')}
+                      trigger={canManage ? 'manual' : 'mouseenter focus'}
                     >
-                      {t('notebook.document.rename')}
-                    </DropdownItem>
-                    <DropdownItem
-                      key="delete"
-                      icon={<TrashIcon />}
-                      onClick={event => {
-                        event.stopPropagation();
-                        setOpenMenuDocId(null);
-                        onDeleteDocument?.(doc.document_id);
-                      }}
+                      <DropdownItem
+                        key="rename"
+                        icon={<PenIcon />}
+                        isDisabled={!canManage}
+                        onClick={event => {
+                          event.stopPropagation();
+                          startEditing(doc.document_id, doc.title);
+                        }}
+                      >
+                        {t('notebook.document.rename')}
+                      </DropdownItem>
+                    </Tooltip>
+                    <Tooltip
+                      content={t('notebooks.manage.deleteDisabled')}
+                      trigger={canManage ? 'manual' : 'mouseenter focus'}
                     >
-                      {t('notebook.document.delete')}
-                    </DropdownItem>
+                      <DropdownItem
+                        key="delete"
+                        icon={<TrashIcon />}
+                        isDisabled={!canManage}
+                        onClick={event => {
+                          event.stopPropagation();
+                          setOpenMenuDocId(null);
+                          onDeleteDocument?.(doc.document_id);
+                        }}
+                      >
+                        {t('notebook.document.delete')}
+                      </DropdownItem>
+                    </Tooltip>
                   </DropdownList>
                 </Dropdown>
               )}

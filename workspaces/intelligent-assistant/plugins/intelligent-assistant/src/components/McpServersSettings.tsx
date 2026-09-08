@@ -34,7 +34,10 @@ import {
 } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
-import { iaMcpManagePermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+import {
+  iaMcpManagePermission,
+  iaMcpUsePermission,
+} from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import { useMcpConfigureModal } from '../hooks/useMcpConfigureModal';
 import { useTranslation } from '../hooks/useTranslation';
@@ -292,9 +295,13 @@ export const McpServersSettings = ({
   const { t } = useTranslation();
   const configApi = useApi(configApiRef);
   const fetchApi = useApi(fetchApiRef);
+  const mcpUsePermission = usePermission({
+    permission: iaMcpUsePermission,
+  });
   const mcpManagePermission = usePermission({
     permission: iaMcpManagePermission,
   });
+  const canUseMcp = mcpUsePermission.allowed;
   const canManageMcp = mcpManagePermission.allowed;
   const [servers, setServers] = useState<McpServer[]>([]);
   const [sortColumn, setSortColumn] = useState<McpServerSortColumn>('name');
@@ -548,183 +555,215 @@ export const McpServersSettings = ({
           onClick={onClose}
         />
       </div>
-      {error && (
-        <Alert
-          variant="danger"
-          isInline
-          title={error}
-          className={classes.alert}
-        />
+      {!mcpUsePermission.loading && !canUseMcp && (
+        <>
+          <Alert
+            variant="warning"
+            isInline
+            title={t('mcp.settings.permissionDenied')}
+            className={classes.alert}
+          >
+            {t('mcp.settings.permissionDeniedDescription')}
+          </Alert>
+        </>
       )}
-      {!mcpManagePermission.loading && !canManageMcp && (
-        <Alert
-          variant="info"
-          isInline
-          title={t('mcp.settings.readOnlyAccess')}
-          className={classes.alert}
-        />
-      )}
-
-      <Table
-        variant="compact"
-        aria-label={t('mcp.settings.tableAriaLabel')}
-        className={classes.table}
-      >
-        <Thead>
-          <Tr>
-            <Th width={10} screenReaderText={t('mcp.settings.enabled')} />
-            <Th>
-              <Button
-                variant="link"
-                className={classes.nameHeaderButton}
-                icon={renderSortIcon('name')}
-                iconPosition="right"
-                onClick={() => onSortColumnClick('name')}
-              >
-                <Typography component="span" className={classes.nameHeaderText}>
-                  {t('mcp.settings.name')}
-                </Typography>
-              </Button>
-            </Th>
-            <Th className={classes.statusHeader}>
-              <Button
-                variant="link"
-                className={classes.statusHeaderButton}
-                icon={renderSortIcon('status')}
-                iconPosition="right"
-                onClick={() => onSortColumnClick('status')}
-              >
-                <Typography component="span" className={classes.nameHeaderText}>
-                  {t('mcp.settings.status')}
-                </Typography>
-              </Button>
-            </Th>
-            <Th screenReaderText={t('mcp.settings.edit')} />
-          </Tr>
-        </Thead>
-        <Tbody>
-          {isLoading && (
-            <Tr>
-              <Td colSpan={4}>{t('mcp.settings.loading')}</Td>
-            </Tr>
+      {(mcpUsePermission.loading || canUseMcp) && (
+        <>
+          {error && (
+            <Alert
+              variant="danger"
+              isInline
+              title={error}
+              className={classes.alert}
+            />
           )}
-          {!isLoading && sortedServers.length === 0 && (
-            <Tr>
-              <Td colSpan={4}>{t('mcp.settings.noneAvailable')}</Td>
-            </Tr>
+          {!mcpManagePermission.loading && !canManageMcp && (
+            <Alert
+              variant="info"
+              isInline
+              title={t('mcp.settings.readOnlyAccess')}
+              className={classes.alert}
+            />
           )}
-          {sortedServers.map(server => {
-            const displayStatus = getDisplayStatus(server);
-            const displayDetail = getDisplayDetail(server, displayStatus, t);
-            let statusClass = classes.statusWarn;
-            if (displayStatus === 'ok') {
-              statusClass = classes.statusOk;
-            } else if (displayStatus === 'disabled') {
-              statusClass = classes.statusDisabled;
-            }
 
-            return (
-              <Tr key={server.id} className={classes.tableRow}>
-                <Td width={10} className={classes.toggleCell}>
-                  {(() => {
-                    const isUnavailable =
-                      isEnabledToggleUnavailable(displayStatus);
-                    const isChecked = getEnabledToggleChecked(
-                      server,
-                      displayStatus,
-                    );
-                    const isRowSaving = Boolean(isSaving[server.name]);
-                    const isToggleDisabled =
-                      isUnavailable || isRowSaving || !canManageMcp;
-                    const switchControl = (
-                      <Switch
-                        id={`mcp-switch-${server.id}`}
+          <Table
+            variant="compact"
+            aria-label={t('mcp.settings.tableAriaLabel')}
+            className={classes.table}
+          >
+            <Thead>
+              <Tr>
+                <Th width={10} screenReaderText={t('mcp.settings.enabled')} />
+                <Th>
+                  <Button
+                    variant="link"
+                    className={classes.nameHeaderButton}
+                    icon={renderSortIcon('name')}
+                    iconPosition="right"
+                    onClick={() => onSortColumnClick('name')}
+                  >
+                    <Typography
+                      component="span"
+                      className={classes.nameHeaderText}
+                    >
+                      {t('mcp.settings.name')}
+                    </Typography>
+                  </Button>
+                </Th>
+                <Th className={classes.statusHeader}>
+                  <Button
+                    variant="link"
+                    className={classes.statusHeaderButton}
+                    icon={renderSortIcon('status')}
+                    iconPosition="right"
+                    onClick={() => onSortColumnClick('status')}
+                  >
+                    <Typography
+                      component="span"
+                      className={classes.nameHeaderText}
+                    >
+                      {t('mcp.settings.status')}
+                    </Typography>
+                  </Button>
+                </Th>
+                <Th screenReaderText={t('mcp.settings.edit')} />
+              </Tr>
+            </Thead>
+            <Tbody>
+              {isLoading && (
+                <Tr>
+                  <Td colSpan={4}>{t('mcp.settings.loading')}</Td>
+                </Tr>
+              )}
+              {!isLoading && sortedServers.length === 0 && (
+                <Tr>
+                  <Td colSpan={4}>{t('mcp.settings.noneAvailable')}</Td>
+                </Tr>
+              )}
+              {sortedServers.map(server => {
+                const displayStatus = getDisplayStatus(server);
+                const displayDetail = getDisplayDetail(
+                  server,
+                  displayStatus,
+                  t,
+                );
+                let statusClass = classes.statusWarn;
+                if (displayStatus === 'ok') {
+                  statusClass = classes.statusOk;
+                } else if (displayStatus === 'disabled') {
+                  statusClass = classes.statusDisabled;
+                }
+
+                return (
+                  <Tr key={server.id} className={classes.tableRow}>
+                    <Td width={10} className={classes.toggleCell}>
+                      {(() => {
+                        const isUnavailable =
+                          isEnabledToggleUnavailable(displayStatus);
+                        const isChecked = getEnabledToggleChecked(
+                          server,
+                          displayStatus,
+                        );
+                        const isRowSaving = Boolean(isSaving[server.name]);
+                        const isToggleDisabled =
+                          isUnavailable || isRowSaving || !canManageMcp;
+                        const switchControl = (
+                          <Switch
+                            id={`mcp-switch-${server.id}`}
+                            aria-label={t(
+                              'mcp.settings.toggleServerAriaLabel' as any,
+                              {
+                                serverName: server.name,
+                              },
+                            )}
+                            isChecked={isChecked}
+                            isDisabled={isToggleDisabled}
+                            onChange={(_event, checked) => {
+                              void patchServer(server.name, {
+                                enabled: checked,
+                              }).catch(() => {
+                                // patchServer already updates component error state.
+                                // Swallow here to avoid unhandled promise rejections
+                                // from event-handler fire-and-forget usage.
+                              });
+                            }}
+                          />
+                        );
+
+                        if (!isToggleDisabled) {
+                          return switchControl;
+                        }
+
+                        return (
+                          <Tooltip content={displayDetail}>
+                            <Typography component="span">
+                              {switchControl}
+                            </Typography>
+                          </Tooltip>
+                        );
+                      })()}
+                    </Td>
+                    <Td
+                      width={35}
+                      className={`${classes.rowName} ${classes.nameCell}`}
+                    >
+                      <Typography
+                        component="span"
+                        className={classes.nameValue}
+                      >
+                        {server.name}
+                      </Typography>
+                    </Td>
+                    <Td width={40} className={classes.statusColumnCell}>
+                      <div className={classes.statusCell}>
+                        {getStatusIcon(displayStatus, statusClass)}
+                        {displayStatus === 'failed' ? (
+                          <Tooltip
+                            content={
+                              server.validationError ??
+                              t('mcp.settings.token.validationFailed')
+                            }
+                          >
+                            <Typography
+                              component="span"
+                              className={classes.statusValue}
+                            >
+                              {displayDetail}
+                            </Typography>
+                          </Tooltip>
+                        ) : (
+                          <Typography
+                            component="span"
+                            className={classes.statusValue}
+                          >
+                            {displayDetail}
+                          </Typography>
+                        )}
+                      </div>
+                    </Td>
+                    <Td width={15} isActionCell style={{ textAlign: 'right' }}>
+                      <Button
                         aria-label={t(
-                          'mcp.settings.toggleServerAriaLabel' as any,
+                          'mcp.settings.editServerAriaLabel' as any,
                           {
                             serverName: server.name,
                           },
                         )}
-                        isChecked={isChecked}
-                        isDisabled={isToggleDisabled}
-                        onChange={(_event, checked) => {
-                          void patchServer(server.name, {
-                            enabled: checked,
-                          }).catch(() => {
-                            // patchServer already updates component error state.
-                            // Swallow here to avoid unhandled promise rejections
-                            // from event-handler fire-and-forget usage.
-                          });
-                        }}
+                        icon={<PencilAltIcon />}
+                        variant="plain"
+                        className={classes.actionButton}
+                        isDisabled={!canManageMcp}
+                        onClick={() => configureModal.open(server)}
                       />
-                    );
-
-                    if (!isToggleDisabled) {
-                      return switchControl;
-                    }
-
-                    return (
-                      <Tooltip content={displayDetail}>
-                        <Typography component="span">
-                          {switchControl}
-                        </Typography>
-                      </Tooltip>
-                    );
-                  })()}
-                </Td>
-                <Td
-                  width={35}
-                  className={`${classes.rowName} ${classes.nameCell}`}
-                >
-                  <Typography component="span" className={classes.nameValue}>
-                    {server.name}
-                  </Typography>
-                </Td>
-                <Td width={40} className={classes.statusColumnCell}>
-                  <div className={classes.statusCell}>
-                    {getStatusIcon(displayStatus, statusClass)}
-                    {displayStatus === 'failed' ? (
-                      <Tooltip
-                        content={
-                          server.validationError ??
-                          t('mcp.settings.token.validationFailed')
-                        }
-                      >
-                        <Typography
-                          component="span"
-                          className={classes.statusValue}
-                        >
-                          {displayDetail}
-                        </Typography>
-                      </Tooltip>
-                    ) : (
-                      <Typography
-                        component="span"
-                        className={classes.statusValue}
-                      >
-                        {displayDetail}
-                      </Typography>
-                    )}
-                  </div>
-                </Td>
-                <Td width={15} isActionCell style={{ textAlign: 'right' }}>
-                  <Button
-                    aria-label={t('mcp.settings.editServerAriaLabel' as any, {
-                      serverName: server.name,
-                    })}
-                    icon={<PencilAltIcon />}
-                    variant="plain"
-                    className={classes.actionButton}
-                    isDisabled={!canManageMcp}
-                    onClick={() => configureModal.open(server)}
-                  />
-                </Td>
-              </Tr>
-            );
-          })}
-        </Tbody>
-      </Table>
-      <McpConfigureServerModal {...configureModal} />
+                    </Td>
+                  </Tr>
+                );
+              })}
+            </Tbody>
+          </Table>
+          <McpConfigureServerModal {...configureModal} />
+        </>
+      )}
     </div>
   );
 };

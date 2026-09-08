@@ -22,19 +22,16 @@ import { useAsync } from 'react-use';
 
 import { identityApiRef, useApi } from '@backstage/core-plugin-api';
 
-import { Button } from '@material-ui/core';
 import {
   StylesProvider as StylesProviderV4,
   useTheme,
 } from '@material-ui/core/styles';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { StylesProvider } from '@mui/styles';
 import { QueryClientProvider } from '@tanstack/react-query';
 
 import { useAllModels } from '../hooks/useAllModels';
 import { useLightspeedViewPermission } from '../hooks/useLightspeedViewPermission';
 import { useTopicRestrictionStatus } from '../hooks/useQuestionValidation';
-import { useTranslation } from '../hooks/useTranslation';
 import {
   generateClassName,
   generateClassNameV4,
@@ -60,7 +57,6 @@ const LightspeedChatContainerInner = () => {
   const {
     palette: { type },
   } = useTheme();
-  const { t } = useTranslation();
 
   const identityApi = useApi(identityApiRef);
 
@@ -72,10 +68,10 @@ const LightspeedChatContainerInner = () => {
   } = useAllModels();
 
   const {
-    allowed: hasViewAccess,
+    hasAccess,
+    hasUse: chatUseAllowed,
     loading,
     iaChatAccessPermissionName,
-    iaChatUsePermissionName,
   } = useLightspeedViewPermission();
 
   const { value: profile, loading: profileLoading } = useAsync(
@@ -168,21 +164,12 @@ const LightspeedChatContainerInner = () => {
     return <LightspeedChatModelsLoading />;
   }
 
-  if (!hasViewAccess) {
+  if (!hasAccess) {
     return (
       <PermissionRequiredState
-        subject={t('permission.subject.plugin')}
-        permissions={[iaChatAccessPermissionName, iaChatUsePermissionName]}
-        action={
-          <Button
-            variant="outlined"
-            color="primary"
-            target="_blank"
-            href="https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/intelligent-assistant/plugins/intelligent-assistant/README.md#permission-framework-support"
-          >
-            {t('common.readMore')} &nbsp; <OpenInNewIcon />
-          </Button>
-        }
+        subject="Intelligent Assistant"
+        permissions={[iaChatAccessPermissionName]}
+        action={<></>}
       />
     );
   }
@@ -208,6 +195,7 @@ const LightspeedChatContainerInner = () => {
         selectedModel={selectedModel}
         selectedProvider={selectedProvider}
         topicRestrictionEnabled={topicRestrictionEnabled ?? false}
+        chatUseAllowed={chatUseAllowed}
         handleSelectedModel={item => {
           setSelectedModel(item);
           setSelectedProvider(

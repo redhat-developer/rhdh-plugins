@@ -163,6 +163,10 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'mcp.settings.personalAccessToken': '個人アクセストークン',
     'mcp.settings.readOnlyAccess':
       'MCP サーバーへのアクセスは読み取り専用です。',
+    'mcp.settings.permissionDenied':
+      'MCP ツールへのアクセスは許可されていません',
+    'mcp.settings.permissionDeniedDescription':
+      'MCP ツールを表示および使用するために必要な mcp.tools.use 権限がありません。アクセスをリクエストするには管理者に連絡してください。',
     'mcp.settings.removePersonalToken': '個人トークンを削除',
     'mcp.settings.savedToken': '保存済みトークン',
     'mcp.settings.selectedCount':
@@ -263,6 +267,10 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebook.view.upload.heading': 'リソースを追加して開始してください',
     'notebooks.actions.delete': '削除',
     'notebooks.actions.rename': '名前の変更',
+    'notebooks.manage.deleteDisabled':
+      '削除する権限がありません。管理者に連絡して intelligent-assistant.notebooks.manage 権限を付与してもらってください。',
+    'notebooks.manage.renameDisabled':
+      '名前を変更する権限がありません。管理者に連絡して intelligent-assistant.notebooks.manage 権限を付与してもらってください。',
     'notebooks.card.openAria': 'ノートブック {{name}} を開く',
     'notebooks.delete.action': '削除',
     'notebooks.delete.message':
@@ -288,6 +296,10 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebooks.updated.yesterday': '1日前に更新',
     'page.subtitle': 'AI 搭載開発アシスタント',
     'page.title': 'インテリジェントアシスタント',
+    'permission.chat.readOnlyPlaceholder':
+      '読み取り専用 — メッセージの送信は許可されていません',
+    'permission.chat.readOnlyUse':
+      'チャットへの読み取り専用アクセス権があります。メッセージを送信するには、管理者に連絡して <permissionName/> 権限を付与してもらってください。',
     'permission.notebooks.goBack': '戻る',
     'permission.required.description':
       '<subject/> を表示するには、管理者に連絡して <permissions/> 権限を付与してもらうよう依頼してください。',

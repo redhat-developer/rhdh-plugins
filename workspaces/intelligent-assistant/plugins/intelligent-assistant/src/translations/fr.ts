@@ -169,6 +169,9 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'mcp.settings.readOnlyAccess':
       'Vous disposez d’un accès en lecture seule aux serveurs MCP.',
     'mcp.settings.removePersonalToken': 'Supprimer le jeton personnel',
+    'mcp.settings.permissionDenied': 'Accès aux outils MCP non autorisé',
+    'mcp.settings.permissionDeniedDescription':
+      'Vous ne disposez pas de la permission mcp.tools.use requise pour afficher et utiliser les outils MCP. Contactez votre administrateur pour demander l\u2019accès.',
     'mcp.settings.savedToken': 'Jeton enregistré',
     'mcp.settings.selectedCount':
       '{{selectedCount}} sur {{totalCount}} sélectionnés',
@@ -271,6 +274,10 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'notebook.view.upload.heading': 'Ajoutez une ressource pour commencer',
     'notebooks.actions.delete': 'Supprimer',
     'notebooks.actions.rename': 'Renommer',
+    'notebooks.manage.deleteDisabled':
+      "Vous n'avez pas la permission de supprimer. Contactez votre administrateur pour obtenir la permission intelligent-assistant.notebooks.manage.",
+    'notebooks.manage.renameDisabled':
+      "Vous n'avez pas la permission de renommer. Contactez votre administrateur pour obtenir la permission intelligent-assistant.notebooks.manage.",
     'notebooks.card.openAria': 'Ouvrir le carnet {{name}}',
     'notebooks.delete.action': 'Supprimer',
     'notebooks.delete.message':
@@ -298,6 +305,10 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'notebooks.updated.yesterday': 'Mis à jour il y a 1 jour',
     'page.subtitle': 'Assistant de développement AI-POWERED',
     'page.title': 'Assistant intelligent',
+    'permission.chat.readOnlyPlaceholder':
+      "Lecture seule — l'envoi de messages n'est pas autorisé",
+    'permission.chat.readOnlyUse':
+      "Vous avez un accès en lecture seule au chat. Contactez votre administrateur pour obtenir la permission <permissionName/> afin d'envoyer des messages.",
     'permission.notebooks.goBack': 'Retour',
     'permission.required.description':
       "Pour afficher <subject/>, veuillez contacter votre administrateur pour qu'il vous donne la permission <permissions/>.",

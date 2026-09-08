@@ -100,6 +100,9 @@ const intelligentAssistantPage = PageBlueprint.make({
     noHeader: true,
     loader: () => import('./components/Router').then(m => <m.Router />),
   },
+  if: {
+    permissions: { $contains: 'intelligent-assistant.chat.access' },
+  },
 });
 
 const intelligentAssistantDrawer = AppDrawerContentBlueprint.make({
@@ -110,6 +113,9 @@ const intelligentAssistantDrawer = AppDrawerContentBlueprint.make({
     resizable: true,
     defaultWidth: 400,
     priority: 100,
+  },
+  if: {
+    permissions: { $contains: 'intelligent-assistant.chat.access' },
   },
 });
 
@@ -165,6 +171,9 @@ const intelligentAssistantFABExtension = AppRootWrapperBlueprint.make({
         {children}
       </LightspeedProvider>
     ),
+  },
+  if: {
+    permissions: { $contains: 'intelligent-assistant.chat.access' },
   },
 });
 

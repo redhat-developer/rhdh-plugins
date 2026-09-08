@@ -273,6 +273,7 @@ type NotebookViewProps = {
   isUploadModalOpen: boolean;
   onUploadModalOpenChange: (open: boolean) => void;
   onUploadsInProgressChange?: (inProgress: boolean) => void;
+  canManage?: boolean;
 };
 
 export const NotebookView = ({
@@ -293,6 +294,7 @@ export const NotebookView = ({
   isUploadModalOpen,
   onUploadModalOpenChange,
   onUploadsInProgressChange,
+  canManage = true,
 }: NotebookViewProps) => {
   const classes = useStyles();
   const theme = useTheme();
@@ -665,6 +667,7 @@ export const NotebookView = ({
         onDeleteDocument={handleDeleteDocument}
         onRenameDocument={handleRenameDocument}
         onRenameNotebook={newName => handleRenameNotebook(sessionId, newName)}
+        canManage={canManage}
       />
     </DrawerPanelContent>
   );

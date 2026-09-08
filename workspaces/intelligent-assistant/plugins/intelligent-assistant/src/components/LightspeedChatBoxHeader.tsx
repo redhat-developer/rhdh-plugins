@@ -50,7 +50,8 @@ type LightspeedChatBoxHeaderProps = {
   models: { label: string; value: string; provider: string }[];
   isPinningChatsEnabled: boolean;
   onPinnedChatsToggle: (state: boolean) => void;
-  onMcpSettingsClick: () => void;
+  onMcpSettingsClick?: () => void;
+  mcpSettingsDisabled?: boolean;
   isModelSelectorDisabled?: boolean;
   hideModelSelector?: boolean;
   /** When false, omits pinned-chats and MCP entries (Chat tab only). */
@@ -88,6 +89,7 @@ export const LightspeedChatBoxHeader = ({
   isPinningChatsEnabled,
   onPinnedChatsToggle,
   onMcpSettingsClick,
+  mcpSettingsDisabled = false,
   isModelSelectorDisabled = false,
   hideModelSelector = false,
   showChatTabOptions = true,
@@ -251,6 +253,12 @@ export const LightspeedChatBoxHeader = ({
                   key="mcpSettings"
                   icon={<McpSettingsIcon />}
                   onClick={onMcpSettingsClick}
+                  isDisabled={mcpSettingsDisabled}
+                  tooltipProps={
+                    mcpSettingsDisabled
+                      ? { content: t('mcp.settings.permissionDenied') }
+                      : undefined
+                  }
                 >
                   {t('settings.mcp.label')}
                   <Label color="purple" isCompact style={{ marginLeft: 8 }}>
