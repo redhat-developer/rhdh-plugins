@@ -886,7 +886,7 @@ describe('LightspeedChat', () => {
   describe('notebooks permission denied', () => {
     beforeEach(() => {
       mockUsePermission.mockImplementation((args: any) => {
-        if (args.permission.name === 'intelligent-assistant.notebooks.use') {
+        if (args.permission.name === 'intelligent-assistant.notebooks') {
           return { loading: false, allowed: false };
         }
         return { loading: false, allowed: true };
