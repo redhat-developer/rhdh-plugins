@@ -90,13 +90,11 @@ export const ScorecardEntityContentGridView = ({
               groupConfig.title,
             ) ?? groupConfig.title
           }
-          description={
-            getTranslatedTextWithFallback(
-              t,
-              groupConfig.descriptionKey,
-              groupConfig.description,
-            ) ?? groupConfig.description
-          }
+          description={getTranslatedTextWithFallback(
+            t,
+            groupConfig.descriptionKey,
+            groupConfig.description,
+          )}
           metrics={metricsInGroup}
         />
       );
