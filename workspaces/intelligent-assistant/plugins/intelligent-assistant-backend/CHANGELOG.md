@@ -1,5 +1,15 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
 
+## 4.3.0
+
+### Minor Changes
+
+- cfdfe68: Accept WebP (`image/webp`) image attachments on the `/v1/query` route alongside the existing JPEG support, validating them by their `RIFF....WEBP` magic bytes.
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.3.0
+
 ## 4.2.0
 
 ### Minor Changes
