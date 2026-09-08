@@ -25,6 +25,9 @@ import {
 import { Attachments, QueryRequestBody } from './types';
 
 const JPEG_MAGIC = [0xff, 0xd8, 0xff];
+// WebP files are a RIFF container: bytes 0-3 are "RIFF" and bytes 8-11 are "WEBP".
+const WEBP_RIFF_MAGIC = [0x52, 0x49, 0x46, 0x46];
+const WEBP_FORMAT_MAGIC = [0x57, 0x45, 0x42, 0x50];
 
 function extractBase64(content: string): string {
   const commaIndex = content.indexOf(',');
@@ -34,12 +37,20 @@ function extractBase64(content: string): string {
   return content;
 }
 
-function hasValidJpegMagicBytes(content: string): boolean {
-  const bytes = Buffer.from(extractBase64(content), 'base64');
+function matchesMagic(bytes: Buffer, magic: number[], offset = 0): boolean {
   return (
-    bytes.length >= JPEG_MAGIC.length &&
-    JPEG_MAGIC.every((b, i) => bytes[i] === b)
+    bytes.length >= offset + magic.length &&
+    magic.every((b, i) => bytes[offset + i] === b)
   );
+}
+
+function hasValidImageMagicBytes(content: string): boolean {
+  const bytes = Buffer.from(extractBase64(content), 'base64');
+  const isJpeg = matchesMagic(bytes, JPEG_MAGIC);
+  const isWebp =
+    matchesMagic(bytes, WEBP_RIFF_MAGIC) &&
+    matchesMagic(bytes, WEBP_FORMAT_MAGIC, 8);
+  return isJpeg || isWebp;
 }
 
 function isValidJson(content: string): boolean {
@@ -68,9 +79,9 @@ function validateAttachments(attachments: Array<Attachments>): string | null {
     if (
       attachment.attachment_type === 'image' &&
       attachment.content &&
-      !hasValidJpegMagicBytes(attachment.content)
+      !hasValidImageMagicBytes(attachment.content)
     ) {
-      return 'Image attachment does not contain a valid JPEG file';
+      return 'Image attachment does not contain a valid JPEG or WebP file';
     }
 
     if (
@@ -179,7 +190,7 @@ export const validateAttachmentsForModel = (
   if (!supportsVision) {
     return res.status(400).json({
       error:
-        'This model does not support JPEG images. Please select a vision-capable model.',
+        'This model does not support image attachments. Please select a vision-capable model.',
       model,
     });
   }
