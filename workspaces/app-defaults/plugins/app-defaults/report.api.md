@@ -554,6 +554,9 @@ export const appDefaultsModule: FrontendModule;
 export const appDefaultsTranslations: TranslationResource<'plugin.app-defaults'>;
 
 // @public
+export const appDefaultsTranslationsModule: FrontendModule;
+
+// @public
 export const catalogGraphPluginOverride: OverridableFrontendPlugin<
   {
     catalogGraph: RouteRef<undefined>;

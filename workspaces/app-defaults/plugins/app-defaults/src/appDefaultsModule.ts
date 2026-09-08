@@ -24,6 +24,19 @@ import {
 import { commonIconsExtension } from './icons/commonIconsExtension';
 import { appDefaultsTranslations } from './translations';
 
+/**
+ * RHDH app module for `pluginId: 'app'`.
+ * Provides the application drawer, the extensible scaffolder template card,
+ * and the common RHDH icon catalog (`IconBundleBlueprint`).
+ * Default-export this module for dynamic frontend loading.
+ *
+ * @public
+ */
+export const appDefaultsModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [appDrawerExtension, templateCardExtension, commonIconsExtension],
+});
+
 const appDefaultsTranslation = TranslationBlueprint.make({
   params: {
     resource: appDefaultsTranslations,
@@ -31,20 +44,14 @@ const appDefaultsTranslation = TranslationBlueprint.make({
 });
 
 /**
- * RHDH app module for `pluginId: 'app'`.
- * Provides the application drawer, the extensible scaffolder template card,
- * the common RHDH icon catalog (`IconBundleBlueprint`), and the plugin
- * translations.
+ * RHDH app translations module for `pluginId: 'app'`.
+ * Registers the app defaults translation resource. Must be installed
+ * separately because `TranslationBlueprint` is restricted to `pluginId: 'app'`.
  * Default-export this module for dynamic frontend loading.
  *
  * @public
  */
-export const appDefaultsModule = createFrontendModule({
+export const appDefaultsTranslationsModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [
-    appDrawerExtension,
-    templateCardExtension,
-    commonIconsExtension,
-    appDefaultsTranslation,
-  ],
+  extensions: [appDefaultsTranslation],
 });

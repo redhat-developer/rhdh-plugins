@@ -7,10 +7,14 @@
   "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./app-defaults-translations-module": "./src/appDefaultsTranslationsModuleExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
+      "app-defaults-translations-module": [
+        "src/appDefaultsTranslationsModuleExport.ts"
+      ],
       "package.json": [
         "package.json"
       ]

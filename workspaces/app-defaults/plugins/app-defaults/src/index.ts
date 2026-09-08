@@ -22,7 +22,10 @@
 
 import { createFrontendFeatureLoader } from '@backstage/frontend-plugin-api';
 
-import { appDefaultsModule } from './appDefaultsModule';
+import {
+  appDefaultsModule,
+  appDefaultsTranslationsModule,
+} from './appDefaultsModule';
 import { appDefaultsTranslations } from './translations';
 import { apiDocsPluginOverride } from './api-docs/apiDocsPluginOverride';
 import { catalogPluginOverride } from './catalog/catalogPluginOverride';
@@ -31,6 +34,8 @@ import { docsPluginOverride } from './docs/docsPluginOverride';
 import { scaffolderPluginOverride } from './scaffolder/scaffolderPluginOverride';
 
 export { appDefaultsModule };
+
+export { appDefaultsTranslationsModule };
 
 export { appDefaultsTranslations };
 
@@ -55,6 +60,7 @@ export default createFrontendFeatureLoader({
   loader() {
     return [
       appDefaultsModule,
+      appDefaultsTranslationsModule,
       catalogPluginOverride,
       catalogGraphPluginOverride,
       scaffolderPluginOverride,
