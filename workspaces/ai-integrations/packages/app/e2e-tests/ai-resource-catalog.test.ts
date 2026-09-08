@@ -60,7 +60,9 @@ test.describe('AiResource catalog QE (RHIDP-14382)', () => {
     await expect(
       page.getByText('Fraud detection model trained on transaction data.'),
     ).toBeVisible();
-    await expect(page.getByRole('link', { name: 'ML Platform' })).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: 'ML Platform' }).first(),
+    ).toBeVisible();
   });
 
   test('OCI-backed AiResource entity detail page renders metadata', async ({
@@ -73,7 +75,9 @@ test.describe('AiResource catalog QE (RHIDP-14382)', () => {
         'Summarization prompt and skill pack published as an OCI artifact.',
       ),
     ).toBeVisible();
-    await expect(page.getByRole('link', { name: 'ML Platform' })).toBeVisible();
+    await expect(
+      page.getByRole('link', { name: 'ML Platform' }).first(),
+    ).toBeVisible();
   });
 
   test('AiResource entity with techdocs-ref shows Docs tab', async ({
