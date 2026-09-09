@@ -80,8 +80,6 @@ exports.up = async function up(knex) {
   await knex.schema.createTable('dora_pull_requests', table => {
     table.string('id').primary().notNullable();
     table.string('catalog_entity_ref').notNullable();
-    table.string('collector_id').notNullable();
-    table.string('collector_input_hash').notNullable();
     table.string('original_pr_id').notNullable();
     table.dateTime('first_commit_at', { precision: 3 }).notNullable();
     table
@@ -91,23 +89,12 @@ exports.up = async function up(knex) {
       .onDelete('CASCADE')
       .notNullable();
 
-    table.unique([
-      'catalog_entity_ref',
-      'collector_id',
-      'collector_input_hash',
-      'original_pr_id',
-      'deployment_id',
-    ]);
-    // Lead-time reads: PRs for one entity/collector/input/deployment
-    // Leads with deployment_id: for ON DELETE CASCADE `WHERE deployment_id = ?`cleanup lookup
+    table.unique(['original_pr_id', 'deployment_id']);
+    // Lead-time reads: PRs for one entity/deployment.
+    // Leads with deployment_id: for ON DELETE CASCADE `WHERE deployment_id = ?` cleanup lookup
     table.index(
-      [
-        'deployment_id',
-        'catalog_entity_ref',
-        'collector_id',
-        'collector_input_hash',
-      ],
-      'dora_pull_requests_deployment_entity_collector_idx',
+      ['deployment_id', 'catalog_entity_ref'],
+      'dora_pull_requests_deployment_entity_idx',
     );
   });
 

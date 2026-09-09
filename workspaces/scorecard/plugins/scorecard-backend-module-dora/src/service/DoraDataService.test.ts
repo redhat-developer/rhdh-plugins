@@ -19,7 +19,6 @@ import {
   TestDatabases,
 } from '@backstage/backend-test-utils';
 import {
-  DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
 } from '../constants';
@@ -153,8 +152,6 @@ describe('DefaultDoraDataService', () => {
           await createService(databaseId);
         const entityRef = 'component:default/service-a';
         const deploymentsCollectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
-        const prCollectorId =
-          DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID;
 
         await deploymentsDb.upsert([
           {
@@ -178,8 +175,6 @@ describe('DefaultDoraDataService', () => {
         await pullRequestsDb.upsert([
           {
             catalogEntityRef: entityRef,
-            collectorId: prCollectorId,
-            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-1',
             firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
             deploymentId: deployment.id,
@@ -188,19 +183,12 @@ describe('DefaultDoraDataService', () => {
 
         await expect(
           dataService.readPullRequestsForDeployment(entityRef, {
-            collector: {
-              id: prCollectorId,
-              input: {},
-              inputHash: EMPTY_INPUT_HASH,
-            },
             deploymentId: deployment.id,
           }),
         ).resolves.toEqual([
           {
             id: expect.any(String),
             catalogEntityRef: entityRef,
-            collectorId: prCollectorId,
-            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-1',
             firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
             deploymentId: deployment.id,

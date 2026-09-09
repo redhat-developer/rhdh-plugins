@@ -468,5 +468,59 @@ describe('DatabaseDoraDeployments', () => {
         );
       },
     );
+
+    it.each(databases.eachSupportedId())(
+      'rolls back markPullRequestsSynced when the transaction fails - %p',
+      async databaseId => {
+        const { deployments, pullRequests } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+
+        await deployments.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-1',
+            commitSha: 'sha-1',
+            environment: 'production',
+            createdAt: new Date('2026-06-10T10:00:00.000Z'),
+          },
+        ]);
+        const [deployment] = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          EMPTY_INPUT_HASH,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+
+        await expect(
+          pullRequests.transaction(async trx => {
+            await deployments.markPullRequestsSynced(
+              deployment.id,
+              {
+                collectorId: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+                collectorInputHash: EMPTY_INPUT_HASH,
+              },
+              { trx },
+            );
+            throw new Error('sync failed');
+          }),
+        ).rejects.toThrow('sync failed');
+
+        const [afterFailure] = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          EMPTY_INPUT_HASH,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+        expect(afterFailure.pullRequestsCollectorId).toBeNull();
+        expect(afterFailure.pullRequestsCollectorInputHash).toBeNull();
+      },
+    );
   });
 });

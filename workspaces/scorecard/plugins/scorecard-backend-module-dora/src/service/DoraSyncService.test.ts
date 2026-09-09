@@ -41,9 +41,9 @@ function collectorConfig(id: string) {
   return { id, input: {}, inputHash: EMPTY_INPUT_HASH };
 }
 
-const unsyncedPullRequestsMarker = {
-  deploymentPullRequestsCollectorId: null,
-  deploymentPullRequestsCollectorInputHash: null,
+const unsyncedPullRequestsCollector = {
+  id: null,
+  inputHash: null,
 };
 
 describe('DefaultDoraSyncService', () => {
@@ -989,7 +989,7 @@ describe('DefaultDoraSyncService', () => {
         collector: collectorConfig(
           DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
         ),
-        ...unsyncedPullRequestsMarker,
+        lastSyncedPullRequestsCollector: unsyncedPullRequestsCollector,
       });
 
       expect(collect).toHaveBeenCalledWith(
@@ -1004,9 +1004,6 @@ describe('DefaultDoraSyncService', () => {
       await expect(
         dataService.readPullRequestsForDeployment(catalogEntityRef, {
           deploymentId: deployment.id,
-          collector: collectorConfig(
-            DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
-          ),
         }),
       ).resolves.toEqual([
         expect.objectContaining({
@@ -1093,14 +1090,13 @@ describe('DefaultDoraSyncService', () => {
           baseCommitSha: 'sha-base',
           headCommitSha: 'sha-head',
           collector,
-          ...unsyncedPullRequestsMarker,
+          lastSyncedPullRequestsCollector: unsyncedPullRequestsCollector,
         }),
       ).rejects.toThrow('unable to fetch data');
 
       await expect(
         dataService.readPullRequestsForDeployment(catalogEntityRef, {
           deploymentId: deployment.id,
-          collector,
         }),
       ).resolves.toEqual([]);
 
@@ -1118,7 +1114,7 @@ describe('DefaultDoraSyncService', () => {
   );
 
   it.each(databases.eachSupportedId())(
-    'skips pull request collector when deployment has already synced PRs - %p',
+    'skips pull request collector when deployment has already synced 0 PRs for it - %p',
     async databaseId => {
       const { deployments, incidents, pullRequests, lastSync } =
         await createTestDatabase(await databases.init(databaseId));
@@ -1169,7 +1165,7 @@ describe('DefaultDoraSyncService', () => {
         baseCommitSha: 'sha-base',
         headCommitSha: 'sha-head',
         collector,
-        ...unsyncedPullRequestsMarker,
+        lastSyncedPullRequestsCollector: unsyncedPullRequestsCollector,
       });
       expect(collect).toHaveBeenCalledTimes(1);
 
@@ -1191,9 +1187,10 @@ describe('DefaultDoraSyncService', () => {
         baseCommitSha: 'sha-base',
         headCommitSha: 'sha-head',
         collector,
-        deploymentPullRequestsCollectorId: afterFirst.pullRequestsCollectorId,
-        deploymentPullRequestsCollectorInputHash:
-          afterFirst.pullRequestsCollectorInputHash,
+        lastSyncedPullRequestsCollector: {
+          id: afterFirst.pullRequestsCollectorId,
+          inputHash: afterFirst.pullRequestsCollectorInputHash,
+        },
       });
       expect(collect).toHaveBeenCalledTimes(1);
     },
@@ -1269,18 +1266,16 @@ describe('DefaultDoraSyncService', () => {
         collector: collectorConfig(
           DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
         ),
-        deploymentPullRequestsCollectorId: marked.pullRequestsCollectorId,
-        deploymentPullRequestsCollectorInputHash:
-          marked.pullRequestsCollectorInputHash,
+        lastSyncedPullRequestsCollector: {
+          id: marked.pullRequestsCollectorId,
+          inputHash: marked.pullRequestsCollectorInputHash,
+        },
       });
 
       expect(collect).toHaveBeenCalledTimes(1);
       await expect(
         dataService.readPullRequestsForDeployment(catalogEntityRef, {
           deploymentId: deployment.id,
-          collector: collectorConfig(
-            DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
-          ),
         }),
       ).resolves.toEqual([expect.objectContaining({ originalPrId: 'pr' })]);
       const [afterSync] = await deployments.readByEntityCollectorAndWindow(
@@ -1370,20 +1365,16 @@ describe('DefaultDoraSyncService', () => {
           input: newInput,
           inputHash: collectorInputHash(newInput),
         },
-        deploymentPullRequestsCollectorId: marked.pullRequestsCollectorId,
-        deploymentPullRequestsCollectorInputHash:
-          marked.pullRequestsCollectorInputHash,
+        lastSyncedPullRequestsCollector: {
+          id: marked.pullRequestsCollectorId,
+          inputHash: marked.pullRequestsCollectorInputHash,
+        },
       });
 
       expect(collect).toHaveBeenCalledTimes(1);
       await expect(
         dataService.readPullRequestsForDeployment(catalogEntityRef, {
           deploymentId: deployment.id,
-          collector: {
-            id: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
-            input: newInput,
-            inputHash: collectorInputHash(newInput),
-          },
         }),
       ).resolves.toEqual([expect.objectContaining({ originalPrId: 'pr' })]);
       const [afterSync] = await deployments.readByEntityCollectorAndWindow(
@@ -1396,6 +1387,128 @@ describe('DefaultDoraSyncService', () => {
       // pull requests collector input updated
       expect(afterSync.pullRequestsCollectorInputHash).toBe(
         collectorInputHash(newInput),
+      );
+    },
+  );
+
+  it.each(databases.eachSupportedId())(
+    'rolls back pull request sync changes when marking synced fails - %p',
+    async databaseId => {
+      const { deployments, incidents, pullRequests, lastSync } =
+        await createTestDatabase(await databases.init(databaseId));
+      const catalogEntityRef = stringifyEntityRef(mockEntity);
+      const previousPullRequestsCollectorId = 'github:oldPullRequests';
+
+      await deployments.upsert([
+        {
+          catalogEntityRef,
+          collectorId: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+          collectorInputHash: EMPTY_INPUT_HASH,
+          originalDeploymentId: '100',
+          commitSha: 'sha-head',
+          environment: 'production',
+          createdAt: new Date('2026-06-10T00:00:00.000Z'),
+        },
+      ]);
+      const [deployment] = await deployments.readByEntityCollectorAndWindow(
+        catalogEntityRef,
+        DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+        EMPTY_INPUT_HASH,
+        new Date('2026-06-01T00:00:00.000Z'),
+        new Date('2026-06-30T00:00:00.000Z'),
+      );
+      await pullRequests.upsert([
+        {
+          catalogEntityRef,
+          originalPrId: 'pr-old',
+          firstCommitAt: new Date('2026-06-08T10:00:00.000Z'),
+          deploymentId: deployment.id,
+        },
+      ]);
+      await deployments.markPullRequestsSynced(deployment.id, {
+        collectorId: previousPullRequestsCollectorId,
+        collectorInputHash: EMPTY_INPUT_HASH,
+      });
+
+      const pullRequestsCollector = buildMockDeploymentPullRequestsCollector({
+        pullRequests: [
+          {
+            id: 'pr-new',
+            firstCommitAt: '2026-06-09T10:00:00.000Z',
+          },
+        ],
+        collectorId: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+      });
+      const { collectorsService } = buildMockCollectorsService({
+        collectors: [pullRequestsCollector],
+      });
+      const markPullRequestsSynced =
+        deployments.markPullRequestsSynced.bind(deployments);
+      jest
+        .spyOn(deployments, 'markPullRequestsSynced')
+        .mockImplementation(async (...args) => {
+          await markPullRequestsSynced(...args);
+          throw new Error('mark failed');
+        });
+
+      const syncService = new DefaultDoraSyncService(
+        collectorsService,
+        deployments,
+        incidents,
+        pullRequests,
+        lastSync,
+        logger,
+      );
+      const dataService = new DefaultDoraDataService(
+        deployments,
+        incidents,
+        pullRequests,
+      );
+      const [marked] = await deployments.readByEntityCollectorAndWindow(
+        catalogEntityRef,
+        DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+        EMPTY_INPUT_HASH,
+        new Date('2026-06-01T00:00:00.000Z'),
+        new Date('2026-06-30T00:00:00.000Z'),
+      );
+
+      await expect(
+        syncService.syncPullRequestsForDeployment(mockEntity, {
+          deploymentId: deployment.id,
+          baseCommitSha: 'sha-base',
+          headCommitSha: 'sha-head',
+          collector: collectorConfig(
+            DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+          ),
+          lastSyncedPullRequestsCollector: {
+            id: marked.pullRequestsCollectorId,
+            inputHash: marked.pullRequestsCollectorInputHash,
+          },
+        }),
+      ).rejects.toThrow('mark failed');
+
+      // Old PRs are kept; the new collector's PRs are not left.
+      await expect(
+        dataService
+          .readPullRequestsForDeployment(catalogEntityRef, {
+            deploymentId: deployment.id,
+          })
+          .then(rows => rows.map(row => row.originalPrId)),
+      ).resolves.toEqual(['pr-old']);
+
+      const [afterFailure] = await deployments.readByEntityCollectorAndWindow(
+        catalogEntityRef,
+        DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+        EMPTY_INPUT_HASH,
+        new Date('2026-06-01T00:00:00.000Z'),
+        new Date('2026-06-30T00:00:00.000Z'),
+      );
+      // old collector id is not updated
+      expect(afterFailure.pullRequestsCollectorId).toBe(
+        previousPullRequestsCollectorId,
+      );
+      expect(afterFailure.pullRequestsCollectorInputHash).toBe(
+        EMPTY_INPUT_HASH,
       );
     },
   );
@@ -1473,7 +1586,7 @@ describe('DefaultDoraSyncService', () => {
         collector: collectorConfig(
           DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
         ),
-        ...unsyncedPullRequestsMarker,
+        lastSyncedPullRequestsCollector: unsyncedPullRequestsCollector,
       };
 
       const first = syncService.syncPullRequestsForDeployment(

@@ -38,9 +38,7 @@ export interface DoraDataService {
   ): Promise<DbDoraIncident[]>;
   readPullRequestsForDeployment(
     catalogEntityRef: string,
-    options: CollectorCallOptions & {
-      deploymentId: string;
-    },
+    options: { deploymentId: string },
   ): Promise<DbDoraPullRequest[]>;
 }
 
@@ -79,14 +77,10 @@ export class DefaultDoraDataService implements DoraDataService {
 
   async readPullRequestsForDeployment(
     catalogEntityRef: string,
-    options: CollectorCallOptions & {
-      deploymentId: string;
-    },
+    options: { deploymentId: string },
   ): Promise<DbDoraPullRequest[]> {
-    return this.pullRequestsDb.readByEntityCollectorAndDeployment(
+    return this.pullRequestsDb.readByEntityAndDeployment(
       catalogEntityRef,
-      options.collector.id,
-      options.collector.inputHash,
       options.deploymentId,
     );
   }

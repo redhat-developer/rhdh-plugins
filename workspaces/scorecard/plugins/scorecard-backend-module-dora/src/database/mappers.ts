@@ -55,8 +55,6 @@ export type DbDoraIncidentRow = {
 export type DbDoraPullRequestRow = {
   id: string;
   catalog_entity_ref: string;
-  collector_id: string;
-  collector_input_hash: string;
   original_pr_id: string;
   first_commit_at: Date | string;
   deployment_id: string;
@@ -125,8 +123,6 @@ export function toDoraPullRequestRow(
 ): Omit<DbDoraPullRequestRow, 'id'> {
   return {
     catalog_entity_ref: pullRequest.catalogEntityRef,
-    collector_id: pullRequest.collectorId,
-    collector_input_hash: pullRequest.collectorInputHash,
     original_pr_id: pullRequest.originalPrId,
     first_commit_at: pullRequest.firstCommitAt,
     deployment_id: pullRequest.deploymentId,
@@ -139,8 +135,6 @@ export function fromDoraPullRequestRow(
   return {
     id: row.id,
     catalogEntityRef: row.catalog_entity_ref,
-    collectorId: row.collector_id,
-    collectorInputHash: row.collector_input_hash,
     originalPrId: row.original_pr_id,
     firstCommitAt: parseDate(row.first_commit_at),
     deploymentId: row.deployment_id,

@@ -21,7 +21,11 @@ import {
   toDoraDeploymentCreateRow,
   type DbDoraDeploymentRow,
 } from './mappers';
-import type { DbDoraDeployment, DbDoraDeploymentCreate } from './types';
+import type {
+  DbDoraDeployment,
+  DbDoraDeploymentCreate,
+  DoraDbWriteOptions,
+} from './types';
 
 export interface DoraDeploymentsStore {
   upsert(deployments: DbDoraDeploymentCreate[]): Promise<void>;
@@ -38,6 +42,7 @@ export interface DoraDeploymentsStore {
       collectorId: string;
       collectorInputHash: string;
     },
+    options?: DoraDbWriteOptions,
   ): Promise<void>;
   deleteOlderThan(olderThan: Date): Promise<number>;
 }
@@ -97,11 +102,14 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
       collectorId: string;
       collectorInputHash: string;
     },
+    options?: DoraDbWriteOptions,
   ): Promise<void> {
-    await this.dbClient(this.tableName).where('id', deploymentId).update({
-      pull_requests_collector_id: pullRequestsSync.collectorId,
-      pull_requests_collector_input_hash: pullRequestsSync.collectorInputHash,
-    });
+    await (options?.trx ?? this.dbClient)(this.tableName)
+      .where('id', deploymentId)
+      .update({
+        pull_requests_collector_id: pullRequestsSync.collectorId,
+        pull_requests_collector_input_hash: pullRequestsSync.collectorInputHash,
+      });
   }
 
   async deleteOlderThan(olderThan: Date): Promise<number> {

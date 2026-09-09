@@ -21,20 +21,30 @@ import {
   toDoraPullRequestRow,
   type DbDoraPullRequestRow,
 } from './mappers';
-import type { DbDoraPullRequest, DbDoraPullRequestCreate } from './types';
+import type {
+  DbDoraPullRequest,
+  DbDoraPullRequestCreate,
+  DoraDbWriteOptions,
+} from './types';
 
 export interface DoraPullRequestsStore {
-  upsert(pullRequests: DbDoraPullRequestCreate[]): Promise<void>;
-  readByEntityCollectorAndDeployment(
+  transaction<T>(fn: (trx: Knex.Transaction) => Promise<T>): Promise<T>;
+  upsert(
+    pullRequests: DbDoraPullRequestCreate[],
+    options?: DoraDbWriteOptions,
+  ): Promise<void>;
+  readByEntityAndDeployment(
     catalogEntityRef: string,
-    collectorId: string,
-    collectorInputHash: string,
     deploymentId: string,
   ): Promise<DbDoraPullRequest[]>;
   /**
    * Deletes pull requests whose parent deployment is older than the cutoff (for sqlite without CASCADE delete support).
    */
   deleteForDeploymentsOlderThan(olderThan: Date): Promise<number>;
+  deleteByDeployment(
+    deploymentId: string,
+    options?: DoraDbWriteOptions,
+  ): Promise<number>;
 }
 
 export class DatabaseDoraPullRequests implements DoraPullRequestsStore {
@@ -43,44 +53,54 @@ export class DatabaseDoraPullRequests implements DoraPullRequestsStore {
 
   constructor(private readonly dbClient: Knex) {}
 
-  async upsert(pullRequests: DbDoraPullRequestCreate[]): Promise<void> {
+  transaction<T>(fn: (trx: Knex.Transaction) => Promise<T>): Promise<T> {
+    return this.dbClient.transaction(fn);
+  }
+
+  private client(options?: DoraDbWriteOptions): Knex | Knex.Transaction {
+    return options?.trx ?? this.dbClient;
+  }
+
+  async upsert(
+    pullRequests: DbDoraPullRequestCreate[],
+    options?: DoraDbWriteOptions,
+  ): Promise<void> {
     if (pullRequests.length === 0) {
       return;
     }
 
-    await this.dbClient(this.tableName)
+    await this.client(options)(this.tableName)
       .insert(
         pullRequests.map(pullRequest => ({
           ...toDoraPullRequestRow(pullRequest),
           id: randomUUID(),
         })),
       )
-      .onConflict([
-        'catalog_entity_ref',
-        'collector_id',
-        'collector_input_hash',
-        'original_pr_id',
-        'deployment_id',
-      ])
+      .onConflict(['original_pr_id', 'deployment_id'])
       // All columns are immutable historical facts for a given PR
       .ignore();
   }
 
-  async readByEntityCollectorAndDeployment(
+  async readByEntityAndDeployment(
     catalogEntityRef: string,
-    collectorId: string,
-    collectorInputHash: string,
     deploymentId: string,
   ): Promise<DbDoraPullRequest[]> {
     const rows = await this.dbClient<DbDoraPullRequestRow>(this.tableName)
       .select('*')
       .where('catalog_entity_ref', catalogEntityRef)
-      .andWhere('collector_id', collectorId)
-      .andWhere('collector_input_hash', collectorInputHash)
       .andWhere('deployment_id', deploymentId)
       .orderBy('first_commit_at', 'asc');
 
     return rows.map(fromDoraPullRequestRow);
+  }
+
+  async deleteByDeployment(
+    deploymentId: string,
+    options?: DoraDbWriteOptions,
+  ): Promise<number> {
+    return await this.client(options)(this.tableName)
+      .where('deployment_id', deploymentId)
+      .del();
   }
 
   async deleteForDeploymentsOlderThan(olderThan: Date): Promise<number> {

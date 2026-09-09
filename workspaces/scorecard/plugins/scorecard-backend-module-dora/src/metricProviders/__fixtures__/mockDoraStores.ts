@@ -16,7 +16,6 @@
 
 import { parseDate } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import {
-  DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
 } from '../../constants';
@@ -90,16 +89,11 @@ export function dbPullRequest(partial: {
   firstCommitAt: string | Date;
   deploymentId: string;
   catalogEntityRef?: string;
-  collectorId?: string;
-  collectorInputHash?: string;
   originalPrId?: string;
 }): DbDoraPullRequest {
   return {
     id: partial.id,
     catalogEntityRef: partial.catalogEntityRef ?? DEFAULT_ENTITY_REF,
-    collectorId:
-      partial.collectorId ?? DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
-    collectorInputHash: partial.collectorInputHash ?? EMPTY_INPUT_HASH,
     originalPrId: partial.originalPrId ?? partial.id,
     firstCommitAt: parseDate(partial.firstCommitAt),
     deploymentId: partial.deploymentId,
@@ -120,9 +114,13 @@ export const mockDoraIncidentsStore: jest.Mocked<DoraIncidentsStore> = {
 };
 
 export const mockDoraPullRequestsStore: jest.Mocked<DoraPullRequestsStore> = {
+  transaction: jest.fn(fn =>
+    fn((() => {}) as any),
+  ) as jest.Mocked<DoraPullRequestsStore>['transaction'],
   upsert: jest.fn(),
-  readByEntityCollectorAndDeployment: jest.fn(),
+  readByEntityAndDeployment: jest.fn(),
   deleteForDeploymentsOlderThan: jest.fn(),
+  deleteByDeployment: jest.fn(),
 };
 
 export const mockDoraLastSyncStore: jest.Mocked<DoraLastSyncStore> = {

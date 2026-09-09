@@ -27,10 +27,18 @@ export type WindowOptions = {
   windowTo: Date;
 };
 
+export type LastSyncedPullRequestsCollector = {
+  id: string | null;
+  inputHash: string | null;
+};
+
 export type SyncPullRequestsForDeploymentOptions = CollectorCallOptions & {
   deploymentId: string;
   baseCommitSha: string; // previous deployment
   headCommitSha: string; // current deployment
-  deploymentPullRequestsCollectorId: string | null;
-  deploymentPullRequestsCollectorInputHash: string | null;
+  /**
+   * PR collector identity already stored on this deployment, if any.
+   * Compared to `collector` (the configured collector to use for this sync).
+   */
+  lastSyncedPullRequestsCollector: LastSyncedPullRequestsCollector;
 };

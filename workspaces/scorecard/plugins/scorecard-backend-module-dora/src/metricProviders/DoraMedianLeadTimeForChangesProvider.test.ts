@@ -125,8 +125,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           deploymentId: '101',
           baseCommitSha: 'sha-previous',
           headCommitSha: 'sha-current',
-          deploymentPullRequestsCollectorId: null,
-          deploymentPullRequestsCollectorInputHash: null,
+          lastSyncedPullRequestsCollector: { id: null, inputHash: null },
         }),
       );
     });
@@ -199,8 +198,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           deploymentId: '101',
           baseCommitSha: 'sha-previous',
           headCommitSha: 'sha-current',
-          deploymentPullRequestsCollectorId: null,
-          deploymentPullRequestsCollectorInputHash: null,
+          lastSyncedPullRequestsCollector: { id: null, inputHash: null },
         }),
       );
     });
@@ -244,8 +242,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           deploymentId: '101',
           baseCommitSha: 'sha-previous',
           headCommitSha: 'sha-current',
-          deploymentPullRequestsCollectorId: null,
-          deploymentPullRequestsCollectorInputHash: null,
+          lastSyncedPullRequestsCollector: { id: null, inputHash: null },
         }),
       );
     });
@@ -277,9 +274,10 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
         mockEntity,
         expect.objectContaining({
           deploymentId: '101',
-          deploymentPullRequestsCollectorId:
-            DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
-          deploymentPullRequestsCollectorInputHash: EMPTY_INPUT_HASH,
+          lastSyncedPullRequestsCollector: {
+            id: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+            inputHash: EMPTY_INPUT_HASH,
+          },
         }),
       );
     });

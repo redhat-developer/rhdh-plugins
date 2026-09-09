@@ -282,8 +282,8 @@ export class DefaultDoraSyncService implements DoraSyncService {
     // changes. A different PR collector id or input is a new data identity
     // and must be fetched again.
     if (
-      options.deploymentPullRequestsCollectorId === collectorId &&
-      options.deploymentPullRequestsCollectorInputHash === collectorInputHash
+      options.lastSyncedPullRequestsCollector.id === collectorId &&
+      options.lastSyncedPullRequestsCollector.inputHash === collectorInputHash
     ) {
       this.logger.debug(
         `Skipping DORA pull requests refresh for collector "${collectorId}" on "${catalogEntityRef}". Already synced."`,
@@ -308,20 +308,27 @@ export class DefaultDoraSyncService implements DoraSyncService {
       },
     });
 
-    await this.pullRequestsDb.upsert(
-      collected.pullRequests.map(pullRequest => ({
-        catalogEntityRef,
-        collectorId,
-        collectorInputHash,
-        originalPrId: pullRequest.id,
-        firstCommitAt: new Date(pullRequest.firstCommitAt),
-        deploymentId: options.deploymentId,
-      })),
-    );
-
-    await this.deploymentsDb.markPullRequestsSynced(options.deploymentId, {
-      collectorId,
-      collectorInputHash,
+    await this.pullRequestsDb.transaction(async trx => {
+      await this.pullRequestsDb.deleteByDeployment(options.deploymentId, {
+        trx,
+      });
+      await this.pullRequestsDb.upsert(
+        collected.pullRequests.map(pullRequest => ({
+          catalogEntityRef,
+          originalPrId: pullRequest.id,
+          firstCommitAt: new Date(pullRequest.firstCommitAt),
+          deploymentId: options.deploymentId,
+        })),
+        { trx },
+      );
+      await this.deploymentsDb.markPullRequestsSynced(
+        options.deploymentId,
+        {
+          collectorId,
+          collectorInputHash,
+        },
+        { trx },
+      );
     });
   }
 }

@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
+import type { Knex } from 'knex';
+
+export interface DoraDbWriteOptions {
+  trx?: Knex | Knex.Transaction;
+}
+
 export type DbDoraDeploymentCreate = {
   catalogEntityRef: string;
   collectorId: string;
@@ -64,8 +70,6 @@ export type DbDoraIncident = {
 
 export type DbDoraPullRequestCreate = {
   catalogEntityRef: string;
-  collectorId: string;
-  collectorInputHash: string;
   originalPrId: string;
   firstCommitAt: Date;
   deploymentId: string;
@@ -74,8 +78,6 @@ export type DbDoraPullRequestCreate = {
 export type DbDoraPullRequest = {
   id: string;
   catalogEntityRef: string;
-  collectorId: string;
-  collectorInputHash: string;
   originalPrId: string;
   firstCommitAt: Date;
   deploymentId: string;

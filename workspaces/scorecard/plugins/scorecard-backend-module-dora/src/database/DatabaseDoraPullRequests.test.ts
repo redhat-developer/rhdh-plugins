@@ -16,7 +16,6 @@
 
 import { TestDatabases } from '@backstage/backend-test-utils';
 import { DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID } from '../constants';
-import { collectorInputHash } from '../service/collectorHash';
 import { createTestDatabase } from './__fixtures__';
 import { DatabaseDoraDeployments } from './DatabaseDoraDeployments';
 import { EMPTY_INPUT_HASH } from './__fixtures__/inputHash';
@@ -75,23 +74,18 @@ describe('DatabaseDoraPullRequests', () => {
           await databases.init(databaseId),
         );
         const { entityRef, deployment } = await seedDeployment(deployments);
-        const prCollectorId = 'github:deploymentRangePullRequests';
 
         await pullRequests.upsert([
           {
             catalogEntityRef: entityRef,
-            collectorId: prCollectorId,
-            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-1',
             firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
             deploymentId: deployment.id,
           },
         ]);
 
-        const rows = await pullRequests.readByEntityCollectorAndDeployment(
+        const rows = await pullRequests.readByEntityAndDeployment(
           entityRef,
-          prCollectorId,
-          EMPTY_INPUT_HASH,
           deployment.id,
         );
 
@@ -99,8 +93,6 @@ describe('DatabaseDoraPullRequests', () => {
           {
             id: expect.any(String),
             catalogEntityRef: entityRef,
-            collectorId: prCollectorId,
-            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-1',
             firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
             deploymentId: deployment.id,
@@ -116,34 +108,27 @@ describe('DatabaseDoraPullRequests', () => {
           await databases.init(databaseId),
         );
         const { entityRef, deployment } = await seedDeployment(deployments);
-        const prCollectorId = 'github:deploymentRangePullRequests';
 
         await pullRequests.upsert([
           {
             catalogEntityRef: entityRef,
-            collectorId: prCollectorId,
-            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-1',
             firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
             deploymentId: deployment.id,
           },
         ]);
-        // Conflict on (catalog_entity_ref, collector_id, collector_input_hash, original_pr_id, deployment_id) for firstCommitAt
+        // Conflict on (original_pr_id, deployment_id) for firstCommitAt
         await pullRequests.upsert([
           {
             catalogEntityRef: entityRef,
-            collectorId: prCollectorId,
-            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-1',
             firstCommitAt: new Date('2026-06-09T12:00:00.000Z'),
             deploymentId: deployment.id,
           },
         ]);
 
-        const rows = await pullRequests.readByEntityCollectorAndDeployment(
+        const rows = await pullRequests.readByEntityAndDeployment(
           entityRef,
-          prCollectorId,
-          EMPTY_INPUT_HASH,
           deployment.id,
         );
 
@@ -156,59 +141,6 @@ describe('DatabaseDoraPullRequests', () => {
     );
 
     it.each(databases.eachSupportedId())(
-      'treats the same original id with different input hashes as distinct - %p',
-      async databaseId => {
-        const { deployments, pullRequests } = await createTestDatabase(
-          await databases.init(databaseId),
-        );
-        const { entityRef, deployment } = await seedDeployment(deployments);
-        const prCollectorId = 'github:deploymentRangePullRequests';
-        const otherHash = collectorInputHash({ label: 'other' });
-
-        await pullRequests.upsert([
-          {
-            catalogEntityRef: entityRef,
-            collectorId: prCollectorId,
-            collectorInputHash: EMPTY_INPUT_HASH,
-            originalPrId: 'pr-1',
-            firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
-            deploymentId: deployment.id,
-          },
-          {
-            catalogEntityRef: entityRef,
-            collectorId: prCollectorId,
-            collectorInputHash: otherHash,
-            originalPrId: 'pr-1',
-            firstCommitAt: new Date('2026-06-09T11:00:00.000Z'),
-            deploymentId: deployment.id,
-          },
-        ]);
-
-        const emptyInputRows =
-          await pullRequests.readByEntityCollectorAndDeployment(
-            entityRef,
-            prCollectorId,
-            EMPTY_INPUT_HASH,
-            deployment.id,
-          );
-        const otherInputRows =
-          await pullRequests.readByEntityCollectorAndDeployment(
-            entityRef,
-            prCollectorId,
-            otherHash,
-            deployment.id,
-          );
-
-        expect(
-          emptyInputRows.map(row => row.firstCommitAt.toISOString()),
-        ).toEqual(['2026-06-09T10:00:00.000Z']);
-        expect(
-          otherInputRows.map(row => row.firstCommitAt.toISOString()),
-        ).toEqual(['2026-06-09T11:00:00.000Z']);
-      },
-    );
-
-    it.each(databases.eachSupportedId())(
       'no-ops when upserting an empty list - %p',
       async databaseId => {
         const { pullRequests } = await createTestDatabase(
@@ -217,9 +149,40 @@ describe('DatabaseDoraPullRequests', () => {
         await expect(pullRequests.upsert([])).resolves.toBeUndefined();
       },
     );
+
+    it.each(databases.eachSupportedId())(
+      'rolls back upsert when the transaction fails - %p',
+      async databaseId => {
+        const { deployments, pullRequests } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const { entityRef, deployment } = await seedDeployment(deployments);
+
+        await expect(
+          pullRequests.transaction(async trx => {
+            await pullRequests.upsert(
+              [
+                {
+                  catalogEntityRef: entityRef,
+                  originalPrId: 'pr-1',
+                  firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
+                  deploymentId: deployment.id,
+                },
+              ],
+              { trx },
+            );
+            throw new Error('sync failed');
+          }),
+        ).rejects.toThrow('sync failed');
+
+        await expect(
+          pullRequests.readByEntityAndDeployment(entityRef, deployment.id),
+        ).resolves.toEqual([]);
+      },
+    );
   });
 
-  describe('readByEntityCollectorAndDeployment', () => {
+  describe('readByEntityAndDeployment', () => {
     it.each(databases.eachSupportedId())(
       'returns pull requests for the given deployment - %p',
       async databaseId => {
@@ -227,31 +190,24 @@ describe('DatabaseDoraPullRequests', () => {
           await databases.init(databaseId),
         );
         const { entityRef, deployment } = await seedDeployment(deployments);
-        const prCollectorId = 'github:deploymentRangePullRequests';
 
         await pullRequests.upsert([
           {
             catalogEntityRef: entityRef,
-            collectorId: prCollectorId,
-            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-1',
             firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
             deploymentId: deployment.id,
           },
           {
             catalogEntityRef: entityRef,
-            collectorId: prCollectorId,
-            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-2',
             firstCommitAt: new Date('2026-06-09T11:00:00.000Z'),
             deploymentId: deployment.id,
           },
         ]);
 
-        const rows = await pullRequests.readByEntityCollectorAndDeployment(
+        const rows = await pullRequests.readByEntityAndDeployment(
           entityRef,
-          prCollectorId,
-          EMPTY_INPUT_HASH,
           deployment.id,
         );
 
@@ -267,7 +223,6 @@ describe('DatabaseDoraPullRequests', () => {
         const { deployments, pullRequests } = await createTestDatabase(
           await databases.init(databaseId),
         );
-        const prCollectorId = 'github:deploymentRangePullRequests';
         const { entityRef, deployment: oldDeployment } = await seedDeployment(
           deployments,
           {
@@ -286,16 +241,12 @@ describe('DatabaseDoraPullRequests', () => {
         await pullRequests.upsert([
           {
             catalogEntityRef: entityRef,
-            collectorId: prCollectorId,
-            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-old',
             firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
             deploymentId: oldDeployment.id,
           },
           {
             catalogEntityRef: entityRef,
-            collectorId: prCollectorId,
-            collectorInputHash: EMPTY_INPUT_HASH,
             originalPrId: 'pr-new',
             firstCommitAt: new Date('2026-06-09T11:00:00.000Z'),
             deploymentId: newDeployment.id,
@@ -309,24 +260,74 @@ describe('DatabaseDoraPullRequests', () => {
         expect(deleted).toBe(1);
         expect(
           (
-            await pullRequests.readByEntityCollectorAndDeployment(
+            await pullRequests.readByEntityAndDeployment(
               entityRef,
-              prCollectorId,
-              EMPTY_INPUT_HASH,
               oldDeployment.id,
             )
           ).map(row => row.originalPrId),
         ).toEqual([]);
         expect(
           (
-            await pullRequests.readByEntityCollectorAndDeployment(
+            await pullRequests.readByEntityAndDeployment(
               entityRef,
-              prCollectorId,
-              EMPTY_INPUT_HASH,
               newDeployment.id,
             )
           ).map(row => row.originalPrId),
         ).toEqual(['pr-new']);
+      },
+    );
+  });
+
+  describe('deleteByDeployment', () => {
+    it.each(databases.eachSupportedId())(
+      'deletes pull requests for a single deployment - %p',
+      async databaseId => {
+        const { deployments, pullRequests } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const { entityRef, deployment } = await seedDeployment(deployments);
+        await pullRequests.upsert([
+          {
+            catalogEntityRef: entityRef,
+            originalPrId: 'pr-1',
+            firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
+            deploymentId: deployment.id,
+          },
+        ]);
+
+        expect(await pullRequests.deleteByDeployment(deployment.id)).toBe(1);
+        await expect(
+          pullRequests.readByEntityAndDeployment(entityRef, deployment.id),
+        ).resolves.toEqual([]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'rolls back deleteByDeployment when the transaction fails - %p',
+      async databaseId => {
+        const { pullRequests, deployments } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const { entityRef, deployment } = await seedDeployment(deployments);
+        await pullRequests.upsert([
+          {
+            catalogEntityRef: entityRef,
+            originalPrId: 'pr-1',
+            firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
+            deploymentId: deployment.id,
+          },
+        ]);
+
+        await expect(
+          pullRequests.transaction(async trx => {
+            await pullRequests.deleteByDeployment(deployment.id, { trx });
+            throw new Error('sync failed');
+          }),
+        ).rejects.toThrow('sync failed');
+
+        await expect(
+          pullRequests.readByEntityAndDeployment(entityRef, deployment.id),
+        ).resolves.toEqual([expect.objectContaining({ originalPrId: 'pr-1' })]);
       },
     );
   });

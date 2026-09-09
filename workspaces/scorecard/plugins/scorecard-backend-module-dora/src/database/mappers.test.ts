@@ -211,8 +211,6 @@ describe('mappers', () => {
       const firstCommitAt = new Date('2026-06-09T10:00:00.000Z');
       const create = {
         catalogEntityRef: 'component:default/service-a',
-        collectorId: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
-        collectorInputHash: EMPTY_INPUT_HASH,
         originalPrId: 'pr-1',
         firstCommitAt,
         deploymentId: 'dep-row-1',
@@ -220,8 +218,6 @@ describe('mappers', () => {
 
       expect(toDoraPullRequestRow(create)).toEqual({
         catalog_entity_ref: 'component:default/service-a',
-        collector_id: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
-        collector_input_hash: EMPTY_INPUT_HASH,
         original_pr_id: 'pr-1',
         first_commit_at: firstCommitAt,
         deployment_id: 'dep-row-1',
@@ -233,8 +229,6 @@ describe('mappers', () => {
         fromDoraPullRequestRow({
           id: 'pr-row-1',
           catalog_entity_ref: 'component:default/service-a',
-          collector_id: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
-          collector_input_hash: EMPTY_INPUT_HASH,
           original_pr_id: 'pr-1',
           first_commit_at: '2026-06-09T10:00:00.000Z',
           deployment_id: 'dep-row-1',
@@ -242,8 +236,6 @@ describe('mappers', () => {
       ).toEqual({
         id: 'pr-row-1',
         catalogEntityRef: 'component:default/service-a',
-        collectorId: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
-        collectorInputHash: EMPTY_INPUT_HASH,
         originalPrId: 'pr-1',
         firstCommitAt: new Date('2026-06-09T10:00:00.000Z'),
         deploymentId: 'dep-row-1',

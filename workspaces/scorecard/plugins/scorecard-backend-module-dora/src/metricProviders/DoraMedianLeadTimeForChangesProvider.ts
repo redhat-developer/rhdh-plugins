@@ -156,9 +156,10 @@ export class DoraMedianLeadTimeForChangesProvider
           deploymentId: deployment.id,
           baseCommitSha: previousDeployment.commitSha,
           headCommitSha: deployment.commitSha,
-          deploymentPullRequestsCollectorId: deployment.pullRequestsCollectorId,
-          deploymentPullRequestsCollectorInputHash:
-            deployment.pullRequestsCollectorInputHash,
+          lastSyncedPullRequestsCollector: {
+            id: deployment.pullRequestsCollectorId,
+            inputHash: deployment.pullRequestsCollectorInputHash,
+          },
         });
       } catch (error) {
         this.logger.warn(
@@ -177,7 +178,6 @@ export class DoraMedianLeadTimeForChangesProvider
         await this.doraDataService.readPullRequestsForDeployment(
           catalogEntityRef,
           {
-            collector: this.config.deploymentPullRequestsCollector,
             deploymentId: deployment.id,
           },
         );
