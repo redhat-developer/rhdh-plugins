@@ -124,7 +124,9 @@ You can replace default collector IDs via `app-config.yaml` as long as your coll
 
 Collector inputs are merged with provider-generated required inputs. This lets you pass extra collector-specific fields (for example `workflowName` when using a workflow-runs based collector) as long as required contract fields are still supported.
 
-Changing a collector's `input` starts a new data identity and refetches the full 30-day window.
+Changing a collector's `id` or `input` starts a new data identity and refetches the full 30-day window.
+
+Updating a catalog entity annotations does **not** invalidate stored DORA data. Dora deployments, incidents and pull requests stay keyed to the `catalog_entity_ref` captured at write time.
 
 ```yaml
 scorecard:
