@@ -72,6 +72,9 @@ yarn start
 # Run tests
 yarn test:all
 
+# Run Playwright e2e tests (starts the dev app unless PLAYWRIGHT_URL is set)
+yarn test:e2e
+
 # Build all plugins
 yarn build:all
 ```
