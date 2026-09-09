@@ -772,16 +772,16 @@ describe('InformerService', () => {
   describe('listLLMInferenceServices: CRD not installed', () => {
     it('warns (not errors) when the CRD returns 404', async () => {
       mockMakeApiClient.mockReturnValue({
-        listNamespacedCustomObject: jest.fn().mockImplementation(
-          (group: string) => {
+        listNamespacedCustomObject: jest
+          .fn()
+          .mockImplementation((group: string) => {
             if (group === 'serving.kserve.io') {
               const err: any = new Error('Not Found');
               err.statusCode = 404;
               return Promise.reject(err);
             }
             return Promise.resolve({ body: { items: [] } });
-          },
-        ),
+          }),
         listClusterCustomObject: jest
           .fn()
           .mockResolvedValue({ body: { items: [] } }),
@@ -797,7 +797,9 @@ describe('InformerService', () => {
         expect.stringContaining('CRD not available (404)'),
       );
       expect(logger.error).not.toHaveBeenCalledWith(
-        expect.stringContaining('listLLMInferenceServices: Error listing from API'),
+        expect.stringContaining(
+          'listLLMInferenceServices: Error listing from API',
+        ),
         expect.anything(),
       );
     });

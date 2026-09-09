@@ -90,7 +90,9 @@ function getPredictorTags(predictor: any, is: InferenceService): string[] {
 
   if (predictor.model?.modelFormat) {
     const { name, version } = predictor.model.modelFormat;
-    tags.push(version ? `${name}-${version}`.toLowerCase() : name.toLowerCase());
+    tags.push(
+      version ? `${name}-${version}`.toLowerCase() : name.toLowerCase(),
+    );
   }
 
   if (is.spec.explainer?.art) {

@@ -499,7 +499,8 @@ async function processModelCatalog(
 async function innerStart(
   client: k8s.CustomObjectsApi,
   config: ReconcilerConfig,
-  llmInformer?: k8s.Informer<InferenceService> & k8s.ObjectCache<InferenceService>,
+  llmInformer?: k8s.Informer<InferenceService> &
+    k8s.ObjectCache<InferenceService>,
 ): Promise<void> {
   const logger = config.logger!;
   logger.debug('innerStart: Beginning reconciliation sync');
@@ -800,7 +801,8 @@ function startBackgroundPolling(
   client: k8s.CustomObjectsApi,
   config: ReconcilerConfig,
   logger: LoggerService,
-  llmInformer?: k8s.Informer<InferenceService> & k8s.ObjectCache<InferenceService>,
+  llmInformer?: k8s.Informer<InferenceService> &
+    k8s.ObjectCache<InferenceService>,
 ): void {
   const pollingInterval = parseInt(
     process.env.POLLING_INTERVAL || '600000',
