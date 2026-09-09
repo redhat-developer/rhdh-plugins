@@ -23,7 +23,6 @@ import {
   getEntitiesPageMissingPermission,
   getEntitiesPageNoDataFound,
   getEntitiesTableHeaderLabels,
-  getHomepageEntityCalculationHealthText,
   getSomeEntitiesNotReportingTooltip,
 } from '../utils/translationUtils';
 
@@ -176,7 +175,9 @@ export class ScorecardDrillDownPage {
   }
 
   private getEntitiesTableCalculationWarningIcon(): Locator {
-    return this.getEntitiesTableHeading().locator('svg');
+    return this.getEntitiesTableHeading().getByTestId(
+      'entities-table-calculation-warning-icon',
+    );
   }
 
   async expectNoDrillDownCalculationErrorWarningIcon() {
@@ -190,28 +191,6 @@ export class ScorecardDrillDownPage {
   /** Verifies the calculation-error tooltip on the Entities table heading icon. */
   async verifyEntitiesTableCalculationErrorTooltip() {
     await this.getEntitiesTableCalculationWarningIcon().hover();
-    const tooltipText = getSomeEntitiesNotReportingTooltip(this.translations);
-    await expect(this.page.getByRole('tooltip')).toContainText(tooltipText);
-  }
-
-  /** Verifies the "some entities not reporting" tooltip on the drill-down card subheader link. */
-  async verifySomeEntitiesNotReportingTooltip(
-    metricId: MetricId,
-    options?: DrillDownCardLocatorOptions & {
-      healthy?: string;
-      total?: string;
-    },
-  ) {
-    const card = this.getDrillDownCard(metricId, options);
-    const healthy = options?.healthy ?? '8';
-    const total = options?.total ?? '10';
-    const linkText = getHomepageEntityCalculationHealthText(
-      this.translations,
-      healthy,
-      total,
-    );
-    const link = card.getByRole('link', { name: linkText });
-    await link.hover();
     const tooltipText = getSomeEntitiesNotReportingTooltip(this.translations);
     await expect(this.page.getByRole('tooltip')).toContainText(tooltipText);
   }
@@ -252,21 +231,22 @@ export class ScorecardDrillDownPage {
     }
   }
 
-  async clickEntityLink(entitySlug: string) {
-    const entitiesTable = this.getEntitiesTable();
+  private getEntityLink(entitySlug: string): Locator {
     const slug = encodeURIComponent(entitySlug);
-    const link = entitiesTable
+    return this.getEntitiesTable()
       .locator('tbody')
       .locator(`a[href*="/catalog/default/component/${slug}"]`)
       .first();
-    await link.click();
+  }
+
+  async clickEntityLink(entitySlug: string) {
+    await this.getEntityLink(entitySlug).click();
+  }
+
+  async expectOnEntityPage(entitySlug: string) {
+    const slug = encodeURIComponent(entitySlug);
     await expect(this.page).toHaveURL(
-      new RegExp(
-        `/catalog/default/component/${slug.replace(
-          /[.*+?^${}()|[\]\\]/g,
-          '\\$&',
-        )}`,
-      ),
+      new RegExp(`/catalog/default/component/${escapeRegex(slug)}`),
     );
   }
 

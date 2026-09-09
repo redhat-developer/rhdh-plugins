@@ -497,13 +497,15 @@ test.describe('Scorecard Plugin Tests', () => {
         );
       });
 
-      test('Verify exist and missing threshold buckets', async () => {
+      test('Verify exist and missing threshold buckets', async ({}, testInfo) => {
         const existLabel = translations.thresholds.exist ?? 'Exist';
         const missingLabel = translations.thresholds.missing ?? 'Missing';
         await expect(card.getByText(existLabel, { exact: true })).toBeVisible();
         await expect(
           card.getByText(missingLabel, { exact: true }),
         ).toBeVisible();
+
+        await runAccessibilityTests(page, testInfo);
       });
 
       test('Verify drill-down link', async () => {
@@ -1023,6 +1025,9 @@ test.describe('Scorecard Plugin Tests', () => {
 
         await test.step('Navigate to entity from drill-down table', async () => {
           await scorecardDrillDownPage.clickEntityLink('red-hat-developer-hub');
+          await scorecardDrillDownPage.expectOnEntityPage(
+            'red-hat-developer-hub',
+          );
         });
       });
 

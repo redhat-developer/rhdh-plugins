@@ -66,7 +66,11 @@ export const EntitiesTableWrapper: FC<EntitiesTableWrapperProps> = ({
                 cursor: 'pointer',
               }}
             >
-              <ReportProblemOutlinedIcon color="warning" fontSize="small" />
+              <ReportProblemOutlinedIcon
+                color="warning"
+                fontSize="small"
+                data-testid="entities-table-calculation-warning-icon"
+              />
             </Tooltip>
           )}
         </Typography>

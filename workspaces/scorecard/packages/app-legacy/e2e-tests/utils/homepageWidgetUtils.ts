@@ -23,6 +23,14 @@ import {
 import { mockApiResponse, waitForAggregationResponse } from './apiUtils';
 import { mockAggregationNoDataFound } from './mockHomepageAggregations';
 
+type AggregatedCardWidgetKey = keyof typeof AGGREGATED_CARDS_METRIC_IDS;
+
+function isAggregatedCardWidgetKey(
+  key: string,
+): key is AggregatedCardWidgetKey {
+  return key in AGGREGATED_CARDS_WIDGET_TITLES;
+}
+
 type SetupHomepageAggregationCardOptions = {
   aggregationMetadata: { id: string; title: string };
   route: string;
@@ -40,18 +48,19 @@ async function addWidget(homePage: HomePage, widgetTitle: string) {
 
 export async function addAggregatedScorecardWidgets(
   homePage: HomePage,
-  widgetIds: Record<string, string> = AGGREGATED_CARDS_METRIC_IDS,
+  widgetIds: Partial<
+    typeof AGGREGATED_CARDS_METRIC_IDS
+  > = AGGREGATED_CARDS_METRIC_IDS,
 ) {
   await homePage.navigateToHome();
   await homePage.enterEditMode();
   await homePage.clearAllCards();
 
   for (const instanceId of Object.keys(widgetIds)) {
-    await homePage.addCard(
-      AGGREGATED_CARDS_WIDGET_TITLES[
-        instanceId as keyof typeof AGGREGATED_CARDS_WIDGET_TITLES
-      ],
-    );
+    if (!isAggregatedCardWidgetKey(instanceId)) {
+      throw new Error(`Unknown homepage scorecard widget id: ${instanceId}`);
+    }
+    await homePage.addCard(AGGREGATED_CARDS_WIDGET_TITLES[instanceId]);
   }
 
   await homePage.saveChanges();
