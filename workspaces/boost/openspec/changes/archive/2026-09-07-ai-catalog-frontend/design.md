@@ -166,7 +166,7 @@ browser (skill command, OCI pull, git archive link, MCP remote). No backend.
 
 `EntityContentBlueprint` named `usage`. Boost tab, not the Catalog TechDocs tab.
 
-- Denied: contact-owner affordance
+- Denied: permission-denied message and, when the owner ref is valid, an owner link
 - Allowed: optional link to TechDocs plus entity `metadata.links`
 
 ## Design Reference

@@ -21,7 +21,8 @@ A `FilterDefinition` interface MUST define the contract, and a Blueprint MUST wr
 
 - **GIVEN** a `FilterDefinition` object
 - **THEN** it has `urlParam` (string) for URL state persistence
-- **AND** it has `label` (string) for the sidebar heading (i18n key or plain text)
+- **AND** it has `label` (string) as the fallback sidebar heading
+- **AND** `labelKey` is an optional string that is translated and takes precedence over `label`
 - **AND** it has `getOptions(entities) => { id, label }[]` for deriving select options from loaded entities
 - **AND** it has `matchEntity(entity, selectedValues) => boolean` for client-side filtering
 - **AND** it has `priority` (number) controlling render order in the sidebar
@@ -144,7 +145,7 @@ The filter pipeline MUST adapt to the registered filter set.
 - **THEN** all registered filter URL params are cleared
 - **AND** the search param (`q`) is cleared
 - **AND** view mode (`view`) and page size (`pageSize`) are preserved
-- **AND** the full unfiltered card grid is restored
+- **AND** the full unfiltered result set is restored in the selected view
 
 #### Scenario: Active filter detection includes custom filters
 

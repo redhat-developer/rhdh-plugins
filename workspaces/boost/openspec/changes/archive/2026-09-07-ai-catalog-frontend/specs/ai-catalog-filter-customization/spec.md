@@ -6,7 +6,7 @@ The AI Catalog browse page filter sidebar becomes extensible via the Backstage N
 
 ## Design Approach
 
-Filters are **data, not components**. Each filter is a `FilterDefinition` — a plain object with a URL param name, a label, a function to extract options from entities, and a function to match an entity against selected values. The `FilterSidebar` renders a generic `<Select>` for each definition. No per-filter React components, no lazy loading, no custom data refs per field.
+Filters are **data, not components**. Each filter is a `FilterDefinition` — a plain object with a URL param name, a fallback label, an optional translation key, a function to extract options from entities, and a function to match an entity against selected values. The `FilterSidebar` renders a generic `<Select>` for each definition. No per-filter React components, no lazy loading, no custom data refs per field.
 
 The NFS extension system handles enable/disable/add via `app.extensions`. The `AiCatalogFilterBlueprint` wraps a `FilterDefinition` in an extension. A single custom `createExtensionDataRef` carries the whole definition object. No `config` schema — deployers control filter visibility via NFS disable (`ai-catalog-filter:boost/owner: false`) and filter render order via `priority` in params.
 
@@ -20,7 +20,8 @@ A `FilterDefinition` interface MUST define the contract, and a Blueprint MUST wr
 
 - **GIVEN** a `FilterDefinition` object
 - **THEN** it has `urlParam` (string) for URL state persistence
-- **AND** it has `label` (string) for the sidebar heading (i18n key or plain text)
+- **AND** it has `label` (string) as the fallback sidebar heading
+- **AND** `labelKey` is an optional string that is translated and takes precedence over `label`
 - **AND** it has `getOptions(entities) => { id, label }[]` for deriving select options from loaded entities
 - **AND** it has `matchEntity(entity, selectedValues) => boolean` for client-side filtering
 - **AND** it has `priority` (number) controlling render order in the sidebar
@@ -143,7 +144,7 @@ The filter pipeline MUST adapt to the registered filter set.
 - **THEN** all registered filter URL params are cleared
 - **AND** the search param (`q`) is cleared
 - **AND** view mode (`view`) and page size (`pageSize`) are preserved
-- **AND** the full unfiltered card grid is restored
+- **AND** the full unfiltered result set is restored in the selected view
 
 #### Scenario: Active filter detection includes custom filters
 

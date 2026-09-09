@@ -73,13 +73,15 @@ with type `agent`.
 
 ### Requirement: Refresh and model-fetch failure behavior
 
-The providers SHALL refresh through scheduled full mutations using their
-configured intervals. A failed model fetch SHALL preserve the last successfully
-emitted model entity.
+The providers SHALL refresh through scheduled full mutations. Intervals from
+`boost.entityProviders.ogx` override the 60-second model and 300-second agent
+defaults. A failed model fetch SHALL preserve the last successfully emitted
+model entity.
 
 #### Scenario: Use the configured refresh intervals
 
-- GIVEN model and agent refresh intervals are configured
+- GIVEN model and agent refresh intervals are configured under
+  `boost.entityProviders.ogx`
 - WHEN the OGX module creates the providers
 - THEN the model provider uses the configured model interval
 - AND the agent provider uses the configured agent interval

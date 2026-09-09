@@ -25,12 +25,19 @@ response boundary.
 
 ### Requirement: Summary Card
 
-The Summary card MUST render on AI asset entity pages.
+The Summary card MUST render on AI asset entity pages when the entity contains
+at least one supported summary field.
 
 #### Scenario: Summary card renders on AI entity
 
-- **WHEN** a developer views a catalog entity page for an AI asset
-- **THEN** `entity-card:boost/summary` may render extra AI fields from the entity
+- **WHEN** an AI asset has a description, rationale, available model, agent
+  instruction, handoff description, or RAG setting
+- **THEN** `entity-card:boost/summary` renders the available summary fields
+
+#### Scenario: Summary card has no supported data
+
+- **WHEN** an AI asset has none of the supported summary fields
+- **THEN** the Summary card is not rendered
 
 #### Scenario: Summary card absent on non-AI entity
 
@@ -71,23 +78,23 @@ Usage authorization is an API/data-boundary concern. If a future backend API
 returns protected usage data, that API MUST enforce field-level authorization;
 the frontend MUST NOT rely on hiding a tab as the security boundary.
 
-#### Scenario: Existing usage presentation check denies access
+#### Scenario: Current usage permission denies access
 
-- **WHEN** the existing usage presentation check denies access
-- **THEN** the Usage tab shows a contact-owner affordance
+- **WHEN** `ai-catalog.asset.access.usage-docs` denies access to the entity
+- **THEN** the Usage tab shows a permission-denied message
+- **AND** it links to the owner when the entity has a valid owner reference
 
 #### Scenario: Entity visibility is independent from usage presentation
 
 - **WHEN** a user is authorized to read an entity through `catalog.entity.read`
-- **AND** protected usage data is unavailable
+- **AND** `ai-catalog.asset.access.usage-docs` denies access to the entity
 - **THEN** the entity remains discoverable
-- **AND** the Usage tab shows the contact-owner affordance
+- **AND** the Usage tab shows its permission-denied state
 
-#### Scenario: Protected usage data is available
+#### Scenario: Current usage permission allows access
 
-- **WHEN** protected usage data is available to the user
-- **THEN** the Usage tab may link to TechDocs if `backstage.io/techdocs-ref` is present
-- **AND** it may show `metadata.links`
+- **WHEN** `ai-catalog.asset.access.usage-docs` allows access to the entity
+- **THEN** the Usage tab links to TechDocs and `metadata.links` when present
 - **AND** the Catalog TechDocs tab is unchanged
 
 #### Scenario: Tab visibility

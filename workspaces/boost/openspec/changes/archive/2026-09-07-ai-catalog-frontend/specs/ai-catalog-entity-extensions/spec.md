@@ -10,12 +10,19 @@ Relations, and TechDocs remain Catalog surfaces.
 
 ### Requirement: Summary Card
 
-The Summary card MUST render on AI asset entity pages.
+The Summary card MUST render on AI asset entity pages when the entity contains
+at least one supported summary field.
 
 #### Scenario: Summary card renders on AI entity
 
-- **WHEN** a developer views a catalog entity page for an AI asset
-- **THEN** `entity-card:boost/summary` may render extra AI fields from the entity
+- **WHEN** an AI asset has a description, rationale, available model, agent
+  instruction, handoff description, or RAG setting
+- **THEN** `entity-card:boost/summary` renders the available summary fields
+
+#### Scenario: Summary card has no supported data
+
+- **WHEN** an AI asset has none of the supported summary fields
+- **THEN** the Summary card is not rendered
 
 #### Scenario: Summary card absent on non-AI entity
 
@@ -55,13 +62,13 @@ replace the Catalog TechDocs tab.
 #### Scenario: Permission denied
 
 - **WHEN** the user is denied `ai-catalog.asset.access.usage-docs`
-- **THEN** the Usage tab shows a contact-owner affordance
+- **THEN** the Usage tab shows a permission-denied message
+- **AND** it links to the owner when the entity has a valid owner reference
 
 #### Scenario: Permission allowed
 
-- **WHEN** the user is allowed
-- **THEN** the Usage tab may link to TechDocs if `backstage.io/techdocs-ref` is present
-- **AND** it may show `metadata.links`
+- **WHEN** the user is allowed `ai-catalog.asset.access.usage-docs` for the entity
+- **THEN** the Usage tab links to TechDocs and `metadata.links` when present
 - **AND** the Catalog TechDocs tab is unchanged
 
 #### Scenario: Tab visibility

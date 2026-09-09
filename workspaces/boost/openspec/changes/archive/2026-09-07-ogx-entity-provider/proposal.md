@@ -1,5 +1,7 @@
 # Proposal: Document the implemented OGX entity provider
 
+> **Retrospective record:** Documents already implemented and tested behavior.
+
 ## Why
 
 The OGX entity provider is part of the RHDH 2.1 release scope, but its current

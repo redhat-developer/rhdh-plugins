@@ -11,37 +11,23 @@ This specification describes how the shipped `plugins/boost` frontend is
 registered and exported as an RHDH dynamic plugin through the overlay CI
 pipeline.
 
+Overlay registration and publication are owned by the external
+[`rhdh-plugin-export-overlays`](https://github.com/redhat-developer/rhdh-plugin-export-overlays)
+repository. They are release evidence, not behavior validated by this
+workspace's tests.
+
 ## Requirements
 
-### Requirement: Overlay Export
+### Requirement: Dynamic Plugin Package
 
-The frontend MUST be exportable as an RHDH dynamic plugin through overlays CI.
+The frontend package MUST remain compatible with RHDH dynamic-plugin export
+tooling.
 
-#### Scenario: Overlay lists the frontend package
-
-- **GIVEN** `redhat-developer/rhdh-plugin-export-overlays` `workspaces/boost/plugins-list.yaml`
-- **THEN** it includes `plugins/boost`
-- **AND** overlay CI runs `rhdh-cli plugin export` and publishes an OCI image
-
-#### Scenario: Local export script is optional
+#### Scenario: Package has no local dynamic-export output
 
 - **GIVEN** `plugins/boost/package.json`
-- **THEN** a `yarn export-dynamic` script is not required for overlays packaging
-- **AND** `files` need not include `dist-dynamic/` for overlays CI to produce the image
-
-### Requirement: Overlay Registration
-
-The plugin MUST be registered in the overlays repo for automated OCI image builds.
-
-#### Scenario: Plugin added to rhdh-plugin-export-overlays
-
-- **GIVEN** the `redhat-developer/rhdh-plugin-export-overlays` repository
-- **THEN** the boost frontend plugin is listed and an OCI image is published
-
-#### Scenario: OGX entity provider is listed
-
-- **GIVEN** the same overlays workspace
-- **THEN** `plugins/ogx-entity-provider` is also listed
+- **THEN** its scripts do not define `export-dynamic`
+- **AND** its published `files` do not include `dist-dynamic/`
 
 ### Requirement: Plugin Loads in RHDH
 

@@ -24,10 +24,19 @@ AI assets MUST render as a card or table list.
 
 #### Scenario: Responsive layout
 
-- **WHEN** the viewport is desktop width
-- **THEN** the card grid renders 3 columns
-- **WHEN** the viewport is mobile width
-- **THEN** the card grid renders 1 column
+- **WHEN** the card grid responds to viewport width
+- **THEN** it renders 1 column initially, 2 at `sm`, and 4 at `lg`
+
+### Requirement: View, Sorting, and Pagination
+
+The browse page MUST support grid and table presentation, sortable table
+columns, and client-side pagination.
+
+#### Scenario: Use table controls
+
+- **WHEN** the developer selects table view, sorting, or pagination
+- **THEN** the corresponding ordered result page is displayed
+- **AND** non-default view and pagination state are reflected in the URL
 
 ### Requirement: Keyword Search
 
@@ -64,8 +73,9 @@ Filter controls MUST narrow the card grid by entity metadata.
 #### Scenario: Clear filters
 
 - **WHEN** the developer clears all filters
-- **THEN** the URL resets to the base path
-- **AND** the full unfiltered card grid is restored
+- **THEN** the search, page, and registered filter URL parameters are cleared
+- **AND** the selected view and page size are preserved
+- **AND** the full unfiltered result set is restored in the selected view
 
 ### Requirement: Loading, Empty, and Error States
 

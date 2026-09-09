@@ -23,13 +23,13 @@ Playwright E2E (RHIDP-15480) moved to `ai-catalog-frontend-e2e`.
 
 ## 2. Browse Page with Search and Filters (RHIDP-15166)
 
-- [x] 2.1 Implement `AiCatalogPage` with responsive card grid layout (BUI Grid.Root/Grid.Item, 3 columns desktop, 1 mobile)
+- [x] 2.1 Implement `AiCatalogPage` with responsive card grid layout (BUI Grid.Root/Grid.Item, 1/2/4 columns by breakpoint)
 - [x] 2.2 Implement `AiAssetCard` with BUI Card — name, description, category badge, lifecycle, tags, owner, version, source
 - [x] 2.3 Type is a badge on each card and a filter
 - [x] 2.4 Implement debounced search bar (BUI SearchField, 300ms, filters by name/description/tags)
-- [x] 2.5 Implement filter controls — category (CheckboxGroup), lifecycle (CheckboxGroup), tags (Select multi), owner (SearchAutocomplete), source (CheckboxGroup)
+- [x] 2.5 Implement category (type), provider, owner, and tags filters through the generic multi-select sidebar
 - [x] 2.6 Filters combine as AND; URL query param sync for all filter + search state
-- [x] 2.7 Add client-side pagination (BUI TablePagination) and sort control (name, last updated)
+- [x] 2.7 Add client-side pagination (BUI TablePagination), grid/table toggle, and table sorting by name, type, owner, or provider
 - [x] 2.8 Implement loading state (BUI Skeleton cards), empty state ("No AI assets match" + clear-filters), error state (BUI Alert + Retry)
 - [x] 2.9 Add error boundary so catalog-unreachable does not crash RHDH shell
 - [x] 2.10 Card click navigates to catalog entity detail page (`/catalog/:namespace/:kind/:name`)
@@ -44,13 +44,13 @@ Playwright E2E (RHIDP-15480) moved to `ai-catalog-frontend-e2e`.
 - [x] 3.3 Implement `VersionListCard` — show only `rhdh.io/ai-asset-version` when present
 - [x] 3.4 Implement `UsageTab` — Boost entity-content tab; contact-owner when permission is denied; when allowed, link to TechDocs if annotated and show `metadata.links`
 - [x] 3.5 Wire cards and Usage tab via EntityCardBlueprint/EntityContentBlueprint with `isAiAsset` filter
-- [x] 3.8 i18n: all user-facing strings via translation resources
-- [x] 3.9 WCAG 2.1 AA for all interactive elements
-- [x] 3.10 Unit tests for each card and the Usage tab
+- [x] 3.6 i18n: all user-facing strings via translation resources
+- [x] 3.7 WCAG 2.1 AA for all interactive elements
+- [x] 3.8 Unit tests for each card and the Usage tab
 
 ## 4. Extensible Browse Filters via NFS (RHIDP-15449)
 
-- [x] 4.1 Define `FilterDefinition` interface in `src/blueprints/AiCatalogFilterBlueprint.ts` — fields: `urlParam` (string), `label` (string), `getOptions(entities) => {id, label}[]`, `matchEntity(entity, values) => boolean`, `priority` (number)
+- [x] 4.1 Define `FilterDefinition` interface in `src/blueprints/AiCatalogFilterBlueprint.ts` — fields: `urlParam` (string), `label` (string fallback), optional `labelKey` (translated heading), `getOptions(entities) => {id, label}[]`, `matchEntity(entity, values) => boolean`, `priority` (number)
 - [x] 4.2 Create single `filterDefinitionDataRef` via `createExtensionDataRef<FilterDefinition>` in same file
 - [x] 4.3 Create `AiCatalogFilterBlueprint` via `createExtensionBlueprint` — kind `ai-catalog-filter`, attaches to `page:boost/ai-catalog` input `filters`, params are `FilterDefinition` fields, no config schema. Factory outputs the `FilterDefinition` via the single data ref.
 - [x] 4.4 Create `src/filters/builtInFilterDefinitions.ts` with 4 plain `FilterDefinition` objects:

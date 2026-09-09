@@ -8,7 +8,8 @@ agent entity provider with the Catalog processing extension point. Both
 providers use the Backstage scheduler for periodic refreshes.
 
 The default model refresh interval is 60 seconds and the default agent refresh
-interval is 300 seconds. These intervals are configurable.
+interval is 300 seconds. These intervals are configurable through
+`boost.entityProviders.ogx`.
 
 ## Configuration resolution
 
@@ -16,9 +17,10 @@ The module first reads `boost.entityProviders.ogx`. If that configuration is
 not present, it falls back to `boost.providers.ogx`. If neither is present,
 the OGX base URL defaults to `http://localhost:8321`.
 
-The supported configuration includes the base URL, optional API key, model and
+The primary configuration supports the base URL, optional API key, model and
 agent refresh intervals, default agent settings, maximum agent turns, and the
-configured agent list.
+configured agent list. The legacy `boost.providers.ogx` fallback does not read
+the refresh interval fields, so the default intervals apply on that path.
 
 ## Model-server entities
 
