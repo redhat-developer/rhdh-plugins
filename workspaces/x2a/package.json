@@ -26,7 +26,7 @@
     "test:e2e:nfs": "APP_MODE=nfs playwright test",
     "test:e2e:all": "yarn test:e2e:nfs",
     "playwright": "bash -c 'if [[ $1 == test ]]; then echo \"Skipping test:e2e:all e2e tests (no real tests yet)\"; else npx playwright \"$@\"; fi' _",
-    "fix": "backstage-cli repo fix --publish",
+    "fix": "node ../../scripts/workspace-fix.mjs",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
@@ -84,6 +84,9 @@
     "@backstage/plugin-user-settings": "0.9.1",
     "zod@^3.25.76 || ^4.0.0": "3.25.76",
     "zod@^3.25 || ^4.0": "3.25.76"
+  },
+  "rhdhFix": {
+    "publish": true
   },
   "prettier": "@backstage/cli/config/prettier",
   "lint-staged": {

@@ -4,4 +4,5 @@ dist-scalprum
 dist-types
 coverage
 .vscode
-.eslintrc.js
+!.eslintrc.js
+!.prettierrc.js

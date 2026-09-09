@@ -42,6 +42,10 @@ export const darkThemeOverrides: Partial<ThemeConfigPalette> = {
     primary: '#ffffff',
     secondary: '#c7c7c7',
   },
+  // MUI default #f44336 fails WCAG AA on #292929 paper (~3.95:1)
+  error: {
+    main: '#FF5252',
+  },
   background: {
     default: '#292929',
     paper: '#292929',

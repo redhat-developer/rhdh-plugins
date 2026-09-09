@@ -277,6 +277,17 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
             backgroundColor: 'transparent',
           },
         },
+        containedError: ({ theme }) =>
+          theme.palette.mode === 'dark'
+            ? {
+                // error.main is light for dark outlined/text; contained needs darker red
+                backgroundColor: '#E22134',
+                color: '#ffffff',
+                '&:hover': {
+                  backgroundColor: '#CA001B',
+                },
+              }
+            : {},
         text: {
           '&:focus-visible': {
             boxShadow: `inset 0 0 0 2px ${rhdhPrimary.main}`,
@@ -287,9 +298,11 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
     };
     components.MuiToggleButton = {
       styleOverrides: {
-        root: {
+        root: ({ theme }) => ({
           textTransform: 'none',
-        },
+          // MUI default unselected label (#9e9e9e) fails AA on white (~2.67:1)
+          color: theme.palette.text.secondary,
+        }),
       },
     };
     components.MuiIconButton = {

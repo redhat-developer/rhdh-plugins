@@ -25,7 +25,7 @@
     "test:e2e:all": "yarn test:e2e:legacy && yarn test:e2e:nfs",
     "test:e2e:ci": "yarn test:e2e:all",
     "playwright": "bash -c 'if [[ $@ == test ]]; then yarn test:e2e:all; else npx playwright \"$@\"; fi' _",
-    "fix": "backstage-cli repo fix",
+    "fix": "node ../../scripts/workspace-fix.mjs",
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
     "lint:check": "backstage-cli package lint",

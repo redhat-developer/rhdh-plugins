@@ -1,2 +1,6 @@
 playwright.config.ts
 e2e-tests/
+dist-dynamic
+dist-scalprum
+!.eslintrc.js
+!.prettierrc.js

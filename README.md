@@ -13,3 +13,7 @@ Contributions are welcome! To contribute a plugin, please follow the guidelines 
 ## Plugins Workflow
 
 The `rhdh-plugins` repository is organized into multiple workspaces, with each workspace containing a plugin or a set of related plugins. Each workspace operates independently, with its own release cycle and dependencies managed via npm. When a new changeset is added (each workspace has its own `.changesets` directory), a "Version packages ($workspace_name)" PR is automatically generated. Merging this PR triggers the release of all plugins in the workspace and updates the corresponding `CHANGELOG` files.
+
+## yarn fix
+
+From a workspace directory (`workspaces/<name>`), run `yarn fix` to auto-correct fixable package, lint, and format issues. The pipeline is defined once in `scripts/workspace-fix.mjs`. See [CONTRIBUTING.md](CONTRIBUTING.md#yarn-fix) for the fixer order and how to add a new fixer.
