@@ -7,10 +7,14 @@
   "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./app-defaults-translations-module": "./src/appDefaultsTranslationsModuleExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
+      "app-defaults-translations-module": [
+        "src/appDefaultsTranslationsModuleExport.ts"
+      ],
       "package.json": [
         "package.json"
       ]
@@ -43,11 +47,23 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
+    "@backstage/catalog-client": "^1.16.1",
+    "@backstage/core-components": "^0.18.11",
+    "@backstage/core-plugin-api": "^1.12.7",
     "@backstage/frontend-plugin-api": "^0.17.2",
+    "@backstage/plugin-api-docs": "^0.14.2",
     "@backstage/plugin-app-react": "^0.2.4",
+    "@backstage/plugin-catalog": "^2.0.6",
+    "@backstage/plugin-catalog-graph": "^0.6.5",
+    "@backstage/plugin-catalog-react": "^3.1.0",
+    "@backstage/plugin-scaffolder": "^1.38.0",
+    "@backstage/plugin-techdocs": "^1.17.7",
+    "@backstage/plugin-techdocs-common": "^0.1.1",
+    "@backstage/ui": "^0.16.0",
     "@mui/icons-material": "^5.17.1",
     "@mui/material": "5.18.0",
-    "@red-hat-developer-hub/backstage-plugin-app-react": "workspace:^"
+    "@red-hat-developer-hub/backstage-plugin-app-react": "workspace:^",
+    "@remixicon/react": ">=4.6.0 <4.9.0"
   },
   "peerDependencies": {
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
@@ -63,7 +79,7 @@
     "cross-fetch": "^4.0.0",
     "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
     "react-dom": "^18.0.2",
-    "react-router-dom": "^6.30.2"
+    "react-router-dom": "^6.30.6"
   },
   "files": [
     "dist"

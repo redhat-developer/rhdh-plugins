@@ -360,7 +360,9 @@ const _default: OverridableFrontendPlugin<
           {
             title: string;
             metrics: string[];
+            titleKey?: string | undefined;
             description?: string | undefined;
+            descriptionKey?: string | undefined;
           }
         >;
       };
@@ -371,7 +373,9 @@ const _default: OverridableFrontendPlugin<
               {
                 title: string;
                 metrics: string[];
+                titleKey?: string | undefined;
                 description?: string | undefined;
+                descriptionKey?: string | undefined;
               }
             >
           | undefined;
@@ -395,7 +399,9 @@ export interface ScorecardLayoutProps {
     string,
     {
       title: string;
+      titleKey?: string;
       description?: string;
+      descriptionKey?: string;
       metrics: string[];
     }
   >;

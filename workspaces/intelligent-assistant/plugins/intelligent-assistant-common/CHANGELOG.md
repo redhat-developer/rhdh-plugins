@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common
 
+## 5.0.1
+
+### Patch Changes
+
+- fe51be2: Backstage version bump to v1.54.6
+
+## 5.0.0
+
+### Major Changes
+
+- 5741af9: Consolidate Intelligent Assistant RBAC permissions into four feature-linked sets: `intelligent-assistant.chat`, `intelligent-assistant.notebooks`, `intelligent-assistant.mcp.tools`, and `intelligent-assistant.skills`. Update backend routes, frontend permission checks, example RBAC policies, and documentation to use the new permission names and exported constants.
+
+## 4.3.0
+
 ## 4.2.0
 
 ### Minor Changes
@@ -112,6 +126,10 @@
 ## 2.9.1
 
 ## 2.9.0
+
+## 2.8.7
+
+## 2.8.6
 
 ## 2.8.5
 

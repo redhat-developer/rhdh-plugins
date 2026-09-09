@@ -76,7 +76,7 @@
   "peerDependencies": {
     "react": "^17.0.0 || ^18.0.0",
     "react-dom": "^17.0.0 || ^18.0.0",
-    "react-router-dom": "^6.3.0"
+    "react-router-dom": "^6.30.6"
   },
   "devDependencies": {
     "@backstage/cli": "^0.36.3",
@@ -86,7 +86,7 @@
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "react": "^17.0.0 || ^18.0.0",
-    "react-router-dom": "^6.3.0"
+    "react-router-dom": "^6.30.6"
   },
   "files": [
     "app-config.dynamic.yaml",

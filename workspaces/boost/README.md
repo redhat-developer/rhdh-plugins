@@ -54,7 +54,7 @@ All specs are currently in **draft** status (pre-implementation). They will be m
 
 ## Compatibility
 
-This workspace is aligned with **Backstage 1.52.0** (see [`backstage.json`](backstage.json)).
+This workspace is aligned with **Backstage 1.54.6** (see [`backstage.json`](backstage.json)).
 
 ## Development
 
@@ -71,6 +71,9 @@ yarn start
 
 # Run tests
 yarn test:all
+
+# Run Playwright e2e tests (starts the dev app unless PLAYWRIGHT_URL is set)
+yarn test:e2e
 
 # Build all plugins
 yarn build:all

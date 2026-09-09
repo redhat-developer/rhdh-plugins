@@ -25,6 +25,7 @@ import {
   LightspeedMessages,
   evaluateMessage,
   formatMcpSelectedCount,
+  formatSourcesChipLabel,
 } from '../utils/translations';
 
 export type DisplayMode = 'Overlay' | 'Dock to window' | 'Fullscreen';
@@ -459,6 +460,64 @@ const buttonCounts: Record<DisplayMode, number> = {
   'Dock to window': 2,
   Fullscreen: 3,
 };
+
+export function botMessageRegion(page: Page): Locator {
+  return page.locator('.pf-chatbot__message--bot').last();
+}
+
+export function inlineSourceCards(page: Page): Locator {
+  return page.locator('.pf-chatbot__sources-card');
+}
+
+export async function expectInlineRagSourceLabels(
+  page: Page,
+  ragIds: string[],
+) {
+  const botMessage = botMessageRegion(page);
+  await expect(botMessage.locator('.pf-chatbot__sources-card')).toHaveCount(1);
+
+  for (let index = 0; index < ragIds.length; index++) {
+    await expect(
+      botMessage.getByText(ragIds[index], { exact: true }),
+    ).toBeVisible();
+    if (index < ragIds.length - 1) {
+      await botMessage.getByRole('button', { name: 'Go to next page' }).click();
+    }
+  }
+}
+
+export async function expectNoInlineSourceCards(page: Page) {
+  const botMessage = botMessageRegion(page);
+  await expect(botMessage.locator('.pf-chatbot__sources-card')).toHaveCount(0);
+  await expect(
+    botMessage.getByRole('navigation', { name: 'Pagination' }),
+  ).toHaveCount(0);
+}
+
+export async function openSourcesPopover(page: Page, t: LightspeedMessages) {
+  const chipLabel = formatSourcesChipLabel(t, 1);
+  const sourcesChip = page.getByRole('button', { name: chipLabel });
+  if (await sourcesChip.isVisible().catch(() => false)) {
+    await sourcesChip.click();
+    return;
+  }
+  const pluralChip = page.getByRole('button', {
+    name: formatSourcesChipLabel(t, 2),
+  });
+  await pluralChip.click();
+}
+
+export async function expectSourcesPopoverRagLabels(
+  page: Page,
+  t: LightspeedMessages,
+  ragIds: string[],
+) {
+  const dialog = page.getByRole('dialog', { name: t['sources.modal.title'] });
+  await expect(dialog).toBeVisible();
+  for (const ragId of ragIds) {
+    await expect(dialog.getByText(ragId, { exact: true })).toBeVisible();
+  }
+}
 
 export async function expectConversationArea(
   page: Page,

@@ -39,15 +39,40 @@ export async function assertChatDialogInitialState(
 
   await assertDrawerState(page, 'open', translations);
 
-  await expect(page.locator('.pf-v6-c-drawer__panel-main'))
-    .toMatchAriaSnapshot(`
-      - heading "${translations['conversation.category.pinnedChats']}"
-      - menu:
-        - menuitem "${translations['chatbox.emptyState.noPinnedChats']}"
-      - heading "${translations['conversation.category.recent']}"
-      - menu:
-        - menuitem "${translations['chatbox.emptyState.noRecentChats']}"
-      `);
+  const drawerPanel = page.locator('.pf-v6-c-drawer__panel-main');
+
+  await expect(
+    drawerPanel.getByRole('button', {
+      name: translations['menu.newConversation'],
+    }),
+  ).toBeDisabled();
+  await expect(
+    drawerPanel.getByRole('button', { name: translations['sort.label'] }),
+  ).toBeVisible();
+  await expect(
+    drawerPanel.getByRole('heading', {
+      name: translations['conversation.category.pinnedChats'],
+      level: 3,
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    drawerPanel.getByRole('menuitem', {
+      name: translations['chatbox.emptyState.noPinnedChats'],
+    }),
+  ).toBeDisabled();
+  await expect(
+    drawerPanel.getByRole('heading', {
+      name: translations['conversation.category.recent'],
+      level: 3,
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    drawerPanel.getByRole('menuitem', {
+      name: translations['chatbox.emptyState.noRecentChats'],
+    }),
+  ).toBeDisabled();
 }
 
 export async function closeChatDrawer(
