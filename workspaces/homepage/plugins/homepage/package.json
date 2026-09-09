@@ -72,7 +72,7 @@
     "@backstage/core-plugin-api": "^1.12.9",
     "@backstage/frontend-plugin-api": "^0.18.0",
     "@backstage/plugin-app-react": "^0.2.6",
-    "@backstage/plugin-catalog-react": "^3.2.1",
+    "@backstage/plugin-catalog-react": "^3.2.2",
     "@backstage/plugin-home": "^0.9.9",
     "@backstage/plugin-home-react": "^0.1.41",
     "@backstage/plugin-search-react": "^1.11.7",
