@@ -17961,10 +17961,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-to-chromium@npm:1.5.419":
-  version: 1.5.419
-  resolution: "electron-to-chromium@npm:1.5.419"
-  checksum: 10c0/e9ffd64ef9c41b970ee6a822e845f03251c16a17f33f86ad29c5daf76a445c07eeb2044be5f0212cb8ea0122277f4bc8c5b7fe448372d4b5d0a7523f7f12b2c1
+"electron-to-chromium@npm:1.5.422":
+  version: 1.5.422
+  resolution: "electron-to-chromium@npm:1.5.422"
+  checksum: 10c0/bd388e0d3ab94e6fe792e27eab886071050f8f7575f1ec20e30e530733d1f8270eeff7a0e75e42c9405de54addd8df3d1f9d58b40e53f0a44fbe4fb8f1e7b930
   languageName: node
   linkType: hard
 
