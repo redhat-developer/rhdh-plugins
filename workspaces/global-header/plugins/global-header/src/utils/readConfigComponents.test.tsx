@@ -18,10 +18,11 @@ import { render, screen } from '@testing-library/react';
 import { ConfigReader } from '@backstage/config';
 import { readConfigComponents } from './readConfigComponents';
 
-jest.mock('../components/onMountHeaderBundle', () => ({
-  HeaderIconButton: ({ title, to }: { title: string; to: string }) => (
-    <a href={to} aria-label={title} />
-  ),
+jest.mock('../components/loaders', () => ({
+  loadHeaderIconButton:
+    async () =>
+    ({ title, to }: { title: string; to: string }) =>
+      <a href={to} aria-label={title} />,
 }));
 
 describe('readConfigComponents', () => {

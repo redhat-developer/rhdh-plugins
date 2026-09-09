@@ -26,6 +26,7 @@ import {
   globalHeaderComponentDataRef,
   globalHeaderMenuItemDataRef,
 } from './dataRefs';
+import { loadHeaderBundle, loadHeaderIconButton } from '../components/loaders';
 
 /**
  * Params accepted by {@link GlobalHeaderComponentBlueprint}.
@@ -135,9 +136,7 @@ function createDataDrivenToolbarLoader(
 ): () => Promise<ComponentType<any>> {
   return async () => {
     if (params.link) {
-      const { HeaderIconButton } = await import(
-        '../components/onMountHeaderBundle'
-      );
+      const HeaderIconButton = await loadHeaderIconButton();
       return () => (
         <HeaderIconButton
           title={params.title ?? ''}
@@ -152,16 +151,18 @@ function createDataDrivenToolbarLoader(
     const [
       { default: IconButton },
       { default: Tooltip },
-      { HeaderIcon },
+      onMountBundle,
       { useTranslation },
       { translateWithFallback },
     ] = await Promise.all([
       import('@mui/material/IconButton'),
       import('@mui/material/Tooltip'),
-      import('../components/HeaderIcon/HeaderIcon'),
+      loadHeaderBundle(),
       import('../hooks/useTranslation'),
       import('../utils/translationUtils'),
     ]);
+
+    const { HeaderIcon } = onMountBundle;
 
     return () => {
       const { t } = useTranslation();

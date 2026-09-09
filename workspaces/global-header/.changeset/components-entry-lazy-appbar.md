@@ -10,4 +10,4 @@ Building-block UI lives on the `/components` package subpath (`src/componentsExp
 
 `globalHeaderModule` registers system icon ids (`article`, `bugReport`, `quiz`, `forum`, `dashboard`, etc.) as outlined MUI SVGs for config and default extensions.
 
-On-mount header widgets (AppBar, logo, search input, spacers, icon buttons, dropdown _triggers_) share a single async chunk via `src/components/onMountHeaderBundle.ts`. Dropdown menus, starred lists, and search-result rows stay on separate `import()` split points so they are not required for first paint.
+On-mount header widgets (AppBar, logo, search input, spacers, icon buttons) share a single critical async chunk via `loadHeaderBundle()` in `src/components/loaders.ts`, backed by `onMountHeaderBundle.ts` and `onMount/index.ts`. Dropdown wrappers (profile, help, app launcher, starred) use separate interaction loaders so menu contents stay on their own `import()` split points and are not required for first paint.

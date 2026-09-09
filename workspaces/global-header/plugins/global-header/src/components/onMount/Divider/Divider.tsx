@@ -14,7 +14,25 @@
  * limitations under the License.
  */
 
-export { useDropdownManager } from './useDropdownManager';
-export { useRetainMenuContent } from './useRetainMenuContent';
-export { useTranslation } from './useTranslation';
-export { useLanguage } from './useLanguage';
+import type { CSSProperties } from 'react';
+import MUIDivider from '@mui/material/Divider';
+
+/**
+ * @public
+ */
+export interface DividerProps {
+  layout?: CSSProperties;
+}
+
+/**
+ * @public
+ */
+export const Divider = ({ layout }: DividerProps) => {
+  return (
+    <MUIDivider
+      orientation="vertical"
+      flexItem
+      sx={{ borderColor: 'inherit', opacity: 0.25, marginX: 1, ...layout }}
+    />
+  );
+};

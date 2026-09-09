@@ -14,7 +14,14 @@
  * limitations under the License.
  */
 
-export { useDropdownManager } from './useDropdownManager';
-export { useRetainMenuContent } from './useRetainMenuContent';
-export { useTranslation } from './useTranslation';
-export { useLanguage } from './useLanguage';
+import { render } from '@testing-library/react';
+
+import { Divider } from './Divider';
+
+describe('Divider', () => {
+  it('render some default styles', () => {
+    const { debug, container } = render(<Divider />);
+    debug();
+    expect(container.firstElementChild?.nodeName).toEqual('HR');
+  });
+});

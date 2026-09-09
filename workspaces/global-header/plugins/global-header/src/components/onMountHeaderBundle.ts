@@ -15,29 +15,21 @@
  */
 
 /**
- * On-mount global header widgets (AppBar shell + default toolbar items).
+ * Performance boundary for the single critical first-paint header async chunk.
  *
- * Every default toolbar `loader` and the lazy AppBar must `import()` this
- * same module so webpack/Rspack emit one async chunk instead of one request
- * per widget.
+ * This module contains only components required for initial header rendering.
+ * It is intentionally imported through a single dynamic import
+ * (`loadHeaderBundle()` in `loaders.ts`) so all critical header UI is emitted
+ * into one async chunk rather than creating one network request per toolbar
+ * extension.
  *
- * Do not statically import this file from the package root (`index.ts`,
- * `plugin.ts`, `blueprints.tsx`) or it lands on the Module Federation sync
- * graph. Dropdown menus, search results, and highlighter langs stay on their
- * own `import()` / `React.lazy` split points.
+ * Interaction-only UI (dropdown menus, search result rows, etc.) must not be
+ * added here — use separate loaders in `loaders.ts`.
+ *
+ * Do not statically import from sync entrypoints (`index.ts`, `plugin.ts`,
+ * `blueprints.tsx`, `globalHeaderModule.tsx`).
  *
  * @internal
  */
 
-export { GlobalHeader } from './GlobalHeader';
-export { CompanyLogo } from './CompanyLogo/CompanyLogo';
-export { SearchComponent } from './SearchComponent/SearchComponent';
-export { Spacer } from './Spacer/Spacer';
-export { HeaderIconButton } from './HeaderIconButton/HeaderIconButton';
-export { HeaderIcon } from './HeaderIcon/HeaderIcon';
-export { StarredDropdown } from './HeaderDropdownComponent/StarredDropdown';
-export { ApplicationLauncherDropdown } from './ApplicationLauncherDropdown';
-export { HelpDropdown } from './HelpDropdown';
-export { NotificationButton } from './NotificationButton/NotificationButton';
-export { Divider } from './Divider/Divider';
-export { ProfileDropdown } from './ProfileDropdown';
+export * from './onMount';

@@ -21,7 +21,7 @@ import Box from '@mui/material/Box';
 
 import { useGlobalHeaderMenuItems } from '../extensions/GlobalHeaderContext';
 import { buildDropdownEntries } from '../utils/menuItemGrouping';
-import { useDropdownManager } from '../hooks';
+import { useDropdownManager, useRetainMenuContent } from '../hooks';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent/HeaderDropdownComponent';
 
 const GlobalHeaderDropdownContent = lazy(() =>
@@ -89,6 +89,8 @@ export const GlobalHeaderDropdown = ({
   const [menuValidity, setMenuValidity] = useState<MenuValidity>('pending');
 
   const isOpen = Boolean(anchorEl);
+  const { shouldRenderMenuContent, handleMenuTransitionExited } =
+    useRetainMenuContent(isOpen);
 
   useEffect(() => {
     if (!trackValidity) {
@@ -148,9 +150,9 @@ export const GlobalHeaderDropdown = ({
     hasNoContributions || (trackValidity && menuValidity === 'empty');
 
   let menuBody: ReactNode = null;
-  if (isOpen && hasNoContributions) {
+  if (shouldRenderMenuContent && hasNoContributions) {
     menuBody = emptyState;
-  } else if (isOpen) {
+  } else if (shouldRenderMenuContent) {
     menuBody = (
       <Suspense fallback={null}>
         {trackValidity && showEmptyState ? emptyState : null}
@@ -185,6 +187,7 @@ export const GlobalHeaderDropdown = ({
       onClose={handleClose}
       anchorEl={anchorEl}
       menuListRef={trackValidity ? menuListRef : undefined}
+      onTransitionExited={handleMenuTransitionExited}
     >
       {menuBody}
     </HeaderDropdownComponent>

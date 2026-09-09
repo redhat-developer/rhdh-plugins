@@ -14,7 +14,31 @@
  * limitations under the License.
  */
 
-export { useDropdownManager } from './useDropdownManager';
-export { useRetainMenuContent } from './useRetainMenuContent';
-export { useTranslation } from './useTranslation';
-export { useLanguage } from './useLanguage';
+import type { CSSProperties } from 'react';
+/**
+ * @public
+ */
+export interface SpacerProps {
+  growFactor?: number;
+  minWidth?: number | string;
+  layout?: CSSProperties;
+}
+
+/**
+ * @public
+ */
+export const Spacer = ({
+  growFactor = 1,
+  minWidth = 1,
+  layout,
+}: SpacerProps) => {
+  return (
+    <div
+      style={{
+        flexGrow: growFactor,
+        minWidth: typeof minWidth === 'number' ? minWidth * 8 : minWidth,
+        ...layout,
+      }}
+    />
+  );
+};

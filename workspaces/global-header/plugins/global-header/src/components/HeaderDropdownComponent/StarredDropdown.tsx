@@ -18,7 +18,7 @@ import { lazy, Suspense } from 'react';
 import { AppIcon } from '@backstage/core-components';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 
-import { useDropdownManager } from '../../hooks';
+import { useDropdownManager, useRetainMenuContent } from '../../hooks';
 import { HEADER_TOOLBAR_ICON_SIZE } from '../../icons/headerToolbarIcon';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -35,6 +35,8 @@ export const StarredDropdown = () => {
   const { anchorEl, handleOpen, handleClose } = useDropdownManager();
   const { t } = useTranslation();
   const isOpen = Boolean(anchorEl);
+  const { shouldRenderMenuContent, handleMenuTransitionExited } =
+    useRetainMenuContent(isOpen);
 
   return (
     <HeaderDropdownComponent
@@ -50,8 +52,9 @@ export const StarredDropdown = () => {
       anchorEl={anchorEl}
       tooltip={t('starred.title')}
       isIconButton
+      onTransitionExited={handleMenuTransitionExited}
     >
-      {isOpen ? (
+      {shouldRenderMenuContent ? (
         <Suspense fallback={null}>
           <StarredDropdownMenu handleClose={handleClose} />
         </Suspense>

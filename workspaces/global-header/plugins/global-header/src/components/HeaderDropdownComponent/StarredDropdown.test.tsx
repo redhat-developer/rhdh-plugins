@@ -33,6 +33,10 @@ jest.mock('@backstage/plugin-catalog-react', () => ({
 
 jest.mock('../../hooks', () => ({
   useDropdownManager: jest.fn(),
+  useRetainMenuContent: (isMenuOpen: boolean) => ({
+    shouldRenderMenuContent: isMenuOpen,
+    handleMenuTransitionExited: jest.fn(),
+  }),
 }));
 
 // Mock translation hooks
