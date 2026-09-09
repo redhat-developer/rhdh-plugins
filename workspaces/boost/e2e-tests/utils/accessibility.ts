@@ -26,6 +26,8 @@ import { expect, type Page, type TestInfo } from '@playwright/test';
  * suppression once the AI Catalog UI violations are fixed (including
  * color-contrast on category badges when the catalog has assets).
  */
+// Intentional divergence from other workspace copies: callers can override via
+// options.disableRules; default suppression is tied to RHDHBUGS-3738.
 const DEFAULT_AXE_DISABLE_RULES = ['nested-interactive'] as const;
 
 export async function runAccessibilityTests(

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type Route } from '@playwright/test';
 
 import { runAccessibilityTests } from './utils/accessibility';
 
@@ -74,16 +74,23 @@ function catalogCount(page: Page, n: number) {
   return page.getByText(`All (${n})`, { exact: true });
 }
 
+function isCatalogEntitiesPath(url: URL): boolean {
+  return (
+    url.pathname.endsWith('/api/catalog/entities') &&
+    !url.pathname.includes('/by-query')
+  );
+}
+
 async function mockCatalogEntities(page: Page, items: unknown[]) {
-  const fulfill = (route: { fulfill: (r: object) => Promise<void> }) =>
+  const fulfillItemsWrapper = async (route: Route) =>
     route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ items }),
     });
 
-  await page.route('**/api/catalog/entities/by-query**', fulfill);
-  await page.route('**/api/catalog/entities?**', async route => {
+  await page.route('**/api/catalog/entities/by-query**', fulfillItemsWrapper);
+  await page.route(isCatalogEntitiesPath, async route => {
     if (route.request().method() === 'GET') {
       await route.fulfill({
         status: 200,
@@ -92,7 +99,7 @@ async function mockCatalogEntities(page: Page, items: unknown[]) {
       });
       return;
     }
-    await fulfill(route);
+    await fulfillItemsWrapper(route);
   });
 }
 

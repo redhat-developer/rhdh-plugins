@@ -16,6 +16,10 @@
 
 import { defineConfig } from '@playwright/test';
 
+// Boost is NFS-only (no legacy app), so APP_MODE is not used. English-only
+// until per-locale test_yamls land (RHIDP-15480 follow-up).
+const LOCALES = ['en'] as const;
+
 export default defineConfig({
   timeout: 2 * 60 * 1000,
   expect: { timeout: 10_000 },
@@ -41,10 +45,8 @@ export default defineConfig({
     actionTimeout: 30_000,
   },
   outputDir: 'node_modules/.cache/e2e-test-results',
-  projects: [
-    {
-      name: 'en',
-      use: { channel: 'chrome', locale: 'en' },
-    },
-  ],
+  projects: LOCALES.map(locale => ({
+    name: locale,
+    use: { channel: 'chrome' as const, locale },
+  })),
 });
