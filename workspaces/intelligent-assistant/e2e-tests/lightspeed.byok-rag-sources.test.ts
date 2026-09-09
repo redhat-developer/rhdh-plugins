@@ -60,7 +60,7 @@ import {
 const BYOK_MATCH_PROMPT = 'What does my custom knowledge document cover?';
 const NO_BYOK_MATCH_PROMPT = 'Tell me a generic fact with no citations';
 
-test.describe('BYOK RAG source labeling (RHIDP-14772)', () => {
+test.describe('BYOK RAG source labeling', () => {
   let sharedPage: Page;
   let translations: LightspeedMessages;
   let locale: string;
