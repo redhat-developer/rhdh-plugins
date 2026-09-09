@@ -1,5 +1,14 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.0.1
+
+### Patch Changes
+
+- 0f8225e: Show the LCORE `source` field as a label on each referenced document card so that RAG sources are distinguishable.
+- fe51be2: Backstage version bump to v1.54.6
+- Updated dependencies [fe51be2]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.0.1
+
 ## 5.0.0
 
 ### Major Changes
