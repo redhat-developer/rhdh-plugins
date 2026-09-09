@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-app-auth
 
+## 1.0.1
+
+### Patch Changes
+
+- b3f837f: Updated dependency `react-router-dom` to `^6.30.6`.
+
 ## 1.0.0
 
 ### Major Changes

@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-app-defaults
 
+## 1.1.0
+
+### Minor Changes
+
+- a05b689: Add empty-state page overrides for the catalog, catalog graph, scaffolder, API docs, and TechDocs plugins.
+
+  Each override checks whether matching catalog entities exist before rendering the original page. When none are found, a translatable empty state with an illustration, an action link, and a support button is shown instead. All overrides plus the existing app defaults module are registered together through a `createFrontendFeatureLoader` default export, so a single package import loads everything. Translations are provided for English (default), German, Spanish, French, Italian, and Japanese.
+
+### Patch Changes
+
+- b3f837f: Updated dependency `react-router-dom` to `^6.30.6`.
+
 ## 1.0.0
 
 ### Major Changes
