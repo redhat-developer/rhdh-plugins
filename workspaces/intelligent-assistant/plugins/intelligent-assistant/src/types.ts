@@ -37,6 +37,7 @@ export type ReferencedDocument = {
   doc_title: string;
   doc_url: string;
   doc_description?: string;
+  source?: string;
 };
 
 /**
