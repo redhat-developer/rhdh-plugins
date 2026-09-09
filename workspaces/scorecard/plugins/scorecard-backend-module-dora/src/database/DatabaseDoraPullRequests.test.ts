@@ -19,10 +19,9 @@ import { DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID } from '../constants';
 import { collectorInputHash } from '../service/collectorHash';
 import { createTestDatabase } from './__fixtures__';
 import { DatabaseDoraDeployments } from './DatabaseDoraDeployments';
+import { EMPTY_INPUT_HASH } from './__fixtures__/inputHash';
 
 jest.setTimeout(60000);
-
-const EMPTY_INPUT_HASH = collectorInputHash({});
 
 async function seedDeployment(
   deploymentsDb: DatabaseDoraDeployments,

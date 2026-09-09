@@ -18,7 +18,7 @@ import { type Knex } from 'knex';
 import { randomUUID } from 'node:crypto';
 import {
   fromDoraDeploymentRow,
-  toDoraDeploymentRow,
+  toDoraDeploymentCreateRow,
   type DbDoraDeploymentRow,
 } from './mappers';
 import type { DbDoraDeployment, DbDoraDeploymentCreate } from './types';
@@ -32,7 +32,13 @@ export interface DoraDeploymentsStore {
     from: Date,
     to: Date,
   ): Promise<DbDoraDeployment[]>;
-  markPullRequestsSynced(deploymentId: string, syncedAt: Date): Promise<void>;
+  markPullRequestsSynced(
+    deploymentId: string,
+    pullRequestsSync: {
+      collectorId: string;
+      collectorInputHash: string;
+    },
+  ): Promise<void>;
   deleteOlderThan(olderThan: Date): Promise<number>;
 }
 
@@ -49,7 +55,7 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
     await this.dbClient(this.tableName)
       .insert(
         deployments.map(deployment => ({
-          ...toDoraDeploymentRow(deployment),
+          ...toDoraDeploymentCreateRow(deployment),
           id: randomUUID(),
         })),
       )
@@ -87,11 +93,15 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
 
   async markPullRequestsSynced(
     deploymentId: string,
-    syncedAt: Date,
+    pullRequestsSync: {
+      collectorId: string;
+      collectorInputHash: string;
+    },
   ): Promise<void> {
-    await this.dbClient(this.tableName)
-      .where('id', deploymentId)
-      .update({ pull_requests_synced_at: syncedAt });
+    await this.dbClient(this.tableName).where('id', deploymentId).update({
+      pull_requests_collector_id: pullRequestsSync.collectorId,
+      pull_requests_collector_input_hash: pullRequestsSync.collectorInputHash,
+    });
   }
 
   async deleteOlderThan(olderThan: Date): Promise<number> {

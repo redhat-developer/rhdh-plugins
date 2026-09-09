@@ -21,10 +21,9 @@ import {
 } from '../constants';
 import { collectorInputHash } from '../service/collectorHash';
 import { createTestDatabase } from './__fixtures__';
+import { EMPTY_INPUT_HASH } from './__fixtures__/inputHash';
 
 jest.setTimeout(60000);
-
-const EMPTY_INPUT_HASH = collectorInputHash({});
 
 describe('DatabaseDoraLastSync', () => {
   const databases = TestDatabases.create({

@@ -18,10 +18,9 @@ import { TestDatabases } from '@backstage/backend-test-utils';
 import { DORA_DEFAULT_INCIDENTS_COLLECTOR_ID } from '../constants';
 import { collectorInputHash } from '../service/collectorHash';
 import { createTestDatabase } from './__fixtures__';
+import { EMPTY_INPUT_HASH } from './__fixtures__/inputHash';
 
 jest.setTimeout(60000);
-
-const EMPTY_INPUT_HASH = collectorInputHash({});
 
 describe('DatabaseDoraIncidents', () => {
   const databases = TestDatabases.create({

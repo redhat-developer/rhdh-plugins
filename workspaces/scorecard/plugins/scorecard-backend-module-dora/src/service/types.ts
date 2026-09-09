@@ -26,3 +26,11 @@ export type WindowOptions = {
   windowFrom: Date;
   windowTo: Date;
 };
+
+export type SyncPullRequestsForDeploymentOptions = CollectorCallOptions & {
+  deploymentId: string;
+  baseCommitSha: string; // previous deployment
+  headCommitSha: string; // current deployment
+  deploymentPullRequestsCollectorId: string | null;
+  deploymentPullRequestsCollectorInputHash: string | null;
+};

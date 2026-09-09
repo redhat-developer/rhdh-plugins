@@ -25,9 +25,11 @@ exports.up = async function up(knex) {
     table.string('environment').nullable();
     // Millisecond precision so same-second deployments stay distinct for CFR/lead time.
     table.dateTime('created_at', { precision: 3 }).notNullable();
-    // Set once PRs have been fetched for this deployment, so zero-PR deployments
-    // are not re-fetched on every provider run. NULL means "PRs not yet fetched".
-    table.dateTime('pull_requests_synced_at', { precision: 3 }).nullable();
+    // Set pull requests collector identity columns once PRs have been fetched for this deployment
+    // to handle zero-PR deployments and pull requests collector changes.
+    // NULL means "PRs not yet fetched".
+    table.string('pull_requests_collector_id').nullable();
+    table.string('pull_requests_collector_input_hash').nullable();
 
     table.unique([
       'catalog_entity_ref',

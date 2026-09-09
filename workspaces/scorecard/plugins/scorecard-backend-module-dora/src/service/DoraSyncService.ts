@@ -39,7 +39,11 @@ import {
   deploymentPullRequestsCollectorInputSchema,
   deploymentPullRequestsCollectorOutputSchema,
 } from '../metricProviders/schemas/pullRequestSchemas';
-import type { WindowOptions, CollectorCallOptions } from './types';
+import type {
+  WindowOptions,
+  CollectorCallOptions,
+  SyncPullRequestsForDeploymentOptions,
+} from './types';
 import {
   coalesceInFlight,
   collectorDataBoundary,
@@ -66,12 +70,7 @@ export interface DoraSyncService {
   ): Promise<void>;
   syncPullRequestsForDeployment(
     entity: Entity,
-    options: CollectorCallOptions & {
-      deploymentId: string;
-      baseCommitSha: string;
-      headCommitSha: string;
-      pullRequestsSyncedAt: Date | null;
-    },
+    options: SyncPullRequestsForDeploymentOptions,
   ): Promise<void>;
 }
 
@@ -252,20 +251,16 @@ export class DefaultDoraSyncService implements DoraSyncService {
   }
 
   /**
-   * Retrieves and persists PRs for a deployment when none are stored yet and updates `deployment.pullRequestsSyncedAt`
-   * `deploymentId` is the persisted deployments row id (FK).
+   * Retrieves and persists PRs for a deployment when they have not yet been
+   * fetched for this PR collector identity, then records that identity on the
+   * deployment row. `deploymentId` is the persisted deployments row id (FK).
    *
    * Concurrent syncs for the same entity, collector, and deployment share one
    * in-flight fetch.
    */
   syncPullRequestsForDeployment(
     entity: Entity,
-    options: CollectorCallOptions & {
-      deploymentId: string;
-      baseCommitSha: string;
-      headCommitSha: string;
-      pullRequestsSyncedAt: Date | null;
-    },
+    options: SyncPullRequestsForDeploymentOptions,
   ): Promise<void> {
     const catalogEntityRef = stringifyEntityRef(entity);
     const key = `${catalogEntityRef}\0${options.collector.id}\0${options.collector.inputHash}\0${options.deploymentId}`;
@@ -276,23 +271,22 @@ export class DefaultDoraSyncService implements DoraSyncService {
 
   private async doSyncPullRequestsForDeployment(
     entity: Entity,
-    options: CollectorCallOptions & {
-      deploymentId: string;
-      baseCommitSha: string;
-      headCommitSha: string;
-      pullRequestsSyncedAt: Date | null;
-    },
+    options: SyncPullRequestsForDeploymentOptions,
     catalogEntityRef: string,
   ): Promise<void> {
     const collectorId = options.collector.id;
     const collectorInputHash = options.collector.inputHash;
 
     // A deployment interval (base..head commits) is historical and immutable, so
-    // once PRs have been fetched for it the answer never changes.
-    // `pullRequestsSyncedAt` being set means "already fetched".
-    if (options.pullRequestsSyncedAt !== null) {
+    // once PRs have been fetched for it by a given collector the answer never
+    // changes. A different PR collector id or input is a new data identity
+    // and must be fetched again.
+    if (
+      options.deploymentPullRequestsCollectorId === collectorId &&
+      options.deploymentPullRequestsCollectorInputHash === collectorInputHash
+    ) {
       this.logger.debug(
-        `Skipping DORA pull requests refresh for collector "${collectorId}" on "${catalogEntityRef}". Already synced at "${options.pullRequestsSyncedAt.toISOString()}"`,
+        `Skipping DORA pull requests refresh for collector "${collectorId}" on "${catalogEntityRef}". Already synced."`,
       );
       return;
     }
@@ -325,9 +319,9 @@ export class DefaultDoraSyncService implements DoraSyncService {
       })),
     );
 
-    await this.deploymentsDb.markPullRequestsSynced(
-      options.deploymentId,
-      new Date(),
-    );
+    await this.deploymentsDb.markPullRequestsSynced(options.deploymentId, {
+      collectorId,
+      collectorInputHash,
+    });
   }
 }

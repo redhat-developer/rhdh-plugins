@@ -37,6 +37,7 @@ import {
   parseDoraSyncConfig,
 } from './DoraConfig';
 import { collectorInputHash } from '../service/collectorHash';
+import { EMPTY_INPUT_HASH } from '../database/__fixtures__';
 
 describe('DoraConfig', () => {
   describe('parseCollectorConfig', () => {
@@ -53,7 +54,7 @@ describe('DoraConfig', () => {
       ).toEqual({
         id: exampleCollectorId,
         input: {},
-        inputHash: collectorInputHash({}),
+        inputHash: EMPTY_INPUT_HASH,
       });
     });
 
@@ -143,7 +144,7 @@ describe('DoraConfig', () => {
         deploymentsCollector: {
           id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
           input: {},
-          inputHash: collectorInputHash({}),
+          inputHash: EMPTY_INPUT_HASH,
         },
         productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
       });
@@ -219,12 +220,12 @@ describe('DoraConfig', () => {
         deploymentsCollector: {
           id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
           input: {},
-          inputHash: collectorInputHash({}),
+          inputHash: EMPTY_INPUT_HASH,
         },
         deploymentPullRequestsCollector: {
           id: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
           input: {},
-          inputHash: collectorInputHash({}),
+          inputHash: EMPTY_INPUT_HASH,
         },
         productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
       });
@@ -287,7 +288,7 @@ describe('DoraConfig', () => {
         incidentsCollector: {
           id: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
           input: {},
-          inputHash: collectorInputHash({}),
+          inputHash: EMPTY_INPUT_HASH,
         },
       });
     });
@@ -338,12 +339,12 @@ describe('DoraConfig', () => {
         deploymentsCollector: {
           id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
           input: {},
-          inputHash: collectorInputHash({}),
+          inputHash: EMPTY_INPUT_HASH,
         },
         incidentsCollector: {
           id: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
           input: {},
-          inputHash: collectorInputHash({}),
+          inputHash: EMPTY_INPUT_HASH,
         },
         productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
       });

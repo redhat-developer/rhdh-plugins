@@ -15,13 +15,15 @@
  */
 
 import { TestDatabases } from '@backstage/backend-test-utils';
-import { DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID } from '../constants';
+import {
+  DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+  DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+} from '../constants';
 import { collectorInputHash } from '../service/collectorHash';
 import { createTestDatabase } from './__fixtures__';
+import { EMPTY_INPUT_HASH } from './__fixtures__/inputHash';
 
 jest.setTimeout(60000);
-
-const EMPTY_INPUT_HASH = collectorInputHash({});
 
 describe('DatabaseDoraDeployments', () => {
   const databases = TestDatabases.create({
@@ -68,7 +70,8 @@ describe('DatabaseDoraDeployments', () => {
             commitSha: 'sha-1',
             environment: 'production',
             createdAt: new Date('2026-06-01T10:00:00.000Z'),
-            pullRequestsSyncedAt: null,
+            pullRequestsCollectorId: null,
+            pullRequestsCollectorInputHash: null,
           },
         ]);
       },
@@ -357,7 +360,7 @@ describe('DatabaseDoraDeployments', () => {
 
   describe('markPullRequestsSynced', () => {
     it.each(databases.eachSupportedId())(
-      'sets pullRequestsSyncedAt on the deployment - %p',
+      'sets pullRequestsCollectorId and pullRequestsCollectorInputHash on the deployment - %p',
       async databaseId => {
         const { deployments } = await createTestDatabase(
           await databases.init(databaseId),
@@ -383,10 +386,13 @@ describe('DatabaseDoraDeployments', () => {
           new Date('2026-06-01T00:00:00.000Z'),
           new Date('2026-06-30T00:00:00.000Z'),
         );
-        expect(deployment.pullRequestsSyncedAt).toBeNull();
+        expect(deployment.pullRequestsCollectorId).toBeNull();
+        expect(deployment.pullRequestsCollectorInputHash).toBeNull();
 
-        const syncedAt = new Date('2026-06-11T00:00:00.000Z');
-        await deployments.markPullRequestsSynced(deployment.id, syncedAt);
+        await deployments.markPullRequestsSynced(deployment.id, {
+          collectorId: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+          collectorInputHash: EMPTY_INPUT_HASH,
+        });
 
         const [afterMark] = await deployments.readByEntityCollectorAndWindow(
           entityRef,
@@ -395,12 +401,15 @@ describe('DatabaseDoraDeployments', () => {
           new Date('2026-06-01T00:00:00.000Z'),
           new Date('2026-06-30T00:00:00.000Z'),
         );
-        expect(afterMark.pullRequestsSyncedAt).toEqual(syncedAt);
+        expect(afterMark.pullRequestsCollectorId).toBe(
+          DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+        );
+        expect(afterMark.pullRequestsCollectorInputHash).toBe(EMPTY_INPUT_HASH);
       },
     );
 
     it.each(databases.eachSupportedId())(
-      'preserves pullRequestsSyncedAt when the deployment is re-upserted - %p',
+      'pullRequestsCollectorId and pullRequestsCollectorInputHash are preserved when the deployment is re-upserted - %p',
       async databaseId => {
         const { deployments } = await createTestDatabase(
           await databases.init(databaseId),
@@ -426,11 +435,12 @@ describe('DatabaseDoraDeployments', () => {
           new Date('2026-06-01T00:00:00.000Z'),
           new Date('2026-06-30T00:00:00.000Z'),
         );
-        const syncedAt = new Date('2026-06-11T00:00:00.000Z');
-        await deployments.markPullRequestsSynced(deployment.id, syncedAt);
+        await deployments.markPullRequestsSynced(deployment.id, {
+          collectorId: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+          collectorInputHash: EMPTY_INPUT_HASH,
+        });
 
-        // Re-upserting the same deployment (natural key conflict) must not reset
-        // the marker.
+        // Re-upserting the same deployment (natural key conflict) does not reset the marker.
         await deployments.upsert([
           {
             catalogEntityRef: entityRef,
@@ -450,7 +460,12 @@ describe('DatabaseDoraDeployments', () => {
           new Date('2026-06-01T00:00:00.000Z'),
           new Date('2026-06-30T00:00:00.000Z'),
         );
-        expect(afterUpsert.pullRequestsSyncedAt).toEqual(syncedAt);
+        expect(afterUpsert.pullRequestsCollectorId).toBe(
+          DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+        );
+        expect(afterUpsert.pullRequestsCollectorInputHash).toBe(
+          EMPTY_INPUT_HASH,
+        );
       },
     );
   });

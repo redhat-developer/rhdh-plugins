@@ -19,17 +19,15 @@ import {
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
 } from '../constants';
-import { collectorInputHash } from '../service/collectorHash';
+import { EMPTY_INPUT_HASH } from './__fixtures__/inputHash';
 import {
   fromDoraDeploymentRow,
   fromDoraIncidentRow,
   fromDoraPullRequestRow,
-  toDoraDeploymentRow,
+  toDoraDeploymentCreateRow,
   toDoraIncidentRow,
   toDoraPullRequestRow,
 } from './mappers';
-
-const EMPTY_INPUT_HASH = collectorInputHash({});
 
 describe('mappers', () => {
   describe('deployments', () => {
@@ -45,7 +43,7 @@ describe('mappers', () => {
         createdAt,
       };
 
-      expect(toDoraDeploymentRow(create)).toEqual({
+      expect(toDoraDeploymentCreateRow(create)).toEqual({
         catalog_entity_ref: 'component:default/service-a',
         collector_id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
         collector_input_hash: EMPTY_INPUT_HASH,
@@ -58,7 +56,7 @@ describe('mappers', () => {
 
     it('defaults missing environment to null', () => {
       expect(
-        toDoraDeploymentRow({
+        toDoraDeploymentCreateRow({
           catalogEntityRef: 'component:default/service-a',
           collectorId: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
           collectorInputHash: EMPTY_INPUT_HASH,
@@ -80,6 +78,8 @@ describe('mappers', () => {
           commit_sha: 'sha-1',
           environment: null,
           created_at: '2026-06-10T10:00:00.000Z',
+          pull_requests_collector_id: null,
+          pull_requests_collector_input_hash: null,
         }),
       ).toEqual({
         id: 'dep-row-1',
@@ -90,11 +90,12 @@ describe('mappers', () => {
         commitSha: 'sha-1',
         environment: null,
         createdAt: new Date('2026-06-10T10:00:00.000Z'),
-        pullRequestsSyncedAt: null,
+        pullRequestsCollectorId: null,
+        pullRequestsCollectorInputHash: null,
       });
     });
 
-    it('defaults missing pull_requests_synced_at to null', () => {
+    it('maps null PR sync marker columns to null', () => {
       expect(
         fromDoraDeploymentRow({
           id: 'dep-row-1',
@@ -105,11 +106,18 @@ describe('mappers', () => {
           commit_sha: 'sha-1',
           environment: null,
           created_at: '2026-06-10T10:00:00.000Z',
-        }).pullRequestsSyncedAt,
-      ).toBeNull();
+          pull_requests_collector_id: null,
+          pull_requests_collector_input_hash: null,
+        }),
+      ).toEqual(
+        expect.objectContaining({
+          pullRequestsCollectorId: null,
+          pullRequestsCollectorInputHash: null,
+        }),
+      );
     });
 
-    it('parses pull_requests_synced_at when set', () => {
+    it('parses PR collector identity when set', () => {
       expect(
         fromDoraDeploymentRow({
           id: 'dep-row-1',
@@ -120,9 +128,17 @@ describe('mappers', () => {
           commit_sha: 'sha-1',
           environment: null,
           created_at: '2026-06-10T10:00:00.000Z',
-          pull_requests_synced_at: '2026-06-11T10:00:00.000Z',
-        }).pullRequestsSyncedAt,
-      ).toEqual(new Date('2026-06-11T10:00:00.000Z'));
+          pull_requests_collector_id:
+            DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+          pull_requests_collector_input_hash: EMPTY_INPUT_HASH,
+        }),
+      ).toEqual(
+        expect.objectContaining({
+          pullRequestsCollectorId:
+            DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+          pullRequestsCollectorInputHash: EMPTY_INPUT_HASH,
+        }),
+      );
     });
   });
 

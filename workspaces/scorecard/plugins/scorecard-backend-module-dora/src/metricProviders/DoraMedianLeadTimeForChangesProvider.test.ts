@@ -29,6 +29,7 @@ import {
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
 } from '../constants';
 import { DEFAULT_DORA_MEDIAN_LEAD_TIME_THRESHOLDS } from './DoraConfig';
+import { EMPTY_INPUT_HASH } from '../database/__fixtures__';
 
 describe('DoraMedianLeadTimeForChangesProvider', () => {
   const mockLogger = mockServices.logger.mock();
@@ -124,7 +125,8 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           deploymentId: '101',
           baseCommitSha: 'sha-previous',
           headCommitSha: 'sha-current',
-          pullRequestsSyncedAt: null,
+          deploymentPullRequestsCollectorId: null,
+          deploymentPullRequestsCollectorInputHash: null,
         }),
       );
     });
@@ -197,7 +199,8 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           deploymentId: '101',
           baseCommitSha: 'sha-previous',
           headCommitSha: 'sha-current',
-          pullRequestsSyncedAt: null,
+          deploymentPullRequestsCollectorId: null,
+          deploymentPullRequestsCollectorInputHash: null,
         }),
       );
     });
@@ -241,13 +244,13 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           deploymentId: '101',
           baseCommitSha: 'sha-previous',
           headCommitSha: 'sha-current',
-          pullRequestsSyncedAt: null,
+          deploymentPullRequestsCollectorId: null,
+          deploymentPullRequestsCollectorInputHash: null,
         }),
       );
     });
 
-    it('should forward the deployment pullRequestsSyncedAt marker to the sync service', async () => {
-      const syncedAt = new Date('2026-06-09T00:00:00.000Z');
+    it('should forward the deployment pull request sync markers to the sync service', async () => {
       mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({
           id: '100',
@@ -260,7 +263,9 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           commitSha: 'sha-current',
           environment: 'production',
           createdAt: '2026-06-08T12:00:00.000Z',
-          pullRequestsSyncedAt: syncedAt,
+          pullRequestsCollectorId:
+            DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+          pullRequestsCollectorInputHash: EMPTY_INPUT_HASH,
         }),
       ]);
 
@@ -272,7 +277,9 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
         mockEntity,
         expect.objectContaining({
           deploymentId: '101',
-          pullRequestsSyncedAt: syncedAt,
+          deploymentPullRequestsCollectorId:
+            DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+          deploymentPullRequestsCollectorInputHash: EMPTY_INPUT_HASH,
         }),
       );
     });

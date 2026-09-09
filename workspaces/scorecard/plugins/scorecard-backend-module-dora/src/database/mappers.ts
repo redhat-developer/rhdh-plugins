@@ -24,8 +24,7 @@ import type {
   DbDoraPullRequestCreate,
 } from './types';
 
-export type DbDoraDeploymentRow = {
-  id: string;
+export type DbDoraDeploymentCreateRow = {
   catalog_entity_ref: string;
   collector_id: string;
   collector_input_hash: string;
@@ -33,7 +32,13 @@ export type DbDoraDeploymentRow = {
   commit_sha: string;
   environment: string | null;
   created_at: Date | string;
-  pull_requests_synced_at?: Date | string | null;
+};
+
+export type DbDoraDeploymentRow = DbDoraDeploymentCreateRow & {
+  id: string;
+  // Written together by markPullRequestsSynced; all null until PRs are fetched.
+  pull_requests_collector_id: string | null;
+  pull_requests_collector_input_hash: string | null;
 };
 
 export type DbDoraIncidentRow = {
@@ -57,9 +62,9 @@ export type DbDoraPullRequestRow = {
   deployment_id: string;
 };
 
-export function toDoraDeploymentRow(
+export function toDoraDeploymentCreateRow(
   deployment: DbDoraDeploymentCreate,
-): Omit<DbDoraDeploymentRow, 'id'> {
+): DbDoraDeploymentCreateRow {
   return {
     catalog_entity_ref: deployment.catalogEntityRef,
     collector_id: deployment.collectorId,
@@ -83,9 +88,8 @@ export function fromDoraDeploymentRow(
     commitSha: row.commit_sha,
     environment: row.environment,
     createdAt: parseDate(row.created_at),
-    pullRequestsSyncedAt: row.pull_requests_synced_at
-      ? parseDate(row.pull_requests_synced_at)
-      : null,
+    pullRequestsCollectorId: row.pull_requests_collector_id,
+    pullRequestsCollectorInputHash: row.pull_requests_collector_input_hash,
   };
 }
 

@@ -23,13 +23,10 @@ import {
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
 } from '../constants';
-import { collectorInputHash } from './collectorHash';
-import { createTestDatabase } from '../database/__fixtures__';
+import { createTestDatabase, EMPTY_INPUT_HASH } from '../database/__fixtures__';
 import { DefaultDoraDataService } from './DoraDataService';
 
 jest.setTimeout(60000);
-
-const EMPTY_INPUT_HASH = collectorInputHash({});
 
 describe('DefaultDoraDataService', () => {
   const databases = TestDatabases.create({
@@ -94,7 +91,8 @@ describe('DefaultDoraDataService', () => {
             commitSha: 'sha-1',
             environment: 'production',
             createdAt: new Date('2026-06-10T10:00:00.000Z'),
-            pullRequestsSyncedAt: null,
+            pullRequestsCollectorId: null,
+            pullRequestsCollectorInputHash: null,
           },
         ]);
       },

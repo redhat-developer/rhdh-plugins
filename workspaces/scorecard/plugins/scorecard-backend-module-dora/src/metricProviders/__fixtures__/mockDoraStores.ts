@@ -15,7 +15,6 @@
  */
 
 import { parseDate } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
-import { collectorInputHash } from '../../service/collectorHash';
 import {
   DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
@@ -30,9 +29,9 @@ import type {
   DbDoraIncident,
   DbDoraPullRequest,
 } from '../../database/types';
+import { EMPTY_INPUT_HASH } from '../../database/__fixtures__';
 
 const DEFAULT_ENTITY_REF = 'component:default/mock';
-const EMPTY_INPUT_HASH = collectorInputHash({});
 
 export function dbDeployment(partial: {
   id: string;
@@ -43,7 +42,8 @@ export function dbDeployment(partial: {
   collectorId?: string;
   collectorInputHash?: string;
   originalDeploymentId?: string;
-  pullRequestsSyncedAt?: string | Date | null;
+  pullRequestsCollectorId?: string | null;
+  pullRequestsCollectorInputHash?: string | null;
 }): DbDoraDeployment {
   return {
     id: partial.id,
@@ -54,11 +54,9 @@ export function dbDeployment(partial: {
     commitSha: partial.commitSha,
     environment: partial.environment ?? null,
     createdAt: parseDate(partial.createdAt),
-    pullRequestsSyncedAt:
-      partial.pullRequestsSyncedAt === undefined ||
-      partial.pullRequestsSyncedAt === null
-        ? null
-        : parseDate(partial.pullRequestsSyncedAt),
+    pullRequestsCollectorId: partial.pullRequestsCollectorId ?? null,
+    pullRequestsCollectorInputHash:
+      partial.pullRequestsCollectorInputHash ?? null,
   };
 }
 

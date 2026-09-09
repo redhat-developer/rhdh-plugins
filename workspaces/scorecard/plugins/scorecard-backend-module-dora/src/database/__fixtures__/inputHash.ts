@@ -14,5 +14,6 @@
  * limitations under the License.
  */
 
-export * from './inputHash';
-export * from './testDatabase';
+import { collectorInputHash } from '../../service/collectorHash';
+
+export const EMPTY_INPUT_HASH = collectorInputHash({});
