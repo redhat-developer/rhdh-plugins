@@ -1,6 +1,6 @@
 # Boost current status
 
-Release map as of 2026-09-08. After this file exists, treat it as the
+Release map as of 2026-09-09. After this file exists, treat it as the
 workspace map for what is in this release. Implemented frontend behavior
 lives in `openspec/specs/`. Active work lives in `openspec/changes/`.
 PRDs and Jira analysis are background, not current truth.
@@ -58,10 +58,12 @@ the archived OGX spec should be updated together.
 
 ## Active remaining frontend work (`openspec/changes/`)
 
-| Change                             | Status                 |
-| ---------------------------------- | ---------------------- |
-| `ai-catalog-frontend-translations` | 1/11 — locale files    |
-| `ai-catalog-frontend-e2e`          | 0/7 — Playwright suite |
+| Change                             | Status              |
+| ---------------------------------- | ------------------- |
+| `ai-catalog-frontend-translations` | 1/11 — locale files |
+
+Playwright coverage from PR #4501 is implemented. Its test-infrastructure
+change is archived without adding a product-behavior spec.
 
 ## RBAC follow-on work
 
@@ -103,13 +105,7 @@ do not add RBAC behavior to this release.
 
 ## Cleanup progress
 
-Done: inventory; split translations and e2e; archive implemented catalog
-frontend; prefix implemented spec IDs with `ai-catalog-*`; classify the
-remaining OpenSpecs; normalize their validation deltas; remove placeholders
-from implemented specs.
+Done: inventory; archive implemented frontend, OGX, and E2E work; classify the
+remaining OpenSpecs; and align workspace documentation with the current code.
 
-Remaining: plugin README / AGENTS.md pointers; implement translations and
-e2e; open the documentation PR.
-
-Part 2 (later): implement translations and e2e, then archive each.
-OGX code stays a separate track.
+Remaining current-release OpenSpec work: frontend translations.

@@ -281,7 +281,7 @@ The AI Catalog is the first domain. Here is how future capabilities map to surfa
 | Frontend system   | NFS Blueprints (`createFrontendPlugin`, `PageBlueprint`, `EntityCardBlueprint`, etc.)                           |
 | State             | React hooks + URL params for filters; streaming reducer for chat events                                         |
 | API               | `catalogApiRef` for catalog entity queries; `fetchApi` for authenticated fetches. No Boost API client yet       |
-| Testing           | Unit: `TestApiProvider` + `renderInTestApp`. Playwright E2E is a remaining OpenSpec (`ai-catalog-frontend-e2e`) |
+| Testing           | Unit: `TestApiProvider` + `renderInTestApp`; Playwright E2E covers primary browse flows in `e2e-tests/` on NFS. |
 | i18n              | `TranslationBlueprint` + `useTranslationRef`; 5 locales planned (de, es, fr, it, ja)                            |
 | Dynamic plugins   | NFS Module Federation via `rhdh-cli plugin export`; no Scalprum (NFS-only plugin)                               |
 | Accessibility     | WCAG 2.1 AA, keyboard navigation, screen reader support                                                         |

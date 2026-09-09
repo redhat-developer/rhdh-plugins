@@ -1,17 +1,12 @@
 # AI Catalog E2E
 
-> **Status: Remaining — current RHDH 2.1 frontend work.**
->
-> **Scope:** Playwright coverage for `plugins/boost` and its NFS development
-> app. This does not add product behavior or backend integration.
-
-The workspace MUST provide Playwright coverage for the AI Catalog browse page.
+> **Status:** Implemented by PR #4501.
 
 ## ADDED Requirements
 
 ### Requirement: Playwright Infrastructure
 
-The workspace MUST provide an isolated Playwright runner for the NFS development app.
+The workspace MUST provide a Playwright runner for the NFS development app.
 
 #### Scenario: Release suite runs
 
@@ -33,16 +28,17 @@ The suite MUST cover the browse page.
 - **THEN** the visible cards are filtered to match the keyword
 - **AND** the URL updates with `?q=<keyword>`
 
-#### Scenario: Sidebar filters narrow results
+#### Scenario: Type filter narrows results
 
 - **WHEN** the test selects a type filter
 - **THEN** only matching cards are shown
 - **AND** the URL updates with the filter param
 
-#### Scenario: Card click navigates to entity detail
+#### Scenario: Table view renders assets
 
-- **WHEN** the test clicks an asset card
-- **THEN** the browser navigates to that asset's catalog entity page
+- **WHEN** the test selects table view
+- **THEN** both fixture assets appear in the table
+- **AND** the URL records the table view
 
 ### Requirement: State and Accessibility
 
@@ -52,8 +48,15 @@ The suite MUST cover empty results and automated accessibility scans.
 
 - **WHEN** the test applies filters that match no assets
 - **THEN** the empty state is displayed with a clear-filters action
+- **AND** clearing filters restores the fixture assets
+
+#### Scenario: Catalog request fails
+
+- **WHEN** the Catalog API request fails
+- **THEN** the error state and retry action are displayed
 
 #### Scenario: Browse page passes axe audit
 
-- **WHEN** the browse page has loaded
-- **THEN** an axe-core scan with WCAG 2.1 AA rules reports zero violations or attaches findings to the test report
+- **WHEN** the empty browse page has loaded
+- **THEN** an axe-core scan with WCAG 2.1 AA rules runs with documented exceptions
+- **AND** the scan report is attached to the test result
