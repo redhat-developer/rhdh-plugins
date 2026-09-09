@@ -78,6 +78,11 @@ test.describe('BYOK RAG source labeling', () => {
   });
 
   test.beforeEach(async () => {
+    if (endMocks) {
+      await endMocks();
+      endMocks = undefined;
+    }
+
     await mockConversations(sharedPage, conversations, true);
     await mockChatHistory(sharedPage, []);
     await mockQuery(
