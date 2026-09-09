@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights-backend
 
+## 1.0.0
+
+### Minor Changes
+
+- 8a42ace: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- b7d3535: Stop forwarding the caller's raw Authorization header when resolving TechDocs titles; mint a plugin-to-plugin token on behalf of the calling user, and reject unsafe entity path segments.
+- Updated dependencies [8a42ace]
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@1.0.0
+
 ## 0.9.1
 
 ### Patch Changes
