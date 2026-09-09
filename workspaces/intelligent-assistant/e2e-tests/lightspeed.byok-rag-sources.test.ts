@@ -63,13 +63,18 @@ const NO_BYOK_MATCH_PROMPT = 'Tell me a generic fact with no citations';
 test.describe('BYOK RAG source labeling', () => {
   let sharedPage: Page;
   let translations: LightspeedMessages;
-  let locale: string;
+  let notebooks: NotebookSurfacePage;
+  let endMocks: (() => Promise<void>) | undefined;
 
   test.beforeAll(async ({ browser }) => {
     const boot = await bootstrapLightspeedE2ePage(browser);
     sharedPage = boot.page;
     translations = boot.translations;
-    locale = boot.locale;
+    notebooks = new NotebookSurfacePage(sharedPage, translations, boot.locale);
+  });
+
+  test.afterAll(async () => {
+    await endMocks?.();
   });
 
   test.beforeEach(async () => {
@@ -130,67 +135,61 @@ test.describe('BYOK RAG source labeling', () => {
 
   test('notebook sources popover lists rag_id labels next to document titles', async ({}, testInfo) => {
     const { fileName } = localeNotebookUpload1Path(testInfo.project.name);
-    const notebooks = new NotebookSurfacePage(sharedPage, translations, locale);
-    let endMocks: (() => Promise<void>) | undefined;
 
-    try {
-      endMocks = await withNotebookTabSeededConversation(sharedPage, {
-        conversationId: 'byok-rag-label-e2e',
-        chatHistory: [
-          {
-            provider: 'vllm',
-            model: 'llama3.2:3b',
-            messages: [
-              {
-                content: `Tell me about ${fileName}`,
-                type: 'user',
-                referenced_documents: null,
-              },
-              {
-                content: `Summary from ${fileName}.`,
-                type: 'assistant',
-                referenced_documents: [
-                  {
-                    doc_title: fileName,
-                    doc_url: 'https://example.com/my-doc',
-                    source: BYOK_E2E_RAG_ID,
-                  },
-                ],
-              },
-            ],
-            started_at: '2026-05-04T12:08:13Z',
-            completed_at: '2026-05-04T12:08:26Z',
-          },
-        ],
-      });
+    endMocks = await withNotebookTabSeededConversation(sharedPage, {
+      conversationId: 'byok-rag-label-e2e',
+      chatHistory: [
+        {
+          provider: 'vllm',
+          model: 'llama3.2:3b',
+          messages: [
+            {
+              content: `Tell me about ${fileName}`,
+              type: 'user',
+              referenced_documents: null,
+            },
+            {
+              content: `Summary from ${fileName}.`,
+              type: 'assistant',
+              referenced_documents: [
+                {
+                  doc_title: fileName,
+                  doc_url: 'https://example.com/my-doc',
+                  source: BYOK_E2E_RAG_ID,
+                },
+              ],
+            },
+          ],
+          started_at: '2026-05-04T12:08:13Z',
+          completed_at: '2026-05-04T12:08:26Z',
+        },
+      ],
+    });
 
-      await notebooks.gotoFullscreenNotebooksTab();
-      await notebooks.clickPrimaryNotebookCreate();
-      await expect(sharedPage).toHaveURL(NOTEBOOK_EDITOR_URL_RE);
+    await notebooks.gotoFullscreenNotebooksTab();
+    await notebooks.clickPrimaryNotebookCreate();
+    await expect(sharedPage).toHaveURL(NOTEBOOK_EDITOR_URL_RE);
 
-      const chipLabel = formatSourcesChipLabel(translations, 1);
-      await expect(
-        sharedPage.getByRole('button', { name: chipLabel }),
-      ).toBeVisible();
-      await openSourcesPopover(sharedPage, translations);
-      await expectSourcesPopoverRagLabels(sharedPage, translations, [
-        BYOK_E2E_RAG_ID,
-      ]);
-      await expect(
-        sharedPage.getByRole('dialog', {
-          name: translations['sources.modal.title'],
-        }),
-      ).toContainText(fileName);
+    const chipLabel = formatSourcesChipLabel(translations, 1);
+    await expect(
+      sharedPage.getByRole('button', { name: chipLabel }),
+    ).toBeVisible();
+    await openSourcesPopover(sharedPage, translations);
+    await expectSourcesPopoverRagLabels(sharedPage, translations, [
+      BYOK_E2E_RAG_ID,
+    ]);
+    await expect(
+      sharedPage.getByRole('dialog', {
+        name: translations['sources.modal.title'],
+      }),
+    ).toContainText(fileName);
 
-      await notebooks.clickCloseNotebookEditor();
-      const card = notebooks.newestUntitledNotebookCard();
-      await notebooks.notebookCardOverflowMenuButton(card).click();
-      await notebooks.deleteNotebookOverflowMenuItem().click();
-      await notebooks
-        .notebookDeleteConfirmationDialog(NOTEBOOK_UNTITLED_GRID_NAME)
-        .confirmDeletion();
-    } finally {
-      await endMocks?.();
-    }
+    await notebooks.clickCloseNotebookEditor();
+    const card = notebooks.newestUntitledNotebookCard();
+    await notebooks.notebookCardOverflowMenuButton(card).click();
+    await notebooks.deleteNotebookOverflowMenuItem().click();
+    await notebooks
+      .notebookDeleteConfirmationDialog(NOTEBOOK_UNTITLED_GRID_NAME)
+      .confirmDeletion();
   });
 });
