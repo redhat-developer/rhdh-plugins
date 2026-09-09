@@ -53,7 +53,7 @@ The search bar MUST filter visible cards by keyword.
 
 - **WHEN** the developer types a keyword in the search bar
 - **THEN** cards are filtered within 300ms (debounced)
-- **AND** matching is against entity name, description, and tags
+- **AND** matching is against entity title, name, description, and tags
 
 #### Scenario: Search state in URL
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-`plugins/boost` is the frontend plugin for the boost workspace in RHDH (`workspaces/boost/plugins/boost`). It is a multi-domain plugin that will grow to cover AI catalog discovery, agentic chat, agent lifecycle management, and platform administration. The AI Catalog ([RHDHPLAN-1509](https://redhat.atlassian.net/browse/RHDHPLAN-1509)) is the first feature delivered.
+`plugins/boost` is the frontend plugin for the boost workspace in RHDH (`workspaces/boost/plugins/boost`). It is a multi-domain plugin that will grow to cover AI catalog discovery, agentic chat, agent lifecycle management, and platform administration. The AI Catalog ([RHDHPLAN-1509](https://redhat.atlassian.net/browse/RHDHPLAN-1509)) is the first feature delivered; the other domains remain future work.
 
 The plugin follows the NFS (New Frontend System) model with Blueprints. The AI Catalog uses `PageBlueprint`, `EntityCardBlueprint`, and `EntityContentBlueprint` (Usage tab), and adds a standalone page for marketplace-style browse. Chat, admin, and other domains are future work.
 
@@ -26,9 +26,9 @@ The plugin extends existing RHDH/Backstage pages wherever possible. Standalone p
 
 ### 2. Consistent AI Experience via PatternFly AI Chatbot
 
-RHDH already has **Lightspeed** as an AI chatbot feature, designed primarily for RAG. Boost adds agentic chat, tool calling, HITL approval, multi-agent handoffs, and streaming with phase indicators.
+RHDH already has **Lightspeed** as an AI chatbot feature, designed primarily for RAG. Future Boost work may add agentic chat, tool calling, HITL approval, multi-agent handoffs, and streaming with phase indicators.
 
-To maintain a consistent AI interaction experience across RHDH, boost uses the **PatternFly AI chatbot framework** (`@patternfly/chatbot`) for conversational UI. This keeps interaction patterns familiar to Lightspeed users while supporting boost's broader capabilities. Building on the same primitives keeps a future convergence path viable.
+To maintain a consistent AI interaction experience across RHDH, future Boost chat work is expected to use the **PatternFly AI chatbot framework** (`@patternfly/chatbot`) for conversational UI. This keeps interaction patterns familiar to Lightspeed users while supporting Boost's broader capabilities. Building on the same primitives keeps a future convergence path viable.
 
 ### 3. Components Decouple from Mount Points
 

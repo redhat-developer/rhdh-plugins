@@ -300,7 +300,7 @@ const endpoint = safeGetOptionalString(config, 'endpoint');
 - Config namespace: `boost.*` (e.g., `boost.features.agentCreation`, `boost.security.mode`)
 - Permission names — two namespaces by design:
   - `boost.*` — application-layer agent/tool operations: `boost.agent.*`, `boost.tool.*`, `boost.kagenti.admin`, `boost.access`, `boost.admin`
-  - Catalog entity visibility uses Backstage Catalog's built-in `catalog.entity.read` permission and the deployed RHDH conditional-policy support. Do not introduce duplicate `ai-catalog.*` entity permissions without a concrete API or entity-model requirement.
+  - Catalog entity visibility uses Backstage Catalog's built-in `catalog.entity.read` permission and the deployed RHDH conditional-policy support. The current Usage tab's `ai-catalog.asset.access.usage-docs` check is an existing implementation detail; do not introduce new or duplicate `ai-catalog.*` entity permissions without a concrete API or entity-model requirement.
 - Config: deployment permission policy and RHDH conditional policies are the default catalog authorization configuration. Do not add `ai-catalog.rbac.*` keys without a documented gap.
 - Resource types: `boost-agent`, `boost-tool`; catalog entities use the standard Catalog permission model
 - DB tables: `boost_admin_config`, `boost_sessions`, `boost_messages`, `boost_feedback`

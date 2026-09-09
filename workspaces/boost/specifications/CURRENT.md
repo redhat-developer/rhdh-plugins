@@ -14,11 +14,11 @@ The `boost-backend` plugin and Kagenti packages are development scaffolding;
 they are not released for RHDH 2.1. Browse and entity cards use
 `catalogApiRef` only and do not call a Boost backend.
 
-The unreleased backend still contains project-specific permission checks,
-currently named `ai-catalog.*`. This is an implementation example, not part of
-the RHDH 2.1 frontend/OGX authorization contract; any future backend release
-must reconcile its selected permission names with the Catalog
-`catalog.entity.read` model.
+The unreleased backend and the current Usage tab still contain project-specific
+permission checks, currently named `ai-catalog.*`. These checks are not the
+RHDH 2.1 entity-visibility contract; the current browse experience uses the
+Catalog API, and any future backend release must reconcile its selected
+permission names with the Catalog `catalog.entity.read` model.
 
 The two release packages currently require supporting packages:
 `boost-common` for the frontend taxonomy and permissions, and
