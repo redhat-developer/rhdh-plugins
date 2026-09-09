@@ -474,7 +474,7 @@ export async function expectInlineRagSourceLabels(
   ragIds: string[],
 ) {
   const botMessage = botMessageRegion(page);
-  await expect(inlineSourceCards(page)).toHaveCount(1);
+  await expect(botMessage.locator('.pf-chatbot__sources-card')).toHaveCount(1);
 
   for (let index = 0; index < ragIds.length; index++) {
     await expect(
@@ -487,9 +487,10 @@ export async function expectInlineRagSourceLabels(
 }
 
 export async function expectNoInlineSourceCards(page: Page) {
-  await expect(inlineSourceCards(page)).toHaveCount(0);
+  const botMessage = botMessageRegion(page);
+  await expect(botMessage.locator('.pf-chatbot__sources-card')).toHaveCount(0);
   await expect(
-    botMessageRegion(page).getByRole('navigation', { name: 'Pagination' }),
+    botMessage.getByRole('navigation', { name: 'Pagination' }),
   ).toHaveCount(0);
 }
 
