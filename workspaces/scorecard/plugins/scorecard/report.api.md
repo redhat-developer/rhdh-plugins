@@ -360,8 +360,8 @@ const _default: OverridableFrontendPlugin<
           {
             title: string;
             metrics: string[];
-            description?: string | undefined;
             titleKey?: string | undefined;
+            description?: string | undefined;
             descriptionKey?: string | undefined;
           }
         >;
@@ -373,8 +373,8 @@ const _default: OverridableFrontendPlugin<
               {
                 title: string;
                 metrics: string[];
-                description?: string | undefined;
                 titleKey?: string | undefined;
+                description?: string | undefined;
                 descriptionKey?: string | undefined;
               }
             >
