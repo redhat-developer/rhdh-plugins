@@ -893,7 +893,7 @@ describe('LightspeedChat', () => {
       });
     });
 
-    it('should show permission required state when notebooks permission is denied', async () => {
+    it('should hide tabs and show header divider when notebooks permission is denied', async () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
@@ -902,19 +902,25 @@ describe('LightspeedChat', () => {
         ).toBeInTheDocument();
       });
 
-      const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
-      await userEvent.click(notebooksTab);
+      expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+      expect(
+        screen.getByTestId('lightspeed-header-divider'),
+      ).toBeInTheDocument();
+    });
+  });
 
-      await waitFor(() => {
-        expect(screen.getByText('Missing permissions')).toBeInTheDocument();
-        expect(
-          screen.getByRole('button', { name: 'Go back' }),
-        ).toBeInTheDocument();
+  describe('chat permission denied', () => {
+    beforeEach(() => {
+      mockUsePermission.mockImplementation((args: any) => {
+        if (args.permission.name === 'intelligent-assistant.chat') {
+          return { loading: false, allowed: false };
+        }
+        return { loading: false, allowed: true };
       });
     });
 
-    it('should navigate back to chat tab when Go back is clicked', async () => {
-      render(setupLightspeedChat());
+    it('should hide tabs and show header divider when chat permission is denied', async () => {
+      render(setupLightspeedChat('/intelligent-assistant/notebooks'));
 
       await waitFor(() => {
         expect(
@@ -922,21 +928,10 @@ describe('LightspeedChat', () => {
         ).toBeInTheDocument();
       });
 
-      const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
-      await userEvent.click(notebooksTab);
-
-      await waitFor(() => {
-        expect(screen.getByText('Missing permissions')).toBeInTheDocument();
-      });
-
-      const goBackButton = screen.getByRole('button', { name: 'Go back' });
-      await userEvent.click(goBackButton);
-
-      await waitFor(() => {
-        expect(
-          screen.queryByText('Missing permissions'),
-        ).not.toBeInTheDocument();
-      });
+      expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+      expect(
+        screen.getByTestId('lightspeed-header-divider'),
+      ).toBeInTheDocument();
     });
   });
 

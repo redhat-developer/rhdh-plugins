@@ -123,11 +123,6 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'conversation.rename.confirm.title': string;
     readonly 'conversation.rename.confirm.action': string;
     readonly 'conversation.rename.placeholder': string;
-    readonly 'permission.required.title': string;
-    readonly 'permission.required.description': string;
-    readonly 'permission.subject.plugin': string;
-    readonly 'permission.subject.notebooks': string;
-    readonly 'permission.notebooks.goBack': string;
     readonly 'lcore.notConfigured.title': string;
     readonly 'lcore.notConfigured.description': string;
     readonly 'lcore.notConfigured.developerLightspeedDocs': string;
@@ -235,7 +230,6 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'mcp.settings.title': string;
     readonly 'mcp.settings.selectedCount': string;
     readonly 'mcp.settings.closeAriaLabel': string;
-    readonly 'mcp.settings.readOnlyAccess': string;
     readonly 'mcp.settings.tableAriaLabel': string;
     readonly 'mcp.settings.enabled': string;
     readonly 'mcp.settings.name': string;

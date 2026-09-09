@@ -24,10 +24,9 @@ import { lightspeedApiRef } from '../api/api';
  * Hook to fetch conversation IDs associated with notebook sessions for filtering
  * Works even when notebooks feature is disabled
  */
-export const useNotebookConversationIds = (): UseQueryResult<
-  string[],
-  Error
-> => {
+export const useNotebookConversationIds = (
+  enabled = true,
+): UseQueryResult<string[], Error> => {
   const lightspeedApi = useApi(lightspeedApiRef);
 
   return useQuery({
@@ -35,6 +34,7 @@ export const useNotebookConversationIds = (): UseQueryResult<
     queryFn: async () => {
       return await lightspeedApi.getNotebookConversationIds();
     },
+    enabled,
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: false,
   });

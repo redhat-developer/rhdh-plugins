@@ -164,8 +164,6 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'mcp.settings.name': 'Nombre',
     'mcp.settings.noneAvailable': 'No hay servidores MCP disponibles.',
     'mcp.settings.personalAccessToken': 'Token de acceso personal',
-    'mcp.settings.readOnlyAccess':
-      'Tienes acceso de solo lectura a los servidores MCP.',
     'mcp.settings.removePersonalToken': 'Eliminar token personal',
     'mcp.settings.savedToken': 'Token guardado',
     'mcp.settings.selectedCount':
@@ -291,12 +289,6 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'notebooks.updated.yesterday': 'Actualizado hace 1 día',
     'page.subtitle': 'Asistente de desarrollo con tecnología de IA',
     'page.title': 'Asistente inteligente',
-    'permission.notebooks.goBack': 'Volver',
-    'permission.required.description':
-      'Para ver <subject/>, contacta a tu administrador para que te otorgue el permiso <permissions/>.',
-    'permission.required.title': 'Permisos faltantes',
-    'permission.subject.notebooks': 'los cuadernos del asistente inteligente',
-    'permission.subject.plugin': 'el plugin del asistente inteligente',
     'prompts.codeOptimization.message':
       '¿Puedes sugerir formas comunes de optimizar el código para lograr un mejor rendimiento?',
     'prompts.codeOptimization.title': 'Sugerir optimizaciones de código',

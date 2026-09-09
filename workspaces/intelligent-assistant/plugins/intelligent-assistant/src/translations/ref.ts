@@ -178,14 +178,6 @@ export const intelligentAssistantMessages = {
   'conversation.rename.confirm.action': 'Rename',
   'conversation.rename.placeholder': 'Chat name',
 
-  // Permissions
-  'permission.required.title': 'Missing permissions',
-  'permission.required.description':
-    'To view <subject/>, contact your administrator to give the <permissions/> permission.',
-  'permission.subject.plugin': 'the intelligent assistant plugin',
-  'permission.subject.notebooks': 'the intelligent assistant notebooks',
-  'permission.notebooks.goBack': 'Go back',
-
   // LCORE / LLM (no models registered)
   'lcore.notConfigured.title': 'Connect an LLM to get started',
   'lcore.notConfigured.description':
@@ -351,7 +343,6 @@ export const intelligentAssistantMessages = {
   'mcp.settings.title': 'MCP servers',
   'mcp.settings.selectedCount': '{{selectedCount}} of {{totalCount}} selected',
   'mcp.settings.closeAriaLabel': 'Close MCP settings',
-  'mcp.settings.readOnlyAccess': 'You have read-only access to MCP servers.',
   'mcp.settings.tableAriaLabel': 'MCP servers table',
   'mcp.settings.enabled': 'Enabled',
   'mcp.settings.name': 'Name',

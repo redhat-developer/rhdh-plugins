@@ -24,10 +24,11 @@ import { getRandomSamplePrompts } from '../utils/prompt-utils';
 import { useTopicRestrictionStatus } from './useQuestionValidation';
 import { useTranslation } from './useTranslation';
 
-export const useWelcomePrompts = (): SamplePrompts => {
+export const useWelcomePrompts = (enabled = true): SamplePrompts => {
   const configApi: ConfigApi = useApi(configApiRef);
   const { t } = useTranslation();
-  const { data: questionValidationEnabled } = useTopicRestrictionStatus();
+  const { data: questionValidationEnabled } =
+    useTopicRestrictionStatus(enabled);
 
   return useMemo(() => {
     // Transform translation keys to actual prompts

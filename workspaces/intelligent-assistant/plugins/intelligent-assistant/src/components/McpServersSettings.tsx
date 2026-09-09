@@ -17,7 +17,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { configApiRef, fetchApiRef, useApi } from '@backstage/core-plugin-api';
-import { usePermission } from '@backstage/plugin-permission-react';
 
 import { makeStyles } from '@material-ui/core';
 import Typography from '@mui/material/Typography';
@@ -34,8 +33,7 @@ import {
 } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
-import { iaMcpToolsPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
-
+import { useIaMcpToolsPermission } from '../hooks/useIaMcpToolsPermission';
 import { useMcpConfigureModal } from '../hooks/useMcpConfigureModal';
 import { useTranslation } from '../hooks/useTranslation';
 import { McpConfigureServerModal } from './McpConfigureServerModal';
@@ -292,10 +290,9 @@ export const McpServersSettings = ({
   const { t } = useTranslation();
   const configApi = useApi(configApiRef);
   const fetchApi = useApi(fetchApiRef);
-  const mcpToolsPermission = usePermission({
-    permission: iaMcpToolsPermission,
-  });
-  const canManageMcp = mcpToolsPermission.allowed;
+  const { allowed: hasMcpToolsAccess, loading: mcpToolsPermissionLoading } =
+    useIaMcpToolsPermission();
+
   const [servers, setServers] = useState<McpServer[]>([]);
   const [sortColumn, setSortColumn] = useState<McpServerSortColumn>('name');
   const [sortAsc, setSortAsc] = useState(true);
@@ -399,24 +396,22 @@ export const McpServersSettings = ({
       const uiServers = (data.servers ?? []).map(server => toUiServer(server));
       setServers(uiServers);
 
-      if (canManageMcp) {
-        const serversToValidate = uiServers.filter(server => server.hasToken);
-        void Promise.allSettled(
-          serversToValidate.map(async server => {
-            try {
-              await validateServer(server.name);
-            } catch (validationError) {
-              setError(
-                prev =>
-                  prev ??
-                  (validationError instanceof Error
-                    ? validationError.message
-                    : `Failed to validate ${server.name}`),
-              );
-            }
-          }),
-        );
-      }
+      const serversToValidate = uiServers.filter(server => server.hasToken);
+      void Promise.allSettled(
+        serversToValidate.map(async server => {
+          try {
+            await validateServer(server.name);
+          } catch (validationError) {
+            setError(
+              prev =>
+                prev ??
+                (validationError instanceof Error
+                  ? validationError.message
+                  : `Failed to validate ${server.name}`),
+            );
+          }
+        }),
+      );
     } catch (e) {
       setError(
         e instanceof Error ? e.message : 'Failed to load MCP server settings',
@@ -424,20 +419,20 @@ export const McpServersSettings = ({
     } finally {
       setIsLoading(false);
     }
-  }, [canManageMcp, fetchJson, getBaseUrl, validateServer]);
+  }, [fetchJson, getBaseUrl, validateServer]);
 
   useEffect(() => {
+    if (mcpToolsPermissionLoading || !hasMcpToolsAccess) {
+      return;
+    }
     loadServers();
-  }, [loadServers]);
+  }, [loadServers, mcpToolsPermissionLoading, hasMcpToolsAccess]);
 
   const patchServer = useCallback(
     async (
       serverName: string,
       body: { enabled?: boolean; token?: string | null },
     ) => {
-      if (!canManageMcp) {
-        return;
-      }
       setError(null);
       setIsSaving(prev => ({ ...prev, [serverName]: true }));
       try {
@@ -472,12 +467,11 @@ export const McpServersSettings = ({
         setIsSaving(prev => ({ ...prev, [serverName]: false }));
       }
     },
-    [canManageMcp, fetchJson, getBaseUrl, loadServers],
+    [fetchJson, getBaseUrl, loadServers],
   );
 
   const configureModal = useMcpConfigureModal({
     servers,
-    canManageMcp,
     isSaving,
     patchServer,
     validateServer,
@@ -523,6 +517,10 @@ export const McpServersSettings = ({
     );
   };
 
+  if (mcpToolsPermissionLoading || !hasMcpToolsAccess) {
+    return null;
+  }
+
   return (
     <div
       className={classes.root}
@@ -553,14 +551,6 @@ export const McpServersSettings = ({
           variant="danger"
           isInline
           title={error}
-          className={classes.alert}
-        />
-      )}
-      {!mcpToolsPermission.loading && !canManageMcp && (
-        <Alert
-          variant="info"
-          isInline
-          title={t('mcp.settings.readOnlyAccess')}
           className={classes.alert}
         />
       )}
@@ -634,8 +624,7 @@ export const McpServersSettings = ({
                       displayStatus,
                     );
                     const isRowSaving = Boolean(isSaving[server.name]);
-                    const isToggleDisabled =
-                      isUnavailable || isRowSaving || !canManageMcp;
+                    const isToggleDisabled = isUnavailable || isRowSaving;
                     const switchControl = (
                       <Switch
                         id={`mcp-switch-${server.id}`}
@@ -715,7 +704,6 @@ export const McpServersSettings = ({
                     icon={<PencilAltIcon />}
                     variant="plain"
                     className={classes.actionButton}
-                    isDisabled={!canManageMcp}
                     onClick={() => configureModal.open(server)}
                   />
                 </Td>

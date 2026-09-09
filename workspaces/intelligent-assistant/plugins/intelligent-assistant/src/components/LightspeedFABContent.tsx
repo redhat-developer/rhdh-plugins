@@ -20,6 +20,8 @@ import Tooltip from '@mui/material/Tooltip';
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
 import { DOCKED_CONTENT_OFFSET } from '../const';
+import { useIaChatPermission } from '../hooks/useIaChatPermission';
+import { useIaNotebooksPermission } from '../hooks/useIaNotebooksPermission';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useTranslation } from '../hooks/useTranslation';
 import { LightspeedFABIcon, LightspeedFABOpenIcon } from './LightspeedIcon';
@@ -28,8 +30,20 @@ export const LightspeedFABContent = () => {
   const { t } = useTranslation();
   const { isChatbotActive, toggleChatbot, displayMode } =
     useLightspeedDrawerContext();
+  const { allowed: hasChatAccess, loading: chatPermissionLoading } =
+    useIaChatPermission();
+  const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
+    useIaNotebooksPermission();
+
+  const permissionsLoading =
+    chatPermissionLoading || notebooksPermissionLoading;
+  const hasPluginAccess = hasChatAccess || hasNotebooksAccess;
 
   if (displayMode === ChatbotDisplayMode.embedded) {
+    return null;
+  }
+
+  if (permissionsLoading || !hasPluginAccess) {
     return null;
   }
 
