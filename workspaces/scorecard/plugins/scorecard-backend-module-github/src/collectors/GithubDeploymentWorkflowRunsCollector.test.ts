@@ -121,4 +121,29 @@ describe('GithubDeploymentWorkflowRunsCollector', () => {
     });
     expect(getWorkflowRunsSpy).toHaveBeenCalledTimes(1);
   });
+
+  it('forwards fetchItemsLimit to the GitHub client', async () => {
+    const getWorkflowRunsSpy = jest
+      .spyOn(GithubClient.prototype, 'getWorkflowRuns')
+      .mockResolvedValue([]);
+
+    await collector.collect({
+      entity: testEntity,
+      input: {
+        workflowName: 'Custom deployment',
+        from: '1970-01-01T00:00:00.000Z',
+        to: '2026-07-25T23:59:59.999Z',
+        fetchItemsLimit: 100,
+      },
+    });
+
+    expect(getWorkflowRunsSpy).toHaveBeenCalledWith(
+      'https://github.com/owner/repo',
+      { owner: 'owner', repo: 'repo' },
+      'Custom deployment',
+      new Date('1970-01-01T00:00:00.000Z'),
+      new Date('2026-07-25T23:59:59.999Z'),
+      { fetchItemsLimit: 100 },
+    );
+  });
 });

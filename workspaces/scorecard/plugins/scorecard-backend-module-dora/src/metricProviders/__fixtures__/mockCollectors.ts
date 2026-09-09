@@ -15,6 +15,7 @@
  */
 
 import { Collector } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
+import { DORA_PREDECESSOR_COLLECT_FROM } from '../../constants';
 import {
   Deployment,
   deploymentsCollectorInputSchema,
@@ -33,18 +34,31 @@ import {
 
 export function buildMockDeploymentsCollector(options: {
   deployments: Deployment[];
+  preWindowDeployments?: Deployment[];
   collectorId?: string;
 }): Collector {
-  const { deployments, collectorId = 'github:deployments' } = options;
+  const {
+    deployments,
+    preWindowDeployments = [],
+    collectorId = 'github:deployments',
+  } = options;
 
   return {
     getCollectorId: () => collectorId,
     getCollectorDescription: () => 'mock deployments collector',
     getInputSchema: () => deploymentsCollectorInputSchema,
     getOutputSchema: () => deploymentsCollectorOutputSchema,
-    collect: jest.fn(async () => ({
-      deployments,
-    })),
+    collect: jest.fn(async ({ input }) => {
+      if (
+        typeof input === 'object' &&
+        input !== null &&
+        'from' in input &&
+        input.from === DORA_PREDECESSOR_COLLECT_FROM
+      ) {
+        return { deployments: preWindowDeployments };
+      }
+      return { deployments };
+    }),
   };
 }
 

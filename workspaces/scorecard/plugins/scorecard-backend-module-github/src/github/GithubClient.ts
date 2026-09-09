@@ -117,6 +117,12 @@ export class GithubClient {
     return response.repository.pullRequests.totalCount;
   }
 
+  /**
+   * Lists deployments in `[from, to]` (inclusive). GitHub returns newest first;
+   * results are reversed to ASC. `fetchItemsLimit` caps in-range rows so a
+   * predecessor lookback (wide `from`, small cap) does not fetch the default
+   * 1000 historical deployments.
+   */
   async getDeployments(
     url: string,
     repository: GithubRepository,

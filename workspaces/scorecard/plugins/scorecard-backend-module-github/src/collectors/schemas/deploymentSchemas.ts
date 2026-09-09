@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT } from '../../github/constants';
 import { z } from 'zod';
 
 export const deploymentResultSchema = z.enum(['success', 'failure', '']);
@@ -31,3 +32,10 @@ export type DeploymentResult = z.infer<typeof deploymentResultSchema>;
 export const deploymentsSchema = z.object({
   deployments: z.array(deploymentSchema),
 });
+
+export const fetchItemsLimitSchema = z
+  .number()
+  .int()
+  .positive()
+  .max(DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT)
+  .optional();

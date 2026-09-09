@@ -25,6 +25,7 @@ import { getRepositoryInformationFromEntity } from '../github/utils';
 import {
   DeploymentResult,
   deploymentsSchema,
+  fetchItemsLimitSchema,
 } from './schemas/deploymentSchemas';
 
 export class GithubDeploymentWorkflowRunsCollector
@@ -38,6 +39,7 @@ export class GithubDeploymentWorkflowRunsCollector
     workflowName: z.string().min(1),
     from: z.string().datetime(),
     to: z.string().datetime(),
+    fetchItemsLimit: fetchItemsLimitSchema,
   });
   static readonly outputSchema = deploymentsSchema;
 
@@ -91,6 +93,7 @@ export class GithubDeploymentWorkflowRunsCollector
       options.input.workflowName,
       from,
       to,
+      { fetchItemsLimit: options.input.fetchItemsLimit },
     );
 
     return {

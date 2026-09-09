@@ -73,6 +73,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.useRealTimers();
     deploymentsCollector = buildMockDeploymentsCollector({
       deployments,
       collectorId: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
@@ -192,7 +193,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
 
       await customProvider.calculateMetrics(mockEntity);
 
-      expect(customCollect).toHaveBeenCalledTimes(2);
+      expect(customCollect).toHaveBeenCalledTimes(3);
       expect(customCollect).toHaveBeenCalledWith(
         expect.objectContaining({
           collectorId: customDeploymentsCollectorId,
@@ -220,6 +221,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       const results = await provider.calculateMetrics(mockEntity);
 
       expect(results.get('dora.medianLeadTimeForChanges')).toBe(48);
+      expect(deploymentPullRequestsCollector.collect).toHaveBeenCalledTimes(1);
     });
 
     it('should calculate median with multiple pull requests across multiple deployment ranges', async () => {
@@ -294,6 +296,7 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
         /need at least 2 successful production deployments/,
       );
+      expect(deploymentsCollector.collect).toHaveBeenCalledTimes(1);
       expect(deploymentPullRequestsCollector.collect).not.toHaveBeenCalled();
     });
 
@@ -471,6 +474,146 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
 
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
         'Deployments must be sorted in ascending order by createdAt',
+      );
+    });
+
+    it('should throw when a single in-window deployment has no predecessor', async () => {
+      jest.mocked(deploymentsCollector.collect).mockResolvedValueOnce({
+        deployments: [
+          {
+            id: '101',
+            commitSha: 'sha-current',
+            environment: 'production',
+            createdAt: '2026-06-08T12:00:00.000Z',
+            result: 'success',
+          },
+        ],
+      });
+
+      await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
+        /need at least 2 successful production deployments.*found 1/,
+      );
+      expect(deploymentPullRequestsCollector.collect).not.toHaveBeenCalled();
+    });
+
+    it('should measure lead time into the first in-window deployment using a predecessor', async () => {
+      jest.useFakeTimers({ now: new Date('2026-08-25T00:00:00.000Z') });
+      deploymentsCollector = buildMockDeploymentsCollector({
+        deployments: [
+          {
+            id: '101',
+            commitSha: 'sha-current',
+            environment: 'production',
+            createdAt: '2026-08-08T12:00:00.000Z',
+            result: 'success',
+          },
+        ],
+        preWindowDeployments: [
+          {
+            id: '99',
+            commitSha: 'sha-predecessor',
+            environment: 'production',
+            createdAt: '2026-07-10T12:00:00.000Z',
+            result: 'success',
+          },
+        ],
+        collectorId: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+      });
+      deploymentPullRequestsCollector =
+        buildMockDeploymentPullRequestsCollector({
+          pullRequests: [
+            { id: '123', firstCommitAt: '2026-08-05T12:00:00.000Z' }, // 72h
+            { id: '124', firstCommitAt: '2026-08-07T12:00:00.000Z' }, // 24h
+          ],
+          collectorId: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+        });
+      ({ collectorsService } = buildMockCollectorsService({
+        collectors: [deploymentsCollector, deploymentPullRequestsCollector],
+      }));
+      provider = DoraMedianLeadTimeForChangesProvider.fromConfig(
+        new ConfigReader({}),
+        { collectorsService, logger: mockLogger },
+      );
+
+      const results = await provider.calculateMetrics(mockEntity);
+
+      expect(results.get('dora.medianLeadTimeForChanges')).toBe(48);
+      expect(deploymentPullRequestsCollector.collect).toHaveBeenCalledTimes(1);
+      expect(deploymentPullRequestsCollector.collect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          input: expect.objectContaining({
+            baseCommitSha: 'sha-predecessor',
+            headCommitSha: 'sha-current',
+          }),
+        }),
+      );
+    });
+
+    it('should add a predecessor interval in front of existing in-window pairs', async () => {
+      jest.useFakeTimers({ now: new Date('2026-08-25T00:00:00.000Z') });
+      deploymentsCollector = buildMockDeploymentsCollector({
+        deployments: [
+          {
+            id: '101',
+            commitSha: 'sha-1',
+            environment: 'production',
+            createdAt: '2026-08-05T00:00:00.000Z',
+            result: 'success',
+          },
+          {
+            id: '102',
+            commitSha: 'sha-2',
+            environment: 'production',
+            createdAt: '2026-08-10T00:00:00.000Z',
+            result: 'success',
+          },
+        ],
+        preWindowDeployments: [
+          {
+            id: '99',
+            commitSha: 'sha-predecessor',
+            environment: 'production',
+            createdAt: '2026-07-10T00:00:00.000Z',
+            result: 'success',
+          },
+        ],
+        collectorId: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+      });
+      deploymentPullRequestsCollector =
+        buildMockDeploymentPullRequestsCollector({
+          pullRequests: [
+            { id: '501', firstCommitAt: '2026-08-04T12:00:00.000Z' },
+          ],
+          collectorId: DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+        });
+      ({ collectorsService } = buildMockCollectorsService({
+        collectors: [deploymentsCollector, deploymentPullRequestsCollector],
+      }));
+      provider = DoraMedianLeadTimeForChangesProvider.fromConfig(
+        new ConfigReader({}),
+        { collectorsService, logger: mockLogger },
+      );
+
+      await provider.calculateMetrics(mockEntity);
+
+      expect(deploymentPullRequestsCollector.collect).toHaveBeenCalledTimes(2);
+      expect(deploymentPullRequestsCollector.collect).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          input: expect.objectContaining({
+            baseCommitSha: 'sha-predecessor',
+            headCommitSha: 'sha-1',
+          }),
+        }),
+      );
+      expect(deploymentPullRequestsCollector.collect).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          input: expect.objectContaining({
+            baseCommitSha: 'sha-1',
+            headCommitSha: 'sha-2',
+          }),
+        }),
       );
     });
   });

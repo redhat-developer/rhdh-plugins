@@ -204,6 +204,64 @@ describe('GithubClient', () => {
       expect(getCredentialsSpy).toHaveBeenCalledWith({ url });
     });
 
+    it('should keep only the newest in-range deployments when fetchItemsLimit is set', async () => {
+      const url = `https://github.com/owner/repo`;
+      const from = new Date('1970-01-01T00:00:00.000Z');
+      const to = new Date('2026-04-30T23:59:59.000Z');
+      mockedGraphqlClient.mockResolvedValue({
+        repository: {
+          deployments: {
+            nodes: [
+              {
+                databaseId: 103,
+                commitOid: 'sha-after-to',
+                createdAt: '2026-05-20T10:00:00.000Z',
+                environment: 'production',
+                latestStatus: { state: 'SUCCESS' },
+              },
+              {
+                databaseId: 102,
+                commitOid: 'sha-newest-in-range',
+                createdAt: '2026-04-20T10:00:00.000Z',
+                environment: 'production',
+                latestStatus: { state: 'SUCCESS' },
+              },
+              {
+                databaseId: 101,
+                commitOid: 'sha-older-in-range',
+                createdAt: '2026-03-15T10:00:00.000Z',
+                environment: 'production',
+                latestStatus: { state: 'SUCCESS' },
+              },
+            ],
+            pageInfo: {
+              hasNextPage: false,
+              endCursor: null,
+            },
+          },
+        },
+      });
+
+      const deployments = await githubClient.getDeployments(
+        url,
+        repository,
+        from,
+        to,
+        { fetchItemsLimit: 1 },
+      );
+
+      expect(deployments).toEqual([
+        {
+          id: 102,
+          sha: 'sha-newest-in-range',
+          createdAt: '2026-04-20T10:00:00.000Z',
+          environment: 'production',
+          status: 'SUCCESS',
+        },
+      ]);
+      expect(mockedGraphqlClient).toHaveBeenCalledTimes(1);
+    });
+
     it('should stop paging once fetchItemsLimit of in-window deployments is reached', async () => {
       const url = `https://github.com/owner/repo`;
       const from = new Date('2026-05-01T00:00:00.000Z');
