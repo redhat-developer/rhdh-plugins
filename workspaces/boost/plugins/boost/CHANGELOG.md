@@ -1,5 +1,32 @@
 # @red-hat-developer-hub/backstage-plugin-boost
 
+## 0.5.4
+
+### Patch Changes
+
+- a65f815: bump workspace to Backstage 1.54.6
+- Updated dependencies [a65f815]
+  - @red-hat-developer-hub/backstage-plugin-boost-common@0.4.2
+
+## 0.5.3
+
+### Patch Changes
+
+- 0e772a4: bump workspace to Backstage 1.54.4
+- 0ec0b3f: Updated dependency `esbuild` to `^0.28.0`.
+  Updated dependency `@remixicon/react` to `<4.10.0`.
+  Updated dependency `@backstage/backend-defaults` to `^0.17.7`.
+  Updated dependency `@backstage/backend-plugin-api` to `^1.10.0`.
+  Updated dependency `@backstage/backend-test-utils` to `^1.11.6`.
+- Updated dependencies [0e772a4]
+  - @red-hat-developer-hub/backstage-plugin-boost-common@0.4.1
+
+## 0.5.2
+
+### Patch Changes
+
+- 5192aef: Add RBAC permission gating to the Usage tab. Users without `ai-catalog.asset.access.usage-docs` see a "contact owner" fallback instead of usage documentation.
+
 ## 0.5.1
 
 ### Patch Changes

@@ -14,88 +14,119 @@
  * limitations under the License.
  */
 
-import { ConfigReader } from '@backstage/config';
-import { SonarQubeMetricProviderFactory } from './SonarQubeMetricProviderFactory';
+import type { Config } from '@backstage/config';
 import { mockServices } from '@backstage/backend-test-utils';
+import { SonarQubeMetricProviderFactory } from './SonarQubeMetricProviderFactory';
+import {
+  SONARQUBE_BOOLEAN_THRESHOLDS,
+  SONARQUBE_NUMBER_THRESHOLDS,
+} from './SonarQubeConfig';
 
 jest.mock('../clients/SonarQubeClient');
 
-const mockConfig = new ConfigReader({});
-const mockLogger = mockServices.logger.mock();
+describe('SonarQubeMetricProviderFactory', () => {
+  let mockConfig: Config;
+  let mockLogger: ReturnType<typeof mockServices.logger.mock>;
 
-describe('createMetricProvider', () => {
-  it('returns a boolean provider for qualityGate', () => {
-    const provider = SonarQubeMetricProviderFactory.createMetricProvider(
-      mockConfig,
-      mockLogger,
-      'qualityGate',
-    );
-    expect(provider.getProviderId()).toBe('sonarqube.qualityGate');
-    expect(provider.getProviderDatasourceId()).toBe('sonarqube');
-    expect(provider.getMetrics()[0].type).toBe('boolean');
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockConfig = mockServices.rootConfig.mock();
+    mockLogger = mockServices.logger.mock();
   });
 
-  it('returns a number provider for openIssues', () => {
-    const provider = SonarQubeMetricProviderFactory.createMetricProvider(
-      mockConfig,
-      mockLogger,
-      'openIssues',
-    );
-    expect(provider.getProviderId()).toBe('sonarqube.openIssues');
-    expect(provider.getMetrics()[0].type).toBe('number');
+  describe('createMetricProvider', () => {
+    it('should return a boolean provider when metric is qualityGate', () => {
+      const provider = SonarQubeMetricProviderFactory.createMetricProvider(
+        mockConfig,
+        mockLogger,
+        'qualityGate',
+      );
+      expect(provider.getProviderId()).toBe('sonarqube.qualityGate');
+      expect(provider.getProviderDatasourceId()).toBe('sonarqube');
+      expect(provider.getMetrics()[0]).toMatchObject({
+        type: 'boolean',
+        history: true,
+        thresholds: SONARQUBE_BOOLEAN_THRESHOLDS,
+      });
+    });
+
+    it('should return a number provider when metric is openIssues', () => {
+      const provider = SonarQubeMetricProviderFactory.createMetricProvider(
+        mockConfig,
+        mockLogger,
+        'openIssues',
+      );
+      expect(provider.getProviderId()).toBe('sonarqube.openIssues');
+      expect(provider.getProviderDatasourceId()).toBe('sonarqube');
+      expect(provider.getMetrics()[0]).toMatchObject({
+        type: 'number',
+        history: true,
+        thresholds: SONARQUBE_NUMBER_THRESHOLDS.openIssues,
+      });
+    });
+
+    it('should return a number provider when metric is securityRating', () => {
+      const provider = SonarQubeMetricProviderFactory.createMetricProvider(
+        mockConfig,
+        mockLogger,
+        'securityRating',
+      );
+      expect(provider.getProviderId()).toBe('sonarqube.securityRating');
+      expect(provider.getProviderDatasourceId()).toBe('sonarqube');
+      expect(provider.getMetrics()[0]).toMatchObject({
+        type: 'number',
+        history: true,
+        thresholds: SONARQUBE_NUMBER_THRESHOLDS.securityRating,
+      });
+    });
+
+    it('should return a number provider when metric is securityIssues', () => {
+      const provider = SonarQubeMetricProviderFactory.createMetricProvider(
+        mockConfig,
+        mockLogger,
+        'securityIssues',
+      );
+      expect(provider.getProviderId()).toBe('sonarqube.securityIssues');
+      expect(provider.getProviderDatasourceId()).toBe('sonarqube');
+      expect(provider.getMetrics()[0]).toMatchObject({
+        type: 'number',
+        history: true,
+        thresholds: SONARQUBE_NUMBER_THRESHOLDS.securityIssues,
+      });
+    });
   });
 
-  it('returns a number provider for securityRating', () => {
-    const provider = SonarQubeMetricProviderFactory.createMetricProvider(
-      mockConfig,
-      mockLogger,
-      'securityRating',
-    );
-    expect(provider.getProviderId()).toBe('sonarqube.securityRating');
-    expect(provider.getMetrics()[0].type).toBe('number');
-  });
+  describe('fromConfig', () => {
+    it('should return twelve providers with correct IDs', () => {
+      const providers = SonarQubeMetricProviderFactory.fromConfig(
+        mockConfig,
+        mockLogger,
+      );
+      expect(providers).toHaveLength(12);
+      expect(providers.map(p => p.getProviderId())).toEqual([
+        'sonarqube.qualityGate',
+        'sonarqube.openIssues',
+        'sonarqube.securityRating',
+        'sonarqube.securityIssues',
+        'sonarqube.securityReviewRating',
+        'sonarqube.securityHotspots',
+        'sonarqube.reliabilityRating',
+        'sonarqube.reliabilityIssues',
+        'sonarqube.maintainabilityRating',
+        'sonarqube.maintainabilityIssues',
+        'sonarqube.codeCoverage',
+        'sonarqube.codeDuplications',
+      ]);
+    });
 
-  it('returns a number provider for securityIssues', () => {
-    const provider = SonarQubeMetricProviderFactory.createMetricProvider(
-      mockConfig,
-      mockLogger,
-      'securityIssues',
-    );
-    expect(provider.getProviderId()).toBe('sonarqube.securityIssues');
-    expect(provider.getMetrics()[0].type).toBe('number');
-  });
-});
-
-describe('fromConfig', () => {
-  it('returns twelve providers with correct IDs', () => {
-    const providers = SonarQubeMetricProviderFactory.fromConfig(
-      mockConfig,
-      mockLogger,
-    );
-    expect(providers).toHaveLength(12);
-    expect(providers.map(p => p.getProviderId())).toEqual([
-      'sonarqube.qualityGate',
-      'sonarqube.openIssues',
-      'sonarqube.securityRating',
-      'sonarqube.securityIssues',
-      'sonarqube.securityReviewRating',
-      'sonarqube.securityHotspots',
-      'sonarqube.reliabilityRating',
-      'sonarqube.reliabilityIssues',
-      'sonarqube.maintainabilityRating',
-      'sonarqube.maintainabilityIssues',
-      'sonarqube.codeCoverage',
-      'sonarqube.codeDuplications',
-    ]);
-  });
-
-  it('returns 1 boolean and 11 number providers', () => {
-    const providers = SonarQubeMetricProviderFactory.fromConfig(
-      mockConfig,
-      mockLogger,
-    );
-    const types = providers.map(p => p.getMetrics()[0].type);
-    expect(types.filter(t => t === 'boolean')).toHaveLength(1);
-    expect(types.filter(t => t === 'number')).toHaveLength(11);
+    it('should return 1 boolean and 11 number providers', () => {
+      const providers = SonarQubeMetricProviderFactory.fromConfig(
+        mockConfig,
+        mockLogger,
+      );
+      const types = providers.map(p => p.getMetrics()[0].type);
+      expect(types.filter(t => t === 'boolean')).toHaveLength(1);
+      expect(types.filter(t => t === 'number')).toHaveLength(11);
+    });
   });
 });

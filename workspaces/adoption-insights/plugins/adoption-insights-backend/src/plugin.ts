@@ -39,6 +39,8 @@ export const adoptionInsightsPlugin = createBackendPlugin({
         auditor: coreServices.auditor,
         config: coreServices.rootConfig,
         logger: coreServices.logger,
+        auth: coreServices.auth,
+        discovery: coreServices.discovery,
         httpAuth: coreServices.httpAuth,
         httpRouter: coreServices.httpRouter,
         database: coreServices.database,
@@ -50,6 +52,8 @@ export const adoptionInsightsPlugin = createBackendPlugin({
         auditor,
         config,
         logger,
+        auth,
+        discovery,
         httpAuth,
         httpRouter,
         database,
@@ -72,6 +76,10 @@ export const adoptionInsightsPlugin = createBackendPlugin({
           processor,
           config,
           auditor,
+          auth,
+          httpAuth,
+          discovery,
+          logger,
         );
 
         // Migrate database

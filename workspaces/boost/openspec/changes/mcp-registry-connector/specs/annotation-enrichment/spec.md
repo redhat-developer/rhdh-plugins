@@ -20,6 +20,10 @@ None — this is a new productization wrapper around the upstream MCP Registry e
 
 ### Requirement: Annotation Population During Entity Emission
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Entity emission is enriched
+
 **WHEN** the upstream MCP Registry connector emits a Backstage entity for a discovered MCP server:
 
 **THEN** the productization wrapper enriches the entity with AI Asset annotations before passing it to `applyMutation`.
@@ -30,7 +34,7 @@ None — this is a new productization wrapper around the upstream MCP Registry e
 metadata:
   annotations:
     rhdh.io/ai-asset-category: 'mcp-server'
-    rhdh.io/ai-asset-version: '1.0.0' # Extracted from MCP server manifest or "unknown"
+    rhdh.io/ai-asset-version: '1.0.0' # Extracted from MCP server manifest, normalized via normalizeAIAssetVersion(); missing/unrecognized → "0.0.0-unknown"
     rhdh.io/ai-asset-source: 'mcp-registry/<instance-id>'
 ```
 
@@ -62,6 +66,10 @@ metadata:
 
 ### Requirement: Version Metadata Extraction
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Version metadata is normalized
+
 **WHEN** the MCP server manifest includes version metadata:
 
 ```json
@@ -80,11 +88,11 @@ metadata:
 
 **WHEN** the MCP server manifest does NOT include version metadata:
 
-**THEN** the wrapper populates `rhdh.io/ai-asset-version: "unknown"`.
+**THEN** the wrapper treats the version as absent (empty string), passes it through `normalizeAIAssetVersion()`, and populates `rhdh.io/ai-asset-version: "0.0.0-unknown"`.
 
 **AND** the wrapper logs a DEBUG-level message indicating missing version metadata.
 
-**AND** the wrapper proceeds with the placeholder version annotation.
+**AND** the wrapper proceeds with the normalized fallback version annotation.
 
 ---
 
@@ -92,11 +100,15 @@ metadata:
 
 **THEN** the wrapper logs a WARNING-level message indicating invalid version.
 
-**AND** the wrapper populates `rhdh.io/ai-asset-version: "unknown"`.
+**AND** the wrapper passes the invalid value through `normalizeAIAssetVersion()`, which populates `rhdh.io/ai-asset-version: "0.0.0-unknown"`.
 
 **AND** the warning message includes the entity reference and invalid version value.
 
 ### Requirement: SDK Validation Integration
+
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Enriched entity is validated
 
 **WHEN** the enriched entity is passed to the catalog for ingestion:
 
@@ -120,6 +132,10 @@ metadata:
 
 ### Requirement: Annotation Category Constancy
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Category annotation is constant
+
 **WHEN** the wrapper enriches an entity emitted by the MCP Registry connector:
 
 **THEN** the wrapper always populates `rhdh.io/ai-asset-category: "mcp-server"` unless the entity already carries this annotation.
@@ -137,6 +153,10 @@ metadata:
 **AND** the wrapper logs a DEBUG-level message indicating manifest category was ignored.
 
 ### Requirement: Annotation Source Constancy
+
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Source annotation identifies the instance
 
 **WHEN** the wrapper enriches an entity emitted by the MCP Registry connector:
 
@@ -167,6 +187,10 @@ ai-catalog:
 
 ### Requirement: Annotation Enrichment Performance
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Enrichment meets the latency target
+
 **WHEN** the wrapper enriches an entity:
 
 **THEN** the enrichment logic completes in under 5ms (synchronous operation).
@@ -186,6 +210,10 @@ ai-catalog:
 **AND** Prometheus metrics track enrichment latency per entity (p50, p95, p99).
 
 ### Requirement: Prometheus Metrics for Annotation Enrichment
+
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Enrichment metrics are emitted
 
 **WHEN** the wrapper enriches an entity:
 

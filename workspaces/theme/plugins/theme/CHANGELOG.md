@@ -1,5 +1,33 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.2.0
+
+### Minor Changes
+
+- e8c4cd7: feat: allow customers to customize BUI components via app-config (RHIDP-14510)
+
+  Adds two new `app.branding` configuration options:
+
+  - `customCSS`: raw CSS string injected as global styles (use at your own risk)
+  - `theme.{light|dark}.bui.tokens`: per-theme structured token overrides mapping to BUI CSS custom properties (`--bui-*`), allowing different values for light and dark themes
+
+### Patch Changes
+
+- a8731b1: Update theme workspace dependencies to Backstage 1.54.6.
+- 1a55424: Offset Backstage UI dialogs such as Inspect Entity below the global header so their title and close control stay visible.
+
+## 1.1.0
+
+### Minor Changes
+
+- d0fdac4: Add initial support for Backstage UI
+
+### Patch Changes
+
+- 889a5d0: Fix light-theme WCAG contrast and demo a11y issues so the theme e2e axe suite can enforce violations.
+- 1bb88d7: Make NFS BUI catalog entity `<main>` a flex column so Topology and Scorecard fill the content well instead of leaving a gap below short tab content (RHDHBUGS-3543).
+- a1601a9: Added `createSharedThemeProvider` internal utility that creates a single shared Provider for multiple themes, preventing full application remount when switching themes. All built-in RHDH themes now share one Provider.
+
 ## 1.0.2
 
 ### Patch Changes

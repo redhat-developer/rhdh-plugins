@@ -212,6 +212,15 @@ const _default: OverridableFrontendPlugin<
       inputs: {};
       params: HomePageWidgetBlueprintParams;
     }>;
+    'home-page-widget:scorecard/scorecard-github-filecheck-readme': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-github-filecheck-readme';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
     'home-page-widget:scorecard/scorecard-github-open-prs': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
       name: 'scorecard-github-open-prs';
@@ -351,7 +360,9 @@ const _default: OverridableFrontendPlugin<
           {
             title: string;
             metrics: string[];
+            titleKey?: string | undefined;
             description?: string | undefined;
+            descriptionKey?: string | undefined;
           }
         >;
       };
@@ -362,7 +373,9 @@ const _default: OverridableFrontendPlugin<
               {
                 title: string;
                 metrics: string[];
+                titleKey?: string | undefined;
                 description?: string | undefined;
+                descriptionKey?: string | undefined;
               }
             >
           | undefined;
@@ -386,7 +399,9 @@ export interface ScorecardLayoutProps {
     string,
     {
       title: string;
+      titleKey?: string;
       description?: string;
+      descriptionKey?: string;
       metrics: string[];
     }
   >;

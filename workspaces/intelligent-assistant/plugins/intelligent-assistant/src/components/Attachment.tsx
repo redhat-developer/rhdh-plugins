@@ -16,8 +16,8 @@
 
 import { makeStyles } from '@material-ui/core';
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
-import AttachmentEdit from '@patternfly/chatbot/dist/dynamic/AttachmentEdit';
-import PreviewAttachment from '@patternfly/chatbot/dist/dynamic/PreviewAttachment';
+import { AttachmentEdit } from '@patternfly/chatbot/dist/dynamic/AttachmentEdit';
+import { PreviewAttachment } from '@patternfly/chatbot/dist/dynamic/PreviewAttachment';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { useFileAttachmentContext } from './AttachmentContext';
@@ -82,7 +82,7 @@ const Attachment = () => {
         secondaryActionButtonText={t('modal.cancel')}
         primaryActionButtonText={t('modal.save')}
         modalFooterClassName={classes.modalFooter}
-        onSave={(_event: unknown, content: string) => {
+        onSave={(_event, content) => {
           setCurrentFileContent({
             ...currentFileContent,
             content,

@@ -142,6 +142,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'module.statuses.success': 'Successo',
     'module.statuses.error': 'Errore',
     'module.statuses.cancelled': 'Annullato',
+    'module.statuses.stale': 'Non aggiornato',
     'module.statuses.removed': 'Rimosso',
     'artifact.types.migrated_sources': 'Sorgenti migrate',
     'artifact.types.project_metadata': 'Metadati del progetto',
@@ -169,6 +170,7 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'modulePage.phases.statuses.success': 'Successo',
     'modulePage.phases.statuses.error': 'Errore',
     'modulePage.phases.statuses.cancelled': 'Annullato',
+    'modulePage.phases.statuses.stale': 'Non aggiornato',
     'modulePage.phases.reanalyzeInstructions':
       "Il piano di migrazione del modulo è già presente. Se il piano di migrazione complessivo del progetto è stato aggiornato, riavvia l'analisi per riflettere le modifiche.",
     'modulePage.phases.rerunAnalyze':
@@ -215,6 +217,8 @@ const x2aPluginTranslationIt = createTranslationMessages({
     'modulePage.phases.telemetry.totalOutputTokens': 'Token di output totali',
     'modulePage.phases.resyncMigrationPlanInstructions':
       "Sincronizza l'elenco dei moduli con il piano di migrazione.",
+    'modulePage.phases.staleInstructions':
+      'Il risultato di questa fase non è aggiornato perché una fase precedente è stata rieseguita. Rieseguire per aggiornare.',
     'time.duration.daysAndHours': '{{days}}g {{hours}}h',
     'time.duration.daysOnly': '{{days}}g',
     'time.duration.hoursAndMinutes': '{{hours}}h {{minutes}}min',

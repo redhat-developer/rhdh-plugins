@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { PropsWithChildren, useState, useMemo } from 'react';
+import { default as React, PropsWithChildren, useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { makeStyles, Button, Typography } from '@material-ui/core';
 import HomeIcon from '@material-ui/icons/Home';

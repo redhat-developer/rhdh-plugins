@@ -62,7 +62,7 @@ export const createGetEntityMetricsAction = ({
                 type: z.enum(['number', 'boolean']),
                 unit: z.string().optional(),
                 history: z.boolean().optional(),
-                defaultVisualization: z.enum(['value', 'sparkline']).optional(),
+                defaultVisualization: z.enum(['donut', 'sparkline']).optional(),
                 collectorIds: z.array(z.string()).optional(),
               }),
               result: z.object({

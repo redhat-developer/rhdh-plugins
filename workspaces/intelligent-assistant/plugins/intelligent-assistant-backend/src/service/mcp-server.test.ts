@@ -128,6 +128,7 @@ jest.mock('@backstage/backend-plugin-api', () => ({
 async function startBackendServer(
   config?: Record<PropertyKey, unknown>,
   authorizeResult?: AuthorizeResult.DENY | AuthorizeResult.ALLOW,
+  extraFeatures: BackendFeature[] = [],
 ) {
   const features: (BackendFeature | Promise<{ default: BackendFeature }>)[] = [
     intelligentAssistantPlugin,
@@ -144,6 +145,7 @@ async function startBackendServer(
       ],
     }).factory,
     mockServices.userInfo.factory(),
+    ...extraFeatures,
   ];
   return (await startTestBackend({ features })).server;
 }
@@ -307,6 +309,8 @@ describe('MCP server management endpoints', () => {
       );
       expect(dcrServer.auth).toBe('dcr');
       expect(dcrServer.hasToken).toBe(true);
+      expect(dcrServer.hasOrgToken).toBe(false);
+      expect(dcrServer.hasUserToken).toBe(false);
 
       const staticServer = response.body.servers.find(
         (s: any) => s.name === 'static-mcp',
@@ -419,6 +423,32 @@ describe('MCP server management endpoints', () => {
         .send({ enabled: false });
 
       expect(patchRes.status).toBe(403);
+    });
+
+    it('toggles enabled for DCR servers', async () => {
+      const backendServer = await startBackendServer(MCP_CONFIG_DCR);
+
+      const disableRes = await request(backendServer)
+        .patch('/api/intelligent-assistant/mcp-servers/no-token-server')
+        .send({ enabled: false });
+
+      expect(disableRes.status).toBe(200);
+      expect(disableRes.body.server).toMatchObject({
+        name: 'no-token-server',
+        enabled: false,
+        auth: 'dcr',
+        hasToken: true,
+      });
+      expect(disableRes.body.validation).toBeUndefined();
+
+      const enableRes = await request(backendServer)
+        .patch('/api/intelligent-assistant/mcp-servers/no-token-server')
+        .send({ enabled: true });
+
+      expect(enableRes.status).toBe(200);
+      expect(enableRes.body.server.enabled).toBe(true);
+      expect(enableRes.body.server.auth).toBe('dcr');
+      expect(enableRes.body.server.hasToken).toBe(true);
     });
   });
 
@@ -574,17 +604,60 @@ describe('MCP server management endpoints', () => {
       expect(response.status).toBe(403);
     });
 
-    it('validates a DCR server using a minted token', async () => {
-      const backendServer = await startBackendServer(MCP_CONFIG_DCR);
+    it('successfully mints a user token and validates a DCR server', async () => {
+      const auth = mockServices.auth.mock({
+        getPluginRequestToken: async () => ({ token: MOCK_MCP_VALID_TOKEN }),
+      });
+      const backendServer = await startBackendServer(
+        MCP_CONFIG_DCR,
+        undefined,
+        [auth.factory],
+      );
+
       const response = await request(backendServer).post(
         '/api/intelligent-assistant/mcp-servers/no-token-server/validate',
       );
 
-      // DCR path mints a token successfully (no 502), but the mock MCP server
-      // rejects it (only accepts MOCK_MCP_VALID_TOKEN), so validation reports error.
       expect(response.status).toBe(200);
-      expect(response.body.name).toBe('no-token-server');
-      expect(response.body.validation).toBeDefined();
+      expect(response.body).toMatchObject({
+        name: 'no-token-server',
+        status: 'connected',
+        toolCount: 3,
+      });
+      expect(response.body.validation.valid).toBe(true);
+      expect(response.body.validation.toolCount).toBe(3);
+      expect(response.body.validation.tools).toHaveLength(3);
+      expect(auth.getPluginRequestToken).toHaveBeenCalledWith(
+        expect.objectContaining({
+          targetPluginId: 'mcp-actions',
+          onBehalfOf: expect.anything(),
+        }),
+      );
+    });
+
+    it('returns 502 when DCR token minting fails', async () => {
+      const auth = mockServices.auth.mock({
+        getPluginRequestToken: async () => {
+          throw new Error('Unable to mint plugin request token');
+        },
+      });
+      const backendServer = await startBackendServer(
+        MCP_CONFIG_DCR,
+        undefined,
+        [auth.factory],
+      );
+
+      const response = await request(backendServer).post(
+        '/api/intelligent-assistant/mcp-servers/no-token-server/validate',
+      );
+
+      expect(response.status).toBe(502);
+      expect(response.body.error).toContain(
+        "Failed to mint authentication token for DCR server 'no-token-server'",
+      );
+      expect(auth.getPluginRequestToken).toHaveBeenCalledWith(
+        expect.objectContaining({ targetPluginId: 'mcp-actions' }),
+      );
     });
   });
 

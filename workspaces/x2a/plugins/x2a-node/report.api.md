@@ -417,6 +417,8 @@ export interface X2ADatabaseServiceApi {
   // (undocumented)
   listRules(): Promise<RuleEntity[]>;
   // (undocumented)
+  markJobsAsStale(jobIds: string[]): Promise<void>;
+  // (undocumented)
   restoreModule(args: { id: string }): Promise<number>;
   // (undocumented)
   softDeleteModule(args: { id: string }): Promise<number>;

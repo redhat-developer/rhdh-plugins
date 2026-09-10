@@ -39,39 +39,52 @@ export async function assertChatDialogInitialState(
 
   await assertDrawerState(page, 'open', translations);
 
-  const sidePanel = page.locator('.pf-v6-c-drawer__panel-main');
+  const drawerPanel = page.locator('.pf-v6-c-drawer__panel-main');
+
   await expect(
-    sidePanel.getByRole('heading', {
+    drawerPanel.getByRole('button', {
+      name: translations['menu.newConversation'],
+    }),
+  ).toBeDisabled();
+  await expect(
+    drawerPanel.getByRole('button', { name: translations['sort.label'] }),
+  ).toBeVisible();
+  await expect(
+    drawerPanel.getByRole('heading', {
       name: new RegExp(translations['conversation.category.savedPrompts']),
     }),
   ).toBeVisible();
   await expect(
-    sidePanel.locator('.lightspeed-saved-prompts-group').getByRole('menuitem', {
-      name: translations['savedPrompts.sidebar.empty'],
-    }),
-  ).toBeVisible();
+    drawerPanel
+      .locator('.lightspeed-saved-prompts-group')
+      .getByRole('menuitem', {
+        name: translations['savedPrompts.sidebar.empty'],
+      }),
+  ).toBeDisabled();
   await expect(
-    sidePanel.getByRole('heading', {
+    drawerPanel.getByRole('heading', {
       name: translations['conversation.category.pinnedChats'],
+      level: 3,
       exact: true,
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole('menuitem', {
+    drawerPanel.getByRole('menuitem', {
       name: translations['chatbox.emptyState.noPinnedChats'],
     }),
-  ).toBeVisible();
+  ).toBeDisabled();
   await expect(
-    sidePanel.getByRole('heading', {
+    drawerPanel.getByRole('heading', {
       name: translations['conversation.category.recent'],
+      level: 3,
       exact: true,
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole('menuitem', {
+    drawerPanel.getByRole('menuitem', {
       name: translations['chatbox.emptyState.noRecentChats'],
     }),
-  ).toBeVisible();
+  ).toBeDisabled();
 }
 
 export async function closeChatDrawer(

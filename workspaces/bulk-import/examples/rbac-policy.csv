@@ -1,0 +1,12 @@
+# Role membership. Workflow-specific access is in conditional-policies.yaml.
+g, user:default/cyberbitnext, role:default/workflowUser
+g, group:default/rhdh-ui-test, role:default/workflowUser
+
+p, role:default/workflowUser, bulk.import, use, allow
+p, role:default/workflowUser, catalog.entity.read, read, allow
+p, role:default/workflowUser, catalog.entity.create, create, allow
+p, role:default/workflowUser, catalog.location.read, read, allow
+p, role:default/workflowUser, catalog.location.create, create, allow
+
+# Needed to open runs started as plugin:bulk-import (initiator user:default/system).
+#p, role:default/workflowUser, orchestrator.instanceAdminView, read, allow

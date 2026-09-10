@@ -31,6 +31,21 @@ describe('getAggregateExpression', () => {
     );
   });
 
+  it.each([
+    ['sum', `SUM(CASE WHEN NOT missing THEN ${numericValueExpr} END)`],
+    ['average', `AVG(CASE WHEN NOT missing THEN ${numericValueExpr} END)`],
+    ['max', `MAX(CASE WHEN NOT missing THEN ${numericValueExpr} END)`],
+    ['min', `MIN(CASE WHEN NOT missing THEN ${numericValueExpr} END)`],
+    ['count', 'COUNT(CASE WHEN NOT missing THEN 1 END)'],
+  ] as const)(
+    'should wrap %s with a row-included CASE WHEN',
+    (aggregationFn, expected) => {
+      expect(
+        getAggregateExpression(aggregationFn, numericValueExpr, 'NOT missing'),
+      ).toBe(expected);
+    },
+  );
+
   it('should throw for invalid aggregation function', () => {
     expect(() =>
       getAggregateExpression('invalid' as 'sum', numericValueExpr),

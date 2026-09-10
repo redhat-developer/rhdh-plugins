@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  default as React,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useIntl } from 'react-intl';
 import { makeStyles } from '@material-ui/core/styles';
 import {

@@ -1,5 +1,34 @@
 # @red-hat-developer-hub/backstage-plugin-boost-backend
 
+## 0.8.2
+
+### Patch Changes
+
+- a65f815: bump workspace to Backstage 1.54.6
+- Updated dependencies [a65f815]
+  - @red-hat-developer-hub/backstage-plugin-boost-common@0.4.2
+  - @red-hat-developer-hub/backstage-plugin-boost-node@0.2.3
+
+## 0.8.1
+
+### Patch Changes
+
+- 0e772a4: bump workspace to Backstage 1.54.4
+- 0ec0b3f: Updated dependency `esbuild` to `^0.28.0`.
+  Updated dependency `@remixicon/react` to `<4.10.0`.
+  Updated dependency `@backstage/backend-defaults` to `^0.17.7`.
+  Updated dependency `@backstage/backend-plugin-api` to `^1.10.0`.
+  Updated dependency `@backstage/backend-test-utils` to `^1.11.6`.
+- Updated dependencies [0e772a4]
+  - @red-hat-developer-hub/backstage-plugin-boost-common@0.4.1
+  - @red-hat-developer-hub/backstage-plugin-boost-node@0.2.2
+
+## 0.8.0
+
+### Minor Changes
+
+- db8ab88: BREAKING: Wire ConnectorConfigReader runtimeEnabled to RuntimeConfigResolver so that admin panel toggles for connector runtime sync take effect within the 30-second cache TTL. listCandidates() is now async — callers must `await reader.listCandidates()`. ConnectorConfigReaderOptions now requires a `resolver` (RuntimeConfigResolver).
+
 ## 0.7.0
 
 ### Minor Changes

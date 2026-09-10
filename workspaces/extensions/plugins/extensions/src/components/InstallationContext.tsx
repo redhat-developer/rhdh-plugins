@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createContext, useContext, useMemo, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react';
 
 export type InstallationType = { [pluginName: string]: string };
 
@@ -22,6 +28,31 @@ type InstallationContextType = {
   installedPackages: InstallationType;
   setInstalledPackages: (plugins: InstallationType) => void;
   setInstalledPlugins: (plugins: InstallationType) => void;
+};
+
+type InstallationStore = {
+  plugins: InstallationType;
+  packages: InstallationType;
+};
+
+const STORE_KEY = '__rhdhExtensionsInstallation';
+
+const getStore = (): InstallationStore => {
+  const globalState = globalThis as typeof globalThis & {
+    [STORE_KEY]?: InstallationStore;
+  };
+  if (!globalState[STORE_KEY]) {
+    globalState[STORE_KEY] = { plugins: {}, packages: {} };
+  }
+  return globalState[STORE_KEY];
+};
+
+/** @internal test-only helper to avoid leaking pending-restart state between tests */
+export const resetInstallationStore = () => {
+  const globalState = globalThis as typeof globalThis & {
+    [STORE_KEY]?: InstallationStore;
+  };
+  globalState[STORE_KEY] = { plugins: {}, packages: {} };
 };
 
 export const InstallationContext = createContext<InstallationContextType>({
@@ -38,12 +69,21 @@ export const InstallationContextProvider = ({
 }: {
   children: React.ReactElement;
 }) => {
-  const [installedPlugins, setInstalledPlugins] = useState<InstallationType>(
-    {},
-  );
-  const [installedPackages, setInstalledPackages] = useState<InstallationType>(
-    {},
-  );
+  const store = getStore();
+  const [installedPlugins, setInstalledPluginsState] =
+    useState<InstallationType>(() => store.plugins);
+  const [installedPackages, setInstalledPackagesState] =
+    useState<InstallationType>(() => store.packages);
+
+  const setInstalledPlugins = useCallback((plugins: InstallationType) => {
+    getStore().plugins = plugins;
+    setInstalledPluginsState(plugins);
+  }, []);
+
+  const setInstalledPackages = useCallback((packages: InstallationType) => {
+    getStore().packages = packages;
+    setInstalledPackagesState(packages);
+  }, []);
 
   const installationContexttProviderValue = useMemo(
     () => ({

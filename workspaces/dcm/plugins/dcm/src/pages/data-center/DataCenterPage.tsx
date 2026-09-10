@@ -22,7 +22,7 @@ import {
 } from '@backstage/core-components';
 import { Box, Divider, makeStyles, Typography } from '@material-ui/core';
 
-import { ProvidersTabContent } from '../providers/ProvidersTabContent';
+import { AgentsTabContent } from '../agents/AgentsTabContent';
 import { PoliciesTabContent } from '../policies/PoliciesTabContent';
 import { ServiceTypesTabContent } from '../service-types/ServiceTypesTabContent';
 import { CatalogItemsTabContent } from '../catalog-items/CatalogItemsTabContent';
@@ -79,8 +79,8 @@ export const DataCenterPage = () => {
       <Content>
         <Box className={classes.tabbedLayout}>
           <TabbedLayout>
-            <TabbedLayout.Route path="/" title={t('page.tabs.providers')}>
-              <ProvidersTabContent />
+            <TabbedLayout.Route path="/" title={t('page.tabs.agents')}>
+              <AgentsTabContent />
             </TabbedLayout.Route>
             <TabbedLayout.Route
               path={policiesRouteRef.path}

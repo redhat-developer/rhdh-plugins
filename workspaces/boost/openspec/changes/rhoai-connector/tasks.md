@@ -78,8 +78,8 @@
 - [ ] 7.1 Define version normalization rules: extract version string from MCP server manifest metadata
 - [ ] 7.2 Implement `normalizeAIAssetVersion(rawVersion: string): string` utility — semver normalization, strip `v` prefix, handle `latest`/`nightly` tags (SDK-exported name from RHDHPLAN-1507)
 - [ ] 7.3 Populate `rhdh.io/ai-asset-version` annotation with normalized version on all emitted MCP server entities
-- [ ] 7.4 Handle missing version metadata: set `rhdh.io/ai-asset-version: "unknown"` with DEBUG log
-- [ ] 7.5 Handle invalid version strings (empty, malformed): set `rhdh.io/ai-asset-version: "unknown"` with WARNING log
+- [ ] 7.4 Handle missing version metadata: pass empty string through `normalizeAIAssetVersion()` → `rhdh.io/ai-asset-version: "0.0.0-unknown"` with DEBUG log
+- [ ] 7.5 Handle invalid version strings (empty, malformed): pass through `normalizeAIAssetVersion()` → `rhdh.io/ai-asset-version: "0.0.0-unknown"` with WARNING log
 - [ ] 7.6 Unit tests for version normalization: semver, pre-release, `v`-prefix stripping, missing/invalid
 - [ ] 7.7 Integration test: emitted entities carry correct `rhdh.io/ai-asset-version` annotation
 

@@ -1,5 +1,44 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.0.1
+
+### Patch Changes
+
+- 0f8225e: Show the LCORE `source` field as a label on each referenced document card so that RAG sources are distinguishable.
+- fe51be2: Backstage version bump to v1.54.6
+- Updated dependencies [fe51be2]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.0.1
+
+## 5.0.0
+
+### Major Changes
+
+- 5741af9: Consolidate Intelligent Assistant RBAC permissions into four feature-linked sets: `intelligent-assistant.chat`, `intelligent-assistant.notebooks`, `intelligent-assistant.mcp.tools`, and `intelligent-assistant.skills`. Update backend routes, frontend permission checks, example RBAC policies, and documentation to use the new permission names and exported constants.
+
+### Patch Changes
+
+- Updated dependencies [5741af9]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.0.0
+
+## 4.3.0
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.3.0
+
+## 4.2.0
+
+### Minor Changes
+
+- cc6ba08: Add DOM text extraction for deep context awareness — extracts structured page content (headings, tables, alerts, text) and sends as context alongside user messages
+- eb3e2d9: implement docked and overlay display modes for Notebook
+- 5238698: Backstage version bump to v1.54.5
+
+### Patch Changes
+
+- Updated dependencies [5238698]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.2.0
+
 ## 4.1.0
 
 ### Minor Changes
@@ -212,6 +251,24 @@
 ### Patch Changes
 
 - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.9.0
+
+## 2.8.7
+
+### Patch Changes
+
+- 798b7d4: Updated dependency `monaco-editor` to `^0.56.0`.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.7
+
+## 2.8.6
+
+### Patch Changes
+
+- 3b0851a: Backport: Fix document upload gating and conversation deletion in notebooks
+
+  This backports fixes from commits f7d96f8, e49fc2c, and d5199d6 on main to the 1.10 release line:
+  - Prevent additional document uploads while another document is still being processed, avoiding race conditions in the notebook vector store
+  - Fix document deletion to use the proper conversations API abstraction instead of direct internal base URL access
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.6
 
 ## 2.8.5
 

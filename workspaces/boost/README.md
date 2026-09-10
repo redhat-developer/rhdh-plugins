@@ -12,6 +12,10 @@ Boost is a clean-room reimplementation of the [Augment](../augment/) plugin. Thi
 
 The rationale for this approach is documented in detail in [`specifications/boost-context.md`](specifications/boost-context.md).
 
+For the current release boundary and the status of every OpenSpec area, see
+[`specifications/CURRENT.md`](specifications/CURRENT.md). It is the source of
+truth for what is implemented, remaining, follow-on, or consolidated.
+
 ## Directory Structure
 
 This workspace uses a specification-driven layout that differs from other workspaces in the repo:
@@ -31,29 +35,32 @@ workspaces/boost/
 └── plugins/                     # Plugin packages
 ```
 
-**`specifications/`** contains the product-level requirements — what Boost must do and why. The PRDs are organized by capability area: AI chat, agent discovery, platform architecture, security, and operations.
+**`specifications/`** contains the product-level requirements — what Boost must do and why. The PRDs are organized by capability area: AI chat, agent discovery, platform architecture, security, and operations. [`CURRENT.md`](specifications/CURRENT.md) records the active release scope and status.
 
-**`openspec/`** contains the implementation-level specifications — how each capability area will be built. Each change includes a proposal, design decisions, task breakdown, and behavioral specs that serve as acceptance criteria.
+**`openspec/`** contains the implementation-level specifications — how each capability area will be built. Implemented behavior lives in `openspec/specs/`; active planning lives in `openspec/changes/`. Each active change includes a proposal, design decisions, task breakdown, and behavioral specs that serve as acceptance criteria.
 
-All specs are currently in **draft** status (pre-implementation). They will be maintained alongside the code as implementation progresses.
+The current release contains the AI Catalog frontend plugin and OGX entity
+provider. Backend, connector, chat, and platform OpenSpecs are follow-on
+planning unless [`CURRENT.md`](specifications/CURRENT.md) says otherwise.
 
 ## Plugins
 
-| Plugin                       | Package                                                                | Description                                                         |
-| ---------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| boost                        | `@red-hat-developer-hub/backstage-plugin-boost`                        | Frontend plugin — AI Catalog browse page and entity extensions      |
-| boost-backend                | `@red-hat-developer-hub/backstage-plugin-boost-backend`                | Backend plugin — chat, agent lifecycle, MCP, admin APIs             |
-| boost-common                 | `@red-hat-developer-hub/backstage-plugin-boost-common`                 | Shared types and permissions                                        |
-| boost-node                   | `@red-hat-developer-hub/backstage-plugin-boost-node`                   | Node library — service refs and extension points                    |
-| boost-connector-utils        | `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`        | Shared CA/fault-isolation/startup helpers for AI catalog connectors |
-| boost-backend-module-ogx     | `@red-hat-developer-hub/backstage-plugin-boost-backend-module-ogx`     | OGX provider module                                                 |
-| boost-backend-module-kagenti | `@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti` | Kagenti provider module                                             |
-| ogx-entity-provider          | `@red-hat-developer-hub/backstage-plugin-ogx-entity-provider`          | OGX catalog entity provider                                         |
-| kagenti-entity-provider      | `@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider`      | Kagenti catalog entity provider                                     |
+| Plugin                       | Package                                                                | Description                                                                |
+| ---------------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| boost                        | `@red-hat-developer-hub/backstage-plugin-boost`                        | Frontend plugin — AI Catalog browse page and entity extensions             |
+| boost-backend                | `@red-hat-developer-hub/backstage-plugin-boost-backend`                | Backend plugin — chat, agent lifecycle, MCP, admin APIs                    |
+| boost-common                 | `@red-hat-developer-hub/backstage-plugin-boost-common`                 | Shared types and permissions                                               |
+| boost-node                   | `@red-hat-developer-hub/backstage-plugin-boost-node`                   | Node library — service refs and extension points                           |
+| boost-connector-utils        | `@red-hat-developer-hub/backstage-plugin-boost-connector-utils`        | Shared CA/fault-isolation/startup helpers for AI catalog connectors        |
+| boost-backend-module-ogx     | `@red-hat-developer-hub/backstage-plugin-boost-backend-module-ogx`     | OGX provider module                                                        |
+| boost-backend-module-kagenti | `@red-hat-developer-hub/backstage-plugin-boost-backend-module-kagenti` | Kagenti provider module                                                    |
+| ogx-entity-provider          | `@red-hat-developer-hub/backstage-plugin-ogx-entity-provider`          | OGX catalog entity provider                                                |
+| kagenti-entity-provider      | `@red-hat-developer-hub/backstage-plugin-kagenti-entity-provider`      | Kagenti catalog entity provider                                            |
+| boost-migration-readiness    | `@red-hat-developer-hub/backstage-plugin-boost-migration-readiness`    | Read-only CLI assessing AI asset entities against upstream Backstage kinds |
 
 ## Compatibility
 
-This workspace is aligned with **Backstage 1.52.0** (see [`backstage.json`](backstage.json)).
+This workspace is aligned with **Backstage 1.54.6** (see [`backstage.json`](backstage.json)).
 
 ## Development
 
@@ -70,6 +77,9 @@ yarn start
 
 # Run tests
 yarn test:all
+
+# Run Playwright e2e tests (starts the dev app unless PLAYWRIGHT_URL is set)
+yarn test:e2e
 
 # Build all plugins
 yarn build:all

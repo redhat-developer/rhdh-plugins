@@ -118,6 +118,7 @@ import {
   isSavedPromptConversationId,
   SAVED_PROMPT_CONVERSATION_ID_PREFIX,
 } from '../utils/buildConversationHistoryGroups';
+import { extractPageContext } from '../utils/dom-extractor';
 import {
   ChatbotFootnoteWithIcon,
   getCategorizeMessages,
@@ -720,6 +721,19 @@ export const LightspeedChat = ({
   const notebooksEnabled =
     configApi.getOptionalBoolean('intelligent-assistant.notebooks.enabled') ??
     false;
+  const screenContextEnabled =
+    configApi.getOptionalBoolean(
+      'intelligent-assistant.screen-context.enabled',
+    ) ?? false;
+  const domExtractionEnabled =
+    configApi.getOptionalBoolean(
+      'intelligent-assistant.screen-context.dom-extraction.enabled',
+    ) ?? true;
+  const domExtractionMaxChars =
+    configApi.getOptionalNumber(
+      'intelligent-assistant.screen-context.dom-extraction.maxChars',
+    ) ?? 8000;
+
   const notebooksRouteMatch = useMatch(`${LIGHTSPEED_PATH}/notebooks`);
   const notebookViewRouteMatch = useMatch(
     `${LIGHTSPEED_PATH}/notebooks/:notebookId`,
@@ -781,7 +795,7 @@ export const LightspeedChat = ({
   const {
     allowed: hasNotebooksAccess,
     loading: notebooksPermissionLoading,
-    iaNotebooksUsePermissionName,
+    iaNotebooksPermissionName,
   } = useLightspeedNotebooksPermission();
   const notebooksPermissionResolved =
     !notebooksPermissionLoading && hasNotebooksAccess;
@@ -1296,7 +1310,26 @@ export const LightspeedChat = ({
         prompt: message.toString(),
       }),
     );
-    handleInputPrompt(message.toString(), getAttachments(fileContents));
+    const allAttachments = getAttachments(fileContents);
+
+    if (screenContextEnabled && domExtractionEnabled) {
+      try {
+        const domContext = extractPageContext({
+          maxChars: domExtractionMaxChars,
+        });
+        if (domContext) {
+          allAttachments.push({
+            attachment_type: 'configuration',
+            content_type: 'text/plain',
+            content: domContext,
+          });
+        }
+      } catch {
+        // DOM extraction failure is non-fatal; proceed without page context
+      }
+    }
+
+    handleInputPrompt(message.toString(), allAttachments);
     setIsSendButtonDisabled(true);
     setFileContents([]);
     setDraftMessage('');
@@ -2434,7 +2467,7 @@ export const LightspeedChat = ({
               !hasNotebooksAccess && (
                 <PermissionRequiredState
                   subject={t('permission.subject.notebooks')}
-                  permissions={[iaNotebooksUsePermissionName]}
+                  permissions={[iaNotebooksPermissionName]}
                   action={
                     <Button
                       variant="outlined"

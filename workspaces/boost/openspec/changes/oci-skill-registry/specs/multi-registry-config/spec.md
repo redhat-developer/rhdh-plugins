@@ -10,6 +10,8 @@ The OCI Skill Registry connector supports multiple registry instances with diffe
 
 ### Requirement: Support Multiple Auth Mechanisms
 
+The implementation MUST satisfy the scenarios below.
+
 The connector supports auth for Quay, GHCR, Docker Hub, Harbor, Artifactory, and OpenShift Internal Image Registry.
 
 #### Scenario: Authenticate with Quay (Basic Auth)
@@ -78,6 +80,8 @@ The connector supports auth for Quay, GHCR, Docker Hub, Harbor, Artifactory, and
 
 ### Requirement: Configurable Registry Endpoints (No Hardcoded SaaS URLs)
 
+The implementation MUST satisfy the scenarios below.
+
 The connector requires explicit registry URLs in app-config, with no hardcoded defaults for SaaS registries.
 
 #### Scenario: Configure internal Quay instance
@@ -123,6 +127,8 @@ The connector requires explicit registry URLs in app-config, with no hardcoded d
 
 ### Requirement: Custom CA Bundles for TLS
 
+The implementation MUST satisfy the scenarios below.
+
 The connector honors custom CA certificates for all HTTPS connections to registries.
 
 #### Scenario: Use custom CA bundle from ConfigMap
@@ -167,6 +173,8 @@ The connector honors custom CA certificates for all HTTPS connections to registr
 
 ### Requirement: Secret-Based Credentials Only
 
+The implementation MUST satisfy the scenarios below.
+
 The connector rejects plaintext credentials in app-config and requires K8s Secret references.
 
 #### Scenario: Reject plaintext credentials
@@ -207,6 +215,8 @@ The connector rejects plaintext credentials in app-config and requires K8s Secre
 
 ### Requirement: K8s Pull Secret Pattern as Primary Credential Mechanism
 
+The implementation MUST support the Kubernetes pull-secret credential pattern.
+
 > _Added from RHIDP-15294 updated ACs (2026-07-08 consolidation)_
 
 The connector MUST support Kubernetes pull secrets (`kubernetes.io/dockerconfigjson`) as the primary credential mechanism, alongside the existing `secretRef` pattern.
@@ -246,6 +256,8 @@ The connector MUST support Kubernetes pull secrets (`kubernetes.io/dockerconfigj
 
 ### Requirement: Independent Sync Intervals Per Registry
 
+The implementation MUST satisfy the scenarios below.
+
 The connector allows configurable sync intervals for each registry instance.
 
 #### Scenario: Configure different sync intervals
@@ -278,6 +290,8 @@ The connector allows configurable sync intervals for each registry instance.
 - **THEN** the connector fails at startup with error: `Registry "quay-internal" syncInterval must be at least 1m`
 
 ### Requirement: Simultaneous Multi-Registry Operation
+
+The implementation MUST satisfy the scenarios below.
 
 The connector supports multiple registry instances running sync cycles simultaneously.
 

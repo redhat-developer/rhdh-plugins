@@ -470,8 +470,6 @@ export async function createRouter(
         search,
       );
 
-      const token = getBearerTokenFromReq(req);
-
       for (const repo of repositories.data) {
         const response = await findOrchestratorImportStatusByRepo(
           {
@@ -479,9 +477,11 @@ export async function createRouter(
             orchestratorRepositoryDao,
             orchestratorWorkflowDao,
             discovery,
+            auth,
+            httpAuth,
+            req,
           },
           repo.url,
-          token,
           true,
         );
         if (response.responseBody) {
@@ -574,12 +574,12 @@ export async function createRouter(
         );
       }
 
-      const token = getBearerTokenFromReq(req);
-
       const response = await createWorkflowImportJobs({
         orchestratorWorkflowId,
         discovery,
-        token,
+        auth,
+        httpAuth,
+        req,
         requestBody: c.request.requestBody,
         orchestratorWorkflowDao,
         orchestratorRepositoryDao,
@@ -587,7 +587,7 @@ export async function createRouter(
         gitlabApiService,
       });
 
-      res.status(response.statusCode).json(response.responseBody);
+      return res.status(response.statusCode).json(response.responseBody);
     },
   );
 
@@ -654,16 +654,17 @@ export async function createRouter(
       if (!q.repo?.trim()) {
         throw new Error('missing or blank parameter');
       }
-      const token = getBearerTokenFromReq(req);
       const response = await findOrchestratorImportStatusByRepo(
         {
           logger,
           orchestratorRepositoryDao,
           orchestratorWorkflowDao,
           discovery,
+          auth,
+          httpAuth,
+          req,
         },
         q.repo,
-        token,
       );
       return res.status(response.statusCode).json(response.responseBody);
     },
@@ -921,12 +922,4 @@ function getFindImportsParams(c: Context<any, any, any, any, any, Document>): {
     sortColumn: q.sortColumn,
     sortOrder: q.sortOrder,
   };
-}
-
-function getBearerTokenFromReq(req: express.Request): string {
-  const header = req.header('authorization') ?? req.headers.authorization;
-  if (header?.startsWith(`Bearer `)) {
-    return header.replace('Bearer ', '');
-  }
-  throw new InputError(`Request provided without token`);
 }

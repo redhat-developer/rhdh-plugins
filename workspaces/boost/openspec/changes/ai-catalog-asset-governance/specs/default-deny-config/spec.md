@@ -1,91 +1,49 @@
-# Default-Deny Configuration
+# Catalog Entity Access
 
-> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+> **Status: Draft** — Follow-on RHDH permission/RBAC guidance. No
+> Boost-specific configuration key or provider authorization state is proposed.
 
-Configurable default-deny posture for AI catalog assets. When enabled, newly ingested assets are invisible by default until explicit RBAC policies grant access. Per-category and per-connector scoping allows mixed posture within a single deployment.
+RHDH roles and conditional rules for `catalog.entity.read` determine which AI
+catalog entities a user receives.
 
-**Jira references:** RHIDP-15270, RHIDP-15306
+**Jira:** RHIDP-15270, RHIDP-15306
 
 ## ADDED Requirements
 
-### Requirement: Default Policy Configuration
+### Requirement: RHDH-managed entity access
 
-A configuration key MUST control the default visibility posture for newly ingested AI assets.
+AI Catalog visibility MUST follow RHDH's configured policy for
+`catalog.entity.read`.
 
-#### Scenario: Default-allow posture (Backstage standard)
+#### Scenario: Access denied
 
-- **WHEN** `ai-catalog.rbac.defaultPolicy` is set to `allow` (or not configured)
-- **THEN** newly ingested AI assets are visible to all users with `ai-catalog.asset.access`
-- **AND** no catch-all DENY rule is applied
-- **AND** this matches standard Backstage behavior where permissions not explicitly denied are allowed
+- **WHEN** RHDH does not grant `catalog.entity.read` for an AI catalog entity
+- **THEN** that entity is excluded from the user's authorized Catalog results
 
-#### Scenario: Default-deny posture
+#### Scenario: Explicit access granted
 
-- **WHEN** `ai-catalog.rbac.defaultPolicy` is set to `deny`
-- **THEN** the `AICatalogRBACProvider` applies a catch-all DENY conditional rule for `ai-catalog.asset.access` on newly ingested entities
-- **AND** deployers must explicitly grant access via RBAC policies (role-based or conditional) for users to see assets
-- **AND** `ai-catalog.admin` holders can always see all assets regardless of default posture
+- **WHEN** RHDH grants `catalog.entity.read` through a role or condition
+- **THEN** the user can receive the matching entity from Catalog queries
 
-#### Scenario: Only new assets affected
+### Requirement: Scoped entity access
 
-- **WHEN** the default policy is changed from `allow` to `deny`
-- **THEN** only subsequently ingested assets receive the catch-all DENY rule
-- **AND** existing assets retain their current visibility policies
-- **AND** the ingestion-time boundary is tracked via the `rhdh.io/ai-catalog-ingested-at` annotation
+RHDH policies MUST be able to scope `catalog.entity.read` by provider-emitted
+category, source, and namespace data.
 
-### Requirement: Per-Category Default Posture
+#### Scenario: Source scope
 
-Deployers MUST be able to configure different default postures per asset category.
+- **WHEN** RHDH denies `catalog.entity.read` for source `ogx`
+- **THEN** entities whose source annotation is `ogx` are denied
+- **AND** the provider does not add an authorization annotation
 
-#### Scenario: Category-scoped deny configuration
+### Requirement: No provider authorization state
 
-- **WHEN** the configuration specifies per-category defaults:
-  ```yaml
-  ai-catalog:
-    rbac:
-      defaultPolicy: allow
-      categories:
-        ai-model:
-          defaultPolicy: deny
-        agent:
-          defaultPolicy: allow
-  ```
-- **THEN** newly ingested assets with `rhdh.io/ai-asset-category: ai-model` receive a catch-all DENY rule
-- **AND** newly ingested assets with `rhdh.io/ai-asset-category: agent` do not receive a deny rule
-- **AND** categories not listed fall back to the top-level `defaultPolicy`
+Providers MUST NOT persist an authorization decision or policy-change timestamp
+by default.
 
-### Requirement: Per-Connector Default Posture
+#### Scenario: Provider refresh
 
-Deployers MUST be able to configure different default postures per source connector.
-
-#### Scenario: Connector-scoped deny configuration
-
-- **WHEN** the configuration specifies per-connector defaults:
-  ```yaml
-  ai-catalog:
-    rbac:
-      connectors:
-        watsonx:
-          defaultPolicy: deny
-        internal-registry:
-          defaultPolicy: allow
-  ```
-- **THEN** assets ingested from the `watsonx` connector receive a catch-all DENY rule
-- **AND** assets ingested from `internal-registry` do not receive a deny rule
-- **AND** connector identity is determined by the `rhdh.io/ai-asset-source` annotation
-
-### Requirement: Configuration Validation
-
-Invalid configuration MUST be rejected at startup with clear error messages.
-
-#### Scenario: Invalid defaultPolicy value
-
-- **WHEN** `ai-catalog.rbac.defaultPolicy` is set to an invalid value (not `allow` or `deny`)
-- **THEN** the plugin fails to start with a clear error listing valid values
-- **AND** the error follows the same pattern as `validateSecurityMode()` in boost's security middleware
-
-#### Scenario: Unknown category or connector in config
-
-- **WHEN** a per-category or per-connector config references a name that doesn't match any known asset
-- **THEN** the plugin logs a warning at startup but does not fail
-- **AND** the config is retained for future assets that may match
+- **WHEN** a provider refreshes an entity
+- **THEN** Catalog evaluates visibility using the current RHDH decision and the
+  entity's refreshed annotations and metadata
+- **AND** the provider does not update an authorization record

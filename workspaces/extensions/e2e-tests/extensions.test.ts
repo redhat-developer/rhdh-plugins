@@ -111,8 +111,8 @@ test.describe('Admin > Extensions', () => {
       await extensionHelper.verifyHeading('Pipelines with Tekton');
       await extensionHelper.verifyTextInLocator(
         '',
-        `${translations.metadata.by} Red Hat`,
-        true,
+        `${translations.metadata.by}Red Hat`,
+        false,
       );
 
       await extensionHelper.clickHeading('Pipelines with Tekton');

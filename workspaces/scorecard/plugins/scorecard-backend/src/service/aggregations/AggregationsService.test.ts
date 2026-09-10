@@ -15,6 +15,7 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
+import { InputError } from '@backstage/errors';
 import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { AggregationsService } from './AggregationsService';
 import type { DatabaseMetricValues } from '../../database/DatabaseMetricValues';
@@ -111,8 +112,10 @@ describe('AggregationsService', () => {
     aggregate: jest.fn(),
   } as unknown as jest.Mocked<AggregationStrategy>;
 
+  const scalarAggregateTimeSeries = jest.fn();
   const scalarStrategy = {
     aggregate: jest.fn(),
+    aggregateTimeSeries: scalarAggregateTimeSeries,
   } as unknown as jest.Mocked<AggregationStrategy>;
 
   let service: AggregationsService;
@@ -220,8 +223,33 @@ describe('AggregationsService', () => {
       expect(cfg.id).toBe('github.openPRs');
       expect(cfg.metricId).toBe('github.openPRs');
       expect(cfg.type).toBe(aggregationTypes.statusGrouped);
-      expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('github.openPRs'),
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'No "scorecard.aggregationKPIs.github.openPRs" block in app-config; using default type "statusGrouped"',
+        ),
+      );
+    });
+
+    it('should default to average when KPI config is absent and metric is sparkline', () => {
+      const sparklineMetric = mockGithubOpenPrsMetric({
+        id: 'dora.deploymentFrequency',
+        defaultVisualization: 'sparkline',
+      });
+      const providersSparklineRegistry = buildMockMetricProvidersRegistry({
+        metricsList: [sparklineMetric],
+      });
+
+      const cfg = service.getAggregationConfig(
+        'dora.deploymentFrequency',
+        providersSparklineRegistry,
+      );
+
+      expect(cfg.metricId).toBe('dora.deploymentFrequency');
+      expect(cfg.type).toBe(aggregationTypes.average);
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'No "scorecard.aggregationKPIs.dora.deploymentFrequency" block in app-config; using default type "average"',
+        ),
       );
     });
 
@@ -398,8 +426,84 @@ describe('AggregationsService', () => {
       );
 
       expect(second).toBe(first);
-      expect(logger.warn).toHaveBeenCalledTimes(1);
+      expect(logger.info).toHaveBeenCalledTimes(1);
       expect(metricProvidersRegistry.getMetric).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('getAggregatedMetricTimeSeries', () => {
+    const from = new Date('2024-01-01T00:00:00Z');
+    const to = new Date('2024-01-31T00:00:00Z');
+    const scalarSeriesResult = {
+      id: 'totalOpenPrs',
+      metricId: metric.id,
+      points: [{ value: 12, total: 3, timestamp: '2024-01-01T00:00:00.000Z' }],
+      metadata: scalarApiResult.metadata,
+      thresholds: { rules: [] },
+      aggregationChartDisplayColor: 'warning.main',
+    };
+
+    beforeEach(() => {
+      scalarAggregateTimeSeries.mockResolvedValue(scalarSeriesResult);
+    });
+
+    it('should call scalar strategy with time-series options', async () => {
+      const options = {
+        metric,
+        entityRefs,
+        thresholds: mockHigherIsBetterThresholds,
+        aggregationConfig: scalarAggregationConfig,
+        from,
+        to,
+      };
+
+      const result = await service.getAggregatedMetricTimeSeries(options);
+
+      expect(scalarAggregateTimeSeries).toHaveBeenCalledWith(options);
+      expect(result).toEqual(scalarSeriesResult);
+    });
+
+    it('should throw InputError for statusGrouped', async () => {
+      await expect(
+        service.getAggregatedMetricTimeSeries({
+          metric,
+          entityRefs,
+          thresholds: mockHigherIsBetterThresholds,
+          aggregationConfig: statusGroupedAggregationConfig,
+          from,
+          to,
+        }),
+      ).rejects.toBeInstanceOf(InputError);
+    });
+
+    it('should throw InputError for weightedStatusScore', async () => {
+      await expect(
+        service.getAggregatedMetricTimeSeries({
+          metric,
+          entityRefs,
+          thresholds: mockHigherIsBetterThresholds,
+          aggregationConfig: weightedAggregationConfig,
+          from,
+          to,
+        }),
+      ).rejects.toThrow(/does not support time-series/);
+    });
+
+    it('should throw when aggregation type is not registered', async () => {
+      await expect(() =>
+        service.getAggregatedMetricTimeSeries({
+          metric,
+          entityRefs: [],
+          thresholds: mockHigherIsBetterThresholds,
+          aggregationConfig: {
+            id: metric.id,
+            metricId: metric.id,
+            type: 'unknownStrategy' as any,
+          } as any,
+          from,
+          to,
+        }),
+      ).rejects.toThrow(/Unsupported aggregation type: unknownStrategy/);
     });
   });
 });

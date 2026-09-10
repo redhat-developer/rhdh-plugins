@@ -17,9 +17,9 @@
 import { createApiRef } from '@backstage/core-plugin-api';
 import type { ApiRef } from '@backstage/core-plugin-api';
 import type {
+  AgentsApi,
   CatalogApi,
   PolicyManagerApi,
-  ProvidersApi,
   ResourcesApi,
 } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 
@@ -48,17 +48,16 @@ export const policyManagerApiRef: ApiRef<PolicyManagerApi> =
   });
 
 /**
- * Backstage API ref for the DCM Providers service.
+ * Backstage API ref for the DCM Agents service.
  *
- * Provides CRUD operations for Providers via the dcm-backend secure proxy.
+ * Provides operations for listing and registering environment agents via
+ * the dcm-backend secure proxy.
  *
  * @public
  */
-export const providersApiRef: ApiRef<ProvidersApi> = createApiRef<ProvidersApi>(
-  {
-    id: 'plugin.dcm.providers',
-  },
-);
+export const agentsApiRef: ApiRef<AgentsApi> = createApiRef<AgentsApi>({
+  id: 'plugin.dcm.agents',
+});
 
 /**
  * Backstage API ref for the DCM Resources service.

@@ -22,6 +22,7 @@ import type { Config } from '@backstage/config';
 import {
   DefaultGithubCredentialsProvider,
   GithubCredentials,
+  GithubCredentialType,
   GithubIntegrationConfig,
   ScmIntegrations,
 } from '@backstage/integration';
@@ -124,7 +125,10 @@ export class GithubApiService implements GitApiService {
     };
   }
 
-  async getCredentials(repoUrl: string): Promise<{ token: string }> {
+  async getCredentials(repoUrl: string): Promise<{
+    token: string;
+    type: GithubCredentialType;
+  }> {
     const provider = DefaultGithubCredentialsProvider.fromIntegrations(
       this.integrations,
     );
@@ -133,6 +137,28 @@ export class GithubApiService implements GitApiService {
     });
     if (!creds || !creds.token) {
       throw new Error(`Token not configured for 'github' provider`);
+    }
+    return {
+      token: creds.token,
+      type: creds.type,
+    };
+  }
+
+  /**
+   * Returns a short-lived GitHub App installation token for the given repo URL.
+   * Fails closed if only a classic PAT is available or no App installation exists.
+   * Used by orchestrator import mode so long-lived PATs are never forwarded to SonataFlow.
+   */
+  async getAppInstallationCredentials(
+    repoUrl: string,
+  ): Promise<{ token: string }> {
+    const creds = await this.getCredentials(repoUrl);
+    if (creds.type !== 'app') {
+      throw new Error(
+        `Orchestrator import requires a GitHub App installation token for '${repoUrl}'. ` +
+          `Configure integrations.github with an App that has access to this repository; ` +
+          `classic personal access tokens are not forwarded in orchestrator mode.`,
+      );
     }
     return {
       token: creds.token,

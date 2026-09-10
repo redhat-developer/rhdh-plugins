@@ -8,6 +8,19 @@
 
 Formal specification of all RHDH AI Asset annotations and entity kinds, with explicit mapping to upstream Backstage entity kind targets. Covers all seven AI-asset categories per [ai-catalog-entity-model/design.md Decision 1](../../design.md). MCP servers are kind-aligned with upstream (`McpServerApiEntity`, [backstage#34016](https://github.com/backstage/backstage/pull/34016)); remaining categories have varying upstream readiness. Published in a location accessible to platform engineers. Actual migration is explicitly framed as future work.
 
+## ADDED Requirements
+
+### Requirement: Annotation specification coverage
+
+The specification document MUST record the current annotation and entity-kind
+mapping without executing a migration.
+
+#### Scenario: Specification remains a read-only planning artifact
+
+- **WHEN** the annotation specification is reviewed
+- **THEN** it documents the current mapping and upstream target status
+- **AND** it does not mutate catalog entities
+
 ---
 
 ## Scenario: Specification covers all rhdh.io/ai-asset-\* annotations
@@ -29,13 +42,13 @@ Formal specification of all RHDH AI Asset annotations and entity kinds, with exp
 **WHEN** the specification document is published  
 **THEN** all `spec.type` values for AI Assets are documented:
 
-- `ai-agent` (Component kind)
+- `agent` (AiResource kind)
 - `skill` (AIResource kind)
 - `rule` (AIResource kind)
 - `ai-skill-bundle` (AIResource kind)
 - `mcp-server` (API kind)
 - `ai-model` (Resource kind)
-- `ai-model-server` (Resource kind)
+- `ai-model-server` (AiModelServerAPI kind)
 - Each type includes: entity kind pairing, purpose, examples
 
 ---
@@ -60,7 +73,7 @@ Formal specification of all RHDH AI Asset annotations and entity kinds, with exp
 **WHEN** the specification document is published  
 **THEN** the mapping from RHDH Model Server entities is documented:
 
-- **Model Server:** Current `kind: Resource`, `spec.type: ai-model-server` → Candidate target `kind: API`, `spec.type: ai-model-server`. **Not** a new kind named `ai-model-server`.
+- **Model Server:** Current `kind: AiModelServerAPI`, `spec.type: ai-model-server` → Candidate target `kind: API`, `spec.type: ai-model-server`. **Not** a new kind named `ai-model-server`.
 - Confidence level: Medium/Low (open PR, hedge accordingly)
 - Transformation: `Resource` → `API` kind change + field mapping
 
@@ -98,7 +111,7 @@ Formal specification of all RHDH AI Asset annotations and entity kinds, with exp
 **THEN** the mappings document explicit uncertainty:
 
 - **Skill Bundle:** Current `kind: AIResource`, `spec.type: ai-skill-bundle` → No upstream kind. Confidence: Low. Stay on current mapping; track future RFCs.
-- **Agent:** Current `kind: Component`, `spec.type: ai-agent` → No upstream kind via RFC #32062 (that RFC is MCP-only). Confidence: Low. Track agent-kind ownership under RHDHPLAN-1113.
+- **Agent:** Current `kind: AiResource`, `spec.type: agent` → No upstream kind via RFC #32062 (that RFC is MCP-only). Confidence: Low. Track agent-kind ownership under RHDHPLAN-1113.
 
 ---
 

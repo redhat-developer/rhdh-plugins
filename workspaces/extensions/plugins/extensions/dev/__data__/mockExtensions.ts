@@ -48,6 +48,9 @@ export const mockPlugins: ExtensionsPlugin[] = [
       name: 'techdocs',
       title: 'TechDocs',
       description: 'Documentation as code for your Backstage instance.',
+      annotations: {
+        'extensions.backstage.io/catalog-source': 'community',
+      },
     },
     spec: {
       categories: ['documentation'],
@@ -63,6 +66,9 @@ export const mockPlugins: ExtensionsPlugin[] = [
       name: 'catalog',
       title: 'Software Catalog',
       description: 'Manage your software ecosystem with a unified catalog.',
+      annotations: {
+        'extensions.backstage.io/catalog-source': 'primary',
+      },
     },
     spec: {
       categories: ['infrastructure'],
@@ -78,6 +84,9 @@ export const mockPlugins: ExtensionsPlugin[] = [
       name: 'scaffolder',
       title: 'Software Templates',
       description: 'Create new components and projects from templates.',
+      annotations: {
+        'extensions.backstage.io/catalog-source': 'primary',
+      },
     },
     spec: {
       categories: ['developer-tools'],

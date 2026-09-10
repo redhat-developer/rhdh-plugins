@@ -33,7 +33,7 @@ import {
 } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
-import { iaMcpManagePermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+import { iaMcpToolsPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import { useMcpConfigureModal } from '../hooks/useMcpConfigureModal';
 import { useTranslation } from '../hooks/useTranslation';
@@ -291,10 +291,10 @@ export const McpServersSettings = ({
   const { t } = useTranslation();
   const configApi = useApi(configApiRef);
   const fetchApi = useApi(fetchApiRef);
-  const mcpManagePermission = usePermission({
-    permission: iaMcpManagePermission,
+  const mcpToolsPermission = usePermission({
+    permission: iaMcpToolsPermission,
   });
-  const canManageMcp = mcpManagePermission.allowed;
+  const canManageMcp = mcpToolsPermission.allowed;
   const [servers, setServers] = useState<McpServer[]>([]);
   const [sortColumn, setSortColumn] = useState<McpServerSortColumn>('name');
   const [sortAsc, setSortAsc] = useState(true);
@@ -548,7 +548,7 @@ export const McpServersSettings = ({
           className={classes.alert}
         />
       )}
-      {!mcpManagePermission.loading && !canManageMcp && (
+      {!mcpToolsPermission.loading && !canManageMcp && (
         <Alert
           variant="info"
           isInline

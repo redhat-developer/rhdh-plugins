@@ -14,6 +14,8 @@ None. This is a new configuration schema.
 
 ### Requirement: Enable/Disable Toggle
 
+The implementation MUST satisfy the scenarios below.
+
 The MCP catalog source must be toggleable via app-config.
 
 #### Scenario: MCP catalog disabled
@@ -37,6 +39,8 @@ The MCP catalog source must be toggleable via app-config.
 - **AND** the catalog backend logs: `RHOAI MCP catalog provider enabled`
 
 ### Requirement: Cross-Cluster Endpoint Configuration
+
+The implementation MUST satisfy the scenarios below.
 
 The MCP catalog source must support cross-cluster API endpoints with dedicated configuration.
 
@@ -63,6 +67,8 @@ The MCP catalog source must support cross-cluster API endpoints with dedicated c
 - **AND** it uses the CA bundle for TLS validation when connecting to the endpoint
 
 ### Requirement: K8s Secret Credentials
+
+The implementation MUST satisfy the scenarios below.
 
 The MCP catalog source must load authentication credentials from K8s Secrets.
 
@@ -96,6 +102,8 @@ The MCP catalog source must load authentication credentials from K8s Secrets.
 
 ### Requirement: Custom CA Bundle
 
+The implementation MUST satisfy the scenarios below.
+
 The MCP catalog source must support custom CA bundles for internal/self-signed certificates.
 
 #### Scenario: Custom CA bundle is configured
@@ -119,6 +127,8 @@ The MCP catalog source must support custom CA bundles for internal/self-signed c
 - **AND** it continues connecting to the API endpoint (TLS validation may fail if a custom CA is required)
 
 ### Requirement: Config Validation
+
+The implementation MUST satisfy the scenarios below.
 
 The module must validate the configuration schema at startup.
 

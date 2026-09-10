@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
 import type { SvgIconProps } from '@material-ui/core/SvgIcon';
 import { AnalyticsIcon } from './AnalyticsIcon';
 
