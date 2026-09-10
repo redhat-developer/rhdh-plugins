@@ -34,12 +34,19 @@ class TestClient extends DcmBaseClient {
   }
 }
 
-function makeClient(fetchFn: jest.Mock) {
+function makeClient(fetchFn: jest.Mock, authEnabled = true) {
   const discoveryApi: DiscoveryApi = {
     getBaseUrl: jest.fn().mockResolvedValue('http://localhost/api/dcm'),
   };
   const fetchApi: FetchApi = { fetch: fetchFn };
-  return new TestClient({ discoveryApi, fetchApi });
+  const oidcAuthApi = {
+    getAccessToken: jest.fn().mockResolvedValue('oidc-token'),
+  };
+  return new TestClient({
+    discoveryApi,
+    fetchApi,
+    ...(authEnabled ? { getAccessToken: oidcAuthApi.getAccessToken } : {}),
+  });
 }
 
 describe('DcmBaseClient', () => {
@@ -57,8 +64,23 @@ describe('DcmBaseClient', () => {
       expect.objectContaining({
         headers: expect.objectContaining({
           'Content-Type': 'application/json',
+          'X-DCM-OIDC-Token': 'oidc-token',
         }),
       }),
+    );
+  });
+
+  it('does not add an OIDC token header when DCM authentication is disabled', async () => {
+    const fetchFn = jest.fn().mockResolvedValue({
+      status: 200,
+      ok: true,
+      json: async () => ({}),
+    });
+    const client = makeClient(fetchFn, false);
+    await client.getItem('providers');
+
+    expect(fetchFn.mock.calls[0][1].headers).not.toHaveProperty(
+      'X-DCM-OIDC-Token',
     );
   });
 

@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-import { render, screen } from '@testing-library/react';
-import { wrapInTestApp } from '@backstage/test-utils';
-import { Router } from './Router';
+import {
+  createApiRef,
+  type ApiRef,
+  type OAuthApi,
+  type OpenIdConnectApi,
+} from '@backstage/core-plugin-api';
 
-jest.mock('./pages/data-center/DataCenterPage', () => ({
-  DataCenterPage: () => <div>DataCenterPage</div>,
-}));
-
-jest.mock('./DcmAuth', () => ({
-  setDcmAccessTokenProvider: jest.fn(),
-}));
-
-describe('Router', () => {
-  it('renders DataCenterPage on the default route', () => {
-    render(wrapInTestApp(<Router />));
-    expect(screen.getByText('DataCenterPage')).toBeInTheDocument();
-  });
+/** RHDH's OIDC API, provided by the host application. */
+export const oidcAuthApiRef: ApiRef<OAuthApi & OpenIdConnectApi> = createApiRef<
+  OAuthApi & OpenIdConnectApi
+>({
+  id: 'internal.auth.oidc',
 });

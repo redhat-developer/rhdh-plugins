@@ -15,8 +15,33 @@
  */
 
 import { ErrorBoundary } from '@backstage/core-components';
+import type { ReactNode } from 'react';
+import { configApiRef, useApi, useApiHolder } from '@backstage/core-plugin-api';
 import { Routes, Route } from 'react-router-dom';
 import { DataCenterPage } from './pages/data-center/DataCenterPage';
+import { oidcAuthApiRef } from './api/AuthApiRefs';
+import { setDcmAccessTokenProvider } from './DcmAuth';
+
+function DcmAuthConfigurator({ children }: { children: ReactNode }) {
+  const configApi = useApi(configApiRef);
+  const apiHolder = useApiHolder();
+  const authEnabled = configApi.getOptionalBoolean('dcm.auth.enabled') ?? true;
+  const oidcAuthApi = authEnabled ? apiHolder.get(oidcAuthApiRef) : undefined;
+
+  setDcmAccessTokenProvider(
+    authEnabled
+      ? oidcAuthApi?.getAccessToken.bind(oidcAuthApi) ??
+          (() =>
+            Promise.reject(
+              new Error(
+                'DCM authentication is enabled, but the host does not provide internal.auth.oidc.',
+              ),
+            ))
+      : undefined,
+  );
+
+  return <>{children}</>;
+}
 
 /**
  * Plugin-level router. All DCM routes are defined here (app mounts at /dcm/*).
@@ -26,9 +51,11 @@ import { DataCenterPage } from './pages/data-center/DataCenterPage';
 export function Router() {
   return (
     <ErrorBoundary>
-      <Routes>
-        <Route path="*" element={<DataCenterPage />} />
-      </Routes>
+      <DcmAuthConfigurator>
+        <Routes>
+          <Route path="*" element={<DataCenterPage />} />
+        </Routes>
+      </DcmAuthConfigurator>
     </ErrorBoundary>
   );
 }

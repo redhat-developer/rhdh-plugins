@@ -16,9 +16,9 @@
 
 import type { Request, Response } from 'express';
 import type { RouterOptions } from '../models/RouterOptions';
-import { getTokenFromApi } from '../util/tokenUtil';
 
 const API_BASE_PATH = '/api/v1alpha1';
+const DCM_OIDC_TOKEN_HEADER = 'x-dcm-oidc-token';
 
 /**
  * Proxies all `ALL /proxy/*` requests to the DCM control plane.
@@ -26,7 +26,9 @@ const API_BASE_PATH = '/api/v1alpha1';
  * The wildcard path segment is appended to:
  *   `{dcm.apiUrl}/api/v1alpha1/<wildcardPath>`
  *
- * An SSO bearer token is injected automatically via `tokenUtil`.
+ * The authenticated user's OIDC access token is forwarded from the dedicated
+ * `X-DCM-OIDC-Token` header. The normal RHDH Authorization header remains
+ * available to Backstage's httpAuth service and is never replaced.
  */
 export function createDcmProxy(options: RouterOptions) {
   return async (req: Request, res: Response): Promise<void> => {
@@ -43,6 +45,26 @@ export function createDcmProxy(options: RouterOptions) {
       res
         .status(503)
         .json({ error: 'DCM API is not configured on the server.' });
+      return;
+    }
+
+    // Authenticate the caller with the normal RHDH/Backstage bearer token.
+    // This deliberately happens before reading the DCM token header so the
+    // custom header cannot be used to bypass RHDH authentication.
+    try {
+      await options.httpAuth.credentials(req);
+    } catch (_err) {
+      res.status(401).json({ error: 'RHDH authentication is required.' });
+      return;
+    }
+
+    const authEnabled = config.getOptionalBoolean('dcm.auth.enabled') ?? true;
+    const dcmOidcToken = req.headers[DCM_OIDC_TOKEN_HEADER];
+    if (
+      authEnabled &&
+      (typeof dcmOidcToken !== 'string' || !dcmOidcToken.trim())
+    ) {
+      res.status(401).json({ error: 'DCM OIDC authentication is required.' });
       return;
     }
 
@@ -63,27 +85,10 @@ export function createDcmProxy(options: RouterOptions) {
       `DCM proxy: ${req.method} ${req.path} → ${targetUrl.toString()}`,
     );
 
-    let tokenResult;
-    try {
-      tokenResult = await getTokenFromApi(options);
-    } catch (err) {
-      logger.error(`DCM proxy: failed to obtain access token — ${err}`);
-      res
-        .status(502)
-        .json({ error: 'Failed to obtain upstream access token.' });
-      return;
-    }
-
     const requestHeaders: Record<string, string> = {
       Accept: (req.headers.accept as string) || 'application/json',
+      ...(authEnabled ? { Authorization: `Bearer ${dcmOidcToken}` } : {}),
     };
-
-    // Only attach the Authorization header when an SSO token was obtained.
-    // When clientId/clientSecret are not configured the token is empty and
-    // the request is forwarded without auth (open/unauthenticated API).
-    if (tokenResult.accessToken) {
-      requestHeaders.Authorization = `Bearer ${tokenResult.accessToken}`;
-    }
 
     // Forward Content-Type for requests that carry a body
     if (req.headers['content-type']) {

@@ -275,7 +275,11 @@ export interface DcmApiError {
 
 // @public
 export abstract class DcmBaseClient {
-  constructor(options: { discoveryApi: DiscoveryApi; fetchApi: FetchApi });
+  constructor(options: {
+    discoveryApi: DiscoveryApi;
+    fetchApi: FetchApi;
+    getAccessToken?: DcmOidcTokenProvider;
+  });
   // (undocumented)
   protected readonly discoveryApi: DiscoveryApi;
   // (undocumented)
@@ -323,6 +327,11 @@ export interface DcmHealth {
   // (undocumented)
   status: string;
 }
+
+// @public
+export type DcmOidcTokenProvider = () =>
+  | Promise<string | undefined>
+  | undefined;
 
 // @public
 export const dcmPluginPermissions: BasicPermission[];
