@@ -26,7 +26,10 @@ import type {
   Metric,
   EntityMetricDetailResponse,
   MetricTimeSeriesResponse,
+  MetricTimeSeriesPoint,
   AggregatedMetricTimeSeriesResponse,
+  ScalarAggregatedTimeSeriesPoint,
+  TimeSeriesPointError,
   CollectorMetadata,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
@@ -410,7 +413,8 @@ export class ScorecardApiClient implements ScorecardApi {
         typeof data !== 'object' ||
         typeof data.id !== 'string' ||
         typeof data.metricId !== 'string' ||
-        !Array.isArray(data.points)
+        !Array.isArray(data.points) ||
+        !data.points.every(isScalarAggregatedTimeSeriesPoint)
       ) {
         throw new TypeError(
           'Invalid response format from aggregation time-series API',
@@ -478,7 +482,8 @@ export class ScorecardApiClient implements ScorecardApi {
         typeof data !== 'object' ||
         typeof data.metricId !== 'string' ||
         typeof data.entityRef !== 'string' ||
-        !Array.isArray(data.points)
+        !Array.isArray(data.points) ||
+        !data.points.every(isMetricTimeSeriesPoint)
       ) {
         throw new TypeError(
           'Invalid response format from metric time-series API',
@@ -549,5 +554,65 @@ function isCollectorMetadata(value: unknown): value is CollectorMetadata {
   return (
     typeof collector.id === 'string' &&
     typeof collector.description === 'string'
+  );
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
+
+const isNullableFiniteNumber = (value: unknown): value is number | null =>
+  value === null || isFiniteNumber(value);
+
+const hasTimeSeriesPointShape = (
+  value: unknown,
+  isValidValue: (pointValue: unknown) => boolean,
+): value is Record<string, unknown> =>
+  isRecord(value) &&
+  typeof value.timestamp === 'string' &&
+  isValidValue(value.value);
+
+function isMetricTimeSeriesPoint(
+  value: unknown,
+): value is MetricTimeSeriesPoint {
+  return (
+    hasTimeSeriesPointShape(
+      value,
+      pointValue =>
+        isNullableFiniteNumber(pointValue) || typeof pointValue === 'boolean',
+    ) &&
+    (value.error === undefined || typeof value.error === 'string')
+  );
+}
+
+function isTimeSeriesPointError(value: unknown): value is TimeSeriesPointError {
+  return (
+    isRecord(value) &&
+    typeof value.message === 'string' &&
+    isFiniteNumber(value.count)
+  );
+}
+
+function isScalarAggregatedTimeSeriesPoint(
+  value: unknown,
+): value is ScalarAggregatedTimeSeriesPoint {
+  if (!hasTimeSeriesPointShape(value, isNullableFiniteNumber)) {
+    return false;
+  }
+
+  if (
+    !isFiniteNumber(value.successCount) ||
+    !isFiniteNumber(value.errorCount) ||
+    !isFiniteNumber(value.total) ||
+    (value.status !== 'success' && value.status !== 'error')
+  ) {
+    return false;
+  }
+
+  return (
+    value.errors === undefined ||
+    (Array.isArray(value.errors) && value.errors.every(isTimeSeriesPointError))
   );
 }

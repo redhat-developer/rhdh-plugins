@@ -36,9 +36,7 @@ export const useMetricTimeSeries = (
   const scorecardApi = useApi(scorecardApiRef);
   const { t } = useTranslation();
 
-  const hasEntity = Boolean(
-    entity?.kind && entity?.metadata?.namespace && entity?.metadata?.name,
-  );
+  const hasEntity = Boolean(entity?.kind && entity?.metadata?.name);
   const entityRef = hasEntity ? stringifyEntityRef(entity) : '';
 
   const { error, isLoading, data } = useQuery({
@@ -49,11 +47,7 @@ export const useMetricTimeSeries = (
       TIME_SERIES_DEFAULT_RANGE_DAYS,
     ],
     queryFn: async () => {
-      if (
-        !entity?.kind ||
-        !entity?.metadata?.namespace ||
-        !entity?.metadata?.name
-      ) {
+      if (!entity?.kind || !entity?.metadata?.name) {
         throw new Error(t('errors.entityMissingProperties'));
       }
 

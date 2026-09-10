@@ -397,6 +397,25 @@ describe('ScorecardApiClient', () => {
       );
     });
 
+    it('should throw when a point is missing timestamp or has a non-numeric value', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...validTimeSeries,
+          points: [{ value: '10', successCount: 5, timestamp: 123 }],
+        }),
+      });
+
+      await expect(
+        client.getAggregationTimeSeries({
+          aggregationId: 'avgDeploymentFrequency',
+          ...range,
+        }),
+      ).rejects.toThrow(
+        'Invalid response format from aggregation time-series API',
+      );
+    });
+
     it('should throw on non-OK response', async () => {
       fetchApi.fetch.mockResolvedValue({
         ok: false,
@@ -468,6 +487,24 @@ describe('ScorecardApiClient', () => {
       fetchApi.fetch.mockResolvedValue({
         ok: true,
         json: async () => [],
+      });
+
+      await expect(
+        client.getMetricTimeSeries({
+          entity,
+          metricId: 'dora.deploymentFrequency',
+          ...range,
+        }),
+      ).rejects.toThrow('Invalid response format from metric time-series API');
+    });
+
+    it('should throw when a point is missing timestamp or has an invalid value', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...validTimeSeries,
+          points: [{ value: '8' }],
+        }),
       });
 
       await expect(

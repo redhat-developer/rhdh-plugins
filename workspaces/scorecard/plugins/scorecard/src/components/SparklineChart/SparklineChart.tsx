@@ -46,8 +46,11 @@ const TOOLTIP_WRAPPER_STYLE = {
   position: 'relative',
   transform: 'none',
   width: '100%',
+  maxWidth: '100%',
   left: 0,
   top: 0,
+  overflow: 'hidden',
+  boxSizing: 'border-box',
 } as const;
 
 export type SparklineChartProps = {
@@ -97,6 +100,8 @@ export const SparklineChart = ({
       sx={{
         display: 'flex',
         flexDirection: 'column',
+        minWidth: 0,
+        maxWidth: '100%',
         cursor: 'default',
         '& .recharts-wrapper > svg': {
           outline: 'none',
@@ -265,9 +270,15 @@ export const SparklineChart = ({
         data-testid="sparkline-tooltip-slot"
         sx={{
           width: '100%',
+          maxWidth: '100%',
+          minWidth: 0,
           px: 2,
           minHeight: '2rem',
           boxSizing: 'border-box',
+          overflowX: 'hidden',
+          '& .recharts-tooltip-wrapper': {
+            maxWidth: '100% !important',
+          },
         }}
       />
       {legendItems && legendItems.length > 0 && (
