@@ -50,8 +50,11 @@ import {
 } from './extensions/homePageCards';
 import { homepageTranslations } from './translations';
 import { homePageLayoutExtension } from './extensions/homePageLayoutExtension';
-import { homepagePage, homepageRouteRef } from './extensions/homepagePage';
+import { homepagePage } from './extensions/homepagePage';
 import { defaultWidgetsApi, quickAccessApi } from './extensions/apis';
+import { homepageRouteRef } from './homepageRouteRef';
+
+export { homepageRouteRef } from './homepageRouteRef';
 
 /**
  * Extensions owned by the homepage plugin.
@@ -92,7 +95,7 @@ export const homepagePlugin = createFrontendPlugin({
  * Optional module for when community `@backstage/plugin-home` is also installed.
  *
  * Mirrors RH widgets onto `page:home` (no RH layout / no homepage-backend
- * filtering) and disables community toolkit / joke / starred demos.
+ * filtering) and disables community toolkit / joke demos and overrides the starred widget.
  *
  * @public
  */
@@ -136,8 +139,6 @@ export const homepageTranslationsModule = createFrontendModule({
 });
 
 export { homepageTranslationRef, homepageTranslations } from './translations';
-
-export { homepageRouteRef } from './extensions/homepagePage';
 
 /**
  * Default export required for Module Federation to emit the NFS expose.

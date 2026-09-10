@@ -16,10 +16,10 @@
 
 import {
   createExtensionInput,
-  createRouteRef,
   ExtensionBoundary,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
+import { homepageRouteRef } from '../homepageRouteRef';
 import {
   homePageLayoutComponentDataRef,
   homePageWidgetDataRef,
@@ -27,13 +27,6 @@ import {
 } from '@backstage/plugin-home-react/alpha';
 import HomeIcon from '@mui/icons-material/Home';
 import { lazy } from 'react';
-
-/**
- * Route ref for the homepage-owned NFS page.
- *
- * @alpha
- */
-export const homepageRouteRef = createRouteRef();
 
 /**
  * Homepage page (`page:homepage`) with configurable `path`.

@@ -90,7 +90,10 @@ export class TestUtils {
       await this.page.getByRole('link', { name: 'Settings' }).click();
       await this.page.getByRole('button', { name: 'English' }).click();
       await this.page.getByRole('option', { name: displayName }).click();
-      await this.page.locator('a').filter({ hasText: 'Home' }).click();
+      // Navigate directly to avoid ambiguous sidebar links (NFS exposes both
+      // "Home" at /home and "Dynamic Homepage" at /).
+      await this.page.goto('/');
+      await this.waitForLoad();
     }
   }
 
