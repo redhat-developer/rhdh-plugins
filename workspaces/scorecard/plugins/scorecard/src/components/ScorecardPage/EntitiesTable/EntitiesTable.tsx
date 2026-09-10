@@ -28,8 +28,13 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useOwnershipEntityRefs } from '../../../hooks/useOwnershipEntityRefs';
 import { useAggregatedScorecardEntities } from '../../../hooks/useAggregatedScorecardEntities';
 import { useAggregatedScorecard } from '../../../hooks/useAggregatedScorecard';
+import { useAggregationMetadata } from '../../../hooks/useAggregationMetadata';
 import { useEntityMetadataMap } from '../../../hooks/useEntityMetadataMap';
 import { SCORECARD_ENTITIES_TABLE_HEADERS } from '../../../utils';
+import {
+  type EntitiesTableSortState,
+  getDefaultEntitiesTableSort,
+} from '../../../utils/getDefaultEntitiesTableSort';
 import { useTranslation } from '../../../hooks/useTranslation';
 
 import { EntitiesTableStateRow } from './EntitiesTableStateRow';
@@ -55,21 +60,30 @@ export const EntitiesTable = ({
   const [rowsPerPage, setRowsPerPage] = useState<number>(5);
   const { t } = useTranslation();
 
-  const [sortState, setSortState] = useState<{
-    orderBy: string | null;
-    order: 'asc' | 'desc';
-  }>({
-    orderBy: null,
-    order: 'asc',
-  });
-
-  const { orderBy, order } = sortState;
+  const [userSortOverride, setUserSortOverride] =
+    useState<EntitiesTableSortState | null>(null);
 
   const { ownershipEntityRefs, loading: ownershipLoading } =
     useOwnershipEntityRefs();
 
   // TODO: Remove metricId once we deprecate it. We need to keep it for backward compatibility.
   const resolvedMetricId = aggregationId || metricId || '';
+
+  const { data: aggregationMetadata, isLoading: aggregationMetadataLoading } =
+    useAggregationMetadata({
+      aggregationId: aggregationId || '',
+      enabled: Boolean(aggregationId?.trim()) && !ownershipLoading,
+    });
+
+  const defaultSort = useMemo(
+    () => getDefaultEntitiesTableSort(aggregationMetadata?.aggregationType),
+    [aggregationMetadata?.aggregationType],
+  );
+
+  const { orderBy, order } = userSortOverride ?? defaultSort;
+
+  const entitiesQueryEnabled =
+    !ownershipLoading && (!aggregationId || !aggregationMetadataLoading);
 
   const {
     aggregatedScorecardEntities,
@@ -82,7 +96,7 @@ export const EntitiesTable = ({
     ownershipEntityRefs,
     orderBy,
     order,
-    enabled: !ownershipLoading,
+    enabled: entitiesQueryEnabled,
   });
 
   const { data: aggregatedScorecard } = useAggregatedScorecard({
@@ -109,13 +123,17 @@ export const EntitiesTable = ({
     [],
   );
 
-  const handleSortRequest = useCallback((columnId: string) => {
-    setSortState(prev =>
-      prev.orderBy !== columnId
-        ? { orderBy: columnId, order: 'asc' }
-        : { ...prev, order: prev.order === 'asc' ? 'desc' : 'asc' },
-    );
-  }, []);
+  const handleSortRequest = useCallback(
+    (columnId: string) => {
+      setUserSortOverride(prev => {
+        const current = prev ?? defaultSort;
+        return current.orderBy !== columnId
+          ? { orderBy: columnId, order: 'asc' }
+          : { ...current, order: current.order === 'asc' ? 'desc' : 'asc' };
+      });
+    },
+    [defaultSort],
+  );
 
   const entityRefs = useMemo(
     () =>
