@@ -14,6 +14,5 @@
  * limitations under the License.
  */
 
-export const daysToMilliseconds = (days: number) => {
-  return days * 24 * 60 * 60 * 1000;
-};
+export { daysToMilliseconds } from './daysToMilliseconds';
+export { parseDate } from './parseDate';

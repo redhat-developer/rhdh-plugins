@@ -19,9 +19,9 @@ import {
   SchedulerService,
   SchedulerServiceTaskScheduleDefinition,
 } from '@backstage/backend-plugin-api';
+import { daysToMilliseconds } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { randomUUID } from 'node:crypto';
 import { CLEANUP_EXPIRED_METRICS_ID } from '../constants';
-import { daysToMilliseconds } from './utils';
 import type { Config } from '@backstage/config';
 import { SchedulerTask, SchedulerOptions } from '../types';
 import { DatabaseMetricValues } from '../../database/DatabaseMetricValues';

@@ -84,6 +84,12 @@ export class CustomDeploymentsCollector
 }
 ```
 
+## Secrets and credentials
+
+> [!IMPORTANT]
+> Never pass secrets through a collector's `input`. Configure credentials through `app-config` instead.
+> Collectors do not support secrets, if they ever will be added, they will be a separate key from `input`.
+
 ## Register collectors in a backend module
 
 Register collectors through `scorecardCollectorsExtensionPoint`:
