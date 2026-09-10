@@ -49,7 +49,8 @@
 - [ ] 5.2 Add `GET /api/boost/admin/analytics/sync-history` endpoint
 - [ ] 5.3 Add `GET /api/boost/admin/analytics/quality-scores` endpoint
 - [ ] 5.4 Add `GET /api/boost/admin/analytics/match-coverage` endpoint
-- [ ] 5.5 Add RBAC gating to all endpoints (require `ai-catalog.admin` permission)
+- [ ] 5.5 Add `boost.admin` authorization to all endpoints using
+      `permissions.authorize()`
 - [ ] 5.6 Add pagination support (page, limit, total_count metadata)
 - [ ] 5.7 Add date range filtering (start_date, end_date query params)
 - [ ] 5.8 Add connector name filtering for sync history endpoint
@@ -138,12 +139,13 @@
 - [ ] 13.5 Add support for LightEval, IBM Clear, GuideLLM eval backends
 - [ ] 13.6 Add unit tests for multi-eval backend support
 
-## 14. Permission Definitions (P1)
+## 14. Authorization Integration (P1)
 
-- [ ] 14.1 Define `ai-catalog.admin` permission in `plugins/boost-common/src/permissions.ts` (if not already defined)
-- [ ] 14.2 Add permission rules for analytics endpoints
-- [ ] 14.3 Add RBAC policy configuration examples in documentation
-- [ ] 14.4 Add unit tests for permission checks
+- [ ] 14.1 Use the existing `boost.admin` permission for all analytics
+      endpoints; do not add a separate analytics-admin permission
+- [ ] 14.2 Add RHDH RBAC policy examples showing how to assign `boost.admin`
+      to analytics administrators
+- [ ] 14.3 Add unit tests for allowed and denied analytics requests
 
 ## 15. Integration Testing (P1)
 
