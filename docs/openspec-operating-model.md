@@ -33,6 +33,9 @@ repository. The intended outcome was that an agent could pick up a story,
 understand its behavior and design constraints, execute its tasks, and
 validate the result. This RFC captures the lessons from that pilot.
 
+During the pilot, Fullsend used GitHub issues as an execution trigger; this
+RFC treats that as a workflow entry point, not another source of truth.
+
 The pilot exposed a failure of information ownership. Scope, status, design
 decisions, and implementation claims were distributed across Jira, OpenSpec,
 product specifications, general documentation, GitHub issues, code, and tests.
