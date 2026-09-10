@@ -42,7 +42,7 @@ export const EntityMetricCard = ({ metric }: { metric: MetricResult }) => {
 
   if (isSparklineVisualization(metric.metadata.defaultVisualization)) {
     return (
-      <Box sx={{ height: 'fit-content' }}>
+      <Box sx={{ height: 'fit-content', minWidth: 0, maxWidth: '100%' }}>
         <EntitySparklineCard
           metric={metric}
           title={title}
@@ -62,7 +62,7 @@ export const EntityMetricCard = ({ metric }: { metric: MetricResult }) => {
   });
 
   return (
-    <Box sx={{ height: 'fit-content' }}>
+    <Box sx={{ height: 'fit-content', minWidth: 0, maxWidth: '100%' }}>
       <Scorecard
         cardTitle={title}
         description={description}

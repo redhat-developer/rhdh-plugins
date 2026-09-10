@@ -52,9 +52,12 @@ export const SparklineTooltip = ({
     return null;
   }
 
+  const label = getSparklineTooltipLabel(point, unit);
+
   return (
     <Box
       data-testid="sparkline-hover-tooltip"
+      title={label}
       sx={{
         backgroundColor: theme.palette.grey[900],
         color: theme.palette.common.white,
@@ -66,12 +69,16 @@ export const SparklineTooltip = ({
         lineHeight: 1.4,
         textAlign: 'left',
         width: '100%',
+        maxWidth: '100%',
+        minWidth: 0,
         boxSizing: 'border-box',
         whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
         boxShadow: theme.shadows[2],
       }}
     >
-      {getSparklineTooltipLabel(point, unit)}
+      {label}
     </Box>
   );
 };

@@ -22,19 +22,23 @@ import {
   type Metric,
   type EntityMetricDetailResponse,
   type AggregationMetadata,
+  type MetricTimeSeriesPoint,
   type MetricTimeSeriesResponse,
   type AggregatedMetricTimeSeriesResponse,
+  type ThresholdRule,
   aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import type { GetAggregatedScorecardEntitiesOptions } from '../src/components/types';
 
+import { mockAggregatedMetricTimeSeriesData } from '../__fixtures__/aggregatedMetricTimeSeriesData';
+import { mockAggregatedScorecardEntitiesData } from '../__fixtures__/aggregatedScorecardEntitiesData';
+import { mockMetricTimeSeriesData } from '../__fixtures__/metricTimeSeriesData';
 import {
   mockAggregatedScorecardData,
   mockScorecardErrorData,
   mockScorecardSuccessData,
 } from '../__fixtures__/scorecardData';
-import { mockAggregatedScorecardEntitiesData } from '../__fixtures__/aggregatedScorecardEntitiesData';
 import {
   ScorecardApi,
   ScorecardOptions,
@@ -42,24 +46,209 @@ import {
   GetAggregationTimeSeriesOptions,
 } from '../src/api/types';
 
-/** mock catalog entity so the Catalog shows one entity and the Scorecard tab can be opened. */
-export const mockComponentEntity: Entity = {
-  apiVersion: 'backstage.io/v1alpha1',
-  kind: 'Component',
-  metadata: {
-    namespace: 'default',
-    name: 'example-service',
-    description: 'Example service',
-  },
-  spec: {
-    type: 'service',
-    lifecycle: 'production',
-  },
-};
+function createMockComponentEntity(
+  name: string,
+  description = 'Example service',
+): Entity {
+  return {
+    apiVersion: 'backstage.io/v1alpha1',
+    kind: 'Component',
+    metadata: {
+      namespace: 'default',
+      name,
+      description,
+    },
+    spec: {
+      type: 'service',
+      lifecycle: 'production',
+    },
+  };
+}
+
+/** Default catalog entity used by the isolated Scorecard tab page. */
+export const mockComponentEntity = createMockComponentEntity(
+  'example-service',
+  'Example service',
+);
+
+/**
+ * Catalog entities matching the mock aggregation drill-down table.
+ * Without these, entity-name links 404 with "Entity not found".
+ */
+const mockEntitiesFromAggregatedTable = mockAggregatedScorecardEntitiesData(
+  'github.openPRs',
+  1,
+  10,
+).entities.map(entity =>
+  createMockComponentEntity(
+    entity.entityName,
+    `Mock catalog entity for ${entity.entityName}`,
+  ),
+);
 
 export const mockCatalogApi = new InMemoryCatalogClient({
-  entities: [mockComponentEntity],
+  entities: [
+    mockComponentEntity,
+    createMockComponentEntity(
+      'dora-scorecard-1',
+      'Plugin-mode DORA sparkline fixture entity',
+    ),
+    ...mockEntitiesFromAggregatedTable,
+  ],
 });
+
+const SPARKLINE_AGGREGATION_IDS = new Set([
+  'avgDeploymentFrequency',
+  'avgChangeFailureRate',
+  'avgMedianLeadTimeForChanges',
+]);
+
+const DORA_COLLECTORS = ['github:deploymentWorkflowRuns', 'jira:incidents'];
+
+const COLLECTOR_DESCRIPTIONS: Record<string, string> = {
+  'github:deploymentWorkflowRuns': 'Collects deployments from GitHub Actions.',
+  'jira:incidents': 'Collects Jira incidents.',
+};
+
+const DEPLOYMENT_FREQUENCY_RULES: ThresholdRule[] = [
+  { key: 'elite', expression: '>=7', color: 'success.main' },
+  { key: 'medium', expression: '1-7', color: 'warning.main' },
+  { key: 'error', expression: '<1', color: 'error.main' },
+];
+
+const CHANGE_FAILURE_RATE_RULES: ThresholdRule[] = [
+  { key: 'elite', expression: '<5', color: 'success.main' },
+  { key: 'medium', expression: '5-15', color: 'warning.main' },
+  { key: 'low', expression: '>15', color: 'error.main' },
+];
+
+const LEAD_TIME_RULES: ThresholdRule[] = [
+  { key: 'elite', expression: '<24', color: 'success.main' },
+  { key: 'medium', expression: '24-168', color: 'warning.main' },
+  { key: 'low', expression: '>168', color: 'error.main' },
+];
+
+const MTTR_RULES: ThresholdRule[] = [
+  { key: 'elite', expression: '<1', color: 'success.main' },
+  { key: 'medium', expression: '1-24', color: 'warning.main' },
+  { key: 'low', expression: '>24', color: 'error.main' },
+];
+
+const lastNumericPoint = (
+  points: MetricTimeSeriesPoint[],
+): MetricTimeSeriesPoint | undefined =>
+  [...points].reverse().find(point => typeof point.value === 'number');
+
+const lastNumericPoints = (
+  points: MetricTimeSeriesPoint[],
+  count: number,
+): MetricTimeSeriesPoint[] =>
+  points.filter(point => typeof point.value === 'number').slice(-count);
+
+const sparklineMetricResult = ({
+  metricId,
+  evaluation,
+  rules,
+  title,
+  description,
+  collectorIds = DORA_COLLECTORS,
+}: {
+  metricId: string;
+  evaluation: string;
+  rules: ThresholdRule[];
+  title: string;
+  description?: string;
+  collectorIds?: string[];
+}): MetricResult => {
+  const series = mockMetricTimeSeriesData(mockComponentEntity, metricId);
+  const latest = lastNumericPoint(series.points);
+
+  return {
+    id: metricId,
+    status: 'success',
+    metadata: {
+      title,
+      description: description ?? series.metadata.description,
+      type: 'number',
+      unit: series.metadata.unit,
+      history: true,
+      defaultVisualization: 'sparkline',
+      ...(collectorIds.length > 0 ? { collectorIds } : {}),
+    },
+    result: {
+      value: latest?.value ?? 0,
+      timestamp: latest?.timestamp ?? new Date().toISOString(),
+      thresholdResult: {
+        status: 'success',
+        evaluation,
+        definition: { rules },
+      },
+    },
+  };
+};
+
+/**
+ * Entity-page sparkline cards for plugin `yarn start`.
+ * Time-series shapes are applied in {@link MockScorecardApi.getMetricTimeSeries}
+ * so you can exercise charts without seeding the workspace database.
+ */
+const mockPluginSparklineMetrics: MetricResult[] = [
+  sparklineMetricResult({
+    metricId: 'dora.deploymentFrequency',
+    evaluation: 'elite',
+    rules: DEPLOYMENT_FREQUENCY_RULES,
+    title: 'DORA - Deployment Frequency (full series + errors)',
+  }),
+  sparklineMetricResult({
+    metricId: 'dora.changeFailureRate',
+    evaluation: 'medium',
+    rules: CHANGE_FAILURE_RATE_RULES,
+    title: 'DORA - Change Failure Rate (2 points)',
+  }),
+  sparklineMetricResult({
+    metricId: 'dora.medianLeadTimeForChanges',
+    evaluation: 'low',
+    rules: LEAD_TIME_RULES,
+    title: 'DORA - Median Lead Time for Changes (1 point)',
+  }),
+  sparklineMetricResult({
+    metricId: 'dora.meanTimeToRestore',
+    evaluation: 'elite',
+    rules: MTTR_RULES,
+    title: 'DORA - Mean Time to Restore (full series + errors)',
+  }),
+  sparklineMetricResult({
+    metricId: 'mock.sparklineEmpty',
+    evaluation: 'elite',
+    rules: DEPLOYMENT_FREQUENCY_RULES,
+    title: 'Sparkline (plugin) — empty series',
+    description:
+      'Plugin-mode fixture with no time-series points. Tests the empty-state card without a database.',
+    collectorIds: [],
+  }),
+  sparklineMetricResult({
+    metricId: 'mock.sparklineAllErrors',
+    evaluation: 'error',
+    rules: DEPLOYMENT_FREQUENCY_RULES,
+    title: 'Sparkline (plugin) — all calculation errors',
+    description:
+      'Plugin-mode fixture where every day is a calculation failure. Tests error-day markers without a database.',
+  }),
+  sparklineMetricResult({
+    metricId: 'mock.sparklineFetchError',
+    evaluation: 'elite',
+    rules: DEPLOYMENT_FREQUENCY_RULES,
+    title: 'Sparkline (plugin) — fetch error',
+    description:
+      'Plugin-mode fixture that rejects the time-series request. Tests the card error panel without a database.',
+  }),
+];
+
+const allMockMetrics = (): MetricResult[] => [
+  ...mockPluginSparklineMetrics,
+  ...mockScorecardSuccessData,
+  ...mockScorecardErrorData,
+];
 
 export class MockScorecardApi implements ScorecardApi {
   async getBaseUrl(): Promise<string> {
@@ -67,7 +256,7 @@ export class MockScorecardApi implements ScorecardApi {
   }
 
   async getScorecards(_options: ScorecardOptions): Promise<MetricResult[]> {
-    return [...mockScorecardSuccessData, ...mockScorecardErrorData];
+    return allMockMetrics();
   }
 
   async getAggregatedScorecard(
@@ -79,18 +268,18 @@ export class MockScorecardApi implements ScorecardApi {
   async getMetrics(_options: {
     metricIds: string[];
   }): Promise<{ metrics: Metric[] }> {
-    const allMetrics = [
-      ...mockScorecardSuccessData,
-      ...mockScorecardErrorData,
-    ].map(m => ({
+    const metrics = allMockMetrics().map(m => ({
       id: m.id,
       title: m.metadata.title,
       description: m.metadata.description,
       type: m.metadata.type,
       thresholds: m.result.thresholdResult.definition ?? { rules: [] },
       history: m.metadata.history,
+      unit: m.metadata.unit,
+      defaultVisualization: m.metadata.defaultVisualization,
+      collectorIds: m.metadata.collectorIds,
     }));
-    return { metrics: allMetrics };
+    return { metrics };
   }
 
   async getAggregatedScorecardEntities(
@@ -107,19 +296,10 @@ export class MockScorecardApi implements ScorecardApi {
     aggregationId: string,
   ): Promise<AggregationMetadata> {
     if (
-      aggregationId === 'avgDeploymentFrequency' ||
+      SPARKLINE_AGGREGATION_IDS.has(aggregationId) ||
       aggregationId.startsWith('dora.')
     ) {
-      return {
-        title: 'Average Deployment Frequency',
-        description:
-          'This KPI provides average weekly production deploys over a 30-day window per entity.',
-        type: 'number',
-        unit: '/week',
-        history: true,
-        visualization: 'sparkline',
-        aggregationType: aggregationTypes.average,
-      };
+      return mockAggregatedMetricTimeSeriesData(aggregationId).metadata;
     }
 
     return {
@@ -133,83 +313,62 @@ export class MockScorecardApi implements ScorecardApi {
 
   async getAggregationTimeSeries({
     aggregationId,
+    from,
+    to,
   }: GetAggregationTimeSeriesOptions): Promise<AggregatedMetricTimeSeriesResponse> {
-    return {
-      id: aggregationId,
-      metricId: 'dora.deploymentFrequency',
-      metadata: {
-        title: 'Average Deployment Frequency',
-        description:
-          'This KPI provides average weekly production deploys over a 30-day window per entity.',
-        type: 'number',
-        unit: '/week',
-        history: true,
-        visualization: 'sparkline',
-        aggregationType: aggregationTypes.average,
-      },
-      points: [
-        {
-          value: 10,
-          successCount: 5,
-          errorCount: 0,
-          total: 5,
-          status: 'success',
-          timestamp: '2026-08-23T00:00:00.000Z',
-        },
-        {
-          value: 6.8,
-          successCount: 4,
-          errorCount: 3,
-          total: 7,
-          status: 'success',
-          timestamp: '2026-08-24T00:00:00.000Z',
-        },
-      ],
-      thresholds: {
-        rules: [
-          { key: 'elite', expression: '>=7', color: 'success.main' },
-          { key: 'medium', expression: '1-7', color: 'warning.main' },
-          { key: 'error', expression: '<1', color: 'error.main' },
-        ],
-      },
-      aggregationChartDisplayColor: 'warning.main',
-    };
+    return mockAggregatedMetricTimeSeriesData(aggregationId, from, to);
   }
 
+  /**
+   * Plugin-mode entity sparkline cases (no DB seeding):
+   * - `dora.deploymentFrequency` — full series with calculation-error days (Elite)
+   * - `dora.changeFailureRate` — 2 numeric points (Medium)
+   * - `dora.medianLeadTimeForChanges` — 1 numeric point (Low)
+   * - `dora.meanTimeToRestore` — full series with calculation-error days (Elite)
+   * - `mock.sparklineEmpty` — no points
+   * - `mock.sparklineAllErrors` — every point is a calculation failure
+   * - `mock.sparklineFetchError` — request fails
+   */
   async getMetricTimeSeries({
     entity,
     metricId,
+    from,
+    to,
   }: GetMetricTimeSeriesOptions): Promise<MetricTimeSeriesResponse> {
-    return {
-      metricId,
-      entityRef: `${entity.kind}:${entity.metadata.namespace}/${entity.metadata.name}`,
-      points: [
-        { value: 8, timestamp: '2026-04-27T23:10:00.000Z' },
-        { value: 7, timestamp: '2026-04-28T22:55:00.000Z' },
-      ],
-      metadata: {
-        title: metricId,
-        description: '',
-        type: 'number',
-        history: true,
-        defaultVisualization: 'sparkline',
-      },
-    };
+    if (metricId === 'mock.sparklineFetchError') {
+      throw new Error('Failed to fetch metric time series (plugin mock)');
+    }
+
+    const series = mockMetricTimeSeriesData(entity, metricId, from, to);
+
+    if (metricId === 'dora.medianLeadTimeForChanges') {
+      return { ...series, points: lastNumericPoints(series.points, 1) };
+    }
+    if (metricId === 'dora.changeFailureRate') {
+      return { ...series, points: lastNumericPoints(series.points, 2) };
+    }
+    if (metricId === 'mock.sparklineEmpty') {
+      return { ...series, points: [] };
+    }
+    if (metricId === 'mock.sparklineAllErrors') {
+      return {
+        ...series,
+        points: series.points.map((point, index) => ({
+          value: null,
+          timestamp: point.timestamp,
+          error: index % 2 === 0 ? 'GitHub API 500' : 'Jira unavailable',
+        })),
+      };
+    }
+
+    return series;
   }
 
   async getMetricCollectors(metricId: string) {
-    if (metricId.startsWith('dora.')) {
-      return [
-        {
-          id: 'github:deploymentWorkflowRuns',
-          description: 'Collects deployments from GitHub Actions.',
-        },
-        {
-          id: 'jira:incidents',
-          description: 'Collects Jira incidents.',
-        },
-      ];
-    }
-    return [];
+    const metric = mockPluginSparklineMetrics.find(m => m.id === metricId);
+    return (metric?.metadata.collectorIds ?? []).map(id => ({
+      id,
+      description: COLLECTOR_DESCRIPTIONS[id] ?? `Collector ${id}`,
+    }));
   }
 }
