@@ -87,6 +87,7 @@ const useStyles = makeStyles(theme =>
       color: theme.palette.text.primary,
       fontWeight: 600,
       borderBottom: `2px solid var(--pf-t--global--color--brand--default, ${theme.palette.primary.main})`,
+      borderRadius: 0,
     },
     tabContent: {
       flex: 1,
