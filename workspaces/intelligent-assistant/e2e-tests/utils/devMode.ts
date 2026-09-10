@@ -16,7 +16,7 @@
 
 import { randomUUID } from 'node:crypto';
 
-import { BrowserContext, Page, Route } from '@playwright/test';
+import { Page, Route } from '@playwright/test';
 import {
   contentsWithRedactedThinking,
   E2E_MCP_VALID_TOKEN,
@@ -836,105 +836,4 @@ export async function mockFeedbackReceived(page: Page) {
       }),
     });
   });
-}
-
-export type IaPermissionMatrix = {
-  chat: boolean;
-  notebooks: boolean;
-  mcp: boolean;
-};
-
-export const IA_PERMISSIONS_ALL_ALLOWED: IaPermissionMatrix = {
-  chat: true,
-  notebooks: true,
-  mcp: true,
-};
-
-const IA_PERMISSION_AUTHORIZE_ROUTE = '**/api/permission/authorize';
-const permissionMatrixByContext = new WeakMap<
-  BrowserContext,
-  IaPermissionMatrix
->();
-const permissionRoutesRegistered = new WeakSet<BrowserContext>();
-
-const IA_PERMISSION_NAMES = {
-  chat: 'intelligent-assistant.chat',
-  notebooks: 'intelligent-assistant.notebooks',
-  mcp: 'intelligent-assistant.mcp.tools',
-  skills: 'intelligent-assistant.skills',
-} as const;
-
-function isIaPermissionAllowed(
-  permissionName: string | undefined,
-  matrix: IaPermissionMatrix,
-): boolean {
-  switch (permissionName) {
-    case IA_PERMISSION_NAMES.chat:
-      return matrix.chat;
-    case IA_PERMISSION_NAMES.notebooks:
-      return matrix.notebooks;
-    case IA_PERMISSION_NAMES.mcp:
-      return matrix.mcp;
-    case IA_PERMISSION_NAMES.skills:
-      return false;
-    default:
-      return false;
-  }
-}
-
-function authorizeRequestPermissionName(item: {
-  permission?: { name?: string };
-}): string | undefined {
-  return item.permission?.name;
-}
-
-/** Intercept Backstage permission checks for IA permission e2e tests. */
-export async function mockIaPermissions(
-  page: Page,
-  matrix: IaPermissionMatrix,
-): Promise<void> {
-  const context = page.context();
-  permissionMatrixByContext.set(context, matrix);
-
-  if (permissionRoutesRegistered.has(context)) {
-    return;
-  }
-  permissionRoutesRegistered.add(context);
-
-  await context.route(IA_PERMISSION_AUTHORIZE_ROUTE, async route => {
-    if (route.request().method() !== 'POST') {
-      await route.continue();
-      return;
-    }
-
-    const activeMatrix =
-      permissionMatrixByContext.get(context) ?? IA_PERMISSIONS_ALL_ALLOWED;
-    const body = route.request().postDataJSON() as {
-      items?: Array<{ id: string; permission?: { name?: string } }>;
-    };
-    const items = body?.items ?? [];
-    await route.fulfill({
-      json: {
-        items: items.map(item => ({
-          id: item.id,
-          result: isIaPermissionAllowed(
-            authorizeRequestPermissionName(item),
-            activeMatrix,
-          )
-            ? 'ALLOW'
-            : 'DENY',
-        })),
-      },
-    });
-  });
-}
-
-/** Wait until the FAB has resolved IA permission checks on the catalog page. */
-export async function waitForIaPermissionAuthorize(page: Page): Promise<void> {
-  await page.waitForResponse(
-    response =>
-      response.url().includes('/api/permission/authorize') &&
-      response.request().method() === 'POST',
-    { timeout: 30_000 },
-  );
 }
