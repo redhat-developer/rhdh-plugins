@@ -532,13 +532,20 @@ describe('CatalogMetricService', () => {
           defaultVisualization: provider.getMetrics()[0].defaultVisualization,
           collectorIds: provider.getMetrics()[0].collectorIds,
         },
+        thresholds: { rules: mockThresholdRules },
       });
       expect(
         mockedDatabase.readLatestEntityMetricValuesPerUtcDay,
       ).toHaveBeenCalledWith(entityRef, metricId, from, to);
+      expect(
+        mockedThresholdResolver.resolveEntityThresholds,
+      ).toHaveBeenCalledWith(
+        mockEntity,
+        expect.objectContaining({ id: metricId }),
+      );
     });
 
-    it('should map each daily DB row to a time-series point', async () => {
+    it('should map each daily DB row to a time-series point with thresholdEvaluation', async () => {
       mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
         {
           id: 3,
@@ -556,7 +563,7 @@ describe('CatalogMetricService', () => {
           value: 7,
           timestamp: new Date('2024-01-02T12:00:00.000Z'),
           errorMessage: null,
-          status: 'success',
+          status: 'warning',
         },
       ] as DbMetricValue[]);
 
@@ -568,12 +575,21 @@ describe('CatalogMetricService', () => {
       );
 
       expect(result.points).toEqual([
-        { value: 9, timestamp: '2024-01-01T20:00:00.000Z' },
-        { value: 7, timestamp: '2024-01-02T12:00:00.000Z' },
+        {
+          value: 9,
+          timestamp: '2024-01-01T20:00:00.000Z',
+          thresholdEvaluation: 'success',
+        },
+        {
+          value: 7,
+          timestamp: '2024-01-02T12:00:00.000Z',
+          thresholdEvaluation: 'warning',
+        },
       ]);
+      expect(result.thresholds).toEqual({ rules: mockThresholdRules });
     });
 
-    it('should map calculation-error rows to null value with error', async () => {
+    it('should map calculation-error rows to null value with error and omit thresholdEvaluation', async () => {
       mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
         {
           id: 1,
@@ -612,14 +628,66 @@ describe('CatalogMetricService', () => {
       );
 
       expect(result.points).toEqual([
-        { value: 8, timestamp: '2024-01-01T10:00:00.000Z' },
+        {
+          value: 8,
+          timestamp: '2024-01-01T10:00:00.000Z',
+          thresholdEvaluation: 'success',
+        },
         {
           value: null,
           timestamp: '2024-01-02T16:00:00.000Z',
           error: 'GitHub API 500',
         },
-        { value: 7, timestamp: '2024-01-03T10:00:00.000Z' },
+        {
+          value: 7,
+          timestamp: '2024-01-03T10:00:00.000Z',
+          thresholdEvaluation: 'success',
+        },
       ]);
+    });
+
+    it('should set thresholdEvaluation to null when DB status is null on success points', async () => {
+      mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
+        {
+          id: 1,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: 5,
+          timestamp: new Date('2024-01-01T10:00:00.000Z'),
+          errorMessage: null,
+          status: null,
+        },
+      ] as DbMetricValue[]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result.points).toEqual([
+        {
+          value: 5,
+          timestamp: '2024-01-01T10:00:00.000Z',
+          thresholdEvaluation: null,
+        },
+      ]);
+    });
+
+    it('should fall back to metric.thresholds when resolveEntityThresholds throws', async () => {
+      mockedThresholdResolver.resolveEntityThresholds.mockImplementation(() => {
+        throw new Error('Merge thresholds failed');
+      });
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result.thresholds).toEqual(provider.getMetrics()[0].thresholds);
     });
 
     it('should pass permission filter to filterAuthorizedMetrics', async () => {

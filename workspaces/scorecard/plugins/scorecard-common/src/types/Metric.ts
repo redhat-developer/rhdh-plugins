@@ -138,6 +138,11 @@ export type MetricTimeSeriesPoint = {
   timestamp: string;
   /** Present when this point is a calculation failure */
   error?: string;
+  /**
+   * Matched threshold rule key from pull-time evaluation (e.g., "elite", "success", "warning").
+   * `null` when the value could not be classified. Absent on calculation-error points.
+   */
+  thresholdEvaluation?: string | null;
 };
 
 /**
@@ -157,4 +162,9 @@ export type MetricTimeSeriesResponse = {
     defaultVisualization?: ScorecardVisualizationType;
     collectorIds?: string[];
   };
+  /**
+   * Entity-resolved threshold rules (provider defaults, then app-config, then entity annotation overrides).
+   * Used for sparkline legend rendering and mapping `thresholdEvaluation` keys to colors.
+   */
+  thresholds: ThresholdConfig;
 };

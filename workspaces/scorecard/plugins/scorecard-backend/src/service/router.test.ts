@@ -654,9 +654,24 @@ describe('createRouter', () => {
         defaultVisualization: 'donut',
       },
       points: [
-        { value: 8, timestamp: '2024-01-01T20:00:00.000Z' },
-        { value: 7, timestamp: '2024-01-02T12:00:00.000Z' },
+        {
+          value: 8,
+          timestamp: '2024-01-01T20:00:00.000Z',
+          thresholdEvaluation: 'success',
+        },
+        {
+          value: 7,
+          timestamp: '2024-01-02T12:00:00.000Z',
+          thresholdEvaluation: 'success',
+        },
       ],
+      thresholds: {
+        rules: [
+          { key: 'error', expression: '>40' },
+          { key: 'warning', expression: '>20' },
+          { key: 'success', expression: '<=20' },
+        ],
+      },
     };
 
     const timeSeriesPath =

@@ -244,8 +244,19 @@ export class CatalogMetricService {
       return {
         value: row.value,
         timestamp: row.timestamp.toISOString(),
+        thresholdEvaluation: row.status ?? null,
       };
     });
+
+    let thresholds: ThresholdConfig;
+    try {
+      thresholds = this.thresholdResolver.resolveEntityThresholds(
+        entity,
+        metric,
+      );
+    } catch {
+      thresholds = metric.thresholds;
+    }
 
     return {
       metricId: metric.id,
@@ -260,6 +271,7 @@ export class CatalogMetricService {
         defaultVisualization: metric.defaultVisualization,
         collectorIds: metric.collectorIds,
       },
+      thresholds,
     };
   }
 
