@@ -1,0 +1,7 @@
+# Playwright overlay: enable the permission framework so the UI calls
+# POST /api/permission/authorize (required for RBAC e2e route mocks).
+permission:
+  enabled: true
+  rbac:
+    policies-csv-file: ./rbac-policy.e2e.csv
+    policyFileReload: true

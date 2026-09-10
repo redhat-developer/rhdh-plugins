@@ -28,6 +28,11 @@ import {
   mockQuery,
   mockShields,
 } from './devMode';
+import {
+  installIaPermissionsMock,
+  waitForIaPermissionAuthorize,
+  type IaPermissionMatrix,
+} from './iaPermissionsE2e';
 import { getTranslations, type LightspeedMessages } from './translations';
 
 /** Default user message used by the shared query mock in Lightspeed e2e. */
@@ -100,4 +105,29 @@ export async function bootstrapLightspeedE2ePage(
   await openLightspeed(page);
 
   return { page, locale, translations };
+}
+
+/**
+ * Guest session with IA API mocks and a fixed permission matrix.
+ * Installs the authorize mock on the browser context before any navigation.
+ */
+export async function bootstrapLightspeedRbacE2ePage(
+  browser: Browser,
+  permissions: IaPermissionMatrix,
+): Promise<LightspeedE2eBootstrap> {
+  const context = await browser.newContext({ locale: 'en-US' });
+  await installIaPermissionsMock(context, permissions);
+
+  const page = await context.newPage();
+  const translations = getTranslations('en');
+
+  await setupLightspeedApiMocks(page);
+
+  await page.goto('/');
+  await loginAsGuest(page);
+  await switchToLocale(page, 'en');
+  await page.reload();
+  await waitForIaPermissionAuthorize(page);
+
+  return { page, locale: 'en', translations };
 }
