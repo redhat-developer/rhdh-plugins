@@ -14,12 +14,67 @@
  * limitations under the License.
  */
 
-import { Page, expect } from '@playwright/test';
+import { Page, expect, type Locator } from '@playwright/test';
 import { LightspeedMessages, evaluateMessage } from './translations';
 
-export const openChatContextMenu = async (page: Page, chatIndex = 0) => {
-  await page
-    .locator('.pf-v6-c-menu-toggle.pf-m-plain.pf-chatbot__history-actions')
+export const sidePanelLocator = (page: Page): Locator =>
+  page.locator('.pf-v6-c-drawer__panel-main');
+
+export const chatsMenu = (
+  page: Page,
+  translations: LightspeedMessages,
+): Locator =>
+  sidePanelLocator(page).getByRole('menu', {
+    name: translations['conversation.category.recent'],
+    exact: true,
+  });
+
+export const pinnedChatsMenu = (
+  page: Page,
+  translations: LightspeedMessages,
+): Locator =>
+  sidePanelLocator(page).getByRole('menu', {
+    name: translations['conversation.category.pinnedChats'],
+    exact: true,
+  });
+
+export const savedPromptsMenuItems = (
+  page: Page,
+  _translations: LightspeedMessages,
+): Locator =>
+  sidePanelLocator(page)
+    .locator('.lightspeed-saved-prompts-group')
+    .locator('.pf-chatbot__menu-item');
+
+export const pinnedChatsMenuItems = (
+  page: Page,
+  translations: LightspeedMessages,
+): Locator =>
+  pinnedChatsMenu(page, translations).locator('li.pf-chatbot__menu-item');
+
+export const recentChatsMenuItems = (
+  page: Page,
+  translations: LightspeedMessages,
+): Locator => chatsMenu(page, translations).locator('li.pf-chatbot__menu-item');
+
+export const openChatContextMenu = async (
+  page: Page,
+  translations: LightspeedMessages,
+  chatIndex = 0,
+) => {
+  await chatsMenu(page, translations)
+    .locator('.pf-chatbot__history-actions')
+    .nth(chatIndex)
+    .click();
+};
+
+export const openPinnedChatContextMenu = async (
+  page: Page,
+  translations: LightspeedMessages,
+  chatIndex = 0,
+) => {
+  await pinnedChatsMenu(page, translations)
+    .locator('.pf-chatbot__history-actions')
     .nth(chatIndex)
     .click();
 };
@@ -29,11 +84,10 @@ export const openChatContextMenuByName = async (
   chatName: string,
   translations: LightspeedMessages,
 ) => {
-  await page
-    .locator('li')
+  await sidePanelLocator(page)
+    .locator('li.pf-chatbot__menu-item')
     .filter({ hasText: chatName })
-    .locator('div')
-    .getByLabel(translations['aria.options.label'])
+    .locator('.pf-chatbot__history-actions')
     .click();
 };
 
@@ -99,8 +153,16 @@ export const submitChatRename = async (
     .click();
 };
 
-export const verifyChatRenamed = async (page: Page, chatName: string) => {
-  await expect(page.locator('li').filter({ hasText: chatName })).toBeVisible();
+export const verifyChatRenamed = async (
+  page: Page,
+  chatName: string,
+  _translations: LightspeedMessages,
+) => {
+  await expect(
+    sidePanelLocator(page)
+      .locator('li.pf-chatbot__menu-item')
+      .filter({ hasText: chatName }),
+  ).toBeVisible();
 };
 
 export const verifyEmptyPinnedChatsMessage = async (
@@ -149,10 +211,13 @@ export const selectUnpinAction = async (
     .click();
 };
 
-export const verifyChatPinned = async (page: Page, chatName: string) => {
-  const sidePanel = page.locator('.pf-v6-c-drawer__panel-main');
-  const validChat = sidePanel.locator('li.pf-chatbot__menu-item').first();
-  await expect(validChat).toContainText(chatName);
+export const verifyChatPinned = async (
+  page: Page,
+  chatName: string,
+  translations: LightspeedMessages,
+) => {
+  const pinnedChat = pinnedChatsMenuItems(page, translations).first();
+  await expect(pinnedChat).toContainText(chatName);
 };
 
 export const verifyPinActionAvailable = async (
@@ -227,9 +292,15 @@ export const confirmChatDeletion = async (
     .click();
 };
 
-export const verifyChatDeleted = async (page: Page, chatName: string) => {
+export const verifyChatDeleted = async (
+  page: Page,
+  chatName: string,
+  _translations: LightspeedMessages,
+) => {
   await expect(
-    page.locator('li').filter({ hasText: chatName }),
+    sidePanelLocator(page)
+      .locator('li.pf-chatbot__menu-item')
+      .filter({ hasText: chatName }),
   ).not.toBeVisible();
 };
 
@@ -258,6 +329,7 @@ export const verifyPinnedSectionVisible = async (
   await expect(
     page.getByRole('heading', {
       name: translations['conversation.category.pinnedChats'],
+      exact: true,
     }),
   ).toBeVisible();
 };
@@ -269,6 +341,7 @@ export const verifyPinnedSectionHidden = async (
   await expect(
     page.getByRole('heading', {
       name: translations['conversation.category.pinnedChats'],
+      exact: true,
     }),
   ).not.toBeVisible();
 };
@@ -332,12 +405,12 @@ export const verifyEmptySearchResults = async (
   translations: LightspeedMessages,
 ) => {
   await expect(
-    page.getByRole('menuitem', {
+    pinnedChatsMenu(page, translations).getByRole('menuitem', {
       name: translations['chatbox.emptyState.noPinnedChats'],
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole('menuitem', {
+    chatsMenu(page, translations).getByRole('menuitem', {
       name: translations['common.noSearchResults'],
     }),
   ).toBeVisible();
@@ -362,9 +435,9 @@ export const verifyChatUnpinned = async (
   translations: LightspeedMessages,
 ) => {
   await expect(
-    page
-      .getByRole('menu')
-      .filter({ hasText: translations['chatbox.emptyState.noPinnedChats'] }),
+    pinnedChatsMenu(page, translations).getByRole('menuitem', {
+      name: translations['chatbox.emptyState.noPinnedChats'],
+    }),
   ).toBeVisible();
 };
 
@@ -411,12 +484,7 @@ export const getConversationNames = async (
   page: Page,
   translations: LightspeedMessages,
 ): Promise<string[]> => {
-  const sidePanel = page.locator('.pf-v6-c-drawer__panel-main');
-  const recentSection = sidePanel.locator(
-    `ul[aria-label="${translations['conversation.category.recent']}"] li.pf-chatbot__menu-item`,
-  );
-
-  const chatItems = await recentSection.all();
+  const chatItems = await recentChatsMenuItems(page, translations).all();
   const names: string[] = [];
 
   for (const item of chatItems) {

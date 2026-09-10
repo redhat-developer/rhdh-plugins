@@ -361,12 +361,11 @@ export async function verifyMcpSettingsPanel(
     }
   }
 
+  await closeMcpSettingsPanel(page, t);
+  await expectMcpServersSettingsHeading(page, false, t);
   await expect(
     page.getByRole('button', { name: t['aria.options.label'] }),
   ).toBeVisible();
-
-  await closeMcpSettingsPanel(page, t);
-  await expectMcpServersSettingsHeading(page, false, t);
 }
 
 /** Chat composer message field (matches sendMessage in testHelper). */

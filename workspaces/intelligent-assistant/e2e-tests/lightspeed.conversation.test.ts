@@ -29,6 +29,7 @@ import {
   verifyFeedbackButtons,
   submitFeedback,
   assertClipboardContains,
+  openLightspeed,
 } from './utils/testHelper';
 import {
   expectChatInputValue,
@@ -76,6 +77,9 @@ import {
   verifySortDropdownVisible,
   closeSortDropdown,
   verifyConversationsSortedAlphabetically,
+  recentChatsMenuItems,
+  chatsMenu,
+  openPinnedChatContextMenu,
 } from './utils/chatManagement';
 import {
   mockChatHistory,
@@ -181,21 +185,20 @@ test.describe('Intelligent assistant conversation', () => {
       await sendMessage('test', sharedPage, translations);
       const sidePanel = sharedPage.locator('.pf-v6-c-drawer__panel-main');
 
-      const currentChat = sidePanel.locator('li.pf-chatbot__menu-item--active');
+      const currentChat = chatsMenu(sharedPage, translations).locator(
+        'li.pf-chatbot__menu-item--active',
+      );
       await expect(currentChat).toHaveText(moreConversations[0].topic_summary);
 
-      const chats = sidePanel.locator('li.pf-chatbot__menu-item');
-      await expect(chats).toHaveCount(3);
+      const chats = recentChatsMenuItems(sharedPage, translations);
+      await expect(chats).toHaveCount(moreConversations.length);
 
       const searchText = moreConversations[1].topic_summary;
       const searchBox = sidePanel.getByPlaceholder(
         translations['chatbox.search.placeholder'],
       );
       await searchBox.fill('new');
-      const validChat = sidePanel
-        .locator('li.pf-chatbot__menu-item')
-        .filter({ hasText: searchText })
-        .first();
+      const validChat = chats.filter({ hasText: searchText }).first();
 
       const chatItems = await chats.all();
       for (const chat of chatItems) {
@@ -235,7 +238,7 @@ test.describe('Intelligent assistant conversation', () => {
 
       test('Verify chat actions menu', async () => {
         await sharedPage.reload();
-        await openChatContextMenu(sharedPage);
+        await openChatContextMenu(sharedPage, translations);
         await verifyChatContextMenuOptions(sharedPage, translations);
       });
 
@@ -243,30 +246,30 @@ test.describe('Intelligent assistant conversation', () => {
         await selectRenameAction(sharedPage, translations);
         await verifyRenameChatForm(sharedPage, translations);
         await submitChatRename(sharedPage, testChatName, translations);
-        await verifyChatRenamed(sharedPage, testChatName);
+        await verifyChatRenamed(sharedPage, testChatName, translations);
       });
 
       test('Verify pin chat and its actions', async () => {
         await verifyEmptyPinnedChatsMessage(sharedPage, translations);
-        await openChatContextMenu(sharedPage);
+        await openChatContextMenu(sharedPage, translations);
         await verifyPinActionAvailable(sharedPage, translations);
         await selectPinAction(sharedPage, translations);
-        await verifyChatPinned(sharedPage, testChatName);
+        await verifyChatPinned(sharedPage, testChatName, translations);
         await verifyPinnedChatsNotEmpty(sharedPage, translations);
       });
 
       test('Verify delete chat and its actions', async () => {
-        await verifyChatRenamed(sharedPage, testChatName);
+        await verifyChatRenamed(sharedPage, testChatName, translations);
         await openChatContextMenuByName(sharedPage, testChatName, translations);
         await selectDeleteAction(sharedPage, translations);
         await verifyDeleteConfirmation(sharedPage, translations, testChatName);
         await cancelChatDeletion(sharedPage, translations);
-        await verifyChatRenamed(sharedPage, testChatName);
+        await verifyChatRenamed(sharedPage, testChatName, translations);
 
         await openChatContextMenuByName(sharedPage, testChatName, translations);
         await selectDeleteAction(sharedPage, translations);
         await confirmChatDeletion(sharedPage, translations);
-        await verifyChatDeleted(sharedPage, testChatName);
+        await verifyChatDeleted(sharedPage, testChatName, translations);
       });
 
       test('Verify disable pinned chats section via settings', async () => {
@@ -292,13 +295,14 @@ test.describe('Intelligent assistant conversation', () => {
 
       test.describe('Search no-results scenarios', () => {
         test('Verify search results when chats are not pinned', async () => {
+          await sharedPage.reload();
           await searchChats(sharedPage, 'dummy search', translations);
           await verifyEmptySearchResults(sharedPage, translations);
         });
 
         test('Verify search results when chats are pinned', async () => {
           await sharedPage.reload();
-          await openChatContextMenu(sharedPage);
+          await openChatContextMenu(sharedPage, translations);
           await selectPinAction(sharedPage, translations);
           await searchChats(sharedPage, 'dummy search', translations);
           await verifyNoResultsFoundMessage(sharedPage, translations);
@@ -307,7 +311,7 @@ test.describe('Intelligent assistant conversation', () => {
 
       test('Verify unpin chat action removes chat from pinned section', async () => {
         await clearSearch(sharedPage);
-        await openChatContextMenu(sharedPage);
+        await openPinnedChatContextMenu(sharedPage, translations);
         await verifyUnpinActionAvailable(sharedPage, translations);
         await selectUnpinAction(sharedPage, translations);
         await verifyChatUnpinned(sharedPage, translations);
@@ -345,6 +349,8 @@ test.describe('Intelligent assistant conversation', () => {
     test('Verify thinking section is displayed in bot response', async () => {
       await mockChatHistoryWithRedactedThinking(sharedPage);
       await sharedPage.reload();
+      await openLightspeed(sharedPage);
+      await recentChatsMenuItems(sharedPage, translations).first().click();
       await sharedPage.waitForSelector('.pf-chatbot__message--bot', {
         timeout: 10000,
       });

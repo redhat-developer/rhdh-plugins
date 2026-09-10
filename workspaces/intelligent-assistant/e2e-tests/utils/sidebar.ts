@@ -39,15 +39,39 @@ export async function assertChatDialogInitialState(
 
   await assertDrawerState(page, 'open', translations);
 
-  await expect(page.locator('.pf-v6-c-drawer__panel-main'))
-    .toMatchAriaSnapshot(`
-      - heading "${translations['conversation.category.pinnedChats']}"
-      - menu:
-        - menuitem "${translations['chatbox.emptyState.noPinnedChats']}"
-      - heading "${translations['conversation.category.recent']}"
-      - menu:
-        - menuitem "${translations['chatbox.emptyState.noRecentChats']}"
-      `);
+  const sidePanel = page.locator('.pf-v6-c-drawer__panel-main');
+  await expect(
+    sidePanel.getByRole('heading', {
+      name: new RegExp(translations['conversation.category.savedPrompts']),
+    }),
+  ).toBeVisible();
+  await expect(
+    sidePanel.locator('.lightspeed-saved-prompts-group').getByRole('menuitem', {
+      name: translations['savedPrompts.sidebar.empty'],
+    }),
+  ).toBeVisible();
+  await expect(
+    sidePanel.getByRole('heading', {
+      name: translations['conversation.category.pinnedChats'],
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('menuitem', {
+      name: translations['chatbox.emptyState.noPinnedChats'],
+    }),
+  ).toBeVisible();
+  await expect(
+    sidePanel.getByRole('heading', {
+      name: translations['conversation.category.recent'],
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('menuitem', {
+      name: translations['chatbox.emptyState.noRecentChats'],
+    }),
+  ).toBeVisible();
 }
 
 export async function closeChatDrawer(
@@ -124,6 +148,6 @@ export async function verifySidePanelConversation(
   });
   await expect(newButton).toBeEnabled({ timeout: 60000 });
 
-  const conversation = sidePanel.locator('li.pf-chatbot__menu-item--active');
+  const conversation = sidePanel.locator('.pf-chatbot__menu-item--active');
   await expect(conversation).toBeVisible();
 }
