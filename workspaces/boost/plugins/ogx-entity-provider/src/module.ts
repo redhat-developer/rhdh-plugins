@@ -49,6 +49,8 @@ const DEFAULT_AGENT_REFRESH_SECONDS = 300;
  *     ogx:
  *       baseUrl: http://localhost:8321
  *       apiKey: ${OGX_API_KEY}  # optional
+ *       caData: '-----BEGIN CERTIFICATE-----\nTEST\n-----END CERTIFICATE-----' # optional
+ *       skipTLSVerify: false # optional
  *       modelRefreshIntervalSeconds: 60
  *       agentRefreshIntervalSeconds: 300
  *       agents:
