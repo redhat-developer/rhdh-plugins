@@ -33,11 +33,11 @@ export const appLauncherDevHubMenuItemExtension: OverridableExtensionDefinition<
     sectionLinkLabel: string | undefined;
   };
   configInput: {
-    link?: string | undefined;
-    title?: string | undefined;
-    icon?: string | undefined;
-    titleKey?: string | undefined;
     priority?: number | undefined;
+    title?: string | undefined;
+    titleKey?: string | undefined;
+    icon?: string | undefined;
+    link?: string | undefined;
     sectionLabel?: string | undefined;
     sectionLink?: string | undefined;
     sectionLinkLabel?: string | undefined;
@@ -66,11 +66,11 @@ export const appLauncherRhdhLocalMenuItemExtension: OverridableExtensionDefiniti
     sectionLinkLabel: string | undefined;
   };
   configInput: {
-    link?: string | undefined;
-    title?: string | undefined;
-    icon?: string | undefined;
-    titleKey?: string | undefined;
     priority?: number | undefined;
+    title?: string | undefined;
+    titleKey?: string | undefined;
+    icon?: string | undefined;
+    link?: string | undefined;
     sectionLabel?: string | undefined;
     sectionLink?: string | undefined;
     sectionLinkLabel?: string | undefined;
@@ -147,11 +147,11 @@ export const defaultMenuItemExtensions: (
         sectionLinkLabel: string | undefined;
       };
       configInput: {
-        link?: string | undefined;
-        title?: string | undefined;
-        icon?: string | undefined;
-        titleKey?: string | undefined;
         priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
         sectionLabel?: string | undefined;
         sectionLink?: string | undefined;
         sectionLinkLabel?: string | undefined;
@@ -178,11 +178,11 @@ export const defaultMenuItemExtensions: (
         sectionLinkLabel: string | undefined;
       };
       configInput: {
-        link?: string | undefined;
-        title?: string | undefined;
-        icon?: string | undefined;
-        titleKey?: string | undefined;
         priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
         sectionLabel?: string | undefined;
         sectionLink?: string | undefined;
         sectionLinkLabel?: string | undefined;
@@ -209,11 +209,11 @@ export const defaultMenuItemExtensions: (
         sectionLinkLabel: string | undefined;
       };
       configInput: {
-        link?: string | undefined;
-        title?: string | undefined;
-        icon?: string | undefined;
-        titleKey?: string | undefined;
         priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
         sectionLabel?: string | undefined;
         sectionLink?: string | undefined;
         sectionLinkLabel?: string | undefined;
@@ -240,11 +240,11 @@ export const defaultMenuItemExtensions: (
         sectionLinkLabel: string | undefined;
       };
       configInput: {
-        link?: string | undefined;
-        title?: string | undefined;
-        icon?: string | undefined;
-        titleKey?: string | undefined;
         priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
         sectionLabel?: string | undefined;
         sectionLink?: string | undefined;
         sectionLinkLabel?: string | undefined;
@@ -271,11 +271,11 @@ export const defaultMenuItemExtensions: (
         sectionLinkLabel: string | undefined;
       };
       configInput: {
-        link?: string | undefined;
-        title?: string | undefined;
-        icon?: string | undefined;
-        titleKey?: string | undefined;
         priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
         sectionLabel?: string | undefined;
         sectionLink?: string | undefined;
         sectionLinkLabel?: string | undefined;
@@ -302,11 +302,11 @@ export const defaultMenuItemExtensions: (
         sectionLinkLabel: string | undefined;
       };
       configInput: {
-        link?: string | undefined;
-        title?: string | undefined;
-        icon?: string | undefined;
-        titleKey?: string | undefined;
         priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
         sectionLabel?: string | undefined;
         sectionLink?: string | undefined;
         sectionLinkLabel?: string | undefined;
@@ -602,11 +602,11 @@ export const GlobalHeaderMenuItemBlueprint: ExtensionBlueprint<{
     sectionLinkLabel: string | undefined;
   };
   configInput: {
-    link?: string | undefined;
-    title?: string | undefined;
-    icon?: string | undefined;
-    titleKey?: string | undefined;
     priority?: number | undefined;
+    title?: string | undefined;
+    titleKey?: string | undefined;
+    icon?: string | undefined;
+    link?: string | undefined;
     sectionLabel?: string | undefined;
     sectionLink?: string | undefined;
     sectionLinkLabel?: string | undefined;
@@ -851,11 +851,11 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         sectionLinkLabel: string | undefined;
       };
       configInput: {
-        link?: string | undefined;
-        title?: string | undefined;
-        icon?: string | undefined;
-        titleKey?: string | undefined;
         priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
         sectionLabel?: string | undefined;
         sectionLink?: string | undefined;
         sectionLinkLabel?: string | undefined;
@@ -882,11 +882,11 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         sectionLinkLabel: string | undefined;
       };
       configInput: {
-        link?: string | undefined;
-        title?: string | undefined;
-        icon?: string | undefined;
-        titleKey?: string | undefined;
         priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
         sectionLabel?: string | undefined;
         sectionLink?: string | undefined;
         sectionLinkLabel?: string | undefined;
@@ -913,11 +913,11 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         sectionLinkLabel: string | undefined;
       };
       configInput: {
-        link?: string | undefined;
-        title?: string | undefined;
-        icon?: string | undefined;
-        titleKey?: string | undefined;
         priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
         sectionLabel?: string | undefined;
         sectionLink?: string | undefined;
         sectionLinkLabel?: string | undefined;
@@ -944,11 +944,11 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         sectionLinkLabel: string | undefined;
       };
       configInput: {
-        link?: string | undefined;
-        title?: string | undefined;
-        icon?: string | undefined;
-        titleKey?: string | undefined;
         priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
         sectionLabel?: string | undefined;
         sectionLink?: string | undefined;
         sectionLinkLabel?: string | undefined;
@@ -975,11 +975,11 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         sectionLinkLabel: string | undefined;
       };
       configInput: {
-        link?: string | undefined;
-        title?: string | undefined;
-        icon?: string | undefined;
-        titleKey?: string | undefined;
         priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
         sectionLabel?: string | undefined;
         sectionLink?: string | undefined;
         sectionLinkLabel?: string | undefined;
@@ -1006,11 +1006,11 @@ const globalHeaderPlugin: OverridableFrontendPlugin<
         sectionLinkLabel: string | undefined;
       };
       configInput: {
-        link?: string | undefined;
-        title?: string | undefined;
-        icon?: string | undefined;
-        titleKey?: string | undefined;
         priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
         sectionLabel?: string | undefined;
         sectionLink?: string | undefined;
         sectionLinkLabel?: string | undefined;
@@ -1137,11 +1137,11 @@ export const logoutMenuItemExtension: OverridableExtensionDefinition<{
     sectionLinkLabel: string | undefined;
   };
   configInput: {
-    link?: string | undefined;
-    title?: string | undefined;
-    icon?: string | undefined;
-    titleKey?: string | undefined;
     priority?: number | undefined;
+    title?: string | undefined;
+    titleKey?: string | undefined;
+    icon?: string | undefined;
+    link?: string | undefined;
     sectionLabel?: string | undefined;
     sectionLink?: string | undefined;
     sectionLinkLabel?: string | undefined;
@@ -1197,11 +1197,11 @@ export const myProfileMenuItemExtension: OverridableExtensionDefinition<{
     sectionLinkLabel: string | undefined;
   };
   configInput: {
-    link?: string | undefined;
-    title?: string | undefined;
-    icon?: string | undefined;
-    titleKey?: string | undefined;
     priority?: number | undefined;
+    title?: string | undefined;
+    titleKey?: string | undefined;
+    icon?: string | undefined;
+    link?: string | undefined;
     sectionLabel?: string | undefined;
     sectionLink?: string | undefined;
     sectionLinkLabel?: string | undefined;
@@ -1306,11 +1306,11 @@ export const settingsMenuItemExtension: OverridableExtensionDefinition<{
     sectionLinkLabel: string | undefined;
   };
   configInput: {
-    link?: string | undefined;
-    title?: string | undefined;
-    icon?: string | undefined;
-    titleKey?: string | undefined;
     priority?: number | undefined;
+    title?: string | undefined;
+    titleKey?: string | undefined;
+    icon?: string | undefined;
+    link?: string | undefined;
     sectionLabel?: string | undefined;
     sectionLink?: string | undefined;
     sectionLinkLabel?: string | undefined;
@@ -1377,11 +1377,11 @@ export const supportButtonMenuItemExtension: OverridableExtensionDefinition<{
     sectionLinkLabel: string | undefined;
   };
   configInput: {
-    link?: string | undefined;
-    title?: string | undefined;
-    icon?: string | undefined;
-    titleKey?: string | undefined;
     priority?: number | undefined;
+    title?: string | undefined;
+    titleKey?: string | undefined;
+    icon?: string | undefined;
+    link?: string | undefined;
     sectionLabel?: string | undefined;
     sectionLink?: string | undefined;
     sectionLinkLabel?: string | undefined;
