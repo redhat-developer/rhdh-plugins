@@ -131,7 +131,17 @@ export const MenuSection: FC<MenuSectionConfig> = ({
               onClick?.();
               handleClose();
             }}
-            sx={{ py: 0.5, color: 'inherit', textDecoration: 'none' }}
+            sx={{
+              py: 0.5,
+              px: 0,
+              width: '100%',
+              boxSizing: 'border-box',
+              display: 'flex',
+              color: 'inherit',
+              textDecoration: 'none',
+            }}
+            // Fragment when there is no link so nested full MenuItems
+            // (e.g. SupportButton) are not wrapped in a second menuitem.
             component={link ? Link : Fragment}
             to={link}
           >

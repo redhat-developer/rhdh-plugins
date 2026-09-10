@@ -14,18 +14,23 @@
  * limitations under the License.
  */
 
-import { useMemo } from 'react';
+import { lazy, Suspense, useEffect, useMemo } from 'react';
 import type { PropsWithChildren } from 'react';
 
 import {
   createExtensionInput,
   createFrontendModule,
 } from '@backstage/frontend-plugin-api';
-import { AppRootWrapperBlueprint } from '@backstage/plugin-app-react';
+import {
+  AppRootWrapperBlueprint,
+  IconBundleBlueprint,
+} from '@backstage/plugin-app-react';
+import { ErrorBoundary } from '@backstage/core-components';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
+import { globalHeaderSystemIcons } from '../icons/globalHeaderSystemIcons';
+
 import { GlobalHeaderProvider } from './GlobalHeaderContext';
-import { GlobalHeader } from '../components/GlobalHeader';
 import {
   globalHeaderComponentDataRef,
   globalHeaderMenuItemDataRef,
@@ -36,6 +41,11 @@ import type {
 } from '../types';
 import { readConfigMenuItems } from '../utils/readConfigMenuItems';
 import { readConfigComponents } from '../utils/readConfigComponents';
+import { loadGlobalHeader, loadHeaderBundle } from '../components/loaders';
+
+const LazyGlobalHeader = lazy(() =>
+  loadGlobalHeader().then(GlobalHeader => ({ default: GlobalHeader })),
+);
 
 function GlobalHeaderWrapper({
   extensionComponents,
@@ -68,9 +78,20 @@ function GlobalHeaderWrapper({
       ),
     [extensionMenuItems, configMenuItems],
   );
+
+  // Start the shared critical header chunk only after the app shell mounts
+  // (post sign-in), not during plugin module evaluation on the sign-in page.
+  useEffect(() => {
+    void loadHeaderBundle();
+  }, []);
+
   return (
     <GlobalHeaderProvider components={allComponents} menuItems={allMenuItems}>
-      <GlobalHeader />
+      <Suspense fallback={null}>
+        <ErrorBoundary>
+          <LazyGlobalHeader />
+        </ErrorBoundary>
+      </Suspense>
       {children}
     </GlobalHeaderProvider>
   );
@@ -110,6 +131,13 @@ const globalHeaderExtension = AppRootWrapperBlueprint.makeWithOverrides({
   },
 });
 
+const globalHeaderIconsExtension = IconBundleBlueprint.make({
+  name: 'global-header-icons',
+  params: {
+    icons: globalHeaderSystemIcons,
+  },
+});
+
 /**
  * Frontend module that provides the global header system.
  * Registers a wrapper extension with input slots for toolbar components
@@ -123,5 +151,5 @@ const globalHeaderExtension = AppRootWrapperBlueprint.makeWithOverrides({
  */
 export const globalHeaderModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [globalHeaderExtension],
+  extensions: [globalHeaderIconsExtension, globalHeaderExtension],
 });

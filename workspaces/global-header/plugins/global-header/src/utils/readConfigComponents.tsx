@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
+import { lazy, Suspense } from 'react';
+
 import type { Config } from '@backstage/config';
 
-import { HeaderIconButton } from '../components/HeaderIconButton/HeaderIconButton';
+import { loadHeaderIconButton } from '../components/loaders';
 import type { GlobalHeaderComponentData } from '../types';
+
+const LazyHeaderIconButton = lazy(() =>
+  loadHeaderIconButton().then(HeaderIconButton => ({
+    default: HeaderIconButton,
+  })),
+);
 
 /**
  * Reads `globalHeader.components` from the app config and maps
@@ -25,7 +33,8 @@ import type { GlobalHeaderComponentData } from '../types';
  *
  * Config-driven components are always rendered as a `HeaderIconButton`
  * (icon + link), matching the data-driven tier of
- * `GlobalHeaderComponentBlueprint`.
+ * `GlobalHeaderComponentBlueprint`. The button is lazy-loaded from the shared
+ * critical header bundle.
  */
 export function readConfigComponents(
   configApi: Config,
@@ -42,13 +51,15 @@ export function readConfigComponents(
     const priority = item.getOptionalNumber('priority');
 
     const ConfigComponent = () => (
-      <HeaderIconButton
-        title={title}
-        titleKey={titleKey}
-        icon={icon}
-        tooltip={tooltip}
-        to={link}
-      />
+      <Suspense fallback={null}>
+        <LazyHeaderIconButton
+          title={title}
+          titleKey={titleKey}
+          icon={icon}
+          tooltip={tooltip}
+          to={link}
+        />
+      </Suspense>
     );
 
     return { component: ConfigComponent, priority };

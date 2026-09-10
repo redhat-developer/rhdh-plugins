@@ -71,7 +71,7 @@ export const defaultGlobalHeaderComponentsMountPoints: GlobalHeaderComponentMoun
         props: {
           title: 'Self-service',
           titleKey: 'create.title',
-          icon: 'addCircleOutline',
+          icon: 'add',
           to: '/create',
         },
       },

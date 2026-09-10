@@ -66,7 +66,82 @@ Props:
 
 \*SVG images must start with `<svg`.
 
-\*\*Please note that remote URLs must be accepted in the CSP.
+\*\*Remote URLs must be accepted in the CSP.
+
+Resolution order:
+
+1. `app.getSystemIcon(icon)` — host or `globalHeaderModule`'s `IconBundleBlueprint` (default extension ids)
+2. Inline `<svg>` markup
+3. Image URL (`http(s)://`, `/`, or `data:image/`)
+
+Unregistered icon ids render nothing. Register additional ids on the host (e.g. RHDH `CommonIcons` or NFS `IconBundleBlueprint`) or use inline SVG/URLs.
+
+### Global-header system icons
+
+When `globalHeaderModule` is enabled, it registers the following icon ids through
+`IconBundleBlueprint` (outlined `@mui/icons-material` components). Use these
+string ids in `globalHeader.menuItems`, `globalHeader.components`, mount-point
+`icon` props, and anywhere else `HeaderIcon` is used.
+
+| Icon id          | Typical use                           |
+| ---------------- | ------------------------------------- |
+| `account`        | Profile / my account menu items       |
+| `add`            | Create / self-service toolbar actions |
+| `article`        | Wiki, documentation links             |
+| `bugReport`      | Issue tracker links                   |
+| `dashboard`      | Dashboard or visualizer toolbar links |
+| `developerHub`   | App launcher / developer hub          |
+| `forum`          | Community forum links                 |
+| `logout`         | Sign-out actions                      |
+| `manageAccounts` | Settings, account management          |
+| `quiz`           | FAQ, help menu items                  |
+| `support`        | Support menu items                    |
+
+Source of truth: [`globalHeaderSystemIcons.ts`](../../../plugins/global-header/src/icons/globalHeaderSystemIcons.ts).
+
+Example `app-config.yaml`:
+
+```yaml
+globalHeader:
+  components:
+    - title: Visualizer Dashboard
+      icon: dashboard
+      link: /visualizer/tree
+      priority: 75
+  menuItems:
+    - target: app-launcher
+      title: Internal Wiki
+      icon: article
+      link: https://wiki.internal.example.com
+    - target: app-launcher
+      title: Issue Tracker
+      icon: bugReport
+      link: https://issues.internal.example.com
+    - target: help
+      title: FAQ
+      icon: quiz
+      link: https://faq.example.com
+    - target: help
+      title: Community Forum
+      icon: forum
+      link: https://forum.example.com
+```
+
+`dashboard` is also a [Backstage `app-defaults`](https://github.com/backstage/backstage/blob/master/packages/app-defaults/src/defaults/icons.tsx) id; global-header registers an outlined variant for header use. Host icon registration still takes precedence.
+
+Other Backstage default ids (for example `search`, `github`, `catalog`, `kind:component`) remain available via `app.getSystemIcon` without global-header registration. Icons not registered anywhere render nothing.
+
+### Host integration
+
+RHDH loads plugins via Module Federation. **Plugins must not assume the host imported a global icon font.**
+
+| Approach                                                                                                               | Verdict                              |
+| ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| Host registers icons via `app.getSystemIcon` / `CommonIcons` (OFS) or NFS `IconBundleBlueprint`                        | Preferred                            |
+| `globalHeaderModule` registers the [global-header system icons](#global-header-system-icons) via `IconBundleBlueprint` | Automatic when the module is enabled |
+| Inline SVG or image URL in config                                                                                      | Supported without host registration  |
+
+For `globalHeader.menuItems[].icon`, prefer ids from the [global-header system icons](#global-header-system-icons) table, other Backstage defaults, host-registered ids (e.g. RHDH `CommonIcons` for `quickstart`), or inline SVG/URLs.
 
 ## HeaderIconButton
 
@@ -93,6 +168,7 @@ Props:
 | ----------- | ----------------------------------------------------------------------------------- |
 | `title`     | Required information for the button which is used as tooltip and for accessability. |
 | `to`        | Required internal or external link                                                  |
+| `icon`      | Optional icon, see `HeaderIcon` > `icon` for more information                       |
 | `tooltip`   | Optional                                                                            |
 | `color`     | Optional, one of `inherit`, `primary`, `secondary`, `default`, default is `inherit` |
 | `size`      | Optional, one of `small`, `medium`, `large`, default is `medium`                    |

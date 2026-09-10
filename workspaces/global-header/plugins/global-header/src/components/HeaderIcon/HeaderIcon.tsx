@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 import type { CSSProperties } from 'react';
 import { useApp } from '@backstage/core-plugin-api';
 import MuiIcon from '@mui/material/Icon';
 import Box from '@mui/material/Box';
+
+import { ShapesOutlinedIcon } from '../../icons/ShapesOutlinedIcon';
 
 /**
  * @public
@@ -25,14 +28,6 @@ export interface HeaderIconProps {
   icon: string;
   size?: 'small' | 'medium' | 'large';
   layout?: CSSProperties;
-}
-
-/**
- * Converts camelCase icon names to snake_case for Material Icons ligatures.
- * e.g. `manageAccounts` -> `manage_accounts`, `accountCircle` -> `account_circle`
- */
-function toMaterialIconLigature(name: string): string {
-  return name.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`);
 }
 
 /**
@@ -69,7 +64,8 @@ export const HeaderIcon = ({
   if (
     icon.startsWith('https://') ||
     icon.startsWith('http://') ||
-    icon.startsWith('/')
+    icon.startsWith('/') ||
+    icon.startsWith('data:image/')
   ) {
     return (
       <MuiIcon
@@ -82,14 +78,14 @@ export const HeaderIcon = ({
     );
   }
 
-  const ligature = toMaterialIconLigature(icon);
+  // eslint-disable-next-line no-console
+  console.warn(
+    `HeaderIcon: unregistered icon id "${icon}". Register via IconBundleBlueprint, app.getSystemIcon(), or use an image/SVG URL.`,
+  );
+
   return (
-    <MuiIcon
-      fontSize={size}
-      baseClassName="material-icons-outlined"
-      sx={layout}
-    >
-      {ligature}
-    </MuiIcon>
+    <Box aria-hidden sx={{ display: 'flex', alignItems: 'center', ...layout }}>
+      <ShapesOutlinedIcon fontSize={size} />
+    </Box>
   );
 };

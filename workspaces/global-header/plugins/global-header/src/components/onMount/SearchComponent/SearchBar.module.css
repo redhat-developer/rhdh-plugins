@@ -1,0 +1,12 @@
+/* SearchBar.module.css */
+.allResultsOption {
+  background-color: transparent !important;
+}
+
+.allResultsOption:hover {
+  background-color: transparent !important;
+}
+
+.allResultsOption:focus {
+  background-color: transparent !important;
+}

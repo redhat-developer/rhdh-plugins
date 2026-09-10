@@ -15,5 +15,6 @@
  */
 
 export { useDropdownManager } from './useDropdownManager';
+export { useRetainMenuContent } from './useRetainMenuContent';
 export { useTranslation } from './useTranslation';
 export { useLanguage } from './useLanguage';

@@ -2,6 +2,15 @@
 
 The global header is the top-level navigation bar in Red Hat Developer Hub. It ships with sensible defaults -- a company logo, search, notifications, and user profile -- but is designed to be extended by other plugins and configured by deployers.
 
+The NFS surface is **stable** on the package root
+(`@red-hat-developer-hub/backstage-plugin-global-header`). Building-block UI
+components live on a separate `/components` **package subpath** so they stay off
+the root Module Federation sync chunk. Other dynamic plugins import that
+subpath at compile/export time (typically from a file reached only via a
+blueprint `loader`); it is not a host-loaded federated remote. Prefer `/legacy`
+only for Old Frontend System (mount-point) apps. `/alpha` is a deprecated
+translations-only shim — do not use it for the plugin, module, or blueprints.
+
 This guide explains how to:
 
 - [Set up the header in your app](#setup)
@@ -39,7 +48,7 @@ yarn --cwd packages/app add @red-hat-developer-hub/backstage-plugin-global-heade
 import { createApp } from '@backstage/frontend-defaults';
 import globalHeaderPlugin, {
   globalHeaderModule,
-} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 export default createApp({
   features: [
@@ -54,14 +63,15 @@ Both are required. The **module** provides the wrapper; the **plugin** provides 
 
 ## Add a toolbar component
 
-Import `GlobalHeaderComponentBlueprint` and call `.make()`. There are three ways to define what renders.
+Import `GlobalHeaderComponentBlueprint` from the root and call `.make()`.
+There are three ways to define what renders.
 
 ### Option A: Provide data, let the framework render
 
 Supply `icon`, `title`, and `link` (or `onClick`). The framework renders a styled icon button for you.
 
 ```typescript
-import { GlobalHeaderComponentBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import { GlobalHeaderComponentBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 export const myButton = GlobalHeaderComponentBlueprint.make({
   name: 'my-button',
@@ -76,26 +86,31 @@ export const myButton = GlobalHeaderComponentBlueprint.make({
 
 ### Option B: Use building-block components
 
-For dropdowns or more control, provide a `component` that uses the exported building blocks (`GlobalHeaderIconButton`, `GlobalHeaderDropdown`).
+For dropdowns or more control, provide a `loader` (preferred) that dynamically
+imports building blocks from `/components` (kept off the root NFS sync
+chunk):
 
 ```typescript
-import {
-  GlobalHeaderComponentBlueprint,
-  GlobalHeaderDropdown,
-} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
-
-const MyDropdown = () => (
-  <GlobalHeaderDropdown
-    target="my-links"
-    isIconButton
-    tooltip="My links"
-    buttonContent={<MyIcon />}
-  />
-);
+import { GlobalHeaderComponentBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 export const myDropdown = GlobalHeaderComponentBlueprint.make({
   name: 'my-dropdown',
-  params: { component: MyDropdown, priority: 75 },
+  params: {
+    priority: 75,
+    loader: async () => {
+      const { GlobalHeaderDropdown } = await import(
+        '@red-hat-developer-hub/backstage-plugin-global-header/components'
+      );
+      return () => (
+        <GlobalHeaderDropdown
+          target="my-links"
+          isIconButton
+          tooltip="My links"
+          buttonContent={<MyIcon />}
+        />
+      );
+    },
+  },
 });
 ```
 
@@ -116,17 +131,18 @@ export const myWidget = GlobalHeaderComponentBlueprint.make({
 
 ### Parameters reference
 
-| Param       | Type                      | Description                                     |
-| ----------- | ------------------------- | ----------------------------------------------- |
-| `icon`      | `string`                  | Icon name, inline SVG, or URL                   |
-| `title`     | `string`                  | Display title (also tooltip and aria-label)     |
-| `titleKey`  | `string`                  | i18n translation key for the title              |
-| `tooltip`   | `string`                  | Explicit tooltip (overrides `title`)            |
-| `link`      | `string`                  | Navigation URL                                  |
-| `onClick`   | `() => void`              | Click handler (mutually exclusive with `link`)  |
-| `component` | `ComponentType`           | Custom React component (options B/C)            |
-| `priority`  | `number`                  | Sort order -- higher values appear further left |
-| `layout`    | `Record<string, unknown>` | MUI `sx` overrides on the wrapper               |
+| Param       | Type                           | Description                                           |
+| ----------- | ------------------------------ | ----------------------------------------------------- |
+| `icon`      | `string`                       | Icon name, inline SVG, or URL                         |
+| `title`     | `string`                       | Display title (also tooltip and aria-label)           |
+| `titleKey`  | `string`                       | i18n translation key for the title                    |
+| `tooltip`   | `string`                       | Explicit tooltip (overrides `title`)                  |
+| `link`      | `string`                       | Navigation URL                                        |
+| `onClick`   | `() => void`                   | Click handler (mutually exclusive with `link`)        |
+| `component` | `ComponentType`                | Custom React component (options B/C; prefer `loader`) |
+| `loader`    | `() => Promise<ComponentType>` | Async component factory (keeps UI off sync)           |
+| `priority`  | `number`                       | Sort order -- higher values appear further left       |
+| `layout`    | `Record<string, unknown>`      | MUI `sx` overrides on the wrapper                     |
 
 ## Add a menu item
 
@@ -143,7 +159,7 @@ Import `GlobalHeaderMenuItemBlueprint`. The `target` field routes the item to th
 Provide `title`, `link`, and optionally `icon` / `sectionLabel`. Items that share a `sectionLabel` are grouped under that heading.
 
 ```typescript
-import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 export const docsItem = GlobalHeaderMenuItemBlueprint.make({
   name: 'my-docs',
@@ -160,28 +176,45 @@ export const docsItem = GlobalHeaderMenuItemBlueprint.make({
 
 ### Custom component item using building blocks
 
-Use the exported `GlobalHeaderMenuItem` to build a complete, clickable menu item with consistent styling. The component receives `handleClose` and `hideDivider` as props from the dropdown.
+Use `GlobalHeaderMenuItem` from `/components` inside a blueprint `loader` so the
+UI stays off the root NFS sync chunk. The component receives
+`handleClose` and `hideDivider` as props from the dropdown.
+
+Put the menu item UI in its own file so the `/components` import is only pulled
+in when the loader runs:
 
 ```typescript
-import {
-  GlobalHeaderMenuItemBlueprint,
-  GlobalHeaderMenuItem,
-} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+// docs-item.tsx
+import { GlobalHeaderMenuItem } from '@red-hat-developer-hub/backstage-plugin-global-header/components';
 
-const MyDocsLink = ({ handleClose }: { handleClose?: () => void }) => (
-  <GlobalHeaderMenuItem
-    to="https://docs.example.com"
-    title="Documentation"
-    icon="menu_book"
-    onClick={handleClose}
-  />
-);
+export function DocsLink({ handleClose }: { handleClose?: () => void }) {
+  return (
+    <GlobalHeaderMenuItem
+      to="https://docs.example.com"
+      title="Documentation"
+      icon="article"
+      onClick={handleClose}
+    />
+  );
+}
+```
+
+```typescript
+import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 export const myDocsItem = GlobalHeaderMenuItemBlueprint.make({
   name: 'my-docs-link',
-  params: { target: 'help', component: MyDocsLink, priority: 50 },
+  params: {
+    target: 'help',
+    priority: 50,
+    loader: () => import('./docs-item').then(m => m.DocsLink),
+  },
 });
 ```
+
+> For simple links with `title`, `icon`, and `link`, prefer the
+> [data-driven item](#data-driven-item) above — no custom component or loader
+> required.
 
 ### Fully custom component item
 
@@ -224,7 +257,7 @@ import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
 import {
   GlobalHeaderComponentBlueprint,
   GlobalHeaderMenuItemBlueprint,
-} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 export default createFrontendPlugin({
   pluginId: 'my-plugin',
@@ -244,7 +277,7 @@ export default createFrontendPlugin({
         target: 'help',
         title: 'FAQ',
         link: '/faq',
-        icon: 'help',
+        icon: 'quiz',
         priority: 50,
       },
     }),
@@ -346,13 +379,28 @@ Extension ID pattern: `gh-menu-item:global-header/<name>`
 
 For plugin authors building custom toolbar components or dropdowns, the plugin exports lower-level building blocks and React hooks:
 
-**Building-block components** (consistent styling without starting from scratch):
+**Building-block components** (import from the `/components` package subpath —
+not the root entry — so MUI stays off the root NFS sync chunk). Put the import
+in a file that is only loaded from a blueprint `loader` so the consumer bundles
+it into its own async chunk:
 
 | Component                | Key props                        | Purpose                                                                      |
 | ------------------------ | -------------------------------- | ---------------------------------------------------------------------------- |
 | `GlobalHeaderIconButton` | `title`, `icon`, `to`            | Toolbar icon button that navigates to a URL                                  |
 | `GlobalHeaderMenuItem`   | `to`, `title`, `icon`, `onClick` | Complete clickable menu item with link navigation and consistent styling     |
 | `GlobalHeaderDropdown`   | `target`, `buttonContent`        | Dropdown that auto-collects `gh-menu-item` extensions for the given `target` |
+
+```typescript
+import {
+  GlobalHeaderIconButton,
+  GlobalHeaderMenuItem,
+  GlobalHeaderDropdown,
+} from '@red-hat-developer-hub/backstage-plugin-global-header/components';
+```
+
+Prefer reaching these from inside a blueprint `loader` (static import in the
+lazy file, or `await import('…/components')` in the loader). Do not import them
+from the global-header package root.
 
 **Context hooks** (direct access to collected extension data):
 
@@ -363,4 +411,9 @@ For plugin authors building custom toolbar components or dropdowns, the plugin e
 
 **Translations:** Use `titleKey` / `subTitleKey` for i18n. Keys containing dots (e.g. `'applicationLauncher.sections.documentation'`) are auto-resolved. The plugin exports `globalHeaderTranslationRef` and `globalHeaderTranslations` for overrides.
 
-All exports are available from `@red-hat-developer-hub/backstage-plugin-global-header/alpha`.
+| Entry              | Use for                                                           |
+| ------------------ | ----------------------------------------------------------------- |
+| Package root (`.`) | NFS plugin, module, blueprints, hooks, translations               |
+| `/components`      | Building-block UI package subpath only (not a loaded NFS feature) |
+| `/legacy`          | Deprecated OFS / mount-point API                                  |
+| `/alpha`           | Deprecated translations re-export only (not an NFS entry)         |
