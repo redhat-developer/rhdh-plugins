@@ -16,7 +16,7 @@
 
 import { randomUUID } from 'node:crypto';
 
-import { Page, Route } from '@playwright/test';
+import { BrowserContext, Page, Route } from '@playwright/test';
 import {
   contentsWithRedactedThinking,
   E2E_MCP_VALID_TOKEN,
@@ -851,8 +851,11 @@ export const IA_PERMISSIONS_ALL_ALLOWED: IaPermissionMatrix = {
 };
 
 const IA_PERMISSION_AUTHORIZE_ROUTE = '**/api/permission/authorize';
-const permissionMatrixByPage = new WeakMap<Page, IaPermissionMatrix>();
-const permissionRoutesRegistered = new WeakSet<Page>();
+const permissionMatrixByContext = new WeakMap<
+  BrowserContext,
+  IaPermissionMatrix
+>();
+const permissionRoutesRegistered = new WeakSet<BrowserContext>();
 
 const IA_PERMISSION_NAMES = {
   chat: 'intelligent-assistant.chat',
@@ -875,8 +878,14 @@ function isIaPermissionAllowed(
     case IA_PERMISSION_NAMES.skills:
       return false;
     default:
-      return true;
+      return false;
   }
+}
+
+function authorizeRequestPermissionName(item: {
+  permission?: { name?: string };
+}): string | undefined {
+  return item.permission?.name;
 }
 
 /** Intercept Backstage permission checks for IA permission e2e tests. */
@@ -884,16 +893,22 @@ export async function mockIaPermissions(
   page: Page,
   matrix: IaPermissionMatrix,
 ): Promise<void> {
-  permissionMatrixByPage.set(page, matrix);
+  const context = page.context();
+  permissionMatrixByContext.set(context, matrix);
 
-  if (permissionRoutesRegistered.has(page)) {
+  if (permissionRoutesRegistered.has(context)) {
     return;
   }
-  permissionRoutesRegistered.add(page);
+  permissionRoutesRegistered.add(context);
 
-  await page.route(IA_PERMISSION_AUTHORIZE_ROUTE, async route => {
+  await context.route(IA_PERMISSION_AUTHORIZE_ROUTE, async route => {
+    if (route.request().method() !== 'POST') {
+      await route.continue();
+      return;
+    }
+
     const activeMatrix =
-      permissionMatrixByPage.get(page) ?? IA_PERMISSIONS_ALL_ALLOWED;
+      permissionMatrixByContext.get(context) ?? IA_PERMISSIONS_ALL_ALLOWED;
     const body = route.request().postDataJSON() as {
       items?: Array<{ id: string; permission?: { name?: string } }>;
     };
@@ -902,7 +917,10 @@ export async function mockIaPermissions(
       json: {
         items: items.map(item => ({
           id: item.id,
-          result: isIaPermissionAllowed(item.permission?.name, activeMatrix)
+          result: isIaPermissionAllowed(
+            authorizeRequestPermissionName(item),
+            activeMatrix,
+          )
             ? 'ALLOW'
             : 'DENY',
         })),

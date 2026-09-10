@@ -68,5 +68,6 @@ export default defineConfig({
       channel: 'chrome' as const,
       locale,
     },
+    testIgnore: locale === 'en' ? [] : ['**/lightspeed.permissions.test.ts'],
   })),
 });

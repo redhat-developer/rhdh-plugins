@@ -14,31 +14,37 @@
  * limitations under the License.
  */
 
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Browser, type Page } from '@playwright/test';
 
 import { IaRbacPermissionsPage } from './pages/IaRbacPermissionsPage';
 import {
   IA_PERMISSIONS_ALL_ALLOWED,
+  waitForIaPermissionAuthorize,
   type IaPermissionMatrix,
 } from './utils/devMode';
 import { skipUnlessLocales } from './utils/localeSkip';
 import { bootstrapLightspeedRbacE2ePage } from './utils/lightspeedE2eSetup';
 
-async function bootstrapPermissionScenario(
-  browser: Parameters<typeof bootstrapLightspeedRbacE2ePage>[0],
+async function withPermissionScenario(
+  browser: Browser,
   matrix: IaPermissionMatrix,
-): Promise<{ page: Page; permissions: IaRbacPermissionsPage }> {
+  run: (page: Page, permissions: IaRbacPermissionsPage) => Promise<void>,
+): Promise<void> {
   const boot = await bootstrapLightspeedRbacE2ePage(browser, matrix);
-  return {
-    page: boot.page,
-    permissions: new IaRbacPermissionsPage(boot.page, boot.translations),
-  };
+  const permissions = new IaRbacPermissionsPage(boot.page, boot.translations);
+  try {
+    await boot.page.goto('/');
+    await waitForIaPermissionAuthorize(boot.page).catch(() => undefined);
+    await run(boot.page, permissions);
+  } finally {
+    await boot.page.context().close();
+  }
 }
 
 test.describe('Intelligent assistant permissions', () => {
   test.describe.configure({ mode: 'serial' });
 
-  test.beforeAll(({}, testInfo) => {
+  test.beforeEach(({}, testInfo) => {
     skipUnlessLocales(
       testInfo,
       ['en'],
@@ -46,146 +52,74 @@ test.describe('Intelligent assistant permissions', () => {
     );
   });
 
-  test.describe('Chat and notebooks', () => {
-    let sharedPage: Page;
-    let permissions: IaRbacPermissionsPage;
-
-    test.beforeAll(async ({ browser }) => {
-      const boot = await bootstrapPermissionScenario(browser, {
-        chat: true,
-        notebooks: true,
-        mcp: false,
-      });
-      sharedPage = boot.page;
-      permissions = boot.permissions;
-    });
-
-    test.beforeEach(async () => {
-      await sharedPage.goto('/');
-    });
-
-    test('shows FAB and chat and notebooks tabs', async () => {
-      await permissions.expectFabVisible();
-      await permissions.openFromFab();
-      await permissions.expectChatAndNotebooksTabsVisible();
-      await expect(permissions.newChatButton()).toBeVisible();
-    });
+  test('shows FAB and chat and notebooks tabs', async ({ browser }) => {
+    await withPermissionScenario(
+      browser,
+      { chat: true, notebooks: true, mcp: false },
+      async (_page, permissions) => {
+        await permissions.expectFabVisible();
+        await permissions.openFromFab();
+        await permissions.expectChatAndNotebooksTabsVisible();
+        await expect(permissions.newChatButton()).toBeVisible();
+      },
+    );
   });
 
-  test.describe('Chat only', () => {
-    let sharedPage: Page;
-    let permissions: IaRbacPermissionsPage;
-
-    test.beforeAll(async ({ browser }) => {
-      const boot = await bootstrapPermissionScenario(browser, {
-        chat: true,
-        notebooks: false,
-        mcp: false,
-      });
-      sharedPage = boot.page;
-      permissions = boot.permissions;
-    });
-
-    test.beforeEach(async () => {
-      await sharedPage.goto('/');
-    });
-
-    test('shows FAB without tabs and skips notebook API calls', async () => {
-      await permissions.expectFabVisible();
-      await permissions.openFromFab();
-      await permissions.expectChatOnlyLayout();
-    });
+  test('shows chat-only layout without notebooks tab', async ({ browser }) => {
+    await withPermissionScenario(
+      browser,
+      { chat: true, notebooks: false, mcp: false },
+      async (_page, permissions) => {
+        await permissions.expectFabVisible();
+        await permissions.openFromFab();
+        await permissions.expectChatOnlyLayout();
+      },
+    );
   });
 
-  test.describe('Notebooks only', () => {
-    let sharedPage: Page;
-    let permissions: IaRbacPermissionsPage;
-
-    test.beforeAll(async ({ browser }) => {
-      const boot = await bootstrapPermissionScenario(browser, {
-        chat: false,
-        notebooks: true,
-        mcp: false,
-      });
-      sharedPage = boot.page;
-      permissions = boot.permissions;
-    });
-
-    test.beforeEach(async () => {
-      await sharedPage.goto('/');
-    });
-
-    test('shows FAB without tabs and skips chat API calls', async () => {
-      await permissions.expectFabVisible();
-      await permissions.openFromFab();
-      await permissions.expectNotebooksOnlyLayout();
-    });
+  test('shows notebooks-only layout without chat tab', async ({ browser }) => {
+    await withPermissionScenario(
+      browser,
+      { chat: false, notebooks: true, mcp: false },
+      async (_page, permissions) => {
+        await permissions.expectFabVisible();
+        await permissions.openFromFab();
+        await permissions.expectNotebooksOnlyLayout();
+      },
+    );
   });
 
-  test.describe('No chat or notebooks', () => {
-    let sharedPage: Page;
-    let permissions: IaRbacPermissionsPage;
-
-    test.beforeAll(async ({ browser }) => {
-      const boot = await bootstrapPermissionScenario(browser, {
-        chat: false,
-        notebooks: false,
-        mcp: false,
-      });
-      sharedPage = boot.page;
-      permissions = boot.permissions;
-    });
-
-    test.beforeEach(async () => {
-      await sharedPage.goto('/');
-    });
-
-    test('hides FAB', async () => {
-      await permissions.expectFabHidden();
-    });
+  test('hides FAB when chat and notebooks are denied', async ({ browser }) => {
+    await withPermissionScenario(
+      browser,
+      { chat: false, notebooks: false, mcp: false },
+      async (_page, permissions) => {
+        await permissions.expectFabHidden();
+      },
+    );
   });
 
-  test.describe('MCP tools allowed', () => {
-    let sharedPage: Page;
-    let permissions: IaRbacPermissionsPage;
-
-    test.beforeAll(async ({ browser }) => {
-      const boot = await bootstrapPermissionScenario(
-        browser,
-        IA_PERMISSIONS_ALL_ALLOWED,
-      );
-      sharedPage = boot.page;
-      permissions = boot.permissions;
-    });
-
-    test.beforeEach(async () => {
-      await sharedPage.goto('/');
-    });
-
-    test('shows MCP settings in header menu', async () => {
-      await permissions.expectMcpMenuVisible();
-    });
+  test('shows MCP settings in header menu when allowed', async ({
+    browser,
+  }) => {
+    await withPermissionScenario(
+      browser,
+      IA_PERMISSIONS_ALL_ALLOWED,
+      async (_page, permissions) => {
+        await permissions.expectMcpMenuVisible();
+      },
+    );
   });
 
-  test.describe('MCP tools denied', () => {
-    let sharedPage: Page;
-    let permissions: IaRbacPermissionsPage;
-
-    test.beforeAll(async ({ browser }) => {
-      const boot = await bootstrapPermissionScenario(browser, {
-        ...IA_PERMISSIONS_ALL_ALLOWED,
-        mcp: false,
-      });
-      sharedPage = boot.page;
-      permissions = boot.permissions;
-    });
-
-    test.beforeEach(async () => {
-      await sharedPage.goto('/');
-    });
-
-    test('hides MCP settings from header menu', async () => {
-      await permissions.expectMcpMenuHidden();
-    });
+  test('hides MCP settings from header menu when denied', async ({
+    browser,
+  }) => {
+    await withPermissionScenario(
+      browser,
+      { ...IA_PERMISSIONS_ALL_ALLOWED, mcp: false },
+      async (_page, permissions) => {
+        await permissions.expectMcpMenuHidden();
+      },
+    );
   });
 });
