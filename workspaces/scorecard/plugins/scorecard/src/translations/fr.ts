@@ -100,7 +100,7 @@ const scorecardTranslationFr = createTranslationMessages({
       'Suit la fréquence à laquelle le code est déployé avec succès en production au cours des 30 derniers jours. Les meilleurs performeurs déploient à la demande (plusieurs fois par jour).',
     'metric.dora.deploymentFrequency.title': 'DORA - Fréquence de déploiement',
     'metric.dora.medianLeadTimeForChanges.description':
-      'Mesure le temps entre le commit du code et le déploiement en production au cours des 30 derniers jours. Les meilleurs performeurs ont un délai de livraison inférieur à 24 heures.',
+      'Mesure le temps médian entre le commit du code et le déploiement en production au cours des 30 derniers jours. Les meilleurs performeurs ont un délai de livraison inférieur à 24 heures.',
     'metric.dora.medianLeadTimeForChanges.title':
       'DORA - Délai médian de livraison des changements',
     'metric.dora.changeFailureRate.description':
@@ -108,9 +108,9 @@ const scorecardTranslationFr = createTranslationMessages({
     'metric.dora.changeFailureRate.title':
       'DORA - Taux de défaillance des changements',
     'metric.dora.medianTimeToRestore.description':
-      "Suit le temps moyen de rétablissement du service après un incident au cours des 30 derniers jours. Les meilleurs performeurs rétablissent le service en moins d'une heure.",
+      "Suit le temps médian de rétablissement du service après un incident au cours des 30 derniers jours. Les meilleurs performeurs rétablissent le service en moins d'une heure.",
     'metric.dora.medianTimeToRestore.title':
-      'DORA - Temps moyen de rétablissement',
+      'DORA - Temps médian de rétablissement',
     'metric.filecheck.description':
       'Vérifie si le fichier {{name}} existe dans le référentiel.',
     'metric.filecheck.title': 'Vérification du fichier : {{name}}',

@@ -102,16 +102,15 @@ const scorecardTranslationEs = createTranslationMessages({
     'metric.dora.deploymentFrequency.title':
       'DORA - Frecuencia de implementación',
     'metric.dora.medianLeadTimeForChanges.description':
-      'Mide el tiempo desde el commit del código hasta la implementación en producción durante los últimos 30 días. Los mejores equipos tienen un tiempo de entrega inferior a 24 horas.',
+      'Mide el tiempo mediano desde el commit del código hasta la implementación en producción durante los últimos 30 días. Los mejores equipos tienen un tiempo de entrega inferior a 24 horas.',
     'metric.dora.medianLeadTimeForChanges.title':
-      'DORA - Tiempo medio de entrega de cambios',
+      'DORA - Tiempo mediano de entrega de cambios',
     'metric.dora.changeFailureRate.description':
       'Supervisa el porcentaje de implementaciones que provocan un fallo en producción durante los últimos 30 días. Los mejores equipos mantienen una tasa de fallos de cambio inferior al 5 %.',
     'metric.dora.changeFailureRate.title': 'DORA - Tasa de fallos de cambio',
     'metric.dora.medianTimeToRestore.description':
-      'Realiza un seguimiento del tiempo medio para restaurar el servicio tras un incidente durante los últimos 30 días. Los mejores equipos restauran el servicio en menos de una hora.',
-    'metric.dora.medianTimeToRestore.title':
-      'DORA - Tiempo medio de restauración',
+      'Realiza un seguimiento del tiempo mediano para restaurar el servicio tras un incidente durante los últimos 30 días. Los mejores equipos restauran el servicio en menos de una hora.',
+    'metric.dora.medianTimeToRestore.title': 'Tiempo mediano de restauración',
     'metric.filecheck.description':
       'Comprueba si el archivo {{name}} existe en el repositorio.',
     'metric.filecheck.title': 'Verificación de archivo: {{name}}',

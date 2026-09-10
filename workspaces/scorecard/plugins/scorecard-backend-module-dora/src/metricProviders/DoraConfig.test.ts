@@ -32,8 +32,8 @@ import {
   parseDoraChangeFailureRateConfig,
   parseDoraDataRetentionDays,
   parseDoraDeploymentFrequencyConfig,
-  parseDoraMedianTimeToRestoreConfig,
   parseDoraMedianLeadTimeForChangesConfig,
+  parseDoraMedianTimeToRestoreConfig,
   parseDoraSyncConfig,
 } from './DoraConfig';
 import { collectorInputHash } from '../service/collectorHash';

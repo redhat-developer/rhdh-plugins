@@ -89,7 +89,7 @@ export const scorecardMessages = {
     'dora.medianLeadTimeForChanges': {
       title: 'DORA - Median Lead Time for Changes',
       description:
-        'Measures the time from code commit to production deployment over the past 30 days. Elite performers have a lead time of less than 24 hours',
+        'Measures the median time from code commit to production deployment over the past 30 days. Elite performers have a lead time of less than 24 hours.',
     },
     'dora.changeFailureRate': {
       title: 'DORA - Change Failure Rate',

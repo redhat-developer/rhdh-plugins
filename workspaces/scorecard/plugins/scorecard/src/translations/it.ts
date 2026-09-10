@@ -102,7 +102,7 @@ const scorecardTranslationIt = createTranslationMessages({
       'Monitora la frequenza con cui il codice viene distribuito correttamente in produzione negli ultimi 30 giorni. I team di elite effettuano il deployment on demand (più volte al giorno).',
     'metric.dora.deploymentFrequency.title': 'DORA - Frequenza di deployment',
     'metric.dora.medianLeadTimeForChanges.description':
-      'Misura il tempo dal commit del codice al deployment in produzione negli ultimi 30 giorni. I team di elite hanno un tempo di consegna inferiore a 24 ore.',
+      'Misura il tempo mediano dal commit del codice al deployment in produzione negli ultimi 30 giorni. I team di elite hanno un tempo di consegna inferiore a 24 ore.',
     'metric.dora.medianLeadTimeForChanges.title':
       'DORA - Tempo mediano di consegna delle modifiche',
     'metric.dora.changeFailureRate.description':
@@ -110,8 +110,9 @@ const scorecardTranslationIt = createTranslationMessages({
     'metric.dora.changeFailureRate.title':
       'DORA - Tasso di fallimento delle modifiche',
     'metric.dora.medianTimeToRestore.description':
-      "Monitora il tempo medio per ripristinare il servizio dopo un incidente negli ultimi 30 giorni. I team di elite ripristinano il servizio in meno di un'ora.",
-    'metric.dora.medianTimeToRestore.title': 'DORA - Tempo medio di ripristino',
+      "Monitora il tempo mediano per ripristinare il servizio dopo un incidente negli ultimi 30 giorni. I team di elite ripristinano il servizio in meno di un'ora.",
+    'metric.dora.medianTimeToRestore.title':
+      'DORA - Tempo mediano di ripristino',
     'metric.filecheck.description':
       'Verifica se il file {{name}} esiste nel repository.',
     'metric.filecheck.title': 'Verifica del file: {{name}}',
