@@ -1,3 +1,8 @@
+dcm:
+  # Keep this aligned with the DCM control plane's auth.enabled setting.
+  auth:
+    enabled: ${DCM_AUTH_ENABLED:-true}
+
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-dcm:
