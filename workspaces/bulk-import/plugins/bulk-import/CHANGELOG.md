@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 9.0.1
+
+### Patch Changes
+
+- df4bcba: Backstage version bump to v1.54.6
+- Updated dependencies [df4bcba]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.0.1
+
 ## 9.0.0
 
 ### Patch Changes
