@@ -189,12 +189,8 @@ const mockUseIaNotebooksPermission =
   useIaNotebooksPermission as jest.MockedFunction<
     typeof useIaNotebooksPermission
   >;
-const mockUseAllModels = useAllModels as jest.MockedFunction<
-  typeof useAllModels
->;
-const mockUseConversations = useConversations as jest.MockedFunction<
-  typeof useConversations
->;
+const mockUseAllModels = useAllModels as jest.Mock;
+const mockUseConversations = useConversations as jest.Mock;
 const mockUseNotebookSessions = useNotebookSessions as jest.Mock;
 const mockUseLightspeedDrawerContext =
   useLightspeedDrawerContext as jest.MockedFunction<
@@ -370,13 +366,13 @@ describe('IA RBAC permission gating scenarios', () => {
       isLoading: false,
       isError: false,
       refetch: jest.fn(),
-    } as ReturnType<typeof useAllModels>);
+    });
 
     mockUseConversations.mockReturnValue({
       data: [],
       isRefetching: false,
       isLoading: false,
-    } as ReturnType<typeof useConversations>);
+    });
 
     mockUseNotebookSessions.mockReturnValue({
       data: [],
