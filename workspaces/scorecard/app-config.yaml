@@ -574,7 +574,7 @@ scorecard:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
-      meanTimeToRestore:
+      medianTimeToRestore:
         options:
           collectors:
             incidents:
