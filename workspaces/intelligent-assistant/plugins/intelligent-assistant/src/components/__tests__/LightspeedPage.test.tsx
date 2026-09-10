@@ -125,7 +125,7 @@ describe('LightspeedPage', () => {
     });
   });
 
-  it('should render nothing when no feature permissions are granted', async () => {
+  it('should show 404 page when no feature permissions are granted', async () => {
     mockUsePermission.mockImplementation(() => ({
       loading: false,
       allowed: false,
@@ -144,7 +144,9 @@ describe('LightspeedPage', () => {
 
     await waitFor(() => {
       expect(screen.queryByText('LightspeedChat')).not.toBeInTheDocument();
-      expect(screen.queryByText('Missing permissions')).not.toBeInTheDocument();
+      expect(screen.getByTestId('error')).toHaveTextContent(
+        'ERROR 404: Page not found',
+      );
     });
   });
 
