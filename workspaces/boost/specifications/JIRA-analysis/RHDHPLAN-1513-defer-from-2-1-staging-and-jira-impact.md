@@ -1,5 +1,11 @@
 # RHDHPLAN-1513 — Deferral Impact on 2.1 Staging and Jira
 
+> **Workspace reconciliation (2026-09-08):** This impact analysis preserves
+> the historical staged-issue decomposition. Its RHDHPLAN-1508 issue labels
+> predate the current Catalog-permission direction and must not be read as a
+> current implementation plan. The current RBAC scope is defined in
+> `openspec/changes/ai-catalog-asset-governance/`.
+
 ## Context
 
 RHDHPLAN-1513 (Ingestion Operations & Schema Alignment) may be deferred from the 2.1 release. This document analyzes the impact on the staged GitHub issues in `rhdhplan1505-1-staged-issues.md` (29 issues across 3 dependency tiers covering RHDHPLAN-1507, 1508, 1510, and 1513).

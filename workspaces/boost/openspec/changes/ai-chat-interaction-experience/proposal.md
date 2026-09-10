@@ -1,5 +1,9 @@
 # Proposal: AI Chat & Interaction Experience
 
+> **Workspace status:** Follow-on frontend/backend planning; not part of the
+> current RHDH 2.1 release. The current frontend release is limited to the AI
+> Catalog plugin baseline.
+
 ## Why
 
 Boost's core value is the developer-agent conversation interface. Without a compelling chat experience, the platform has no user-facing value regardless of backend configuration. The chat surface must deliver streaming responses, knowledge-grounded answers with citations, human-in-the-loop approval for sensitive actions, persistent conversation history, and developer debugging tools.

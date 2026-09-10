@@ -1,5 +1,9 @@
 # Design: AI Catalog Entity Model
 
+> **Workspace scope:** This is broader follow-on entity-model planning. It is
+> not the RHDH 2.1 Boost release behavior source of truth; the current release
+> contains the frontend plugin and OGX entity provider only.
+
 ## Context
 
 The AI Catalog entity model establishes RHDH's standardized approach to classifying, versioning, and tracking AI assets from heterogeneous sources. The Backstage catalog has no built-in entity kinds for agents, skills, models, or MCP servers. Upstream developments include: RFC [#32062](https://github.com/backstage/backstage/issues/32062) Option 3 shipped as `McpServerApiEntity` ([backstage#34016](https://github.com/backstage/backstage/pull/34016)) for MCP servers, `AiResource` shipped upstream ([#33575](https://github.com/backstage/backstage/issues/33575)) for skills/rules, and a candidate `API` / `ai-model-server` in [backstage#34476](https://github.com/backstage/backstage/pull/34476) for model servers. Agent and AI model kinds are not yet proposed upstream.
@@ -24,7 +28,7 @@ This design is informed by the RHDHPLAN-1507 feasibility analysis, which confirm
 > Per RHDHPLAN-1505 stakeholder meeting (updated 2026-07-20):
 >
 > - **RHDHPLAN-1113 dependency (resolved):** RHDHPLAN-1113 is sufficiently advanced — Boost uses AIResource for skills/rules directly. No interim Resource/Component mapping needed.
-> - **MCP → API mapping ships in RHDH 2.1** via RHDHPLAN-1510. The `mcp-server` category maps to `API` kind with `spec.type: mcp-server`. What remains deferred is upstream due diligence on whether MCP gets its own entity kind — the API mapping is the 2.1 deliverable.
+> - **MCP → API mapping is tracked by broader RHDH 2.1 work** via RHDHPLAN-1510. The `mcp-server` category maps to `API` kind with `spec.type: mcp-server`. This mapping is not a deliverable of the current Boost frontend/OGX release.
 > - **Entity kind strategy:** The mapping table in Decision 1 uses AIResource for skills/rules. Agent kind mapping is pending RHDHPLAN-1113. Model/model-server mappings are pending RHDHPLAN-404.
 
 ## Goals
@@ -56,19 +60,19 @@ The `rhdh.io/ai-asset-category` annotation provides a flat vocabulary (`agent`, 
 
 **Mapping reference (not a constraint):**
 
-| Category       | Backstage Kind | spec.type         | Notes                                                             |
-| -------------- | -------------- | ----------------- | ----------------------------------------------------------------- |
-| `agent`        | Component      | `ai-agent`        | Mapping pending RHDHPLAN-1113 (owns agent entity kind definition) |
-| `skill`        | AIResource     | `skill`           | AIResource per RHDHPLAN-1113                                      |
-| `rule`         | AIResource     | `rule`            | AIResource per RHDHPLAN-1113                                      |
-| `skill-bundle` | AIResource     | `ai-skill-bundle` | Curated skill collections; enables frontend browse category       |
-| `mcp-server`   | API            | `mcp-server`      | Ships in RHDH 2.1 via RHDHPLAN-1510                               |
-| `ai-model`     | Resource       | `ai-model`        | Mapping pending RHDHPLAN-404 (upstream entity schema work)        |
-| `model-server` | Resource       | `ai-model-server` | Mapping pending RHDHPLAN-404 (upstream entity schema work)        |
+| Category       | Backstage Kind | spec.type         | Notes                                                                          |
+| -------------- | -------------- | ----------------- | ------------------------------------------------------------------------------ |
+| `agent`        | Component      | `ai-agent`        | Mapping pending RHDHPLAN-1113 (owns agent entity kind definition)              |
+| `skill`        | AIResource     | `skill`           | AIResource per RHDHPLAN-1113                                                   |
+| `rule`         | AIResource     | `rule`            | AIResource per RHDHPLAN-1113                                                   |
+| `skill-bundle` | AIResource     | `ai-skill-bundle` | Curated skill collections; enables frontend browse category                    |
+| `mcp-server`   | API            | `mcp-server`      | Tracked by broader RHDHPLAN-1510 work; not a current Boost release deliverable |
+| `ai-model`     | Resource       | `ai-model`        | Mapping pending RHDHPLAN-404 (upstream entity schema work)                     |
+| `model-server` | Resource       | `ai-model-server` | Mapping pending RHDHPLAN-404 (upstream entity schema work)                     |
 
 This mapping is documented for reference — connectors MAY map differently based on their domain. The annotation is the source of truth for AI asset category, not the kind.
 
-> **RHDHPLAN-1113 / RHDHPLAN-404 dependencies (updated 2026-07-20):** The `skill`, `rule`, and `skill-bundle` categories use `AIResource` kind per RHDHPLAN-1113 (resolved). The `agent` category mapping is pending RHDHPLAN-1113 — Boost will refrain from defining agent entity kind mappings independently. The `ai-model` and `model-server` mappings are pending RHDHPLAN-404 upstream entity schema work. The `mcp-server` category maps to `API` kind with `spec.type: mcp-server` — this mapping ships in RHDH 2.1 via RHDHPLAN-1510.
+> **RHDHPLAN-1113 / RHDHPLAN-404 dependencies (updated 2026-07-20):** The `skill`, `rule`, and `skill-bundle` categories use `AIResource` kind per RHDHPLAN-1113 (resolved). The `agent` category mapping is pending RHDHPLAN-1113 — Boost will refrain from defining agent entity kind mappings independently. The `ai-model` and `model-server` mappings are pending RHDHPLAN-404 upstream entity schema work. The `mcp-server` category maps to `API` kind with `spec.type: mcp-server` under broader RHDHPLAN-1510 work; it is not part of the current Boost frontend/OGX release contract.
 
 **Migration path:** When upstream kinds stabilize, we document field-level transformations. For example, `AiResource` casing alignment for skills: `kind: AIResource` + `spec.type: skill` + `rhdh.io/ai-asset-category: skill` → `kind: AiResource` (see [#33575](https://github.com/backstage/backstage/issues/33575)). The annotation remains for backward compatibility during the transition.
 
