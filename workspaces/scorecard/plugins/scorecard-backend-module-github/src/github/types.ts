@@ -82,3 +82,25 @@ export type GithubCommitsPullRequestsQueryResponse =
       } | null
     > | null;
   };
+
+export type GithubCommit = {
+  message: string;
+  committedDate: string;
+};
+
+export type GithubCommitHistoryQueryResponse = GraphQlQueryResponseData & {
+  repository: {
+    defaultBranchRef: {
+      target: {
+        history: {
+          nodes: Array<GithubCommit | null>;
+          pageInfo: {
+            hasNextPage: boolean;
+            endCursor: string | null;
+          };
+          totalCount: number;
+        } | null;
+      } | null;
+    } | null;
+  } | null;
+};

@@ -682,6 +682,254 @@ describe('GithubClient', () => {
     });
   });
 
+  describe('getCommitHistory', () => {
+    it('should return commits from the default branch', async () => {
+      const url = `https://github.com/owner/repo`;
+      const since = new Date('2026-05-01T00:00:00.000Z');
+      mockedGraphqlClient.mockResolvedValue({
+        repository: {
+          defaultBranchRef: {
+            target: {
+              history: {
+                nodes: [
+                  {
+                    message: 'feat: add feature',
+                    committedDate: '2026-05-15T10:00:00.000Z',
+                  },
+                  {
+                    message: 'fix: bug fix',
+                    committedDate: '2026-05-10T10:00:00.000Z',
+                  },
+                ],
+                pageInfo: {
+                  hasNextPage: false,
+                  endCursor: null,
+                },
+                totalCount: 2,
+              },
+            },
+          },
+        },
+      });
+
+      const commits = await githubClient.getCommitHistory(
+        url,
+        repository,
+        since,
+      );
+
+      expect(commits).toEqual([
+        {
+          message: 'feat: add feature',
+          committedDate: '2026-05-15T10:00:00.000Z',
+        },
+        {
+          message: 'fix: bug fix',
+          committedDate: '2026-05-10T10:00:00.000Z',
+        },
+      ]);
+      expect(mockedGraphqlClient).toHaveBeenCalledTimes(1);
+      expect(mockedGraphqlClient).toHaveBeenCalledWith(
+        expect.stringContaining('query getCommitHistory'),
+        expect.objectContaining({
+          owner: repository.owner,
+          repo: repository.repo,
+          since: since.toISOString(),
+          after: null,
+        }),
+      );
+      expect(getCredentialsSpy).toHaveBeenCalledWith({ url });
+    });
+
+    it('should paginate across multiple pages', async () => {
+      const url = `https://github.com/owner/repo`;
+      const since = new Date('2026-05-01T00:00:00.000Z');
+      mockedGraphqlClient
+        .mockResolvedValueOnce({
+          repository: {
+            defaultBranchRef: {
+              target: {
+                history: {
+                  nodes: [
+                    {
+                      message: 'feat: page one',
+                      committedDate: '2026-05-20T10:00:00.000Z',
+                    },
+                  ],
+                  pageInfo: {
+                    hasNextPage: true,
+                    endCursor: 'cursor-1',
+                  },
+                  totalCount: 2,
+                },
+              },
+            },
+          },
+        })
+        .mockResolvedValueOnce({
+          repository: {
+            defaultBranchRef: {
+              target: {
+                history: {
+                  nodes: [
+                    {
+                      message: 'fix: page two',
+                      committedDate: '2026-05-10T10:00:00.000Z',
+                    },
+                  ],
+                  pageInfo: {
+                    hasNextPage: false,
+                    endCursor: null,
+                  },
+                  totalCount: 2,
+                },
+              },
+            },
+          },
+        });
+
+      const commits = await githubClient.getCommitHistory(
+        url,
+        repository,
+        since,
+      );
+
+      expect(commits).toHaveLength(2);
+      expect(commits[0].message).toBe('feat: page one');
+      expect(commits[1].message).toBe('fix: page two');
+      expect(mockedGraphqlClient).toHaveBeenCalledTimes(2);
+      expect(mockedGraphqlClient).toHaveBeenNthCalledWith(
+        2,
+        expect.stringContaining('query getCommitHistory'),
+        expect.objectContaining({ after: 'cursor-1' }),
+      );
+    });
+
+    it('should stop paging once fetchItemsLimit is reached', async () => {
+      const url = `https://github.com/owner/repo`;
+      const since = new Date('2026-05-01T00:00:00.000Z');
+      mockedGraphqlClient.mockResolvedValueOnce({
+        repository: {
+          defaultBranchRef: {
+            target: {
+              history: {
+                nodes: [
+                  {
+                    message: 'feat: one',
+                    committedDate: '2026-05-20T10:00:00.000Z',
+                  },
+                  {
+                    message: 'feat: two',
+                    committedDate: '2026-05-15T10:00:00.000Z',
+                  },
+                  {
+                    message: 'feat: three',
+                    committedDate: '2026-05-10T10:00:00.000Z',
+                  },
+                ],
+                pageInfo: {
+                  hasNextPage: true,
+                  endCursor: 'cursor-1',
+                },
+                totalCount: 5,
+              },
+            },
+          },
+        },
+      });
+
+      const commits = await githubClient.getCommitHistory(
+        url,
+        repository,
+        since,
+        { fetchItemsLimit: 2 },
+      );
+
+      expect(commits).toHaveLength(2);
+      expect(commits[0].message).toBe('feat: one');
+      expect(commits[1].message).toBe('feat: two');
+      expect(mockedGraphqlClient).toHaveBeenCalledTimes(1);
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        'Reached fetchItemsLimit of 2 for commit history in owner/repo; stopping fetch',
+      );
+    });
+
+    it('should throw when repository is not found or inaccessible', async () => {
+      const url = `https://github.com/owner/repo`;
+      mockedGraphqlClient.mockResolvedValue({ repository: null });
+
+      await expect(
+        githubClient.getCommitHistory(
+          url,
+          repository,
+          new Date('2026-05-01T00:00:00.000Z'),
+        ),
+      ).rejects.toThrow(
+        `GitHub repository '${repository.owner}/${repository.repo}' was not found or is inaccessible`,
+      );
+    });
+
+    it('should skip null nodes in commit history', async () => {
+      const url = `https://github.com/owner/repo`;
+      const since = new Date('2026-05-01T00:00:00.000Z');
+      mockedGraphqlClient.mockResolvedValue({
+        repository: {
+          defaultBranchRef: {
+            target: {
+              history: {
+                nodes: [
+                  {
+                    message: 'feat: valid commit',
+                    committedDate: '2026-05-15T10:00:00.000Z',
+                  },
+                  null,
+                  {
+                    message: 'fix: another valid',
+                    committedDate: '2026-05-10T10:00:00.000Z',
+                  },
+                ],
+                pageInfo: {
+                  hasNextPage: false,
+                  endCursor: null,
+                },
+                totalCount: 3,
+              },
+            },
+          },
+        },
+      });
+
+      const commits = await githubClient.getCommitHistory(
+        url,
+        repository,
+        since,
+      );
+
+      expect(commits).toHaveLength(2);
+    });
+
+    it('should warn and return empty when defaultBranchRef is null', async () => {
+      const url = `https://github.com/owner/repo`;
+      const since = new Date('2026-05-01T00:00:00.000Z');
+      mockedGraphqlClient.mockResolvedValue({
+        repository: {
+          defaultBranchRef: null,
+        },
+      });
+
+      const commits = await githubClient.getCommitHistory(
+        url,
+        repository,
+        since,
+      );
+
+      expect(commits).toEqual([]);
+      expect(mockedLogger.warn).toHaveBeenCalledWith(
+        'No default branch found for owner/repo; returning empty commit history',
+      );
+    });
+  });
+
   describe('getWorkflowRuns', () => {
     it('should return workflow runs filtered by workflow name and date window in ascending order', async () => {
       const url = `https://github.com/owner/repo`;

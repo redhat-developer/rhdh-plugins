@@ -23,6 +23,8 @@ import {
 import { graphql } from '@octokit/graphql';
 import { Octokit } from '@octokit/rest';
 import {
+  GithubCommit,
+  GithubCommitHistoryQueryResponse,
   GithubDeployment,
   GithubWorkflowRun,
   GithubPullRequest,
@@ -30,10 +32,7 @@ import {
   GithubDeploymentsQueryResponse,
   GithubCommitsPullRequestsQueryResponse,
 } from './types';
-import {
-  DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT,
-  GITHUB_BATCH_SIZE,
-} from './constants';
+import { DEFAULT_FETCH_ITEMS_LIMIT, GITHUB_BATCH_SIZE } from './constants';
 import { buildCommitsPullRequestsQuery } from './queries/buildCommitsPullRequestsQuery';
 import { mapCommitsPullRequests } from './mappers';
 
@@ -125,7 +124,7 @@ export class GithubClient {
     options?: { fetchItemsLimit?: number },
   ): Promise<GithubDeployment[]> {
     const fetchItemsLimit =
-      options?.fetchItemsLimit ?? DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT;
+      options?.fetchItemsLimit ?? DEFAULT_FETCH_ITEMS_LIMIT;
     const octokit = await this.getOctokitClient(url);
     const deployments: GithubDeployment[] = [];
     const query = `
@@ -241,7 +240,7 @@ export class GithubClient {
     options?: { fetchItemsLimit?: number },
   ): Promise<string[]> {
     const fetchItemsLimit =
-      options?.fetchItemsLimit ?? DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT;
+      options?.fetchItemsLimit ?? DEFAULT_FETCH_ITEMS_LIMIT;
     const octokit = await this.getOctokitRestClient(url);
 
     const basehead = `${baseSha}...${headSha}`;
@@ -347,7 +346,7 @@ export class GithubClient {
     options?: { fetchItemsLimit?: number },
   ): Promise<GithubWorkflowRun[]> {
     const fetchItemsLimit =
-      options?.fetchItemsLimit ?? DEFAULT_DEPLOYMENT_FETCH_ITEMS_LIMIT;
+      options?.fetchItemsLimit ?? DEFAULT_FETCH_ITEMS_LIMIT;
     const octokit = await this.getOctokitRestClient(url);
 
     const workflows = await octokit.paginate(
@@ -407,5 +406,96 @@ export class GithubClient {
     // GitHub returns DESC by createdAt
     // normalize to ASC for chronological processing (oldest -> newest).
     return workflowRuns.reverse();
+  }
+
+  async getCommitHistory(
+    url: string,
+    repository: GithubRepository,
+    since: Date,
+    options?: { fetchItemsLimit?: number },
+  ): Promise<GithubCommit[]> {
+    const fetchItemsLimit =
+      options?.fetchItemsLimit ?? DEFAULT_FETCH_ITEMS_LIMIT;
+    const octokit = await this.getOctokitClient(url);
+    const commits: GithubCommit[] = [];
+    const query = `
+      query getCommitHistory($owner: String!, $repo: String!, $since: GitTimestamp!, $after: String) {
+        repository(owner: $owner, name: $repo) {
+          defaultBranchRef {
+            target {
+              ... on Commit {
+                history(since: $since, first: ${GITHUB_BATCH_SIZE}, after: $after) {
+                  nodes {
+                    message
+                    committedDate
+                  }
+                  pageInfo {
+                    hasNextPage
+                    endCursor
+                  }
+                  totalCount
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    let after: string | null = null;
+    let hasMorePages = true;
+
+    while (hasMorePages && commits.length < fetchItemsLimit) {
+      const response: GithubCommitHistoryQueryResponse = await octokit(query, {
+        owner: repository.owner,
+        repo: repository.repo,
+        since: since.toISOString(),
+        after,
+      });
+
+      if (!response.repository) {
+        throw new Error(
+          `GitHub repository '${repository.owner}/${repository.repo}' was not found or is inaccessible`,
+        );
+      }
+
+      if (!response.repository.defaultBranchRef) {
+        this.logger.warn(
+          `No default branch found for ${repository.owner}/${repository.repo}; returning empty commit history`,
+        );
+        break;
+      }
+
+      const history = response.repository.defaultBranchRef.target?.history;
+      const pageCommits = history?.nodes ?? [];
+
+      if (pageCommits.length === 0) {
+        break;
+      }
+
+      for (const commit of pageCommits) {
+        if (commits.length >= fetchItemsLimit) {
+          break;
+        }
+        if (commit) {
+          commits.push({
+            message: commit.message,
+            committedDate: commit.committedDate,
+          });
+        }
+      }
+
+      const githubHasNextPage = Boolean(history?.pageInfo.hasNextPage);
+      if (commits.length >= fetchItemsLimit && githubHasNextPage) {
+        this.logger.warn(
+          `Reached fetchItemsLimit of ${fetchItemsLimit} for commit history in ${repository.owner}/${repository.repo}; stopping fetch`,
+        );
+      }
+
+      hasMorePages = commits.length < fetchItemsLimit && githubHasNextPage;
+      after = history?.pageInfo.endCursor ?? null;
+    }
+
+    return commits;
   }
 }
