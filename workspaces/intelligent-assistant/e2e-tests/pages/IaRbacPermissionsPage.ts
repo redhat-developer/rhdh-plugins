@@ -56,16 +56,22 @@ export class IaRbacPermissionsPage {
     return this.page.getByRole('button', { name: this.t['tooltip.fab.open'] });
   }
 
+  chatbotRegion(): Locator {
+    return this.page.getByLabel('Chatbot', { exact: true });
+  }
+
   newChatButton(): Locator {
     return this.page.getByRole('button', { name: this.t['button.newChat'] });
   }
 
   chatTab(): Locator {
-    return this.page.getByRole('tab', { name: this.t['tabs.chat'] });
+    return this.chatbotRegion().getByRole('tab', { name: this.t['tabs.chat'] });
   }
 
   notebooksTab(): Locator {
-    return this.page.getByRole('tab', { name: this.t['tabs.notebooks'] });
+    return this.chatbotRegion().getByRole('tab', {
+      name: this.t['tabs.notebooks'],
+    });
   }
 
   notebooksEmptyTitle(): Locator {
@@ -88,7 +94,7 @@ export class IaRbacPermissionsPage {
 
   async openFromFab(): Promise<void> {
     await openChatbot(this.page, this.t);
-    await expect(this.page.locator('.pf-chatbot__header')).toBeVisible();
+    await expect(this.chatbotRegion()).toBeVisible();
   }
 
   async expectChatAndNotebooksTabsVisible(): Promise<void> {
@@ -97,7 +103,7 @@ export class IaRbacPermissionsPage {
   }
 
   async expectNoTabs(): Promise<void> {
-    await expect(this.page.getByRole('tab')).toHaveCount(0);
+    await expect(this.chatbotRegion().getByRole('tab')).toHaveCount(0);
   }
 
   async expectChatApiRequestsMade(): Promise<void> {
