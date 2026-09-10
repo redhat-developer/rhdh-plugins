@@ -43,6 +43,7 @@ import {
   visitDocs,
   performSearch,
 } from './utils/events';
+import { installMockAdoptionInsightsPermission } from './utils/permissionUtils';
 
 test.describe.configure({ mode: 'serial' });
 
@@ -56,6 +57,7 @@ test.beforeAll(async ({ browser }) => {
   const currentLocale = await page.evaluate(
     () => globalThis.navigator.language,
   );
+  await installMockAdoptionInsightsPermission(page, 'ALLOW');
   await page.goto('/');
   await page.getByRole('button', { name: 'Enter' }).click();
 

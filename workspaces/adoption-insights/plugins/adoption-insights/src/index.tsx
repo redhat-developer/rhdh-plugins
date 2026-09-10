@@ -30,11 +30,19 @@ import {
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
 import MUIAdoptionInsightsIcon from '@mui/icons-material/QueryStatsOutlined';
+import { adoptionInsightsEventsReadPermission } from '@red-hat-developer-hub/backstage-plugin-adoption-insights-common';
 import { rootRouteRef } from './routes';
 import { AdoptionInsightsApiClient, adoptionInsightsApiRef } from './api';
 import { adoptionInsightsTranslations } from './translations';
 
+const adoptionInsightsAccess = {
+  permissions: {
+    $contains: `${adoptionInsightsEventsReadPermission.name}#read`,
+  },
+};
+
 const adoptionInsightsPage = PageBlueprint.make({
+  if: adoptionInsightsAccess,
   params: {
     title: 'Adoption Insights',
     icon: <MUIAdoptionInsightsIcon />,
