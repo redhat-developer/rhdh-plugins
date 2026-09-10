@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-global-header-test
 
+## 0.8.1
+
+### Patch Changes
+
+- 0eea6a1: Update global-header workspace dependencies to Backstage 1.54.6 and migrate extension blueprint config schemas to the new `configSchema` API.
+
 ## 0.8.0
 
 ### Minor Changes
