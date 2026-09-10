@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import {
   ScorecardThresholdRuleColors,
   type MetricResult,
@@ -170,6 +170,11 @@ const mockTimeSeries = (metricId: string) => ({
   error: undefined,
 });
 
+const getLegendColor = (key: string) =>
+  within(
+    screen.getByTestId(`sparkline-threshold-legend-item-${key}`),
+  ).getByTestId('sparkline-threshold-color');
+
 describe('EntitySparklineCard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -309,7 +314,7 @@ describe('EntitySparklineCard', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('should color the sparkline from the matched metric threshold and show a legend', () => {
+  it('should show every threshold in the legend with its rule color', () => {
     useMetricTimeSeriesMock.mockReturnValue(
       mockTimeSeries('dora.changeFailureRate'),
     );
@@ -322,19 +327,18 @@ describe('EntitySparklineCard', () => {
       />,
     );
 
+    expect(screen.getByText('Elite (<5%)')).toBeInTheDocument();
+    expect(screen.getByText('Medium (5-15%)')).toBeInTheDocument();
     expect(screen.getByText('Low (>15%)')).toBeInTheDocument();
-    expect(screen.queryByText('Elite (<5%)')).not.toBeInTheDocument();
-    expect(screen.queryByText('Medium (5-15%)')).not.toBeInTheDocument();
     expect(
       screen.getByTestId('sparkline-threshold-legend-dora.changeFailureRate'),
     ).toBeInTheDocument();
-    expect(screen.getByTestId('sparkline-threshold-color')).toHaveAttribute(
-      'stroke',
-      '#d32f2f',
-    );
+    expect(getLegendColor('elite')).toHaveAttribute('stroke', '#2e7d32');
+    expect(getLegendColor('medium')).toHaveAttribute('stroke', '#ed6c02');
+    expect(getLegendColor('low')).toHaveAttribute('stroke', '#d32f2f');
   });
 
-  it('should update the legend label when the metric evaluates to a different threshold', () => {
+  it('should keep the full legend when the matched threshold changes', () => {
     useMetricTimeSeriesMock.mockReturnValue(
       mockTimeSeries('dora.changeFailureRate'),
     );
@@ -360,11 +364,8 @@ describe('EntitySparklineCard', () => {
     );
 
     expect(screen.getByText('Elite (<5%)')).toBeInTheDocument();
-    expect(screen.queryByText('Low (>15%)')).not.toBeInTheDocument();
-    expect(screen.getByTestId('sparkline-threshold-color')).toHaveAttribute(
-      'stroke',
-      '#2e7d32',
-    );
+    expect(screen.getByText('Medium (5-15%)')).toBeInTheDocument();
+    expect(screen.getByText('Low (>15%)')).toBeInTheDocument();
   });
 
   it('should open the data sources dialog with collectors after the menu click', () => {

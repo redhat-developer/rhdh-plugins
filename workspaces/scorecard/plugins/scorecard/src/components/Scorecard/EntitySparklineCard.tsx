@@ -121,7 +121,7 @@ const EntitySparklineCardContent = ({
         unit,
         theme,
         t,
-        legendRules: matchedRule ? [matchedRule] : undefined,
+        legendRules: thresholds?.definition?.rules,
       }),
     [
       series?.points,
