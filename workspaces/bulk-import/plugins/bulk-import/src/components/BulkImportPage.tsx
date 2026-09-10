@@ -46,7 +46,6 @@ export const BulkImportPage = () => {
 
   const bulkImportViewPermissionResult = usePermission({
     permission: bulkImportPermission,
-    resourceRef: bulkImportPermission.resourceType,
   });
 
   const showContent = () => {
