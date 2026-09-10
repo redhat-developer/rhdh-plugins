@@ -4,13 +4,14 @@
 >
 > **Scope:** The independently deployable OGX model and agent entity
 > providers, including their configuration, annotations, version handling,
-> and synchronization behavior.
+> TLS connection settings, and synchronization behavior.
 
 ## Purpose
 
 This specification describes the shipped OGX entity provider: module
 registration, configuration resolution, model and agent entity mapping,
-annotation and version normalization, and scheduled full synchronization.
+annotation and version normalization, TLS connection configuration, and
+scheduled full synchronization.
 
 ## Requirements
 
@@ -50,6 +51,87 @@ URL when neither configuration path provides an OGX base URL.
 - **GIVEN** neither supported OGX configuration path provides a base URL
 - **WHEN** the OGX module reads configuration
 - **THEN** it uses `http://localhost:8321`
+
+#### Scenario: Read TLS settings from either configuration path
+
+- **GIVEN** `caData` or `skipTLSVerify` is set under the OGX configuration in use
+- **WHEN** the OGX module reads configuration
+- **THEN** both settings are read from that path
+- **AND** the same settings are supported on the `boost.providers.ogx` fallback path
+- **AND** each is left unset when the configuration does not provide it
+
+### Requirement: OGX configuration schema
+
+The plugin SHALL declare its configuration schema so that Backstage validates
+the OGX configuration keys and enforces their visibility when the module is
+loaded independently of `boost-backend`.
+
+#### Scenario: Declare the OGX configuration contract
+
+- **GIVEN** the `ogx-entity-provider` package is installed
+- **WHEN** Backstage loads the configuration schema
+- **THEN** the package contributes a schema covering `boost.entityProviders.ogx`
+  and `boost.providers.ogx`
+- **AND** `apiKey` is marked with `@visibility secret`
+- **AND** `caData` is marked with `@visibility backend`
+- **AND** `baseUrl` and `skipTLSVerify` are marked `@configScope yaml-only`
+
+### Requirement: TLS connection configuration
+
+The model provider SHALL apply the configured TLS settings when requesting the
+OGX model endpoint. `skipTLSVerify` SHALL take precedence over `caData`. The
+dispatcher SHALL be created once and reused across refresh cycles.
+
+#### Scenario: Use default TLS behavior when nothing is configured
+
+- **GIVEN** neither `caData` nor `skipTLSVerify` is set
+- **WHEN** the model provider fetches the OGX model endpoint
+- **THEN** it issues the request without a custom dispatcher
+- **AND** the runtime default certificate verification applies
+
+#### Scenario: Verify against a custom CA
+
+- **GIVEN** `caData` contains a PEM-encoded certificate or bundle
+- **AND** `skipTLSVerify` is not set
+- **WHEN** the model provider fetches the OGX model endpoint
+- **THEN** it issues the request with a dispatcher carrying that CA
+- **AND** certificate verification remains enabled
+
+#### Scenario: Disable certificate verification
+
+- **GIVEN** `skipTLSVerify` is true
+- **WHEN** the model provider fetches the OGX model endpoint
+- **THEN** it issues the request with certificate verification disabled
+- **AND** it logs a warning that this is intended for development environments only
+
+#### Scenario: Prefer skipTLSVerify over caData
+
+- **GIVEN** both `caData` and `skipTLSVerify` are set
+- **WHEN** the model provider fetches the OGX model endpoint
+- **THEN** certificate verification is disabled
+- **AND** the configured `caData` is not applied
+
+#### Scenario: Report malformed CA data without blocking the request
+
+- **GIVEN** `caData` does not contain matching PEM certificate markers
+- **WHEN** the model provider fetches the OGX model endpoint
+- **THEN** it logs an error naming the expected PEM markers
+- **AND** it still applies the configured `caData` and issues the request
+
+#### Scenario: Reuse the dispatcher and warn only once
+
+- **GIVEN** a TLS setting is configured
+- **WHEN** the model provider refreshes repeatedly
+- **THEN** the dispatcher is created on the first refresh and reused afterwards
+- **AND** the `skipTLSVerify` warning is logged only once
+
+#### Scenario: Preserve existing request behavior under TLS settings
+
+- **GIVEN** a TLS setting is configured
+- **AND** an API key is configured
+- **WHEN** the model provider fetches the OGX model endpoint
+- **THEN** the Bearer authorization header is still sent
+- **AND** a non-2xx response is still treated as a failed fetch
 
 ### Requirement: Model-server entity emission
 

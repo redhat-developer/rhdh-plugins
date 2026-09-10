@@ -1,6 +1,6 @@
 # Boost current status
 
-Release map as of 2026-09-09. After this file exists, treat it as the
+Release map as of 2026-09-10. After this file exists, treat it as the
 workspace map for what is in this release. Implemented frontend behavior
 lives in `openspec/specs/`. Active work lives in `openspec/changes/`.
 PRDs and Jira analysis are background, not current truth.
@@ -49,12 +49,24 @@ current behavior is captured in the focused `ogx-entity-provider` spec archived
 under `openspec/specs/`. The broader `ai-catalog-entity-model` change remains
 active and deferred; it is not the release behavior source of truth.
 
+The provider now accepts per-provider TLS settings, `caData` and
+`skipTLSVerify`, on both supported configuration paths, and the package
+declares a `config.d.ts` schema so Backstage validates these keys and enforces
+`@visibility secret` on `apiKey`. This shape was patched directly into the
+`ogx-entity-provider` spec rather than routed through a new OpenSpec change,
+because the `openspec/changes/` content is being reset.
+
 ## Open question for the backend team
 
 `boost.providers.ogx` was never released, and the Boost backend is outside the
 RHDH 2.1 release. Should the OGX entity provider stop supporting that fallback
-and use only `boost.entityProviders.ogx`? If yes, the fallback code, tests, and
-the archived OGX spec should be updated together.
+and use only `boost.entityProviders.ogx`?
+
+The TLS work extended the fallback rather than retiring it: `caData` and
+`skipTLSVerify` are read on both paths, and `config.d.ts` declares the full
+schema for both. That raises the cost of removal — the fallback code, its
+tests, the declared schema, and the OGX spec would all have to be updated
+together.
 
 ## Active remaining frontend work (`openspec/changes/`)
 
