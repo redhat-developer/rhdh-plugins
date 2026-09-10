@@ -102,24 +102,32 @@ export const VALID_TOPIC_RESTRICTION_PROVIDER_IDS = [
   'lightspeed_question_validity-shield',
 ];
 
-// Matches app shell margin on main when ApplicationDrawer is docked (e.g. Root.tsx).
-export const DOCKED_CONTENT_OFFSET =
-  'calc(var(--docked-drawer-width, 500px) + 1.5em)';
-
 export const LIGHTSPEED_FAB_ELEMENT_ID = 'lightspeed-fab';
 export const LIGHTSPEED_OVERLAY_CHATBOT_MODAL_CLASS =
   'ia-overlay-chatbot-modal';
-/** Gap between the FAB top edge and the overlay bottom edge. */
-export const LIGHTSPEED_OVERLAY_OFFSET_FROM_FAB = '1.5em';
 
+/** CSS variables published by LightspeedFABContent — single source for overlay layout. */
 export const LIGHTSPEED_FAB_ANCHOR_VARS = {
   insetBlockEnd: '--ia-fab-inset-block-end',
   insetInlineEnd: '--ia-fab-inset-inline-end',
   height: '--ia-fab-height',
+  overlayGap: '--ia-overlay-gap',
+  dockedDrawerGutter: '--ia-docked-drawer-gutter',
 } as const;
 
-export const getLightspeedFabInset = (themeSpacing: string) =>
-  `calc(${themeSpacing} + 1.5em)`;
+const zero = '0px';
+
+/** Shift FAB/overlay left when the app drawer is docked (drawer width + theme gutter). */
+export const DOCKED_CONTENT_OFFSET = `calc(var(--docked-drawer-width, ${zero}) + var(${LIGHTSPEED_FAB_ANCHOR_VARS.dockedDrawerGutter}, ${zero}))`;
+
+/** Overlay bottom: measured FAB bottom inset + FAB height + theme gap. */
+export const LIGHTSPEED_OVERLAY_BOTTOM = `calc(var(${LIGHTSPEED_FAB_ANCHOR_VARS.insetBlockEnd}, ${zero}) + var(${LIGHTSPEED_FAB_ANCHOR_VARS.height}, ${zero}) + var(${LIGHTSPEED_FAB_ANCHOR_VARS.overlayGap}, ${zero}))`;
+
+/** Overlay right: measured FAB right inset (tracks docked margin via getBoundingClientRect). */
+export const LIGHTSPEED_OVERLAY_RIGHT = `var(${LIGHTSPEED_FAB_ANCHOR_VARS.insetInlineEnd}, ${zero})`;
+
+/** Overlay max width: PatternFly default capped by viewport minus theme gutters. */
+export const LIGHTSPEED_OVERLAY_MAX_WIDTH = `min(30rem, calc(100vw - 2 * var(${LIGHTSPEED_FAB_ANCHOR_VARS.overlayGap}, ${zero})))`;
 
 export const LIGHTSPEED_PATH = '/intelligent-assistant';
 export const LIGHTSPEED_LEGACY_PATH = '/lightspeed';

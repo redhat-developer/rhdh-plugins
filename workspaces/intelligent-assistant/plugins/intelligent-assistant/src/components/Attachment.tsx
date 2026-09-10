@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import GlobalStyles from '@mui/material/GlobalStyles';
+import { styled } from '@mui/material/styles';
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { AttachmentEdit } from '@patternfly/chatbot/dist/dynamic/AttachmentEdit';
 import { PreviewAttachment } from '@patternfly/chatbot/dist/dynamic/PreviewAttachment';
@@ -23,6 +23,12 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useFileAttachmentContext } from './AttachmentContext';
 
 const MODAL_FOOTER_CLASS = 'ia-attachment-modal-footer';
+
+const AttachmentScope = styled('div')({
+  [`& .${MODAL_FOOTER_CLASS} > button`]: {
+    width: '12% !important',
+  },
+});
 
 const Attachment = () => {
   const {
@@ -46,14 +52,7 @@ const Attachment = () => {
   } = modalState;
 
   return (
-    <>
-      <GlobalStyles
-        styles={{
-          [`.${MODAL_FOOTER_CLASS} > button`]: {
-            width: '12% !important',
-          },
-        }}
-      />
+    <AttachmentScope>
       <PreviewAttachment
         key={previewModalKey}
         code={currentFileContent?.content}
@@ -122,7 +121,7 @@ const Attachment = () => {
         handleModalToggle={() => setIsEditModalOpen(false)}
         displayMode={ChatbotDisplayMode.fullscreen}
       />
-    </>
+    </AttachmentScope>
   );
 };
 

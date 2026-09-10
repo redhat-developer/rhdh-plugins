@@ -19,7 +19,6 @@ import { Ref, useState } from 'react';
 import ToggleOffOutlinedIcon from '@mui/icons-material/ToggleOffOutlined';
 import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
 import Divider from '@mui/material/Divider';
-import GlobalStyles from '@mui/material/GlobalStyles';
 import { styled } from '@mui/material/styles';
 import {
   ChatbotDisplayMode,
@@ -31,6 +30,7 @@ import {
   DropdownGroup,
   DropdownItem,
   DropdownList,
+  Icon,
   Label,
   MenuToggle,
   MenuToggleElement,
@@ -39,6 +39,7 @@ import {
   ExpandIcon,
   OpenDrawerRightIcon,
   OutlinedWindowRestoreIcon,
+  RhUiEllipsisVerticalFillIcon,
 } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
@@ -72,11 +73,6 @@ const StyledOptionsDropdown = styled(ChatbotHeaderOptionsDropdown)({
     margin: 0,
   },
 });
-
-// ChatbotHeaderOptionsDropdown spreads toggleProps.className over its own
-// `pf-chatbot__button--toggle-options` classes, so keep those here. PF then
-// rotates the vertical ellipsis 90deg, which clips away in the compact button.
-const OPTIONS_TOGGLE_CLASS = 'ia-chat-options-toggle';
 
 const SelectorToggle = styled(MenuToggle, {
   shouldForwardProp: prop => prop !== 'dimmed',
@@ -150,16 +146,6 @@ export const LightspeedChatBoxHeader = ({
 
   return (
     <ChatbotHeaderActions>
-      <GlobalStyles
-        styles={{
-          [`.${OPTIONS_TOGGLE_CLASS}`]: {
-            overflow: 'visible',
-            '& svg': {
-              transform: 'none !important',
-            },
-          },
-        }}
-      />
       {!hideModelSelector && (
         <StyledDropdown
           isOpen={isOptionsMenuOpen}
@@ -200,7 +186,12 @@ export const LightspeedChatBoxHeader = ({
         }}
         toggleProps={{
           'aria-label': t('aria.options.label'),
-          className: `pf-chatbot__button--toggle-options pf-m-compact ${OPTIONS_TOGGLE_CLASS}`,
+          className: 'pf-chatbot__button--toggle-options pf-m-compact',
+          icon: (
+            <Icon size="lg" isInline>
+              <RhUiEllipsisVerticalFillIcon />
+            </Icon>
+          ),
         }}
         tooltipProps={{
           trigger: 'manual',

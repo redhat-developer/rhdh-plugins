@@ -18,49 +18,27 @@ import { useLayoutEffect, useRef } from 'react';
 
 import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
-import GlobalStyles from '@mui/material/GlobalStyles';
+import { useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
-import {
-  DOCKED_CONTENT_OFFSET,
-  getLightspeedFabInset,
-  LIGHTSPEED_FAB_ANCHOR_VARS,
-  LIGHTSPEED_FAB_ELEMENT_ID,
-} from '../const';
+import { DOCKED_CONTENT_OFFSET, LIGHTSPEED_FAB_ELEMENT_ID } from '../const';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useTranslation } from '../hooks/useTranslation';
+import {
+  clearLightspeedFabAnchorVars,
+  getLightspeedFabEdgeInset,
+  publishLightspeedFabAnchorVars,
+} from '../utils/fab-anchor-utils';
 import { LightspeedFABIcon, LightspeedFABOpenIcon } from './LightspeedIcon';
-
-const publishFabAnchor = (fab: HTMLElement) => {
-  const rect = fab.getBoundingClientRect();
-  if (rect.width < 1 || rect.height < 1) {
-    return;
-  }
-  const root = document.documentElement;
-  root.style.setProperty(
-    LIGHTSPEED_FAB_ANCHOR_VARS.insetBlockEnd,
-    `${window.innerHeight - rect.bottom}px`,
-  );
-  root.style.setProperty(
-    LIGHTSPEED_FAB_ANCHOR_VARS.insetInlineEnd,
-    `${window.innerWidth - rect.right}px`,
-  );
-  root.style.setProperty(LIGHTSPEED_FAB_ANCHOR_VARS.height, `${rect.height}px`);
-};
-
-const clearFabAnchor = () => {
-  const root = document.documentElement;
-  root.style.removeProperty(LIGHTSPEED_FAB_ANCHOR_VARS.insetBlockEnd);
-  root.style.removeProperty(LIGHTSPEED_FAB_ANCHOR_VARS.insetInlineEnd);
-  root.style.removeProperty(LIGHTSPEED_FAB_ANCHOR_VARS.height);
-};
 
 export const LightspeedFABContent = () => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const { isChatbotActive, toggleChatbot, displayMode } =
     useLightspeedDrawerContext();
   const fabRef = useRef<HTMLDivElement>(null);
+  const fabEdgeInset = getLightspeedFabEdgeInset(theme);
 
   useLayoutEffect(() => {
     const fab = fabRef.current;
@@ -68,7 +46,8 @@ export const LightspeedFABContent = () => {
       return undefined;
     }
 
-    const syncAnchor = () => publishFabAnchor(fab);
+    const syncAnchor = () =>
+      publishLightspeedFabAnchorVars({ fabElement: fab, theme });
     syncAnchor();
 
     const resizeObserver =
@@ -90,76 +69,56 @@ export const LightspeedFABContent = () => {
       window.removeEventListener('resize', syncAnchor);
       fab.removeEventListener('transitionend', syncAnchor);
       mutationObserver.disconnect();
-      clearFabAnchor();
+      clearLightspeedFabAnchorVars();
     };
-  }, [displayMode]);
+  }, [displayMode, theme]);
 
   if (displayMode === ChatbotDisplayMode.embedded) {
     return null;
   }
 
   return (
-    <>
-      <GlobalStyles
-        styles={theme => {
-          const inset = getLightspeedFabInset(theme.spacing(2));
-          return {
-            ':root': {
-              [LIGHTSPEED_FAB_ANCHOR_VARS.insetBlockEnd]: inset,
-              [LIGHTSPEED_FAB_ANCHOR_VARS.insetInlineEnd]: inset,
-              [LIGHTSPEED_FAB_ANCHOR_VARS.height]: '56px',
-            },
-          };
-        }}
-      />
-      <Box
-        ref={fabRef}
-        sx={theme => ({
-          bottom: getLightspeedFabInset(theme.spacing(2)),
-          right: getLightspeedFabInset(theme.spacing(2)),
-          alignItems: 'end',
-          zIndex: theme.zIndex.tooltip,
-          display: 'flex',
-          position: 'fixed',
-          'body.docked-drawer-open &': {
-            transition: 'margin-right 0.3s ease',
-            marginRight: DOCKED_CONTENT_OFFSET,
-          },
-        })}
-        id={LIGHTSPEED_FAB_ELEMENT_ID}
-        data-testid="lightspeed-fab"
+    <Box
+      ref={fabRef}
+      sx={{
+        bottom: fabEdgeInset,
+        right: fabEdgeInset,
+        alignItems: 'end',
+        zIndex: theme.zIndex.tooltip,
+        display: 'flex',
+        position: 'fixed',
+        'body.docked-drawer-open &': {
+          transition: 'margin-right 0.3s ease',
+          marginRight: DOCKED_CONTENT_OFFSET,
+        },
+      }}
+      id={LIGHTSPEED_FAB_ELEMENT_ID}
+      data-testid="lightspeed-fab"
+    >
+      <Tooltip
+        title={isChatbotActive ? t('tooltip.fab.close') : t('tooltip.fab.open')}
+        placement="left"
       >
-        <Tooltip
-          title={
+        <Fab
+          color="inherit"
+          variant="circular"
+          size="large"
+          onClick={toggleChatbot}
+          aria-label={
             isChatbotActive ? t('tooltip.fab.close') : t('tooltip.fab.open')
           }
-          placement="left"
+          sx={{
+            backgroundColor: theme.palette.background.default,
+            color: theme.palette.text.primary,
+            border: `1px solid ${theme.palette.divider}`,
+            '&:hover': {
+              backgroundColor: theme.palette.background.paper,
+            },
+          }}
         >
-          <Fab
-            color="inherit"
-            variant="circular"
-            size="large"
-            onClick={toggleChatbot}
-            aria-label={
-              isChatbotActive ? t('tooltip.fab.close') : t('tooltip.fab.open')
-            }
-            sx={theme => ({
-              backgroundColor: theme.palette.background.default,
-              color: theme.palette.text.primary,
-              border: `1px solid ${theme.palette.divider}`,
-              '&:hover': {
-                backgroundColor: theme.palette.background.paper,
-              },
-            })}
-          >
-            {isChatbotActive ? (
-              <LightspeedFABOpenIcon />
-            ) : (
-              <LightspeedFABIcon />
-            )}
-          </Fab>
-        </Tooltip>
-      </Box>
-    </>
+          {isChatbotActive ? <LightspeedFABOpenIcon /> : <LightspeedFABIcon />}
+        </Fab>
+      </Tooltip>
+    </Box>
   );
 };
