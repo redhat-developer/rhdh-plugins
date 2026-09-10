@@ -197,6 +197,7 @@ export class OgxModelEntityProvider implements EntityProvider {
       this.logger.error(
         'caData does not contain valid PEM certificate markers (expected -----BEGIN CERTIFICATE----- / -----END CERTIFICATE-----) — TLS connections to the OGX endpoint may fail',
       );
+      return undefined;
     }
 
     this.cachedTlsDispatcher = new Agent({

@@ -403,7 +403,8 @@ describe('OgxModelEntityProvider', () => {
         config: {
           ...defaultConfig,
           apiKey: 'secret-key',
-          caData: 'PEM-CERT',
+          caData:
+            '-----BEGIN CERTIFICATE-----\nTEST\n-----END CERTIFICATE-----',
         },
         logger: mockServices.logger.mock(),
         taskRunner,
@@ -555,8 +556,8 @@ describe('OgxModelEntityProvider', () => {
           'does not contain valid PEM certificate markers',
         ),
       );
-      // Agent is still created — invalid PEM is a warning, not a hard stop
-      expect(MockAgent).toHaveBeenCalledTimes(1);
+      // Agent is not created — invalid PEM is a hard stop
+      expect(MockAgent).toHaveBeenCalledTimes(0);
     });
 
     it('should not log PEM error when caData has valid PEM markers', async () => {
