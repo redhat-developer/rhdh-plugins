@@ -21,6 +21,8 @@ import express from 'express';
 import { setupServer } from 'msw/node';
 import request from 'supertest';
 
+import { iaNotebooksPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+
 import {
   lightspeedCoreHandlers,
   resetMockStorage,
@@ -424,6 +426,61 @@ describe('Notebooks Router', () => {
         );
         expect(listResponse.body.documents).toHaveLength(0);
       });
+    });
+  });
+
+  describe('RBAC permission name contract', () => {
+    it('POST /v1/sessions checks intelligent-assistant.notebooks', async () => {
+      const authorize = jest.fn(async () => [
+        { result: AuthorizeResult.ALLOW },
+      ]);
+      const logger = mockServices.logger.mock();
+      const config = mockServices.rootConfig({
+        data: {
+          'intelligent-assistant': {
+            servicePort: 7007,
+            notebooks: {
+              enabled: true,
+              queryDefaults: {
+                model: 'test-model',
+                provider_id: 'test-provider',
+              },
+              sessionDefaults: {
+                provider_id: 'test-notebooks',
+                embedding_model: 'test-embedding-model',
+                embedding_dimension: 768,
+              },
+            },
+          },
+        },
+      });
+      const userInfo = mockServices.userInfo.mock({
+        getUserInfo: async () => ({
+          userEntityRef: mockUserId,
+          ownershipEntityRefs: [mockUserId],
+        }),
+      });
+      const permissions = mockServices.permissions.mock({ authorize });
+
+      const router = await createNotebooksRouter({
+        logger,
+        config,
+        httpAuth: mockServices.httpAuth(),
+        userInfo,
+        permissions,
+      });
+
+      const permissionApp = express();
+      permissionApp.use(router);
+
+      await request(permissionApp)
+        .post('/notebooks/v1/sessions')
+        .send({ name: 'Test Session' });
+
+      expect(authorize).toHaveBeenCalledWith(
+        [{ permission: iaNotebooksPermission }],
+        expect.objectContaining({ credentials: expect.anything() }),
+      );
     });
   });
 
