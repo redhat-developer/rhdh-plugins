@@ -676,10 +676,19 @@ describe('CatalogMetricService', () => {
       ]);
     });
 
-    it('should fall back to metric.thresholds when resolveEntityThresholds throws', async () => {
+    it('should fall back to resolveMetricThresholds when resolveEntityThresholds throws', async () => {
+      const metricThresholds = {
+        rules: [
+          { key: 'success', expression: '<5' },
+          { key: 'error', expression: '>=5' },
+        ],
+      };
       mockedThresholdResolver.resolveEntityThresholds.mockImplementation(() => {
         throw new Error('Merge thresholds failed');
       });
+      mockedThresholdResolver.resolveMetricThresholds.mockReturnValue(
+        metricThresholds,
+      );
 
       const result = await service.getEntityMetricTimeSeries(
         entityRef,
@@ -688,7 +697,10 @@ describe('CatalogMetricService', () => {
         to,
       );
 
-      expect(result.thresholds).toEqual(provider.getMetrics()[0].thresholds);
+      expect(
+        mockedThresholdResolver.resolveMetricThresholds,
+      ).toHaveBeenCalledWith(expect.objectContaining({ id: metricId }));
+      expect(result.thresholds).toEqual(metricThresholds);
     });
 
     it('should pass permission filter to filterAuthorizedMetrics', async () => {

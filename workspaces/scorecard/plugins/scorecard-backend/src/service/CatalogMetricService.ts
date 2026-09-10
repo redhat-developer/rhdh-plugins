@@ -242,7 +242,8 @@ export class CatalogMetricService {
         metric,
       );
     } catch {
-      thresholds = metric.thresholds;
+      // Keep app-config / provider thresholds when entity annotation merge fails
+      thresholds = this.thresholdResolver.resolveMetricThresholds(metric);
     }
 
     const points: MetricTimeSeriesPoint[] = rows.map(row => {
