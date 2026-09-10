@@ -1,0 +1,10 @@
+# Minimal RBAC policy for Playwright. Guest has no IA role; permission matrix
+# scenarios are driven by the e2e authorize route mock.
+p, role:default/intelligent-assistant-user, intelligent-assistant.chat, use, allow
+p, role:default/intelligent-assistant-user, intelligent-assistant.notebooks, use, allow
+p, role:default/intelligent-assistant-user, intelligent-assistant.mcp.tools, use, allow
+p, role:default/intelligent-assistant-user, intelligent-assistant.skills, use, allow
+p, role:default/intelligent-assistant-user, catalog.entity.read, read, allow
+p, role:default/intelligent-assistant-user, catalog.location.read, read, allow
+
+g, user:development/guest, role:default/intelligent-assistant-user
