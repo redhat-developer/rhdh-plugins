@@ -309,7 +309,7 @@ curl -X GET "{{url}}/api/scorecard/metrics/catalog/component/default/my-service?
 
 Returns daily time-series points for one metric on a catalog entity. Each point is the latest sample (`MAX(id)` among success or calculation-error rows) for that UTC calendar day. On a mixed day the later sample wins, so a later error is returned as `{ "value": null, "error": "..." }` (and clients can gap a sparkline). Days with no rows (or only null without `error_message`) are omitted. Returns `200` with `points: []` when the entity and metric are authorized but no data exists in the range.
 
-The response also includes entity-resolved `thresholds` (provider defaults, then app-config, then entity annotation overrides) for sparkline legend rendering. Successful points include `thresholdEvaluation`: the matched threshold rule key from pull-time evaluation (e.g. `success`, `warning`, `error`). Calculation-error points omit `thresholdEvaluation`. When the stored status is missing, `thresholdEvaluation` is `null`.
+The response also includes entity-resolved `thresholds` (provider defaults, then app-config, then entity annotation overrides) for sparkline legend rendering. Successful points include `thresholdEvaluation`: the matched threshold rule key from **read-time** evaluation of the point's `value` against those current `thresholds` (e.g. `success`, `warning`, `error`). This keeps legend keys and point classifications consistent when config changes. Calculation-error points omit `thresholdEvaluation`. When no rule matches, `thresholdEvaluation` is `null`.
 
 #### Path Parameters
 

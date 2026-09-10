@@ -545,7 +545,7 @@ describe('CatalogMetricService', () => {
       );
     });
 
-    it('should map each daily DB row to a time-series point with thresholdEvaluation', async () => {
+    it('should map each daily DB row to a time-series point with read-time thresholdEvaluation', async () => {
       mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
         {
           id: 3,
@@ -560,10 +560,11 @@ describe('CatalogMetricService', () => {
           id: 2,
           catalogEntityRef: entityRef,
           metricId: metricId,
-          value: 7,
+          value: 25,
           timestamp: new Date('2024-01-02T12:00:00.000Z'),
           errorMessage: null,
-          status: 'warning',
+          // Stale write-time status must be ignored in favor of read-time evaluation
+          status: 'success',
         },
       ] as DbMetricValue[]);
 
@@ -581,7 +582,7 @@ describe('CatalogMetricService', () => {
           thresholdEvaluation: 'success',
         },
         {
-          value: 7,
+          value: 25,
           timestamp: '2024-01-02T12:00:00.000Z',
           thresholdEvaluation: 'warning',
         },
@@ -646,7 +647,7 @@ describe('CatalogMetricService', () => {
       ]);
     });
 
-    it('should set thresholdEvaluation to null when DB status is null on success points', async () => {
+    it('should evaluate thresholdEvaluation from current thresholds even when DB status is null', async () => {
       mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
         {
           id: 1,
@@ -670,7 +671,7 @@ describe('CatalogMetricService', () => {
         {
           value: 5,
           timestamp: '2024-01-01T10:00:00.000Z',
-          thresholdEvaluation: null,
+          thresholdEvaluation: 'success',
         },
       ]);
     });

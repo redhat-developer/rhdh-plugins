@@ -50,6 +50,7 @@ import { isMetricCalculationError } from '../utils/metricCalculationError';
 import { AggregatedMetricMapper } from './mappers';
 import { DbMetricValue } from '../database/types';
 import { ThresholdResolver } from '../threshold/ThresholdResolver';
+import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 
 type CatalogMetricServiceOptions = {
   catalog: CatalogService;
@@ -82,6 +83,7 @@ export class CatalogMetricService {
   private readonly registry: MetricProvidersRegistry;
   private readonly database: DatabaseMetricValues;
   private readonly thresholdResolver: ThresholdResolver;
+  private readonly thresholdEvaluator = new ThresholdEvaluator();
 
   private static readonly MAX_FETCHABLE_ROWS = 10_000;
   private static readonly BATCH_SIZE = 100;
@@ -233,21 +235,6 @@ export class CatalogMetricService {
       to,
     );
 
-    const points: MetricTimeSeriesPoint[] = rows.map(row => {
-      if (isMetricCalculationError(row)) {
-        return {
-          value: null,
-          timestamp: row.timestamp.toISOString(),
-          error: row.errorMessage!,
-        };
-      }
-      return {
-        value: row.value,
-        timestamp: row.timestamp.toISOString(),
-        thresholdEvaluation: row.status ?? null,
-      };
-    });
-
     let thresholds: ThresholdConfig;
     try {
       thresholds = this.thresholdResolver.resolveEntityThresholds(
@@ -257,6 +244,40 @@ export class CatalogMetricService {
     } catch {
       thresholds = metric.thresholds;
     }
+
+    const points: MetricTimeSeriesPoint[] = rows.map(row => {
+      if (isMetricCalculationError(row)) {
+        return {
+          value: null,
+          timestamp: row.timestamp.toISOString(),
+          error: row.errorMessage!,
+        };
+      }
+
+      let thresholdEvaluation: string | null = null;
+      if (row.value !== null) {
+        try {
+          thresholdEvaluation =
+            this.thresholdEvaluator.getFirstMatchingThreshold(
+              row.value,
+              metric.type,
+              thresholds,
+            ) ?? null;
+        } catch (error) {
+          this.logger.warn(
+            `Failed to evaluate thresholds for metric '${
+              metric.id
+            }' on entity '${entityRef}': ${stringifyError(error)}`,
+          );
+        }
+      }
+
+      return {
+        value: row.value,
+        timestamp: row.timestamp.toISOString(),
+        thresholdEvaluation,
+      };
+    });
 
     return {
       metricId: metric.id,

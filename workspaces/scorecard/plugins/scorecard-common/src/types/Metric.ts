@@ -139,7 +139,8 @@ export type MetricTimeSeriesPoint = {
   /** Present when this point is a calculation failure */
   error?: string;
   /**
-   * Matched threshold rule key from pull-time evaluation (e.g., "elite", "success", "warning").
+   * Matched threshold rule key from read-time evaluation against the response
+   * `thresholds` (e.g., "elite", "success", "warning").
    * `null` when the value could not be classified. Absent on calculation-error points.
    */
   thresholdEvaluation?: string | null;
