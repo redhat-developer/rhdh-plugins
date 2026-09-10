@@ -28,7 +28,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useOwnershipEntityRefs } from '../../../hooks/useOwnershipEntityRefs';
 import { useAggregatedScorecardEntities } from '../../../hooks/useAggregatedScorecardEntities';
 import { useAggregatedScorecard } from '../../../hooks/useAggregatedScorecard';
-import { useAggregationMetadata } from '../../../hooks/useAggregationMetadata';
 import { useEntityMetadataMap } from '../../../hooks/useEntityMetadataMap';
 import { SCORECARD_ENTITIES_TABLE_HEADERS } from '../../../utils';
 import {
@@ -69,21 +68,25 @@ export const EntitiesTable = ({
   // TODO: Remove metricId once we deprecate it. We need to keep it for backward compatibility.
   const resolvedMetricId = aggregationId || metricId || '';
 
-  const { data: aggregationMetadata, isLoading: aggregationMetadataLoading } =
-    useAggregationMetadata({
-      aggregationId: aggregationId || '',
-      enabled: Boolean(aggregationId?.trim()) && !ownershipLoading,
+  const { data: aggregatedScorecard, isLoading: loadingAggregatedScorecard } =
+    useAggregatedScorecard({
+      aggregationId: resolvedMetricId,
+      enabled: Boolean(resolvedMetricId?.trim()) && !ownershipLoading,
     });
 
   const defaultSort = useMemo(
-    () => getDefaultEntitiesTableSort(aggregationMetadata?.aggregationType),
-    [aggregationMetadata?.aggregationType],
+    () =>
+      getDefaultEntitiesTableSort(
+        aggregatedScorecard?.metadata?.aggregationType,
+      ),
+    [aggregatedScorecard?.metadata?.aggregationType],
   );
 
   const { orderBy, order } = userSortOverride ?? defaultSort;
 
   const entitiesQueryEnabled =
-    !ownershipLoading && (!aggregationId || !aggregationMetadataLoading);
+    !ownershipLoading &&
+    (!aggregationId?.trim() || !loadingAggregatedScorecard);
 
   const {
     aggregatedScorecardEntities,
@@ -97,11 +100,6 @@ export const EntitiesTable = ({
     orderBy,
     order,
     enabled: entitiesQueryEnabled,
-  });
-
-  const { data: aggregatedScorecard } = useAggregatedScorecard({
-    aggregationId: resolvedMetricId,
-    enabled: !!metricId && !ownershipLoading && !loadingDataEntities,
   });
 
   const thresholdRules = aggregatedScorecard?.result?.thresholds?.rules ?? [];

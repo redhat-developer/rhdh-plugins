@@ -48,14 +48,8 @@ jest.mock('../../../../hooks/useAggregatedScorecardEntities', () => ({
 
 const mockUseAggregatedScorecard = jest.fn();
 jest.mock('../../../../hooks/useAggregatedScorecard', () => ({
-  useAggregatedScorecard: (opts: { metricId: string }) =>
+  useAggregatedScorecard: (opts: { aggregationId: string }) =>
     mockUseAggregatedScorecard(opts),
-}));
-
-const mockUseAggregationMetadata = jest.fn();
-jest.mock('../../../../hooks/useAggregationMetadata', () => ({
-  useAggregationMetadata: (opts: { aggregationId: string }) =>
-    mockUseAggregationMetadata(opts),
 }));
 
 const mockUseEntityMetadataMap = jest.fn();
@@ -168,11 +162,6 @@ describe('EntitiesTable', () => {
     });
     mockUseAggregatedScorecard.mockReturnValue({
       data: { metadata: { title: 'Open PRs' } },
-      loadingData: false,
-      error: undefined,
-    });
-    mockUseAggregationMetadata.mockReturnValue({
-      data: undefined,
       isLoading: false,
       error: undefined,
     });
@@ -361,8 +350,13 @@ describe('EntitiesTable', () => {
   });
 
   it('should default-sort min aggregations by metric value ascending', () => {
-    mockUseAggregationMetadata.mockReturnValue({
-      data: { aggregationType: aggregationTypes.min },
+    mockUseAggregatedScorecard.mockReturnValue({
+      data: {
+        metadata: {
+          title: 'Open PRs',
+          aggregationType: aggregationTypes.min,
+        },
+      },
       isLoading: false,
       error: undefined,
     });
@@ -395,8 +389,13 @@ describe('EntitiesTable', () => {
   });
 
   it('should default-sort max aggregations by metric value descending', () => {
-    mockUseAggregationMetadata.mockReturnValue({
-      data: { aggregationType: aggregationTypes.max },
+    mockUseAggregatedScorecard.mockReturnValue({
+      data: {
+        metadata: {
+          title: 'Open PRs',
+          aggregationType: aggregationTypes.max,
+        },
+      },
       isLoading: false,
       error: undefined,
     });
@@ -428,8 +427,8 @@ describe('EntitiesTable', () => {
     );
   });
 
-  it('should wait for aggregation metadata before fetching entities', () => {
-    mockUseAggregationMetadata.mockReturnValue({
+  it('should wait for aggregated scorecard before fetching entities', () => {
+    mockUseAggregatedScorecard.mockReturnValue({
       data: undefined,
       isLoading: true,
       error: undefined,
