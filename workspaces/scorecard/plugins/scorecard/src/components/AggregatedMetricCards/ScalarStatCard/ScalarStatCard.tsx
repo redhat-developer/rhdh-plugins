@@ -60,7 +60,7 @@ export const ScalarStatCard = ({
 
   const resolvedColor = result.aggregationChartDisplayColor
     ? resolveStatusColor(theme, result.aggregationChartDisplayColor)
-    : theme.palette.grey[500];
+    : theme.palette.grey[300];
   const displayValue = formatWithMetricUnit(
     formatAggregationScoreDetail(result.value),
     metadata.unit,

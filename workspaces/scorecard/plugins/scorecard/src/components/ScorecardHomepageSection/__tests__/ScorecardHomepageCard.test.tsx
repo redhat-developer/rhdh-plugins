@@ -580,7 +580,7 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
     );
     expect(screen.getByTestId('scalar-stat-value')).toHaveTextContent('0');
     expect(screen.getByTestId('scalar-stat-tile')).toHaveStyle({
-      backgroundColor: 'rgba(158, 158, 158, 0.16)',
+      backgroundColor: 'rgba(224, 224, 224, 0.16)',
     });
   });
 
@@ -607,7 +607,7 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
 
     expect(screen.getByTestId('scalar-stat-value')).toHaveTextContent('0');
     expect(screen.getByTestId('scalar-stat-tile')).toHaveStyle({
-      backgroundColor: 'rgba(158, 158, 158, 0.16)',
+      backgroundColor: 'rgba(224, 224, 224, 0.16)',
     });
   });
 
