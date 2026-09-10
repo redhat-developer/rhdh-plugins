@@ -39,7 +39,7 @@ export interface Config {
         apiKey?: string;
         /**
          * PEM-encoded CA certificate or certificate bundle used to verify the OGX endpoint.
-         * @visibility backend
+         * @visibility secret
          */
         caData?: string;
         /**
@@ -66,7 +66,7 @@ export interface Config {
         apiKey?: string;
         /**
          * PEM-encoded CA certificate or certificate bundle used to verify the OGX endpoint.
-         * @visibility backend
+         * @visibility secret
          */
         caData?: string;
         /**

@@ -183,8 +183,13 @@ export class OgxModelEntityProvider implements EntityProvider {
     }
 
     if (skipTLSVerify) {
+      if (caData) {
+        this.logger.warn(
+          'caData is configured but will be ignored because skipTLSVerify is true',
+        );
+      }
       this.logger.warn(
-        'TLS certificate verification is disabled for OGX endpoint — this should only be used in development environments',
+        `TLS certificate verification is disabled for OGX endpoint ${this.config.baseUrl} — this should only be used in development environments`,
       );
       this.cachedTlsDispatcher = new Agent({
         connect: { rejectUnauthorized: false },
@@ -197,6 +202,7 @@ export class OgxModelEntityProvider implements EntityProvider {
       this.logger.error(
         'caData does not contain valid PEM certificate markers (expected -----BEGIN CERTIFICATE----- / -----END CERTIFICATE-----) — TLS connections to the OGX endpoint may fail',
       );
+      this.cachedTlsDispatcher = null;
       return undefined;
     }
 

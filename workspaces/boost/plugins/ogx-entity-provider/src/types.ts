@@ -100,6 +100,10 @@ export interface OgxEntityProviderConfig {
   baseUrl: string;
   /** Optional API key for authenticated endpoints. */
   apiKey?: string;
+  /** PEM-encoded CA certificate or certificate bundle used to verify OGX. */
+  caData?: string;
+  /** Disable TLS certificate verification. Development use only. */
+  skipTLSVerify?: boolean;
   /** Optional version string for the model server (semver, date, or commit hash). */
   serverVersion?: string;
   /** Upstream refresh interval in seconds for model entities (default: 60 = 1m). */
@@ -112,8 +116,4 @@ export interface OgxEntityProviderConfig {
   maxAgentTurns?: number;
   /** Static agent configurations from YAML/admin config. */
   agents?: OgxAgentConfig[];
-  /** PEM-encoded CA certificate or certificate bundle used to verify OGX. */
-  caData?: string;
-  /** Disable TLS certificate verification. Development use only. */
-  skipTLSVerify?: boolean;
 }

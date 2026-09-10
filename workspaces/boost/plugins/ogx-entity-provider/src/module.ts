@@ -117,7 +117,8 @@ export const catalogModuleOgxEntityProvider = createBackendModule({
 /**
  * Read OGX entity provider configuration from app-config.yaml.
  *
- * @internal Exported for testing only.
+ * @internal
+ * Exported for testing only.
  */
 export function readOgxEntityProviderConfig(
   config: typeof coreServices.rootConfig extends { T: infer T } ? T : never,

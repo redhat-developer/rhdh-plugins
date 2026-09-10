@@ -116,7 +116,8 @@ dispatcher SHALL be created once and reused across refresh cycles.
 - **GIVEN** `caData` does not contain matching PEM certificate markers
 - **WHEN** the model provider fetches the OGX model endpoint
 - **THEN** it logs an error naming the expected PEM markers
-- **AND** it still applies the configured `caData` and issues the request
+- **AND** it issues the request using system-default TLS behavior (without
+  the custom CA)
 
 #### Scenario: Reuse the dispatcher and warn only once
 
@@ -124,6 +125,7 @@ dispatcher SHALL be created once and reused across refresh cycles.
 - **WHEN** the model provider refreshes repeatedly
 - **THEN** the dispatcher is created on the first refresh and reused afterwards
 - **AND** the `skipTLSVerify` warning is logged only once
+- **AND** the malformed `caData` error is logged only once
 
 #### Scenario: Preserve existing request behavior under TLS settings
 

@@ -556,8 +556,91 @@ describe('OgxModelEntityProvider', () => {
           'does not contain valid PEM certificate markers',
         ),
       );
-      // Agent is not created — invalid PEM is a hard stop
+      // Agent is not created — invalid PEM falls back to system defaults
       expect(MockAgent).toHaveBeenCalledTimes(0);
+    });
+
+    it('should log invalid PEM error only once across multiple refresh cycles', async () => {
+      mockFetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: [] }),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ data: [] }),
+        } as Response);
+
+      const childError = jest.fn();
+      const mockLogger = {
+        ...mockServices.logger.mock(),
+        child: jest.fn().mockReturnValue({
+          info: jest.fn(),
+          warn: jest.fn(),
+          error: childError,
+          debug: jest.fn(),
+          child: jest.fn(),
+        }),
+      };
+
+      const provider = new OgxModelEntityProvider({
+        config: {
+          ...defaultConfig,
+          caData: 'not-a-valid-pem-string',
+        },
+        logger: mockLogger,
+        taskRunner,
+      });
+
+      await provider.connect(mockConnection);
+      await taskRunner.runAll();
+
+      // Second refresh
+      await provider.run();
+
+      // Error emitted only once despite two refresh cycles
+      const pemErrors = childError.mock.calls.filter((call: string[]) =>
+        call[0].includes('does not contain valid PEM certificate markers'),
+      );
+      expect(pemErrors).toHaveLength(1);
+    });
+
+    it('should log caData override warning when both skipTLSVerify and caData are set', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: [] }),
+      } as Response);
+
+      const childWarn = jest.fn();
+      const mockLogger = {
+        ...mockServices.logger.mock(),
+        child: jest.fn().mockReturnValue({
+          info: jest.fn(),
+          warn: childWarn,
+          error: jest.fn(),
+          debug: jest.fn(),
+          child: jest.fn(),
+        }),
+      };
+
+      const provider = new OgxModelEntityProvider({
+        config: {
+          ...defaultConfig,
+          caData: '-----BEGIN CERTIFICATE-----\nCA\n-----END CERTIFICATE-----',
+          skipTLSVerify: true,
+        },
+        logger: mockLogger,
+        taskRunner,
+      });
+
+      await provider.connect(mockConnection);
+      await taskRunner.runAll();
+
+      expect(childWarn).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'caData is configured but will be ignored because skipTLSVerify is true',
+        ),
+      );
     });
 
     it('should not log PEM error when caData has valid PEM markers', async () => {
