@@ -16,7 +16,7 @@
 
 import { ConfigReader } from '@backstage/config';
 import { mockServices } from '@backstage/backend-test-utils';
-import { DoraMeanTimeToRestoreProvider } from './DoraMeanTimeToRestoreProvider';
+import { DoraMedianTimeToRestoreProvider } from './DoraMedianTimeToRestoreProvider';
 import {
   dbIncident,
   mockDoraDataService,
@@ -24,11 +24,11 @@ import {
   mockEntity,
 } from './__fixtures__';
 import { DORA_DEFAULT_INCIDENTS_COLLECTOR_ID } from '../constants';
-import { DEFAULT_DORA_MEAN_TIME_TO_RESTORE_THRESHOLDS } from './DoraConfig';
+import { DEFAULT_DORA_MEDIAN_TIME_TO_RESTORE_THRESHOLDS } from './DoraConfig';
 
-describe('DoraMeanTimeToRestoreProvider', () => {
+describe('DoraMedianTimeToRestoreProvider', () => {
   const mockLogger = mockServices.logger.mock();
-  let provider: DoraMeanTimeToRestoreProvider;
+  let provider: DoraMedianTimeToRestoreProvider;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -40,11 +40,14 @@ describe('DoraMeanTimeToRestoreProvider', () => {
         resolutionAt: '2026-06-10T12:00:00.000Z',
       }),
     ]);
-    provider = DoraMeanTimeToRestoreProvider.fromConfig(new ConfigReader({}), {
-      doraSyncService: mockDoraSyncService,
-      doraDataService: mockDoraDataService,
-      logger: mockLogger,
-    });
+    provider = DoraMedianTimeToRestoreProvider.fromConfig(
+      new ConfigReader({}),
+      {
+        doraSyncService: mockDoraSyncService,
+        doraDataService: mockDoraDataService,
+        logger: mockLogger,
+      },
+    );
   });
 
   afterEach(() => {
@@ -56,7 +59,7 @@ describe('DoraMeanTimeToRestoreProvider', () => {
       const metrics = provider.getMetrics();
       expect(metrics).toHaveLength(1);
       expect(metrics[0].thresholds).toEqual(
-        DEFAULT_DORA_MEAN_TIME_TO_RESTORE_THRESHOLDS,
+        DEFAULT_DORA_MEDIAN_TIME_TO_RESTORE_THRESHOLDS,
       );
       expect(metrics[0].defaultVisualization).toBe('sparkline');
       expect(metrics[0].unit).toBe('h');
@@ -99,12 +102,12 @@ describe('DoraMeanTimeToRestoreProvider', () => {
           resolutionAt: '2026-06-10T12:00:00.000Z',
         }),
       ]);
-      const customProvider = DoraMeanTimeToRestoreProvider.fromConfig(
+      const customProvider = DoraMedianTimeToRestoreProvider.fromConfig(
         new ConfigReader({
           scorecard: {
             metricProviders: {
               dora: {
-                meanTimeToRestore: {
+                medianTimeToRestore: {
                   options: {
                     collectors: {
                       incidents: {
@@ -172,7 +175,7 @@ describe('DoraMeanTimeToRestoreProvider', () => {
       );
     });
 
-    it('should calculate mean time to restore in hours', async () => {
+    it('should calculate median time to restore in hours', async () => {
       mockDoraDataService.readIncidents.mockResolvedValueOnce([
         dbIncident({
           id: 'INC-1',
@@ -196,7 +199,7 @@ describe('DoraMeanTimeToRestoreProvider', () => {
 
       const results = await provider.calculateMetrics(mockEntity);
 
-      expect(results.get('dora.meanTimeToRestore')).toBe(3);
+      expect(results.get('dora.medianTimeToRestore')).toBe(2);
     });
 
     it('should throw when the incidents collector is unable to fetch data', async () => {
@@ -221,7 +224,7 @@ describe('DoraMeanTimeToRestoreProvider', () => {
       ]);
 
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
-        'Unable to calculate mean time to restore: no resolved incidents with measurable recovery time were found',
+        'Unable to calculate median time to restore: no resolved incidents with measurable recovery time were found',
       );
     });
 
@@ -229,7 +232,7 @@ describe('DoraMeanTimeToRestoreProvider', () => {
       mockDoraDataService.readIncidents.mockResolvedValueOnce([]);
 
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
-        'Unable to calculate mean time to restore: no resolved incidents with measurable recovery time were found',
+        'Unable to calculate median time to restore: no resolved incidents with measurable recovery time were found',
       );
     });
 
@@ -251,7 +254,7 @@ describe('DoraMeanTimeToRestoreProvider', () => {
       );
     });
 
-    it('should skip invalid resolved incidents and calculate mean from the rest', async () => {
+    it('should skip invalid resolved incidents and calculate median from the rest', async () => {
       mockDoraDataService.readIncidents.mockResolvedValueOnce([
         dbIncident({
           id: 'INC-1',
@@ -269,7 +272,7 @@ describe('DoraMeanTimeToRestoreProvider', () => {
 
       const results = await provider.calculateMetrics(mockEntity);
 
-      expect(results.get('dora.meanTimeToRestore')).toBe(2);
+      expect(results.get('dora.medianTimeToRestore')).toBe(2);
       expect(mockLogger.warn).toHaveBeenCalledWith(
         expect.stringContaining('Skipping incident INC-1'),
       );

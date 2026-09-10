@@ -62,6 +62,7 @@
     "typescript": "~5.8.0"
   },
   "resolutions": {
+    "@backstage/frontend-plugin-api": "^0.18.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "refractor@npm:3.6.0/prismjs": "^1.30.0"

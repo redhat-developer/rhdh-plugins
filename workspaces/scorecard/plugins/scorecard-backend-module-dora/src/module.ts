@@ -29,7 +29,7 @@ import { DatabaseDoraPullRequests } from './database/DatabaseDoraPullRequests';
 import { DoraChangeFailureRateProvider } from './metricProviders/DoraChangeFailureRateProvider';
 import { DoraDeploymentFrequencyProvider } from './metricProviders/DoraDeploymentFrequencyProvider';
 import { DoraMedianLeadTimeForChangesProvider } from './metricProviders/DoraMedianLeadTimeForChangesProvider';
-import { DoraMeanTimeToRestoreProvider } from './metricProviders/DoraMeanTimeToRestoreProvider';
+import { DoraMedianTimeToRestoreProvider } from './metricProviders/DoraMedianTimeToRestoreProvider';
 import { DefaultDoraDataService } from './service/DoraDataService';
 import { DefaultDoraSyncService } from './service/DoraSyncService';
 import { CleanupExpiredDataTask } from './scheduler/CleanupExpiredDataTask';
@@ -92,7 +92,7 @@ export const scorecardModuleDora = createBackendModule({
             doraDataService,
             logger,
           }),
-          DoraMeanTimeToRestoreProvider.fromConfig(config, {
+          DoraMedianTimeToRestoreProvider.fromConfig(config, {
             doraSyncService,
             doraDataService,
             logger,
