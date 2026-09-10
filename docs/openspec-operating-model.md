@@ -110,10 +110,18 @@ is automatically rewritten to hide a discrepancy.
 
 ## OpenSpec lifecycle
 
-Every change directly under `openspec/changes/` is actionable implementation
-work. Review readiness is established through pull-request review, while
-ownership and implementation progress are visible in Jira, branches, and pull
-requests. Completion is represented by archiving the change.
+The active-queue rule applies after an initial classification. Before adopting
+this model in a workspace, existing changes must be classified as actionable,
+completed, blocked or deferred, or historical. Retain only actionable changes
+directly under `openspec/changes/`; archive completed behavior under
+`openspec/specs/`; and remove blocked, deferred, and historical material from
+the active tree while preserving Git history.
+
+After that initial classification, every change directly under
+`openspec/changes/` is actionable implementation work. Review readiness is
+established through pull-request review, while ownership and implementation
+progress are visible in Jira, branches, and pull requests. Completion is
+represented by archiving the change.
 
 Create a change when the work needs an explicit implementation contract. For a
 design choice that reviewers may reasonably question, the proposal records the
@@ -151,6 +159,11 @@ grows beyond that boundary, split it into smaller vertical slices or document
 why it should remain together.
 
 ## Agent context contract
+
+OpenSpec is the implementation contract, not an agent framework. The same
+change may be used by Fullsend, Cursor, Codex, or a human engineer. The tool
+used to select or execute it does not change the information ownership defined
+here.
 
 An implementation agent receives only:
 
@@ -190,9 +203,10 @@ If this RFC is approved, Boost will be the first workspace to apply the
 corrected operating model in a separate pull request:
 
 - keep its release map small;
-- retain only actionable changes directly under `openspec/changes/`;
-- remove blocked and deferred plans from the active tree while preserving Git
-  history;
+- start with a one-time classification of existing changes: retain only
+  actionable changes under `openspec/changes/`, archive completed behavior
+  under `openspec/specs/`, and remove blocked or deferred plans from the active
+  tree while preserving Git history;
 - keep concise canonical frontend and OGX behavior specs;
 - add a local validator that also runs the standard OpenSpec validator;
 - validate the bounded workflow through real Boost implementation work.
