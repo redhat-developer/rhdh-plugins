@@ -39,7 +39,7 @@ import { MyGroupsSidebarItem } from '@backstage/plugin-org';
 import {
   defaultGlobalHeaderComponentsMountPoints,
   GlobalHeaderComponent,
-} from '@red-hat-developer-hub/backstage-plugin-global-header';
+} from '@red-hat-developer-hub/backstage-plugin-global-header/legacy';
 import Box from '@mui/material/Box';
 import {
   QuickstartDrawerProvider,

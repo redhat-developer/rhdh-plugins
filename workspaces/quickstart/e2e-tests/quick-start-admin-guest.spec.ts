@@ -122,9 +122,12 @@ test.describe('Test Quick Start plugin', () => {
       translations.steps.setupLightspeed.description,
     );
     await setupLightspeedDescription.waitFor({ state: 'visible' });
-    await expect(page.getByRole('list')).toContainText(
-      translations.steps.setupLightspeed.description,
-    );
+    // NFS catalog breadcrumbs are also role=list; target the quickstart step list.
+    await expect(
+      page.getByRole('list').filter({
+        hasText: translations.steps.setupLightspeed.description,
+      }),
+    ).toBeVisible();
     const setupLightspeedParentList = setupLightspeedDescription
       .locator('..')
       .locator('..')
