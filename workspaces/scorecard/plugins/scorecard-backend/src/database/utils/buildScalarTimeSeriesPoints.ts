@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
+import { parseDate } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import type { DbScalarTimeSeriesPoint } from '../types';
-import { parseTimestamp } from '../../utils/normalizeTimestamp';
 
 /**
  * One row from the scalar time-series query:
@@ -50,7 +50,7 @@ export function buildScalarTimeSeriesPoints(
       const rawValue = Number(row.value);
       const rawTotal = Number(row.total);
       point = {
-        maxTimestamp: parseTimestamp(row.max_timestamp),
+        maxTimestamp: parseDate(row.max_timestamp),
         value: successCount > 0 && Number.isFinite(rawValue) ? rawValue : null,
         successCount,
         errorCount,

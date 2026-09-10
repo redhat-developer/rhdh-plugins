@@ -16,4 +16,7 @@
 
 export * from './mockCollectors';
 export * from './mockCollectorsService';
+export * from './mockDoraDataService';
+export * from './mockDoraStores';
+export * from './mockDoraSyncService';
 export * from './mockEntity';

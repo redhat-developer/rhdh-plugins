@@ -21,8 +21,57 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export interface Config {
-  /** Configuration for scorecard dora plugin */
+  /** Configuration for scorecard dora plugin. */
   scorecard?: {
+    plugins?: {
+      /**
+       * Configuration for scorecard dora plugin.
+       */
+      dora?: {
+        /**
+         * Number of days to retain scorecard DORA source data (deployments, incidents,
+         * pull requests) in the database. Older data is cleaned up by the
+         * `scorecard-dora:cleanup-expired-data` task.
+         * Must be greater than or equal to the DORA metric computation window (30 days).
+         * @default 365
+         */
+        dataRetentionDays?: number;
+        /**
+         * Freshness threshold in milliseconds for DORA deployment and incident collector refresh.
+         * If last successful deployments or incidents sync for a collector is within this value,
+         * data refresh is skipped and existing database data is reused.
+         * Must be greater than or equal to 0.
+         * Set to `0` to always refresh.
+         * @default 60000 (1 minute)
+         */
+        staleAfterMs?: number;
+        /**
+         * Lookback in milliseconds when re-querying deployments by creation time
+         * since the last synchronization watermark. It determines how far back
+         * to search for deployments that may have transitioned to a 'success'
+         * status after the previous refresh. Only new succeeded deployments are
+         * stored, existing deployment data remains unchanged as it’s considered
+         * immutable.
+         * Must be greater than or equal to 0 and less than or equal
+         * to the DORA metric computation window (30 days).
+         * Set to `0` for watermark-only incremental refresh (no lookback).
+         * @default 172800000 (48 hours)
+         */
+        deploymentLookbackMs?: number;
+        /**
+         * Lookback in milliseconds when re-querying incidents by update time
+         * since the last synchronization watermark. It determines how far back
+         * to search for incidents that were updated around the previous refresh,
+         * covering clock skew between Scorecard and the incident source as well
+         * as source-side indexing lag.
+         * Must be greater than or equal to 0 and less than or equal
+         * to the DORA metric computation window (30 days).
+         * Set to `0` for watermark-only incremental refresh (no lookback).
+         * @default 300000 (5 minutes)
+         */
+        incidentLookbackMs?: number;
+      };
+    };
     metricProviders?: {
       dora?: {
         deploymentFrequency?: {
