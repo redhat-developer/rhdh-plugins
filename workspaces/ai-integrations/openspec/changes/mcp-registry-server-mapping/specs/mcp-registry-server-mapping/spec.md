@@ -64,7 +64,7 @@ A registry publishes one `server.json` per server version, and each version beco
 
 ### Requirement: Map descriptive metadata to native Backstage fields
 
-The mapping SHALL map `server.json` descriptive attributes to native Backstage `metadata` fields: `title` → `metadata.title`; `description` → `metadata.description`; `websiteUrl` → a `metadata.links` entry whose `url` is the `websiteUrl` and whose `title` is `Website`; and `repository.url` (combined with `repository.subfolder` when present) → a `metadata.links` entry whose `url` references the repository and whose `title` is `Source Code`. The mapping SHALL ALSO emit `repository.url` (combined with `repository.subfolder` when present) as a `backstage.io/source-location` annotation, so the repository is captured both as the canonical Backstage source-location annotation (for source-aware tooling) and as a human-visible source link. The mapping SHALL set `metadata.tags` to include the upstream mcp-server convention tags (`mcp`, `ai`).
+The mapping SHALL map `server.json` descriptive attributes to native Backstage `metadata` fields: `title` → `metadata.title`; `description` → `metadata.description`; `websiteUrl` → a `metadata.links` entry whose `url` is the `websiteUrl` and whose `title` is `Website`; and `repository.url` (combined with `repository.subfolder` when present) → a `metadata.links` entry whose `url` references the repository and whose `title` is `Source Code`. The mapping SHALL ALSO emit `repository.url` (combined with `repository.subfolder` when present) as a `backstage.io/source-location` annotation whose value MUST use the `url:` format (e.g. `url:https://github.com/org/repo/tree/main/subfolder`), so the repository is captured both as the canonical Backstage source-location annotation (for source-aware tooling) and as a human-visible source link. The mapping SHALL set `metadata.tags` to include the upstream mcp-server convention tags (`mcp`, `ai`).
 
 #### Scenario: Descriptive fields lift to metadata
 
@@ -74,7 +74,7 @@ The mapping SHALL map `server.json` descriptive attributes to native Backstage `
 #### Scenario: Repository maps to a source link and a source-location annotation
 
 - **WHEN** a `server.json` provides `repository.url` and `repository.subfolder`
-- **THEN** the entity has a `metadata.links` entry whose `url` references the repository URL (and subfolder when present) and whose `title` is `Source Code`, a `backstage.io/source-location` annotation carrying the same repository URL (and subfolder when present) is also emitted, and the remaining `repository` sub-fields (`source`, `id`) are projected into `modelcontextprotocol.io/*` annotations
+- **THEN** the entity has a `metadata.links` entry whose `url` references the repository URL (and subfolder when present) and whose `title` is `Source Code`, a `backstage.io/source-location` annotation whose value uses the `url:` format (e.g. `url:https://github.com/org/repo/tree/main/subfolder`) carrying the same repository URL (and subfolder when present) is also emitted, and the remaining `repository` sub-fields (`source`, `id`) are projected into `modelcontextprotocol.io/*` annotations
 
 #### Scenario: mcp-server tags applied
 

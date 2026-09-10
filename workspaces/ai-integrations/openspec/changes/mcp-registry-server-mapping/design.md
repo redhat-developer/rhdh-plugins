@@ -116,7 +116,7 @@ The mapping therefore targets the dedicated `mcp-server` entity shape: top-level
 
 ### D10: Repository emits both `backstage.io/source-location` and a titled `metadata.links` entry; `websiteUrl` link titled "Website"
 
-**Choice:** `repository.url` (combined with `repository.subfolder` when present) is emitted **both** as the canonical Backstage `backstage.io/source-location` annotation — the annotation source-aware Backstage tooling (source view, scaffolder, TechDocs) reads to locate an entity's repository — **and** as a human-visible `metadata.links` entry titled `Source Code`. `websiteUrl` is emitted as a `metadata.links` entry titled `Website`.
+**Choice:** `repository.url` (combined with `repository.subfolder` when present) is emitted **both** as the canonical Backstage `backstage.io/source-location` annotation — whose value MUST use the `url:` format (e.g. `url:https://github.com/org/repo/tree/main/subfolder`), the format source-aware Backstage tooling (source view, scaffolder, TechDocs) reads to locate an entity's repository — **and** as a human-visible `metadata.links` entry titled `Source Code`. `websiteUrl` is emitted as a `metadata.links` entry titled `Website`.
 
 **Alternatives considered:** (a) Emit only the `metadata.links` source entry and omit `backstage.io/source-location` — rejected; without the canonical annotation, upstream source-location tooling cannot resolve the repository. (b) Emit only the annotation and no link — rejected; the annotation is not surfaced as a browsable link in the catalog UI.
 
