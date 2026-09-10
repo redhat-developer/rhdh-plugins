@@ -1,3 +1,5 @@
+# Tasks: MCP Registry Provider
+
 <!-- After each completed task, commit the changes. -->
 <!-- Group 1 scaffolds the plugin; Group 2 (config) and Group 3 (registry client) can
      proceed in parallel once scaffolding lands; Group 4 (provider wiring) depends on

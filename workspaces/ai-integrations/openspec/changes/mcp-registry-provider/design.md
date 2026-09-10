@@ -1,3 +1,5 @@
+# Design: MCP Registry Provider
+
 ## Canonical Touchpoints
 
 Carried forward from the proposal:

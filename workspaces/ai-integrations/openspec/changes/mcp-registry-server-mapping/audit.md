@@ -1,3 +1,5 @@
+# Audit: MCP Registry Server Mapping
+
 ## Audit Report: mcp-registry-server-mapping
 
 **Last audited:** 2026-08-25T00:03:43Z

@@ -1,3 +1,5 @@
+# Tasks: MCP Registry Server Mapping
+
 <!-- After each completed task, commit the changes. -->
 <!-- Group 1 (mapping reference) unblocks everything else. Groups 2 and 3
      can proceed in parallel once Group 1 lands; Group 4 depends on both. -->

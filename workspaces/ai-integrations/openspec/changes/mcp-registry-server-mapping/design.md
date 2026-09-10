@@ -1,3 +1,5 @@
+# Design: MCP Registry Server Mapping
+
 ## Canonical Touchpoints
 
 Carried forward from the proposal:

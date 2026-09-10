@@ -1,3 +1,5 @@
+# Proposal: MCP Registry Server Mapping
+
 ## Why
 
 MCP registries (the upstream [MCP Registry](https://github.com/modelcontextprotocol/registry) and downstream/private mirrors) publish server entries as `server.json` documents conforming to the [`server.schema.json` draft](https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json). Backstage already supports cataloging MCP servers as `API` entities with `spec.type: mcp-server` — defined upstream in [`backstage/backstage`](https://github.com/backstage/backstage) (Backstage RFC [#32062](https://github.com/backstage/backstage/issues/32062), not by RHDH) — but there is no defined, deterministic way to turn a registry `server.json` into such an entity. Without a canonical mapping, every ingestion path would invent its own field translation, lose registry metadata that has no native catalog home, and produce entities that do not round-trip. A single documented mapping contract makes registry ingestion predictable and lossless, and is the prerequisite for any future registry entity provider.

@@ -1,3 +1,5 @@
+# Proposal: MCP Registry Provider
+
 ## Why
 
 The [`mcp-registry-server-mapping`](../mcp-registry-server-mapping/proposal.md) change defines the pure `server.json` → `mcp-server` `API` entity transform, but explicitly leaves ingestion out of scope: nothing yet fetches entries from an [MCP Registry](https://github.com/modelcontextprotocol/registry) and puts the resulting entities into the Backstage catalog. Without a provider, an operator who points RHDH at a registry gets no catalog entities. This change delivers that missing runtime component — a Backstage catalog **entity provider** that periodically reads a registry's `server.json` entries and populates the catalog with `mcp-server` `API` entities — so MCP servers published to a registry become discoverable in RHDH.
