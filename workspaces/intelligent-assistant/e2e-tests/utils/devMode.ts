@@ -837,3 +837,66 @@ export async function mockFeedbackReceived(page: Page) {
     });
   });
 }
+
+export type IaPermissionMatrix = {
+  chat: boolean;
+  notebooks: boolean;
+  mcp: boolean;
+};
+
+export const IA_PERMISSIONS_ALL_ALLOWED: IaPermissionMatrix = {
+  chat: true,
+  notebooks: true,
+  mcp: true,
+};
+
+const IA_PERMISSION_AUTHORIZE_ROUTE = '**/api/permission/authorize';
+
+const IA_PERMISSION_NAMES = {
+  chat: 'intelligent-assistant.chat',
+  notebooks: 'intelligent-assistant.notebooks',
+  mcp: 'intelligent-assistant.mcp.tools',
+  skills: 'intelligent-assistant.skills',
+} as const;
+
+function isIaPermissionAllowed(
+  permissionName: string | undefined,
+  matrix: IaPermissionMatrix,
+): boolean {
+  switch (permissionName) {
+    case IA_PERMISSION_NAMES.chat:
+      return matrix.chat;
+    case IA_PERMISSION_NAMES.notebooks:
+      return matrix.notebooks;
+    case IA_PERMISSION_NAMES.mcp:
+      return matrix.mcp;
+    case IA_PERMISSION_NAMES.skills:
+      return false;
+    default:
+      return true;
+  }
+}
+
+/** Intercept Backstage permission checks for IA permission e2e tests. */
+export async function mockIaPermissions(
+  page: Page,
+  matrix: IaPermissionMatrix,
+): Promise<void> {
+  await page.unroute(IA_PERMISSION_AUTHORIZE_ROUTE);
+  await page.route(IA_PERMISSION_AUTHORIZE_ROUTE, async route => {
+    const body = route.request().postDataJSON() as {
+      items?: Array<{ id: string; permission?: { name?: string } }>;
+    };
+    const items = body?.items ?? [];
+    await route.fulfill({
+      json: {
+        items: items.map(item => ({
+          id: item.id,
+          result: isIaPermissionAllowed(item.permission?.name, matrix)
+            ? 'ALLOW'
+            : 'DENY',
+        })),
+      },
+    });
+  });
+}

@@ -19,14 +19,17 @@ import type { Browser, Page } from '@playwright/test';
 import { models, conversations, mockedShields } from '../fixtures/responses';
 import { openLightspeed, switchToLocale } from './testHelper';
 import {
+  IA_PERMISSIONS_ALL_ALLOWED,
   mockChatHistory,
   mockConversations,
   mockFeedbackStatus,
+  mockIaPermissions,
   mockMcpServers,
   mockModels,
   mockNotebookLightspeedBackend,
   mockQuery,
   mockShields,
+  type IaPermissionMatrix,
 } from './devMode';
 import { getTranslations, type LightspeedMessages } from './translations';
 
@@ -67,6 +70,17 @@ async function loginAsGuest(page: Page) {
     }
   }
 }
+async function setupLightspeedApiMocks(page: Page) {
+  await mockModels(page, models);
+  await mockConversations(page);
+  await mockChatHistory(page);
+  await mockQuery(page, LIGHTSPEED_E2E_DEFAULT_BOT_QUERY, conversations);
+  await mockShields(page, mockedShields);
+  await mockMcpServers(page);
+  await mockFeedbackStatus(page);
+  await mockNotebookLightspeedBackend(page);
+}
+
 /**
  * One logged-in Lightspeed session with the same dev-mode mocks as the legacy
  * monolithic suite. Each Playwright test file should call this from `beforeAll`.
@@ -79,20 +93,37 @@ export async function bootstrapLightspeedE2ePage(
   const locale = await page.evaluate(() => globalThis.navigator.language);
   const translations = getTranslations(locale);
 
-  await mockModels(page, models);
-  await mockConversations(page);
-  await mockChatHistory(page);
-  await mockQuery(page, LIGHTSPEED_E2E_DEFAULT_BOT_QUERY, conversations);
-  await mockShields(page, mockedShields);
-  await mockMcpServers(page);
-  await mockFeedbackStatus(page);
-  await mockNotebookLightspeedBackend(page);
+  await mockIaPermissions(page, IA_PERMISSIONS_ALL_ALLOWED);
+  await setupLightspeedApiMocks(page);
 
   await page.goto('/');
   await loginAsGuest(page);
 
   await switchToLocale(page, locale);
   await openLightspeed(page);
+
+  return { page, locale, translations };
+}
+
+/**
+ * Guest session with IA API mocks and a fixed permission matrix.
+ * Does not open the assistant — callers start from the catalog home page.
+ */
+export async function bootstrapLightspeedRbacE2ePage(
+  browser: Browser,
+  permissions: IaPermissionMatrix,
+): Promise<LightspeedE2eBootstrap> {
+  const context = await browser.newContext();
+  const page = await context.newPage();
+  const locale = await page.evaluate(() => globalThis.navigator.language);
+  const translations = getTranslations(locale);
+
+  await mockIaPermissions(page, permissions);
+  await setupLightspeedApiMocks(page);
+
+  await page.goto('/');
+  await loginAsGuest(page);
+  await switchToLocale(page, locale);
 
   return { page, locale, translations };
 }
