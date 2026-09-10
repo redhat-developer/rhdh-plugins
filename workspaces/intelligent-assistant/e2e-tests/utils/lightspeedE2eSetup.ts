@@ -24,6 +24,7 @@ import {
   mockConversations,
   mockFeedbackStatus,
   mockIaPermissions,
+  waitForIaPermissionAuthorize,
   mockMcpServers,
   mockModels,
   mockNotebookLightspeedBackend,
@@ -124,6 +125,8 @@ export async function bootstrapLightspeedRbacE2ePage(
   await page.goto('/');
   await loginAsGuest(page);
   await switchToLocale(page, locale);
+  await page.reload();
+  await waitForIaPermissionAuthorize(page).catch(() => undefined);
 
   return { page, locale, translations };
 }

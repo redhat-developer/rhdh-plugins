@@ -19,7 +19,6 @@ import { test, expect, type Page } from '@playwright/test';
 import { IaRbacPermissionsPage } from './pages/IaRbacPermissionsPage';
 import {
   IA_PERMISSIONS_ALL_ALLOWED,
-  mockIaPermissions,
   type IaPermissionMatrix,
 } from './utils/devMode';
 import { skipUnlessLocales } from './utils/localeSkip';
@@ -37,6 +36,8 @@ async function bootstrapPermissionScenario(
 }
 
 test.describe('Intelligent assistant permissions', () => {
+  test.describe.configure({ mode: 'serial' });
+
   test.beforeAll(({}, testInfo) => {
     skipUnlessLocales(
       testInfo,
@@ -86,7 +87,6 @@ test.describe('Intelligent assistant permissions', () => {
     });
 
     test.beforeEach(async () => {
-      permissions.resetApiTracking();
       await sharedPage.goto('/');
     });
 
@@ -112,7 +112,6 @@ test.describe('Intelligent assistant permissions', () => {
     });
 
     test.beforeEach(async () => {
-      permissions.resetApiTracking();
       await sharedPage.goto('/');
     });
 
@@ -146,9 +145,7 @@ test.describe('Intelligent assistant permissions', () => {
     });
   });
 
-  test.describe('MCP tools', () => {
-    test.describe.configure({ mode: 'serial' });
-
+  test.describe('MCP tools allowed', () => {
     let sharedPage: Page;
     let permissions: IaRbacPermissionsPage;
 
@@ -165,21 +162,29 @@ test.describe('Intelligent assistant permissions', () => {
       await sharedPage.goto('/');
     });
 
-    test.afterEach(async () => {
-      await mockIaPermissions(sharedPage, IA_PERMISSIONS_ALL_ALLOWED);
-    });
-
     test('shows MCP settings in header menu', async () => {
       await permissions.expectMcpMenuVisible();
     });
+  });
 
-    test('hides MCP settings from header menu', async () => {
-      await mockIaPermissions(sharedPage, {
+  test.describe('MCP tools denied', () => {
+    let sharedPage: Page;
+    let permissions: IaRbacPermissionsPage;
+
+    test.beforeAll(async ({ browser }) => {
+      const boot = await bootstrapPermissionScenario(browser, {
         ...IA_PERMISSIONS_ALL_ALLOWED,
         mcp: false,
       });
-      await sharedPage.goto('/');
+      sharedPage = boot.page;
+      permissions = boot.permissions;
+    });
 
+    test.beforeEach(async () => {
+      await sharedPage.goto('/');
+    });
+
+    test('hides MCP settings from header menu', async () => {
       await permissions.expectMcpMenuHidden();
     });
   });

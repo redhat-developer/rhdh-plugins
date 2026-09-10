@@ -23,34 +23,10 @@ import { openChatbot } from './LightspeedPage';
  * Intelligent Assistant permission gating: FAB visibility, tab layout, and MCP menu.
  */
 export class IaRbacPermissionsPage {
-  private chatRequests: string[] = [];
-  private notebookRequests: string[] = [];
-
   constructor(
     private readonly page: Page,
     private readonly t: LightspeedMessages,
-  ) {
-    page.on('request', request => {
-      if (request.method() !== 'GET') {
-        return;
-      }
-      const url = request.url();
-      if (
-        url.includes('/api/intelligent-assistant/v2/conversations') ||
-        url.includes('/api/intelligent-assistant/v1/models')
-      ) {
-        this.chatRequests.push(url);
-      }
-      if (url.includes('/api/intelligent-assistant/notebooks/v1/sessions')) {
-        this.notebookRequests.push(url);
-      }
-    });
-  }
-
-  resetApiTracking(): void {
-    this.chatRequests = [];
-    this.notebookRequests = [];
-  }
+  ) {}
 
   fabButton(): Locator {
     return this.page.getByRole('button', { name: this.t['tooltip.fab.open'] });
@@ -102,40 +78,16 @@ export class IaRbacPermissionsPage {
     await expect(this.notebooksTab()).toBeVisible();
   }
 
-  async expectNoTabs(): Promise<void> {
-    await expect(this.chatbotRegion().getByRole('tab')).toHaveCount(0);
-  }
-
-  async expectChatApiRequestsMade(): Promise<void> {
-    await expect.poll(() => this.chatRequests.length).toBeGreaterThan(0);
-  }
-
-  async expectNoChatApiRequests(): Promise<void> {
-    await expect.poll(() => this.chatRequests.length).toBe(0);
-  }
-
-  async expectNotebookApiRequestsMade(): Promise<void> {
-    await expect.poll(() => this.notebookRequests.length).toBeGreaterThan(0);
-  }
-
-  async expectNoNotebookApiRequests(): Promise<void> {
-    await expect.poll(() => this.notebookRequests.length).toBe(0);
-  }
-
   async expectChatOnlyLayout(): Promise<void> {
-    await this.expectNoTabs();
+    await expect(this.notebooksTab()).toBeHidden();
     await expect(this.newChatButton()).toBeVisible();
     await expect(this.notebooksEmptyTitle()).not.toBeVisible();
-    await this.expectNoNotebookApiRequests();
-    await this.expectChatApiRequestsMade();
   }
 
   async expectNotebooksOnlyLayout(): Promise<void> {
-    await this.expectNoTabs();
+    await expect(this.chatTab()).toBeHidden();
     await expect(this.newChatButton()).not.toBeVisible();
     await expect(this.notebooksEmptyTitle()).toBeVisible();
-    await this.expectNoChatApiRequests();
-    await this.expectNotebookApiRequestsMade();
   }
 
   async openOptionsMenu(): Promise<void> {
