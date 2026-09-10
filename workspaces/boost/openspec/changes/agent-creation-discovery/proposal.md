@@ -1,5 +1,9 @@
 # Proposal: Agent Creation & Discovery
 
+> **Workspace status:** Follow-on planning; not part of the current RHDH 2.1
+> release. The current release contains the AI Catalog frontend plugin and OGX
+> entity provider only.
+
 ## Why
 
 An agentic AI platform is only as valuable as its agents. Boost supports four creation paths (no-code, template, DevSpaces, import), a gallery for discovery, and MCP tool connectivity. These form the supply side of the agent ecosystem.

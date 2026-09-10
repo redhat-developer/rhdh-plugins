@@ -1,5 +1,8 @@
 # Proposal: Cross-Connector Shared Infrastructure
 
+> **Workspace status:** Follow-on connector/backend infrastructure; not part
+> of the current RHDH 2.1 frontend and OGX release baseline.
+
 ## Why
 
 Boost delivers three AI catalog connectors — MCP Registry, RHOAI, and OCI Skill Registry — each discovering and surfacing AI entities (models, agents, tools) from external platforms. These connectors share common infrastructure requirements: custom CA bundle resolution for air-gapped deployments, K8s Secret-based credential injection, and fault isolation to prevent one connector failure from blocking other connectors or degrading non-AI catalog entities.

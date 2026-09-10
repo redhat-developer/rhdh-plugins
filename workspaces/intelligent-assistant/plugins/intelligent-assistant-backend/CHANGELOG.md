@@ -1,5 +1,34 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
 
+## 5.0.1
+
+### Patch Changes
+
+- fe51be2: Backstage version bump to v1.54.6
+- Updated dependencies [fe51be2]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.0.1
+
+## 5.0.0
+
+### Major Changes
+
+- 5741af9: Consolidate Intelligent Assistant RBAC permissions into four feature-linked sets: `intelligent-assistant.chat`, `intelligent-assistant.notebooks`, `intelligent-assistant.mcp.tools`, and `intelligent-assistant.skills`. Update backend routes, frontend permission checks, example RBAC policies, and documentation to use the new permission names and exported constants.
+
+### Patch Changes
+
+- Updated dependencies [5741af9]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.0.0
+
+## 4.3.0
+
+### Minor Changes
+
+- cfdfe68: Accept WebP (`image/webp`) image attachments on the `/v1/query` route alongside the existing JPEG support, validating them by their `RIFF....WEBP` magic bytes.
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@4.3.0
+
 ## 4.2.0
 
 ### Minor Changes
@@ -200,6 +229,18 @@
 ### Patch Changes
 
 - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.9.0
+
+## 2.8.7
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.7
+
+## 2.8.6
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.6
 
 ## 2.8.5
 

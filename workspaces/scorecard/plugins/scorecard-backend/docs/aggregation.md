@@ -269,8 +269,8 @@ Use this endpoint for all new integrations.
 The response shape includes **`id`**, **`status`**, **`metadata`** (title, description, type, unit, visualization, aggregation type, and **`filter`** when configured), and **`result`**. The shape of **`result`** depends on the aggregation type:
 
 - **`statusGrouped`**: counts per threshold rule, **`total`**, **`thresholds`**, **`entitiesConsidered`**, **`calculationErrorCount`**, **`timestamp`**.
-- **`weightedStatusScore`**: same as status-grouped, plus **`weightedStatusScore`** (portfolio percentage in \[0, 100\], one decimal), **`weightedStatusSum`**, **`weightedStatusMaxPossible`**, and **`aggregationChartDisplayColor`** (see backend README). The homepage card shows a donut gauge for this type instead of a multi-slice status pie.
-- **Scalar types** (`sum`, `average`, `max`, `min`, `count`): see [Scalar result fields](#scalar-result-fields) below. When **`filter.status`** is configured, **`metadata.filter`** is also returned.
+- **`weightedStatusScore`**: same as status-grouped, plus **`weightedStatusScore`** (portfolio percentage in \[0, 100\], one decimal), **`weightedStatusSum`**, **`weightedStatusMaxPossible`**, and **`aggregationChartDisplayColor`** (color from the **first** matching rule in **`thresholds`** against **`weightedStatusScore`**; **`null`** when **`total`** is **0** — see backend README). The homepage card shows a donut gauge for this type instead of a multi-slice status pie.
+- **Scalar types** (`sum`, `average`, `max`, `min`, `count`): see [Scalar result fields](#scalar-result-fields) below, including **`aggregationChartDisplayColor`**. When **`filter.status`** is configured, **`metadata.filter`** is also returned.
 
 For a daily history of a **scalar** KPI over owned entities, see [`GET /aggregations/:aggregationId/time-series`](#get-aggregationsaggregationidtime-series).
 
@@ -278,14 +278,15 @@ For a daily history of a **scalar** KPI over owned entities, see [`GET /aggregat
 
 When **`metadata.aggregationType`** is one of **`sum`**, **`average`**, **`max`**, **`min`**, or **`count`**, **`result`** is a scalar aggregation payload:
 
-| Field                       | Description                                                                                                                                                                    |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **`value`**                 | Aggregated number from the KPI type (`sum` / `average` / `max` / `min` / `count`) over contributing latest non-null rows. Classified by **`options.thresholds`** when present. |
-| **`total`**                 | How many latest rows contributed to **`value`** (non-null, calculation failures excluded, optionally narrowed by **`filter.status`**). For **`count`**, equals **`value`**.    |
-| **`entitiesConsidered`**    | Owned entities in scope that have at least one latest row for this metric (includes calculation-error rows).                                                                   |
-| **`calculationErrorCount`** | Among **`entitiesConsidered`**, how many latest rows are metric calculation failures (`error_message` set and `value` null).                                                   |
-| **`timestamp`**             | Portfolio data freshness — ISO timestamp of the most recent latest row in scope (same merge rule as other aggregation types).                                                  |
-| **`thresholds`**            | Number-style rules for classifying **`value`**; from **`options.thresholds`** or **`DEFAULT_NUMBER_THRESHOLDS`** when omitted.                                                 |
+| Field                              | Description                                                                                                                                                                                                                                      |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`value`**                        | Aggregated number from the KPI type (`sum` / `average` / `max` / `min` / `count`) over contributing latest non-null rows. Classified by **`options.thresholds`** when present.                                                                   |
+| **`total`**                        | How many latest rows contributed to **`value`** (non-null, calculation failures excluded, optionally narrowed by **`filter.status`**). For **`count`**, equals **`value`**.                                                                      |
+| **`entitiesConsidered`**           | Owned entities in scope that have at least one latest row for this metric (includes calculation-error rows).                                                                                                                                     |
+| **`calculationErrorCount`**        | Among **`entitiesConsidered`**, how many latest rows are metric calculation failures (`error_message` set and `value` null).                                                                                                                     |
+| **`timestamp`**                    | Portfolio data freshness — ISO timestamp of the most recent latest row in scope (same merge rule as other aggregation types).                                                                                                                    |
+| **`thresholds`**                   | Number-style rules for classifying **`value`**; from **`options.thresholds`** or **`DEFAULT_NUMBER_THRESHOLDS`** when omitted.                                                                                                                   |
+| **`aggregationChartDisplayColor`** | Color from the **first** matching rule in **`thresholds`** against **`value`**. Standard keys (`success`, `warning`, `error`) use default theme colors when **`color`** is omitted. **`null`** when **`total`** is **0** (no contributing rows). |
 
 Example scalar response with status filter:
 
@@ -306,6 +307,7 @@ Example scalar response with status filter:
     "entitiesConsidered": 10,
     "calculationErrorCount": 1,
     "timestamp": "2026-02-17T10:30:00.000Z",
+    "aggregationChartDisplayColor": "rgb(224, 189, 108)",
     "thresholds": {
       "rules": [
         { "key": "success", "expression": "<100" },

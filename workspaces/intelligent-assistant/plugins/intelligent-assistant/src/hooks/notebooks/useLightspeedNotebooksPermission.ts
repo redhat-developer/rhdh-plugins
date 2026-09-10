@@ -16,16 +16,16 @@
 
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import { iaNotebooksUsePermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+import { iaNotebooksPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 export const useLightspeedNotebooksPermission = () => {
   const result = usePermission({
-    permission: iaNotebooksUsePermission,
+    permission: iaNotebooksPermission,
   });
 
   return {
     loading: result.loading,
     allowed: result.allowed,
-    iaNotebooksUsePermissionName: iaNotebooksUsePermission.name,
+    iaNotebooksPermissionName: iaNotebooksPermission.name,
   };
 };

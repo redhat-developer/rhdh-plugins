@@ -28,14 +28,11 @@ import express, { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
 import {
-  iaChatAccessPermission,
-  iaChatManagePermission,
-  iaChatUsePermission,
-  iaMcpManagePermission,
-  iaMcpUsePermission,
-  iaNotebooksUsePermission,
+  iaChatPermission,
+  iaMcpToolsPermission,
+  iaNotebooksPermission,
   iaPermissions,
-  iaSkillsAccessPermission,
+  iaSkillsPermission,
 } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import { Readable } from 'node:stream';
@@ -372,7 +369,7 @@ export async function createRouter(
   router.get(
     '/mcp-servers',
     generalRateLimiter,
-    requirePermission(iaMcpUsePermission),
+    requirePermission(iaMcpToolsPermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -413,7 +410,7 @@ export async function createRouter(
   router.post(
     '/mcp-servers/validate',
     generalRateLimiter,
-    requirePermission(iaMcpUsePermission),
+    requirePermission(iaMcpToolsPermission),
     async (req, res) => {
       try {
         const { url, token } = req.body;
@@ -448,7 +445,7 @@ export async function createRouter(
   router.post(
     '/mcp-servers/:name/validate',
     generalRateLimiter,
-    requirePermission(iaMcpManagePermission),
+    requirePermission(iaMcpToolsPermission),
     async (req, res) => {
       try {
         const { userEntityRef, credentials } = getIdentity(req);
@@ -533,7 +530,7 @@ export async function createRouter(
   router.patch(
     '/mcp-servers/:name',
     generalRateLimiter,
-    requirePermission(iaMcpManagePermission),
+    requirePermission(iaMcpToolsPermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -620,7 +617,7 @@ export async function createRouter(
   router.get(
     '/notebook-conversation-ids',
     generalRateLimiter,
-    requirePermission(iaNotebooksUsePermission),
+    requirePermission(iaNotebooksPermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -666,7 +663,7 @@ export async function createRouter(
   router.get(
     '/v1/models',
     generalRateLimiter,
-    requirePermission(iaChatAccessPermission),
+    requirePermission(iaChatPermission),
     async (_request, response) => {
       try {
         const upstream = await fetch(`${lcsBaseUrl}/v1/models`);
@@ -728,64 +725,64 @@ export async function createRouter(
   router.get(
     '/v1/shields',
     generalRateLimiter,
-    requirePermission(iaChatAccessPermission),
+    requirePermission(iaChatPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations',
     generalRateLimiter,
-    requirePermission(iaChatAccessPermission),
+    requirePermission(iaChatPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(iaChatAccessPermission),
+    requirePermission(iaChatPermission),
     apiProxy,
   );
   router.delete(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(iaChatManagePermission),
+    requirePermission(iaChatPermission),
     apiProxy,
   );
   router.get(
     '/v1/feedback/status',
     generalRateLimiter,
-    requirePermission(iaChatAccessPermission),
+    requirePermission(iaChatPermission),
     apiProxy,
   );
 
   router.get(
     '/v1/saved-prompts/config',
     generalRateLimiter,
-    requirePermission(iaChatUsePermission),
+    requirePermission(iaChatPermission),
     apiProxy, // SKIP_USER_ID_ENDPOINTS prevents user_id injection for this endpoint
   );
   router.get(
     '/v1/saved-prompts',
     generalRateLimiter,
-    requirePermission(iaChatUsePermission),
+    requirePermission(iaChatPermission),
     apiProxy,
   );
   router.delete(
     '/v1/saved-prompts/:prompt_id',
     generalRateLimiter,
-    requirePermission(iaChatUsePermission),
+    requirePermission(iaChatPermission),
     apiProxy,
   );
 
   router.get(
     '/v1/skills',
     generalRateLimiter,
-    requirePermission(iaSkillsAccessPermission),
+    requirePermission(iaSkillsPermission),
     apiProxy,
   );
 
   router.post(
     '/v1/feedback',
     generalRateLimiter,
-    requirePermission(iaChatUsePermission),
+    requirePermission(iaChatPermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -828,7 +825,7 @@ export async function createRouter(
   router.post(
     '/v1/saved-prompts',
     generalRateLimiter,
-    requirePermission(iaChatUsePermission),
+    requirePermission(iaChatPermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -873,7 +870,7 @@ export async function createRouter(
   router.post(
     '/v1/query/interrupt',
     generalRateLimiter,
-    requirePermission(iaChatUsePermission),
+    requirePermission(iaChatPermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -913,7 +910,7 @@ export async function createRouter(
     expensiveRateLimiter,
     validateCompletionsRequest,
     validateAttachmentsForModel,
-    requirePermission(iaChatUsePermission),
+    requirePermission(iaChatPermission),
     async (request, response) => {
       const { provider }: Pick<QueryRequestBody, 'provider'> = request.body;
       try {
@@ -1006,7 +1003,7 @@ export async function createRouter(
   router.put(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(iaChatManagePermission),
+    requirePermission(iaChatPermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -1047,7 +1044,7 @@ export async function createRouter(
   router.post(
     '/v1/validate-model-vision',
     generalRateLimiter,
-    requirePermission(iaChatUsePermission),
+    requirePermission(iaChatPermission),
     async (request, response) => {
       const { model, provider } = request.body;
 

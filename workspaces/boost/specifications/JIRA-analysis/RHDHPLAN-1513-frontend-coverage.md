@@ -4,6 +4,16 @@
 > **Feature:** AI Catalog Ingestion Operations & Upstream Schema Alignment Readiness
 > **Cross-referenced against:** RHDHPLAN-1509 (AI Catalog Discovery UI)
 
+> **Workspace reconciliation (2026-09-08):** The RHDHPLAN-1508 entries in the
+> cross-feature table below are historical traceability only. The current
+> design does not include a standalone RBAC admin page or duplicate Catalog
+> entity permissions; follow-on authorization work has no separate RHDH 2.1
+> frontend deliverable.
+>
+> The RHDHPLAN-1513 frontend stories documented below are follow-on Boost
+> backend/admin work, not deliverables of the current RHDH 2.1 frontend and
+> OGX release baseline.
+
 ## Feature Structure
 
 | Level   | Key           | Summary                                                               | Status      |
@@ -124,12 +134,14 @@ The relationship between RHDHPLAN-1513 and RHDHPLAN-1509 is clean:
 
 ## Cross-Feature Frontend Summary (All 4 Features)
 
-| Feature       | Frontend Stories NOT in RHDHPLAN-1509                                         | Total |
-| ------------- | ----------------------------------------------------------------------------- | ----- |
-| RHDHPLAN-1507 | None                                                                          | 0     |
-| RHDHPLAN-1508 | RHIDP-15273 (graduated visibility), RHIDP-15307/15308/15309 (RBAC admin UI)   | 4     |
-| RHDHPLAN-1510 | None                                                                          | 0     |
-| RHDHPLAN-1513 | RHIDP-15336/15338/15339 (health dashboard), RHIDP-15342 (connector config UI) | 4     |
-| **Total**     |                                                                               | **8** |
+| Feature       | Frontend Stories NOT in RHDHPLAN-1509                                                           | Total |
+| ------------- | ----------------------------------------------------------------------------------------------- | ----- |
+| RHDHPLAN-1507 | None                                                                                            | 0     |
+| RHDHPLAN-1508 | Follow-on Catalog authorization and API-level redaction; no current standalone frontend stories | 0     |
+| RHDHPLAN-1510 | None                                                                                            | 0     |
+| RHDHPLAN-1513 | RHIDP-15336/15338/15339 (health dashboard), RHIDP-15342 (connector config UI)                   | 4     |
+| **Total**     |                                                                                                 | **4** |
 
-All 8 frontend stories have RHIDP Jira coverage and openspec specifications. No gaps across any feature.
+The four current RHDHPLAN-1513 frontend stories have RHIDP Jira coverage and
+OpenSpec specifications. RHDHPLAN-1508 remains follow-on authorization work,
+not a current standalone frontend deliverable.

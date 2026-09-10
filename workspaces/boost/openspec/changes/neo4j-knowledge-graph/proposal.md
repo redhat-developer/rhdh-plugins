@@ -1,5 +1,8 @@
 # Proposal: Neo4j Knowledge Graph Sync Adapter
 
+> **Workspace status:** Follow-on graph synchronization work; not part of the
+> current RHDH 2.1 frontend and OGX release baseline.
+
 ## Why
 
 AI asset developers and platform administrators need to explore relationships between skills, tools, domains, agents, and model servers to:

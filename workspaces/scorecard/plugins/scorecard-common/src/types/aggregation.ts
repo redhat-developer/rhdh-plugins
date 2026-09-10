@@ -100,7 +100,7 @@ export type WeightedStatusScoreAggregationResult =
     weightedStatusScore: number;
     weightedStatusSum: number;
     weightedStatusMaxPossible: number;
-    aggregationChartDisplayColor: string;
+    aggregationChartDisplayColor: string | null;
   };
 
 /**
@@ -108,6 +108,7 @@ export type WeightedStatusScoreAggregationResult =
  */
 export type ScalarAggregationResult = ScalarAggregatedMetric & {
   thresholds: ThresholdConfig;
+  aggregationChartDisplayColor: string | null;
 };
 
 /**

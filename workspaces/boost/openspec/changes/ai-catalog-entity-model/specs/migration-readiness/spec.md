@@ -1,5 +1,10 @@
 # Migration Readiness for Upstream Entity Kinds
 
+> **Workspace status:** Follow-on RHDH schema-alignment planning; not part of
+> the current RHDH 2.1 Boost release. This document records a broader
+> migration-readiness target and does not change the shipped frontend or OGX
+> entity-provider contract.
+
 > **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
 >
 > **Design document:** [migration-plan.md](migration-plan.md) — implements RHIDP-15302 tasks 8.1–8.4 (canonical SoT). Platform engineers can also find a pointer at [`specifications/ai-asset-upstream-migration-design.md`](../../../../../specifications/ai-asset-upstream-migration-design.md).

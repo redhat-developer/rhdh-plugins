@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-boost-toolscope
 
+## 0.2.2
+
+### Patch Changes
+
+- a65f815: bump workspace to Backstage 1.54.6
+
+## 0.2.1
+
+### Patch Changes
+
+- 0e772a4: bump workspace to Backstage 1.54.4
+
 ## 0.2.0
 
 ### Minor Changes
