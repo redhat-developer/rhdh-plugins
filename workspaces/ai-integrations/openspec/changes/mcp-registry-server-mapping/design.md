@@ -44,43 +44,83 @@ The mapping therefore targets the dedicated `mcp-server` entity shape: top-level
 
 ### D1: Target the upstream example shape — top-level `spec.remotes[]`, no `spec.definition`
 
-The entity carries `spec.type: mcp-server`, `spec.lifecycle`, `spec.owner`, and top-level `spec.remotes[]` (`type`, `url`). No `spec.definition` is emitted. **Alternatives considered:** (a) inline `spec.definition` MCP Server Specification string — rejected; the mcp-server entity uses `spec.remotes` instead. (b) Dual-write both `spec.definition` and `spec.remotes` for base-schema safety — rejected as redundant given the target shape uses `spec.remotes`.
+**Choice:** The entity carries `spec.type: mcp-server`, `spec.lifecycle`, `spec.owner`, and top-level `spec.remotes[]` (`type`, `url`). No `spec.definition` is emitted.
+
+**Alternatives considered:** (a) Inline `spec.definition` MCP Server Specification string — rejected; the mcp-server entity uses `spec.remotes` instead. (b) Dual-write both `spec.definition` and `spec.remotes` for base-schema safety — rejected as redundant given the target shape uses `spec.remotes`.
+
+**Rationale:** Aligns with the dedicated upstream `McpServerApiEntity` schema, which defines `spec.remotes` in place of `spec.definition`.
 
 ### D2: Two-tier mapping — native lift, then annotation projection fallback
 
-Attributes with a native home lift into `metadata`/`spec` fields (`mcp-registry-server-mapping`); everything else is projected into `modelcontextprotocol.io/*` annotations (`mcp-registry-annotation-projection`). This keeps the entity idiomatic for catalog consumers while losing no source data. **Alternative:** stuff the entire `server.json` into a single annotation blob — rejected; opaque and not individually searchable/filterable.
+**Choice:** Attributes with a native home lift into `metadata`/`spec` fields (`mcp-registry-server-mapping`); everything else is projected into `modelcontextprotocol.io/*` annotations (`mcp-registry-annotation-projection`).
+
+**Alternative considered:** Stuff the entire `server.json` into a single annotation blob — rejected; opaque and not individually searchable/filterable.
+
+**Rationale:** Keeps the entity idiomatic for catalog consumers while losing no source data.
 
 ### D3: Annotation key encoding — dot-separated path after the prefix
 
-Nested paths are encoded as `modelcontextprotocol.io/attribute.tree.to.leaf` (object keys by name, array elements by zero-based index). Backstage annotation keys allow exactly one `/` and a ≤63-char name segment over a restricted character set, so path segments are sanitized (illegal characters and leading `_` replaced) and over-length keys are truncated with a stable hash suffix; sanitization collisions are disambiguated by the same hash suffix. **Alternatives considered:** literal slashes (`.../attr/tree/leaf`) — rejected, invalid Backstage keys; hyphenated scalars + JSON blobs for arrays — rejected, less uniform and less queryable.
+**Choice:** Nested paths are encoded as `modelcontextprotocol.io/attribute.tree.to.leaf` (object keys by name, array elements by zero-based index). Path segments are sanitized (illegal characters and leading `_` replaced) and over-length keys are truncated with a stable hash suffix; sanitization collisions are disambiguated by the same hash suffix.
+
+**Alternatives considered:** Literal slashes (`.../attr/tree/leaf`) — rejected, invalid Backstage keys; hyphenated scalars + JSON blobs for arrays — rejected, less uniform and less queryable.
+
+**Rationale:** Backstage annotation keys allow exactly one `/` and a ≤63-char name segment over a restricted character set, making dot-separated encoding the most uniform and queryable representation that fits within those constraints.
 
 ### D4: Entity identity — `metadata.name` = `<name>__<version>`
 
-A registry publishes one `server.json` per version and each becomes its own entity, so a name derived from the canonical name alone would collide across versions. `metadata.name` is the sanitized canonical name and sanitized version joined by `__`. The bare canonical name is preserved in `modelcontextprotocol.io/name` and the version in `modelcontextprotocol.io/version`, so both remain individually queryable and the identity is reconstructable. Over-length/collision falls back to truncation + stable hash suffix. **Alternative:** encode the version in `metadata.namespace` — rejected; fragments entity references and complicates relationships.
+**Choice:** `metadata.name` is the sanitized canonical name and sanitized version joined by `__`. The bare canonical name is preserved in `modelcontextprotocol.io/name` and the version in `modelcontextprotocol.io/version`, so both remain individually queryable and the identity is reconstructable. Over-length/collision falls back to truncation + stable hash suffix.
+
+**Alternative considered:** Encode the version in `metadata.namespace` — rejected; fragments entity references and complicates relationships.
+
+**Rationale:** A registry publishes one `server.json` per version and each becomes its own entity, so a name derived from the canonical name alone would collide across versions.
 
 ### D5: Supplying fields absent from `server.json` — owner and lifecycle
 
-`server.json` (per the base `server.schema.json`) has no owner or lifecycle fields. `spec.owner` is set to the constant `unknown` by default; a caller MAY supply an override default, but the transform never fails for a missing owner (a placeholder owner keeps the output valid, and the future ingestion change can reassign ownership). `spec.lifecycle` is set to the constant `production` by default; a caller MAY supply an override default lifecycle value. Both fields use the same caller-override pattern for consistency. **Alternatives considered:** (a) require caller-provided owner/lifecycle and fail if absent — rejected; a pure transform should always yield a valid entity, and ownership/lifecycle assignment belongs to the ingestion layer. (b) derive lifecycle from a `status` field — rejected; `status` is not part of the base `server.schema.json` (verified 2026-08-21 against the draft schema).
+**Choice:** `spec.owner` is set to the constant `unknown` by default; a caller MAY supply an override default, but the transform never fails for a missing owner (a placeholder owner keeps the output valid, and the future ingestion change can reassign ownership). `spec.lifecycle` is set to the constant `production` by default; a caller MAY supply an override default lifecycle value. Both fields use the same caller-override pattern for consistency.
+
+**Alternatives considered:** (a) Require caller-provided owner/lifecycle and fail if absent — rejected; a pure transform should always yield a valid entity, and ownership/lifecycle assignment belongs to the ingestion layer. (b) Derive lifecycle from a `status` field — rejected; `status` is not part of the base `server.schema.json` (verified 2026-08-21 against the draft schema).
+
+**Rationale:** `server.json` (per the base `server.schema.json`) has no owner or lifecycle fields. Defaults keep the output valid without requiring the caller to supply values that the ingestion layer should own.
 
 ### D6: Determinism and idempotency
 
-The transform is a pure function of (`server.json`, caller defaults) with stable ordering of `spec.remotes`, `metadata.tags`, and annotation keys, and no timestamps or randomness. This makes the output safe as the identity for repeated ingestion and usable as a golden-file test oracle.
+**Choice:** The transform is a pure function of (`server.json`, caller defaults) with stable ordering of `spec.remotes`, `metadata.tags`, and annotation keys, and no timestamps or randomness.
+
+**Rationale:** Makes the output safe as the identity for repeated ingestion and usable as a golden-file test oracle.
 
 ### D7: Fail-open to generic projection on schema drift
 
-The draft `server.schema.json` evolves. Native mappings are pinned to known fields; any field not recognized by a native rule is still captured by the generic annotation projection. New/unknown source fields are therefore never dropped — at worst they land in annotations rather than a native field.
+**Choice:** Native mappings are pinned to known fields; any field not recognized by a native rule is still captured by the generic annotation projection. New/unknown source fields are therefore never dropped — at worst they land in annotations rather than a native field.
+
+**Rationale:** The draft `server.schema.json` evolves. Fail-open projection ensures no source data is lost as the schema changes.
 
 ### D8: Servers with no remotes emit an empty `spec.remotes: []`
 
-The upstream `McpServerApiEntity` schema requires `spec.remotes`. A `server.json` that declares no `remotes` (e.g. a local-`packages`-only server) is therefore mapped to an entity with an **empty array** `spec.remotes: []`, never an omitted field. This keeps the output both schema-conformant and deterministic (D6) — the no-remotes case has a single, stable representation. **Alternative:** treat a no-remotes server as a mapping failure — rejected; such servers are valid registry entries and their `packages`/metadata are still worth cataloging (their runtime details are preserved via annotation projection). **Dependency note:** this assumes `McpServerApiEntity` accepts an empty `remotes` array (no `minItems: 1`); if upstream later enforces a non-empty `remotes`, revisit this decision (emit a failure or a documented placeholder).
+**Choice:** A `server.json` that declares no `remotes` (e.g. a local-`packages`-only server) is mapped to an entity with an **empty array** `spec.remotes: []`, never an omitted field.
+
+**Alternative considered:** Treat a no-remotes server as a mapping failure — rejected; such servers are valid registry entries and their `packages`/metadata are still worth cataloging (their runtime details are preserved via annotation projection).
+
+**Rationale:** The upstream `McpServerApiEntity` schema requires `spec.remotes`. An empty array keeps the output both schema-conformant and deterministic (D6) — the no-remotes case has a single, stable representation.
+
+**Dependency note:** This assumes `McpServerApiEntity` accepts an empty `remotes` array (no `minItems: 1`); if upstream later enforces a non-empty `remotes`, revisit this decision (emit a failure or a documented placeholder).
 
 ### D9: Redact secret-flagged input values from annotation projection
 
-The `server.json` `Input` shape (used by `packages[].environmentVariables[]`, `remotes[].headers[]`, `remotes[].variables`, and package/runtime arguments) carries an `isSecret` flag alongside `default`/`value`. Because annotation projection (D2/D3) emits scalar leaves into **searchable, plaintext** catalog annotations, projecting the `default`/`value` of an `isSecret: true` input would publish a credential. **Decision:** when an input object declares `isSecret: true`, the projection walker SHALL prune (omit) that object's `default` and `value` leaves; all non-secret sibling leaves (`name`, `description`, `format`, `isRequired`, `isSecret` itself, `choices`, …) continue to project. The redaction applies uniformly to every `isSecret`-bearing input, not only environment variables — redacting env vars while leaving remote `headers`/`variables` exposed would reintroduce the same leak. **Round-trip consequence:** this is a deliberate exception to the scalar round-trip fidelity guarantee (D-note below and the projection spec); a pruned secret leaf is intentionally _not_ recoverable from the entity. **Alternatives considered:** (a) hash/mask the value instead of omitting — rejected; a mask still advertises the secret's presence and length without adding catalog value, and a hash is neither reversible nor useful for discovery. (b) project into a differently-prefixed "sensitive" annotation — rejected; catalog annotations are not a secret store, so any in-entity representation is unsafe.
+**Choice:** When an input object declares `isSecret: true`, the projection walker SHALL prune (omit) that object's `default` and `value` leaves; all non-secret sibling leaves (`name`, `description`, `format`, `isRequired`, `isSecret` itself, `choices`, …) continue to project. The redaction applies uniformly to every `isSecret`-bearing input, not only environment variables — redacting env vars while leaving remote `headers`/`variables` exposed would reintroduce the same leak.
+
+**Alternatives considered:** (a) Hash/mask the value instead of omitting — rejected; a mask still advertises the secret's presence and length without adding catalog value, and a hash is neither reversible nor useful for discovery. (b) Project into a differently-prefixed "sensitive" annotation — rejected; catalog annotations are not a secret store, so any in-entity representation is unsafe.
+
+**Rationale:** The `server.json` `Input` shape (used by `packages[].environmentVariables[]`, `remotes[].headers[]`, `remotes[].variables`, and package/runtime arguments) carries an `isSecret` flag alongside `default`/`value`. Because annotation projection (D2/D3) emits scalar leaves into **searchable, plaintext** catalog annotations, projecting the `default`/`value` of an `isSecret: true` input would publish a credential.
+
+**Round-trip consequence:** This is a deliberate exception to the scalar round-trip fidelity guarantee (D-note below and the projection spec); a pruned secret leaf is intentionally _not_ recoverable from the entity.
 
 ### D10: Repository emits both `backstage.io/source-location` and a titled `metadata.links` entry; `websiteUrl` link titled "Website"
 
-`repository.url` (combined with `repository.subfolder` when present) is emitted **both** as the canonical Backstage `backstage.io/source-location` annotation — the annotation source-aware Backstage tooling (source view, scaffolder, TechDocs) reads to locate an entity's repository — **and** as a human-visible `metadata.links` entry titled `Source Code`. `websiteUrl` is emitted as a `metadata.links` entry titled `Website`. Emitting the source-location annotation in addition to the link keeps the entity idiomatic for both machine consumers (the annotation) and the catalog UI (the titled link). **Alternatives considered:** (a) emit only the `metadata.links` source entry and omit `backstage.io/source-location` — rejected; without the canonical annotation, upstream source-location tooling cannot resolve the repository. (b) emit only the annotation and no link — rejected; the annotation is not surfaced as a browsable link in the catalog UI. The `backstage.io/source-location` value is set by the direct mapping and is therefore a reserved annotation that the generic projection (D2/D3) must not overwrite or re-derive.
+**Choice:** `repository.url` (combined with `repository.subfolder` when present) is emitted **both** as the canonical Backstage `backstage.io/source-location` annotation — the annotation source-aware Backstage tooling (source view, scaffolder, TechDocs) reads to locate an entity's repository — **and** as a human-visible `metadata.links` entry titled `Source Code`. `websiteUrl` is emitted as a `metadata.links` entry titled `Website`.
+
+**Alternatives considered:** (a) Emit only the `metadata.links` source entry and omit `backstage.io/source-location` — rejected; without the canonical annotation, upstream source-location tooling cannot resolve the repository. (b) Emit only the annotation and no link — rejected; the annotation is not surfaced as a browsable link in the catalog UI.
+
+**Rationale:** Emitting the source-location annotation in addition to the link keeps the entity idiomatic for both machine consumers (the annotation) and the catalog UI (the titled link). The `backstage.io/source-location` value is set by the direct mapping and is therefore a reserved annotation that the generic projection (D2/D3) must not overwrite or re-derive.
 
 ## Risks / Trade-offs
 

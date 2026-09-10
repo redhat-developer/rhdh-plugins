@@ -56,31 +56,59 @@ Pagination is cursor-based: omit `cursor` on the first request; pass the prior `
 
 ### D1: Configuration under `catalog.providers.mcpRegistry.<id>` (keyed map, multi-registry)
 
-Config lives at `catalog.providers.mcpRegistry.<id>`, a keyed map where each key registers one provider instance with `baseUrl` (required), `apiVersion` (default `v1`), `schedule` (`SchedulerServiceTaskScheduleDefinition`), and `defaultOwner` (entity ref). This is the idiomatic Backstage entity-provider location (mirrors `catalog.providers.github.<id>`, etc.), which upstream tooling and operators already understand. **Alternatives considered:** (a) the prototype's `mcp.registry.proxy.<id>` namespace — rejected; that namespace reads as proxy/pass-through config and is not where catalog operators look for entity providers. (b) a flat single-registry block — rejected; a keyed map supports multiple registries at no extra cost and matches upstream providers. A `config.d.ts` declares the schema so app-config validation and IDE assistance work.
+**Choice:** Config lives at `catalog.providers.mcpRegistry.<id>`, a keyed map where each key registers one provider instance with `baseUrl` (required), `apiVersion` (default `v1`), `schedule` (`SchedulerServiceTaskScheduleDefinition`), and `defaultOwner` (entity ref). A `config.d.ts` declares the schema so app-config validation and IDE assistance work.
+
+**Alternatives considered:** (a) The prototype's `mcp.registry.proxy.<id>` namespace — rejected; that namespace reads as proxy/pass-through config and is not where catalog operators look for entity providers. (b) A flat single-registry block — rejected; a keyed map supports multiple registries at no extra cost and matches upstream providers.
+
+**Rationale:** This is the idiomatic Backstage entity-provider location (mirrors `catalog.providers.github.<id>`, etc.), which upstream tooling and operators already understand.
 
 ### D2: Package as a `catalog-backend-module`, one `EntityProvider` per instance
 
-The plugin is a backend module registered via `createBackendModule` that extends the catalog via `catalogProcessingExtensionPoint.addEntityProvider(...)`, adding one `EntityProvider` per configured `<id>`. Each provider owns its `getProviderName()` (e.g. `mcp-registry-provider:<id>`), which becomes the entities' `locationKey` and drives full-mutation pruning scoping. **Alternatives considered:** (a) a single provider handling all registries internally — rejected; per-instance providers give independent schedules, independent failure isolation, and correct per-source `locationKey` pruning. (b) a standalone backend plugin with its own router — rejected; ingestion needs the catalog extension point, not an HTTP surface (that would be the proxy pattern).
+**Choice:** The plugin is a backend module registered via `createBackendModule` that extends the catalog via `catalogProcessingExtensionPoint.addEntityProvider(...)`, adding one `EntityProvider` per configured `<id>`. Each provider owns its `getProviderName()` (e.g. `mcp-registry-provider:<id>`), which becomes the entities' `locationKey` and drives full-mutation pruning scoping.
+
+**Alternatives considered:** (a) A single provider handling all registries internally — rejected; per-instance providers give independent schedules, independent failure isolation, and correct per-source `locationKey` pruning. (b) A standalone backend plugin with its own router — rejected; ingestion needs the catalog extension point, not an HTTP surface (that would be the proxy pattern).
+
+**Rationale:** Per-instance providers give independent schedules, independent failure isolation, and correct per-source `locationKey` pruning.
 
 ### D3: Schedule via `SchedulerService`; per-instance `schedule` with a documented default
 
-Each provider is driven by `scheduler.createScheduledTaskRunner(schedule)` and refreshes on the configured `SchedulerServiceTaskScheduleDefinition`. When `schedule` is omitted, a documented default (e.g. `frequency: { minutes: 30 }`, `timeout: { minutes: 3 }`) is applied rather than failing — a missing schedule should not block ingestion. Providers connect via the standard `EntityProvider.connect` + scheduled `run()` pattern. **Alternative:** require `schedule` and fail if absent — rejected; a sensible default keeps first-run setup simple, consistent with the mapping's "never fail for a supplyable default" stance.
+**Choice:** Each provider is driven by `scheduler.createScheduledTaskRunner(schedule)` and refreshes on the configured `SchedulerServiceTaskScheduleDefinition`. When `schedule` is omitted, a documented default (e.g. `frequency: { minutes: 30 }`, `timeout: { minutes: 3 }`) is applied rather than failing. Providers connect via the standard `EntityProvider.connect` + scheduled `run()` pattern.
+
+**Alternative considered:** Require `schedule` and fail if absent — rejected; a sensible default keeps first-run setup simple, consistent with the mapping's "never fail for a supplyable default" stance.
+
+**Rationale:** A missing schedule should not block ingestion. A sensible default keeps first-run setup simple.
 
 ### D4: Full cursor pagination is mandatory
 
-Unlike the reference prototype (first page only), the provider loops: request `<baseUrl>/<apiVersion>/servers`, accumulate `servers[]`, read `metadata.nextCursor`, and re-request with `?cursor=<value>` until the cursor is absent/empty. Cursors are opaque and passed verbatim. A **loop safeguard** (max-pages / max-total bound, plus detecting a repeated cursor) prevents a misbehaving registry from spinning forever; hitting the bound fails the run (D6) rather than committing a partial catalog. **Alternative:** trust a single page (prototype behavior) — rejected; silently truncates ingestion for any registry larger than one page.
+**Choice:** The provider loops: request `<baseUrl>/<apiVersion>/servers`, accumulate `servers[]`, read `metadata.nextCursor`, and re-request with `?cursor=<value>` until the cursor is absent/empty. Cursors are opaque and passed verbatim. A **loop safeguard** (max-pages / max-total bound, plus detecting a repeated cursor) prevents a misbehaving registry from spinning forever; hitting the bound fails the run (D6) rather than committing a partial catalog.
+
+**Alternative considered:** Trust a single page (prototype behavior) — rejected; silently truncates ingestion for any registry larger than one page.
+
+**Rationale:** Unlike the reference prototype (first page only), full cursor pagination ensures complete ingestion for registries of any size.
 
 ### D5: Delegate wholly to `mcp-registry-server-mapping`; supply `defaultOwner` as the caller override
 
-For each server the provider calls the mapping transform, passing the instance's `defaultOwner` as the caller-override owner default (and any future caller defaults like `lifecycle`). The provider adds only provider-level concerns on top of the transform's output: the managed-by-location annotation / `locationKey` for catalog attribution and pruning. It never re-derives names, annotations, or `spec.remotes`. **Consequence:** the mapping is the single source of truth for entity shape; a mapping change automatically flows through the provider. **Alternative:** inline a copy of the mapping for "performance" — rejected; violates the single-contract goal and would drift.
+**Choice:** For each server the provider calls the mapping transform, passing the instance's `defaultOwner` as the caller-override owner default (and any future caller defaults like `lifecycle`). The provider adds only provider-level concerns on top of the transform's output: the managed-by-location annotation / `locationKey` for catalog attribution and pruning. It never re-derives names, annotations, or `spec.remotes`.
+
+**Alternative considered:** Inline a copy of the mapping for "performance" — rejected; violates the single-contract goal and would drift.
+
+**Rationale:** The mapping is the single source of truth for entity shape; a mapping change automatically flows through the provider.
 
 ### D6: Failure isolation — skip bad entries, fail bad runs atomically
 
-Two failure tiers: (a) a single server that the mapping rejects (missing required `server.json` field) is logged with an identifying message and skipped; the run proceeds and commits the rest. (b) A registry-level error (unreachable, non-2xx, unparseable body, or pagination-safeguard trip) fails the whole run: **no** `applyMutation` is emitted, so the last-good catalog state is preserved, and the next scheduled tick retries. This matches the agent-native principle (predictable errors) and the full-mutation model (a partial full mutation would wrongly prune healthy entities). **Alternative:** commit whatever was fetched before an error — rejected; a partial full mutation prunes entities that still exist, causing catalog flapping.
+**Choice:** Two failure tiers: (a) a single server that the mapping rejects (missing required `server.json` field) is logged with an identifying message and skipped; the run proceeds and commits the rest. (b) A registry-level error (unreachable, non-2xx, unparseable body, or pagination-safeguard trip) fails the whole run: **no** `applyMutation` is emitted, so the last-good catalog state is preserved, and the next scheduled tick retries.
+
+**Alternative considered:** Commit whatever was fetched before an error — rejected; a partial full mutation prunes entities that still exist, causing catalog flapping.
+
+**Rationale:** Matches the agent-native principle (predictable errors) and the full-mutation model (a partial full mutation would wrongly prune healthy entities).
 
 ### D7: API-version slug is configurable, defaults to `v1`, discrepancy documented
 
-The endpoint is `<baseUrl>/<apiVersion>/servers` with `apiVersion` defaulting to `v1`. The current reference registry actually serves `/v0` (prototype) or `/v0.1` (docs); the default follows the proposal's stated `v1` and operators override `apiVersion` to match their registry. URL joining normalizes trailing/leading slashes so `baseUrl` with or without a trailing `/` yields exactly one separator. This is captured as a risk below and an open question. **Alternative:** default `v0` to match today's registry — considered and deferred to the user's explicit choice of `v1`.
+**Choice:** The endpoint is `<baseUrl>/<apiVersion>/servers` with `apiVersion` defaulting to `v1`. The current reference registry actually serves `/v0` (prototype) or `/v0.1` (docs); the default follows the proposal's stated `v1` and operators override `apiVersion` to match their registry. URL joining normalizes trailing/leading slashes so `baseUrl` with or without a trailing `/` yields exactly one separator. This is captured as a risk below and an open question.
+
+**Alternative considered:** Default `v0` to match today's registry — considered and deferred to the user's explicit choice of `v1`.
+
+**Rationale:** Following the proposal's stated `v1` establishes the forward-looking default; operators override `apiVersion` to match their registry's actual version.
 
 ## Risks / Trade-offs
 
