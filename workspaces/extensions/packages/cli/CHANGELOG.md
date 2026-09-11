@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/extensions-cli
 
+## 0.20.0
+
+### Minor Changes
+
+- 7533ffd: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- Updated dependencies [394d88c]
+- Updated dependencies [7533ffd]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.20.0
+
 ## 0.19.1
 
 ### Patch Changes

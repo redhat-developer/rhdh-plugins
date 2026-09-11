@@ -1,5 +1,23 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 0.20.0
+
+### Minor Changes
+
+- 7b6bd77: Add catalog source filter and display to Extensions UI
+- 7533ffd: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- e3fb07a: Export translations module as default for NFS auto-discovery
+- 6caf154: bump monaco-editor to v0.56.0 to pick up dompurify update
+- 10d6e35: Navigate to the catalog tab after enable/disable so the NFS restart alert still appears.
+- 09d1b43: Updated dependency `react-router-dom` to `^6.30.6`.
+- 2bb57d1: Add documentation link to Installed Packages missing catalog-entity tooltip and keep the enable toggle ON for loaded packages without an entity.
+- Updated dependencies [394d88c]
+- Updated dependencies [7533ffd]
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.20.0
+
 ## 0.19.1
 
 ### Patch Changes
