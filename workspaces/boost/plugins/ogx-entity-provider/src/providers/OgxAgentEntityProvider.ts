@@ -45,14 +45,6 @@ import {
 const PROVIDER_ID = 'ogx-agent-entity-provider';
 
 /**
- * Annotation key for the ai-catalog lifecycle stage.
- *
- * @internal
- */
-export const ANNOTATION_AI_CATALOG_LIFECYCLE_STAGE =
-  'ai-catalog.rhdh.com/lifecycle-stage';
-
-/**
  * Entity provider that reads configured agents from YAML/admin config
  * and emits them as Backstage catalog entities with kind: AiResource,
  * spec.type: agent.
@@ -131,14 +123,6 @@ export class OgxAgentEntityProvider implements EntityProvider {
       ),
     };
 
-    if (agent.lifecycleStage) {
-      annotations[ANNOTATION_AI_CATALOG_LIFECYCLE_STAGE] = agent.lifecycleStage;
-    }
-
-    if (agent.model) {
-      annotations['ai-catalog.rhdh.com/model'] = agent.model;
-    }
-
     // Build handoffs for agent-to-agent delegation targets
     const handoffs: string[] = [];
     if (agent.handoffs) {
@@ -149,6 +133,8 @@ export class OgxAgentEntityProvider implements EntityProvider {
       }
     }
 
+    const owner = mapOwner(agent.createdBy);
+
     return {
       apiVersion: 'backstage.io/v1alpha1',
       kind: 'AiResource',
@@ -157,14 +143,13 @@ export class OgxAgentEntityProvider implements EntityProvider {
         title: agent.name,
         description: agent.description ?? `OGX agent: ${agent.name}`,
         annotations,
-        labels: {
-          'ai-catalog.rhdh.com/provider': 'ogx',
-        },
       },
       spec: {
         type: 'agent',
         lifecycle: mapLifecycleStage(agent.lifecycleStage),
-        owner: mapOwner(agent.createdBy),
+        ...(owner && { owner }),
+        ...(agent.model && { model: agent.model }),
+        ...(agent.tools && agent.tools.length > 0 && { tools: agent.tools }),
         instructions:
           agent.instructions ?? agent.description ?? `OGX agent: ${agent.name}`,
         ...(handoffs.length > 0 && { handoffs }),
