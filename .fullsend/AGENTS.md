@@ -33,3 +33,18 @@ type:
 
 Match the bump level to the issue's stated intent (title prefix,
 constraints), not the size of the diff.
+
+## Release workflow
+
+This repo uses changesets for versioning. Individual PRs include a
+`.changeset/*.md` entry declaring the bump level. npm publish is handled
+automatically by the Version Packages workflow — do not flag PRs for
+missing publish or CHANGELOG steps.
+
+## Review scope
+
+When a PR references a specific issue (`Closes #XXXX`), changes may be
+intentionally limited to files and components cited in that issue. Stale
+references or inconsistencies in uncited files should be noted as
+informational observations, not flagged as defects requiring fixes in the
+current PR.
