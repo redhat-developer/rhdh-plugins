@@ -84,9 +84,4 @@ The following extensions are available in the plugin:
 
 ## Development
 
-You can serve the plugin in isolation for local development. The setup is in the [dev](./dev) directory.
-
-- **Legacy dev mode**: Run `yarn start:legacy` in the plugin directory to use the legacy app with Full Page and Tabbed Page routers.
-- **NFS dev mode**: Run `yarn start:nfs` in the plugin directory to use the new frontend system with mock data.
-
-Both dev modes use mock extensions data and do not require a running backend.
+See [CONTRIBUTING.md](./CONTRIBUTING.md).

@@ -120,7 +120,7 @@ spec:
 
 ## Contributing
 
-This extensions plugin is part of the Red Hat Developer Hub plugins ecosystem. For contribution guidelines, please refer to the main repository documentation.
+Plugin `dev/` harnesses, scoped test commands, and when to use the full workspace: [CONTRIBUTING.md](./CONTRIBUTING.md). Repository process is in the [rhdh-plugins CONTRIBUTING guide](../../CONTRIBUTING.md).
 
 ## License
 

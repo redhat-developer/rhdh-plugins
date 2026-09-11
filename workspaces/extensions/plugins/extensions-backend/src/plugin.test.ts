@@ -13,18 +13,111 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// import { startTestBackend } from '@backstage/backend-test-utils';
-// import request from 'supertest';
 
-// import { extensionsPlugin } from './plugin';
+import { rest } from 'msw';
+import { setupServer } from 'msw/node';
+import request from 'supertest';
 
-describe('plugin', () => {
-  // TODO: Fix tests
-  it('should return plugins', async () => {
-    expect(true).toBeTruthy();
-    // const { server } = await startTestBackend({
-    //   features: [extensionsPlugin],
-    // });
-    // await request(server).get('/api/extensions/plugins').expect(200, []);
+import { createServiceFactory } from '@backstage/backend-plugin-api';
+import { mockServices, startTestBackend } from '@backstage/backend-test-utils';
+import {
+  DynamicPluginProvider,
+  dynamicPluginsServiceRef,
+} from '@backstage/backend-dynamic-feature-service';
+
+import { mockPlugins } from '../__fixtures__/mockData';
+import { extensionsPlugin } from './plugin';
+
+const BASE_CONFIG = {
+  app: {
+    baseUrl: 'https://my-backstage-app.example.com',
+  },
+  backend: {
+    baseUrl: 'http://localhost:7007',
+    database: {
+      client: 'better-sqlite3',
+      connection: ':memory:',
+    },
+  },
+};
+
+const mockDynamicPluginProvider: DynamicPluginProvider = {
+  plugins: () => [],
+  getScannedPackage: () => {
+    throw new Error('getScannedPackage is not used in this test');
+  },
+  frontendPlugins: () => [],
+  backendPlugins: () => [],
+};
+
+const mockDynamicPluginsServiceFactory = createServiceFactory({
+  service: dynamicPluginsServiceRef,
+  deps: {},
+  factory: () => mockDynamicPluginProvider,
+});
+
+describe('extensionsPlugin', () => {
+  const catalogServer = setupServer();
+
+  beforeAll(() => {
+    catalogServer.listen({
+      onUnhandledRequest: (req, print) => {
+        if (
+          req.url.pathname === '/' ||
+          req.url.pathname.startsWith('/api/extensions')
+        ) {
+          return;
+        }
+        print.warning();
+      },
+    });
+  });
+
+  afterAll(() => catalogServer.close());
+
+  afterEach(() => {
+    catalogServer.resetHandlers();
+  });
+
+  it('is a backend feature', () => {
+    expect(extensionsPlugin).toEqual(
+      expect.objectContaining({
+        $$type: '@backstage/BackendFeature',
+      }),
+    );
+  });
+
+  it('mounts the router and serves GET /plugins', async () => {
+    const backend = await startTestBackend({
+      features: [
+        extensionsPlugin,
+        mockServices.rootLogger.factory(),
+        mockServices.rootConfig.factory({ data: BASE_CONFIG }),
+        mockDynamicPluginsServiceFactory,
+      ],
+    });
+
+    try {
+      catalogServer.use(
+        rest.get(
+          `http://localhost:${backend.server.port()}/api/catalog/entities/by-query`,
+          (_req, res, ctx) =>
+            res(ctx.status(200), ctx.json({ items: mockPlugins })),
+        ),
+      );
+
+      const response = await request(backend.server).get(
+        '/api/extensions/plugins',
+      );
+
+      expect(response.status).toEqual(200);
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          items: mockPlugins,
+        }),
+      );
+    } finally {
+      await backend.stop();
+    }
   });
 });

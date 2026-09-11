@@ -1,6 +1,8 @@
-# extensions
+# Extensions backend plugin
 
-This plugin backend was templated using the Backstage CLI. You should replace this text with a description of your plugin backend.
+HTTP APIs for the Extensions catalog (plugins, packages, collections) and permission-gated install/configure operations. Pair this package with `@red-hat-developer-hub/backstage-plugin-extensions` (UI) and `@red-hat-developer-hub/backstage-plugin-catalog-backend-module-extensions` (catalog entities).
+
+Local development, `dev/` harness, and scoped test commands: [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Installation
 
@@ -33,11 +35,3 @@ extensions:
     saveToSingleFile:
       file: <path-to>/dynamic-plugins.yaml
 ```
-
-## Development
-
-This plugin backend can be started in a standalone mode from directly in this
-package with `yarn start`. It is a limited setup that is most convenient when
-developing the plugin backend itself.
-
-If you want to run the entire project, including the frontend, run `yarn start` from the root directory.
