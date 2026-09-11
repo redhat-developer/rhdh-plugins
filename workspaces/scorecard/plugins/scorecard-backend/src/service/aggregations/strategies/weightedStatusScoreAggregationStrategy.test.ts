@@ -324,7 +324,7 @@ describe('WeightedStatusScoreAggregationStrategy', () => {
         weightedStatusScore: 0,
         weightedStatusSum: 0,
         weightedStatusMaxPossible: 0,
-        aggregationChartDisplayColor: 'error.main',
+        aggregationChartDisplayColor: null,
       }),
       aggregationConfig,
     );
