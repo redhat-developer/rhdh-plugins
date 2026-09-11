@@ -15,13 +15,8 @@
  */
 
 @layer components {
-  .command {
-    flex: 1;
-    padding: var(--bui-space-2) var(--bui-space-3);
-    background-color: var(--bui-bg-surface-0);
-    border-radius: var(--bui-radius-2);
-    font-size: var(--bui-font-size-1);
-    font-family: monospace;
-    overflow-x: auto;
+  .badge {
+    border: 1px solid currentColor;
+    background: transparent;
   }
 }

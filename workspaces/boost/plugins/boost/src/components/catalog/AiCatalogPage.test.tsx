@@ -154,6 +154,16 @@ describe('AiCatalogPage', () => {
     expect(screen.queryByText('Code Review Skill')).toBeNull();
   });
 
+  it('repairs an out-of-range page and renders the first page', async () => {
+    mockCatalogApi.getEntities.mockResolvedValue({ items: mockEntities });
+    await renderPage(['/?page=99']);
+
+    await waitFor(() => {
+      expect(screen.getByText('Code Review Skill')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Developer Assistant')).toBeInTheDocument();
+  });
+
   it('renders table view when view=table is in the URL', async () => {
     mockCatalogApi.getEntities.mockResolvedValue({ items: mockEntities });
     await renderPage(['/?view=table']);

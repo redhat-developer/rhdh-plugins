@@ -23,6 +23,22 @@ import { useTranslation } from '../../hooks/useTranslation';
 import styles from './FilterSidebar.module.css';
 
 type TranslationKey = Parameters<ReturnType<typeof useTranslation>['t']>[0];
+const ALL_FILTER_VALUE = '__all__';
+
+function getAllFilterValue(
+  options: { id: string }[],
+  selected: string[],
+): string {
+  const usedValues = new Set([
+    ...options.map(option => option.id),
+    ...selected,
+  ]);
+  let value = ALL_FILTER_VALUE;
+  while (usedValues.has(value)) {
+    value += '_';
+  }
+  return value;
+}
 
 interface FilterSidebarProps {
   filters: FilterDefinition[];
@@ -50,14 +66,30 @@ function FilterSelect({
     () => filter.getOptions(entities),
     [filter, entities],
   );
+  const allFilterValue = getAllFilterValue(options, selected);
+  const optionsWithAll = useMemo(
+    () => [{ id: allFilterValue, label: t('catalog.filter.all') }, ...options],
+    [allFilterValue, options, t],
+  );
+  const selectedWithAll = selected.length > 0 ? selected : [allFilterValue];
 
   return (
     <Select
+      className={styles.filter}
       label={label}
       selectionMode="multiple"
-      options={options}
-      value={selected}
-      onChange={keys => onChange(keys as string[])}
+      options={optionsWithAll}
+      value={selectedWithAll}
+      onChange={keys => {
+        const next = keys as string[];
+        const allSelected = next.includes(allFilterValue);
+        const wasAllSelected = selectedWithAll.includes(allFilterValue);
+        onChange(
+          allSelected && !wasAllSelected
+            ? []
+            : next.filter(value => value !== allFilterValue),
+        );
+      }}
     />
   );
 }
@@ -73,7 +105,7 @@ export const FilterSidebar = ({
   if (filters.length === 0) return null;
 
   return (
-    <nav className={styles.sidebar} aria-label={t('catalog.page.title')}>
+    <nav className={styles.sidebar} aria-label={t('catalog.filter.title')}>
       {filters.map(filter => (
         <FilterSelect
           key={filter.urlParam}

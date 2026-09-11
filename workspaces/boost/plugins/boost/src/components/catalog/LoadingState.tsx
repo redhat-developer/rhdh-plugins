@@ -38,23 +38,35 @@ const SkeletonCard = () => (
   </div>
 );
 
-export const LoadingState = () => (
-  <Flex gap="6" p="4" className={styles.layout}>
+interface LoadingStateProps {
+  filterCount: number;
+  cardCount: number;
+}
+
+export const LoadingState = ({ filterCount, cardCount }: LoadingStateProps) => (
+  <div className={styles.layout}>
     <div className={styles.loadingSidebar}>
-      {Array.from({ length: 4 }, (_, i) => (
+      {Array.from({ length: filterCount }, (_, i) => (
         <div key={i}>
           <Skeleton width={60} height={14} />
-          <Skeleton width="100%" height={36} style={{ marginTop: 4 }} />
+          <Skeleton
+            width="100%"
+            height={36}
+            className={styles.skeletonFilterInput}
+          />
         </div>
       ))}
     </div>
-    <Flex direction="column" grow={1}>
-      <Skeleton width={80} height={24} />
-      <div className={styles.loadingGrid} style={{ marginTop: 16 }}>
-        {Array.from({ length: 6 }, (_, i) => (
+    <div className={styles.resultsSurface}>
+      <div className={styles.loadingToolbar}>
+        <Skeleton width={80} height={24} />
+        <Skeleton width={180} height={36} />
+      </div>
+      <div className={`${styles.loadingGrid} ${styles.skeletonGrid}`}>
+        {Array.from({ length: cardCount }, (_, i) => (
           <SkeletonCard key={i} />
         ))}
       </div>
-    </Flex>
-  </Flex>
+    </div>
+  </div>
 );

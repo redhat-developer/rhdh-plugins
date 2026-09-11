@@ -20,11 +20,9 @@ import {
   createFrontendPlugin,
   PageBlueprint,
 } from '@backstage/frontend-plugin-api';
+import type { Entity } from '@backstage/catalog-model';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
-import {
-  EntityCardBlueprint,
-  EntityContentBlueprint,
-} from '@backstage/plugin-catalog-react/alpha';
+import { EntityCardBlueprint } from '@backstage/plugin-catalog-react/alpha';
 import { isAiAsset } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 
 import {
@@ -39,6 +37,10 @@ import {
 } from './filters/builtInFilterDefinitions';
 import { rootRouteRef } from './routes';
 import { boostTranslations } from './translations';
+import { getSpecField } from './utils/entityHelpers';
+
+const isAgentAsset = (entity: Entity) =>
+  isAiAsset(entity) && getSpecField(entity, 'type')?.toLowerCase() === 'agent';
 
 // ---------------------------------------------------------------------------
 // Built-in filter extensions
@@ -96,52 +98,38 @@ const aiCatalogPage = PageBlueprint.makeWithOverrides({
 });
 
 // ---------------------------------------------------------------------------
-// Entity Card Blueprints — stubs with isAiAsset filter
+// Entity card extensions — AI asset entity overview cards
 // ---------------------------------------------------------------------------
-const summaryCard = EntityCardBlueprint.make({
-  name: 'summary',
+const assetDetailsCard = EntityCardBlueprint.make({
+  name: 'ai-asset-details',
   params: {
     filter: isAiAsset,
     loader: () =>
-      import('./components/catalog/entity/SummaryCard').then(m => (
-        <m.SummaryCard />
+      import('./components/catalog/entity/AssetDetailsCard').then(m => (
+        <m.AssetDetailsCard />
       )),
   },
 });
 
-const adoptionCard = EntityCardBlueprint.make({
-  name: 'adoption',
+const agentInstructionsCard = EntityCardBlueprint.make({
+  name: 'agent-instructions',
   params: {
-    filter: isAiAsset,
+    filter: isAgentAsset,
     loader: () =>
-      import('./components/catalog/entity/AdoptionCard').then(m => (
-        <m.AdoptionCard />
+      import('./components/catalog/entity/AgentInstructionsCard').then(m => (
+        <m.AgentInstructionsCard />
       )),
   },
 });
 
-const versionListCard = EntityCardBlueprint.make({
-  name: 'version-list',
-  params: {
-    filter: isAiAsset,
-    loader: () =>
-      import('./components/catalog/entity/VersionListCard').then(m => (
-        <m.VersionListCard />
-      )),
-  },
-});
-
-// ---------------------------------------------------------------------------
-// Entity Content Blueprint — Usage tab (RBAC-gated) with isAiAsset filter
-// ---------------------------------------------------------------------------
-const usageTab = EntityContentBlueprint.make({
+const usageCard = EntityCardBlueprint.make({
   name: 'usage',
   params: {
-    path: '/usage',
-    title: 'Usage',
     filter: isAiAsset,
     loader: () =>
-      import('./components/catalog/entity/UsageTab').then(m => <m.UsageTab />),
+      import('./components/catalog/entity/UsageCard').then(m => (
+        <m.UsageCard />
+      )),
   },
 });
 
@@ -169,10 +157,9 @@ export const boostPlugin = createFrontendPlugin({
     providerFilter,
     ownerFilter,
     tagsFilter,
-    summaryCard,
-    adoptionCard,
-    versionListCard,
-    usageTab,
+    assetDetailsCard,
+    agentInstructionsCard,
+    usageCard,
   ],
   routes: {
     root: rootRouteRef,

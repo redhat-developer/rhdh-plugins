@@ -32,7 +32,7 @@ export interface UrlFilterActions {
   setSearch: (value: string) => void;
   setFilter: (urlParam: string, values: string[]) => void;
   setViewMode: (mode: ViewMode) => void;
-  setPage: (page: number) => void;
+  setPage: (page: number, options?: { replace?: boolean }) => void;
   setPageSize: (size: number) => void;
   clearFilters: () => void;
 }
@@ -42,7 +42,40 @@ function readArray(params: URLSearchParams, key: string): string[] {
   return val ? val.split(',').filter(Boolean) : [];
 }
 
+function buildFilterKey(
+  filterParams: string[],
+  searchParams: URLSearchParams,
+): string {
+  const filterSnapshot = new URLSearchParams();
+  for (const param of filterParams) {
+    filterSnapshot.set(param, searchParams.get(param) ?? '');
+  }
+  return filterSnapshot.toString();
+}
+
+function readFilterValues(filterKey: string): Map<string, string[]> {
+  const filterSnapshot = new URLSearchParams(filterKey);
+  const values = new Map<string, string[]>();
+
+  for (const [param] of filterSnapshot) {
+    const selected = readArray(filterSnapshot, param);
+    if (selected.length > 0) {
+      values.set(param, selected);
+    }
+  }
+
+  return values;
+}
+
 const SEARCH_DEBOUNCE_MS = 300;
+const DEFAULT_PAGE_SIZE = 20;
+const ALLOWED_PAGE_SIZES = new Set([10, 20, 50]);
+
+function parseNonNegativeInteger(value: string | null): number | undefined {
+  if (value === null || !/^\d+$/.test(value)) return undefined;
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : undefined;
+}
 
 /**
  * Synchronizes filter, search, pagination, and view mode state
@@ -55,30 +88,44 @@ export function useUrlFilters(
   const [searchParams, setSearchParams] = useSearchParams();
 
   const rawSearch = searchParams.get('q') ?? '';
-  const viewMode = (searchParams.get('view') as ViewMode) || 'grid';
-  const page = Math.max(0, parseInt(searchParams.get('page') ?? '0', 10) || 0);
-  const pageSize = Math.min(
-    100,
-    Math.max(1, parseInt(searchParams.get('pageSize') ?? '20', 10) || 20),
-  );
+  const rawView = searchParams.get('view');
+  const viewMode: ViewMode = rawView === 'table' ? 'table' : 'grid';
+  const rawPage = searchParams.get('page');
+  const parsedPage = parseNonNegativeInteger(rawPage);
+  const page = parsedPage ?? 0;
+  const rawPageSize = searchParams.get('pageSize');
+  const parsedPageSize = parseNonNegativeInteger(rawPageSize);
+  const pageSize =
+    parsedPageSize !== undefined && ALLOWED_PAGE_SIZES.has(parsedPageSize)
+      ? parsedPageSize
+      : DEFAULT_PAGE_SIZE;
 
-  // Derived key that changes only when filter-relevant URL params change,
-  // not on pagination or view mode changes.
-  const filterKey = filterParams.map(p => searchParams.get(p) ?? '').join('\0');
+  const invalidView =
+    rawView !== null && rawView !== 'grid' && rawView !== 'table';
+  const invalidPage = rawPage !== null && parsedPage === undefined;
+  const invalidPageSize =
+    rawPageSize !== null &&
+    (parsedPageSize === undefined || !ALLOWED_PAGE_SIZES.has(parsedPageSize));
 
-  const filterValues = useMemo(() => {
-    const map = new Map<string, string[]>();
-    for (const param of filterParams) {
-      const vals = readArray(searchParams, param);
-      if (vals.length > 0) {
-        map.set(param, vals);
-      }
-    }
-    return map;
-    // searchParams and filterParams are used inside the memo but intentionally excluded from deps.
-    // filterKey is derived from searchParams and filterParams, it stays stable when unrelated params change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterKey]);
+  useEffect(() => {
+    if (!invalidView && !invalidPage && !invalidPageSize) return;
+    setSearchParams(
+      prev => {
+        const next = new URLSearchParams(prev);
+        if (invalidView) next.delete('view');
+        if (invalidPage) next.delete('page');
+        if (invalidPageSize) next.delete('pageSize');
+        return next;
+      },
+      { replace: true },
+    );
+  }, [invalidPage, invalidPageSize, invalidView, setSearchParams]);
+
+  // Keep filterValues stable when unrelated URL state changes. Include both
+  // names and values so changing the dynamic filter set cannot reuse a stale
+  // map when two filters happen to have the same selected value.
+  const filterKey = buildFilterKey(filterParams, searchParams);
+  const filterValues = useMemo(() => readFilterValues(filterKey), [filterKey]);
 
   const [searchInputValue, setSearchInputValue] = useState(rawSearch);
   const [debouncedSearch, setDebouncedSearch] = useState(rawSearch);
@@ -150,16 +197,19 @@ export function useUrlFilters(
   );
 
   const setPage = useCallback(
-    (p: number) => {
-      setSearchParams(prev => {
-        const next = new URLSearchParams(prev);
-        if (p === 0) {
-          next.delete('page');
-        } else {
-          next.set('page', String(p));
-        }
-        return next;
-      });
+    (p: number, options?: { replace?: boolean }) => {
+      setSearchParams(
+        prev => {
+          const next = new URLSearchParams(prev);
+          if (p <= 0) {
+            next.delete('page');
+          } else {
+            next.set('page', String(p));
+          }
+          return next;
+        },
+        { replace: options?.replace },
+      );
     },
     [setSearchParams],
   );

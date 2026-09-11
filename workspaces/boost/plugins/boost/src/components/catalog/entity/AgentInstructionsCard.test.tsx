@@ -20,46 +20,54 @@ import { renderInTestApp } from '@backstage/test-utils';
 import { screen } from '@testing-library/react';
 
 import { boostMessages } from '../../../translations/ref';
-import { VersionListCard } from './VersionListCard';
+import { AgentInstructionsCard } from './AgentInstructionsCard';
 
-const { catalog: msg } = boostMessages;
+const instructions = 'Use **concise** answers and `short` examples.';
 
-const versioned: Entity = {
+const agent: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
   kind: 'AiResource',
   metadata: {
-    name: 'code-review-skill',
+    name: 'developer-assistant',
     namespace: 'default',
-    annotations: { 'rhdh.io/ai-asset-version': '1.4.0' },
+    description: 'An assistant for developers.',
   },
-  spec: { type: 'skill', lifecycle: 'production', owner: 'team-ai' },
-};
-
-const unversioned: Entity = {
-  apiVersion: 'backstage.io/v1alpha1',
-  kind: 'AiResource',
-  metadata: { name: 'code-review-skill', namespace: 'default' },
-  spec: { type: 'skill', lifecycle: 'production', owner: 'team-ai' },
+  spec: {
+    type: 'agent',
+    lifecycle: 'production',
+    owner: 'team-ai',
+    instructions,
+  },
 };
 
 function renderWithEntity(entity: Entity) {
   return renderInTestApp(
     <EntityProvider entity={entity}>
-      <VersionListCard />
+      <AgentInstructionsCard />
     </EntityProvider>,
   );
 }
 
-describe('VersionListCard', () => {
-  it('renders the current version badge', async () => {
-    await renderWithEntity(versioned);
-    expect(screen.getByText(msg.card.versionTitle)).toBeInTheDocument();
-    expect(screen.getByText('1.4.0')).toBeInTheDocument();
-    expect(screen.getByText(msg.card.versionCurrent)).toBeInTheDocument();
+describe('AgentInstructionsCard', () => {
+  it('renders agent instructions as Markdown in its own card', async () => {
+    await renderWithEntity(agent);
+
+    expect(
+      screen.getByText(boostMessages.catalog.card.instructionsTitle),
+    ).toBeInTheDocument();
+    expect(screen.getByText('concise').tagName).toBe('STRONG');
+    expect(screen.getByText('short').tagName).toBe('CODE');
   });
 
-  it('renders nothing when the version annotation is missing', async () => {
-    await renderWithEntity(unversioned);
-    expect(screen.queryByText(msg.card.versionTitle)).toBeNull();
+  it('does not repeat the entity description as instructions', async () => {
+    const { container } = await renderWithEntity({
+      ...agent,
+      metadata: {
+        ...agent.metadata,
+        description: instructions,
+      },
+    });
+
+    expect(container).toBeEmptyDOMElement();
   });
 });

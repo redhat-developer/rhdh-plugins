@@ -14,36 +14,32 @@
  * limitations under the License.
  */
 
+import { MarkdownContent } from '@backstage/core-components';
 import { useEntity } from '@backstage/plugin-catalog-react';
-import { Badge, Card, CardBody, CardHeader, Flex, Text } from '@backstage/ui';
+import { Card, CardBody, CardHeader, Text } from '@backstage/ui';
 
 import { useTranslation } from '../../../hooks/useTranslation';
+import {
+  getDistinctSpecField,
+  getSpecField,
+} from '../../../utils/entityHelpers';
 
-export const VersionListCard = () => {
+export const AgentInstructionsCard = () => {
   const { entity } = useEntity();
   const { t } = useTranslation();
 
-  const version =
-    entity.metadata.annotations?.['rhdh.io/ai-asset-version'] ?? '';
+  if (getSpecField(entity, 'type')?.toLowerCase() !== 'agent') return null;
 
-  if (!version) {
-    return null;
-  }
+  const instructions = getDistinctSpecField(entity, 'instructions');
+  if (!instructions) return null;
 
   return (
     <Card>
       <CardHeader>
-        <Text variant="title-small">{t('catalog.card.versionTitle')}</Text>
+        <Text variant="title-small">{t('catalog.card.instructionsTitle')}</Text>
       </CardHeader>
       <CardBody>
-        <Flex direction="column" gap="2">
-          <Flex align="center" gap="2">
-            <Badge size="small">{version}</Badge>
-            <Text variant="body-x-small" color="secondary">
-              {t('catalog.card.versionCurrent')}
-            </Text>
-          </Flex>
-        </Flex>
+        <MarkdownContent content={instructions} />
       </CardBody>
     </Card>
   );

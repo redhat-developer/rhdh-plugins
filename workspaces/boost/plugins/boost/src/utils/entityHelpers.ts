@@ -20,8 +20,16 @@ import { parseEntityRef } from '@backstage/catalog-model';
 import type { FilterDefinition } from '../blueprints/AiCatalogFilterBlueprint';
 import { getCategoryMeta } from './categoryMeta';
 
+const AI_ASSET_SOURCE_ANNOTATION = 'rhdh.io/ai-asset-source';
+
 function catalogHref(kind: string, namespace: string, name: string): string {
   return `/catalog/${namespace}/${kind.toLowerCase()}/${name}`;
+}
+
+function getSpecObject(entity: Entity): Record<string, unknown> | undefined {
+  return typeof entity.spec === 'object' && entity.spec !== null
+    ? (entity.spec as Record<string, unknown>)
+    : undefined;
 }
 
 export function entityHref(entity: Entity): string {
@@ -36,8 +44,8 @@ export function entityHref(entity: Entity): string {
  * kind `group` in the `default` namespace, matching common Backstage
  * conventions for `spec.owner`.
  *
- * Returns `undefined` when `ref` is not a valid entity ref, so callers
- * (the Usage tab denied fallback) can omit the link instead of throwing.
+ * Returns `undefined` when `ref` is not a valid entity ref, so callers can
+ * omit the link instead of throwing.
  */
 export function entityRefHref(ref: string): string | undefined {
   try {
@@ -55,9 +63,94 @@ export function getSpecField(
   entity: Entity,
   field: string,
 ): string | undefined {
-  return (entity.spec as Record<string, unknown> | undefined)?.[field] as
-    | string
-    | undefined;
+  const value = getSpecObject(entity)?.[field];
+  return typeof value === 'string' ? value : undefined;
+}
+
+/** Returns a spec string when it adds information beyond the entity description. */
+export function getDistinctSpecField(
+  entity: Entity,
+  field: string,
+): string | undefined {
+  const value = getSpecField(entity, field);
+  const description = entity.metadata.description ?? '';
+  return value && value.trim() !== description.trim() ? value : undefined;
+}
+
+function getUniqueStrings(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+
+  return Array.from(
+    new Set(
+      value.flatMap(item => {
+        if (typeof item !== 'string' || item.trim().length === 0) return [];
+        return [item.trim()];
+      }),
+    ),
+  );
+}
+
+/** Returns unique, non-empty string values from a list-valued spec field. */
+export function getStringArraySpecField(
+  entity: Entity,
+  field: string,
+): string[] {
+  return getUniqueStrings(getSpecObject(entity)?.[field]);
+}
+
+export interface EntityRemote {
+  url: string;
+  type?: string;
+}
+
+/** Returns valid remote entries from an entity's spec.remotes field. */
+export function getSpecRemotes(entity: Entity): EntityRemote[] {
+  const value = getSpecObject(entity)?.remotes;
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap(remote => {
+    if (typeof remote !== 'object' || remote === null) return [];
+    const entry = remote as Record<string, unknown>;
+    const url = typeof entry.url === 'string' ? entry.url.trim() : '';
+    if (!url) {
+      return [];
+    }
+    const type =
+      typeof entry.type === 'string' && entry.type.trim().length > 0
+        ? entry.type.trim()
+        : undefined;
+
+    return [
+      {
+        url,
+        ...(type && { type }),
+      },
+    ];
+  });
+}
+
+export function getModelsAvailable(entity: Entity): string[] {
+  const models = getSpecObject(entity)?.models;
+  if (typeof models !== 'object' || models === null) return [];
+
+  return getUniqueStrings((models as Record<string, unknown>).available);
+}
+
+/**
+ * Returns the provider facet from the AI asset source annotation.
+ */
+export function getProvider(entity: Entity): string | undefined {
+  return entity.metadata.annotations?.[AI_ASSET_SOURCE_ANNOTATION];
+}
+
+/** Returns an agent's configured model from the typed spec field. */
+export function getAgentModel(entity: Entity): string | undefined {
+  return getSpecField(entity, 'model');
+}
+
+/** Returns the target entity references configured for an agent's handoffs. */
+export function getHandoffRefs(entity: Entity): string[] {
+  return getStringArraySpecField(entity, 'handoffs');
 }
 
 /**
@@ -94,161 +187,6 @@ export function applyEntityFilters(
   return results;
 }
 
-/**
- * Resolved adoption action for an AI asset entity.
- *
- * - `copy`: the value should be copied to the clipboard (skill, OCI pull, MCP remote URL).
- * - `link`: the value is a URL that should be opened in a new tab (git ZIP download).
- */
-export interface AdoptionAction {
-  type: 'copy' | 'link';
-  value: string;
-}
-
-/**
- * Parses a URL string and returns its hostname, or undefined if the URL is malformed.
- */
-function parseHostname(url: string): string | undefined {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return undefined;
-  }
-}
-
-function isHost(hostname: string | undefined, host: string): boolean {
-  return hostname === host || (hostname?.endsWith(`.${host}`) ?? false);
-}
-
-/**
- * Matches a well-formed `oci://` reference and rejects anything containing
- * shell metacharacters (`;`, `|`, `` ` ``, `$()`, spaces, etc.), since this
- * value is interpolated into a `podman pull` command that gets copied to the
- * clipboard.
- */
-const OCI_REFERENCE_PATTERN = /^oci:\/\/[a-zA-Z0-9][a-zA-Z0-9._:@/-]*$/;
-
-function isSafeOciReference(url: string): boolean {
-  return OCI_REFERENCE_PATTERN.test(url);
-}
-
-/**
- * Returns true if `value` parses as an absolute `http:`/`https:` URL.
- */
-function isHttpUrl(value: string): boolean {
-  try {
-    return ['http:', 'https:'].includes(new URL(value).protocol);
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Builds a "download ZIP" archive URL for a git-hosted repository target.
- *
- * - GitHub: uses the branch-agnostic `zipball` API endpoint, so the actual
- *   default branch is always resolved server-side (no branch guessing).
- *   Requires the target path to be exactly `owner/repo` (a repo root); a
- *   subpage such as `/tree/main` or `/blob/...` is not a repo root and is
- *   returned unchanged rather than guessing a wrong owner/repo pair.
- * - GitLab: has no branch-agnostic web URL, so this falls back to a
- *   best-effort `main` branch guess. This is a heuristic pending the
- *   backend download proxy (RHIDP-15167); it may not resolve for
- *   repositories whose default branch isn't `main`.
- */
-function buildGitArchiveUrl(target: string, hostname: string): string {
-  let segments: string[];
-  try {
-    segments = new URL(target).pathname
-      .replace(/^\/|\/$/g, '')
-      .split('/')
-      .filter(Boolean);
-  } catch {
-    return target;
-  }
-
-  if (isHost(hostname, 'github.com')) {
-    if (segments.length !== 2) return target;
-    const [owner, repoRaw] = segments;
-    return `https://api.github.com/repos/${owner}/${repoRaw.replace(/\.git$/, '')}/zipball`;
-  }
-
-  const repo = segments[segments.length - 1]?.replace(/\.git$/, '');
-  if (!repo) return target;
-  return `${target.replace(/\/$/, '')}/-/archive/main/${repo}-main.zip`;
-}
-
-/**
- * Resolves the adoption action for an entity based on its metadata.
- *
- * Priority order:
- * 1. Skills — `npx skills add <name>`
- * 2. OCI-sourced — `podman pull <oci-ref>`
- * 3. Git-sourced — Download ZIP link
- * 4. MCP servers — remote URL copy
- * 5. Fallback — undefined (no action)
- */
-export function getAdoptionAction(entity: Entity): AdoptionAction | undefined {
-  const spec = entity.spec as Record<string, unknown> | undefined;
-  const specType = getSpecField(entity, 'type')?.toLowerCase();
-
-  // 1. Skills
-  if (specType === 'skill') {
-    return {
-      type: 'copy',
-      value: `npx skills add ${entity.metadata.name}`,
-    };
-  }
-
-  const remotes = (spec?.remotes ?? []) as Array<{
-    url?: string;
-    type?: string;
-  }>;
-
-  // 2. OCI-sourced
-  // Checked before the mcp-server branch below: per #3735's priority order,
-  // an oci:// remote takes precedence even for entities typed `mcp-server`.
-  const ociRemote = remotes.find(r => r.url && isSafeOciReference(r.url));
-  if (ociRemote?.url) {
-    return {
-      type: 'copy',
-      value: `podman pull ${ociRemote.url}`,
-    };
-  }
-
-  // 3. Git-sourced
-  const location = spec?.location as
-    | { type?: string; target?: string }
-    | undefined;
-  if (location?.type === 'git' && location.target) {
-    const target = location.target;
-    const hostname = parseHostname(target);
-    if (isHost(hostname, 'github.com') || isHost(hostname, 'gitlab.com')) {
-      return {
-        type: 'link',
-        value: buildGitArchiveUrl(target, hostname as string),
-      };
-    }
-  }
-
-  // 4. MCP servers
-  if (specType === 'mcp-server') {
-    const mcpRemote =
-      remotes.find(
-        r => r.type === 'streamable-http' && r.url && isHttpUrl(r.url),
-      ) ?? remotes.find(r => r.url && isHttpUrl(r.url));
-    if (mcpRemote?.url) {
-      return {
-        type: 'copy',
-        value: mcpRemote.url,
-      };
-    }
-  }
-
-  // 5. Fallback
-  return undefined;
-}
-
 export function getSortValue(entity: Entity, columnId: string): string {
   switch (columnId) {
     case 'title':
@@ -258,7 +196,7 @@ export function getSortValue(entity: Entity, columnId: string): string {
     case 'owner':
       return getSpecField(entity, 'owner') ?? '';
     case 'provider':
-      return entity.metadata.annotations?.['rhdh.io/ai-asset-source'] ?? '';
+      return getProvider(entity) ?? '';
     case 'description':
       return entity.metadata.description ?? '';
     default:

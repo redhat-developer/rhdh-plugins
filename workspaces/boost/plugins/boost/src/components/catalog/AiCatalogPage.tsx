@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
+  Button,
   Flex,
   Grid,
   SearchField,
@@ -36,21 +37,25 @@ import { AiAssetCard } from './AiAssetCard';
 import { AiCatalogTable } from './AiCatalogTable';
 import { EmptyFilteredState } from './EmptyFilteredState';
 import { EmptyState } from './EmptyState';
-import { ErrorState } from './ErrorState';
-import { LoadingState } from './LoadingState';
 import { ErrorBoundary } from './ErrorBoundary';
+import { ErrorState } from './ErrorState';
+import { FilterDrawer } from './FilterDrawer';
 import { FilterSidebar } from './FilterSidebar';
+import { LoadingState } from './LoadingState';
 import styles from './AiCatalogPage.module.css';
 
 interface AiCatalogPageProps {
   filters: FilterDefinition[];
 }
 
+const CatalogPageSurface = ({ children }: { children: ReactNode }) => {
+  return <div className={styles.page}>{children}</div>;
+};
+
 const AiCatalogPageContent = ({ filters }: AiCatalogPageProps) => {
   const { t } = useTranslation();
 
   const filterParams = useMemo(() => filters.map(f => f.urlParam), [filters]);
-  const hasCategoryFilter = filters.some(f => f.urlParam === 'type');
   const urlState = useUrlFilters(filterParams);
   const {
     search,
@@ -105,103 +110,162 @@ const AiCatalogPageContent = ({ filters }: AiCatalogPageProps) => {
   const hasPreviousPage = page > 0;
   const viewModeKeys = useMemo(() => new Set([viewMode]), [viewMode]);
 
-  if (loading) return <LoadingState />;
-  if (error) return <ErrorState onRetry={retry} />;
+  useEffect(() => {
+    if (!loading && !error && page > 0 && pageStart >= totalCount) {
+      setPage(0, { replace: true });
+    }
+  }, [error, loading, page, pageStart, setPage, totalCount]);
 
-  const hasActiveFilters = search || filterValues.size > 0;
+  if (loading) {
+    return (
+      <CatalogPageSurface>
+        <LoadingState
+          filterCount={filters.length}
+          cardCount={Math.min(pageSize, 8)}
+        />
+      </CatalogPageSurface>
+    );
+  }
+  if (error) {
+    return (
+      <CatalogPageSurface>
+        <ErrorState onRetry={retry} />
+      </CatalogPageSurface>
+    );
+  }
+
+  const hasActiveFilters = Boolean(search) || filterValues.size > 0;
 
   if (allEntities.length === 0 && !hasActiveFilters) {
-    return <EmptyState />;
+    return (
+      <CatalogPageSurface>
+        <EmptyState />
+      </CatalogPageSurface>
+    );
   }
 
   return (
-    <Flex gap="6" p="4" align="start" className={styles.layout}>
-      <FilterSidebar
-        filters={filters}
-        entities={allEntities}
-        values={filterValues}
-        onFilterChange={setFilter}
-      />
-      <Flex direction="column" grow={1} className={styles.content}>
-        <Flex align="center" justify="between" gap="4" mb="4">
-          <Text variant="title-small">
-            {`${t('catalog.toolbar.allPrefix')} (${totalCount})`}
-          </Text>
-          <Flex align="center" gap="3">
-            <SearchField
-              aria-label={t('catalog.toolbar.search')}
-              placeholder={t('catalog.toolbar.search')}
-              value={searchInputValue}
-              onChange={setSearch}
-              size="small"
+    <CatalogPageSurface>
+      <div className={styles.layout}>
+        <div className={styles.desktopFilters}>
+          <FilterSidebar
+            filters={filters}
+            entities={allEntities}
+            values={filterValues}
+            onFilterChange={setFilter}
+          />
+        </div>
+        <main className={styles.content}>
+          <div className={styles.mobileFilterTrigger}>
+            <FilterDrawer
+              filters={filters}
+              entities={allEntities}
+              values={filterValues}
+              onFilterChange={setFilter}
             />
-            <ToggleButtonGroup
-              selectionMode="single"
-              selectedKeys={viewModeKeys}
-              onSelectionChange={keys => {
-                const selected = [...keys][0] as string | undefined;
-                if (selected === 'grid' || selected === 'table') {
-                  setViewMode(selected);
-                }
-              }}
-              disallowEmptySelection
+          </div>
+          <section
+            className={styles.resultsSurface}
+            aria-labelledby="ai-catalog-results-title"
+          >
+            <Flex
+              align="center"
+              justify="between"
+              gap="4"
+              className={styles.toolbar}
             >
-              <ToggleButton
-                id="grid"
-                aria-label={t('catalog.toolbar.viewGrid')}
-                iconStart={<RiGridLine size={16} />}
-              />
-              <ToggleButton
-                id="table"
-                aria-label={t('catalog.toolbar.viewTable')}
-                iconStart={<RiListUnordered size={16} />}
-              />
-            </ToggleButtonGroup>
-          </Flex>
-        </Flex>
-
-        {totalCount === 0 && hasActiveFilters && (
-          <EmptyFilteredState onClearFilters={clearFilters} />
-        )}
-
-        {totalCount > 0 && viewMode === 'grid' && (
-          <Grid.Root columns={{ initial: '1', sm: '2', lg: '4' }} gap="4">
-            {pagedEntities.map(entity => (
-              <Grid.Item key={entity.metadata.uid ?? entity.metadata.name}>
-                <AiAssetCard
-                  entity={entity}
-                  onCategoryClick={
-                    hasCategoryFilter
-                      ? cat => setFilter('type', [cat])
-                      : undefined
-                  }
+              <Text
+                id="ai-catalog-results-title"
+                variant="title-small"
+                className={styles.resultCount}
+              >
+                {`${t('catalog.toolbar.allPrefix')} (${totalCount})`}
+              </Text>
+              <Flex align="center" gap="3" className={styles.toolbarActions}>
+                {hasActiveFilters && (
+                  <Button
+                    variant="tertiary"
+                    size="small"
+                    onPress={clearFilters}
+                  >
+                    {t('catalog.filter.clearAll')}
+                  </Button>
+                )}
+                <SearchField
+                  className={styles.search}
+                  aria-label={t('catalog.toolbar.search')}
+                  placeholder={t('catalog.toolbar.search')}
+                  value={searchInputValue}
+                  onChange={setSearch}
+                  size="small"
                 />
-              </Grid.Item>
-            ))}
-          </Grid.Root>
-        )}
+                <ToggleButtonGroup
+                  className={styles.viewToggle}
+                  selectionMode="single"
+                  selectedKeys={viewModeKeys}
+                  onSelectionChange={keys => {
+                    const selected = [...keys][0] as string | undefined;
+                    if (selected === 'grid' || selected === 'table') {
+                      setViewMode(selected);
+                    }
+                  }}
+                  disallowEmptySelection
+                >
+                  <ToggleButton
+                    id="grid"
+                    aria-label={t('catalog.toolbar.viewGrid')}
+                    iconStart={<RiGridLine size={16} />}
+                  />
+                  <ToggleButton
+                    id="table"
+                    aria-label={t('catalog.toolbar.viewTable')}
+                    iconStart={<RiListUnordered size={16} />}
+                  />
+                </ToggleButtonGroup>
+              </Flex>
+            </Flex>
 
-        {totalCount > 0 && viewMode === 'table' && (
-          <AiCatalogTable entities={pagedEntities} sort={sortState} />
-        )}
+            <div className={styles.resultsBody}>
+              {totalCount === 0 && hasActiveFilters && (
+                <EmptyFilteredState onClearFilters={clearFilters} />
+              )}
 
-        {totalCount > 0 && (
-          <Flex justify="end" mt="4">
-            <TablePagination
-              pageSize={pageSize}
-              pageSizeOptions={[10, 20, 50]}
-              offset={pageStart}
-              totalCount={totalCount}
-              hasNextPage={hasNextPage}
-              hasPreviousPage={hasPreviousPage}
-              onNextPage={() => setPage(page + 1)}
-              onPreviousPage={() => setPage(page - 1)}
-              onPageSizeChange={setPageSize}
-            />
-          </Flex>
-        )}
-      </Flex>
-    </Flex>
+              {totalCount > 0 && viewMode === 'grid' && (
+                <Grid.Root columns={{ initial: '1', sm: '2', lg: '4' }} gap="4">
+                  {pagedEntities.map(entity => (
+                    <Grid.Item
+                      key={entity.metadata.uid ?? entity.metadata.name}
+                    >
+                      <AiAssetCard entity={entity} />
+                    </Grid.Item>
+                  ))}
+                </Grid.Root>
+              )}
+
+              {totalCount > 0 && viewMode === 'table' && (
+                <AiCatalogTable entities={pagedEntities} sort={sortState} />
+              )}
+            </div>
+
+            {totalCount > 0 && (
+              <Flex justify="end" className={styles.pagination}>
+                <TablePagination
+                  pageSize={pageSize}
+                  pageSizeOptions={[10, 20, 50]}
+                  offset={pageStart}
+                  totalCount={totalCount}
+                  hasNextPage={hasNextPage}
+                  hasPreviousPage={hasPreviousPage}
+                  onNextPage={() => setPage(page + 1)}
+                  onPreviousPage={() => setPage(page - 1)}
+                  onPageSizeChange={setPageSize}
+                />
+              </Flex>
+            )}
+          </section>
+        </main>
+      </div>
+    </CatalogPageSurface>
   );
 };
 

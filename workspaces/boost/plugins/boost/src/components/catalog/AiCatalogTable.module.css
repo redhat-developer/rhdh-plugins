@@ -15,27 +15,16 @@
  */
 
 @layer components {
-  .sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: var(--bui-space-6);
+  .tableViewport {
     width: 100%;
-    flex-shrink: 0;
-    position: sticky;
-    top: var(--bui-space-4);
-    align-self: flex-start;
+    min-width: 0;
+    overflow-x: auto;
   }
 
-  .filter {
-    width: 100%;
-  }
-
-  .filter :global(.bui-SelectTrigger) {
-    width: 100%;
-    min-height: 40px;
-    padding: 0 var(--bui-space-3);
-    border: 1px solid var(--bui-border-1);
-    border-radius: var(--bui-radius-2);
-    background: transparent;
+  @media (max-width: 639px) {
+    .table {
+      min-width: 720px;
+      width: 720px;
+    }
   }
 }
