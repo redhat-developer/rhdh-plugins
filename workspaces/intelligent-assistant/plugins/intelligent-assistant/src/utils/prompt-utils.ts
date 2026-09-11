@@ -35,3 +35,35 @@ export const getRandomSamplePrompts = (
   const defaultSelected = getRandomPrompts(defaultPrompts, remaining);
   return [...userSelected, ...defaultSelected];
 };
+
+/**
+ * Priority-based prompt selection for the welcome screen.
+ * Fills slots sequentially: app-config > saved prompts (by order) > hardcoded defaults.
+ * No random sampling when saved prompts are available.
+ */
+export const getPriorityBasedPrompts = (
+  appConfigPrompts: SamplePrompts,
+  savedPrompts: SamplePrompts,
+  hardcodedDefaults: SamplePrompts,
+  numberOfPrompts: number = 3,
+): SamplePrompts => {
+  const result: SamplePrompts = [];
+
+  for (const prompt of appConfigPrompts) {
+    if (result.length >= numberOfPrompts) break;
+    result.push(prompt);
+  }
+
+  for (const prompt of savedPrompts) {
+    if (result.length >= numberOfPrompts) break;
+    result.push(prompt);
+  }
+
+  if (result.length < numberOfPrompts) {
+    const remaining = numberOfPrompts - result.length;
+    const defaults = getRandomPrompts(hardcodedDefaults, remaining);
+    result.push(...defaults);
+  }
+
+  return result;
+};

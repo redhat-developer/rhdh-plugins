@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 import { SamplePrompts } from '../../types';
-import { getRandomSamplePrompts } from '../prompt-utils';
+import {
+  getPriorityBasedPrompts,
+  getRandomSamplePrompts,
+} from '../prompt-utils';
 
 const getPromptTitle = (prompt: any): string => {
   if ('title' in prompt) {
@@ -76,5 +79,62 @@ describe('getRandomSamplePrompts', () => {
     );
     expect(defaultPromptsTitles).toContain(getPromptTitle(prompt1));
     expect(defaultPromptsTitles).toContain(getPromptTitle(prompt2));
+  });
+});
+
+describe('getPriorityBasedPrompts', () => {
+  const appConfig: SamplePrompts = [{ title: 'App 1', message: 'App msg 1' }];
+  const saved: SamplePrompts = [
+    { title: 'Saved 1', message: 'Saved msg 1' },
+    { title: 'Saved 2', message: 'Saved msg 2' },
+  ];
+  const hardcoded: SamplePrompts = [
+    { title: 'Default 1', message: 'Default msg 1' },
+    { title: 'Default 2', message: 'Default msg 2' },
+    { title: 'Default 3', message: 'Default msg 3' },
+  ];
+
+  it('should fill all slots from app-config if enough prompts', () => {
+    const manyAppConfig: SamplePrompts = [
+      { title: 'A1', message: 'M1' },
+      { title: 'A2', message: 'M2' },
+      { title: 'A3', message: 'M3' },
+      { title: 'A4', message: 'M4' },
+    ];
+    const result = getPriorityBasedPrompts(manyAppConfig, saved, hardcoded, 3);
+    expect(result.length).toBe(3);
+    expect(result.map(p => getPromptTitle(p))).toEqual(['A1', 'A2', 'A3']);
+  });
+
+  it('should fill remaining from saved prompts after app-config', () => {
+    const result = getPriorityBasedPrompts(appConfig, saved, hardcoded, 3);
+    expect(result.length).toBe(3);
+    expect(getPromptTitle(result[0])).toBe('App 1');
+    expect(getPromptTitle(result[1])).toBe('Saved 1');
+    expect(getPromptTitle(result[2])).toBe('Saved 2');
+  });
+
+  it('should fill remaining from hardcoded when not enough app + saved', () => {
+    const result = getPriorityBasedPrompts(
+      [],
+      [{ title: 'S1', message: 'M' }],
+      hardcoded,
+      3,
+    );
+    expect(result.length).toBe(3);
+    expect(getPromptTitle(result[0])).toBe('S1');
+    // Remaining 2 come from hardcoded (random, but length is guaranteed)
+    expect(result.length).toBe(3);
+  });
+
+  it('should return empty array when all sources are empty', () => {
+    const result = getPriorityBasedPrompts([], [], [], 3);
+    expect(result.length).toBe(0);
+  });
+
+  it('should respect numberOfPrompts parameter', () => {
+    const result = getPriorityBasedPrompts(appConfig, saved, hardcoded, 1);
+    expect(result.length).toBe(1);
+    expect(getPromptTitle(result[0])).toBe('App 1');
   });
 });

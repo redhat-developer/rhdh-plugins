@@ -39,6 +39,8 @@ describe('useLightspeedDrawerContext', () => {
     setShellViewTab: jest.fn(),
     activeNotebookId: undefined,
     setActiveNotebookId: jest.fn(),
+    settingsTab: null,
+    setSettingsTab: jest.fn(),
   };
 
   it('should return context value when used within provider', () => {

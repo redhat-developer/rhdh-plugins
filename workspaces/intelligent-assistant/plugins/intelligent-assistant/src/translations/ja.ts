@@ -67,6 +67,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
       'ユーザーからのメッセージ: {{prompt}}。ボットからのメッセージを読み込んでいます。',
     'conversation.category.pinnedChats': '固定チャット',
     'conversation.category.recent': 'チャット',
+    'conversation.category.savedPrompts': '保存済みプロンプト',
     'conversation.delete': '削除',
     'conversation.delete.confirm.action': '削除',
     'conversation.delete.confirm.message':
@@ -247,6 +248,8 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebook.view.documents.maxReached':
       '最大10個のリソースが許可されています。新しいリソースをアップロードするには、リソースを削除してください。',
     'notebook.view.documents.uploading': 'リソースをアップロード中',
+    'notebook.view.documents.uploadsInProgress':
+      '追加のリソースをアップロードする前に、現在のアップロードが完了するまでお待ちください。',
     'notebook.view.input.disabledTooltip':
       'チャットを開始するには、少なくとも1つのロード済みリソースを選択してください',
     'notebook.view.input.placeholder': 'リソースについて質問する...',
@@ -335,11 +338,55 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'settings.displayMode.label': '表示モード',
     'settings.displayMode.overlay': 'オーバーレイ',
     'settings.mcp.badge': '新規',
-    'settings.mcp.label': 'MCP 設定',
+    'settings.panel.title': '設定',
+    'settings.mcp.label': 'MCPとプロンプトの設定',
     'settings.pinned.disable': 'チャットの固定の無効化',
     'settings.pinned.disabled.description': 'チャットの固定は現在無効です',
     'settings.pinned.enable': 'チャットの固定の有効化',
     'settings.pinned.enabled.description': 'チャットの固定は現在有効です',
+    'settings.savedPrompts.disable': '保存済みプロンプトを無効にする',
+    'settings.savedPrompts.disabled.description':
+      '保存済みプロンプトは現在無効です',
+    'settings.savedPrompts.enable': '保存済みプロンプトを有効にする',
+    'settings.savedPrompts.enabled.description':
+      '保存済みプロンプトは現在有効です',
+    'savedPrompts.tab.title': '保存済みプロンプト',
+    'savedPrompts.disabled.title': '保存済みプロンプトは無効です',
+    'savedPrompts.disabled.body':
+      '保存済みプロンプトはチャット履歴パネルで非表示になっています。サイドバーに表示するには有効にしてください。',
+    'savedPrompts.disabled.enableLink': '保存済みプロンプトを有効にする',
+    'savedPrompts.count.zero': 'プロンプトなし',
+    'savedPrompts.count_one': '1件のプロンプト',
+    'savedPrompts.count_other': '{{count}}件のプロンプト',
+    'savedPrompts.newPrompt': '+ 新しいプロンプト',
+    'savedPrompts.form.titleLabel': 'タイトル',
+    'savedPrompts.form.titlePlaceholder': 'プロンプトのタイトル',
+    'savedPrompts.form.contentLabel': 'プロンプト',
+    'savedPrompts.form.contentPlaceholder': 'プロンプトの内容',
+    'savedPrompts.form.save': '保存',
+    'savedPrompts.form.cancel': 'キャンセル',
+    'savedPrompts.validation.titleMaxLength':
+      'タイトルは{{max}}文字以内である必要があります。',
+    'savedPrompts.validation.contentMaxLength':
+      'プロンプトは{{max}}文字以内である必要があります。',
+    'savedPrompts.limitReached':
+      'プロンプトの上限に達しました。新しいプロンプトを作成するには、既存のプロンプトを削除してください。',
+    'savedPrompts.actions.apply': '入力ボックスに適用',
+    'savedPrompts.actions.send': '直接送信',
+    'savedPrompts.actions.sendDisabledStreaming':
+      '応答が完了するまでお待ちください',
+    'savedPrompts.actions.delete': '削除',
+    'savedPrompts.actions.menuAriaLabel': '{{name}} のアクション',
+    'savedPrompts.delete.confirm.title': '「{{name}}」を削除しますか?',
+    'savedPrompts.delete.confirm.message':
+      'この保存済みプロンプトは完全に削除されます。',
+    'savedPrompts.delete.confirm.action': '削除',
+    'savedPrompts.empty.description':
+      'よく使うプロンプトを保存して、会話で再入力せずにすばやく再利用できます。保存済みプロンプトは、チャット履歴パネルにも表示され、すばやくアクセスできます。',
+    'savedPrompts.sidebar.showAll': 'すべて表示',
+    'savedPrompts.sidebar.showLess': '表示を減らす',
+    'savedPrompts.sidebar.openSettings': '保存済みプロンプトの設定を開く',
+    'savedPrompts.sidebar.empty': '保存済みプロンプトはまだありません',
     'sort.alphabeticalAsc': '名前（A-Z）',
     'sort.alphabeticalDesc': '名前（Z-A）',
     'sort.label': '会話を並べ替え',
@@ -382,6 +429,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'tooltip.quickNewChat': '新しいチャット',
     'tooltip.responseRecorded': '回答が記録されました',
     'tooltip.send': '送信',
+    'tooltip.settings': 'チャットボットのオプション',
     'user.guest': 'ゲスト',
     'user.loading': '...',
   },

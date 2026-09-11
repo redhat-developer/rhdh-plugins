@@ -101,6 +101,8 @@ function baseContextValue(): LightspeedDrawerContextType {
     setShellViewTab: jest.fn(),
     activeNotebookId: undefined,
     setActiveNotebookId: jest.fn(),
+    settingsTab: null,
+    setSettingsTab: jest.fn(),
   };
 }
 

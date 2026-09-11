@@ -17,6 +17,13 @@
 import { createApiRef, type ApiRef } from '@backstage/core-plugin-api';
 
 import {
+  SavedPrompt,
+  SavedPromptCreateRequest,
+  SavedPromptDeleteResponse,
+  SavedPromptsConfig,
+} from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+
+import {
   Attachment,
   BaseMessage,
   CaptureFeedback,
@@ -52,6 +59,10 @@ export type LightspeedAPI = {
   captureFeedback: (payload: CaptureFeedback) => Promise<{ response: string }>;
   isTopicRestrictionEnabled: () => Promise<boolean>;
   stopMessage: (requestId: string) => Promise<{ success: boolean }>;
+  getSavedPromptsConfig: () => Promise<SavedPromptsConfig>;
+  getSavedPrompts: () => Promise<SavedPrompt[]>;
+  createSavedPrompt: (req: SavedPromptCreateRequest) => Promise<SavedPrompt>;
+  deleteSavedPrompt: (promptId: string) => Promise<SavedPromptDeleteResponse>;
 };
 
 /**

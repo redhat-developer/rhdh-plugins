@@ -32,6 +32,7 @@ import {
   selectDisplayMode,
   type DisplayMode,
   expectBackstagePageVisible,
+  waitForBackstageCatalogReady,
   verifyMcpSettingsPanel,
   openMcpSettingsPanel,
   closeMcpSettingsPanel,
@@ -94,7 +95,8 @@ test.describe('Intelligent assistant MCP', () => {
     }
 
     test.beforeEach(async () => {
-      await sharedPage.goto('/');
+      await sharedPage.goto('/catalog');
+      await waitForBackstageCatalogReady(sharedPage);
     });
 
     test.afterEach(async () => {

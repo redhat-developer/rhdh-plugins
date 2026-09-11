@@ -58,6 +58,7 @@ function HookHarness() {
   return (
     <div>
       <div data-testid="pathname">{location.pathname}</div>
+      <div data-testid="search">{location.search}</div>
       <div data-testid="display-mode">{contextValue.displayMode}</div>
       <div data-testid="is-open">
         {contextValue.isChatbotActive ? 'open' : 'closed'}
@@ -98,6 +99,13 @@ function HookHarness() {
         }
       >
         Late conversation id
+      </button>
+      <button
+        type="button"
+        data-testid="switch-conversation"
+        onClick={() => contextValue.setCurrentConversationId('other-thread')}
+      >
+        Switch conversation
       </button>
       <button
         type="button"
@@ -510,6 +518,37 @@ describe('useLightspeedProviderState', () => {
       await waitFor(() => {
         expect(screen.getByTestId('display-mode')).toHaveTextContent(
           ChatbotDisplayMode.default,
+        );
+      });
+    });
+
+    it('preserves search params when switching conversations in fullscreen', async () => {
+      displayModeSettingsRef.displayMode = ChatbotDisplayMode.embedded;
+
+      renderWithRouter([
+        '/intelligent-assistant/conversation/conv-a?settingsTab=saved-prompts',
+      ]);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('conversation-id')).toHaveTextContent(
+          'conv-a',
+        );
+        expect(screen.getByTestId('search')).toHaveTextContent(
+          '?settingsTab=saved-prompts',
+        );
+      });
+
+      screen.getByTestId('switch-conversation').click();
+
+      await waitFor(() => {
+        expect(screen.getByTestId('pathname')).toHaveTextContent(
+          '/intelligent-assistant/conversation/other-thread',
+        );
+        expect(screen.getByTestId('search')).toHaveTextContent(
+          '?settingsTab=saved-prompts',
+        );
+        expect(screen.getByTestId('conversation-id')).toHaveTextContent(
+          'other-thread',
         );
       });
     });

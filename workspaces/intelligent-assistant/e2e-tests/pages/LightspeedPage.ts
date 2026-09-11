@@ -92,14 +92,51 @@ export async function closeChatHistoryDrawer(
   await page.getByRole('button', { name: t['aria.closeDrawerPanel'] }).click();
 }
 
+// Legacy app-legacy uses BackstagePage; NFS uses BUI header titles.
+const backstagePageContent = (page: Page) =>
+  page.locator('main[class*="BackstagePage-root"], .bui-HeaderTitle').first();
+
+const isRenderedInLayout = (element: Element) => {
+  const { width, height } = element.getBoundingClientRect();
+  const style = window.getComputedStyle(element);
+  return (
+    width > 0 &&
+    height > 0 &&
+    style.visibility !== 'hidden' &&
+    style.display !== 'none'
+  );
+};
+
+export async function waitForBackstageCatalogReady(page: Page) {
+  if (process.env.APP_MODE === 'nfs') {
+    return;
+  }
+
+  await expect(page).toHaveURL(/\/catalog/);
+  await expect(backstagePageContent(page)).toBeAttached({ timeout: 15_000 });
+}
+
 // Assertions
 export async function expectBackstagePageVisible(page: Page, visible = true) {
   if (process.env.APP_MODE === 'nfs') {
     return;
   }
-  const locator = page.getByText('Red Hat Catalog');
-  const assertion = visible ? expect(locator) : expect(locator).not;
-  await assertion.toBeVisible();
+
+  const content = backstagePageContent(page);
+
+  if (visible) {
+    await expect(page).toHaveURL(/\/catalog/);
+    // Overlay/dock modes may set aria-hidden on the page behind the chatbot.
+    // Locale-specific catalog titles differ between legacy and NFS — use layout.
+    await expect(content).toBeAttached({ timeout: 15_000 });
+    await expect
+      .poll(async () => content.evaluate(isRenderedInLayout))
+      .toBe(true);
+    return;
+  }
+
+  // Fullscreen navigates to the dedicated IA route instead of overlaying the catalog.
+  await expect(page).toHaveURL(/\/intelligent-assistant/, { timeout: 15_000 });
 }
 
 export async function expectChatbotControlsVisible(
@@ -380,12 +417,11 @@ export async function verifyMcpSettingsPanel(
     }
   }
 
+  await closeMcpSettingsPanel(page, t);
+  await expectMcpServersSettingsHeading(page, false, t);
   await expect(
     page.getByRole('button', { name: t['aria.options.label'] }),
   ).toBeVisible();
-
-  await closeMcpSettingsPanel(page, t);
-  await expectMcpServersSettingsHeading(page, false, t);
 }
 
 /** Chat composer message field (matches sendMessage in testHelper). */
