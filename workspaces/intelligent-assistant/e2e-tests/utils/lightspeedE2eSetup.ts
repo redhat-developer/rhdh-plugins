@@ -41,12 +41,16 @@ export type LightspeedE2eBootstrap = {
 };
 
 async function waitForLoggedInShell(page: Page) {
-  const catalogHeading = page.getByRole('heading', { name: 'Red Hat Catalog' });
+  const legacyMain = page.locator('main[class*="BackstagePage-root"]').first();
+  const nfsCatalogTitle = page.locator('.bui-HeaderTitle').first();
   const settings = page.getByRole('link', { name: 'Settings' });
   const deadline = Date.now() + 15_000;
 
   while (Date.now() < deadline) {
-    if (await catalogHeading.isVisible().catch(() => false)) {
+    if (await legacyMain.isVisible().catch(() => false)) {
+      return;
+    }
+    if (await nfsCatalogTitle.isVisible().catch(() => false)) {
       return;
     }
     if (await settings.isVisible().catch(() => false)) {

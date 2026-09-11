@@ -92,7 +92,9 @@ export async function closeChatHistoryDrawer(
   await page.getByRole('button', { name: t['aria.closeDrawerPanel'] }).click();
 }
 
-const backstageCatalogTitle = (page: Page) => page.locator('.bui-HeaderTitle');
+// Legacy app-legacy uses BackstagePage; NFS uses BUI header titles.
+const backstagePageContent = (page: Page) =>
+  page.locator('main[class*="BackstagePage-root"], .bui-HeaderTitle').first();
 
 const isRenderedInLayout = (element: Element) => {
   const { width, height } = element.getBoundingClientRect();
@@ -105,26 +107,36 @@ const isRenderedInLayout = (element: Element) => {
   );
 };
 
+export async function waitForBackstageCatalogReady(page: Page) {
+  if (process.env.APP_MODE === 'nfs') {
+    return;
+  }
+
+  await expect(page).toHaveURL(/\/catalog/);
+  await expect(backstagePageContent(page)).toBeAttached({ timeout: 15_000 });
+}
+
 // Assertions
 export async function expectBackstagePageVisible(page: Page, visible = true) {
   if (process.env.APP_MODE === 'nfs') {
     return;
   }
 
-  const catalogTitle = backstageCatalogTitle(page);
+  const content = backstagePageContent(page);
 
   if (visible) {
     await expect(page).toHaveURL(/\/catalog/);
-    // Overlay/dock modes may set aria-hidden on the page behind the chatbot, and
-    // the catalog title is localized — use the DOM node instead of role/text.
-    await expect(catalogTitle.first()).toBeAttached({ timeout: 15_000 });
+    // Overlay/dock modes may set aria-hidden on the page behind the chatbot.
+    // Locale-specific catalog titles differ between legacy and NFS — use layout.
+    await expect(content).toBeAttached({ timeout: 15_000 });
     await expect
-      .poll(async () => catalogTitle.first().evaluate(isRenderedInLayout))
+      .poll(async () => content.evaluate(isRenderedInLayout))
       .toBe(true);
     return;
   }
 
-  await expect(catalogTitle.first()).not.toBeVisible();
+  // Fullscreen navigates to the dedicated IA route instead of overlaying the catalog.
+  await expect(page).toHaveURL(/\/intelligent-assistant/, { timeout: 15_000 });
 }
 
 export async function expectChatbotControlsVisible(
