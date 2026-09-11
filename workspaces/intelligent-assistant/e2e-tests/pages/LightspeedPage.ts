@@ -92,8 +92,7 @@ export async function closeChatHistoryDrawer(
   await page.getByRole('button', { name: t['aria.closeDrawerPanel'] }).click();
 }
 
-const backstageCatalogTitle = (page: Page) =>
-  page.locator('.bui-HeaderTitle', { hasText: 'Red Hat Catalog' });
+const backstageCatalogTitle = (page: Page) => page.locator('.bui-HeaderTitle');
 
 const isRenderedInLayout = (element: Element) => {
   const { width, height } = element.getBoundingClientRect();
@@ -115,16 +114,17 @@ export async function expectBackstagePageVisible(page: Page, visible = true) {
   const catalogTitle = backstageCatalogTitle(page);
 
   if (visible) {
-    // Overlay mode sets aria-hidden on the page behind the chatbot dialog, so
-    // role-based queries stop matching even though the catalog is still shown.
-    await expect(catalogTitle).toBeAttached();
+    await expect(page).toHaveURL(/\/catalog/);
+    // Overlay/dock modes may set aria-hidden on the page behind the chatbot, and
+    // the catalog title is localized — use the DOM node instead of role/text.
+    await expect(catalogTitle.first()).toBeAttached({ timeout: 15_000 });
     await expect
-      .poll(async () => catalogTitle.evaluate(isRenderedInLayout))
+      .poll(async () => catalogTitle.first().evaluate(isRenderedInLayout))
       .toBe(true);
     return;
   }
 
-  await expect(catalogTitle).not.toBeVisible();
+  await expect(catalogTitle.first()).not.toBeVisible();
 }
 
 export async function expectChatbotControlsVisible(
