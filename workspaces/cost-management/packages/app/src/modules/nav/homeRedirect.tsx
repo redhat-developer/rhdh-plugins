@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
-import { createFrontendModule } from '@backstage/frontend-plugin-api';
-import { homeRedirectPage } from './homeRedirect';
-import { SidebarContent } from './Sidebar';
+import { PageBlueprint } from '@backstage/frontend-plugin-api';
+import { Navigate } from 'react-router-dom';
 
-export const navModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: [homeRedirectPage, SidebarContent],
+/**
+ * NFS has no default `/` page. Match the legacy app, which redirects `/` to catalog.
+ */
+export const homeRedirectPage = PageBlueprint.make({
+  name: 'home-redirect',
+  params: {
+    path: '/',
+    noHeader: true,
+    loader: async () => <Navigate to="/catalog" replace />,
+  },
 });

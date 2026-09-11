@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import rbacPlugin, {
+  rbacTranslationsModule,
+} from '@backstage-community/plugin-rbac/alpha';
 import { createApp } from '@backstage/frontend-defaults';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import userSettingsPlugin from '@backstage/plugin-user-settings/alpha';
@@ -29,6 +32,8 @@ export default createApp({
     catalogPlugin,
     userSettingsPlugin,
     costManagementPlugin,
+    rbacPlugin,
+    rbacTranslationsModule,
     signInModule,
   ],
 });
