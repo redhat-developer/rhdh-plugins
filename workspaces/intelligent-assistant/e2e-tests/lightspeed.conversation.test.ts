@@ -30,6 +30,7 @@ import {
   submitFeedback,
   assertClipboardContains,
   openLightspeed,
+  waitForChatbotVisible,
 } from './utils/testHelper';
 import {
   expectChatInputValue,
@@ -37,7 +38,7 @@ import {
   chatStopButton,
   waitForChatMessageLoadingHidden,
 } from './pages/LightspeedPage';
-import { verifySidePanelConversation } from './utils/sidebar';
+import { openChatDrawer, verifySidePanelConversation } from './utils/sidebar';
 import {
   openChatContextMenu,
   openChatContextMenuByName,
@@ -141,6 +142,18 @@ test.describe('Intelligent assistant conversation', () => {
     test('Verify scroll controls in Conversation', async ({}, testInfo) => {
       await mockChatHistory(sharedPage, demoChatContent);
       await sharedPage.reload();
+      await waitForChatbotVisible(sharedPage);
+
+      const conversation = recentChatsMenuItems(
+        sharedPage,
+        translations,
+      ).first();
+      if (!(await conversation.isVisible().catch(() => false))) {
+        await openChatDrawer(sharedPage, translations);
+      }
+      await expect(conversation).toBeVisible({ timeout: 10000 });
+      await conversation.click();
+
       await sharedPage.locator('.pf-chatbot__messagebox').waitFor({
         state: 'visible',
       });
@@ -238,6 +251,7 @@ test.describe('Intelligent assistant conversation', () => {
 
       test('Verify chat actions menu', async () => {
         await sharedPage.reload();
+        await waitForChatbotVisible(sharedPage);
         await openChatContextMenu(sharedPage, translations);
         await verifyChatContextMenuOptions(sharedPage, translations);
       });
@@ -302,6 +316,7 @@ test.describe('Intelligent assistant conversation', () => {
 
         test('Verify search results when chats are pinned', async () => {
           await sharedPage.reload();
+          await waitForChatbotVisible(sharedPage);
           await openChatContextMenu(sharedPage, translations);
           await selectPinAction(sharedPage, translations);
           await searchChats(sharedPage, 'dummy search', translations);
@@ -349,13 +364,19 @@ test.describe('Intelligent assistant conversation', () => {
     test('Verify thinking section is displayed in bot response', async () => {
       await mockChatHistoryWithRedactedThinking(sharedPage);
       await sharedPage.reload();
-      await openLightspeed(sharedPage);
-      await recentChatsMenuItems(sharedPage, translations).first().click();
-      await sharedPage.waitForSelector('.pf-chatbot__message--bot', {
-        timeout: 10000,
-      });
+      await waitForChatbotVisible(sharedPage);
+      const conversation = recentChatsMenuItems(
+        sharedPage,
+        translations,
+      ).first();
+      if (!(await conversation.isVisible().catch(() => false))) {
+        await openChatDrawer(sharedPage, translations);
+      }
+      await expect(conversation).toBeVisible({ timeout: 10000 });
+      await conversation.click();
+
       const botMessage = sharedPage.locator('.pf-chatbot__message--bot').last();
-      await expect(botMessage).toBeVisible();
+      await expect(botMessage).toBeVisible({ timeout: 10000 });
       await expect(
         sharedPage.getByRole('button', {
           name: translations['reasoning.thinking'],
@@ -373,9 +394,7 @@ test.describe('Intelligent assistant conversation', () => {
           localStorage.removeItem('lastOpenedConversation'),
         );
         await sharedPage.reload();
-        await sharedPage
-          .locator('.pf-chatbot__messagebox')
-          .waitFor({ state: 'visible' });
+        await waitForChatbotVisible(sharedPage);
       });
 
       test('Model selector is enabled before sending a message', async () => {

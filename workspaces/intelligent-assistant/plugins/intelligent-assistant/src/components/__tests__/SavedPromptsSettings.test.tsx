@@ -145,7 +145,9 @@ describe('SavedPromptsSettings', () => {
     fireEvent.click(screen.getByText('+ New prompt'));
 
     expect(screen.getByText('Title')).toBeInTheDocument();
-    expect(screen.getByText('Prompt content')).toBeInTheDocument();
+    expect(screen.getByText('Prompt')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Prompt title')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Prompt content')).toBeInTheDocument();
     expect(screen.getByText('Save')).toBeInTheDocument();
     expect(screen.getByText('Cancel')).toBeInTheDocument();
   });

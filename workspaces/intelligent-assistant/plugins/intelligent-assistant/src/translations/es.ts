@@ -79,9 +79,7 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'conversation.rename.confirm.action': 'Cambiar el nombre',
     'conversation.rename.confirm.title': '¿Cambiar el nombre del chat?',
     'conversation.rename.placeholder': 'Nombre del chat',
-    'disclaimer.withValidation':
-      'Esta funcionalidad utiliza tecnología de IA. No incluya información personal ni otros datos confidenciales en la entrada. Las interacciones pueden utilizarse para mejorar los productos o servicios de Red Hat.',
-    'disclaimer.withoutValidation':
+    disclaimer:
       'Esta funcionalidad utiliza tecnología de IA. No incluya información personal ni otros datos confidenciales en la entrada. Las interacciones pueden utilizarse para mejorar los productos o servicios de Red Hat.',
     'error.context.fileAttachment':
       'useFileAttachmentContext debe estar dentro de un FileAttachmentContextProvider',
@@ -253,6 +251,8 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'notebook.view.documents.maxReached':
       'Se permiten un máximo de 10 recursos. Elimina un recurso para subir uno nuevo.',
     'notebook.view.documents.uploading': 'Subiendo recurso',
+    'notebook.view.documents.uploadsInProgress':
+      'Espere a que se completen las cargas actuales antes de agregar más recursos.',
     'notebook.view.input.disabledTooltip':
       'Selecciona al menos un recurso cargado para comenzar a chatear',
     'notebook.view.input.placeholder': 'Pregunta sobre tus recursos...',
@@ -355,9 +355,27 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'settings.savedPrompts.enable': 'Habilitar prompts guardados',
     'settings.savedPrompts.enabled.description':
       'Los prompts guardados están habilitados actualmente',
+    'savedPrompts.tab.title': 'Prompts guardados',
+    'savedPrompts.disabled.title': 'Los prompts guardados están deshabilitados',
+    'savedPrompts.disabled.body':
+      'Los prompts guardados están ocultos en el panel del historial de chat. Habilítelos para mostrar sus prompts en la barra lateral.',
+    'savedPrompts.disabled.enableLink': 'Habilitar prompts guardados',
     'savedPrompts.count.zero': 'Sin prompts',
     'savedPrompts.count_one': '1 prompt',
     'savedPrompts.count_other': '{{count}} prompts',
+    'savedPrompts.newPrompt': '+ Nuevo prompt',
+    'savedPrompts.form.titleLabel': 'Título',
+    'savedPrompts.form.titlePlaceholder': 'Título del prompt',
+    'savedPrompts.form.contentLabel': 'Prompt',
+    'savedPrompts.form.contentPlaceholder': 'Contenido del prompt',
+    'savedPrompts.form.save': 'Guardar',
+    'savedPrompts.form.cancel': 'Cancelar',
+    'savedPrompts.validation.titleMaxLength':
+      'El título debe tener {{max}} caracteres o menos.',
+    'savedPrompts.validation.contentMaxLength':
+      'El prompt debe tener {{max}} caracteres o menos.',
+    'savedPrompts.limitReached':
+      'Se alcanzó el límite de prompts. Elimine un prompt existente para crear uno nuevo.',
     'savedPrompts.actions.apply': 'Aplicar en el cuadro de entrada',
     'savedPrompts.actions.send': 'Enviar directamente',
     'savedPrompts.actions.sendDisabledStreaming':
@@ -417,6 +435,7 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'tooltip.quickNewChat': 'Nuevo chat',
     'tooltip.responseRecorded': 'Respuesta grabada',
     'tooltip.send': 'Enviar',
+    'tooltip.settings': 'Opciones del chatbot',
     'user.guest': 'Invitado',
     'user.loading': '...',
   },

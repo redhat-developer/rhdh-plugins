@@ -78,9 +78,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'conversation.rename.confirm.action': '名前の変更',
     'conversation.rename.confirm.title': 'チャットの名前を変更しますか?',
     'conversation.rename.placeholder': 'チャット名',
-    'disclaimer.withValidation':
-      'この機能は AI テクノロジーを使用します。入力内容に個人情報やその他の機密情報を含めないでください。やり取りの内容は、Red Hat の製品やサービスを改善するために使用される場合があります。',
-    'disclaimer.withoutValidation':
+    disclaimer:
       'この機能は AI テクノロジーを使用します。入力内容に個人情報やその他の機密情報を含めないでください。やり取りの内容は、Red Hat の製品やサービスを改善するために使用される場合があります。',
     'error.context.fileAttachment':
       'useFileAttachmentContext が FileAttachmentContextProvider 内に収まっている必要があります',
@@ -250,6 +248,8 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebook.view.documents.maxReached':
       '最大10個のリソースが許可されています。新しいリソースをアップロードするには、リソースを削除してください。',
     'notebook.view.documents.uploading': 'リソースをアップロード中',
+    'notebook.view.documents.uploadsInProgress':
+      '追加のリソースをアップロードする前に、現在のアップロードが完了するまでお待ちください。',
     'notebook.view.input.disabledTooltip':
       'チャットを開始するには、少なくとも1つのロード済みリソースを選択してください',
     'notebook.view.input.placeholder': 'リソースについて質問する...',
@@ -349,9 +349,27 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'settings.savedPrompts.enable': '保存済みプロンプトを有効にする',
     'settings.savedPrompts.enabled.description':
       '保存済みプロンプトは現在有効です',
+    'savedPrompts.tab.title': '保存済みプロンプト',
+    'savedPrompts.disabled.title': '保存済みプロンプトは無効です',
+    'savedPrompts.disabled.body':
+      '保存済みプロンプトはチャット履歴パネルで非表示になっています。サイドバーに表示するには有効にしてください。',
+    'savedPrompts.disabled.enableLink': '保存済みプロンプトを有効にする',
     'savedPrompts.count.zero': 'プロンプトなし',
     'savedPrompts.count_one': '1件のプロンプト',
     'savedPrompts.count_other': '{{count}}件のプロンプト',
+    'savedPrompts.newPrompt': '+ 新しいプロンプト',
+    'savedPrompts.form.titleLabel': 'タイトル',
+    'savedPrompts.form.titlePlaceholder': 'プロンプトのタイトル',
+    'savedPrompts.form.contentLabel': 'プロンプト',
+    'savedPrompts.form.contentPlaceholder': 'プロンプトの内容',
+    'savedPrompts.form.save': '保存',
+    'savedPrompts.form.cancel': 'キャンセル',
+    'savedPrompts.validation.titleMaxLength':
+      'タイトルは{{max}}文字以内である必要があります。',
+    'savedPrompts.validation.contentMaxLength':
+      'プロンプトは{{max}}文字以内である必要があります。',
+    'savedPrompts.limitReached':
+      'プロンプトの上限に達しました。新しいプロンプトを作成するには、既存のプロンプトを削除してください。',
     'savedPrompts.actions.apply': '入力ボックスに適用',
     'savedPrompts.actions.send': '直接送信',
     'savedPrompts.actions.sendDisabledStreaming':
@@ -410,6 +428,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'tooltip.quickNewChat': '新しいチャット',
     'tooltip.responseRecorded': '回答が記録されました',
     'tooltip.send': '送信',
+    'tooltip.settings': 'チャットボットのオプション',
     'user.guest': 'ゲスト',
     'user.loading': '...',
   },

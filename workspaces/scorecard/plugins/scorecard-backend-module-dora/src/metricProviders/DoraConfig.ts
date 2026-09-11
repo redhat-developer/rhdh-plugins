@@ -46,7 +46,7 @@ export type DoraMedianLeadTimeForChangesConfig = {
   productionEnvironments: string[];
 };
 
-export type DoraMeanTimeToRestoreConfig = {
+export type DoraMedianTimeToRestoreConfig = {
   incidentsCollector: DoraCollectorConfig;
 };
 
@@ -137,7 +137,7 @@ export const DEFAULT_DORA_CHANGE_FAILURE_RATE_THRESHOLDS: ThresholdConfig =
     ],
   };
 
-export const DEFAULT_DORA_MEAN_TIME_TO_RESTORE_THRESHOLDS: ThresholdConfig =
+export const DEFAULT_DORA_MEDIAN_TIME_TO_RESTORE_THRESHOLDS: ThresholdConfig =
   // Calculated metric is in hours
   {
     rules: [
@@ -251,12 +251,13 @@ export function parseDoraMedianLeadTimeForChangesConfig(
 }
 
 /**
- * Parses mean-time-to-restore provider config from the root Backstage config.
+ * Parses median-time-to-restore provider config from the root Backstage config.
  */
-export function parseDoraMeanTimeToRestoreConfig(
+export function parseDoraMedianTimeToRestoreConfig(
   config: Config,
-): DoraMeanTimeToRestoreConfig {
-  const providerConfigPath = 'scorecard.metricProviders.dora.meanTimeToRestore';
+): DoraMedianTimeToRestoreConfig {
+  const providerConfigPath =
+    'scorecard.metricProviders.dora.medianTimeToRestore';
 
   return {
     incidentsCollector: parseCollectorConfig(

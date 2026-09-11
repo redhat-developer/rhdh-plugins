@@ -79,9 +79,7 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'conversation.rename.confirm.action': 'Renommer',
     'conversation.rename.confirm.title': 'Renommer la conversation ?',
     'conversation.rename.placeholder': 'Nom de la conversation',
-    'disclaimer.withValidation':
-      'Cette fonctionnalité utilise la technologie AI. Ne pas inclure d’informations personnelles ou toute autre information sensible dans vos entrées de données. Des interactions pourront être utilisées pour améliorer les produits ou services de Red Hat.',
-    'disclaimer.withoutValidation':
+    disclaimer:
       'Cette fonctionnalité utilise la technologie AI. Ne pas inclure d’informations personnelles ou toute autre information sensible dans vos entrées de données. Des interactions pourront être utilisées pour améliorer les produits ou services de Red Hat.',
     'error.context.fileAttachment':
       'useFileAttachmentContext doit être dans un FileAttachmentContextProvider',
@@ -257,6 +255,8 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'notebook.view.documents.maxReached':
       'Maximum 10 ressources autorisées. Supprimez une ressource pour en charger une nouvelle.',
     'notebook.view.documents.uploading': 'Chargement de la ressource',
+    'notebook.view.documents.uploadsInProgress':
+      "Veuillez attendre la fin des téléversements en cours avant d'ajouter d'autres ressources.",
     'notebook.view.input.disabledTooltip':
       'Sélectionnez au moins une ressource chargée pour commencer à discuter',
     'notebook.view.input.placeholder':
@@ -362,9 +362,27 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'settings.savedPrompts.enable': 'Activer les prompts sauvegardés',
     'settings.savedPrompts.enabled.description':
       'Les prompts sauvegardés sont actuellement activés',
+    'savedPrompts.tab.title': 'Prompts enregistrés',
+    'savedPrompts.disabled.title': 'Les prompts enregistrés sont désactivés',
+    'savedPrompts.disabled.body':
+      "Les prompts enregistrés sont masqués dans le panneau d'historique des conversations. Activez-les pour afficher vos prompts dans la barre latérale.",
+    'savedPrompts.disabled.enableLink': 'Activer les prompts enregistrés',
     'savedPrompts.count.zero': 'Aucun prompt',
     'savedPrompts.count_one': '1 prompt',
     'savedPrompts.count_other': '{{count}} prompts',
+    'savedPrompts.newPrompt': '+ Nouveau prompt',
+    'savedPrompts.form.titleLabel': 'Titre',
+    'savedPrompts.form.titlePlaceholder': 'Titre du prompt',
+    'savedPrompts.form.contentLabel': 'Prompt',
+    'savedPrompts.form.contentPlaceholder': 'Contenu du prompt',
+    'savedPrompts.form.save': 'Enregistrer',
+    'savedPrompts.form.cancel': 'Annuler',
+    'savedPrompts.validation.titleMaxLength':
+      'Le titre doit contenir {{max}} caractères ou moins.',
+    'savedPrompts.validation.contentMaxLength':
+      'Le prompt doit contenir {{max}} caractères ou moins.',
+    'savedPrompts.limitReached':
+      'Limite de prompts atteinte. Supprimez un prompt existant pour en créer un nouveau.',
     'savedPrompts.actions.apply': 'Appliquer dans la zone de saisie',
     'savedPrompts.actions.send': 'Envoyer directement',
     'savedPrompts.actions.sendDisabledStreaming':
@@ -424,6 +442,7 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'tooltip.quickNewChat': 'Nouveau chat',
     'tooltip.responseRecorded': 'Réponse enregistrée',
     'tooltip.send': 'Envoyer',
+    'tooltip.settings': 'Options du chatbot',
     'user.guest': 'Invité',
     'user.loading': '...',
   },

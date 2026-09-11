@@ -32,23 +32,6 @@ const mockNotebook: NotebookSession = {
   },
 };
 
-const mockClasses: Record<string, string> = {
-  notebookCard: 'notebookCard',
-  notebookCardMenuOpen: 'notebookCardMenuOpen',
-  notebookCardHeader: 'notebookCardHeader',
-  notebookDropdownMenu: 'notebookDropdownMenu',
-  notebookMenuButton: 'notebookMenuButton',
-  notebookDropdownList: 'notebookDropdownList',
-  notebookDropdownItem: 'notebookDropdownItem',
-  notebookCardHeaderActions: 'notebookCardHeaderActions',
-  notebookTitle: 'notebookTitle',
-  notebookTitleText: 'notebookTitleText',
-  notebookCardDivider: 'notebookCardDivider',
-  notebookCardBody: 'notebookCardBody',
-  notebookDocuments: 'notebookDocuments',
-  notebookUpdated: 'notebookUpdated',
-};
-
 describe('NotebookCard', () => {
   const onClick = jest.fn();
   const onRename = jest.fn();
@@ -57,7 +40,6 @@ describe('NotebookCard', () => {
 
   const defaultProps = {
     notebook: mockNotebook,
-    classes: mockClasses,
     openNotebookMenuId: null as string | null,
     setOpenNotebookMenuId,
     onClick,

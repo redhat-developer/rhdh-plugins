@@ -79,9 +79,7 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'conversation.rename.confirm.action': 'Umbenennen',
     'conversation.rename.confirm.title': 'Chat umbenennen?',
     'conversation.rename.placeholder': 'Chatname',
-    'disclaimer.withValidation':
-      'Diese Funktion nutzt KI-Technologie. Geben Sie bei Ihrer Eingabe keine persönlichen oder sonstigen sensiblen Informationen an. Interaktionen können dazu genutzt werden, die Produkte oder Dienstleistungen von Red Hat zu verbessern.',
-    'disclaimer.withoutValidation':
+    disclaimer:
       'Diese Funktion nutzt KI-Technologie. Geben Sie bei Ihrer Eingabe keine persönlichen oder sonstigen sensiblen Informationen an. Interaktionen können dazu genutzt werden, die Produkte oder Dienstleistungen von Red Hat zu verbessern.',
     'error.context.fileAttachment':
       'useFileAttachmentContext muss innerhalb eines FileAttachmentContextProvider liegen',
@@ -257,6 +255,8 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebook.view.documents.maxReached':
       'Maximal 10 Ressourcen sind erlaubt. Löschen Sie eine Ressource, um eine neue hochzuladen.',
     'notebook.view.documents.uploading': 'Ressource wird hochgeladen',
+    'notebook.view.documents.uploadsInProgress':
+      'Bitte warten Sie, bis die aktuellen Uploads abgeschlossen sind, bevor Sie weitere Ressourcen hinzufügen.',
     'notebook.view.input.disabledTooltip':
       'Wählen Sie mindestens eine geladene Ressource aus, um den Chat zu starten',
     'notebook.view.input.placeholder': 'Fragen Sie zu Ihren Ressourcen...',
@@ -362,9 +362,27 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'settings.savedPrompts.enable': 'Gespeicherte Prompts aktivieren',
     'settings.savedPrompts.enabled.description':
       'Gespeicherte Prompts sind derzeit aktiviert',
+    'savedPrompts.tab.title': 'Gespeicherte Prompts',
+    'savedPrompts.disabled.title': 'Gespeicherte Prompts sind deaktiviert',
+    'savedPrompts.disabled.body':
+      'Gespeicherte Prompts sind im Chat-Verlaufsbereich ausgeblendet. Aktivieren Sie sie, um Ihre Prompts in der Seitenleiste anzuzeigen.',
+    'savedPrompts.disabled.enableLink': 'Gespeicherte Prompts aktivieren',
     'savedPrompts.count.zero': 'Keine Prompts',
     'savedPrompts.count_one': '1 Prompt',
     'savedPrompts.count_other': '{{count}} Prompts',
+    'savedPrompts.newPrompt': '+ Neuer Prompt',
+    'savedPrompts.form.titleLabel': 'Titel',
+    'savedPrompts.form.titlePlaceholder': 'Prompt-Titel',
+    'savedPrompts.form.contentLabel': 'Prompt',
+    'savedPrompts.form.contentPlaceholder': 'Prompt-Inhalt',
+    'savedPrompts.form.save': 'Speichern',
+    'savedPrompts.form.cancel': 'Abbrechen',
+    'savedPrompts.validation.titleMaxLength':
+      'Der Titel darf höchstens {{max}} Zeichen lang sein.',
+    'savedPrompts.validation.contentMaxLength':
+      'Der Prompt darf höchstens {{max}} Zeichen lang sein.',
+    'savedPrompts.limitReached':
+      'Prompt-Limit erreicht. Löschen Sie einen vorhandenen Prompt, um einen neuen zu erstellen.',
     'savedPrompts.actions.apply': 'In Eingabefeld einfügen',
     'savedPrompts.actions.send': 'Direkt senden',
     'savedPrompts.actions.sendDisabledStreaming':
@@ -424,6 +442,7 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'tooltip.quickNewChat': 'Neuer Chat',
     'tooltip.responseRecorded': 'Antwort aufgezeichnet',
     'tooltip.send': 'Senden',
+    'tooltip.settings': 'Chatbot-Optionen',
     'user.guest': 'Gast',
     'user.loading': '...',
   },

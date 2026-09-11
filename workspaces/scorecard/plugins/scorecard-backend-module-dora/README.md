@@ -57,7 +57,7 @@ metadata:
 | ------------------------------- | ------------------------------- | ------- | ---------------------------------------- | --------------------------------------------------------------------------------- |
 | `dora.deploymentFrequency`      | `dora.deploymentFrequency`      | `/week` | elite `>=7`, medium `1-7`, low `<1`      | [deployment-frequency.md](./docs/metrics/deployment-frequency.md)                 |
 | `dora.medianLeadTimeForChanges` | `dora.medianLeadTimeForChanges` | `h`     | elite `<24`, medium `24-168`, low `>168` | [median-lead-time-for-changes.md](./docs/metrics/median-lead-time-for-changes.md) |
-| `dora.meanTimeToRestore`        | `dora.meanTimeToRestore`        | `h`     | elite `<1`, medium `1-24`, low `>24`     | [mean-time-to-restore.md](./docs/metrics/mean-time-to-restore.md)                 |
+| `dora.medianTimeToRestore`      | `dora.medianTimeToRestore`      | `h`     | elite `<1`, medium `1-24`, low `>24`     | [median-time-to-restore.md](./docs/metrics/median-time-to-restore.md)             |
 | `dora.changeFailureRate`        | `dora.changeFailureRate`        | `%`     | elite `<5`, medium `5-15`, low `>15`     | [change-failure-rate.md](./docs/metrics/change-failure-rate.md)                   |
 
 ## Threshold customization
@@ -89,7 +89,7 @@ scorecard:
               expression: '<1'
 ```
 
-Paths follow `scorecard.metricProviders.dora.<metricProviderName>.thresholds` (update `metricProviderName` to `deploymentFrequency`, `medianLeadTimeForChanges`, `meanTimeToRestore` or `changeFailureRate`).
+Paths follow `scorecard.metricProviders.dora.<metricProviderName>.thresholds` (update `metricProviderName` to `deploymentFrequency`, `medianLeadTimeForChanges`, `medianTimeToRestore` or `changeFailureRate`).
 
 **Entity annotation example** (overrides selected keys; others keep app-config or defaults):
 
@@ -119,7 +119,7 @@ You can replace default collector IDs via `app-config.yaml` as long as your coll
 
 - `dora.deploymentFrequency` [collector contracts](./docs/metrics/deployment-frequency.md#collectors)
 - `dora.medianLeadTimeForChanges` [collector contracts](./docs/metrics/median-lead-time-for-changes.md#collectors)
-- `dora.meanTimeToRestore` [collector contracts](./docs/metrics/mean-time-to-restore.md#collectors)
+- `dora.medianTimeToRestore` [collector contracts](./docs/metrics/median-time-to-restore.md#collectors)
 - `dora.changeFailureRate` [collector contracts](./docs/metrics/change-failure-rate.md#collectors)
 
 Collector inputs are merged with provider-generated required inputs. This lets you pass extra collector-specific fields (for example `workflowName` when using a workflow-runs based collector) as long as required contract fields are still supported.
@@ -162,7 +162,7 @@ DORA providers follow Scorecard scheduling settings under their metric keys:
 
 - `scorecard.metricProviders.dora.deploymentFrequency.schedule`
 - `scorecard.metricProviders.dora.medianLeadTimeForChanges.schedule`
-- `scorecard.metricProviders.dora.meanTimeToRestore.schedule`
+- `scorecard.metricProviders.dora.medianTimeToRestore.schedule`
 - `scorecard.metricProviders.dora.changeFailureRate.schedule`
 
 See [providers.md](../scorecard-backend/docs/providers.md#metric-collection-scheduling) for schedule schema and defaults.

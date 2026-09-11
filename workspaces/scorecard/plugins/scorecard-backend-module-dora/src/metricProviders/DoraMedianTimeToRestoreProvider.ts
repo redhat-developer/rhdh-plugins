@@ -26,27 +26,29 @@ import {
 import { DORA_TIME_WINDOW_DAYS } from '../constants';
 import type { DoraDataService } from '../service/DoraDataService';
 import type { DoraSyncService } from '../service/DoraSyncService';
+import { calculateMedian } from './utils/calculationUtils';
 import {
-  DEFAULT_DORA_MEAN_TIME_TO_RESTORE_THRESHOLDS,
-  type DoraMeanTimeToRestoreConfig,
-  parseDoraMeanTimeToRestoreConfig,
+  DEFAULT_DORA_MEDIAN_TIME_TO_RESTORE_THRESHOLDS,
+  type DoraMedianTimeToRestoreConfig,
+  parseDoraMedianTimeToRestoreConfig,
 } from './DoraConfig';
-import { calculateMean } from './utils/calculationUtils';
 
-type DoraMeanTimeToRestoreProviderOptions = {
+type DoraMedianTimeToRestoreProviderOptions = {
   doraSyncService: DoraSyncService;
   doraDataService: DoraDataService;
-  config: DoraMeanTimeToRestoreConfig;
+  config: DoraMedianTimeToRestoreConfig;
   logger: LoggerService;
 };
 
-export class DoraMeanTimeToRestoreProvider implements MetricProvider<'number'> {
+export class DoraMedianTimeToRestoreProvider
+  implements MetricProvider<'number'>
+{
   private readonly doraSyncService: DoraSyncService;
   private readonly doraDataService: DoraDataService;
-  private readonly config: DoraMeanTimeToRestoreConfig;
+  private readonly config: DoraMedianTimeToRestoreConfig;
   private readonly logger: LoggerService;
 
-  private constructor(options: DoraMeanTimeToRestoreProviderOptions) {
+  private constructor(options: DoraMedianTimeToRestoreProviderOptions) {
     this.doraSyncService = options.doraSyncService;
     this.doraDataService = options.doraDataService;
     this.config = options.config;
@@ -60,11 +62,11 @@ export class DoraMeanTimeToRestoreProvider implements MetricProvider<'number'> {
       doraDataService: DoraDataService;
       logger: LoggerService;
     },
-  ): DoraMeanTimeToRestoreProvider {
-    return new DoraMeanTimeToRestoreProvider({
+  ): DoraMedianTimeToRestoreProvider {
+    return new DoraMedianTimeToRestoreProvider({
       doraSyncService: options.doraSyncService,
       doraDataService: options.doraDataService,
-      config: parseDoraMeanTimeToRestoreConfig(config),
+      config: parseDoraMedianTimeToRestoreConfig(config),
       logger: options.logger,
     });
   }
@@ -74,18 +76,18 @@ export class DoraMeanTimeToRestoreProvider implements MetricProvider<'number'> {
   }
 
   getProviderId() {
-    return 'dora.meanTimeToRestore';
+    return 'dora.medianTimeToRestore';
   }
 
   getMetrics(): Metric<'number'>[] {
     return [
       {
         id: this.getProviderId(),
-        title: 'DORA - Mean Time to Restore',
+        title: 'DORA - Median Time to Restore',
         description:
-          'Tracks the average time to restore service after an incident over the past 30 days. Elite performers restore service in under one hour.',
+          'Tracks the median time to restore service after an incident over the past 30 days. Elite performers restore service in under one hour.',
         type: 'number',
-        thresholds: DEFAULT_DORA_MEAN_TIME_TO_RESTORE_THRESHOLDS,
+        thresholds: DEFAULT_DORA_MEDIAN_TIME_TO_RESTORE_THRESHOLDS,
         unit: 'h',
         history: true,
         defaultVisualization: 'sparkline',
@@ -147,17 +149,17 @@ export class DoraMeanTimeToRestoreProvider implements MetricProvider<'number'> {
     if (recoveryHours.length === 0) {
       if (invalidResolvedIncidents > 0) {
         throw new Error(
-          `Unable to calculate mean time to restore: found ${invalidResolvedIncidents} resolved incident(s) with resolutionAt before createdAt and no measurable recovery times`,
+          `Unable to calculate median time to restore: found ${invalidResolvedIncidents} resolved incident(s) with resolutionAt before createdAt and no measurable recovery times`,
         );
       }
       throw new Error(
-        'Unable to calculate mean time to restore: no resolved incidents with measurable recovery time were found',
+        'Unable to calculate median time to restore: no resolved incidents with measurable recovery time were found',
       );
     }
 
     results.set(
       this.getProviderId(),
-      Number(calculateMean(recoveryHours).toFixed(4)),
+      Number(calculateMedian(recoveryHours).toFixed(4)),
     );
     return results;
   }

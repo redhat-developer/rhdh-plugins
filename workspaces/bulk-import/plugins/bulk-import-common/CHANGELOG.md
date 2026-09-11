@@ -1,5 +1,11 @@
 ## @red-hat-developer-hub/backstage-plugin-bulk-import-common [0.2.0](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.1.0...@red-hat-developer-hub/backstage-plugin-bulk-import-common@0.2.0) (2024-07-25)
 
+## 9.0.1
+
+### Patch Changes
+
+- df4bcba: Backstage version bump to v1.54.6
+
 ## 9.0.0
 
 ## 8.0.3

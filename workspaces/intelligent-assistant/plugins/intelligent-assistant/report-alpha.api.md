@@ -10,8 +10,7 @@ import { TranslationResource } from '@backstage/frontend-plugin-api';
 export const intelligentAssistantTranslationRef: TranslationRef<
   'plugin.intelligent-assistant',
   {
-    readonly 'disclaimer.withoutValidation': string;
-    readonly 'disclaimer.withValidation': string;
+    readonly disclaimer: string;
     readonly 'prompts.codeReadability.title': string;
     readonly 'prompts.codeReadability.message': string;
     readonly 'prompts.debugging.title': string;
@@ -322,7 +321,9 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'savedPrompts.count_other': string;
     readonly 'savedPrompts.newPrompt': string;
     readonly 'savedPrompts.form.titleLabel': string;
+    readonly 'savedPrompts.form.titlePlaceholder': string;
     readonly 'savedPrompts.form.contentLabel': string;
+    readonly 'savedPrompts.form.contentPlaceholder': string;
     readonly 'savedPrompts.form.save': string;
     readonly 'savedPrompts.form.cancel': string;
     readonly 'savedPrompts.validation.titleMaxLength': string;

@@ -238,6 +238,7 @@ const SavedPromptsSettingsContent = ({
               onChange={(_event, value) => setTitle(value)}
               validated={titleExceedsLimit ? 'error' : 'default'}
               isRequired
+              placeholder={t('savedPrompts.form.titlePlaceholder')}
             />
             {titleExceedsLimit && (
               <FormHelperText>
@@ -268,6 +269,7 @@ const SavedPromptsSettingsContent = ({
               isRequired
               rows={4}
               resizeOrientation="vertical"
+              placeholder={t('savedPrompts.form.contentPlaceholder')}
             />
             {contentExceedsLimit && (
               <FormHelperText>

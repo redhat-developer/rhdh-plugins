@@ -1,16 +1,16 @@
-# DORA Mean Time to Restore
+# DORA Median Time to Restore
 
-- **Metric ID**: `dora.meanTimeToRestore`
+- **Metric ID**: `dora.medianTimeToRestore`
 - **Type**: Number
 - **Unit**: hours
 - **Computation window**: 30 days
 
-Mean Time to Restore measures how quickly service is restored after incidents occur.
+Median Time to Restore measures how quickly service is restored after incidents occur.
 
-The metric computes mean incident recovery time for incidents in the last 30 days.
+The metric computes median incident recovery time for incidents in the last 30 days.
 Only resolved incidents are considered (`resolutionAt` is not `null`).
 For each resolved incident, recovery time is `resolutionAt - createdAt` in hours.
-The result is: `mean(recoveryHours)`.
+The result is: `median(recoveryHours)`.
 
 If there are no incidents, or only unresolved ones, calculation fails with an error.
 If resolved incidents exist but none have a measurable recovery time (for example `resolutionAt` before `createdAt`), calculation fails with an error.
@@ -25,7 +25,7 @@ Thresholds are applied to the computed value in hours:
 
 Configure thresholds via:
 
-- `scorecard.metricProviders.dora.meanTimeToRestore.thresholds`
+- `scorecard.metricProviders.dora.medianTimeToRestore.thresholds`
 
 ## Collectors
 
@@ -55,7 +55,7 @@ Optional incident-only filters:
 - `jira/incident-component`
 - `jira/incident-label`
 - `jira/incident-team`
-- `jira/incident-issue-type` (overrides app-config `scorecard.metricProviders.dora.meanTimeToRestore.options.collectors.incidents.input.issueType`; default issue type is `Incident`)
+- `jira/incident-issue-type` (overrides app-config `scorecard.metricProviders.dora.medianTimeToRestore.options.collectors.incidents.input.issueType`; default issue type is `Incident`)
 
 #### Incidents collector contract
 
@@ -88,7 +88,7 @@ Collector-specific extra input fields are allowed, but they do not replace requi
 scorecard:
   metricProviders:
     dora:
-      meanTimeToRestore:
+      medianTimeToRestore:
         options:
           collectors:
             incidents:
@@ -108,7 +108,7 @@ For more details about the `jira:incidents` collector, see the [scorecard-backen
 scorecard:
   metricProviders:
     dora:
-      meanTimeToRestore:
+      medianTimeToRestore:
         options:
           collectors:
             incidents:

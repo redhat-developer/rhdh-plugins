@@ -26,6 +26,7 @@ import {
   mockModels,
   mockNotebookLightspeedBackend,
   mockQuery,
+  mockSavedPrompts,
   mockShields,
 } from './devMode';
 import { getTranslations, type LightspeedMessages } from './translations';
@@ -86,6 +87,7 @@ export async function bootstrapLightspeedE2ePage(
   await mockShields(page, mockedShields);
   await mockMcpServers(page);
   await mockFeedbackStatus(page);
+  await mockSavedPrompts(page);
   await mockNotebookLightspeedBackend(page);
 
   await page.goto('/');

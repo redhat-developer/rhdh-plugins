@@ -40,6 +40,7 @@ import { notebooksApiRef } from '../../api/notebooksApi';
 import { useConversations, useNotebookSessions } from '../../hooks';
 import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerContext';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
+import { MuiThemeTestProvider } from '../../test-utils/MuiThemeTestProvider';
 import FileAttachmentContextProvider from '../AttachmentContext';
 import { LightspeedChat } from '../LightSpeedChat';
 import { NotebookStreamProvider } from '../notebooks/NotebookStreamProvider';
@@ -130,6 +131,54 @@ jest.mock('../../hooks/useSortSettings', () => ({
   }),
 }));
 
+jest.mock('../../hooks/useSavedPromptsSettings', () => ({
+  useSavedPromptsSettings: jest.fn().mockReturnValue({
+    isSavedPromptsEnabled: true,
+    handleSavedPromptsToggle: jest.fn(),
+  }),
+}));
+
+jest.mock('../../hooks/useSavedPrompts', () => ({
+  useSavedPrompts: jest.fn().mockReturnValue({
+    savedPrompts: [],
+    config: { maxPrompts: 10, maxPromptLength: 500 },
+    loading: false,
+    error: null,
+    createPrompt: jest.fn(),
+    deletePrompt: jest.fn(),
+  }),
+}));
+
+jest.mock('../../hooks/useSavedPromptActions', () => ({
+  useSavedPromptActions: jest.fn().mockReturnValue({
+    sendDirectly: jest.fn(),
+    requestDelete: jest.fn(),
+    promptToDelete: null,
+    closeDeleteModal: jest.fn(),
+    confirmDelete: jest.fn(),
+    isDeleting: false,
+    deleteError: null,
+    isDeleteModalOpen: false,
+  }),
+}));
+
+jest.mock('../../hooks/useConversationHistoryGroups', () => ({
+  useConversationHistoryGroups: jest.fn().mockReturnValue({
+    conversationGroups: {},
+    hasNoSearchResults: false,
+  }),
+}));
+
+jest.mock('../../hooks/useSettingsPanelUrlState', () => ({
+  useSettingsPanelUrlState: jest.fn().mockReturnValue({
+    isOpen: false,
+    activeTab: 'mcp-servers',
+    openSettings: jest.fn(),
+    closeSettings: jest.fn(),
+    setActiveTab: jest.fn(),
+  }),
+}));
+
 jest.mock('@patternfly/chatbot', () => {
   const actual = jest.requireActual('@patternfly/chatbot');
   return {
@@ -198,34 +247,39 @@ const mockNotebooksApi = {
   }),
 };
 
-const setupLightspeedChat = (initialPath = '/intelligent-assistant') => (
-  <MemoryRouter initialEntries={[initialPath]}>
-    <TestApiProvider
-      apis={[
-        [identityApiRef, identityApi],
-        [configApiRef, configAPi],
-        [lightspeedApiRef, mockLightspeedApi],
-        [notebooksApiRef, mockNotebooksApi],
-      ]}
-    >
-      <FileAttachmentContextProvider>
-        <QueryClientProvider client={queryClient}>
-          <NotebookStreamProvider>
-            <LightspeedChat
-              selectedModel="granite"
-              profileLoading={false}
-              handleSelectedModel={() => {}}
-              topicRestrictionEnabled={false}
-              selectedProvider="openai"
-              models={[]}
-              avatar="test"
-              userName="user:test"
-            />
-          </NotebookStreamProvider>
-        </QueryClientProvider>
-      </FileAttachmentContextProvider>
-    </TestApiProvider>
-  </MemoryRouter>
+const setupLightspeedChat = (
+  initialPath = '/intelligent-assistant',
+  configApi = configAPi,
+) => (
+  <MuiThemeTestProvider>
+    <MemoryRouter initialEntries={[initialPath]}>
+      <TestApiProvider
+        apis={[
+          [identityApiRef, identityApi],
+          [configApiRef, configApi],
+          [lightspeedApiRef, mockLightspeedApi],
+          [notebooksApiRef, mockNotebooksApi],
+        ]}
+      >
+        <FileAttachmentContextProvider>
+          <QueryClientProvider client={queryClient}>
+            <NotebookStreamProvider>
+              <LightspeedChat
+                selectedModel="granite"
+                profileLoading={false}
+                handleSelectedModel={() => {}}
+                topicRestrictionEnabled={false}
+                selectedProvider="openai"
+                models={[]}
+                avatar="test"
+                userName="user:test"
+              />
+            </NotebookStreamProvider>
+          </QueryClientProvider>
+        </FileAttachmentContextProvider>
+      </TestApiProvider>
+    </MemoryRouter>
+  </MuiThemeTestProvider>
 );
 
 describe('LightspeedChat', () => {
@@ -347,6 +401,18 @@ describe('LightspeedChat', () => {
       'accept',
       'text/plain,.txt,application/json,.json,application/yaml,.yaml,.yml',
     );
+  });
+
+  it('should open the file picker when Attach is clicked', async () => {
+    render(setupLightspeedChat());
+
+    const input = screen.getByTestId('attachment-input') as HTMLInputElement;
+    const clickSpy = jest.spyOn(input, 'click');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Attach' }));
+
+    expect(clickSpy).toHaveBeenCalled();
+    clickSpy.mockRestore();
   });
 
   it('should show an alert when unsupported file types are dropped', async () => {
@@ -499,7 +565,7 @@ describe('LightspeedChat', () => {
       const searchInput = screen.getByPlaceholderText('Search');
       expect(searchInput).toBeInTheDocument();
 
-      await userEvent.type(searchInput, 'Pinned Chat One');
+      fireEvent.change(searchInput, { target: { value: 'Pinned Chat One' } });
 
       expect(searchInput).toHaveValue('Pinned Chat One');
     });
@@ -515,7 +581,9 @@ describe('LightspeedChat', () => {
 
       const searchInput = screen.getByPlaceholderText('Search');
 
-      await userEvent.type(searchInput, 'NonExistentSearchTerm12345');
+      fireEvent.change(searchInput, {
+        target: { value: 'NonExistentSearchTerm12345' },
+      });
 
       expect(searchInput).toHaveValue('NonExistentSearchTerm12345');
     });
@@ -578,7 +646,9 @@ describe('LightspeedChat', () => {
 
       const searchInput = screen.getByPlaceholderText('Search');
 
-      await userEvent.type(searchInput, 'xyz123nonexistent');
+      fireEvent.change(searchInput, {
+        target: { value: 'xyz123nonexistent' },
+      });
 
       expect(searchInput).toHaveValue('xyz123nonexistent');
     });
@@ -745,6 +815,31 @@ describe('LightspeedChat', () => {
       expect(
         screen.getByRole('tab', { name: 'Notebooks' }),
       ).toBeInTheDocument();
+    });
+
+    it('should hide Chat/Notebooks tabs when notebooks are disabled', async () => {
+      const disabledConfig = mockApis.config({
+        data: {
+          'intelligent-assistant': {
+            notebooks: {
+              enabled: false,
+            },
+          },
+        },
+      });
+
+      render(setupLightspeedChat('/intelligent-assistant', disabledConfig));
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Options')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByRole('tab', { name: 'Chat' }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('tab', { name: 'Notebooks' }),
+      ).not.toBeInTheDocument();
     });
 
     it('should render Chat/Notebooks tabs in docked mode', async () => {

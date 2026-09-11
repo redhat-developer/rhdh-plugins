@@ -865,3 +865,92 @@ export async function mockFeedbackReceived(page: Page) {
     });
   });
 }
+
+type SavedPromptMock = {
+  id: string;
+  name: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
+};
+
+const savedPromptsByPage = new WeakMap<Page, SavedPromptMock[]>();
+
+const defaultSavedPromptsConfig = {
+  max_prompts_per_user: 50,
+  max_display_name_length: 255,
+  max_content_length: 10000,
+};
+
+/** Per-page in-memory saved prompts mock (starts empty unless seeded). */
+export async function mockSavedPrompts(
+  page: Page,
+  initialPrompts: SavedPromptMock[] = [],
+) {
+  savedPromptsByPage.set(page, [...initialPrompts]);
+
+  await page.route(`${modelBaseUrl}/v1/saved-prompts**`, async route => {
+    const url = new URL(route.request().url());
+    const method = route.request().method();
+    const prompts = savedPromptsByPage.get(page) ?? [];
+
+    if (url.pathname.endsWith('/v1/saved-prompts/config')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(defaultSavedPromptsConfig),
+      });
+      return;
+    }
+
+    if (method === 'GET' && url.pathname.endsWith('/v1/saved-prompts')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ prompts }),
+      });
+      return;
+    }
+
+    if (method === 'POST' && url.pathname.endsWith('/v1/saved-prompts')) {
+      const body = route.request().postDataJSON() as {
+        name: string;
+        content: string;
+      };
+      const now = new Date().toISOString();
+      const created = {
+        id: randomUUID(),
+        name: body.name,
+        content: body.content,
+        created_at: now,
+        updated_at: now,
+      };
+      prompts.push(created);
+      savedPromptsByPage.set(page, prompts);
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify(created),
+      });
+      return;
+    }
+
+    if (method === 'DELETE') {
+      const promptId = url.pathname.split('/').pop() ?? '';
+      const nextPrompts = prompts.filter(prompt => prompt.id !== promptId);
+      savedPromptsByPage.set(page, nextPrompts);
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          prompt_id: promptId,
+          deleted: true,
+          response: 'Saved prompt deleted successfully',
+        }),
+      });
+      return;
+    }
+
+    await route.continue();
+  });
+}

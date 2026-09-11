@@ -111,7 +111,7 @@ export interface Config {
           thresholds?: ThresholdConfig;
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
         };
-        meanTimeToRestore?: {
+        medianTimeToRestore?: {
           /**
            * Provider-specific options.
            */

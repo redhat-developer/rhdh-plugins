@@ -32,8 +32,8 @@ import {
   parseDoraChangeFailureRateConfig,
   parseDoraDataRetentionDays,
   parseDoraDeploymentFrequencyConfig,
-  parseDoraMeanTimeToRestoreConfig,
   parseDoraMedianLeadTimeForChangesConfig,
+  parseDoraMedianTimeToRestoreConfig,
   parseDoraSyncConfig,
 } from './DoraConfig';
 import { collectorInputHash } from '../service/collectorHash';
@@ -276,10 +276,10 @@ describe('DoraConfig', () => {
     });
   });
 
-  describe('parseDoraMeanTimeToRestoreConfig', () => {
+  describe('parseDoraMedianTimeToRestoreConfig', () => {
     it('returns defaults when unset', () => {
       expect(
-        parseDoraMeanTimeToRestoreConfig(
+        parseDoraMedianTimeToRestoreConfig(
           mockServices.rootConfig({
             data: {},
           }),
@@ -295,13 +295,13 @@ describe('DoraConfig', () => {
 
     it('parses incidents collector', () => {
       expect(
-        parseDoraMeanTimeToRestoreConfig(
+        parseDoraMedianTimeToRestoreConfig(
           mockServices.rootConfig({
             data: {
               scorecard: {
                 metricProviders: {
                   dora: {
-                    meanTimeToRestore: {
+                    medianTimeToRestore: {
                       options: {
                         collectors: {
                           incidents: {

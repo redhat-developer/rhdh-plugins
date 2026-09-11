@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
@@ -29,75 +28,9 @@ import Typography from '@mui/material/Typography';
 import { useDeleteNotebook } from '../../hooks/notebooks/useDeleteNotebook';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getScopedDialogProps } from '../../utils/scoped-dialog-utils';
+import { optionalStyle } from './notebookDialogStyles';
 
-const useStyles = makeStyles(theme => ({
-  dialogPaper: {
-    borderRadius: 16,
-  },
-  dialogPaperCompact: {
-    borderRadius: 12,
-  },
-  dialogTitle: {
-    padding: '16px 20px',
-    fontStyle: 'inherit',
-  },
-  dialogTitleCompact: {
-    padding: '12px 16px !important',
-    fontStyle: 'inherit',
-  },
-  dialogContent: {
-    paddingTop: 0,
-    paddingBottom: theme.spacing(5),
-  },
-  dialogContentCompact: {
-    paddingTop: '0 !important',
-    paddingBottom: `${theme.spacing(2)}px !important`,
-    paddingLeft: `${theme.spacing(2)}px !important`,
-    paddingRight: `${theme.spacing(2)}px !important`,
-  },
-  titleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-  },
-  titleText: {
-    fontWeight: 'bold',
-  },
-  closeButton: {
-    position: 'absolute',
-    right: theme.spacing(1),
-    top: theme.spacing(1),
-    color: theme.palette.text.primary,
-  },
-  errorBox: {
-    maxWidth: 650,
-    marginLeft: theme.spacing(2.5),
-    marginRight: theme.spacing(2.5),
-  },
-  errorBoxCompact: {
-    maxWidth: '100%',
-    marginLeft: theme.spacing(2),
-    marginRight: theme.spacing(2),
-  },
-  dialogActions: {
-    justifyContent: 'left',
-    padding: theme.spacing(2.5),
-    gap: theme.spacing(1),
-  },
-  dialogActionsCompact: {
-    justifyContent: 'left',
-    padding: `${theme.spacing(1.5)}px !important`,
-    gap: theme.spacing(1),
-  },
-  deleteButton: {
-    textTransform: 'none',
-    borderRadius: 999,
-  },
-  cancelButton: {
-    textTransform: 'none',
-    borderRadius: 999,
-  },
-}));
+const pillButtonSx = { textTransform: 'none', borderRadius: 999 } as const;
 
 export const DeleteNotebookModal = ({
   isOpen,
@@ -114,7 +47,6 @@ export const DeleteNotebookModal = ({
   name: string;
   isCompact?: boolean;
 }) => {
-  const classes = useStyles();
   const { t } = useTranslation();
   const { mutateAsync: deleteNotebook, isError, error } = useDeleteNotebook();
 
@@ -140,15 +72,21 @@ export const DeleteNotebookModal = ({
       fullWidth
       {...scopedProps}
       PaperProps={{
-        className: isCompact ? classes.dialogPaperCompact : classes.dialogPaper,
         ...scopedProps.PaperProps,
+        sx: [
+          { borderRadius: isCompact ? '12px' : '16px' },
+          optionalStyle(scopedProps.PaperProps?.sx),
+        ],
       }}
     >
       <DialogTitle
-        className={isCompact ? classes.dialogTitleCompact : classes.dialogTitle}
+        sx={{
+          p: isCompact ? '12px 16px !important' : '16px 20px',
+          fontStyle: 'inherit',
+        }}
       >
-        <Box className={classes.titleRow}>
-          <Typography component="span" className={classes.titleText}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Typography component="span" sx={{ fontWeight: 'bold' }}>
             {t('notebooks.delete.title', { name } as any)}
           </Typography>
           <IconButton
@@ -156,7 +94,12 @@ export const DeleteNotebookModal = ({
             onClick={onClose}
             title={t('common.close')}
             size={isCompact ? 'small' : 'large'}
-            className={classes.closeButton}
+            sx={{
+              position: 'absolute',
+              right: 1,
+              top: 1,
+              color: 'text.primary',
+            }}
           >
             <CloseIcon />
           </IconButton>
@@ -164,26 +107,40 @@ export const DeleteNotebookModal = ({
       </DialogTitle>
       <DialogContent
         id="delete-notebook-modal-body"
-        className={
-          isCompact ? classes.dialogContentCompact : classes.dialogContent
-        }
+        sx={theme => ({
+          pt: 0,
+          pb: 5,
+          ...(isCompact && {
+            paddingTop: '0 !important',
+            paddingBottom: `${theme.spacing(2)} !important`,
+            paddingLeft: `${theme.spacing(2)} !important`,
+            paddingRight: `${theme.spacing(2)} !important`,
+          }),
+        })}
       >
         <Typography variant="body2">{t('notebooks.delete.message')}</Typography>
       </DialogContent>
       {isError && (
-        <Box className={isCompact ? classes.errorBoxCompact : classes.errorBox}>
+        <Box
+          sx={{
+            maxWidth: isCompact ? '100%' : 650,
+            mx: isCompact ? 2 : 2.5,
+          }}
+        >
           <Alert severity="error">{String(error)}</Alert>
         </Box>
       )}
       <DialogActions
-        className={
-          isCompact ? classes.dialogActionsCompact : classes.dialogActions
-        }
+        sx={{
+          justifyContent: 'left',
+          p: isCompact ? '12px !important' : 2.5,
+          gap: 1,
+        }}
       >
         <Button
           variant="contained"
           color="error"
-          className={classes.deleteButton}
+          sx={pillButtonSx}
           onClick={handleDelete}
         >
           {t('notebooks.delete.action')}
@@ -191,7 +148,7 @@ export const DeleteNotebookModal = ({
         <Button
           key="cancel"
           variant="outlined"
-          className={classes.cancelButton}
+          sx={pillButtonSx}
           onClick={onClose}
         >
           {t('common.cancel')}
