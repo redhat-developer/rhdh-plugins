@@ -14,10 +14,17 @@
  * limitations under the License.
  */
 
-import '@backstage/cli/asset-types';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-// eslint-disable-next-line @backstage/no-ui-css-imports-in-non-frontend
-import '@backstage/ui/css/styles.css';
+import { SignInPage } from '@backstage/core-components';
+import { githubAuthApiRef } from '@backstage/core-plugin-api';
+import type { SignInPageProps } from '@backstage/plugin-app-react';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(App.createRoot());
+const githubProvider = {
+  id: 'github-auth-provider',
+  title: 'GitHub',
+  message: 'Sign in using GitHub',
+  apiRef: githubAuthApiRef,
+};
+
+export function SignInPageComponent(props: SignInPageProps) {
+  return <SignInPage {...props} auto providers={['guest', githubProvider]} />;
+}
