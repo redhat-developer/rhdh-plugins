@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "yarn workspaces foreach -A --include backend --include app --parallel -v -i run start",
     "dev:debug": "yarn workspaces foreach -A --include backend --include app --parallel -v -i run start --inspect",
-    "start": "yarn workspace app start",
+    "start": "backstage-cli repo start",
     "start-backend": "yarn workspace backend start",
     "build:backend": "yarn workspace backend build",
     "tsc": "tsc",
@@ -24,6 +24,10 @@
     "lint": "backstage-cli repo lint --since origin/main",
     "lint:all": "backstage-cli repo lint",
     "prettier:check": "prettier --check .",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:ui": "playwright test --ui",
+    "playwright": "sh -c 'if [ \"$1\" = test ] && [ $# -eq 1 ]; then yarn test:e2e; else exec playwright \"$@\"; fi' _",
     "new": "backstage-cli new --scope @red-hat-developer-hub",
     "postinstall": "cd ../../ && yarn install"
   },
@@ -44,6 +48,7 @@
     "@backstage/e2e-test-utils": "^0.1.2",
     "@backstage/repo-tools": "^0.19.0",
     "@changesets/cli": "^2.27.1",
+    "@playwright/test": "1.62.1",
     "knip": "^5.27.4",
     "node-gyp": "^9.0.0",
     "prettier": "^2.3.2",
