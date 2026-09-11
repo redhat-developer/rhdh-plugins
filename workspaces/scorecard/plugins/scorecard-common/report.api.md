@@ -34,6 +34,12 @@ export type AggregatedMetricValue = {
   score?: number;
 };
 
+// @public
+export type AggregatedTimeSeriesPointError = {
+  message: string;
+  count: number;
+};
+
 // @public (undocumented)
 export type AggregationConfig = {
   id: string;
@@ -234,7 +240,7 @@ export type ScalarAggregatedTimeSeriesPoint = {
   errorCount: number;
   total: number;
   status: 'success' | 'error';
-  errors?: TimeSeriesPointError[];
+  errors?: AggregatedTimeSeriesPointError[];
   timestamp: string;
 };
 
@@ -326,12 +332,6 @@ export type ThresholdRule = {
   expression: string;
   color?: string;
   icon?: string;
-};
-
-// @public
-export type TimeSeriesPointError = {
-  message: string;
-  count: number;
 };
 
 // @public (undocumented)

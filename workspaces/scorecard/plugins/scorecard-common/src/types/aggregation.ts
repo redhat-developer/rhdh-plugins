@@ -156,10 +156,10 @@ export type AggregationConfig = {
 };
 
 /**
- * Unique calculation-error message for a UTC day, with how many entities reported it.
+ * Unique calculation-error message for a UTC day, with how many aggregated entities reported it.
  * @public
  */
-export type TimeSeriesPointError = {
+export type AggregatedTimeSeriesPointError = {
   message: string;
   count: number;
 };
@@ -184,8 +184,8 @@ export type ScalarAggregatedTimeSeriesPoint = {
   /**
    * Unique error messages for that day. Omitted when there are none.
    */
-  errors?: TimeSeriesPointError[];
-  /** Start of the UTC calendar day (ISO-8601). */
+  errors?: AggregatedTimeSeriesPointError[];
+  /** Maximum timestamp (ISO-8601) of the values aggregated for this point. */
   timestamp: string;
 };
 
