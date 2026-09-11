@@ -125,12 +125,14 @@ describe('createComponents', () => {
     const desktop = root?.['@media (min-width: 600px)'] as
       | Record<string, unknown>
       | undefined;
-    expect(desktop?.['& > main:not([data-backstage-core-page])']).toEqual(
+    expect(desktop?.['& > main:has([class*="bui-Container"])']).toEqual(
       expect.objectContaining({
         display: 'flex',
         flexDirection: 'column',
-        flex: 1,
-        minHeight: 0,
+        flex: '1 0 auto',
+        minHeight: 'calc(100vh - 2 * 1.5rem)',
+        height: 'auto',
+        maxHeight: 'none !important',
       }),
     );
   });
