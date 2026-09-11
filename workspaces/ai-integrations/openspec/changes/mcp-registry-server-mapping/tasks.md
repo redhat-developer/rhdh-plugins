@@ -7,7 +7,7 @@
 ## 1. Mapping Reference & Schema Pinning
 
 - [ ] 1.1 Pin the source `server.json` draft schema version this mapping targets and record it (with URL and retrieval date) in a `mapping-reference.md` under the change
-- [ ] 1.2 Author the canonical field-mapping table in `mapping-reference.md`: each `server.json` attribute → native entity target OR "projected annotation", including `name`→`metadata.name`(`<name>__<version>`)+`modelcontextprotocol.io/name`, `version`→`modelcontextprotocol.io/version`, `description`/`title`, `websiteUrl`→`metadata.links` (title `Website`), `repository.url`→`metadata.links` (title `Source Code`) + `backstage.io/source-location`, `tags`, `remotes[]`→`spec.remotes[]`
+- [ ] 1.2 Author the canonical field-mapping table in `mapping-reference.md`: each `server.json` attribute → native entity target OR "projected annotation", including `name`→`metadata.name`(`<name>__<version>`)+`modelcontextprotocol.io/name`, `version`→`modelcontextprotocol.io/version`, `description`/`title`, `websiteUrl`→`metadata.links` (title `Website`), `repository.url` (+ `repository.subfolder` via the SCM-aware combination algorithm keyed on `repository.source`)→`metadata.links` (title `Source Code`) + `backstage.io/source-location`, `tags`, `remotes[]`→`spec.remotes[]`
 - [ ] 1.3 Document the annotation key rules (dot-separated `modelcontextprotocol.io/attribute.tree.to.leaf`, character sanitization, 63-char truncation + stable hash suffix, collision disambiguation) with worked examples
 - [ ] 1.4 Document field-supply rules (`owner` defaults to the constant `unknown`, `lifecycle` defaults to the constant `production` — both overridable by caller defaults, never a failure) and the null/empty-container omission rule
 
@@ -15,7 +15,7 @@
 
 - [ ] 2.1 Implement the `server.json` → `mcp-server` `API` entity transform skeleton (pure function of the document plus caller defaults; no I/O, no timestamps, no randomness)
 - [ ] 2.2 Implement identity derivation: sanitize and combine `<name>__<version>` for `metadata.name`, preserve bare name in `modelcontextprotocol.io/name`, version in `modelcontextprotocol.io/version`, with truncation + hash-suffix fallback
-- [ ] 2.3 Implement descriptive-metadata mapping (`title`, `description`, `websiteUrl`→`metadata.links` entry titled `Website`, `repository.url` (combined with `repository.subfolder` when present)→`metadata.links` entry titled `Source Code` **and** a `backstage.io/source-location` annotation, `tags` including `mcp`/`ai`)
+- [ ] 2.3 Implement descriptive-metadata mapping (`title`, `description`, `websiteUrl`→`metadata.links` entry titled `Website`, `repository.url` combined with `repository.subfolder` when present via the SCM-aware algorithm in `mcp-registry-server-mapping` — `github`/`gitlab`/`bitbucket`/`azure-devops` templates with `HEAD`, path-join fallback →`metadata.links` entry titled `Source Code` **and** a `backstage.io/source-location` annotation, `tags` including `mcp`/`ai`)
 - [ ] 2.4 Implement `remotes[]` → top-level `spec.remotes[]` (`type`, `url`, source order preserved); when the source has no `remotes` (empty or unset), emit an empty `spec.remotes: []` array (never omitted); ensure no `spec.definition` is emitted
 - [ ] 2.5 Implement field-supply: `spec.type: mcp-server`, `spec.owner` set to `unknown` by default (caller override allowed, never a failure), `spec.lifecycle` set to `production` by default (caller override allowed, never a failure)
 - [ ] 2.6 Enforce required-source-field validation (`name`, `description`, `version`) with actionable errors that name the missing field
@@ -31,7 +31,7 @@
 
 ## 4. Conformance Fixtures, Verification & Docs
 
-- [ ] 4.1 Create input→expected-output fixtures: minimal server, multi-version (same name, two versions → distinct entities), server with `packages`/`icons`/`_meta`, server with remote `headers`/`variables`, and over-length/collision name cases
+- [ ] 4.1 Create input→expected-output fixtures: minimal server, multi-version (same name, two versions → distinct entities), server with `packages`/`icons`/`_meta`, server with remote `headers`/`variables`, over-length/collision name cases, and repository URL combination cases (`github`/`gitlab`/`bitbucket`/`azure-devops` subfolder, unknown-source path-join fallback, and url-only with no subfolder)
 - [ ] 4.2 Verify every produced entity passes the upstream `mcp-server` `API` entity schema (`McpServerApiEntity`, PR #34016) — `spec.remotes` required, `spec.definition` not required — rather than the generic base `API` schema
 - [ ] 4.3 Verify determinism/idempotency (byte-identical output on repeated runs) and scalar round-trip fidelity (every non-null, non-redacted source scalar recoverable — `isSecret: true` `default`/`value` leaves exempt) via tests over the fixtures
 - [ ] 4.4 Add unit tests covering annotation key sanitization, truncation, and collision disambiguation edge cases

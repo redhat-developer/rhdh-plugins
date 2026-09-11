@@ -19,3 +19,7 @@
 {"ts":"2026-08-25T00:03:43Z","phase":"any","event":"turn.start","input":"Re-run pre-implementation audit after repository.url/websiteUrl link-mapping revision"}
 {"ts":"2026-08-25T00:03:43Z","phase":"any","event":"skill.invoked","name":"openspec-audit-change"}
 {"ts":"2026-08-25T00:03:43Z","phase":"any","event":"turn.end","output":"Audit clean (no CRITICAL). 2 passes; pass1 1 WARNING fixed (remotes type/url in projection scenario), pass2 2 SUGGESTIONs fixed (proposal wording alignment). Artifacts coherent."}
+{"ts":"2026-09-11T17:15:00Z","phase":"any","event":"turn.start","input":"Define the repository URL combination algorithm explicitly for descriptive-metadata mapping, for compatibility across SCMs"}
+{"ts":"2026-09-11T17:15:00Z","phase":"authoring","event":"artifact.revised","ref":"specs/mcp-registry-server-mapping/spec.md, design.md, proposal.md, tasks.md","input":"PR review: combining repository.url with repository.subfolder was unspecified and the example invented branch main, which is not in server.json; SCM browse paths differ","output":"Specified SCM-aware URL combination keyed on repository.source (github/gitlab/bitbucket/azure-devops templates using HEAD, path-join fallback); replaced /tree/main examples; added per-SCM scenarios"}
+{"ts":"2026-09-11T17:15:00Z","phase":"any","event":"turn.end","output":"Defined explicit repository URL combination algorithm across mapping OpenSpec artifacts; no invented default branch"}
+
