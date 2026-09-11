@@ -25,6 +25,7 @@ import {
   MetricTimeSeriesResponse,
   MetricTimeSeriesPoint,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { Config } from '@backstage/config';
 import type { Entity } from '@backstage/catalog-model';
 import { normalizeOwnerRef } from '../utils/normalizeOwnerRef';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
@@ -47,11 +48,13 @@ import {
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { isMetricCalculationError } from '../utils/metricCalculationError';
+import { isMetricEnabled, filterEnabledMetrics } from '../utils/metricUtils';
 import { AggregatedMetricMapper } from './mappers';
 import { DbMetricValue } from '../database/types';
 import { ThresholdResolver } from '../threshold/ThresholdResolver';
 
 type CatalogMetricServiceOptions = {
+  config: Config;
   catalog: CatalogService;
   auth: AuthService;
   registry: MetricProvidersRegistry;
@@ -77,6 +80,7 @@ export class CatalogMetricService {
 
   private readonly logger: LoggerService;
 
+  private readonly config: Config;
   private readonly catalog: CatalogService;
   private readonly auth: AuthService;
   private readonly registry: MetricProvidersRegistry;
@@ -87,6 +91,7 @@ export class CatalogMetricService {
   private static readonly BATCH_SIZE = 100;
 
   constructor(options: CatalogMetricServiceOptions) {
+    this.config = options.config;
     this.catalog = options.catalog;
     this.auth = options.auth;
     this.registry = options.registry;
@@ -118,7 +123,12 @@ export class CatalogMetricService {
       throw new NotFoundError(`Entity not found: ${entityRef}`);
     }
 
-    const metricsToFetch = this.registry.listMetrics(metricIds);
+    const metricsToFetch = filterEnabledMetrics(
+      this.config,
+      this.registry.listMetrics(metricIds),
+      metricId => this.registry.getProvider(metricId),
+      this.logger,
+    );
 
     const authorizedMetricsToFetch = filterAuthorizedMetrics(
       metricsToFetch,
@@ -219,6 +229,11 @@ export class CatalogMetricService {
     }
 
     const metric = this.registry.getMetric(metricId);
+    const provider = this.registry.getProvider(metricId);
+    if (!isMetricEnabled(this.config, metric, provider)) {
+      throw new NotFoundError(`Metric not found: ${metricId}`);
+    }
+
     const authorizedMetrics = filterAuthorizedMetrics([metric], filter);
     if (authorizedMetrics.length === 0) {
       throw new NotAllowedError(
@@ -351,6 +366,10 @@ export class CatalogMetricService {
   ): Promise<EntityMetricDetailResponse> {
     // Get metric metadata
     const metric = this.registry.getMetric(metricId);
+    const provider = this.registry.getProvider(metricId);
+    if (!isMetricEnabled(this.config, metric, provider)) {
+      throw new NotFoundError(`Metric not found: ${metricId}`);
+    }
 
     // High-page early-exit guard
     if (

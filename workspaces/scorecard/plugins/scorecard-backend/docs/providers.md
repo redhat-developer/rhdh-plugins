@@ -104,6 +104,45 @@ export class MyMetricProvider implements MetricProvider<'number'> {
 - Each metric carries its own `type` and `thresholds`
 - Configuration for metric providers follows the schema in [`config.d.ts`](../config.d.ts) under `scorecard.metricProviders.<datasource>.<providerName>` (e.g., for schedule and threshold configurations)
 
+### Disabling providers and metrics by default
+
+Providers and individual metrics can be disabled by default in code. Administrators can override these defaults via `app-config.yaml`.
+
+**Provider-level:** Implement the optional `isEnabled()` method on `MetricProvider`. When it returns `false`, the provider and all its metrics are disabled unless overridden by config:
+
+```typescript
+isEnabled(): boolean {
+  return false; // disabled by default; admins can re-enable via config
+}
+```
+
+**Metric-level:** Set the optional `enabled` field on a `Metric` object. When `false`, the individual metric is disabled by default:
+
+```typescript
+getMetrics(): Metric<'number'>[] {
+  return [
+    {
+      id: 'myDatasource.experimentalMetric',
+      title: 'Experimental Metric',
+      description: 'This metric is disabled by default.',
+      type: 'number',
+      thresholds: DEFAULT_NUMBER_THRESHOLDS,
+      enabled: false,
+    },
+  ];
+}
+```
+
+The enabled state is resolved using a five-level precedence chain (first defined value wins):
+
+1. Config metric `enabled` — most specific config override
+2. Config provider `enabled` — provider-level config override
+3. Code metric `enabled` field — code-level default
+4. Code provider `isEnabled()` — provider code default
+5. `true` — backward-compatible default
+
+Config overrides always take precedence over code defaults. Disabled metrics are excluded from scheduling, API responses, and scaffolder actions. See [disabled-metrics-logic.md](./disabled-metrics-logic.md) for the full disabled-metrics system.
+
 ## Updating the Module
 
 Update the module registration in `module.ts` to register your metric provider:

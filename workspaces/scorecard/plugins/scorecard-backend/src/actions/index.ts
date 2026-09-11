@@ -13,7 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { AuthService, PermissionsService } from '@backstage/backend-plugin-api';
+import type { Config } from '@backstage/config';
+import {
+  AuthService,
+  LoggerService,
+  PermissionsService,
+} from '@backstage/backend-plugin-api';
 import { ActionsRegistryService } from '@backstage/backend-plugin-api/alpha';
 import { CatalogService } from '@backstage/plugin-catalog-node';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
@@ -27,6 +32,8 @@ export { createListMetricsAction } from './listMetrics';
 export const createScorecardActions = (options: {
   actionsRegistry: ActionsRegistryService;
   auth: AuthService;
+  config: Config;
+  logger: LoggerService;
   permissions: PermissionsService;
   catalog: CatalogService;
   metricProvidersRegistry: MetricProvidersRegistry;

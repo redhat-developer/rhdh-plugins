@@ -138,6 +138,15 @@ export interface Config {
          * Use the local name without datasource prefix (e.g., `openPRs` instead of `github.openPRs`).
          */
         [providerName: string]: {
+          /**
+           * Whether this metric provider is enabled. Overrides the
+           * provider's code-level `isEnabled()` default. When `false`,
+           * the provider and all its metrics are disabled (unless
+           * individual metrics are re-enabled via their own `enabled`
+           * flag). When `true`, a provider that is disabled by default
+           * in code is re-enabled.
+           */
+          enabled?: boolean;
           /** How often metrics will be calculated for this provider. */
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
           /**
@@ -151,6 +160,15 @@ export interface Config {
              * Use the local name without datasource prefix (e.g., 'openPRs' instead of 'github.openPRs').
              */
             [metricName: string]: {
+              /**
+               * Whether this metric is enabled. Overrides both the
+               * metric's code-level `enabled` default and the
+               * provider-level enabled state. Set to `true` to
+               * re-enable a metric that is disabled by default; set
+               * to `false` to disable a metric that is normally
+               * enabled.
+               */
+              enabled?: boolean;
               /**
                * How metric values are categorized for this metric.
                * Overrides provider-level thresholds.

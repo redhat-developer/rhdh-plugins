@@ -67,6 +67,7 @@ export interface MetricProvider<T extends MetricType = MetricType> {
   getMetrics(): Metric<T>[];
   getProviderDatasourceId(): string;
   getProviderId(): string;
+  isEnabled?(): boolean;
 }
 
 // @public
