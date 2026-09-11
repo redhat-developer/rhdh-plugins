@@ -44,4 +44,7 @@
 /.cursor/                                           @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
 /.fullsend/                                         @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
 /.github/workflows/fullsend.yaml                    @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
+/.github/workflows/fullsend-ci-repair.yml           @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
+/.github/workflows/fullsend-ci-triage.yml           @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
 /.github/workflows/prioritize.yml                   @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
+/scripts/ci/fullsend-ci-context.cjs                 @redhat-developer/rhdh-plugins-maintainers @redhat-developer/rhdh-fullsend
