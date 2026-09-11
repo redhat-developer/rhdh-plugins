@@ -8,3 +8,7 @@ backend:
     port: 7009
   cors:
     origin: http://localhost:3002
+
+# Needed so Playwright can intercept POST /api/permission/authorize.
+permission:
+  enabled: true
