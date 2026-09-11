@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { Administration } from '@backstage-community/plugin-rbac';
 import {
   Sidebar,
   SidebarDivider,
@@ -37,7 +38,9 @@ export const SidebarContent = NavContentBlueprint.make({
 
       // Consume so the `/` → `/catalog` redirect is not listed in the sidebar.
       nav.take('page:app/home-redirect');
-      const rbacItem = nav.take('page:rbac');
+      // Consume page:rbac so it is not always shown. Administration hides
+      // itself unless getUserAuthorization() returns Authorized (legacy match).
+      nav.take('page:rbac');
 
       return (
         <Sidebar>
@@ -53,7 +56,7 @@ export const SidebarContent = NavContentBlueprint.make({
           </SidebarGroup>
           <SidebarSpace />
           <SidebarDivider />
-          {rbacItem}
+          <Administration />
           <SidebarGroup
             label="Settings"
             icon={<UserSettingsSignInAvatar />}
