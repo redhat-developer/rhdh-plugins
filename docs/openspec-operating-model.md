@@ -28,10 +28,12 @@ Before adopting this model, reviewers are asked to agree that:
 
 ## Why this is needed
 
-Boost was the pilot for using OpenSpec and agentic development in this
-repository. The intended outcome was that an agent could pick up a story,
-understand its behavior and design constraints, execute its tasks, and
-validate the result. This RFC captures the lessons from that pilot.
+OpenSpec and agentic development have been exercised in more than one RHDH
+context. The RHDH 2.1 work in `ai-integrations` exercised them on an existing
+codebase, while Boost served as the clean-room pilot for new, substantially
+interdependent features. The intended outcome was that an agent could pick up
+a story, understand its behavior and design constraints, execute its tasks,
+and validate the result. This RFC captures the lessons from those pilots.
 
 During the pilot, Fullsend used GitHub issues as an execution trigger; this
 RFC treats that as a workflow entry point, not another source of truth.
@@ -218,6 +220,12 @@ Repository-wide validation or migration will not be introduced until the
 corrected workflow has been exercised in Boost. Checks that prove useful may
 later move into `repo-tools`, and other workspaces may adopt them
 incrementally.
+
+## Next steps
+
+If approved, validate the model through Boost implementation work. Proven
+practices can then be curated into shared RHDH skills, while framework-specific
+workflows and related tracking items are documented separately as needed.
 
 > **Note:** This model follows the [OpenSpec workflow](https://github.com/Fission-AI/OpenSpec/blob/main/docs/team-workflow.md)
 > and [Solana Explorer's adoption](https://github.com/solana-foundation/explorer/blob/master/openspec/README.md).
