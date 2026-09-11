@@ -16,6 +16,10 @@
 
 import { test, expect } from '@playwright/test';
 
+/**
+ * Merge-gate smoke test — runs against the local workspace app shell.
+ * Live-cluster coverage lives in the other *.test.ts files (project: live).
+ */
 test('App should render the welcome page', async ({ page }) => {
   await page.goto('/');
 
@@ -23,5 +27,7 @@ test('App should render the welcome page', async ({ page }) => {
   await expect(enterButton).toBeVisible();
   await enterButton.click();
 
-  await expect(page.getByText('My Company Catalog')).toBeVisible();
+  const nav = page.getByRole('navigation');
+  await expect(nav.getByRole('link', { name: 'APIs' })).toBeVisible();
+  await expect(nav.getByRole('link', { name: 'Docs' })).toBeVisible();
 });
