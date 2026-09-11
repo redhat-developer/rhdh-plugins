@@ -22,7 +22,9 @@ import { lightspeedApiRef } from '../api/api';
 import { ConversationList } from '../types';
 
 // Fetch all conversations
-export const useConversations = (): UseQueryResult<ConversationList, Error> => {
+export const useConversations = (
+  enabled = true,
+): UseQueryResult<ConversationList, Error> => {
   const lightspeedApi = useApi(lightspeedApiRef);
   return useQuery({
     queryKey: ['conversations'],
@@ -30,6 +32,7 @@ export const useConversations = (): UseQueryResult<ConversationList, Error> => {
       const response = await lightspeedApi.getConversations();
       return response;
     },
+    enabled,
     refetchInterval: query => {
       const data = query.state.data;
       if (!data?.length) return false;

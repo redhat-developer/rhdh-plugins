@@ -23,6 +23,8 @@ import Tooltip from '@mui/material/Tooltip';
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
 import { DOCKED_CONTENT_OFFSET, LIGHTSPEED_FAB_ELEMENT_ID } from '../const';
+import { useIaChatPermission } from '../hooks/useIaChatPermission';
+import { useIaNotebooksPermission } from '../hooks/useIaNotebooksPermission';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useTranslation } from '../hooks/useTranslation';
 import {
@@ -37,6 +39,14 @@ export const LightspeedFABContent = () => {
   const theme = useTheme();
   const { isChatbotActive, toggleChatbot, displayMode } =
     useLightspeedDrawerContext();
+  const { allowed: hasChatAccess, loading: chatPermissionLoading } =
+    useIaChatPermission();
+  const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
+    useIaNotebooksPermission();
+
+  const permissionsLoading =
+    chatPermissionLoading || notebooksPermissionLoading;
+  const hasPluginAccess = hasChatAccess || hasNotebooksAccess;
   const fabRef = useRef<HTMLDivElement>(null);
   const fabEdgeInset = getLightspeedFabEdgeInset(theme);
 
@@ -74,6 +84,10 @@ export const LightspeedFABContent = () => {
   }, [displayMode, theme]);
 
   if (displayMode === ChatbotDisplayMode.embedded) {
+    return null;
+  }
+
+  if (permissionsLoading || !hasPluginAccess) {
     return null;
   }
 

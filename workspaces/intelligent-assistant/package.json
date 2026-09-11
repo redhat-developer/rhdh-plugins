@@ -20,7 +20,7 @@
     "test": "backstage-cli repo test",
     "test:all": "backstage-cli repo test --coverage",
     "test:e2e": "yarn test:e2e:all",
-    "test:e2e:legacy": "APP_MODE=legacy playwright test",
+    "test:e2e:legacy": "APP_MODE=legacy playwright test && APP_MODE=legacy playwright test --config playwright.config.rbac.ts",
     "test:e2e:nfs": "APP_MODE=nfs playwright test",
     "test:e2e:all": "yarn test:e2e:legacy && yarn test:e2e:nfs",
     "test:e2e:ci": "yarn test:e2e:all",

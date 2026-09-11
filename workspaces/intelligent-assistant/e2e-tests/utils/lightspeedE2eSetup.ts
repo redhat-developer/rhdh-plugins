@@ -28,6 +28,11 @@ import {
   mockQuery,
   mockShields,
 } from './devMode';
+import {
+  installIaPermissionsMock,
+  waitForIaPermissionAuthorize,
+  type IaPermissionMatrix,
+} from './iaPermissionsE2e';
 import { getTranslations, type LightspeedMessages } from './translations';
 
 /** Default user message used by the shared query mock in Lightspeed e2e. */
@@ -67,6 +72,18 @@ async function loginAsGuest(page: Page) {
     }
   }
 }
+
+async function setupLightspeedApiMocks(page: Page) {
+  await mockModels(page, models);
+  await mockConversations(page);
+  await mockChatHistory(page);
+  await mockQuery(page, LIGHTSPEED_E2E_DEFAULT_BOT_QUERY, conversations);
+  await mockShields(page, mockedShields);
+  await mockMcpServers(page);
+  await mockFeedbackStatus(page);
+  await mockNotebookLightspeedBackend(page);
+}
+
 /**
  * One logged-in Lightspeed session with the same dev-mode mocks as the legacy
  * monolithic suite. Each Playwright test file should call this from `beforeAll`.
@@ -79,14 +96,7 @@ export async function bootstrapLightspeedE2ePage(
   const locale = await page.evaluate(() => globalThis.navigator.language);
   const translations = getTranslations(locale);
 
-  await mockModels(page, models);
-  await mockConversations(page);
-  await mockChatHistory(page);
-  await mockQuery(page, LIGHTSPEED_E2E_DEFAULT_BOT_QUERY, conversations);
-  await mockShields(page, mockedShields);
-  await mockMcpServers(page);
-  await mockFeedbackStatus(page);
-  await mockNotebookLightspeedBackend(page);
+  await setupLightspeedApiMocks(page);
 
   await page.goto('/');
   await loginAsGuest(page);
@@ -95,4 +105,29 @@ export async function bootstrapLightspeedE2ePage(
   await openLightspeed(page);
 
   return { page, locale, translations };
+}
+
+/**
+ * Guest session with IA API mocks and a fixed permission matrix.
+ * Installs the authorize mock on the browser context before any navigation.
+ */
+export async function bootstrapLightspeedRbacE2ePage(
+  browser: Browser,
+  permissions: IaPermissionMatrix,
+): Promise<LightspeedE2eBootstrap> {
+  const context = await browser.newContext({ locale: 'en-US' });
+  await installIaPermissionsMock(context, permissions);
+
+  const page = await context.newPage();
+  const translations = getTranslations('en');
+
+  await setupLightspeedApiMocks(page);
+
+  await page.goto('/');
+  await loginAsGuest(page);
+  await switchToLocale(page, 'en');
+  await page.reload();
+  await waitForIaPermissionAuthorize(page);
+
+  return { page, locale: 'en', translations };
 }

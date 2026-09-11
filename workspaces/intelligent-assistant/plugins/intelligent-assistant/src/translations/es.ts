@@ -112,7 +112,6 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'footer.accuracy.label':
       'Revise siempre el contenido generado con IA antes de usarlo.',
     'icon.lightspeed.alt': 'icono del asistente inteligente',
-    'icon.permissionRequired.alt': 'icono de permiso requerido',
     'lcore.loadError.description':
       'El backend del asistente inteligente no devolvió una lista de modelos. Compruebe que el servicio está en ejecución y es accesible, e inténtelo de nuevo.',
     'lcore.loadError.title': 'No se pudieron cargar los modelos',
@@ -162,8 +161,6 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'mcp.settings.name': 'Nombre',
     'mcp.settings.noneAvailable': 'No hay servidores MCP disponibles.',
     'mcp.settings.personalAccessToken': 'Token de acceso personal',
-    'mcp.settings.readOnlyAccess':
-      'Tienes acceso de solo lectura a los servidores MCP.',
     'mcp.settings.removePersonalToken': 'Eliminar token personal',
     'mcp.settings.savedToken': 'Token guardado',
     'mcp.settings.selectedCount':
@@ -289,12 +286,6 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'notebooks.updated.yesterday': 'Actualizado hace 1 día',
     'page.subtitle': 'Asistente de desarrollo con tecnología de IA',
     'page.title': 'Asistente inteligente',
-    'permission.notebooks.goBack': 'Volver',
-    'permission.required.description':
-      'Para ver <subject/>, contacta a tu administrador para que te otorgue el permiso <permissions/>.',
-    'permission.required.title': 'Permisos faltantes',
-    'permission.subject.notebooks': 'los cuadernos del asistente inteligente',
-    'permission.subject.plugin': 'el plugin del asistente inteligente',
     'prompts.codeOptimization.message':
       '¿Puedes sugerir formas comunes de optimizar el código para lograr un mejor rendimiento?',
     'prompts.codeOptimization.title': 'Sugerir optimizaciones de código',
