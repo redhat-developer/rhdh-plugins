@@ -137,11 +137,11 @@ test.describe.serial('Dynamic Home Page Customization', () => {
 
 test.describe('Persona-Based Homepages', () => {
   test('Groups filters default widgets by persona', async ({ browser }) => {
-    // The `if: groups:` condition in `homepage.defaultWidgets` is a legacy-only
-    // feature — NFS does not implement group-based widget filtering.
+    // NFS applies `homepage.defaultWidgets` persona filtering in HomePageLayout,
+    // but this suite exercises the legacy `/customizable` mount-point page.
     test.skip(
       process.env.APP_MODE === 'nfs',
-      '`if: groups:` filtering is not supported in NFS mode',
+      'Persona e2e still targets the legacy /customizable route',
     );
 
     const loginUrl = '/customizable';

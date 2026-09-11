@@ -14,36 +14,58 @@
  * limitations under the License.
  */
 
-import { Content, EmptyState, Page } from '@backstage/core-components';
+import {
+  Content,
+  EmptyState,
+  Page,
+  Progress,
+} from '@backstage/core-components';
+import { useMemo } from 'react';
 import { useTranslation } from '../hooks/useTranslation';
+import { useDefaultWidgets } from '../legacy/hooks/useDefaultWidgets';
 import { HeaderProps, Header } from './Header';
 import { ReadOnlyGridLayout } from './ReadOnlyGridLayout';
 import { CustomizableGridLayout } from './CustomizableGridLayout';
 import { HomePageCardConfig } from '../types';
+import { applyDefaultWidgetsToNfsWidgets } from './applyDefaultWidgets';
 
 /**
  * Props for the NFS home page layout component.
  */
 export interface HomePageProps extends HeaderProps {
   widgets: HomePageCardConfig[];
-  customizable: boolean;
+  customizable?: boolean;
 }
 
 /**
  * NFS home page layout that renders widgets in a read-only or customizable grid.
- * Used by the dynamic-homepage-layout extension.
  *
+ * When `homepage.defaultWidgets` is available from the backend, applies the same
+ * persona / RBAC filtering as the legacy homepage (`if` / `unless` / `tags`).
  */
-export const HomePageLayout = ({ widgets, customizable }: HomePageProps) => {
+export const HomePageLayout = ({
+  widgets,
+  customizable = true,
+}: HomePageProps) => {
   const { t } = useTranslation();
+  const { defaultWidgets, loading } = useDefaultWidgets();
+
+  const visibleWidgets = useMemo(() => {
+    if (!defaultWidgets) {
+      return widgets;
+    }
+    return applyDefaultWidgetsToNfsWidgets(widgets, defaultWidgets);
+  }, [widgets, defaultWidgets]);
 
   let content: React.ReactNode;
-  if (widgets.length === 0) {
+  if (loading) {
+    content = <Progress />;
+  } else if (visibleWidgets.length === 0) {
     content = <EmptyState title={t('homePage.empty')} missing="content" />;
   } else if (customizable) {
-    content = <CustomizableGridLayout homepageCards={widgets} />;
+    content = <CustomizableGridLayout homepageCards={visibleWidgets} />;
   } else {
-    content = <ReadOnlyGridLayout homepageCards={widgets} />;
+    content = <ReadOnlyGridLayout homepageCards={visibleWidgets} />;
   }
 
   return (

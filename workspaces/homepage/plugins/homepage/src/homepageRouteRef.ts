@@ -14,23 +14,11 @@
  * limitations under the License.
  */
 
-import { createApp } from '@backstage/frontend-defaults';
-import { navModule } from './modules/nav';
-import { signInModule } from './modules/signIn';
-import {
-  homepagePlugin,
-  homepageHomeModule,
-  homepageTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-homepage';
-import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
+import { createRouteRef } from '@backstage/frontend-plugin-api';
 
-export default createApp({
-  features: [
-    rhdhThemeModule,
-    navModule,
-    signInModule,
-    homepagePlugin,
-    homepageHomeModule,
-    homepageTranslationsModule,
-  ],
-});
+/**
+ * Route ref for the homepage-owned NFS page.
+ *
+ * @public
+ */
+export const homepageRouteRef = createRouteRef();

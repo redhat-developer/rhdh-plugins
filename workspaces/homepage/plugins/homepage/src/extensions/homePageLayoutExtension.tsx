@@ -17,20 +17,18 @@
 import { HomePageLayoutBlueprint } from '@backstage/plugin-home-react/alpha';
 import { z } from 'zod';
 import { HomePageCardConfig } from '../types';
+import { homepageLayoutAttachTo } from './homepageAttach';
 
 /**
- * Custom home page layout extension for the New Frontend System.
+ * Custom home page layout for `page:homepage` only.
  *
- * Config-driven layout with `widgetLayout` (priority, breakpoints per widget),
- * supports both customizable (drag/drop) and read-only modes.
- *
- * The layout component is loaded via dynamic `import()` inside the async
- * loader so it stays out of the Module Federation sync chunk graph.
- *
+ * Applies persona-based `homepage.defaultWidgets` filtering via HomePageLayout
+ * (homepage-backend). Community `page:home` keeps the upstream default layout.
  */
 export const homePageLayoutExtension =
   HomePageLayoutBlueprint.makeWithOverrides({
     name: 'dynamic-homepage-layout',
+    attachTo: homepageLayoutAttachTo,
     configSchema: {
       customizable: z.boolean().optional(),
       widgetLayout: z
@@ -77,7 +75,7 @@ export const homePageLayoutExtension =
                 };
               })
               .sort((a, b) => {
-                if (customizable) return 0; // keep original order
+                if (customizable) return 0;
 
                 const priorityA = layoutConfig[a.name ?? '']?.priority ?? 0;
                 const priorityB = layoutConfig[b.name ?? '']?.priority ?? 0;
