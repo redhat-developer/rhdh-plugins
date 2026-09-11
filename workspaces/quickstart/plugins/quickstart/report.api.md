@@ -55,11 +55,11 @@ const _default: OverridableFrontendPlugin<
         sectionLinkLabel: string | undefined;
       };
       configInput: {
-        link?: string | undefined;
-        title?: string | undefined;
-        icon?: string | undefined;
-        titleKey?: string | undefined;
         priority?: number | undefined;
+        title?: string | undefined;
+        titleKey?: string | undefined;
+        icon?: string | undefined;
+        link?: string | undefined;
         sectionLabel?: string | undefined;
         sectionLink?: string | undefined;
         sectionLinkLabel?: string | undefined;
