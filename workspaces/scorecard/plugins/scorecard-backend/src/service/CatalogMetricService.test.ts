@@ -532,13 +532,20 @@ describe('CatalogMetricService', () => {
           defaultVisualization: provider.getMetrics()[0].defaultVisualization,
           collectorIds: provider.getMetrics()[0].collectorIds,
         },
+        thresholds: { rules: mockThresholdRules },
       });
       expect(
         mockedDatabase.readLatestEntityMetricValuesPerUtcDay,
       ).toHaveBeenCalledWith(entityRef, metricId, from, to);
+      expect(
+        mockedThresholdResolver.resolveEntityThresholds,
+      ).toHaveBeenCalledWith(
+        mockEntity,
+        expect.objectContaining({ id: metricId }),
+      );
     });
 
-    it('should map each daily DB row to a time-series point', async () => {
+    it('should map each daily DB row to a time-series point with read-time thresholdEvaluation', async () => {
       mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
         {
           id: 3,
@@ -553,9 +560,10 @@ describe('CatalogMetricService', () => {
           id: 2,
           catalogEntityRef: entityRef,
           metricId: metricId,
-          value: 7,
+          value: 25,
           timestamp: new Date('2024-01-02T12:00:00.000Z'),
           errorMessage: null,
+          // Stale write-time status must be ignored in favor of read-time evaluation
           status: 'success',
         },
       ] as DbMetricValue[]);
@@ -568,12 +576,21 @@ describe('CatalogMetricService', () => {
       );
 
       expect(result.points).toEqual([
-        { value: 9, timestamp: '2024-01-01T20:00:00.000Z' },
-        { value: 7, timestamp: '2024-01-02T12:00:00.000Z' },
+        {
+          value: 9,
+          timestamp: '2024-01-01T20:00:00.000Z',
+          thresholdEvaluation: 'success',
+        },
+        {
+          value: 25,
+          timestamp: '2024-01-02T12:00:00.000Z',
+          thresholdEvaluation: 'warning',
+        },
       ]);
+      expect(result.thresholds).toEqual({ rules: mockThresholdRules });
     });
 
-    it('should map calculation-error rows to null value with error', async () => {
+    it('should map calculation-error rows to null value with error and omit thresholdEvaluation', async () => {
       mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
         {
           id: 1,
@@ -612,14 +629,78 @@ describe('CatalogMetricService', () => {
       );
 
       expect(result.points).toEqual([
-        { value: 8, timestamp: '2024-01-01T10:00:00.000Z' },
+        {
+          value: 8,
+          timestamp: '2024-01-01T10:00:00.000Z',
+          thresholdEvaluation: 'success',
+        },
         {
           value: null,
           timestamp: '2024-01-02T16:00:00.000Z',
           error: 'GitHub API 500',
         },
-        { value: 7, timestamp: '2024-01-03T10:00:00.000Z' },
+        {
+          value: 7,
+          timestamp: '2024-01-03T10:00:00.000Z',
+          thresholdEvaluation: 'success',
+        },
       ]);
+    });
+
+    it('should evaluate thresholdEvaluation from current thresholds even when DB status is null', async () => {
+      mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
+        {
+          id: 1,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: 5,
+          timestamp: new Date('2024-01-01T10:00:00.000Z'),
+          errorMessage: null,
+          status: null,
+        },
+      ] as DbMetricValue[]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result.points).toEqual([
+        {
+          value: 5,
+          timestamp: '2024-01-01T10:00:00.000Z',
+          thresholdEvaluation: 'success',
+        },
+      ]);
+    });
+
+    it('should fall back to resolveMetricThresholds when resolveEntityThresholds throws', async () => {
+      const metricThresholds = {
+        rules: [
+          { key: 'success', expression: '<5' },
+          { key: 'error', expression: '>=5' },
+        ],
+      };
+      mockedThresholdResolver.resolveEntityThresholds.mockImplementation(() => {
+        throw new Error('Merge thresholds failed');
+      });
+      mockedThresholdResolver.resolveMetricThresholds.mockReturnValue(
+        metricThresholds,
+      );
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(
+        mockedThresholdResolver.resolveMetricThresholds,
+      ).toHaveBeenCalledWith(expect.objectContaining({ id: metricId }));
+      expect(result.thresholds).toEqual(metricThresholds);
     });
 
     it('should pass permission filter to filterAuthorizedMetrics', async () => {
