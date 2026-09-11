@@ -20,6 +20,7 @@ import {
 import { scorecardMetricsExtensionPoint } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { SonarQubeMetricProviderFactory } from './metricProviders/SonarQubeMetricProviderFactory';
 
+/** @public */
 export const scorecardModuleSonarqube = createBackendModule({
   pluginId: 'scorecard',
   moduleId: 'sonarqube',

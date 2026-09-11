@@ -20,4 +20,5 @@
  * @packageDocumentation
  */
 
+/** @public */
 export { scorecardModuleJira as default } from './module';
