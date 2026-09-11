@@ -17,8 +17,9 @@
 import { bulkImportPermission } from './permissions';
 
 describe('bulkImportPermission', () => {
-  it('exports the stable permission name and resource type contract', () => {
+  it('exports the stable permission name as a feature permission', () => {
     expect(bulkImportPermission.name).toBe('bulk.import');
-    expect(bulkImportPermission.resourceType).toBe('bulk-import');
+    expect(bulkImportPermission.attributes).toEqual({});
+    expect(bulkImportPermission).not.toHaveProperty('resourceType');
   });
 });

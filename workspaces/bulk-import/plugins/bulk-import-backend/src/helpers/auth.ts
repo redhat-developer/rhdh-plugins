@@ -43,7 +43,6 @@ export async function permissionCheck(
       [
         {
           permission: bulkImportPermission,
-          resourceRef: bulkImportPermission.resourceType,
         },
       ],
       {

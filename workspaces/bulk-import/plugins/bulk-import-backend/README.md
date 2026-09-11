@@ -30,7 +30,9 @@ To set up the bulk import backend package for the backend:
 
 #### Permission Framework Support
 
-The Bulk Import Backend plugin has support for the permission framework. A basic example permission policy is shown below to disallow access to the bulk import API for all users except those in the `backstage-admins` group.
+The Bulk Import Backend plugin has support for the permission framework. The plugin registers `bulk.import` as a **feature permission** (`BasicPermission`) from `@red-hat-developer-hub/backstage-plugin-bulk-import-common`.
+
+A basic example permission policy is shown below to disallow access to the bulk import API for all users except those in the `backstage-admins` group.
 
 1. Create a backend module for the permission policy, under a `packages/backend/src/plugins/permissions.ts` file:
 

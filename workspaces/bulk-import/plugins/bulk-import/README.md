@@ -29,7 +29,7 @@ The sections below are relevant for static plugins. If the plugin is expected to
 
 **NOTE**
 
-- When RBAC permission framework is enabled, for non-admin users to access bulk import UI, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file:
+- When the permission framework is enabled, users need `bulk.import` to access the Bulk Import UI and API. For non-admin users, associate a role with the following policies:
 
 ```CSV
 p, role:default/team_a, bulk.import, use, allow
@@ -143,8 +143,16 @@ export default createApp({
 The plugin will automatically provide:
 
 - Bulk Import page at `/bulk-import` with all existing features
-- A "Bulk import" navigation item in the sidebar
+- A "Bulk import" navigation item in the sidebar (only when the signed-in user is allowed `bulk.import`)
 - Translations support (via `bulkImportTranslationsModule`)
+
+#### Permission-based visibility (NFS)
+
+The NFS page is registered with an `if` predicate that checks for the `bulk.import` permission. When permission checks deny access, the page and sidebar entry are not registered for that session. This replaces runtime page-level permission checks in the NFS flow.
+
+Users who lack `bulk.import` will not see the Bulk Import nav item and cannot reach `/bulk-import` through the registered NFS routes.
+
+> **Legacy (OFS) note:** The `./legacy` entry point still uses `usePermission` in `BulkImportSidebarItem` and shows a permission-denied alert on direct navigation to `/bulk-import`.
 
 ### Extensions
 
@@ -152,4 +160,3 @@ The following extensions are available in the plugin:
 
 - `api:bulk-import`
 - `page:bulk-import`
-- `nav-item:bulk-import`

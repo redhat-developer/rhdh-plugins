@@ -16,8 +16,13 @@
 import { coreExtensionData } from '@backstage/frontend-plugin-api';
 import { createExtensionTester } from '@backstage/frontend-test-utils';
 
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import translationsModuleDefault from './bulkImportTranslationsModuleExport';
 import bulkImportPlugin, { bulkImportTranslationsModule } from './index';
+
+const nfsPluginSource = readFileSync(resolve(__dirname, 'index.tsx'), 'utf8');
 
 describe('bulk-import NFS exports', () => {
   it('should export a translations module as a FrontendModule', () => {
@@ -29,6 +34,15 @@ describe('bulk-import NFS exports', () => {
 
   it('should export the translations module as default for NFS discovery', () => {
     expect(translationsModuleDefault).toBe(bulkImportTranslationsModule);
+  });
+
+  it('registers the bulk import page with a bulk.import permission if predicate', () => {
+    expect(nfsPluginSource).toMatch(
+      /PageBlueprint\.make\(\{[\s\S]*?if:\s*bulkImportAccess/,
+    );
+    expect(nfsPluginSource).toMatch(
+      /permissions:\s*\{\s*\$contains:\s*bulkImportPermission\.name/,
+    );
   });
 });
 

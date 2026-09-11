@@ -143,8 +143,7 @@ catalog:
 
 # see https://backstage.io/docs/permissions/getting-started for more on the permission framework
 permission:
-  # setting this to `false` will disable permissions
-  enabled: false
+  enabled: true
   rbac:
     # Paths are relative to packages/backend (yarn start cwd).
     policies-csv-file: ../../examples/rbac-policy.csv
