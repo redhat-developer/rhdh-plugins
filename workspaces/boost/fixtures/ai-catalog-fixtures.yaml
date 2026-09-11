@@ -1,7 +1,22 @@
 ---
-# AI Catalog sample fixtures — one entity per AI asset category.
-# Used by the dev app for local development and testing.
+# AI Catalog sample fixtures — representative entities for local development.
+# These examples focus on the entity types currently exercised by the dev app.
 
+# ---------------------------------------------------------------------------
+# User — referenced by the local OGX agent provider configuration
+# ---------------------------------------------------------------------------
+apiVersion: backstage.io/v1alpha1
+kind: User
+metadata:
+  name: admin
+  title: Development Admin
+spec:
+  profile:
+    displayName: Development Admin
+    email: admin@example.com
+  memberOf: []
+
+---
 # ---------------------------------------------------------------------------
 # Owner groups — referenced by AI asset entities below
 # ---------------------------------------------------------------------------
@@ -169,7 +184,10 @@ spec:
   type: agent
   lifecycle: production
   owner: team-ai-platform
+  model: openai/vllm-inference/gpt-4.1
   instructions: An AI agent that helps developers with code generation, debugging, architecture decisions, and documentation.
+  handoffDescription: Routes specialized questions to the appropriate team.
+  enableRAG: true
   location:
     type: git
     target: https://github.com/example/developer-assistant-agent
@@ -192,14 +210,19 @@ metadata:
     rhdh.io/ai-asset-category: model-server
     rhdh.io/ai-asset-version: '3.0.0'
     rhdh.io/ai-asset-source: model-registry
+  links:
+    - title: API
+      url: https://granite.example.com/v1
 spec:
   type: ai-model-server
   lifecycle: production
   owner: team-ml-ops
   serverType: openai-v1
   serverUrl: https://granite.example.com/v1
+  requiresApiKey: true
   models:
     discoverable: true
     available:
       - granite-3-code
       - granite-3-instruct
+    default: granite-3-instruct

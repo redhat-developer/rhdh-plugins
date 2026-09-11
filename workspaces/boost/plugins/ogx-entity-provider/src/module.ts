@@ -186,6 +186,7 @@ function readAgentConfigs(
   return agentConfigs.map(agentConfig => ({
     id: agentConfig.getString('id'),
     name: agentConfig.getString('name'),
+    version: agentConfig.getOptionalString('version'),
     description: agentConfig.getOptionalString('description'),
     instructions: agentConfig.getOptionalString('instructions'),
     model: agentConfig.getOptionalString('model'),
