@@ -26,7 +26,7 @@ import {
   getSomeEntitiesNotReportingTooltip,
 } from '../utils/translationUtils';
 
-type MetricId = 'github.openPRs' | 'jira.openIssues';
+type MetricId = 'github.openPRs' | 'jira.openIssues' | 'filecheck.license';
 
 export type DrillDownCardLocatorOptions = {
   aggregationId?: string;
@@ -167,19 +167,30 @@ export class ScorecardDrillDownPage {
    * When mocks report no calculation failures, the drill-down must not show the
    * calculation-warning icon next to the Entities heading.
    */
-  async expectNoDrillDownCalculationErrorWarningIcon() {
-    const heading = this.page.getByRole('heading', {
-      level: 3,
-      name: this.translations.entitiesPage.entitiesTable.title,
+  private getEntitiesTableHeading(): Locator {
+    const titlePrefix = this.translations.entitiesPage.entitiesTable.title;
+    return this.page.getByRole('heading', { level: 3 }).filter({
+      hasText: titlePrefix,
     });
-    await expect(heading.locator('svg.MuiSvgIcon-colorWarning')).toHaveCount(0);
   }
 
-  /** Verifies the "some entities not reporting" icon tooltip on the drill-down card. */
-  async verifySomeEntitiesNotReportingTooltip() {
-    const icon = this.page.getByTestId('ReportProblemOutlinedIcon');
-    await expect(icon).toBeVisible();
-    await icon.hover();
+  private getEntitiesTableCalculationWarningIcon(): Locator {
+    return this.getEntitiesTableHeading().getByTestId(
+      'entities-table-calculation-warning-icon',
+    );
+  }
+
+  async expectNoDrillDownCalculationErrorWarningIcon() {
+    await expect(this.getEntitiesTableCalculationWarningIcon()).toHaveCount(0);
+  }
+
+  async expectDrillDownCalculationErrorWarningIcon() {
+    await expect(this.getEntitiesTableCalculationWarningIcon()).toBeVisible();
+  }
+
+  /** Verifies the calculation-error tooltip on the Entities table heading icon. */
+  async verifyEntitiesTableCalculationErrorTooltip() {
+    await this.getEntitiesTableCalculationWarningIcon().hover();
     const tooltipText = getSomeEntitiesNotReportingTooltip(this.translations);
     await expect(this.page.getByRole('tooltip')).toContainText(tooltipText);
   }
@@ -218,6 +229,25 @@ export class ScorecardDrillDownPage {
           .first(),
       ).toBeVisible({ timeout: 15_000 });
     }
+  }
+
+  private getEntityLink(entitySlug: string): Locator {
+    const slug = encodeURIComponent(entitySlug);
+    return this.getEntitiesTable()
+      .locator('tbody')
+      .locator(`a[href*="/catalog/default/component/${slug}"]`)
+      .first();
+  }
+
+  async clickEntityLink(entitySlug: string) {
+    await this.getEntityLink(entitySlug).click();
+  }
+
+  async expectOnEntityPage(entitySlug: string) {
+    const slug = encodeURIComponent(entitySlug);
+    await expect(this.page).toHaveURL(
+      new RegExp(`/catalog/default/component/${escapeRegex(slug)}`),
+    );
   }
 
   async verifyMetricColumnSort() {
