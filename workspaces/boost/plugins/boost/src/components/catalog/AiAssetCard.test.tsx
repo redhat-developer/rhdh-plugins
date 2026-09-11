@@ -72,6 +72,9 @@ describe('AiAssetCard', () => {
       <AiAssetCard entity={mockSkillEntity} />,
     );
     expect(rendered.getByText('Skills')).toBeInTheDocument();
+    expect(
+      rendered.queryByRole('button', { name: /filter by skills/i }),
+    ).toBeNull();
   });
 
   it('renders tags', async () => {
@@ -86,14 +89,34 @@ describe('AiAssetCard', () => {
     const rendered = await renderInTestApp(
       <AiAssetCard entity={mockSkillEntity} />,
     );
-    expect(rendered.getByText('team-ai-platform')).toBeInTheDocument();
+    expect(
+      rendered.getByRole('link', { name: 'team-ai-platform' }),
+    ).toHaveAttribute('href', '/catalog/default/group/team-ai-platform');
+    expect(
+      rendered.getByRole('link', { name: 'team-ai-platform' }),
+    ).toHaveAttribute('data-color', 'info');
+    expect(
+      rendered.getByRole('link', { name: 'team-ai-platform' }),
+    ).toHaveAttribute('data-weight', 'bold');
   });
 
-  it('renders scope from annotation', async () => {
+  it('does not render an unknown owner', async () => {
+    const entity = {
+      ...mockAgentEntity,
+      spec: { ...mockAgentEntity.spec, owner: 'unknown' },
+    } as Entity;
+    const rendered = await renderInTestApp(<AiAssetCard entity={entity} />);
+
+    expect(rendered.queryByText('unknown')).not.toBeInTheDocument();
+  });
+
+  it('renders provider from annotation', async () => {
     const rendered = await renderInTestApp(
       <AiAssetCard entity={mockSkillEntity} />,
     );
-    expect(rendered.getByText('github')).toBeInTheDocument();
+    expect(
+      rendered.getByText('github').closest('[data-size="small"]'),
+    ).toBeInTheDocument();
   });
 
   it('links to catalog entity detail page', async () => {

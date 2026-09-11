@@ -57,5 +57,15 @@ describe('AiCatalogTable', () => {
     expect(screen.getByText('team-ai')).toBeInTheDocument();
     expect(screen.getByText('github')).toBeInTheDocument();
     expect(screen.getByText('Automated code review.')).toBeInTheDocument();
+
+    expect(
+      screen.getAllByRole('columnheader').map(header => header.textContent),
+    ).toEqual([
+      msg.table.name,
+      msg.table.type,
+      msg.table.provider,
+      msg.table.owner,
+      msg.table.description,
+    ]);
   });
 });

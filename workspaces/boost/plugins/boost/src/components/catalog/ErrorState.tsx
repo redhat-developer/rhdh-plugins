@@ -22,7 +22,7 @@ import styles from './AiCatalogPage.module.css';
 export const ErrorState = ({ onRetry }: { onRetry: () => void }) => {
   const { t } = useTranslation();
   return (
-    <Flex p="4" className={styles.layout}>
+    <Flex p="4" className={styles.errorState}>
       <Alert
         status="danger"
         title={t('catalog.error.title')}

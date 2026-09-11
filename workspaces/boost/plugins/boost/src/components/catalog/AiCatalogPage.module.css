@@ -15,30 +15,132 @@
  */
 
 @layer components {
+  .page {
+    --boost-shell-chrome-height: 96px;
+    height: calc(100dvh - var(--boost-shell-chrome-height));
+    min-height: 0;
+    padding: var(--bui-space-6);
+    border-radius: var(--bui-radius-4);
+    background: var(--bui-bg-neutral-1);
+    display: flex;
+    flex-direction: column;
+  }
+
   .layout {
-    min-height: calc(100vh - var(--boost-shell-header-height, 120px));
+    display: grid;
+    grid-template-columns: minmax(200px, 240px) minmax(0, 1fr);
+    gap: var(--bui-space-6);
+    align-items: start;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
   }
 
   .emptyState {
-    min-height: calc(100vh - var(--boost-shell-chrome-height, 200px));
+    min-height: 420px;
+  }
+
+  .errorState {
+    min-height: 240px;
   }
 
   .content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
     min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .resultsSurface {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    width: 100%;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid var(--bui-border-1);
+    border-radius: var(--bui-radius-4);
+  }
+
+  .toolbar {
+    min-height: 72px;
+    padding: var(--bui-space-4);
+    border-bottom: 1px solid var(--bui-border-1);
+  }
+
+  .resultCount {
+    flex-shrink: 0;
+  }
+
+  .toolbarActions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .viewToggle {
+    flex-shrink: 0;
+  }
+
+  .search {
+    width: min(280px, 100%);
+  }
+
+  .search :global(.bui-SearchFieldInputWrapper) {
+    border: 1px solid var(--bui-border-2);
+    border-radius: var(--bui-radius-2);
+    background: var(--bui-bg-neutral-1);
+  }
+
+  .search :global(.bui-SearchFieldInputWrapper:has([data-focused])) {
+    border-color: var(--bui-bg-solid);
+  }
+
+  .mobileFilterTrigger {
+    display: none;
+  }
+
+  .resultsBody {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    padding: var(--bui-space-4);
+  }
+
+  .pagination {
+    flex-shrink: 0;
+    padding: var(--bui-space-3) var(--bui-space-4);
+    border-top: 1px solid var(--bui-border-1);
   }
 
   .loadingSidebar {
     display: flex;
     flex-direction: column;
     gap: var(--bui-space-1);
-    width: 180px;
+    width: 100%;
     flex-shrink: 0;
+  }
+
+  .loadingToolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 72px;
+    padding: var(--bui-space-4);
+    border-bottom: 1px solid var(--bui-border-1);
   }
 
   .loadingGrid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: var(--bui-space-4);
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
   }
 
   .skeletonCard {
@@ -46,19 +148,97 @@
     flex-direction: column;
     gap: var(--bui-space-2);
     padding: var(--bui-space-4);
-    border: 1px solid var(--bui-border);
+    border: 1px solid var(--bui-border-1);
     border-radius: var(--bui-radius-2);
   }
 
-  @media (max-width: 768px) {
+  .skeletonFilterInput {
+    margin-top: var(--bui-space-1);
+  }
+
+  .skeletonGrid {
+    padding: var(--bui-space-4);
+  }
+
+  @media (max-width: 1023px) {
+    .page {
+      height: calc(100dvh - var(--boost-shell-chrome-height));
+      padding: var(--bui-space-4) var(--bui-space-6);
+      padding-bottom: var(--bui-space-4);
+    }
+
+    .layout {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .desktopFilters {
+      display: none;
+    }
+
+    .mobileFilterTrigger {
+      display: flex;
+      margin-bottom: var(--bui-space-4);
+    }
+
+    .content {
+      flex: 1;
+      height: auto;
+    }
+
+    .toolbar {
+      align-items: center;
+      flex-direction: row;
+      flex-wrap: nowrap;
+    }
+
+    .toolbarActions {
+      flex-wrap: nowrap;
+      justify-content: flex-end;
+      min-width: 0;
+    }
+
+    .search {
+      flex: 1 1 auto;
+      width: min(240px, 100%);
+      min-width: 0;
+    }
+
+    .loadingSidebar {
+      display: none;
+    }
+
     .loadingGrid {
       grid-template-columns: 1fr;
     }
   }
 
-  @media (min-width: 769px) and (max-width: 1024px) {
+  @media (max-width: 639px) {
+    .page {
+      --boost-shell-chrome-height: 153px;
+    }
+  }
+
+  @media (min-width: 640px) and (max-width: 1023px) {
     .loadingGrid {
       grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 479px) {
+    .toolbar {
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .toolbarActions {
+      width: 100%;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .loadingSidebar {
+      width: 240px;
     }
   }
 }

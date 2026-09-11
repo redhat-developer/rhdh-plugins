@@ -17,9 +17,13 @@
 import { type Entity } from '@backstage/catalog-model';
 import { EntityProvider } from '@backstage/plugin-catalog-react';
 import { renderInTestApp } from '@backstage/test-utils';
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 
-import { AdoptionCard } from './AdoptionCard';
+import { boostMessages } from '../../../translations/ref';
+import { UsageCard } from './UsageCard';
+
+const { catalog: msg } = boostMessages;
+const writeText = jest.fn();
 
 const skillEntity: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
@@ -83,6 +87,22 @@ const gitEntity: Entity = {
   },
 };
 
+const gitSubpathEntity: Entity = {
+  ...gitEntity,
+  metadata: {
+    ...gitEntity.metadata,
+    name: 'git-subpath-rule',
+    uid: 'uid-git-subpath',
+  },
+  spec: {
+    ...gitEntity.spec,
+    location: {
+      type: 'git',
+      target: 'https://github.com/example/repo/tree/main/rules',
+    },
+  },
+};
+
 const mcpEntity: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
   kind: 'API',
@@ -98,6 +118,22 @@ const mcpEntity: Entity = {
     remotes: [
       { url: 'https://mcp.example.com/github', type: 'streamable-http' },
     ],
+  },
+};
+
+const modelServerEntity: Entity = {
+  apiVersion: 'backstage.io/v1alpha1',
+  kind: 'AiModelServerAPI',
+  metadata: {
+    name: 'granite-model-server',
+    namespace: 'default',
+    uid: 'uid-model-server',
+  },
+  spec: {
+    type: 'ai-model-server',
+    lifecycle: 'production',
+    owner: 'team-ml-ops',
+    serverUrl: 'https://granite.example.com/v1',
   },
 };
 
@@ -119,15 +155,17 @@ const noActionEntity: Entity = {
 function renderWithEntity(entity: Entity) {
   return renderInTestApp(
     <EntityProvider entity={entity}>
-      <AdoptionCard />
+      <UsageCard />
     </EntityProvider>,
   );
 }
 
-describe('AdoptionCard', () => {
+describe('UsageCard', () => {
   beforeEach(() => {
-    Object.assign(navigator, {
-      clipboard: { writeText: jest.fn().mockResolvedValue(undefined) },
+    writeText.mockReset().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
     });
   });
 
@@ -137,7 +175,31 @@ describe('AdoptionCard', () => {
     expect(
       screen.getByText('npx skills add code-review-skill'),
     ).toBeInTheDocument();
-    expect(screen.getByText('Copy')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: msg.card.copyCommand }),
+    ).toBeInTheDocument();
+  });
+
+  it('shows copied feedback after copying a command', async () => {
+    await renderWithEntity(skillEntity);
+
+    fireEvent.click(screen.getByRole('button', { name: msg.card.copyCommand }));
+
+    expect(
+      await screen.findByRole('button', { name: msg.card.copied }),
+    ).toBeInTheDocument();
+    expect(writeText).toHaveBeenCalledWith('npx skills add code-review-skill');
+  });
+
+  it('shows an error when copying a command fails', async () => {
+    writeText.mockRejectedValueOnce(new Error('clipboard unavailable'));
+    await renderWithEntity(skillEntity);
+
+    fireEvent.click(screen.getByRole('button', { name: msg.card.copyCommand }));
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      msg.card.copyFailed,
+    );
   });
 
   it('renders podman pull command for OCI-sourced entities', async () => {
@@ -148,7 +210,9 @@ describe('AdoptionCard', () => {
         'podman pull oci://registry.example.com/tools/custom-ai-tool:latest',
       ),
     ).toBeInTheDocument();
-    expect(screen.getByText('Copy')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: msg.card.copyCommand }),
+    ).toBeInTheDocument();
   });
 
   it('renders Download ZIP button for git-sourced entities', async () => {
@@ -157,36 +221,40 @@ describe('AdoptionCard', () => {
     expect(screen.getByText('Download ZIP')).toBeInTheDocument();
   });
 
+  it('renders a source link for git subpaths', async () => {
+    await renderWithEntity(gitSubpathEntity);
+
+    expect(screen.getByText('View source')).toBeInTheDocument();
+    expect(screen.queryByText('Download ZIP')).toBeNull();
+  });
+
   it('renders remote URL for MCP server entities', async () => {
     await renderWithEntity(mcpEntity);
 
     expect(
       screen.getByText('https://mcp.example.com/github'),
     ).toBeInTheDocument();
-    expect(screen.getByText('Copy')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: msg.card.copyCommand }),
+    ).toBeInTheDocument();
+  });
+
+  it('renders the model server endpoint as usage information', async () => {
+    await renderWithEntity(modelServerEntity);
+
+    expect(
+      screen.getByText('https://granite.example.com/v1'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: msg.card.copyCommand }),
+    ).toBeInTheDocument();
   });
 
   it('renders nothing for entities with no actionable metadata', async () => {
     const { container } = await renderWithEntity(noActionEntity);
 
-    expect(container.querySelector('.command')).toBeNull();
-    expect(screen.queryByText('Copy')).toBeNull();
+    expect(container).toBeEmptyDOMElement();
     expect(screen.queryByText('Download ZIP')).toBeNull();
-  });
-
-  it('copies command to clipboard when copy button is clicked', async () => {
-    await renderWithEntity(skillEntity);
-
-    const copyButton = screen.getByText('Copy');
-    fireEvent.click(copyButton);
-
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
-      'npx skills add code-review-skill',
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText('Copied')).toBeInTheDocument();
-    });
   });
 
   it('opens the git archive URL with noopener,noreferrer when Download ZIP is clicked', async () => {
@@ -197,6 +265,21 @@ describe('AdoptionCard', () => {
 
     expect(openSpy).toHaveBeenCalledWith(
       'https://api.github.com/repos/example/no-hardcoded-secrets-rule/zipball',
+      '_blank',
+      'noopener,noreferrer',
+    );
+
+    openSpy.mockRestore();
+  });
+
+  it('opens the original source URL for a Git subpath', async () => {
+    const openSpy = jest.spyOn(window, 'open').mockImplementation(() => null);
+
+    await renderWithEntity(gitSubpathEntity);
+    fireEvent.click(screen.getByText('View source'));
+
+    expect(openSpy).toHaveBeenCalledWith(
+      'https://github.com/example/repo/tree/main/rules',
       '_blank',
       'noopener,noreferrer',
     );
