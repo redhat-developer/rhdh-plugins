@@ -481,6 +481,14 @@ scorecard:
   #     except:
   #       - openssf.maintained
 
+  # plugins:
+  #   # Optional DORA source-data retention and freshness controls
+  #   dora:
+  #     dataRetentionDays: 365
+  #     staleAfterMs: 60000
+  #     deploymentLookbackMs: 172800000
+  #     incidentLookbackMs: 300000
+
   metricProviders:
     jira:
       openIssues:
@@ -566,7 +574,7 @@ scorecard:
           frequency: { minutes: 5 }
           timeout: { minutes: 10 }
           initialDelay: { seconds: 10 }
-      meanTimeToRestore:
+      medianTimeToRestore:
         options:
           collectors:
             incidents:

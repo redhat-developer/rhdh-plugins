@@ -1,5 +1,8 @@
 # Proposal: Ingestion Health Admin Dashboard
 
+> **Release boundary:** This is follow-on Boost backend/admin work. It is not
+> part of the RHDH 2.1 frontend and OGX release baseline.
+
 ## Why
 
 > **RHDHPLAN-1513 Consolidation (2026-07-08):** Epic RHIDP-15333 (Ingestion Audit Logging & Metrics) was closed — its scope has been absorbed by RHIDP-15277 (AI Catalog RBAC Audit Logging) under RHDHPLAN-1508. This health dashboard epic (RHIDP-15331) is unaffected — it remains a surviving RHDHPLAN-1513 epic alongside RHIDP-15332 (Connector Config Hot-Reload) and RHIDP-15334 (Upstream Schema Alignment). Audit event patterns referenced here continue to come from RHIDP-15277. The Neo4j sync panel (RHIDP-15338) depends on RHIDP-15295 (RHDHPLAN-1507 Neo4j Knowledge Graph Sync Adapter).
@@ -19,7 +22,8 @@ Air-gapped deployments make connectivity failures common and hard to diagnose. A
 - REST API exposing per-connector health: enabled state, last sync attempt/success timestamps, health status (healthy/degraded/failing/unknown), most recent error
 - Data model tracks sync attempts with timestamps and outcomes (success/failure, assets added/updated/removed counts, error type, error message)
 - Health status derivation: healthy = last 3 sync attempts succeeded, degraded = mixed results (not all-success and not all-failure), failing = last 3 sync attempts failed
-- RBAC-gated via `ai-catalog.admin` permission
+- Authorization-gated with the existing `boost.admin` permission, granted by
+  an RHDH RBAC role
 - Force Sync API endpoint triggers provider's `run()` method outside scheduled cadence with configurable timeout
 
 ### Admin Health UI

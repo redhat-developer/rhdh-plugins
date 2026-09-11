@@ -94,6 +94,10 @@ Required output:
 
 - `deployments: Array<{ id: string; commitSha: string; environment?: string; createdAt: string; result: 'success' | 'failure' | '' }>`
 
+Only deployments with `result: 'success'` are included in the calculation.
+
+Incremental refresh re-queries from `max(windowFrom, lastSync − deploymentLookbackMs)` by `createdAt` (see [Data retention and staleness](../../README.md#data-retention-and-staleness)). Lookback exists to insert deployments that became success after the previous sync. Already-stored rows are not updated.
+
 Ordering requirement:
 
 - `deployments` must be in ascending `createdAt` order (oldest to newest). Order is required because the metric processes adjacent deployment pairs chronologically.
@@ -128,10 +132,16 @@ Required input:
 
 - `from: string` (ISO datetime)
 - `to: string` (ISO datetime)
+- `updatedSince: string` (ISO datetime)
+
+Incremental refresh re-queries with `updatedSince` as `max(windowFrom, lastSync − incident lookback)` (5 minutes by default, not configurable). See [Data retention and staleness](../../README.md#data-retention-and-staleness).
 
 Required output:
 
-- `incidents: Array<{ id: string; createdAt: string; resolutionAt: string | null }>`
+- `incidents: Array<{ id: string; createdAt: string; updatedAt: string; resolutionAt: string | null }>`
+
+`createdAt` and `updatedAt` must be valid ISO datetimes.
+`resolutionAt` must be `null` for unresolved incidents or a valid ISO datetime for resolved incidents.
 
 Collector-specific extra input fields are allowed, but they do not replace required contract fields.
 
@@ -157,6 +167,8 @@ scorecard:
               #   issueType: ServiceIncident
 ```
 
+Updating `issueType` in your configuration creates a new data identity and triggers a full 30-day data refresh.
+
 For more details about the `jira:incidents` collector, see the [scorecard-backend-module-jira README](../../../scorecard-backend-module-jira/README.md).
 
 ### Use GitHub workflow runs for deployments
@@ -177,6 +189,8 @@ scorecard:
             incidents:
               id: jira:incidents
 ```
+
+Updating `workflowName` in your configuration creates a new data identity and triggers a full 30-day data refresh.
 
 ### Use custom collectors
 

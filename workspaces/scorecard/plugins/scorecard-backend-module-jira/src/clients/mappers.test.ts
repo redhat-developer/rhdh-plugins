@@ -23,6 +23,7 @@ describe('mapJiraIssues', () => {
       id: '10001',
       fields: {
         created: '2026-06-01T10:00:00.000+0530',
+        updated: '2026-06-01T12:00:00.000+0530',
         resolutiondate: '2026-06-01T12:00:00.000+0530',
       },
     },
@@ -30,6 +31,7 @@ describe('mapJiraIssues', () => {
       id: '10002',
       fields: {
         created: '2026-06-02T10:00:00.000Z',
+        updated: '2026-06-02T10:00:00.000Z',
         resolutiondate: null,
       },
     },
@@ -40,11 +42,13 @@ describe('mapJiraIssues', () => {
       {
         id: '10001',
         createdAt: '2026-06-01T04:30:00.000Z',
+        updatedAt: '2026-06-01T06:30:00.000Z',
         resolutionAt: '2026-06-01T06:30:00.000Z',
       },
       {
         id: '10002',
         createdAt: '2026-06-02T10:00:00.000Z',
+        updatedAt: '2026-06-02T10:00:00.000Z',
         resolutionAt: null,
       },
     ]);

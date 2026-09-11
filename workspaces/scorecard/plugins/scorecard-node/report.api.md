@@ -50,6 +50,9 @@ export type ComparisonOperator = {
 // @public
 export type ComparisonSign = '>=' | '<=' | '>' | '<' | '==' | '!=';
 
+// @public (undocumented)
+export function daysToMilliseconds(days: number): number;
+
 // @public
 export function getThresholdsFromConfig(
   config: Config,
@@ -65,6 +68,9 @@ export interface MetricProvider<T extends MetricType = MetricType> {
   getProviderDatasourceId(): string;
   getProviderId(): string;
 }
+
+// @public
+export function parseDate(value: Date | string | number): Date;
 
 // @public
 export function parseThresholdExpression(

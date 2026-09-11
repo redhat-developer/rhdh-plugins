@@ -22,21 +22,13 @@ import { useAsync } from 'react-use';
 
 import { identityApiRef, useApi } from '@backstage/core-plugin-api';
 
-import {
-  StylesProvider as StylesProviderV4,
-  useTheme,
-} from '@material-ui/core/styles';
-import { StylesProvider } from '@mui/styles';
+import { useTheme } from '@mui/material/styles';
 import { QueryClientProvider } from '@tanstack/react-query';
 
 import { useAllModels } from '../hooks/useAllModels';
 import { useIaChatPermission } from '../hooks/useIaChatPermission';
 import { useIaNotebooksPermission } from '../hooks/useIaNotebooksPermission';
 import { useTopicRestrictionStatus } from '../hooks/useQuestionValidation';
-import {
-  generateClassName,
-  generateClassNameV4,
-} from '../utils/generateClassName';
 import queryClient from '../utils/queryClient';
 import FileAttachmentContextProvider from './AttachmentContext';
 import { LightspeedChat } from './LightSpeedChat';
@@ -55,7 +47,7 @@ const LAST_SELECTED_MODEL_KEY = 'lastSelectedModel';
  */
 const LightspeedChatContainerInner = () => {
   const {
-    palette: { type },
+    palette: { mode },
   } = useTheme();
 
   const identityApi = useApi(identityApiRef);
@@ -103,12 +95,12 @@ const LightspeedChatContainerInner = () => {
 
   useLayoutEffect(() => {
     const htmlTagElement = document.documentElement;
-    if (type === THEME_DARK) {
+    if (mode === THEME_DARK) {
       htmlTagElement.classList.add(THEME_DARK_CLASS);
     } else {
       htmlTagElement.classList.remove(THEME_DARK_CLASS);
     }
-  }, [type]);
+  }, [mode]);
 
   // Load last selected model from localStorage
   useEffect(() => {
@@ -219,12 +211,8 @@ const LightspeedChatContainerInner = () => {
  */
 export const LightspeedChatContainer = () => {
   return (
-    <StylesProvider generateClassName={generateClassName}>
-      <StylesProviderV4 generateClassName={generateClassNameV4}>
-        <QueryClientProvider client={queryClient}>
-          <LightspeedChatContainerInner />
-        </QueryClientProvider>
-      </StylesProviderV4>
-    </StylesProvider>
+    <QueryClientProvider client={queryClient}>
+      <LightspeedChatContainerInner />
+    </QueryClientProvider>
   );
 };

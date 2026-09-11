@@ -8,6 +8,8 @@ The Neo4j sync adapter requires setup documentation covering configuration, grap
 
 ### Requirement: Configuration Guide in Setup Documentation
 
+The implementation MUST satisfy the scenarios below.
+
 Documentation covers adapter configuration in app-config and environment setup.
 
 #### Scenario: Basic configuration example in docs
@@ -86,6 +88,8 @@ Documentation covers adapter configuration in app-config and environment setup.
 
 ### Requirement: Graph Schema Reference Documentation
 
+The implementation MUST satisfy the scenarios below.
+
 Documentation includes a complete graph schema reference with all node types, relationship types, and properties.
 
 #### Scenario: Node types documented with properties
@@ -127,6 +131,8 @@ Documentation includes a complete graph schema reference with all node types, re
   - Sync latency is 30-60s (eventual consistency)
 
 ### Requirement: Example Cypher Query Library
+
+The implementation MUST satisfy the scenarios below.
 
 Documentation includes at least 5 example Cypher queries for common use cases.
 
@@ -195,6 +201,8 @@ Documentation includes at least 5 example Cypher queries for common use cases.
   ```
 
 ### Requirement: Troubleshooting Guide
+
+The implementation MUST satisfy the scenarios below.
 
 Documentation includes troubleshooting steps for common issues.
 
@@ -271,6 +279,8 @@ Documentation includes troubleshooting steps for common issues.
 
 ### Requirement: Metrics and Observability Documentation
 
+The implementation MUST satisfy the scenarios below.
+
 Documentation covers metrics exported by the adapter for monitoring.
 
 #### Scenario: Prometheus metrics documented
@@ -310,6 +320,8 @@ Documentation covers metrics exported by the adapter for monitoring.
   ````
 
 ### Requirement: Documentation Coverage Validation
+
+The implementation MUST satisfy the scenarios below.
 
 All setup documentation must be validated before release.
 

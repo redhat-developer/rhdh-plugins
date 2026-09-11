@@ -70,6 +70,16 @@ export function formatMcpSelectedCount(
     .replace(/\{\{totalCount\}\}/g, String(totalCount));
 }
 
+/** Renders `sources.chip.label` for the given count (matches i18n plural rules). */
+export function formatSourcesChipLabel(
+  t: LightspeedMessages,
+  count: number,
+): string {
+  const key =
+    count === 1 ? 'sources.chip.label_one' : 'sources.chip.label_other';
+  return t[key].replace(/\{\{count\}\}/g, String(count));
+}
+
 /** Status cell detail for a connected server tool count (singular vs plural). */
 export function formatMcpToolCountStatus(
   t: LightspeedMessages,

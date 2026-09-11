@@ -16,6 +16,7 @@
 
 import { render, screen } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { EntitiesTable } from '../EntitiesTable';
 
@@ -47,7 +48,7 @@ jest.mock('../../../../hooks/useAggregatedScorecardEntities', () => ({
 
 const mockUseAggregatedScorecard = jest.fn();
 jest.mock('../../../../hooks/useAggregatedScorecard', () => ({
-  useAggregatedScorecard: (opts: { metricId: string }) =>
+  useAggregatedScorecard: (opts: { aggregationId: string }) =>
     mockUseAggregatedScorecard(opts),
 }));
 
@@ -161,7 +162,7 @@ describe('EntitiesTable', () => {
     });
     mockUseAggregatedScorecard.mockReturnValue({
       data: { metadata: { title: 'Open PRs' } },
-      loadingData: false,
+      isLoading: false,
       error: undefined,
     });
   });
@@ -346,5 +347,107 @@ describe('EntitiesTable', () => {
     );
 
     expect(setMetricTitle).toHaveBeenCalledWith('Open PRs');
+  });
+
+  it('should default-sort min aggregations by metric value ascending', () => {
+    mockUseAggregatedScorecard.mockReturnValue({
+      data: {
+        metadata: {
+          title: 'Open PRs',
+          aggregationType: aggregationTypes.min,
+        },
+      },
+      isLoading: false,
+      error: undefined,
+    });
+
+    render(
+      <TestWrapper>
+        <EntitiesTable
+          metricId="github.openPRs"
+          aggregationId="minOpenPrs"
+          setMetricTitle={jest.fn()}
+        />
+      </TestWrapper>,
+    );
+
+    expect(mockUseAggregatedScorecardEntities).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: 'metricValue',
+        order: 'asc',
+        enabled: true,
+      }),
+    );
+    expect(screen.getByTestId('entities-table-header')).toHaveAttribute(
+      'data-orderby',
+      'metricValue',
+    );
+    expect(screen.getByTestId('entities-table-header')).toHaveAttribute(
+      'data-order',
+      'asc',
+    );
+  });
+
+  it('should default-sort max aggregations by metric value descending', () => {
+    mockUseAggregatedScorecard.mockReturnValue({
+      data: {
+        metadata: {
+          title: 'Open PRs',
+          aggregationType: aggregationTypes.max,
+        },
+      },
+      isLoading: false,
+      error: undefined,
+    });
+
+    render(
+      <TestWrapper>
+        <EntitiesTable
+          metricId="github.openPRs"
+          aggregationId="maxOpenPrs"
+          setMetricTitle={jest.fn()}
+        />
+      </TestWrapper>,
+    );
+
+    expect(mockUseAggregatedScorecardEntities).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: 'metricValue',
+        order: 'desc',
+        enabled: true,
+      }),
+    );
+    expect(screen.getByTestId('entities-table-header')).toHaveAttribute(
+      'data-orderby',
+      'metricValue',
+    );
+    expect(screen.getByTestId('entities-table-header')).toHaveAttribute(
+      'data-order',
+      'desc',
+    );
+  });
+
+  it('should wait for aggregated scorecard before fetching entities', () => {
+    mockUseAggregatedScorecard.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      error: undefined,
+    });
+
+    render(
+      <TestWrapper>
+        <EntitiesTable
+          metricId="github.openPRs"
+          aggregationId="minOpenPrs"
+          setMetricTitle={jest.fn()}
+        />
+      </TestWrapper>,
+    );
+
+    expect(mockUseAggregatedScorecardEntities).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enabled: false,
+      }),
+    );
   });
 });

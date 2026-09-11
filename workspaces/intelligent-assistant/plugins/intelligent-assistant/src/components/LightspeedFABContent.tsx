@@ -14,20 +14,29 @@
  * limitations under the License.
  */
 
+import { useLayoutEffect, useRef } from 'react';
+
 import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
+import { useTheme } from '@mui/material/styles';
 import Tooltip from '@mui/material/Tooltip';
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 
-import { DOCKED_CONTENT_OFFSET } from '../const';
+import { DOCKED_CONTENT_OFFSET, LIGHTSPEED_FAB_ELEMENT_ID } from '../const';
 import { useIaChatPermission } from '../hooks/useIaChatPermission';
 import { useIaNotebooksPermission } from '../hooks/useIaNotebooksPermission';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useTranslation } from '../hooks/useTranslation';
+import {
+  clearLightspeedFabAnchorVars,
+  getLightspeedFabEdgeInset,
+  publishLightspeedFabAnchorVars,
+} from '../utils/fab-anchor-utils';
 import { LightspeedFABIcon, LightspeedFABOpenIcon } from './LightspeedIcon';
 
 export const LightspeedFABContent = () => {
   const { t } = useTranslation();
+  const theme = useTheme();
   const { isChatbotActive, toggleChatbot, displayMode } =
     useLightspeedDrawerContext();
   const { allowed: hasChatAccess, loading: chatPermissionLoading } =
@@ -38,6 +47,41 @@ export const LightspeedFABContent = () => {
   const permissionsLoading =
     chatPermissionLoading || notebooksPermissionLoading;
   const hasPluginAccess = hasChatAccess || hasNotebooksAccess;
+  const fabRef = useRef<HTMLDivElement>(null);
+  const fabEdgeInset = getLightspeedFabEdgeInset(theme);
+
+  useLayoutEffect(() => {
+    const fab = fabRef.current;
+    if (!fab) {
+      return undefined;
+    }
+
+    const syncAnchor = () =>
+      publishLightspeedFabAnchorVars({ fabElement: fab, theme });
+    syncAnchor();
+
+    const resizeObserver =
+      typeof ResizeObserver === 'function'
+        ? new ResizeObserver(syncAnchor)
+        : undefined;
+    resizeObserver?.observe(fab);
+
+    window.addEventListener('resize', syncAnchor);
+    fab.addEventListener('transitionend', syncAnchor);
+    const mutationObserver = new MutationObserver(syncAnchor);
+    mutationObserver.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => {
+      resizeObserver?.disconnect();
+      window.removeEventListener('resize', syncAnchor);
+      fab.removeEventListener('transitionend', syncAnchor);
+      mutationObserver.disconnect();
+      clearLightspeedFabAnchorVars();
+    };
+  }, [displayMode, theme]);
 
   if (displayMode === ChatbotDisplayMode.embedded) {
     return null;
@@ -49,19 +93,20 @@ export const LightspeedFABContent = () => {
 
   return (
     <Box
-      sx={theme => ({
-        bottom: `calc(${theme.spacing(2)} + 1.5em)`,
-        right: `calc(${theme.spacing(2)} + 1.5em)`,
+      ref={fabRef}
+      sx={{
+        bottom: fabEdgeInset,
+        right: fabEdgeInset,
         alignItems: 'end',
-        zIndex: 200,
+        zIndex: theme.zIndex.tooltip,
         display: 'flex',
         position: 'fixed',
         'body.docked-drawer-open &': {
           transition: 'margin-right 0.3s ease',
           marginRight: DOCKED_CONTENT_OFFSET,
         },
-      })}
-      id="lightspeed-fab"
+      }}
+      id={LIGHTSPEED_FAB_ELEMENT_ID}
       data-testid="lightspeed-fab"
     >
       <Tooltip
@@ -76,14 +121,14 @@ export const LightspeedFABContent = () => {
           aria-label={
             isChatbotActive ? t('tooltip.fab.close') : t('tooltip.fab.open')
           }
-          sx={theme => ({
+          sx={{
             backgroundColor: theme.palette.background.default,
             color: theme.palette.text.primary,
             border: `1px solid ${theme.palette.divider}`,
             '&:hover': {
               backgroundColor: theme.palette.background.paper,
             },
-          })}
+          }}
         >
           {isChatbotActive ? <LightspeedFABOpenIcon /> : <LightspeedFABIcon />}
         </Fab>

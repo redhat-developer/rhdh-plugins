@@ -21,7 +21,7 @@ import {
   homePageModule,
   homepageTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-homepage';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 
 export default createApp({
   features: [

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import React from 'react';
+
 import type { Entity } from '@backstage/catalog-model';
 import type { CatalogApi } from '@backstage/plugin-catalog-react';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
@@ -73,13 +75,14 @@ const mockCatalogApi: Pick<jest.Mocked<CatalogApi>, 'getEntities'> = {
   getEntities: jest.fn(),
 };
 
-function renderPage() {
+function renderPage(routeEntries?: string[]) {
   return renderInTestApp(
     <TestApiProvider
       apis={[[catalogApiRef, mockCatalogApi as unknown as CatalogApi]]}
     >
       <AiCatalogPage filters={defaultFilters} />
     </TestApiProvider>,
+    routeEntries ? { routeEntries } : undefined,
   );
 }
 
@@ -138,5 +141,33 @@ describe('AiCatalogPage', () => {
     expect(
       screen.getByText(`${msg.toolbar.allPrefix} (2)`),
     ).toBeInTheDocument();
+  });
+
+  it('shows empty filtered state when search matches nothing', async () => {
+    mockCatalogApi.getEntities.mockResolvedValue({ items: mockEntities });
+    await renderPage(['/?q=no-such-asset']);
+
+    await waitFor(() => {
+      expect(screen.getByText(msg.emptyFiltered.title)).toBeInTheDocument();
+    });
+    expect(
+      screen.getByText(msg.emptyFiltered.clearFilters),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('Code Review Skill')).toBeNull();
+  });
+
+  it('renders table view when view=table is in the URL', async () => {
+    mockCatalogApi.getEntities.mockResolvedValue({ items: mockEntities });
+    await renderPage(['/?view=table']);
+
+    await waitFor(() => {
+      expect(screen.getByText(msg.table.name)).toBeInTheDocument();
+    });
+    expect(
+      screen.getByRole('link', { name: 'Code Review Skill' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: 'View Code Review Skill details' }),
+    ).toBeNull();
   });
 });
