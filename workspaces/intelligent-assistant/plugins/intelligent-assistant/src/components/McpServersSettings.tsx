@@ -54,7 +54,6 @@ import {
 type McpServer = McpConfigureServer;
 
 type McpServersSettingsProps = {
-  onClose: () => void;
   backgroundColor?: string;
 };
 
@@ -301,7 +300,6 @@ const toUiServer = (
   auth: server.auth,
 });
 export const McpServersSettings = ({
-  onClose: _onClose,
   backgroundColor,
 }: McpServersSettingsProps) => {
   const { t } = useTranslation();

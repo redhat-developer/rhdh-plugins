@@ -13,9 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import type { ReactElement } from 'react';
+
 import { useApi } from '@backstage/core-plugin-api';
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  type RenderOptions,
+} from '@testing-library/react';
 
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import { SavedPromptsSettings } from '../SavedPromptsSettings';
@@ -48,6 +57,25 @@ const mockPrompts = [
   },
 ];
 
+const createTestQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+
+const renderWithProviders = (
+  ui: ReactElement,
+  options?: Omit<RenderOptions, 'wrapper'>,
+) => {
+  const queryClient = createTestQueryClient();
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+    options,
+  );
+};
+
 describe('SavedPromptsSettings', () => {
   const defaultProps = {
     isSavedPromptsEnabled: true,
@@ -68,7 +96,7 @@ describe('SavedPromptsSettings', () => {
   });
 
   it('should render empty state when no prompts are saved', async () => {
-    render(<SavedPromptsSettings {...defaultProps} />);
+    renderWithProviders(<SavedPromptsSettings {...defaultProps} />);
     await waitFor(() => {
       expect(
         screen.getByTestId('saved-prompts-empty-state'),
@@ -84,7 +112,7 @@ describe('SavedPromptsSettings', () => {
   });
 
   it('should not show prompt count header when empty state is visible', async () => {
-    render(<SavedPromptsSettings {...defaultProps} />);
+    renderWithProviders(<SavedPromptsSettings {...defaultProps} />);
     await waitFor(() => {
       expect(
         screen.getByTestId('saved-prompts-empty-state'),
@@ -95,7 +123,7 @@ describe('SavedPromptsSettings', () => {
   });
 
   it('should show No prompts in header when create form is open with no prompts', async () => {
-    render(<SavedPromptsSettings {...defaultProps} />);
+    renderWithProviders(<SavedPromptsSettings {...defaultProps} />);
     await waitFor(() => {
       expect(
         screen.getByTestId('saved-prompts-empty-state'),
@@ -109,7 +137,7 @@ describe('SavedPromptsSettings', () => {
   });
 
   it('should show disabled alert when saved prompts are disabled', async () => {
-    render(
+    renderWithProviders(
       <SavedPromptsSettings {...defaultProps} isSavedPromptsEnabled={false} />,
     );
     await waitFor(() => {
@@ -121,7 +149,7 @@ describe('SavedPromptsSettings', () => {
   });
 
   it('should not show disabled alert when saved prompts are enabled', async () => {
-    render(<SavedPromptsSettings {...defaultProps} />);
+    renderWithProviders(<SavedPromptsSettings {...defaultProps} />);
     await waitFor(() => {
       expect(
         screen.queryByText('Saved prompts are disabled'),
@@ -130,14 +158,14 @@ describe('SavedPromptsSettings', () => {
   });
 
   it('should show the new prompt button', async () => {
-    render(<SavedPromptsSettings {...defaultProps} />);
+    renderWithProviders(<SavedPromptsSettings {...defaultProps} />);
     await waitFor(() => {
       expect(screen.getByText('+ New prompt')).toBeInTheDocument();
     });
   });
 
   it('should open the form when new prompt button is clicked', async () => {
-    render(<SavedPromptsSettings {...defaultProps} />);
+    renderWithProviders(<SavedPromptsSettings {...defaultProps} />);
     await waitFor(() => {
       expect(screen.getByText('+ New prompt')).toBeInTheDocument();
     });
@@ -153,7 +181,7 @@ describe('SavedPromptsSettings', () => {
   });
 
   it('should close the form when cancel is clicked', async () => {
-    render(<SavedPromptsSettings {...defaultProps} />);
+    renderWithProviders(<SavedPromptsSettings {...defaultProps} />);
     await waitFor(() => {
       expect(screen.getByText('+ New prompt')).toBeInTheDocument();
     });
@@ -166,7 +194,7 @@ describe('SavedPromptsSettings', () => {
   });
 
   it('should return to empty state when cancel is clicked with no saved prompts', async () => {
-    render(<SavedPromptsSettings {...defaultProps} />);
+    renderWithProviders(<SavedPromptsSettings {...defaultProps} />);
     await waitFor(() => {
       expect(
         screen.getByTestId('saved-prompts-empty-state'),
@@ -187,7 +215,7 @@ describe('SavedPromptsSettings', () => {
 
   it('should render saved prompts list when prompts are loaded', async () => {
     mockGetSavedPrompts.mockResolvedValue(mockPrompts);
-    render(<SavedPromptsSettings {...defaultProps} />);
+    renderWithProviders(<SavedPromptsSettings {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText('Performance Optimization')).toBeInTheDocument();
@@ -202,7 +230,7 @@ describe('SavedPromptsSettings', () => {
       max_content_length: 5000,
     });
     mockGetSavedPrompts.mockResolvedValue(mockPrompts);
-    render(<SavedPromptsSettings {...defaultProps} />);
+    renderWithProviders(<SavedPromptsSettings {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText('1 prompt')).toBeInTheDocument();
@@ -223,7 +251,7 @@ describe('SavedPromptsSettings', () => {
 
   it('should call onApplyToInput when Apply is selected from kebab menu', async () => {
     mockGetSavedPrompts.mockResolvedValue(mockPrompts);
-    render(<SavedPromptsSettings {...defaultProps} />);
+    renderWithProviders(<SavedPromptsSettings {...defaultProps} />);
 
     await waitFor(() => {
       expect(screen.getByText('Performance Optimization')).toBeInTheDocument();

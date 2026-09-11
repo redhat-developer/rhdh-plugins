@@ -30,6 +30,13 @@ const mockPrompts = [
     created_at: '2026-03-10T12:00:00Z',
     updated_at: '2026-03-10T12:00:00Z',
   },
+  {
+    id: 'sp-2',
+    name: 'Debug Workflow',
+    content: 'Help me debug this CI pipeline failure.',
+    created_at: '2026-03-11T12:00:00Z',
+    updated_at: '2026-03-11T12:00:00Z',
+  },
 ];
 
 describe('SavedPromptsList', () => {
@@ -93,5 +100,41 @@ describe('SavedPromptsList', () => {
       ),
     ).toBeInTheDocument();
     expect(screen.getByTestId('saved-prompt-card-sp-1')).toBeInTheDocument();
+  });
+
+  it('should only show dividers between prompt cards, not after the last one', () => {
+    render(
+      <SavedPromptsList
+        prompts={mockPrompts}
+        loading={false}
+        error={null}
+        {...defaultHandlers}
+      />,
+    );
+
+    expect(screen.getByTestId('saved-prompt-card-sp-1')).toHaveAttribute(
+      'data-has-divider',
+      'true',
+    );
+    expect(screen.getByTestId('saved-prompt-card-sp-2')).toHaveAttribute(
+      'data-has-divider',
+      'false',
+    );
+  });
+
+  it('should not show a divider on a single prompt card', () => {
+    render(
+      <SavedPromptsList
+        prompts={[mockPrompts[0]]}
+        loading={false}
+        error={null}
+        {...defaultHandlers}
+      />,
+    );
+
+    expect(screen.getByTestId('saved-prompt-card-sp-1')).toHaveAttribute(
+      'data-has-divider',
+      'false',
+    );
   });
 });

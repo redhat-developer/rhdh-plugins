@@ -94,7 +94,7 @@ test.describe('Intelligent assistant MCP', () => {
     }
 
     test.beforeEach(async () => {
-      await sharedPage.goto('/');
+      await sharedPage.goto('/catalog');
     });
 
     test.afterEach(async () => {

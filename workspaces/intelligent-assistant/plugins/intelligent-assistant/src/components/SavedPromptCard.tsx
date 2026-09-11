@@ -26,6 +26,7 @@ import {
 type SavedPromptCardProps = {
   prompt: SavedPrompt;
   variant: SavedPromptKebabVariant;
+  showDivider?: boolean;
   onApplyToInput?: (content: string) => void;
   onSendDirectly: (content: string) => void;
   onDelete: (prompt: SavedPrompt) => void;
@@ -35,6 +36,8 @@ type SavedPromptCardProps = {
 const useStyles = makeStyles()(theme => ({
   card: {
     padding: `${theme.spacing(1.5)} 0`,
+  },
+  cardDivider: {
     borderBottom: '1px solid var(--pf-t--global--border--color--default)',
   },
   row: {
@@ -87,17 +90,19 @@ const formatSavedDate = (isoDate: string): string => {
 export const SavedPromptCard = ({
   prompt,
   variant,
+  showDivider = false,
   onApplyToInput,
   onSendDirectly,
   onDelete,
   isSendDirectlyDisabled,
 }: SavedPromptCardProps) => {
-  const { classes } = useStyles();
+  const { classes, cx } = useStyles();
 
   return (
     <div
-      className={classes.card}
+      className={cx(classes.card, showDivider && classes.cardDivider)}
       data-testid={`saved-prompt-card-${prompt.id}`}
+      data-has-divider={showDivider ? 'true' : 'false'}
     >
       <div className={classes.row}>
         <div className={classes.content}>

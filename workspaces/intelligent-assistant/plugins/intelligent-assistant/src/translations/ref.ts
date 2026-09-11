@@ -349,6 +349,7 @@ export const intelligentAssistantMessages = {
     'Saved prompts are currently enabled',
   'settings.savedPrompts.disabled.description':
     'Saved prompts are currently disabled',
+  'settings.panel.title': 'Settings',
   'settings.mcp.label': 'MCP and Prompt Settings',
   'settings.mcp.badge': 'New',
 

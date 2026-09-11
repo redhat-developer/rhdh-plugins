@@ -15,6 +15,7 @@
  */
 import { useApi } from '@backstage/core-plugin-api';
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
 import { useSavedPrompts } from '../useSavedPrompts';
@@ -28,6 +29,19 @@ const mockGetSavedPromptsConfig = jest.fn();
 const mockGetSavedPrompts = jest.fn();
 const mockCreateSavedPrompt = jest.fn();
 const mockDeleteSavedPrompt = jest.fn();
+
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+
+  return ({ children }: { children?: React.ReactNode }) => (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
+};
 
 describe('useSavedPrompts', () => {
   beforeEach(() => {
@@ -59,7 +73,9 @@ describe('useSavedPrompts', () => {
     mockGetSavedPromptsConfig.mockResolvedValue(mockConfig);
     mockGetSavedPrompts.mockResolvedValue(mockPrompts);
 
-    const { result } = renderHook(() => useSavedPrompts());
+    const { result } = renderHook(() => useSavedPrompts(), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -74,7 +90,9 @@ describe('useSavedPrompts', () => {
     mockGetSavedPromptsConfig.mockRejectedValue(new Error('Network error'));
     mockGetSavedPrompts.mockResolvedValue([]);
 
-    const { result } = renderHook(() => useSavedPrompts());
+    const { result } = renderHook(() => useSavedPrompts(), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -95,7 +113,9 @@ describe('useSavedPrompts', () => {
     });
     mockGetSavedPrompts.mockRejectedValue(new Error('Fetch failed'));
 
-    const { result } = renderHook(() => useSavedPrompts());
+    const { result } = renderHook(() => useSavedPrompts(), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -124,7 +144,9 @@ describe('useSavedPrompts', () => {
       .mockResolvedValueOnce([newPrompt]);
     mockCreateSavedPrompt.mockResolvedValue(newPrompt);
 
-    const { result } = renderHook(() => useSavedPrompts());
+    const { result } = renderHook(() => useSavedPrompts(), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -167,7 +189,9 @@ describe('useSavedPrompts', () => {
       response: 'Deleted',
     });
 
-    const { result } = renderHook(() => useSavedPrompts());
+    const { result } = renderHook(() => useSavedPrompts(), {
+      wrapper: createWrapper(),
+    });
 
     await waitFor(() => {
       expect(result.current.savedPrompts).toEqual([prompt]);

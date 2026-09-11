@@ -342,6 +342,7 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'settings.displayMode.label': 'Modo de visualización',
     'settings.displayMode.overlay': 'Superposición',
     'settings.mcp.badge': 'Nuevo',
+    'settings.panel.title': 'Configuración',
     'settings.mcp.label': 'Configuración de MCP y Prompts',
     'settings.pinned.disable': 'Deshabilitar chats fijados',
     'settings.pinned.disabled.description':

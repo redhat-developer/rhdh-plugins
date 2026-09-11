@@ -347,6 +347,7 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'settings.displayMode.label': 'Modalità di visualizzazione',
     'settings.displayMode.overlay': 'Sovrapposizione',
     'settings.mcp.badge': 'Nuovo',
+    'settings.panel.title': 'Impostazioni',
     'settings.mcp.label': 'Impostazioni MCP e Prompt',
     'settings.pinned.disable': 'Disattiva le chat bloccate',
     'settings.pinned.disabled.description':

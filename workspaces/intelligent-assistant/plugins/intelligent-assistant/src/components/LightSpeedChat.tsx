@@ -186,6 +186,8 @@ const StyledChatbot = styled(Chatbot, {
     height: 0,
     overflow: 'hidden',
   },
+  // Remove once @patternfly/chatbot supports ConversationGroup header actions:
+  // https://github.com/patternfly/chatbot/issues/904
   '& .pf-chatbot__history-menu .pf-v6-c-menu__list': {
     paddingInlineStart: 0,
   },
@@ -388,6 +390,8 @@ const StyledChatbotContent = styled(ChatbotContent, {
     overflowWrap: 'break-word',
     wordBreak: 'break-word',
   },
+  // Remove once @patternfly/chatbot adds a responsive grid layout for prompt suggestions:
+  // https://github.com/patternfly/chatbot/issues/905
   '& .pf-chatbot__prompt-suggestions': {
     display: 'grid !important',
     flexDirection: 'unset !important',

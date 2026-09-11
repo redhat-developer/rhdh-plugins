@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
   SavedPrompt,
@@ -46,70 +48,70 @@ type UseSavedPromptsReturn = {
  */
 export const useSavedPrompts = (): UseSavedPromptsReturn => {
   const api = useApi(lightspeedApiRef);
+  const queryClient = useQueryClient();
 
-  const [config, setConfig] = useState<SavedPromptsConfig>(DEFAULT_LIMITS);
-  const [configLoaded, setConfigLoaded] = useState(false);
-  const [savedPrompts, setSavedPrompts] = useState<SavedPrompt[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const configQuery = useQuery({
+    queryKey: ['savedPromptsConfig'],
+    queryFn: async () => {
+      try {
+        return await api.getSavedPromptsConfig();
+      } catch {
+        return DEFAULT_LIMITS;
+      }
+    },
+    staleTime: Infinity,
+  });
 
-  useEffect(() => {
-    if (!configLoaded) {
-      api
-        .getSavedPromptsConfig()
-        .then(c => {
-          setConfig(c);
-          setConfigLoaded(true);
-        })
-        .catch(() => {
-          setConfigLoaded(true);
-        });
-    }
-  }, [api, configLoaded]);
+  const promptsQuery = useQuery({
+    queryKey: ['savedPrompts'],
+    queryFn: () => api.getSavedPrompts(),
+    staleTime: 1000 * 60 * 5,
+  });
 
-  const fetchPrompts = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const prompts = await api.getSavedPrompts();
-      setSavedPrompts(prompts);
-    } catch (e) {
-      const message =
-        e instanceof Error ? e.message : 'Failed to fetch saved prompts';
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  }, [api]);
+  const createMutation = useMutation({
+    mutationFn: ({ name, content }: { name: string; content: string }) =>
+      api.createSavedPrompt({ name, content }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['savedPrompts'] });
+    },
+  });
 
-  useEffect(() => {
-    fetchPrompts();
-  }, [fetchPrompts]);
+  const deleteMutation = useMutation({
+    mutationFn: (promptId: string) => api.deleteSavedPrompt(promptId),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['savedPrompts'] });
+    },
+  });
 
   const createPrompt = useCallback(
     async (name: string, content: string) => {
-      await api.createSavedPrompt({ name, content });
-      await fetchPrompts();
+      await createMutation.mutateAsync({ name, content });
     },
-    [api, fetchPrompts],
+    [createMutation],
   );
 
   const deletePrompt = useCallback(
     async (promptId: string) => {
-      await api.deleteSavedPrompt(promptId);
-      await fetchPrompts();
+      await deleteMutation.mutateAsync(promptId);
     },
-    [api, fetchPrompts],
+    [deleteMutation],
   );
 
   const refresh = useCallback(() => {
-    fetchPrompts();
-  }, [fetchPrompts]);
+    void queryClient.invalidateQueries({ queryKey: ['savedPrompts'] });
+  }, [queryClient]);
+
+  let error: string | null = null;
+  if (promptsQuery.error instanceof Error) {
+    error = promptsQuery.error.message;
+  } else if (promptsQuery.error) {
+    error = 'Failed to fetch saved prompts';
+  }
 
   return {
-    savedPrompts,
-    config,
-    loading,
+    savedPrompts: promptsQuery.data ?? [],
+    config: configQuery.data ?? DEFAULT_LIMITS,
+    loading: configQuery.isLoading || promptsQuery.isLoading,
     error,
     createPrompt,
     deletePrompt,

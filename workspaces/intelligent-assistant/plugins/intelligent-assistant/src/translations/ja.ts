@@ -338,6 +338,7 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'settings.displayMode.label': '表示モード',
     'settings.displayMode.overlay': 'オーバーレイ',
     'settings.mcp.badge': '新規',
+    'settings.panel.title': '設定',
     'settings.mcp.label': 'MCPとプロンプトの設定',
     'settings.pinned.disable': 'チャットの固定の無効化',
     'settings.pinned.disabled.description': 'チャットの固定は現在無効です',

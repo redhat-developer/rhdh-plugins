@@ -349,6 +349,7 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'settings.displayMode.label': "Mode d'affichage",
     'settings.displayMode.overlay': 'Superposition',
     'settings.mcp.badge': 'Nouveau',
+    'settings.panel.title': 'Paramètres',
     'settings.mcp.label': 'Paramètres MCP et Prompts',
     'settings.pinned.disable': 'Désactiver les conversations épinglées',
     'settings.pinned.disabled.description':

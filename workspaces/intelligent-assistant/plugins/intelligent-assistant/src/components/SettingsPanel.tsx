@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { createStyles, makeStyles } from '@material-ui/core';
 import { Button, Title } from '@patternfly/react-core';
 import { TimesIcon } from '@patternfly/react-icons';
+import { makeStyles } from 'tss-react/mui';
 
 import {
   SavedPrompt,
@@ -47,55 +47,53 @@ type SettingsPanelProps = {
   onDeleteSavedPrompt?: (promptId: string) => Promise<void>;
 };
 
-const useStyles = makeStyles(theme =>
-  createStyles({
-    root: {
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      width: '100%',
-      overflow: 'hidden',
-      backgroundColor:
-        'var(--pf-t--global--background--color--floating--default)',
-    },
-    headerRow: {
-      display: 'flex',
-      alignItems: 'flex-start',
-      justifyContent: 'space-between',
-      padding: `${theme.spacing(2)}px ${theme.spacing(2)}px ${theme.spacing(1)}px ${theme.spacing(3)}px`,
-    },
-    tabBar: {
-      display: 'flex',
-      padding: `0 ${theme.spacing(3)}px`,
-      gap: theme.spacing(1),
-      borderBottom: '1px solid var(--pf-t--global--border--color--default)',
-    },
-    tabButton: {
-      background: 'none',
-      border: 'none',
-      padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
-      fontSize: '0.875rem',
-      cursor: 'pointer',
-      color: theme.palette.text.secondary,
-      borderBottom: '2px solid transparent',
-      transition: 'color 0.15s, border-color 0.15s',
-      '&:hover': {
-        color: theme.palette.text.primary,
-      },
-    },
-    tabButtonActive: {
+const useStyles = makeStyles()(theme => ({
+  root: {
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100%',
+    width: '100%',
+    overflow: 'hidden',
+    backgroundColor:
+      'var(--pf-t--global--background--color--floating--default)',
+  },
+  headerRow: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    padding: `${theme.spacing(2)} ${theme.spacing(2)} ${theme.spacing(1)} ${theme.spacing(3)}`,
+  },
+  tabBar: {
+    display: 'flex',
+    padding: `0 ${theme.spacing(3)}`,
+    gap: theme.spacing(1),
+    borderBottom: '1px solid var(--pf-t--global--border--color--default)',
+  },
+  tabButton: {
+    background: 'none',
+    border: 'none',
+    padding: `${theme.spacing(1)} ${theme.spacing(2)}`,
+    fontSize: '0.875rem',
+    cursor: 'pointer',
+    color: theme.palette.text.secondary,
+    borderBottom: '2px solid transparent',
+    transition: 'color 0.15s, border-color 0.15s',
+    '&:hover': {
       color: theme.palette.text.primary,
-      fontWeight: 600,
-      borderBottom: `2px solid var(--pf-t--global--color--brand--default, ${theme.palette.primary.main})`,
-      borderRadius: 0,
     },
-    tabContent: {
-      flex: 1,
-      minHeight: 0,
-      overflow: 'auto',
-    },
-  }),
-);
+  },
+  tabButtonActive: {
+    color: theme.palette.text.primary,
+    fontWeight: 600,
+    borderBottom: `2px solid var(--pf-t--global--color--brand--default, ${theme.palette.primary.main})`,
+    borderRadius: 0,
+  },
+  tabContent: {
+    flex: 1,
+    minHeight: 0,
+    overflow: 'auto',
+  },
+}));
 
 export const SettingsPanel = ({
   activeTab,
@@ -115,13 +113,13 @@ export const SettingsPanel = ({
   onDeleteSavedPrompt,
 }: SettingsPanelProps) => {
   const { t } = useTranslation();
-  const classes = useStyles();
+  const { classes } = useStyles();
 
   return (
     <div className={classes.root}>
       <div className={classes.headerRow}>
         <Title headingLevel="h2" size="xl">
-          Settings
+          {t('settings.panel.title')}
         </Title>
         <Button
           aria-label={t('mcp.settings.closeAriaLabel')}
@@ -150,10 +148,7 @@ export const SettingsPanel = ({
 
       <div className={classes.tabContent}>
         {activeTab === 'mcp-servers' && (
-          <McpServersSettings
-            onClose={onClose}
-            backgroundColor={backgroundColor}
-          />
+          <McpServersSettings backgroundColor={backgroundColor} />
         )}
         {activeTab === 'saved-prompts' && (
           <SavedPromptsSettings

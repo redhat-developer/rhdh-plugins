@@ -83,11 +83,12 @@ export const SavedPromptsList = ({
 
   return (
     <div className={classes.root} data-testid="saved-prompts-list">
-      {prompts.map(prompt => (
+      {prompts.map((prompt, index) => (
         <SavedPromptCard
           key={prompt.id}
           prompt={prompt}
           variant={variant}
+          showDivider={index < prompts.length - 1}
           onApplyToInput={onApplyToInput}
           onSendDirectly={onSendDirectly}
           onDelete={onDelete}

@@ -234,6 +234,7 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'settings.savedPrompts.disable': string;
     readonly 'settings.savedPrompts.enabled.description': string;
     readonly 'settings.savedPrompts.disabled.description': string;
+    readonly 'settings.panel.title': string;
     readonly 'settings.mcp.label': string;
     readonly 'settings.mcp.badge': string;
     readonly 'mcp.settings.title': string;

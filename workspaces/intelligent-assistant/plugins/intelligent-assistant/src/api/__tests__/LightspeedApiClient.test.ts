@@ -431,6 +431,196 @@ describe('LightspeedApiClient', () => {
     });
   });
 
+  describe('getSavedPromptsConfig', () => {
+    it('should return config when API call succeeds', async () => {
+      const mockConfig = {
+        max_prompts_per_user: 50,
+        max_display_name_length: 255,
+        max_content_length: 10000,
+      };
+
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockConfig),
+      } as unknown as Response);
+
+      const result = await client.getSavedPromptsConfig();
+
+      expect(result).toEqual(mockConfig);
+      expect(mockFetchApi.fetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/intelligent-assistant/v1/saved-prompts/config',
+        expect.objectContaining({
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      );
+    });
+
+    it('should throw error when API call fails', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      } as unknown as Response);
+
+      await expect(client.getSavedPromptsConfig()).rejects.toThrow(
+        'failed to fetch data, status 500: Internal Server Error',
+      );
+    });
+  });
+
+  describe('getSavedPrompts', () => {
+    it('should return prompts when API call succeeds', async () => {
+      const mockPrompts = [
+        {
+          id: 'sp-1',
+          name: 'Explain error',
+          content: 'Explain this stack trace',
+          created_at: '2026-07-22T16:00:00+00:00',
+          updated_at: '2026-07-22T16:00:00+00:00',
+        },
+      ];
+
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({ prompts: mockPrompts }),
+      } as unknown as Response);
+
+      const result = await client.getSavedPrompts();
+
+      expect(result).toEqual(mockPrompts);
+      expect(mockFetchApi.fetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/intelligent-assistant/v1/saved-prompts',
+        expect.any(Object),
+      );
+    });
+
+    it('should return empty array when prompts is undefined', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({}),
+      } as unknown as Response);
+
+      const result = await client.getSavedPrompts();
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('createSavedPrompt', () => {
+    it('should return created prompt when API call succeeds', async () => {
+      const createdPrompt = {
+        id: 'sp-new',
+        name: 'My prompt',
+        content: 'Prompt body',
+        created_at: '2026-07-22T16:00:00+00:00',
+        updated_at: '2026-07-22T16:00:00+00:00',
+      };
+
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(createdPrompt),
+      } as unknown as Response);
+
+      const result = await client.createSavedPrompt({
+        name: 'My prompt',
+        content: 'Prompt body',
+      });
+
+      expect(result).toEqual(createdPrompt);
+      expect(mockFetchApi.fetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/intelligent-assistant/v1/saved-prompts',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({
+            name: 'My prompt',
+            content: 'Prompt body',
+          }),
+        }),
+      );
+    });
+
+    it('should throw structured error message when API returns error body', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: false,
+        status: 403,
+        statusText: 'Forbidden',
+        json: jest.fn().mockResolvedValue({ error: 'Prompt limit reached' }),
+      } as unknown as Response);
+
+      await expect(
+        client.createSavedPrompt({ name: 'My prompt', content: 'Prompt body' }),
+      ).rejects.toThrow('Prompt limit reached');
+    });
+
+    it('should throw generic error when API call fails without error body', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+        json: jest.fn().mockRejectedValue(new Error('invalid json')),
+      } as unknown as Response);
+
+      await expect(
+        client.createSavedPrompt({ name: 'My prompt', content: 'Prompt body' }),
+      ).rejects.toThrow(
+        'failed to create saved prompt, status 500: Internal Server Error',
+      );
+    });
+  });
+
+  describe('deleteSavedPrompt', () => {
+    it('should return delete response when API call succeeds', async () => {
+      const deleteResponse = {
+        prompt_id: 'sp-1',
+        deleted: true,
+        response: 'Saved prompt deleted successfully',
+      };
+
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(deleteResponse),
+      } as unknown as Response);
+
+      const result = await client.deleteSavedPrompt('sp-1');
+
+      expect(result).toEqual(deleteResponse);
+      expect(mockFetchApi.fetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/intelligent-assistant/v1/saved-prompts/sp-1',
+        expect.objectContaining({ method: 'DELETE' }),
+      );
+    });
+
+    it('should encode prompt id in delete URL', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          prompt_id: 'sp/with/slash',
+          deleted: true,
+          response: 'Saved prompt deleted successfully',
+        }),
+      } as unknown as Response);
+
+      await client.deleteSavedPrompt('sp/with/slash');
+
+      expect(mockFetchApi.fetch).toHaveBeenCalledWith(
+        'http://localhost:7007/api/intelligent-assistant/v1/saved-prompts/sp%2Fwith%2Fslash',
+        expect.objectContaining({ method: 'DELETE' }),
+      );
+    });
+
+    it('should throw structured error message when API returns error body', async () => {
+      mockFetchApi.fetch.mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+        json: jest.fn().mockResolvedValue({ error: 'Saved prompt not found' }),
+      } as unknown as Response);
+
+      await expect(client.deleteSavedPrompt('sp-missing')).rejects.toThrow(
+        'Saved prompt not found',
+      );
+    });
+  });
+
   describe('createMessage', () => {
     it('should return readable stream reader when message is created', async () => {
       const mockReader = {
