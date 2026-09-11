@@ -5,9 +5,9 @@
 ```ts
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 
-// @alpha
-const extensionsTranslationsModule: FrontendModule;
-export default extensionsTranslationsModule;
+// @public
+const translations: FrontendModule;
+export default translations;
 
 // (No @packageDocumentation comment for this package)
 ```

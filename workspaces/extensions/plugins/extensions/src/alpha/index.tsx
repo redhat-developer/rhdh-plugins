@@ -14,72 +14,8 @@
  * limitations under the License.
  */
 
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
-import {
-  createFrontendModule,
-  createFrontendPlugin,
-  PageBlueprint,
-} from '@backstage/frontend-plugin-api';
-import { TranslationBlueprint } from '@backstage/plugin-app-react';
-import { compatWrapper } from '@backstage/core-compat-api';
-import ExtensionsIcon from '@mui/icons-material/ShoppingBasketOutlined';
-import { dynamicPluginsInfoApi, extensionApi } from './apis';
-import { allRoutes, rootRouteRef } from '../routes';
-import { extensionsTranslations } from './translations';
-
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
-});
-
+/**
+ * Translations remain available at the `/alpha` export.
+ * NFS plugin and modules have graduated to the primary package entry point.
+ */
 export * from './translations';
-
-/**
- * @alpha
- */
-export const extensionsPage = PageBlueprint.make({
-  params: {
-    path: '/extensions',
-    title: 'Extensions',
-    icon: <ExtensionsIcon fontSize="inherit" />,
-    routeRef: rootRouteRef,
-    loader: () =>
-      import('../pages/DynamicExtensionsPluginRouter').then(m =>
-        compatWrapper(<m.DynamicExtensionsPluginRouter />),
-      ),
-    // async () => compatWrapper(<DynamicExtensionsPluginRouter/>),
-  },
-});
-
-/**
- * Translation module for the rbac plugin
- * @alpha
- */
-
-export const extensionsTranslationsModule = createFrontendModule({
-  pluginId: 'app',
-  extensions: [
-    TranslationBlueprint.make({
-      name: 'extensions-translations',
-      params: {
-        resource: extensionsTranslations,
-      },
-    }),
-  ],
-});
-
-/*
- * @alpha
- */
-/**
- * @alpha
- */
-const extensionsPlugin = createFrontendPlugin({
-  pluginId: 'extensions',
-  info: { packageJson: () => import('../../package.json') },
-  extensions: [dynamicPluginsInfoApi, extensionApi, extensionsPage],
-  routes: allRoutes,
-});
-
-export default extensionsPlugin;

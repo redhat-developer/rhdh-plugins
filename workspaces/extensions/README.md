@@ -2,6 +2,19 @@
 
 The extensions plugin serves as a catalog for discovering, browsing, and installing plugins within a Backstage/RHDH environment. It provides:
 
+## Frontend package exports
+
+The frontend plugin (`@red-hat-developer-hub/backstage-plugin-extensions`) graduated its NFS APIs to the primary entry point. See the [plugin README](./plugins/extensions/README.md) for installation, migration notes, and export paths.
+
+| Sub-path         | Contents                                 |
+| ---------------- | ---------------------------------------- |
+| `.`              | NFS plugin (`@public`)                   |
+| `./alpha`        | Translation ref and resource (`@alpha`)  |
+| `./legacy`       | OFS plugin, routers, icons (`@public`)   |
+| `./translations` | NFS translations module (default export) |
+
+**Breaking change:** NFS apps import from the package root and `/translations`. Legacy OFS apps import from `/legacy`. Translation resources remain at `/alpha`.
+
 ## Features
 
 ### Entity Management
@@ -62,13 +75,27 @@ p, role:default/extensions-config-admin, extensions.plugin.configuration.write, 
 
 ### Development
 
-To start the development environment:
+To start the development environment (NFS app + backend):
 
 ```bash
 git clone https://github.com/redhat-developer/rhdh-plugins.git
 cd rhdh-plugins/workspaces/extensions
 yarn install
 yarn start
+```
+
+For the legacy (OFS) app and backend:
+
+```bash
+yarn start:legacy
+```
+
+To develop the frontend plugin in isolation (mock data, no backend):
+
+```bash
+cd plugins/extensions
+yarn start          # NFS dev mode
+yarn start:legacy   # Legacy dev mode
 ```
 
 Navigate to Extensions on the bottom left.

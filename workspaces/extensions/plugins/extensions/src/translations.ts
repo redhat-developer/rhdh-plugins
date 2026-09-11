@@ -14,11 +14,24 @@
  * limitations under the License.
  */
 
-import { createApp } from '@backstage/frontend-defaults';
-import translations from '@red-hat-developer-hub/backstage-plugin-extensions/translations';
-import { navModule } from './modules/nav';
-import { signInModule } from './modules/signIn';
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import { TranslationBlueprint } from '@backstage/plugin-app-react';
+import { extensionsTranslations } from './alpha/translations';
 
-export default createApp({
-  features: [navModule, translations, signInModule],
+/**
+ * Translation module for the extensions plugin.
+ * @public
+ */
+const translations = createFrontendModule({
+  pluginId: 'app',
+  extensions: [
+    TranslationBlueprint.make({
+      name: 'extensions-translations',
+      params: {
+        resource: extensionsTranslations,
+      },
+    }),
+  ],
 });
+
+export default translations;
