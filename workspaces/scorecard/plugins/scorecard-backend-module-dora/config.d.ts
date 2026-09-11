@@ -70,75 +70,38 @@ export interface Config {
          * @default 300000 (5 minutes)
          */
         incidentLookbackMs?: number;
+        /**
+         * Environment names treated as production (case-insensitive).
+         * Missing/unknown deployment environments still count as production.
+         * Shared by all DORA metrics that filter deployments.
+         * @default ['production']
+         */
+        productionEnvironments?: string[];
+        /**
+         * Collectors shared by all DORA metrics. Each metric uses the subset it needs.
+         */
+        collectors?: {
+          deployments?: CollectorConfig;
+          incidents?: CollectorConfig;
+          deploymentPullRequests?: CollectorConfig;
+        };
       };
     };
     metricProviders?: {
       dora?: {
         deploymentFrequency?: {
-          /**
-           * Provider-specific options.
-           */
-          options?: {
-            /**
-             * Environment names treated as production (case-insensitive).
-             * Missing/unknown deployment environments still count as production.
-             * @default ['production']
-             */
-            productionEnvironments?: string[];
-            collectors?: {
-              deployments?: CollectorConfig;
-            };
-          };
           thresholds?: ThresholdConfig;
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
         };
         medianLeadTimeForChanges?: {
-          /**
-           * Provider-specific options.
-           */
-          options?: {
-            /**
-             * Environment names treated as production (case-insensitive).
-             * Missing/unknown deployment environments still count as production.
-             * @default ['production']
-             */
-            productionEnvironments?: string[];
-            collectors?: {
-              deployments?: CollectorConfig;
-              deploymentPullRequests?: CollectorConfig;
-            };
-          };
           thresholds?: ThresholdConfig;
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
         };
         medianTimeToRestore?: {
-          /**
-           * Provider-specific options.
-           */
-          options?: {
-            collectors?: {
-              incidents?: CollectorConfig;
-            };
-          };
           thresholds?: ThresholdConfig;
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
         };
         changeFailureRate?: {
-          /**
-           * Provider-specific options.
-           */
-          options?: {
-            /**
-             * Environment names treated as production (case-insensitive).
-             * Missing/unknown deployment environments still count as production.
-             * @default ['production']
-             */
-            productionEnvironments?: string[];
-            collectors?: {
-              deployments?: CollectorConfig;
-              incidents?: CollectorConfig;
-            };
-          };
           thresholds?: ThresholdConfig;
           schedule?: SchedulerServiceTaskScheduleDefinitionConfig;
         };
