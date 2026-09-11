@@ -117,7 +117,6 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'footer.accuracy.label':
       'KI-generierte Inhalte sollten vor der Verwendung stets überprüft werden.',
     'icon.lightspeed.alt': 'Symbol des intelligenten Assistenten',
-    'icon.permissionRequired.alt': "Symbol für 'Berechtigung erforderlich'",
     'lcore.loadError.description':
       'Das Backend des intelligenten Assistenten hat keine Modellliste zurückgegeben. Prüfen Sie, ob der Dienst läuft und erreichbar ist, und versuchen Sie es erneut.',
     'lcore.loadError.title': 'Modelle konnten nicht geladen werden',

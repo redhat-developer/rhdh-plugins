@@ -289,7 +289,6 @@ export const intelligentAssistantMessages = {
 
   // Alt texts for icons
   'icon.lightspeed.alt': 'intelligent assistant icon',
-  'icon.permissionRequired.alt': 'permission required icon',
 
   // Message utilities
   'message.options.label': 'Options',

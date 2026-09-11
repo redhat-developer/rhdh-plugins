@@ -194,7 +194,6 @@ export const intelligentAssistantTranslationRef: TranslationRef<
     readonly 'modal.title.preview': string;
     readonly 'modal.title.edit': string;
     readonly 'icon.lightspeed.alt': string;
-    readonly 'icon.permissionRequired.alt': string;
     readonly 'message.options.label': string;
     readonly 'file.upload.error.alreadyExists': string;
     readonly 'file.upload.error.multipleFiles': string;

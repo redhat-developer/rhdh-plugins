@@ -117,7 +117,6 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'footer.accuracy.label':
       'Toujours vérifier le contenu AI généré avant utilisation.',
     'icon.lightspeed.alt': 'Icône de l\u2019assistant intelligent',
-    'icon.permissionRequired.alt': 'icône d’autorisation requise',
     'lcore.loadError.description':
       "Le backend de l\u2019assistant intelligent n'a pas renvoyé de liste de modèles. Vérifiez que le service est démarré et joignable, puis réessayez.",
     'lcore.loadError.title': 'Impossible de charger les modèles',

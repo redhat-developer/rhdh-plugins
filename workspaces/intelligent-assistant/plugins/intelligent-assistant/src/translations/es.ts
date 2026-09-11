@@ -114,7 +114,6 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'footer.accuracy.label':
       'Revise siempre el contenido generado con IA antes de usarlo.',
     'icon.lightspeed.alt': 'icono del asistente inteligente',
-    'icon.permissionRequired.alt': 'icono de permiso requerido',
     'lcore.loadError.description':
       'El backend del asistente inteligente no devolvió una lista de modelos. Compruebe que el servicio está en ejecución y es accesible, e inténtelo de nuevo.',
     'lcore.loadError.title': 'No se pudieron cargar los modelos',

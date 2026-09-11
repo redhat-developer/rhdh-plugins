@@ -114,7 +114,6 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'footer.accuracy.label':
       'AI によって生成されたコンテンツは、使用する前に必ず確認してください。',
     'icon.lightspeed.alt': 'インテリジェントアシスタントアイコン',
-    'icon.permissionRequired.alt': '権限不足アイコン',
     'lcore.loadError.description':
       'インテリジェントアシスタントバックエンドがモデル一覧を返しませんでした。サービスが実行中で到達可能か確認してから、もう一度お試しください。',
     'lcore.loadError.title': 'モデルを読み込めませんでした',
