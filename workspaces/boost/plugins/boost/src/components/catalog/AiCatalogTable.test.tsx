@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import React from 'react';
-
 import type { Entity } from '@backstage/catalog-model';
 import { renderInTestApp } from '@backstage/test-utils';
 import { screen } from '@testing-library/react';

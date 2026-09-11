@@ -16,7 +16,7 @@
 
 import { renderInTestApp } from '@backstage/test-utils';
 import { fireEvent, screen } from '@testing-library/react';
-import React, { type ReactElement } from 'react';
+import type { ReactElement } from 'react';
 
 import { ErrorBoundary } from './ErrorBoundary';
 
