@@ -1203,4 +1203,20 @@ describe('LightspeedChat', () => {
       ).toBeInTheDocument();
     });
   });
+
+  /**
+   * RHIDP-14721 — L3 /skills command UI (mocked API).
+   * Blocked on frontend implementation in RHIDP-14222; QE adds tests only.
+   */
+  describe('RHIDP-14721 /skills slash command', () => {
+    it.todo(
+      'lists skill name and description when GET /v1/skills returns skills (blocked on RHIDP-14222)',
+    );
+    it.todo(
+      'shows empty-state copy when GET /v1/skills returns no skills (blocked on RHIDP-14222)',
+    );
+    it.todo(
+      'shows permission-denied copy when user lacks intelligent-assistant.skills (blocked on RHIDP-14222)',
+    );
+  });
 });
