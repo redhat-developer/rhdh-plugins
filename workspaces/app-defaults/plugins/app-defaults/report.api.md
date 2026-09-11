@@ -373,9 +373,9 @@ export const apiDocsPluginOverride: OverridableFrontendPlugin<
         defaultGroup?: [Error: `Use the 'group' param instead`];
         group?:
           | (
-              | 'development'
               | 'overview'
               | 'documentation'
+              | 'development'
               | 'deployment'
               | 'operation'
               | 'observability'
@@ -452,9 +452,9 @@ export const apiDocsPluginOverride: OverridableFrontendPlugin<
         defaultGroup?: [Error: `Use the 'group' param instead`];
         group?:
           | (
-              | 'development'
               | 'overview'
               | 'documentation'
+              | 'development'
               | 'deployment'
               | 'operation'
               | 'observability'
@@ -1492,9 +1492,9 @@ export const catalogPluginOverride: OverridableFrontendPlugin<
         defaultGroup?: [Error: `Use the 'group' param instead`];
         group?:
           | (
-              | 'development'
               | 'overview'
               | 'documentation'
+              | 'development'
               | 'deployment'
               | 'operation'
               | 'observability'
@@ -2140,9 +2140,9 @@ export const docsPluginOverride: OverridableFrontendPlugin<
         defaultGroup?: [Error: `Use the 'group' param instead`];
         group?:
           | (
-              | 'development'
               | 'overview'
               | 'documentation'
+              | 'development'
               | 'deployment'
               | 'operation'
               | 'observability'
