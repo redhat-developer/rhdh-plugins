@@ -16,7 +16,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { ResponseErrorPanel } from '@backstage/core-components';
 import type { SortDescriptor } from '@backstage/ui';
 import {
   Dialog,
@@ -30,34 +30,27 @@ import {
 import Box from '@mui/material/Box';
 
 import { useTranslation } from '../../hooks/useTranslation';
-import { useLanguage } from '../../hooks/useLanguage';
-import {
-  getStatusConfig,
-  getLastUpdatedLabel,
-  extractPluginName,
-  resolveMetricTranslation,
-} from '../../utils';
-import {
-  buildThresholdBuckets,
-  getMetricBucketKey,
-  getMetricBucketLabel,
-  hasMetricEvaluation,
-  MISSING_EVALUATION_LABEL,
-} from './thresholdBucketUtils';
+import { CardLoading } from '../Common/CardLoading';
 import {
   buildColumnConfig,
-  formatMetricValue,
   sortSourceRows,
   type SourceRow,
 } from './DataSourcesDialogColumns';
 import { ThresholdLegend } from './ThresholdLegend';
+import type { ThresholdBucket } from './types';
 
-interface DataSourcesDialogProps {
+export type { SourceRow };
+
+export interface DataSourcesDialogProps {
   open: boolean;
   onClose: () => void;
   title: string;
-  metrics: MetricResult[];
+  rows: SourceRow[];
+  isLoading?: boolean;
+  error?: Error;
   initialFilters?: string[];
+  /** When provided, the footer renders a filterable threshold legend. */
+  buckets?: ThresholdBucket[];
 }
 
 /** Scopes dialog style overrides to this instance (set on BUI ModalOverlay). */
@@ -67,63 +60,13 @@ export const DataSourcesDialog = ({
   open,
   onClose,
   title,
-  metrics,
+  rows,
+  isLoading = false,
+  error,
   initialFilters,
+  buckets,
 }: DataSourcesDialogProps) => {
   const { t } = useTranslation();
-  const locale = useLanguage();
-
-  const buckets = useMemo(
-    () => buildThresholdBuckets(metrics, t),
-    [metrics, t],
-  );
-
-  const rows = useMemo<SourceRow[]>(
-    () =>
-      metrics.map((metric, index) => {
-        const evaluationKey = getMetricBucketKey(metric);
-        const evaluated = hasMetricEvaluation(metric);
-        const thresholdRules =
-          metric.result?.thresholdResult?.definition?.rules ?? [];
-
-        const statusConfig = getStatusConfig({
-          evaluation: evaluated ? evaluationKey : null,
-          thresholdStatus: metric.result?.thresholdResult?.status,
-          metricStatus: metric.status,
-          thresholdRules,
-        });
-
-        const matchedRule = evaluated
-          ? thresholdRules.find(r => r.key === evaluationKey)
-          : undefined;
-
-        return {
-          id: String(index),
-          plugin: extractPluginName(
-            metric.id,
-            t('dataSourcesDialog.unknownPlugin'),
-          ),
-          metricId: metric.id,
-          metricDescription: resolveMetricTranslation(
-            t,
-            metric.id,
-            'description',
-            metric.metadata.description,
-          ),
-          value: formatMetricValue(metric.result),
-          evaluationKey,
-          statusLabel: getMetricBucketLabel(evaluationKey, t),
-          statusIcon: evaluated ? statusConfig.icon ?? '' : '',
-          statusColor: statusConfig.color,
-          lastSynced: metric.result?.timestamp
-            ? getLastUpdatedLabel(metric.result.timestamp, locale)
-            : MISSING_EVALUATION_LABEL,
-          thresholdExpression: matchedRule?.expression ?? null,
-          unit: metric.metadata.unit,
-        };
-      }),
-    [metrics, t, locale],
-  );
 
   const [activeFilters, setActiveFilters] = useState<Set<string>>(new Set());
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor | null>(
@@ -165,48 +108,59 @@ export const DataSourcesDialog = ({
     sortFn: sortSourceRows,
   });
 
+  const renderBody = () => {
+    if (isLoading) {
+      return <CardLoading dataTestId="data-sources-loading" />;
+    }
+    if (error) {
+      return <ResponseErrorPanel error={error} />;
+    }
+    return (
+      <Box>
+        <Table columnConfig={columnConfig} {...tableProps} />
+      </Box>
+    );
+  };
+
   return (
-    <>
-      <Dialog
-        isOpen={open}
-        onOpenChange={isOpen => !isOpen && onClose()}
-        width={900}
-        {...{ [DATA_SOURCES_DIALOG_ATTR]: '' }}
+    <Dialog
+      isOpen={open}
+      onOpenChange={isOpen => !isOpen && onClose()}
+      width={900}
+      {...{ [DATA_SOURCES_DIALOG_ATTR]: '' }}
+    >
+      <DialogHeader style={{ padding: '1rem 1.5rem' }}>
+        {t('dataSourcesDialog.title', { title } as any)}
+      </DialogHeader>
+      <DialogBody style={{ paddingTop: '0' }}>{renderBody()}</DialogBody>
+      <DialogFooter
+        style={{
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '0.5rem',
+        }}
       >
-        <DialogHeader style={{ padding: '1rem 1.5rem' }}>
-          {t('dataSourcesDialog.title', { title } as any)}
-        </DialogHeader>
-        <DialogBody style={{ paddingTop: '0' }}>
-          <Box>
-            <Table columnConfig={columnConfig} {...tableProps} />
-          </Box>
-        </DialogBody>
-        <DialogFooter
-          style={{
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: '0.5rem',
-          }}
-        >
+        {buckets && (
           <ThresholdLegend
             buckets={buckets}
             activeFilters={activeFilters}
             onToggleFilter={handleToggleFilter}
           />
-          <Button
-            variant="primary"
-            onPress={onClose}
-            style={{
-              fontSize: '0.875rem',
-              fontWeight: 500,
-              padding: '0.375rem 1rem',
-              maxWidth: '5rem',
-            }}
-          >
-            {t('dataSourcesDialog.close')}
-          </Button>
-        </DialogFooter>
-      </Dialog>
-    </>
+        )}
+        <Button
+          variant="primary"
+          onPress={onClose}
+          style={{
+            fontSize: '0.875rem',
+            fontWeight: 500,
+            padding: '0.375rem 1rem',
+            maxWidth: '5rem',
+            marginLeft: 'auto',
+          }}
+        >
+          {t('dataSourcesDialog.close')}
+        </Button>
+      </DialogFooter>
+    </Dialog>
   );
 };

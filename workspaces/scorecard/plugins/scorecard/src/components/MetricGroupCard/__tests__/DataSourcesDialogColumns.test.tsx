@@ -318,4 +318,24 @@ describe('buildColumnConfig', () => {
     expect(screen.getByText('—')).toBeInTheDocument();
     expect(screen.getByTestId('tooltip')).toHaveAttribute('data-title', '');
   });
+
+  it('should show the collector explanation tooltip on N/A status', () => {
+    const columns = buildColumnConfig(mockT as any);
+    const statusCell = columns.find(c => c.id === 'status')?.cell;
+    const row = createRow({
+      isCollector: true,
+      thresholdExpression: null,
+      evaluationKey: 'noEvaluation',
+      statusLabel: '-- N/A',
+      statusIcon: '',
+      value: '--',
+    });
+
+    render(<>{statusCell!(row)}</>, { wrapper: TestWrapper });
+
+    expect(screen.getByText('-- N/A')).toBeInTheDocument();
+    expect(screen.getByTestId('tooltip').getAttribute('data-title')).toBe(
+      'This collector provides input data only. The DORA metric value is calculated from collectors and shown on the scorecard card.',
+    );
+  });
 });

@@ -44,6 +44,7 @@ export interface SourceRow extends TableItem {
   lastSynced: string;
   thresholdExpression: string | null;
   unit?: string;
+  isCollector?: boolean;
 }
 
 const HEADER_STYLE = {
@@ -126,20 +127,44 @@ const StatusCell = ({
   tooltipText: string;
 }) => (
   <Cell>
-    <MuiTooltip title={tooltipText} placement="bottom" arrow>
-      <Flex gap="1.5" style={{ alignItems: 'center' }}>
-        <StatusIcon icon={item.statusIcon} color={item.statusColor} />
-        <Text
-          variant="body-medium"
-          weight="bold"
-          style={{ fontWeight: 500, fontSize: '1rem' }}
-        >
-          {item.statusLabel}
-        </Text>
-      </Flex>
+    <MuiTooltip
+      title={tooltipText}
+      placement="bottom"
+      arrow
+      disableHoverListener={!tooltipText}
+    >
+      <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+        <Flex gap="1.5" style={{ alignItems: 'center' }}>
+          <StatusIcon icon={item.statusIcon} color={item.statusColor} />
+          <Text
+            variant="body-medium"
+            weight="bold"
+            style={{ fontWeight: 500, fontSize: '1rem' }}
+          >
+            {item.statusLabel}
+          </Text>
+        </Flex>
+      </span>
     </MuiTooltip>
   </Cell>
 );
+
+function getStatusTooltip(
+  item: SourceRow,
+  t: ReturnType<typeof useTranslation>['t'],
+): string {
+  if (item.isCollector) {
+    return t('dataSourcesDialog.collectorStatusTooltip');
+  }
+  if (!item.thresholdExpression || !item.evaluationKey) {
+    return '';
+  }
+  return t('dataSourcesDialog.statusTooltip', {
+    value: item.value,
+    status: item.statusLabel,
+    expression: formatWithMetricUnit(item.thresholdExpression, item.unit),
+  } as any);
+}
 
 export function sortSourceRows(
   data: SourceRow[],
@@ -226,20 +251,9 @@ export function buildColumnConfig(
           width={'1fr' as ColumnConfig<SourceRow>['width']}
         />
       ),
-      cell: item => {
-        const tooltipText =
-          item.thresholdExpression && item.evaluationKey
-            ? t('dataSourcesDialog.statusTooltip', {
-                value: item.value,
-                status: item.statusLabel,
-                expression: formatWithMetricUnit(
-                  item.thresholdExpression,
-                  item.unit,
-                ),
-              } as any)
-            : '';
-        return <StatusCell item={item} tooltipText={tooltipText} />;
-      },
+      cell: item => (
+        <StatusCell item={item} tooltipText={getStatusTooltip(item, t)} />
+      ),
       isSortable: true,
       width: '1fr' as ColumnConfig<SourceRow>['width'],
     },

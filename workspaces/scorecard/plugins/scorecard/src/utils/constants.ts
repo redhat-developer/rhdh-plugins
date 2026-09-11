@@ -19,6 +19,9 @@
  */
 export const SCORECARD_ERROR_STATE_COLOR = 'rhdh.general.cardBorderColor';
 
+/** Default lookback period for sparkline data. */
+export const TIME_SERIES_DEFAULT_RANGE_DAYS = 30;
+
 interface HeadCell {
   id: string;
   label: string;

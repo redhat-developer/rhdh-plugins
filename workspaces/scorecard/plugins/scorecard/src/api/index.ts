@@ -25,6 +25,12 @@ import type {
   AggregationMetadata,
   Metric,
   EntityMetricDetailResponse,
+  MetricTimeSeriesResponse,
+  MetricTimeSeriesPoint,
+  AggregatedMetricTimeSeriesResponse,
+  ScalarAggregatedTimeSeriesPoint,
+  TimeSeriesPointError,
+  CollectorMetadata,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import type { GetAggregatedScorecardEntitiesOptions } from '../components/types';
@@ -32,6 +38,8 @@ import type { GetAggregatedScorecardEntitiesOptions } from '../components/types'
 export { ScorecardQueryProvider } from './ScorecardQueryProvider';
 
 import type {
+  GetAggregationTimeSeriesOptions,
+  GetMetricTimeSeriesOptions,
   ScorecardApi,
   ScorecardApiClientOptions,
   ScorecardOptions,
@@ -364,4 +372,247 @@ export class ScorecardApiClient implements ScorecardApi {
       );
     }
   }
+
+  async getAggregationTimeSeries({
+    aggregationId,
+    from,
+    to,
+  }: GetAggregationTimeSeriesOptions): Promise<AggregatedMetricTimeSeriesResponse> {
+    if (!aggregationId || aggregationId.trim() === '') {
+      throw new Error(
+        'Aggregation ID is required for aggregation time-series lookup',
+      );
+    }
+
+    if (!from || !to) {
+      throw new Error(
+        'from and to are required for aggregation time-series lookup',
+      );
+    }
+
+    const baseUrl = await this.getBaseUrl();
+    const url = new URL(`${baseUrl}/aggregations/${aggregationId}/time-series`);
+    url.searchParams.set('from', from);
+    url.searchParams.set('to', to);
+
+    try {
+      const response = await this.fetchApi.fetch(url.toString());
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to fetch aggregation time series: ${response.status} ${response.statusText}. ${errorText}`,
+        );
+      }
+
+      const data = await response.json();
+
+      if (
+        !data ||
+        Array.isArray(data) ||
+        typeof data !== 'object' ||
+        typeof data.id !== 'string' ||
+        typeof data.metricId !== 'string' ||
+        !Array.isArray(data.points) ||
+        !data.points.every(isScalarAggregatedTimeSeriesPoint)
+      ) {
+        throw new TypeError(
+          'Invalid response format from aggregation time-series API',
+        );
+      }
+
+      return data as AggregatedMetricTimeSeriesResponse;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error(
+        `Unexpected error fetching aggregation time series: ${String(error)}`,
+      );
+    }
+  }
+
+  async getMetricTimeSeries({
+    entity,
+    metricId,
+    from,
+    to,
+  }: GetMetricTimeSeriesOptions): Promise<MetricTimeSeriesResponse> {
+    if (
+      !entity?.kind ||
+      !entity?.metadata?.namespace ||
+      !entity?.metadata?.name
+    ) {
+      throw new Error(
+        'Entity missing required properties for scorecard lookup',
+      );
+    }
+
+    if (!metricId || metricId.trim() === '') {
+      throw new Error('Metric ID is required for time-series lookup');
+    }
+
+    if (!from || !to) {
+      throw new Error('from and to are required for time-series lookup');
+    }
+
+    const baseUrl = await this.getBaseUrl();
+    const url = new URL(
+      `${baseUrl}/metrics/catalog/${entity.kind}/${entity.metadata.namespace}/${entity.metadata.name}/time-series`,
+    );
+    url.searchParams.set('metricId', metricId);
+    url.searchParams.set('from', from);
+    url.searchParams.set('to', to);
+
+    try {
+      const response = await this.fetchApi.fetch(url.toString());
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to fetch metric time series: ${response.status} ${response.statusText}. ${errorText}`,
+        );
+      }
+
+      const data = await response.json();
+
+      if (
+        !data ||
+        Array.isArray(data) ||
+        typeof data !== 'object' ||
+        typeof data.metricId !== 'string' ||
+        typeof data.entityRef !== 'string' ||
+        !Array.isArray(data.points) ||
+        !data.points.every(isMetricTimeSeriesPoint)
+      ) {
+        throw new TypeError(
+          'Invalid response format from metric time-series API',
+        );
+      }
+
+      return data as MetricTimeSeriesResponse;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error(
+        `Unexpected error fetching metric time series: ${String(error)}`,
+      );
+    }
+  }
+
+  async getMetricCollectors(metricId: string): Promise<CollectorMetadata[]> {
+    if (!metricId || metricId.trim() === '') {
+      throw new Error('Metric ID is required for collectors lookup');
+    }
+
+    const baseUrl = await this.getBaseUrl();
+    const url = `${baseUrl}/metrics/${encodeURIComponent(metricId)}/collectors`;
+
+    try {
+      const response = await this.fetchApi.fetch(url);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to fetch metric collectors: ${response.status} ${response.statusText}. ${errorText}`,
+        );
+      }
+
+      const data = await response.json();
+
+      if (
+        !data ||
+        Array.isArray(data) ||
+        typeof data !== 'object' ||
+        !Array.isArray(data.collectors) ||
+        !data.collectors.every(isCollectorMetadata)
+      ) {
+        throw new TypeError(
+          'Invalid response format from metric collectors API',
+        );
+      }
+
+      return data.collectors;
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error(
+        `Unexpected error fetching metric collectors: ${String(error)}`,
+      );
+    }
+  }
+}
+
+function isCollectorMetadata(value: unknown): value is CollectorMetadata {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+
+  const collector = value as Record<string, unknown>;
+  return (
+    typeof collector.id === 'string' &&
+    typeof collector.description === 'string'
+  );
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
+
+const isNullableFiniteNumber = (value: unknown): value is number | null =>
+  value === null || isFiniteNumber(value);
+
+const hasTimeSeriesPointShape = (
+  value: unknown,
+  isValidValue: (pointValue: unknown) => boolean,
+): value is Record<string, unknown> =>
+  isRecord(value) &&
+  typeof value.timestamp === 'string' &&
+  isValidValue(value.value);
+
+function isMetricTimeSeriesPoint(
+  value: unknown,
+): value is MetricTimeSeriesPoint {
+  return (
+    hasTimeSeriesPointShape(
+      value,
+      pointValue =>
+        isNullableFiniteNumber(pointValue) || typeof pointValue === 'boolean',
+    ) &&
+    (value.error === undefined || typeof value.error === 'string')
+  );
+}
+
+function isTimeSeriesPointError(value: unknown): value is TimeSeriesPointError {
+  return (
+    isRecord(value) &&
+    typeof value.message === 'string' &&
+    isFiniteNumber(value.count)
+  );
+}
+
+function isScalarAggregatedTimeSeriesPoint(
+  value: unknown,
+): value is ScalarAggregatedTimeSeriesPoint {
+  if (!hasTimeSeriesPointShape(value, isNullableFiniteNumber)) {
+    return false;
+  }
+
+  if (
+    !isFiniteNumber(value.successCount) ||
+    !isFiniteNumber(value.errorCount) ||
+    !isFiniteNumber(value.total) ||
+    (value.status !== 'success' && value.status !== 'error')
+  ) {
+    return false;
+  }
+
+  return (
+    value.errors === undefined ||
+    (Array.isArray(value.errors) && value.errors.every(isTimeSeriesPointError))
+  );
 }

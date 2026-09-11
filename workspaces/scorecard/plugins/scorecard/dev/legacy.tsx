@@ -33,14 +33,6 @@ import {
 } from '@backstage/core-components';
 import { TestApiProvider } from '@backstage/test-utils';
 import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
-import type { Entity } from '@backstage/catalog-model';
-import type {
-  MetricResult,
-  AggregatedMetricResult,
-  Metric,
-  EntityMetricDetailResponse,
-  AggregationMetadata,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { CatalogEntityPage } from '@backstage/plugin-catalog';
 
 import Box from '@mui/material/Box';
@@ -54,84 +46,10 @@ import {
 } from '../src/plugin';
 import { scorecardTranslations } from '../src/translations';
 import { scorecardApiRef } from '../src/api';
-import type { ScorecardApi } from '../src/api/types';
-import type { GetAggregatedScorecardEntitiesOptions } from '../src/components/types';
-import {
-  mockAggregatedScorecardData,
-  mockScorecardErrorData,
-  mockScorecardSuccessData,
-} from '../__fixtures__/scorecardData';
-import { mockAggregatedScorecardEntitiesData } from '../__fixtures__/aggregatedScorecardEntitiesData';
-import { mockCatalogApi } from './mocks';
-import { ScorecardOptions } from '../src/api/types';
+import { MockScorecardApi, mockCatalogApi, mockComponentEntity } from './mocks';
+import { applyPluginDevMainUnclip } from './unclipMain';
 
-const mockComponentEntity: Entity = {
-  apiVersion: 'backstage.io/v1alpha1',
-  kind: 'Component',
-  metadata: {
-    namespace: 'default',
-    name: 'example-service',
-    description: 'Example service',
-  },
-  spec: {
-    type: 'service',
-    lifecycle: 'production',
-  },
-};
-
-class MockScorecardApi implements ScorecardApi {
-  async getBaseUrl(): Promise<string> {
-    return 'https://example.com';
-  }
-
-  async getScorecards(_options: ScorecardOptions): Promise<MetricResult[]> {
-    return [...mockScorecardSuccessData, ...mockScorecardErrorData];
-  }
-
-  async getAggregatedScorecard(
-    _metricId: string,
-  ): Promise<AggregatedMetricResult> {
-    return mockAggregatedScorecardData.statusGrouped;
-  }
-
-  async getAggregationMetadata(
-    _aggregationId: string,
-  ): Promise<AggregationMetadata> {
-    return {
-      title: 'GitHub open issues',
-      description: 'GitHub open issues',
-      type: 'number',
-      aggregationType: 'statusGrouped',
-    };
-  }
-
-  async getMetrics(_options: {
-    metricIds: string[];
-  }): Promise<{ metrics: Metric[] }> {
-    const allMetrics = [
-      ...mockScorecardSuccessData,
-      ...mockScorecardErrorData,
-    ].map(m => ({
-      id: m.id,
-      title: m.metadata.title,
-      description: m.metadata.description,
-      type: m.metadata.type,
-      thresholds: m.result.thresholdResult.definition ?? { rules: [] },
-      history: m.metadata.history,
-    }));
-    return { metrics: allMetrics };
-  }
-
-  async getAggregatedScorecardEntities(
-    options: GetAggregatedScorecardEntitiesOptions,
-  ): Promise<EntityMetricDetailResponse> {
-    return mockAggregatedScorecardEntitiesData(
-      options.metricId,
-      options.page ?? 1,
-      options.pageSize ?? 10,
-    ) as EntityMetricDetailResponse;
-  }
-}
+applyPluginDevMainUnclip();
 
 const ScorecardWrapper = ({ children }: { children: ReactNode }) => (
   <TestApiProvider

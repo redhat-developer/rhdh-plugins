@@ -82,8 +82,29 @@ jest.mock('../Scorecard', () => {
   };
 });
 
+jest.mock('../EntitySparklineCard', () => ({
+  EntitySparklineCard: function MockEntitySparklineCard({
+    title,
+    description,
+  }: {
+    title: string;
+    description: string;
+  }) {
+    return (
+      <div data-testid="area-chart-card" data-title={title}>
+        <h3>{title}</h3>
+        <p>{description}</p>
+      </div>
+    );
+  },
+}));
+
 jest.mock('../../../hooks/useScorecards', () => ({
   useScorecards: jest.fn(),
+}));
+
+jest.mock('../../../hooks/useMetricTimeSeries', () => ({
+  useMetricTimeSeries: jest.fn(),
 }));
 
 jest.mock('../../../utils', () => ({
@@ -346,5 +367,62 @@ describe('EntityScorecardContent Component', () => {
     expect(
       screen.getByText('Metric Error: Failed to fetch metric data'),
     ).toBeInTheDocument();
+  });
+
+  it('should render a sparkline beside score donuts when visualization is sparkline', () => {
+    const doraMetric = {
+      ...mockScorecardSuccessData[0],
+      id: 'dora.changeFailureRate',
+      metadata: {
+        ...mockScorecardSuccessData[0].metadata,
+        title: 'DORA - Change Failure Rate',
+        description: 'Percentage of changes that fail in production.',
+        defaultVisualization: 'sparkline' as const,
+      },
+    };
+
+    useScorecardsMock.mockReturnValue({
+      data: [doraMetric, mockScorecardSuccessData[0]],
+      isLoading: false,
+      error: undefined,
+    });
+
+    render(<EntityScorecardContent />);
+
+    expect(screen.getByTestId('area-chart-card')).toHaveAttribute(
+      'data-title',
+      'DORA - Change Failure Rate',
+    );
+    expect(screen.getByTestId('scorecard-card')).toHaveAttribute(
+      'data-title',
+      'GitHub open PRs',
+    );
+    expect(getStatusConfigMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('should render a sparkline chart when defaultVisualization is sparkline', () => {
+    const sparklineMetric = {
+      ...mockScorecardSuccessData[0],
+      id: 'custom.trend',
+      metadata: {
+        ...mockScorecardSuccessData[0].metadata,
+        title: 'Custom Trend',
+        defaultVisualization: 'sparkline' as const,
+      },
+    };
+
+    useScorecardsMock.mockReturnValue({
+      data: [sparklineMetric],
+      isLoading: false,
+      error: undefined,
+    });
+
+    render(<EntityScorecardContent />);
+
+    expect(screen.getByTestId('area-chart-card')).toHaveAttribute(
+      'data-title',
+      'Custom Trend',
+    );
+    expect(screen.queryByTestId('scorecard-card')).not.toBeInTheDocument();
   });
 });
