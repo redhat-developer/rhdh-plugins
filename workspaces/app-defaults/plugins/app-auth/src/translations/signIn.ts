@@ -36,6 +36,12 @@ export const signInTranslationRef = createTranslationRef({
           description:
             'Set {{ authEnvKey }} in your app configuration (for example {{ devEnv }} for local use or {{ prodEnv }} in deployed environments). Without it, the app cannot safely determine which sign-in options to offer.',
         },
+        noConfiguredProviders: {
+          error: 'No authentication providers are configured',
+          panelTitle: 'Sign-in is not available',
+          description:
+            'To enable sign-in, configure at least one authentication provider in your app configuration under {{ authProvidersKey }}.',
+        },
       },
       providers: {
         auth0: {
