@@ -25,8 +25,6 @@ import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import MenuIcon from '@mui/icons-material/Menu';
 import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
 
-import { SidebarLogo } from './SidebarLogo';
-
 export const SidebarContent = NavContentBlueprint.make({
   params: {
     component: ({ navItems }) => {
@@ -39,7 +37,6 @@ export const SidebarContent = NavContentBlueprint.make({
 
       return (
         <Sidebar>
-          <SidebarLogo />
           <SidebarGroup label="Menu" icon={<MenuIcon />}>
             {nav.take('page:catalog')}
             {nav.take('page:scaffolder')}
