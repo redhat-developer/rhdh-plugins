@@ -198,9 +198,7 @@ export const intelligentAssistantMessages = {
     'The intelligent assistant backend did not return a model list. Check that the service is running and reachable, then try again.',
 
   // Disclaimers
-  'disclaimer.withValidation':
-    "This feature uses AI technology. Do not include any personal information or any other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.",
-  'disclaimer.withoutValidation':
+  disclaimer:
     "This feature uses AI technology. Do not include any personal information or any other sensitive information in your input. Interactions may be used to improve Red Hat's products or services.",
 
   // Footer and feedback

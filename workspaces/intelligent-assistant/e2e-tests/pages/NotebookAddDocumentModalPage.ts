@@ -143,7 +143,10 @@ export class NotebookAddDocumentModalPage {
 
   async expectModalTitleBarMatchesAriaSnapshot(): Promise<void> {
     await expect(this.modalTitleAccessibilityRegion()).toBeVisible();
-    await expect(this.titleCloseButton()).toBeVisible();
+    await expect(this.dialog()).toMatchAriaSnapshot(`
+      - heading "${this.t['notebook.upload.modal.title']}"
+      - button "${this.t['common.close']}"
+      `);
   }
 
   async expectAddFilesButtonDisabled(stagedCount: number): Promise<void> {

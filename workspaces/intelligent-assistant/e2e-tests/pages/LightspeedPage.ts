@@ -21,6 +21,7 @@ import {
   mockedMcpServersResponse,
   type McpServersListMock,
 } from '../fixtures/responses';
+import { waitForChatbotVisible } from '../utils/testHelper';
 import {
   LightspeedMessages,
   evaluateMessage,
@@ -32,7 +33,11 @@ export type DisplayMode = 'Overlay' | 'Dock to window' | 'Fullscreen';
 
 // Actions
 export async function openChatbot(page: Page, t: LightspeedMessages) {
-  await page.getByRole('button', { name: t['tooltip.fab.open'] }).click();
+  const closeFab = page.getByRole('button', { name: t['tooltip.fab.close'] });
+  if (!(await closeFab.isVisible().catch(() => false))) {
+    await page.getByRole('button', { name: t['tooltip.fab.open'] }).click();
+  }
+  await waitForChatbotVisible(page);
 }
 
 export async function selectDisplayMode(
@@ -53,6 +58,9 @@ export async function selectDisplayMode(
 }
 
 export async function openChatHistoryDrawer(page: Page, t: LightspeedMessages) {
+  const closeButton = page.getByRole('button', {
+    name: t['aria.closeDrawerPanel'],
+  });
   const chatHistoryMenuButton = page.getByRole('button', {
     name: t['aria.chatHistoryMenu'],
   });
@@ -60,11 +68,21 @@ export async function openChatHistoryDrawer(page: Page, t: LightspeedMessages) {
     name: t['tooltip.expandHistoryPanel'],
   });
 
-  if (await chatHistoryMenuButton.isVisible()) {
+  if (await closeButton.isVisible().catch(() => false)) {
+    return;
+  }
+
+  await expect(chatHistoryMenuButton.or(expandHistoryButton)).toBeVisible({
+    timeout: 10000,
+  });
+
+  if (await chatHistoryMenuButton.isVisible().catch(() => false)) {
     await chatHistoryMenuButton.click();
-  } else if (await expandHistoryButton.isVisible()) {
+  } else {
     await expandHistoryButton.click();
   }
+
+  await expect(closeButton).toBeVisible({ timeout: 5000 });
 }
 
 export async function closeChatHistoryDrawer(
@@ -447,7 +465,7 @@ function getWelcomeHeader(t: LightspeedMessages): string {
   return `
     - region "Scrollable message log":
       - 'heading "Info alert: ${t['aria.important']}" [level=4]'
-      - text: ${t['disclaimer.withValidation']}
+      - text: ${t['disclaimer']}
       - heading "${greeting} ${t['chatbox.welcome.description']}" [level=1]`;
 }
 

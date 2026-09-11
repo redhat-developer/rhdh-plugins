@@ -14,51 +14,45 @@
  * limitations under the License.
  */
 
-import { makeStyles, Typography } from '@material-ui/core';
+import Box from '@mui/material/Box';
+import { styled } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 import { Button, Spinner } from '@patternfly/react-core';
 import { AddCircleOIcon } from '@patternfly/react-icons';
 import { CatalogIcon } from '@patternfly/react-icons/dist/esm/icons';
 
 import { useTranslation } from '../../hooks/useTranslation';
 
-const useStyles = makeStyles(theme => ({
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    textAlign: 'center',
-    gap: theme.spacing(2),
+const Container = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flex: 1,
+  textAlign: 'center',
+  gap: theme.spacing(2),
+}));
+
+const EmptyIcon = styled(CatalogIcon)({
+  fontSize: 48,
+  color: 'var(--pf-t--global--icon--color--subtle)',
+  '& > .pf-v6-icon-rh-ui': {
+    display: 'none !important',
   },
-  icon: {
-    fontSize: 48,
-    color: 'var(--pf-t--global--icon--color--subtle)',
-    '& > .pf-v6-icon-rh-ui': {
-      display: 'none !important',
-    },
-  },
-  headingRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-  },
-  heading: {
-    fontWeight: 500,
-    fontSize: '1.5rem',
-    lineHeight: '2rem',
-    letterSpacing: '-0.25px',
-  },
-  description: {
-    color: 'var(--pf-t--global--text--color--subtle)',
-    maxWidth: 400,
-  },
-  uploadButton: {
-    textTransform: 'none',
-    borderRadius: 999,
-    paddingLeft: theme.spacing(3),
-    paddingRight: theme.spacing(3),
-  },
+});
+
+const Heading = styled(Typography)({
+  fontWeight: 500,
+  fontSize: '1.5rem',
+  lineHeight: '2rem',
+  letterSpacing: '-0.25px',
+});
+
+const UploadButton = styled(Button)(({ theme }) => ({
+  textTransform: 'none',
+  borderRadius: 999,
+  paddingLeft: theme.spacing(3),
+  paddingRight: theme.spacing(3),
 }));
 
 type UploadResourceScreenProps = {
@@ -70,39 +64,44 @@ export const UploadResourceScreen = ({
   onUploadClick,
   isProcessing = false,
 }: UploadResourceScreenProps) => {
-  const classes = useStyles();
   const { t } = useTranslation();
   return (
-    <div className={classes.container}>
-      <CatalogIcon className={classes.icon} />
+    <Container>
+      <EmptyIcon />
       {isProcessing ? (
         <>
-          <div className={classes.headingRow}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+            }}
+          >
             <Spinner size="md" />
-            <Typography className={classes.heading}>
-              {t('notebook.view.processing.heading')}
-            </Typography>
-          </div>
-          <Typography className={classes.description}>
+            <Heading>{t('notebook.view.processing.heading')}</Heading>
+          </Box>
+          <Typography
+            sx={{
+              color: 'var(--pf-t--global--text--color--subtle)',
+              maxWidth: 400,
+            }}
+          >
             {t('notebook.view.processing.description')}
           </Typography>
         </>
       ) : (
         <>
-          <Typography className={classes.heading}>
-            {t('notebook.view.upload.heading')}
-          </Typography>
-          <Button
+          <Heading>{t('notebook.view.upload.heading')}</Heading>
+          <UploadButton
             variant="secondary"
-            className={classes.uploadButton}
             icon={<AddCircleOIcon />}
             iconPosition="start"
             onClick={onUploadClick}
           >
             {t('notebook.view.upload.action')}
-          </Button>
+          </UploadButton>
         </>
       )}
-    </div>
+    </Container>
   );
 };
