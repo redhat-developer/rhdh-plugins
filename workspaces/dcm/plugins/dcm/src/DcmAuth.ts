@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-import { render, screen } from '@testing-library/react';
-import { wrapInTestApp } from '@backstage/test-utils';
-import { Router } from './Router';
+import type { DcmOidcTokenProvider } from '@red-hat-developer-hub/backstage-plugin-dcm-common';
 
-jest.mock('./pages/data-center/DataCenterPage', () => ({
-  DataCenterPage: () => <div>DataCenterPage</div>,
-}));
+let accessTokenProvider: DcmOidcTokenProvider | undefined;
 
-jest.mock('./DcmAuth', () => ({
-  setDcmAccessTokenProvider: jest.fn(),
-}));
+/** Configures the OIDC token provider used by the DCM API clients. */
+export function setDcmAccessTokenProvider(
+  provider: DcmOidcTokenProvider | undefined,
+) {
+  accessTokenProvider = provider;
+}
 
-describe('Router', () => {
-  it('renders DataCenterPage on the default route', () => {
-    render(wrapInTestApp(<Router />));
-    expect(screen.getByText('DataCenterPage')).toBeInTheDocument();
-  });
-});
+/** Gets an OIDC token when DCM authentication is enabled. */
+export function getDcmAccessToken() {
+  return accessTokenProvider?.();
+}
