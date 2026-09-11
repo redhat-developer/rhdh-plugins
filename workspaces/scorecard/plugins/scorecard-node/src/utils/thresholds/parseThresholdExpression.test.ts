@@ -106,6 +106,44 @@ describe('parseThresholdExpression', () => {
     });
   });
 
+  describe('parseThresholdExpression - string metrics', () => {
+    it.each([
+      {
+        expression: '==found',
+        expectedResult: { operator: '==', value: 'found' },
+      },
+      {
+        expression: '==missed',
+        expectedResult: { operator: '==', value: 'missed' },
+      },
+      {
+        expression: '!=invalid',
+        expectedResult: { operator: '!=', value: 'invalid' },
+      },
+      {
+        expression: '==ok',
+        expectedResult: { operator: '==', value: 'ok' },
+      },
+    ])(
+      'should parse string expression $expression correctly',
+      ({ expression, expectedResult }) => {
+        const result = parseThresholdExpression(expression, 'string');
+        expect(result).toEqual(expectedResult);
+      },
+    );
+
+    it('should handle whitespace in string expressions', () => {
+      const result = parseThresholdExpression('  ==  found  ', 'string');
+      expect(result).toEqual({ operator: '==', value: 'found' });
+    });
+
+    it('should reject range expressions for string metrics', () => {
+      expect(() => parseThresholdExpression('10-60', 'string')).toThrow(
+        ThresholdConfigFormatError,
+      );
+    });
+  });
+
   describe('parseThresholdExpression - error handling', () => {
     it.each([
       {
