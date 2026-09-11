@@ -27713,8 +27713,8 @@ __metadata:
   linkType: hard
 
 "isomorphic-git@npm:^1.23.0":
-  version: 1.27.2
-  resolution: "isomorphic-git@npm:1.27.2"
+  version: 1.42.0
+  resolution: "isomorphic-git@npm:1.42.0"
   dependencies:
     async-lock: "npm:^1.4.1"
     clean-git-ref: "npm:^2.0.1"
@@ -27723,14 +27723,13 @@ __metadata:
     ignore: "npm:^5.1.4"
     minimisted: "npm:^2.0.0"
     pako: "npm:^1.0.10"
-    path-browserify: "npm:^1.0.1"
     pify: "npm:^4.0.1"
-    readable-stream: "npm:^3.4.0"
-    sha.js: "npm:^2.4.9"
+    readable-stream: "npm:^4.0.0"
+    sha.js: "npm:^2.4.12"
     simple-get: "npm:^4.0.1"
   bin:
     isogit: cli.cjs
-  checksum: 10c0/a864e24d866c03226273d00346962568553b19aaf84d5419967283dd7f2967b3189a27ca28d7cefd7509a78d2e983f78b95d3bead1d3053e5dbd78ff500d1e3b
+  checksum: 10c0/d5bc2aa68f7e071d855b92fb97c743ce1b53c4035f3067f5cbafe4a9a3c2a1951fcb2d55322866caf6cbbff5999615bad9262f78472c9cddbca46883c4316080
   languageName: node
   linkType: hard
 
@@ -36518,7 +36517,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sha.js@npm:^2.4.0, sha.js@npm:^2.4.11, sha.js@npm:^2.4.12, sha.js@npm:^2.4.8, sha.js@npm:^2.4.9":
+"sha.js@npm:^2.4.0, sha.js@npm:^2.4.11, sha.js@npm:^2.4.12, sha.js@npm:^2.4.8":
   version: 2.4.12
   resolution: "sha.js@npm:2.4.12"
   dependencies:
