@@ -1,5 +1,49 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-common
 
+## 4.3.0
+
+### Minor Changes
+
+- 9c1936e: Add `GET /aggregations/:aggregationId/time-series` for daily scalar portfolio aggregation (`sum`, `average`, `max`, `min`, `count`). Returns aggregated metric values per UTC days. Days with no data are omitted. Aggregation type `statusGrouped` and `weightedStatusScore` return `400`. Sparkline metrics without a KPI block default to aggregation type `average`.
+
+  Adds `metadata.visualization` type to `GET /aggregations/:aggregationId/metadata` response.
+
+- 485fadb: Persist DORA collector data in the database and sync incrementally from the last watermark, so metrics reuse stored deployments, incidents, and pull requests instead of refetching the full window every time.
+
+  The Jira `jira:incidents` collector contract now requires `updatedSince` (ISO datetime) in the input and `updatedAt` (ISO datetime) on each incident in the output. Custom incident collector implementations must provide these fields.
+
+- c380e6b: Skip scalar aggregation threshold coloring when no successful samples contributed (`total` is 0). Return a null display color and keep the card grey fallback. Scalar aggregation responses now include `aggregationChartDisplayColor` (threshold-derived chart color, or `null` when `total` is 0).
+
+  **BREAKING**: Changed types in `scorecard-common` module:
+
+  - `WeightedStatusScoreAggregationResult.aggregationChartDisplayColor` widened from `string` to `string | null`.
+  - `ScalarAggregationResult` gained a required `aggregationChartDisplayColor: string | null` property.
+
+  These changes are intentional: the API can return `null` when no samples contribute, and scalar KPI results now expose the same display-color field as weighted status score aggregations.
+
+- fea86e8: Adds new endpoint `GET /metrics/:metricId/collectors` to list collector id and description for a metric. Composite metrics (like DORA) set optional `collectorIds` on `Metric` from config.
+
+  **BREAKING**: `ScorecardCollectorsService` now includes `getCollectorMetadata`. The default implementation behind `scorecardCollectorsServiceRef` already provides it, so no change is required unless you registered your own factory for that ref — then implement the new method.
+
+- ff6683f: Add DORA metrics and a collectors framework for composing datasource data into metrics.
+
+  - New `@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora` with Deployment Frequency, Median Lead Time for Changes, Mean Time to Restore, and Change Failure Rate
+  - New data collectors used by DORA: GitHub deployments, deployment workflow runs, and deployment pull requests; Jira incidents
+  - Metric time-series API `/metrics/catalog/:kind/:namespace/:name/time-series`
+  - Adds `defaultVisualization` to Metric metadata for sparkline
+
+- ecb789b: Select one time-series point per UTC day in the database and include error-only days in the response.
+
+  - Prefer the latest sample of the day, including calculation errors (`value: null` with `error`)
+  - Widen `MetricTimeSeriesPoint` so `value` may be null and `error` is optional
+
+- f3f71a5: Add unit to metric and display it in threshold legend
+- a7a1b4a: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- befccc2: Fix too general type name for aggregation point errors and update incorrect timestamp description
+
 ## 4.2.0
 
 ### Minor Changes
