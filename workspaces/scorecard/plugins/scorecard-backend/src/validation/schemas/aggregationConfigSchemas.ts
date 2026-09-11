@@ -17,7 +17,7 @@
 import { z } from 'zod';
 import {
   aggregationTypes,
-  scalarAggregationTypes,
+  ScalarAggregationType,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { aggregationThresholdsConfigSchema } from './aggregationThresholdsConfigSchema';
 import { aggregationFilterSchema } from './aggregationFilterSchema';
@@ -47,9 +47,7 @@ const weightedStatusScoreAggregationConfigSchema = z.object({
   }),
 });
 
-function scalarAggregationConfigSchema(
-  type: (typeof scalarAggregationTypes)[number],
-) {
+function scalarAggregationConfigSchema(type: ScalarAggregationType) {
   return z.object({
     ...baseAggregationConfigSchema.shape,
     type: z.literal(type),
@@ -84,7 +82,7 @@ export type WeightedStatusScoreAggregationConfig = Extract<
 
 export type ScalarAggregationConfig = Extract<
   ValidatedAggregationConfig,
-  { type: (typeof scalarAggregationTypes)[number] }
+  { type: ScalarAggregationType }
 >;
 
 export type StatusGroupedAggregationConfig = Extract<

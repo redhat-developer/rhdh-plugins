@@ -250,6 +250,9 @@ export type ScalarAggregationResult = ScalarAggregatedMetric & {
   aggregationChartDisplayColor: string | null;
 };
 
+// @public (undocumented)
+export type ScalarAggregationType = (typeof scalarAggregationTypes)[number];
+
 // @public
 export const scalarAggregationTypes: readonly [
   'sum',
