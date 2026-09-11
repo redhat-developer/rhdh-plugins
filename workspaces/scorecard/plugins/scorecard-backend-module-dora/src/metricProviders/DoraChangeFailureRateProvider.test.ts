@@ -113,24 +113,19 @@ describe('DoraChangeFailureRateProvider', () => {
       const customProvider = DoraChangeFailureRateProvider.fromConfig(
         new ConfigReader({
           scorecard: {
-            metricProviders: {
+            plugins: {
               dora: {
-                changeFailureRate: {
-                  options: {
-                    collectors: {
-                      deployments: {
-                        id: customDeploymentsCollectorId,
-                        input: {
-                          customDeploymentsInputLabel:
-                            'deployments-custom-input',
-                        },
-                      },
-                      incidents: {
-                        id: customIncidentsCollectorId,
-                        input: {
-                          customIncidentsInputLabel: 'incidents-custom-input',
-                        },
-                      },
+                collectors: {
+                  deployments: {
+                    id: customDeploymentsCollectorId,
+                    input: {
+                      customDeploymentsInputLabel: 'deployments-custom-input',
+                    },
+                  },
+                  incidents: {
+                    id: customIncidentsCollectorId,
+                    input: {
+                      customIncidentsInputLabel: 'incidents-custom-input',
                     },
                   },
                 },

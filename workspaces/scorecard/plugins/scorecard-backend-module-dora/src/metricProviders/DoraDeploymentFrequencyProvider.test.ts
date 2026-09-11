@@ -88,17 +88,13 @@ describe('DoraDeploymentFrequencyProvider', () => {
       const customProvider = DoraDeploymentFrequencyProvider.fromConfig(
         new ConfigReader({
           scorecard: {
-            metricProviders: {
+            plugins: {
               dora: {
-                deploymentFrequency: {
-                  options: {
-                    collectors: {
-                      deployments: {
-                        id: customCollectorId,
-                        input: {
-                          artificialLabel: 'frequency-test',
-                        },
-                      },
+                collectors: {
+                  deployments: {
+                    id: customCollectorId,
+                    input: {
+                      artificialLabel: 'frequency-test',
                     },
                   },
                 },
@@ -227,13 +223,9 @@ describe('DoraDeploymentFrequencyProvider', () => {
       const customProvider = DoraDeploymentFrequencyProvider.fromConfig(
         new ConfigReader({
           scorecard: {
-            metricProviders: {
+            plugins: {
               dora: {
-                deploymentFrequency: {
-                  options: {
-                    productionEnvironments: ['prod', 'live'],
-                  },
-                },
+                productionEnvironments: ['prod', 'live'],
               },
             },
           },
