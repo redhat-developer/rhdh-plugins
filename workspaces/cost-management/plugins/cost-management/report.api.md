@@ -55,7 +55,7 @@ export const resourceOptimizationPlugin: BackstagePlugin<
   {}
 >;
 
-// @public (undocumented)
+// @public
 export function Router(): JSX_2.Element;
 
 // (No @packageDocumentation comment for this package)
