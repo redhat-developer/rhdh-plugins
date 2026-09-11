@@ -82,13 +82,19 @@ const useSidebarItemStyles = makeStyles(theme => {
     },
     submenuItem: {
       marginBottom: 4,
+      alignItems: 'center',
+      boxSizing: 'border-box',
       '& .MuiSvgIcon-root': {
         fontSize: '20px',
+        display: 'block',
       },
       '& .MuiTypography-root': {
         marginLeft: 8,
         fontWeight: 400,
         fontSize: 14,
+        lineHeight: 1,
+        display: 'flex',
+        alignItems: 'center',
       },
     },
     submenuItemActive: {
@@ -97,6 +103,12 @@ const useSidebarItemStyles = makeStyles(theme => {
         dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)'
       }`,
       backgroundColor: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.06)',
+      borderLeft: `1px solid ${
+        dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)'
+      }`,
+      '& [data-testid="login-button"]': {
+        marginLeft: 0,
+      },
     },
     inactiveItem: {
       backgroundColor: 'transparent',
@@ -104,7 +116,7 @@ const useSidebarItemStyles = makeStyles(theme => {
     // Scoped so sidebar item styles win over upstream without !important
     administrationGroup: {
       '& $submenuItem': {
-        '& .MuiSvgIcon-root': { fontSize: '20px' },
+        '& .MuiSvgIcon-root': { fontSize: '14px' },
       },
       '& $submenuItemActive': {
         borderRadius: 6,
@@ -112,6 +124,12 @@ const useSidebarItemStyles = makeStyles(theme => {
           dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)'
         }`,
         backgroundColor: dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.06)',
+        borderLeft: `1px solid ${
+          dark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)'
+        }`,
+        '& [data-testid="login-button"]': {
+          marginLeft: 0,
+        },
       },
       '& $inactiveItem': {
         backgroundColor: 'transparent',
