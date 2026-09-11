@@ -35,6 +35,10 @@ export const SidebarContent = NavContentBlueprint.make({
         <SidebarItem icon={() => item.icon} to={item.href} text={item.title} />
       ));
 
+      // Consume so the `/` → `/catalog` redirect is not listed in the sidebar.
+      nav.take('page:app/home-redirect');
+      const rbacItem = nav.take('page:rbac');
+
       return (
         <Sidebar>
           <SidebarLogo />
@@ -49,6 +53,7 @@ export const SidebarContent = NavContentBlueprint.make({
           </SidebarGroup>
           <SidebarSpace />
           <SidebarDivider />
+          {rbacItem}
           <SidebarGroup
             label="Settings"
             icon={<UserSettingsSignInAvatar />}
