@@ -85,8 +85,8 @@ const useStyles = makeStyles()(theme => ({
   tabButtonActive: {
     color: theme.palette.text.primary,
     fontWeight: 600,
-    borderBottom: `2px solid var(--pf-t--global--color--brand--default, ${theme.palette.primary.main})`,
-    borderRadius: 0,
+    borderBottom: `2px solid var(--pf-t--global--color--brand--default, ${theme.palette.primary.main}) !important`,
+    borderRadius: '0 !important',
   },
   tabContent: {
     flex: 1,
