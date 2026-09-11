@@ -44,7 +44,7 @@ import {
 } from '@backstage/dev-utils';
 
 import { extensionsPage, extensionsTranslationsModule } from '../src/alpha';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 import { extensionsApiRef, dynamicPluginsInfoApiRef } from '../src/api';
 import { allRoutes } from '../src/routes';
 import { MockExtensionsApi } from './__data__/mockExtensions';

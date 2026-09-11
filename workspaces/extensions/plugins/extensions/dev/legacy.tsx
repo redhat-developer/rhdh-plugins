@@ -20,7 +20,7 @@ import { createDevApp } from '@backstage/dev-utils';
 import { mockApis, TestApiProvider } from '@backstage/test-utils';
 import { configApiRef } from '@backstage/core-plugin-api';
 
-import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 
 import {
   extensionsPlugin,
