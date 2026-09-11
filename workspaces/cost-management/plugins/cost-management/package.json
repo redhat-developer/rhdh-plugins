@@ -14,6 +14,8 @@
   "dependencies": {
     "@backstage/core-components": "^0.18.13",
     "@backstage/core-plugin-api": "^1.12.9",
+    "@backstage/frontend-plugin-api": "^0.18.0",
+    "@backstage/plugin-app-react": "^0.2.6",
     "@backstage/plugin-permission-common": "^0.9.10",
     "@backstage/plugin-permission-react": "^0.5.4",
     "@backstage/theme": "^0.7.3",
@@ -49,6 +51,8 @@
     "@backstage/cli": "^0.36.5",
     "@backstage/core-app-api": "^1.20.4",
     "@backstage/dev-utils": "^1.1.26",
+    "@backstage/frontend-defaults": "^0.5.5",
+    "@backstage/frontend-test-utils": "^0.6.3",
     "@backstage/plugin-search-react": "^1.11.7",
     "@backstage/test-utils": "^1.7.21",
     "@testing-library/dom": "^10.0.0",
@@ -62,6 +66,7 @@
   },
   "exports": {
     ".": "./src/index.ts",
+    "./alpha": "./src/alpha.tsx",
     "./package.json": "./package.json"
   },
   "files": [
@@ -90,12 +95,16 @@
     "postpack": "backstage-cli package postpack",
     "prepack": "backstage-cli package prepack",
     "start": "backstage-cli package start",
+    "start:legacy": "backstage-cli package start --entrypoint=dev/legacy.tsx",
     "test": "backstage-cli package test"
   },
   "sideEffects": false,
   "types": "src/index.ts",
   "typesVersions": {
     "*": {
+      "alpha": [
+        "src/alpha.tsx"
+      ],
       "package.json": [
         "package.json"
       ]

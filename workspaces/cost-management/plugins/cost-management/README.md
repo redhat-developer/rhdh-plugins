@@ -44,7 +44,34 @@ You can follow one of these options depending on your environment and how you ch
    backend.add(import('@red-hat-developer-hub/plugin-cost-management-backend'));
    ```
 
-1. Add the `ResourceOptimizationPage` extension to your `App.tsx` routes
+1. Add the frontend plugin to your app.
+
+   **New Frontend System** (RHDH 2.1 / `app-next`):
+
+   ```ts
+   import costManagementPlugin from '@red-hat-developer-hub/plugin-cost-management/alpha';
+
+   const app = createApp({
+     features: [costManagementPlugin],
+   });
+   ```
+
+   Sidebar items come from the plugin: **Optimizations** (`/cost-management/optimizations`) and **Cost Management** (`/cost-management/openshift`). Optional overrides:
+
+   ```yaml
+   app:
+     extensions:
+       - page:cost-management:
+           config:
+             title: Optimizations
+             path: /cost-management/optimizations
+       - page:cost-management/openshift:
+           config:
+             title: Cost Management
+             path: /cost-management/openshift
+   ```
+
+   **Legacy frontend** (`FlatRoutes`):
 
    ```ts
    // packages/app/src/App.tsx

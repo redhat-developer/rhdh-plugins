@@ -14,26 +14,9 @@
  * limitations under the License.
  */
 
-/**
- * New Frontend System plugin standalone (yarn start / yarn start:fe-plugin).
- * Legacy createDevApp: yarn start:legacy
- */
-
 import '@backstage/cli/asset-types';
-
 import ReactDOM from 'react-dom/client';
-import { createApp } from '@backstage/frontend-defaults';
 
-import costManagementPlugin from '../src/alpha';
+import App from './App';
 
-const DEFAULT_PATH = '/cost-management/optimizations';
-
-const app = createApp({
-  features: [costManagementPlugin],
-});
-
-if (typeof window !== 'undefined' && window.location.pathname === '/') {
-  window.location.pathname = DEFAULT_PATH;
-}
-
-ReactDOM.createRoot(document.getElementById('root')!).render(app.createRoot());
+ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
