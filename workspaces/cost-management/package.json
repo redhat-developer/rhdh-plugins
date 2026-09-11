@@ -10,6 +10,7 @@
     "start-app": "yarn workspace app start",
     "start-backend": "yarn workspace backend start",
     "start:fe-plugin": "yarn workspace @red-hat-developer-hub/plugin-cost-management start",
+    "start:fe-plugin:legacy": "yarn workspace @red-hat-developer-hub/plugin-cost-management start:legacy",
     "start:be-plugin": "yarn workspace @red-hat-developer-hub/plugin-cost-management-backend start",
     "start:dev": "concurrently -c auto -n \"fe,be\" -p \"{name}:{pid}\" \"yarn start:fe-plugin\" \"yarn start:be-plugin\"",
     "tsc": "tsc",

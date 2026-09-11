@@ -21,7 +21,26 @@ import { OptimizationsBreakdownPage } from './pages/optimizations-breakdown/Opti
 import { OpenShiftPage } from './pages/openshift/OpenShiftPage';
 import { usePatternFlyTheme } from './hooks/usePatternFlyTheme';
 
-/** @public */
+const notFound = <ErrorPage status="404" statusMessage="Page not found" />;
+
+/**
+ * NFS Optimizations page loader: list + breakdown only.
+ * OpenShift is a separate PageBlueprint, not a child of this mount.
+ */
+export function OptimizationsRouter() {
+  usePatternFlyTheme();
+
+  return (
+    <Routes>
+      <Route path="/" element={<OptimizationsPage />} />
+      <Route path="/optimizations" element={<OptimizationsPage />} />
+      <Route path="/:id/*" element={<OptimizationsBreakdownPage />} />
+      <Route path="*" element={notFound} />
+    </Routes>
+  );
+}
+
+/** @public Legacy ResourceOptimizationPage mount (still includes nested /openshift). */
 export function Router() {
   usePatternFlyTheme();
 
@@ -31,10 +50,7 @@ export function Router() {
       <Route path="/optimizations" element={<OptimizationsPage />} />
       <Route path="/openshift" element={<OpenShiftPage />} />
       <Route path="/:id/*" element={<OptimizationsBreakdownPage />} />
-      <Route
-        path="*"
-        element={<ErrorPage status="404" statusMessage="Page not found" />}
-      />
+      <Route path="*" element={notFound} />
     </Routes>
   );
 }
