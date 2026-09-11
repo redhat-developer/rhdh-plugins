@@ -82,7 +82,7 @@
     "@backstage/cli": "^0.36.5",
     "@backstage/dev-utils": "^1.1.26",
     "@backstage/test-utils": "^1.7.21",
-    "@red-hat-developer-hub/backstage-plugin-theme": "^0.14.11",
+    "@red-hat-developer-hub/backstage-plugin-theme": "^1.2.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^14.0.0",
     "react": "^17.0.0 || ^18.0.0",
