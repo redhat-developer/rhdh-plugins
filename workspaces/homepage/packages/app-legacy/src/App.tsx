@@ -37,7 +37,7 @@ import {
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { UserSettingsPage } from '@backstage/plugin-user-settings';
-import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { getThemes } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 import { apis } from './apis';
 import { entityPage } from './components/catalog/EntityPage';
 import { searchPage } from './components/search/SearchPage';
@@ -62,7 +62,7 @@ import { githubAuthApiRef } from '@backstage/core-plugin-api';
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
 
-import { RbacPage } from '@backstage-community/plugin-rbac';
+import { RbacPage } from '@backstage-community/plugin-rbac/legacy';
 
 import {
   DynamicHomePage,

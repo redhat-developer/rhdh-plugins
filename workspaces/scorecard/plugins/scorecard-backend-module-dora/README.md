@@ -57,7 +57,7 @@ metadata:
 | ------------------------------- | ------------------------------- | ------- | ---------------------------------------- | --------------------------------------------------------------------------------- |
 | `dora.deploymentFrequency`      | `dora.deploymentFrequency`      | `/week` | elite `>=7`, medium `1-7`, low `<1`      | [deployment-frequency.md](./docs/metrics/deployment-frequency.md)                 |
 | `dora.medianLeadTimeForChanges` | `dora.medianLeadTimeForChanges` | `h`     | elite `<24`, medium `24-168`, low `>168` | [median-lead-time-for-changes.md](./docs/metrics/median-lead-time-for-changes.md) |
-| `dora.meanTimeToRestore`        | `dora.meanTimeToRestore`        | `h`     | elite `<1`, medium `1-24`, low `>24`     | [mean-time-to-restore.md](./docs/metrics/mean-time-to-restore.md)                 |
+| `dora.medianTimeToRestore`      | `dora.medianTimeToRestore`      | `h`     | elite `<1`, medium `1-24`, low `>24`     | [median-time-to-restore.md](./docs/metrics/median-time-to-restore.md)             |
 | `dora.changeFailureRate`        | `dora.changeFailureRate`        | `%`     | elite `<5`, medium `5-15`, low `>15`     | [change-failure-rate.md](./docs/metrics/change-failure-rate.md)                   |
 
 ## Threshold customization
@@ -89,7 +89,7 @@ scorecard:
               expression: '<1'
 ```
 
-Paths follow `scorecard.metricProviders.dora.<metricProviderName>.thresholds` (update `metricProviderName` to `deploymentFrequency`, `medianLeadTimeForChanges`, `meanTimeToRestore` or `changeFailureRate`).
+Paths follow `scorecard.metricProviders.dora.<metricProviderName>.thresholds` (update `metricProviderName` to `deploymentFrequency`, `medianLeadTimeForChanges`, `medianTimeToRestore` or `changeFailureRate`).
 
 **Entity annotation example** (overrides selected keys; others keep app-config or defaults):
 
@@ -119,10 +119,14 @@ You can replace default collector IDs via `app-config.yaml` as long as your coll
 
 - `dora.deploymentFrequency` [collector contracts](./docs/metrics/deployment-frequency.md#collectors)
 - `dora.medianLeadTimeForChanges` [collector contracts](./docs/metrics/median-lead-time-for-changes.md#collectors)
-- `dora.meanTimeToRestore` [collector contracts](./docs/metrics/mean-time-to-restore.md#collectors)
+- `dora.medianTimeToRestore` [collector contracts](./docs/metrics/median-time-to-restore.md#collectors)
 - `dora.changeFailureRate` [collector contracts](./docs/metrics/change-failure-rate.md#collectors)
 
 Collector inputs are merged with provider-generated required inputs. This lets you pass extra collector-specific fields (for example `workflowName` when using a workflow-runs based collector) as long as required contract fields are still supported.
+
+Changing a collector's `id` or `input` starts a new data identity and refetches the full 30-day window.
+
+Updating a catalog entity annotations does **not** invalidate stored DORA data. Dora deployments, incidents and pull requests stay keyed to the `catalog_entity_ref` captured at write time.
 
 ```yaml
 scorecard:
@@ -137,6 +141,7 @@ scorecard:
               input:
                 # merged with generated from/to window
                 # your collector-specific options
+                fetchMaxItems: 10000
       medianLeadTimeForChanges:
         options:
           productionEnvironments: [production, prod]
@@ -157,7 +162,31 @@ DORA providers follow Scorecard scheduling settings under their metric keys:
 
 - `scorecard.metricProviders.dora.deploymentFrequency.schedule`
 - `scorecard.metricProviders.dora.medianLeadTimeForChanges.schedule`
-- `scorecard.metricProviders.dora.meanTimeToRestore.schedule`
+- `scorecard.metricProviders.dora.medianTimeToRestore.schedule`
 - `scorecard.metricProviders.dora.changeFailureRate.schedule`
 
 See [providers.md](../scorecard-backend/docs/providers.md#metric-collection-scheduling) for schedule schema and defaults.
+
+## Data retention and staleness
+
+Configure DORA module data retention and collector staleness behavior under
+`scorecard.plugins.dora`:
+
+```yaml
+scorecard:
+  plugins:
+    dora:
+      dataRetentionDays: 365
+      staleAfterMs: 60000 # 1 minute
+      deploymentLookbackMs: 172800000 # 48 hours
+      incidentLookbackMs: 300000 # 5 minutes
+```
+
+- `dataRetentionDays`: how long source rows (deployments, incidents, pull requests linked to expired deployments and sync watermarks) are retained before cleanup. Must be at least `30` (the DORA metric computation window). Default: `365`.
+- `staleAfterMs`: freshness threshold in milliseconds for deployments and incidents; if the last sync is within this window, those collectors are not refreshed. Must be greater than or equal to `0`. Set to `0` to always refresh. Default: `60000`. Pull request sync is not gated by `staleAfterMs`; PRs are fetched once per deployment when none are stored yet.
+- `deploymentLookbackMs`: when refreshing deployments, re-query from `max(windowFrom, lastSync − lookback)` by `createdAt` so deployments that succeed shortly after the previous lastSync watermark are not missed. Only new succeeded deployments are stored, **existing deployment rows are not updated** as successful deployment (commit SHA, environment, `createdAt`) is considered immutable.
+  - Must be greater than or equal to `0` and at most `30` days. Set to `0` for watermark-only incremental refresh. Default: `172800000` (48 hours).
+- `incidentLookbackMs`: when refreshing incidents, re-query from `max(windowFrom, lastSync − lookback)` by `updatedAt`, to absorb clock skew between Scorecard and the incident source as well as source-system index lag.
+  - Must be greater than or equal to `0` and at most `30` days. Set to `0` for watermark-only incremental refresh. Default: `300000` (5 minutes).
+
+The module schedules a daily background task, `scorecard-dora:cleanup-expired-data`, that deletes deployments, incidents, pull requests linked to expired deployments and sync watermarks older than `dataRetentionDays`.

@@ -693,20 +693,19 @@ case "${PHASE}" in
     REPORT_MD="${OUTPUT_DIR}/adversarial-report-${ACTUAL_PHASE}.md"
     REPORT_JSON_DEST="${OUTPUT_DIR}/adversarial-report-${ACTUAL_PHASE}.json"
 
-    cd /app
-    # Telemetry lands in /app (Python CWD) — outside the target git repo.
-    # Set SOURCE_BASE before run_x2a so cleanup picks up telemetry even on failure.
-    SOURCE_BASE="/app"
+    # Run from /workspace (writable) so telemetry lands there, not in read-only /app.
+    SOURCE_BASE="/workspace"
+    cd "${SOURCE_BASE}"
 
-    run_x2a uv run app.py adversarial-run \
+    run_x2a uv run --project /app /app/app.py adversarial-run \
       --phase "${ACTUAL_PHASE}" \
       --source-dir "${SOURCE_DIR}" \
       --config "${AGENTS_CONFIG}" \
       --report-path "${REPORT_MD}"
 
-    if [[ -f "/app/agent-adversarial-report.json" ]]; then
-      cp "/app/agent-adversarial-report.json" "${REPORT_JSON_DEST}"
-      ARTIFACTS+=("adversarial_report_json:$(cat /app/agent-adversarial-report.json)")
+    if [[ -f "/workspace/agent-adversarial-report.json" ]]; then
+      cp "/workspace/agent-adversarial-report.json" "${REPORT_JSON_DEST}"
+      ARTIFACTS+=("adversarial_report_json:$(cat /workspace/agent-adversarial-report.json)")
     fi
 
     echo ""

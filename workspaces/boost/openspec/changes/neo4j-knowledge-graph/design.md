@@ -123,7 +123,7 @@ neo4j-admin database drop neo4j
 neo4j-admin database create neo4j
 
 # Adapter will detect all entities as unsynchronized and rebuild graph
-# Requires ai-catalog.admin permission
+# Requires the `boost.admin` permission
 curl -X POST http://backstage-backend/api/neo4j-sync/trigger-full-sync \
   -H "Authorization: Bearer <admin-token>"
 ```

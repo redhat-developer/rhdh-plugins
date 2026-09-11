@@ -1,5 +1,8 @@
 # Proposal: Connector Configuration Hot-Reload
 
+> **Release boundary:** Follow-on Boost backend/admin work; not part of the
+> RHDH 2.1 frontend and OGX release baseline.
+
 ## Why
 
 > **RHDHPLAN-1513 Consolidation (2026-07-08):** Epic RHIDP-15333 (Ingestion Audit Logging & Metrics) was closed — its scope has been absorbed by RHIDP-15277 (AI Catalog RBAC Audit Logging) under RHDHPLAN-1508. This hot-reload epic (RHIDP-15332) is unaffected — it remains a surviving RHDHPLAN-1513 epic alongside RHIDP-15331 (Ingestion Health Dashboard) and RHIDP-15334 (Upstream Schema Alignment). Config change audit events (originally RHIDP-15333 scope) are now delivered under RHIDP-15277/RHIDP-15280 — connector config changes should emit audit events using the RHIDP-15277 pattern.
@@ -34,7 +37,8 @@ The key distinction: Backstage's built-in `ConfigApi` loads config at startup wi
 - K8s Secret reference field (display only — Secret names are deployment-time config)
 - Changes saved via `AdminConfigService` DB overrides
 - Takes effect via `RuntimeConfigResolver` hot-reload pattern
-- RBAC gating: admin-only access to connector config
+- RBAC gating: connector config writes require the existing
+  `boost.config.manage` permission
 
 ## Impact
 

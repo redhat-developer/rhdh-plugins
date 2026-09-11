@@ -228,6 +228,7 @@ const mockScalarAggregationScorecard: AggregatedMetricResult = {
     thresholds: DEFAULT_NUMBER_THRESHOLDS,
     entitiesConsidered: 4,
     calculationErrorCount: 0,
+    aggregationChartDisplayColor: 'warning.main',
   },
 };
 
@@ -538,10 +539,9 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
         '4 entities',
       );
       expect(screen.getByTestId('scalar-stat-value')).toHaveTextContent('12');
-      expect(screen.getByTestId('scalar-stat-tile')).toHaveAttribute(
-        'data-threshold-status',
-        'warning',
-      );
+      expect(screen.getByTestId('scalar-stat-tile')).toHaveStyle({
+        backgroundColor: 'rgba(240, 171, 0, 0.16)',
+      });
       expect(screen.getByTestId('scalar-stat-label')).toHaveTextContent(
         aggregationType.charAt(0).toUpperCase() + aggregationType.slice(1),
       );
@@ -565,6 +565,7 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
             value: 0,
             entitiesConsidered: 5,
             calculationErrorCount: 5,
+            aggregationChartDisplayColor: null,
           },
         }}
         aggregationId={mockScalarAggregationScorecard.id}
@@ -578,10 +579,9 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
       '0/5 entities',
     );
     expect(screen.getByTestId('scalar-stat-value')).toHaveTextContent('0');
-    expect(screen.getByTestId('scalar-stat-tile')).toHaveAttribute(
-      'data-threshold-status',
-      '',
-    );
+    expect(screen.getByTestId('scalar-stat-tile')).toHaveStyle({
+      backgroundColor: 'rgba(224, 224, 224, 0.16)',
+    });
   });
 
   it('should skip threshold coloring when a scalar aggregation has no entities', () => {
@@ -595,6 +595,7 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
             value: 0,
             entitiesConsidered: 0,
             calculationErrorCount: 0,
+            aggregationChartDisplayColor: null,
           },
         }}
         aggregationId={mockScalarAggregationScorecard.id}
@@ -605,10 +606,9 @@ describe('AggregatedMetricCard (homepage scorecard)', () => {
     );
 
     expect(screen.getByTestId('scalar-stat-value')).toHaveTextContent('0');
-    expect(screen.getByTestId('scalar-stat-tile')).toHaveAttribute(
-      'data-threshold-status',
-      '',
-    );
+    expect(screen.getByTestId('scalar-stat-tile')).toHaveStyle({
+      backgroundColor: 'rgba(224, 224, 224, 0.16)',
+    });
   });
 
   it('should render ScalarStatCard for an unknown type when the result is scalar-shaped', () => {
