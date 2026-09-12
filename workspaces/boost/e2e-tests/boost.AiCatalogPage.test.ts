@@ -215,7 +215,9 @@ test.describe('Boost AI Catalog', () => {
     await expect(catalogCount(page, 2)).toBeVisible();
   });
 
-  test('uses a mobile filter drawer on smaller screens', async ({ page }) => {
+  test('uses a mobile filter drawer on smaller screens', async ({
+    page,
+  }, testInfo) => {
     await page.setViewportSize({ width: 768, height: 900 });
     await loadTwoAssetCatalog(page);
 
@@ -228,6 +230,12 @@ test.describe('Boost AI Catalog', () => {
     await expect(
       dialog.getByRole('navigation', { name: 'Filters' }),
     ).toBeVisible();
+    await runAccessibilityTests(
+      page,
+      testInfo,
+      'mobile-filter-drawer-accessibility.json',
+      { disableRules: ['nested-interactive', 'color-contrast'] },
+    );
 
     await dialog.getByRole('button', { name: 'All Type' }).click();
     await page

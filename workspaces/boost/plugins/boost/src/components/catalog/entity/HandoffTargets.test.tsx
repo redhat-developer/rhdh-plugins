@@ -15,6 +15,7 @@
  */
 
 import type { Entity } from '@backstage/catalog-model';
+import { errorApiRef } from '@backstage/core-plugin-api';
 import {
   type CatalogApi,
   catalogApiRef,
@@ -61,11 +62,18 @@ const target: Entity = {
 const mockCatalogApi: Pick<jest.Mocked<CatalogApi>, 'getEntitiesByRefs'> = {
   getEntitiesByRefs: jest.fn(),
 };
+const mockErrorApi = {
+  post: jest.fn(),
+  error$: jest.fn(),
+};
 
 function renderTargets(refs: string[]) {
   return renderInTestApp(
     <TestApiProvider
-      apis={[[catalogApiRef, mockCatalogApi as unknown as CatalogApi]]}
+      apis={[
+        [catalogApiRef, mockCatalogApi as unknown as CatalogApi],
+        [errorApiRef, mockErrorApi],
+      ]}
     >
       <HandoffTargets refs={refs} />
     </TestApiProvider>,
@@ -75,6 +83,7 @@ function renderTargets(refs: string[]) {
 describe('HandoffTargets', () => {
   beforeEach(() => {
     mockCatalogApi.getEntitiesByRefs.mockReset();
+    mockErrorApi.post.mockReset();
   });
 
   it('renders resolved targets as links', async () => {
@@ -97,5 +106,17 @@ describe('HandoffTargets', () => {
       expect(screen.getByText(ref)).toBeInTheDocument();
     });
     expect(screen.queryByRole('link')).toBeNull();
+  });
+
+  it('renders unresolved targets when lookup fails', async () => {
+    const ref = 'airesource:default/unavailable-agent';
+    mockCatalogApi.getEntitiesByRefs.mockRejectedValue(new Error('offline'));
+
+    await renderTargets([ref]);
+
+    await waitFor(() => {
+      expect(screen.getByText(ref)).toBeInTheDocument();
+    });
+    expect(mockErrorApi.post).toHaveBeenCalledWith(expect.any(Error));
   });
 });
