@@ -114,6 +114,7 @@ export const AiCatalogTable = ({ entities, sort }: AiCatalogTableProps) => {
         columnConfig={columns}
         pagination={{ type: 'none' }}
         sort={sort}
+        rowConfig={{ getHref: item => item.href }}
         className={styles.table}
       />
     </div>

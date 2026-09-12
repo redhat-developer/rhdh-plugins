@@ -15,8 +15,13 @@
  */
 
 import { type Entity } from '@backstage/catalog-model';
+import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { EntityProvider } from '@backstage/plugin-catalog-react';
-import { renderInTestApp } from '@backstage/test-utils';
+import {
+  permissionApiRef,
+  type PermissionApi,
+} from '@backstage/plugin-permission-react';
+import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 import { fireEvent, screen } from '@testing-library/react';
 
 import { boostMessages } from '../../../translations/ref';
@@ -24,6 +29,9 @@ import { UsageCard } from './UsageCard';
 
 const { catalog: msg } = boostMessages;
 const writeText = jest.fn();
+const permissionApi: jest.Mocked<PermissionApi> = {
+  authorize: jest.fn(),
+};
 
 const skillEntity: Entity = {
   apiVersion: 'backstage.io/v1alpha1',
@@ -152,17 +160,24 @@ const noActionEntity: Entity = {
   },
 };
 
-function renderWithEntity(entity: Entity) {
+function renderWithEntity(entity: Entity, allowed = true) {
+  permissionApi.authorize.mockResolvedValue({
+    result: allowed ? AuthorizeResult.ALLOW : AuthorizeResult.DENY,
+  });
+
   return renderInTestApp(
-    <EntityProvider entity={entity}>
-      <UsageCard />
-    </EntityProvider>,
+    <TestApiProvider apis={[[permissionApiRef, permissionApi]]}>
+      <EntityProvider entity={entity}>
+        <UsageCard />
+      </EntityProvider>
+    </TestApiProvider>,
   );
 }
 
 describe('UsageCard', () => {
   beforeEach(() => {
     writeText.mockReset().mockResolvedValue(undefined);
+    permissionApi.authorize.mockReset();
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
       value: { writeText },
@@ -178,6 +193,23 @@ describe('UsageCard', () => {
     expect(
       screen.getByRole('button', { name: msg.card.copyCommand }),
     ).toBeInTheDocument();
+  });
+
+  it('does not render usage actions without permission', async () => {
+    const deniedEntity = {
+      ...skillEntity,
+      metadata: {
+        ...skillEntity.metadata,
+        name: 'denied-skill',
+        uid: 'uid-denied',
+      },
+    };
+    await renderWithEntity(deniedEntity, false);
+
+    expect(screen.queryByText('npx skills add code-review-skill')).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: msg.card.copyCommand }),
+    ).toBeNull();
   });
 
   it('shows copied feedback after copying a command', async () => {

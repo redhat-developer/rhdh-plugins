@@ -8944,6 +8944,7 @@ __metadata:
     "@backstage/frontend-test-utils": "npm:^0.6.3"
     "@backstage/plugin-app-react": "npm:^0.2.6"
     "@backstage/plugin-catalog-react": "npm:^3.2.2"
+    "@backstage/plugin-permission-common": "npm:^0.9.10"
     "@backstage/plugin-permission-react": "npm:^0.5.4"
     "@backstage/test-utils": "npm:^1.7.21"
     "@backstage/ui": "npm:^0.17.1"

@@ -15,7 +15,9 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
+import { stringifyEntityRef } from '@backstage/catalog-model';
 import { useEntity } from '@backstage/plugin-catalog-react';
+import { usePermission } from '@backstage/plugin-permission-react';
 import {
   Button,
   Card,
@@ -30,6 +32,8 @@ import {
   RiExternalLinkLine,
   RiFileCopyLine,
 } from '@remixicon/react';
+
+import { aiCatalogAssetAccessUsageDocsPermission } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 
 import { useTranslation } from '../../../hooks/useTranslation';
 import { getUsageAction } from '../../../utils/usageActions';
@@ -120,6 +124,12 @@ function CopyCommand({ value }: { value: string }) {
 export const UsageCard = () => {
   const { entity } = useEntity();
   const { t } = useTranslation();
+  const { loading, allowed } = usePermission({
+    permission: aiCatalogAssetAccessUsageDocsPermission,
+    resourceRef: stringifyEntityRef(entity),
+  });
+
+  if (loading || !allowed) return null;
 
   const action = getUsageAction(entity);
 
