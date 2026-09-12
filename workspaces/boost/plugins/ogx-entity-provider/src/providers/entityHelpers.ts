@@ -57,9 +57,9 @@ export function sanitizeEntityName(name: string): string {
 /**
  * Maps a createdBy user reference to a catalog owner ref.
  *
- * Returns undefined when the source does not provide an owner. An
- * unavailable owner should be omitted rather than represented by a fake
- * entity reference such as "unknown".
+ * Returns undefined when the source does not provide an owner. Provider
+ * callers must choose a schema-valid fallback when their entity schema
+ * requires an owner.
  *
  * @internal
  */

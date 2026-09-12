@@ -133,7 +133,7 @@ export class OgxAgentEntityProvider implements EntityProvider {
       }
     }
 
-    const owner = mapOwner(agent.createdBy);
+    const owner = mapOwner(agent.createdBy) ?? 'unknown';
 
     return {
       apiVersion: 'backstage.io/v1alpha1',
@@ -147,7 +147,7 @@ export class OgxAgentEntityProvider implements EntityProvider {
       spec: {
         type: 'agent',
         lifecycle: mapLifecycleStage(agent.lifecycleStage),
-        ...(owner && { owner }),
+        owner,
         ...(agent.model && { model: agent.model }),
         ...(agent.tools && agent.tools.length > 0 && { tools: agent.tools }),
         instructions:

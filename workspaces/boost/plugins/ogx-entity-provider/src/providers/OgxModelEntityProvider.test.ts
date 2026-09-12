@@ -191,6 +191,7 @@ describe('OgxModelEntityProvider', () => {
     expect(entity.metadata.annotations[AI_ASSET_VERSION_ANNOTATION]).toBe(
       '0.0.0-unknown',
     );
+    expect(entity.spec.owner).toBe('unknown');
   });
 
   it('should send Authorization header when apiKey is configured', async () => {
