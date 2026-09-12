@@ -16,7 +16,7 @@
 
 import { RiBrainLine, RiMagicLine } from '@remixicon/react';
 
-import { getAllCategories, getCategoryMeta } from './categoryMeta';
+import { getCategoryMeta } from './categoryMeta';
 
 describe('getCategoryMeta', () => {
   it('returns Skills metadata for skill', () => {
@@ -32,19 +32,5 @@ describe('getCategoryMeta', () => {
   it('returns Unknown fallback for missing or unrecognized types', () => {
     expect(getCategoryMeta(undefined).label).toBe('Unknown');
     expect(getCategoryMeta('not-a-category').icon).toBe(RiBrainLine);
-  });
-});
-
-describe('getAllCategories', () => {
-  it('returns every known category id and label', () => {
-    const categories = getAllCategories();
-    expect(categories).toEqual(
-      expect.arrayContaining([
-        { id: 'skill', label: 'Skills' },
-        { id: 'agent', label: 'Agents' },
-        { id: 'mcp-server', label: 'MCP Servers' },
-      ]),
-    );
-    expect(categories).toHaveLength(7);
   });
 });

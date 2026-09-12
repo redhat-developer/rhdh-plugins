@@ -89,8 +89,8 @@ describe('sanitizeEntityName', () => {
 });
 
 describe('mapOwner', () => {
-  it('returns unknown for undefined input', () => {
-    expect(mapOwner(undefined)).toBe('unknown');
+  it('returns undefined when no owner is provided', () => {
+    expect(mapOwner(undefined)).toBeUndefined();
   });
 
   it('wraps bare username as user:default/<name>', () => {

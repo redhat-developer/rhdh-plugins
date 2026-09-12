@@ -14,15 +14,36 @@
  * limitations under the License.
  */
 
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { type ReactNode, createElement } from 'react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation, useNavigationType } from 'react-router-dom';
 
 import { useUrlFilters } from './useUrlFilters';
 
 function wrapper(initialUrl = '/') {
   return ({ children }: { children: ReactNode }) =>
     createElement(MemoryRouter, { initialEntries: [initialUrl] }, children);
+}
+
+function wrapperWithLocation(initialUrl: string) {
+  let currentSearch = '';
+  let currentNavigationType = '';
+  const LocationProbe = () => {
+    currentSearch = useLocation().search;
+    currentNavigationType = useNavigationType();
+    return null;
+  };
+  return {
+    wrapper: ({ children }: { children: ReactNode }) =>
+      createElement(
+        MemoryRouter,
+        { initialEntries: [initialUrl] },
+        createElement(LocationProbe),
+        children,
+      ),
+    getSearch: () => currentSearch,
+    getNavigationType: () => currentNavigationType,
+  };
 }
 
 describe('useUrlFilters', () => {
@@ -51,6 +72,37 @@ describe('useUrlFilters', () => {
     expect(result.current.filterValues.size).toBe(1);
     expect(result.current.filterValues.has('page')).toBe(false);
     expect(result.current.filterValues.has('view')).toBe(false);
+  });
+
+  it('keeps filter values stable when unrelated URL state changes', () => {
+    const { result } = renderHook(() => useUrlFilters(['type']), {
+      wrapper: wrapper('/?type=skill&page=2'),
+    });
+    const initialFilterValues = result.current.filterValues;
+
+    act(() => result.current.setPage(3));
+    expect(result.current.filterValues).toBe(initialFilterValues);
+
+    act(() => result.current.setViewMode('table'));
+    expect(result.current.filterValues).toBe(initialFilterValues);
+  });
+
+  it('updates filter values when dynamic filter names change', () => {
+    const { result, rerender } = renderHook(
+      ({ filterParams }: { filterParams: string[] }) =>
+        useUrlFilters(filterParams),
+      {
+        initialProps: { filterParams: ['type'] },
+        wrapper: wrapper('/?type=skill&owner=skill'),
+      },
+    );
+
+    expect(result.current.filterValues.get('type')).toEqual(['skill']);
+
+    rerender({ filterParams: ['owner'] });
+
+    expect(result.current.filterValues.has('type')).toBe(false);
+    expect(result.current.filterValues.get('owner')).toEqual(['skill']);
   });
 
   it('returns empty map when no filter params are in URL', () => {
@@ -131,11 +183,60 @@ describe('useUrlFilters', () => {
     expect(result.current.pageSize).toBe(50);
   });
 
-  it('clamps pageSize between 1 and 100', () => {
+  it.each([10, 20, 50])('accepts page size %d', pageSize => {
     const { result } = renderHook(() => useUrlFilters([]), {
-      wrapper: wrapper('/?pageSize=999'),
+      wrapper: wrapper(`/?pageSize=${pageSize}`),
     });
 
-    expect(result.current.pageSize).toBe(100);
+    expect(result.current.pageSize).toBe(pageSize);
+  });
+
+  it.each(['999', '25', '-1', 'not-a-number'])(
+    'defaults invalid pageSize %s to 20 and removes it from the URL',
+    async invalidPageSize => {
+      const route = wrapperWithLocation(`/?pageSize=${invalidPageSize}`);
+      const { result } = renderHook(() => useUrlFilters([]), {
+        wrapper: route.wrapper,
+      });
+
+      expect(result.current.pageSize).toBe(20);
+      await waitFor(() => expect(route.getSearch()).toBe(''));
+    },
+  );
+
+  it.each(['cards', 'TABLE', 'unknown'])(
+    'defaults invalid view %s to grid and removes it from the URL',
+    async invalidView => {
+      const route = wrapperWithLocation(`/?view=${invalidView}`);
+      const { result } = renderHook(() => useUrlFilters([]), {
+        wrapper: route.wrapper,
+      });
+
+      expect(result.current.viewMode).toBe('grid');
+      await waitFor(() => expect(route.getSearch()).toBe(''));
+    },
+  );
+
+  it.each(['-1', '1.5', 'bad'])(
+    'defaults invalid page %s to zero and removes it from the URL',
+    async invalidPage => {
+      const route = wrapperWithLocation(`/?page=${invalidPage}`);
+      const { result } = renderHook(() => useUrlFilters([]), {
+        wrapper: route.wrapper,
+      });
+
+      expect(result.current.page).toBe(0);
+      await waitFor(() => expect(route.getSearch()).toBe(''));
+    },
+  );
+
+  it('preserves unrelated query parameters when repairing URL state', async () => {
+    const route = wrapperWithLocation(
+      '/?q=agent&view=invalid&pageSize=25&keep=me',
+    );
+    renderHook(() => useUrlFilters([]), { wrapper: route.wrapper });
+
+    await waitFor(() => expect(route.getSearch()).toBe('?q=agent&keep=me'));
+    expect(route.getNavigationType()).toBe('REPLACE');
   });
 });

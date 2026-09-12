@@ -51,11 +51,17 @@ const entities = [skill, agent];
 
 describe('builtinFilters', () => {
   describe('categoryFilterDefinition', () => {
-    it('returns all category options', () => {
+    it('returns only categories represented by the visible entities', () => {
       const options = categoryFilterDefinition.getOptions(entities);
-      expect(options.length).toBeGreaterThanOrEqual(5);
-      expect(options.find(o => o.id === 'skill')).toBeDefined();
-      expect(options.find(o => o.id === 'agent')).toBeDefined();
+      expect(options).toEqual([
+        { id: 'agent', label: 'Agents' },
+        { id: 'skill', label: 'Skills' },
+      ]);
+    });
+
+    it('does not expose categories that are not represented', () => {
+      const options = categoryFilterDefinition.getOptions([skill]);
+      expect(options).toEqual([{ id: 'skill', label: 'Skills' }]);
     });
 
     it('matches entity by spec.type', () => {

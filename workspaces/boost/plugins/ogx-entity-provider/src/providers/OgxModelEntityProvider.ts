@@ -213,6 +213,7 @@ export class OgxModelEntityProvider implements EntityProvider {
     const entityName = sanitizeEntityName('ogx-model-server');
     const modelNames = models.map(m => m.id);
     const firstOwner = models.find(m => m.owned_by)?.owned_by;
+    const owner = mapOwner(firstOwner) ?? 'unknown';
 
     return {
       apiVersion: 'backstage.io/v1alpha1',
@@ -221,6 +222,7 @@ export class OgxModelEntityProvider implements EntityProvider {
         name: entityName,
         title: 'OGX Model Server',
         description: `OGX model server at ${this.config.baseUrl} serving ${modelNames.length} models`,
+        links: [{ title: 'API', url: this.config.baseUrl }],
         annotations: {
           [ANNOTATION_LOCATION]: `${PROVIDER_ID}:${entityName}`,
           [ANNOTATION_ORIGIN_LOCATION]: `${PROVIDER_ID}:${entityName}`,
@@ -231,14 +233,11 @@ export class OgxModelEntityProvider implements EntityProvider {
             { entityRef: `aimodelserverapi:default/${entityName}` },
           ),
         },
-        labels: {
-          'ai-catalog.rhdh.com/provider': 'ogx',
-        },
       },
       spec: {
         type: 'ai-model-server',
         lifecycle: 'production',
-        owner: mapOwner(firstOwner),
+        owner,
         serverType: 'openai-v1',
         serverUrl: this.config.baseUrl,
         models: {

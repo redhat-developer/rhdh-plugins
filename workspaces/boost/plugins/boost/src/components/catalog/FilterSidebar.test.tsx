@@ -53,6 +53,42 @@ describe('FilterSidebar', () => {
     expect(screen.getByText('Owner')).toBeInTheDocument();
   });
 
+  it('shows All when a filter has no selected values', () => {
+    render(
+      <FilterSidebar
+        filters={[mockFilter('type', 'Type')]}
+        entities={[]}
+        values={new Map()}
+        onFilterChange={jest.fn()}
+      />,
+    );
+
+    expect(screen.getAllByText('catalog.filter.all').length).toBeGreaterThan(0);
+  });
+
+  it('keeps an option with the internal All value', () => {
+    const filter = {
+      ...mockFilter('type', 'Type'),
+      getOptions: () => [
+        { id: '__all__', label: 'Reserved value' },
+        { id: 'skill', label: 'Skills' },
+      ],
+    };
+
+    render(
+      <FilterSidebar
+        filters={[filter]}
+        entities={[]}
+        values={new Map([['type', ['__all__']]])}
+        onFilterChange={jest.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByRole('button', { name: 'Reserved value Type' }),
+    ).toBeInTheDocument();
+  });
+
   it('returns null when filters array is empty', () => {
     const { container } = render(
       <FilterSidebar
@@ -80,7 +116,7 @@ describe('FilterSidebar', () => {
 
     expect(screen.getByRole('navigation')).toHaveAttribute(
       'aria-label',
-      'catalog.page.title',
+      'catalog.filter.title',
     );
   });
 

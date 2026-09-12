@@ -79,8 +79,10 @@ describe('OgxAgentEntityProvider', () => {
         {
           id: 'code-assistant',
           name: 'Code Assistant',
+          version: '1.2.3',
           description: 'Helps with code',
           model: 'meta-llama/Llama-3.1-8B-Instruct',
+          tools: ['resource:default/web-search-tool'],
           createdBy: 'user:default/admin',
           lifecycleStage: 'published',
         },
@@ -110,16 +112,39 @@ describe('OgxAgentEntityProvider', () => {
     expect(entity.spec.owner).toBe('user:default/admin');
     expect(entity.spec.instructions).toBe('Helps with code');
     expect(entity.metadata.title).toBe('Code Assistant');
-    expect(entity.metadata.annotations['ai-catalog.rhdh.com/model']).toBe(
-      'meta-llama/Llama-3.1-8B-Instruct',
+    expect(entity.metadata.annotations[AI_ASSET_VERSION_ANNOTATION]).toBe(
+      '1.2.3',
     );
+    expect(entity.spec.model).toBe('meta-llama/Llama-3.1-8B-Instruct');
+    expect(entity.spec.tools).toEqual(['resource:default/web-search-tool']);
+    expect(
+      entity.metadata.annotations['ai-catalog.rhdh.com/model'],
+    ).toBeUndefined();
     expect(entity.metadata.annotations[AI_ASSET_CATEGORY_ANNOTATION]).toBe(
       'agent',
     );
     expect(entity.metadata.annotations[AI_ASSET_SOURCE_ANNOTATION]).toBe('ogx');
-    expect(entity.metadata.annotations[AI_ASSET_VERSION_ANNOTATION]).toBe(
-      '0.0.0-unknown',
-    );
+    expect(entity.metadata.labels).toBeUndefined();
+  });
+
+  it('uses unknown when an agent does not provide an owner', async () => {
+    const config: OgxEntityProviderConfig = {
+      baseUrl: 'http://localhost:8321',
+      agents: [{ id: 'ownerless-agent', name: 'Ownerless Agent' }],
+    };
+
+    const provider = new OgxAgentEntityProvider({
+      config,
+      logger: mockServices.logger.mock(),
+      taskRunner,
+    });
+
+    await provider.connect(mockConnection);
+    await taskRunner.runAll();
+
+    const mutation = (mockConnection.applyMutation as jest.Mock).mock
+      .calls[0][0];
+    expect(mutation.entities[0].entity.spec.owner).toBe('unknown');
   });
 
   it('should include all three required AI asset annotations', async () => {

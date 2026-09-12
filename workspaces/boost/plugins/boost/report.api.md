@@ -5,7 +5,7 @@
 ```ts
 import { AnyRouteRefParams } from '@backstage/frontend-plugin-api';
 import { ConfigurableExtensionDataRef } from '@backstage/frontend-plugin-api';
-import { Entity } from '@backstage/catalog-model';
+import type { Entity } from '@backstage/catalog-model';
 import { EntityCardType } from '@backstage/plugin-catalog-react/alpha';
 import { ExtensionBlueprint } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
@@ -14,10 +14,8 @@ import { FilterPredicate } from '@backstage/filter-predicates';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
 import { IconElement } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react';
-import { JSXElementConstructor } from 'react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { OverridableFrontendPlugin } from '@backstage/frontend-plugin-api';
-import { ReactElement } from 'react';
 import { RouteRef } from '@backstage/frontend-plugin-api';
 import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
@@ -152,9 +150,9 @@ const boostPlugin: OverridableFrontendPlugin<
         priority?: number;
       };
     }>;
-    'entity-card:boost/adoption': OverridableExtensionDefinition<{
+    'entity-card:boost/agent-instructions': OverridableExtensionDefinition<{
       kind: 'entity-card';
-      name: 'adoption';
+      name: 'agent-instructions';
       config: {
         filter: FilterPredicate | undefined;
         type: 'content' | 'info' | undefined;
@@ -193,9 +191,9 @@ const boostPlugin: OverridableFrontendPlugin<
         type?: EntityCardType;
       };
     }>;
-    'entity-card:boost/summary': OverridableExtensionDefinition<{
+    'entity-card:boost/ai-asset-details': OverridableExtensionDefinition<{
       kind: 'entity-card';
-      name: 'summary';
+      name: 'ai-asset-details';
       config: {
         filter: FilterPredicate | undefined;
         type: 'content' | 'info' | undefined;
@@ -234,74 +232,19 @@ const boostPlugin: OverridableFrontendPlugin<
         type?: EntityCardType;
       };
     }>;
-    'entity-card:boost/version-list': OverridableExtensionDefinition<{
+    'entity-card:boost/usage': OverridableExtensionDefinition<{
       kind: 'entity-card';
-      name: 'version-list';
-      config: {
-        filter: FilterPredicate | undefined;
-        type: 'content' | 'info' | undefined;
-      };
-      configInput: {
-        filter?: FilterPredicate | undefined;
-        type?: 'content' | 'info' | undefined;
-      };
-      output:
-        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
-        | ExtensionDataRef<
-            (entity: Entity) => boolean,
-            'catalog.entity-filter-function',
-            {
-              optional: true;
-            }
-          >
-        | ExtensionDataRef<
-            string,
-            'catalog.entity-filter-expression',
-            {
-              optional: true;
-            }
-          >
-        | ExtensionDataRef<
-            EntityCardType,
-            'catalog.entity-card-type',
-            {
-              optional: true;
-            }
-          >;
-      inputs: {};
-      params: {
-        loader: () => Promise<JSX.Element>;
-        filter?: string | FilterPredicate | ((entity: Entity) => boolean);
-        type?: EntityCardType;
-      };
-    }>;
-    'entity-content:boost/usage': OverridableExtensionDefinition<{
-      kind: 'entity-content';
       name: 'usage';
       config: {
-        path: string | undefined;
-        title: string | undefined;
         filter: FilterPredicate | undefined;
-        group: string | false | undefined;
-        icon: string | undefined;
+        type: 'content' | 'info' | undefined;
       };
       configInput: {
-        path?: string | undefined;
-        title?: string | undefined;
         filter?: FilterPredicate | undefined;
-        group?: string | false | undefined;
-        icon?: string | undefined;
+        type?: 'content' | 'info' | undefined;
       };
       output:
-        | ExtensionDataRef<string, 'core.routing.path', {}>
         | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
-        | ExtensionDataRef<
-            RouteRef<AnyRouteRefParams>,
-            'core.routing.ref',
-            {
-              optional: true;
-            }
-          >
         | ExtensionDataRef<
             (entity: Entity) => boolean,
             'catalog.entity-filter-function',
@@ -316,42 +259,18 @@ const boostPlugin: OverridableFrontendPlugin<
               optional: true;
             }
           >
-        | ExtensionDataRef<string, 'catalog.entity-content-title', {}>
         | ExtensionDataRef<
-            string,
-            'catalog.entity-content-group',
-            {
-              optional: true;
-            }
-          >
-        | ExtensionDataRef<
-            string | ReactElement<any, string | JSXElementConstructor<any>>,
-            'catalog.entity-content-icon',
+            EntityCardType,
+            'catalog.entity-card-type',
             {
               optional: true;
             }
           >;
       inputs: {};
       params: {
-        defaultPath?: [Error: `Use the 'path' param instead`];
-        path: string;
-        defaultTitle?: [Error: `Use the 'title' param instead`];
-        title: string;
-        defaultGroup?: [Error: `Use the 'group' param instead`];
-        group?:
-          | (
-              | 'overview'
-              | 'documentation'
-              | 'development'
-              | 'deployment'
-              | 'operation'
-              | 'observability'
-            )
-          | (string & {});
-        icon?: string | ReactElement;
         loader: () => Promise<JSX.Element>;
-        routeRef?: RouteRef;
         filter?: string | FilterPredicate | ((entity: Entity) => boolean);
+        type?: EntityCardType;
       };
     }>;
     'page:boost/ai-catalog': OverridableExtensionDefinition<{
@@ -456,37 +375,55 @@ export const boostTranslationRef: TranslationRef<
     readonly 'catalog.table.owner': string;
     readonly 'catalog.table.provider': string;
     readonly 'catalog.table.description': string;
+    readonly 'catalog.filter.title': string;
+    readonly 'catalog.filter.all': string;
     readonly 'catalog.filter.type': string;
     readonly 'catalog.filter.owner': string;
     readonly 'catalog.filter.provider': string;
     readonly 'catalog.filter.tag': string;
+    readonly 'catalog.filter.clearAll': string;
     readonly 'catalog.page.title': string;
-    readonly 'catalog.page.subtitle': string;
     readonly 'catalog.error.title': string;
     readonly 'catalog.error.description': string;
     readonly 'catalog.error.retry': string;
-    readonly 'catalog.tab.usageTitle': string;
-    readonly 'catalog.tab.usageDocumentation': string;
-    readonly 'catalog.tab.usageViewTechDocs': string;
-    readonly 'catalog.tab.usageExternalLinks': string;
-    readonly 'catalog.tab.usageNoDocumentation': string;
-    readonly 'catalog.tab.usagePermissionDenied': string;
-    readonly 'catalog.tab.usageContactOwner': string;
     readonly 'catalog.toolbar.search': string;
+    readonly 'catalog.toolbar.filters': string;
     readonly 'catalog.toolbar.allPrefix': string;
     readonly 'catalog.toolbar.viewGrid': string;
     readonly 'catalog.toolbar.viewTable': string;
-    readonly 'catalog.card.summaryTitle': string;
-    readonly 'catalog.card.adoptionTitle': string;
-    readonly 'catalog.card.versionTitle': string;
-    readonly 'catalog.card.versionCurrent': string;
+    readonly 'catalog.card.yes': string;
+    readonly 'catalog.card.no': string;
+    readonly 'catalog.card.assetDetailsTitle': string;
+    readonly 'catalog.card.usageTitle': string;
+    readonly 'catalog.card.versionLabel': string;
     readonly 'catalog.card.copyCommand': string;
     readonly 'catalog.card.copied': string;
-    readonly 'catalog.card.copyAriaLabel': string;
-    readonly 'catalog.card.adoptionDownloadZip': string;
+    readonly 'catalog.card.copyFailed': string;
+    readonly 'catalog.card.usageDownloadZip': string;
+    readonly 'catalog.card.usageViewSource': string;
+    readonly 'catalog.card.serverTypeLabel': string;
+    readonly 'catalog.card.apiKeyLabel': string;
+    readonly 'catalog.card.defaultModelLabel': string;
+    readonly 'catalog.card.rationaleLabel': string;
+    readonly 'catalog.card.disciplinesLabel': string;
+    readonly 'catalog.card.categoriesLabel': string;
+    readonly 'catalog.card.relatedAgentsLabel': string;
+    readonly 'catalog.card.ruleCategoryLabel': string;
+    readonly 'catalog.card.toolsLabel': string;
+    readonly 'catalog.card.remotesLabel': string;
+    readonly 'catalog.card.definitionLabel': string;
+    readonly 'catalog.card.viewDefinition': string;
+    readonly 'catalog.card.modelsTitle': string;
+    readonly 'catalog.card.modelsAvailableSuffix': string;
     readonly 'catalog.card.modelsAvailableTitle': string;
+    readonly 'catalog.card.modelTitle': string;
+    readonly 'catalog.card.viewModels': string;
+    readonly 'catalog.card.modelsDialogTitle': string;
+    readonly 'catalog.card.modelSearch': string;
+    readonly 'catalog.card.noModelsMatch': string;
     readonly 'catalog.card.instructionsTitle': string;
     readonly 'catalog.card.handoffDescriptionTitle': string;
+    readonly 'catalog.card.handoffTargetsTitle': string;
     readonly 'catalog.card.ragEnabledLabel': string;
     readonly 'catalog.empty.title': string;
     readonly 'catalog.empty.description': string;
