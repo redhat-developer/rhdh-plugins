@@ -127,6 +127,26 @@ describe('OgxAgentEntityProvider', () => {
     expect(entity.metadata.labels).toBeUndefined();
   });
 
+  it('uses unknown when an agent does not provide an owner', async () => {
+    const config: OgxEntityProviderConfig = {
+      baseUrl: 'http://localhost:8321',
+      agents: [{ id: 'ownerless-agent', name: 'Ownerless Agent' }],
+    };
+
+    const provider = new OgxAgentEntityProvider({
+      config,
+      logger: mockServices.logger.mock(),
+      taskRunner,
+    });
+
+    await provider.connect(mockConnection);
+    await taskRunner.runAll();
+
+    const mutation = (mockConnection.applyMutation as jest.Mock).mock
+      .calls[0][0];
+    expect(mutation.entities[0].entity.spec.owner).toBe('unknown');
+  });
+
   it('should include all three required AI asset annotations', async () => {
     const config: OgxEntityProviderConfig = {
       baseUrl: 'http://localhost:8321',

@@ -283,7 +283,6 @@ const boostPlugin: OverridableFrontendPlugin<
         title?: string | undefined | undefined;
       };
       output:
-        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
         | ExtensionDataRef<string, 'core.routing.path', {}>
         | ExtensionDataRef<
             RouteRef<AnyRouteRefParams>,
@@ -292,6 +291,7 @@ const boostPlugin: OverridableFrontendPlugin<
               optional: true;
             }
           >
+        | ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>
         | ExtensionDataRef<
             string,
             'core.title',
@@ -370,25 +370,22 @@ export const boostTranslationRef: TranslationRef<
   'plugin.boost',
   {
     readonly 'nav.aiCatalog': string;
-    readonly 'catalog.filter.type': string;
-    readonly 'catalog.filter.all': string;
+    readonly 'catalog.table.name': string;
+    readonly 'catalog.table.type': string;
+    readonly 'catalog.table.owner': string;
+    readonly 'catalog.table.provider': string;
+    readonly 'catalog.table.description': string;
     readonly 'catalog.filter.title': string;
-    readonly 'catalog.filter.tag': string;
+    readonly 'catalog.filter.all': string;
+    readonly 'catalog.filter.type': string;
     readonly 'catalog.filter.owner': string;
     readonly 'catalog.filter.provider': string;
+    readonly 'catalog.filter.tag': string;
     readonly 'catalog.filter.clearAll': string;
+    readonly 'catalog.page.title': string;
     readonly 'catalog.error.title': string;
     readonly 'catalog.error.description': string;
     readonly 'catalog.error.retry': string;
-    readonly 'catalog.page.title': string;
-    readonly 'catalog.table.name': string;
-    readonly 'catalog.table.type': string;
-    readonly 'catalog.table.description': string;
-    readonly 'catalog.table.owner': string;
-    readonly 'catalog.table.provider': string;
-    readonly 'catalog.empty.title': string;
-    readonly 'catalog.empty.description': string;
-    readonly 'catalog.empty.learnMore': string;
     readonly 'catalog.toolbar.search': string;
     readonly 'catalog.toolbar.filters': string;
     readonly 'catalog.toolbar.allPrefix': string;
@@ -396,11 +393,11 @@ export const boostTranslationRef: TranslationRef<
     readonly 'catalog.toolbar.viewTable': string;
     readonly 'catalog.card.yes': string;
     readonly 'catalog.card.no': string;
-    readonly 'catalog.card.copied': string;
     readonly 'catalog.card.assetDetailsTitle': string;
     readonly 'catalog.card.usageTitle': string;
     readonly 'catalog.card.versionLabel': string;
     readonly 'catalog.card.copyCommand': string;
+    readonly 'catalog.card.copied': string;
     readonly 'catalog.card.copyFailed': string;
     readonly 'catalog.card.usageDownloadZip': string;
     readonly 'catalog.card.usageViewSource': string;
@@ -428,6 +425,9 @@ export const boostTranslationRef: TranslationRef<
     readonly 'catalog.card.handoffDescriptionTitle': string;
     readonly 'catalog.card.handoffTargetsTitle': string;
     readonly 'catalog.card.ragEnabledLabel': string;
+    readonly 'catalog.empty.title': string;
+    readonly 'catalog.empty.description': string;
+    readonly 'catalog.empty.learnMore': string;
     readonly 'catalog.emptyFiltered.title': string;
     readonly 'catalog.emptyFiltered.description': string;
     readonly 'catalog.emptyFiltered.clearFilters': string;
