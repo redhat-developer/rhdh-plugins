@@ -25,6 +25,7 @@ const scalarResultBase = {
   calculationErrorCount: 0,
   timestamp: '2026-01-24T14:10:32.858Z',
   thresholds: DEFAULT_NUMBER_THRESHOLDS,
+  aggregationChartDisplayColor: 'warning.main',
 };
 
 /** Matches `scorecard.aggregationKPIs.totalOpenBugs` in app-config.yaml */

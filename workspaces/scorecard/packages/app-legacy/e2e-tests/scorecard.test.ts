@@ -588,7 +588,7 @@ test.describe('Scorecard Plugin Tests', () => {
         route: ScorecardRoutes.OPEN_PRS_KPI_AGGREGATION_ROUTE,
         aggregatedResponse: githubCustomAggregatedResponse,
         titleSource: 'apiMetadata',
-        titleDescriptionTimeout: 15000,
+        descriptionTimeout: 15000,
         snapshot: {
           drillDownAggregationId: AGGREGATED_CARDS_METADATA.githubOpenPrsKpi.id,
           homepageCalculationHealth: {

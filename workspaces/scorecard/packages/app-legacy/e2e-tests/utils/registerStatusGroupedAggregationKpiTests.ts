@@ -34,7 +34,7 @@ type ThresholdExpectation = {
   percentage: string;
 };
 
-export type StatusGroupedAggregationKpiTestConfig = {
+type StatusGroupedAggregationKpiTestConfig = {
   describeTitle: string;
   aggregationMetadata: {
     id: string;
@@ -52,7 +52,7 @@ export type StatusGroupedAggregationKpiTestConfig = {
   };
   titleSource: 'translations' | 'apiMetadata';
   titleTestName?: string;
-  titleDescriptionTimeout?: number;
+  descriptionTimeout?: number;
   snapshot?: {
     drillDownAggregationId?: string;
     homepageCalculationHealth?: { healthy: string; total: string };
@@ -70,7 +70,7 @@ export type StatusGroupedAggregationKpiTestConfig = {
   runAccessibility?: boolean;
 };
 
-export type HomepageAggregationKpiTestContext = {
+type HomepageAggregationKpiTestContext = {
   page: Page;
   homePage: HomePage;
   scorecardDrillDownPage: ScorecardDrillDownPage;
@@ -124,7 +124,7 @@ export function registerStatusGroupedAggregationKpiTests(
     route,
     aggregatedResponse,
     titleTestName,
-    titleDescriptionTimeout,
+    descriptionTimeout,
     snapshot,
     thresholds,
     drillDown,
@@ -156,14 +156,10 @@ export function registerStatusGroupedAggregationKpiTests(
       const { title, description } = resolveCardLabels(config, translations);
 
       await expect(card).toBeVisible();
-      await expect(card).toContainText(title, {
-        ...(titleDescriptionTimeout !== undefined
-          ? { timeout: titleDescriptionTimeout }
-          : {}),
-      });
+      await expect(card).toContainText(title);
       await expect(card).toContainText(description, {
-        ...(titleDescriptionTimeout !== undefined
-          ? { timeout: titleDescriptionTimeout }
+        ...(descriptionTimeout !== undefined
+          ? { timeout: descriptionTimeout }
           : {}),
       });
     });
