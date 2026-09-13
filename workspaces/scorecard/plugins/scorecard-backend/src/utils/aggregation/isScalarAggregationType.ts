@@ -16,11 +16,12 @@
 
 import {
   AggregationType,
+  type ScalarAggregationType,
   scalarAggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export function isScalarAggregationType(
   type: AggregationType,
-): type is (typeof scalarAggregationTypes)[number] {
+): type is ScalarAggregationType {
   return (scalarAggregationTypes as readonly string[]).includes(type);
 }
