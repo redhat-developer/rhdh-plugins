@@ -30,7 +30,7 @@ export function CustomCatalogPage(
       emptyState={{
         title: t('catalog.emptyState.title'),
         description: t('catalog.emptyState.description'),
-        importButtonTitle: t('catalog.emptyState.action'),
+        importButtonTitle: t('catalog.emptyState.importButtonTitle'),
       }}
     >
       {props.children}

@@ -30,7 +30,7 @@ export function CustomCatalogGraphPage(
       emptyState={{
         title: t('catalogGraph.emptyState.title'),
         description: t('catalogGraph.emptyState.description'),
-        importButtonTitle: t('catalogGraph.emptyState.action'),
+        importButtonTitle: t('catalogGraph.emptyState.importButtonTitle'),
       }}
     >
       {props.children}

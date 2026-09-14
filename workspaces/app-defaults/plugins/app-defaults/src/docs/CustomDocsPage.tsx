@@ -33,7 +33,7 @@ export function CustomDocsPage(props: Readonly<{ children: React.ReactNode }>) {
       emptyState={{
         title: t('docs.emptyState.title'),
         description: t('docs.emptyState.description'),
-        importButtonTitle: t('docs.emptyState.action'),
+        importButtonTitle: t('docs.emptyState.importButtonTitle'),
       }}
     >
       {props.children}

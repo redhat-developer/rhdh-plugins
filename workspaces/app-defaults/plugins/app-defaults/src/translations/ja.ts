@@ -26,22 +26,22 @@ export default createTranslationMessages({
     'catalog.emptyState.title': 'カタログアイテムがありません',
     'catalog.emptyState.description':
       'カタログエンティティがまだ存在しないか、閲覧する権限がありません。登録され、アクセス権を得ると、ここに表示されます。',
-    'catalog.emptyState.action': 'コンポーネントを登録',
+    'catalog.emptyState.importButtonTitle': 'コンポーネントを登録',
     'catalogGraph.emptyState.title': 'カタログアイテムがありません',
     'catalogGraph.emptyState.description':
       'カタログエンティティがまだ存在しないか、閲覧する権限がありません。登録され、アクセス権を得ると、ここにカタロググラフが表示されます。',
-    'catalogGraph.emptyState.action': 'カタログへ移動',
+    'catalogGraph.emptyState.importButtonTitle': 'コンポーネントを登録',
     'scaffolder.emptyState.title': 'テンプレートがありません',
     'scaffolder.emptyState.description':
       'ソフトウェアテンプレートがまだ存在しないか、閲覧する権限がありません。登録され、アクセス権を得ると、ここに表示されます。',
-    'scaffolder.emptyState.action': 'テンプレートを登録',
+    'scaffolder.emptyState.importButtonTitle': 'テンプレートを登録',
     'apiDocs.emptyState.title': 'API がありません',
     'apiDocs.emptyState.description':
       'API がまだ存在しないか、閲覧する権限がありません。登録され、アクセス権を得ると、ここに表示されます。',
-    'apiDocs.emptyState.action': 'API を登録',
+    'apiDocs.emptyState.importButtonTitle': 'API を登録',
     'docs.emptyState.title': 'ドキュメントがありません',
     'docs.emptyState.description':
       'ドキュメント化されたエンティティがまだ存在しないか、閲覧する権限がありません。TechDocs アノテーションを持つエンティティが登録され、アクセス権を得ると、ここにドキュメントが表示されます。',
-    'docs.emptyState.action': '詳細を見る',
+    'docs.emptyState.importButtonTitle': 'コンポーネントを登録',
   },
 });

@@ -31,7 +31,7 @@ export function CustomScaffolderPage(
       emptyState={{
         title: t('scaffolder.emptyState.title'),
         description: t('scaffolder.emptyState.description'),
-        importButtonTitle: t('scaffolder.emptyState.action'),
+        importButtonTitle: t('scaffolder.emptyState.importButtonTitle'),
       }}
     >
       {props.children}

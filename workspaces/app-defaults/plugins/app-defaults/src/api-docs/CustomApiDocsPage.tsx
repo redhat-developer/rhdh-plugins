@@ -31,7 +31,7 @@ export function CustomApiDocsPage(
       emptyState={{
         title: t('apiDocs.emptyState.title'),
         description: t('apiDocs.emptyState.description'),
-        importButtonTitle: t('apiDocs.emptyState.action'),
+        importButtonTitle: t('apiDocs.emptyState.importButtonTitle'),
       }}
     >
       {props.children}

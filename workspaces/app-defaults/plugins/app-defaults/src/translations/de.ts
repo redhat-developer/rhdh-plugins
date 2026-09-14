@@ -26,22 +26,22 @@ export default createTranslationMessages({
     'catalog.emptyState.title': 'Keine Katalogeinträge verfügbar',
     'catalog.emptyState.description':
       'Es gibt noch keine Katalogeinträge oder Sie haben keine Berechtigung, welche anzuzeigen. Sie erscheinen hier, sobald sie registriert sind und Sie Zugriff haben.',
-    'catalog.emptyState.action': 'Komponente registrieren',
+    'catalog.emptyState.importButtonTitle': 'Komponente registrieren',
     'catalogGraph.emptyState.title': 'Keine Katalogeinträge verfügbar',
     'catalogGraph.emptyState.description':
       'Es gibt noch keine Katalogeinträge oder Sie haben keine Berechtigung, welche anzuzeigen. Der Kataloggraph erscheint hier, sobald sie registriert sind und Sie Zugriff haben.',
-    'catalogGraph.emptyState.action': 'Zum Katalog',
+    'catalogGraph.emptyState.importButtonTitle': 'Komponente registrieren',
     'scaffolder.emptyState.title': 'Keine Vorlagen verfügbar',
     'scaffolder.emptyState.description':
       'Es gibt noch keine Software-Vorlagen oder Sie haben keine Berechtigung, welche anzuzeigen. Sie erscheinen hier, sobald sie registriert sind und Sie Zugriff haben.',
-    'scaffolder.emptyState.action': 'Vorlage registrieren',
+    'scaffolder.emptyState.importButtonTitle': 'Vorlage registrieren',
     'apiDocs.emptyState.title': 'Keine APIs verfügbar',
     'apiDocs.emptyState.description':
       'Es gibt noch keine APIs oder Sie haben keine Berechtigung, welche anzuzeigen. Sie erscheinen hier, sobald sie registriert sind und Sie Zugriff haben.',
-    'apiDocs.emptyState.action': 'API registrieren',
+    'apiDocs.emptyState.importButtonTitle': 'API registrieren',
     'docs.emptyState.title': 'Keine Dokumentation verfügbar',
     'docs.emptyState.description':
       'Es gibt noch keine dokumentierten Einträge oder Sie haben keine Berechtigung, welche anzuzeigen. Dokumentation erscheint hier, sobald Einträge mit TechDocs-Annotationen registriert sind und Sie Zugriff haben.',
-    'docs.emptyState.action': 'Mehr erfahren',
+    'docs.emptyState.importButtonTitle': 'Komponente registrieren',
   },
 });
