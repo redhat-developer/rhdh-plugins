@@ -33,7 +33,7 @@ _Re-audit following the `repository.url`/`websiteUrl` link-mapping revision (rep
 
 ### SUGGESTION
 
-- None
+- **[F]** [`openspec/changes/mcp-registry-server-mapping/proposal.md:29`](specs/mcp-registry-server-mapping/proposal.md#L29) — The proposal still calls ingestion “a separate future change,” although this branch contains the sibling `mcp-registry-provider` change that consumes this contract. Replace that wording with an explicit sibling reference to remove stale final-artifact context.
 
 ---
 
