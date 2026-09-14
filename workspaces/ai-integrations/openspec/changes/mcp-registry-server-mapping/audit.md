@@ -12,7 +12,7 @@ _Re-audit following the `repository.url`/`websiteUrl` link-mapping revision (rep
 | -------------------------------------- | -------- | ------- | ---------- |
 | A (Entity propagation)                 | 0        | 0       | 0          |
 | B (Enum / vocabulary)                  | 0        | 0       | 0          |
-| C (Semantic contradiction)             | 0        | 0       | 0          |
+| C (Semantic contradiction)             | 0        | 2       | 0          |
 | D (Codebase & convention grounding)    | 0        | 0       | 0          |
 | E (Namespace & cross-change ownership) | 0        | 0       | 0          |
 | F (Template / copy-paste residue)      | 0        | 0       | 0          |
