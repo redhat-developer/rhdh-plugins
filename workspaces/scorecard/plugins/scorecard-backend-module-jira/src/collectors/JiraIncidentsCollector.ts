@@ -48,7 +48,7 @@ export class JiraIncidentsCollector
   }
 
   getCollectorId(): string {
-    return 'jira:incidents';
+    return 'jira:doraIncidents';
   }
 
   getCollectorDescription(): string {

@@ -3,9 +3,9 @@
 DORA plugin uses [**collectors**](../../scorecard-backend/docs/collectors.md) to gather necessary data for metrics calculation from various sources.
 Plugin is pre-configured to use following **default collectors**:
 
-- `jira:incidents`: to gather incident data
-- `github:deployments`: to gather deployment data
-- `github:deploymentPullRequests`: to gather pull request data linked to deployment data
+- `jira:doraIncidents`: to gather incident data
+- `github:doraDeployments`: to gather deployment data
+- `github:doraDeploymentPullRequests`: to gather pull request data linked to deployment data
 
 To use the DORA plugin with its default configuration, install the following backend modules:
 
@@ -19,7 +19,7 @@ You can replace the default collectors with custom collectors tailored to your s
 - [Deployment pull requests collector contract](#deployment-pull-requests-collector-contract)
 - [Incidents collector contract](#incidents-collector-contract)
 
-Your custom collectors can require or optional extra collector-specific input fields (like `workflowName` with `github:deploymentWorkflowRuns` collector), as long as required DORA contract fields are still supported.
+Your custom collectors can require or optional extra collector-specific input fields (like `workflowName` with `github:doraDeploymentWorkflowRuns` collector), as long as required DORA contract fields are still supported.
 
 ## Deployments collector
 
@@ -27,8 +27,8 @@ Collects deployments created in time window (`from` - `to`).
 
 Available collectors:
 
-- `github:deployments` (default)
-- `github:deploymentWorkflowRuns`
+- `github:doraDeployments` (default)
+- `github:doraDeploymentWorkflowRuns`
 
 See [scorecard-backend-module-github README](../../scorecard-backend-module-github/README.md).
 
@@ -45,7 +45,7 @@ Required output:
   - `deployments` must be in ascending `createdAt` order (oldest to newest), because Change Failure Rate and Median Lead Time for Changes metrics process adjacent deployment pairs chronologically.
   - Only deployments with `result: 'success'` are included in metric calculations.
 
-### Collector `github:deployments`
+### Collector `github:doraDeployments`
 
 Required entity annotations:
 
@@ -63,10 +63,10 @@ scorecard:
     dora:
       collectors:
         deployments:
-          id: github:deployments
+          id: github:doraDeployments
 ```
 
-### Collector `github:deploymentWorkflowRuns`
+### Collector `github:doraDeploymentWorkflowRuns`
 
 Required entity annotations:
 
@@ -76,7 +76,7 @@ metadata:
     github.com/project-slug: myorg/my-service
 ```
 
-When using `github:deploymentWorkflowRuns`, provide `workflowName` as extra collector input:
+When using `github:doraDeploymentWorkflowRuns`, provide `workflowName` as extra collector input:
 
 ```yaml
 scorecard:
@@ -84,7 +84,7 @@ scorecard:
     dora:
       collectors:
         deployments:
-          id: github:deploymentWorkflowRuns
+          id: github:doraDeploymentWorkflowRuns
           input:
             workflowName: Custom deployment
 ```
@@ -110,7 +110,7 @@ Collects incidents created in time window (`from` - `to`) that were updated sinc
 
 Available collectors:
 
-- `jira:incidents` (default)
+- `jira:doraIncidents` (default)
 
 See [scorecard-backend-module-jira README](../../scorecard-backend-module-jira/README.md).
 
@@ -128,7 +128,7 @@ Required output:
   - `createdAt` and `updatedAt` must be valid ISO datetimes.
   - `resolutionAt` must be `null` for unresolved incidents or a valid ISO datetime for resolved incidents.
 
-### Collector `jira:incidents`
+### Collector `jira:doraIncidents`
 
 Required entity annotations:
 
@@ -150,7 +150,7 @@ scorecard:
     dora:
       collectors:
         incidents:
-          id: jira:incidents
+          id: jira:doraIncidents
 ```
 
 Override Jira issue type:
@@ -161,7 +161,7 @@ scorecard:
     dora:
       collectors:
         incidents:
-          id: jira:incidents
+          id: jira:doraIncidents
           input:
             issueType: CustomIncident
 ```
@@ -187,7 +187,7 @@ Collects pull requests included in the commit range between two deployments (`ba
 
 Available collectors:
 
-- `github:deploymentPullRequests` (default)
+- `github:doraDeploymentPullRequests` (default)
 
 See [scorecard-backend-module-github README](../../scorecard-backend-module-github/README.md).
 
@@ -203,7 +203,7 @@ Required output:
 - `pullRequests: Array<{ id: string; firstCommitAt: string }>`
   - `firstCommitAt` must be a valid ISO datetime for lead-time calculation.
 
-### Collector `github:deploymentPullRequests`
+### Collector `github:doraDeploymentPullRequests`
 
 Required entity annotations for the default pull requests collector:
 
@@ -221,7 +221,7 @@ scorecard:
     dora:
       collectors:
         deploymentPullRequests:
-          id: github:deploymentPullRequests
+          id: github:doraDeploymentPullRequests
 ```
 
 ### Custom deployment pull requests collector

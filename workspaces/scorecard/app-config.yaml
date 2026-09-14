@@ -492,15 +492,15 @@ scorecard:
       productionEnvironments: ['production']
       collectors:
         deployments:
-          id: github:deployments
+          id: github:doraDeployments
           # Uncomment the following to use workflow runs
-          # id: github:deploymentWorkflowRuns
+          # id: github:doraDeploymentWorkflowRuns
           # input:
           #   workflowName: Create Test Deployment on PR Merge
         deploymentPullRequests:
-          id: github:deploymentPullRequests
+          id: github:doraDeploymentPullRequests
         incidents:
-          id: jira:incidents
+          id: jira:doraIncidents
           # Optional: override default Incident issue type
           # input:
           #   issueType: CustomIncident

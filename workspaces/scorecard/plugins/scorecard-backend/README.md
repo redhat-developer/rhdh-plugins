@@ -396,11 +396,11 @@ curl -X GET "{{url}}/api/scorecard/metrics/dora.changeFailureRate/collectors" \
 {
   "collectors": [
     {
-      "id": "github:deployments",
+      "id": "github:doraDeployments",
       "description": "Collects GitHub deployments."
     },
     {
-      "id": "jira:incidents",
+      "id": "jira:doraIncidents",
       "description": "Collects Jira incidents."
     }
   ]

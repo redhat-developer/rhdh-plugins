@@ -85,15 +85,15 @@ scorecard:
       productionEnvironments: [production]
       collectors:
         deployments:
-          id: github:deployments
-          # To use workflow runs collector, comment out `id: github:deployments` and uncomment:
-          # id: github:deploymentWorkflowRuns
+          id: github:doraDeployments
+          # To use workflow runs collector, comment out `id: github:doraDeployments` and uncomment:
+          # id: github:doraDeploymentWorkflowRuns
           # input:
           #   workflowName: My production workflow
         deploymentPullRequests:
-          id: github:deploymentPullRequests
+          id: github:doraDeploymentPullRequests
         incidents:
-          id: jira:incidents
+          id: jira:doraIncidents
           # input:
           #   issueType: CustomIncident
 ```

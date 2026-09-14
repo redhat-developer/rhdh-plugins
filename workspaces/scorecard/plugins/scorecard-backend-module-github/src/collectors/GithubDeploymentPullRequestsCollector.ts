@@ -62,7 +62,7 @@ export class GithubDeploymentPullRequestsCollector
   }
 
   getCollectorId(): string {
-    return 'github:deploymentPullRequests';
+    return 'github:doraDeploymentPullRequests';
   }
 
   getCollectorDescription(): string {
