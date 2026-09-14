@@ -33,8 +33,8 @@
 - [ ] 4.1 Implement the `EntityProvider` class: `getProviderName()` = `mcp-registry-provider`, `connect()` storing the connection, and a `run()` performing one sync
 - [ ] 4.2 Wire scheduling via `SchedulerService.createScheduledTaskRunner(schedule)`, honoring `initialDelay`; register the single provider when config is present
 - [ ] 4.3 Implement the full-mutation commit: on successful sync call `connection.applyMutation({ type: 'full', entities })`; on a failed run emit no mutation (preserve prior catalog state)
-- [ ] 4.4 Attach provider attribution to each entity (managed-by-location annotation / `locationKey`) so entities are scoped to this provider for pruning
-- [ ] 4.5 Add unit tests: full mutation contents, pruning of removed servers across two syncs, updated server reflected, and no-mutation-on-failed-run
+- [ ] 4.4 Attach provider attribution to each entity: set the mutation `locationKey` to `mcp-registry-provider` **and** set `backstage.io/managed-by-location` on the entity (they are not interchangeable — the key claims the entity ref; the annotation is catalog-visible source)
+- [ ] 4.5 Add unit tests: full mutation contents (each `DeferredEntity` has `locationKey` `mcp-registry-provider` **and** the entity carries `backstage.io/managed-by-location`, matching scenario `Provider attribution annotations present`), pruning of removed servers across two syncs, updated server reflected, and no-mutation-on-failed-run
 
 ## 5. Mapping Integration
 

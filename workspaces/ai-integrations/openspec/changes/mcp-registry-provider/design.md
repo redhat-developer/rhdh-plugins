@@ -65,11 +65,11 @@ Pagination is cursor-based: omit `cursor` on the first request; pass the prior `
 
 ### D2: Package as a `catalog-backend-module` with a single `EntityProvider`
 
-**Choice:** The plugin is a backend module registered via `createBackendModule` that extends the catalog via `catalogProcessingExtensionPoint.addEntityProvider(...)`, adding one `EntityProvider`. The provider owns `getProviderName()` (`mcp-registry-provider`), which becomes the entities' `locationKey` and drives full-mutation pruning scoping.
+**Choice:** The plugin is a backend module registered via `createBackendModule` that extends the catalog via `catalogProcessingExtensionPoint.addEntityProvider(...)`, adding one `EntityProvider`. The provider owns `getProviderName()` (`mcp-registry-provider`), which identifies its entity bucket for full-mutation pruning. That same string is also each `DeferredEntity`'s mutation `locationKey` (conflict/claim on the entity ref). Independently, each produced entity carries `backstage.io/managed-by-location` so it is visible in the catalog.
 
 **Alternatives considered:** (a) One `EntityProvider` per registry id — deferred with multi-registry support; independent schedules and per-source `locationKey` pruning are the reasons to revisit this. (b) A standalone backend plugin with its own router — rejected; ingestion needs the catalog extension point, not an HTTP surface (that would be the proxy pattern).
 
-**Rationale:** One registry, one provider: scheduling, failure isolation, and `locationKey` pruning stay straightforward.
+**Rationale:** One registry, one provider: scheduling, failure isolation, and a single bucket/`locationKey` stay straightforward.
 
 ### D3: Schedule via `SchedulerService`; omitted `schedule` uses a documented default
 
@@ -89,7 +89,7 @@ Pagination is cursor-based: omit `cursor` on the first request; pass the prior `
 
 ### D5: Delegate wholly to `mcp-registry-server-mapping`; supply `defaultOwner` and `baseName` as caller overrides
 
-**Choice:** For each server the provider calls the mapping transform, passing `defaultOwner` as the caller-override owner default and, when configured, `baseName` as the caller-override identity prefix (mapping D4). When `baseName` is omitted the mapping's default prefix `mcp.registry` applies. The provider adds only provider-level concerns on top of the transform's output: the managed-by-location annotation / `locationKey` for catalog attribution and pruning. It never re-derives names, annotations, or `spec.remotes`.
+**Choice:** For each server the provider calls the mapping transform, passing `defaultOwner` as the caller-override owner default and, when configured, `baseName` as the caller-override identity prefix (mapping D4). When `baseName` is omitted the mapping's default prefix `mcp.registry` applies. The provider adds only provider-level concerns on top of the transform's output: mutation `locationKey` `mcp-registry-provider` **and** `backstage.io/managed-by-location` on the entity. It never re-derives mapping-owned names, annotations, or `spec.remotes`.
 
 **Alternative considered:** Inline a copy of the mapping for "performance" — rejected; violates the single-contract goal and would drift.
 

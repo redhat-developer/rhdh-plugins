@@ -88,7 +88,7 @@ The provider SHALL construct the servers endpoint as `<baseUrl>/<apiVersion>/ser
 
 ### Requirement: Map each registry server to an mcp-server API entity
 
-For every accumulated server entry, the provider SHALL extract the `server.json` document from the list entry's `.server` object and produce an `mcp-server` `API` entity by applying the `mcp-registry-server-mapping` transform, supplying the configured `defaultOwner` as the caller-override owner default and, when `baseName` is present, supplying `baseName` as the caller-override identity prefix. The provider SHALL NOT reimplement or alter the field mapping, annotation projection, or identity rules defined by `mcp-registry-server-mapping`. Each produced entity SHALL carry the provider's location/ownership annotations so the catalog attributes the entity to this provider.
+For every accumulated server entry, the provider SHALL extract the `server.json` document from the list entry's `.server` object and produce an `mcp-server` `API` entity by applying the `mcp-registry-server-mapping` transform, supplying the configured `defaultOwner` as the caller-override owner default and, when `baseName` is present, supplying `baseName` as the caller-override identity prefix. The provider SHALL NOT reimplement or alter the field mapping, annotation projection, or identity rules defined by `mcp-registry-server-mapping`. Each produced entity SHALL be emitted with mutation `locationKey` `mcp-registry-provider` **and** SHALL carry `backstage.io/managed-by-location` so the catalog attributes the entity to this provider.
 
 #### Scenario: Server mapped with configured default owner
 
@@ -103,17 +103,17 @@ For every accumulated server entry, the provider SHALL extract the `server.json`
 #### Scenario: baseName overrides the mapping identity prefix
 
 - **WHEN** a sync retrieves a `server.json` with `name: io.github.user/weather` and `version: 1.0.2`, and the provider is configured with `baseName: com.example.registry`
-- **THEN** the mapping is invoked with prefix override `com.example.registry` and the produced entity's `metadata.name` is `com.example.registry__io.github.user-weather__1.0.2`
+- **THEN** the mapping is invoked with prefix override `com.example.registry` and the produced entity's `metadata.name` is the sanitized stem `com.example.registry__io.github.user-weather__1.0.2` plus a stable hash suffix (sanitization changed the identity)
 
 #### Scenario: baseName omitted uses the mapping default prefix
 
 - **WHEN** a sync retrieves a `server.json` with `name: io.github.user/weather` and `version: 1.0.2`, and the provider is configured with no `baseName`
-- **THEN** the mapping is invoked with no prefix override and the produced entity's `metadata.name` uses the mapping default prefix (`mcp.registry__io.github.user-weather__1.0.2`)
+- **THEN** the mapping is invoked with no prefix override and the produced entity's `metadata.name` uses the mapping default prefix stem (`mcp.registry__io.github.user-weather__1.0.2`) plus a stable hash suffix (sanitization changed the identity)
 
 #### Scenario: Provider attribution annotations present
 
 - **WHEN** the provider produces an entity
-- **THEN** the entity's mutation `locationKey` is `mcp-registry-provider` and the entity carries the provider's managed-by-location annotation so the catalog associates the entity with this provider and can prune it on removal
+- **THEN** the entity's mutation `locationKey` is `mcp-registry-provider` and the entity carries `backstage.io/managed-by-location` so the catalog associates the entity with this provider and can prune it on removal
 
 ### Requirement: Commit ingested entities as a full mutation
 
