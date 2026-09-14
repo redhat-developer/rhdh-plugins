@@ -75,7 +75,6 @@ jest.mock('../../hooks/useTranslation', () => ({
     t: (key: string) =>
       ({
         'workflow.status.available': 'Available',
-        'workflow.status.unavailable': 'Unavailable',
       })[key] ?? key,
   }),
 }));
@@ -90,45 +89,9 @@ jest.mock('../Trans', () => ({
 }));
 
 jest.mock('../ui/OverrideBackstageTable', () => {
-  const React = require('react');
-
   return {
     __esModule: true,
-    default: ({ columns, data }: { columns: any[]; data: any[] }) =>
-      React.createElement(
-        'table',
-        null,
-        React.createElement(
-          'thead',
-          null,
-          React.createElement(
-            'tr',
-            null,
-            columns.map(column =>
-              React.createElement('th', { key: column.field }, column.title),
-            ),
-          ),
-        ),
-        React.createElement(
-          'tbody',
-          null,
-          data.map(row =>
-            React.createElement(
-              'tr',
-              { key: row.id },
-              columns.map(column =>
-                React.createElement(
-                  'td',
-                  { key: column.field },
-                  column.render
-                    ? column.render(row)
-                    : row[column.field as keyof typeof row],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
+    default: jest.requireActual('./testUtils').renderMockTable,
   };
 });
 

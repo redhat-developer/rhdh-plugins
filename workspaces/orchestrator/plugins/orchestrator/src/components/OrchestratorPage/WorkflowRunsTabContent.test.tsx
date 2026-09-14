@@ -25,11 +25,7 @@ import {
   type ProcessInstanceDTO,
 } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
-import {
-  entityInstanceRouteRef,
-  entityWorkflowRouteRef,
-  workflowRunsRouteRef,
-} from '../../routes';
+import { workflowRunsRouteRef } from '../../routes';
 import { WorkflowRunDetail } from '../types/WorkflowRunDetail';
 import { WorkflowRunsTabContent } from './WorkflowRunsTabContent';
 
@@ -108,18 +104,8 @@ jest.mock('@backstage/core-plugin-api', () => {
     useApi: () => mockOrchestratorApi,
     useRouteRef: () => (params: Record<string, string>) =>
       `/stub/${Object.values(params).join('/')}`,
-    useRouteRefParams: (routeRef: unknown) => {
-      if (routeRef === workflowRunsRouteRef) {
-        return { workflowId: mockWorkflowId };
-      }
-      if (routeRef === entityWorkflowRouteRef) {
-        return {};
-      }
-      if (routeRef === entityInstanceRouteRef) {
-        return {};
-      }
-      return {};
-    },
+    useRouteRefParams: (routeRef: unknown) =>
+      routeRef === workflowRunsRouteRef ? { workflowId: mockWorkflowId } : {},
   };
 });
 
@@ -168,33 +154,13 @@ jest.mock('../../hooks/usePolling', () => {
   const React = require('react');
 
   const usePollingMock = (fetcher: () => Promise<unknown>) => {
-    const [state, setState] = React.useState({
-      loading: true,
-      error: undefined,
-      value: undefined,
-    });
+    const [value, setValue] = React.useState();
 
     React.useEffect(() => {
-      let active = true;
-      void fetcher().then(
-        value => {
-          if (active) {
-            setState({ loading: false, error: undefined, value });
-          }
-        },
-        error => {
-          if (active) {
-            setState({ loading: false, error, value: undefined });
-          }
-        },
-      );
-
-      return () => {
-        active = false;
-      };
+      void fetcher().then(setValue);
     }, [fetcher]);
 
-    return state;
+    return { loading: value === undefined, error: undefined, value };
   };
 
   return {
@@ -213,45 +179,9 @@ jest.mock('../ui/OrchestratorEmptyState', () => ({
 }));
 
 jest.mock('../ui/OverrideBackstageTable', () => {
-  const React = require('react');
-
   return {
     __esModule: true,
-    default: ({ columns, data }: { columns: any[]; data: any[] }) =>
-      React.createElement(
-        'table',
-        null,
-        React.createElement(
-          'thead',
-          null,
-          React.createElement(
-            'tr',
-            null,
-            columns.map(column =>
-              React.createElement('th', { key: column.field }, column.title),
-            ),
-          ),
-        ),
-        React.createElement(
-          'tbody',
-          null,
-          data.map(row =>
-            React.createElement(
-              'tr',
-              { key: row.id },
-              columns.map(column =>
-                React.createElement(
-                  'td',
-                  { key: column.field },
-                  column.render
-                    ? column.render(row)
-                    : row[column.field as keyof typeof row],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
+    default: jest.requireActual('./testUtils').renderMockTable,
   };
 });
 
@@ -260,37 +190,20 @@ jest.mock('../ui/Selector', () => {
 
   return {
     Selector: ({
-      items,
       label,
       onChange,
-      selected,
     }: {
-      items: Array<{ label: string; value: string }>;
       label: string;
       onChange: (value: string) => void;
-      selected: string;
     }) =>
       React.createElement(
-        'label',
-        null,
-        label,
-        React.createElement(
-          'select',
-          {
-            'aria-label': label,
-            value: selected,
-            onChange: (event: { target: { value: string } }) =>
-              onChange(event.target.value),
-          },
-          React.createElement('option', { value: '___all___' }, 'All'),
-          ...items.map(item =>
-            React.createElement(
-              'option',
-              { key: item.value, value: item.value },
-              item.label,
-            ),
-          ),
-        ),
+        'select',
+        {
+          'aria-label': label,
+          onChange: (event: { target: { value: string } }) =>
+            onChange(event.target.value),
+        },
+        React.createElement('option', { value: 'ERROR' }, 'Error'),
       ),
   };
 });
