@@ -236,7 +236,9 @@ async function loadDynamicPluginsConfig(
 
 /**
  * Resolve `ref://` entries in the main plugin list to their full package URLs
- * by matching the ref name against entries in the include lists.
+ * by matching the ref name against entries in the include lists. Matched
+ * packages must use `oci://`; `ref://` does not resolve to `https://`,
+ * `http://`, or local (`./`) packages.
  *
  * This must run before the pre-merge pass so that resolved entries are visible
  * as standard OCI URLs and level overrides apply correctly.
