@@ -14,7 +14,7 @@
 | D — Codebase & convention  | 0        | 0       | 0          |
 | E — Namespace & ownership  | 0        | 0       | 0          |
 | F — Template / copy-paste  | 0        | 0       | 0          |
-| G — Extended coherence     | 0        | 0       | 0          |
+| G — Extended coherence     | 0        | 2       | 1          |
 | H — Security lint          | 0        | 0       | 0          |
 | **Total**                  | **0**    | **0**   | **0**      |
 
