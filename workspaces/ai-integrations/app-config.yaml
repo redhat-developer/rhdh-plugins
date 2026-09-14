@@ -182,6 +182,11 @@ catalog:
         #   timeout: { minutes: 3 }
         #   # Optional: defer the first sync
         #   # initialDelay: { seconds: 15 }
+# Uncomment to enable the skill-image-connector plugin.
+# skillImageConnector:
+#   images:
+#     - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
+
 # Uncomment to use kubernetesPluginRef — the Backstage Kubernetes plugin
 # does NOT need to be installed, only its config section is needed.
 #kubernetes:

@@ -21,7 +21,7 @@ import {
 import type { Config } from '@backstage/config';
 import { createRouter } from './router';
 import { fetchAndExtractSkillImage } from './services/SkillImageService';
-import type { SkillImageConfig } from './services/types';
+import type { SkillImageConfig, SkillImageExtraction } from './services/types';
 
 /**
  * Safely read an optional string from a Backstage Config object.
@@ -108,6 +108,9 @@ export const skillImageConnectorPlugin = createBackendPlugin({
           safeGetOptionalString(config, 'backend.workingDirectory') ??
           undefined;
 
+        // Store extraction results so they can be exposed via the API
+        const extractions = new Map<string, SkillImageExtraction>();
+
         // Process configured images at startup
         for (const imgConfig of imageConfigs) {
           try {
@@ -116,6 +119,7 @@ export const skillImageConnectorPlugin = createBackendPlugin({
               workDir,
               pluginLogger,
             );
+            extractions.set(imgConfig.imageRef, result);
             pluginLogger.info(
               `Successfully extracted skill image ${imgConfig.imageRef}: ` +
                 `skillimage.yaml=${result.skillImageYamlPath}, ` +
@@ -129,7 +133,7 @@ export const skillImageConnectorPlugin = createBackendPlugin({
           }
         }
 
-        httpRouter.use(await createRouter(pluginLogger));
+        httpRouter.use(await createRouter(pluginLogger, extractions));
       },
     });
   },

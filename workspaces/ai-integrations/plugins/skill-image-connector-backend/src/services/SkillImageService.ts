@@ -52,6 +52,14 @@ export function validateSkillImageManifest(manifest: OciManifest): {
   skillImageYamlLayer: OciDescriptor;
   skillsMdLayer: OciDescriptor;
 } {
+  if (!Array.isArray(manifest.layers)) {
+    throw new Error(
+      'Image manifest does not contain a layers array. ' +
+        'This may indicate a manifest list, an unsupported manifest format, ' +
+        'or a malformed registry response.',
+    );
+  }
+
   const skillImageYamlLayer = findLayerByTitle(
     manifest.layers,
     SKILLIMAGE_YAML,
@@ -111,8 +119,13 @@ export async function fetchAndExtractSkillImage(
 
   // 3. Fetch the layer blobs
   const [skillImageYamlBuf, skillsMdBuf] = await Promise.all([
-    fetchBlob(imageRef, skillImageYamlLayer.digest, logger),
-    fetchBlob(imageRef, skillsMdLayer.digest, logger),
+    fetchBlob(
+      imageRef,
+      skillImageYamlLayer.digest,
+      skillImageYamlLayer.size,
+      logger,
+    ),
+    fetchBlob(imageRef, skillsMdLayer.digest, skillsMdLayer.size, logger),
   ]);
 
   // 4. Write to local storage following the pattern from
@@ -121,23 +134,36 @@ export async function fetchAndExtractSkillImage(
     platformPath.join(baseDir, 'skill-image-'),
   );
 
-  const skillImageYamlPath = platformPath.join(extractDir, SKILLIMAGE_YAML);
-  const skillsMdPath = platformPath.join(extractDir, SKILLS_MD);
+  try {
+    const skillImageYamlPath = platformPath.join(extractDir, SKILLIMAGE_YAML);
+    const skillsMdPath = platformPath.join(extractDir, SKILLS_MD);
 
-  await Promise.all([
-    fs.promises.writeFile(skillImageYamlPath, skillImageYamlBuf),
-    fs.promises.writeFile(skillsMdPath, skillsMdBuf),
-  ]);
+    await Promise.all([
+      fs.promises.writeFile(skillImageYamlPath, skillImageYamlBuf),
+      fs.promises.writeFile(skillsMdPath, skillsMdBuf),
+    ]);
 
-  const skillImageYaml = skillImageYamlBuf.toString('utf-8');
-  const skillsMd = skillsMdBuf.toString('utf-8');
+    const skillImageYaml = skillImageYamlBuf.toString('utf-8');
+    const skillsMd = skillsMdBuf.toString('utf-8');
 
-  logger.info(`Extracted skill image files to ${extractDir}`);
+    logger.info(`Extracted skill image files to ${extractDir}`);
 
-  return {
-    skillImageYamlPath,
-    skillsMdPath,
-    skillImageYaml,
-    skillsMd,
-  };
+    return {
+      skillImageYamlPath,
+      skillsMdPath,
+      skillImageYaml,
+      skillsMd,
+    };
+  } catch (error) {
+    // Clean up the temp directory on failure to prevent resource leaks
+    try {
+      await fs.promises.rm(extractDir, { recursive: true, force: true });
+    } catch (cleanupError) {
+      logger.warn(
+        `Failed to clean up temp directory ${extractDir}`,
+        cleanupError as Error,
+      );
+    }
+    throw error;
+  }
 }
