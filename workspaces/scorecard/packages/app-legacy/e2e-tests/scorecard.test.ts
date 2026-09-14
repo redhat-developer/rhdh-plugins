@@ -17,9 +17,11 @@
 import { test, expect, Page, Locator } from '@playwright/test';
 import {
   mockJiraAggregationResponse,
+  mockGitHubAggregationResponse,
   mockScorecardEntitiesDrillDown,
   mockScorecardEntitiesDrillDownWithSort,
   mockJiraDrillDownMissingPermission,
+  mockGitHubDrillDownMissingPermission,
   mockMetricsApi,
   mockApiResponse,
   mockSonarqubeScorecardResponse,
@@ -34,7 +36,9 @@ import {
   unavailableMetricResponse,
   invalidThresholdResponse,
   githubAggregatedResponse,
+  emptyGithubAggregatedResponse,
   jiraAggregatedResponse,
+  jiraPartiallyAggregatedResponse,
   emptyJiraAggregatedResponse,
   openPrsWeightedAggregatedResponse,
   emptyOpenPrsWeightedAggregatedResponse,
@@ -42,8 +46,12 @@ import {
   openPrsWeightedUnsupportedAggregationResponse,
   notAllowedAggregationErrorBody,
   githubEntitiesDrillDownResponse,
+  githubEntitiesDrillDownNoDataResponse,
+  githubEntitiesDrillDownWithUnavailableRowsResponse,
+  githubMetricMetadataResponse,
   jiraEntitiesDrillDownResponse,
   jiraEntitiesDrillDownNoDataResponse,
+  jiraEntitiesDrillDownWithCalculationErrorsResponse,
   jiraMetricMetadataResponse,
   sonarqubeScorecardResponse,
   sonarqubeFailedQualityGateResponse,
@@ -978,6 +986,112 @@ test.describe('Scorecard Plugin Tests', () => {
         await scorecardDrillDownPage.verifyEntitiesTableCalculationErrorTooltip();
       });
 
+      test('GitHub drill-down: missing permission', async () => {
+        const aggregationMetadata =
+          AGGREGATED_CARDS_METADATA.githubDefaultAggregation;
+
+        await mockGitHubDrillDownMissingPermission(
+          page,
+          githubMetricMetadataResponse,
+        );
+        await page.goto(
+          `/scorecard/aggregations/${aggregationMetadata.id}/metrics/github.openPRs`,
+        );
+        await scorecardDrillDownPage.expectOnPage('github.openPRs', {
+          aggregationId: aggregationMetadata.id,
+        });
+        await scorecardDrillDownPage.expectPageTitle('github.openPRs');
+        await scorecardDrillDownPage.expectTableHeadersVisible();
+        await scorecardDrillDownPage.expectCardHasMissingPermission(
+          'github.openPRs',
+          { aggregationId: aggregationMetadata.id },
+        );
+        await scorecardDrillDownPage.expectTableHasMissingPermission();
+      });
+
+      test('GitHub drill-down: no data found', async () => {
+        const aggregationMetadata =
+          AGGREGATED_CARDS_METADATA.githubDefaultAggregation;
+
+        await mockMetricsApi(page, githubMetricMetadataResponse);
+        await mockGitHubAggregationResponse(
+          page,
+          emptyGithubAggregatedResponse,
+        );
+        await mockScorecardEntitiesDrillDown(
+          page,
+          githubEntitiesDrillDownNoDataResponse,
+          'github.openPRs',
+        );
+        await page.goto(
+          `/scorecard/aggregations/${aggregationMetadata.id}/metrics/github.openPRs`,
+        );
+        await scorecardDrillDownPage.expectOnPage('github.openPRs', {
+          aggregationId: aggregationMetadata.id,
+        });
+        await scorecardDrillDownPage.expectPageTitle('github.openPRs');
+        await scorecardDrillDownPage.expectTableHeadersVisible();
+        await scorecardDrillDownPage.expectTableNoDataFound();
+        await scorecardDrillDownPage.expectCardHasNoDataFound(
+          'github.openPRs',
+          {
+            aggregationId: aggregationMetadata.id,
+          },
+        );
+      });
+
+      test('GitHub drill-down: per-row unavailable metric values', async () => {
+        const aggregationMetadata =
+          AGGREGATED_CARDS_METADATA.githubDefaultAggregation;
+        const partialAggregationResponse = {
+          ...githubAggregatedResponse,
+          result: {
+            ...githubAggregatedResponse.result,
+            calculationErrorCount: 2,
+          },
+        };
+
+        await mockApiResponse(
+          page,
+          ScorecardRoutes.GITHUB_OPEN_PRS_METRIC_AGGREGATION_ROUTE,
+          partialAggregationResponse,
+        );
+        await mockScorecardEntitiesDrillDown(
+          page,
+          githubEntitiesDrillDownWithUnavailableRowsResponse,
+          'github.openPRs',
+        );
+
+        const entitiesResponse = page.waitForResponse(
+          res =>
+            res
+              .url()
+              .includes(
+                '/api/scorecard/metrics/github.openPRs/catalog/aggregations/entities',
+              ) && res.status() === 200,
+        );
+
+        await page.goto(
+          `/scorecard/aggregations/${aggregationMetadata.id}/metrics/github.openPRs`,
+        );
+        await entitiesResponse;
+
+        await scorecardDrillDownPage.expectOnPage('github.openPRs', {
+          aggregationId: aggregationMetadata.id,
+        });
+        await scorecardDrillDownPage.expectDrillDownCalculationErrorWarningIcon();
+        await scorecardDrillDownPage.expectEntityMetricValueUnavailable(
+          'all-scorecards-service',
+        );
+        await scorecardDrillDownPage.expectEntityMetricValueUnavailable(
+          'github-scorecard-only-service',
+        );
+        await scorecardDrillDownPage.expectEntityMetricValueVisible(
+          'red-hat-developer-hub',
+          50,
+        );
+      });
+
       test('Jira scorecard: tooltips, entity drill-down, and metric sort', async () => {
         const aggregationMetadata = AGGREGATED_CARDS_METADATA.jiraOpenIssuesKpi;
 
@@ -1096,6 +1210,41 @@ test.describe('Scorecard Plugin Tests', () => {
         await scorecardDrillDownPage.expectCardHasNoDataFound(
           'jira.openIssues',
         );
+      });
+
+      test('Jira drill-down: calculation errors show warning icon and tooltip', async () => {
+        const aggregationMetadata = AGGREGATED_CARDS_METADATA.jiraOpenIssuesKpi;
+
+        await mockApiResponse(
+          page,
+          ScorecardRoutes.OPEN_ISSUES_KPI_AGGREGATION_ROUTE,
+          jiraPartiallyAggregatedResponse,
+        );
+        await mockScorecardEntitiesDrillDown(
+          page,
+          jiraEntitiesDrillDownWithCalculationErrorsResponse,
+          'jira.openIssues',
+        );
+
+        const entitiesResponse = page.waitForResponse(
+          res =>
+            res
+              .url()
+              .includes(
+                '/api/scorecard/metrics/jira.openIssues/catalog/aggregations/entities',
+              ) && res.status() === 200,
+        );
+
+        await page.goto(
+          `/scorecard/aggregations/${aggregationMetadata.id}/metrics/jira.openIssues`,
+        );
+        await entitiesResponse;
+
+        await scorecardDrillDownPage.expectOnPage('jira.openIssues', {
+          aggregationId: aggregationMetadata.id,
+        });
+        await scorecardDrillDownPage.expectDrillDownCalculationErrorWarningIcon();
+        await scorecardDrillDownPage.verifyEntitiesTableCalculationErrorTooltip();
       });
     });
 
