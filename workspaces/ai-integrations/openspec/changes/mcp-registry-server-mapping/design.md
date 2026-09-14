@@ -112,7 +112,7 @@ The mapping therefore targets the dedicated `mcp-server` entity shape: top-level
 
 **Rationale:** The `server.json` `Input` shape (used by `packages[].environmentVariables[]`, `remotes[].headers[]`, `remotes[].variables`, and package/runtime arguments) carries an `isSecret` flag alongside `default`/`value`. Because annotation projection (D2/D3) emits scalar leaves into **searchable, plaintext** catalog annotations, projecting the `default`/`value` of an `isSecret: true` input would publish a credential.
 
-**Round-trip consequence:** This is a deliberate exception to the scalar round-trip fidelity guarantee (D-note below and the projection spec); a pruned secret leaf is intentionally _not_ recoverable from the entity.
+**Round-trip consequence:** This is a deliberate exception to the scalar round-trip fidelity guarantee in the projection spec; a pruned secret leaf is intentionally _not_ recoverable from the entity.
 
 ### D10: Repository emits both `backstage.io/source-location` and a titled `metadata.links` entry; `websiteUrl` link titled "Website"
 

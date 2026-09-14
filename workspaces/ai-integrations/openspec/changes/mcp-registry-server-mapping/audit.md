@@ -1,24 +1,19 @@
-# Audit: MCP Registry Server Mapping
-
 ## Audit Report: mcp-registry-server-mapping
 
-**Last audited:** 2026-08-25T00:03:43Z
-
-_Re-audit following the `repository.url`/`websiteUrl` link-mapping revision (repository.url now dual-emits `backstage.io/source-location` + a `metadata.links` "Source Code" entry; `websiteUrl` link titled "Website"). Fix-and-reaudit loop ran 2 passes; all findings from both passes were fixed and confirmed. No CRITICAL findings at any point in this run._
+**Last audited:** 2026-09-14T16:09:22Z
 
 ### Summary
 
-| Category                               | CRITICAL | WARNING | SUGGESTION |
-| -------------------------------------- | -------- | ------- | ---------- |
-| A (Entity propagation)                 | 0        | 0       | 0          |
-| B (Enum / vocabulary)                  | 0        | 0       | 0          |
-| C (Semantic contradiction)             | 0        | 2       | 0          |
-| D (Codebase & convention grounding)    | 0        | 0       | 0          |
-| E (Namespace & cross-change ownership) | 0        | 0       | 0          |
-| F (Template / copy-paste residue)      | 0        | 0       | 1          |
-| G (Extended coherence)                 | 0        | 0       | 0          |
-| H (Security lint)                      | 0        | 2       | 0          |
-| **Total**                              | **0**    | **4**   | **1**      |
+| Category | CRITICAL | WARNING | SUGGESTION |
+| -------- | -------- | ------- | ---------- |
+| A        | 0        | 0       | 0          |
+| B        | 0        | 0       | 0          |
+| C        | 0        | 5       | 4          |
+| D        | 0        | 0       | 1          |
+| E        | 0        | 0       | 1          |
+| F        | 0        | 0       | 0          |
+| G        | 0        | 0       | 1          |
+| H        | 0        | 0       | 1          |
 
 ### CRITICAL
 
@@ -26,25 +21,19 @@ _Re-audit following the `repository.url`/`websiteUrl` link-mapping revision (rep
 
 ### WARNING
 
-- **[C]** [`openspec/changes/mcp-registry-server-mapping/specs/mcp-registry-server-mapping/spec.md:59`](specs/mcp-registry-server-mapping/spec.md#L59) — The spec requires distinct sanitized-name collisions to receive a hash suffix, but the transform is pure over one document and cannot know whether another document collides. Make the rule deterministic per input (for example, hash whenever sanitization changes the identity or the value is truncated), or explicitly move collision resolution to the provider and specify that contract.
-- **[C]** [`openspec/changes/mcp-registry-server-mapping/specs/mcp-registry-server-mapping/spec.md:71`](specs/mcp-registry-server-mapping/spec.md#L71) — The repository algorithm strips trailing `/` and `.git`, then emits only the combined URL while the annotation-projection spec promises recovery of every non-secret scalar. The original `repository.url` is therefore not recoverable for such inputs. Preserve the original URL in a dedicated annotation or narrow the round-trip guarantee with an explicit exception and scenario.
-- **[H]** [`openspec/changes/mcp-registry-server-mapping/design.md:133`](design.md#L133) — D9 continues projecting `choices` for `isSecret: true` inputs. If choices contain allowed secret values, those values become searchable catalog annotations. Redact secret-associated choices too, or document and test why they are safe.
-- **[H]** [`openspec/changes/mcp-registry-server-mapping/specs/mcp-registry-server-mapping/spec.md:67`](specs/mcp-registry-server-mapping/spec.md#L67) — Registry-controlled `websiteUrl` and repository URLs are copied into links and `backstage.io/source-location` without a scheme/host safety rule. Specify safe handling for disallowed schemes such as `javascript:`/`data:` and decide how internal-network URLs should be treated; add adversarial scenarios.
+- **C** `openspec/changes/mcp-registry-server-mapping/specs/mcp-registry-server-mapping/spec.md:72` — `WHEN two distinct (prefix, name, version) triples sanitize to the same`. The transform is a pure function of one document plus caller defaults (D6) and cannot observe another document. Rewrite the collision trigger as a per-input rule (e.g. hash-suffix when sanitization is lossy and/or the name exceeds 63 characters).
+- **C** `openspec/changes/mcp-registry-server-mapping/design.md:121` — `strip trailing / and a trailing .git from repository.url`. Direct mapping consumes/normalizes `repository.url` and projection skips re-projecting it, so the original scalar is not recoverable. Project the original URL, or add an explicit round-trip exception plus scenario.
+- **C** `openspec/changes/mcp-registry-server-mapping/specs/mcp-registry-annotation-projection/spec.md:70` — `the projection SHALL be skipped or disambiguated`. Pick one reserved-key collision behavior (skip, matching the scenario, or hash-suffix, matching D3) and use it in the requirement, scenario, and task 3.4.
+- **C** `openspec/changes/mcp-registry-server-mapping/specs/mcp-registry-server-mapping/spec.md:102` — `the remaining repository sub-fields (source, id) are projected`. State uniformly whether `repository.subfolder` is always projected (proposal, unknown-SCM scenario, and task 3.5 say yes; this GitHub THEN omits it).
+- **C** `openspec/changes/mcp-registry-server-mapping/design.md:32` — `every non-null scalar leaf is recoverable`. Narrow the Goals lossless sentence to exclude D9-redacted `isSecret` `default`/`value` leaves (and any other documented exceptions).
 
 ### SUGGESTION
 
-- **[F]** [`openspec/changes/mcp-registry-server-mapping/proposal.md:29`](specs/mcp-registry-server-mapping/proposal.md#L29) — The proposal still calls ingestion “a separate future change,” although this branch contains the sibling `mcp-registry-provider` change that consumes this contract. Replace that wording with an explicit sibling reference to remove stale final-artifact context.
-
----
-
-**Pass 1 findings (all resolved):**
-
-- **[A] WARNING**: `specs/mcp-registry-annotation-projection/spec.md:22` "not re-projected" scenario listed only `remotes[].url` as natively-mapped, while the server-mapping spec (line 29) and task 3.4 map/exclude both `type` and `url` → **Fixed**: now reads `remotes[].type`/`url`.
-- **[C] WARNING**: Ambiguity over whether `repository.subfolder` is separately projected as `modelcontextprotocol.io/repository.subfolder` in addition to being combined into the source-location/link values → **Resolved (no change needed)**: subfolder is not in task 3.4's skip list, so it projects normally under the round-trip fidelity rule (annotation-projection spec); the combine-when-present behavior is already stated in the server-mapping spec, design D10, and tasks. Not re-reported in pass 2.
-
-**Pass 2 findings (all resolved):**
-
-- **[B] SUGGESTION**: `proposal.md:11` said `spec.lifecycle` defaults to `production` while owner used "constant `unknown`" and design/tasks/spec used "constant `production`" → **Fixed**: now "the constant `production`".
-- **[A] SUGGESTION**: `proposal.md:8` source-location clause omitted the "(combined with `repository.subfolder` when present)" detail present in design/tasks/spec → **Fixed**: detail added.
-
-**Cross-change ownership (Category E):** `modelcontextprotocol.io/*` and the `mcp-server` API entity mapping are owned solely by this change. `backstage.io/source-location` is a standard Backstage annotation also used by sibling `aicontext-catalog-entity-kind` for its own `AIResource`/git entities (via `UrlReaderProcessor`); this change emits it for `mcp-server` entities. Different entity kinds, convergent standard usage — no exclusive-ownership conflict.
+- **C** `openspec/changes/mcp-registry-server-mapping/design.md:63` — Specify the sanitization replacement mapping and the hash function/encoding/suffix length used for annotation keys and `metadata.name`, so D6/task 4.3 golden fixtures are uniquely determined.
+- **C** `openspec/changes/mcp-registry-server-mapping/design.md:87` — Add `metadata.links` (and an explicit `metadata.tags` sequence) to the stable-order set in D6 and the determinism spec.
+- **C** `openspec/changes/mcp-registry-server-mapping/design.md:121` — Align D10 with the mapping spec: azure-devops uses `?` only when `base` has no query string, otherwise `&`.
+- **C** `openspec/changes/mcp-registry-server-mapping/tasks.md:21` — Extend task 2.6 so errors also reference the MCP server schema, matching the mapping spec's missing-field requirement.
+- **D** `openspec/changes/mcp-registry-server-mapping/proposal.md:1` — Shorten the proposal to the `openspec/config.yaml` 500-word cap (move the YAML example and long upstream notes into design.md / specs).
+- **E** `openspec/changes/mcp-registry-server-mapping/proposal.md:29` — Name sibling `openspec/changes/mcp-registry-provider/` as the owner of ingestion in Non-goals and related “future ingestion” wording.
+- **G** `openspec/changes/mcp-registry-server-mapping/tasks.md:34` — Add a no-remotes / packages-only fixture to task 4.1 so D8 (`spec.remotes: []`) is in the verification set.
+- **H** `openspec/changes/mcp-registry-server-mapping/design.md:109` — Redact `choices` on `isSecret: true` inputs, or document and fixture why `choices` cannot contain secrets; keep the same rule in the projection spec and task 4.6.
