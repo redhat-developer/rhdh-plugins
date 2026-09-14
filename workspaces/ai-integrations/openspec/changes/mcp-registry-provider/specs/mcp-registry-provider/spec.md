@@ -84,7 +84,7 @@ During a sync, the provider SHALL request the registry's servers from `<baseUrl>
 
 #### Scenario: Single-page result
 
-- **WHEN** the registry returns a page whose `metadata.nextCursor` is absent or empty
+- **WHEN** the registry returns a page whose `metadata.nextCursor` is absent, null, or empty
 - **THEN** the provider stops after that single request and processes only the accumulated servers
 
 #### Scenario: Opaque cursor is passed unchanged

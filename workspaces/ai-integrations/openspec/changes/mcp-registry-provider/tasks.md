@@ -26,7 +26,7 @@
 - [ ] 3.3 Implement cursor pagination: loop passing prior `metadata.nextCursor` as the `cursor` query param until it is absent, null, or empty, accumulating all `servers[]`; treat cursors as opaque; when `pageSize` is set send it as `?limit=` on every list request; when `pageSize` is omitted leave `?limit=` unset
 - [ ] 3.4 Implement the pagination loop safeguard: cap fetches at configured `pageLimit` pages per sync (`10` when omitted); do not send `pageLimit` as the registry `?limit=` query param; detect a repeated cursor; exceeding the page cap or a repeated cursor fails the run rather than looping forever
 - [ ] 3.5 Implement registry-error handling (unreachable host, non-2xx status, unparseable body, pagination-safeguard trip) raising a typed error that aborts the run
-- [ ] 3.6 Add unit tests for the client using mocked HTTP: single page, multi-page traversal, empty/absent cursor termination, opaque-cursor passthrough, omitted `pageSize` (no `limit` query), configured `pageSize` as `limit` on every page request, default `pageLimit` `10` tripping on an 11th page, configured `pageLimit` tripping, and error/safeguard cases
+- [ ] 3.6 Add unit tests for the client using mocked HTTP: single page, multi-page traversal, empty/absent/null cursor termination, opaque-cursor passthrough, omitted `pageSize` (no `limit` query), configured `pageSize` as `limit` on every page request, default `pageLimit` `10` tripping on an 11th page, configured `pageLimit` tripping, and error/safeguard cases
 
 ## 4. Entity Provider & Scheduling
 

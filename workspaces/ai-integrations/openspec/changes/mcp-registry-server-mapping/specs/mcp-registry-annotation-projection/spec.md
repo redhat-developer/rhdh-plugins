@@ -77,7 +77,7 @@ Every projected annotation key SHALL be valid for the Backstage catalog: the nam
 
 ### Requirement: Do not overwrite reserved or previously-set annotations
 
-Projection SHALL NOT overwrite annotations set by the direct mapping (for example `modelcontextprotocol.io/name`, `modelcontextprotocol.io/version`, `modelcontextprotocol.io/repository.url`) or any other reserved annotation. If a generic projected key would collide with such an annotation, the direct-mapping value SHALL win and the projection SHALL be skipped or disambiguated.
+Projection SHALL NOT overwrite annotations set by the direct mapping (for example `modelcontextprotocol.io/name`, `modelcontextprotocol.io/version`, `modelcontextprotocol.io/repository.url`, `backstage.io/source-location`) or any other reserved annotation. If a generic projected key would collide with such an annotation, the direct-mapping value SHALL win and the projection SHALL be skipped or disambiguated.
 
 #### Scenario: Direct-mapping annotation wins
 
