@@ -8,12 +8,32 @@
   "exports": {
     ".": "./src/index.ts",
     "./app-defaults-translations-module": "./src/appDefaultsTranslationsModuleExport.ts",
+    "./catalog-plugin-override": "./src/catalogPluginOverrideExport.ts",
+    "./catalog-graph-plugin-override": "./src/catalogGraphPluginOverrideExport.ts",
+    "./scaffolder-plugin-override": "./src/scaffolderPluginOverrideExport.ts",
+    "./api-docs-plugin-override": "./src/apiDocsPluginOverrideExport.ts",
+    "./docs-plugin-override": "./src/docsPluginOverrideExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "app-defaults-translations-module": [
         "src/appDefaultsTranslationsModuleExport.ts"
+      ],
+      "catalog-plugin-override": [
+        "src/catalogPluginOverrideExport.ts"
+      ],
+      "catalog-graph-plugin-override": [
+        "src/catalogGraphPluginOverrideExport.ts"
+      ],
+      "scaffolder-plugin-override": [
+        "src/scaffolderPluginOverrideExport.ts"
+      ],
+      "api-docs-plugin-override": [
+        "src/apiDocsPluginOverrideExport.ts"
+      ],
+      "docs-plugin-override": [
+        "src/docsPluginOverrideExport.ts"
       ],
       "package.json": [
         "package.json"
