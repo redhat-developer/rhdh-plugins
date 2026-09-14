@@ -11,3 +11,8 @@
 {"ts":"2026-08-26T04:15:15Z","phase":"any","event":"agent.spawned","kind":"audit","count":"1"}
 {"ts":"2026-08-26T04:15:15Z","phase":"any","event":"skill.invoked","name":"opsx:audit"}
 {"ts":"2026-08-26T04:15:15Z","phase":"any","event":"turn.end","output":"Audit clean (no CRITICAL): 1 WARNING (schedule type name drift), 1 SUGGESTION (cursor safeguard wording). User chose report-only. Wrote audit.md"}
+{"ts":"2026-09-14T14:17:24Z","phase":"any","event":"turn.start","input":"Continue mcp-registry-provider: no multi-registry in v1; add baseName alongside baseUrl to override mapping prefix for future multi-registry."}
+{"ts":"2026-09-14T14:17:24Z","phase":"any","event":"skill.invoked","name":"openspec-continue-change"}
+{"ts":"2026-09-14T14:19:59Z","phase":"authoring","event":"artifact.revised","ref":"proposal.md, specs/, design.md, tasks.md","input":"No multi-registry in v1; add baseName alongside baseUrl to override mapping prefix","output":"Single-object catalog.providers.mcpRegistry; keyed maps rejected; baseName passed as mapping prefix override"}
+{"ts":"2026-09-14T14:20:00Z","phase":"any","event":"decision","input":"Resolve multi-registry scope and how mapping prefix is overridden from provider config","output":"Multi-registry out of scope; flat config; optional baseName overrides mapping prefix; hook for a later change"}
+{"ts":"2026-09-14T14:20:00Z","phase":"any","event":"turn.end","output":"Revised provider artifacts: single registry; baseName overrides mapping prefix; keyed maps fail startup"}

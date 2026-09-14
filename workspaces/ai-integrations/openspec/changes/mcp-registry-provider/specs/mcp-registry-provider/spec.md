@@ -1,8 +1,8 @@
 ## MCP Registry Provider
 
-This capability defines a Backstage catalog **entity provider** that ingests MCP servers from one or more configured [MCP Registries](https://github.com/modelcontextprotocol/registry) into the RHDH catalog as `mcp-server` `API` entities.
+This capability defines a Backstage catalog **entity provider** that ingests MCP servers from one configured [MCP Registry](https://github.com/modelcontextprotocol/registry) into the RHDH catalog as `mcp-server` `API` entities. Multiple registries are out of scope for this implementation.
 
-On a configured schedule, each provider instance lists the registry's servers (`GET <baseUrl>/<apiVersion>/servers`), traverses all pages via cursor pagination, transforms each `server.json` document into an `mcp-server` `API` entity using the [`mcp-registry-server-mapping`](../../../mcp-registry-server-mapping/specs/mcp-registry-server-mapping/spec.md) contract (supplying the configured `defaultOwner` as the caller-override owner), and commits the full set to the catalog as a single full mutation so that servers removed from the registry are pruned.
+On a configured schedule, the provider lists the registry's servers (`GET <baseUrl>/<apiVersion>/servers`), traverses all pages via cursor pagination, transforms each `server.json` document into an `mcp-server` `API` entity using the [`mcp-registry-server-mapping`](../../../mcp-registry-server-mapping/specs/mcp-registry-server-mapping/spec.md) contract (supplying the configured `defaultOwner` as the caller-override owner and, when present, `baseName` as the caller-override identity prefix), and commits the full set to the catalog as a single full mutation so that servers removed from the registry are pruned.
 
 This spec covers configuration, scheduling, registry API interaction (pagination and API-version slug construction), delegation to the mapping transform, catalog mutation semantics, and error handling. It does **not** redefine the `server.json` → entity transform, which is owned by `mcp-registry-server-mapping`.
 
@@ -10,42 +10,47 @@ This spec covers configuration, scheduling, registry API interaction (pagination
 
 ## ADDED Requirements
 
-### Requirement: Configure MCP registry provider instances
+### Requirement: Configure a single MCP registry provider
 
-The provider SHALL read its configuration from `catalog.providers.mcpRegistry`, treated as a keyed map where each key is a caller-chosen instance `<id>` and each value configures one registry. For each instance the provider SHALL read `baseUrl` (**required**), `apiVersion` (optional, defaulting to the constant `v1`), `schedule` (optional, a standard `SchedulerServiceTaskScheduleDefinition`), and `defaultOwner` (optional, a Backstage entity reference). The provider SHALL register one independent provider instance per configured `<id>`. When `catalog.providers.mcpRegistry` is absent, the provider SHALL register nothing and SHALL NOT error (the module is inert unless configured).
+The provider SHALL read its configuration from `catalog.providers.mcpRegistry` as a **single object** (not a keyed map of instances). The provider SHALL read `baseUrl` (**required**), `baseName` (optional), `apiVersion` (optional, defaulting to the constant `v1`), `schedule` (optional, a standard `SchedulerServiceTaskScheduleDefinition`), and `defaultOwner` (optional, a Backstage entity reference). When `baseName` is present, the provider SHALL pass it to `mcp-registry-server-mapping` as the caller-override identity prefix; when it is omitted, the provider SHALL NOT pass a prefix override, so the mapping's default prefix (`mcp.registry`) applies. The provider SHALL register at most one provider. When `catalog.providers.mcpRegistry` is absent, the provider SHALL register nothing and SHALL NOT error (the module is inert unless configured). Multiple registries are out of scope: a keyed map of instance objects SHALL fail startup with an actionable error.
 
-#### Scenario: Single registry instance configured
+#### Scenario: Single registry configured
 
-- **WHEN** `catalog.providers.mcpRegistry.redhatEcosystem` is configured with a `baseUrl` and a `schedule`
-- **THEN** exactly one provider instance is registered for the `redhatEcosystem` id, using the configured `baseUrl` and `schedule`, `apiVersion` defaulting to `v1`, and no owner override beyond the mapping's own default
+- **WHEN** `catalog.providers.mcpRegistry` is configured with a `baseUrl` and a `schedule`
+- **THEN** exactly one provider is registered using the configured `baseUrl` and `schedule`, `apiVersion` defaulting to `v1`, no prefix override beyond the mapping's default, and no owner override beyond the mapping's own default
 
-#### Scenario: Multiple registry instances configured
+#### Scenario: baseName is accepted alongside baseUrl
 
-- **WHEN** `catalog.providers.mcpRegistry` contains two keys `internal` and `public`, each with its own `baseUrl` and `schedule`
-- **THEN** two independent provider instances are registered, each syncing its own registry on its own schedule
+- **WHEN** `catalog.providers.mcpRegistry` is configured with `baseUrl` and `baseName: com.example.registry`
+- **THEN** the provider is registered, and on sync it passes `com.example.registry` as the mapping's prefix override
+
+#### Scenario: Keyed multi-registry config is rejected
+
+- **WHEN** `catalog.providers.mcpRegistry` is a keyed map of instance objects (e.g. keys `internal` and `public`, each with its own `baseUrl`)
+- **THEN** provider startup fails with an actionable error that multiple registries are out of scope
 
 #### Scenario: Missing required baseUrl fails fast
 
-- **WHEN** a configured instance omits `baseUrl`
-- **THEN** provider startup fails with an actionable error that names the offending instance `<id>` and the missing `baseUrl` key
+- **WHEN** `catalog.providers.mcpRegistry` is present but omits `baseUrl`
+- **THEN** provider startup fails with an actionable error that names the missing `baseUrl` key
 
 #### Scenario: No configuration present
 
 - **WHEN** `catalog.providers.mcpRegistry` is not present in app-config
-- **THEN** the module registers no provider instances and startup succeeds without error
+- **THEN** the module registers no provider and startup succeeds without error
 
 ### Requirement: Sync on the configured schedule
 
-Each provider instance SHALL run its ingestion sync on the configured `schedule` using the Backstage `SchedulerService`. When `schedule` is omitted for an instance, the provider SHALL apply a documented default `SchedulerServiceTaskScheduleDefinition` rather than failing. The provider SHALL also perform an initial sync according to the schedule's `initialDelay` (or immediately when unset) after registration.
+The provider SHALL run its ingestion sync on the configured `schedule` using the Backstage `SchedulerService`. When `schedule` is omitted, the provider SHALL apply a documented default `SchedulerServiceTaskScheduleDefinition` rather than failing. The provider SHALL also perform an initial sync according to the schedule's `initialDelay` (or immediately when unset) after registration.
 
 #### Scenario: Scheduled sync runs at the configured frequency
 
-- **WHEN** an instance is configured with a `schedule` of `frequency: { minutes: 30 }`
-- **THEN** the provider runs a full ingestion sync approximately every 30 minutes via the scheduler, independently of other instances
+- **WHEN** the provider is configured with a `schedule` of `frequency: { minutes: 30 }`
+- **THEN** the provider runs a full ingestion sync approximately every 30 minutes via the scheduler
 
 #### Scenario: Schedule omitted uses the default
 
-- **WHEN** an instance is configured without a `schedule`
+- **WHEN** the provider is configured without a `schedule`
 - **THEN** the provider applies the documented default schedule and syncs on that cadence without error
 
 ### Requirement: List all registry servers with cursor pagination
@@ -73,32 +78,42 @@ The provider SHALL construct the servers endpoint as `<baseUrl>/<apiVersion>/ser
 
 #### Scenario: Default apiVersion
 
-- **WHEN** an instance configures `baseUrl: https://registry.example.com` and no `apiVersion`
+- **WHEN** the provider is configured with `baseUrl: https://registry.example.com` and no `apiVersion`
 - **THEN** the provider requests `https://registry.example.com/v1/servers`
 
 #### Scenario: Overridden apiVersion
 
-- **WHEN** an instance configures `baseUrl: https://registry.example.com/` (trailing slash) and `apiVersion: v0`
+- **WHEN** the provider is configured with `baseUrl: https://registry.example.com/` (trailing slash) and `apiVersion: v0`
 - **THEN** the provider requests `https://registry.example.com/v0/servers` with exactly one separator between segments
 
 ### Requirement: Map each registry server to an mcp-server API entity
 
-For every accumulated server entry, the provider SHALL extract its `server.json` document and produce an `mcp-server` `API` entity by applying the `mcp-registry-server-mapping` transform, supplying the instance's configured `defaultOwner` as the caller-override owner default. The provider SHALL NOT reimplement or alter the field mapping, annotation projection, or identity rules defined by `mcp-registry-server-mapping`. Each produced entity SHALL carry the provider's location/ownership annotations so the catalog attributes the entity to this provider instance.
+For every accumulated server entry, the provider SHALL extract its `server.json` document and produce an `mcp-server` `API` entity by applying the `mcp-registry-server-mapping` transform, supplying the configured `defaultOwner` as the caller-override owner default and, when `baseName` is present, supplying `baseName` as the caller-override identity prefix. The provider SHALL NOT reimplement or alter the field mapping, annotation projection, or identity rules defined by `mcp-registry-server-mapping`. Each produced entity SHALL carry the provider's location/ownership annotations so the catalog attributes the entity to this provider.
 
 #### Scenario: Server mapped with configured default owner
 
-- **WHEN** a sync retrieves a `server.json` and the instance configures `defaultOwner: group:default/mcp-admins`
+- **WHEN** a sync retrieves a `server.json` and the provider is configured with `defaultOwner: group:default/mcp-admins`
 - **THEN** the produced `mcp-server` `API` entity has `spec.owner: group:default/mcp-admins` (the caller override), with all other fields set by the `mcp-registry-server-mapping` transform
 
 #### Scenario: Default owner omitted falls back to the mapping default
 
-- **WHEN** a sync retrieves a `server.json` and the instance configures no `defaultOwner`
+- **WHEN** a sync retrieves a `server.json` and the provider is configured with no `defaultOwner`
 - **THEN** the produced entity's `spec.owner` is the `mcp-registry-server-mapping` default (`unknown`)
+
+#### Scenario: baseName overrides the mapping identity prefix
+
+- **WHEN** a sync retrieves a `server.json` with `name: io.github.user/weather` and `version: 1.0.2`, and the provider is configured with `baseName: com.example.registry`
+- **THEN** the mapping is invoked with prefix override `com.example.registry` and the produced entity's `metadata.name` is `com.example.registry__io.github.user-weather__1.0.2`
+
+#### Scenario: baseName omitted uses the mapping default prefix
+
+- **WHEN** a sync retrieves a `server.json` with `name: io.github.user/weather` and `version: 1.0.2`, and the provider is configured with no `baseName`
+- **THEN** the mapping is invoked with no prefix override and the produced entity's `metadata.name` uses the mapping default prefix (`mcp.registry__io.github.user-weather__1.0.2`)
 
 #### Scenario: Provider attribution annotations present
 
 - **WHEN** the provider produces an entity
-- **THEN** the entity carries the provider instance's managed-location annotation so the catalog associates the entity with this provider and can prune it on removal
+- **THEN** the entity carries the provider's managed-location annotation so the catalog associates the entity with this provider and can prune it on removal
 
 ### Requirement: Commit ingested entities as a full mutation
 

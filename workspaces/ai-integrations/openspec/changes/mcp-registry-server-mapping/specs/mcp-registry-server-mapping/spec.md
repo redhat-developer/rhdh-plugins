@@ -45,22 +45,32 @@ The mapping SHALL copy each `server.json` `remotes[]` entry's `type` and `url` i
 
 ### Requirement: Derive a version-unique metadata.name and preserve the canonical name and version
 
-A registry publishes one `server.json` per server version, and each version becomes its own `API` entity; a `metadata.name` derived from the canonical name alone would therefore collide across versions in the catalog. The `server.json` `name` is also a reverse-DNS identifier (`namespace/server`) that is not itself a valid Backstage `metadata.name`. The mapping SHALL derive `metadata.name` as `<name>__<version>` — the sanitized canonical name and the sanitized version joined by a double underscore (`__`) — conforming to the Backstage name character set (lowercase alphanumerics with `-`/`_`/`.`, beginning and ending alphanumeric, ≤63 characters). The mapping SHALL preserve the unmodified canonical name (without the version) in a `modelcontextprotocol.io/name` annotation, and SHALL map the `version` directly to its dedicated `modelcontextprotocol.io/version` annotation so it remains individually queryable.
+A registry publishes one `server.json` per server version, and each version becomes its own `API` entity; a `metadata.name` derived from the canonical name alone would therefore collide across versions in the catalog. The `server.json` `name` is also a reverse-DNS identifier (`namespace/server`) that is not itself a valid Backstage `metadata.name`. The mapping SHALL derive `metadata.name` as `<prefix>__<name>__<version>` — the sanitized prefix, the sanitized canonical name, and the sanitized version joined by a double underscore (`__`) — conforming to the Backstage name character set (lowercase alphanumerics with `-`/`_`/`.`, beginning and ending alphanumeric, ≤63 characters). The prefix SHALL be the constant `mcp.registry` when no caller override is supplied; a caller MAY supply an override default prefix. When the override is unset, empty, or sanitizes to empty, the mapping SHALL use `mcp.registry` and SHALL NOT fail. The mapping SHALL preserve the unmodified canonical name (without the version) in a `modelcontextprotocol.io/name` annotation, and SHALL map the `version` directly to its dedicated `modelcontextprotocol.io/version` annotation so it remains individually queryable.
 
 #### Scenario: Two versions of the same server produce distinct entities
 
-- **WHEN** two `server.json` documents share the canonical name `io.github.user/weather` but declare `version` `1.0.0` and `2.0.0`
-- **THEN** the two produced entities have distinct `metadata.name` values (each incorporating its version), each carries the same `modelcontextprotocol.io/name: io.github.user/weather`, and each carries its own `modelcontextprotocol.io/version` (`1.0.0` and `2.0.0` respectively)
+- **WHEN** two `server.json` documents share the canonical name `io.github.user/weather` but declare `version` `1.0.0` and `2.0.0`, and no caller prefix override is supplied
+- **THEN** the two produced entities have distinct `metadata.name` values (each incorporating the default prefix and its version, e.g. `mcp.registry__io.github.user-weather__1.0.0` and `mcp.registry__io.github.user-weather__2.0.0`), each carries the same `modelcontextprotocol.io/name: io.github.user/weather`, and each carries its own `modelcontextprotocol.io/version` (`1.0.0` and `2.0.0` respectively)
 
-#### Scenario: Reverse-DNS name and version are sanitized into metadata.name
+#### Scenario: Reverse-DNS name and version are sanitized into metadata.name with the default prefix
 
-- **WHEN** `server.json` `name` is `io.github.user/weather` and `version` is `1.0.2`
-- **THEN** `metadata.name` is the sanitized `<name>__<version>` form (e.g. `io.github.user-weather__1.0.2`), the original `io.github.user/weather` is preserved verbatim in `modelcontextprotocol.io/name`, and `1.0.2` is recorded in `modelcontextprotocol.io/version`
+- **WHEN** `server.json` `name` is `io.github.user/weather`, `version` is `1.0.2`, and no caller prefix override is supplied
+- **THEN** `metadata.name` is the sanitized `<prefix>__<name>__<version>` form `mcp.registry__io.github.user-weather__1.0.2`, the original `io.github.user/weather` is preserved verbatim in `modelcontextprotocol.io/name`, and `1.0.2` is recorded in `modelcontextprotocol.io/version`
+
+#### Scenario: Caller prefix override is applied
+
+- **WHEN** the mapping is invoked with a caller-provided default prefix `com.example.registry` and `server.json` `name` is `io.github.user/weather` with `version` `1.0.2`
+- **THEN** `metadata.name` is `com.example.registry__io.github.user-weather__1.0.2`
+
+#### Scenario: Empty prefix override falls back to the default
+
+- **WHEN** the mapping is invoked with a caller-provided prefix that is empty or sanitizes to empty
+- **THEN** `metadata.name` uses the default prefix `mcp.registry` and the mapping succeeds
 
 #### Scenario: Over-length or colliding names remain unique
 
-- **WHEN** two distinct (name, version) pairs sanitize to the same `<name>__<version>`, or the combined value exceeds the 63-character limit after sanitization
-- **THEN** the mapping produces a deterministic, unique `metadata.name` by truncating and appending a stable hash suffix derived from the canonical name and version
+- **WHEN** two distinct (prefix, name, version) triples sanitize to the same `<prefix>__<name>__<version>`, or the combined value exceeds the 63-character limit after sanitization
+- **THEN** the mapping produces a deterministic, unique `metadata.name` by truncating and appending a stable hash suffix derived from the prefix, canonical name, and version
 
 ### Requirement: Map descriptive metadata to native Backstage fields
 

@@ -14,10 +14,10 @@
 
 ## 2. Configuration
 
-- [ ] 2.1 Author `config.d.ts` declaring `catalog.providers.mcpRegistry.<id>` with `baseUrl` (required), `apiVersion?` (default `v1`), `schedule?` (`SchedulerServiceTaskScheduleDefinitionConfig`), and `defaultOwner?`
-- [ ] 2.2 Implement config reading: parse `catalog.providers.mcpRegistry` as a keyed map into a typed per-instance config array; register nothing (no error) when the key is absent
-- [ ] 2.3 Implement validation with actionable errors that name the offending instance `<id>` (fail fast when `baseUrl` is missing); apply the `apiVersion` default (`v1`) and the documented default schedule when omitted
-- [ ] 2.4 Add unit tests for config parsing/validation: single instance, multiple instances, missing `baseUrl`, and absent-config no-op
+- [ ] 2.1 Author `config.d.ts` declaring `catalog.providers.mcpRegistry` as a single object with `baseUrl` (required), `baseName?` (optional mapping-prefix override), `apiVersion?` (default `v1`), `schedule?` (`SchedulerServiceTaskScheduleDefinitionConfig`), and `defaultOwner?`
+- [ ] 2.2 Implement config reading: parse `catalog.providers.mcpRegistry` as a single object; register nothing (no error) when the key is absent
+- [ ] 2.3 Implement validation with actionable errors (fail fast when `baseUrl` is missing; fail fast with a multiple-registries-out-of-scope message when the value is a keyed map of instance objects); apply the `apiVersion` default (`v1`) and the documented default schedule when omitted
+- [ ] 2.4 Add unit tests for config parsing/validation: single object with `baseUrl`, optional `baseName`, keyed-map rejection, missing `baseUrl`, and absent-config no-op
 
 ## 3. Registry Client & Pagination
 
@@ -30,22 +30,22 @@
 
 ## 4. Entity Provider & Scheduling
 
-- [ ] 4.1 Implement the `EntityProvider` class: `getProviderName()` = `mcp-registry-provider:<id>`, `connect()` storing the connection, and a `run()` performing one sync
-- [ ] 4.2 Wire scheduling via `SchedulerService.createScheduledTaskRunner(schedule)` per instance, honoring `initialDelay`; register one provider per configured `<id>`
+- [ ] 4.1 Implement the `EntityProvider` class: `getProviderName()` = `mcp-registry-provider`, `connect()` storing the connection, and a `run()` performing one sync
+- [ ] 4.2 Wire scheduling via `SchedulerService.createScheduledTaskRunner(schedule)`, honoring `initialDelay`; register the single provider when config is present
 - [ ] 4.3 Implement the full-mutation commit: on successful sync call `connection.applyMutation({ type: 'full', entities })`; on a failed run emit no mutation (preserve prior catalog state)
-- [ ] 4.4 Attach provider attribution to each entity (managed-by-location annotation / `locationKey`) so entities are scoped to this provider instance for pruning
+- [ ] 4.4 Attach provider attribution to each entity (managed-by-location annotation / `locationKey`) so entities are scoped to this provider for pruning
 - [ ] 4.5 Add unit tests: full mutation contents, pruning of removed servers across two syncs, updated server reflected, and no-mutation-on-failed-run
 
 ## 5. Mapping Integration
 
-- [ ] 5.1 Depend on the sibling `mcp-registry-server-mapping` transform and invoke it per accumulated server, passing the instance's `defaultOwner` as the caller-override owner default (never reimplement the mapping)
+- [ ] 5.1 Depend on the sibling `mcp-registry-server-mapping` transform and invoke it per accumulated server, passing `defaultOwner` as the caller-override owner default and, when configured, `baseName` as the caller-override identity prefix (never reimplement the mapping)
 - [ ] 5.2 Implement per-entry failure isolation: catch a mapping rejection (e.g. missing required `server.json` field), log an actionable message identifying the entry, skip it, and continue the run
-- [ ] 5.3 Add integration tests over sample `server.json` inputs → produced `mcp-server` `API` entities, asserting `spec.owner` reflects `defaultOwner` (and the mapping default `unknown` when omitted), and that one bad entry does not abort the batch
+- [ ] 5.3 Add integration tests over sample `server.json` inputs → produced `mcp-server` `API` entities, asserting `spec.owner` reflects `defaultOwner` (and the mapping default `unknown` when omitted), `metadata.name` uses `baseName` as prefix when configured (and mapping default `mcp.registry` when omitted), and that one bad entry does not abort the batch
 
 ## 6. End-to-End Verification & Docs
 
 - [ ] 6.1 Add an end-to-end test wiring config → mocked paginated registry → mapping → full mutation, asserting the mutation converges to the registry's current server set
 - [ ] 6.2 Verify produced entities pass the upstream `mcp-server` `API` entity schema (`McpServerApiEntity`) — reusing the mapping change's conformance expectations
 - [ ] 6.3 Verify the apiVersion discrepancy handling: default `v1` requests `<baseUrl>/v1/servers` and an override (`v0`) is honored, with a documented note for operators
-- [ ] 6.4 Finalize `README.md` / config docs: full `catalog.providers.mcpRegistry.<id>` example (baseUrl, apiVersion, schedule, defaultOwner), pagination behavior, and error-handling semantics
+- [ ] 6.4 Finalize `README.md` / config docs: full `catalog.providers.mcpRegistry` example (`baseUrl`, optional `baseName`, `apiVersion`, `schedule`, `defaultOwner`), note that multiple registries are out of scope, pagination behavior, and error-handling semantics
 - [ ] 6.5 Run the workspace lint, typecheck, and test suite; ensure the new package builds and passes CI conventions

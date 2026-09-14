@@ -28,7 +28,7 @@ The mapping therefore targets the dedicated `mcp-server` entity shape: top-level
 
 - A deterministic, idempotent, side-effect-free transform: `server.json` (+ caller defaults) → one `mcp-server` `API` entity.
 - Faithful adherence to the upstream mcp-server entity shape (top-level `spec.remotes[]`, no `spec.definition`).
-- Collision-free entity identity across multiple versions of the same server.
+- Collision-free entity identity across multiple versions of the same server (`<prefix>__<name>__<version>`, prefix default `mcp.registry`).
 - Lossless capture of source data: every non-null scalar leaf is recoverable from a native field or a `modelcontextprotocol.io/*` annotation.
 - Catalog-valid output: every produced key/name passes Backstage validation.
 
@@ -66,17 +66,17 @@ The mapping therefore targets the dedicated `mcp-server` entity shape: top-level
 
 **Rationale:** Backstage annotation keys allow exactly one `/` and a ≤63-char name segment over a restricted character set, making dot-separated encoding the most uniform and queryable representation that fits within those constraints.
 
-### D4: Entity identity — `metadata.name` = `<name>__<version>`
+### D4: Entity identity — `metadata.name` = `<prefix>__<name>__<version>`
 
-**Choice:** `metadata.name` is the sanitized canonical name and sanitized version joined by `__`. The bare canonical name is preserved in `modelcontextprotocol.io/name` and the version in `modelcontextprotocol.io/version`, so both remain individually queryable and the identity is reconstructable. Over-length/collision falls back to truncation + stable hash suffix.
+**Choice:** `metadata.name` is the sanitized prefix, sanitized canonical name, and sanitized version joined by `__`. The prefix is the constant `mcp.registry` by default; a caller MAY supply an override default (same caller-override pattern as owner and lifecycle in D5). If the override is unset, empty, or sanitizes to empty, the mapping uses `mcp.registry` — it never fails for a missing prefix, and the produced name never starts with `_`. The bare canonical name is preserved in `modelcontextprotocol.io/name` and the version in `modelcontextprotocol.io/version`, so both remain individually queryable and the identity is reconstructable together with the effective prefix. Over-length/collision falls back to truncation + stable hash suffix derived from the prefix, canonical name, and version.
 
-**Alternative considered:** Encode the version in `metadata.namespace` — rejected; fragments entity references and complicates relationships.
+**Alternatives considered:** (a) Encode the version in `metadata.namespace` — rejected; fragments entity references and complicates relationships. (b) `<name>__<version>` with no prefix — rejected; leaves registry-mapped entities without a caller-controllable namespacing token in `metadata.name` (they would collide with any other `mcp-server` API that sanitizes to the same name+version).
 
-**Rationale:** A registry publishes one `server.json` per version and each becomes its own entity, so a name derived from the canonical name alone would collide across versions.
+**Rationale:** A registry publishes one `server.json` per version and each becomes its own entity, so a name derived from the canonical name alone would collide across versions. The prefix distinguishes registry-mapped entities in a shared catalog and lets the future ingestion layer pass a per-source override without changing the transform.
 
 ### D5: Supplying fields absent from `server.json` — owner and lifecycle
 
-**Choice:** `spec.owner` is set to the constant `unknown` by default; a caller MAY supply an override default, but the transform never fails for a missing owner (a placeholder owner keeps the output valid, and the future ingestion change can reassign ownership). `spec.lifecycle` is set to the constant `production` by default; a caller MAY supply an override default lifecycle value. Both fields use the same caller-override pattern for consistency.
+**Choice:** `spec.owner` is set to the constant `unknown` by default; a caller MAY supply an override default, but the transform never fails for a missing owner (a placeholder owner keeps the output valid, and the future ingestion change can reassign ownership). `spec.lifecycle` is set to the constant `production` by default; a caller MAY supply an override default lifecycle value. Both fields use the same caller-override pattern as the identity prefix in D4.
 
 **Alternatives considered:** (a) Require caller-provided owner/lifecycle and fail if absent — rejected; a pure transform should always yield a valid entity, and ownership/lifecycle assignment belongs to the ingestion layer. (b) Derive lifecycle from a `status` field — rejected; `status` is not part of the base `server.schema.json` (verified 2026-08-21 against the draft schema).
 
@@ -127,7 +127,7 @@ The combined URL is computed by the SCM-aware algorithm in `mcp-registry-server-
 ## Risks / Trade-offs
 
 - **63-char truncation collisions** → Deterministic hash suffix on truncation and on sanitization collisions keeps keys unique; the hash is derived from the full source path so it is stable across runs.
-- **`metadata.name` collisions across registries** (same name+version from two registries) → Out of scope here (no dedup); documented so the future ingestion change can namespace or dedup. Within a single source the `<name>__<version>` + hash-suffix rule guarantees uniqueness.
+- **`metadata.name` collisions across registries** (same name+version from two registries under the default prefix) → Out of scope here (no dedup). The caller-overridable prefix is the ingestion-layer lever for per-source namespacing; documented so the future ingestion change can supply distinct prefixes or otherwise dedup. Within a single `(prefix, name, version)` the hash-suffix rule guarantees uniqueness.
 - **Draft schema drift** → D7 fail-open projection; the mapping table is versioned against the draft and revisited when the schema changes.
 - **Lossy flattening of deep `packages[]` config** → Accepted; runtime package details are preserved as scalar-leaf annotations for discoverability, not interpreted. Round-trip fidelity is guaranteed only for scalar leaves.
 - **Secret leakage into searchable annotations** (remote `headers`/`variables`, `environmentVariables` carrying `default`/`value`) → D9 prunes the `default`/`value` leaves of any `isSecret: true` input from projection. This is a deliberate carve-out from scalar round-trip fidelity — secret leaves are intentionally unrecoverable from the entity. Non-secret metadata on the same input still projects, so discoverability is preserved.
@@ -140,5 +140,5 @@ Not applicable — new capabilities with no existing data or behavior to migrate
 
 ## Open Questions
 
-- Should the mapping optionally map the reverse-DNS namespace (portion before `/` in `server.json` `name`) to `metadata.namespace`, or keep a single default namespace? Deferred to the ingestion change, where entity-ref implications are clearer.
+- Should the mapping optionally map the reverse-DNS namespace (portion before `/` in `server.json` `name`) to `metadata.namespace`, or keep a single default namespace? Deferred to the ingestion change, where entity-ref implications are clearer. Cross-registry uniqueness can already be approached via a per-source prefix override (D4) without introducing `metadata.namespace`.
 - Cross-registry dedup/merge of the same server (same name+version from multiple registries) — deferred to the ingestion change.
