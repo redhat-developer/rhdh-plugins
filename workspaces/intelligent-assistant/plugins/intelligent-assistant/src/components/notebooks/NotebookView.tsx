@@ -26,7 +26,7 @@ import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { styled, useTheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import { ChatbotContent, ChatbotFooter, MessageBar } from '@patternfly/chatbot';
+import { ChatbotFooter, MessageBar } from '@patternfly/chatbot';
 import {
   Alert,
   Button,
@@ -54,6 +54,7 @@ import {
 import { useRenameDocument } from '../../hooks/notebooks/useRenameDocument';
 import { useRenameNotebookWithAlert } from '../../hooks/notebooks/useRenameNotebookWithAlert';
 import { useUploadDocument } from '../../hooks/notebooks/useUploadDocument';
+import { useChatContentScrollOverflow } from '../../hooks/useChatContentScrollOverflow';
 import { useConversationMessages } from '../../hooks/useConversationMessages';
 import { useNotebookWelcomePrompts } from '../../hooks/useNotebookWelcomePrompts';
 import { useStopConversation } from '../../hooks/useStopConversation';
@@ -64,6 +65,10 @@ import userAvatar from '../../images/user-avatar.svg';
 import { NotebookSessionMetadata, SessionDocument } from '../../types';
 import { ChatbotFootnoteWithIcon } from '../../utils/lightspeed-chatbox-utils';
 import { runFileUploads } from '../../utils/notebook-upload-runner';
+import {
+  ChatMessageContentShell,
+  ChatMessageScroll,
+} from '../chatMessageScrollLayout';
 import { LightspeedChatBox } from '../LightspeedChatBox';
 import {
   FramedPlainIconButton,
@@ -239,18 +244,8 @@ const PromptPill = styled('button')(({ theme }) => ({
   },
 }));
 
-const StyledChatbotContent = styled(ChatbotContent)({
-  minHeight: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  flex: 1,
-  overflow: 'auto',
+const NotebookChatContentShell = styled(ChatMessageContentShell)({
   backgroundColor: floatingBg,
-  '& .pf-chatbot__message-contents': {
-    overflowX: 'hidden',
-    overflowWrap: 'break-word',
-    wordBreak: 'break-word',
-  },
 });
 
 const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
@@ -389,11 +384,18 @@ export const NotebookView = ({
     '',
     avatar,
   );
+  const notebookMessageScrollRef = useRef<HTMLDivElement>(null);
 
   // Show the store's transcript whenever there is an active or finished stream
   // for this session; otherwise fall back to persisted server messages.
   const messages =
     streamStatus === 'idle' ? conversationMessages : streamMessages;
+
+  const hasNotebookMessageOverflow = useChatContentScrollOverflow(
+    notebookMessageScrollRef,
+    messages.length > 0,
+    [sessionId, conversationId, messages.length, isStreaming],
+  );
 
   // Keep the local conversation id in sync when the store resolves a temp
   // conversation to its real id (written into the session query cache).
@@ -764,20 +766,22 @@ export const NotebookView = ({
     }
     if (messages.length > 0) {
       return (
-        <StyledChatbotContent>
-          <LightspeedChatBox
-            userName={userName}
-            messages={messages}
-            profileLoading={profileLoading}
-            announcement={announcement}
-            ref={scrollToBottomRef}
-            welcomePrompts={[]}
-            conversationId={conversationId}
-            isStreaming={isStreaming}
-            topicRestrictionEnabled={topicRestrictionEnabled}
-            showSourcesChipPopover
-          />
-        </StyledChatbotContent>
+        <NotebookChatContentShell hasOverflow={hasNotebookMessageOverflow}>
+          <ChatMessageScroll ref={notebookMessageScrollRef}>
+            <LightspeedChatBox
+              userName={userName}
+              messages={messages}
+              profileLoading={profileLoading}
+              announcement={announcement}
+              ref={scrollToBottomRef}
+              welcomePrompts={[]}
+              conversationId={conversationId}
+              isStreaming={isStreaming}
+              topicRestrictionEnabled={topicRestrictionEnabled}
+              showSourcesChipPopover
+            />
+          </ChatMessageScroll>
+        </NotebookChatContentShell>
       );
     }
     return (
