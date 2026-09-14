@@ -76,7 +76,7 @@ metadata:
 
 ## App configuration
 
-Default, no configration required:
+Default, no configuration required:
 
 ```yaml
 scorecard:
@@ -124,7 +124,7 @@ If you use GitHub or Jira collectors, install the corresponding backend modules:
 
 ## DORA collectors
 
-DORA plugin uses [**collectors**](../scorecard-backend/docs/collectors.md) to gather necessary data for metrics calculation from various sources. See [collectors.md](./docs/dora-collectors.mdd) for more information.
+DORA plugin uses [**collectors**](../scorecard-backend/docs/collectors.md) to gather necessary data for metrics calculation from various sources. See [collectors.md](./docs/dora-collectors.md) for more information.
 
 This modular approach offers significant benefits:
 
