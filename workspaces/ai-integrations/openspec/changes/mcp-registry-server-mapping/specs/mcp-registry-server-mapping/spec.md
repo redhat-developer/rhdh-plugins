@@ -79,11 +79,11 @@ A registry publishes one `server.json` per server version, and each version beco
 
 ### Requirement: Map descriptive metadata to native Backstage fields
 
-The mapping SHALL map `server.json` descriptive attributes to native Backstage `metadata` fields: `title` → `metadata.title`; `description` → `metadata.description`; `websiteUrl` → a `metadata.links` entry whose `url` is the `websiteUrl` and whose `title` is `Website`; and `repository.url` combined with `repository.subfolder` when present (per the repository URL combination algorithm below) → a `metadata.links` entry whose `url` is that combined URL and whose `title` is `Source Code`. The mapping SHALL ALSO emit the same combined URL as a `backstage.io/source-location` annotation whose value MUST use the `url:` format (`url:<combined-url>`), so the repository is captured both as the canonical Backstage source-location annotation (for source-aware tooling) and as a human-visible source link. The mapping SHALL set `metadata.tags` to include the upstream mcp-server convention tags (`mcp`, `ai`).
+The mapping SHALL map `server.json` descriptive attributes to native Backstage `metadata` fields: `title` → `metadata.title`; `description` → `metadata.description`; `websiteUrl` → a `metadata.links` entry whose `url` is the `websiteUrl` and whose `title` is `Website`; and `repository.url` combined with `repository.subfolder` when present (per the repository URL combination algorithm below) → a `metadata.links` entry whose `url` is that combined URL and whose `title` is `Source Code`. The mapping SHALL ALSO emit the same combined URL as a `backstage.io/source-location` annotation whose value MUST use the `url:` format (`url:<combined-url>`), so the repository is captured both as the canonical Backstage source-location annotation (for source-aware tooling) and as a human-visible source link. Independently of that combination, the mapping SHALL copy the original `repository.url` scalar **verbatim** (no trailing-`/` or `.git` strip, no subfolder join) into a dedicated `modelcontextprotocol.io/repository.url` annotation so the source value remains recoverable. The mapping SHALL set `metadata.tags` to include the upstream mcp-server convention tags (`mcp`, `ai`).
 
 The [`server.json` `repository` object](https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/server-json/draft/server.schema.json) supplies a repository-root `url` (browse and git clone), a hosting-service `source` identifier, and an optional `subfolder` that is a clean relative path from the repository root. It does not supply a git branch or ref. The mapping therefore MUST NOT invent a branch name such as `main`. The mapping SHALL compute the combined repository URL as follows:
 
-1. **Normalize the base URL.** Let `base` be `repository.url` with any trailing `/` removed and with a trailing `.git` suffix removed when present.
+1. **Normalize the base URL (for combination only).** Let `base` be `repository.url` with any trailing `/` removed and with a trailing `.git` suffix removed when present. This normalization applies only to the combined Source Code / `backstage.io/source-location` URL; it SHALL NOT alter the dedicated `modelcontextprotocol.io/repository.url` annotation.
 2. **Absent subfolder.** When `repository.subfolder` is unset or empty after trimming whitespace, the combined URL is `base`. No tree/src/browse segment is inserted.
 3. **Normalize the subfolder.** Let `subfolder` be `repository.subfolder` with leading and trailing `/` characters removed. The mapping SHALL treat it as `/`-separated relative path segments and SHALL NOT resolve `.` or `..` segments.
 4. **Select a browse-path template from `repository.source`** (compared case-insensitively) so subdirectory URLs remain valid across SCMs. Templates that require a ref SHALL use the git symbolic ref `HEAD` (the repository default branch):
@@ -92,7 +92,7 @@ The [`server.json` `repository` object](https://github.com/modelcontextprotocol/
    - `bitbucket` → `{base}/src/HEAD/{subfolder}`
    - `azure-devops` → `{base}` with query parameter `path=/{subfolder}` (use `?` when `base` has no query string, otherwise `&`; do not invent a `version`/`GB*` ref)
    - any other or unset `source` → `{base}/{subfolder}` (path join). This fallback MAY not be a clickable browse URL on the hosting platform; `repository.source` and `repository.subfolder` remain projected as `modelcontextprotocol.io/*` annotations so a consumer can reconstruct a host-specific URL.
-5. **Emit.** The `Source Code` `metadata.links` entry `url` is the combined URL. The `backstage.io/source-location` value is `url:` concatenated with the combined URL.
+5. **Emit.** The `Source Code` `metadata.links` entry `url` is the combined URL. The `backstage.io/source-location` value is `url:` concatenated with the combined URL. The dedicated `modelcontextprotocol.io/repository.url` annotation is the original `repository.url` scalar, unnormalized.
 
 `repository.url` is treated as the repository root, matching the MCP schema; the mapping SHALL NOT parse or strip an existing `/tree/<ref>/` (or equivalent) prefix from it.
 
@@ -104,7 +104,7 @@ The [`server.json` `repository` object](https://github.com/modelcontextprotocol/
 #### Scenario: GitHub repository subfolder uses the GitHub tree path with HEAD
 
 - **WHEN** a `server.json` provides `repository.url` `https://github.com/modelcontextprotocol/servers`, `repository.source` `github`, and `repository.subfolder` `src/everything`
-- **THEN** the entity has a `metadata.links` entry whose `url` is `https://github.com/modelcontextprotocol/servers/tree/HEAD/src/everything` and whose `title` is `Source Code`, a `backstage.io/source-location` annotation `url:https://github.com/modelcontextprotocol/servers/tree/HEAD/src/everything`, and the remaining `repository` sub-fields (`source`, `id`) are projected into `modelcontextprotocol.io/*` annotations
+- **THEN** the entity has a `metadata.links` entry whose `url` is `https://github.com/modelcontextprotocol/servers/tree/HEAD/src/everything` and whose `title` is `Source Code`, a `backstage.io/source-location` annotation `url:https://github.com/modelcontextprotocol/servers/tree/HEAD/src/everything`, a dedicated `modelcontextprotocol.io/repository.url` annotation equal to the original `https://github.com/modelcontextprotocol/servers`, and the remaining `repository` sub-fields (`source`, `id`, `subfolder`) projected into `modelcontextprotocol.io/*` annotations
 
 #### Scenario: GitLab repository subfolder uses the GitLab tree path with HEAD
 
@@ -129,7 +129,12 @@ The [`server.json` `repository` object](https://github.com/modelcontextprotocol/
 #### Scenario: Repository without subfolder uses the base URL
 
 - **WHEN** a `server.json` provides `repository.url` `https://github.com/org/repo` and no `repository.subfolder`
-- **THEN** the `Source Code` link URL and the `backstage.io/source-location` target are both `https://github.com/org/repo`, with no `/tree/HEAD` segment inserted
+- **THEN** the `Source Code` link URL and the `backstage.io/source-location` target are both `https://github.com/org/repo`, with no `/tree/HEAD` segment inserted, and `modelcontextprotocol.io/repository.url` is `https://github.com/org/repo`
+
+#### Scenario: Original repository.url is preserved unnormalized
+
+- **WHEN** a `server.json` provides `repository.url` `https://github.com/org/repo.git/` (trailing `.git` and `/`)
+- **THEN** `modelcontextprotocol.io/repository.url` is exactly `https://github.com/org/repo.git/`, while the `Source Code` link URL and the `backstage.io/source-location` target use the normalized base `https://github.com/org/repo`
 
 #### Scenario: mcp-server tags applied
 

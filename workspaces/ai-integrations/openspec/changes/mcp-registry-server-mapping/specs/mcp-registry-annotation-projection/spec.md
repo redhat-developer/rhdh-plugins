@@ -19,8 +19,8 @@ Every scalar leaf in the `server.json` document that is not consumed by a native
 
 #### Scenario: Natively-mapped attributes are not re-projected
 
-- **WHEN** a `server.json` carries `remotes[].type`/`url` (mapped to `spec.remotes`), `name` (mapped to `modelcontextprotocol.io/name` and `metadata.name`), `version` (mapped to `modelcontextprotocol.io/version`), `title`/`description` (mapped to `metadata`), and `websiteUrl`/`repository.url` (mapped to `metadata.links`, with `repository.url` also to the `backstage.io/source-location` annotation)
-- **THEN** those attributes are not additionally emitted as generic `modelcontextprotocol.io/*` projected annotations, and the generic projection does not overwrite or re-derive the direct-mapping `backstage.io/source-location` annotation
+- **WHEN** a `server.json` carries `remotes[].type`/`url` (mapped to `spec.remotes`), `name` (mapped to `modelcontextprotocol.io/name` and `metadata.name`), `version` (mapped to `modelcontextprotocol.io/version`), `title`/`description` (mapped to `metadata`), `websiteUrl` (mapped to `metadata.links`), and `repository.url` (mapped to `metadata.links`, `backstage.io/source-location`, and the dedicated `modelcontextprotocol.io/repository.url` annotation)
+- **THEN** those attributes are not additionally emitted as generic `modelcontextprotocol.io/*` projected annotations, and the generic projection does not overwrite or re-derive the direct-mapping `backstage.io/source-location` or `modelcontextprotocol.io/repository.url` annotations
 
 ### Requirement: Encode nested paths as dot-separated segments within a single-slash key
 
@@ -67,7 +67,7 @@ Every projected annotation key SHALL be valid for the Backstage catalog: the nam
 
 ### Requirement: Do not overwrite reserved or previously-set annotations
 
-Projection SHALL NOT overwrite annotations set by the direct mapping (for example `modelcontextprotocol.io/name`, `modelcontextprotocol.io/version`) or any other reserved annotation. If a generic projected key would collide with such an annotation, the direct-mapping value SHALL win and the projection SHALL be skipped or disambiguated.
+Projection SHALL NOT overwrite annotations set by the direct mapping (for example `modelcontextprotocol.io/name`, `modelcontextprotocol.io/version`, `modelcontextprotocol.io/repository.url`) or any other reserved annotation. If a generic projected key would collide with such an annotation, the direct-mapping value SHALL win and the projection SHALL be skipped or disambiguated.
 
 #### Scenario: Direct-mapping annotation wins
 
@@ -101,6 +101,11 @@ Every scalar leaf present in the source `server.json` SHALL be recoverable from 
 
 - **WHEN** a `server.json` with populated `packages`, `repository`, `icons`, and `_meta` is mapped
 - **THEN** every non-null, non-redacted scalar leaf from those sections is present either in a native entity field or in a `modelcontextprotocol.io/*` annotation, so the source values can be reconstructed
+
+#### Scenario: Original repository.url is recoverable unnormalized
+
+- **WHEN** a `server.json` provides `repository.url` `https://github.com/org/repo.git/`
+- **THEN** that exact scalar is recoverable from `modelcontextprotocol.io/repository.url`; reconstructing it from the normalized Source Code link or `backstage.io/source-location` is not required and MUST NOT be the only representation
 
 #### Scenario: Redacted secret leaves are exempt from round-trip
 
