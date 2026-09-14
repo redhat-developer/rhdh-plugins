@@ -41,7 +41,6 @@
     "@backstage/backend-plugin-api": "^1.10.0",
     "@backstage/catalog-client": "^1.16.1",
     "@backstage/catalog-model": "^1.10.0",
-    "@backstage/plugin-catalog-node": "^2.2.4",
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-scorecard-node": "workspace:^",
     "zod": "^3.22.4"
