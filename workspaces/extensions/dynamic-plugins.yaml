@@ -24,12 +24,15 @@ plugins:
           red-hat-developer-hub.backstage-plugin-extensions:
             appIcons:
               - name: extensions
+                module: Legacy
                 importName: ExtensionsIcon
             dynamicRoutes:
               - path: /extensions
+                module: Legacy
                 importName: DynamicExtensionsPluginRouter
             mountPoints:
               - mountPoint: internal.plugins/tab
+                module: Legacy
                 importName: DynamicExtensionsPluginContent
                 config:
                   path: extensions
