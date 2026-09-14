@@ -10,7 +10,7 @@ Attribute paths are encoded in **dot-separated** form as `modelcontextprotocol.i
 
 ### Requirement: Project unmapped server.json attributes into modelcontextprotocol.io annotations
 
-Every scalar leaf in the `server.json` document that is not consumed by a native field mapping SHALL be projected into an entity annotation whose key is `modelcontextprotocol.io/<path>`, where `<path>` identifies the attribute's location in the source document. Attributes that the direct mapping already places in a native field or a dedicated annotation SHALL NOT be re-projected by this fallback.
+Every scalar leaf in the `server.json` document that is not consumed by a native field mapping SHALL be projected into an entity annotation whose key is `modelcontextprotocol.io/<path>`, where `<path>` identifies the attribute's location in the source document. Attributes that the direct mapping already places in a native field or a dedicated annotation SHALL NOT be re-projected by this fallback. Projection SHALL NOT emit a URL that fails the emitted-URL scheme policy (D11) under any key — including refused `websiteUrl`, `repository.url`, `remotes[].url`, `icons[].src`, and any other URL-typed leaf. Non-URL siblings of a refused URL (for example `remotes[].type`, `icons[].mimeType`, `repository.source`) SHALL still project.
 
 #### Scenario: Unmapped scalar becomes an annotation
 
@@ -19,8 +19,18 @@ Every scalar leaf in the `server.json` document that is not consumed by a native
 
 #### Scenario: Natively-mapped attributes are not re-projected
 
-- **WHEN** a `server.json` carries `remotes[].type`/`url` (mapped to `spec.remotes`), `name` (mapped to `modelcontextprotocol.io/name` and `metadata.name`), `version` (mapped to `modelcontextprotocol.io/version`), `title`/`description` (mapped to `metadata`), `websiteUrl` (mapped to `metadata.links`), and `repository.url` (mapped to `metadata.links`, `backstage.io/source-location`, and the dedicated `modelcontextprotocol.io/repository.url` annotation)
+- **WHEN** a `server.json` carries `remotes[].type`/`url` that were copied into `spec.remotes`, `name` (mapped to `modelcontextprotocol.io/name` and `metadata.name`), `version` (mapped to `modelcontextprotocol.io/version`), `title`/`description` (mapped to `metadata`), `websiteUrl` that was copied into `metadata.links`, and `repository.url` that was copied into `metadata.links`, `backstage.io/source-location`, and the dedicated `modelcontextprotocol.io/repository.url` annotation
 - **THEN** those attributes are not additionally emitted as generic `modelcontextprotocol.io/*` projected annotations, and the generic projection does not overwrite or re-derive the direct-mapping `backstage.io/source-location` or `modelcontextprotocol.io/repository.url` annotations
+
+#### Scenario: Refused URLs are not projected
+
+- **WHEN** `websiteUrl`, `remotes[].url`, `repository.url`, or `icons[].src` is refused by the emitted-URL scheme policy (for example `javascript:` or `data:`)
+- **THEN** no `modelcontextprotocol.io/*` annotation carries that URL, and non-URL siblings of the same object still project
+
+#### Scenario: Refused repository.url is not re-projected onto the dedicated key
+
+- **WHEN** `repository.url` is refused by the emitted-URL scheme policy (for example `javascript:`, `data:`, or `git@github.com:org/repo.git`)
+- **THEN** no `modelcontextprotocol.io/repository.url` annotation is emitted, generic projection does not recreate that key, and remaining `repository` sub-fields (`source`, `id`, `subfolder`) still project
 
 ### Requirement: Encode nested paths as dot-separated segments within a single-slash key
 
@@ -95,17 +105,22 @@ An `Input` object in `server.json` (as used by `packages[].environmentVariables[
 
 ### Requirement: Scalar round-trip fidelity
 
-Every scalar leaf present in the source `server.json` SHALL be recoverable from the produced entity — either from a native field or from a projected annotation — **except** the `default`/`value` leaves of `isSecret: true` inputs, which are intentionally redacted per "Redact secret-flagged input values". Null values and empty containers MAY be omitted per a documented rule; every non-null, non-redacted scalar SHALL be represented.
+Every scalar leaf present in the source `server.json` SHALL be recoverable from the produced entity — either from a native field or from a projected annotation — **except** the `default`/`value` leaves of `isSecret: true` inputs, which are intentionally redacted per "Redact secret-flagged input values", **and** any URL refused by the emitted-URL scheme policy, which is omitted from emitted URL fields and from all `modelcontextprotocol.io/*` annotations. Null values and empty containers MAY be omitted per a documented rule; every non-null, non-redacted, non-D11-refused-URL scalar SHALL be represented.
 
 #### Scenario: All scalar leaves are recoverable
 
-- **WHEN** a `server.json` with populated `packages`, `repository`, `icons`, and `_meta` is mapped
-- **THEN** every non-null, non-redacted scalar leaf from those sections is present either in a native entity field or in a `modelcontextprotocol.io/*` annotation, so the source values can be reconstructed
+- **WHEN** a `server.json` with populated `packages`, `repository`, `icons`, and `_meta` is mapped and those URL leaves pass the emitted-URL scheme policy
+- **THEN** every non-null, non-redacted, non-D11-refused scalar leaf from those sections is present either in a native entity field or in a `modelcontextprotocol.io/*` annotation, so the source values can be reconstructed
 
 #### Scenario: Original repository.url is recoverable unnormalized
 
 - **WHEN** a `server.json` provides `repository.url` `https://github.com/org/repo.git/`
 - **THEN** that exact scalar is recoverable from `modelcontextprotocol.io/repository.url`; reconstructing it from the normalized Source Code link or `backstage.io/source-location` is not required and MUST NOT be the only representation
+
+#### Scenario: Refused URLs are exempt from round-trip
+
+- **WHEN** a `server.json` provides `websiteUrl` `javascript:alert(1)`, `repository.url` `data:text/html,x`, or `icons[0].src` `javascript:alert(1)`
+- **THEN** the absence of those scalars from `metadata.links`, `backstage.io/source-location`, `spec.remotes`, and all `modelcontextprotocol.io/*` annotations does NOT violate round-trip fidelity, because D11 refusal of URL scalars is a documented exception
 
 #### Scenario: Redacted secret leaves are exempt from round-trip
 
