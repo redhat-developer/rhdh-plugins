@@ -23,25 +23,25 @@ import { translationRef } from './ref';
 export default createTranslationMessages({
   ref: translationRef,
   messages: {
-    'catalog.emptyState.title': 'Keine Katalogeinträge gefunden',
+    'catalog.emptyState.title': 'Keine Katalogeinträge verfügbar',
     'catalog.emptyState.description':
-      'Einträge werden hier angezeigt, sobald sie im Katalog registriert sind.',
+      'Es gibt noch keine Katalogeinträge oder Sie haben keine Berechtigung, welche anzuzeigen. Sie erscheinen hier, sobald sie registriert sind und Sie Zugriff haben.',
     'catalog.emptyState.action': 'Komponente registrieren',
-    'catalogGraph.emptyState.title': 'Keine Katalogeinträge gefunden',
+    'catalogGraph.emptyState.title': 'Keine Katalogeinträge verfügbar',
     'catalogGraph.emptyState.description':
-      'Der Kataloggraph wird hier angezeigt, sobald Entitäten im Katalog registriert sind.',
+      'Es gibt noch keine Katalogeinträge oder Sie haben keine Berechtigung, welche anzuzeigen. Der Kataloggraph erscheint hier, sobald sie registriert sind und Sie Zugriff haben.',
     'catalogGraph.emptyState.action': 'Zum Katalog',
     'scaffolder.emptyState.title': 'Keine Vorlagen verfügbar',
     'scaffolder.emptyState.description':
-      'Software-Vorlagen werden hier angezeigt, sobald sie im Katalog registriert sind.',
+      'Es gibt noch keine Software-Vorlagen oder Sie haben keine Berechtigung, welche anzuzeigen. Sie erscheinen hier, sobald sie registriert sind und Sie Zugriff haben.',
     'scaffolder.emptyState.action': 'Vorlage registrieren',
     'apiDocs.emptyState.title': 'Keine APIs verfügbar',
     'apiDocs.emptyState.description':
-      'API-Definitionen werden hier angezeigt, sobald sie im Katalog registriert sind.',
+      'Es gibt noch keine APIs oder Sie haben keine Berechtigung, welche anzuzeigen. Sie erscheinen hier, sobald sie registriert sind und Sie Zugriff haben.',
     'apiDocs.emptyState.action': 'API registrieren',
     'docs.emptyState.title': 'Keine Dokumentation verfügbar',
     'docs.emptyState.description':
-      'Dokumentation wird hier angezeigt, sobald Entitäten mit TechDocs-Annotationen registriert sind.',
+      'Es gibt noch keine dokumentierten Einträge oder Sie haben keine Berechtigung, welche anzuzeigen. Dokumentation erscheint hier, sobald Einträge mit TechDocs-Annotationen registriert sind und Sie Zugriff haben.',
     'docs.emptyState.action': 'Mehr erfahren',
   },
 });
