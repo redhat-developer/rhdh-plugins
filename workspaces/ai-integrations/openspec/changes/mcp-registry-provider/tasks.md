@@ -14,19 +14,19 @@
 
 ## 2. Configuration
 
-- [ ] 2.1 Author `config.d.ts` declaring `catalog.providers.mcpRegistry` as a single object with `baseUrl` (required), `baseName?` (optional mapping-prefix override), `apiVersion?` (default `v1`), `schedule?` (`SchedulerServiceTaskScheduleDefinitionConfig`), and `defaultOwner?`
+- [ ] 2.1 Author `config.d.ts` declaring `catalog.providers.mcpRegistry` as a single object with `baseUrl` (required), `baseName?` (optional mapping-prefix override), `apiVersion?` (default `v1`), `schedule?` (`SchedulerServiceTaskScheduleDefinitionConfig`), `pageLimit?` (max pages per sync, default `10`), `pageSize?` (registry `?limit=` when set), and `defaultOwner?`
 - [ ] 2.2 Implement config reading: parse `catalog.providers.mcpRegistry` as a single object; register nothing (no error) when the key is absent
-- [ ] 2.3 Implement validation with actionable errors (fail fast when `baseUrl` is missing; fail fast with a multiple-registries-out-of-scope message when the value is a keyed map of instance objects); apply the `apiVersion` default (`v1`) and the documented default schedule when omitted
-- [ ] 2.4 Add unit tests for config parsing/validation: single object with `baseUrl`, optional `baseName`, keyed-map rejection, missing `baseUrl`, and absent-config no-op
+- [ ] 2.3 Implement validation with actionable errors (fail fast when `baseUrl` is missing; fail fast with a multiple-registries-out-of-scope message when the value is a keyed map of instance objects); apply the `apiVersion` default (`v1`), the documented default schedule, and the `pageLimit` default (`10` pages per sync) when omitted
+- [ ] 2.4 Add unit tests for config parsing/validation: single object with `baseUrl`, optional `baseName`, keyed-map rejection, missing `baseUrl`, absent-config no-op, omitted `pageLimit` → `10`, explicit `pageLimit` override, omitted `pageSize` (no invented default), and explicit `pageSize`
 
 ## 3. Registry Client & Pagination
 
 - [ ] 3.1 Define the registry API response types (`servers[]`, `metadata.count`, `metadata.nextCursor`) and the `server.json` extraction from each `servers[]` entry (`.server`)
 - [ ] 3.2 Implement servers-endpoint URL construction `<baseUrl>/<apiVersion>/servers` with slash normalization (works with and without a trailing slash on `baseUrl`)
-- [ ] 3.3 Implement cursor pagination: loop passing prior `metadata.nextCursor` as the `cursor` query param until it is absent, null, or empty, accumulating all `servers[]`; treat cursors as opaque
-- [ ] 3.4 Implement the pagination loop safeguard (max-pages/total bound + repeated-cursor detection) that fails the run rather than looping forever
+- [ ] 3.3 Implement cursor pagination: loop passing prior `metadata.nextCursor` as the `cursor` query param until it is absent, null, or empty, accumulating all `servers[]`; treat cursors as opaque; when `pageSize` is set send it as `?limit=` on every list request; when `pageSize` is omitted leave `?limit=` unset
+- [ ] 3.4 Implement the pagination loop safeguard: cap fetches at configured `pageLimit` pages per sync (`10` when omitted); do not send `pageLimit` as the registry `?limit=` query param; detect a repeated cursor; exceeding the page cap or a repeated cursor fails the run rather than looping forever
 - [ ] 3.5 Implement registry-error handling (unreachable host, non-2xx status, unparseable body, pagination-safeguard trip) raising a typed error that aborts the run
-- [ ] 3.6 Add unit tests for the client using mocked HTTP: single page, multi-page traversal, empty/absent cursor termination, opaque-cursor passthrough, and error/ safeguard cases
+- [ ] 3.6 Add unit tests for the client using mocked HTTP: single page, multi-page traversal, empty/absent cursor termination, opaque-cursor passthrough, omitted `pageSize` (no `limit` query), configured `pageSize` as `limit` on every page request, default `pageLimit` `10` tripping on an 11th page, configured `pageLimit` tripping, and error/safeguard cases
 
 ## 4. Entity Provider & Scheduling
 
@@ -47,5 +47,5 @@
 - [ ] 6.1 Add an end-to-end test wiring config → mocked paginated registry → mapping → full mutation, asserting the mutation converges to the registry's current server set
 - [ ] 6.2 Verify produced entities pass the upstream `mcp-server` `API` entity schema (`McpServerApiEntity`) — reusing the mapping change's conformance expectations
 - [ ] 6.3 Verify the apiVersion discrepancy handling: default `v1` requests `<baseUrl>/v1/servers` and an override (`v0`) is honored, with a documented note for operators
-- [ ] 6.4 Finalize `README.md` / config docs: full `catalog.providers.mcpRegistry` example (`baseUrl`, optional `baseName`, `apiVersion`, `schedule`, `defaultOwner`), note that multiple registries are out of scope, pagination behavior, and error-handling semantics
+- [ ] 6.4 Finalize `README.md` / config docs: full `catalog.providers.mcpRegistry` example (`baseUrl`, optional `baseName`, `apiVersion`, `schedule`, `pageLimit` default `10` pages per sync, optional `pageSize` as `?limit=`, `defaultOwner`), note that multiple registries are out of scope, pagination behavior, and error-handling semantics
 - [ ] 6.5 Run the workspace lint, typecheck, and test suite; ensure the new package builds and passes CI conventions

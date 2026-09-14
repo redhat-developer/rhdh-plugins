@@ -37,7 +37,7 @@ Pagination is cursor-based: omit `cursor` on the first request; pass the prior `
 **Goals:**
 
 - A scheduled catalog entity provider that ingests MCP servers from one configured registry into the RHDH catalog as `mcp-server` `API` entities.
-- Complete ingestion via full cursor pagination (the gap left by the reference prototype).
+- **Complete ingestion via cursor pagination** (the gap left by the reference prototype), capped per sync by optional `pageLimit` (default `10` pages), with optional `pageSize` controlling `?limit=`.
 - Idiomatic, upstream-aligned configuration (`catalog.providers.mcpRegistry`) for a single registry, with optional `baseName` overriding the mapping identity prefix.
 - Clean delegation to `mcp-registry-server-mapping` — the provider never reimplements the transform.
 - Full-mutation semantics so the catalog converges to the registry's current state (adds, updates, prunes).
@@ -57,9 +57,9 @@ Pagination is cursor-based: omit `cursor` on the first request; pass the prior `
 
 ### D1: Configuration under `catalog.providers.mcpRegistry` (single registry; `baseName` for future multi-registry)
 
-**Choice:** Config is a single object at `catalog.providers.mcpRegistry` with `baseUrl` (required), `baseName` (optional; passed as the mapping's prefix override), `apiVersion` (default `v1`), `schedule` (`SchedulerServiceTaskScheduleDefinition`), and `defaultOwner` (entity ref). A keyed map of instances is rejected at startup. A `config.d.ts` declares the schema so app-config validation and IDE assistance work.
+**Choice:** Config is a single object at `catalog.providers.mcpRegistry` with `baseUrl` (required), `baseName` (optional; passed as the mapping's prefix override), `apiVersion` (default `v1`), `schedule` (`SchedulerServiceTaskScheduleDefinition`), `pageLimit` (optional; max **pages** fetched per sync, default `10`), `pageSize` (optional; sent as the registry `?limit=` page-size query; omitted from the request when unset), and `defaultOwner` (entity ref). A keyed map of instances is rejected at startup. A `config.d.ts` declares the schema so app-config validation and IDE assistance work.
 
-**Alternatives considered:** (a) The prototype's `mcp.registry.proxy.<id>` namespace — rejected; that namespace reads as proxy/pass-through config and is not where catalog operators look for entity providers. (b) A keyed map `catalog.providers.mcpRegistry.<id>` matching `github`/`ldap` providers — deferred; multiple registries are out of scope for the initial implementation. `baseName` is the hook that change would use so each source can override the mapping `prefix` (`<prefix>__<name>__<version>`).
+**Alternatives considered:** (a) The prototype's `mcp.registry.proxy.<id>` namespace — rejected; that namespace reads as proxy/pass-through config and is not where catalog operators look for entity providers. (b) A keyed map `catalog.providers.mcpRegistry.<id>` matching `github`/`ldap` providers — deferred; multiple registries are out of scope for the initial implementation. `baseName` is the hook that change would use so each source can override the mapping `prefix` (`<prefix>__<name>__<version>`). (c) Naming the page cap `limit` — rejected; it collides with the registry `?limit=` query parameter. (d) Always sending a default `?limit=` — rejected; when `pageSize` is unset the registry's own default applies.
 
 **Rationale:** A flat block matches the initial single-registry scope. `baseName` alongside `baseUrl` is cheap now and avoids a mapping redesign when a later change adds more sources.
 
@@ -81,11 +81,11 @@ Pagination is cursor-based: omit `cursor` on the first request; pass the prior `
 
 ### D4: Full cursor pagination is mandatory
 
-**Choice:** The provider loops: request `<baseUrl>/<apiVersion>/servers`, accumulate `servers[]`, read `metadata.nextCursor`, and re-request with `?cursor=<value>` until the cursor is absent, null, or empty. Cursors are opaque and passed verbatim. A **loop safeguard** (max-pages / max-total bound, plus detecting a repeated cursor) prevents a misbehaving registry from spinning forever; hitting the bound fails the run (D6) rather than committing a partial catalog.
+**Choice:** The provider loops: request `<baseUrl>/<apiVersion>/servers`, accumulate `servers[]`, read `metadata.nextCursor`, and re-request with `?cursor=<value>` until the cursor is absent, null, or empty. Cursors are opaque and passed verbatim. When `pageSize` is set, every list request in the sync includes `?limit=<pageSize>`. When `pageSize` is omitted, `?limit=` is left unset so the MCP Registry default page size applies. The loop is capped at `pageLimit` pages per sync (`10` when `pageLimit` is omitted). Fetching another page after that cap while `nextCursor` is still set, or detecting a repeated cursor, fails the run (D6) rather than committing a partial catalog. `pageLimit` is never forwarded as `?limit=`.
 
-**Alternative considered:** Trust a single page (prototype behavior) — rejected; silently truncates ingestion for any registry larger than one page.
+**Alternative considered:** Trust a single page (prototype behavior) — rejected; silently truncates ingestion for any registry larger than one page. Unbounded pagination — rejected; a stuck cursor would spin forever. Silently stop at `pageLimit` and commit what was fetched — rejected; that would prune unfetched servers (D6). Invent a default `pageSize` and always send `?limit=` — rejected; the registry's default stands when the operator does not set `pageSize`.
 
-**Rationale:** Unlike the reference prototype (first page only), full cursor pagination ensures complete ingestion for registries of any size.
+**Rationale:** Unlike the reference prototype (first page only), cursor pagination continues until the registry is exhausted **or** the page cap is hit. The default of `10` pages is a safe first-run bound; operators raise `pageLimit` for larger registries and set `pageSize` only when they want to override the registry's page size.
 
 ### D5: Delegate wholly to `mcp-registry-server-mapping`; supply `defaultOwner` and `baseName` as caller overrides
 
@@ -114,20 +114,19 @@ Pagination is cursor-based: omit `cursor` on the first request; pass the prior `
 ## Risks / Trade-offs
 
 - **apiVersion default (`v1`) does not match the live registry (`/v0`, `/v0.1`)** → Operators must set `apiVersion` to their registry's actual version; the default is documented and overridable, and startup/first-sync errors name the endpoint that was requested. Revisit the default if the registry standardizes on a version.
-- **Non-terminating or repeating cursor from a buggy registry** → D4 loop safeguard (max pages/total + repeated-cursor detection) trips and fails the run (D6) rather than looping forever or committing a partial catalog.
+- **Non-terminating or repeating cursor from a buggy registry** → D4 `pageLimit` (default `10`) plus repeated-cursor detection trips and fails the run (D6) rather than looping forever or committing a partial catalog.
 - **Partial-page fetch failure mid-pagination** → D6 fails the whole run with no mutation, preserving prior catalog state; no partial full mutation is ever committed.
 - **`metadata.name` collisions across registries** (same name+version from two registries) → Out of scope: this implementation ingests one registry. `baseName` is the future per-source prefix override so a later multi-registry change can keep identities distinct via mapping D4; true dedup/merge remains deferred.
-- **Large registries** → Pagination handles arbitrary size, but a very large registry produces a large full mutation each tick; `limit` tuning and schedule cadence are the operator's levers. Batching/streaming the mutation is a possible future optimization.
+- **Large registries** → Cursor pagination continues until the cursor ends, but a registry that still has `nextCursor` after `pageLimit` pages (default `10`) fails the sync until the operator raises `pageLimit`. Optional `pageSize` (`?limit=`) and schedule cadence are the other operator levers. Batching/streaming the mutation is a possible future optimization.
 - **Mapping contract drift** → The provider depends on `mcp-registry-server-mapping`; because it delegates wholly (D5), a mapping change flows through automatically, but a breaking signature change to the transform would require a coordinated update here.
 - **Unauthenticated registry assumption** → Auth is a non-goal; a registry requiring credentials will fail at fetch (D6) until a future auth extension lands.
 
 ## Migration Plan
 
-Not applicable to existing data — this is additive and introduces no migration of prior state. Deployment: publish the backend module package, add it to the backend via `backend.add(...)`, and configure `catalog.providers.mcpRegistry` with a `baseUrl` (optional `baseName`, `apiVersion`, `schedule`, `defaultOwner`). Rollback: remove the module registration (or the config block); ingested entities are pruned on the next catalog reconciliation because they are provider-managed via `locationKey`. The provider is inert when unconfigured, so shipping the package without config is a safe no-op.
+Not applicable to existing data — this is additive and introduces no migration of prior state. Deployment: publish the backend module package, add it to the backend via `backend.add(...)`, and configure `catalog.providers.mcpRegistry` with a `baseUrl` (optional `baseName`, `apiVersion`, `schedule`, `pageLimit`, `pageSize`, `defaultOwner`). Rollback: remove the module registration (or the config block); ingested entities are pruned on the next catalog reconciliation because they are provider-managed via `locationKey`. The provider is inert when unconfigured, so shipping the package without config is a safe no-op.
 
 ## Open Questions
 
 - **apiVersion default** — should the default track the live registry (`v0`/`v0.1`) instead of `v1` once the registry's versioning stabilizes? Currently `v1` per the proposal; revisit when the MCP Registry pins a stable API version.
-- **`limit` / page-size configuration** — expose a `limit` (and pagination safeguard bounds) as config, or keep them internal constants? Deferred until real registry sizes inform sensible defaults.
 - **Registry authentication** — token/header auth is out of scope now; what shape (static token, `${ENV}` substitution, Backstage auth integration) should it take when added?
 - **Multiple registries** — deferred. A later change would likely restore a keyed `catalog.providers.mcpRegistry.<id>` map, using each instance's `baseName` as the mapping prefix override so `<prefix>__<name>__<version>` stays unique per source. Cross-registry dedup/merge remains a separate question.

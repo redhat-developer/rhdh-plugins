@@ -12,7 +12,7 @@ This spec covers configuration, scheduling, registry API interaction (pagination
 
 ### Requirement: Configure a single MCP registry provider
 
-The provider SHALL read its configuration from `catalog.providers.mcpRegistry` as a **single object** (not a keyed map of instances). The provider SHALL read `baseUrl` (**required**), `baseName` (optional), `apiVersion` (optional, defaulting to the constant `v1`), `schedule` (optional, a standard `SchedulerServiceTaskScheduleDefinition`), and `defaultOwner` (optional, a Backstage entity reference). When `baseName` is present, the provider SHALL pass it to `mcp-registry-server-mapping` as the caller-override identity prefix; when it is omitted, the provider SHALL NOT pass a prefix override, so the mapping's default prefix (`mcp.registry`) applies. The provider SHALL register at most one `EntityProvider` whose `getProviderName()` is the constant `mcp-registry-provider`, which SHALL also be the mutation `locationKey` used for full-mutation pruning. When `catalog.providers.mcpRegistry` is absent, the provider SHALL register nothing and SHALL NOT error (the module is inert unless configured). Multiple registries are out of scope: a keyed map of instance objects SHALL fail startup with an actionable error.
+The provider SHALL read its configuration from `catalog.providers.mcpRegistry` as a **single object** (not a keyed map of instances). The provider SHALL read `baseUrl` (**required**), `baseName` (optional), `apiVersion` (optional, defaulting to the constant `v1`), `schedule` (optional, a standard `SchedulerServiceTaskScheduleDefinition`), `pageLimit` (optional, the max number of pages fetched per sync, defaulting to the constant `10`), `pageSize` (optional, the registry page size sent as the `limit` query parameter; when omitted the provider SHALL leave `?limit=` unset), and `defaultOwner` (optional, a Backstage entity reference). When `baseName` is present, the provider SHALL pass it to `mcp-registry-server-mapping` as the caller-override identity prefix; when it is omitted, the provider SHALL NOT pass a prefix override, so the mapping's default prefix (`mcp.registry`) applies. The provider SHALL register at most one `EntityProvider` whose `getProviderName()` is the constant `mcp-registry-provider`, which SHALL also be the mutation `locationKey` used for full-mutation pruning. When `catalog.providers.mcpRegistry` is absent, the provider SHALL register nothing and SHALL NOT error (the module is inert unless configured). Multiple registries are out of scope: a keyed map of instance objects SHALL fail startup with an actionable error.
 
 #### Scenario: Single registry configured
 
@@ -39,6 +39,26 @@ The provider SHALL read its configuration from `catalog.providers.mcpRegistry` a
 - **WHEN** `catalog.providers.mcpRegistry` is not present in app-config
 - **THEN** the module registers no provider and startup succeeds without error
 
+#### Scenario: Omitted pageLimit defaults to 10 pages per sync
+
+- **WHEN** `catalog.providers.mcpRegistry` is configured with a `baseUrl` and no `pageLimit`
+- **THEN** the provider's max pages per sync is `10`
+
+#### Scenario: Configured pageLimit is the max pages per sync
+
+- **WHEN** `catalog.providers.mcpRegistry` is configured with `pageLimit: 3`
+- **THEN** the provider's max pages per sync is `3`
+
+#### Scenario: Omitted pageSize leaves the registry page-size query unset
+
+- **WHEN** `catalog.providers.mcpRegistry` is configured with a `baseUrl` and no `pageSize`
+- **THEN** list requests omit the `limit` query parameter and the MCP Registry default page size applies
+
+#### Scenario: Configured pageSize is sent as the limit query parameter
+
+- **WHEN** `catalog.providers.mcpRegistry` is configured with `pageSize: 50`
+- **THEN** each servers list request includes `limit=50`
+
 ### Requirement: Sync on the configured schedule
 
 The provider SHALL run its ingestion sync on the configured `schedule` using the Backstage `SchedulerService`. When `schedule` is omitted, the provider SHALL apply a documented default `SchedulerServiceTaskScheduleDefinition` rather than failing. The provider SHALL also perform an initial sync according to the schedule's `initialDelay` (or immediately when unset) after registration.
@@ -53,9 +73,9 @@ The provider SHALL run its ingestion sync on the configured `schedule` using the
 - **WHEN** the provider is configured without a `schedule`
 - **THEN** the provider applies the documented default schedule and syncs on that cadence without error
 
-### Requirement: List all registry servers with cursor pagination
+### Requirement: List registry servers with cursor pagination
 
-During a sync, the provider SHALL request the registry's servers from `<baseUrl>/<apiVersion>/servers` and SHALL traverse every page using the registry's cursor pagination: it SHALL read `metadata.nextCursor` from each response and, when that value is present and non-empty, issue the next request with that value as the `cursor` query parameter, repeating until `metadata.nextCursor` is absent, null, or empty. Cursors SHALL be treated as opaque strings (never constructed or modified). All `servers[]` entries across all pages SHALL be accumulated for the sync. The provider SHALL guard against a non-terminating cursor loop with a max-pages/total bound plus repeated-cursor detection; hitting that bound SHALL fail the run with no mutation.
+During a sync, the provider SHALL request the registry's servers from `<baseUrl>/<apiVersion>/servers` and SHALL traverse pages using the registry's cursor pagination: it SHALL read `metadata.nextCursor` from each response and, when that value is present and non-empty, issue the next request with that value as the `cursor` query parameter, repeating until `metadata.nextCursor` is absent, null, or empty. Cursors SHALL be treated as opaque strings (never constructed or modified). All `servers[]` entries across fetched pages SHALL be accumulated for the sync. When `pageSize` is set, the provider SHALL send it as the `limit` query parameter on every list request in the sync. When `pageSize` is omitted, the provider SHALL omit `?limit=` so the MCP Registry default page size applies. The provider SHALL NOT send `pageLimit` as the registry `?limit=` query parameter; `pageLimit` is a local max-pages bound only. The provider SHALL fail the run with no mutation when it would fetch more pages than `pageLimit` (default `10`) while `metadata.nextCursor` is still present and non-empty, or when a repeated cursor is detected.
 
 #### Scenario: Multi-page traversal
 
@@ -71,6 +91,26 @@ During a sync, the provider SHALL request the registry's servers from `<baseUrl>
 
 - **WHEN** a response's `metadata.nextCursor` is an opaque token
 - **THEN** the provider passes that token verbatim as the `cursor` query parameter without parsing or altering it
+
+#### Scenario: Omitted pageSize does not send limit on list requests
+
+- **WHEN** `pageSize` is omitted
+- **THEN** each servers list request has no `limit` query parameter
+
+#### Scenario: Configured pageSize is present on every page request
+
+- **WHEN** the provider is configured with `pageSize: 50` and the registry returns a first page with `metadata.nextCursor` set
+- **THEN** both the first request and the follow-up request include `limit=50`
+
+#### Scenario: Default pageLimit trips when an 11th page is required
+
+- **WHEN** `pageLimit` is omitted (default `10`) and the 10th page still has a non-empty `metadata.nextCursor`
+- **THEN** the provider does not fetch an 11th page, logs the pagination-safeguard trip, and does not commit a mutation for this run
+
+#### Scenario: Configured pageLimit trips before the cursor ends
+
+- **WHEN** the provider is configured with `pageLimit: 2` and the 2nd page still has a non-empty `metadata.nextCursor`
+- **THEN** the provider does not fetch a 3rd page, logs the pagination-safeguard trip, and does not commit a mutation for this run
 
 ### Requirement: Construct the servers endpoint from apiVersion
 
