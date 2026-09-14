@@ -4,32 +4,42 @@
 > **Scope:** RHDHPLAN-1507, 1508, 1510, 1513
 > **Cross-referenced against:** RHDHPLAN-1509 (AI Catalog Discovery UI)
 
+> **Workspace reconciliation (2026-09-08):** The RHDHPLAN-1508 rows below are
+> historical Jira coverage. The current follow-on design does not include a
+> standalone RBAC admin page or duplicate `ai-catalog.*` entity permissions;
+> entity visibility uses Catalog's built-in `catalog.entity.read` permission
+> and RHDH conditional policies.
+
 ## Overview
 
-RHDHPLAN-1509 covers all **developer-facing** discovery UI (browse, search, detail pages). However, **8 admin-facing frontend stories** across RHDHPLAN-1508 and RHDHPLAN-1513 fall outside RHDHPLAN-1509's scope and must be delivered independently. All 8 have RHIDP Jira coverage and openspec specifications on this branch.
+RHDHPLAN-1509 covers the **developer-facing** discovery UI (browse, search,
+and detail pages). The RHDHPLAN-1508 RBAC work is follow-on governance work;
+the current RHDH 2.1 frontend baseline does not deliver a separate RBAC UI.
+The RHDHPLAN-1513 stories remain separate admin-panel work.
 
 ## Per-Feature Breakdown
 
-| Feature       | Summary                                          | Frontend Stories Outside 1509           | Count |
-| ------------- | ------------------------------------------------ | --------------------------------------- | ----- |
-| RHDHPLAN-1507 | AI Asset Entity Model & Ingestion Framework      | None — purely backend SDK/ingestion     | **0** |
-| RHDHPLAN-1508 | AI Catalog RBAC & Versioning Policy Model        | Graduated visibility UI + RBAC Admin UI | **4** |
-| RHDHPLAN-1510 | MCP Registry & RHOAI Connector                   | None — purely backend connectors        | **0** |
-| RHDHPLAN-1513 | Ingestion Operations & Upstream Schema Alignment | Health dashboard + Connector config UI  | **4** |
-|               |                                                  | **Total**                               | **8** |
+| Feature       | Summary                                          | Frontend Stories Outside 1509                           | Count         |
+| ------------- | ------------------------------------------------ | ------------------------------------------------------- | ------------- |
+| RHDHPLAN-1507 | AI Asset Entity Model & Ingestion Framework      | None — purely backend SDK/ingestion                     | **0**         |
+| RHDHPLAN-1508 | AI Catalog RBAC & Versioning Policy Model        | Follow-on Catalog authorization and API-level redaction | **0 current** |
+| RHDHPLAN-1510 | MCP Registry & RHOAI Connector                   | None — purely backend connectors                        | **0**         |
+| RHDHPLAN-1513 | Ingestion Operations & Upstream Schema Alignment | Health dashboard + Connector config UI                  | **4**         |
+|               |                                                  | **Total**                                               | **4**         |
 
-## The 8 Frontend Stories
+## Jira story mapping
 
-### RHDHPLAN-1508 — RBAC & Versioning Policy (4 stories)
+### RHDHPLAN-1508 — RBAC & Versioning Policy
 
-| Story       | Epic                               | What It Builds                                                                                                                                                                                                                                      | OpenSpec                                                    |
-| ----------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| RHIDP-15273 | RHIDP-15270 (Graduated Visibility) | `RequirePermission` gating on entity detail pages — users with `ai-catalog.asset.access` but not `ai-catalog.asset.access.usage-docs` see redacted fields with "request access" placeholder. Also includes SkillBundle filtered-skill UX messaging. | `ai-catalog-asset-governance` `specs/graduated-visibility/` |
-| RHIDP-15307 | RHIDP-15304 (RBAC Admin UI)        | AI Catalog Policy Dashboard — summary view of active policies grouped by category and connector                                                                                                                                                     | `ai-catalog-asset-governance` `specs/rbac-admin-ui/`        |
-| RHIDP-15308 | RHIDP-15304 (RBAC Admin UI)        | Category and Connector Policy Editor — create/edit/delete conditional RBAC policies, no raw YAML                                                                                                                                                    | `ai-catalog-asset-governance` `specs/rbac-admin-ui/`        |
-| RHIDP-15309 | RHIDP-15304 (RBAC Admin UI)        | Default Posture Configuration — UI for default-allow/deny per category and per connector                                                                                                                                                            | `ai-catalog-asset-governance` `specs/default-deny-config/`  |
+| Story       | Epic                               | What It Builds                                                                                                               | OpenSpec                                                    |
+| ----------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| RHIDP-15273 | RHIDP-15270 (Graduated Visibility) | API-level redaction for protected fields when a future backend returns them; no duplicate entity permission in the frontend. | `ai-catalog-asset-governance` `specs/graduated-visibility/` |
+| RHIDP-15307 | RHIDP-15304 (RBAC Admin UI)        | Canceled standalone policy dashboard; use the existing RHDH/RBAC administration surface.                                     | `ai-catalog-asset-governance`                               |
+| RHIDP-15308 | RHIDP-15304 (RBAC Admin UI)        | Canceled standalone policy editor; use the existing RHDH/RBAC administration surface.                                        | `ai-catalog-asset-governance`                               |
+| RHIDP-15309 | RHIDP-15304 (RBAC Admin UI)        | Deployment policy configuration, not a new frontend page.                                                                    | `ai-catalog-asset-governance` `specs/default-deny-config/`  |
 
-**Theme:** Permission-gated content rendering (1 story) + standalone RBAC admin page at `/ai-catalog/admin/rbac` (3 stories)
+**Theme:** Catalog permission integration and API-level protection where a
+future backend requires it.
 
 ### RHDHPLAN-1513 — Ingestion Operations (4 stories)
 
@@ -52,10 +62,9 @@ RHDHPLAN-1509 delivers the **developer-facing** AI Catalog frontend:
 - Translations, E2E tests, dynamic plugin export (RHIDP-15479, 15480, 15481)
 - Analytics tab rendering (Journey 6 Step 16 — consumes RHDHPLAN-1513 metrics API)
 
-The 8 stories above are **admin-facing** and live in two distinct UI surfaces:
-
-1. **RBAC Admin UI** (RHDHPLAN-1508) — standalone page calling RBAC REST API directly, gated by `ai-catalog.admin` permission
-2. **Boost Admin Panel** (RHDHPLAN-1513) — new sections in existing admin panel for health monitoring and connector config
+The RHDHPLAN-1508 target does not add a new UI surface. The RHDHPLAN-1513
+stories remain Boost Admin Panel work for health monitoring and connector
+configuration.
 
 No overlap. RHDHPLAN-1509 renders entities; RHDHPLAN-1508 gates sections of those renderings; RHDHPLAN-1513 manages the connectors that produce them.
 
@@ -63,22 +72,22 @@ No overlap. RHDHPLAN-1509 renders entities; RHDHPLAN-1508 gates sections of thos
 
 With RHIDP-15166 (Browse page) already **Closed**, **RHIDP-15167** (Entity page extensions and adoption actions) is the remaining critical story under RHDHPLAN-1509 with active cross-feature dependencies:
 
-| Direction                         | Our Story                   | Relationship                                                                                             | Rationale                                   |
-| --------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| **RHIDP-15167 is depended on by** | RHIDP-15273 (RHDHPLAN-1508) | Graduated visibility frontend wraps RHIDP-15167's entity page components with `RequirePermission` gating | Cannot gate what hasn't been built yet      |
-| **RHIDP-15167 depends on**        | RHIDP-15335 (RHDHPLAN-1513) | RHIDP-15167's Analytics tab (Journey 6 Step 16) consumes the per-connector health status API             | Cannot render metrics without a metrics API |
+| Direction                         | Our Story                   | Relationship                                                                                                                          | Rationale                                   |
+| --------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| **RHIDP-15167 is depended on by** | RHIDP-15273 (RHDHPLAN-1508) | A future API-level redaction requirement may affect entity detail fields; the current frontend consumes the Catalog response directly | Requires a concrete protected-field API     |
+| **RHIDP-15167 depends on**        | RHIDP-15335 (RHDHPLAN-1513) | RHIDP-15167's Analytics tab (Journey 6 Step 16) consumes the per-connector health status API                                          | Cannot render metrics without a metrics API |
 
 Both dependency links are registered in Jira as story-to-story "Depend" relationships.
 
 ## Interface Boundaries
 
 ```
-Developer-facing (RHDHPLAN-1509)          Admin-facing (1508 + 1513)
+Developer-facing (RHDHPLAN-1509)          Admin-facing (1513 + existing RBAC)
 ┌──────────────────────────────┐         ┌──────────────────────────────┐
-│  Browse Page (RHIDP-15166)   │         │  RBAC Admin UI (RHIDP-15304) │
-│  Entity Page (RHIDP-15167)   │◄────────│    Policy Dashboard (15307)  │
-│    └─ RequirePermission gate │ gates   │    Policy Editor (15308)     │
-│       (RHIDP-15273)          │ sections│    Default Posture (15309)   │
+│  Browse Page (RHIDP-15166)   │         │  Existing RHDH/RBAC surface  │
+│  Entity Page (RHIDP-15167)   │◄────────│  (RHIDP-15304 traceability)  │
+│    └─ Catalog permission     │         │    No Boost policy page      │
+│       response               │         │                              │
 │  NFS Filters (RHIDP-15449)   │         ├──────────────────────────────┤
 │  Analytics Tab (Journey 6)   │◄────────│  Boost Admin Panel           │
 │                              │consumes │    Health Dashboard (15336)  │
@@ -99,7 +108,8 @@ Developer-facing (RHDHPLAN-1509)          Admin-facing (1508 + 1513)
 ## Conclusion
 
 - **RHDHPLAN-1509** covers all **developer-facing** discovery UI (browse, search, detail pages, Analytics tab)
-- **RHDHPLAN-1508** owns **4 admin-facing frontend stories** not covered by RHDHPLAN-1509: graduated visibility gating (RHIDP-15273) and RBAC Admin UI (RHIDP-15307, 15308, 15309)
+- **RHDHPLAN-1508** owns follow-on catalog authorization and API-level
+  redaction requirements; it does not add a standalone Boost frontend page.
 - **RHDHPLAN-1513** owns **4 admin-facing frontend stories** not covered by RHDHPLAN-1509: ingestion health dashboard (RHIDP-15336, 15338, 15339) and connector config UI (RHIDP-15342)
 - **RHDHPLAN-1507 and 1510** are purely backend with zero frontend deliverables
 - **No gaps** — every identified frontend need has a Jira story and an openspec specification

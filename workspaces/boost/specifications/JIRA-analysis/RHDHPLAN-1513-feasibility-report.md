@@ -3,6 +3,13 @@
 **Date:** 2026-07-07
 **Purpose:** Assess whether each RHIDP epic under RHDHPLAN-1513 can be implemented within the existing Backstage framework and boost infrastructure without requiring upstream changes.
 
+> **Workspace reconciliation (2026-09-08):** This is a historical feasibility
+> analysis. Its examples of a custom `ai-catalog.admin` permission describe an
+> earlier approach, not a current requirement. Follow-on work must name a
+> concrete permission: current planning uses `boost.admin` for operational/admin
+> APIs, `boost.config.manage` for connector-config writes, and
+> `catalog.entity.read` for catalog entity visibility.
+
 ---
 
 ## Framework Capabilities Summary

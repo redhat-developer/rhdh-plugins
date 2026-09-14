@@ -21,7 +21,7 @@ import HomeIcon from '@material-ui/icons/Home';
 import ExtensionIcon from '@material-ui/icons/Extension';
 import LibraryBooks from '@material-ui/icons/LibraryBooks';
 import CreateComponentIcon from '@material-ui/icons/AddCircleOutline';
-import { Administration } from '@backstage-community/plugin-rbac';
+import { Administration } from '@backstage-community/plugin-rbac/legacy';
 import {
   Settings as SidebarSettings,
   UserSettingsSignInAvatar,

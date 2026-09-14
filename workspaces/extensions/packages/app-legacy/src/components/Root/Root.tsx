@@ -27,7 +27,7 @@ import {
   UserSettingsSignInAvatar,
 } from '@backstage/plugin-user-settings';
 import { SidebarSearchModal } from '@backstage/plugin-search';
-import { Administration } from '@backstage-community/plugin-rbac';
+import { Administration } from '@backstage-community/plugin-rbac/legacy';
 
 import {
   Sidebar,

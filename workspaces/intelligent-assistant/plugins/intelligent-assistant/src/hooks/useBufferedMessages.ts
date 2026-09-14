@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React from 'react';
+
+import { useEffect, useRef, useState } from 'react';
 
 export const useBufferedMessages = <T>(messages: T[], interval = 30): T[] => {
-  const [bufferedMessages, setBufferedMessages] = React.useState(messages);
-  const lastUpdateTime = React.useRef(0);
-  const animationFrame = React.useRef<number | null>(null);
+  const [bufferedMessages, setBufferedMessages] = useState(messages);
+  const lastUpdateTime = useRef(0);
+  const animationFrame = useRef<number | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const now = Date.now();
 
     const update = () => {

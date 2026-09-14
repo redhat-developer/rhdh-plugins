@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Config } from '@backstage/config';
+import type { Config } from '@backstage/config';
 import {
   mockErrorHandler,
   mockServices,
@@ -1619,6 +1619,7 @@ describe('createRouter', () => {
         entitiesConsidered: 45,
         calculationErrorCount: 3,
         timestamp: '2025-01-01T10:30:00.000Z',
+        aggregationChartDisplayColor: 'error.main',
         thresholds: DEFAULT_NUMBER_THRESHOLDS,
       });
     });

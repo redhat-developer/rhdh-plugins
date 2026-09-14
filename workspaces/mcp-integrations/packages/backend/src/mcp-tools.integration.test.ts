@@ -39,10 +39,13 @@ import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import softwareCatalogMcpExtrasPlugin from '@red-hat-developer-hub/backstage-plugin-software-catalog-mcp-extras';
 import mcpTechdocsExtrasPlugin from '@red-hat-developer-hub/backstage-plugin-techdocs-mcp-extras';
 import mcpScaffolderExtrasPlugin from '@red-hat-developer-hub/backstage-plugin-scaffolder-mcp-extras';
+import mcpKubernetesExtrasPlugin from '@red-hat-developer-hub/backstage-plugin-kubernetes-mcp-extras';
 
 const MCP_TOKEN = 'ci-test-mcp-token-12345';
 
 const EXPECTED_EXTRA_TOOLS = [
+  'kubernetes-mcp-extras.get-kubernetes-clusters',
+  'kubernetes-mcp-extras.get-kubernetes-resources-for-entity',
   'scaffolder-mcp-extras.execute-template',
   'scaffolder-mcp-extras.fetch-template-metadata',
   'scaffolder-mcp-extras.get-scaffolder-task-logs',
@@ -56,6 +59,8 @@ const EXPECTED_EXTRA_TOOLS = [
 ];
 
 const READ_ONLY_TOOLS = [
+  'kubernetes-mcp-extras.get-kubernetes-clusters',
+  'kubernetes-mcp-extras.get-kubernetes-resources-for-entity',
   'techdocs-mcp-extras.fetch-techdocs',
   'techdocs-mcp-extras.retrieve-techdocs-content',
   'scaffolder-mcp-extras.list-scaffolder-tasks',
@@ -76,6 +81,7 @@ type CallToolResult = z.infer<typeof CallToolResultSchema>;
 type McpTestBackend = Awaited<ReturnType<typeof startMcpBackend>>;
 
 const ALL_PLUGIN_SOURCES = [
+  'kubernetes-mcp-extras',
   'software-catalog-mcp-extras',
   'techdocs-mcp-extras',
   'scaffolder-mcp-extras',
@@ -180,6 +186,7 @@ async function startMcpBackend(options: McpBackendOptions) {
     softwareCatalogMcpExtrasPlugin,
     mcpTechdocsExtrasPlugin,
     mcpScaffolderExtrasPlugin,
+    mcpKubernetesExtrasPlugin,
     metricsServiceMock.mock().factory,
     mockServices.rootConfig.factory({
       data: createBackendConfig(options),

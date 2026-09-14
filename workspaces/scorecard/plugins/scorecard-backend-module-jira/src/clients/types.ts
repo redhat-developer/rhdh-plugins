@@ -19,6 +19,7 @@ export type Product = 'datacenter' | 'cloud';
 export interface JiraIssue {
   id: string;
   createdAt: string;
+  updatedAt: string;
   resolutionAt: string | null;
 }
 

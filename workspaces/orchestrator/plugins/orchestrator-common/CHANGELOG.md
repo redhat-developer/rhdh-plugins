@@ -1,5 +1,15 @@
 ## @red-hat-developer-hub/backstage-plugin-orchestrator-common [1.13.1](https://github.com/janus-idp/backstage-plugins/compare/@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.0...@red-hat-developer-hub/backstage-plugin-orchestrator-common@1.13.1) (2024-08-02)
 
+## 3.11.0
+
+### Minor Changes
+
+- 213b75e: Support nested objects in `orchestrator.rjsf-widgets` configuration for hierarchical widget parameter organization.
+
+### Patch Changes
+
+- 47fdead: Remove unused dependencies and declare imports that were previously unlisted.
+
 ## 3.10.0
 
 ### Minor Changes

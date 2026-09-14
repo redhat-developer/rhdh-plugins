@@ -10,8 +10,7 @@ import { TranslationResource } from '@backstage/frontend-plugin-api';
 export const intelligentAssistantTranslationRef: TranslationRef<
   'plugin.intelligent-assistant',
   {
-    readonly 'disclaimer.withoutValidation': string;
-    readonly 'disclaimer.withValidation': string;
+    readonly disclaimer: string;
     readonly 'prompts.codeReadability.title': string;
     readonly 'prompts.codeReadability.message': string;
     readonly 'prompts.debugging.title': string;

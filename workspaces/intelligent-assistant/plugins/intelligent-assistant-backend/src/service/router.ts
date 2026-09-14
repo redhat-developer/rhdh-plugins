@@ -28,14 +28,11 @@ import express, { Router } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
 import {
-  iaChatAccessPermission,
-  iaChatManagePermission,
-  iaChatUsePermission,
-  iaMcpManagePermission,
-  iaMcpUsePermission,
-  iaNotebooksUsePermission,
+  iaChatPermission,
+  iaMcpToolsPermission,
+  iaNotebooksPermission,
   iaPermissions,
-  iaSkillsAccessPermission,
+  iaSkillsPermission,
 } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 import { Readable } from 'node:stream';
@@ -46,6 +43,7 @@ import {
   DEFAULT_LIGHTSPEED_SERVICE_PORT,
   EXPRESS_JSON_BODY_LIMIT,
   TEST_VISION_JPEG,
+  VISION_PROBE_TIMEOUT_MS,
 } from './constant';
 import { McpUserSettingsStore } from './mcp-server-store';
 import {
@@ -156,6 +154,59 @@ async function buildMcpHeaders(
   }
 
   return Object.keys(headers).length > 0 ? JSON.stringify(headers) : '';
+}
+
+/**
+ * Whether a model supports vision (JPEG input), memoised in
+ * {@link ModelCapabilitiesCache}. A cache hit skips LCS; a miss sends a minimal
+ * test-inference to `/v1/responses`, where a 2xx means vision-capable. `true` is
+ * cached for 24h, `false` only briefly, since LCS returns the same 5xx for a
+ * genuinely non-vision model and for a transient error. Network/timeout errors
+ * are re-thrown (nothing cached).
+ */
+async function probeModelVisionSupport(
+  lcsBaseUrl: string,
+  cacheKey: string,
+): Promise<boolean> {
+  const cached = ModelCapabilitiesCache.get(cacheKey);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  const testJpeg = `data:image/jpeg;base64,${TEST_VISION_JPEG}`;
+  const testResponse = await fetch(`${lcsBaseUrl}/v1/responses`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    signal: AbortSignal.timeout(VISION_PROBE_TIMEOUT_MS),
+    body: JSON.stringify({
+      model: cacheKey,
+      input: [
+        {
+          type: 'message',
+          role: 'user',
+          content: [
+            {
+              type: 'input_image',
+              image_url: testJpeg,
+              detail: 'low',
+            },
+            {
+              type: 'input_text',
+              text: 'hi, respond with hi.',
+            },
+          ],
+        },
+      ],
+      tool_choice: 'none',
+      temperature: 0,
+      store: false,
+      stream: false,
+    }),
+  });
+
+  const supportsVision = testResponse.ok;
+  ModelCapabilitiesCache.set(cacheKey, supportsVision);
+  return supportsVision;
 }
 
 /**
@@ -318,7 +369,7 @@ export async function createRouter(
   router.get(
     '/mcp-servers',
     generalRateLimiter,
-    requirePermission(iaMcpUsePermission),
+    requirePermission(iaMcpToolsPermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -359,7 +410,7 @@ export async function createRouter(
   router.post(
     '/mcp-servers/validate',
     generalRateLimiter,
-    requirePermission(iaMcpUsePermission),
+    requirePermission(iaMcpToolsPermission),
     async (req, res) => {
       try {
         const { url, token } = req.body;
@@ -394,7 +445,7 @@ export async function createRouter(
   router.post(
     '/mcp-servers/:name/validate',
     generalRateLimiter,
-    requirePermission(iaMcpManagePermission),
+    requirePermission(iaMcpToolsPermission),
     async (req, res) => {
       try {
         const { userEntityRef, credentials } = getIdentity(req);
@@ -479,7 +530,7 @@ export async function createRouter(
   router.patch(
     '/mcp-servers/:name',
     generalRateLimiter,
-    requirePermission(iaMcpManagePermission),
+    requirePermission(iaMcpToolsPermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -566,7 +617,7 @@ export async function createRouter(
   router.get(
     '/notebook-conversation-ids',
     generalRateLimiter,
-    requirePermission(iaNotebooksUsePermission),
+    requirePermission(iaNotebooksPermission),
     async (req, res) => {
       try {
         const { userEntityRef } = getIdentity(req);
@@ -605,73 +656,133 @@ export async function createRouter(
 
   // ─── Proxy Routes ───────────────────────────────────────────────────
 
+  // GET /v1/models has a dedicated handler (not the shared proxy) so each model
+  // can be enriched with `supportsVision`, letting the frontend gate image input
+  // without a per-user /v1/validate-model-vision call. Like the proxy, no user_id
+  // is forwarded to LCS.
   router.get(
     '/v1/models',
     generalRateLimiter,
-    requirePermission(iaChatAccessPermission),
-    apiProxy,
+    requirePermission(iaChatPermission),
+    async (_request, response) => {
+      try {
+        const upstream = await fetch(`${lcsBaseUrl}/v1/models`);
+        if (!upstream.ok) {
+          await handleLCSFetchError(
+            upstream,
+            logger,
+            'fetching models',
+            response,
+          );
+          return;
+        }
+
+        const data = (await upstream.json()) as {
+          models?: Array<{
+            identifier: string;
+            api_model_type?: string;
+          }>;
+        };
+        const models = Array.isArray(data.models) ? data.models : [];
+
+        const enriched = await Promise.all(
+          models.map(async model => {
+            // Only LLMs can be vision-capable; skip probing embeddings etc.
+            if (model.api_model_type !== 'llm') {
+              return { ...model, supportsVision: false };
+            }
+            // `identifier` is already the `provider/model` key LCS and
+            // /v1/validate-model-vision use — do not re-prefix with provider_id.
+            const cacheKey = model.identifier;
+            try {
+              const supportsVision = await probeModelVisionSupport(
+                lcsBaseUrl,
+                cacheKey,
+              );
+              return { ...model, supportsVision };
+            } catch (error) {
+              // One failed probe must not fail the whole list.
+              logger.warn(
+                `Vision probe failed for ${cacheKey}: ${
+                  error instanceof Error ? error.message : String(error)
+                }`,
+              );
+              return { ...model, supportsVision: false };
+            }
+          }),
+        );
+
+        response.json({ ...data, models: enriched });
+      } catch (error) {
+        const msg = error instanceof Error ? error.message : String(error);
+        logger.error(`Error while fetching models: ${msg}`);
+        response
+          .status(502)
+          .json({ error: 'Unable to fetch models — upstream unreachable' });
+      }
+    },
   );
   router.get(
     '/v1/shields',
     generalRateLimiter,
-    requirePermission(iaChatAccessPermission),
+    requirePermission(iaChatPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations',
     generalRateLimiter,
-    requirePermission(iaChatAccessPermission),
+    requirePermission(iaChatPermission),
     apiProxy,
   );
   router.get(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(iaChatAccessPermission),
+    requirePermission(iaChatPermission),
     apiProxy,
   );
   router.delete(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(iaChatManagePermission),
+    requirePermission(iaChatPermission),
     apiProxy,
   );
   router.get(
     '/v1/feedback/status',
     generalRateLimiter,
-    requirePermission(iaChatAccessPermission),
+    requirePermission(iaChatPermission),
     apiProxy,
   );
 
   router.get(
     '/v1/saved-prompts/config',
     generalRateLimiter,
-    requirePermission(iaChatUsePermission),
+    requirePermission(iaChatPermission),
     apiProxy, // SKIP_USER_ID_ENDPOINTS prevents user_id injection for this endpoint
   );
   router.get(
     '/v1/saved-prompts',
     generalRateLimiter,
-    requirePermission(iaChatUsePermission),
+    requirePermission(iaChatPermission),
     apiProxy,
   );
   router.delete(
     '/v1/saved-prompts/:prompt_id',
     generalRateLimiter,
-    requirePermission(iaChatUsePermission),
+    requirePermission(iaChatPermission),
     apiProxy,
   );
 
   router.get(
     '/v1/skills',
     generalRateLimiter,
-    requirePermission(iaSkillsAccessPermission),
+    requirePermission(iaSkillsPermission),
     apiProxy,
   );
 
   router.post(
     '/v1/feedback',
     generalRateLimiter,
-    requirePermission(iaChatUsePermission),
+    requirePermission(iaChatPermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -714,7 +825,7 @@ export async function createRouter(
   router.post(
     '/v1/saved-prompts',
     generalRateLimiter,
-    requirePermission(iaChatUsePermission),
+    requirePermission(iaChatPermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -759,7 +870,7 @@ export async function createRouter(
   router.post(
     '/v1/query/interrupt',
     generalRateLimiter,
-    requirePermission(iaChatUsePermission),
+    requirePermission(iaChatPermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -799,7 +910,7 @@ export async function createRouter(
     expensiveRateLimiter,
     validateCompletionsRequest,
     validateAttachmentsForModel,
-    requirePermission(iaChatUsePermission),
+    requirePermission(iaChatPermission),
     async (request, response) => {
       const { provider }: Pick<QueryRequestBody, 'provider'> = request.body;
       try {
@@ -892,7 +1003,7 @@ export async function createRouter(
   router.put(
     '/v2/conversations/:conversation_id',
     generalRateLimiter,
-    requirePermission(iaChatManagePermission),
+    requirePermission(iaChatPermission),
     async (request, response) => {
       try {
         const { userEntityRef } = getIdentity(request);
@@ -933,7 +1044,7 @@ export async function createRouter(
   router.post(
     '/v1/validate-model-vision',
     generalRateLimiter,
-    requirePermission(iaChatUsePermission),
+    requirePermission(iaChatPermission),
     async (request, response) => {
       const { model, provider } = request.body;
 
@@ -952,47 +1063,11 @@ export async function createRouter(
       try {
         logger.info(`Vision validation requested for model: ${cacheKey}`);
 
-        if (ModelCapabilitiesCache.has(cacheKey)) {
-          const cached = ModelCapabilitiesCache.get(cacheKey)!;
-          logger.info(`Cache hit for ${cacheKey}: ${cached}`);
-          response.json({ model, provider, supportsVision: cached });
-          return;
-        }
-
-        const testJpeg = `data:image/jpeg;base64,${TEST_VISION_JPEG}`;
-        const testResponse = await fetch(`${lcsBaseUrl}/v1/responses`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: cacheKey,
-            input: [
-              {
-                type: 'message',
-                role: 'user',
-                content: [
-                  {
-                    type: 'input_image',
-                    image_url: testJpeg,
-                    detail: 'low',
-                  },
-                  {
-                    type: 'input_text',
-                    text: 'hi, respond with hi.',
-                  },
-                ],
-              },
-            ],
-            tool_choice: 'none',
-            temperature: 0,
-            store: false,
-            stream: false,
-          }),
-        });
-
-        if (testResponse.ok) {
-          ModelCapabilitiesCache.set(cacheKey, true);
-          response.json({ model, provider, supportsVision: true });
-        }
+        const supportsVision = await probeModelVisionSupport(
+          lcsBaseUrl,
+          cacheKey,
+        );
+        response.json({ model, provider, supportsVision });
       } catch (error) {
         logger.error(`Vision test error for ${cacheKey}:`, error);
         response.status(502).json({

@@ -13,50 +13,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
+import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import type { Config } from '@backstage/config';
-import type { Entity } from '@backstage/catalog-model';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import {
-  type ScorecardCollectorsService,
+  daysToMilliseconds,
   MetricProvider,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { DORA_TIME_WINDOW_DAYS } from '../constants';
-import {
-  deploymentsCollectorInputSchema,
-  deploymentsCollectorOutputSchema,
-} from './schemas/deploymentSchemas';
+import type { DoraDataService } from '../service/DoraDataService';
+import type { DoraSyncService } from '../service/DoraSyncService';
 import {
   DEFAULT_DORA_DEPLOYMENT_FREQUENCY_THRESHOLDS,
   type DoraDeploymentFrequencyConfig,
   parseDoraDeploymentFrequencyConfig,
 } from './DoraConfig';
-import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
-import { isSuccessfulProductionDeployment } from './utils/deploymentFilterUtils';
+import { isProductionEnvironment } from './utils/deploymentFilterUtils';
 
 type DoraDeploymentFrequencyProviderOptions = {
-  collectorsService: ScorecardCollectorsService;
+  doraSyncService: DoraSyncService;
+  doraDataService: DoraDataService;
   config: DoraDeploymentFrequencyConfig;
 };
 
 export class DoraDeploymentFrequencyProvider
   implements MetricProvider<'number'>
 {
-  private readonly collectorsService: ScorecardCollectorsService;
+  private readonly doraSyncService: DoraSyncService;
+  private readonly doraDataService: DoraDataService;
   private readonly config: DoraDeploymentFrequencyConfig;
 
   private constructor(options: DoraDeploymentFrequencyProviderOptions) {
-    this.collectorsService = options.collectorsService;
+    this.doraSyncService = options.doraSyncService;
+    this.doraDataService = options.doraDataService;
     this.config = options.config;
   }
 
   static fromConfig(
     config: Config,
     options: {
-      collectorsService: ScorecardCollectorsService;
+      doraSyncService: DoraSyncService;
+      doraDataService: DoraDataService;
     },
   ): DoraDeploymentFrequencyProvider {
     return new DoraDeploymentFrequencyProvider({
-      collectorsService: options.collectorsService,
+      doraSyncService: options.doraSyncService,
+      doraDataService: options.doraDataService,
       config: parseDoraDeploymentFrequencyConfig(config),
     });
   }
@@ -95,37 +98,33 @@ export class DoraDeploymentFrequencyProvider
   async calculateMetrics(entity: Entity): Promise<Map<string, number>> {
     const results = new Map<string, number>();
     const to = new Date();
-    const from = new Date();
-    from.setDate(to.getDate() - DORA_TIME_WINDOW_DAYS);
+    const from = new Date(
+      to.getTime() - daysToMilliseconds(DORA_TIME_WINDOW_DAYS),
+    );
 
-    const deploymentsCollected = await this.collectorsService.collect<
-      typeof deploymentsCollectorInputSchema,
-      typeof deploymentsCollectorOutputSchema
-    >({
-      collectorId: this.config.deploymentsCollector.id,
-      contract: {
-        inputSchema: deploymentsCollectorInputSchema,
-        outputSchema: deploymentsCollectorOutputSchema,
-      },
-      entity,
-      input: {
-        ...this.config.deploymentsCollector.input,
-        from: from.toISOString(),
-        to: to.toISOString(),
-      },
+    await this.doraSyncService.syncDeployments(entity, {
+      windowFrom: from,
+      windowTo: to,
+      collector: this.config.deploymentsCollector,
     });
 
-    if (deploymentsCollected.deployments.length === 0) {
-      results.set(this.getProviderId(), 0);
-      return results;
-    }
-
-    const deployments = deploymentsCollected.deployments.filter(deployment =>
-      isSuccessfulProductionDeployment(
-        deployment,
+    const deployments = (
+      await this.doraDataService.readDeployments(stringifyEntityRef(entity), {
+        windowFrom: from,
+        windowTo: to,
+        collector: this.config.deploymentsCollector,
+      })
+    ).filter(deployment =>
+      isProductionEnvironment(
+        deployment.environment,
         this.config.productionEnvironments,
       ),
     );
+
+    if (deployments.length === 0) {
+      results.set(this.getProviderId(), 0);
+      return results;
+    }
 
     const deploymentsPerWeek = (deployments.length / DORA_TIME_WINDOW_DAYS) * 7;
     results.set(this.getProviderId(), Number(deploymentsPerWeek.toFixed(4)));

@@ -22,21 +22,18 @@ type ScalarStatTileProps = {
   displayValue: string;
   label: string;
   resolvedColor: string;
-  thresholdStatus?: string;
 };
 
 export const ScalarStatTile = ({
   displayValue,
   label,
   resolvedColor,
-  thresholdStatus,
 }: ScalarStatTileProps) => {
   const textColor = darken(resolvedColor, 0.3);
 
   return (
     <Box
       data-testid="scalar-stat-tile"
-      data-threshold-status={thresholdStatus ?? ''}
       aria-label={`${label} ${displayValue}`}
       sx={{
         width: '100%',

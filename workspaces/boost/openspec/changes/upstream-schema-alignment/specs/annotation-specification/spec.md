@@ -8,6 +8,19 @@
 
 Formal specification of all RHDH AI Asset annotations and entity kinds, with explicit mapping to upstream Backstage entity kind targets. Covers all seven AI-asset categories per [ai-catalog-entity-model/design.md Decision 1](../../design.md). MCP servers are kind-aligned with upstream (`McpServerApiEntity`, [backstage#34016](https://github.com/backstage/backstage/pull/34016)); remaining categories have varying upstream readiness. Published in a location accessible to platform engineers. Actual migration is explicitly framed as future work.
 
+## ADDED Requirements
+
+### Requirement: Annotation specification coverage
+
+The specification document MUST record the current annotation and entity-kind
+mapping without executing a migration.
+
+#### Scenario: Specification remains a read-only planning artifact
+
+- **WHEN** the annotation specification is reviewed
+- **THEN** it documents the current mapping and upstream target status
+- **AND** it does not mutate catalog entities
+
 ---
 
 ## Scenario: Specification covers all rhdh.io/ai-asset-\* annotations

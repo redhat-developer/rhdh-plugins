@@ -16,11 +16,11 @@
 
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import { iaChatManagePermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+import { iaChatPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
 export const useLightspeedUpdatePermission = () => {
   const lightspeedUpdatePermissionResult = usePermission({
-    permission: iaChatManagePermission,
+    permission: iaChatPermission,
   });
 
   return lightspeedUpdatePermissionResult;

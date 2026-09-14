@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { makeStyles } from '@material-ui/core';
+import { styled } from '@mui/material/styles';
 
 const FILE_TYPE_COLORS: Record<string, string> = {
   pdf: '#C9190B',
@@ -35,23 +35,21 @@ const FILE_TYPE_COLORS: Record<string, string> = {
 
 const DEFAULT_COLOR = '#6A6E73';
 
-const useStyles = makeStyles(() => ({
-  badge: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 28,
-    height: 22,
-    padding: '0 4px',
-    borderRadius: 4,
-    border: '1.5px solid',
-    fontSize: '0.625rem',
-    fontWeight: 700,
-    textTransform: 'uppercase',
-    lineHeight: 1,
-    flexShrink: 0,
-  },
-}));
+const Badge = styled('span')({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minWidth: 28,
+  height: 22,
+  padding: '0 4px',
+  borderRadius: 4,
+  border: '1.5px solid',
+  fontSize: '0.625rem',
+  fontWeight: 700,
+  textTransform: 'uppercase',
+  lineHeight: 1,
+  flexShrink: 0,
+});
 
 type FileTypeIconProps = {
   fileName: string;
@@ -65,17 +63,13 @@ const getExtension = (fileName: string): string => {
 };
 
 export const FileTypeIcon = ({ fileName, className }: FileTypeIconProps) => {
-  const classes = useStyles();
   const ext = getExtension(fileName);
   const color = FILE_TYPE_COLORS[ext] ?? DEFAULT_COLOR;
   const label = ext || '?';
 
   return (
-    <span
-      className={`${classes.badge}${className ? ` ${className}` : ''}`}
-      style={{ borderColor: color, color }}
-    >
+    <Badge className={className} style={{ borderColor: color, color }}>
       {label}
-    </span>
+    </Badge>
   );
 };

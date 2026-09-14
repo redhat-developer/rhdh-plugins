@@ -1,99 +1,39 @@
 # Audit Logging
 
-> **Status: Draft** — Pre-implementation specification. Subject to change during implementation.
+> **Status: Draft** — Follow-on coverage for Catalog authorization and provider
+> operations. Full ingestion analytics remains separate work.
 
-AI-catalog management events and ingestion sync events complement the RBAC plugin's existing `AuditorService` coverage. Events use the same structured JSON format as existing RHDH audit logs.
+Policy, role, condition, and permission-evaluation events use RHDH's existing
+`AuditorService`. Provider events are added only when an operational audit gap
+is confirmed.
 
-**Jira references:** RHIDP-15277 (absorbs RHIDP-15333 from RHDHPLAN-1513)
+**Jira:** RHIDP-15277 (absorbs RHIDP-15333)
 
 ## ADDED Requirements
 
-### Requirement: AI-Catalog Management Audit Events
+### Requirement: Reuse RBAC audit coverage
 
-Management actions on AI catalog RBAC configuration MUST emit audit events.
+Catalog authorization MUST use the existing RHDH/RBAC audit facility.
 
-#### Scenario: Default posture change event
+#### Scenario: RBAC operation
 
-- **WHEN** a deployer changes `ai-catalog.rbac.defaultPolicy` from `allow` to `deny` (or vice versa) ~~via the admin UI~~ via YAML configuration, and `AICatalogRBACProvider` detects the change on startup or config reload (see design Decision 4)
-- **THEN** an audit event is emitted with:
-  - `eventName`: `ai-catalog.rbac.posture-changed`
-  - `actor`: `system` (the change is detected from configuration, not from an interactive admin action)
-  - `previousValue`: the old posture value
-  - `newValue`: the new posture value
-  - `scope`: `global` | `category:<name>` | `connector:<name>`
-  - `timestamp`: ISO 8601
+- **WHEN** an administrator changes a Catalog permission policy or role
+- **THEN** the existing RBAC audit facility records the operation
+- **AND** the AI Catalog integration does not emit a duplicate event
 
-#### ~~Scenario: Category/connector policy CRUD events~~
+### Requirement: Audit provider gaps through RHDH
 
-> **Removed.** Create/update/delete of AI Catalog policies happens in the existing RBAC plugin, whose `AuditorService` already emits the policy-CRUD event (see the AuditorService Complementarity requirement below and `design.md` Decision 6). Emitting a duplicate `ai-catalog.rbac.policy-*` event would contradict that requirement, so the AI Catalog does not emit these events — the `AuditorService` is the sufficient source of record for policy CRUD.
+Provider events MUST use the existing RHDH audit format and channel when an
+operational requirement needs them.
 
-- ~~**WHEN** an admin creates, updates, or deletes a category-scoped or connector-scoped policy via the RBAC plugin~~
-- ~~**THEN** an audit event is emitted with:~~
-  - ~~`eventName`: `ai-catalog.rbac.policy-created` | `policy-updated` | `policy-deleted`~~
-  - ~~`actor`: the admin's user entity ref~~
-  - ~~`policyTarget`: the category or connector name~~
-  - ~~`policyType`: `category` | `connector`~~
-  - ~~`permissionName`: the affected permission (e.g., `ai-catalog.asset.access`)~~
+#### Scenario: Provider failure
 
-### Requirement: Ingestion Sync Audit Events
+- **WHEN** an AI entity provider synchronization fails
+- **THEN** the audit event records the provider and safe failure information
+- **AND** the event does not expose credentials or other secret values
 
-AI catalog ingestion sync operations MUST emit audit events for operational visibility.
+#### Scenario: No parallel audit store
 
-#### Scenario: Sync completion event
-
-- **WHEN** an entity provider completes a sync cycle
-- **THEN** an audit event is emitted with:
-  - `eventName`: `ai-catalog.ingestion.sync-completed`
-  - `providerName`: the entity provider identifier
-  - `entitiesCreated`: count of new entities
-  - `entitiesUpdated`: count of updated entities
-  - `entitiesDeleted`: count of removed entities
-  - `duration`: sync duration in milliseconds
-  - `timestamp`: ISO 8601
-
-#### Scenario: Sync error event
-
-- **WHEN** an entity provider encounters an error during sync
-- **THEN** an audit event is emitted with:
-  - `eventName`: `ai-catalog.ingestion.sync-error`
-  - `providerName`: the entity provider identifier
-  - `errorMessage`: the error description
-  - `errorType`: the error classification
-  - `partialResults`: whether partial entities were committed before the error
-
-#### Scenario: Per-asset ingestion event
-
-- **WHEN** an individual AI asset is created, updated, or deleted during ingestion
-- **THEN** an audit event is emitted with:
-  - `eventName`: `ai-catalog.ingestion.entity-created` | `entity-updated` | `entity-deleted`
-  - `entityRef`: the Backstage entity reference
-  - `operation`: `create` | `update` | `delete`
-  - `sourceProvider`: the entity provider that originated the change
-
-### Requirement: AuditorService Complementarity
-
-AI Catalog audit events MUST NOT duplicate events already covered by the RBAC plugin's `AuditorService`.
-
-#### Scenario: RBAC plugin covers permission evaluation
-
-- **WHEN** a user's `ai-catalog.asset.access` permission is evaluated by the RBAC plugin
-- **THEN** the RBAC plugin's `AuditorService` emits the evaluation event (approve/deny/conditional)
-- **AND** the AI Catalog does NOT emit a duplicate event
-- **AND** the AI Catalog only emits events for management actions and ingestion operations that the `AuditorService` does not cover
-
-#### Scenario: RBAC plugin covers policy/role CRUD
-
-- **WHEN** an admin modifies RBAC roles or policies that affect AI Catalog permissions
-- **THEN** the RBAC plugin's `AuditorService` emits the CRUD event
-- **AND** the AI Catalog does NOT emit a duplicate event
-
-### Requirement: Audit Event Format
-
-All AI-catalog audit events MUST follow the existing RHDH structured JSON format.
-
-#### Scenario: Event format compliance
-
-- **WHEN** an AI-catalog audit event is emitted
-- **THEN** it includes the standard RHDH audit log fields: `timestamp`, `level`, `plugin`, `eventName`, `actor`
-- **AND** `plugin` is set to `ai-catalog`
-- **AND** the event is emitted via the standard `LoggerService` with structured metadata
+- **WHEN** an AI Catalog operational event is emitted
+- **THEN** it is consumable by the existing RHDH audit infrastructure
+- **AND** no separate AI Catalog audit store is created

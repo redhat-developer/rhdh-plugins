@@ -1,5 +1,20 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 9.0.1
+
+### Patch Changes
+
+- df4bcba: Backstage version bump to v1.54.6
+- Updated dependencies [df4bcba]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.0.1
+
+## 9.0.0
+
+### Patch Changes
+
+- b9198f8: Show orchestrator import job errors, such as a missing GitHub App installation token, as alerts on the add-repositories page.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.0.0
+
 ## 8.0.3
 
 ### Patch Changes

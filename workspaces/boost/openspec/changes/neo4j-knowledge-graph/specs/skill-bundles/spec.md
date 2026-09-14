@@ -8,6 +8,8 @@ SkillBundle entities represent curated collections of related skills (e.g., "sec
 
 ### Requirement: SkillBundle Node Creation from Catalog Entity
 
+The implementation MUST satisfy the scenarios below.
+
 SkillBundle entities are synced to SkillBundle nodes with properties mirroring bundle metadata.
 
 #### Scenario: SkillBundle entity synced to SkillBundle node
@@ -29,6 +31,8 @@ SkillBundle entities are synced to SkillBundle nodes with properties mirroring b
 - **AND** creates a relationship `(bundle)-[:BELONGS_TO]->(domain)`
 
 ### Requirement: INCLUDES Relationship from Bundle Skill References
+
+The implementation MUST satisfy the scenarios below.
 
 SkillBundle-to-skill relationships are derived from the bundle's skill list.
 
@@ -56,6 +60,8 @@ SkillBundle-to-skill relationships are derived from the bundle's skill list.
 
 ### Requirement: SkillBundle Update Propagation
 
+The implementation MUST satisfy the scenarios below.
+
 Bundle definitions can be updated through incremental sync without affecting included skills.
 
 #### Scenario: SkillBundle description updated
@@ -74,6 +80,8 @@ Bundle definitions can be updated through incremental sync without affecting inc
 
 ### Requirement: SkillBundle Deletion Cleanup
 
+The implementation MUST satisfy the scenarios below.
+
 Deleting a SkillBundle removes the node and relationships without affecting included skills.
 
 #### Scenario: Deleted SkillBundle removes node and INCLUDES relationships
@@ -90,6 +98,8 @@ Deleting a SkillBundle removes the node and relationships without affecting incl
 - **AND** the skill is still discoverable via domain, tag-based queries, or dependency traversal
 
 ### Requirement: Bundle Composition Queries
+
+The implementation MUST satisfy the scenarios below.
 
 Example Cypher queries demonstrate how to traverse INCLUDES relationships.
 
@@ -135,6 +145,8 @@ Example Cypher queries demonstrate how to traverse INCLUDES relationships.
   ```
 
 ### Requirement: SkillBundle Metadata Validation
+
+The implementation MUST satisfy the scenarios below.
 
 The adapter validates SkillBundle entity structure before syncing.
 

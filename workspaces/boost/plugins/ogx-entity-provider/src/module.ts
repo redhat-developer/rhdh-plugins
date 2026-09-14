@@ -49,6 +49,8 @@ const DEFAULT_AGENT_REFRESH_SECONDS = 300;
  *     ogx:
  *       baseUrl: http://localhost:8321
  *       apiKey: ${OGX_API_KEY}  # optional
+ *       caData: '-----BEGIN CERTIFICATE-----\nTEST\n-----END CERTIFICATE-----' # optional
+ *       skipTLSVerify: false # optional
  *       modelRefreshIntervalSeconds: 60
  *       agentRefreshIntervalSeconds: 300
  *       agents:
@@ -114,8 +116,10 @@ export const catalogModuleOgxEntityProvider = createBackendModule({
 
 /**
  * Read OGX entity provider configuration from app-config.yaml.
+ *
+ * @internal Exported for testing only.
  */
-function readOgxEntityProviderConfig(
+export function readOgxEntityProviderConfig(
   config: typeof coreServices.rootConfig extends { T: infer T } ? T : never,
 ): OgxEntityProviderConfig {
   // Try the entity-provider-specific config first
@@ -134,6 +138,8 @@ function readOgxEntityProviderConfig(
       defaultAgent: epConfig.getOptionalString('defaultAgent'),
       maxAgentTurns: epConfig.getOptionalNumber('maxAgentTurns'),
       agents: readAgentConfigs(epConfig),
+      caData: epConfig.getOptionalString('caData'),
+      skipTLSVerify: epConfig.getOptionalBoolean('skipTLSVerify'),
     };
   }
 
@@ -147,6 +153,8 @@ function readOgxEntityProviderConfig(
       defaultAgent: providerConfig.getOptionalString('defaultAgent'),
       maxAgentTurns: providerConfig.getOptionalNumber('maxAgentTurns'),
       agents: readAgentConfigs(providerConfig),
+      caData: providerConfig.getOptionalString('caData'),
+      skipTLSVerify: providerConfig.getOptionalBoolean('skipTLSVerify'),
     };
   }
 

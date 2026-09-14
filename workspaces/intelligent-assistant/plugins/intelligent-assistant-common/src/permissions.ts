@@ -16,67 +16,35 @@
 
 import { createPermission } from '@backstage/plugin-permission-common';
 
-/** This permission is used to access intelligent-assistant chats
+/** Full permissions to use the intelligent-assistant chat feature
  * @public
  */
-export const iaChatAccessPermission = createPermission({
-  name: 'intelligent-assistant.chat.access',
+export const iaChatPermission = createPermission({
+  name: 'intelligent-assistant.chat',
   attributes: {},
 });
 
-/** This permission is used to create intelligent-assistant chats
+/** Full permissions to use the intelligent-assistant notebooks feature
  * @public
  */
-export const iaChatUsePermission = createPermission({
-  name: 'intelligent-assistant.chat.use',
+export const iaNotebooksPermission = createPermission({
+  name: 'intelligent-assistant.notebooks',
   attributes: {},
 });
 
-/** This permission is used to update and delete intelligent-assistant chats
+/** Full permissions to use the intelligent-assistant MCP actions tooling
  * @public
  */
-export const iaChatManagePermission = createPermission({
-  name: 'intelligent-assistant.chat.manage',
+export const iaMcpToolsPermission = createPermission({
+  name: 'intelligent-assistant.mcp.tools',
   attributes: {},
 });
 
-/** This permission is used to use MCP tooling
+/** Full permissions to use the intelligent-assistant skills feature
  * @public
  */
-export const iaMcpUsePermission = createPermission({
-  name: 'mcp.tools.use',
-  attributes: {},
-});
-
-/** This permission is used to manage MCP tooling
- * @public
- */
-export const iaMcpManagePermission = createPermission({
-  name: 'mcp.tools.manage',
-  attributes: {},
-});
-
-/** This permission is used to access, create, and query intelligent-assistant notebooks
- * @public
- */
-export const iaNotebooksUsePermission = createPermission({
-  name: 'intelligent-assistant.notebooks.use',
-  attributes: {},
-});
-
-/** This permission is used to update and delete intelligent-assistant notebooks
- * @public
- */
-export const iaNotebooksManagePermission = createPermission({
-  name: 'intelligent-assistant.notebooks.manage',
-  attributes: {},
-});
-
-/** This permission is used to view the list of configured skills
- * @public
- */
-export const iaSkillsAccessPermission = createPermission({
-  name: 'intelligent-assistant.skills.access',
+export const iaSkillsPermission = createPermission({
+  name: 'intelligent-assistant.skills',
   attributes: {},
 });
 
@@ -86,12 +54,8 @@ export const iaSkillsAccessPermission = createPermission({
  * @public
  */
 export const iaPermissions = [
-  iaChatAccessPermission,
-  iaChatManagePermission,
-  iaChatUsePermission,
-  iaMcpUsePermission,
-  iaMcpManagePermission,
-  iaNotebooksManagePermission,
-  iaNotebooksUsePermission,
-  iaSkillsAccessPermission,
+  iaChatPermission,
+  iaNotebooksPermission,
+  iaMcpToolsPermission,
+  iaSkillsPermission,
 ];

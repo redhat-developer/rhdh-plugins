@@ -78,9 +78,7 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'conversation.rename.confirm.action': 'Renommer',
     'conversation.rename.confirm.title': 'Renommer la conversation ?',
     'conversation.rename.placeholder': 'Nom de la conversation',
-    'disclaimer.withValidation':
-      'Cette fonctionnalité utilise la technologie AI. Ne pas inclure d’informations personnelles ou toute autre information sensible dans vos entrées de données. Des interactions pourront être utilisées pour améliorer les produits ou services de Red Hat.',
-    'disclaimer.withoutValidation':
+    disclaimer:
       'Cette fonctionnalité utilise la technologie AI. Ne pas inclure d’informations personnelles ou toute autre information sensible dans vos entrées de données. Des interactions pourront être utilisées pour améliorer les produits ou services de Red Hat.',
     'error.context.fileAttachment':
       'useFileAttachmentContext doit être dans un FileAttachmentContextProvider',

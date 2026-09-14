@@ -20,6 +20,52 @@
  * @packageDocumentation
  */
 
-export { appDefaultsModule } from './appDefaultsModule';
+import { createFrontendFeatureLoader } from '@backstage/frontend-plugin-api';
 
-export { appDefaultsModule as default } from './appDefaultsModule';
+import {
+  appDefaultsModule,
+  appDefaultsTranslationsModule,
+} from './appDefaultsModule';
+import { appDefaultsTranslations } from './translations';
+import { apiDocsPluginOverride } from './api-docs/apiDocsPluginOverride';
+import { catalogPluginOverride } from './catalog/catalogPluginOverride';
+import { catalogGraphPluginOverride } from './catalog-graph/catalogGraphPluginOverride';
+import { docsPluginOverride } from './docs/docsPluginOverride';
+import { scaffolderPluginOverride } from './scaffolder/scaffolderPluginOverride';
+
+export { appDefaultsModule };
+
+export { appDefaultsTranslationsModule };
+
+export { appDefaultsTranslations };
+
+export { apiDocsPluginOverride };
+
+export { catalogGraphPluginOverride };
+
+export { catalogPluginOverride };
+
+export { docsPluginOverride };
+
+export { scaffolderPluginOverride };
+
+/**
+ * Feature loader that registers the RHDH app defaults module and all
+ * plugin overrides (catalog, catalog graph, scaffolder, API docs, TechDocs)
+ * that add empty-state pages when no entities are available.
+ *
+ * @public
+ */
+export default createFrontendFeatureLoader({
+  loader() {
+    return [
+      appDefaultsModule,
+      appDefaultsTranslationsModule,
+      catalogPluginOverride,
+      catalogGraphPluginOverride,
+      scaffolderPluginOverride,
+      apiDocsPluginOverride,
+      docsPluginOverride,
+    ];
+  },
+});

@@ -16,3 +16,6 @@ dist-types
 
 # Coverage
 coverage
+
+# E2E test reports
+e2e-test-report*/

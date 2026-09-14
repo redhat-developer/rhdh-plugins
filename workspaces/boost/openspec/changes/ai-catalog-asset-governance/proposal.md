@@ -1,44 +1,65 @@
 # Proposal: AI Catalog Asset Governance
 
-## Why
+## Release boundary
 
-Enterprise AI platforms expose heterogeneous AI assets (agents, skills, models, MCP servers) through a shared catalog. Without catalog-layer RBAC, all authenticated users see all asset details — including connection strings, configuration, and usage documentation — regardless of their role. RHDHPLAN-1508 specifies a graduated visibility model, version-level policy cascade, default-deny posture configuration, ~~an admin UI,~~ and audit logging so that organizations can govern AI asset visibility with the same rigor they apply to other RHDH catalog entities.
+RHDH 2.1 includes the AI Catalog frontend plugin and the OGX entity provider.
+It does not include the Boost backend or a Boost-specific RBAC backend module.
+This change records follow-on governance work built on that release baseline.
 
-Boost already implements 23 application-layer permissions for agent/tool lifecycle governance. This change adds the complementary catalog-layer permissions that control _who can see_ AI assets, not just _who can act on_ them.
+## Baseline
 
-## What Changes
+The frontend reads ordinary Backstage catalog entities through `catalogApiRef`.
+OGX emits ordinary catalog entities with AI asset annotations. The frontend
+does not own entity authorization.
 
-- **Three new AI Catalog permissions:** `ai-catalog.asset.access` (Tier 1 discovery), `ai-catalog.asset.access.usage-docs` (Tier 2 sensitive details), `ai-catalog.admin` (management actions)
-- **Graduated visibility model:** Two-tier field-level filtering — Tier 1 shows name/description/type/stage; Tier 2 adds usage docs, connection endpoints, configuration
-- **Frontend RequirePermission gating:** Entity detail pages gate Tier 2 sections with restricted-access placeholders; SkillBundle views show filtered skill counts
-- **Version-level policy cascade:** Asset-level policies propagate to all version entities via RBACProvider; version-specific overrides take precedence
-- **Default-deny configuration:** `ai-catalog.rbac.defaultPolicy` config key controls ingestion-time posture; per-category and per-connector conditional rules scope visibility
-- **Conditional policy backend:** Custom permission rules (`isAiAssetCategory`, `isFromConnector`, `isInTenant`) enable RBAC policy scoping to categories, connectors, and tenants
-- **Audit logging:** AI-catalog management events and ingestion sync events complement the RBAC plugin's existing `AuditorService` coverage
-- ~~**RBAC Admin UI:** Standalone `/ai-catalog/admin/rbac` page for SMP Admins to manage visibility policies without writing YAML~~
+The unreleased Boost backend still contains project-specific Catalog permission
+checks, currently named `ai-catalog.*`. That name is an implementation example,
+not a commitment to the future permission namespace or release contract.
 
-## Capabilities
+## Proposed direction
 
-### New Capabilities
+1. Use Backstage Catalog's built-in `catalog.entity.read` permission for AI
+   entity discovery.
+2. Use the RHDH permission/RBAC configuration and its existing conditional
+   policies to scope access by provider-emitted annotations and metadata.
+3. Add field-level authorization only when a future API actually returns
+   protected usage, connection, configuration, or deployment data.
+4. Evaluate direct Catalog policies on explicit version entities before
+   considering inherited policy or a custom cascade.
+5. Reuse RHDH's existing RBAC audit and administration surfaces.
+6. Decide authorization for SkillBundle contents from their representation:
+   Catalog permission for separate entities, response filtering for nested
+   API data.
 
-- `graduated-visibility`: Three AI Catalog permission definitions, two-tier visibility model, field-level filtering
-- `version-policy-cascade`: RBACProvider-based policy propagation from asset to version entities
-- `default-deny-config`: Default-allow/deny posture configuration with per-category and per-connector scoping
-- `conditional-policies`: Custom permission rules for category, connector, and tenant filtering
-- `audit-logging`: AI-catalog management events and ingestion sync audit events
-- ~~`rbac-admin-ui`: Standalone admin page for AI Catalog policy management~~
-- `skillbundle-filtering`: Backend read-time RBAC filtering for SkillBundle skill lists
+## Not proposed by this change
 
-### Modified Capabilities
+- A duplicate project-specific entity permission by default (for example,
+  `ai-catalog.asset.access`); a concrete Catalog limitation would require a
+  separate permission-design decision.
+- Custom category, source, or tenant rules when existing conditions are enough.
+- A Boost-specific `ai-catalog.rbac.defaultPolicy` setting or provider-stored
+  authorization records without a demonstrated gap.
+- A standalone AI Catalog RBAC page.
+- Any backend, field-redaction, version-cascade, or ingestion-analytics work
+  that has not passed its corresponding decision gate.
 
-- `fine-grained-permissions`: `boost.agent.list` upgraded to resource-based permission with 3-tier evaluation (already implemented in this branch)
+## Jira traceability
 
-## Impact
+| Area        | Treatment                                                                        |
+| ----------- | -------------------------------------------------------------------------------- |
+| RHIDP-15270 | Catalog entity visibility and future API redaction.                              |
+| RHIDP-15274 | Direct version policy first; inheritance only after an explicit gap is proven.   |
+| RHIDP-15277 | Reuse RBAC audit coverage; add provider events only when required.               |
+| RHIDP-15304 | Standalone RBAC UI remains canceled.                                             |
+| RHIDP-15276 | Default access is expressed through `catalog.entity.read` policy and conditions. |
+| RHIDP-15281 | Use Catalog query filtering and conditions before custom handling.               |
+| RHIDP-15305 | Decide based on separate versus nested skill representation.                     |
 
-- `plugins/boost-common/src/permissions.ts` — 3 new AI Catalog permission definitions + resource type
-- `plugins/boost-backend/` — Permission registration, conditional rule implementations, audit event emitters
-- `plugins/boost/src/components/` — RequirePermission gating, restricted-access placeholder, SkillBundle filtered-view messaging
-- New `catalog-backend-module-ai-catalog-rbac/` — RBACProvider for version-level policy cascade
-- ~~New admin page route at `/ai-catalog/admin/rbac` — RBAC REST API consumer~~
-- `app-config.yaml` — `ai-catalog.rbac.defaultPolicy` config key
-- Cross-references: RHDHPLAN-1507 entity model (provides AI asset entities), existing boost RBAC infrastructure (provides registration patterns)
+## Work products
+
+- Validate the Catalog/OGX baseline and document policy examples using actual
+  emitted values.
+- Decide whether a future API needs field-level redaction.
+- Decide whether explicit version relationships need inherited policy.
+- Identify audit gaps not covered by `AuditorService`.
+- Resolve SkillBundle representation before implementing filtering.

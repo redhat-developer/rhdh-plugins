@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Link,
-  Typography,
-} from '@material-ui/core';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Link from '@mui/material/Link';
+import { type Theme } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
 
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -33,77 +31,55 @@ const LLAMA_STACK_CONFIGURE_DOCS_URL =
 const LIGHTSPEED_BACKEND_README_URL =
   'https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/intelligent-assistant/plugins/intelligent-assistant-backend/README.md';
 
-const useStyles = makeStyles(theme =>
-  createStyles({
-    root: {
-      display: 'flex',
-      flexDirection: 'column',
-      boxSizing: 'border-box',
-      width: '100%',
-      maxWidth: '100%',
-      minWidth: 0,
-      minHeight: '100%',
-      height: '100%',
-      flex: '1 1 auto',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: theme.spacing(4, 2),
-      backgroundColor: theme.palette.background.default,
-    },
-    panel: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      textAlign: 'center',
-      width: '100%',
-      maxWidth: 440,
-      gap: theme.spacing(2),
-    },
-    emptyStateIcon: {
-      fontSize: 64,
-      color: theme.palette.text.secondary,
-    },
-    errorIcon: {
-      fontSize: 64,
-      color: theme.palette.warning.main,
-    },
-    description: {
-      lineHeight: 1.5,
-      color: theme.palette.text.secondary,
-    },
-    actions: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      gap: theme.spacing(1.5),
-      marginTop: theme.spacing(1),
-    },
-    backendLink: {
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: theme.spacing(0.5),
-      fontSize: theme.typography.body1.fontSize,
-      fontWeight: 500,
-    },
-  }),
-);
+const rootSx = (theme: Theme) => ({
+  display: 'flex',
+  flexDirection: 'column' as const,
+  boxSizing: 'border-box' as const,
+  width: '100%',
+  maxWidth: '100%',
+  minWidth: 0,
+  minHeight: '100%',
+  height: '100%',
+  flex: '1 1 auto',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: theme.spacing(4, 2),
+  backgroundColor: theme.palette.background.default,
+});
+
+const panelSx = (theme: Theme) => ({
+  display: 'flex',
+  flexDirection: 'column' as const,
+  alignItems: 'center',
+  textAlign: 'center' as const,
+  width: '100%',
+  maxWidth: 440,
+  gap: theme.spacing(2),
+});
+
+const actionsSx = (theme: Theme) => ({
+  display: 'flex',
+  flexDirection: 'column' as const,
+  alignItems: 'center',
+  gap: theme.spacing(1.5),
+  marginTop: theme.spacing(1),
+});
 
 /**
  * Shown while the models list is loading for an authorized user.
  */
 export const LightspeedChatModelsLoading = () => {
-  const classes = useStyles();
   const { t } = useTranslation();
   return (
-    <div
-      className={classes.root}
+    <Box
+      sx={rootSx}
       data-testid="lightspeed-models-loading"
       role="status"
       aria-busy="true"
       aria-label={t('common.loading')}
     >
       <CircularProgress aria-hidden />
-    </div>
+    </Box>
   );
 };
 
@@ -111,18 +87,20 @@ export const LightspeedChatModelsLoading = () => {
  * Shown when LCORE / Llama Stack is up but no LLM models are registered.
  */
 export const LcoreNotConfiguredEmptyState = () => {
-  const classes = useStyles();
   const { t } = useTranslation();
 
   return (
-    <div className={classes.root} data-testid="lightspeed-lcore-not-configured">
+    <Box sx={rootSx} data-testid="lightspeed-lcore-not-configured">
       <Box
-        className={classes.panel}
+        sx={panelSx}
         component="section"
         aria-labelledby="lightspeed-lcore-empty-title"
       >
         <SmartToyOutlinedIcon
-          className={classes.emptyStateIcon}
+          sx={theme => ({
+            fontSize: 64,
+            color: theme.palette.text.secondary,
+          })}
           aria-hidden
           focusable={false}
         />
@@ -136,11 +114,14 @@ export const LcoreNotConfiguredEmptyState = () => {
         <Typography
           variant="body1"
           component="p"
-          className={classes.description}
+          sx={theme => ({
+            lineHeight: 1.5,
+            color: theme.palette.text.secondary,
+          })}
         >
           {t('lcore.notConfigured.description')}
         </Typography>
-        <Box className={classes.actions}>
+        <Box sx={actionsSx}>
           <Button
             variant="contained"
             color="primary"
@@ -152,8 +133,13 @@ export const LcoreNotConfiguredEmptyState = () => {
             <OpenInNewIcon fontSize="small" aria-hidden />
           </Button>
           <Link
-            className={classes.backendLink}
-            component="a"
+            sx={theme => ({
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: theme.spacing(0.5),
+              fontSize: theme.typography.body1.fontSize,
+              fontWeight: 500,
+            })}
             color="primary"
             href={LIGHTSPEED_BACKEND_README_URL}
             target="_blank"
@@ -164,7 +150,7 @@ export const LcoreNotConfiguredEmptyState = () => {
           </Link>
         </Box>
       </Box>
-    </div>
+    </Box>
   );
 };
 
@@ -178,18 +164,20 @@ type ModelsLoadErrorEmptyStateProps = {
 export const ModelsLoadErrorEmptyState = ({
   onRetry,
 }: ModelsLoadErrorEmptyStateProps) => {
-  const classes = useStyles();
   const { t } = useTranslation();
 
   return (
-    <div className={classes.root} data-testid="lightspeed-models-load-error">
+    <Box sx={rootSx} data-testid="lightspeed-models-load-error">
       <Box
-        className={classes.panel}
+        sx={panelSx}
         component="section"
         aria-labelledby="lightspeed-models-error-title"
       >
         <ErrorOutlineIcon
-          className={classes.errorIcon}
+          sx={theme => ({
+            fontSize: 64,
+            color: theme.palette.warning.main,
+          })}
           aria-hidden
           focusable={false}
         />
@@ -203,16 +191,19 @@ export const ModelsLoadErrorEmptyState = ({
         <Typography
           variant="body1"
           component="p"
-          className={classes.description}
+          sx={theme => ({
+            lineHeight: 1.5,
+            color: theme.palette.text.secondary,
+          })}
         >
           {t('lcore.loadError.description')}
         </Typography>
-        <Box className={classes.actions}>
+        <Box sx={actionsSx}>
           <Button variant="contained" color="primary" onClick={() => onRetry()}>
             {t('common.retry')}
           </Button>
         </Box>
       </Box>
-    </div>
+    </Box>
   );
 };

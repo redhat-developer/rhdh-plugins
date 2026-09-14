@@ -1,5 +1,8 @@
 # Proposal: Pluggable AI Platform Architecture
 
+> **Workspace status:** Follow-on provider/backend architecture; not part of
+> the current RHDH 2.1 frontend and OGX release baseline.
+
 ## Why
 
 Boost must be the experience layer above any AI platform, not a client of one. Enterprise customers run different AI backends — and they change their minds. The architecture must support pluggable providers, runtime hot-swap, normalized streaming, and multi-agent orchestration without vendor lock-in.

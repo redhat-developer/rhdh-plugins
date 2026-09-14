@@ -88,6 +88,10 @@ Required output:
 
 - `deployments: Array<{ id: string; commitSha: string; environment?: string; createdAt: string; result: 'success' | 'failure' | '' }>`
 
+Only deployments with `result: 'success'` are included in the calculation.
+
+Incremental refresh re-queries from `max(windowFrom, lastSync − deploymentLookbackMs)` by `createdAt` (see [Data retention and staleness](../../README.md#data-retention-and-staleness)). Lookback exists to insert deployments that became success after the previous sync. Already-stored rows are not updated.
+
 ## Collector configuration
 
 ### Use GitHub deployments collector (default)
@@ -121,6 +125,8 @@ scorecard:
               input:
                 workflowName: Custom deployment
 ```
+
+Updating `workflowName` in your configuration creates a new data identity and triggers a full 30-day data refresh.
 
 ### Use custom deployments collector
 

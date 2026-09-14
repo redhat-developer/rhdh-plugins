@@ -1,5 +1,8 @@
 # Design: RHOAI MCP Catalog Connector
 
+> **Workspace status:** Follow-on connector design; not part of the current
+> RHDH 2.1 frontend and OGX release baseline.
+
 ## Context
 
 RHOAI (Red Hat OpenShift AI) exposes MCP server metadata via a developer-preview catalog API (RHOAI 3.4+). Customers need catalog visibility into these MCP servers without manual entity YAML authoring. This connector implements an EntityProvider for the RHOAI MCP catalog with its own failure domain and entity bucket.
@@ -12,7 +15,10 @@ The MCP catalog API is developer preview in RHOAI 3.4; not all customers have up
 >
 > - **RHDHPLAN-393 complementary:** The RHOAI MCP catalog source and the MCP Registry connector (RHIDP-15313) serve different MCP server discovery paths — no ingestion duplication. RHDHPLAN-393 provides upstream MCP Registry; RHIDP-15313 adds productization. This connector ingests RHOAI-managed MCP servers separately.
 > - **RHDHPLAN-404 dependency:** Provides extended API entity schema that this connector leverages for MCP server entities (`kind: API, spec.type: mcp-server`). Model Registry integration (Kubeflow API) is handled under RHDHPLAN-404, not this connector.
-> - **MCP resource mapping deferred:** Mapping MCP resources (tools, prompts) as catalog entities is deferred for RHDH 2.1 (Christophe's consent; upstream due diligence pending). This connector emits MCP server entities only; MCP resource discovery is out of scope for now.
+> - **MCP resource mapping is outside this current Boost release:** mapping
+>   MCP resources (tools, prompts) remains broader follow-on work. This
+>   connector emits MCP server entities only; MCP resource discovery is out of
+>   scope here.
 > - **Llamastack/OGX:** New RHDHPLAN-1510 scope — Boost adds Llamastack/OGX as additional model information source alongside RHOAI. Separate connector work.
 
 ## Goals
@@ -27,7 +33,8 @@ The MCP catalog API is developer preview in RHOAI 3.4; not all customers have up
 - Model Registry integration via Kubeflow API (handled by RHDHPLAN-404)
 - MCP server health monitoring (covered in separate observability change)
 - Creating new annotation schemes beyond what RHDHPLAN-1507's entity model defines
-- Mapping MCP resources (tools, prompts) as catalog entities (deferred for RHDH 2.1)
+- Mapping MCP resources (tools, prompts) as catalog entities; this remains
+  broader follow-on work outside the current Boost release
 - Changing the RHOAI MCP catalog API contract
 
 ## Decisions

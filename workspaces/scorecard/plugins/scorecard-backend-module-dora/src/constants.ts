@@ -20,3 +20,38 @@ export const DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID =
 export const DORA_DEFAULT_INCIDENTS_COLLECTOR_ID = 'jira:incidents';
 export const DORA_TIME_WINDOW_DAYS = 30;
 export const DORA_DEFAULT_PRODUCTION_ENVIRONMENTS = ['production'];
+
+/**
+ * Default for how long DORA source rows (deployments, incidents, and PRs linked to expired
+ * deployments) are kept before cleanup. Must stay at least
+ * {@link DORA_TIME_WINDOW_DAYS}. Overridable via
+ * `scorecard.plugins.dora.dataRetentionDays`.
+ */
+export const DORA_DEFAULT_DATA_RETENTION_DAYS = 365;
+
+/**
+ * Default for freshness threshold for deployment and incident collector refresh.
+ * If the last successful sync is within this many milliseconds, refresh is
+ * skipped. Overridable via `scorecard.plugins.dora.staleAfterMs`.
+ */
+export const DORA_DEFAULT_STALE_AFTER_MS = 60_000;
+
+/**
+ * Default deployments lookback, in milliseconds, when re-querying by `createdAt`
+ * since the last sync watermark (`from = max(windowFrom, lastSync − lookback)`).
+ * Catches deployments that later became `success` (created time does not move).
+ * Does not update already-stored rows; see `DatabaseDoraDeployments.upsert`.
+ * Overridable via `scorecard.plugins.dora.deploymentLookbackMs`.
+ */
+export const DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS = 48 * 60 * 60 * 1000;
+
+/**
+ * Default incidents lookback, in milliseconds, when re-querying by `updatedAt`
+ * (`updatedSince = max(windowFrom, lastSync − lookback)`).
+ * Overlaps the previous watermark to cover clock skew and source index lag.
+ * Overridable via `scorecard.plugins.dora.incidentLookbackMs`.
+ */
+export const DORA_DEFAULT_INCIDENT_LOOKBACK_MS = 5 * 60 * 1000;
+
+export const DORA_CLEANUP_EXPIRED_DATA_TASK_ID =
+  'scorecard-dora:cleanup-expired-data' as const;

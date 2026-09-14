@@ -10,6 +10,8 @@ The OCI Skill Registry connector maintains a cursor of tag-to-digest mappings to
 
 ### Requirement: Persist Tag-to-Digest Cursor
 
+The implementation MUST satisfy the scenarios below.
+
 The connector stores a cursor mapping tags to digests after each successful sync cycle.
 
 #### Scenario: Store cursor after first sync
@@ -46,6 +48,8 @@ The connector stores a cursor mapping tags to digests after each successful sync
 
 ### Requirement: Detect New Tags
 
+The implementation MUST satisfy the scenarios below.
+
 The connector emits new entities when tags appear in the registry that aren't in the cursor.
 
 #### Scenario: New tag added to registry
@@ -69,6 +73,8 @@ The connector emits new entities when tags appear in the registry that aren't in
 
 ### Requirement: Detect Changed Digests (Tag Updates)
 
+The implementation MUST satisfy the scenarios below.
+
 The connector updates entities when a tag's digest changes (tag re-pushed with new content).
 
 #### Scenario: Tag re-pushed with new image
@@ -90,6 +96,8 @@ The connector updates entities when a tag's digest changes (tag re-pushed with n
 
 ### Requirement: Detect Removed Tags (Tag Deletions)
 
+The implementation MUST satisfy the scenarios below.
+
 The connector deletes or tombstones entities when tags are removed from the registry.
 
 #### Scenario: Tag removed from registry
@@ -108,6 +116,8 @@ The connector deletes or tombstones entities when tags are removed from the regi
 - **AND** the entity no longer appears in catalog queries
 
 ### Requirement: Fallback to Full Refresh
+
+The implementation MUST satisfy the scenarios below.
 
 The connector falls back to full sync when the cursor is invalid or expired.
 
@@ -139,6 +149,8 @@ The connector falls back to full sync when the cursor is invalid or expired.
 
 ### Requirement: Performance Optimization for Large Namespaces
 
+The implementation MUST satisfy the scenarios below.
+
 The connector processes incremental syncs efficiently for large namespaces with minimal changes.
 
 #### Scenario: Incremental sync of large namespace
@@ -169,6 +181,8 @@ The connector processes incremental syncs efficiently for large namespaces with 
 
 ### Requirement: Manifest-Digest Caching with TTL
 
+The implementation MUST provide manifest-digest caching with a defined TTL.
+
 > _Added from RHIDP-15294 updated ACs (2026-07-08 consolidation)_
 
 The connector MUST cache manifest digests to avoid redundant registry API calls during incremental sync.
@@ -195,6 +209,8 @@ The connector MUST cache manifest digests to avoid redundant registry API calls 
 - **AND** the next sync runs as a full refresh (no cached digests to compare against)
 
 ### Requirement: Cursor Update Atomicity
+
+The implementation MUST satisfy the scenarios below.
 
 The connector ensures cursor updates are atomic to avoid partial state on failure.
 

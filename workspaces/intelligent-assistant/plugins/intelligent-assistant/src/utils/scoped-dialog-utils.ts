@@ -15,9 +15,30 @@
  */
 
 import type { DialogProps } from '@mui/material/Dialog';
+import type { SxProps, Theme } from '@mui/material/styles';
 
-export function getScopedDialogProps(isCompact: boolean): Partial<DialogProps> {
-  if (!isCompact) return {};
+export type ScopedDialogPlacement = 'center' | 'top-right';
+
+const topRightContainerSx = {
+  '& .MuiDialog-container': {
+    alignItems: 'flex-start',
+    justifyContent: 'flex-end',
+    padding: '16px',
+  },
+} as const;
+
+export function getScopedDialogProps(
+  isCompact: boolean,
+  options?: { placement?: ScopedDialogPlacement },
+): Partial<DialogProps> {
+  const placement = options?.placement ?? 'center';
+  const placementSx: SxProps<Theme> | undefined =
+    placement === 'top-right' ? topRightContainerSx : undefined;
+
+  if (!isCompact) {
+    return placementSx ? { sx: placementSx } : {};
+  }
+
   return {
     disablePortal: true,
     disableScrollLock: true,
@@ -30,16 +51,26 @@ export function getScopedDialogProps(isCompact: boolean): Partial<DialogProps> {
       '& [class*="Backdrop-root"]': {
         position: 'absolute',
       },
+      ...(placement === 'top-right' ? topRightContainerSx : {}),
     },
     PaperProps: {
       sx: {
         marginTop: '16px !important',
-        marginBottom: '16px !important',
-        marginLeft: '40px !important',
-        marginRight: '40px !important',
+        marginBottom:
+          placement === 'top-right' ? 'auto !important' : '16px !important',
+        marginLeft:
+          placement === 'top-right' ? 'auto !important' : '40px !important',
+        marginRight:
+          placement === 'top-right' ? '16px !important' : '40px !important',
         borderRadius: '12px !important',
-        width: 'calc(100% - 80px) !important',
-        maxWidth: 'min(480px, calc(100% - 80px)) !important',
+        width:
+          placement === 'top-right'
+            ? 'min(400px, calc(100% - 32px)) !important'
+            : 'calc(100% - 80px) !important',
+        maxWidth:
+          placement === 'top-right'
+            ? 'min(400px, calc(100% - 32px)) !important'
+            : 'min(480px, calc(100% - 80px)) !important',
         maxHeight: 'calc(100% - 32px) !important',
         overflowX: 'hidden',
         overflowY: 'auto',

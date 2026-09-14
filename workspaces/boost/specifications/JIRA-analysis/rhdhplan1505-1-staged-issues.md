@@ -1,5 +1,12 @@
 # RHDHPLAN-1505 — AI Catalog Entity Model, RBAC, Connectors & Ingestion Ops — Staged GitHub Issues
 
+> **Historical planning record (2026-09-08):** This generated issue plan
+> predates the current release boundary and RBAC cleanup. It is retained for
+> issue traceability only. Do not use its custom `ai-catalog.*` permissions,
+> custom conditional rules, provider-owned default-deny state, or standalone
+> RBAC UI as current implementation requirements. The current follow-on model
+> is defined in `openspec/changes/ai-catalog-asset-governance/`.
+
 These issues implement the AI Catalog backend across RHDHPLAN-1507 (Entity Model & Ingestion Framework), RHDHPLAN-1508 (RBAC & Versioning Policy), RHDHPLAN-1510 (MCP Registry & RHOAI Connector), and RHDHPLAN-1513 (Ingestion Operations & Schema Alignment). Issues are grouped in dependency tiers — Tier 0 issues have no dependencies and can run in parallel; Tier 1 depends on Tier 0; Tier 2 depends on Tier 1.
 
 Each issue is scoped for a single fullsend `/fs-code` run. Frontend admin UI issues are included (~~RBAC Admin UI,~~ Ingestion Health Dashboard, Connector Config Admin UI). Developer-facing discovery UI is covered by RHDHPLAN-1509 and is NOT in scope here.

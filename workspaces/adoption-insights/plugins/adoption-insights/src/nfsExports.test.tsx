@@ -13,6 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import { coreExtensionData } from '@backstage/frontend-plugin-api';
 import { createExtensionTester } from '@backstage/frontend-test-utils';
 
@@ -23,6 +26,8 @@ import {
   adoptionInsightsTranslations,
 } from './alpha';
 import { rootRouteRef } from './routes';
+
+const nfsPluginSource = readFileSync(resolve(__dirname, 'index.tsx'), 'utf8');
 
 describe('adoption-insights NFS exports', () => {
   it('should export a valid frontend plugin', () => {
@@ -54,6 +59,15 @@ describe('adoption-insights NFS exports', () => {
     expect(adoptionInsightsTranslations).toBeDefined();
     expect(adoptionInsightsTranslationRef).toBeDefined();
     expect(adoptionInsightsTranslationRef.id).toBe('plugin.adoption-insights');
+  });
+
+  it('registers the Adoption Insights page with an events.read permission if predicate', () => {
+    expect(nfsPluginSource).toMatch(
+      /PageBlueprint\.make\(\{[\s\S]*?if:\s*adoptionInsightsAccess/,
+    );
+    expect(nfsPluginSource).toMatch(
+      /\$contains:\s*`\$\{adoptionInsightsEventsReadPermission\.name\}#read`/,
+    );
   });
 });
 

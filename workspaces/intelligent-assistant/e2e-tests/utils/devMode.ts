@@ -21,6 +21,7 @@ import {
   contentsWithRedactedThinking,
   E2E_MCP_VALID_TOKEN,
   generateQueryResponse,
+  generateQueryResponseWithReferencedDocuments,
   mockedMcpServersResponse,
   modelBaseUrl,
   type McpServersListMock,
@@ -607,6 +608,7 @@ export async function mockQuery(
   query: string,
   conversations: any[],
 ) {
+  await page.unroute(`${modelBaseUrl}/v1/query`);
   await page.route(`${modelBaseUrl}/v1/query`, async route => {
     const payload = route.request().postDataJSON();
 
@@ -618,6 +620,32 @@ export async function mockQuery(
         ? conversations[1].conversation_id
         : conversations[0].conversation_id,
     );
+    await route.fulfill({ body });
+  });
+}
+
+/** Mock query SSE that returns BYOK `referenced_documents` on the `end` event. */
+export async function mockQueryWithReferencedDocuments(
+  page: Page,
+  query: string,
+  conversations: any[],
+  referencedDocuments: Record<string, unknown>[],
+) {
+  await page.unroute(`${modelBaseUrl}/v1/query`);
+  await page.route(`${modelBaseUrl}/v1/query`, async route => {
+    const payload = route.request().postDataJSON();
+    if (payload.conversation_id) {
+      conversations[1].conversation_id = payload.conversation_id;
+    }
+    const conversationId =
+      conversations[1].conversation_id ?? conversations[0].conversation_id;
+    const body =
+      payload.query === query
+        ? generateQueryResponseWithReferencedDocuments(
+            conversationId,
+            referencedDocuments,
+          )
+        : generateQueryResponse(conversationId);
     await route.fulfill({ body });
   });
 }

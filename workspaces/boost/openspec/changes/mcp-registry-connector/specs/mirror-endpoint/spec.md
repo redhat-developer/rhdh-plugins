@@ -18,6 +18,10 @@ None — this is a new productization wrapper around the upstream MCP Registry e
 
 ### Requirement: Configurable Registry Endpoint
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Configured endpoint is used
+
 **WHEN** the connector is configured with a custom mirror endpoint in app-config:
 
 ```yaml
@@ -83,6 +87,10 @@ ai-catalog:
 
 ### Requirement: Zero-Internet Validation
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Public endpoint is not contacted
+
 **WHEN** the connector is configured with a mirror endpoint:
 
 ```yaml
@@ -112,6 +120,10 @@ ai-catalog:
 
 ### Requirement: Endpoint Validation at Startup
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Endpoint is validated at startup
+
 **WHEN** the connector starts with a configured mirror endpoint:
 
 **THEN** the connector validates that the endpoint URL is well-formed (scheme://host[:port][/path]).
@@ -136,6 +148,10 @@ ai-catalog:
 
 ### Requirement: Mirror Endpoint Configuration Override
 
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Configuration precedence is explicit
+
 **WHEN** the connector is configured with both `endpoint` and environment variable `MCP_REGISTRY_ENDPOINT`:
 
 **THEN** the app-config `endpoint` value takes precedence over the environment variable.
@@ -151,6 +167,10 @@ ai-catalog:
 **AND** the connector logs that the endpoint was configured via environment variable.
 
 ### Requirement: Prometheus Metrics for Endpoint Usage
+
+The implementation MUST satisfy the scenarios below.
+
+#### Scenario: Endpoint usage metrics are emitted
 
 **WHEN** the connector makes HTTP requests to the registry endpoint:
 

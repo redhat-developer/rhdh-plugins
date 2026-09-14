@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend
 
+## 0.1.6
+
+### Patch Changes
+
+- 6088511: Backstage version bump to v1.54.6
+
 ## 0.1.5
 
 ### Patch Changes

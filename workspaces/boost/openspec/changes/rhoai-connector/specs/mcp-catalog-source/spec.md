@@ -14,6 +14,8 @@ None. This is a new EntityProvider implementation.
 
 ### Requirement: RHOAI MCP Catalog API Connection
 
+The implementation MUST satisfy the scenarios below.
+
 The provider must connect to the RHOAI MCP catalog API and handle developer-preview API availability.
 
 #### Scenario: Provider connects to MCP catalog API
@@ -38,6 +40,8 @@ The provider must connect to the RHOAI MCP catalog API and handle developer-prev
 
 ### Requirement: MCP Server Entity Emission
 
+The implementation MUST satisfy the scenarios below.
+
 MCP catalog entries must map to API entities with `spec.type: mcp-server`.
 
 #### Scenario: MCP server is mapped to API entity
@@ -59,6 +63,8 @@ MCP catalog entries must map to API entities with `spec.type: mcp-server`.
 
 ### Requirement: Graceful Degradation on API Absence
 
+The implementation MUST satisfy the scenarios below.
+
 The provider must not block catalog startup when the MCP catalog API is unavailable.
 
 #### Scenario: Provider starts with MCP API unavailable
@@ -79,6 +85,8 @@ The provider must not block catalog startup when the MCP catalog API is unavaila
 
 ### Requirement: Developer-Preview API Stability Handling
 
+The implementation MUST satisfy the scenarios below.
+
 The MCP catalog API is developer preview and may change between RHOAI versions.
 
 #### Scenario: API response schema validation
@@ -97,6 +105,8 @@ The MCP catalog API is developer preview and may change between RHOAI versions.
 - **AND** it includes `metadata.annotations['rhdh.io/api-version-mismatch']` on all emitted entities for audit
 
 ### Requirement: Annotation Population
+
+The implementation MUST satisfy the scenarios below.
 
 All emitted MCP server entities must include standard RHDH annotations.
 
@@ -117,6 +127,8 @@ All emitted MCP server entities must include standard RHDH annotations.
 - **AND** it includes `metadata.annotations['rhdh.io/ai-asset-source']` set to `rhoai/<instance-id>`, where `<instance-id>` is the configuration key under `ai-catalog.providers` (e.g., `rhoai`)
 
 ### Requirement: Full Sync via applyMutation
+
+The implementation MUST satisfy the scenarios below.
 
 The provider must use Backstage's `applyMutation` for full sync and incremental updates.
 

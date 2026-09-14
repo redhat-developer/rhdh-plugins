@@ -88,6 +88,7 @@ When you lack evidence, output ONLY: "I cannot answer this based on the provided
  * @reserved Reserved for future URL file type support
  */
 export const URL_FETCH_TIMEOUT_MS = 30000; // 30 second timeout for URL fetching
+export const VISION_PROBE_TIMEOUT_MS = 10000; // 10 second timeout for a model vision probe
 export const USER_AGENT = 'RHDH-Notebooks-Bot/1.0'; // User agent for HTTP requests
 export const MAX_URL_CONTENT_SIZE = 10 * 1024 * 1024; // 10MB max for URL fetched content
 

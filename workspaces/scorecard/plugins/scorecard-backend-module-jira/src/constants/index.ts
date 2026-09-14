@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+export * from './jira';
 export * from './jiraOpenIssues';
 export * from './jiraIncidents';
 export * from './pagination';

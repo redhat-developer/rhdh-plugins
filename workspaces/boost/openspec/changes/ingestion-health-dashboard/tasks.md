@@ -15,7 +15,8 @@
 - [ ] 2.2 Implement `GET /api/boost/ingestion-health` route returning array of connector health objects
 - [ ] 2.3 Implement health status derivation logic in `HealthStatusService.deriveStatus(attempts)` (healthy/degraded/failing/unknown based on last 3 attempts; unknown = zero sync attempts recorded)
 - [ ] 2.4 Add `?includeDisabled=true` query parameter support for disabled connectors
-- [ ] 2.5 Implement RBAC gating via `ai-catalog.admin` permission check in route handler (using `permissions.authorize()`)
+- [ ] 2.5 Implement authorization gating with `boost.admin` using
+      `permissions.authorize()`
 - [ ] 2.6 Add audit logging for health API requests (per RHDHPLAN-1508 RHIDP-15277 audit logging pattern)
 - [ ] 2.7 Implement empty state handling (returns `[]` for zero connectors)
 - [ ] 2.8 Add health API integration tests (authorized/unauthorized, enabled/disabled filters, health status derivation)
@@ -89,9 +90,11 @@
 - [ ] 8.3 Implement active state highlighting for Ingestion Health nav item
 - [ ] 8.4 Verify navigation integration follows existing admin panel patterns (Model Connection, System Prompt, Agent Config)
 
-## 9. RBAC and Permissions (P1)
+## 9. Authorization Integration (P1)
 
-- [ ] 9.1 Implement RBAC permission check via `permissions.authorize()` with `ai-catalog.admin` permission (not custom middleware — per AGENTS.md, authorization goes through the permission framework)
+- [ ] 9.1 Implement the `boost.admin` permission check through
+      `permissions.authorize()` (not custom middleware — authorization goes
+      through the permission framework)
 - [ ] 9.2 Add permission check to all ingestion health API routes (GET health, POST force-sync, GET Neo4j, POST Neo4j force-sync)
 - [ ] 9.3 Add 403 error handling in UI (show "Insufficient permissions" message)
 - [ ] 9.4 Add permission check integration tests (verify 403 for non-admin users)

@@ -6,31 +6,19 @@
 import { BasicPermission } from '@backstage/plugin-permission-common';
 
 // @public
-export const iaChatAccessPermission: BasicPermission;
+export const iaChatPermission: BasicPermission;
 
 // @public
-export const iaChatManagePermission: BasicPermission;
+export const iaMcpToolsPermission: BasicPermission;
 
 // @public
-export const iaChatUsePermission: BasicPermission;
-
-// @public
-export const iaMcpManagePermission: BasicPermission;
-
-// @public
-export const iaMcpUsePermission: BasicPermission;
-
-// @public
-export const iaNotebooksManagePermission: BasicPermission;
-
-// @public
-export const iaNotebooksUsePermission: BasicPermission;
+export const iaNotebooksPermission: BasicPermission;
 
 // @public
 export const iaPermissions: BasicPermission[];
 
 // @public
-export const iaSkillsAccessPermission: BasicPermission;
+export const iaSkillsPermission: BasicPermission;
 
 // @public
 export interface SavedPrompt {

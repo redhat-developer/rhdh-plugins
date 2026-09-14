@@ -1,5 +1,8 @@
 # Proposal: Security, Safety & Governance
 
+> **Workspace status:** Follow-on backend security and governance planning; not
+> part of the current RHDH 2.1 frontend and OGX release baseline.
+
 ## Why
 
 Enterprise AI platforms must treat security, safety, and governance as foundational capabilities. Boost implements a three-tier security mode system, RBAC, content safety shields, SSRF protection, and zero data retention. The permission model uses 16 fine-grained Backstage permissions from day one, with resource-based permissions for owned resources and conditional rules for ownership and lifecycle gating.

@@ -1,0 +1,84 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import type { Knex } from 'knex';
+
+export interface DoraDbWriteOptions {
+  trx?: Knex | Knex.Transaction;
+}
+
+export type DbDoraDeploymentCreate = {
+  catalogEntityRef: string;
+  collectorId: string;
+  collectorInputHash: string;
+  originalDeploymentId: string;
+  commitSha: string;
+  environment?: string | null;
+  createdAt: Date;
+};
+
+export type DbDoraDeployment = {
+  id: string;
+  catalogEntityRef: string;
+  collectorId: string;
+  collectorInputHash: string;
+  originalDeploymentId: string;
+  commitSha: string;
+  environment: string | null;
+  createdAt: Date;
+  // Set together once PRs have been fetched for this deployment, by the
+  // deploymentPullRequests collector identified here. Null means not yet
+  // fetched. Avoids re-fetching zero-PR deployments on every run, while still
+  // re-fetching when the PR collector's id or input changes.
+  pullRequestsCollectorId: string | null;
+  pullRequestsCollectorInputHash: string | null;
+};
+
+export type DbDoraIncidentCreate = {
+  catalogEntityRef: string;
+  collectorId: string;
+  collectorInputHash: string;
+  originalIncidentId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  resolutionAt?: Date | null;
+};
+
+export type DbDoraIncident = {
+  id: string;
+  catalogEntityRef: string;
+  collectorId: string;
+  collectorInputHash: string;
+  originalIncidentId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  resolutionAt: Date | null;
+};
+
+export type DbDoraPullRequestCreate = {
+  catalogEntityRef: string;
+  originalPrId: string;
+  firstCommitAt: Date;
+  deploymentId: string;
+};
+
+export type DbDoraPullRequest = {
+  id: string;
+  catalogEntityRef: string;
+  originalPrId: string;
+  firstCommitAt: Date;
+  deploymentId: string;
+};

@@ -360,7 +360,9 @@ const _default: OverridableFrontendPlugin<
           {
             title: string;
             metrics: string[];
+            titleKey?: string | undefined;
             description?: string | undefined;
+            descriptionKey?: string | undefined;
           }
         >;
       };
@@ -371,7 +373,9 @@ const _default: OverridableFrontendPlugin<
               {
                 title: string;
                 metrics: string[];
+                titleKey?: string | undefined;
                 description?: string | undefined;
+                descriptionKey?: string | undefined;
               }
             >
           | undefined;
@@ -395,7 +399,9 @@ export interface ScorecardLayoutProps {
     string,
     {
       title: string;
+      titleKey?: string;
       description?: string;
+      descriptionKey?: string;
       metrics: string[];
     }
   >;
@@ -440,8 +446,8 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'metric.dora.medianLeadTimeForChanges.description': string;
     readonly 'metric.dora.changeFailureRate.title': string;
     readonly 'metric.dora.changeFailureRate.description': string;
-    readonly 'metric.dora.meanTimeToRestore.title': string;
-    readonly 'metric.dora.meanTimeToRestore.description': string;
+    readonly 'metric.dora.medianTimeToRestore.title': string;
+    readonly 'metric.dora.medianTimeToRestore.description': string;
     readonly 'metric.github.openPRs.title': string;
     readonly 'metric.github.openPRs.description': string;
     readonly 'metric.jira.openIssues.title': string;
