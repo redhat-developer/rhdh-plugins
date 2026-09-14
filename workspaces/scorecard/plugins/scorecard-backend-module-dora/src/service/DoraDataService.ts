@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { DORA_PRE_WINDOW_DEPLOYMENT_CANDIDATE_LIMIT } from '../constants';
 import type { DoraDeploymentsStore } from '../database/DatabaseDoraDeployments';
 import type { DoraIncidentsStore } from '../database/DatabaseDoraIncidents';
 import type { DoraPullRequestsStore } from '../database/DatabaseDoraPullRequests';
@@ -22,6 +23,7 @@ import type {
   DbDoraIncident,
   DbDoraPullRequest,
 } from '../database/types';
+import { isProductionEnvironment } from '../metricProviders/utils/deploymentFilterUtils';
 import type { CollectorCallOptions, WindowOptions } from './types';
 
 /**
@@ -32,6 +34,17 @@ export interface DoraDataService {
     catalogEntityRef: string,
     options: WindowOptions & CollectorCallOptions,
   ): Promise<DbDoraDeployment[]>;
+  /**
+   * Latest successful production deployment with `createdAt` strictly before
+   * `before`, if one exists for this entity and collector identity.
+   */
+  readLatestProductionDeploymentBefore(
+    catalogEntityRef: string,
+    options: CollectorCallOptions & {
+      before: Date;
+      productionEnvironments: string[];
+    },
+  ): Promise<DbDoraDeployment | undefined>;
   readIncidents(
     catalogEntityRef: string,
     options: WindowOptions & CollectorCallOptions,
@@ -59,6 +72,29 @@ export class DefaultDoraDataService implements DoraDataService {
       options.collector.inputHash,
       options.windowFrom,
       options.windowTo,
+    );
+  }
+
+  async readLatestProductionDeploymentBefore(
+    catalogEntityRef: string,
+    options: CollectorCallOptions & {
+      before: Date;
+      productionEnvironments: string[];
+    },
+  ): Promise<DbDoraDeployment | undefined> {
+    const candidates = await this.deploymentsDb.readCandidatesBefore(
+      catalogEntityRef,
+      options.collector.id,
+      options.collector.inputHash,
+      options.before,
+      DORA_PRE_WINDOW_DEPLOYMENT_CANDIDATE_LIMIT,
+    );
+
+    return candidates.find(deployment =>
+      isProductionEnvironment(
+        deployment.environment,
+        options.productionEnvironments,
+      ),
     );
   }
 

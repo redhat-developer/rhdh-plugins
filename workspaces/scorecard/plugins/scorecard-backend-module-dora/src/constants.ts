@@ -21,6 +21,13 @@ export const DORA_DEFAULT_INCIDENTS_COLLECTOR_ID = 'jira:doraIncidents';
 export const DORA_TIME_WINDOW_DAYS = 30;
 export const DORA_DEFAULT_PRODUCTION_ENVIRONMENTS = ['production'];
 
+/**
+ * Max deployments loaded (newest first) with `created_at` before the metric
+ * window when resolving the latest pre-window production deploy. Extra rows
+ * cover a burst of non-production deploys after the last production deploy.
+ */
+export const DORA_PRE_WINDOW_DEPLOYMENT_CANDIDATE_LIMIT = 50;
+
 export const DORA_PLUGIN_CONFIG_PATH = 'scorecard.plugins.dora';
 
 /**

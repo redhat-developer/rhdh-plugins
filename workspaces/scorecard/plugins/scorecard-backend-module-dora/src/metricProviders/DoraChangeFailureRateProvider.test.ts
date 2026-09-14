@@ -27,6 +27,7 @@ import {
 import {
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+  DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
 } from '../constants';
 import { DEFAULT_DORA_CHANGE_FAILURE_RATE_THRESHOLDS } from './DoraConfig';
 
@@ -50,6 +51,9 @@ describe('DoraChangeFailureRateProvider', () => {
         createdAt: '2026-06-11T00:00:00.000Z',
       }),
     ]);
+    mockDoraDataService.readLatestProductionDeploymentBefore.mockResolvedValue(
+      undefined,
+    );
     mockDoraDataService.readIncidents.mockResolvedValue([
       dbIncident({
         id: 'INC-1',
@@ -203,6 +207,15 @@ describe('DoraChangeFailureRateProvider', () => {
           }),
         },
       );
+      expect(
+        mockDoraDataService.readLatestProductionDeploymentBefore,
+      ).toHaveBeenCalledWith('component:default/test-component', {
+        before: windowFrom,
+        productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+        collector: expect.objectContaining({
+          id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+        }),
+      });
       expect(mockDoraDataService.readIncidents).toHaveBeenCalledWith(
         'component:default/test-component',
         {
@@ -409,6 +422,115 @@ describe('DoraChangeFailureRateProvider', () => {
       expect(mockLogger.warn).toHaveBeenCalledWith(
         expect.stringContaining('non-increasing createdAt'),
       );
+    });
+
+    it('should attribute incidents between a pre-window deploy and the first in-window deploy', async () => {
+      const preWindow = dbDeployment({
+        id: '99',
+        commitSha: 'sha-pre-window',
+        environment: 'production',
+        createdAt: '2026-05-20T00:00:00.000Z',
+      });
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([
+        dbDeployment({
+          id: '101',
+          commitSha: 'sha-1',
+          environment: 'production',
+          createdAt: '2026-06-10T00:00:00.000Z',
+        }),
+      ]);
+      mockDoraDataService.readLatestProductionDeploymentBefore.mockResolvedValueOnce(
+        preWindow,
+      );
+      mockDoraDataService.readIncidents.mockResolvedValueOnce([
+        dbIncident({
+          id: 'INC-1',
+          createdAt: '2026-05-25T00:00:00.000Z',
+          updatedAt: '2026-05-25T00:00:00.000Z',
+          resolutionAt: null,
+        }),
+      ]);
+
+      const results = await provider.calculateMetrics(mockEntity);
+
+      expect(results.get('dora.changeFailureRate')).toBe(100);
+      expect(mockDoraDataService.readIncidents).toHaveBeenCalledWith(
+        'component:default/test-component',
+        expect.objectContaining({
+          windowFrom: preWindow.createdAt,
+        }),
+      );
+    });
+
+    it('should count an in-window incident before the first in-window deploy when a pre-window deploy exists', async () => {
+      jest.useFakeTimers().setSystemTime(new Date('2026-06-30T12:00:00.000Z'));
+      const windowFrom = new Date('2026-05-31T12:00:00.000Z');
+      const preWindow = dbDeployment({
+        id: '99',
+        commitSha: 'sha-pre-window',
+        environment: 'production',
+        createdAt: '2026-05-20T00:00:00.000Z',
+      });
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([
+        dbDeployment({
+          id: '101',
+          commitSha: 'sha-1',
+          environment: 'production',
+          createdAt: '2026-06-10T00:00:00.000Z',
+        }),
+      ]);
+      mockDoraDataService.readLatestProductionDeploymentBefore.mockResolvedValueOnce(
+        preWindow,
+      );
+      mockDoraDataService.readIncidents.mockResolvedValueOnce([
+        dbIncident({
+          id: 'INC-1',
+          createdAt: '2026-06-02T00:00:00.000Z',
+          updatedAt: '2026-06-02T00:00:00.000Z',
+          resolutionAt: null,
+        }),
+      ]);
+
+      const results = await provider.calculateMetrics(mockEntity);
+
+      expect(results.get('dora.changeFailureRate')).toBe(100);
+      expect(mockDoraSyncService.syncIncidents).toHaveBeenCalledWith(
+        mockEntity,
+        expect.objectContaining({
+          windowFrom,
+        }),
+      );
+      expect(mockDoraDataService.readIncidents).toHaveBeenCalledWith(
+        'component:default/test-component',
+        expect.objectContaining({
+          windowFrom: preWindow.createdAt,
+        }),
+      );
+    });
+
+    it('should still ignore an incident after the last in-window deploy when a pre-window deploy exists', async () => {
+      const preWindow = dbDeployment({
+        id: '99',
+        commitSha: 'sha-pre-window',
+        environment: 'production',
+        createdAt: '2026-05-20T00:00:00.000Z',
+      });
+      mockDoraDataService.readLatestProductionDeploymentBefore.mockResolvedValueOnce(
+        preWindow,
+      );
+      mockDoraDataService.readIncidents.mockResolvedValueOnce([
+        dbIncident({
+          id: 'INC-after-last',
+          createdAt: '2026-06-12T00:00:00.000Z',
+          updatedAt: '2026-06-12T00:00:00.000Z',
+          resolutionAt: null,
+        }),
+      ]);
+
+      const results = await provider.calculateMetrics(mockEntity);
+
+      // Intervals [pre-window, sha-1) and [sha-1, sha-2); incident is after sha-2.
+      expect(results.get('dora.changeFailureRate')).toBe(0);
     });
   });
 });

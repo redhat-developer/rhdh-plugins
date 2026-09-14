@@ -210,7 +210,7 @@ scorecard:
       incidentLookbackMs: 300000 # 5 minutes
 ```
 
-- `dataRetentionDays`: how long source rows (deployments, incidents, pull requests linked to expired deployments and sync watermarks) are retained before cleanup. Must be at least `30` (the DORA metric computation window). Default: `365`.
+- `dataRetentionDays`: how long source rows (deployments, incidents, pull requests linked to expired deployments and sync watermarks) are retained before cleanup. Must be at least `30` (the DORA metric computation window). Default: `365`. Median lead time and change failure rate use the latest successful production deployment **before** the 30-day window as a pairing boundary; that row must still be retained for first-in-window scoring to apply.
 - `staleAfterMs`: freshness threshold in milliseconds for deployments and incidents; if the last sync is within this window, those collectors are not refreshed. Must be greater than or equal to `0`. Set to `0` to always refresh. Default: `60000`. Pull request sync is not gated by `staleAfterMs`; PRs are fetched once per deployment when none are stored yet.
 - `deploymentLookbackMs`: when refreshing deployments, re-query from `max(windowFrom, lastSync − deploymentLookbackMs)` by `createdAt` so deployments that succeed shortly after the previous lastSync watermark are not missed. Only new succeeded deployments are stored, **existing deployment rows are not updated** as successful deployment (commit SHA, environment, `createdAt`) is considered immutable.
   - Must be greater than or equal to `0` and at most `30` days. Set to `0` for watermark-only incremental refresh. Default: `172800000` (48 hours).

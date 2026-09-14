@@ -12,11 +12,17 @@ Deployments are processed as chronological pairs of successful production deploy
 For each pull request in that range, lead time is `currentDeployment.createdAt - pullRequest.firstCommitAt` in hours.
 The result is: `median(leadTimeHours)`.
 
+Successful production deployments in the 30-day computation window are scored. When the latest successful production deployment still exists in the DORA database **immediately before** that window, it is used only as `previousDeployment` for the **first in-window** deployment so that deploy contributes measurable lead times. Collector refresh still uses the 30-day window; the prior deploy is not re-collected.
+
 ## Scope and limitation
 
 This metric assumes deployments form a single chronological stream for the entity. If deployments from multiple branches or release trains are mixed in the same stream, `previousDeployment` and `currentDeployment` can belong to different branches, which may produce incorrect lead-time pairing and noisy results.
 
-If fewer than two successful production deployments exist in the window, or no pull requests with a measurable lead time are found between deployments, calculation fails with an error for now.
+If fewer than two successful production deployments can be paired (no in-window deploy plus prior deploy, or fewer than two in-window deploys when no prior row exists), or no pull requests with a measurable lead time are found between deployments, calculation fails with an error for this metric.
+
+The prior deploy must still be retained (`scorecard.plugins.dora.dataRetentionDays`, default `365`). Setting retention to the 30-day minimum typically deletes that row as soon as it leaves the window, so first-in-window scoring will not apply.
+
+A sparse first-in-window pair can span a long `baseCommitSha...headCommitSha` compare. The default GitHub pull-requests collector fetches at most **1000** commits in that range; see [dora-collectors.md](../dora-collectors.md) and the [GitHub module README](../../../scorecard-backend-module-github/README.md).
 
 ## Default thresholds
 

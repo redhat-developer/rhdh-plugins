@@ -8,16 +8,21 @@
 Change Failure Rate measures how often production deployments lead to failures that require incident response.
 
 The metric computes the percentage of successful production deployment intervals that contain at least one incident, out of all evaluated successful production deployment intervals.
-Only successful production deployments that happen within the metric's 30-day computation window are evaluated.
-Deployments are processed as chronological pairs (`deployment` -> `nextDeployment`), and each pair defines an interval:
+Successful production deployments in the metric's 30-day computation window are evaluated. When the latest successful production deployment still exists in the DORA database **immediately before** that window, it is used as the start of the interval ending at the **first in-window** deployment:
+`[lastPreWindow.createdAt, firstInWindow.createdAt)`.
+In-window deployments are then processed as chronological pairs (`deployment` -> `nextDeployment`), and each pair defines an interval:
 `[deployment.createdAt, nextDeployment.createdAt)`.
 
 For each interval, if at least one incident has `createdAt` in that interval, the deployment is treated as failed.
 The result is: `(deploymentsWithIncidents / evaluatedDeployments) * 100`.
 
+Incidents in `[lastPreWindow, firstInWindow)` are counted. Incident **sync** still uses the 30-day window; incidents before `windowFrom` are included only if they were already persisted (subject to `dataRetentionDays`).
+
 The metric is **deployment-interval based**, not incident-window based: only incidents that fall between two successful production deployments are scored. An incident after the latest successful production deployment in the 30-day window is not counted in that run, even if it was created within the DORA 30-day window. It is attributed in a later DORA calculation to the interval closed by the next successful production deployment (the first deployment that follows).
 
-If fewer than two successful production deployments exist in the window, or there are no evaluable intervals (adjacent deployments share the same `createdAt`), calculation fails with an error.
+If fewer than two successful production deployments can be paired (no in-window deploy plus prior deploy, or fewer than two in-window deploys when no prior row exists), or there are no evaluable intervals (adjacent deployments share the same `createdAt`), calculation fails with an error.
+
+The prior deploy must still be retained (`scorecard.plugins.dora.dataRetentionDays`, default `365`). Setting retention to the 30-day minimum typically deletes that row as soon as it leaves the window, so the opening pre-window interval will not apply.
 
 ## Scope and limitation
 

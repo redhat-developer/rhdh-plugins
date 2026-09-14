@@ -32,6 +32,7 @@ import {
   parseDoraChangeFailureRateConfig,
 } from './DoraConfig';
 import { isProductionEnvironment } from './utils/deploymentFilterUtils';
+import { prependPreWindowDeployment } from './utils/preWindowDeploymentUtils';
 
 type DoraChangeFailureRateProviderOptions = {
   doraSyncService: DoraSyncService;
@@ -124,29 +125,44 @@ export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
     ]);
 
     const catalogEntityRef = stringifyEntityRef(entity);
-    const [deployments, incidents] = await Promise.all([
+    const [inWindowDeployments, preWindowDeployment] = await Promise.all([
       this.doraDataService.readDeployments(catalogEntityRef, {
         windowFrom: from,
         windowTo: to,
         collector: this.config.deploymentsCollector,
       }),
-      this.doraDataService.readIncidents(catalogEntityRef, {
-        windowFrom: from,
-        windowTo: to,
-        collector: this.config.incidentsCollector,
-      }),
+      this.doraDataService.readLatestProductionDeploymentBefore(
+        catalogEntityRef,
+        {
+          before: from,
+          productionEnvironments: this.config.productionEnvironments,
+          collector: this.config.deploymentsCollector,
+        },
+      ),
     ]);
 
-    const productionDeployments = deployments.filter(deployment =>
-      isProductionEnvironment(
-        deployment.environment,
-        this.config.productionEnvironments,
+    const productionDeployments = prependPreWindowDeployment(
+      preWindowDeployment,
+      inWindowDeployments.filter(deployment =>
+        isProductionEnvironment(
+          deployment.environment,
+          this.config.productionEnvironments,
+        ),
       ),
+    );
+
+    const incidents = await this.doraDataService.readIncidents(
+      catalogEntityRef,
+      {
+        windowFrom: preWindowDeployment?.createdAt ?? from,
+        windowTo: to,
+        collector: this.config.incidentsCollector,
+      },
     );
 
     if (productionDeployments.length < 2) {
       throw new Error(
-        `Unable to calculate change failure rate: need at least 2 successful production deployments in the last ${DORA_TIME_WINDOW_DAYS} days, found ${productionDeployments.length}`,
+        `Unable to calculate change failure rate: need at least 2 successful production deployments (in the last ${DORA_TIME_WINDOW_DAYS} days, or 1 in-window plus a prior successful production deployment), found ${productionDeployments.length}`,
       );
     }
 
