@@ -49,7 +49,7 @@ describe('EntitiesTableWrapper', () => {
   });
 
   it('should not render calculation warning icon by default', () => {
-    const { container } = render(
+    render(
       <TestWrapper>
         <EntitiesTableWrapper title="Entities">
           <span>Content</span>
@@ -58,12 +58,12 @@ describe('EntitiesTableWrapper', () => {
     );
 
     expect(
-      container.querySelector('.MuiSvgIcon-colorWarning'),
+      screen.queryByTestId('entities-table-calculation-warning-icon'),
     ).not.toBeInTheDocument();
   });
 
   it('should render calculation warning icon when showCalculationWarning', () => {
-    const { container } = render(
+    render(
       <TestWrapper>
         <EntitiesTableWrapper title="Entities" showCalculationWarning>
           <span>Content</span>
@@ -72,7 +72,7 @@ describe('EntitiesTableWrapper', () => {
     );
 
     expect(
-      container.querySelector('.MuiSvgIcon-colorWarning'),
+      screen.getByTestId('entities-table-calculation-warning-icon'),
     ).toBeInTheDocument();
     expect(
       screen.getByLabelText(
