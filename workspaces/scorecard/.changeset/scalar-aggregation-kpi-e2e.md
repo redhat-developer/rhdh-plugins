@@ -1,7 +1,7 @@
 ---
-'@red-hat-developer-hub/backstage-plugin-scorecard-common': minor
-'@red-hat-developer-hub/backstage-plugin-scorecard-backend': minor
-'@red-hat-developer-hub/backstage-plugin-scorecard': minor
+'@red-hat-developer-hub/backstage-plugin-scorecard-common': patch
+'@red-hat-developer-hub/backstage-plugin-scorecard-backend': patch
+'@red-hat-developer-hub/backstage-plugin-scorecard': patch
 ---
 
 Export public `ScalarAggregationType` for scalar aggregation KPI types (`sum`, `average`, `count`, `min`, `max`).
