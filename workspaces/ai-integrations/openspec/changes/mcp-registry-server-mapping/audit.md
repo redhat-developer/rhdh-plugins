@@ -17,7 +17,7 @@ _Re-audit following the `repository.url`/`websiteUrl` link-mapping revision (rep
 | E (Namespace & cross-change ownership) | 0        | 0       | 0          |
 | F (Template / copy-paste residue)      | 0        | 0       | 1         |
 | G (Extended coherence)                 | 0        | 0       | 0          |
-| H (Security lint)                      | 0        | 0       | 0          |
+| H (Security lint)                      | 0        | 2      | 0          |
 | **Total**                              | **0**    | **0**   | **0**      |
 
 ### CRITICAL
