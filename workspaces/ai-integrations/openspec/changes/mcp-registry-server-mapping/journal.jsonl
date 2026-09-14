@@ -92,3 +92,11 @@
 {"ts":"2026-09-14T19:04:04Z","phase":"authoring","event":"artifact.revised","ref":"proposal.md","input":"Drop RFC1918/internal causal language","output":"Proposal: private-looking hosts pass the same scheme gate"}
 {"ts":"2026-09-14T19:04:04Z","phase":"authoring","event":"artifact.revised","ref":"tasks.md","input":"Drop RFC1918/internal causal language","output":"Tasks 1.5 2.7 4.7 no longer treat RFC1918 as a classifier"}
 {"ts":"2026-09-14T19:04:04Z","phase":"any","event":"turn.end","output":"Reworded D11: 10.0.0.5 is an http fixture; transform does not guarantee internality"}
+{"ts":"2026-09-14T19:13:55Z","phase":"any","event":"turn.start","input":"Grill: does D9 match understanding of isSecret vs private registry exposure?"}
+{"ts":"2026-09-14T19:13:55Z","phase":"any","event":"skill.invoked","name":"grilling"}
+{"ts":"2026-09-14T19:13:59Z","phase":"any","event":"turn.end","output":"Fact: D9 omits isSecret true default/value only; isSecret false is projected. Asked whether catalog vs registry is the threat model"}
+{"ts":"2026-09-14T19:30:35Z","phase":"any","event":"turn.start","input":"Omit choices on isSecret true inputs; align projection spec and task 4.6"}
+{"ts":"2026-09-14T19:30:35Z","phase":"any","event":"skill.invoked","name":"openspec-continue-change"}
+{"ts":"2026-09-14T19:33:13Z","phase":"authoring","event":"artifact.revised","ref":"proposal.md, specs/mcp-registry-annotation-projection/spec.md, design.md, tasks.md","input":"Redact choices on isSecret true inputs; keep the same rule in the projection spec and task 4.6","output":"D9 now prunes default/value/choices; placeholder still projects; rejected documenting that choices cannot be secrets"}
+{"ts":"2026-09-14T19:33:13Z","phase":"any","event":"decision","input":"Audit H: redact choices on isSecret true, or document why choices cannot contain secrets","output":"Omit choices with default/value; MCP Input.choices is a list of possible values, so it is value-bearing"}
+{"ts":"2026-09-14T19:33:13Z","phase":"any","event":"turn.end","output":"Revised D9: isSecret true prunes default/value/choices; projection spec and task 4.6 match; artifacts still complete"}

@@ -86,26 +86,31 @@ Projection SHALL NOT overwrite annotations set by the direct mapping (for exampl
 
 ### Requirement: Redact secret-flagged input values
 
-An `Input` object in `server.json` (as used by `packages[].environmentVariables[]`, `remotes[].headers[]`, `remotes[].variables`, and package/runtime arguments) MAY declare `isSecret: true`. When an input object declares `isSecret: true`, the projection SHALL prune (omit) that object's `default` and `value` leaves — those values SHALL NOT appear in any `modelcontextprotocol.io/*` annotation. All non-secret sibling leaves of the same input (for example `name`, `description`, `format`, `isRequired`, `isSecret`, `choices`) SHALL continue to project normally. This redaction applies uniformly to every `isSecret: true` input regardless of location, not only environment variables.
+An `Input` object in `server.json` (as used by `packages[].environmentVariables[]`, `remotes[].headers[]`, `remotes[].variables`, and package/runtime arguments) MAY declare `isSecret: true`. When an input object declares `isSecret: true`, the projection SHALL prune (omit) that object's `default`, `value`, and `choices` leaves (including every `choices[]` element) — those values SHALL NOT appear in any `modelcontextprotocol.io/*` annotation. All non-secret sibling leaves of the same input (for example `name`, `description`, `format`, `isRequired`, `isSecret`, `placeholder`) SHALL continue to project normally. This redaction applies uniformly to every `isSecret: true` input regardless of location, not only environment variables.
 
 #### Scenario: Secret environment variable value is pruned
 
 - **WHEN** a `server.json` carries `packages[0].environmentVariables[0]` with `isSecret: true` and a populated `default` (or `value`)
 - **THEN** no `modelcontextprotocol.io/*` annotation carries that `default`/`value`, while the input's non-secret leaves (e.g. `packages.0.environmentVariables.0.name`, `.isSecret`, `.description`) are still projected
 
+#### Scenario: Secret input choices are pruned
+
+- **WHEN** a `server.json` carries an `isSecret: true` input with a populated `choices` array (for example `["tok_live_aaa", "tok_live_bbb"]`)
+- **THEN** no `modelcontextprotocol.io/*` annotation carries any `choices` element, while non-secret siblings such as `name` and `isSecret` still project
+
 #### Scenario: Secret remote header/variable value is pruned
 
-- **WHEN** a `remotes[].headers[]` or `remotes[].variables` input declares `isSecret: true` with a populated `default`/`value`
-- **THEN** that `default`/`value` is omitted from all annotations, and the redaction behaves identically to the environment-variable case (uniform across input locations)
+- **WHEN** a `remotes[].headers[]` or `remotes[].variables` input declares `isSecret: true` with a populated `default`/`value` or `choices`
+- **THEN** that `default`/`value`/`choices` is omitted from all annotations, and the redaction behaves identically to the environment-variable case (uniform across input locations)
 
 #### Scenario: Non-secret input value is retained
 
-- **WHEN** an input object has `isSecret: false` or omits `isSecret`, with a populated `default`/`value`
-- **THEN** that `default`/`value` is projected into a `modelcontextprotocol.io/*` annotation as normal
+- **WHEN** an input object has `isSecret: false` or omits `isSecret`, with a populated `default`/`value` or `choices`
+- **THEN** that `default`/`value`/`choices` is projected into a `modelcontextprotocol.io/*` annotation as normal
 
 ### Requirement: Scalar round-trip fidelity
 
-Every scalar leaf present in the source `server.json` SHALL be recoverable from the produced entity — either from a native field or from a projected annotation — **except** the `default`/`value` leaves of `isSecret: true` inputs, which are intentionally redacted per "Redact secret-flagged input values", **and** any URL refused by the emitted-URL scheme policy, which is omitted from emitted URL fields and from all `modelcontextprotocol.io/*` annotations. Null values and empty containers MAY be omitted per a documented rule; every non-null, non-redacted, non-D11-refused-URL scalar SHALL be represented.
+Every scalar leaf present in the source `server.json` SHALL be recoverable from the produced entity — either from a native field or from a projected annotation — **except** the `default`/`value`/`choices` leaves of `isSecret: true` inputs, which are intentionally redacted per "Redact secret-flagged input values", **and** any URL refused by the emitted-URL scheme policy, which is omitted from emitted URL fields and from all `modelcontextprotocol.io/*` annotations. Null values and empty containers MAY be omitted per a documented rule; every non-null, non-redacted, non-D11-refused-URL scalar SHALL be represented.
 
 #### Scenario: All scalar leaves are recoverable
 
@@ -124,8 +129,8 @@ Every scalar leaf present in the source `server.json` SHALL be recoverable from 
 
 #### Scenario: Redacted secret leaves are exempt from round-trip
 
-- **WHEN** a `server.json` carries an `isSecret: true` input with a populated `default`/`value`
-- **THEN** the absence of that `default`/`value` from the entity does NOT violate round-trip fidelity, because secret redaction is a documented exception
+- **WHEN** a `server.json` carries an `isSecret: true` input with a populated `default`/`value` or `choices`
+- **THEN** the absence of that `default`/`value`/`choices` from the entity does NOT violate round-trip fidelity, because secret redaction is a documented exception
 
 #### Scenario: Nulls and empty containers follow the documented omission rule
 
