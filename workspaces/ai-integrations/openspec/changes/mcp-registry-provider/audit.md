@@ -16,7 +16,7 @@
 | F — Template / copy-paste  | 0        | 0       | 0          |
 | G — Extended coherence     | 0        | 2       | 1          |
 | H — Security lint          | 0        | 0       | 0          |
-| **Total**                  | **0**    | **0**   | **0**      |
+| **Total**                  | **0**    | **6**   | **1**      |
 
 ### CRITICAL
 
