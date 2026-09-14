@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-export const DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID = 'github:deployments';
+export const DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID = 'github:doraDeployments';
 export const DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID =
-  'github:deploymentPullRequests';
-export const DORA_DEFAULT_INCIDENTS_COLLECTOR_ID = 'jira:incidents';
+  'github:doraDeploymentPullRequests';
+export const DORA_DEFAULT_INCIDENTS_COLLECTOR_ID = 'jira:doraIncidents';
 export const DORA_TIME_WINDOW_DAYS = 30;
 export const DORA_DEFAULT_PRODUCTION_ENVIRONMENTS = ['production'];
 

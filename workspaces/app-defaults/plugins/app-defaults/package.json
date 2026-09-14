@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-app-defaults",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "license": "Apache-2.0",
   "description": "RHDH app module for the new frontend system",
   "main": "src/index.ts",
@@ -8,12 +8,32 @@
   "exports": {
     ".": "./src/index.ts",
     "./app-defaults-translations-module": "./src/appDefaultsTranslationsModuleExport.ts",
+    "./catalog-plugin-override": "./src/catalogPluginOverrideExport.ts",
+    "./catalog-graph-plugin-override": "./src/catalogGraphPluginOverrideExport.ts",
+    "./scaffolder-plugin-override": "./src/scaffolderPluginOverrideExport.ts",
+    "./api-docs-plugin-override": "./src/apiDocsPluginOverrideExport.ts",
+    "./docs-plugin-override": "./src/docsPluginOverrideExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "app-defaults-translations-module": [
         "src/appDefaultsTranslationsModuleExport.ts"
+      ],
+      "catalog-plugin-override": [
+        "src/catalogPluginOverrideExport.ts"
+      ],
+      "catalog-graph-plugin-override": [
+        "src/catalogGraphPluginOverrideExport.ts"
+      ],
+      "scaffolder-plugin-override": [
+        "src/scaffolderPluginOverrideExport.ts"
+      ],
+      "api-docs-plugin-override": [
+        "src/apiDocsPluginOverrideExport.ts"
+      ],
+      "docs-plugin-override": [
+        "src/docsPluginOverrideExport.ts"
       ],
       "package.json": [
         "package.json"

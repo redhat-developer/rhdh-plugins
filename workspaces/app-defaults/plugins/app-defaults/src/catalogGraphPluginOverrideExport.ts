@@ -14,22 +14,4 @@
  * limitations under the License.
  */
 
-export const DOCKER_PROTO = 'docker://';
-export const OCI_PROTO = 'oci://';
-export const REF_PROTO = 'ref://';
-
-export function isOciUrl(value: string): boolean {
-  return value.startsWith(OCI_PROTO);
-}
-
-export function isDockerUrl(value: string): boolean {
-  return value.startsWith(DOCKER_PROTO);
-}
-
-export function isLocalPath(value: string): boolean {
-  return value.startsWith('./');
-}
-
-export function isRefUrl(value: string): boolean {
-  return value.startsWith(REF_PROTO);
-}
+export { catalogGraphPluginOverride as default } from './catalog-graph/catalogGraphPluginOverride';
