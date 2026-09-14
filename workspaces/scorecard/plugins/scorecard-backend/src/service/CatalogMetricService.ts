@@ -196,7 +196,10 @@ export class CatalogMetricService {
    *
    * Returns at most one point per UTC calendar day: the latest sample
    * (`MAX(id)`), whether success or calculation error. Calculation failures
-   * use `value: null` and `error`.
+   * use `value: null` and `error`. Threshold evaluation failures also set
+   * `error` (with `thresholdEvaluation` null). When entity threshold
+   * resolution fails, `thresholdsError` is set on the response and points are
+   * not classified (`thresholdEvaluation` null, no per-point `error`).
    *
    * @param entityRef - Entity reference in format "kind:namespace/name"
    * @param metricId - Metric ID to fetch
@@ -235,15 +238,18 @@ export class CatalogMetricService {
       to,
     );
 
-    let thresholds: ThresholdConfig;
+    let thresholds: ThresholdConfig | undefined;
+    let thresholdsError: string | undefined;
     try {
       thresholds = this.thresholdResolver.resolveEntityThresholds(
         entity,
         metric,
       );
-    } catch {
-      // Keep app-config / provider thresholds when entity annotation merge fails
-      thresholds = this.thresholdResolver.resolveMetricThresholds(metric);
+    } catch (err) {
+      thresholdsError = stringifyError(err);
+      this.logger.warn(
+        `Failed to resolve thresholds for metric '${metric.id}' on entity '${entityRef}': ${thresholdsError}`,
+      );
     }
 
     const points: MetricTimeSeriesPoint[] = rows.map(row => {
@@ -256,7 +262,8 @@ export class CatalogMetricService {
       }
 
       let thresholdEvaluation: string | null = null;
-      if (row.value !== null) {
+      let error: string | undefined;
+      if (row.value !== null && thresholds) {
         try {
           thresholdEvaluation =
             this.thresholdEvaluator.getFirstMatchingThreshold(
@@ -264,11 +271,10 @@ export class CatalogMetricService {
               metric.type,
               thresholds,
             ) ?? null;
-        } catch (error) {
+        } catch (err) {
+          error = stringifyError(err);
           this.logger.warn(
-            `Failed to evaluate thresholds for metric '${
-              metric.id
-            }' on entity '${entityRef}': ${stringifyError(error)}`,
+            `Failed to evaluate thresholds for metric '${metric.id}' on entity '${entityRef}': ${error}`,
           );
         }
       }
@@ -277,6 +283,7 @@ export class CatalogMetricService {
         value: row.value,
         timestamp: row.timestamp.toISOString(),
         thresholdEvaluation,
+        ...(error ? { error } : {}),
       };
     });
 
@@ -293,7 +300,8 @@ export class CatalogMetricService {
         defaultVisualization: metric.defaultVisualization,
         collectorIds: metric.collectorIds,
       },
-      thresholds,
+      ...(thresholds ? { thresholds } : {}),
+      ...(thresholdsError ? { thresholdsError } : {}),
     };
   }
 

@@ -198,7 +198,8 @@ export type MetricTimeSeriesResponse = {
     defaultVisualization?: ScorecardVisualizationType;
     collectorIds?: string[];
   };
-  thresholds: ThresholdConfig;
+  thresholds?: ThresholdConfig;
+  thresholdsError?: string;
 };
 
 // @public (undocumented)
