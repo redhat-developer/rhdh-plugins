@@ -41,3 +41,7 @@
 {"ts":"2026-09-14T17:07:47Z","phase":"any","event":"skill.invoked","name":"openspec-continue-change"}
 {"ts":"2026-09-14T17:07:51Z","phase":"authoring","event":"artifact.revised","ref":"proposal.md","input":"Revise ingestion non-goal to name mcp-registry-provider as the owner","output":"Proposal Non-goals now points ingestion/runtime at sibling mcp-registry-provider"}
 {"ts":"2026-09-14T17:07:51Z","phase":"any","event":"turn.end","output":"Revised proposal.md ingestion non-goal to name mcp-registry-provider; all artifacts still complete"}
+{"ts":"2026-09-14T17:17:16Z","phase":"any","event":"turn.start","input":"Continue mapping: hash metadata.name when sanitization mutates identity or the value is truncated"}
+{"ts":"2026-09-14T17:17:16Z","phase":"any","event":"skill.invoked","name":"openspec-continue-change"}
+{"ts":"2026-09-14T17:18:11Z","phase":"authoring","event":"artifact.revised","ref":"specs/mcp-registry-server-mapping/spec.md, design.md, tasks.md","input":"Hash metadata.name when sanitization changes identity or the value is truncated","output":"Per-input hash on lossy sanitization or truncation; no two-document collision WHEN"}
+{"ts":"2026-09-14T17:18:11Z","phase":"any","event":"turn.end","output":"Identity hash is per-input: sanitization mutated the identity or truncated over-length names"}
