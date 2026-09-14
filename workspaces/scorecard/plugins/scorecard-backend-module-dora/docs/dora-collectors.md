@@ -150,7 +150,7 @@ scorecard:
     dora:
       collectors:
         incidents:
-          id: github:incidents
+          id: jira:incidents
 ```
 
 Override Jira issue type:

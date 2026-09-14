@@ -35,6 +35,6 @@ Configure thresholds via:
 Median Lead Time for Changes requires following collectors to gather necessary data for calculation:
 
 - `deployments`: for deployment data
-- `incidents`: for incidents data
+- `deploymentPullRequests`: for pull requests linked to deployments
 
 For detailed information on configuring these collectors, or for creating custom collectors tailored to your specific setup, see [app configuration](../../README.md#app-configuration) and [collectors.md](../dora-collectors.md).
