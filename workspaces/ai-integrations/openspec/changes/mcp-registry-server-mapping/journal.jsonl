@@ -37,3 +37,7 @@
 {"ts":"2026-09-14T15:59:58Z","phase":"any","event":"agent.spawned","kind":"audit","count":"1"}
 {"ts":"2026-09-14T16:09:46Z","phase":"authoring","event":"artifact.revised","ref":"proposal.md","input":"Pass-3 autofix: modelcontextprotocol.io/name and /version are annotations not fields","output":"Proposal now calls dedicated name/version annotations, matching D4"}
 {"ts":"2026-09-14T16:09:46Z","phase":"any","event":"turn.end","output":"Audit clean (no CRITICAL). 5 WARNING, 8 SUGGESTION. Autofix batches applied; remaining findings are judgment calls."}
+{"ts":"2026-09-14T17:07:47Z","phase":"any","event":"turn.start","input":"Continue mcp-registry-server-mapping; name mcp-registry-provider as owner of ingestion non-goal in proposal.md:29"}
+{"ts":"2026-09-14T17:07:47Z","phase":"any","event":"skill.invoked","name":"openspec-continue-change"}
+{"ts":"2026-09-14T17:07:51Z","phase":"authoring","event":"artifact.revised","ref":"proposal.md","input":"Revise ingestion non-goal to name mcp-registry-provider as the owner","output":"Proposal Non-goals now points ingestion/runtime at sibling mcp-registry-provider"}
+{"ts":"2026-09-14T17:07:51Z","phase":"any","event":"turn.end","output":"Revised proposal.md ingestion non-goal to name mcp-registry-provider; all artifacts still complete"}

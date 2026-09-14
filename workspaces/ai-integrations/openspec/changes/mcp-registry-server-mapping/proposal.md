@@ -26,7 +26,7 @@ _(none — no long-lived specs exist under `openspec/specs/` yet; this change in
 
 ## Non-goals
 
-- **Ingestion / runtime.** No registry HTTP client, polling schedule, catalog entity provider/processor, or entity lifecycle management. This change defines the pure `server.json` → entity transform only; the component that fetches entries and applies the mapping is a separate future change.
+- **Ingestion / runtime.** No registry HTTP client, polling schedule, catalog entity provider/processor, or entity lifecycle management. This change defines the pure `server.json` → entity transform only; fetching entries and applying the mapping is owned by [`mcp-registry-provider`](../mcp-registry-provider/).
 - **Modifying the upstream `mcp-server` `API` entity contract.** This change consumes that contract as defined in [`backstage/backstage`](https://github.com/backstage/backstage); it does not change `spec.type: mcp-server` recognition, validation, or page rendering. Changes to the entity contract are owned upstream (Backstage RFC [#32062](https://github.com/backstage/backstage/issues/32062)), not made here.
 - **Reverse mapping** (entity → `server.json`) beyond the scalar round-trip fidelity guarantee needed to avoid data loss.
 - **Runtime invocation / health checking** of the mapped MCP servers.
