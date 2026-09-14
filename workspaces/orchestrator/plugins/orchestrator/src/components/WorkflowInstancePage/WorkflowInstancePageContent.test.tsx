@@ -16,13 +16,20 @@
 
 import '@testing-library/jest-dom';
 
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 import { ProcessInstanceDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
 import { WorkflowInstancePageContent } from './WorkflowInstancePageContent';
 
 let cardHeightMode: 'fixed' | 'content' = 'fixed';
+let mockWorkflowAdminAllowed = false;
+let mockInstanceAdminAllowed = false;
+let mockAsyncValues: Array<{
+  value?: unknown;
+  loading?: boolean;
+  error?: Error;
+}> = [];
 
 const mockOrchestratorApi = {
   getWorkflowDataInputSchema: jest.fn(),
@@ -35,10 +42,12 @@ jest.mock('@backstage/core-components', () => {
     children,
     className,
     cardClassName,
+    title,
   }: {
     children?: unknown;
     className?: string;
     cardClassName?: string;
+    title?: unknown;
   }) =>
     React.createElement(
       'div',
@@ -47,6 +56,7 @@ jest.mock('@backstage/core-components', () => {
         className,
         'data-card-class': cardClassName,
       },
+      title,
       children,
     );
 
@@ -54,8 +64,13 @@ jest.mock('@backstage/core-components', () => {
     Content: ({ children }: { children?: unknown }) =>
       React.createElement('div', null, children),
     InfoCard: WorkflowCard,
-    Link: ({ children }: { children?: unknown }) =>
-      React.createElement('a', { href: '#' }, children),
+    Link: ({
+      children,
+      onClick,
+    }: {
+      children?: unknown;
+      onClick?: () => void;
+    }) => React.createElement('a', { href: '#', onClick }, children),
   };
 });
 
@@ -65,11 +80,24 @@ jest.mock('@backstage/core-plugin-api', () => ({
 }));
 
 jest.mock('@backstage/plugin-permission-react', () => ({
-  usePermission: () => ({ allowed: false, loading: false }),
+  usePermission: ({ permission }: { permission: { name: string } }) => {
+    let allowed = false;
+    if (permission.name === 'orchestrator.workflowAdminView') {
+      allowed = mockWorkflowAdminAllowed;
+    } else if (permission.name === 'orchestrator.instanceAdminView') {
+      allowed = mockInstanceAdminAllowed;
+    }
+    return { allowed, loading: false };
+  },
 }));
 
 jest.mock('react-use', () => ({
-  useAsync: () => ({ value: undefined, loading: false, error: undefined }),
+  useAsync: () =>
+    mockAsyncValues.shift() ?? {
+      value: undefined,
+      loading: false,
+      error: undefined,
+    },
 }));
 
 jest.mock('tss-react/mui', () => ({
@@ -100,9 +128,32 @@ jest.mock('../../hooks/useWorkflowInstanceCardHeightMode', () => ({
   useWorkflowInstanceCardHeightMode: () => cardHeightMode,
 }));
 
-jest.mock('./VariablesDialog', () => ({
-  VariablesDialog: () => null,
-}));
+jest.mock('./VariablesDialog', () => {
+  const React = require('react');
+  return {
+    VariablesDialog: ({
+      open,
+      onClose,
+      instanceVariables,
+    }: {
+      open: boolean;
+      onClose: () => void;
+      instanceVariables: Record<string, unknown>;
+    }) =>
+      open
+        ? React.createElement(
+            'div',
+            { role: 'dialog' },
+            Object.keys(instanceVariables).join(', '),
+            React.createElement(
+              'button',
+              { type: 'button', onClick: onClose },
+              'close',
+            ),
+          )
+        : null,
+  };
+});
 
 jest.mock('./WorkflowInputs', () => {
   const React = require('react');
@@ -110,15 +161,21 @@ jest.mock('./WorkflowInputs', () => {
     WorkflowInputs: ({
       className,
       cardClassName,
+      value,
     }: {
       className: string;
       cardClassName: string;
+      value?: { data?: unknown };
     }) =>
-      React.createElement('div', {
-        'data-testid': 'workflow-card',
-        className,
-        'data-card-class': cardClassName,
-      }),
+      React.createElement(
+        'div',
+        {
+          'data-testid': 'workflow-card',
+          className,
+          'data-card-class': cardClassName,
+        },
+        JSON.stringify(value?.data),
+      ),
   };
 });
 
@@ -145,7 +202,13 @@ jest.mock('./WorkflowResult', () => {
 });
 
 jest.mock('./WorkflowRunDetails', () => ({
-  WorkflowRunDetails: () => null,
+  WorkflowRunDetails: ({
+    details,
+  }: {
+    details: { initiatorEntity?: string };
+  }) => (
+    <span data-testid="workflow-run-details">{details.initiatorEntity}</span>
+  ),
 }));
 
 const instance = {
@@ -155,9 +218,23 @@ const instance = {
   nodes: [],
 } as ProcessInstanceDTO;
 
+const instanceWithVariables = {
+  ...instance,
+  initiatorEntity: 'user:default/alice',
+  workflowdata: {
+    input: 'Alice',
+  },
+} as ProcessInstanceDTO;
+
 describe('WorkflowInstancePageContent', () => {
   beforeEach(() => {
     cardHeightMode = 'fixed';
+    mockWorkflowAdminAllowed = false;
+    mockInstanceAdminAllowed = false;
+    mockAsyncValues = [
+      { value: undefined, loading: false, error: undefined },
+      { value: undefined, loading: false, error: undefined },
+    ];
     mockOrchestratorApi.getWorkflowDataInputSchema.mockResolvedValue({
       data: undefined,
     });
@@ -205,5 +282,47 @@ describe('WorkflowInstancePageContent', () => {
       expect(card).not.toHaveClass('content-mode-card');
       expect(card).toHaveAttribute('data-card-class', 'card-overflow');
     });
+  });
+
+  it.each([
+    ['workflow admins', 'workflow'],
+    ['instance admins', 'instance'],
+  ])('passes instance data and opens variables for %s', (_label, adminType) => {
+    if (adminType === 'workflow') {
+      mockWorkflowAdminAllowed = true;
+    } else {
+      mockInstanceAdminAllowed = true;
+    }
+    mockAsyncValues = [
+      {
+        value: { data: { customer: 'Alice' } },
+        loading: false,
+        error: undefined,
+      },
+      { value: 'states: []', loading: false, error: undefined },
+    ];
+
+    render(<WorkflowInstancePageContent instance={instanceWithVariables} />);
+
+    expect(screen.getByTestId('workflow-run-details')).toHaveTextContent(
+      'user:default/alice',
+    );
+    expect(
+      screen
+        .getAllByTestId('workflow-card')
+        .some(card => card.textContent?.includes('{"customer":"Alice"}')),
+    ).toBe(true);
+
+    fireEvent.click(screen.getByRole('link', { name: 'run.viewVariables' }));
+
+    expect(screen.getByRole('dialog')).toHaveTextContent('input');
+  });
+
+  it('hides variables from non-admin users', () => {
+    render(<WorkflowInstancePageContent instance={instanceWithVariables} />);
+
+    expect(
+      screen.queryByRole('link', { name: 'run.viewVariables' }),
+    ).not.toBeInTheDocument();
   });
 });
