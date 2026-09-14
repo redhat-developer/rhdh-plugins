@@ -21,11 +21,12 @@ export const DORA_DEFAULT_INCIDENTS_COLLECTOR_ID = 'jira:incidents';
 export const DORA_TIME_WINDOW_DAYS = 30;
 export const DORA_DEFAULT_PRODUCTION_ENVIRONMENTS = ['production'];
 
+export const DORA_PLUGIN_CONFIG_PATH = 'scorecard.plugins.dora';
+
 /**
  * Default for how long DORA source rows (deployments, incidents, and PRs linked to expired
- * deployments) are kept before cleanup. Must stay at least
- * {@link DORA_TIME_WINDOW_DAYS}. Overridable via
- * `scorecard.plugins.dora.dataRetentionDays`.
+ * deployments) are kept before cleanup. Must be at least {@link DORA_TIME_WINDOW_DAYS}.
+ * Overridable via `scorecard.plugins.dora.dataRetentionDays`.
  */
 export const DORA_DEFAULT_DATA_RETENTION_DAYS = 365;
 

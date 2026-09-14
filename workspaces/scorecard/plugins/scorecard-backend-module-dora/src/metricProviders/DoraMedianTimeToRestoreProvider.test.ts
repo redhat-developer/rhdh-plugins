@@ -105,17 +105,13 @@ describe('DoraMedianTimeToRestoreProvider', () => {
       const customProvider = DoraMedianTimeToRestoreProvider.fromConfig(
         new ConfigReader({
           scorecard: {
-            metricProviders: {
+            plugins: {
               dora: {
-                medianTimeToRestore: {
-                  options: {
-                    collectors: {
-                      incidents: {
-                        id: customIncidentsCollectorId,
-                        input: {
-                          customIncidentsInputLabel: 'incidents-custom-input',
-                        },
-                      },
+                collectors: {
+                  incidents: {
+                    id: customIncidentsCollectorId,
+                    input: {
+                      customIncidentsInputLabel: 'incidents-custom-input',
                     },
                   },
                 },

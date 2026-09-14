@@ -25,6 +25,7 @@ import {
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
   DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
   DORA_DEFAULT_STALE_AFTER_MS,
+  DORA_PLUGIN_CONFIG_PATH,
   DORA_TIME_WINDOW_DAYS,
 } from '../constants';
 import {
@@ -34,12 +35,37 @@ import {
   parseDoraDeploymentFrequencyConfig,
   parseDoraMedianLeadTimeForChangesConfig,
   parseDoraMedianTimeToRestoreConfig,
+  parseDoraSharedProviderConfig,
   parseDoraSyncConfig,
 } from './DoraConfig';
 import { collectorInputHash } from '../service/collectorHash';
 import { EMPTY_INPUT_HASH } from '../database/__fixtures__';
 
 describe('DoraConfig', () => {
+  const customDoraPluginConfig = {
+    scorecard: {
+      plugins: {
+        dora: {
+          productionEnvironments: ['prod', 'live'],
+          collectors: {
+            deployments: {
+              id: 'custom:deployments',
+              input: { workflowName: 'Deploy' },
+            },
+            deploymentPullRequests: {
+              id: 'custom:deploymentPrs',
+              input: { label: 'prs' },
+            },
+            incidents: {
+              id: 'custom:incidents',
+              input: { project: 'OPS' },
+            },
+          },
+        },
+      },
+    },
+  };
+
   describe('parseCollectorConfig', () => {
     const exampleCollectorConfigPath = 'collectors.test';
     const exampleCollectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
@@ -132,10 +158,10 @@ describe('DoraConfig', () => {
     });
   });
 
-  describe('parseDoraDeploymentFrequencyConfig', () => {
+  describe('parseDoraSharedProviderConfig', () => {
     it('returns defaults when unset', () => {
       expect(
-        parseDoraDeploymentFrequencyConfig(
+        parseDoraSharedProviderConfig(
           mockServices.rootConfig({
             data: {},
           }),
@@ -146,79 +172,8 @@ describe('DoraConfig', () => {
           input: {},
           inputHash: EMPTY_INPUT_HASH,
         },
-        productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
-      });
-    });
-
-    it('parses collectors and productionEnvironments', () => {
-      expect(
-        parseDoraDeploymentFrequencyConfig(
-          mockServices.rootConfig({
-            data: {
-              scorecard: {
-                metricProviders: {
-                  dora: {
-                    deploymentFrequency: {
-                      options: {
-                        productionEnvironments: ['prod', 'live'],
-                        collectors: {
-                          deployments: {
-                            id: 'custom:deployments',
-                            input: { workflowName: 'Deploy' },
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          }),
-        ),
-      ).toEqual({
-        deploymentsCollector: {
-          id: 'custom:deployments',
-          input: { workflowName: 'Deploy' },
-          inputHash: collectorInputHash({ workflowName: 'Deploy' }),
-        },
-        productionEnvironments: ['prod', 'live'],
-      });
-    });
-
-    it('falls back to default productionEnvironments when empty', () => {
-      expect(
-        parseDoraDeploymentFrequencyConfig(
-          mockServices.rootConfig({
-            data: {
-              scorecard: {
-                metricProviders: {
-                  dora: {
-                    deploymentFrequency: {
-                      options: {
-                        productionEnvironments: [],
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          }),
-        ).productionEnvironments,
-      ).toEqual(DORA_DEFAULT_PRODUCTION_ENVIRONMENTS);
-    });
-  });
-
-  describe('parseDoraMedianLeadTimeForChangesConfig', () => {
-    it('returns defaults when unset', () => {
-      expect(
-        parseDoraMedianLeadTimeForChangesConfig(
-          mockServices.rootConfig({
-            data: {},
-          }),
-        ),
-      ).toEqual({
-        deploymentsCollector: {
-          id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+        incidentsCollector: {
+          id: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
           input: {},
           inputHash: EMPTY_INPUT_HASH,
         },
@@ -231,90 +186,101 @@ describe('DoraConfig', () => {
       });
     });
 
-    it('parses collectors and productionEnvironments', () => {
+    it(`parses collectors and productionEnvironments from ${DORA_PLUGIN_CONFIG_PATH}`, () => {
       expect(
-        parseDoraMedianLeadTimeForChangesConfig(
+        parseDoraSharedProviderConfig(
           mockServices.rootConfig({
-            data: {
-              scorecard: {
-                metricProviders: {
-                  dora: {
-                    medianLeadTimeForChanges: {
-                      options: {
-                        productionEnvironments: ['prod'],
-                        collectors: {
-                          deployments: {
-                            id: 'custom:deployments',
-                            input: { flag: true },
-                          },
-                          deploymentPullRequests: {
-                            id: 'custom:deployment-prs',
-                            input: { label: 'prs' },
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
+            data: customDoraPluginConfig,
           }),
         ),
       ).toEqual({
         deploymentsCollector: {
           id: 'custom:deployments',
-          input: { flag: true },
-          inputHash: collectorInputHash({ flag: true }),
+          input: { workflowName: 'Deploy' },
+          inputHash: collectorInputHash({ workflowName: 'Deploy' }),
         },
         deploymentPullRequestsCollector: {
-          id: 'custom:deployment-prs',
+          id: 'custom:deploymentPrs',
           input: { label: 'prs' },
           inputHash: collectorInputHash({ label: 'prs' }),
         },
-        productionEnvironments: ['prod'],
+        incidentsCollector: {
+          id: 'custom:incidents',
+          input: { project: 'OPS' },
+          inputHash: collectorInputHash({ project: 'OPS' }),
+        },
+        productionEnvironments: ['prod', 'live'],
+      });
+    });
+
+    it('falls back to default productionEnvironments when empty', () => {
+      expect(
+        parseDoraSharedProviderConfig(
+          mockServices.rootConfig({
+            data: {
+              scorecard: {
+                plugins: {
+                  dora: {
+                    productionEnvironments: [],
+                  },
+                },
+              },
+            },
+          }),
+        ).productionEnvironments,
+      ).toEqual(DORA_DEFAULT_PRODUCTION_ENVIRONMENTS);
+    });
+  });
+
+  describe('parseDoraDeploymentFrequencyConfig', () => {
+    it('parses deployment frequency config', () => {
+      expect(
+        parseDoraDeploymentFrequencyConfig(
+          mockServices.rootConfig({
+            data: customDoraPluginConfig,
+          }),
+        ),
+      ).toEqual({
+        deploymentsCollector: {
+          id: 'custom:deployments',
+          input: { workflowName: 'Deploy' },
+          inputHash: collectorInputHash({ workflowName: 'Deploy' }),
+        },
+        productionEnvironments: ['prod', 'live'],
+      });
+    });
+  });
+
+  describe('parseDoraMedianLeadTimeForChangesConfig', () => {
+    it('parses median lead time for changes config', () => {
+      expect(
+        parseDoraMedianLeadTimeForChangesConfig(
+          mockServices.rootConfig({
+            data: customDoraPluginConfig,
+          }),
+        ),
+      ).toEqual({
+        deploymentsCollector: {
+          id: 'custom:deployments',
+          input: { workflowName: 'Deploy' },
+          inputHash: collectorInputHash({ workflowName: 'Deploy' }),
+        },
+        deploymentPullRequestsCollector: {
+          id: 'custom:deploymentPrs',
+          input: { label: 'prs' },
+          inputHash: collectorInputHash({ label: 'prs' }),
+        },
+        productionEnvironments: ['prod', 'live'],
       });
     });
   });
 
   describe('parseDoraMedianTimeToRestoreConfig', () => {
-    it('returns defaults when unset', () => {
+    it('parses median time to restore config', () => {
       expect(
         parseDoraMedianTimeToRestoreConfig(
           mockServices.rootConfig({
-            data: {},
-          }),
-        ),
-      ).toEqual({
-        incidentsCollector: {
-          id: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
-          input: {},
-          inputHash: EMPTY_INPUT_HASH,
-        },
-      });
-    });
-
-    it('parses incidents collector', () => {
-      expect(
-        parseDoraMedianTimeToRestoreConfig(
-          mockServices.rootConfig({
-            data: {
-              scorecard: {
-                metricProviders: {
-                  dora: {
-                    medianTimeToRestore: {
-                      options: {
-                        collectors: {
-                          incidents: {
-                            id: 'custom:incidents',
-                            input: { project: 'OPS' },
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
+            data: customDoraPluginConfig,
           }),
         ),
       ).toEqual({
@@ -328,55 +294,11 @@ describe('DoraConfig', () => {
   });
 
   describe('parseDoraChangeFailureRateConfig', () => {
-    it('returns defaults when unset', () => {
+    it('parses change failure rate config', () => {
       expect(
         parseDoraChangeFailureRateConfig(
           mockServices.rootConfig({
-            data: {},
-          }),
-        ),
-      ).toEqual({
-        deploymentsCollector: {
-          id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
-          input: {},
-          inputHash: EMPTY_INPUT_HASH,
-        },
-        incidentsCollector: {
-          id: DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
-          input: {},
-          inputHash: EMPTY_INPUT_HASH,
-        },
-        productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
-      });
-    });
-
-    it('parses collectors and productionEnvironments', () => {
-      expect(
-        parseDoraChangeFailureRateConfig(
-          mockServices.rootConfig({
-            data: {
-              scorecard: {
-                metricProviders: {
-                  dora: {
-                    changeFailureRate: {
-                      options: {
-                        productionEnvironments: ['prod', 'live'],
-                        collectors: {
-                          deployments: {
-                            id: 'custom:deployments',
-                            input: { workflowName: 'Deploy' },
-                          },
-                          incidents: {
-                            id: 'custom:incidents',
-                            input: { project: 'OPS' },
-                          },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
+            data: customDoraPluginConfig,
           }),
         ),
       ).toEqual({
@@ -440,7 +362,7 @@ describe('DoraConfig', () => {
           }),
         ),
       ).toThrow(
-        `scorecard.plugins.dora.dataRetentionDays must be greater than or equal to ${DORA_TIME_WINDOW_DAYS}`,
+        `${DORA_PLUGIN_CONFIG_PATH}.dataRetentionDays must be greater than or equal to ${DORA_TIME_WINDOW_DAYS}`,
       );
     });
 
@@ -542,7 +464,7 @@ describe('DoraConfig', () => {
           }),
         ),
       ).toThrow(
-        'scorecard.plugins.dora.staleAfterMs must be greater than or equal to 0',
+        `${DORA_PLUGIN_CONFIG_PATH}.staleAfterMs must be greater than or equal to 0`,
       );
     });
 
@@ -562,7 +484,7 @@ describe('DoraConfig', () => {
           }),
         ),
       ).toThrow(
-        'scorecard.plugins.dora.deploymentLookbackMs must be greater than or equal to 0',
+        `${DORA_PLUGIN_CONFIG_PATH}.deploymentLookbackMs must be greater than or equal to 0`,
       );
     });
 
@@ -603,7 +525,7 @@ describe('DoraConfig', () => {
           }),
         ),
       ).toThrow(
-        `scorecard.plugins.dora.deploymentLookbackMs must be less than or equal to the DORA metric computation window (${DORA_TIME_WINDOW_DAYS} days)`,
+        `${DORA_PLUGIN_CONFIG_PATH}.deploymentLookbackMs must be less than or equal to the DORA metric computation window (${DORA_TIME_WINDOW_DAYS} days)`,
       );
     });
 
@@ -623,7 +545,7 @@ describe('DoraConfig', () => {
           }),
         ),
       ).toThrow(
-        'scorecard.plugins.dora.incidentLookbackMs must be greater than or equal to 0',
+        `${DORA_PLUGIN_CONFIG_PATH}.incidentLookbackMs must be greater than or equal to 0`,
       );
     });
 
@@ -664,7 +586,7 @@ describe('DoraConfig', () => {
           }),
         ),
       ).toThrow(
-        `scorecard.plugins.dora.incidentLookbackMs must be less than or equal to the DORA metric computation window (${DORA_TIME_WINDOW_DAYS} days)`,
+        `${DORA_PLUGIN_CONFIG_PATH}.incidentLookbackMs must be less than or equal to the DORA metric computation window (${DORA_TIME_WINDOW_DAYS} days)`,
       );
     });
   });
