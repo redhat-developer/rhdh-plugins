@@ -32,4 +32,4 @@
 
 ### SUGGESTION
 
-- None
+- **[G]** [`openspec/changes/mcp-registry-provider/design.md:83`](design.md#L83) — “max-pages / max-total bound” has no concrete value or configuration source, while the open question defers those bounds. Specify deterministic defaults (and their precedence if configurable) so implementations and tests cannot choose incompatible safeguards.
