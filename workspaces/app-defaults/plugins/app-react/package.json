@@ -8,16 +8,12 @@
   "exports": {
     ".": "./src/index.ts",
     "./legacy": "./src/legacy/index.ts",
-    "./app-drawer-module": "./src/appDrawerModuleExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "legacy": [
         "src/legacy/index.ts"
-      ],
-      "app-drawer-module": [
-        "src/appDrawerModuleExport.ts"
       ],
       "package.json": [
         "package.json"

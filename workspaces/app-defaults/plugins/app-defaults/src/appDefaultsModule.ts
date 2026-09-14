@@ -16,11 +16,9 @@
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
-import {
-  appDrawerExtension,
-  templateCardExtension,
-} from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { templateCardExtension } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
+import { appDrawerExtension } from './drawer/appDrawerModule';
 import { commonIconsExtension } from './icons/commonIconsExtension';
 import { appDefaultsTranslations } from './translations';
 
