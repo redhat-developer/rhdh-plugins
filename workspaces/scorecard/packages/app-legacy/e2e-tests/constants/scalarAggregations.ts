@@ -31,7 +31,7 @@ export const SCALAR_AGGREGATION_KPI_WIDGET_TITLES = {
   minOpenPrs: 'Scorecard: Minimum open PRs',
 } as const;
 
-export const SCALAR_AGGREGATION_KPIS = {
+export const SCALAR_AGGREGATION_CARDS_METADATA = {
   totalOpenBugs: {
     id: SCALAR_AGGREGATION_KPI_IDS.totalOpenBugs,
     title: SCALAR_AGGREGATION_KPI_WIDGET_TITLES.totalOpenBugs,

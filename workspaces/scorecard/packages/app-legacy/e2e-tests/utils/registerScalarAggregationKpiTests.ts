@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-import { test, expect, Page, Locator } from '@playwright/test';
-import type { HomePage } from '../pages/HomePage';
-import type { ScorecardDrillDownPage } from '../pages/ScorecardDrillDownPage';
+import { test, expect, Locator } from '@playwright/test';
 import {
   formatLastUpdatedDate,
   getScalarCardSnapshot,
-  ScorecardMessages,
 } from './translationUtils';
+import type { HomepageAggregationKpiTestContext } from './homepageAggregationKpiTestContext';
 import { setupHomepageAggregationCard } from './homepageWidgetUtils';
 import { runAccessibilityTests } from './accessibility';
 import type { ScalarAggregationType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -55,17 +53,9 @@ type ScalarAggregationKpiTestConfig = {
   runAccessibility?: boolean;
 };
 
-type ScalarAggregationKpiTestContext = {
-  page: Page;
-  homePage: HomePage;
-  scorecardDrillDownPage: ScorecardDrillDownPage;
-  translations: ScorecardMessages;
-  currentLocale: string;
-};
-
 export function registerScalarAggregationKpiTests(
   config: ScalarAggregationKpiTestConfig,
-  getContext: () => ScalarAggregationKpiTestContext,
+  getContext: () => HomepageAggregationKpiTestContext,
 ): void {
   const {
     type,

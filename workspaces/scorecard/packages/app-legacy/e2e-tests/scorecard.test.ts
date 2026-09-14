@@ -105,7 +105,7 @@ import {
   AGGREGATED_CARDS_METADATA,
   AGGREGATED_CARDS_METRIC_IDS,
 } from './constants/aggregations';
-import { SCALAR_AGGREGATION_KPIS } from './constants/scalarAggregations';
+import { SCALAR_AGGREGATION_CARDS_METADATA } from './constants/scalarAggregations';
 import { registerScalarAggregationKpiTests } from './utils/registerScalarAggregationKpiTests';
 import { registerStatusGroupedAggregationKpiTests } from './utils/registerStatusGroupedAggregationKpiTests';
 import { installWebpackDevOverlayGuards } from './utils/devOverlays';
@@ -759,7 +759,7 @@ test.describe('Scorecard Plugin Tests', () => {
     registerScalarAggregationKpiTests(
       {
         type: 'sum',
-        aggregationMetadata: SCALAR_AGGREGATION_KPIS.totalOpenBugs,
+        aggregationMetadata: SCALAR_AGGREGATION_CARDS_METADATA.totalOpenBugs,
         route: ScorecardRoutes.TOTAL_OPEN_BUGS_AGGREGATION_ROUTE,
         aggregatedResponse: totalOpenBugsAggregatedResponse,
         partialResponse: totalOpenBugsPartiallyAggregatedResponse,
@@ -771,7 +771,7 @@ test.describe('Scorecard Plugin Tests', () => {
     registerScalarAggregationKpiTests(
       {
         type: 'average',
-        aggregationMetadata: SCALAR_AGGREGATION_KPIS.avgOpenPrs,
+        aggregationMetadata: SCALAR_AGGREGATION_CARDS_METADATA.avgOpenPrs,
         route: ScorecardRoutes.AVG_OPEN_PRS_AGGREGATION_ROUTE,
         aggregatedResponse: avgOpenPrsAggregatedResponse,
         partialResponse: avgOpenPrsPartiallyAggregatedResponse,
@@ -782,7 +782,8 @@ test.describe('Scorecard Plugin Tests', () => {
     registerScalarAggregationKpiTests(
       {
         type: 'count',
-        aggregationMetadata: SCALAR_AGGREGATION_KPIS.entitiesWithOpenPrs,
+        aggregationMetadata:
+          SCALAR_AGGREGATION_CARDS_METADATA.entitiesWithOpenPrs,
         route: ScorecardRoutes.ENTITIES_WITH_OPEN_PRS_AGGREGATION_ROUTE,
         aggregatedResponse: entitiesWithOpenPrsAggregatedResponse,
         partialResponse: entitiesWithOpenPrsPartiallyAggregatedResponse,
@@ -793,7 +794,7 @@ test.describe('Scorecard Plugin Tests', () => {
     registerScalarAggregationKpiTests(
       {
         type: 'max',
-        aggregationMetadata: SCALAR_AGGREGATION_KPIS.maxOpenPrs,
+        aggregationMetadata: SCALAR_AGGREGATION_CARDS_METADATA.maxOpenPrs,
         route: ScorecardRoutes.MAX_OPEN_PRS_AGGREGATION_ROUTE,
         aggregatedResponse: maxOpenPrsAggregatedResponse,
         partialResponse: maxOpenPrsPartiallyAggregatedResponse,
@@ -804,7 +805,7 @@ test.describe('Scorecard Plugin Tests', () => {
     registerScalarAggregationKpiTests(
       {
         type: 'min',
-        aggregationMetadata: SCALAR_AGGREGATION_KPIS.minOpenPrs,
+        aggregationMetadata: SCALAR_AGGREGATION_CARDS_METADATA.minOpenPrs,
         route: ScorecardRoutes.MIN_OPEN_PRS_AGGREGATION_ROUTE,
         aggregatedResponse: minOpenPrsAggregatedResponse,
         partialResponse: minOpenPrsPartiallyAggregatedResponse,

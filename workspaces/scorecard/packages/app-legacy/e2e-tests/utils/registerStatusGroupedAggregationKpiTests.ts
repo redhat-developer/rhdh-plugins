@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-import { test, expect, Page, Locator } from '@playwright/test';
-import type { HomePage } from '../pages/HomePage';
-import type { ScorecardDrillDownPage } from '../pages/ScorecardDrillDownPage';
+import { test, expect, Locator } from '@playwright/test';
 import {
   evaluateMessage,
   formatLastUpdatedDate,
   getStatusGroupedCardSnapshot,
   ScorecardMessages,
 } from './translationUtils';
+import type { HomepageAggregationKpiTestContext } from './homepageAggregationKpiTestContext';
 import { setupHomepageAggregationCard } from './homepageWidgetUtils';
 import { runAccessibilityTests } from './accessibility';
 
@@ -68,14 +67,6 @@ type StatusGroupedAggregationKpiTestConfig = {
     result: { entitiesConsidered: number; calculationErrorCount: number };
   };
   runAccessibility?: boolean;
-};
-
-type HomepageAggregationKpiTestContext = {
-  page: Page;
-  homePage: HomePage;
-  scorecardDrillDownPage: ScorecardDrillDownPage;
-  translations: ScorecardMessages;
-  currentLocale: string;
 };
 
 function resolveCardLabels(
