@@ -29,6 +29,10 @@ import {
 import { AngleDownIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
+import {
+  LIGHTSPEED_MESSAGE_BAR_MODEL_SELECTOR_CLASS,
+  messageBarModelSelectorToggleCss,
+} from './PlainIconButton';
 
 type MessageBarModelSelectorProps = {
   selectedModel: string;
@@ -38,26 +42,24 @@ type MessageBarModelSelectorProps = {
   disabledTooltip?: string;
 };
 
-const SelectorToggle = styled(MenuToggle)(({ theme }) => ({
-  display: 'flex',
+const SelectorRoot = styled('span')({
+  display: 'inline-flex',
   alignItems: 'center',
-  gap: 4,
-  color: theme.palette.text.secondary,
+  flexShrink: 0,
+  maxWidth: '100%',
+});
+
+const SelectorToggle = styled(MenuToggle)({
+  '&&': messageBarModelSelectorToggleCss,
+  color: 'var(--pf-t--global--text--color--subtle)',
   fontSize: 14,
   fontWeight: 500,
   cursor: 'pointer',
-  padding: '4px 8px',
-  borderRadius: 8,
-  border: 'none',
-  background: 'transparent',
-  '&:hover': {
-    backgroundColor: theme.palette.action.hover,
-  },
   '&:disabled': {
     cursor: 'not-allowed',
     opacity: 0.5,
   },
-}));
+});
 
 const StyledDropdown = styled(Dropdown)({
   '& ul, & li': {
@@ -129,13 +131,19 @@ export const MessageBarModelSelector = ({
     </StyledDropdown>
   );
 
+  const content = (
+    <SelectorRoot className={LIGHTSPEED_MESSAGE_BAR_MODEL_SELECTOR_CLASS}>
+      {dropdown}
+    </SelectorRoot>
+  );
+
   if (disabled && disabledTooltip) {
     return (
       <Tooltip content={disabledTooltip}>
-        <Typography component="span">{dropdown}</Typography>
+        <Typography component="span">{content}</Typography>
       </Tooltip>
     );
   }
 
-  return dropdown;
+  return content;
 };

@@ -1266,11 +1266,11 @@ describe('LightspeedChat', () => {
         screen.getByRole('button', { name: 'New chat' }),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole('button', { name: 'Close drawer panel' }),
+        screen.getByRole('button', { name: 'Collapse chat history' }),
       ).toBeInTheDocument();
     });
 
-    it('should show PenIcon in new chat button in fullscreen mode', async () => {
+    it('should show PencilAltIcon in new chat button in fullscreen mode', async () => {
       mockUseConversations.mockReturnValue({
         data: [
           {

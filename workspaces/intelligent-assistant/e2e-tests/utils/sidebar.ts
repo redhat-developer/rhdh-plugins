@@ -28,7 +28,7 @@ export async function assertChatDialogInitialState(
     name: translations['aria.chatHistoryMenu'],
   });
   const closeDrawerButton = page.getByRole('button', {
-    name: translations['aria.closeDrawerPanel'],
+    name: translations['tooltip.collapseHistoryPanel'],
   });
 
   if (await chatHistoryMenuButton.isVisible().catch(() => false)) {
@@ -92,7 +92,7 @@ export async function closeChatDrawer(
   translations: LightspeedMessages,
 ) {
   const closeButton = page.getByRole('button', {
-    name: translations['aria.closeDrawerPanel'],
+    name: translations['tooltip.collapseHistoryPanel'],
   });
   await closeButton.click();
 }
@@ -102,7 +102,7 @@ export async function openChatDrawer(
   translations: LightspeedMessages,
 ) {
   const closeButton = page.getByRole('button', {
-    name: translations['aria.closeDrawerPanel'],
+    name: translations['tooltip.collapseHistoryPanel'],
   });
   const chatHistoryMenuButton = page.getByRole('button', {
     name: translations['aria.chatHistoryMenu'],
@@ -140,7 +140,7 @@ export async function assertDrawerState(
 
   const checks = [
     page.getByRole('button', {
-      name: translations['aria.closeDrawerPanel'],
+      name: translations['tooltip.collapseHistoryPanel'],
     }),
     page.getByPlaceholder(translations['chatbox.search.placeholder']),
   ];

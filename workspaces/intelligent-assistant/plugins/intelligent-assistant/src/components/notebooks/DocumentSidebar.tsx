@@ -25,7 +25,6 @@ import {
   DropdownList,
   HelperText,
   HelperTextItem,
-  MenuToggle,
   Spinner,
   TextInput,
   Tooltip,
@@ -41,6 +40,10 @@ import { NOTEBOOK_MAX_FILES, NOTEBOOK_MAX_TITLE_LENGTH } from '../../const';
 import { useInlineEdit } from '../../hooks/notebooks/useInlineEdit';
 import { useTranslation } from '../../hooks/useTranslation';
 import { SessionDocument } from '../../types';
+import {
+  CompactPlainMenuToggle,
+  DrawerCollapseIconButton,
+} from '../PlainIconButton';
 import { FileTypeIcon } from './FileTypeIcon';
 import { SidebarCollapseIcon } from './SidebarCollapseIcon';
 
@@ -92,10 +95,6 @@ const TitleInput = styled(TextInput)({
     padding: '0 4px',
     outline: 'none',
   },
-});
-
-const CollapseButton = styled(Button)({
-  flexShrink: 0,
 });
 
 const DocumentsRow = styled('div')({
@@ -204,8 +203,7 @@ const SpinnerContainer = styled('div')({
   flexShrink: 0,
 });
 
-const KebabToggle = styled(MenuToggle)({
-  padding: 0,
+const KebabToggle = styled(CompactPlainMenuToggle)({
   flexShrink: 0,
   visibility: 'hidden',
 });
@@ -382,13 +380,12 @@ export const DocumentSidebar = ({
           </NotebookTitle>
         )}
         <Tooltip content={t('notebook.view.sidebar.collapse')} position="right">
-          <CollapseButton
+          <DrawerCollapseIconButton
             variant="plain"
+            icon={<SidebarCollapseIcon size={24} />}
             onClick={onToggleCollapse}
             aria-label={t('notebook.view.sidebar.collapse')}
-          >
-            <SidebarCollapseIcon />
-          </CollapseButton>
+          />
         </Tooltip>
       </TitleRow>
 
