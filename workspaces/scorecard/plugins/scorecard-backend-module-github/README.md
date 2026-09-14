@@ -76,9 +76,9 @@ This module registers collectors to collect data from GitHub to be used by compo
 
 - `scorecard-backend-module-dora`:
 
-  - `github:deployments`
-  - `github:deploymentWorkflowRuns`
-  - `github:deploymentPullRequests`
+  - `github:doraDeployments`
+  - `github:doraDeploymentWorkflowRuns`
+  - `github:doraDeploymentPullRequests`
 
 ### Collector contracts
 
@@ -92,7 +92,7 @@ metadata:
     github.com/project-slug: myorg/my-service
 ```
 
-`github:deployments`
+`github:doraDeployments`
 
 - **Input schema**
   - `from: string` (ISO datetime)
@@ -105,7 +105,7 @@ metadata:
   - Records are returned in ascending `createdAt` order (oldest to newest)
   - Client-side fetch cap: at most **1000** deployments are collected per request. Pagination stops once the cap is reached, the cap keeps the most recent in-window runs
 
-`github:deploymentWorkflowRuns`
+`github:doraDeploymentWorkflowRuns`
 
 - **Input schema**
   - `workflowName: string` (non-empty)
@@ -120,7 +120,7 @@ metadata:
   - `workflowName` can match the workflow display name, the full workflow path (for example `.github/workflows/deploy.yml`), or a filename suffix (for example `deploy.yml`)
   - Client-side fetch cap: at most **1000** workflow runs are collected per request. Pagination stops once the cap is reached, the cap keeps the most recent in-window runs
 
-`github:deploymentPullRequests`
+`github:doraDeploymentPullRequests`
 
 - **Input schema**
   - `baseCommitSha: string` (non-empty)

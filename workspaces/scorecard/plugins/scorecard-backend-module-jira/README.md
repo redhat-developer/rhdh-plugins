@@ -193,13 +193,13 @@ This module registers collectors to collect data from Jira to be used by composi
 
 - `scorecard-backend-module-dora`:
 
-  - `jira:incidents`
+  - `jira:doraIncidents`
 
 ### Collector contracts
 
 Collectors in Scorecard are schema-validated at runtime. Any custom collector replacing a Jira collector must return data that conforms to the same contract expected by consumers.
 
-`jira:incidents`
+`jira:doraIncidents`
 
 - **Input schema**
   - `from: string` (ISO datetime)
@@ -222,7 +222,7 @@ Collectors in Scorecard are schema-validated at runtime. Any custom collector re
   - Does not apply the open-issues `mandatoryFilter` / global `customFilter` from app-config
   - Client-side fetch cap: at most **1000** incidents are collected per request. Pagination stops once the cap is reached, the cap keeps the most recent in-window incidents
 
-Example entity annotations for `jira:incidents` collector:
+Example entity annotations for `jira:doraIncidents` collector:
 
 ```yaml
 # catalog-info.yaml
