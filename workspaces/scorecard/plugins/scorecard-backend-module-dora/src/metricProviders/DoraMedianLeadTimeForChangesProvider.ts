@@ -32,6 +32,7 @@ import {
   type DoraMedianLeadTimeForChangesConfig,
 } from './DoraConfig';
 import { calculateMedian } from './utils/calculationUtils';
+import { prependPreWindowDeployment } from './utils/preWindowDeploymentUtils';
 
 type DoraMedianLeadTimeForChangesProviderOptions = {
   doraSyncService: DoraSyncService;
@@ -121,19 +122,30 @@ export class DoraMedianLeadTimeForChangesProvider
     const catalogEntityRef = stringifyEntityRef(entity);
 
     // Deployments are expected to be returned sorted ascending by createdAt.
-    const deployments = await this.doraDataService.readDeployments(
-      catalogEntityRef,
-      {
+    const [inWindowDeployments, preWindowDeployment] = await Promise.all([
+      this.doraDataService.readDeployments(catalogEntityRef, {
         windowFrom: from,
         windowTo: to,
         collector: this.config.deploymentsCollector,
         productionEnvironments: this.config.productionEnvironments,
-      },
+      }),
+      this.doraDataService.readLatestProductionDeploymentBefore(
+        catalogEntityRef,
+        {
+          before: from,
+          productionEnvironments: this.config.productionEnvironments,
+          collector: this.config.deploymentsCollector,
+        },
+      ),
+    ]);
+    const deployments = prependPreWindowDeployment(
+      preWindowDeployment,
+      inWindowDeployments,
     );
 
     if (deployments.length < 2) {
       throw new Error(
-        `Unable to calculate median lead time for changes: need at least 2 successful production deployments in the last ${DORA_TIME_WINDOW_DAYS} days, found ${deployments.length}`,
+        `Unable to calculate median lead time for changes: need at least 2 successful production deployments (in the last ${DORA_TIME_WINDOW_DAYS} days, or 1 in-window plus a prior successful production deployment), found ${deployments.length}`,
       );
     }
 

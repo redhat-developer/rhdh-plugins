@@ -69,6 +69,9 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       undefined,
     );
     mockDoraDataService.readDeployments.mockResolvedValue(deployments);
+    mockDoraDataService.readLatestProductionDeploymentBefore.mockResolvedValue(
+      undefined,
+    );
     mockDoraDataService.readPullRequestsForDeployment.mockResolvedValue(
       pullRequests,
     );
@@ -228,6 +231,15 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
           productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
         },
       );
+      expect(
+        mockDoraDataService.readLatestProductionDeploymentBefore,
+      ).toHaveBeenCalledWith('component:default/test-component', {
+        before: windowFrom,
+        productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+        collector: expect.objectContaining({
+          id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+        }),
+      });
       expect(
         mockDoraSyncService.syncPullRequestsForDeployment,
       ).toHaveBeenCalledWith(
@@ -527,6 +539,106 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
         expect.stringContaining(
           'Skipping deployment interval sha-previous..sha-current',
         ),
+      );
+    });
+
+    it('should throw when a single in-window production deployment has no prior deploy', async () => {
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([
+        dbDeployment({
+          id: '101',
+          commitSha: 'sha-current',
+          environment: 'production',
+          createdAt: '2026-06-08T12:00:00.000Z',
+        }),
+      ]);
+
+      await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
+        /need at least 2 successful production deployments.*found 1/,
+      );
+      expect(
+        mockDoraSyncService.syncPullRequestsForDeployment,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should measure lead time into the first in-window deploy using a pre-window production deploy', async () => {
+      const preWindow = dbDeployment({
+        id: '99',
+        commitSha: 'sha-pre-window',
+        environment: 'production',
+        createdAt: '2026-05-20T12:00:00.000Z',
+      });
+      mockDoraDataService.readDeployments.mockResolvedValueOnce([
+        dbDeployment({
+          id: '101',
+          commitSha: 'sha-current',
+          environment: 'production',
+          createdAt: '2026-06-08T12:00:00.000Z',
+        }),
+      ]);
+      mockDoraDataService.readLatestProductionDeploymentBefore.mockResolvedValueOnce(
+        preWindow,
+      );
+
+      const results = await provider.calculateMetrics(mockEntity);
+
+      expect(results.get('dora.medianLeadTimeForChanges')).toBe(48);
+      expect(
+        mockDoraSyncService.syncPullRequestsForDeployment,
+      ).toHaveBeenCalledTimes(1);
+      expect(
+        mockDoraSyncService.syncPullRequestsForDeployment,
+      ).toHaveBeenCalledWith(
+        mockEntity,
+        expect.objectContaining({
+          deploymentId: '101',
+          baseCommitSha: 'sha-pre-window',
+          headCommitSha: 'sha-current',
+        }),
+      );
+    });
+
+    it('should include a pre-window pair in addition to in-window pairs', async () => {
+      const preWindow = dbDeployment({
+        id: '99',
+        commitSha: 'sha-pre-window',
+        environment: 'production',
+        createdAt: '2026-05-20T12:00:00.000Z',
+      });
+      mockDoraDataService.readLatestProductionDeploymentBefore.mockResolvedValueOnce(
+        preWindow,
+      );
+      mockDoraDataService.readPullRequestsForDeployment.mockImplementation(
+        async (_catalogEntityRef, options) =>
+          options.deploymentId === '101' ? pullRequests : [],
+      );
+
+      const results = await provider.calculateMetrics(mockEntity);
+
+      expect(results.get('dora.medianLeadTimeForChanges')).toBe(48);
+      expect(
+        mockDoraSyncService.syncPullRequestsForDeployment,
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        mockDoraSyncService.syncPullRequestsForDeployment,
+      ).toHaveBeenNthCalledWith(
+        1,
+        mockEntity,
+        expect.objectContaining({
+          deploymentId: '100',
+          baseCommitSha: 'sha-pre-window',
+          headCommitSha: 'sha-previous',
+        }),
+      );
+      expect(
+        mockDoraSyncService.syncPullRequestsForDeployment,
+      ).toHaveBeenNthCalledWith(
+        2,
+        mockEntity,
+        expect.objectContaining({
+          deploymentId: '101',
+          baseCommitSha: 'sha-previous',
+          headCommitSha: 'sha-current',
+        }),
       );
     });
   });

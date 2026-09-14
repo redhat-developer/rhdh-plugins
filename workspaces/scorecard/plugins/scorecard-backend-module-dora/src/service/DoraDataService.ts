@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { DORA_PRE_WINDOW_DEPLOYMENT_CANDIDATE_LIMIT } from '../constants';
 import type { DoraDeploymentsStore } from '../database/DatabaseDoraDeployments';
 import type { DoraIncidentsStore } from '../database/DatabaseDoraIncidents';
 import type { DoraPullRequestsStore } from '../database/DatabaseDoraPullRequests';
@@ -36,6 +37,17 @@ export interface DoraDataService {
     catalogEntityRef: string,
     options: WindowOptions & CollectorCallOptions & EnvironmentFilterOptions,
   ): Promise<DbDoraDeployment[]>;
+  /**
+   * Latest successful production deployment with `createdAt` strictly before
+   * `before`, if one exists for this entity and collector identity.
+   */
+  readLatestProductionDeploymentBefore(
+    catalogEntityRef: string,
+    options: CollectorCallOptions & {
+      before: Date;
+      productionEnvironments: string[];
+    },
+  ): Promise<DbDoraDeployment | undefined>;
   readIncidents(
     catalogEntityRef: string,
     options: WindowOptions & CollectorCallOptions,
@@ -65,6 +77,35 @@ export class DefaultDoraDataService implements DoraDataService {
       options.windowTo,
       options.productionEnvironments,
     );
+  }
+
+  async readLatestProductionDeploymentBefore(
+    catalogEntityRef: string,
+    options: CollectorCallOptions & {
+      before: Date;
+      productionEnvironments: string[];
+    },
+  ): Promise<DbDoraDeployment | undefined> {
+    const candidates = await this.deploymentsDb.readCandidatesBefore(
+      catalogEntityRef,
+      options.collector.id,
+      options.collector.inputHash,
+      options.before,
+      DORA_PRE_WINDOW_DEPLOYMENT_CANDIDATE_LIMIT,
+    );
+
+    return candidates.find(deployment => {
+      if (options.productionEnvironments.length === 0) {
+        return true;
+      }
+      const environment = deployment.environment;
+      if (environment === null || environment === '') {
+        return true;
+      }
+      return options.productionEnvironments.some(
+        name => name.toLowerCase() === environment.toLowerCase(),
+      );
+    });
   }
 
   async readIncidents(

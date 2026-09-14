@@ -31,6 +31,7 @@ import {
   type DoraChangeFailureRateConfig,
   parseDoraChangeFailureRateConfig,
 } from './DoraConfig';
+import { prependPreWindowDeployment } from './utils/preWindowDeploymentUtils';
 
 type DoraChangeFailureRateProviderOptions = {
   doraSyncService: DoraSyncService;
@@ -123,23 +124,40 @@ export class DoraChangeFailureRateProvider implements MetricProvider<'number'> {
     ]);
 
     const catalogEntityRef = stringifyEntityRef(entity);
-    const [productionDeployments, incidents] = await Promise.all([
+    const [inWindowDeployments, preWindowDeployment] = await Promise.all([
       this.doraDataService.readDeployments(catalogEntityRef, {
         windowFrom: from,
         windowTo: to,
         collector: this.config.deploymentsCollector,
         productionEnvironments: this.config.productionEnvironments,
       }),
-      this.doraDataService.readIncidents(catalogEntityRef, {
-        windowFrom: from,
+      this.doraDataService.readLatestProductionDeploymentBefore(
+        catalogEntityRef,
+        {
+          before: from,
+          productionEnvironments: this.config.productionEnvironments,
+          collector: this.config.deploymentsCollector,
+        },
+      ),
+    ]);
+
+    const productionDeployments = prependPreWindowDeployment(
+      preWindowDeployment,
+      inWindowDeployments,
+    );
+
+    const incidents = await this.doraDataService.readIncidents(
+      catalogEntityRef,
+      {
+        windowFrom: preWindowDeployment?.createdAt ?? from,
         windowTo: to,
         collector: this.config.incidentsCollector,
-      }),
-    ]);
+      },
+    );
 
     if (productionDeployments.length < 2) {
       throw new Error(
-        `Unable to calculate change failure rate: need at least 2 successful production deployments in the last ${DORA_TIME_WINDOW_DAYS} days, found ${productionDeployments.length}`,
+        `Unable to calculate change failure rate: need at least 2 successful production deployments (in the last ${DORA_TIME_WINDOW_DAYS} days, or 1 in-window plus a prior successful production deployment), found ${productionDeployments.length}`,
       );
     }
 
