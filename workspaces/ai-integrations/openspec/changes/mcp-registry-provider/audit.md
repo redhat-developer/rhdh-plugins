@@ -1,22 +1,19 @@
-# Audit: MCP Registry Provider
-
 ## Audit Report: mcp-registry-provider
 
-**Last audited:** 2026-08-27T18:25:00Z
+**Last audited:** 2026-09-14T16:44:13Z
 
 ### Summary
 
-| Category                   | CRITICAL | WARNING | SUGGESTION |
-| -------------------------- | -------- | ------- | ---------- |
-| A — Entity propagation     | 0        | 0       | 0          |
-| B — Enum / vocabulary      | 0        | 0       | 0          |
-| C — Semantic contradiction | 0        | 01      | 0          |
-| D — Codebase & convention  | 0        | 1       | 0          |
-| E — Namespace & ownership  | 0        | 1       | 0          |
-| F — Template / copy-paste  | 0        | 0       | 0          |
-| G — Extended coherence     | 0        | 2       | 1          |
-| H — Security lint          | 0        | 0       | 0          |
-| **Total**                  | **0**    | **6**   | **1**      |
+| Category | CRITICAL | WARNING | SUGGESTION |
+| -------- | -------- | ------- | ---------- |
+| A        | 0        | 0       | 1          |
+| B        | 0        | 0       | 0          |
+| C        | 0        | 4       | 3          |
+| D        | 0        | 0       | 1          |
+| E        | 0        | 0       | 0          |
+| F        | 0        | 0       | 0          |
+| G        | 0        | 0       | 2          |
+| H        | 0        | 0       | 0          |
 
 ### CRITICAL
 
@@ -24,12 +21,17 @@
 
 ### WARNING
 
-- **[C]** [`openspec/changes/mcp-registry-provider/proposal.md:13`](proposal.md#L13) — The proposal chooses a `v1` default while documenting that the cited reference registry serves `v0`/`v0.1`, but does not define how the default is validated or made operationally safe. Resolve the intended compatibility policy and add a test for the default endpoint (or explicitly label the default as a forward-looking contract).
-- **[D]** [`openspec/changes/mcp-registry-provider/tasks.md:17`](tasks.md#L17) — The config task does not require `@visibility backend` on `baseUrl` and other backend-only provider settings. Require those annotations in `config.d.ts`, per `AGENTS.md`, so registry endpoints are not exposed to the frontend config surface.
-- **[E]** [`openspec/changes/mcp-registry-provider/design.md:118`](design.md#L118) — The design defers same `(kind, namespace, name)` output from multiple registries as “dedup/merge,” but `locationKey` does not remove catalog identity collisions. Define whether one provider wins, the mapping name is source-qualified, or configuration rejects this case; add a scenario covering two registries publishing the same server version.
-- **[G]** [`openspec/changes/mcp-registry-provider/specs/mcp-registry-provider/spec.md:119`](specs/mcp-registry-provider/spec.md#L119) — A mapping failure is skipped and the next full mutation contains only successful entries, but behavior when an already-ingested entity becomes unmappable is unspecified. State and test whether that prior entity is pruned or retained on the next sync.
-- **[G]** [`openspec/changes/mcp-registry-provider/design.md:91`](design.md#L91) — “managed-by-location annotation / `locationKey`” conflates an entity annotation with the provider mutation’s `locationKey`. Define the exact Backstage mechanism and whether the implementation adds `backstage.io/managed-by-location` or relies solely on provider `locationKey`; update the task and scenario consistently.
+- **C** `openspec/changes/mcp-registry-provider/design.md:120` — `` `limit` tuning and schedule cadence are the operator's levers ``. Do not call `limit` an operator lever unless it is in D1/`config.d.ts`/spec/tasks. Otherwise strike it here and keep page size as an internal constant, matching the open question that defers exposing `limit`.
+- **C** `openspec/changes/mcp-registry-provider/design.md:126` — `Rollback: remove the module registration (or the config block); ingested entities are pruned`. Pruning is specified only via this provider's successful full mutation. Removing the module or config makes the provider inert (no mutation). Require a final empty full mutation on unregister, or state that entities remain after rollback.
+- **C** `openspec/changes/mcp-registry-provider/design.md:92` — `the managed-by-location annotation / locationKey`. Replace the slash (annotation or locationKey) with the spec's AND: mutation `locationKey` is `mcp-registry-provider` and the entity also carries a named managed-by-location annotation. D2 currently mentions only `locationKey`.
+- **C** `openspec/changes/mcp-registry-provider/specs/mcp-registry-provider/spec.md:143` — `WHEN a page request returns a non-2xx HTTP status or the response body cannot be parsed`. This scenario covers only 2 of the 4 fail-the-run causes in the requirement/D6/task 3.5. Add WHEN/THEN coverage for unreachable host and pagination-safeguard trip, or narrow the SHALL list to match the scenario.
 
 ### SUGGESTION
 
-- **[G]** [`openspec/changes/mcp-registry-provider/design.md:83`](design.md#L83) — “max-pages / max-total bound” has no concrete value or configuration source, while the open question defers those bounds. Specify deterministic defaults (and their precedence if configurable) so implementations and tests cannot choose incompatible safeguards.
+- **A** `openspec/changes/mcp-registry-provider/tasks.md:17` — `schedule? (SchedulerServiceTaskScheduleDefinitionConfig)`. Use one type name across artifacts. Design D1, the proposal, and the spec say `SchedulerServiceTaskScheduleDefinition`. If the Config suffix is the Backstage `config.d.ts` type, say so and keep the runtime name for D3/spec.
+- **C** `openspec/changes/mcp-registry-provider/specs/mcp-registry-provider/spec.md:44` — `or immediately when unset`. Design D3 never requires an immediate first sync when `initialDelay` is unset; task 4.2 only says honoring `initialDelay`. Add that first-run rule to D3 and 4.2, or drop it so the first tick follows `frequency` alone.
+- **C** `openspec/changes/mcp-registry-provider/tasks.md:20` — Task 2.3 applies omitted-`schedule` and omitted-`apiVersion` defaults, but 2.4's test matrix omits them. Extend 2.4 (apiVersion `v1` is only checked later in 6.3).
+- **C** `openspec/changes/mcp-registry-provider/tasks.md:38` — Spec scenario `Provider attribution annotations present` is not in 4.5. Assert `locationKey` `mcp-registry-provider` and the managed-by-location annotation so verification matches that WHEN/THEN.
+- **D** `openspec/changes/mcp-registry-provider/proposal.md:1` — Shorten the proposal to under 500 words (`openspec/config.yaml`). Move API-version discrepancy, exact GET shape, and packaging into design.md.
+- **G** `openspec/changes/mcp-registry-provider/design.md:76` — Pin the omitted-`schedule` default (frequency, timeout, `initialDelay` present or not) in D3, the spec, and task 2.3. `e.g.` leaves the documented default unspecified.
+- **G** `openspec/changes/mcp-registry-provider/design.md:84` — Give numeric defaults for the page/total bound(s) in D4 and task 3.4, and state they are internal constants until the open question promotes them to config.

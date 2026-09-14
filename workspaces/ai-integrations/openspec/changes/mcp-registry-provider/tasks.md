@@ -23,9 +23,9 @@
 
 - [ ] 3.1 Define the registry API response types (`servers[]`, `metadata.count`, `metadata.nextCursor`) and the `server.json` extraction from each `servers[]` entry (`.server`)
 - [ ] 3.2 Implement servers-endpoint URL construction `<baseUrl>/<apiVersion>/servers` with slash normalization (works with and without a trailing slash on `baseUrl`)
-- [ ] 3.3 Implement cursor pagination: loop passing prior `metadata.nextCursor` as the `cursor` query param until it is absent/empty, accumulating all `servers[]`; treat cursors as opaque
+- [ ] 3.3 Implement cursor pagination: loop passing prior `metadata.nextCursor` as the `cursor` query param until it is absent, null, or empty, accumulating all `servers[]`; treat cursors as opaque
 - [ ] 3.4 Implement the pagination loop safeguard (max-pages/total bound + repeated-cursor detection) that fails the run rather than looping forever
-- [ ] 3.5 Implement registry-error handling (unreachable host, non-2xx status, unparseable body) raising a typed error that aborts the run
+- [ ] 3.5 Implement registry-error handling (unreachable host, non-2xx status, unparseable body, pagination-safeguard trip) raising a typed error that aborts the run
 - [ ] 3.6 Add unit tests for the client using mocked HTTP: single page, multi-page traversal, empty/absent cursor termination, opaque-cursor passthrough, and error/ safeguard cases
 
 ## 4. Entity Provider & Scheduling

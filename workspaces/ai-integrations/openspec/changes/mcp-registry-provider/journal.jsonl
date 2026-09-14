@@ -16,3 +16,12 @@
 {"ts":"2026-09-14T14:19:59Z","phase":"authoring","event":"artifact.revised","ref":"proposal.md, specs/, design.md, tasks.md","input":"No multi-registry in v1; add baseName alongside baseUrl to override mapping prefix","output":"Single-object catalog.providers.mcpRegistry; keyed maps rejected; baseName passed as mapping prefix override"}
 {"ts":"2026-09-14T14:20:00Z","phase":"any","event":"decision","input":"Resolve multi-registry scope and how mapping prefix is overridden from provider config","output":"Multi-registry out of scope; flat config; optional baseName overrides mapping prefix; hook for a later change"}
 {"ts":"2026-09-14T14:20:00Z","phase":"any","event":"turn.end","output":"Revised provider artifacts: single registry; baseName overrides mapping prefix; keyed maps fail startup"}
+{"ts":"2026-09-14T16:17:52Z","phase":"any","event":"turn.start","input":"Audit mcp-registry-provider artifacts for pre-implementation coherence"}
+{"ts":"2026-09-14T16:17:53Z","phase":"any","event":"skill.invoked","name":"openspec-audit-change"}
+{"ts":"2026-09-14T16:18:27Z","phase":"any","event":"agent.spawned","kind":"audit","count":"1"}
+{"ts":"2026-09-14T16:27:05Z","phase":"authoring","event":"artifact.revised","ref":"specs/, proposal.md, .openspec.yaml","input":"Apply pass-1 audit autofix: provider name/locationKey, .server extract, schedule optional, schema","output":"Propagated D2/D3/D5 into spec/proposal; schema rhdh-spec-driven"}
+{"ts":"2026-09-14T16:27:27Z","phase":"any","event":"agent.spawned","kind":"audit","count":"1"}
+{"ts":"2026-09-14T16:35:32Z","phase":"authoring","event":"artifact.revised","ref":"specs/, tasks.md","input":"Apply pass-2 audit autofix: pagination-safeguard trip and non-2xx in fail-the-run set","output":"Spec D6 error enum includes safeguard trip and non-2xx; task 3.5 matches"}
+{"ts":"2026-09-14T16:36:01Z","phase":"any","event":"agent.spawned","kind":"audit","count":"1"}
+{"ts":"2026-09-14T16:44:35Z","phase":"authoring","event":"artifact.revised","ref":"design.md, specs/, tasks.md, proposal.md","input":"Pass-3 autofix: cursor stop-set absent/null/empty; spec names D4 loop safeguard","output":"Cursor stop-set unified; spec pagination safeguard is max-pages/total plus repeated-cursor"}
+{"ts":"2026-09-14T16:44:35Z","phase":"any","event":"turn.end","output":"Audit clean (no CRITICAL). 4 WARNING, 7 SUGGESTION. Autofix batches applied; remaining findings are judgment calls."}

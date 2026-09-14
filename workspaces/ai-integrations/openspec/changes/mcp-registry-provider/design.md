@@ -28,7 +28,7 @@ No canonical document updates. This change introduces a new capability only and 
 }
 ```
 
-Pagination is cursor-based: omit `cursor` on the first request; pass the prior `metadata.nextCursor` on each subsequent request; stop when it is absent/empty. Cursors are opaque.
+Pagination is cursor-based: omit `cursor` on the first request; pass the prior `metadata.nextCursor` on each subsequent request; stop when it is absent, null, or empty. Cursors are opaque.
 
 **Backstage integration.** The plugin is a `catalog-backend-module` that registers one `EntityProvider` and schedules it via `SchedulerService`. On each tick it lists servers, maps them, and calls `connection.applyMutation({ type: 'full', entities })`.
 
@@ -81,7 +81,7 @@ Pagination is cursor-based: omit `cursor` on the first request; pass the prior `
 
 ### D4: Full cursor pagination is mandatory
 
-**Choice:** The provider loops: request `<baseUrl>/<apiVersion>/servers`, accumulate `servers[]`, read `metadata.nextCursor`, and re-request with `?cursor=<value>` until the cursor is absent/empty. Cursors are opaque and passed verbatim. A **loop safeguard** (max-pages / max-total bound, plus detecting a repeated cursor) prevents a misbehaving registry from spinning forever; hitting the bound fails the run (D6) rather than committing a partial catalog.
+**Choice:** The provider loops: request `<baseUrl>/<apiVersion>/servers`, accumulate `servers[]`, read `metadata.nextCursor`, and re-request with `?cursor=<value>` until the cursor is absent, null, or empty. Cursors are opaque and passed verbatim. A **loop safeguard** (max-pages / max-total bound, plus detecting a repeated cursor) prevents a misbehaving registry from spinning forever; hitting the bound fails the run (D6) rather than committing a partial catalog.
 
 **Alternative considered:** Trust a single page (prototype behavior) — rejected; silently truncates ingestion for any registry larger than one page.
 

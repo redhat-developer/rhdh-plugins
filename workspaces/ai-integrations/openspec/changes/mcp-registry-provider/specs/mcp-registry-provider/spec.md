@@ -12,7 +12,7 @@ This spec covers configuration, scheduling, registry API interaction (pagination
 
 ### Requirement: Configure a single MCP registry provider
 
-The provider SHALL read its configuration from `catalog.providers.mcpRegistry` as a **single object** (not a keyed map of instances). The provider SHALL read `baseUrl` (**required**), `baseName` (optional), `apiVersion` (optional, defaulting to the constant `v1`), `schedule` (optional, a standard `SchedulerServiceTaskScheduleDefinition`), and `defaultOwner` (optional, a Backstage entity reference). When `baseName` is present, the provider SHALL pass it to `mcp-registry-server-mapping` as the caller-override identity prefix; when it is omitted, the provider SHALL NOT pass a prefix override, so the mapping's default prefix (`mcp.registry`) applies. The provider SHALL register at most one provider. When `catalog.providers.mcpRegistry` is absent, the provider SHALL register nothing and SHALL NOT error (the module is inert unless configured). Multiple registries are out of scope: a keyed map of instance objects SHALL fail startup with an actionable error.
+The provider SHALL read its configuration from `catalog.providers.mcpRegistry` as a **single object** (not a keyed map of instances). The provider SHALL read `baseUrl` (**required**), `baseName` (optional), `apiVersion` (optional, defaulting to the constant `v1`), `schedule` (optional, a standard `SchedulerServiceTaskScheduleDefinition`), and `defaultOwner` (optional, a Backstage entity reference). When `baseName` is present, the provider SHALL pass it to `mcp-registry-server-mapping` as the caller-override identity prefix; when it is omitted, the provider SHALL NOT pass a prefix override, so the mapping's default prefix (`mcp.registry`) applies. The provider SHALL register at most one `EntityProvider` whose `getProviderName()` is the constant `mcp-registry-provider`, which SHALL also be the mutation `locationKey` used for full-mutation pruning. When `catalog.providers.mcpRegistry` is absent, the provider SHALL register nothing and SHALL NOT error (the module is inert unless configured). Multiple registries are out of scope: a keyed map of instance objects SHALL fail startup with an actionable error.
 
 #### Scenario: Single registry configured
 
@@ -55,7 +55,7 @@ The provider SHALL run its ingestion sync on the configured `schedule` using the
 
 ### Requirement: List all registry servers with cursor pagination
 
-During a sync, the provider SHALL request the registry's servers from `<baseUrl>/<apiVersion>/servers` and SHALL traverse every page using the registry's cursor pagination: it SHALL read `metadata.nextCursor` from each response and, when that value is present and non-empty, issue the next request with that value as the `cursor` query parameter, repeating until `metadata.nextCursor` is absent, null, or empty. Cursors SHALL be treated as opaque strings (never constructed or modified). All `servers[]` entries across all pages SHALL be accumulated for the sync. The provider SHALL guard against a non-terminating cursor loop with a documented safeguard.
+During a sync, the provider SHALL request the registry's servers from `<baseUrl>/<apiVersion>/servers` and SHALL traverse every page using the registry's cursor pagination: it SHALL read `metadata.nextCursor` from each response and, when that value is present and non-empty, issue the next request with that value as the `cursor` query parameter, repeating until `metadata.nextCursor` is absent, null, or empty. Cursors SHALL be treated as opaque strings (never constructed or modified). All `servers[]` entries across all pages SHALL be accumulated for the sync. The provider SHALL guard against a non-terminating cursor loop with a max-pages/total bound plus repeated-cursor detection; hitting that bound SHALL fail the run with no mutation.
 
 #### Scenario: Multi-page traversal
 
@@ -88,7 +88,7 @@ The provider SHALL construct the servers endpoint as `<baseUrl>/<apiVersion>/ser
 
 ### Requirement: Map each registry server to an mcp-server API entity
 
-For every accumulated server entry, the provider SHALL extract its `server.json` document and produce an `mcp-server` `API` entity by applying the `mcp-registry-server-mapping` transform, supplying the configured `defaultOwner` as the caller-override owner default and, when `baseName` is present, supplying `baseName` as the caller-override identity prefix. The provider SHALL NOT reimplement or alter the field mapping, annotation projection, or identity rules defined by `mcp-registry-server-mapping`. Each produced entity SHALL carry the provider's location/ownership annotations so the catalog attributes the entity to this provider.
+For every accumulated server entry, the provider SHALL extract the `server.json` document from the list entry's `.server` object and produce an `mcp-server` `API` entity by applying the `mcp-registry-server-mapping` transform, supplying the configured `defaultOwner` as the caller-override owner default and, when `baseName` is present, supplying `baseName` as the caller-override identity prefix. The provider SHALL NOT reimplement or alter the field mapping, annotation projection, or identity rules defined by `mcp-registry-server-mapping`. Each produced entity SHALL carry the provider's location/ownership annotations so the catalog attributes the entity to this provider.
 
 #### Scenario: Server mapped with configured default owner
 
@@ -113,7 +113,7 @@ For every accumulated server entry, the provider SHALL extract its `server.json`
 #### Scenario: Provider attribution annotations present
 
 - **WHEN** the provider produces an entity
-- **THEN** the entity carries the provider's managed-location annotation so the catalog associates the entity with this provider and can prune it on removal
+- **THEN** the entity's mutation `locationKey` is `mcp-registry-provider` and the entity carries the provider's managed-by-location annotation so the catalog associates the entity with this provider and can prune it on removal
 
 ### Requirement: Commit ingested entities as a full mutation
 
@@ -131,7 +131,7 @@ At the end of each successful sync, the provider SHALL commit the complete set o
 
 ### Requirement: Resilient, agent-native error handling
 
-A single server entry that cannot be mapped (e.g. it omits a `server.json`-required field and the mapping rejects it) SHALL be logged with an actionable message identifying the entry and SHALL be skipped, without aborting the sync or discarding the other entries. A registry transport or protocol error (unreachable host, non-success HTTP status, or unparseable response body) SHALL fail the current sync run: the provider SHALL NOT commit a partial full mutation, SHALL log the error, and SHALL retry on the next scheduled tick, leaving the prior catalog state intact.
+A single server entry that cannot be mapped (e.g. it omits a `server.json`-required field and the mapping rejects it) SHALL be logged with an actionable message identifying the entry and SHALL be skipped, without aborting the sync or discarding the other entries. A registry transport or protocol error (unreachable host, non-2xx HTTP status, unparseable response body, or pagination-safeguard trip) SHALL fail the current sync run: the provider SHALL NOT commit a partial full mutation, SHALL log the error, and SHALL retry on the next scheduled tick, leaving the prior catalog state intact.
 
 #### Scenario: One malformed server does not abort the sync
 
@@ -140,5 +140,5 @@ A single server entry that cannot be mapped (e.g. it omits a `server.json`-requi
 
 #### Scenario: Registry fetch error aborts the run without a mutation
 
-- **WHEN** a page request returns a non-success HTTP status or the response body cannot be parsed
+- **WHEN** a page request returns a non-2xx HTTP status or the response body cannot be parsed
 - **THEN** the provider logs the error, does not commit any mutation for this run, leaves the previously committed catalog entities intact, and retries on the next scheduled tick

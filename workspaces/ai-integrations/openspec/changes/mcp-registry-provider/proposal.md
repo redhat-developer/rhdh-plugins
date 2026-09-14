@@ -10,10 +10,10 @@ The [`mcp-registry-server-mapping`](../mcp-registry-server-mapping/proposal.md) 
 - Support **one registry** via idiomatic Backstage entity-provider configuration under `catalog.providers.mcpRegistry` (a single object, not a keyed map), configuring:
   - `baseUrl` — the URL of the MCP Registry (**required**).
   - `baseName` — optional identity prefix passed through as the [`mcp-registry-server-mapping`](../mcp-registry-server-mapping/proposal.md) caller-override `prefix` (mapping default `mcp.registry` when omitted). Introduced so a future multi-registry change can give each source a distinct `<prefix>__<name>__<version>` without redesigning the transform.
-  - `schedule` — sync frequency as a standard `SchedulerServiceTaskScheduleDefinition` (`frequency`, `timeout`, optional `initialDelay`).
+  - `schedule` — optional sync frequency as a standard `SchedulerServiceTaskScheduleDefinition` (`frequency`, `timeout`, optional `initialDelay`); when omitted, a documented default is applied rather than failing.
   - `apiVersion` — the version segment used in the API endpoint slug; **defaults to `v1`**.
   - `defaultOwner` — the default `spec.owner` (a `User`/`Group` entity reference) applied to every produced `API` entity, passed as the caller-override default into the mapping.
-- Implement **cursor pagination**: the servers endpoint (`<baseUrl>/<apiVersion>/servers`) is traversed by passing the prior response's `metadata.nextCursor` as the `cursor` query parameter until the cursor is absent/empty (per the [generic registry API](https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/api/generic-registry-api.md#basic-example-list-servers)), so all servers are ingested regardless of page size.
+- Implement **cursor pagination**: the servers endpoint (`<baseUrl>/<apiVersion>/servers`) is traversed by passing the prior response's `metadata.nextCursor` as the `cursor` query parameter until the cursor is absent, null, or empty (per the [generic registry API](https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/api/generic-registry-api.md#basic-example-list-servers)), so all servers are ingested regardless of page size.
 - Specify **resilient, agent-native sync behavior**: a single server entry that fails to map is logged and skipped without aborting the run; a registry transport/protocol error fails that sync run (leaving the prior catalog state intact) and is retried on the next scheduled tick.
 
 ## Capabilities
