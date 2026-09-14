@@ -21,6 +21,7 @@
       "@red-hat-developer-hub/backstage-plugin-skill-image-connector-backend"
     ]
   },
+  "configSchema": "config.d.ts",
   "scripts": {
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",

@@ -18,6 +18,7 @@ import type { LoggerService } from '@backstage/backend-plugin-api';
 import express from 'express';
 import request from 'supertest';
 import { createRouter } from './router';
+import type { SkillImageExtraction } from './services/types';
 
 const mockLogger: LoggerService = {
   info: jest.fn(),
@@ -29,11 +30,23 @@ const mockLogger: LoggerService = {
 
 describe('createRouter', () => {
   let app: express.Express;
+  let extractions: Map<string, SkillImageExtraction>;
 
   beforeAll(async () => {
-    const router = await createRouter(mockLogger);
+    extractions = new Map();
+    extractions.set('quay.io/org/repo:v1', {
+      skillImageYamlPath: '/tmp/skill-image-xx/skillimage.yaml',
+      skillsMdPath: '/tmp/skill-image-xx/SKILLS.md',
+      skillImageYaml: 'name: test',
+      skillsMd: '# Test',
+    });
+    const router = await createRouter(mockLogger, extractions);
     app = express();
     app.use(router);
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   describe('GET /health', () => {
@@ -41,6 +54,19 @@ describe('createRouter', () => {
       const res = await request(app).get('/health');
       expect(res.status).toBe(200);
       expect(res.body).toEqual({ status: 'ok' });
+    });
+  });
+
+  describe('GET /images', () => {
+    it('returns extracted image list', async () => {
+      const res = await request(app).get('/images');
+      expect(res.status).toBe(200);
+      expect(res.body.images).toHaveLength(1);
+      expect(res.body.images[0]).toEqual({
+        imageRef: 'quay.io/org/repo:v1',
+        skillImageYamlPath: '/tmp/skill-image-xx/skillimage.yaml',
+        skillsMdPath: '/tmp/skill-image-xx/SKILLS.md',
+      });
     });
   });
 });

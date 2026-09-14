@@ -53,6 +53,7 @@
     "@red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-catalog-techdoc-url-reader-backend": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-kserve-kubeflow-connector-backend": "workspace:^",
+    "@red-hat-developer-hub/backstage-plugin-skill-image-connector-backend": "workspace:^",
     "app": "link:../app",
     "better-sqlite3": "^12.0.0",
     "node-gyp": "^10.0.0",

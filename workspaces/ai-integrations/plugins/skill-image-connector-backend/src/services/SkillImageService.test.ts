@@ -34,6 +34,7 @@ jest.mock('fs', () => ({
   promises: {
     mkdtemp: jest.fn(),
     writeFile: jest.fn(),
+    rm: jest.fn(),
   },
 }));
 
@@ -223,6 +224,21 @@ describe('validateSkillImageManifest', () => {
       'missing layer(s) skillimage.yaml, SKILLS.md',
     );
   });
+
+  it('should throw when manifest has no layers array', () => {
+    const manifest = {
+      schemaVersion: 2,
+      config: {
+        mediaType: 'application/vnd.oci.image.config.v1+json',
+        digest: 'sha256:cfg',
+        size: 10,
+      },
+    } as unknown as OciManifest;
+
+    expect(() => validateSkillImageManifest(manifest)).toThrow(
+      'does not contain a layers array',
+    );
+  });
 });
 
 describe('fetchAndExtractSkillImage', () => {
@@ -294,6 +310,20 @@ describe('fetchAndExtractSkillImage', () => {
       '/tmp/skill-image-xx/SKILLS.md',
       Buffer.from(mdContent),
     );
+
+    // Verify fetchBlob was called with expectedSize parameter
+    expect(mockedFetchBlob).toHaveBeenCalledWith(
+      expect.any(Object),
+      'sha256:yaml-digest',
+      yamlContent.length,
+      logger,
+    );
+    expect(mockedFetchBlob).toHaveBeenCalledWith(
+      expect.any(Object),
+      'sha256:md-digest',
+      mdContent.length,
+      logger,
+    );
   });
 
   it('should throw when image does not meet skillimage format', async () => {
@@ -321,5 +351,59 @@ describe('fetchAndExtractSkillImage', () => {
     await expect(
       fetchAndExtractSkillImage('quay.io/org/bad-image:v1', '/tmp', logger),
     ).rejects.toThrow('does not conform to the skillimage format');
+  });
+
+  it('should clean up temp directory on write failure', async () => {
+    const yamlContent = 'name: test';
+    const mdContent = '# Test';
+
+    const manifest: OciManifest = {
+      schemaVersion: 2,
+      config: {
+        mediaType: 'application/vnd.oci.image.config.v1+json',
+        digest: 'sha256:cfg',
+        size: 10,
+      },
+      layers: [
+        {
+          mediaType: 'application/vnd.oci.image.layer.v1.tar',
+          digest: 'sha256:yaml-digest',
+          size: yamlContent.length,
+          annotations: {
+            'org.opencontainers.image.title': 'skillimage.yaml',
+          },
+        },
+        {
+          mediaType: 'application/vnd.oci.image.layer.v1.tar',
+          digest: 'sha256:md-digest',
+          size: mdContent.length,
+          annotations: {
+            'org.opencontainers.image.title': 'SKILLS.md',
+          },
+        },
+      ],
+    };
+
+    mockedFetchManifest.mockResolvedValue(manifest);
+    mockedFetchBlob
+      .mockResolvedValueOnce(Buffer.from(yamlContent))
+      .mockResolvedValueOnce(Buffer.from(mdContent));
+
+    (fs.promises.mkdtemp as jest.Mock).mockResolvedValue(
+      '/tmp/skill-image-fail',
+    );
+    (fs.promises.writeFile as jest.Mock).mockRejectedValue(
+      new Error('Disk full'),
+    );
+    (fs.promises.rm as jest.Mock).mockResolvedValue(undefined);
+
+    await expect(
+      fetchAndExtractSkillImage('quay.io/org/repo:v1', '/tmp', logger),
+    ).rejects.toThrow('Disk full');
+
+    expect(fs.promises.rm).toHaveBeenCalledWith('/tmp/skill-image-fail', {
+      recursive: true,
+      force: true,
+    });
   });
 });
