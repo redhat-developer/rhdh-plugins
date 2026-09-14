@@ -14,7 +14,7 @@
 
 ## 2. Configuration
 
-- [ ] 2.1 Author `config.d.ts` declaring `catalog.providers.mcpRegistry` as a single object with `baseUrl` (required), `baseName?` (optional mapping-prefix override), `apiVersion?` (default `v1`), `schedule?` (`SchedulerServiceTaskScheduleDefinitionConfig`), `pageLimit?` (max pages per sync, default `10`), `pageSize?` (registry `?limit=` when set), and `defaultOwner?`
+- [ ] 2.1 Author `config.d.ts` declaring `catalog.providers.mcpRegistry` as a single object with `baseUrl` (required), `baseName?` (optional mapping-prefix override), `apiVersion?` (default `v1`), `schedule?` (`SchedulerServiceTaskScheduleDefinitionConfig`), `pageLimit?` (max pages per sync, default `10`), `pageSize?` (registry `?limit=` when set), and `defaultOwner?`; require `@visibility backend` annotations for backend-only fields such as `baseUrl`
 - [ ] 2.2 Implement config reading: parse `catalog.providers.mcpRegistry` as a single object; register nothing (no error) when the key is absent
 - [ ] 2.3 Implement validation with actionable errors (fail fast when `baseUrl` is missing; fail fast with a multiple-registries-out-of-scope message when the value is a keyed map of instance objects); apply the `apiVersion` default (`v1`), the documented default schedule, and the `pageLimit` default (`10` pages per sync) when omitted
 - [ ] 2.4 Add unit tests for config parsing/validation: single object with `baseUrl`, optional `baseName`, keyed-map rejection, missing `baseUrl`, absent-config no-op, omitted `pageLimit` → `10`, explicit `pageLimit` override, omitted `pageSize` (no invented default), and explicit `pageSize`
