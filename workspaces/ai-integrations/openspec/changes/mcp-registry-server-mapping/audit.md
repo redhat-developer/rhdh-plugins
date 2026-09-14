@@ -26,7 +26,10 @@ _Re-audit following the `repository.url`/`websiteUrl` link-mapping revision (rep
 
 ### WARNING
 
-- None
+- **[C]** [`openspec/changes/mcp-registry-server-mapping/specs/mcp-registry-server-mapping/spec.md:59`](specs/mcp-registry-server-mapping/spec.md#L59) — The spec requires distinct sanitized-name collisions to receive a hash suffix, but the transform is pure over one document and cannot know whether another document collides. Make the rule deterministic per input (for example, hash whenever sanitization changes the identity or the value is truncated), or explicitly move collision resolution to the provider and specify that contract.
+- **[C]** [`openspec/changes/mcp-registry-server-mapping/specs/mcp-registry-server-mapping/spec.md:71`](specs/mcp-registry-server-mapping/spec.md#L71) — The repository algorithm strips trailing `/` and `.git`, then emits only the combined URL while the annotation-projection spec promises recovery of every non-secret scalar. The original `repository.url` is therefore not recoverable for such inputs. Preserve the original URL in a dedicated annotation or narrow the round-trip guarantee with an explicit exception and scenario.
+- **[H]** [`openspec/changes/mcp-registry-server-mapping/design.md:133`](design.md#L133) — D9 continues projecting `choices` for `isSecret: true` inputs. If choices contain allowed secret values, those values become searchable catalog annotations. Redact secret-associated choices too, or document and test why they are safe.
+- **[H]** [`openspec/changes/mcp-registry-server-mapping/specs/mcp-registry-server-mapping/spec.md:67`](specs/mcp-registry-server-mapping/spec.md#L67) — Registry-controlled `websiteUrl` and repository URLs are copied into links and `backstage.io/source-location` without a scheme/host safety rule. Specify safe handling for disallowed schemes such as `javascript:`/`data:` and decide how internal-network URLs should be treated; add adversarial scenarios.
 
 ### SUGGESTION
 
