@@ -40,7 +40,6 @@ import Tabs from '@mui/material/Tabs';
 import {
   Chatbot,
   ChatbotAlert,
-  ChatbotContent,
   ChatbotDisplayMode,
   ChatbotFooter,
   ChatbotHeader,
@@ -108,6 +107,7 @@ import { useCreateNotebook } from '../hooks/notebooks/useCreateNotebook';
 import { useDeleteNotebook } from '../hooks/notebooks/useDeleteNotebook';
 import { useNotebookDocuments } from '../hooks/notebooks/useNotebookDocuments';
 import { useRenameNotebookWithAlert } from '../hooks/notebooks/useRenameNotebookWithAlert';
+import { useChatContentScrollOverflow } from '../hooks/useChatContentScrollOverflow';
 import { useLightspeedDrawerContext } from '../hooks/useLightspeedDrawerContext';
 import { useTranslation } from '../hooks/useTranslation';
 import { useWelcomePrompts } from '../hooks/useWelcomePrompts';
@@ -766,7 +766,8 @@ export const LightspeedChat = ({
   const contentScrollRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
   const [messageBarKey, setMessageBarKey] = useState(0);
-  const [hasChatContentOverflow, setHasChatContentOverflow] = useState(false);
+  const [hasMcpSettingsScrollOverflow, setHasMcpSettingsScrollOverflow] =
+    useState(false);
   const wasStoppedByUserRef = useRef(false);
   const { isReady, lastOpenedId, setLastOpenedId, clearLastOpenedId } =
     useLastOpenedConversation(user);
@@ -1626,135 +1627,17 @@ export const LightspeedChat = ({
     };
   }, [welcomePrompts.length]);
 
-  useEffect(() => {
-    const scrollContainer = contentScrollRef.current;
-    if (!scrollContainer) {
-      setHasChatContentOverflow(false);
-      return undefined;
-    }
-
-    const getMessageBox = () =>
-      scrollContainer.querySelector(
-        '.pf-chatbot__messagebox',
-      ) as HTMLElement | null;
-
-    const messageBoxOwnsScroll = (messageBox: HTMLElement | null) => {
-      if (!messageBox || typeof window === 'undefined') {
-        return false;
-      }
-      const overflowY = window.getComputedStyle(messageBox).overflowY;
-      return (
-        overflowY === 'auto' ||
-        overflowY === 'scroll' ||
-        overflowY === 'overlay'
-      );
-    };
-
-    const getScrollTarget = () => {
-      const messageBox = getMessageBox();
-      return messageBoxOwnsScroll(messageBox) ? messageBox! : scrollContainer;
-    };
-
-    let observedScrollTarget: HTMLElement | null = getScrollTarget();
-    let rafId: number | null = null;
-    let updateScheduled = false;
-
-    const updateOverflow = () => {
-      const scrollTarget = observedScrollTarget ?? scrollContainer;
-      setHasChatContentOverflow(
-        scrollTarget.scrollHeight > scrollTarget.clientHeight + 1,
-      );
-    };
-
-    const scheduleOverflowUpdate = () => {
-      if (updateScheduled) {
-        return;
-      }
-      updateScheduled = true;
-      if (typeof requestAnimationFrame !== 'undefined') {
-        rafId = requestAnimationFrame(() => {
-          updateScheduled = false;
-          updateOverflow();
-        });
-      } else {
-        updateScheduled = false;
-        updateOverflow();
-      }
-    };
-
-    scheduleOverflowUpdate();
-
-    // Use capture so scroll events from inner messagebox also trigger updates.
-    scrollContainer.addEventListener('scroll', scheduleOverflowUpdate, {
-      passive: true,
-      capture: true,
-    });
-
-    const resizeObserver =
-      typeof ResizeObserver !== 'undefined'
-        ? new ResizeObserver(() => scheduleOverflowUpdate())
-        : undefined;
-    resizeObserver?.observe(scrollContainer);
-    if (observedScrollTarget !== scrollContainer) {
-      resizeObserver?.observe(observedScrollTarget);
-    }
-
-    const syncObservedScrollTarget = () => {
-      const nextScrollTarget = getScrollTarget();
-      if (nextScrollTarget === observedScrollTarget) {
-        return;
-      }
-      if (observedScrollTarget && observedScrollTarget !== scrollContainer) {
-        resizeObserver?.unobserve(observedScrollTarget);
-      }
-      if (nextScrollTarget !== scrollContainer) {
-        resizeObserver?.observe(nextScrollTarget);
-      }
-      observedScrollTarget = nextScrollTarget;
-    };
-
-    const mutationObserver =
-      typeof MutationObserver !== 'undefined'
-        ? new MutationObserver(() => {
-            syncObservedScrollTarget();
-            scheduleOverflowUpdate();
-          })
-        : undefined;
-    mutationObserver?.observe(scrollContainer, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-    });
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('resize', updateOverflow);
-    }
-
-    return () => {
-      if (rafId !== null && typeof cancelAnimationFrame !== 'undefined') {
-        cancelAnimationFrame(rafId);
-      }
-      scrollContainer.removeEventListener(
-        'scroll',
-        scheduleOverflowUpdate,
-        true,
-      );
-      if (observedScrollTarget && observedScrollTarget !== scrollContainer) {
-        resizeObserver?.unobserve(observedScrollTarget);
-      }
-      resizeObserver?.disconnect();
-      mutationObserver?.disconnect();
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', updateOverflow);
-      }
-    };
-  }, [
-    conversationId,
-    displayMode,
-    isSettingsOpen,
-    messages.length,
-    welcomePrompts.length,
-  ]);
+  const hasChatContentOverflow = useChatContentScrollOverflow(
+    contentScrollRef,
+    showChatPanel,
+    [
+      conversationId,
+      displayMode,
+      isSettingsOpen,
+      messages.length,
+      welcomePrompts.length,
+    ],
+  );
 
   const handleFilter = useCallback((value: string) => {
     setFilterValue(value);
@@ -1898,9 +1781,14 @@ export const LightspeedChat = ({
     });
   };
 
+  const showScrollJumpButtons =
+    !isFullscreenMode && isSettingsOpen
+      ? hasMcpSettingsScrollOverflow
+      : hasChatContentOverflow;
+
   const chatMainContent = (
     <>
-      <StyledChatbotContent hasOverflow={hasChatContentOverflow}>
+      <StyledChatbotContent hasOverflow={showScrollJumpButtons}>
         <ContentScroll
           ref={contentScrollRef}
           isNewChat={welcomePrompts.length > 0}
@@ -1997,6 +1885,7 @@ export const LightspeedChat = ({
       onCreateSavedPrompt={createPrompt}
       onRequestSavedPromptDelete={requestSavedPromptDelete}
       showMcpSettings={mcpToolsPermissionResolved}
+      onMcpContentOverflowChange={setHasMcpSettingsScrollOverflow}
     />
   );
 

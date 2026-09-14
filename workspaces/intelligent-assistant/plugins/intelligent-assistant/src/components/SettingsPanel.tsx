@@ -47,6 +47,7 @@ type SettingsPanelProps = {
   onRequestSavedPromptDelete?: (prompt: SavedPrompt) => void;
   /** When false, hides the MCP tab and shows saved prompts only. */
   showMcpSettings?: boolean;
+  onMcpContentOverflowChange?: (hasOverflow: boolean) => void;
 };
 
 const useStyles = makeStyles()(theme => ({
@@ -114,6 +115,7 @@ export const SettingsPanel = ({
   onCreateSavedPrompt,
   onRequestSavedPromptDelete,
   showMcpSettings = true,
+  onMcpContentOverflowChange,
 }: SettingsPanelProps) => {
   const { t } = useTranslation();
   const { classes } = useStyles();
@@ -161,7 +163,10 @@ export const SettingsPanel = ({
 
       <div className={classes.tabContent}>
         {effectiveTab === 'mcp-servers' && showMcpTab && (
-          <McpServersSettings backgroundColor={backgroundColor} />
+          <McpServersSettings
+            backgroundColor={backgroundColor}
+            onContentOverflowChange={onMcpContentOverflowChange}
+          />
         )}
         {effectiveTab === 'saved-prompts' && (
           <SavedPromptsSettings
