@@ -15,9 +15,9 @@ _Re-audit following the `repository.url`/`websiteUrl` link-mapping revision (rep
 | C (Semantic contradiction)             | 0        | 2       | 0          |
 | D (Codebase & convention grounding)    | 0        | 0       | 0          |
 | E (Namespace & cross-change ownership) | 0        | 0       | 0          |
-| F (Template / copy-paste residue)      | 0        | 0       | 1         |
+| F (Template / copy-paste residue)      | 0        | 0       | 1          |
 | G (Extended coherence)                 | 0        | 0       | 0          |
-| H (Security lint)                      | 0        | 2      | 0          |
+| H (Security lint)                      | 0        | 2       | 0          |
 | **Total**                              | **0**    | **4**   | **1**      |
 
 ### CRITICAL
