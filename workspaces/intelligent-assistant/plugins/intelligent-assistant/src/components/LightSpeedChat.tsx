@@ -1894,10 +1894,7 @@ export const LightspeedChat = ({
       backgroundColor={chatHeaderBgColor}
       isSavedPromptsEnabled={isSavedPromptsEnabled}
       onEnableSavedPrompts={() => handleSavedPromptsToggle(true)}
-      onApplySavedPromptToInput={content => {
-        setDraftMessage(content);
-        setMessageBarKey(k => k + 1);
-      }}
+      onApplySavedPromptToInput={handleApplySavedPrompt}
       onSendSavedPromptDirectly={sendMessage}
       isChatStreaming={streamingUiMatchesView}
       savedPrompts={savedPrompts}
@@ -1905,7 +1902,7 @@ export const LightspeedChat = ({
       savedPromptsLoading={savedPromptsLoading}
       savedPromptsError={savedPromptsError}
       onCreateSavedPrompt={createPrompt}
-      onDeleteSavedPrompt={deletePrompt}
+      onRequestSavedPromptDelete={requestSavedPromptDelete}
     />
   );
 

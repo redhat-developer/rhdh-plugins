@@ -54,7 +54,7 @@ type SavedPromptsSettingsProps = {
   savedPromptsLoading?: boolean;
   savedPromptsError?: string | null;
   onCreateSavedPrompt?: (name: string, content: string) => Promise<void>;
-  onDeleteSavedPrompt?: (promptId: string) => Promise<void>;
+  onRequestDelete?: (prompt: SavedPrompt) => void;
 };
 
 type SavedPromptsSettingsContentProps = SavedPromptsSettingsProps & {
@@ -63,7 +63,7 @@ type SavedPromptsSettingsContentProps = SavedPromptsSettingsProps & {
   savedPromptsLoading: boolean;
   savedPromptsError: string | null;
   onCreateSavedPrompt: (name: string, content: string) => Promise<void>;
-  onDeleteSavedPrompt: (promptId: string) => Promise<void>;
+  onRequestDelete: (prompt: SavedPrompt) => void;
 };
 
 const hasInjectedSavedPromptsData = (
@@ -72,7 +72,7 @@ const hasInjectedSavedPromptsData = (
   props.savedPrompts !== undefined &&
   props.savedPromptsConfig !== undefined &&
   props.onCreateSavedPrompt !== undefined &&
-  props.onDeleteSavedPrompt !== undefined;
+  props.onRequestDelete !== undefined;
 
 const useStyles = makeStyles()(() => ({
   root: {
@@ -112,26 +112,10 @@ const SavedPromptsSettingsContent = ({
   savedPromptsLoading: loading,
   savedPromptsError: error,
   onCreateSavedPrompt: createPrompt,
-  onDeleteSavedPrompt: deletePrompt,
+  onRequestDelete,
 }: SavedPromptsSettingsContentProps) => {
   const { classes } = useStyles();
   const { t } = useTranslation();
-
-  const {
-    applyToInput,
-    sendDirectly,
-    requestDelete,
-    promptToDelete,
-    closeDeleteModal,
-    confirmDelete,
-    isDeleting,
-    deleteError,
-    isDeleteModalOpen,
-  } = useSavedPromptActions({
-    onApplyToInput,
-    onSendDirectly,
-    onDelete: deletePrompt,
-  });
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [title, setTitle] = useState('');
@@ -321,21 +305,12 @@ const SavedPromptsSettingsContent = ({
           loading={loading}
           error={error}
           variant="settings"
-          onApplyToInput={applyToInput}
-          onSendDirectly={sendDirectly}
-          onDelete={requestDelete}
+          onApplyToInput={onApplyToInput}
+          onSendDirectly={onSendDirectly}
+          onDelete={onRequestDelete}
           isSendDirectlyDisabled={isChatStreaming}
         />
       )}
-
-      <DeleteSavedPromptModal
-        isOpen={isDeleteModalOpen}
-        promptName={promptToDelete?.name}
-        isDeleting={isDeleting}
-        error={deleteError}
-        onClose={closeDeleteModal}
-        onConfirm={confirmDelete}
-      />
     </div>
   );
 };
@@ -344,16 +319,40 @@ const SavedPromptsSettingsWithHook = (props: SavedPromptsSettingsProps) => {
   const { savedPrompts, config, loading, error, createPrompt, deletePrompt } =
     useSavedPrompts();
 
+  const {
+    requestDelete,
+    promptToDelete,
+    closeDeleteModal,
+    confirmDelete,
+    isDeleting,
+    deleteError,
+    isDeleteModalOpen,
+  } = useSavedPromptActions({
+    onApplyToInput: props.onApplyToInput,
+    onSendDirectly: props.onSendDirectly,
+    onDelete: deletePrompt,
+  });
+
   return (
-    <SavedPromptsSettingsContent
-      {...props}
-      savedPrompts={savedPrompts}
-      savedPromptsConfig={config}
-      savedPromptsLoading={loading}
-      savedPromptsError={error}
-      onCreateSavedPrompt={createPrompt}
-      onDeleteSavedPrompt={deletePrompt}
-    />
+    <>
+      <SavedPromptsSettingsContent
+        {...props}
+        savedPrompts={savedPrompts}
+        savedPromptsConfig={config}
+        savedPromptsLoading={loading}
+        savedPromptsError={error}
+        onCreateSavedPrompt={createPrompt}
+        onRequestDelete={requestDelete}
+      />
+      <DeleteSavedPromptModal
+        isOpen={isDeleteModalOpen}
+        promptName={promptToDelete?.name}
+        isDeleting={isDeleting}
+        error={deleteError}
+        onClose={closeDeleteModal}
+        onConfirm={confirmDelete}
+      />
+    </>
   );
 };
 

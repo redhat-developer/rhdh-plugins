@@ -44,7 +44,7 @@ type SettingsPanelProps = {
   savedPromptsLoading?: boolean;
   savedPromptsError?: string | null;
   onCreateSavedPrompt?: (name: string, content: string) => Promise<void>;
-  onDeleteSavedPrompt?: (promptId: string) => Promise<void>;
+  onRequestSavedPromptDelete?: (prompt: SavedPrompt) => void;
 };
 
 const useStyles = makeStyles()(theme => ({
@@ -110,7 +110,7 @@ export const SettingsPanel = ({
   savedPromptsLoading,
   savedPromptsError,
   onCreateSavedPrompt,
-  onDeleteSavedPrompt,
+  onRequestSavedPromptDelete,
 }: SettingsPanelProps) => {
   const { t } = useTranslation();
   const { classes } = useStyles();
@@ -162,7 +162,7 @@ export const SettingsPanel = ({
             savedPromptsLoading={savedPromptsLoading}
             savedPromptsError={savedPromptsError}
             onCreateSavedPrompt={onCreateSavedPrompt}
-            onDeleteSavedPrompt={onDeleteSavedPrompt}
+            onRequestDelete={onRequestSavedPromptDelete}
           />
         )}
       </div>

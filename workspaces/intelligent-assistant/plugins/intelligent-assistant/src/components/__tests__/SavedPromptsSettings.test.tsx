@@ -268,4 +268,35 @@ describe('SavedPromptsSettings', () => {
       'Analyze performance',
     );
   });
+
+  it('should call onRequestDelete when Delete is selected with injected props', async () => {
+    const onRequestDelete = jest.fn();
+    const mockConfig = {
+      max_prompts_per_user: 100,
+      max_display_name_length: 128,
+      max_content_length: 5000,
+    };
+
+    renderWithProviders(
+      <SavedPromptsSettings
+        {...defaultProps}
+        savedPrompts={mockPrompts}
+        savedPromptsConfig={mockConfig}
+        savedPromptsLoading={false}
+        savedPromptsError={null}
+        onCreateSavedPrompt={mockCreateSavedPrompt}
+        onRequestDelete={onRequestDelete}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Actions for Performance Optimization',
+      }),
+    );
+    fireEvent.click(screen.getByText('Delete'));
+
+    expect(onRequestDelete).toHaveBeenCalledWith(mockPrompts[0]);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
 });
