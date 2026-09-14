@@ -23,25 +23,26 @@ import { translationRef } from './ref';
 export default createTranslationMessages({
   ref: translationRef,
   messages: {
-    'catalog.emptyState.title': 'Aucun élément trouvé dans le catalogue',
+    'catalog.emptyState.title': 'Aucun élément disponible dans le catalogue',
     'catalog.emptyState.description':
-      'Les éléments apparaîtront ici une fois enregistrés dans le catalogue.',
+      "Il n'y a pas encore d'entités dans le catalogue, ou vous n'avez pas la permission d'en voir. Elles apparaîtront ici une fois enregistrées et que vous y aurez accès.",
     'catalog.emptyState.action': 'Enregistrer un composant',
-    'catalogGraph.emptyState.title': 'Aucun élément trouvé dans le catalogue',
+    'catalogGraph.emptyState.title':
+      'Aucun élément disponible dans le catalogue',
     'catalogGraph.emptyState.description':
-      'Le graphe du catalogue apparaîtra ici une fois que des entités seront enregistrées dans le catalogue.',
+      "Il n'y a pas encore d'entités dans le catalogue, ou vous n'avez pas la permission d'en voir. Le graphe du catalogue apparaîtra ici une fois qu'elles seront enregistrées et que vous y aurez accès.",
     'catalogGraph.emptyState.action': 'Aller au catalogue',
     'scaffolder.emptyState.title': 'Aucun modèle disponible',
     'scaffolder.emptyState.description':
-      'Les modèles de logiciels apparaîtront ici une fois enregistrés dans le catalogue.',
+      "Il n'y a pas encore de modèles de logiciels, ou vous n'avez pas la permission d'en voir. Ils apparaîtront ici une fois enregistrés et que vous y aurez accès.",
     'scaffolder.emptyState.action': 'Enregistrer un modèle',
     'apiDocs.emptyState.title': 'Aucune API disponible',
     'apiDocs.emptyState.description':
-      "Les définitions d'API apparaîtront ici une fois enregistrées dans le catalogue.",
+      "Il n'y a pas encore d'API, ou vous n'avez pas la permission d'en voir. Elles apparaîtront ici une fois enregistrées et que vous y aurez accès.",
     'apiDocs.emptyState.action': 'Enregistrer une API',
     'docs.emptyState.title': 'Aucune documentation disponible',
     'docs.emptyState.description':
-      'La documentation apparaîtra ici une fois que des entités avec des annotations TechDocs seront enregistrées.',
+      "Il n'y a pas encore d'entités documentées, ou vous n'avez pas la permission d'en voir. La documentation apparaîtra ici une fois que des entités avec des annotations TechDocs seront enregistrées et que vous y aurez accès.",
     'docs.emptyState.action': 'En savoir plus',
   },
 });
