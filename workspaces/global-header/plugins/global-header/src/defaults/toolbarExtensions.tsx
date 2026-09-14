@@ -32,6 +32,7 @@ import { HeaderIconButton } from '../components/HeaderIconButton/HeaderIconButto
 import { ProfileDropdown } from '../components/ProfileDropdown';
 import { HelpDropdown } from '../components/HelpDropdown';
 import { ApplicationLauncherDropdown } from '../components/ApplicationLauncherDropdown';
+import { SidebarPinToggle } from '../components/SidebarPinToggle/SidebarPinToggle';
 
 const CompanyLogoWrapper = () => <CompanyLogo to="/" />;
 
@@ -43,6 +44,12 @@ const SelfServiceButton = () => (
     to="/create"
   />
 );
+
+/** @public */
+export const sidebarPinToggleExtension = GlobalHeaderComponentBlueprint.make({
+  name: 'sidebar-pin-toggle',
+  params: { component: SidebarPinToggle, priority: 210 },
+});
 
 /** @public */
 export const companyLogoExtension = GlobalHeaderComponentBlueprint.make({

@@ -62,6 +62,10 @@ export const globalHeaderMessages = {
     unsupportedDismissOption:
       'Unsupported dismiss option "{{option}}", currently supported "none", "session" or "localstorage"!',
   },
+  sidebar: {
+    pinSidebar: 'Pin sidebar',
+    unpinSidebar: 'Unpin sidebar',
+  },
   create: {
     title: 'Self-service',
     registerComponent: {
