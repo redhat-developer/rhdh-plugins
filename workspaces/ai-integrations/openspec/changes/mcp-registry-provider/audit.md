@@ -12,7 +12,7 @@
 | B — Enum / vocabulary      | 0        | 0       | 0          |
 | C — Semantic contradiction | 0        | 01      | 0          |
 | D — Codebase & convention  | 0        | 1      | 0          |
-| E — Namespace & ownership  | 0        | 0       | 0          |
+| E — Namespace & ownership  | 0        | 1       | 0          |
 | F — Template / copy-paste  | 0        | 0       | 0          |
 | G — Extended coherence     | 0        | 2       | 1          |
 | H — Security lint          | 0        | 0       | 0          |
