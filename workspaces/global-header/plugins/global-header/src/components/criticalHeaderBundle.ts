@@ -40,6 +40,8 @@ export { HeaderIcon } from './HeaderIcon/HeaderIcon';
 export { Divider } from './Divider/Divider';
 export { NotificationButton } from './NotificationButton/NotificationButton';
 
+export { SidebarPinToggle } from './SidebarPinToggle/SidebarPinToggle';
+
 export { StarredDropdown } from './HeaderDropdownComponent/StarredDropdown';
 export { ApplicationLauncherDropdown } from './ApplicationLauncherDropdown';
 export { HelpDropdown } from './HelpDropdown';

@@ -10,16 +10,25 @@ import { TranslationResource } from '@backstage/frontend-plugin-api';
 export const globalHeaderTranslationRef: TranslationRef<
   'plugin.global-header',
   {
+    readonly 'search.clear': string;
     readonly 'search.placeholder': string;
     readonly 'search.noResults': string;
     readonly 'search.errorFetching': string;
     readonly 'search.allResults': string;
-    readonly 'search.clear': string;
+    readonly 'notifications.title': string;
+    readonly 'notifications.unsupportedDismissOption': string;
     readonly 'help.tooltip': string;
     readonly 'help.noSupportLinks': string;
     readonly 'help.noSupportLinksSubtitle': string;
     readonly 'help.quickStart': string;
     readonly 'help.supportTitle': string;
+    readonly 'create.title': string;
+    readonly 'create.registerComponent.title': string;
+    readonly 'create.registerComponent.subtitle': string;
+    readonly 'create.templates.errorFetching': string;
+    readonly 'create.templates.sectionTitle': string;
+    readonly 'create.templates.allTemplates': string;
+    readonly 'create.templates.noTemplatesAvailable': string;
     readonly 'profile.picture': string;
     readonly 'profile.settings': string;
     readonly 'profile.myProfile': string;
@@ -35,15 +44,8 @@ export const globalHeaderTranslationRef: TranslationRef<
     readonly 'starred.removeTooltip': string;
     readonly 'starred.noItemsTitle': string;
     readonly 'starred.noItemsSubtitle': string;
-    readonly 'notifications.title': string;
-    readonly 'notifications.unsupportedDismissOption': string;
-    readonly 'create.title': string;
-    readonly 'create.registerComponent.title': string;
-    readonly 'create.registerComponent.subtitle': string;
-    readonly 'create.templates.errorFetching': string;
-    readonly 'create.templates.sectionTitle': string;
-    readonly 'create.templates.allTemplates': string;
-    readonly 'create.templates.noTemplatesAvailable': string;
+    readonly 'sidebar.pinSidebar': string;
+    readonly 'sidebar.unpinSidebar': string;
   }
 >;
 
