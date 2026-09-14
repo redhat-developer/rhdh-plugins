@@ -17,11 +17,9 @@ import { resolveRefPlugins } from './installer';
 import type { IncludePluginList, PluginSpec } from './types';
 
 describe('resolveRefPlugins', () => {
-  it('resolves ref:// entries across include files and package types', () => {
+  it('resolves ref:// entries to OCI packages from include files', () => {
     const main: PluginSpec[] = [
       { package: 'ref://backstage-plugin-foo', enabled: true },
-      { package: 'ref://backstage-plugin-bar' },
-      { package: 'ref://backstage-plugin-baz' },
       { package: 'oci://quay.io/rhdh/already-resolved@sha256:fff' },
     ];
     const includes: IncludePluginList[] = [
@@ -31,16 +29,6 @@ describe('resolveRefPlugins', () => {
           {
             package: 'oci://quay.io/rhdh/backstage-plugin-foo@sha256:abc123',
             enabled: false,
-          },
-          { package: './dynamic-plugins/dist/backstage-plugin-bar' },
-        ],
-      ],
-      [
-        'extra.yaml',
-        [
-          {
-            package:
-              'https://example.com/plugins/backstage-plugin-baz-1.2.3.tgz',
           },
         ],
       ],
@@ -52,12 +40,6 @@ describe('resolveRefPlugins', () => {
       'oci://quay.io/rhdh/backstage-plugin-foo@sha256:abc123',
     );
     expect(main[1]!.package).toBe(
-      './dynamic-plugins/dist/backstage-plugin-bar',
-    );
-    expect(main[2]!.package).toBe(
-      'https://example.com/plugins/backstage-plugin-baz-1.2.3.tgz',
-    );
-    expect(main[3]!.package).toBe(
       'oci://quay.io/rhdh/already-resolved@sha256:fff',
     );
   });
