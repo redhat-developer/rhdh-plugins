@@ -54,7 +54,7 @@ function Wrapper({
 const testEmptyState = {
   title: 'Empty title',
   description: 'Empty description',
-  action: <button type="button">Go somewhere</button>,
+  importButtonTitle: 'Import something',
 };
 
 describe('EmptyCatalogGate', () => {
@@ -93,7 +93,7 @@ describe('EmptyCatalogGate', () => {
       expect(screen.getByTestId('empty-state')).toBeInTheDocument();
       expect(screen.getByText('Empty title')).toBeInTheDocument();
       expect(screen.getByText('Empty description')).toBeInTheDocument();
-      expect(screen.getByText('Go somewhere')).toBeInTheDocument();
+      expect(screen.getByText('Import something')).toBeInTheDocument();
     });
     expect(screen.queryByText('Original page content')).not.toBeInTheDocument();
   });

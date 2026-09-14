@@ -16,11 +16,19 @@
 
 import type { EntityFilterQuery } from '@backstage/catalog-client';
 import { ErrorPanel } from '@backstage/core-components';
-import { Container, Flex } from '@backstage/ui';
+import { ButtonLink, Container, Flex } from '@backstage/ui';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useCatalogEntities } from './useCatalogEntities';
-import type { EmptyStateProps } from '../components/empty-state/EmptyState';
 import { EmptyState } from '../components/empty-state/EmptyState';
+
+/**
+ * @internal
+ */
+export interface EmptyCatalogStateProps {
+  title: string;
+  description: string;
+  importButtonTitle?: string;
+}
 
 /**
  * Renders children when catalog entities matching the filter exist,
@@ -31,7 +39,7 @@ import { EmptyState } from '../components/empty-state/EmptyState';
 export function EmptyCatalogGate(
   props: Readonly<{
     filter?: EntityFilterQuery;
-    emptyState: EmptyStateProps;
+    emptyState: EmptyCatalogStateProps;
     children: React.ReactNode;
   }>,
 ) {
@@ -54,9 +62,20 @@ export function EmptyCatalogGate(
   }
 
   if (!state.hasEntities) {
+    const { title, description, importButtonTitle } = props.emptyState;
     return (
       <Container my="4">
-        <EmptyState {...props.emptyState} />
+        <EmptyState
+          title={title}
+          description={description}
+          action={
+            importButtonTitle ? (
+              <ButtonLink href="/catalog-import" variant="primary">
+                {importButtonTitle}
+              </ButtonLink>
+            ) : undefined
+          }
+        />
       </Container>
     );
   }
