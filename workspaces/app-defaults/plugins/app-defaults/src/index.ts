@@ -26,28 +26,11 @@ import {
   appDefaultsModule,
   appDefaultsTranslationsModule,
 } from './appDefaultsModule';
-import { appDefaultsTranslations } from './translations';
 import { apiDocsPluginOverride } from './api-docs/apiDocsPluginOverride';
 import { catalogPluginOverride } from './catalog/catalogPluginOverride';
 import { catalogGraphPluginOverride } from './catalog-graph/catalogGraphPluginOverride';
 import { docsPluginOverride } from './docs/docsPluginOverride';
 import { scaffolderPluginOverride } from './scaffolder/scaffolderPluginOverride';
-
-export { appDefaultsModule };
-
-export { appDefaultsTranslationsModule };
-
-export { appDefaultsTranslations };
-
-export { apiDocsPluginOverride };
-
-export { catalogGraphPluginOverride };
-
-export { catalogPluginOverride };
-
-export { docsPluginOverride };
-
-export { scaffolderPluginOverride };
 
 /**
  * Feature loader that registers the RHDH app defaults module and all
