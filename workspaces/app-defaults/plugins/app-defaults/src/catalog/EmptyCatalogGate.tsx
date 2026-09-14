@@ -16,6 +16,10 @@
 
 import type { EntityFilterQuery } from '@backstage/catalog-client';
 import { ErrorPanel } from '@backstage/core-components';
+import { useRouteRef } from '@backstage/frontend-plugin-api';
+import catalogImportPlugin from '@backstage/plugin-catalog-import/alpha';
+import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
+import { usePermission } from '@backstage/plugin-permission-react';
 import { ButtonLink, Container, Flex } from '@backstage/ui';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useCatalogEntities } from './useCatalogEntities';
@@ -28,6 +32,42 @@ export interface EmptyCatalogStateProps {
   title: string;
   description: string;
   importButtonTitle?: string;
+}
+
+/**
+ * Renders the catalog empty state. The import button is only shown when the
+ * `page:catalog-import` extension is installed (its route also provides the
+ * button href) and the user is allowed to create catalog entities.
+ *
+ * The route and permission hooks live here so they only run when the empty
+ * state is actually rendered.
+ */
+function CatalogEmptyState(props: Readonly<EmptyCatalogStateProps>) {
+  const { title, description, importButtonTitle } = props;
+
+  const catalogImportRoute = useRouteRef(catalogImportPlugin.routes.importPage);
+  const { allowed: canImport } = usePermission({
+    permission: catalogEntityCreatePermission,
+  });
+
+  const showImportButton =
+    Boolean(importButtonTitle) && Boolean(catalogImportRoute) && canImport;
+
+  return (
+    <Container my="4">
+      <EmptyState
+        title={title}
+        description={description}
+        action={
+          showImportButton ? (
+            <ButtonLink href={catalogImportRoute!()} variant="primary">
+              {importButtonTitle}
+            </ButtonLink>
+          ) : undefined
+        }
+      />
+    </Container>
+  );
 }
 
 /**
@@ -62,22 +102,7 @@ export function EmptyCatalogGate(
   }
 
   if (!state.hasEntities) {
-    const { title, description, importButtonTitle } = props.emptyState;
-    return (
-      <Container my="4">
-        <EmptyState
-          title={title}
-          description={description}
-          action={
-            importButtonTitle ? (
-              <ButtonLink href="/catalog-import" variant="primary">
-                {importButtonTitle}
-              </ButtonLink>
-            ) : undefined
-          }
-        />
-      </Container>
-    );
+    return <CatalogEmptyState {...props.emptyState} />;
   }
 
   return <>{props.children}</>;
