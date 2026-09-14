@@ -24,6 +24,7 @@ import {
   emptyOpenPrsWeightedAggregatedResponse,
   githubAggregatedResponse,
   jiraAggregatedResponse,
+  licenseFileExistsAggregatedResponse,
   licenseFileExistsKpiMetadataResponse,
   notAllowedAggregationErrorBody,
   openIssuesKpiMetadataResponse,
@@ -187,6 +188,11 @@ export async function mockAllDefaultHomepageAggregationsSuccess(
     page,
     ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
     openPrsWeightedAggregatedResponse,
+  );
+  await mockApiResponse(
+    page,
+    ScorecardRoutes.LICENSE_FILE_EXISTS_KPI_AGGREGATION_ROUTE,
+    licenseFileExistsAggregatedResponse,
   );
 
   await page.reload();
