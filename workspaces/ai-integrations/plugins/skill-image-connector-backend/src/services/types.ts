@@ -22,7 +22,15 @@ export interface ImageRef {
   repository: string;
   /** Tag (e.g. "1.0.0-draft"). Defaults to "latest" if omitted. */
   tag: string;
+  /** Digest (e.g. "sha256:abcdef..."). When set, used instead of tag for manifest fetch. */
+  digest?: string;
 }
+
+/** Maximum allowed blob download size in bytes (50 MB). */
+export const MAX_BLOB_SIZE = 50 * 1024 * 1024;
+
+/** Default fetch timeout in milliseconds (30 seconds). */
+export const FETCH_TIMEOUT_MS = 30_000;
 
 /** Minimal OCI manifest descriptor (image manifest V2 schema 2). */
 export interface OciManifest {
