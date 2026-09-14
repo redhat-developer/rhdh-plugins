@@ -18,7 +18,7 @@ _Re-audit following the `repository.url`/`websiteUrl` link-mapping revision (rep
 | F (Template / copy-paste residue)      | 0        | 0       | 1         |
 | G (Extended coherence)                 | 0        | 0       | 0          |
 | H (Security lint)                      | 0        | 2      | 0          |
-| **Total**                              | **0**    | **0**   | **0**      |
+| **Total**                              | **0**    | **4**   | **1**      |
 
 ### CRITICAL
 
