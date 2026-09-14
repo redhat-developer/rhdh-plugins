@@ -124,7 +124,7 @@ const DocumentsList = styled('div')(({ theme }) => ({
 
 const DocumentItem = styled('div')(({ theme }) => ({
   display: 'flex',
-  alignItems: 'flex-start',
+  alignItems: 'center',
   gap: theme.spacing(1),
   padding: `${theme.spacing(1)} ${theme.spacing(0.5)}`,
   borderRadius: 4,
@@ -150,7 +150,10 @@ const FileName = styled(Typography)({
   lineHeight: '1.25rem',
   cursor: 'pointer',
   borderRadius: 4,
-  padding: '2px 6px',
+  padding: '0 6px',
+  display: 'flex',
+  alignItems: 'center',
+  minHeight: '2rem',
   '&:hover': {
     backgroundColor:
       'var(--pf-t--global--background--color--action--plain--hover)',
@@ -201,11 +204,14 @@ const RenameHelperText = styled('div')({
 
 const SpinnerContainer = styled('div')({
   flexShrink: 0,
+  display: 'flex',
+  alignItems: 'center',
 });
 
 const KebabToggle = styled(CompactPlainMenuToggle)({
   flexShrink: 0,
   visibility: 'hidden',
+  alignSelf: 'center',
 });
 
 const KebabDropdown = styled(Dropdown)({
