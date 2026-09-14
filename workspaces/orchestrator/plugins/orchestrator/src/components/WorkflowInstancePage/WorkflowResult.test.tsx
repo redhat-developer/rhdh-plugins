@@ -25,10 +25,6 @@ import {
 
 import { WorkflowResult } from './WorkflowResult';
 
-const mockOrchestratorApi = {
-  getWorkflowOverview: jest.fn(),
-};
-
 jest.mock('@backstage/core-components', () => {
   const React = require('react');
 
@@ -40,30 +36,17 @@ jest.mock('@backstage/core-components', () => {
         React.createElement('h2', null, title),
         children,
       ),
-    Link: ({ children, to }: { children?: unknown; to: string }) =>
-      React.createElement('a', { href: to }, children),
-    MarkdownContent: ({ content }: { content: string }) =>
-      React.createElement('div', null, content),
-    StructuredMetadataTable: () => null,
   };
 });
 
 jest.mock('@backstage/core-plugin-api', () => ({
   ...jest.requireActual('@backstage/core-plugin-api'),
-  useApi: () => mockOrchestratorApi,
+  useApi: () => ({}),
   useRouteRef: () => () => '/orchestrator/workflows/next/run',
 }));
 
 jest.mock('@backstage/plugin-catalog', () => ({
-  AboutField: ({ label, children }: { label: string; children?: unknown }) => {
-    const React = require('react');
-    return React.createElement(
-      'div',
-      null,
-      React.createElement('span', null, label),
-      children,
-    );
-  },
+  AboutField: () => null,
 }));
 
 jest.mock('@mui/material/Alert', () => {
@@ -119,32 +102,10 @@ jest.mock('@mui/material/Button', () => {
 
 jest.mock('@mui/material/CircularProgress', () => () => null);
 jest.mock('@mui/material/Divider', () => () => null);
-jest.mock('@mui/material/List', () => {
-  const React = require('react');
-  return {
-    __esModule: true,
-    default: ({ children }: { children?: unknown }) =>
-      React.createElement('ul', null, children),
-  };
-});
-jest.mock('@mui/material/ListItem', () => {
-  const React = require('react');
-  return {
-    __esModule: true,
-    default: ({ children }: { children?: unknown }) =>
-      React.createElement('li', null, children),
-  };
-});
 
 jest.mock('tss-react/mui', () => ({
   makeStyles: () => () => () => ({
-    classes: {
-      cardContent: 'card-content',
-      outputGrid: 'output-grid',
-      links: 'links',
-      values: 'values',
-      errorIcon: 'error-icon',
-    },
+    classes: { cardContent: 'card-content' },
   }),
 }));
 
@@ -177,13 +138,6 @@ jest.mock('../ui/SamlSsoExpiredDialog', () => ({
 }));
 
 describe('WorkflowResult', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockOrchestratorApi.getWorkflowOverview.mockResolvedValue({
-      data: { name: 'Next workflow' },
-    });
-  });
-
   it('exposes the logs action for a failed run and opens its dialog', () => {
     const failedInstance = {
       id: 'run-1',

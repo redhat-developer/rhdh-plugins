@@ -58,18 +58,12 @@ jest.mock('@backstage/core-components', () => {
       ),
     Page: ({ children }: { children?: unknown }) =>
       React.createElement('div', null, children),
-    Progress: () => React.createElement('div', null, 'loading'),
-    ResponseErrorPanel: ({ error }: { error: Error }) =>
-      React.createElement('div', null, error.message),
   };
 });
 
 jest.mock('@backstage/core-plugin-api', () => ({
   ...jest.requireActual('@backstage/core-plugin-api'),
-  useApi: () => ({
-    getWorkflowDataInputSchema: jest.fn(),
-    getInstance: jest.fn(),
-  }),
+  useApi: () => ({}),
   useRouteRef:
     (routeRef: string) => (params: Record<string, string | undefined>) => {
       if (routeRef === 'workflowRouteRef') {
@@ -148,10 +142,6 @@ jest.mock('../../routes', () => ({
   workflowInstanceRouteRef: 'workflowInstanceRouteRef',
   workflowRouteRef: 'workflowRouteRef',
 }));
-
-jest.mock('../ui/BaseOrchestratorPage', () => {
-  return jest.requireActual('../ui/BaseOrchestratorPage');
-});
 
 jest.mock('../ui/InfoDialog', () => ({
   InfoDialog: () => null,

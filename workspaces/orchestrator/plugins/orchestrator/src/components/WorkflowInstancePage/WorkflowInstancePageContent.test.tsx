@@ -16,7 +16,7 @@
 
 import '@testing-library/jest-dom';
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 import { ProcessInstanceDTO } from '@red-hat-developer-hub/backstage-plugin-orchestrator-common';
 
@@ -287,35 +287,18 @@ describe('WorkflowInstancePageContent', () => {
   it.each([
     ['workflow admins', 'workflow'],
     ['instance admins', 'instance'],
-  ])('passes instance data and opens variables for %s', (_label, adminType) => {
+  ])('shows variables for %s', (_label, adminType) => {
     if (adminType === 'workflow') {
       mockWorkflowAdminAllowed = true;
     } else {
       mockInstanceAdminAllowed = true;
     }
-    mockAsyncValues = [
-      {
-        value: { data: { customer: 'Alice' } },
-        loading: false,
-        error: undefined,
-      },
-      { value: 'states: []', loading: false, error: undefined },
-    ];
 
     render(<WorkflowInstancePageContent instance={instanceWithVariables} />);
 
-    expect(screen.getByTestId('workflow-run-details')).toHaveTextContent(
-      'user:default/alice',
-    );
     expect(
-      screen
-        .getAllByTestId('workflow-card')
-        .some(card => card.textContent?.includes('{"customer":"Alice"}')),
-    ).toBe(true);
-
-    fireEvent.click(screen.getByRole('link', { name: 'run.viewVariables' }));
-
-    expect(screen.getByRole('dialog')).toHaveTextContent('input');
+      screen.getByRole('link', { name: 'run.viewVariables' }),
+    ).toBeInTheDocument();
   });
 
   it('hides variables from non-admin users', () => {

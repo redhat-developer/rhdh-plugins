@@ -34,21 +34,12 @@ jest.mock('@backstage/core-components', () => {
 });
 
 jest.mock('@backstage/core-plugin-api', () => ({
-  ...jest.requireActual('@backstage/core-plugin-api'),
   useApi: () => ({ getWorkflowOverview: mockGetWorkflowOverview }),
   useRouteRef: () => () => '/orchestrator/workflows/greeting',
 }));
 
 jest.mock('@backstage/plugin-catalog', () => ({
-  AboutField: ({ label, children }: { label: string; children?: unknown }) => {
-    const React = require('react');
-    return React.createElement(
-      'div',
-      null,
-      React.createElement('span', null, label),
-      children,
-    );
-  },
+  AboutField: ({ children }: { children?: unknown }) => children,
 }));
 
 jest.mock('@backstage/plugin-catalog-react', () => ({
@@ -59,43 +50,6 @@ jest.mock('@backstage/plugin-catalog-react', () => ({
 }));
 
 jest.mock('@mui/icons-material/ContentCopy', () => () => null);
-jest.mock('@mui/material/Box', () => {
-  const React = require('react');
-  return {
-    __esModule: true,
-    default: ({ children }: any) => React.createElement('div', null, children),
-  };
-});
-jest.mock('@mui/material/Grid', () => {
-  const React = require('react');
-  return {
-    __esModule: true,
-    default: ({ children }: any) => React.createElement('div', null, children),
-  };
-});
-jest.mock('@mui/material/IconButton', () => {
-  const React = require('react');
-  return {
-    __esModule: true,
-    default: ({ children }: any) =>
-      React.createElement('button', null, children),
-  };
-});
-jest.mock('@mui/material/Tooltip', () => {
-  const React = require('react');
-  return {
-    __esModule: true,
-    default: ({ children }: any) => React.createElement('span', null, children),
-  };
-});
-jest.mock('@mui/material/Typography', () => {
-  const React = require('react');
-  return {
-    __esModule: true,
-    default: ({ children }: any) => React.createElement('span', null, children),
-  };
-});
-
 jest.mock('../../api', () => ({
   orchestratorApiRef: {},
 }));
