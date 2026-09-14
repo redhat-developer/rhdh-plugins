@@ -59,7 +59,7 @@ export async function selectDisplayMode(
 
 export async function openChatHistoryDrawer(page: Page, t: LightspeedMessages) {
   const closeButton = page.getByRole('button', {
-    name: t['aria.closeDrawerPanel'],
+    name: t['tooltip.collapseHistoryPanel'],
   });
   const chatHistoryMenuButton = page.getByRole('button', {
     name: t['aria.chatHistoryMenu'],
@@ -89,7 +89,9 @@ export async function closeChatHistoryDrawer(
   page: Page,
   t: LightspeedMessages,
 ) {
-  await page.getByRole('button', { name: t['aria.closeDrawerPanel'] }).click();
+  await page
+    .getByRole('button', { name: t['tooltip.collapseHistoryPanel'] })
+    .click();
 }
 
 // Assertions

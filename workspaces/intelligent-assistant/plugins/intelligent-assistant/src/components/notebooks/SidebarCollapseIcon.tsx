@@ -50,19 +50,22 @@ export const SidebarExpandIcon = ({ className, size = 24 }: IconProps) => (
 type AddCircleFilledIconProps = {
   className?: string;
   disabled?: boolean;
+  size?: number;
 };
 
 export const AddCircleFilledIcon = ({
   className,
   disabled,
+  size = 16,
 }: AddCircleFilledIconProps) => (
   <svg
     className={className}
-    width="16"
-    height="16"
-    viewBox="0 0 16 16"
+    width={size}
+    height={size}
+    viewBox="0 0 15.5 15.5"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
+    style={{ display: 'block' }}
   >
     <path
       d="M7.75 0C12.0312 1.02089e-05 15.5 3.46877 15.5 7.75C15.5 12.0312 12.0312 15.5 7.75 15.5C3.46877 15.5 1.02086e-05 12.0312 0 7.75C0 3.46876 3.46876 0 7.75 0ZM6.875 3.25C6.66876 3.25 6.5 3.41876 6.5 3.625V6.5H3.625C3.41876 6.5 3.25 6.66876 3.25 6.875V8.625C3.25001 8.83123 3.41877 9 3.625 9H6.5V11.875C6.50002 12.0812 6.66877 12.25 6.875 12.25H8.625C8.83122 12.25 8.99998 12.0812 9 11.875V9H11.875C12.0812 8.99998 12.25 8.83122 12.25 8.625V6.875C12.25 6.66877 12.0812 6.50002 11.875 6.5H9V3.625C9 3.41877 8.83123 3.25001 8.625 3.25H6.875Z"

@@ -58,15 +58,23 @@ type StyledMessageBoxProps = {
   $isNewChat: boolean;
   $hasWelcomePrompts: boolean;
   $showPromptSuggestions: boolean;
+  $welcomePromptsTwoRowGrid?: boolean;
 };
 
 const StyledMessageBox = styled(MessageBox, {
   shouldForwardProp: prop =>
     prop !== '$isNewChat' &&
     prop !== '$hasWelcomePrompts' &&
-    prop !== '$showPromptSuggestions',
+    prop !== '$showPromptSuggestions' &&
+    prop !== '$welcomePromptsTwoRowGrid',
 })<StyledMessageBoxProps>(
-  ({ theme, $isNewChat, $hasWelcomePrompts, $showPromptSuggestions }) => ({
+  ({
+    theme,
+    $isNewChat,
+    $hasWelcomePrompts,
+    $showPromptSuggestions,
+    $welcomePromptsTwoRowGrid,
+  }) => ({
     maxWidth: 'unset !important',
     [`& .${DEEP_THINKING_CLASS}`]: {
       animation: `${deepThinkingPulse} 1.6s ease-in-out infinite`,
@@ -100,6 +108,21 @@ const StyledMessageBox = styled(MessageBox, {
           },
         }
       : {}),
+    ...($welcomePromptsTwoRowGrid
+      ? {
+          '& div.pf-chatbot__prompt-suggestions': {
+            display: 'grid !important',
+            gridTemplateColumns: 'repeat(2, minmax(0, 1fr)) !important',
+            flexDirection: 'unset !important',
+            alignItems: 'stretch !important',
+          },
+          '& div.pf-chatbot__prompt-suggestions > *': {
+            flex: 'unset !important',
+            height: 'auto !important',
+            maxWidth: 'none !important',
+          },
+        }
+      : {}),
   }),
 );
 
@@ -124,6 +147,8 @@ type LightspeedChatBoxProps = {
   displayMode?: ChatbotDisplayMode;
   /** When true, sources are shown as a compact chip + popover instead of the inline SourcesCard. */
   showSourcesChipPopover?: boolean;
+  /** Fullscreen with history + MCP open: 2-column welcome prompt grid (prototype layout). */
+  welcomePromptsTwoRowGrid?: boolean;
 };
 
 export interface ScrollContainerHandle {
@@ -142,6 +167,7 @@ export const LightspeedChatBox = forwardRef(
       isStreaming,
       displayMode,
       showSourcesChipPopover: showSourcesChipModal = false,
+      welcomePromptsTwoRowGrid = false,
     }: LightspeedChatBoxProps,
     ref: ForwardedRef<ScrollContainerHandle | null>,
   ) => {
@@ -208,6 +234,7 @@ export const LightspeedChatBox = forwardRef(
         $isNewChat={isNewChat}
         $hasWelcomePrompts={hasWelcomePrompts}
         $showPromptSuggestions={showPromptSuggestions}
+        $welcomePromptsTwoRowGrid={welcomePromptsTwoRowGrid}
         announcement={announcement}
         ref={containerRef}
         onScrollToTopClick={scrollToTop}
