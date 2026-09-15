@@ -138,7 +138,7 @@ The provider SHALL construct the servers endpoint as `<baseUrl>/<apiVersion>/ser
 
 ### Requirement: Map each registry server to an mcp-server API entity
 
-For every accumulated server entry, the provider SHALL extract the `server.json` document from the list entry's `.server` object and produce an `mcp-server` `API` entity by applying the `mcp-registry-server-mapping` transform, supplying the configured `defaultOwner` as the caller-override owner default and, when `baseName` is present, supplying `baseName` as the caller-override identity prefix. The provider SHALL NOT reimplement or alter the field mapping, annotation projection, or identity rules defined by `mcp-registry-server-mapping`. Each produced entity SHALL be emitted with mutation `locationKey` `mcp-registry-provider` **and** SHALL carry `backstage.io/managed-by-location` so the catalog attributes the entity to this provider.
+For every accumulated server entry, the provider SHALL extract the `server.json` document from the list entry's `.server` object and produce an `mcp-server` `API` entity by applying the `mcp-registry-server-mapping` transform, supplying the configured `defaultOwner` as the caller-override owner default and, when `baseName` is present, supplying `baseName` as the caller-override identity prefix. The provider SHALL NOT reimplement or alter the field mapping, annotation projection, or identity rules defined by `mcp-registry-server-mapping`. Each produced entity SHALL be emitted with mutation `locationKey` `mcp-registry-provider` **and** SHALL carry `backstage.io/managed-by-location` whose value is `url:` concatenated with the normalized configured `baseUrl` (trailing `/` removed), so the catalog attributes the entity to this provider's registry source.
 
 #### Scenario: Server mapped with configured default owner
 
@@ -162,8 +162,8 @@ For every accumulated server entry, the provider SHALL extract the `server.json`
 
 #### Scenario: Provider attribution annotations present
 
-- **WHEN** the provider produces an entity
-- **THEN** the entity's mutation `locationKey` is `mcp-registry-provider` and the entity carries `backstage.io/managed-by-location` so the catalog associates the entity with this provider and can prune it on removal
+- **WHEN** the provider is configured with `baseUrl: https://registry.example.com/` and produces an entity
+- **THEN** the entity's mutation `locationKey` is `mcp-registry-provider` and `metadata.annotations['backstage.io/managed-by-location']` is `url:https://registry.example.com`
 
 ### Requirement: Commit ingested entities as a full mutation
 
