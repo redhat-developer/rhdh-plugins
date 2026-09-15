@@ -181,7 +181,7 @@ should define the default and document the collision behavior.
 
 ### locationKey vs managed-by-location
 
-These are distinct mechanisms -- do not conflate them:
+These are distinct mechanisms — do not conflate them:
 - **`locationKey`** is set on the entity mutation and determines which
   provider owns the entity for processing. The catalog uses it to scope
   updates and deletions.
