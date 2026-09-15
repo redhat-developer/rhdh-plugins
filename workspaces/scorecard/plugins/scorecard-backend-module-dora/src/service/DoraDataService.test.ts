@@ -21,6 +21,7 @@ import {
 import {
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+  DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
 } from '../constants';
 import { createTestDatabase, EMPTY_INPUT_HASH } from '../database/__fixtures__';
 import { DefaultDoraDataService } from './DoraDataService';
@@ -94,6 +95,259 @@ describe('DefaultDoraDataService', () => {
             pullRequestsCollectorInputHash: null,
           },
         ]);
+      },
+    );
+  });
+
+  describe('readLatestProductionDeploymentBefore', () => {
+    const before = new Date('2026-06-01T00:00:00.000Z');
+
+    it.each(databases.eachSupportedId())(
+      'returns the latest production deployment strictly before the cutoff - %p',
+      async databaseId => {
+        const { deploymentsDb, dataService } = await createService(databaseId);
+        const entityRef = 'component:default/service-a';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+
+        await deploymentsDb.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-older-prod',
+            commitSha: 'sha-older-prod',
+            environment: 'production',
+            createdAt: new Date('2026-05-01T10:00:00.000Z'),
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-latest-prod',
+            commitSha: 'sha-latest-prod',
+            environment: 'production',
+            createdAt: new Date('2026-05-20T10:00:00.000Z'),
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-at-cutoff',
+            commitSha: 'sha-at-cutoff',
+            environment: 'production',
+            createdAt: before,
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-in-window',
+            commitSha: 'sha-in-window',
+            environment: 'production',
+            createdAt: new Date('2026-06-10T10:00:00.000Z'),
+          },
+        ]);
+
+        await expect(
+          dataService.readLatestProductionDeploymentBefore(entityRef, {
+            before,
+            productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+            collector: {
+              id: collectorId,
+              input: {},
+              inputHash: EMPTY_INPUT_HASH,
+            },
+          }),
+        ).resolves.toEqual(
+          expect.objectContaining({
+            originalDeploymentId: 'dep-latest-prod',
+            commitSha: 'sha-latest-prod',
+          }),
+        );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'skips a more recent non-production deploy to return the last production deploy - %p',
+      async databaseId => {
+        const { deploymentsDb, dataService } = await createService(databaseId);
+        const entityRef = 'component:default/service-a';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+
+        await deploymentsDb.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-prod',
+            commitSha: 'sha-prod',
+            environment: 'production',
+            createdAt: new Date('2026-05-10T10:00:00.000Z'),
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-staging',
+            commitSha: 'sha-staging',
+            environment: 'staging',
+            createdAt: new Date('2026-05-31T10:00:00.000Z'),
+          },
+        ]);
+
+        await expect(
+          dataService.readLatestProductionDeploymentBefore(entityRef, {
+            before,
+            productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+            collector: {
+              id: collectorId,
+              input: {},
+              inputHash: EMPTY_INPUT_HASH,
+            },
+          }),
+        ).resolves.toEqual(
+          expect.objectContaining({
+            originalDeploymentId: 'dep-prod',
+          }),
+        );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'treats a null environment as production - %p',
+      async databaseId => {
+        const { deploymentsDb, dataService } = await createService(databaseId);
+        const entityRef = 'component:default/service-a';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+
+        await deploymentsDb.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-null-env',
+            commitSha: 'sha-null-env',
+            environment: null,
+            createdAt: new Date('2026-05-31T10:00:00.000Z'),
+          },
+        ]);
+
+        await expect(
+          dataService.readLatestProductionDeploymentBefore(entityRef, {
+            before,
+            productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+            collector: {
+              id: collectorId,
+              input: {},
+              inputHash: EMPTY_INPUT_HASH,
+            },
+          }),
+        ).resolves.toEqual(
+          expect.objectContaining({
+            originalDeploymentId: 'dep-null-env',
+          }),
+        );
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'returns undefined when only non-production deployments exist before the cutoff - %p',
+      async databaseId => {
+        const { deploymentsDb, dataService } = await createService(databaseId);
+        const entityRef = 'component:default/service-a';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+
+        await deploymentsDb.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-staging',
+            commitSha: 'sha-staging',
+            environment: 'staging',
+            createdAt: new Date('2026-05-31T10:00:00.000Z'),
+          },
+        ]);
+
+        await expect(
+          dataService.readLatestProductionDeploymentBefore(entityRef, {
+            before,
+            productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+            collector: {
+              id: collectorId,
+              input: {},
+              inputHash: EMPTY_INPUT_HASH,
+            },
+          }),
+        ).resolves.toBeUndefined();
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'returns undefined when there are no deployments before the cutoff - %p',
+      async databaseId => {
+        const { dataService } = await createService(databaseId);
+
+        await expect(
+          dataService.readLatestProductionDeploymentBefore(
+            'component:default/service-a',
+            {
+              before,
+              productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+              collector: {
+                id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+                input: {},
+                inputHash: EMPTY_INPUT_HASH,
+              },
+            },
+          ),
+        ).resolves.toBeUndefined();
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'uses configured productionEnvironments when selecting the latest deploy - %p',
+      async databaseId => {
+        const { deploymentsDb, dataService } = await createService(databaseId);
+        const entityRef = 'component:default/service-a';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+
+        await deploymentsDb.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-default-prod',
+            commitSha: 'sha-default-prod',
+            environment: 'production',
+            createdAt: new Date('2026-05-20T10:00:00.000Z'),
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-prod-alias',
+            commitSha: 'sha-prod-alias',
+            environment: 'prod',
+            createdAt: new Date('2026-05-31T10:00:00.000Z'),
+          },
+        ]);
+
+        await expect(
+          dataService.readLatestProductionDeploymentBefore(entityRef, {
+            before,
+            productionEnvironments: ['prod'],
+            collector: {
+              id: collectorId,
+              input: {},
+              inputHash: EMPTY_INPUT_HASH,
+            },
+          }),
+        ).resolves.toEqual(
+          expect.objectContaining({
+            originalDeploymentId: 'dep-prod-alias',
+          }),
+        );
       },
     );
   });

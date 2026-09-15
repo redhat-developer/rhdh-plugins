@@ -42,7 +42,6 @@
     "@backstage/catalog-client": "^1.16.1",
     "@backstage/catalog-model": "^1.10.0",
     "@backstage/integration": "^2.1.1",
-    "@backstage/plugin-catalog-node": "^2.2.4",
     "@octokit/graphql": "^9.0.1",
     "@octokit/rest": "^20.1.1",
     "@red-hat-developer-hub/backstage-plugin-scorecard-common": "workspace:^",

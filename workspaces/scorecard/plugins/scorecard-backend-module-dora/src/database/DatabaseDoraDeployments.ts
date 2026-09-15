@@ -36,6 +36,17 @@ export interface DoraDeploymentsStore {
     from: Date,
     to: Date,
   ): Promise<DbDoraDeployment[]>;
+  /**
+   * Newest deployments with `created_at` strictly before `before`, for the
+   * entity and collector identity. Callers filter to production.
+   */
+  readCandidatesBefore(
+    catalogEntityRef: string,
+    collectorId: string,
+    collectorInputHash: string,
+    before: Date,
+    limit: number,
+  ): Promise<DbDoraDeployment[]>;
   markPullRequestsSynced(
     deploymentId: string,
     pullRequestsSync: {
@@ -92,6 +103,32 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
       .andWhere('created_at', '>=', from)
       .andWhere('created_at', '<=', to)
       .orderBy('created_at', 'asc');
+
+    return rows.map(fromDoraDeploymentRow);
+  }
+
+  async readCandidatesBefore(
+    catalogEntityRef: string,
+    collectorId: string,
+    collectorInputHash: string,
+    before: Date,
+    limit: number,
+  ): Promise<DbDoraDeployment[]> {
+    if (limit <= 0) {
+      return [];
+    }
+
+    const rows = await this.dbClient<DbDoraDeploymentRow>(this.tableName)
+      .select('*')
+      .where('catalog_entity_ref', catalogEntityRef)
+      .andWhere('collector_id', collectorId)
+      .andWhere('collector_input_hash', collectorInputHash)
+      .andWhere('created_at', '<', before)
+      .orderBy([
+        { column: 'created_at', order: 'desc' },
+        { column: 'id', order: 'desc' },
+      ])
+      .limit(limit);
 
     return rows.map(fromDoraDeploymentRow);
   }
