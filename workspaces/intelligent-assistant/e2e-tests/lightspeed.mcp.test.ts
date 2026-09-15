@@ -37,6 +37,7 @@ import {
   openMcpSettingsPanel,
   closeMcpSettingsPanel,
   mcpConfigureModalSaveButton,
+  mcpConfigureModalCloseButton,
   mcpCredentialConfigureModal,
   mcpEditServerButton,
   mcpPersonalAccessTokenInput,
@@ -402,11 +403,7 @@ test.describe('Intelligent assistant MCP', () => {
             ).toBeVisible();
           }
 
-          await modal
-            .getByRole('button', {
-              name: translations['mcp.settings.closeConfigureModalAriaLabel'],
-            })
-            .click();
+          await mcpConfigureModalCloseButton(sharedPage).click();
           await mcpToken.closeMcpPanel();
         });
 
