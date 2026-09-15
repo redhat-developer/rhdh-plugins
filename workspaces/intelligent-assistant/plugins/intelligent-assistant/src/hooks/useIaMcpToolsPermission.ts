@@ -16,12 +16,18 @@
 
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import { iaChatPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+import { iaMcpToolsPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
-export const useLightspeedDeletePermission = () => {
-  const lightspeedDeletePermissionResult = usePermission({
-    permission: iaChatPermission,
+export const useIaMcpToolsPermission = (): {
+  loading: boolean;
+  allowed: boolean;
+} => {
+  const result = usePermission({
+    permission: iaMcpToolsPermission,
   });
 
-  return lightspeedDeletePermissionResult;
+  return {
+    loading: result.loading,
+    allowed: result.allowed,
+  };
 };

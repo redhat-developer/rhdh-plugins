@@ -16,28 +16,31 @@
 
 import { defineConfig } from '@playwright/test';
 
-// APP_MODE: 'legacy' (app-legacy) or 'nfs' (packages/app with new frontend)
-const LOCALES = ['en', 'de', 'es', 'fr', 'it', 'ja'] as const;
 const appMode = process.env.APP_MODE || 'legacy';
 const startCommand = appMode === 'legacy' ? 'yarn start:legacy' : 'yarn start';
-
-// Config paths (absolute to work from any cwd)
 const baseConfig = `${__dirname}/app-config.yaml`;
+const rbacE2eConfig = `${__dirname}/app-config.e2e-rbac.yaml`;
 
+/**
+ * Isolated Playwright config for RBAC permission gating e2e.
+ * Starts the app with permission.enabled so authorize calls hit the network
+ * and the per-scenario route mock can apply deny matrices.
+ */
 export default defineConfig({
-  timeout: 2 * 60 * 1000,
+  timeout: 3 * 60 * 1000,
 
   expect: {
-    timeout: 5000,
+    timeout: 15_000,
   },
 
   webServer: process.env.PLAYWRIGHT_URL
     ? []
     : {
-        command: `${startCommand} --config ${baseConfig}`,
+        command: `${startCommand} --config ${baseConfig} --config ${rbacE2eConfig}`,
         port: 3000,
-        reuseExistingServer: true,
+        reuseExistingServer: !process.env.CI,
         cwd: __dirname,
+        timeout: 4 * 60 * 1000,
         env: {
           NOTEBOOKS_ENABLED: 'true',
           NOTEBOOKS_QUERY_MODEL: 'gpt-4',
@@ -48,7 +51,13 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
 
   reporter: [
-    ['html', { open: 'never', outputFolder: `e2e-test-report-${appMode}` }],
+    [
+      'html',
+      {
+        open: 'never',
+        outputFolder: `e2e-test-report-rbac-${appMode}`,
+      },
+    ],
   ],
 
   use: {
@@ -56,18 +65,13 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     trace: 'on-first-retry',
     permissions: ['clipboard-read', 'clipboard-write'],
+    channel: 'chrome',
+    locale: 'en-US',
   },
 
-  outputDir: `node_modules/.cache/e2e-test-results-${appMode}`,
+  outputDir: `node_modules/.cache/e2e-test-results-rbac-${appMode}`,
 
   testDir: 'e2e-tests',
-
-  projects: LOCALES.map(locale => ({
-    name: locale,
-    testIgnore: '**/lightspeed.permissions.test.ts',
-    use: {
-      channel: 'chrome' as const,
-      locale,
-    },
-  })),
+  testMatch: '**/lightspeed.permissions.test.ts',
+  fullyParallel: false,
 });

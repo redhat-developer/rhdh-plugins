@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-import { useTranslation } from '../hooks/useTranslation';
-import permissionRequired from '../images/permission-required.svg';
+import { usePermission } from '@backstage/plugin-permission-react';
 
-export const PermissionRequiredIcon = () => {
-  const { t } = useTranslation();
+import { iaChatPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
-  return (
-    <img
-      src={permissionRequired as any}
-      alt={t('icon.permissionRequired.alt')}
-      style={{ width: 'clamp(200px, 50cqi, 600px)' }}
-    />
-  );
+export const useIaChatPermission = (): {
+  loading: boolean;
+  allowed: boolean;
+} => {
+  const result = usePermission({
+    permission: iaChatPermission,
+  });
+
+  return {
+    loading: result.loading,
+    allowed: result.allowed,
+  };
 };

@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import { Content, Header, Page } from '@backstage/core-components';
+import { Content, ErrorPage, Header, Page } from '@backstage/core-components';
 
+import { useIaChatPermission } from '../hooks/useIaChatPermission';
+import { useIaNotebooksPermission } from '../hooks/useIaNotebooksPermission';
 import { useTranslation } from '../hooks/useTranslation';
 import { LightspeedChatContainer } from './LightspeedChatContainer';
 
@@ -25,6 +27,18 @@ import { LightspeedChatContainer } from './LightspeedChatContainer';
  */
 export const LightspeedPage = () => {
   const { t } = useTranslation();
+  const { allowed: hasChatAccess, loading: chatPermissionLoading } =
+    useIaChatPermission();
+  const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
+    useIaNotebooksPermission();
+
+  const permissionsLoading =
+    chatPermissionLoading || notebooksPermissionLoading;
+  const hasPluginAccess = hasChatAccess || hasNotebooksAccess;
+
+  if (!permissionsLoading && !hasPluginAccess) {
+    return <ErrorPage status="404" statusMessage="Page not found" />;
+  }
 
   return (
     <Page themeId="tool">

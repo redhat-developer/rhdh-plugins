@@ -17,6 +17,8 @@
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 import { fireEvent, render, screen } from '@testing-library/react';
 
+import { useIaChatPermission } from '../../hooks/useIaChatPermission';
+import { useIaNotebooksPermission } from '../../hooks/useIaNotebooksPermission';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import { LightspeedDrawerContext } from '../LightspeedDrawerContext';
 import { LightspeedFAB } from '../LightspeedFAB';
@@ -25,8 +27,23 @@ jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: jest.fn(() => mockUseTranslation()),
 }));
 
+jest.mock('../../hooks/useIaChatPermission', () => ({
+  useIaChatPermission: jest.fn(),
+}));
+
+jest.mock('../../hooks/useIaNotebooksPermission', () => ({
+  useIaNotebooksPermission: jest.fn(),
+}));
+
 describe('LightspeedFAB', () => {
   const mockToggleChatbot = jest.fn();
+  const mockUseIaChatPermission = useIaChatPermission as jest.MockedFunction<
+    typeof useIaChatPermission
+  >;
+  const mockUseIaNotebooksPermission =
+    useIaNotebooksPermission as jest.MockedFunction<
+      typeof useIaNotebooksPermission
+    >;
 
   const createContextValue = (overrides = {}) => ({
     isChatbotActive: false,
@@ -60,6 +77,14 @@ describe('LightspeedFAB', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    mockUseIaChatPermission.mockReturnValue({
+      allowed: true,
+      loading: false,
+    });
+    mockUseIaNotebooksPermission.mockReturnValue({
+      allowed: true,
+      loading: false,
+    });
   });
 
   it('should render FAB button when displayMode is overlay', () => {
@@ -92,6 +117,59 @@ describe('LightspeedFAB', () => {
     renderWithContext(
       createContextValue({
         displayMode: ChatbotDisplayMode.embedded,
+      }),
+    );
+
+    expect(screen.queryByTestId('lightspeed-fab')).not.toBeInTheDocument();
+  });
+
+  it('should not render FAB when user lacks chat and notebooks permissions', () => {
+    mockUseIaChatPermission.mockReturnValue({
+      allowed: false,
+      loading: false,
+    });
+    mockUseIaNotebooksPermission.mockReturnValue({
+      allowed: false,
+      loading: false,
+    });
+
+    renderWithContext(
+      createContextValue({
+        displayMode: ChatbotDisplayMode.default,
+      }),
+    );
+
+    expect(screen.queryByTestId('lightspeed-fab')).not.toBeInTheDocument();
+  });
+
+  it('should render FAB when user has only notebooks permission', () => {
+    mockUseIaChatPermission.mockReturnValue({
+      allowed: false,
+      loading: false,
+    });
+    mockUseIaNotebooksPermission.mockReturnValue({
+      allowed: true,
+      loading: false,
+    });
+
+    renderWithContext(
+      createContextValue({
+        displayMode: ChatbotDisplayMode.default,
+      }),
+    );
+
+    expect(screen.getByTestId('lightspeed-fab')).toBeInTheDocument();
+  });
+
+  it('should not render FAB while permissions are loading', () => {
+    mockUseIaChatPermission.mockReturnValue({
+      allowed: false,
+      loading: true,
+    });
+
+    renderWithContext(
+      createContextValue({
+        displayMode: ChatbotDisplayMode.default,
       }),
     );
 
