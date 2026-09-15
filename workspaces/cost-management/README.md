@@ -14,6 +14,10 @@ The OpenShift section displays cost tracking for OpenShift clusters with flexibl
 
 The Optimizations section allows users to visualize usage trends and receive optimization recommendations for workloads running on OpenShift clusters. There is also an option to automatically apply recommendations. Refer to [Optimizer App](#optimizer-app) section for more details.
 
+## Architecture
+
+New to this plugin? Start with [docs/walkthrough-architecture-api.md](./docs/walkthrough-architecture-api.md) for a high-level overview of architecture and API flow. For a full breakdown of the frontend/backend/common packages, request flows, permission model, and security design, see [docs/architecture.md](./docs/architecture.md). For a detailed, code-level walkthrough of every API call the plugin makes (exact requests/responses, auth at each hop, config, and debugging tips), see [docs/api-flow.md](./docs/api-flow.md).
+
 ## Getting started
 
 ### Prerequisite
