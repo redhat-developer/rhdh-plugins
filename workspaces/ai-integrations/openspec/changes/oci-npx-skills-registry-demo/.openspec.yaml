@@ -1,0 +1,7 @@
+schema: spec-driven
+created: 2026-09-15
+updated: 2026-09-15
+status: draft
+notes: >-
+  Demo-only catalog entity providers for public OCI skillimage and
+  npx-compatible skill registries.
