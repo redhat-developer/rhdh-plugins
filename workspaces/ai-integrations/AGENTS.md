@@ -165,6 +165,47 @@ The upstream PR number must be documented in the changeset description or
 linked issue so reviewers (human and automated) can verify the upstream
 alignment.
 
+## Entity Provider Design Concepts
+
+Reference for reviewing and authoring entity provider specifications
+(OpenSpec files under `openspec/changes/`).
+
+### Entity identity
+
+Backstage catalog entities are uniquely identified by `(kind, namespace,
+name)`. When multiple providers can emit the same identity tuple, the
+specification must state how the provider constructs each component and
+what happens when a collision with another provider is possible. If the
+provider uses caller-supplied prefixes for scoping, the specification
+should define the default and document the collision behavior.
+
+### locationKey vs managed-by-location
+
+These are distinct mechanisms -- do not conflate them:
+- **`locationKey`** is set on the entity mutation and determines which
+  provider owns the entity for processing. The catalog uses it to scope
+  updates and deletions.
+- **`backstage.io/managed-by-location`** is an annotation on the entity
+  showing provenance (which location ingested it). It is informational.
+
+### Full mutation semantics
+
+`type: 'full'` mutations replace the entire set of entities owned by
+the provider's locationKey. An entity absent from the next full mutation
+is pruned from the catalog. Specifications must explicitly state what
+happens when a previously valid entity becomes unmappable (transient
+failure, schema drift): is it pruned or retained from the last
+successful sync? If retained, how is the stale state communicated?
+
+### Annotation data contracts
+
+When a specification promises that upstream fields are projected into
+catalog annotations, it creates a round-trip contract: the original
+value should be recoverable. URL normalization, truncation, or lossy
+transforms can violate this. Specifications should state which fields
+are preserved exactly and which are normalized, and provide a separate
+annotation for the original value when normalization is lossy.
+
 ## PR Conventions
 
 - All commits must have an `Assisted-by: <model>` footer below the sign offs
