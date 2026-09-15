@@ -27,8 +27,8 @@ import HelpIcon from '@mui/icons-material/HelpOutline';
  * the spacer and dividers, and the notifications item come from the app
  * defaults module itself.
  *
- * - `Help` is an action item (no `to`) that opens the Backstage docs in a
- *   new tab and sits in the bottom block next to notifications.
+ * - `Help` is an action item (no `to`) that opens the Red Hat Developer
+ *   Hub documentation in a new tab and sits in the bottom block next to notifications.
  * - `Docs` and `APIs` take over the auto-discovered TechDocs and API docs
  *   nav items (same `to`) and move them into the `Documentation` group.
  * - The `Documentation` group uses the default inline submenu, while the
@@ -45,7 +45,11 @@ const helpItem = SidebarItemBlueprint.make({
     title: 'Help',
     icon: HelpIcon,
     onClick: () => {
-      window.open('https://backstage.io/docs', '_blank', 'noopener');
+      window.open(
+        'https://access.redhat.com/documentation/red_hat_developer_hub',
+        '_blank',
+        'noopener',
+      );
     },
     priority: -50,
   },
