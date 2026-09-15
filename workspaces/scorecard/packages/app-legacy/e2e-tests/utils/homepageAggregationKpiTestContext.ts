@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
-import { bulkImportPermission } from './permissions';
+import type { Page } from '@playwright/test';
+import type { HomePage } from '../pages/HomePage';
+import type { ScorecardDrillDownPage } from '../pages/ScorecardDrillDownPage';
+import type { ScorecardMessages } from './translationUtils';
 
-describe('bulkImportPermission', () => {
-  it('exports the stable permission name as a feature permission', () => {
-    expect(bulkImportPermission.name).toBe('bulk.import');
-    expect(bulkImportPermission.attributes).toEqual({});
-    expect(bulkImportPermission).not.toHaveProperty('resourceType');
-  });
-});
+export type HomepageAggregationKpiTestContext = {
+  page: Page;
+  homePage: HomePage;
+  scorecardDrillDownPage: ScorecardDrillDownPage;
+  translations: ScorecardMessages;
+  currentLocale: string;
+};

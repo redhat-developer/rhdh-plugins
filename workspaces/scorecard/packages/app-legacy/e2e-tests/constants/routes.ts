@@ -35,4 +35,11 @@ export const ScorecardRoutes = {
     '**/api/scorecard/aggregations/github.openPRs',
   LICENSE_FILE_EXISTS_KPI_AGGREGATION_ROUTE:
     '**/api/scorecard/aggregations/licenseFileExistsKpi',
+  TOTAL_OPEN_BUGS_AGGREGATION_ROUTE:
+    '**/api/scorecard/aggregations/totalOpenBugs',
+  AVG_OPEN_PRS_AGGREGATION_ROUTE: '**/api/scorecard/aggregations/avgOpenPrs',
+  ENTITIES_WITH_OPEN_PRS_AGGREGATION_ROUTE:
+    '**/api/scorecard/aggregations/entitiesWithOpenPrs',
+  MAX_OPEN_PRS_AGGREGATION_ROUTE: '**/api/scorecard/aggregations/maxOpenPrs',
+  MIN_OPEN_PRS_AGGREGATION_ROUTE: '**/api/scorecard/aggregations/minOpenPrs',
 } as const;

@@ -312,6 +312,156 @@ const mountPoints: HomePageCardMountPoint[] = [
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
+      id: 'scorecard-totalOpenBugs',
+      title: 'Scorecard: Total open bugs',
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      layouts: {
+        xl: { w: 4, h: 6 },
+        lg: { w: 4, h: 6 },
+        md: { w: 4, h: 6 },
+        sm: { w: 4, h: 6 },
+        xs: { w: 4, h: 6 },
+        xxs: { w: 4, h: 6 },
+      },
+      props: {
+        aggregationId: 'totalOpenBugs',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-avgOpenPrs',
+      title: 'Scorecard: Average open PRs',
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      layouts: {
+        xl: { w: 4, h: 6, x: 4 },
+        lg: { w: 4, h: 6, x: 4 },
+        md: { w: 4, h: 6, x: 4 },
+        sm: { w: 4, h: 6, x: 4 },
+        xs: { w: 4, h: 6, x: 4 },
+        xxs: { w: 4, h: 6, x: 4 },
+      },
+      props: {
+        aggregationId: 'avgOpenPrs',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-entitiesWithOpenPrs',
+      title: 'Scorecard: Entities with open PRs',
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      layouts: {
+        xl: { w: 4, h: 6, x: 8 },
+        lg: { w: 4, h: 6, x: 8 },
+        md: { w: 4, h: 6, x: 8 },
+        sm: { w: 4, h: 6, x: 8 },
+        xs: { w: 4, h: 6, x: 8 },
+        xxs: { w: 4, h: 6, x: 8 },
+      },
+      props: {
+        aggregationId: 'entitiesWithOpenPrs',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-maxOpenPrs',
+      title: 'Scorecard: Maximum open PRs',
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      layouts: {
+        xl: { w: 4, h: 6 },
+        lg: { w: 4, h: 6 },
+        md: { w: 4, h: 6 },
+        sm: { w: 4, h: 6 },
+        xs: { w: 4, h: 6 },
+        xxs: { w: 4, h: 6 },
+      },
+      props: {
+        aggregationId: 'maxOpenPrs',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
+      id: 'scorecard-minOpenPrs',
+      title: 'Scorecard: Minimum open PRs',
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      layouts: {
+        xl: { w: 4, h: 6, x: 4 },
+        lg: { w: 4, h: 6, x: 4 },
+        md: { w: 4, h: 6, x: 4 },
+        sm: { w: 4, h: 6, x: 4 },
+        xs: { w: 4, h: 6, x: 4 },
+        xxs: { w: 4, h: 6, x: 4 },
+      },
+      props: {
+        aggregationId: 'minOpenPrs',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
       id: 'scorecard-customizable',
       title: 'Scorecard: Customizable',
       // Supported card layout

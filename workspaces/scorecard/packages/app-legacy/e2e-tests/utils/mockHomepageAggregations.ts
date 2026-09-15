@@ -33,6 +33,13 @@ import {
   openPrsWeightedKpiMetadataResponse,
 } from './scorecardResponseUtils';
 import { AGGREGATED_CARDS_METRIC_IDS } from '../constants/aggregations';
+import {
+  avgOpenPrsAggregatedResponse,
+  entitiesWithOpenPrsAggregatedResponse,
+  maxOpenPrsAggregatedResponse,
+  minOpenPrsAggregatedResponse,
+  totalOpenBugsAggregatedResponse,
+} from './scalarAggregationTypeResponses';
 
 function aggregationMetadataForRequestUrl(url: string): object {
   if (url.includes('openIssuesKpi')) {
@@ -194,6 +201,30 @@ export async function mockAllDefaultHomepageAggregationsSuccess(
     ScorecardRoutes.LICENSE_FILE_EXISTS_KPI_AGGREGATION_ROUTE,
     licenseFileExistsAggregatedResponse,
   );
-
+  await mockApiResponse(
+    page,
+    ScorecardRoutes.TOTAL_OPEN_BUGS_AGGREGATION_ROUTE,
+    totalOpenBugsAggregatedResponse,
+  );
+  await mockApiResponse(
+    page,
+    ScorecardRoutes.AVG_OPEN_PRS_AGGREGATION_ROUTE,
+    avgOpenPrsAggregatedResponse,
+  );
+  await mockApiResponse(
+    page,
+    ScorecardRoutes.ENTITIES_WITH_OPEN_PRS_AGGREGATION_ROUTE,
+    entitiesWithOpenPrsAggregatedResponse,
+  );
+  await mockApiResponse(
+    page,
+    ScorecardRoutes.MAX_OPEN_PRS_AGGREGATION_ROUTE,
+    maxOpenPrsAggregatedResponse,
+  );
+  await mockApiResponse(
+    page,
+    ScorecardRoutes.MIN_OPEN_PRS_AGGREGATION_ROUTE,
+    minOpenPrsAggregatedResponse,
+  );
   await page.reload();
 }
