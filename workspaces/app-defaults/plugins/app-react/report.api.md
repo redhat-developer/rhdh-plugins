@@ -9,6 +9,7 @@ import { ExtensionBlueprint } from '@backstage/frontend-plugin-api';
 import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionInput } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
+import type { IconComponent } from '@backstage/frontend-plugin-api';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { SwappableComponentRef } from '@backstage/frontend-plugin-api';
@@ -133,6 +134,108 @@ export interface DrawerPanelProps {
   minWidth?: number;
   onWidthChange?: (width: number) => void;
 }
+
+// @public
+export type SidebarIcon = IconComponent | string;
+
+// @public
+export const SidebarItemBlueprint: ExtensionBlueprint<{
+  kind: 'sidebar-item';
+  params: {
+    title: string;
+    icon?: SidebarIcon;
+    to?: string;
+    onClick?: () => void;
+    priority?: number;
+    group?: string;
+  };
+  output: ExtensionDataRef<SidebarItemData, 'app.sidebar.item', {}>;
+  inputs: {};
+  config: {
+    title: string | undefined;
+    icon: string | undefined;
+    to: string | undefined;
+    priority: number | undefined;
+    group: string | undefined;
+  };
+  configInput: {
+    title?: string | undefined;
+    icon?: string | undefined;
+    to?: string | undefined;
+    priority?: number | undefined;
+    group?: string | undefined;
+  };
+  dataRefs: {
+    item: ConfigurableExtensionDataRef<SidebarItemData, 'app.sidebar.item', {}>;
+  };
+}>;
+
+// @public
+export interface SidebarItemData {
+  group?: string;
+  icon?: SidebarIcon;
+  id: string;
+  onClick?: () => void;
+  priority?: number;
+  title: string;
+  to?: string;
+}
+
+// @public
+export const sidebarItemDataRef: ConfigurableExtensionDataRef<
+  SidebarItemData,
+  'app.sidebar.item',
+  {}
+>;
+
+// @public
+export const SidebarItemGroupBlueprint: ExtensionBlueprint<{
+  kind: 'sidebar-item-group';
+  params: {
+    id: string;
+    title: string;
+    icon?: SidebarIcon;
+    to?: string;
+    priority?: number;
+  };
+  output: ExtensionDataRef<SidebarItemGroupData, 'app.sidebar.item-group', {}>;
+  inputs: {};
+  config: {
+    title: string | undefined;
+    icon: string | undefined;
+    to: string | undefined;
+    priority: number | undefined;
+  };
+  configInput: {
+    title?: string | undefined;
+    icon?: string | undefined;
+    to?: string | undefined;
+    priority?: number | undefined;
+  };
+  dataRefs: {
+    group: ConfigurableExtensionDataRef<
+      SidebarItemGroupData,
+      'app.sidebar.item-group',
+      {}
+    >;
+  };
+}>;
+
+// @public
+export interface SidebarItemGroupData {
+  icon?: SidebarIcon;
+  id: string;
+  priority?: number;
+  title: string;
+  to?: string;
+}
+
+// @public
+export const sidebarItemGroupDataRef: ConfigurableExtensionDataRef<
+  SidebarItemGroupData,
+  'app.sidebar.item-group',
+  {}
+>;
 
 // @public
 export const TemplateCardActionBlueprint: ExtensionBlueprint<{

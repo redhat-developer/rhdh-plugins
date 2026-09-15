@@ -9,40 +9,17 @@ import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionInput } from '@backstage/frontend-plugin-api';
 import { FrontendFeatureLoader } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
-import { JSX as JSX_2 } from 'react';
+import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { NavContentComponent } from '@backstage/plugin-app-react';
+import type { NavContentNavItems } from '@backstage/plugin-app-react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { ReactNode } from 'react';
-import { TranslationRef } from '@backstage/frontend-plugin-api';
+import { SidebarItemData } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { SidebarItemGroupData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public
 export const appDefaultsModule: FrontendModule;
-
-// @public
-export const appDefaultsTranslationRef: TranslationRef<
-  'plugin.app-defaults',
-  {
-    readonly 'catalog.emptyState.title': 'No catalog items available';
-    readonly 'catalog.emptyState.description': 'There are no catalog entities yet, or you do not have permission to view any. They will appear here once they are registered and you have access.';
-    readonly 'catalog.emptyState.importButtonTitle': 'Register a component';
-    readonly 'catalogGraph.emptyState.title': 'No catalog items available';
-    readonly 'catalogGraph.emptyState.description': 'There are no catalog entities yet, or you do not have permission to view any. The catalog graph will appear here once they are registered and you have access.';
-    readonly 'catalogGraph.emptyState.importButtonTitle': 'Register a component';
-    readonly 'scaffolder.emptyState.title': 'No templates available';
-    readonly 'scaffolder.emptyState.description': 'There are no software templates yet, or you do not have permission to view any. They will appear here once they are registered and you have access.';
-    readonly 'scaffolder.emptyState.importButtonTitle': 'Register a template';
-    readonly 'apiDocs.emptyState.title': 'No APIs available';
-    readonly 'apiDocs.emptyState.description': 'There are no APIs yet, or you do not have permission to view any. They will appear here once they are registered and you have access.';
-    readonly 'apiDocs.emptyState.importButtonTitle': 'Register an API';
-    readonly 'docs.emptyState.title': 'No documentation available';
-    readonly 'docs.emptyState.description': 'There are no documented entities yet, or you do not have permission to view any. Documentation will appear here once entities with TechDocs annotations are registered and you have access.';
-    readonly 'docs.emptyState.importButtonTitle': 'Register a component';
-    readonly 'menuItem.learningPaths': 'Learning Paths';
-    readonly 'learningPaths.title': 'Learning Paths';
-    readonly 'learningPaths.error.title': 'Could not fetch data.';
-    readonly 'learningPaths.error.unknownError': 'Unknown error';
-  }
->;
 
 // @public
 export const appDefaultsTranslations: TranslationResource<'plugin.app-defaults'>;
@@ -81,27 +58,59 @@ export const appDrawerExtension: OverridableExtensionDefinition<{
 export const appDrawerModule: FrontendModule;
 
 // @public
-export const autoLogoutElement: OverridableExtensionDefinition<{
-  kind: 'app-root-element';
-  name: 'auto-logout';
+export const AppSidebar: (input: AppSidebarProps) => JSX_2.Element;
+
+// @public
+export const appSidebarExtension: OverridableExtensionDefinition<{
   config: {};
   configInput: {};
-  output: ExtensionDataRef<JSX_2.Element, 'core.reactElement', {}>;
-  inputs: {};
+  output: ExtensionDataRef<
+    NavContentComponent,
+    'core.nav-content.component',
+    {}
+  >;
+  inputs: {
+    items: ExtensionInput<
+      ConfigurableExtensionDataRef<SidebarItemData, 'app.sidebar.item', {}>,
+      {
+        singleton: false;
+        optional: false;
+        internal: false;
+      }
+    >;
+    groups: ExtensionInput<
+      ConfigurableExtensionDataRef<
+        SidebarItemGroupData,
+        'app.sidebar.item-group',
+        {}
+      >,
+      {
+        singleton: false;
+        optional: false;
+        internal: false;
+      }
+    >;
+  };
+  kind: 'nav-content';
+  name: 'sidebar';
   params: {
-    element: JSX.Element;
+    component: NavContentComponent;
   };
 }>;
 
 // @public
-export const catalogModule: FrontendModule;
+export const appSidebarModule: FrontendModule;
+
+// @public
+export interface AppSidebarProps {
+  groups: SidebarItemGroupData[];
+  items: SidebarItemData[];
+  navItems?: NavContentNavItems;
+}
 
 // @public
 const _default: FrontendFeatureLoader;
 export default _default;
-
-// @public
-export const learningPathsModule: FrontendModule;
 
 // (No @packageDocumentation comment for this package)
 ```

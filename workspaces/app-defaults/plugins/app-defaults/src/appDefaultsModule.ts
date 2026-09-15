@@ -24,13 +24,15 @@ import {
 import { autoLogoutElement } from './autoLogout/autoLogoutExtension';
 import { appDrawerExtension } from './drawer/appDrawerModule';
 import { commonIconsExtension } from './icons/commonIconsExtension';
+import { appSidebarExtension } from './sidebar/appSidebarModule';
 import { appDefaultsTranslations } from './translations';
 
 /**
  * RHDH app module for `pluginId: 'app'`.
- * Provides the application drawer, the extensible scaffolder template card,
- * the common RHDH icon catalog (`IconBundleBlueprint`), and the AutoLogout
- * mechanism (disabled by default; opt-in via `auth.autologout.enabled: true`).
+ * Provides the application drawer, the priority-ordered sidebar, the
+ * extensible scaffolder template card, the common RHDH icon catalog
+ * (`IconBundleBlueprint`), and the AutoLogout mechanism (disabled by default;
+ * opt-in via `auth.autologout.enabled: true`).
  * Default-export this module for dynamic frontend loading.
  *
  * @public
@@ -39,6 +41,7 @@ export const appDefaultsModule = createFrontendModule({
   pluginId: 'app',
   extensions: [
     appDrawerExtension,
+    appSidebarExtension,
     templateCardExtension,
     commonIconsExtension,
     autoLogoutElement,

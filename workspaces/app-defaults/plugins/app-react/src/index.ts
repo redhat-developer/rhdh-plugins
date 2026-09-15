@@ -41,3 +41,13 @@ export type {
 } from './templateCard';
 
 export { appReactTranslations, appReactTranslationRef } from './translations';
+
+export { SidebarItemBlueprint } from './sidebar';
+export { sidebarItemDataRef } from './sidebar';
+export { SidebarItemGroupBlueprint } from './sidebar';
+export { sidebarItemGroupDataRef } from './sidebar';
+export type {
+  SidebarIcon,
+  SidebarItemData,
+  SidebarItemGroupData,
+} from './sidebar';
