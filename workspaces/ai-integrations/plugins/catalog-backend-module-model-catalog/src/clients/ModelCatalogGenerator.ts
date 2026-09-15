@@ -27,13 +27,17 @@ const OWNER_ANNOTATION = 'rhdh.io/owner';
 const LIFECYCLE_ANNOTATION = 'rhdh.io/lifecycle';
 const API_ENTITY_REF_ANNOTATION = 'rhdh.io/api-entity-ref';
 
-function normalizeApiEntityRef(value: string): string {
-  if (value.startsWith('api:default/')) {
+function normalizeApiEntityRef(rawValue: string): string {
+  const value = rawValue.trim();
+  // Already fully qualified (e.g. api:default/my-api, api:production/my-api)
+  if (value.includes(':')) {
     return value;
   }
-  if (value.startsWith('default/')) {
+  // Namespace-qualified (e.g. default/my-api, production/my-api)
+  if (value.includes('/')) {
     return `api:${value}`;
   }
+  // Bare name (e.g. my-api)
   return `api:default/${value}`;
 }
 

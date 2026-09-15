@@ -790,6 +790,100 @@ describe('Model Catalog Generator', () => {
     ).toBeUndefined();
   });
 
+  it('should pass through fully qualified non-default namespace ref', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'api-ref-nondefault-service',
+        owner: 'example-user',
+        description: 'Service with non-default namespace api-entity-ref',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/api-entity-ref': 'api:production/my-api',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).apiEntityRef).toBe(
+      'api:production/my-api',
+    );
+  });
+
+  it('should prepend api: to namespace-qualified ref without kind', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'api-ref-ns-service',
+        owner: 'example-user',
+        description: 'Service with namespace-qualified api-entity-ref',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/api-entity-ref': 'production/my-api',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).apiEntityRef).toBe(
+      'api:production/my-api',
+    );
+  });
+
+  it('should trim whitespace from api-entity-ref annotation value', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'api-ref-whitespace-service',
+        owner: 'example-user',
+        description: 'Service with whitespace in api-entity-ref',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/api-entity-ref': '  my-api  ',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).apiEntityRef).toBe('api:default/my-api');
+  });
+
   it('should not set apiEntityRef when annotation is absent', () => {
     const modelCatalog: ModelCatalog = {
       modelServer: {
@@ -817,7 +911,7 @@ describe('Model Catalog Generator', () => {
     expect((entities[0].spec as any).apiEntityRef).toBeUndefined();
   });
 
-  it('should set all five annotation overrides together', () => {
+  it('should set all six annotation overrides together', () => {
     const modelCatalog: ModelCatalog = {
       modelServer: {
         name: 'all-overrides-service',
@@ -830,6 +924,7 @@ describe('Model Catalog Generator', () => {
           'rhdh.io/default': 'gpt-4',
           'rhdh.io/owner': 'team-ai',
           'rhdh.io/lifecycle': 'experimental',
+          'rhdh.io/api-entity-ref': 'my-api',
         },
         API: {
           url: 'https://api.example.com',
@@ -860,6 +955,7 @@ describe('Model Catalog Generator', () => {
     expect(spec.models.default).toBe('gpt-4');
     expect(spec.owner).toBe('user:team-ai');
     expect(spec.lifecycle).toBe('experimental');
+    expect(spec.apiEntityRef).toBe('api:default/my-api');
     // Control annotations must not leak into metadata
     expect(entities[0].metadata.annotations).toBeUndefined();
   });
