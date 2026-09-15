@@ -454,6 +454,24 @@ describe('createRouter', () => {
         "Metric 'dora.changeFailureRate' is configured to use collector 'jira:doraIncidents', but that collector is not registered.",
       );
     });
+
+    it('should return response with status 500 and error details when getCollectorMetadata throws an error', async () => {
+      (collectorsService.getCollectorMetadata as jest.Mock).mockImplementation(
+        () => {
+          throw new Error('getCollectorMetadata error');
+        },
+      );
+
+      const response = await request(app).get(
+        '/metrics/dora.changeFailureRate/collectors',
+      );
+
+      expect(response.status).toBe(500);
+      expect(response.body.error.name).toBe('Error');
+      expect(response.body.error.message).toContain(
+        'getCollectorMetadata error',
+      );
+    });
   });
 
   describe('GET /metrics/catalog/:kind/:namespace/:name', () => {
@@ -1350,6 +1368,22 @@ describe('createRouter', () => {
       expect(response.body.error.name).toBe('NotAllowedError');
     });
 
+    it('should return 403 NotAllowedError when user does not have access to the metric', async () => {
+      permissionsMock.authorizeConditional.mockResolvedValueOnce([
+        CONDITIONAL_POLICY_DECISION,
+      ]);
+
+      const response = await request(aggregationsApp).get(
+        '/aggregations/jira.openIssues',
+      );
+
+      expect(response.status).toBe(403);
+      expect(response.body.error.name).toBe('NotAllowedError');
+      expect(response.body.error.message).toContain(
+        'To view the aggregation of a scorecard metric, your administrator must grant you the required permission.',
+      );
+    });
+
     it('should return 401 when user entity ref is missing', async () => {
       httpAuthMock.credentials.mockResolvedValueOnce({
         principal: {},
@@ -1816,6 +1850,25 @@ describe('createRouter', () => {
 
       expect(response.status).toBe(403);
       expect(response.body.error.name).toBe('NotAllowedError');
+    });
+
+    it('should return 403 NotAllowedError when user does not have access to the metric', async () => {
+      metricProvidersRegistry.register(
+        new MockNumberProvider('jira.openIssues', 'jira', 'Jira Open Issues'),
+      );
+      permissionsMock.authorizeConditional.mockResolvedValueOnce([
+        CONDITIONAL_POLICY_DECISION,
+      ]);
+
+      const response = await request(app).get(
+        `${timeSeriesPath('jira.openIssues')}?${validQuery}`,
+      );
+
+      expect(response.status).toBe(403);
+      expect(response.body.error.name).toBe('NotAllowedError');
+      expect(response.body.error.message).toContain(
+        'To view the aggregation of a scorecard metric, your administrator must grant you the required permission.',
+      );
     });
 
     it('should return 401 when user entity ref is missing', async () => {

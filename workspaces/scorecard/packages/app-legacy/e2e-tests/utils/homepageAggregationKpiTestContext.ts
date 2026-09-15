@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-import {
-  AggregationType,
-  type ScalarAggregationType,
-  scalarAggregationTypes,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import type { Page } from '@playwright/test';
+import type { HomePage } from '../pages/HomePage';
+import type { ScorecardDrillDownPage } from '../pages/ScorecardDrillDownPage';
+import type { ScorecardMessages } from './translationUtils';
 
-export function isScalarAggregationType(
-  type: AggregationType,
-): type is ScalarAggregationType {
-  return (scalarAggregationTypes as readonly string[]).includes(type);
-}
+export type HomepageAggregationKpiTestContext = {
+  page: Page;
+  homePage: HomePage;
+  scorecardDrillDownPage: ScorecardDrillDownPage;
+  translations: ScorecardMessages;
+  currentLocale: string;
+};
