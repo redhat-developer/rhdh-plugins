@@ -15,22 +15,29 @@
  */
 
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import { GlobalHeaderMenuItem } from '@red-hat-developer-hub/backstage-plugin-global-header';
+import Box from '@mui/material/Box';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
 
+import { QuickstartIcon } from './components/QuickstartContent/QuickstartIcon';
 import { QUICKSTART_DRAWER_ID } from './const';
 
 /**
  * Help-dropdown menu item that toggles the Quick start drawer.
  *
- * Relies on `GlobalHeaderMenuItem` from global-header >= 1.21.1, which no
- * longer uses `component={Fragment}` when `to` is absent (that dropped
- * onClick / menuitem role in 1.21.0).
+ * Uses a local MUI `MenuItem` styled like global-header dropdown entries so
+ * this module does not bundle `global-header/components` (and its
+ * `@backstage/core-components` transitive deps) into the quickstart MF graph.
+ * The help menu blueprint `loader` still defers fetching until the dropdown
+ * opens.
  */
 export const QuickstartHelpMenuItem = ({
   handleClose,
 }: {
   handleClose?: () => void;
 }) => {
+  const theme = useTheme();
   const { toggleDrawer } = useAppDrawer();
 
   const handleClick = () => {
@@ -39,10 +46,52 @@ export const QuickstartHelpMenuItem = ({
   };
 
   return (
-    <GlobalHeaderMenuItem
-      title="Quick start"
-      icon="waving_hand"
+    <MenuItem
+      disableRipple
+      disableTouchRipple
       onClick={handleClick}
-    />
+      sx={{
+        py: 0.5,
+        px: 0,
+        width: '100%',
+        boxSizing: 'border-box',
+        display: 'flex',
+        color: 'inherit',
+        textDecoration: 'none',
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          my: 1,
+          px: 2,
+          boxSizing: 'border-box',
+          color: 'inherit',
+          width: '100%',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <QuickstartIcon
+            icon="waving_hand"
+            size="small"
+            sx={{
+              marginRight: 1,
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+              color:
+                theme.palette.mode === 'dark'
+                  ? theme.palette.text.primary
+                  : theme.palette.text.disabled,
+            }}
+          />
+          <Typography variant="body2" color={theme.palette.text.primary}>
+            Quick start
+          </Typography>
+        </Box>
+      </Box>
+    </MenuItem>
   );
 };
