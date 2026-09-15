@@ -126,7 +126,10 @@ Use this flow when you need a **new npm version** of packages in a workspace tha
 
 Automation for this path is defined in [`.github/workflows/release_workspace_version.yml`](.github/workflows/release_workspace_version.yml). Published packages from this workflow use the npm dist-tag **`maintenance`** so they do not replace `latest`.
 
-There are two branch strategies available. The **recommended** approach uses `release-x.y/{plugin}` branches, which support concurrent backports to different release versions without conflicts.
+There are two release flows:
+
+- **1.x legacy backports** use per-plugin branches such as `release-1.10/{plugin}`.
+- **2.1 and later repository-wide releases** use a single branch for the release line, such as `release-2.1`.
 
 ### Recommended: `release-x.y/{plugin}` branches
 
@@ -171,57 +174,28 @@ This approach uses per-release branches (e.g., `release-1.10/my-plugin`), elimin
 
 When only `yarn.lock` changes (e.g., a CVE fix that bumps a transitive dependency) and no plugin code is modified, you can skip the Version Packages flow entirely — no changeset, no version bump, no npm publish is needed.
 
-1. Merge the `yarn.lock` fix into the release branch (e.g., `release-x.y/${plugin}` or `workspace/${workspace}`).
+1. Merge the `yarn.lock` fix into the release branch (e.g., `release-x.y/${plugin}`).
 2. Update `source.json` in the corresponding release branch of [rhdh-plugin-export-overlays](https://github.com/redhat-developer/rhdh-plugin-export-overlays) to point `repo-ref` to the commit with the `yarn.lock` change.
 3. Run `/publish` on the overlays PR — the export step rebuilds the dynamic plugin images from source at that commit, so the CVE fix is picked up without a new npm release.
 
 This avoids unnecessary version bumps when no plugin API or behavior has changed.
 
-### Legacy: `workspace/{plugin}` branches
+### Repository-wide releases from 2.1 onwards
 
-> **Note:** This approach uses a shared `workspace/{plugin}` branch, which blocks concurrent backports to different releases for the same plugin. Use the `release-x.y/{plugin}` approach above when possible.
+Starting with `release-2.1`, repository-wide release lines use a single `release-x.y` branch rather than a per-plugin branch. For example, all workspaces releasing for the 2.1 maintenance line use `release-2.1`.
 
-1. Verify a `workspace/${workspace}` branch exists. If not, create a `workspace/${workspace}` branch by navigating to the [branches page](https://github.com/redhat-developer/rhdh-plugins/branches) and selecting 'New branch'.
-   - The `${workspace}` should correspond to the specific plugin or component you are patching.
+At Feature Freeze, when the corresponding `release-x.y` branch is cut in `rhdh-plugin-export-overlays`, repository maintainers create the matching `release-x.y` branch in `rhdh-plugins`. All backports for that release line must then target this repository-wide branch.
 
-   The workflow requires that pull requests targeting the `workspace/${workspace}` branch be opened from a branch within the `redhat-developer/rhdh-plugins` repository. Therefore, in addition to the `workspace/${workspace}` branch, a corresponding branch must also be created (i.e. `plugin-name-x.y`).
+1. Open a pull request targeting the repository-wide release branch, such as `release-2.1`, and include changesets for the affected workspaces.
+2. Merge the pull request after approval and CI pass. The merge does not publish packages directly.
+3. The Prior Version Release Workspace workflow detects each affected workspace and opens one `Version Packages` PR per workspace.
+4. Each generated PR uses a branch in this format:
+   ```text
+   maintenance-changesets-release/release-x.y/<workspace>
+   ```
+5. Merge the corresponding `Version Packages` PRs. Each merge publishes that workspace with the `maintenance` npm dist-tag and creates its Git tag.
 
-   If a branch `maintenance-changesets-release/${workspace}` already exists on the remote from a previous cycle, delete it before continuing; otherwise the Prior Version Release Workspace workflow will refuse to open a new Version Packages PR.
-
-2. Reset the `workspace` branch from a **published** baseline:
-   - Reset `workspace/${workspace}` so it matches an existing **git tag** for that workspace (the tags created when releases were published), not an arbitrary commit on `main`. That way the maintenance line starts from code that was already shipped and you avoid accidentally including unreleased changes in the next npm publish.
-   - Browse tags in the repository to find the right release: [github.com/redhat-developer/rhdh-plugins/tags](https://github.com/redhat-developer/rhdh-plugins/tags).
-
-3. Apply your commits and push to a branch:
-   - Apply the necessary patch fixes or security updates.
-   - Do not manually bump the version in `package.json`. The version bump must be handled via changesets.
-   - Push to a branch on the `redhat-developer/rhdh-plugins` repository. Note that it is not possible to open PRs from a fork for this release workflow.
-
-4. Open the **patch** pull request (the first PR in this flow):
-   - Open a pull request with your changes against the `workspace/${workspace}` branch.
-   - Ensure the PR:
-     - Contains only necessary fixes.
-     - Includes a changeset.
-
-5. Merge the **patch** PR when it is approved and CI is green.
-
-   Merging this PR does **not** publish to npm by itself. It triggers the Prior Version Release Workspace workflow, which opens a **separate** follow-up pull request—the **Version Packages** PR—from branch `maintenance-changesets-release/${workspace}`, authored by `rhdh-bot`.
-
-6. Merge the corresponding **Version Packages** PR:
-   - The Version Packages PR must meet these conditions before you merge it:
-     - The PR title starts with "Version Packages" (automatically generated by changesets).
-     - The PR originates from a `maintenance-changesets-release/${workspace}` branch.
-     - The PR is authored by `rhdh-bot`.
-     - The PR is merged, not just closed.
-   - Merging **this** PR triggers the release job that builds and publishes to npm.
-
-7. Confirm the release:
-   - Once the workflow completes, a new version will be published.
-   - A new Git tag will be created, which can be used for future patches.
-
-8. Open a PR with the `CHANGELOG` additions to `redhat-developer/rhdh-plugins` main branch:
-   - This is necessary for history to be clear on the latest branch.
-   - You can use `git cherry-pick --no-commit workspace/${workspace}` and only commit the `CHANGELOG` files.
+Future 2.x-and-later release lines follow the same `release-x.y` convention.
 
 ## Creating a new Workspace
 
@@ -424,7 +398,7 @@ As a plugin owner, you are responsible for the ongoing health and maintenance of
   See [Keeping Workspaces Up to Date](#keeping-workspaces-up-to-date-with-backstage).
 - **Manage security updates and patches**:
   Work with your security team to address vulnerabilities according to SLA and product lifecycle requirements.
-  Renovate opens dependency PRs against `main`. If you must ship a fix on an older published line, follow [Backporting patches (prior release lines)](#backporting-patches-prior-release-lines) using the `workspace/<workspace>` branch for that line.
+  Renovate opens dependency PRs against `main`. If you must ship a fix on an older published line, follow [Backporting patches (prior release lines)](#backporting-patches-prior-release-lines). Use the per-plugin `release-1.x/<plugin>` flow for legacy 1.x releases and the repository-wide `release-x.y` flow for 2.1 and later.
 - **Report bugs** following the [Bug Reporting Guide](docs/bug-reporting.md).
 - **Justify Dependency-Related PR closures**:
   If you choose not to merge a Renovate or dependency-related PR, include a brief explanation when closing it.
