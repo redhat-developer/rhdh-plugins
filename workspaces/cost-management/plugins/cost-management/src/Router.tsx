@@ -33,7 +33,6 @@ export function OptimizationsRouter() {
   return (
     <Routes>
       <Route path="/" element={<OptimizationsPage />} />
-      <Route path="/optimizations" element={<OptimizationsPage />} />
       <Route path="/:id/*" element={<OptimizationsBreakdownPage />} />
       <Route path="*" element={notFound} />
     </Routes>
@@ -47,7 +46,6 @@ export function Router() {
   return (
     <Routes>
       <Route path="/" element={<OptimizationsPage />} />
-      <Route path="/optimizations" element={<OptimizationsPage />} />
       <Route path="/openshift" element={<OpenShiftPage />} />
       <Route path="/:id/*" element={<OptimizationsBreakdownPage />} />
       <Route path="*" element={notFound} />
