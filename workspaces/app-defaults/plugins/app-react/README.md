@@ -261,8 +261,12 @@ Ordering rules:
   entry or in a flyout submenu, depending on the group's `submenu` option. An
   item whose `group` is not registered renders at the top level.
 - Nav items that Backstage auto-discovers from page extensions are merged in at
-  priority `0`. Declaring an item with the same `to` as an auto-discovered page
-  replaces it, so a plugin can retitle, regroup, or reprioritize its own page.
+  priority `0`. Declaring an item or group with the same `to` as an
+  auto-discovered page replaces it, so a plugin can retitle, regroup, or
+  reprioritize its own page.
+- A group without items and without a `to` is not rendered, so a host can
+  register empty groups (like the default `admin` group) that only appear once
+  a plugin contributes an item to them.
 - A custom element with a `to` hides every item and auto-discovered page with
   the same `to`, so for example the search modal replaces the plain search
   page entry.

@@ -119,8 +119,8 @@ function toModelItem(item: SidebarItemData): SidebarModelItem {
  * - Items referencing an unknown group fall back to the top level so that a
  *   misconfigured `group` never hides an entry.
  * - Nav items auto-discovered from page extensions are merged in at the
- *   default priority unless a contributed item already links to the same
- *   path, which lets a plugin take over the placement of its own page.
+ *   default priority unless a contributed item or group already links to the
+ *   same path, which lets a plugin take over the placement of its own page.
  * - Custom elements always render at the top level, sorted by priority with
  *   their extension id as tiebreaker. An element with a `to` hides every
  *   contributed item and auto-discovered nav item with the same path, so the
@@ -165,6 +165,7 @@ export function buildSidebarModel({
   const explicitPaths = new Set([
     ...elementPaths,
     ...items.flatMap(item => (item.to ? [item.to] : [])),
+    ...groups.flatMap(group => (group.to ? [group.to] : [])),
   ]);
   for (const navItem of navItems) {
     if (explicitPaths.has(navItem.href)) {
