@@ -59,8 +59,8 @@ describe('AgentInstructionsCard', () => {
     expect(screen.getByText('short').tagName).toBe('CODE');
   });
 
-  it('does not repeat the entity description as instructions', async () => {
-    const { container } = await renderWithEntity({
+  it('renders instructions even when they match the entity description', async () => {
+    await renderWithEntity({
       ...agent,
       metadata: {
         ...agent.metadata,
@@ -68,6 +68,9 @@ describe('AgentInstructionsCard', () => {
       },
     });
 
-    expect(container).toBeEmptyDOMElement();
+    expect(
+      screen.getByText(boostMessages.catalog.card.instructionsTitle),
+    ).toBeInTheDocument();
+    expect(screen.getByText('concise').tagName).toBe('STRONG');
   });
 });

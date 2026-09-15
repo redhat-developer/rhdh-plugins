@@ -19,10 +19,7 @@ import { useEntity } from '@backstage/plugin-catalog-react';
 import { Card, CardBody, CardHeader, Text } from '@backstage/ui';
 
 import { useTranslation } from '../../../hooks/useTranslation';
-import {
-  getDistinctSpecField,
-  getSpecField,
-} from '../../../utils/entityHelpers';
+import { getSpecField } from '../../../utils/entityHelpers';
 
 export const AgentInstructionsCard = () => {
   const { entity } = useEntity();
@@ -30,7 +27,7 @@ export const AgentInstructionsCard = () => {
 
   if (getSpecField(entity, 'type')?.toLowerCase() !== 'agent') return null;
 
-  const instructions = getDistinctSpecField(entity, 'instructions');
+  const instructions = getSpecField(entity, 'instructions');
   if (!instructions) return null;
 
   return (
