@@ -66,7 +66,7 @@ describe('AgentDialog', () => {
   });
 
   describe('create mode', () => {
-    it('renders empty form with create title', () => {
+    it('renders create form with save button disabled', () => {
       render(<AgentDialog open onClose={jest.fn()} onSaved={jest.fn()} />);
       expect(screen.getByText(/create/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /save/i })).toBeDisabled();
@@ -79,12 +79,11 @@ describe('AgentDialog', () => {
         screen.getByPlaceholderText('e.g., Privilege Escalation Check'),
         'My Agent',
       );
-      await userEvent.type(
-        screen.getByPlaceholderText(
-          'Describe what this agent should check for...',
-        ),
-        VALID_PROMPT,
+      const promptField = screen.getByPlaceholderText(
+        'Describe what this agent should check for...',
       );
+      await userEvent.clear(promptField);
+      await userEvent.type(promptField, VALID_PROMPT);
       await userEvent.click(screen.getByLabelText(/analyze/i));
 
       expect(screen.getByRole('button', { name: /save/i })).toBeEnabled();
@@ -100,12 +99,11 @@ describe('AgentDialog', () => {
         screen.getByPlaceholderText('e.g., Privilege Escalation Check'),
         'My Agent',
       );
-      await userEvent.type(
-        screen.getByPlaceholderText(
-          'Describe what this agent should check for...',
-        ),
-        VALID_PROMPT,
+      const promptField = screen.getByPlaceholderText(
+        'Describe what this agent should check for...',
       );
+      await userEvent.clear(promptField);
+      await userEvent.type(promptField, VALID_PROMPT);
       await userEvent.click(screen.getByLabelText(/analyze/i));
 
       await userEvent.click(screen.getByRole('button', { name: /save/i }));
