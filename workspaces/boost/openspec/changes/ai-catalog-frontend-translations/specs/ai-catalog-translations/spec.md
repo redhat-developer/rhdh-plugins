@@ -53,7 +53,7 @@ Every user-facing string in the plugin MUST be translated.
 
 - **GIVEN** a user views an AI asset entity page in French
 - **WHEN** entity cards from the boost plugin render
-- **THEN** Summary, Adoption, Version, and Usage tab titles and actions are all in French
+- **THEN** AI asset details, agent instructions, and Usage card titles and actions are all in French
 
 #### Scenario: Error and empty state strings translated
 

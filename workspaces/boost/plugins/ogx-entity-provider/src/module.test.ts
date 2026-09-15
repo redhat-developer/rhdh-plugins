@@ -124,6 +124,35 @@ describe('readOgxEntityProviderConfig', () => {
     expect(result.skipTLSVerify).toBeUndefined();
   });
 
+  it('treats empty optional environment values as undefined', () => {
+    const config = new ConfigReader({
+      boost: {
+        entityProviders: {
+          ogx: {
+            baseUrl: 'http://localhost:8321',
+            apiKey: '',
+            agents: [
+              {
+                id: 'empty-agent',
+                name: 'Empty Agent',
+                version: '',
+                description: '',
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    const result = readOgxEntityProviderConfig(config);
+
+    expect(result.apiKey).toBeUndefined();
+    expect(result.agents?.[0]).toMatchObject({
+      version: undefined,
+      description: undefined,
+    });
+  });
+
   it('falls back to localhost when no OGX config is present', () => {
     const config = new ConfigReader({});
 
