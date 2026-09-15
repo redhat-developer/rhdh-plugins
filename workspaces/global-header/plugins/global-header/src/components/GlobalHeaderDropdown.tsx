@@ -17,12 +17,12 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import type { ComponentProps, ReactNode } from 'react';
 import type Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
 
 import { useGlobalHeaderMenuItems } from '../extensions/GlobalHeaderContext';
 import { buildDropdownEntries } from '../utils/menuItemGrouping';
 import { useDropdownManager, useRetainMenuContent } from '../hooks';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent/HeaderDropdownComponent';
+import { DropdownMenuLoading } from './HeaderDropdownComponent/DropdownMenuLoading';
 
 const GlobalHeaderDropdownContent = lazy(() =>
   import('./GlobalHeaderDropdownContent').then(m => ({
@@ -85,12 +85,25 @@ export const GlobalHeaderDropdown = ({
   const menuItems = useGlobalHeaderMenuItems(target);
   const entries = useMemo(() => buildDropdownEntries(menuItems), [menuItems]);
 
-  const menuListRef = useRef<HTMLUListElement>(null);
+  const validityProbeRef = useRef<HTMLDivElement>(null);
   const [menuValidity, setMenuValidity] = useState<MenuValidity>('pending');
 
   const isOpen = Boolean(anchorEl);
   const { shouldRenderMenuContent, handleMenuTransitionExited } =
     useRetainMenuContent(isOpen);
+
+  const hasNoContributions = entries.length === 0;
+
+  const showEmptyState =
+    hasNoContributions || (trackValidity && menuValidity === 'empty');
+
+  // While validity is tracked, keep contributed items in a hidden probe until
+  // they are confirmed valid so the menu list only contains focusable items.
+  const contentInValidityProbe =
+    trackValidity &&
+    shouldRenderMenuContent &&
+    !hasNoContributions &&
+    menuValidity !== 'valid';
 
   useEffect(() => {
     if (!trackValidity) {
@@ -102,7 +115,11 @@ export const GlobalHeaderDropdown = ({
       return;
     }
 
-    const list = menuListRef.current;
+    if (menuValidity === 'valid') {
+      return;
+    }
+
+    const list = validityProbeRef.current;
     if (!list) {
       return;
     }
@@ -138,58 +155,67 @@ export const GlobalHeaderDropdown = ({
       observer.disconnect();
       timers.forEach(id => window.clearTimeout(id));
     };
-  }, [trackValidity, isOpen]);
+  }, [trackValidity, isOpen, menuValidity, shouldRenderMenuContent]);
 
   if (menuItems.length === 0 && !emptyState) {
     return null;
   }
 
-  const hasNoContributions = entries.length === 0;
-
-  const showEmptyState =
-    hasNoContributions || (trackValidity && menuValidity === 'empty');
-
   let menuBody: ReactNode = null;
   if (shouldRenderMenuContent && hasNoContributions) {
     menuBody = emptyState;
-  } else if (shouldRenderMenuContent) {
+  } else if (
+    shouldRenderMenuContent &&
+    contentInValidityProbe &&
+    menuValidity === 'pending'
+  ) {
+    menuBody = <DropdownMenuLoading />;
+  } else if (shouldRenderMenuContent && showEmptyState) {
+    menuBody = emptyState;
+  } else if (shouldRenderMenuContent && !contentInValidityProbe) {
     menuBody = (
-      <Suspense fallback={null}>
-        {trackValidity && showEmptyState ? emptyState : null}
-        {/*
-         * Keep content mounted for lazy validity recovery. Use display:contents
-         * when visible so MenuItems stay direct DOM children of the MenuList
-         * for keyboard navigation; hide the subtree only while emptyState shows.
-         */}
-        <Box
-          component="div"
-          sx={{
-            display: trackValidity && showEmptyState ? 'none' : 'contents',
-          }}
-        >
-          <GlobalHeaderDropdownContent
-            entries={entries}
-            target={target}
-            handleClose={handleClose}
-          />
-        </Box>
+      <Suspense fallback={<DropdownMenuLoading />}>
+        <GlobalHeaderDropdownContent
+          entries={entries}
+          target={target}
+          handleClose={handleClose}
+        />
       </Suspense>
     );
   }
 
+  const dropdownContent = (
+    <GlobalHeaderDropdownContent
+      entries={entries}
+      target={target}
+      handleClose={handleClose}
+    />
+  );
+
   return (
-    <HeaderDropdownComponent
-      buttonContent={buttonContent}
-      buttonProps={buttonProps}
-      isIconButton={isIconButton}
-      tooltip={tooltip}
-      onOpen={handleOpen}
-      onClose={handleClose}
-      anchorEl={anchorEl}
-      menuListRef={trackValidity ? menuListRef : undefined}
-      onTransitionExited={handleMenuTransitionExited}
-    >
-      {menuBody}
-    </HeaderDropdownComponent>
+    <>
+      <HeaderDropdownComponent
+        buttonContent={buttonContent}
+        buttonProps={buttonProps}
+        isIconButton={isIconButton}
+        tooltip={tooltip}
+        onOpen={handleOpen}
+        onClose={handleClose}
+        anchorEl={anchorEl}
+        onTransitionExited={handleMenuTransitionExited}
+      >
+        {menuBody}
+      </HeaderDropdownComponent>
+      {contentInValidityProbe ? (
+        <div
+          ref={validityProbeRef}
+          aria-hidden
+          hidden
+          data-testid="validity-probe"
+        >
+          <Suspense fallback={null}>{dropdownContent}</Suspense>
+        </div>
+      ) : null}
+    </>
   );
 };

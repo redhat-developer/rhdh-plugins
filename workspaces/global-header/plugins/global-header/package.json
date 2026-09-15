@@ -50,7 +50,9 @@
       "@red-hat-developer-hub/backstage-plugin-global-header"
     ]
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./src/configureMuiClassName.ts"
+  ],
   "scripts": {
     "start": "backstage-cli package start",
     "start:legacy": "backstage-cli package start --entry dev/legacy.tsx",

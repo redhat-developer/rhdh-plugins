@@ -27,7 +27,10 @@ import {
   globalHeaderComponentDataRef,
   globalHeaderMenuItemDataRef,
 } from './dataRefs';
-import { loadHeaderBundle, loadHeaderIconButton } from '../components/loaders';
+import {
+  loadCriticalHeaderBundle,
+  loadHeaderIconButton,
+} from '../components/loaders';
 
 /**
  * Params accepted by {@link GlobalHeaderComponentBlueprint}.
@@ -152,18 +155,18 @@ function createDataDrivenToolbarLoader(
     const [
       { default: IconButton },
       { default: Tooltip },
-      onMountBundle,
+      criticalHeaderBundle,
       { useTranslation },
       { translateWithFallback },
     ] = await Promise.all([
       import('@mui/material/IconButton'),
       import('@mui/material/Tooltip'),
-      loadHeaderBundle(),
+      loadCriticalHeaderBundle(),
       import('../hooks/useTranslation'),
       import('../utils/translationUtils'),
     ]);
 
-    const { HeaderIcon } = onMountBundle;
+    const { HeaderIcon } = criticalHeaderBundle;
 
     return () => {
       const { t } = useTranslation();

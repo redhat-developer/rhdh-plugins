@@ -44,3 +44,14 @@ export type { GlobalHeaderMenuItemProps } from './components/GlobalHeaderMenuIte
 
 export { GlobalHeaderDropdown } from './components/GlobalHeaderDropdown';
 export type { GlobalHeaderDropdownProps } from './components/GlobalHeaderDropdown';
+
+/**
+ * Company logo for the global header app bar.
+ *
+ * @public
+ */
+export { CompanyLogo } from './components/CompanyLogo/CompanyLogo';
+export type {
+  CompanyLogoProps,
+  LogoURLs,
+} from './components/CompanyLogo/types';

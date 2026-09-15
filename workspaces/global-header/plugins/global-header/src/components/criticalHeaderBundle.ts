@@ -15,11 +15,18 @@
  */
 
 /**
- * First-paint global header UI primitives.
+ * Barrel for the single critical first-paint header async chunk.
  *
- * Only components required for initial header rendering belong here.
- * Interaction-only UI (dropdown menus, search results, etc.) must stay
- * in separate modules with their own `import()` split points.
+ * Re-exports components required for initial header rendering. Imported
+ * through one dynamic import (`loadCriticalHeaderBundle()` in `loaders.ts`)
+ * so all critical header UI is emitted into one async chunk.
+ *
+ * Dropdown trigger wrappers are included here because they render on mount.
+ * Menu contents stay behind separate interaction `import()` split points
+ * inside each dropdown (e.g. `GlobalHeaderDropdownContent`, `StarredDropdownMenu`).
+ *
+ * Do not statically import from sync entrypoints (`index.ts`, `plugin.ts`,
+ * `blueprints.tsx`, `globalHeaderModule.tsx`).
  *
  * @internal
  */
@@ -32,3 +39,8 @@ export { HeaderIconButton } from './HeaderIconButton/HeaderIconButton';
 export { HeaderIcon } from './HeaderIcon/HeaderIcon';
 export { Divider } from './Divider/Divider';
 export { NotificationButton } from './NotificationButton/NotificationButton';
+
+export { StarredDropdown } from './HeaderDropdownComponent/StarredDropdown';
+export { ApplicationLauncherDropdown } from './ApplicationLauncherDropdown';
+export { HelpDropdown } from './HelpDropdown';
+export { ProfileDropdown } from './ProfileDropdown';

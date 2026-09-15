@@ -313,8 +313,9 @@ describe('GlobalHeaderDropdown', () => {
       await waitFor(() => {
         expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
       });
+      await flushLazyMenu();
       expect(
-        screen.getByRole('menuitem', { name: /support/i }),
+        await screen.findByRole('menuitem', { name: /support/i }),
       ).toBeInTheDocument();
     });
 
@@ -352,13 +353,17 @@ describe('GlobalHeaderDropdown', () => {
       });
 
       expect(await screen.findByTestId('empty-state')).toBeInTheDocument();
-      expect(screen.getByTestId('persistent-null-host')).not.toBeVisible();
+      const probe = screen.getByTestId('validity-probe');
+      expect(probe).toHaveAttribute('hidden');
+      expect(probe).toContainElement(
+        screen.getByTestId('persistent-null-host'),
+      );
       expect(unmounted).toBe(false);
     });
   });
 
-  it('supports arrow-key navigation between visible menu items', async () => {
-    const menuItems: GlobalHeaderMenuItemData[] = [
+  describe('keyboard navigation', () => {
+    const twoItemMenu: GlobalHeaderMenuItemData[] = [
       {
         target: 'help',
         type: 'data',
@@ -373,21 +378,86 @@ describe('GlobalHeaderDropdown', () => {
         link: '/second',
         priority: 10,
       },
+      {
+        target: 'help',
+        type: 'data',
+        title: 'Third item',
+        link: '/third',
+        priority: 5,
+      },
     ];
 
-    await renderDropdown(menuItems);
-    await openMenu();
+    const openTwoItemMenu = async () => {
+      await renderDropdown(twoItemMenu);
+      await openMenu();
+      return {
+        first: await screen.findByRole('menuitem', { name: /first item/i }),
+        second: screen.getByRole('menuitem', { name: /second item/i }),
+        third: screen.getByRole('menuitem', { name: /third item/i }),
+      };
+    };
 
-    const firstItem = await screen.findByRole('menuitem', {
-      name: /first item/i,
+    it('moves focus with ArrowDown between menu items', async () => {
+      const { first, second } = await openTwoItemMenu();
+
+      first.focus();
+      expect(first).toHaveFocus();
+
+      await userEvent.keyboard('{ArrowDown}');
+      expect(second).toHaveFocus();
     });
-    const secondItem = screen.getByRole('menuitem', { name: /second item/i });
 
-    firstItem.focus();
-    expect(firstItem).toHaveFocus();
+    it('wraps focus from last item to first with ArrowDown', async () => {
+      const { first, third } = await openTwoItemMenu();
 
-    await userEvent.keyboard('{ArrowDown}');
-    expect(secondItem).toHaveFocus();
+      third.focus();
+      expect(third).toHaveFocus();
+
+      await userEvent.keyboard('{ArrowDown}');
+      expect(first).toHaveFocus();
+    });
+
+    it('wraps focus from first item to last with ArrowUp', async () => {
+      const { first, third } = await openTwoItemMenu();
+
+      first.focus();
+      expect(first).toHaveFocus();
+
+      await userEvent.keyboard('{ArrowUp}');
+      expect(third).toHaveFocus();
+    });
+
+    it('moves focus to the first item with Home', async () => {
+      const { first, third } = await openTwoItemMenu();
+
+      third.focus();
+      expect(third).toHaveFocus();
+
+      await userEvent.keyboard('{Home}');
+      expect(first).toHaveFocus();
+    });
+
+    it('moves focus to the last item with End', async () => {
+      const { first, third } = await openTwoItemMenu();
+
+      first.focus();
+      expect(first).toHaveFocus();
+
+      await userEvent.keyboard('{End}');
+      expect(third).toHaveFocus();
+    });
+
+    it('keeps menu items as direct children of the menu list', async () => {
+      await openTwoItemMenu();
+
+      const menuList = screen.getByRole('menu');
+      const menuItems = Array.from(menuList.children);
+
+      expect(menuItems.length).toBe(3);
+      menuItems.forEach(child => {
+        expect(child).toHaveAttribute('role', 'menuitem');
+      });
+    });
   });
 
   it('forwards tooltip and icon button props to the trigger', async () => {

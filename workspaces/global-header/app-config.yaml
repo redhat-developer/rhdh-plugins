@@ -11,6 +11,7 @@ app:
     - page:catalog:
         config:
           path: /
+          title: 'Home'
 
   support:
     url: https://access.redhat.com/products/red-hat-developer-hub
@@ -30,6 +31,12 @@ globalHeader:
       priority: 75
 
   menuItems:
+    - target: help
+      title: Quick start
+      titleKey: help.quickStart
+      icon: waving_hand
+      link: https://docs.redhat.com/en/documentation/red_hat_developer_hub/latest/
+      priority: 100
     - target: app-launcher
       title: Internal Wiki
       icon: article

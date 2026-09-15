@@ -16,7 +16,7 @@
 
 import type { ComponentType } from 'react';
 
-type OnMountHeaderBundle = typeof import('./onMountHeaderBundle');
+type CriticalHeaderBundle = typeof import('./criticalHeaderBundle');
 
 /**
  * Lazy singleton — do not use a top-level `import()` here. This module is
@@ -24,52 +24,48 @@ type OnMountHeaderBundle = typeof import('./onMountHeaderBundle');
  * `toolbarExtensions.tsx`), which runs before sign-in. A module-scope
  * `import()` would fetch the header chunk on the sign-in page.
  */
-let onMountHeaderBundlePromise: Promise<OnMountHeaderBundle> | undefined;
+let criticalHeaderBundlePromise: Promise<CriticalHeaderBundle> | undefined;
 
-function getOnMountHeaderBundlePromise(): Promise<OnMountHeaderBundle> {
-  if (!onMountHeaderBundlePromise) {
-    onMountHeaderBundlePromise = import('./onMountHeaderBundle');
-  }
-  return onMountHeaderBundlePromise;
-}
-
-/** Returns the shared on-mount header bundle promise (starts fetch on first call). */
-export const loadHeaderBundle = () => getOnMountHeaderBundlePromise();
+export const loadCriticalHeaderBundle = (): Promise<CriticalHeaderBundle> => {
+  criticalHeaderBundlePromise ??= import('./criticalHeaderBundle').catch(
+    error => {
+      criticalHeaderBundlePromise = undefined;
+      throw error;
+    },
+  );
+  return criticalHeaderBundlePromise;
+};
 
 export const loadGlobalHeader = async () =>
-  (await getOnMountHeaderBundlePromise()).GlobalHeader;
+  (await loadCriticalHeaderBundle()).GlobalHeader;
 
 export const loadCompanyLogo = async () =>
-  (await getOnMountHeaderBundlePromise()).CompanyLogo;
+  (await loadCriticalHeaderBundle()).CompanyLogo;
 
 export const loadSearchComponent = async (): Promise<ComponentType<any>> =>
-  (await getOnMountHeaderBundlePromise()).SearchComponent;
+  (await loadCriticalHeaderBundle()).SearchComponent;
 
 export const loadSpacer = async (): Promise<ComponentType<any>> =>
-  (await getOnMountHeaderBundlePromise()).Spacer;
+  (await loadCriticalHeaderBundle()).Spacer;
 
 export const loadHeaderIconButton = async () =>
-  (await getOnMountHeaderBundlePromise()).HeaderIconButton;
+  (await loadCriticalHeaderBundle()).HeaderIconButton;
 
 export const loadDivider = async (): Promise<ComponentType<any>> =>
-  (await getOnMountHeaderBundlePromise()).Divider;
+  (await loadCriticalHeaderBundle()).Divider;
 
 export const loadNotificationButton = async (): Promise<ComponentType<any>> =>
-  (await getOnMountHeaderBundlePromise()).NotificationButton;
+  (await loadCriticalHeaderBundle()).NotificationButton;
 
-/** Dropdown wrappers — separate async chunks, not part of the critical bundle. */
-export const loadStarredDropdown = () =>
-  import('./HeaderDropdownComponent/StarredDropdown').then(
-    m => m.StarredDropdown,
-  );
+/** Dropdown trigger wrappers — same critical bundle as other first-paint UI. */
+export const loadStarredDropdown = async () =>
+  (await loadCriticalHeaderBundle()).StarredDropdown;
 
-export const loadApplicationLauncherDropdown = () =>
-  import('./ApplicationLauncherDropdown').then(
-    m => m.ApplicationLauncherDropdown,
-  );
+export const loadApplicationLauncherDropdown = async () =>
+  (await loadCriticalHeaderBundle()).ApplicationLauncherDropdown;
 
-export const loadHelpDropdown = () =>
-  import('./HelpDropdown').then(m => m.HelpDropdown);
+export const loadHelpDropdown = async () =>
+  (await loadCriticalHeaderBundle()).HelpDropdown;
 
-export const loadProfileDropdown = () =>
-  import('./ProfileDropdown').then(m => m.ProfileDropdown);
+export const loadProfileDropdown = async () =>
+  (await loadCriticalHeaderBundle()).ProfileDropdown;

@@ -21,6 +21,7 @@ import StarBorderIcon from '@mui/icons-material/StarBorder';
 import { useDropdownManager, useRetainMenuContent } from '../../hooks';
 import { HEADER_TOOLBAR_ICON_SIZE } from '../../icons/headerToolbarIcon';
 import { HeaderDropdownComponent } from './HeaderDropdownComponent';
+import { DropdownMenuLoading } from './DropdownMenuLoading';
 import { useTranslation } from '../../hooks/useTranslation';
 
 const StarredDropdownMenu = lazy(() =>
@@ -55,7 +56,7 @@ export const StarredDropdown = () => {
       onTransitionExited={handleMenuTransitionExited}
     >
       {shouldRenderMenuContent ? (
-        <Suspense fallback={null}>
+        <Suspense fallback={<DropdownMenuLoading />}>
           <StarredDropdownMenu handleClose={handleClose} />
         </Suspense>
       ) : null}
