@@ -1,0 +1,48 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
+metadata:
+  name: qe-git-ai-standards
+  description: Git-backed AI coding standards for QE validation
+  tags:
+    - python
+    - ai-rules
+  annotations:
+    backstage.io/source-location: url:https://github.com/my-org/qe-git-ai-standards
+spec:
+  type: skill
+  lifecycle: production
+  owner: team-ml-platform
+  scope: organization
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
+metadata:
+  name: qe-oci-skills-bundle
+  description: OCI-published skills bundle for QE validation
+  tags:
+    - security
+    - oci
+  annotations:
+    backstage.io/source-location: url:oci://quay.io/my-org/qe-skills-bundle:v1.0.0
+spec:
+  type: skill
+  lifecycle: experimental
+  owner: team-ml-platform
+  scope: team
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
+metadata:
+  name: qe-oci-with-docs
+  description: OCI skill with TechDocs annotation
+  annotations:
+    backstage.io/source-location: url:oci://quay.io/my-org/qe-skills-with-docs:v2.0.0
+    backstage.io/techdocs-ref: dir:.
+spec:
+  type: skill
+  lifecycle: production
+  owner: team-ml-platform
+  scope: product

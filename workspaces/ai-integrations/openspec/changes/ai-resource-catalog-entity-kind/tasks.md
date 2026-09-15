@@ -9,8 +9,8 @@ Tracking note: schema/processor work originally landed against a `spec.location`
 - [x] 1.3 Add validation for `spec.scope` that reports field path, received value, and accepted values
 - [ ] 1.4 Remove RHDH `spec.location` (types, schema, docs, examples) from AiResource OCI/git asset location support
 - [ ] 1.5 Retool OCI validation to enforce `backstage.io/source-location` location-ref form `url:oci://…` (type `url`, target starts with `oci://` and is a well-formed OCI reference)
-- [ ] 1.6 Ensure AiResource validation errors are actionable and can report multiple errors in one response
-- [ ] 1.7 Add/update unit tests covering valid and invalid `spec.scope`, valid and invalid OCI source-location values (including bare `oci://…` without `url:`), and multi-error reporting
+- [x] 1.6 Ensure AiResource validation errors are actionable and can report multiple errors in one response
+- [x] 1.7 Add/update unit tests covering valid and invalid `spec.scope`, valid and invalid OCI source-location values (including bare `oci://…` without `url:`), and multi-error reporting
 
 ## 2. Catalog Ingestion - OCI / Extensions Processor
 
@@ -29,24 +29,24 @@ and was later consolidated into `AiResourceExtensionsProcessor` (alongside
 - [x] 3.1 Verify git-backed AiResource entities ingest correctly through the existing `UrlReaderProcessor`
 - [x] 3.2 Verify a missing `backstage.io/source-location` annotation on a git entity produces a warning rather than an error
 - [x] 3.3 Verify AiResource entities are registrable through standard catalog registration and discovery flows
-- [ ] 3.4 Add/update integration tests covering git/HTTPS source-location entities and OCI `url:oci://…` source-location entities (registration still via normal catalog locations)
+- [x] 3.4 Add/update integration tests covering git/HTTPS source-location entities and OCI `url:oci://…` source-location entities (registration still via normal catalog locations)
 
 ## 4. Entity Detail Page
 
-- [ ] 4.1 Add AiResource kind support to the workspace entity page routing
-- [ ] 4.2 Display asset location from `backstage.io/source-location`: HTTPS/git targets as links; `oci://` targets as copyable text
-- [ ] 4.3 Ensure the standard relationships graph is present for AiResource entities
-- [ ] 4.4 Show a TechDocs tab when `backstage.io/techdocs-ref` is present and hide it when absent
-- [ ] 4.5 Add frontend tests covering location rendering, graph presence, and conditional TechDocs display
+- [x] 4.1 Add AiResource kind support to the workspace entity page routing
+- [x] 4.2 Display asset location from `backstage.io/source-location`: HTTPS/git targets as links; `oci://` targets as copyable text
+- [x] 4.3 Ensure the standard relationships graph is present for AiResource entities
+- [x] 4.4 Show a TechDocs tab when `backstage.io/techdocs-ref` is present and hide it when absent
+- [x] 4.5 Add frontend tests covering location rendering, graph presence, and conditional TechDocs display
 
 ## 5. Discovery & Filtering
 
-- [ ] 5.1 Verify AiResource entities are returned by `GET /api/catalog/entities?filter=kind=AiResource` (or upstream kind spelling used by the workspace)
-- [ ] 5.2 Verify by-name lookup for AiResource entities
-- [ ] 5.3 Verify filtering by `spec.type`, `spec.scope`, `spec.owner`, and `spec.lifecycle`
-- [ ] 5.4 Verify entities without `spec.scope` are excluded when a scope filter is applied
-- [ ] 5.5 Verify AiResource entities appear in catalog full-text search
-- [ ] 5.6 Add integration tests for filter and search behavior
+- [x] 5.1 Verify AiResource entities are returned by `GET /api/catalog/entities?filter=kind=AiResource` (or upstream kind spelling used by the workspace)
+- [x] 5.2 Verify by-name lookup for AiResource entities
+- [x] 5.3 Verify filtering by `spec.type`, `spec.scope`, `spec.owner`, and `spec.lifecycle`
+- [x] 5.4 Verify entities without `spec.scope` are excluded when a scope filter is applied
+- [x] 5.5 Verify AiResource entities appear in catalog full-text search
+- [x] 5.6 Add integration tests for filter and search behavior
 
 ## 6. Documentation & Examples
 
@@ -57,7 +57,7 @@ and was later consolidated into `AiResourceExtensionsProcessor` (alongside
 
 ## 7. Final Verification
 
-- [ ] 7.1 Walk through each scenario in the local AiResource specs against the implementation
+- [x] 7.1 Walk through each scenario in the local AiResource specs against the implementation
 - [ ] 7.2 Update release-facing documentation if the feature ships from this workspace
 
 ## Explicitly out of scope (do not implement in this change)
