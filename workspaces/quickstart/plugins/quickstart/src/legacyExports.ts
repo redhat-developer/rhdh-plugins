@@ -46,9 +46,4 @@ export type { QuickstartButtonProps } from './components/QuickstartButton/Quicks
  */
 export { QuickstartDrawerProvider } from './components/QuickstartDrawerProvider';
 
-export {
-  quickstartTranslations,
-  quickstartTranslationRef,
-} from './translations';
-
 export { filterQuickstartItemsByRole } from './utils';

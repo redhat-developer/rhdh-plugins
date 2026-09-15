@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { ActiveBoolean } from './ActiveBoolean';
 import * as utils from '../utils';
 
@@ -25,7 +25,6 @@ jest.mock('../utils', () => {
     useRetriggerEvaluate: jest.fn(),
     useFetch: jest.fn(),
     useProcessingState: jest.fn(),
-    useClearOnRetrigger: jest.fn(),
   };
 });
 
@@ -34,6 +33,42 @@ const mockedUseTemplateUnitEvaluator =
 const mockedUseRetriggerEvaluate = utils.useRetriggerEvaluate as jest.Mock;
 const mockedUseFetch = utils.useFetch as jest.Mock;
 const mockedUseProcessingState = utils.useProcessingState as jest.Mock;
+
+const buildActiveBoolean = ({
+  options = {},
+  value = false,
+  onChange = () => {},
+}: {
+  options?: Record<string, unknown>;
+  value?: boolean;
+  onChange?: (value: boolean) => void;
+} = {}) => (
+  <ActiveBoolean
+    id="ab"
+    name="ab"
+    label="Active Boolean"
+    required={false}
+    readonly={false}
+    disabled={false}
+    autofocus={false}
+    schema={{ type: 'boolean' }}
+    uiSchema={{}}
+    options={{ props: options }}
+    value={value}
+    onChange={onChange}
+    onBlur={() => {}}
+    onFocus={() => {}}
+    formContext={
+      {
+        formData: {},
+        getIsChangedByUser: () => false,
+        setIsChangedByUser: () => {},
+      } as any
+    }
+    rawErrors={[]}
+    registry={{} as any}
+  />
+);
 
 describe('ActiveBoolean', () => {
   beforeEach(() => {
@@ -315,5 +350,108 @@ describe('ActiveBoolean', () => {
 
     const checkbox = screen.getByTestId('ab-checkbox');
     expect(checkbox).toBeInTheDocument();
+  });
+
+  it('checks the field from a fetched string boolean value', async () => {
+    const onChange = jest.fn();
+    mockedUseFetch.mockReturnValue({
+      data: { enabled: 'true' },
+      error: undefined,
+      loading: false,
+    });
+
+    render(
+      buildActiveBoolean({
+        onChange,
+        options: {
+          'fetch:url': 'https://example.test/api',
+          'fetch:response:value': '$.enabled',
+        },
+      }),
+    );
+
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith(true));
+  });
+
+  it('updates the field when a fetch retrigger returns a new value', async () => {
+    const onChange = jest.fn();
+    let retrigger = ['sandbox'];
+    const options = {
+      'fetch:url': 'https://example.test/api',
+      'fetch:response:value': '$.enabled',
+      'fetch:retrigger': ['environment'],
+    };
+
+    mockedUseRetriggerEvaluate.mockImplementation(() => retrigger);
+    mockedUseFetch.mockImplementation(
+      (
+        _formData: unknown,
+        _uiProps: unknown,
+        currentRetrigger: (string | undefined)[] | undefined,
+      ) => ({
+        data: {
+          enabled: currentRetrigger?.[0] === 'prod' ? 'true' : 'false',
+        },
+        error: undefined,
+        loading: false,
+      }),
+    );
+
+    const view = render(buildActiveBoolean({ onChange, options }));
+
+    retrigger = ['prod'];
+    view.rerender(buildActiveBoolean({ onChange, options }));
+
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith(true));
+  });
+
+  it('clears the current value when a retrigger changes', async () => {
+    const onChange = jest.fn();
+    let retrigger = ['sandbox'];
+    const options = {
+      'fetch:url': 'https://example.test/api',
+      'fetch:response:value': '$.enabled',
+      'fetch:retrigger': ['environment'],
+      'fetch:clearOnRetrigger': true,
+    };
+
+    mockedUseRetriggerEvaluate.mockImplementation(() => retrigger);
+    mockedUseFetch.mockReturnValue({
+      data: undefined,
+      error: undefined,
+      loading: false,
+    });
+
+    const view = render(buildActiveBoolean({ value: true, onChange, options }));
+
+    retrigger = ['prod'];
+    view.rerender(buildActiveBoolean({ value: true, onChange, options }));
+
+    await waitFor(() => expect(onChange).toHaveBeenCalledWith(false));
+  });
+
+  it('keeps the existing value visible when a fetch error is silent', () => {
+    mockedUseFetch.mockReturnValue({
+      data: undefined,
+      error: 'network failed',
+      loading: false,
+    });
+
+    render(
+      buildActiveBoolean({
+        value: true,
+        options: {
+          'fetch:url': 'https://example.test/api',
+          'fetch:response:default': 'true',
+          'fetch:error:silent': true,
+        },
+      }),
+    );
+
+    const checkbox = screen
+      .getByTestId('ab-checkbox')
+      .querySelector('input') as HTMLInputElement;
+    expect(checkbox.checked).toBe(true);
+    expect(screen.queryByTestId('ab-error-text')).not.toBeInTheDocument();
   });
 });

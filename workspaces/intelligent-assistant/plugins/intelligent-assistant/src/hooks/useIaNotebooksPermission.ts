@@ -16,12 +16,18 @@
 
 import { usePermission } from '@backstage/plugin-permission-react';
 
-import { iaChatPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+import { iaNotebooksPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
-export const useLightspeedUpdatePermission = () => {
-  const lightspeedUpdatePermissionResult = usePermission({
-    permission: iaChatPermission,
+export const useIaNotebooksPermission = (): {
+  loading: boolean;
+  allowed: boolean;
+} => {
+  const result = usePermission({
+    permission: iaNotebooksPermission,
   });
 
-  return lightspeedUpdatePermissionResult;
+  return {
+    loading: result.loading,
+    allowed: result.allowed,
+  };
 };

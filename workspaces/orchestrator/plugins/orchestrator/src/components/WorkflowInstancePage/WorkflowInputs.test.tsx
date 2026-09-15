@@ -17,11 +17,13 @@
 import '@testing-library/jest-dom';
 
 import { render, screen } from '@testing-library/react';
+import type { JSONSchema7 } from 'json-schema';
 
 import { WorkflowInputs } from './WorkflowInputs';
 
 jest.mock('@backstage/core-components', () => {
   const React = require('react');
+
   return {
     InfoCard: ({
       children,
@@ -45,7 +47,6 @@ jest.mock('@backstage/core-components', () => {
       React.createElement('pre', null, JSON.stringify(metadata)),
   };
 });
-
 jest.mock('../../hooks/useTranslation', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
@@ -54,7 +55,15 @@ jest.mock('../../hooks/useTranslation', () => ({
 
 jest.mock('tss-react/mui', () => ({
   makeStyles: () => () => () => ({
-    classes: { metadataTable: 'metadata-table' },
+    classes: {
+      metadataTable: 'metadata-table',
+      section: 'section',
+      sectionTitle: 'section-title',
+      row: 'row',
+      label: 'label',
+      value: 'value',
+      nestedSection: 'nested-section',
+    },
   }),
 }));
 
@@ -73,7 +82,93 @@ describe('WorkflowInputs', () => {
     expect(
       screen.getByRole('heading', { name: 'run.inputs' }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/"customer":"Alice"/)).toBeInTheDocument();
-    expect(screen.getByText(/"retries":2/)).toBeInTheDocument();
+    expect(screen.getByText('customer:')).toBeInTheDocument();
+    expect(screen.getByText('Alice')).toBeInTheDocument();
+    expect(screen.getByText('retries:')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+  });
+
+  it('renders nested schema labels and includes ui:hidden fields', () => {
+    const inputSchema: JSONSchema7 = {
+      type: 'object',
+      properties: {
+        details: {
+          type: 'object',
+          title: 'Details',
+          properties: {
+            name: {
+              type: 'string',
+              title: 'Name',
+            },
+            hiddenValue: {
+              type: 'string',
+              title: 'Hidden value',
+              'ui:hidden': true,
+            } as JSONSchema7 & { 'ui:hidden': boolean },
+            enabled: {
+              type: 'boolean',
+              title: 'Enabled',
+            },
+            tags: {
+              type: 'array',
+              title: 'Tags',
+              items: { type: 'string' },
+            },
+          },
+        },
+      },
+    };
+
+    render(
+      <WorkflowInputs
+        className=""
+        cardClassName=""
+        loading={false}
+        responseError={undefined}
+        value={{
+          inputSchema,
+          data: {
+            details: {
+              name: 'Nested input',
+              hiddenValue: 'Visible in the input card',
+              enabled: true,
+              tags: ['one', 'two'],
+            },
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByText('Details')).toBeInTheDocument();
+    expect(screen.getByText('Name:')).toBeInTheDocument();
+    expect(screen.getByText('Nested input')).toBeInTheDocument();
+    expect(screen.getByText('Hidden value:')).toBeInTheDocument();
+    expect(screen.getByText('Visible in the input card')).toBeInTheDocument();
+    expect(screen.getByText('Enabled:')).toBeInTheDocument();
+    expect(screen.getByText('true')).toBeInTheDocument();
+    expect(screen.getByText('Tags:')).toBeInTheDocument();
+    expect(screen.getByText('["one","two"]')).toBeInTheDocument();
+  });
+
+  it('renders inputs without a schema using the fallback display data', () => {
+    render(
+      <WorkflowInputs
+        className=""
+        cardClassName=""
+        loading={false}
+        responseError={undefined}
+        value={{
+          data: {
+            enabled: false,
+            tags: ['one', 'two'],
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByText('enabled:')).toBeInTheDocument();
+    expect(screen.getByText('false')).toBeInTheDocument();
+    expect(screen.getByText('tags:')).toBeInTheDocument();
+    expect(screen.getByText('["one","two"]')).toBeInTheDocument();
   });
 });

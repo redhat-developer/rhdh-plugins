@@ -112,7 +112,6 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'footer.accuracy.label':
       'AI によって生成されたコンテンツは、使用する前に必ず確認してください。',
     'icon.lightspeed.alt': 'インテリジェントアシスタントアイコン',
-    'icon.permissionRequired.alt': '権限不足アイコン',
     'lcore.loadError.description':
       'インテリジェントアシスタントバックエンドがモデル一覧を返しませんでした。サービスが実行中で到達可能か確認してから、もう一度お試しください。',
     'lcore.loadError.title': 'モデルを読み込めませんでした',
@@ -159,8 +158,6 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'mcp.settings.name': '名前',
     'mcp.settings.noneAvailable': '利用可能な MCP サーバーはありません。',
     'mcp.settings.personalAccessToken': '個人アクセストークン',
-    'mcp.settings.readOnlyAccess':
-      'MCP サーバーへのアクセスは読み取り専用です。',
     'mcp.settings.removePersonalToken': '個人トークンを削除',
     'mcp.settings.savedToken': '保存済みトークン',
     'mcp.settings.selectedCount':
@@ -286,12 +283,6 @@ const intelligentAssistantTranslationJa = createTranslationMessages({
     'notebooks.updated.yesterday': '1日前に更新',
     'page.subtitle': 'AI 搭載開発アシスタント',
     'page.title': 'インテリジェントアシスタント',
-    'permission.notebooks.goBack': '戻る',
-    'permission.required.description':
-      '<subject/> を表示するには、管理者に連絡して <permissions/> 権限を付与してもらうよう依頼してください。',
-    'permission.required.title': '権限の不足',
-    'permission.subject.notebooks': 'インテリジェントアシスタントノートブック',
-    'permission.subject.plugin': 'インテリジェントアシスタントプラグイン',
     'prompts.codeOptimization.message':
       'コードを最適化してパフォーマンスを向上させるための一般的な方法を提案してくれませんか?',
     'prompts.codeOptimization.title': 'コードの最適化を提案する',
