@@ -17,7 +17,6 @@
 import { coreExtensionData } from '@backstage/frontend-plugin-api';
 import catalogGraphPlugin from '@backstage/plugin-catalog-graph/alpha';
 import { CustomCatalogGraphPage } from './CustomCatalogGraphPage';
-
 /**
  * Override of the Backstage catalog graph plugin that adds an empty state
  * when no catalog entities are available.
@@ -26,6 +25,9 @@ import { CustomCatalogGraphPage } from './CustomCatalogGraphPage';
  */
 export const catalogGraphPluginOverride = catalogGraphPlugin.withOverrides({
   extensions: [
+    catalogGraphPlugin
+      .getExtension('entity-card:catalog-graph/relations')
+      .override({ disabled: true }),
     catalogGraphPlugin.getExtension('page:catalog-graph').override({
       factory(originalFactory) {
         const original = originalFactory();

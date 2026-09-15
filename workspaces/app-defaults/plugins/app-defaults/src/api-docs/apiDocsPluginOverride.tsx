@@ -17,15 +17,19 @@
 import { coreExtensionData } from '@backstage/frontend-plugin-api';
 import apiDocsPlugin from '@backstage/plugin-api-docs/alpha';
 import { CustomApiDocsPage } from './CustomApiDocsPage';
+import { entityOverviewApiDocsCardDisables } from './entityOverviewApiDocsCardDisables';
+import { entityPageApiDocsExtensions } from './entityPageApiDocsExtensions';
 
 /**
  * Override of the Backstage API docs plugin that adds an empty state
- * when no API entities are available.
+ * when no API entities are available, plus legacy RHDH entity Api/Definition tabs.
  *
  * @public
  */
 export const apiDocsPluginOverride = apiDocsPlugin.withOverrides({
   extensions: [
+    ...entityOverviewApiDocsCardDisables,
+    ...entityPageApiDocsExtensions,
     apiDocsPlugin.getExtension('page:api-docs').override({
       factory(originalFactory) {
         const original = originalFactory();

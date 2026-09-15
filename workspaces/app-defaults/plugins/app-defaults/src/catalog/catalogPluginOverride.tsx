@@ -17,15 +17,19 @@
 import { coreExtensionData } from '@backstage/frontend-plugin-api';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import { CustomCatalogPage } from './CustomCatalogPage';
+import { entityOverviewStockCardDisables } from './entityOverviewStockCardDisables';
+import { entityPageCatalogExtensions } from './entityPageExtensions';
 
 /**
  * Override of the Backstage catalog plugin that adds an empty state
- * when no catalog entities are available.
+ * when no catalog entities are available, plus legacy RHDH entity page tabs.
  *
  * @public
  */
 export const catalogPluginOverride = catalogPlugin.withOverrides({
   extensions: [
+    ...entityOverviewStockCardDisables,
+    ...entityPageCatalogExtensions,
     catalogPlugin.getExtension('page:catalog').override({
       factory(originalFactory) {
         const original = originalFactory();
