@@ -43,5 +43,10 @@ export default createTranslationMessages({
     'docs.emptyState.description':
       'Es gibt noch keine dokumentierten Einträge oder Sie haben keine Berechtigung, welche anzuzeigen. Dokumentation erscheint hier, sobald Einträge mit TechDocs-Annotationen registriert sind und Sie Zugriff haben.',
     'docs.emptyState.importButtonTitle': 'Komponente registrieren',
+    'references.title': 'Referenzen',
+    'menuItem.learningPaths': 'Lernpfade',
+    'learningPaths.title': 'Lernpfade',
+    'learningPaths.error.title': 'Daten konnten nicht abgerufen werden.',
+    'learningPaths.error.unknownError': 'Unbekannter Fehler',
   },
 });

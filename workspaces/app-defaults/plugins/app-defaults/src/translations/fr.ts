@@ -44,5 +44,10 @@ export default createTranslationMessages({
     'docs.emptyState.description':
       "Il n'y a pas encore d'entités documentées, ou vous n'avez pas la permission d'en voir. La documentation apparaîtra ici une fois que des entités avec des annotations TechDocs seront enregistrées et que vous y aurez accès.",
     'docs.emptyState.importButtonTitle': 'Enregistrer un composant',
+    'references.title': 'Références',
+    'menuItem.learningPaths': "Parcours d'apprentissage",
+    'learningPaths.title': "Parcours d'apprentissage",
+    'learningPaths.error.title': 'Impossible de récupérer les données',
+    'learningPaths.error.unknownError': 'Erreur inconnue',
   },
 });

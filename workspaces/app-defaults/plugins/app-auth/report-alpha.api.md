@@ -10,9 +10,9 @@ export const signInTranslationRef: TranslationRef<
   'plugin.app-auth.sign-in',
   {
     readonly 'signIn.page.title': 'Select a sign-in method';
+    readonly 'signIn.config.missingAuthEnvironment.description': 'Set {{ authEnvKey }} in your app configuration (for example {{ devEnv }} for local use or {{ prodEnv }} in deployed environments). Without it, the app cannot safely determine which sign-in options to offer.';
     readonly 'signIn.config.missingAuthEnvironment.error': 'Missing required app configuration: auth.environment must be set';
     readonly 'signIn.config.missingAuthEnvironment.panelTitle': 'Sign-in is not available';
-    readonly 'signIn.config.missingAuthEnvironment.description': 'Set {{ authEnvKey }} in your app configuration (for example {{ devEnv }} for local use or {{ prodEnv }} in deployed environments). Without it, the app cannot safely determine which sign-in options to offer.';
     readonly 'signIn.providers.auth0.title': 'Auth0';
     readonly 'signIn.providers.auth0.message': 'Sign in using Auth0';
     readonly 'signIn.providers.atlassian.title': 'Atlassian';

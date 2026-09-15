@@ -21,7 +21,7 @@ import { appIntegrationsModule } from '@red-hat-developer-hub/backstage-plugin-a
 import {
   globalHeaderModule,
   globalHeaderTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
+} from '@red-hat-developer-hub/backstage-plugin-global-header';
 import { navModule } from './modules/nav';
 import { drawerDemoModule } from './modules/drawer-demo';
 import { templateCardDemoModule } from './modules/template-card-demo';
