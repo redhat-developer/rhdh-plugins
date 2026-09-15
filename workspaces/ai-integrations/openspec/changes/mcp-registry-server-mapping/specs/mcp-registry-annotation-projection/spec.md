@@ -58,12 +58,12 @@ Nested object keys and array indices SHALL be encoded as dot-separated segments 
 
 ### Requirement: Produce catalog-valid annotation keys
 
-Every projected annotation key SHALL be valid for the Backstage catalog: the name segment SHALL contain only allowed characters (alphanumerics plus `-`, `_`, `.`), SHALL begin and end with an alphanumeric character, and SHALL be at most 63 characters. Path segments containing characters outside this set (for example `/`, `$`, `@`, whitespace, or a leading `_` as in `_meta`) SHALL be sanitized deterministically, and keys whose name segment would exceed 63 characters SHALL be truncated and suffixed with a stable hash so they remain valid and unique.
+Every projected annotation key SHALL be valid for the Backstage catalog: the name segment SHALL contain only allowed characters (alphanumerics plus `-`, `_`, `.`), SHALL begin and end with an alphanumeric character, and SHALL be at most 63 characters. Sanitization SHALL be applied to each object-key segment in the dot path before segments are joined (array index segments are unchanged decimal numerals). For each object-key segment the mapping SHALL lowercase the segment; replace every character outside `a-z`, `0-9`, `.`, `_`, and `-` with a single ASCII hyphen (`-`); and if the segment begins with `_`, replace that leading `_` with `x`. Keys whose full name segment would exceed 63 characters SHALL be truncated and suffixed with a stable hash so they remain valid and unique.
 
 #### Scenario: Illegal characters in a path are sanitized
 
 - **WHEN** a `server.json` carries a `_meta` object whose nested key contains a `/` (e.g. `_meta."io.modelcontextprotocol.registry/publisher-provided".x`)
-- **THEN** the projected annotation key replaces the leading underscore and the embedded `/` with allowed characters so the resulting `modelcontextprotocol.io/<segment>` key is catalog-valid
+- **THEN** the projected annotation key is `modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provided.x` (leading `_` on `_meta` → `xmeta`; `/` in the nested key → `-`)
 
 #### Scenario: Over-length key is truncated with a stable suffix
 

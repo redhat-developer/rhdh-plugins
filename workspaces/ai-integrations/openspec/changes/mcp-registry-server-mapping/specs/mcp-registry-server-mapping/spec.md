@@ -6,6 +6,8 @@ The target entity shape follows the upstream Backstage mcp-server example ([`bac
 
 `server.json` attributes without a native home in this shape are handed to `mcp-registry-annotation-projection`. This spec covers only the direct (native-field) mapping and the supply of catalog-required fields absent from the source.
 
+The authoritative **attribute → entity target** table (native field, dedicated annotation, or projected annotation) lives in the change's `mapping-reference.md` deliverable (see `tasks.md`); requirements below define behavior per concern rather than duplicating that table.
+
 ---
 
 ## ADDED Requirements
@@ -31,7 +33,7 @@ The mapping SHALL copy each `server.json` `remotes[]` entry's `type` and `url` i
 #### Scenario: Remotes copied in order
 
 - **WHEN** a `server.json` declares multiple `remotes` entries
-- **THEN** `spec.remotes` contains one entry per source remote, in the same order, each with the source `type` and `url`, and no `spec.definition` is present
+- **THEN** `spec.remotes` contains one entry per source remote whose `url` passes the emitted-URL scheme policy, preserving source order among those copied entries, each with the source `type` and `url`, and no `spec.definition` is present
 
 #### Scenario: Remote headers and variables are projected, not dropped
 
@@ -55,7 +57,7 @@ The mapping SHALL copy each `server.json` `remotes[]` entry's `type` and `url` i
 
 ### Requirement: Derive a version-unique metadata.name and preserve the canonical name and version
 
-A registry publishes one `server.json` per server version, and each version becomes its own `API` entity; a `metadata.name` derived from the canonical name alone would therefore collide across versions in the catalog. The `server.json` `name` is also a reverse-DNS identifier (`namespace/server`) that is not itself a valid Backstage `metadata.name`. The mapping SHALL derive `metadata.name` as `<prefix>__<name>__<version>` — the sanitized prefix, the sanitized canonical name, and the sanitized version joined by a double underscore (`__`) — conforming to the Backstage name character set (lowercase alphanumerics with `-`/`_`/`.`, beginning and ending alphanumeric, ≤63 characters). The prefix SHALL be the constant `mcp.registry` when no caller override is supplied; a caller MAY supply an override default prefix. When the override is unset, empty, or sanitizes to empty, the mapping SHALL use `mcp.registry` and SHALL NOT fail. After joining, the mapping SHALL append a stable hash suffix derived from the effective prefix, the unmodified canonical name, and the unmodified version whenever **either** sanitization mutates any identity segment (the sanitized segment differs from the source segment) **or** the joined candidate exceeds 63 characters. When the hash is applied, the mapping SHALL truncate the candidate stem as needed so the final `metadata.name` remains ≤63 characters. When sanitization does not mutate any segment and the candidate is ≤63 characters, the mapping SHALL emit the candidate with no hash suffix. This rule is a pure function of one document plus caller defaults; it does not observe other documents. The mapping SHALL preserve the unmodified canonical name (without the version) in a `modelcontextprotocol.io/name` annotation, and SHALL map the `version` directly to its dedicated `modelcontextprotocol.io/version` annotation so it remains individually queryable.
+A registry publishes one `server.json` per server version, and each version becomes its own `API` entity; a `metadata.name` derived from the canonical name alone would therefore collide across versions in the catalog. The `server.json` `name` is also a reverse-DNS identifier (`namespace/server`) that is not itself a valid Backstage `metadata.name`. The mapping SHALL derive `metadata.name` as `<prefix>__<name>__<version>` — the sanitized prefix, the sanitized canonical name, and the sanitized version joined by a double underscore (`__`) — conforming to the Backstage name character set (lowercase alphanumerics with `-`/`_`/`.`, beginning and ending alphanumeric, ≤63 characters). Each identity segment (prefix, canonical `name`, `version`) SHALL be sanitized with the same algorithm as annotation object-key segments: lowercase; replace every character outside `a-z`, `0-9`, `.`, `_`, and `-` with `-`; if the segment begins with `_`, replace that leading `_` with `x` (for example `/` in `io.github.user/weather` → `-`). The prefix SHALL be the constant `mcp.registry` when no caller override is supplied; a caller MAY supply an override default prefix. When the override is unset, empty, or sanitizes to empty, the mapping SHALL use `mcp.registry` and SHALL NOT fail. After joining, the mapping SHALL append a stable hash suffix derived from the effective prefix, the unmodified canonical name, and the unmodified version whenever **either** sanitization mutates any identity segment (the sanitized segment differs from the source segment) **or** the joined candidate exceeds 63 characters. When the hash is applied, the mapping SHALL truncate the candidate stem as needed so the final `metadata.name` remains ≤63 characters. When sanitization does not mutate any segment and the candidate is ≤63 characters, the mapping SHALL emit the candidate with no hash suffix. This rule is a pure function of one document plus caller defaults; it does not observe other documents. The mapping SHALL preserve the unmodified canonical name (without the version) in a `modelcontextprotocol.io/name` annotation, and SHALL map the `version` directly to its dedicated `modelcontextprotocol.io/version` annotation so it remains individually queryable.
 
 #### Scenario: Two versions of the same server produce distinct entities
 
@@ -108,7 +110,7 @@ The [`server.json` `repository` object](https://github.com/modelcontextprotocol/
 
 #### Scenario: Descriptive fields lift to metadata
 
-- **WHEN** a `server.json` provides `title`, `description`, and `websiteUrl`
+- **WHEN** a `server.json` provides `title`, `description`, and `websiteUrl` that passes the emitted-URL scheme policy
 - **THEN** the entity has `metadata.title` from `title`, `metadata.description` from `description`, and a `metadata.links` entry whose `url` is `websiteUrl` and whose `title` is `Website`
 
 #### Scenario: GitHub repository subfolder uses the GitHub tree path with HEAD

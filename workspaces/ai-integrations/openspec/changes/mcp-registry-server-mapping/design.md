@@ -22,6 +22,42 @@ Upstream Backstage defines a **dedicated `mcp-server` `API` entity schema** that
 
 The mapping therefore targets the dedicated `mcp-server` entity shape: top-level `spec.remotes[]` in place of `spec.definition`. This aligns with the upstream-first principle — the shape is the one upstream ships, not an RHDH invention.
 
+### Upstream references
+
+Anchors for the mapping target (`backstage/backstage`):
+
+- **Canonical example** — [`backstage-mcp-server-api.yaml`](https://raw.githubusercontent.com/backstage/backstage/a4bdc49ed664661bc69fe42bfaebcf24dc96e6b3/packages/catalog-model/examples/apis/backstage-mcp-server-api.yaml): reference `mcp-server` `API` entity (`spec.remotes[]`, no `spec.definition`):
+
+  ```yaml
+  apiVersion: backstage.io/v1alpha1
+  kind: API
+  metadata:
+    name: backstage-mcp-server
+    description: An MCP server that exposes tools related to the Backstage ecosystem
+    tags: [mcp, ai]
+  spec:
+    type: mcp-server
+    lifecycle: experimental
+    owner: team-a
+    remotes:
+      - type: streamable-http
+        url: http://localhost:7007/api/mcp/v1
+  ```
+
+- **Base API schema** — [`API.v1alpha1.schema.json`](https://raw.githubusercontent.com/backstage/backstage/a4bdc49ed664661bc69fe42bfaebcf24dc96e6b3/packages/catalog-model/src/schema/kinds/API.v1alpha1.schema.json): generic `API` requires `spec.definition`; that requirement does **not** apply to `spec.type: mcp-server`.
+- **RFC** — [#32062](https://github.com/backstage/backstage/issues/32062): MCP servers as `API` with `spec.type: mcp-server`.
+- **Dedicated schema** — [`McpServerApiEntity.ts`](https://github.com/backstage/backstage/blob/f91434377dc43cd64bef82344e3f2b539bfdaf11/packages/catalog-model/src/kinds/McpServerApiEntity.ts#L28-L36) ([PR #34016](https://github.com/backstage/backstage/pull/34016)): requires `spec.remotes[]`; omits `spec.definition`.
+
+**Mapping consequence:** emit `spec.type: mcp-server`, `spec.lifecycle`, `spec.owner`, `metadata` (`name`/`title`/`description`/`tags`/`links`), and top-level `spec.remotes[]` (`type`, `url`) only. Project everything else (`packages`, `icons`, remote `headers`/`variables`, `_meta`, remaining `repository` sub-fields, …) via `mcp-registry-annotation-projection`, with dedicated `modelcontextprotocol.io/name`, `modelcontextprotocol.io/version`, and (when D11 passes) `modelcontextprotocol.io/repository.url` from the direct mapping.
+
+### Source schema scope
+
+The draft `server.json` top-level surface this mapping is written against includes `name`, `title`, `description`, `version`, `websiteUrl`, `icons[]`, `repository` (`url`, `source`, `id`, `subfolder`), `packages[]` (nested runtime/package arguments, environment variables, transport), `remotes[]` (`type`, `url`, `headers[]`, `variables`), and `_meta`. The draft evolves; native mappings pin known fields and unknown fields fail-open into annotations (D7).
+
+### Deliverables
+
+Implementation tasks produce a version-pinned `mapping-reference.md` (field-mapping table and annotation-key rules), user-facing mapping documentation, and input→expected-output conformance fixtures as the golden oracle.
+
 ## Goals / Non-Goals
 
 **Goals:**
@@ -60,7 +96,7 @@ The mapping therefore targets the dedicated `mcp-server` entity shape: top-level
 
 ### D3: Annotation key encoding — dot-separated path after the prefix
 
-**Choice:** Nested paths are encoded as `modelcontextprotocol.io/attribute.tree.to.leaf` (object keys by name, array elements by zero-based index). Path segments are sanitized (illegal characters and leading `_` replaced) and over-length keys are truncated with a stable hash suffix; sanitization collisions are disambiguated by the same hash suffix.
+**Choice:** Nested paths are encoded as `modelcontextprotocol.io/attribute.tree.to.leaf` (object keys by name, array elements by zero-based index). Each **object-key segment** in the dot path is sanitized before the segments are joined; array index segments are unchanged decimal numerals. Sanitization per segment: lowercase; replace every character outside `a-z`, `0-9`, `.`, `_`, and `-` with a single ASCII hyphen (`-`); if the segment still begins with `_`, replace that leading `_` with `x` (for example `_meta` → `xmeta`, and `io.modelcontextprotocol.registry/publisher-provided` → `io.modelcontextprotocol.registry-publisher-provided`). Over-length name segments are truncated with a stable hash suffix; sanitization collisions are disambiguated by the same hash suffix.
 
 **Alternatives considered:** Literal slashes (`.../attr/tree/leaf`) — rejected, invalid Backstage keys; hyphenated scalars + JSON blobs for arrays — rejected, less uniform and less queryable.
 
@@ -68,7 +104,7 @@ The mapping therefore targets the dedicated `mcp-server` entity shape: top-level
 
 ### D4: Entity identity — `metadata.name` = `<prefix>__<name>__<version>`
 
-**Choice:** `metadata.name` is the sanitized prefix, sanitized canonical name, and sanitized version joined by `__`. The prefix is the constant `mcp.registry` by default; a caller MAY supply an override default (same caller-override pattern as owner and lifecycle in D5). If the override is unset, empty, or sanitizes to empty, the mapping uses `mcp.registry` — it never fails for a missing prefix, and the produced name never starts with `_`. The bare canonical name is preserved in `modelcontextprotocol.io/name` and the version in `modelcontextprotocol.io/version`, so both remain individually queryable and the identity is reconstructable together with the effective prefix. A stable hash suffix derived from the prefix, canonical name, and version is appended whenever sanitization mutates any identity segment or the joined candidate exceeds 63 characters (truncate the stem as needed). An already catalog-valid candidate that is ≤63 characters is emitted with no hash. The rule is per-input; it does not observe other documents.
+**Choice:** `metadata.name` is the sanitized prefix, sanitized canonical name, and sanitized version joined by `__`. Each of those three strings is sanitized **independently** with the D3 per-segment algorithm (lowercase; illegal chars → `-`; leading `_` → `x`) before joining — not by splitting on `.` like annotation dot paths. The prefix is the constant `mcp.registry` by default; a caller MAY supply an override default (same caller-override pattern as owner and lifecycle in D5). If the override is unset, empty, or sanitizes to empty, the mapping uses `mcp.registry` — it never fails for a missing prefix, and the produced name never starts with `_`. The bare canonical name is preserved in `modelcontextprotocol.io/name` and the version in `modelcontextprotocol.io/version`, so both remain individually queryable and the identity is reconstructable together with the effective prefix. A stable hash suffix derived from the prefix, canonical name, and version is appended whenever sanitization mutates any identity segment or the joined candidate exceeds 63 characters (truncate the stem as needed). An already catalog-valid candidate that is ≤63 characters is emitted with no hash. The rule is per-input; it does not observe other documents.
 
 **Alternatives considered:** (a) Encode the version in `metadata.namespace` — rejected; fragments entity references and complicates relationships. (b) `<name>__<version>` with no prefix — rejected; leaves registry-mapped entities without a caller-controllable namespacing token in `metadata.name` (they would collide with any other `mcp-server` API that sanitizes to the same name+version).
 
