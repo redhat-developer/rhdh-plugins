@@ -129,15 +129,25 @@ export type EntityMetricDetailResponse = {
  * A single sample in a metric time series (latest value for a UTC day).
  * Success points have a non-null `value`. When the latest sample is a
  * calculation failure, `value` is `null` and `error` is set to the failure
- * message.
+ * message. Threshold evaluation failures also set `error` (with
+ * `thresholdEvaluation` null).
  * @public
  */
 export type MetricTimeSeriesPoint = {
   value: MetricValue | null;
   /** ISO-8601 timestamp of the chosen sample */
   timestamp: string;
-  /** Present when this point is a calculation failure */
+  /**
+   * Present when this point is a calculation failure or threshold evaluation
+   * failed.
+   */
   error?: string;
+  /**
+   * Matched threshold rule key from read-time evaluation against the response
+   * `thresholds` (e.g., "elite", "success", "warning").
+   * `null` when the value could not be classified. Absent on calculation-error points.
+   */
+  thresholdEvaluation?: string | null;
 };
 
 /**
@@ -157,4 +167,15 @@ export type MetricTimeSeriesResponse = {
     defaultVisualization?: ScorecardVisualizationType;
     collectorIds?: string[];
   };
+  /**
+   * Entity-resolved threshold rules (provider defaults, then app-config, then entity annotation overrides).
+   * Used for sparkline legend rendering and mapping `thresholdEvaluation` keys to colors.
+   * Undefined when entity threshold resolution failed (see `thresholdsError`).
+   */
+  thresholds?: ThresholdConfig;
+  /**
+   * Set when entity threshold resolution failed (e.g. malformed entity annotation overrides).
+   * When present, points are not classified (`thresholdEvaluation` is null).
+   */
+  thresholdsError?: string;
 };

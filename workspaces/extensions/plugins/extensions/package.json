@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-extensions",
-  "version": "0.19.1",
+  "version": "0.20.0",
   "main": "src/index.tsx",
   "types": "src/index.tsx",
   "license": "Apache-2.0",
@@ -102,8 +102,7 @@
     "exposedModules": {
       "PluginRoot": "./src/index.tsx",
       "Alpha": "./src/alpha/index.tsx",
-      "Legacy": "./src/legacy.ts",
-      "Translations": "./src/translations.ts"
+      "Legacy": "./src/legacy.ts"
     }
   }
 }

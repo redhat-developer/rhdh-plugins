@@ -247,6 +247,9 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'modulePage.phases.adversarialAgentLabel': string;
     readonly 'modulePage.phases.adversarialCriticalFindings': string;
     readonly 'modulePage.phases.adversarialWarningFindings': string;
+    readonly 'modulePage.phases.adversarialCompleted': string;
+    readonly 'modulePage.phases.adversarialNoFindings': string;
+    readonly 'modulePage.phases.adversarialResult': string;
     readonly 'modulePage.phases.adversarialAgents.title': string;
     readonly 'modulePage.phases.adversarialAgents.placeholder': string;
     readonly 'modulePage.phases.adversarialAgents.noAgentsAvailable': string;
