@@ -29,6 +29,7 @@ import { SchedulerOptions, SchedulerTask } from './types';
 import { DatabaseMetricValues } from '../database/DatabaseMetricValues';
 import { ThresholdEvaluator } from '../threshold/ThresholdEvaluator';
 import { ThresholdResolver } from '../threshold/ThresholdResolver';
+import { isMetricEnabled } from '../utils/metricUtils';
 
 export class Scheduler {
   private readonly auth: AuthService;
@@ -101,6 +102,17 @@ export class Scheduler {
     const providers = this.metricProvidersRegistry.listProviders();
 
     for (const provider of providers) {
+      const hasEnabledMetric = provider
+        .getMetrics()
+        .some(m => isMetricEnabled(this.config, m, provider));
+
+      if (!hasEnabledMetric) {
+        this.logger.info(
+          `Skipping provider '${provider.getProviderId()}': all metrics disabled`,
+        );
+        continue;
+      }
+
       this.tasks.push({
         name: provider.getProviderId(),
         task: new PullMetricsByProviderTask(

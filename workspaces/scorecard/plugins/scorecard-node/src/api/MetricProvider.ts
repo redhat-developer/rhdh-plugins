@@ -53,4 +53,14 @@ export interface MetricProvider<T extends MetricType = MetricType> {
    * @public
    */
   getCatalogFilter(): Record<string, string | symbol | (string | symbol)[]>;
+  /**
+   * Whether this metric provider is enabled by default. When this
+   * method returns `false`, all metrics from this provider are
+   * disabled unless the administrator explicitly enables them (or
+   * the provider itself) in `app-config.yaml`.
+   *
+   * Omitting this method means the provider is enabled by default.
+   * @public
+   */
+  isEnabled?(): boolean;
 }
