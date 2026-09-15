@@ -61,6 +61,69 @@ test.describe('CustomTheme should be applied', () => {
     await expect(page).toHaveTitle(/My Company Catalog/);
   });
 
+  test('keeps the legacy Backstage Page grid when it contains BUI content', async ({
+    page,
+  }) => {
+    await page
+      .locator('nav')
+      .getByRole('link', { name: 'MUI v5 tests' })
+      .click();
+
+    const legacyPage = page.locator('main[data-backstage-core-page]').first();
+    await expect(legacyPage).toBeVisible();
+
+    await legacyPage.evaluate(element => {
+      const buiContent = document.createElement('div');
+      buiContent.className = 'bui-Container-regression-test';
+      element.appendChild(buiContent);
+    });
+
+    await expect(legacyPage).toHaveCSS('display', 'grid');
+  });
+
+  test('allows a classless BUI page to grow beyond the viewport', async ({
+    page,
+  }) => {
+    const sidebarPage = page
+      .locator('[class*="BackstageSidebarPage-root"]')
+      .first();
+    await expect(sidebarPage).toBeVisible();
+
+    await sidebarPage.evaluate(element => {
+      const main = document.createElement('main');
+      main.dataset.testid = 'bui-page-layout';
+
+      const container = document.createElement('div');
+      container.className = 'bui-Container-regression-test';
+
+      const spacer = document.createElement('div');
+      spacer.style.height = '200vh';
+      spacer.style.flex = '0 0 auto';
+
+      main.append(container, spacer);
+      element.appendChild(main);
+    });
+
+    const buiPage = page.getByTestId('bui-page-layout');
+    await expect(buiPage).toBeVisible();
+    await expect(buiPage).toHaveCSS('display', 'flex');
+    await expect(buiPage).toHaveCSS('max-height', 'none');
+
+    const minHeight = await buiPage.evaluate(element =>
+      Number.parseFloat(getComputedStyle(element).minHeight),
+    );
+    expect(minHeight).toBeGreaterThan(0);
+
+    const dimensions = await buiPage.evaluate(element => ({
+      clientHeight: element.clientHeight,
+      scrollHeight: element.scrollHeight,
+    }));
+    expect(dimensions.clientHeight).toBeGreaterThan(
+      page.viewportSize()?.height ?? 0,
+    );
+    expect(dimensions.clientHeight).toBe(dimensions.scrollHeight);
+  });
+
   test('Verify accessibility of the test pages', async ({
     page,
   }, testInfo: TestInfo) => {
