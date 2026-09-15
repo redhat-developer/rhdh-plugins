@@ -19,7 +19,7 @@ Every scalar leaf in the `server.json` document that is not consumed by a native
 
 #### Scenario: Natively-mapped attributes are not re-projected
 
-- **WHEN** a `server.json` carries `remotes[].type`/`url` that were copied into `spec.remotes`, `name` (mapped to `modelcontextprotocol.io/name` and `metadata.name`), `version` (mapped to `modelcontextprotocol.io/version`), `title`/`description` (mapped to `metadata`), `websiteUrl` that was copied into `metadata.links`, and `repository.url` that was copied into the SCM-combined browse URL on `metadata.links` and `backstage.io/source-location` plus the verbatim scalar on `modelcontextprotocol.io/repository.url`
+- **WHEN** a `server.json` carries `remotes[].type`/`url` that were copied into `spec.remotes`, `name` (mapped to `modelcontextprotocol.io/name` and `metadata.name`), `version` (mapped to `modelcontextprotocol.io/version`), `title`/`description` (mapped to `metadata`), `websiteUrl` that was copied into `metadata.links`, and `repository.url` that was emitted verbatim on `modelcontextprotocol.io/repository.url` and used (with `repository.subfolder` when present) for the SCM-combined Source Code `metadata.links` entry and `backstage.io/source-location`
 - **THEN** those attributes are not additionally emitted as generic `modelcontextprotocol.io/*` projected annotations, and the generic projection does not overwrite or re-derive the direct-mapping `backstage.io/source-location` or `modelcontextprotocol.io/repository.url` annotations
 
 #### Scenario: Refused URLs are not projected

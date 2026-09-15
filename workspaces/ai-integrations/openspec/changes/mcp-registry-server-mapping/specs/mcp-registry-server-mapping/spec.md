@@ -28,7 +28,7 @@ The mapping SHALL transform one `server.json` document into one `API` entity wit
 
 ### Requirement: Map remotes to top-level spec.remotes
 
-The mapping SHALL copy each `server.json` `remotes[]` entry's `type` and `url` into a corresponding top-level `spec.remotes[]` entry on the `API` entity, preserving source order of the entries that are copied. A remote `url` is copied only when it passes the "Emitted URL scheme policy" requirement; a refused remote is omitted from `spec.remotes` (it is not copied with a blank `url`). The refused `url` SHALL NOT be projected; non-URL siblings (`type`, `headers`, `variables`) SHALL still be handed to `mcp-registry-annotation-projection`. When the source `remotes` is empty, unset, or every remote is refused, the mapping SHALL emit an empty `spec.remotes: []` array — never an omitted field — so the output stays deterministic and schema-conformant. The mapping SHALL NOT emit a `spec.definition` field. Remote sub-fields that are not part of the native `spec.remotes` shape (`headers`, `variables`) SHALL be handed to `mcp-registry-annotation-projection` rather than dropped, including on remotes that were copied.
+The mapping SHALL copy each `server.json` `remotes[]` entry's `type` and `url` into a corresponding top-level `spec.remotes[]` entry on the `API` entity, preserving source order of the entries that are copied. A remote `url` is copied only when it passes the "Emitted URL scheme policy" requirement; a refused remote is omitted from `spec.remotes` (it is not copied with a blank `url`). The refused `url` SHALL NOT be projected; non-URL siblings (`type`, `headers`, `variables`) SHALL still be handed to `mcp-registry-annotation-projection`. When the source `remotes` is unset or empty, or every declared remote is omitted because D11 refused its `url`, the mapping SHALL satisfy upstream `spec.remotes` **`minItems: 1`** by emitting exactly one documented **placeholder** remote: `type` `undefined` (literal string) and `url` set to `websiteUrl` when that scalar passes D11. The placeholder is not derived from `remotes[]`; consumers SHALL treat `type: undefined` as synthetic. When `websiteUrl` is absent, null, or fails D11 in these cases, the mapping SHALL fail with an actionable error. The mapping SHALL NOT emit `spec.remotes: []`. The mapping SHALL NOT emit a `spec.definition` field. Remote sub-fields that are not part of the native `spec.remotes` shape (`headers`, `variables`) SHALL be handed to `mcp-registry-annotation-projection` rather than dropped, including on remotes that were copied.
 
 #### Scenario: Remotes copied in order
 
@@ -40,15 +40,25 @@ The mapping SHALL copy each `server.json` `remotes[]` entry's `type` and `url` i
 - **WHEN** a `remotes` entry carries `headers` or `variables`
 - **THEN** the native `spec.remotes` entry contains only `type` and `url`, and the `headers`/`variables` are projected into `modelcontextprotocol.io/*` annotations keyed by the remote's index
 
-#### Scenario: Server with no remotes
+#### Scenario: Server with no remotes uses placeholder when websiteUrl passes D11
 
-- **WHEN** a `server.json` declares no `remotes` (only local `packages`)
-- **THEN** the entity is still produced with an empty `spec.remotes: []` (not omitted), remains valid, and the `packages` are projected into annotations
+- **WHEN** a `server.json` declares no `remotes` (only local `packages`) and `websiteUrl` is an absolute `http` or `https` URL
+- **THEN** the entity is produced with exactly one `spec.remotes` entry `{ type: undefined, url: <websiteUrl> }` (literal type string `undefined`), the entity passes `McpServerApiEntity` validation, and `packages` are projected into annotations
+
+#### Scenario: Server with no remotes fails without a D11-valid websiteUrl
+
+- **WHEN** a `server.json` declares no `remotes` and `websiteUrl` is absent, null, or fails the emitted-URL scheme policy
+- **THEN** the mapping fails with an actionable error that a D11-valid `websiteUrl` is required to synthesize the placeholder remote required by upstream `minItems: 1`, and no entity is produced
 
 #### Scenario: Disallowed remote URL scheme is omitted from spec.remotes
 
-- **WHEN** a `remotes` entry has `url` `javascript:alert(1)` (or another non-`http`/`https` scheme such as `data:`)
-- **THEN** that entry is omitted from `spec.remotes`, the mapping still succeeds, the refused `url` is not projected, and non-URL siblings such as `type` are projected into `modelcontextprotocol.io/*` annotations
+- **WHEN** a `remotes` entry has `url` `javascript:alert(1)` (or another non-`http`/`https` scheme such as `data:`) and the document has a D11-valid `websiteUrl`
+- **THEN** that entry is omitted from `spec.remotes`, the mapping still succeeds using the D8 placeholder when no other remote is copied, the refused `url` is not projected, and non-URL siblings such as `type` are projected into `modelcontextprotocol.io/*` annotations
+
+#### Scenario: All remotes refused uses placeholder when websiteUrl passes D11
+
+- **WHEN** every `remotes` entry has a `url` refused by D11 and `websiteUrl` passes D11
+- **THEN** `spec.remotes` contains only the single placeholder `{ type: undefined, url: <websiteUrl> }`
 
 #### Scenario: http(s) URLs with private-looking hosts are still copied
 

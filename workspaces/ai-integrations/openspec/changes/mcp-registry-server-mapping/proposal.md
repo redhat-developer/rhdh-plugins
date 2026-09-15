@@ -7,9 +7,9 @@
 ## What Changes
 
 - Define a pure, deterministic **`server.json` → `mcp-server` `API` entity** transform (one document in, one entity out).
-- Specify **native field mapping** (`metadata`, `spec.remotes`, dedicated `modelcontextprotocol.io/*` annotations, D11 URL gating, SCM-aware repository links) in `mcp-registry-server-mapping`.
+- Specify **native field mapping** (`metadata`, `spec.remotes`, dedicated `modelcontextprotocol.io/*` annotations, D11 URL gating, SCM-aware repository links, **D8** placeholder remote when `remotes` is unset/empty or all D11-refused — `type` literal `undefined`, `url` from D11-valid `websiteUrl` for upstream `minItems: 1`) in `mcp-registry-server-mapping`.
 - Specify **annotation projection** for unmapped attributes (`modelcontextprotocol.io/<dot.path>`), including secret redaction (D9) and catalog-valid keys, in `mcp-registry-annotation-projection`.
-- Supply catalog-required defaults (`spec.owner`, `spec.lifecycle`, identity `prefix`) and document **round-trip** rules (with documented exceptions for secrets and refused URLs).
+- Require `name`, `description`, and `version` on input (`server.json`); mapping fails with an actionable error when any is omitted. Supply catalog-required defaults (`spec.owner`, `spec.lifecycle`, identity `prefix`) and document **round-trip** rules (with documented exceptions for secrets and refused URLs).
 - Deliver a **mapping reference**, worked examples, and **conformance fixtures** as the implementation oracle (see `design.md` and capability specs).
 
 ## Capabilities
