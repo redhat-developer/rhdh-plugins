@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-import { render, screen } from '@testing-library/react';
+import { renderInTestApp } from '@backstage/test-utils';
+import { screen } from '@testing-library/react';
 
 import type { FilterDefinition } from '../../blueprints/AiCatalogFilterBlueprint';
 import { FilterSidebar } from './FilterSidebar';
-
-jest.mock('../../hooks/useTranslation', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-}));
 
 const mockFilter = (urlParam: string, label: string): FilterDefinition => ({
   urlParam,
@@ -37,10 +32,10 @@ const mockFilter = (urlParam: string, label: string): FilterDefinition => ({
 });
 
 describe('FilterSidebar', () => {
-  it('renders a Select for each filter', () => {
+  it('renders a Select for each filter', async () => {
     const filters = [mockFilter('type', 'Type'), mockFilter('owner', 'Owner')];
 
-    render(
+    await renderInTestApp(
       <FilterSidebar
         filters={filters}
         entities={[]}
@@ -53,8 +48,8 @@ describe('FilterSidebar', () => {
     expect(screen.getByText('Owner')).toBeInTheDocument();
   });
 
-  it('shows All when a filter has no selected values', () => {
-    render(
+  it('shows All when a filter has no selected values', async () => {
+    await renderInTestApp(
       <FilterSidebar
         filters={[mockFilter('type', 'Type')]}
         entities={[]}
@@ -63,10 +58,10 @@ describe('FilterSidebar', () => {
       />,
     );
 
-    expect(screen.getAllByText('catalog.filter.all').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('All').length).toBeGreaterThan(0);
   });
 
-  it('keeps an option with the internal All value', () => {
+  it('keeps an option with the internal All value', async () => {
     const filter = {
       ...mockFilter('type', 'Type'),
       getOptions: () => [
@@ -75,7 +70,7 @@ describe('FilterSidebar', () => {
       ],
     };
 
-    render(
+    await renderInTestApp(
       <FilterSidebar
         filters={[filter]}
         entities={[]}
@@ -89,8 +84,8 @@ describe('FilterSidebar', () => {
     ).toBeInTheDocument();
   });
 
-  it('returns null when filters array is empty', () => {
-    const { container } = render(
+  it('returns null when filters array is empty', async () => {
+    const { container } = await renderInTestApp(
       <FilterSidebar
         filters={[]}
         entities={[]}
@@ -102,10 +97,10 @@ describe('FilterSidebar', () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders nav with aria-label', () => {
+  it('renders nav with aria-label', async () => {
     const filters = [mockFilter('type', 'Type')];
 
-    render(
+    await renderInTestApp(
       <FilterSidebar
         filters={filters}
         entities={[]}
@@ -116,17 +111,17 @@ describe('FilterSidebar', () => {
 
     expect(screen.getByRole('navigation')).toHaveAttribute(
       'aria-label',
-      'catalog.filter.title',
+      'Filters',
     );
   });
 
-  it('uses labelKey for translation when provided', () => {
+  it('uses labelKey for translation when provided', async () => {
     const filter: FilterDefinition = {
       ...mockFilter('type', 'Fallback'),
       labelKey: 'catalog.filter.type',
     };
 
-    render(
+    await renderInTestApp(
       <FilterSidebar
         filters={[filter]}
         entities={[]}
@@ -135,13 +130,13 @@ describe('FilterSidebar', () => {
       />,
     );
 
-    expect(screen.getByText('catalog.filter.type')).toBeInTheDocument();
+    expect(screen.getByText('Type')).toBeInTheDocument();
   });
 
-  it('uses plain label when labelKey is not set', () => {
+  it('uses plain label when labelKey is not set', async () => {
     const filter = mockFilter('ns', 'Namespace');
 
-    render(
+    await renderInTestApp(
       <FilterSidebar
         filters={[filter]}
         entities={[]}

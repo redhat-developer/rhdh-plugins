@@ -75,6 +75,11 @@ loaded independently of `boost-backend`.
 - **AND** `apiKey` is marked with `@visibility secret`
 - **AND** `caData` is marked with `@visibility backend`
 - **AND** `baseUrl` and `skipTLSVerify` are marked `@configScope yaml-only`
+- **AND** model and agent refresh intervals are declared on the
+  `boost.entityProviders.ogx` configuration path
+- **AND** configured static agents support `id`, `name`, `version`,
+  `description`, `instructions`, `model`, `tools`, handoffs, RAG, owner, and
+  lifecycle fields
 
 ### Requirement: TLS connection configuration
 
@@ -160,7 +165,7 @@ with type `agent`.
 - **WHEN** the agent provider refreshes
 - **THEN** it emits one agent entity for each configured agent
 - **AND** each entity maps the configured lifecycle, owner, instructions, handoffs,
-  handoff description, and RAG setting
+  handoff description, RAG setting, model, and tools
 - **AND** each entity has category `agent` and source `ogx`
 - **AND** each entity has a normalized version, defaulting to `0.0.0-unknown` when
   unavailable

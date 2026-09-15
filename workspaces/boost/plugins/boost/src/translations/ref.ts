@@ -40,6 +40,9 @@ export const boostMessages = {
     card: {
       assetDetailsTitle: 'AI asset details',
       descriptionLabel: 'Description',
+      viewDetails: 'View {{title}} details',
+      tagsLabel: 'Tags',
+      providerLabel: 'Provider',
       usageTitle: 'Usage',
       versionLabel: 'Version',
       copyCommand: 'Copy',
@@ -61,7 +64,6 @@ export const boostMessages = {
       viewDefinition: 'View definition',
       modelsTitle: 'Models',
       modelsAvailableSuffix: 'available',
-      modelsAvailableTitle: 'Available Models',
       modelTitle: 'Model',
       viewModels: 'View models',
       modelsDialogTitle: 'Available models',

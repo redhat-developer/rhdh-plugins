@@ -27,6 +27,7 @@ import {
 } from '@backstage/ui';
 import { RiUserLine } from '@remixicon/react';
 
+import { useTranslation } from '../../hooks/useTranslation';
 import {
   entityHref,
   entityRefHref,
@@ -41,6 +42,7 @@ export interface AiAssetCardProps {
 }
 
 export const AiAssetCard = ({ entity }: AiAssetCardProps) => {
+  const { t } = useTranslation();
   const owner = getSpecField(entity, 'owner')?.trim();
   const displayOwner =
     owner && owner.toLowerCase() !== 'unknown' ? owner : undefined;
@@ -49,11 +51,15 @@ export const AiAssetCard = ({ entity }: AiAssetCardProps) => {
   const description = entity.metadata.description ?? '';
   const provider = getProvider(entity) ?? '';
   const ownerHref = displayOwner ? entityRefHref(displayOwner) : undefined;
+  const viewDetailsLabel = t('catalog.card.viewDetails').replace(
+    '{{title}}',
+    title,
+  );
 
   return (
     <Card
       href={entityHref(entity)}
-      label={`View ${title} details`}
+      label={viewDetailsLabel}
       className={styles.card}
     >
       <CardHeader>
@@ -74,7 +80,7 @@ export const AiAssetCard = ({ entity }: AiAssetCardProps) => {
         )}
         {tags.length > 0 && (
           <div className={styles.tags}>
-            <TagGroup aria-label="Tags">
+            <TagGroup aria-label={t('catalog.card.tagsLabel')}>
               {tags.map(tag => (
                 <Tag key={tag} id={tag} size="small">
                   {tag}
@@ -111,7 +117,10 @@ export const AiAssetCard = ({ entity }: AiAssetCardProps) => {
             </>
           )}
           {provider && (
-            <TagGroup aria-label="Provider" className={styles.provider}>
+            <TagGroup
+              aria-label={t('catalog.card.providerLabel')}
+              className={styles.provider}
+            >
               <Tag id={`provider-${provider}`} size="small">
                 {provider}
               </Tag>
