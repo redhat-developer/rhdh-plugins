@@ -9496,7 +9496,9 @@ __metadata:
     "@backstage/plugin-catalog": "npm:^2.0.6"
     "@backstage/plugin-catalog-graph": "npm:^0.6.5"
     "@backstage/plugin-catalog-react": "npm:^3.1.0"
+    "@backstage/plugin-notifications": "npm:^0.5.18"
     "@backstage/plugin-scaffolder": "npm:^1.38.0"
+    "@backstage/plugin-search": "npm:^1.7.5"
     "@backstage/plugin-techdocs": "npm:^1.17.7"
     "@backstage/plugin-techdocs-common": "npm:^0.1.1"
     "@backstage/test-utils": "npm:^1.7.19"
@@ -9515,6 +9517,7 @@ __metadata:
     react-router-dom: "npm:^6.30.6"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.30.6
   languageName: unknown
   linkType: soft
 

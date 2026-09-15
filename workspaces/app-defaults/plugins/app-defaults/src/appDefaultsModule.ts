@@ -21,6 +21,7 @@ import { templateCardExtension } from '@red-hat-developer-hub/backstage-plugin-a
 import { appDrawerExtension } from './drawer/appDrawerModule';
 import { commonIconsExtension } from './icons/commonIconsExtension';
 import { appSidebarExtension } from './sidebar/appSidebarModule';
+import { defaultSidebarExtensions } from './sidebar/defaultSidebarExtensions';
 import { appDefaultsTranslations } from './translations';
 
 /**
@@ -37,6 +38,7 @@ export const appDefaultsModule = createFrontendModule({
   extensions: [
     appDrawerExtension,
     appSidebarExtension,
+    ...defaultSidebarExtensions,
     templateCardExtension,
     commonIconsExtension,
   ],
