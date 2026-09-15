@@ -18,7 +18,6 @@ import { ErrorPage } from '@backstage/core-components';
 import { Routes, Route } from 'react-router-dom';
 import { OptimizationsPage } from './pages/optimizations/OptimizationsPage';
 import { OptimizationsBreakdownPage } from './pages/optimizations-breakdown/OptimizationsBreakdownPage';
-import { OpenShiftPage } from './pages/openshift/OpenShiftPage';
 import { usePatternFlyTheme } from './hooks/usePatternFlyTheme';
 
 const notFound = <ErrorPage status="404" statusMessage="Page not found" />;
@@ -39,14 +38,13 @@ export function OptimizationsRouter() {
   );
 }
 
-/** @public Legacy ResourceOptimizationPage mount (still includes nested /openshift). */
+/** @public Legacy ResourceOptimizationPage mount (list + breakdown). */
 export function Router() {
   usePatternFlyTheme();
 
   return (
     <Routes>
       <Route path="/" element={<OptimizationsPage />} />
-      <Route path="/openshift" element={<OpenShiftPage />} />
       <Route path="/:id/*" element={<OptimizationsBreakdownPage />} />
       <Route path="*" element={notFound} />
     </Routes>
