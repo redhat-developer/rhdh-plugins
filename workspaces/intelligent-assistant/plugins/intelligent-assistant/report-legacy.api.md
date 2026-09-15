@@ -24,8 +24,8 @@ export type DrawerStateExposerProps = {
   onStateChange: (state: DrawerState) => void;
 };
 
-// @public (undocumented)
-export const LightspeedChatContainer: () => JSX_2.Element;
+// @public
+export const LightspeedChatContainer: () => JSX_2.Element | null;
 
 // @public
 export const LightspeedDrawerProvider: React.ComponentType<PropsWithChildren>;
@@ -36,7 +36,7 @@ export const LightspeedDrawerStateExposer: (
 ) => null;
 
 // @public
-export const LightspeedFAB: () => JSX_2.Element | null;
+export const LightspeedFAB: React.ComponentType;
 
 // @public
 export const LightspeedIcon: () => JSX_2.Element;
