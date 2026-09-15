@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { validateThresholdNumberIntervals } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import { sonarqubeEntity } from '../../__fixtures__/sonarqubeEntity';
 import {
   parseProjectKeyAnnotation,
@@ -72,6 +73,18 @@ describe('SONARQUBE_NUMBER_THRESHOLDS', () => {
       expect(
         SONARQUBE_NUMBER_THRESHOLDS[metricId].rules.length,
       ).toBeGreaterThan(0);
+    },
+  );
+
+  it.each(SONARQUBE_NUMBER_METRICS)(
+    '%s thresholds have valid number intervals',
+    metricId => {
+      expect(() =>
+        validateThresholdNumberIntervals(
+          SONARQUBE_NUMBER_THRESHOLDS[metricId].rules,
+          'number',
+        ),
+      ).not.toThrow();
     },
   );
 });
