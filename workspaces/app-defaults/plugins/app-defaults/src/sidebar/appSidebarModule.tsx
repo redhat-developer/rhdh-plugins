@@ -26,6 +26,7 @@ import {
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 import { AppSidebar } from './AppSidebar';
+import { defaultSidebarExtensions } from './defaultSidebarExtensions';
 
 /**
  * Nav content extension that renders the RHDH sidebar from contributed
@@ -65,11 +66,14 @@ export const appSidebarExtension = NavContentBlueprint.makeWithOverrides({
 /**
  * Frontend module that provides the priority-ordered app sidebar.
  * Registers the nav content extension that accepts sidebar item, group and
- * element contributions via inputs.
+ * element contributions via inputs, plus the default layout: the search
+ * modal at the top, a spacer and divider that push a bottom block down, the
+ * notifications item, and a divider above the settings area. Each default
+ * can be disabled or re-prioritized from `app-config.yaml`.
  *
  * @public
  */
 export const appSidebarModule = createFrontendModule({
   pluginId: 'app',
-  extensions: [appSidebarExtension],
+  extensions: [appSidebarExtension, ...defaultSidebarExtensions],
 });
