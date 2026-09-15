@@ -14,26 +14,26 @@
  * limitations under the License.
  */
 
-import { createDevApp } from '@backstage/dev-utils';
-import {
-  resourceOptimizationPlugin,
-  ResourceOptimizationPage,
-  OpenShiftPage,
-} from '../src/plugin';
-import { CostManagementIconOutlined } from '../src/components/icon/CostManagementIconOutlined';
+/**
+ * New Frontend System plugin standalone (yarn start / yarn start:fe-plugin).
+ * Legacy createDevApp: yarn start:legacy
+ */
 
-createDevApp()
-  .registerPlugin(resourceOptimizationPlugin)
-  .addPage({
-    title: 'Optimizations',
-    path: '/cost-management/optimizations',
-    element: <ResourceOptimizationPage />,
-    icon: CostManagementIconOutlined,
-  })
-  .addPage({
-    title: 'OpenShift',
-    path: '/cost-management/openshift',
-    element: <OpenShiftPage />,
-    icon: CostManagementIconOutlined,
-  })
-  .render();
+import '@backstage/cli/asset-types';
+
+import ReactDOM from 'react-dom/client';
+import { createApp } from '@backstage/frontend-defaults';
+
+import costManagementPlugin from '../src/alpha';
+
+const DEFAULT_PATH = '/cost-management/optimizations';
+
+const app = createApp({
+  features: [costManagementPlugin],
+});
+
+if (typeof window !== 'undefined' && window.location.pathname === '/') {
+  window.location.pathname = DEFAULT_PATH;
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(app.createRoot());
