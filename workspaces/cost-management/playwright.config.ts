@@ -40,7 +40,7 @@ export default defineConfig({
     ? []
     : [
         {
-          command: 'yarn start-app',
+          command: 'yarn workspace app-legacy start',
           port: 3000,
           reuseExistingServer: true,
           timeout: 120_000,
