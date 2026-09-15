@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import-backend
 
+## 9.1.0
+
+### Minor Changes
+
+- 2b31f6c: Convert `bulk.import` from a resource permission to a feature permission, and register the NFS bulk import page using the `if` permission predicate.
+
+### Patch Changes
+
+- Updated dependencies [2b31f6c]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.1.0
+
 ## 9.0.1
 
 ### Patch Changes
