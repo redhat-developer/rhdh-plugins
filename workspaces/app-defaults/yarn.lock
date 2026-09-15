@@ -9567,8 +9567,10 @@ __metadata:
     "@backstage/plugin-catalog-graph": "npm:^0.6.7"
     "@backstage/plugin-catalog-import": "npm:^0.13.17"
     "@backstage/plugin-catalog-react": "npm:^3.2.2"
+    "@backstage/plugin-notifications": "npm:^0.5.20"
     "@backstage/plugin-permission-react": "npm:^0.5.4"
     "@backstage/plugin-scaffolder": "npm:^1.38.2"
+    "@backstage/plugin-search": "npm:^1.7.7"
     "@backstage/plugin-techdocs": "npm:^1.18.0"
     "@backstage/plugin-techdocs-common": "npm:^0.1.1"
     "@backstage/test-utils": "npm:^1.7.21"
@@ -9587,6 +9589,7 @@ __metadata:
     react-router-dom: "npm:^6.30.6"
   peerDependencies:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
+    react-router-dom: ^6.30.6
   languageName: unknown
   linkType: soft
 
@@ -9621,6 +9624,7 @@ __metadata:
     "@backstage/core-components": "npm:^0.18.13"
     "@backstage/core-plugin-api": "npm:^1.12.9"
     "@backstage/frontend-plugin-api": "npm:^0.18.0"
+    "@backstage/frontend-test-utils": "npm:^0.6.3"
     "@backstage/plugin-app-react": "npm:^0.2.6"
     "@backstage/plugin-catalog": "npm:^2.0.8"
     "@backstage/plugin-catalog-react": "npm:^3.2.2"
