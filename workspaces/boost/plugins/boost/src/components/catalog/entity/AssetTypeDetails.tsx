@@ -69,6 +69,28 @@ export interface AssetTypeDetailsData {
   definition?: string;
 }
 
+interface DetailFieldProps {
+  readonly label: string;
+  readonly children: ReactNode;
+}
+
+interface ValueTagsProps {
+  readonly label: string;
+  readonly values: string[];
+}
+
+interface AvailableModelsProps {
+  readonly models: string[];
+}
+
+interface RemoteLinksProps {
+  readonly remotes: AssetTypeDetailsData['remotes'];
+}
+
+interface AssetTypeDetailsProps {
+  readonly details: AssetTypeDetailsData;
+}
+
 export function getAssetTypeDetails(
   entity: Entity,
   handoffRefs: string[],
@@ -130,13 +152,7 @@ export function hasAssetTypeDetails(details: AssetTypeDetailsData): boolean {
   );
 }
 
-export function DetailField({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
+export function DetailField({ label, children }: DetailFieldProps) {
   return (
     <Flex direction="column" gap="1">
       <Text variant="body-small" color="secondary">
@@ -147,7 +163,7 @@ export function DetailField({
   );
 }
 
-function ValueTags({ label, values }: { label: string; values: string[] }) {
+function ValueTags({ label, values }: ValueTagsProps) {
   const items = values.map(value => ({ id: value, label: value }));
 
   return (
@@ -157,7 +173,7 @@ function ValueTags({ label, values }: { label: string; values: string[] }) {
   );
 }
 
-function AvailableModels({ models }: { models: string[] }) {
+function AvailableModels({ models }: AvailableModelsProps) {
   const visibleModels = models.slice(0, INLINE_MODEL_LIMIT);
 
   return (
@@ -174,13 +190,9 @@ function AvailableModels({ models }: { models: string[] }) {
   );
 }
 
-function RemoteLinks({
-  remotes,
-}: {
-  remotes: Array<{ url: string; type?: string }>;
-}) {
+function RemoteLinks({ remotes }: RemoteLinksProps) {
   const renderRemote = (remote: (typeof remotes)[number]) => {
-    const label = `${remote.type ? `${remote.type}: ` : ''}${remote.url}`;
+    const label = remote.type ? `${remote.type}: ${remote.url}` : remote.url;
 
     try {
       const url = new URL(remote.url);
@@ -209,7 +221,7 @@ function RemoteLinks({
   );
 }
 
-function SkillDetails({ details }: { details: AssetTypeDetailsData }) {
+function SkillDetails({ details }: AssetTypeDetailsProps) {
   const { t } = useTranslation();
 
   return (
@@ -239,7 +251,7 @@ function SkillDetails({ details }: { details: AssetTypeDetailsData }) {
   );
 }
 
-function AgentDetails({ details }: { details: AssetTypeDetailsData }) {
+function AgentDetails({ details }: AssetTypeDetailsProps) {
   const { t } = useTranslation();
 
   return (
@@ -280,7 +292,7 @@ function AgentDetails({ details }: { details: AssetTypeDetailsData }) {
   );
 }
 
-function ModelServerDetails({ details }: { details: AssetTypeDetailsData }) {
+function ModelServerDetails({ details }: AssetTypeDetailsProps) {
   const { t } = useTranslation();
 
   return (
@@ -313,7 +325,7 @@ function ModelServerDetails({ details }: { details: AssetTypeDetailsData }) {
   );
 }
 
-function McpServerDetails({ details }: { details: AssetTypeDetailsData }) {
+function McpServerDetails({ details }: AssetTypeDetailsProps) {
   const { t } = useTranslation();
 
   return (
@@ -344,11 +356,7 @@ function McpServerDetails({ details }: { details: AssetTypeDetailsData }) {
   );
 }
 
-export function AssetTypeDetails({
-  details,
-}: {
-  details: AssetTypeDetailsData;
-}) {
+export function AssetTypeDetails({ details }: AssetTypeDetailsProps) {
   const { t } = useTranslation();
 
   switch (details.assetType) {

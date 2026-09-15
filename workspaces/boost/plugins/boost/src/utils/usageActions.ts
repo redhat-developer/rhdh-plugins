@@ -85,7 +85,7 @@ function buildGitLabArchiveUrl(url: URL): string | undefined {
   const segments = getPathSegments(url);
   if (segments.length < 2 || segments.includes('-')) return undefined;
 
-  const repo = segments[segments.length - 1]?.replace(/\.git$/, '');
+  const repo = segments.at(-1)?.replace(/\.git$/, '');
   if (!repo) return undefined;
 
   const projectPath = segments.slice(0, -1).concat(repo).join('/');

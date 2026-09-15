@@ -277,38 +277,22 @@ describe('getUsageAction', () => {
     });
   });
 
-  it('does not guess a wrong owner/repo for a GitHub subpage URL (archive URL parsing regression)', () => {
-    const target = 'https://github.com/example/repo/tree/main';
-    const action = getUsageAction(
-      entity({
-        specType: 'rule',
-        location: { type: 'git', target },
-      }),
-    );
-    expect(action).toEqual({
-      type: 'link',
-      value: target,
-      linkType: 'source',
-    });
-  });
-
-  it('uses the original Git URL for a valid source on an unsupported host', () => {
-    const target = 'https://git.example.com/team/repo';
-    const action = getUsageAction(
-      entity({
-        specType: 'rule',
-        location: { type: 'git', target },
-      }),
-    );
-    expect(action).toEqual({
-      type: 'link',
-      value: target,
-      linkType: 'source',
-    });
-  });
-
-  it('uses the original GitLab URL for a repository subpage', () => {
-    const target = 'https://gitlab.com/example/repo/-/tree/main';
+  it.each([
+    {
+      description:
+        'does not guess a wrong owner/repo for a GitHub subpage URL (archive URL parsing regression)',
+      target: 'https://github.com/example/repo/tree/main',
+    },
+    {
+      description:
+        'uses the original Git URL for a valid source on an unsupported host',
+      target: 'https://git.example.com/team/repo',
+    },
+    {
+      description: 'uses the original GitLab URL for a repository subpage',
+      target: 'https://gitlab.com/example/repo/-/tree/main',
+    },
+  ])('$description', ({ target }) => {
     const action = getUsageAction(
       entity({
         specType: 'rule',

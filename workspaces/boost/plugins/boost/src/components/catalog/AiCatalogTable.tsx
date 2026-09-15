@@ -58,6 +58,14 @@ function toRows(entities: Entity[]): AiAssetRow[] {
   }));
 }
 
+function renderAssetTypeCell(item: AiAssetRow) {
+  return (
+    <Cell>
+      <AssetTypeBadge entity={item.entity} />
+    </Cell>
+  );
+}
+
 export interface AiCatalogTableProps {
   entities: Entity[];
   sort: SortState;
@@ -79,11 +87,7 @@ export const AiCatalogTable = ({ entities, sort }: AiCatalogTableProps) => {
       {
         id: 'categoryLabel',
         label: t('catalog.table.type'),
-        cell: item => (
-          <Cell>
-            <AssetTypeBadge entity={item.entity} />
-          </Cell>
-        ),
+        cell: renderAssetTypeCell,
         isSortable: true,
       },
       {

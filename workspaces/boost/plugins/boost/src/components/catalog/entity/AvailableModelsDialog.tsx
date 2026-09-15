@@ -40,6 +40,10 @@ interface AvailableModelsDialogProps {
   models: string[];
 }
 
+function renderModelCell(row: ModelRow) {
+  return <CellText title={row.name} />;
+}
+
 export const AvailableModelsDialog = ({
   models,
 }: AvailableModelsDialogProps) => {
@@ -54,7 +58,7 @@ export const AvailableModelsDialog = ({
         id: 'name',
         label: t('catalog.card.modelTitle'),
         isRowHeader: true,
-        cell: row => <CellText title={row.name} />,
+        cell: renderModelCell,
       },
     ],
     [t],
