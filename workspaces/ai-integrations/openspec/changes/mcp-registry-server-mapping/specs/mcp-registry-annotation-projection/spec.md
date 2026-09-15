@@ -2,7 +2,7 @@
 
 This capability defines the fallback that captures every `server.json` attribute which has no native home in the `mcp-server` `API` entity shape (see `mcp-registry-server-mapping`). Such attributes are projected into entity annotations under the `modelcontextprotocol.io/` prefix, keyed by the attribute's path within the source document.
 
-Attribute paths are encoded in **dot-separated** form as `modelcontextprotocol.io/attribute.tree.to.leaf`. Because Backstage annotation keys permit exactly one `/` (separating the DNS-style prefix from the name segment) and limit the name segment to a restricted character set and 63 characters, the name segment is sanitized and length-bounded so every produced key is catalog-valid.
+Attribute paths are encoded in **dot-separated** form as `modelcontextprotocol.io/attribute.tree.to.leaf`. Because Backstage annotation keys permit exactly one `/` (separating the DNS-style prefix from the name segment) and limit the name segment to a restricted character set and 63 characters, the name segment is sanitized and length-bounded so every produced key is catalog-valid. Projected annotation keys SHALL use stable lexicographic ordering in the final entity, consistent with the determinism requirement in `mcp-registry-server-mapping`.
 
 ---
 
@@ -19,7 +19,7 @@ Every scalar leaf in the `server.json` document that is not consumed by a native
 
 #### Scenario: Natively-mapped attributes are not re-projected
 
-- **WHEN** a `server.json` carries `remotes[].type`/`url` that were copied into `spec.remotes`, `name` (mapped to `modelcontextprotocol.io/name` and `metadata.name`), `version` (mapped to `modelcontextprotocol.io/version`), `title`/`description` (mapped to `metadata`), `websiteUrl` that was copied into `metadata.links`, and `repository.url` that was copied into `metadata.links`, `backstage.io/source-location`, and the dedicated `modelcontextprotocol.io/repository.url` annotation
+- **WHEN** a `server.json` carries `remotes[].type`/`url` that were copied into `spec.remotes`, `name` (mapped to `modelcontextprotocol.io/name` and `metadata.name`), `version` (mapped to `modelcontextprotocol.io/version`), `title`/`description` (mapped to `metadata`), `websiteUrl` that was copied into `metadata.links`, and `repository.url` that was copied into the SCM-combined browse URL on `metadata.links` and `backstage.io/source-location` plus the verbatim scalar on `modelcontextprotocol.io/repository.url`
 - **THEN** those attributes are not additionally emitted as generic `modelcontextprotocol.io/*` projected annotations, and the generic projection does not overwrite or re-derive the direct-mapping `backstage.io/source-location` or `modelcontextprotocol.io/repository.url` annotations
 
 #### Scenario: Refused URLs are not projected
@@ -58,12 +58,17 @@ Nested object keys and array indices SHALL be encoded as dot-separated segments 
 
 ### Requirement: Produce catalog-valid annotation keys
 
-Every projected annotation key SHALL be valid for the Backstage catalog: the name segment SHALL contain only allowed characters (alphanumerics plus `-`, `_`, `.`), SHALL begin and end with an alphanumeric character, and SHALL be at most 63 characters. Sanitization SHALL be applied to each object-key segment in the dot path before segments are joined (array index segments are unchanged decimal numerals). For each object-key segment the mapping SHALL lowercase the segment; replace every character outside `a-z`, `0-9`, `.`, `_`, and `-` with a single ASCII hyphen (`-`); and if the segment begins with `_`, replace that leading `_` with `x`. Keys whose full name segment would exceed 63 characters SHALL be truncated and suffixed with a stable hash so they remain valid and unique.
+Every projected annotation key SHALL be valid for the Backstage catalog: the name segment SHALL contain only allowed characters (alphanumerics plus `-`, `_`, `.`), SHALL begin and end with an alphanumeric character, and SHALL be at most 63 characters. Sanitization SHALL be applied to each object-key segment in the dot path before segments are joined (array index segments are unchanged decimal numerals). For each object-key segment the mapping SHALL lowercase the segment; replace every character outside `a-z`, `0-9`, `.`, `_`, and `-` with a single ASCII hyphen (`-`); and if the segment begins with `_`, replace that leading `_` with `x`. After that, for each object-key segment, while the segment's first character is not alphanumeric, replace that character with `x`; while the segment's last character is not alphanumeric, replace that character with `x`. Join sanitized segments with `.` into the annotation name segment, then apply the same first/last boundary normalization on the joined name segment so it cannot start or end with a non-alphanumeric character. Keys whose full name segment would exceed 63 characters SHALL be truncated and suffixed with a stable hash so they remain valid and unique.
 
 #### Scenario: Illegal characters in a path are sanitized
 
 - **WHEN** a `server.json` carries a `_meta` object whose nested key contains a `/` (e.g. `_meta."io.modelcontextprotocol.registry/publisher-provided".x`)
 - **THEN** the projected annotation key is `modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provided.x` (leading `_` on `_meta` → `xmeta`; `/` in the nested key → `-`)
+
+#### Scenario: Non-alphanumeric segment boundaries become x
+
+- **WHEN** an object-key segment sanitizes to a value that starts or ends with a non-alphanumeric character (for example a lone `/` becomes `-`, or a key ends with `/` so the segment ends with `-`)
+- **THEN** each offending boundary character is replaced with `x` (the lone `-` segment becomes `x`), and after segments are joined the joined name segment is boundary-normalized the same way so the final key still begins and ends with an alphanumeric character
 
 #### Scenario: Over-length key is truncated with a stable suffix
 
