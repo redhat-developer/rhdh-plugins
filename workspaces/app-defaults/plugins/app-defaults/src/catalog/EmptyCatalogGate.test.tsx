@@ -17,6 +17,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { TestApiProvider } from '@backstage/test-utils';
 import { errorApiRef } from '@backstage/core-plugin-api';
+import { useRouteRef } from '@backstage/frontend-plugin-api';
+import { usePermission } from '@backstage/plugin-permission-react';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { EmptyCatalogGate } from './EmptyCatalogGate';
 
@@ -29,6 +31,18 @@ jest.mock('../components/empty-state/EmptyState', () => ({
     </div>
   ),
 }));
+
+jest.mock('@backstage/frontend-plugin-api', () => ({
+  ...jest.requireActual('@backstage/frontend-plugin-api'),
+  useRouteRef: jest.fn(),
+}));
+
+jest.mock('@backstage/plugin-permission-react', () => ({
+  usePermission: jest.fn(),
+}));
+
+const mockUseRouteRef = useRouteRef as jest.Mock;
+const mockUsePermission = usePermission as jest.Mock;
 
 const mockErrorApi = { post: jest.fn(), error$: jest.fn() };
 
@@ -54,8 +68,18 @@ function Wrapper({
 const testEmptyState = {
   title: 'Empty title',
   description: 'Empty description',
-  action: <button type="button">Go somewhere</button>,
+  importButtonTitle: 'Import something',
 };
+
+beforeEach(() => {
+  // By default the catalog import page is available and the user is allowed.
+  mockUseRouteRef.mockReturnValue(() => '/catalog-import');
+  mockUsePermission.mockReturnValue({ loading: false, allowed: true });
+});
+
+afterEach(() => {
+  jest.clearAllMocks();
+});
 
 describe('EmptyCatalogGate', () => {
   it('shows loading spinner initially', () => {
@@ -74,7 +98,7 @@ describe('EmptyCatalogGate', () => {
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 
-  it('shows empty state with custom props when no entities exist', async () => {
+  it('shows empty state with import button when available and allowed', async () => {
     const mockApi = {
       getEntityFacets: jest.fn().mockResolvedValue({
         facets: { kind: [{ value: 'Component', count: 0 }] },
@@ -93,9 +117,53 @@ describe('EmptyCatalogGate', () => {
       expect(screen.getByTestId('empty-state')).toBeInTheDocument();
       expect(screen.getByText('Empty title')).toBeInTheDocument();
       expect(screen.getByText('Empty description')).toBeInTheDocument();
-      expect(screen.getByText('Go somewhere')).toBeInTheDocument();
+      expect(screen.getByText('Import something')).toBeInTheDocument();
     });
     expect(screen.queryByText('Original page content')).not.toBeInTheDocument();
+  });
+
+  it('hides the import button when the catalog import page is not available', async () => {
+    mockUseRouteRef.mockReturnValue(undefined);
+    const mockApi = {
+      getEntityFacets: jest.fn().mockResolvedValue({
+        facets: { kind: [{ value: 'Component', count: 0 }] },
+      }),
+    };
+
+    render(
+      <Wrapper mockCatalogApi={mockApi}>
+        <EmptyCatalogGate emptyState={testEmptyState}>
+          Original page content
+        </EmptyCatalogGate>
+      </Wrapper>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('empty-state')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Import something')).not.toBeInTheDocument();
+  });
+
+  it('hides the import button when the user lacks permission', async () => {
+    mockUsePermission.mockReturnValue({ loading: false, allowed: false });
+    const mockApi = {
+      getEntityFacets: jest.fn().mockResolvedValue({
+        facets: { kind: [{ value: 'Component', count: 0 }] },
+      }),
+    };
+
+    render(
+      <Wrapper mockCatalogApi={mockApi}>
+        <EmptyCatalogGate emptyState={testEmptyState}>
+          Original page content
+        </EmptyCatalogGate>
+      </Wrapper>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('empty-state')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Import something')).not.toBeInTheDocument();
   });
 
   it('renders children when entities exist', async () => {
