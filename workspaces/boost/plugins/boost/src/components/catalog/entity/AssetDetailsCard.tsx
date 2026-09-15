@@ -36,11 +36,19 @@ export const AssetDetailsCard = () => {
 
   const handoffRefs = useMemo(() => getHandoffRefs(entity), [entity]);
   const typeDetails = getAssetTypeDetails(entity, handoffRefs);
+  const description = entity.metadata.description?.trim() || undefined;
   const rationale = getDistinctSpecField(entity, 'rationale');
   const version =
     entity.metadata.annotations?.['rhdh.io/ai-asset-version'] ?? undefined;
 
-  if (!rationale && !version && !hasAssetTypeDetails(typeDetails)) return null;
+  if (
+    !description &&
+    !rationale &&
+    !version &&
+    !hasAssetTypeDetails(typeDetails)
+  ) {
+    return null;
+  }
 
   return (
     <Card>
@@ -49,6 +57,11 @@ export const AssetDetailsCard = () => {
       </CardHeader>
       <CardBody>
         <Flex direction="column" gap="3">
+          {description && (
+            <DetailField label={t('catalog.card.descriptionLabel')}>
+              <Text variant="body-medium">{description}</Text>
+            </DetailField>
+          )}
           {rationale && (
             <DetailField label={t('catalog.card.rationaleLabel')}>
               <Text variant="body-medium">{rationale}</Text>

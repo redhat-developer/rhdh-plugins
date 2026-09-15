@@ -149,13 +149,13 @@ function renderWithEntity(entity: Entity) {
 }
 
 describe('AssetDetailsCard', () => {
-  it('renders distinct rationale without repeating the catalog description', async () => {
+  it('renders the catalog description and distinct rationale', async () => {
     await renderWithEntity(skillEntity);
     expect(screen.getByText(msg.card.assetDetailsTitle)).toBeInTheDocument();
-    expect(screen.getByText('Catch defects early.')).toBeInTheDocument();
     expect(
-      screen.queryByText('Reviews pull requests for common issues.'),
-    ).toBeNull();
+      screen.getByText('Reviews pull requests for common issues.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Catch defects early.')).toBeInTheDocument();
   });
 
   it('renders skill metadata with built-in tags and entity links', async () => {
@@ -220,7 +220,7 @@ describe('AssetDetailsCard', () => {
     expect(screen.queryByText(msg.card.ragEnabledLabel)).toBeNull();
   });
 
-  it('does not repeat an agent description as detail content', async () => {
+  it('renders a description-only agent asset', async () => {
     await renderWithEntity({
       ...agentEntity,
       metadata: { ...agentEntity.metadata, description: 'Be concise.' },
@@ -235,7 +235,8 @@ describe('AssetDetailsCard', () => {
       },
     });
 
-    expect(screen.queryByText(msg.card.assetDetailsTitle)).toBeNull();
+    expect(screen.getByText(msg.card.assetDetailsTitle)).toBeInTheDocument();
+    expect(screen.getByText('Be concise.')).toBeInTheDocument();
   });
 
   it('renders agent-only fields and available models', async () => {

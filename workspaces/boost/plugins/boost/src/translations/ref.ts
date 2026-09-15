@@ -39,6 +39,7 @@ export const boostMessages = {
     },
     card: {
       assetDetailsTitle: 'AI asset details',
+      descriptionLabel: 'Description',
       usageTitle: 'Usage',
       versionLabel: 'Version',
       copyCommand: 'Copy',

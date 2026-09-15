@@ -394,6 +394,7 @@ export const boostTranslationRef: TranslationRef<
     readonly 'catalog.card.yes': string;
     readonly 'catalog.card.no': string;
     readonly 'catalog.card.assetDetailsTitle': string;
+    readonly 'catalog.card.descriptionLabel': string;
     readonly 'catalog.card.usageTitle': string;
     readonly 'catalog.card.versionLabel': string;
     readonly 'catalog.card.copyCommand': string;
