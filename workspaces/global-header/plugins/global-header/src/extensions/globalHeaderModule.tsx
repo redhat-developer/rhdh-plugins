@@ -25,7 +25,7 @@ import { AppRootWrapperBlueprint } from '@backstage/plugin-app-react';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
 import { GlobalHeaderProvider } from './GlobalHeaderContext';
-import { GlobalHeader } from '../components/GlobalHeader';
+import { GlobalHeaderLayout } from '../components/GlobalHeaderLayout';
 import {
   globalHeaderComponentDataRef,
   globalHeaderMenuItemDataRef,
@@ -70,8 +70,7 @@ function GlobalHeaderWrapper({
   );
   return (
     <GlobalHeaderProvider components={allComponents} menuItems={allMenuItems}>
-      <GlobalHeader />
-      {children}
+      <GlobalHeaderLayout>{children}</GlobalHeaderLayout>
     </GlobalHeaderProvider>
   );
 }
