@@ -89,6 +89,16 @@ backend.add(
 );
 backend.add(
   import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-npx-skills'
+  ),
+);
+backend.add(
+  import(
+    '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-oci-skills'
+  ),
+);
+backend.add(
+  import(
     '@red-hat-developer-hub/backstage-plugin-catalog-backend-module-ai-model-server'
   ),
 );
