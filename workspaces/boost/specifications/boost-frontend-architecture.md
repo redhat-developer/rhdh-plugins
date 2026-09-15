@@ -77,7 +77,7 @@ plugins/boost/
         AiCatalogPage.tsx
         AiAssetCard.tsx
         AiCatalogTable.tsx
-        FilterSidebar.tsx
+        CatalogFilters.tsx
         entity/
           AssetDetailsCard.tsx
           AgentInstructionsCard.tsx

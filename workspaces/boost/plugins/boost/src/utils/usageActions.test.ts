@@ -24,6 +24,7 @@ function entity(overrides: {
   annotations?: Record<string, string>;
   location?: { type?: string; target?: string };
   remotes?: Array<{ url?: string; type?: string }>;
+  serverUrl?: string;
 }): Entity {
   return {
     apiVersion: 'backstage.io/v1alpha1',
@@ -39,6 +40,7 @@ function entity(overrides: {
       owner: 'team-test',
       location: overrides.location,
       remotes: overrides.remotes,
+      serverUrl: overrides.serverUrl,
     },
   } as Entity;
 }
@@ -64,6 +66,23 @@ describe('getUsageAction', () => {
     expect(action).toEqual({
       type: 'copy',
       value: 'podman pull oci://registry.example.com/models/foo:latest',
+    });
+  });
+
+  it('prefers the model server endpoint when OCI remotes are also present', () => {
+    const action = getUsageAction(
+      entity({
+        specType: 'ai-model-server',
+        serverUrl: 'https://models.example.com/v1',
+        remotes: [
+          { url: 'oci://registry.example.com/models/foo:latest', type: 'oci' },
+        ],
+      }),
+    );
+
+    expect(action).toEqual({
+      type: 'copy',
+      value: 'https://models.example.com/v1',
     });
   });
 

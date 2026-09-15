@@ -68,7 +68,11 @@ const mockErrorApi = {
 };
 
 function renderTargets(refs: string[]) {
-  return renderInTestApp(
+  return renderInTestApp(targetsElement(refs));
+}
+
+function targetsElement(refs: string[]) {
+  return (
     <TestApiProvider
       apis={[
         [catalogApiRef, mockCatalogApi as unknown as CatalogApi],
@@ -76,7 +80,7 @@ function renderTargets(refs: string[]) {
       ]}
     >
       <HandoffTargets refs={refs} />
-    </TestApiProvider>,
+    </TestApiProvider>
   );
 }
 
@@ -118,5 +122,20 @@ describe('HandoffTargets', () => {
       expect(screen.getByText(ref)).toBeInTheDocument();
     });
     expect(mockErrorApi.post).toHaveBeenCalledWith(expect.any(Error));
+  });
+
+  it('does not refetch when the refs array is recreated with the same values', async () => {
+    const ref = 'airesource:default/ogx-agent-legal';
+    mockCatalogApi.getEntitiesByRefs.mockResolvedValue({ items: [target] });
+
+    const view = await renderTargets([ref]);
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: 'Legal' })).toBeInTheDocument();
+    });
+
+    view.rerender(targetsElement([ref]));
+
+    expect(mockCatalogApi.getEntitiesByRefs).toHaveBeenCalledTimes(1);
   });
 });

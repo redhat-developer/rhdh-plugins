@@ -30,7 +30,7 @@ Each supported language MUST have a complete translation file following the stan
 
 - **GIVEN** the plugin is deployed as a dynamic plugin in RHDH
 - **WHEN** the translation module needs to be auto-discovered
-- **THEN** a separate entry point re-exports `boostTranslationsModule` as default (e.g., `./boost-translations-module` in `package.json` exports)
+- **THEN** the `./translations` package export exposes `boostTranslationsModule` as the default export
 - **AND** RHDH auto-discovers the module without explicit `features` array registration
 
 ### Requirement: Complete String Coverage

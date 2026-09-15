@@ -8,7 +8,7 @@
 import type { Entity } from '@backstage/catalog-model';
 import type { FilterDefinition } from '../blueprints/AiCatalogFilterBlueprint';
 
-import { applyEntityFilters } from './entityFiltering';
+import { applyEntityFilters, getSortValue } from './entityFiltering';
 
 const entities: Entity[] = [
   {
@@ -62,5 +62,30 @@ describe('applyEntityFilters', () => {
     expect(
       applyEntityFilters(entities, undefined, [typeFilter], new Map()),
     ).toHaveLength(2);
+  });
+});
+
+describe('getSortValue', () => {
+  const sortableEntity: Entity = {
+    apiVersion: 'backstage.io/v1alpha1',
+    kind: 'AiResource',
+    metadata: {
+      name: 'skill-name',
+      title: 'Skill title',
+      description: 'Skill description',
+      annotations: { 'rhdh.io/ai-asset-source': 'ogx' },
+    },
+    spec: { type: 'skill', owner: 'team-ai' },
+  };
+
+  it.each([
+    ['title', 'Skill title'],
+    ['categoryLabel', 'Skills'],
+    ['owner', 'team-ai'],
+    ['provider', 'ogx'],
+    ['description', 'Skill description'],
+    ['unknown', ''],
+  ])('returns the value for the %s column', (columnId, expected) => {
+    expect(getSortValue(sortableEntity, columnId)).toBe(expected);
   });
 });

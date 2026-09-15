@@ -15,7 +15,7 @@
  */
 
 import type { Entity } from '@backstage/catalog-model';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { errorApiRef, useApi } from '@backstage/core-plugin-api';
 import { EntityRefLink, catalogApiRef } from '@backstage/plugin-catalog-react';
 import { Flex, Text } from '@backstage/ui';
@@ -27,6 +27,11 @@ interface HandoffTargetsProps {
 export const HandoffTargets = ({ refs }: HandoffTargetsProps) => {
   const catalogApi = useApi(catalogApiRef);
   const errorApi = useApi(errorApiRef);
+  const refsKey = refs.join('\0');
+  const stableRefs = useMemo(
+    () => (refsKey ? refsKey.split('\0') : []),
+    [refsKey],
+  );
   const [targets, setTargets] = useState<Array<Entity | undefined> | null>(
     null,
   );
@@ -36,25 +41,25 @@ export const HandoffTargets = ({ refs }: HandoffTargetsProps) => {
 
     setTargets(null);
     catalogApi
-      .getEntitiesByRefs({ entityRefs: refs })
+      .getEntitiesByRefs({ entityRefs: stableRefs })
       .then(response => {
         if (!cancelled) setTargets(response.items);
       })
       .catch(error => {
         if (!cancelled) {
           errorApi.post(error);
-          setTargets(refs.map(() => undefined));
+          setTargets(stableRefs.map(() => undefined));
         }
       });
 
     return () => {
       cancelled = true;
     };
-  }, [catalogApi, errorApi, refs]);
+  }, [catalogApi, errorApi, stableRefs]);
 
   return (
     <Flex direction="row" gap="2" style={{ flexWrap: 'wrap' }}>
-      {refs.map((ref, index) => {
+      {stableRefs.map((ref, index) => {
         const target = targets?.[index];
 
         return target ? (
