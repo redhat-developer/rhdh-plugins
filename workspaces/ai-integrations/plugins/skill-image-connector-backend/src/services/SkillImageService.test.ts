@@ -29,8 +29,8 @@ jest.mock('./OciClient', () => ({
   fetchBlob: jest.fn(),
 }));
 
-jest.mock('fs', () => ({
-  ...jest.requireActual('fs'),
+jest.mock('node:fs', () => ({
+  ...jest.requireActual('node:fs'),
   promises: {
     mkdtemp: jest.fn(),
     writeFile: jest.fn(),
@@ -243,7 +243,7 @@ describe('validateSkillImageManifest', () => {
 
 describe('fetchAndExtractSkillImage', () => {
   const logger = mockServices.logger.mock();
-  const fs = require('fs');
+  const fs = require('node:fs');
 
   afterEach(() => {
     jest.resetAllMocks();

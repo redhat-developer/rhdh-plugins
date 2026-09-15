@@ -15,9 +15,9 @@
  */
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import fs from 'fs';
-import platformPath from 'path';
-import os from 'os';
+import fs from 'node:fs';
+import platformPath from 'node:path';
+import os from 'node:os';
 import { parseImageRef, fetchManifest, fetchBlob } from './OciClient';
 import type { OciManifest, OciDescriptor, SkillImageExtraction } from './types';
 
@@ -53,7 +53,7 @@ export function validateSkillImageManifest(manifest: OciManifest): {
   skillsMdLayer: OciDescriptor;
 } {
   if (!Array.isArray(manifest.layers)) {
-    throw new Error(
+    throw new TypeError(
       'Image manifest does not contain a layers array. ' +
         'This may indicate a manifest list, an unsupported manifest format, ' +
         'or a malformed registry response.',
