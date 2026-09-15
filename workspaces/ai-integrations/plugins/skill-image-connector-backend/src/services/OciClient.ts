@@ -16,7 +16,7 @@
 
 import { InputError } from '@backstage/errors';
 import type { LoggerService } from '@backstage/backend-plugin-api';
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 import type { ImageRef, OciManifest } from './types';
 import { MAX_BLOB_SIZE, FETCH_TIMEOUT_MS } from './types';
 
@@ -29,7 +29,7 @@ import { MAX_BLOB_SIZE, FETCH_TIMEOUT_MS } from './types';
  *   registry/repo          (tag defaults to "latest")
  */
 export function parseImageRef(ref: string): ImageRef {
-  if (!ref || !ref.trim()) {
+  if (!ref?.trim()) {
     throw new InputError(
       'Invalid image reference: reference must not be empty',
     );
@@ -85,18 +85,13 @@ export function parseImageRef(ref: string): ImageRef {
 function parseBearerChallenge(
   header: string,
 ): { realm: string; service?: string; scope?: string } | undefined {
-  const match = header.match(/^Bearer\s+(.+)/i);
+  const match = /^Bearer\s+(.+)/i.exec(header);
   if (!match) {
     return undefined;
   }
 
   const params: Record<string, string> = {};
-  const paramRegex = /(\w+)="([^"]*)"/g;
-  for (
-    let paramMatch = paramRegex.exec(match[1]);
-    paramMatch !== null;
-    paramMatch = paramRegex.exec(match[1])
-  ) {
+  for (const paramMatch of match[1].matchAll(/([a-z]+)="([^"]*)"/gi)) {
     params[paramMatch[1]] = paramMatch[2];
   }
 
@@ -184,7 +179,7 @@ async function registryFetch(
     ...init,
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     headers: {
-      ...((init.headers as Record<string, string>) ?? {}),
+      ...(init.headers as Record<string, string>),
       Authorization: `Bearer ${token}`,
     },
   });

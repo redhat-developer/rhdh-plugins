@@ -15,7 +15,7 @@
  */
 
 import { mockServices } from '@backstage/backend-test-utils';
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 import { parseImageRef, fetchManifest, fetchBlob } from './OciClient';
 import type { OciManifest } from './types';
 
