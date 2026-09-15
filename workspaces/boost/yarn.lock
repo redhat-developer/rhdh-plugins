@@ -3355,30 +3355,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/frontend-plugin-api@npm:^0.17.2":
-  version: 0.17.3
-  resolution: "@backstage/frontend-plugin-api@npm:0.17.3"
-  dependencies:
-    "@backstage/config": "npm:^1.3.8"
-    "@backstage/errors": "npm:^1.3.1"
-    "@backstage/filter-predicates": "npm:^0.1.4"
-    "@backstage/types": "npm:^1.2.2"
-    "@backstage/version-bridge": "npm:^1.0.12"
-    "@standard-schema/spec": "npm:^1.1.0"
-    zod: "npm:^4.0.0"
-    zod-to-json-schema: "npm:^3.25.1"
-  peerDependencies:
-    "@types/react": ^17.0.0 || ^18.0.0
-    react: ^17.0.0 || ^18.0.0
-    react-dom: ^17.0.0 || ^18.0.0
-    react-router-dom: ^6.30.2
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: 10c0/d321dd4e37d655a2b1e5a4b50aa280d5d21e9b96dc674505bce2b35820c33e04926f89a9335c3f1ea658e4321d6480efb7ce75eb2729fbeeb07af40d426cd7be
-  languageName: node
-  linkType: hard
-
 "@backstage/frontend-plugin-api@npm:^0.18.0":
   version: 0.18.0
   resolution: "@backstage/frontend-plugin-api@npm:0.18.0"
@@ -3555,7 +3531,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@backstage/plugin-app-react@npm:^0.2.4, @backstage/plugin-app-react@npm:^0.2.6":
+"@backstage/plugin-app-react@npm:^0.2.6":
   version: 0.2.6
   resolution: "@backstage/plugin-app-react@npm:0.2.6"
   dependencies:
@@ -9050,21 +9026,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-theme@npm:^0.15.0":
-  version: 0.15.0
-  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.15.0"
+"@red-hat-developer-hub/backstage-plugin-theme@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:1.2.0"
   dependencies:
-    "@backstage/frontend-plugin-api": "npm:^0.17.2"
-    "@backstage/plugin-app-react": "npm:^0.2.4"
+    "@backstage/frontend-plugin-api": "npm:^0.18.0"
+    "@backstage/plugin-app-react": "npm:^0.2.6"
     "@mui/icons-material": "npm:^5.17.1"
   peerDependencies:
-    "@backstage/core-plugin-api": ^1.12.7
+    "@backstage/core-plugin-api": ^1.12.9
     "@backstage/theme": ^0.7.3
     "@mui/icons-material": ^5.17.1
     "@mui/material": ^5.0.0
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
-  checksum: 10c0/a5b8128344e37475fbf699ce6eb9854a0a5d1cbd6be39ce28e1ced08301eff643aabc28d9ee173a04a59976d2de850285e49ba3b66e9b3c130fa1e3889608cd6
+  checksum: 10c0/47d1a399b3cb38403d083a34a99a1b82be26b97958780d99be8506f02482936ef56e29432c04c40980dfac5ab81298b78c7551a642cd52a0dd71cf24fb7b4dd7
   languageName: node
   linkType: hard
 
@@ -12514,7 +12490,7 @@ __metadata:
     "@mui/icons-material": "npm:^5.17.1"
     "@mui/material": "npm:^5.17.1"
     "@red-hat-developer-hub/backstage-plugin-boost": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^0.15.0"
+    "@red-hat-developer-hub/backstage-plugin-theme": "npm:^1.2.0"
     "@testing-library/dom": "npm:^9.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^14.0.0"

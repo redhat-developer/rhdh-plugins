@@ -170,7 +170,7 @@ describe('AssetDetailsCard', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders MCP remotes and a collapsible definition', async () => {
+  it('renders MCP remotes and the definition', async () => {
     await renderWithEntity(mcpEntity);
 
     expect(
@@ -179,7 +179,14 @@ describe('AssetDetailsCard', () => {
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: msg.card.viewDefinition }),
+      screen.getByText(
+        (_content, element) =>
+          element?.tagName === 'PRE' &&
+          (element.textContent ?? '').includes('openapi: 3.0.0'),
+      ),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByRole('button', { name: 'Copy text' }),
     ).toBeInTheDocument();
   });
 
@@ -241,9 +248,10 @@ describe('AssetDetailsCard', () => {
 
   it('renders agent-only fields and available models', async () => {
     await renderWithEntity(agentEntity);
+    expect(screen.getByText('granite-8b')).toBeInTheDocument();
     expect(
-      screen.getByText(`1 ${msg.card.modelsAvailableSuffix}`),
-    ).toBeInTheDocument();
+      screen.queryByRole('button', { name: /View all models/ }),
+    ).toBeNull();
     expect(screen.getByText(msg.card.modelTitle)).toBeInTheDocument();
     expect(
       screen.getByText('resource:default/web-search-tool'),
@@ -251,16 +259,34 @@ describe('AssetDetailsCard', () => {
     expect(
       screen.getByText('openai/vllm-inference/gpt-4.1'),
     ).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: msg.card.viewModels }));
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText('granite-8b')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(
       screen.getByText(msg.card.handoffDescriptionTitle),
     ).toBeInTheDocument();
     expect(screen.getByText('Routes coding questions')).toBeInTheDocument();
     expect(screen.getByText(msg.card.ragEnabledLabel)).toBeInTheDocument();
     expect(screen.getByText(msg.card.yes)).toBeInTheDocument();
+  });
+
+  it('shows the first five models inline and the rest in a dialog', async () => {
+    const models = Array.from({ length: 6 }, (_, index) => `model-${index}`);
+
+    await renderWithEntity({
+      ...agentEntity,
+      spec: { ...agentEntity.spec, models: { available: models } },
+    });
+
+    for (const model of models.slice(0, 5)) {
+      expect(screen.getByText(model)).toBeInTheDocument();
+    }
+    expect(screen.queryByText('model-5')).toBeNull();
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: `${msg.card.viewModels} (${models.length})`,
+      }),
+    );
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('model-5')).toBeInTheDocument();
   });
 
   it('renders the translated disabled RAG status', async () => {

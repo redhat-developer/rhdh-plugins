@@ -29,10 +29,19 @@ describe('AvailableModelsDialog', () => {
     await renderInTestApp(<AvailableModelsDialog models={models} />);
 
     expect(screen.queryByText('model-24')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: msg.card.viewModels }));
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: `${msg.card.viewModels} (${models.length})`,
+      }),
+    );
 
     expect(screen.getByText('model-0')).toBeInTheDocument();
     expect(screen.queryByText('model-24')).toBeNull();
+    expect(
+      screen.getByRole('button', {
+        name: /Show 10 results.*Select table page size/,
+      }),
+    ).toBeInTheDocument();
 
     fireEvent.change(screen.getByRole('searchbox'), {
       target: { value: 'model-24' },

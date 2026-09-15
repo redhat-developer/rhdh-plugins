@@ -24,11 +24,8 @@ import {
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
 import { fireEvent, screen } from '@testing-library/react';
 
-import { boostMessages } from '../../../translations/ref';
 import { UsageCard } from './UsageCard';
 
-const { catalog: msg } = boostMessages;
-const writeText = jest.fn();
 const permissionApi: jest.Mocked<PermissionApi> = {
   authorize: jest.fn(),
 };
@@ -176,12 +173,7 @@ function renderWithEntity(entity: Entity, allowed = true) {
 
 describe('UsageCard', () => {
   beforeEach(() => {
-    writeText.mockReset().mockResolvedValue(undefined);
     permissionApi.authorize.mockReset();
-    Object.defineProperty(navigator, 'clipboard', {
-      configurable: true,
-      value: { writeText },
-    });
   });
 
   it('renders npx command for skill entities', async () => {
@@ -191,7 +183,7 @@ describe('UsageCard', () => {
       screen.getByText('npx skills add code-review-skill'),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: msg.card.copyCommand }),
+      screen.getByRole('button', { name: 'Copy text' }),
     ).toBeInTheDocument();
   });
 
@@ -207,31 +199,7 @@ describe('UsageCard', () => {
     await renderWithEntity(deniedEntity, false);
 
     expect(screen.queryByText('npx skills add code-review-skill')).toBeNull();
-    expect(
-      screen.queryByRole('button', { name: msg.card.copyCommand }),
-    ).toBeNull();
-  });
-
-  it('shows copied feedback after copying a command', async () => {
-    await renderWithEntity(skillEntity);
-
-    fireEvent.click(screen.getByRole('button', { name: msg.card.copyCommand }));
-
-    expect(
-      await screen.findByRole('button', { name: msg.card.copied }),
-    ).toBeInTheDocument();
-    expect(writeText).toHaveBeenCalledWith('npx skills add code-review-skill');
-  });
-
-  it('shows an error when copying a command fails', async () => {
-    writeText.mockRejectedValueOnce(new Error('clipboard unavailable'));
-    await renderWithEntity(skillEntity);
-
-    fireEvent.click(screen.getByRole('button', { name: msg.card.copyCommand }));
-
-    expect(await screen.findByRole('status')).toHaveTextContent(
-      msg.card.copyFailed,
-    );
+    expect(screen.queryByRole('button', { name: 'Copy text' })).toBeNull();
   });
 
   it('renders podman pull command for OCI-sourced entities', async () => {
@@ -243,7 +211,7 @@ describe('UsageCard', () => {
       ),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: msg.card.copyCommand }),
+      screen.getByRole('button', { name: 'Copy text' }),
     ).toBeInTheDocument();
   });
 
@@ -267,7 +235,7 @@ describe('UsageCard', () => {
       screen.getByText('https://mcp.example.com/github'),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: msg.card.copyCommand }),
+      screen.getByRole('button', { name: 'Copy text' }),
     ).toBeInTheDocument();
   });
 
@@ -278,7 +246,7 @@ describe('UsageCard', () => {
       screen.getByText('https://granite.example.com/v1'),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: msg.card.copyCommand }),
+      screen.getByRole('button', { name: 'Copy text' }),
     ).toBeInTheDocument();
   });
 

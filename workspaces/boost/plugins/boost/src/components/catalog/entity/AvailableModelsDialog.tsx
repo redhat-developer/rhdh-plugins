@@ -70,15 +70,15 @@ export const AvailableModelsDialog = ({
     },
     paginationOptions: {
       type: 'page',
-      pageSize: 20,
-      pageSizeOptions: [20, 50, 100],
+      pageSize: 10,
+      pageSizeOptions: [10, 20, 50],
     },
   });
 
   return (
     <DialogTrigger>
       <Button variant="secondary" size="small">
-        {t('catalog.card.viewModels')}
+        {`${t('catalog.card.viewModels')} (${models.length})`}
       </Button>
       <Dialog width="min(720px, calc(100vw - 32px))">
         <DialogHeader>

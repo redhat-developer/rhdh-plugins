@@ -226,3 +226,48 @@ spec:
       - granite-3-code
       - granite-3-instruct
     default: granite-3-instruct
+
+---
+# ---------------------------------------------------------------------------
+# AiModelServerAPI / ai-model-server with a larger model catalog
+# ---------------------------------------------------------------------------
+apiVersion: backstage.io/v1alpha1
+kind: AiModelServerAPI
+metadata:
+  name: multi-model-server
+  title: Multi-Model Server
+  description: Model server exposing a larger catalog of available models.
+  tags:
+    - model-server
+    - inference
+    - multi-model
+  annotations:
+    rhdh.io/ai-asset-category: model-server
+    rhdh.io/ai-asset-version: '3.0.0'
+    rhdh.io/ai-asset-source: model-registry
+  links:
+    - title: API
+      url: https://models.example.com/v1
+spec:
+  type: ai-model-server
+  lifecycle: production
+  owner: team-ml-ops
+  serverType: openai-v1
+  serverUrl: https://models.example.com/v1
+  requiresApiKey: true
+  models:
+    discoverable: true
+    available:
+      - granite-3-code
+      - granite-3-instruct
+      - llama-3.1-8b-instruct
+      - llama-3.1-70b-instruct
+      - mistral-7b-instruct
+      - mixtral-8x7b-instruct
+      - qwen2.5-7b-instruct
+      - qwen2.5-coder-7b
+      - gemma-3-12b-it
+      - phi-4
+      - deepseek-r1-distill-qwen-32b
+      - command-r-plus
+    default: llama-3.1-8b-instruct

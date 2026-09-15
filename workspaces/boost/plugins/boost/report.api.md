@@ -400,9 +400,6 @@ export const boostTranslationRef: TranslationRef<
     readonly 'catalog.card.providerLabel': string;
     readonly 'catalog.card.usageTitle': string;
     readonly 'catalog.card.versionLabel': string;
-    readonly 'catalog.card.copyCommand': string;
-    readonly 'catalog.card.copied': string;
-    readonly 'catalog.card.copyFailed': string;
     readonly 'catalog.card.usageDownloadZip': string;
     readonly 'catalog.card.usageViewSource': string;
     readonly 'catalog.card.serverTypeLabel': string;
@@ -416,9 +413,7 @@ export const boostTranslationRef: TranslationRef<
     readonly 'catalog.card.toolsLabel': string;
     readonly 'catalog.card.remotesLabel': string;
     readonly 'catalog.card.definitionLabel': string;
-    readonly 'catalog.card.viewDefinition': string;
     readonly 'catalog.card.modelsTitle': string;
-    readonly 'catalog.card.modelsAvailableSuffix': string;
     readonly 'catalog.card.modelTitle': string;
     readonly 'catalog.card.viewModels': string;
     readonly 'catalog.card.modelsDialogTitle': string;

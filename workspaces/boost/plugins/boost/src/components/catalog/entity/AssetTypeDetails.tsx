@@ -14,19 +14,10 @@
  * limitations under the License.
  */
 
-import { CodeSnippet } from '@backstage/core-components';
 import type { Entity } from '@backstage/catalog-model';
+import { CodeSnippet } from '@backstage/core-components';
 import { EntityRefLinks } from '@backstage/plugin-catalog-react';
-import {
-  Accordion,
-  AccordionPanel,
-  AccordionTrigger,
-  Flex,
-  Link,
-  Text,
-  Tag,
-  TagGroup,
-} from '@backstage/ui';
+import { Flex, Link, Text, Tag, TagGroup } from '@backstage/ui';
 import { Fragment, type ReactNode } from 'react';
 
 import { useTranslation } from '../../../hooks/useTranslation';
@@ -40,6 +31,8 @@ import {
 } from '../../../utils/entityHelpers';
 import { AvailableModelsDialog } from './AvailableModelsDialog';
 import { HandoffTargets } from './HandoffTargets';
+
+const INLINE_MODEL_LIMIT = 5;
 
 function getBooleanSpecField(
   entity: Entity,
@@ -164,6 +157,23 @@ function ValueTags({ label, values }: { label: string; values: string[] }) {
   );
 }
 
+function AvailableModels({ models }: { models: string[] }) {
+  const visibleModels = models.slice(0, INLINE_MODEL_LIMIT);
+
+  return (
+    <Flex direction="column" align="start" gap="1">
+      {visibleModels.map((model, index) => (
+        <Text key={`${model}-${index}`} variant="body-medium">
+          {model}
+        </Text>
+      ))}
+      {models.length > INLINE_MODEL_LIMIT && (
+        <AvailableModelsDialog models={models} />
+      )}
+    </Flex>
+  );
+}
+
 function RemoteLinks({
   remotes,
 }: {
@@ -241,14 +251,7 @@ function AgentDetails({ details }: { details: AssetTypeDetailsData }) {
       )}
       {details.modelsAvailable.length > 0 && (
         <DetailField label={t('catalog.card.modelsTitle')}>
-          <Flex align="center" gap="2">
-            <Text variant="body-medium">
-              {`${details.modelsAvailable.length} ${t(
-                'catalog.card.modelsAvailableSuffix',
-              )}`}
-            </Text>
-            <AvailableModelsDialog models={details.modelsAvailable} />
-          </Flex>
+          <AvailableModels models={details.modelsAvailable} />
         </DetailField>
       )}
       {details.tools.length > 0 && (
@@ -303,14 +306,7 @@ function ModelServerDetails({ details }: { details: AssetTypeDetailsData }) {
       )}
       {details.modelsAvailable.length > 0 && (
         <DetailField label={t('catalog.card.modelsTitle')}>
-          <Flex align="center" gap="2">
-            <Text variant="body-medium">
-              {`${details.modelsAvailable.length} ${t(
-                'catalog.card.modelsAvailableSuffix',
-              )}`}
-            </Text>
-            <AvailableModelsDialog models={details.modelsAvailable} />
-          </Flex>
+          <AvailableModels models={details.modelsAvailable} />
         </DetailField>
       )}
     </>
@@ -329,19 +325,19 @@ function McpServerDetails({ details }: { details: AssetTypeDetailsData }) {
       )}
       {details.definition && (
         <DetailField label={t('catalog.card.definitionLabel')}>
-          <Accordion>
-            <AccordionTrigger>
-              {t('catalog.card.viewDefinition')}
-            </AccordionTrigger>
-            <AccordionPanel>
-              <CodeSnippet
-                language="yaml"
-                text={details.definition}
-                showCopyCodeButton
-                wrapLongLines
-              />
-            </AccordionPanel>
-          </Accordion>
+          <CodeSnippet
+            language="yaml"
+            text={details.definition}
+            showCopyCodeButton
+            wrapLongLines
+            customStyle={{
+              margin: 0,
+              padding: 'var(--bui-space-3)',
+              border: '1px solid var(--bui-border-1)',
+              borderRadius: 'var(--bui-radius-2)',
+              background: 'var(--bui-bg-neutral-2)',
+            }}
+          />
         </DetailField>
       )}
     </>

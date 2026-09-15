@@ -14,112 +14,17 @@
  * limitations under the License.
  */
 
-import { useEffect, useRef, useState } from 'react';
 import { stringifyEntityRef } from '@backstage/catalog-model';
+import { CodeSnippet } from '@backstage/core-components';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { usePermission } from '@backstage/plugin-permission-react';
-import {
-  Button,
-  Card,
-  CardBody,
-  CardHeader,
-  Text,
-  VisuallyHidden,
-} from '@backstage/ui';
-import {
-  RiCheckLine,
-  RiDownload2Line,
-  RiExternalLinkLine,
-  RiFileCopyLine,
-} from '@remixicon/react';
+import { Button, Card, CardBody, CardHeader, Text } from '@backstage/ui';
+import { RiDownload2Line, RiExternalLinkLine } from '@remixicon/react';
 
 import { aiCatalogAssetAccessUsageDocsPermission } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 
 import { useTranslation } from '../../../hooks/useTranslation';
 import { getUsageAction } from '../../../utils/usageActions';
-import styles from './UsageCard.module.css';
-
-const COPY_FEEDBACK_MS = 2000;
-
-function CopyCommand({ value }: { value: string }) {
-  const { t } = useTranslation();
-  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>(
-    'idle',
-  );
-  const resetTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined,
-  );
-
-  useEffect(() => {
-    return () => {
-      if (resetTimer.current) {
-        clearTimeout(resetTimer.current);
-        resetTimer.current = undefined;
-      }
-    };
-  }, []);
-
-  const handleCopy = async () => {
-    if (resetTimer.current) {
-      clearTimeout(resetTimer.current);
-      resetTimer.current = undefined;
-    }
-
-    if (!navigator.clipboard?.writeText) {
-      setCopyState('failed');
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(value);
-      setCopyState('copied');
-      resetTimer.current = setTimeout(() => {
-        setCopyState('idle');
-        resetTimer.current = undefined;
-      }, COPY_FEEDBACK_MS);
-    } catch {
-      setCopyState('failed');
-    }
-  };
-
-  let feedback = '';
-  if (copyState === 'copied') feedback = t('catalog.card.copied');
-  if (copyState === 'failed') feedback = t('catalog.card.copyFailed');
-
-  return (
-    <>
-      <div className={styles.commandBlock}>
-        <pre className={styles.command}>
-          <code>{value}</code>
-        </pre>
-        <Button
-          variant="tertiary"
-          size="small"
-          onPress={handleCopy}
-          iconStart={
-            copyState === 'copied' ? (
-              <RiCheckLine size={16} />
-            ) : (
-              <RiFileCopyLine size={16} />
-            )
-          }
-        >
-          {copyState === 'copied'
-            ? t('catalog.card.copied')
-            : t('catalog.card.copyCommand')}
-        </Button>
-      </div>
-      {copyState === 'failed' && (
-        <Text variant="body-x-small" color="danger">
-          {t('catalog.card.copyFailed')}
-        </Text>
-      )}
-      <VisuallyHidden role="status" aria-live="polite" aria-atomic="true">
-        {feedback}
-      </VisuallyHidden>
-    </>
-  );
-}
 
 export const UsageCard = () => {
   const { entity } = useEntity();
@@ -142,7 +47,19 @@ export const UsageCard = () => {
       </CardHeader>
       <CardBody>
         {action.type === 'copy' ? (
-          <CopyCommand value={action.value} />
+          <CodeSnippet
+            language="bash"
+            text={action.value}
+            showCopyCodeButton
+            wrapLongLines
+            customStyle={{
+              margin: 0,
+              padding: 'var(--bui-space-3)',
+              border: '1px solid var(--bui-border-1)',
+              borderRadius: 'var(--bui-radius-2)',
+              background: 'var(--bui-bg-neutral-2)',
+            }}
+          />
         ) : (
           <Button
             variant="tertiary"
