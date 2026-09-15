@@ -306,6 +306,171 @@ describe('DatabaseDoraDeployments', () => {
         ]);
       },
     );
+
+    it.each(databases.eachSupportedId())(
+      'filters by productionEnvironments including null and empty - %p',
+      async databaseId => {
+        const { deployments } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+
+        await deployments.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-prod',
+            commitSha: 'sha-prod',
+            environment: 'production',
+            createdAt: new Date('2026-06-01T10:00:00.000Z'),
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-null',
+            commitSha: 'sha-null',
+            environment: null,
+            createdAt: new Date('2026-06-02T10:00:00.000Z'),
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-empty',
+            commitSha: 'sha-empty',
+            environment: '',
+            createdAt: new Date('2026-06-03T10:00:00.000Z'),
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-staging',
+            commitSha: 'sha-staging',
+            environment: 'staging',
+            createdAt: new Date('2026-06-04T10:00:00.000Z'),
+          },
+        ]);
+
+        const rows = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          EMPTY_INPUT_HASH,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+          ['production'],
+        );
+
+        expect(rows.map(row => row.originalDeploymentId)).toEqual([
+          'dep-prod',
+          'dep-null',
+          'dep-empty',
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'matches productionEnvironments case-insensitively - %p',
+      async databaseId => {
+        const { deployments } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+
+        await deployments.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-prod',
+            commitSha: 'sha-prod',
+            environment: 'Prod',
+            createdAt: new Date('2026-06-01T10:00:00.000Z'),
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-live',
+            commitSha: 'sha-live',
+            environment: 'LIVE',
+            createdAt: new Date('2026-06-02T10:00:00.000Z'),
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-dev',
+            commitSha: 'sha-dev',
+            environment: 'development',
+            createdAt: new Date('2026-06-03T10:00:00.000Z'),
+          },
+        ]);
+
+        const rows = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          EMPTY_INPUT_HASH,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+          ['prod', 'live'],
+        );
+
+        expect(rows.map(row => row.originalDeploymentId)).toEqual([
+          'dep-prod',
+          'dep-live',
+        ]);
+      },
+    );
+
+    it.each(databases.eachSupportedId())(
+      'returns all rows when productionEnvironments is omitted - %p',
+      async databaseId => {
+        const { deployments } = await createTestDatabase(
+          await databases.init(databaseId),
+        );
+        const entityRef = 'component:default/service-a';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+
+        await deployments.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-prod',
+            commitSha: 'sha-prod',
+            environment: 'production',
+            createdAt: new Date('2026-06-01T10:00:00.000Z'),
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-staging',
+            commitSha: 'sha-staging',
+            environment: 'staging',
+            createdAt: new Date('2026-06-02T10:00:00.000Z'),
+          },
+        ]);
+
+        const rows = await deployments.readByEntityCollectorAndWindow(
+          entityRef,
+          collectorId,
+          EMPTY_INPUT_HASH,
+          new Date('2026-06-01T00:00:00.000Z'),
+          new Date('2026-06-30T00:00:00.000Z'),
+        );
+
+        expect(rows.map(row => row.originalDeploymentId)).toEqual([
+          'dep-prod',
+          'dep-staging',
+        ]);
+      },
+    );
   });
 
   describe('deleteOlderThan', () => {

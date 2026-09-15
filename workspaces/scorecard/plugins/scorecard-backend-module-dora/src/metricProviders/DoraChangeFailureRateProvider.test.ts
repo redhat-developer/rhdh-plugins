@@ -27,6 +27,7 @@ import {
 import {
   DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+  DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
 } from '../constants';
 import { DEFAULT_DORA_CHANGE_FAILURE_RATE_THRESHOLDS } from './DoraConfig';
 
@@ -201,6 +202,7 @@ describe('DoraChangeFailureRateProvider', () => {
           collector: expect.objectContaining({
             id: DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
           }),
+          productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
         },
       );
       expect(mockDoraDataService.readIncidents).toHaveBeenCalledWith(
@@ -342,45 +344,62 @@ describe('DoraChangeFailureRateProvider', () => {
       );
     });
 
-    it('should throw when fewer than 2 production deployments are found among mixed environments', async () => {
+    it('should pass default productionEnvironments to the data service', async () => {
       mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({
           id: '100',
           commitSha: 'sha-1',
           environment: 'production',
           createdAt: '2026-06-10T00:00:00.000Z',
-        }),
-        dbDeployment({
-          id: '101',
-          commitSha: 'sha-2',
-          environment: 'development',
-          createdAt: '2026-06-11T00:00:00.000Z',
         }),
       ]);
 
       await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
         /need at least 2 successful production deployments.*found 1/,
       );
+      expect(mockDoraDataService.readDeployments).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          productionEnvironments: DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
+        }),
+      );
     });
 
-    it('should throw when fewer than two production deployments are found', async () => {
+    it('should pass configured productionEnvironments to the data service', async () => {
       mockDoraDataService.readDeployments.mockResolvedValueOnce([
         dbDeployment({
           id: '100',
           commitSha: 'sha-1',
-          environment: 'production',
+          environment: 'prod',
           createdAt: '2026-06-10T00:00:00.000Z',
-        }),
-        dbDeployment({
-          id: '101',
-          commitSha: 'sha-2',
-          environment: 'demo-test',
-          createdAt: '2026-06-11T00:00:00.000Z',
         }),
       ]);
 
-      await expect(provider.calculateMetrics(mockEntity)).rejects.toThrow(
+      const customProvider = DoraChangeFailureRateProvider.fromConfig(
+        new ConfigReader({
+          scorecard: {
+            plugins: {
+              dora: {
+                productionEnvironments: ['prod', 'live'],
+              },
+            },
+          },
+        }),
+        {
+          doraSyncService: mockDoraSyncService,
+          doraDataService: mockDoraDataService,
+          logger: mockLogger,
+        },
+      );
+
+      await expect(customProvider.calculateMetrics(mockEntity)).rejects.toThrow(
         /need at least 2 successful production deployments.*found 1/,
+      );
+      expect(mockDoraDataService.readDeployments).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          productionEnvironments: ['prod', 'live'],
+        }),
       );
     });
 

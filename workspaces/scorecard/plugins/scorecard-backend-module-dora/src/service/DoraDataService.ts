@@ -22,7 +22,11 @@ import type {
   DbDoraIncident,
   DbDoraPullRequest,
 } from '../database/types';
-import type { CollectorCallOptions, WindowOptions } from './types';
+import type {
+  CollectorCallOptions,
+  EnvironmentFilterOptions,
+  WindowOptions,
+} from './types';
 
 /**
  * Reads persisted DORA data for metric calculation.
@@ -30,7 +34,7 @@ import type { CollectorCallOptions, WindowOptions } from './types';
 export interface DoraDataService {
   readDeployments(
     catalogEntityRef: string,
-    options: WindowOptions & CollectorCallOptions,
+    options: WindowOptions & CollectorCallOptions & EnvironmentFilterOptions,
   ): Promise<DbDoraDeployment[]>;
   readIncidents(
     catalogEntityRef: string,
@@ -51,7 +55,7 @@ export class DefaultDoraDataService implements DoraDataService {
 
   async readDeployments(
     catalogEntityRef: string,
-    options: WindowOptions & CollectorCallOptions,
+    options: WindowOptions & CollectorCallOptions & EnvironmentFilterOptions,
   ): Promise<DbDoraDeployment[]> {
     return this.deploymentsDb.readByEntityCollectorAndWindow(
       catalogEntityRef,
@@ -59,6 +63,7 @@ export class DefaultDoraDataService implements DoraDataService {
       options.collector.inputHash,
       options.windowFrom,
       options.windowTo,
+      options.productionEnvironments,
     );
   }
 

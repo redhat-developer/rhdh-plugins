@@ -27,14 +27,39 @@ import type {
   DoraDbWriteOptions,
 } from './types';
 
+/**
+ * Restricts the query to production-like environments: null/empty environment
+ * (treated as production) or a case-insensitive match against `productionEnvironments`.
+ */
+function applyProductionEnvironmentFilter(
+  query: Knex.QueryBuilder,
+  productionEnvironments: string[],
+): void {
+  const lowered = productionEnvironments.map(name => name.toLowerCase());
+  query.andWhere(builder => {
+    builder.whereNull('environment').orWhere('environment', '');
+    if (lowered.length > 0) {
+      builder.orWhereRaw(
+        `LOWER(??) IN (${lowered.map(() => '?').join(', ')})`,
+        ['environment', ...lowered],
+      );
+    }
+  });
+}
+
 export interface DoraDeploymentsStore {
   upsert(deployments: DbDoraDeploymentCreate[]): Promise<void>;
+  /**
+   * When `productionEnvironments` is provided, only rows whose environment is
+   * null, empty, or case-insensitively matches one of the names are returned.
+   */
   readByEntityCollectorAndWindow(
     catalogEntityRef: string,
     collectorId: string,
     collectorInputHash: string,
     from: Date,
     to: Date,
+    productionEnvironments?: string[],
   ): Promise<DbDoraDeployment[]>;
   markPullRequestsSynced(
     deploymentId: string,
@@ -83,15 +108,21 @@ export class DatabaseDoraDeployments implements DoraDeploymentsStore {
     collectorInputHash: string,
     from: Date,
     to: Date,
+    productionEnvironments?: string[],
   ): Promise<DbDoraDeployment[]> {
-    const rows = await this.dbClient<DbDoraDeploymentRow>(this.tableName)
+    const query = this.dbClient<DbDoraDeploymentRow>(this.tableName)
       .select('*')
       .where('catalog_entity_ref', catalogEntityRef)
       .andWhere('collector_id', collectorId)
       .andWhere('collector_input_hash', collectorInputHash)
       .andWhere('created_at', '>=', from)
-      .andWhere('created_at', '<=', to)
-      .orderBy('created_at', 'asc');
+      .andWhere('created_at', '<=', to);
+
+    if (productionEnvironments !== undefined) {
+      applyProductionEnvironmentFilter(query, productionEnvironments);
+    }
+
+    const rows = await query.orderBy('created_at', 'asc');
 
     return rows.map(fromDoraDeploymentRow);
   }
