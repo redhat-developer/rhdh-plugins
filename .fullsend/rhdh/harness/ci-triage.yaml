@@ -1,0 +1,53 @@
+---
+agent: rhdh/agents/ci-triage.md
+model: opus
+image: ghcr.io/redhat-developer/rhdh-fullsend-code:latest
+policy: rhdh/policies/ci-triage.yaml
+role: retro
+slug: fullsend-ai-retro
+readonly_repo: true
+
+providers:
+  - github-artifacts
+openshell:
+  profiles:
+    - profiles/fullsend-github-artifacts.yaml
+
+host_files:
+  - src: rhdh/env/gcp-vertex.env
+    dest: /sandbox/workspace/.env.d/gcp-vertex.env
+    expand: true
+  - src: ${GOOGLE_APPLICATION_CREDENTIALS}
+    dest: /tmp/.gcp-credentials.json
+  - src: ${GCP_OIDC_TOKEN_FILE}
+    dest: /tmp/.gcp-oidc-token
+    optional: true
+  - src: dispatch/event-payload.json
+    dest: /sandbox/workspace/ci-event.json
+    optional: true
+
+skills:
+  - skills/ci-failure-analysis
+  - skills/playwright-trace
+
+pre_script: rhdh/scripts/pre-ci-triage.sh
+post_script: rhdh/scripts/post-ci-triage.sh
+validation_loop:
+  script: rhdh/scripts/validate-output-schema.sh
+  schema: rhdh/schemas/ci-triage-result.schema.json
+  max_iterations: 2
+
+env:
+  runner:
+    GH_TOKEN: ${GH_TOKEN}
+    REPO_FULL_NAME: ${REPO_FULL_NAME}
+    GITHUB_ISSUE_URL: ${GITHUB_ISSUE_URL}
+    CI_CONTEXT_FILE: ${GITHUB_WORKSPACE}/.fullsend/dispatch/event-payload.json
+  sandbox:
+    GH_TOKEN: ${GH_TOKEN}
+    REPO_FULL_NAME: ${REPO_FULL_NAME}
+    GITHUB_ISSUE_URL: ${GITHUB_ISSUE_URL}
+    CI_EVENT_FILE: /sandbox/workspace/ci-event.json
+    PLAYWRIGHT_BROWSERS_PATH: /tmp/playwright-browsers
+
+timeout_minutes: 45

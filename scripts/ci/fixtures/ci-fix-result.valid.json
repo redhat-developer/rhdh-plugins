@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "pr": {
+    "number": 12,
+    "head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "head_ref": "feature/fix"
+  },
+  "run": { "id": 34, "attempt": 1 },
+  "analyzed_head_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "workspace": "boost",
+  "iteration": 1,
+  "status": "committed",
+  "strategy": "Wait for the response that drives the rendered state.",
+  "files": ["workspaces/boost/e2e-tests/render.spec.ts"],
+  "verification": [
+    {
+      "command": "yarn playwright test e2e-tests/render.spec.ts",
+      "exit_code": 0,
+      "passed": true,
+      "summary": "The failed test passed."
+    }
+  ],
+  "commit": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "summary": "Targeted test repair committed locally."
+}
