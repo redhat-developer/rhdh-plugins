@@ -15,14 +15,8 @@
  */
 
 /**
- * Legacy frontend system API surface for the global header plugin.
+ * MUI SvgIcon size for toolbar IconButtons (20px).
  *
- * @deprecated Use the root import instead: `import from '@red-hat-developer-hub/backstage-plugin-global-header'`
- * @packageDocumentation
+ * @internal
  */
-
-import './configureMuiClassName';
-
-export * from './legacy/plugin';
-
-export * from './translations';
+export const HEADER_TOOLBAR_ICON_SIZE = 'small' as const;
