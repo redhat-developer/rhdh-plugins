@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 9.1.0
+
+### Minor Changes
+
+- 2b31f6c: Convert `bulk.import` from a resource permission to a feature permission, and register the NFS bulk import page using the `if` permission predicate.
+
+### Patch Changes
+
+- 77cc007: Cover the new frontend system wiring with createExtensionTester: the page's path and title, that the page and the API extension are registered on the plugin, and that both route refs survive. The existing NFS test only covers the translations module, which is a separate FrontendModule — so it stays green against a plugin whose own extensions array is empty.
+- Updated dependencies [2b31f6c]
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@9.1.0
+
 ## 9.0.1
 
 ### Patch Changes
