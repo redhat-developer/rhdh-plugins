@@ -35,7 +35,7 @@ export default createApp({
     appAuthModule,
     appIntegrationsModule,
     drawerDemoModule,
-    // sidebarDemoModule,
+    sidebarDemoModule,
     templateCardDemoModule,
     globalHeaderModule,
     globalHeaderTranslationsModule,
