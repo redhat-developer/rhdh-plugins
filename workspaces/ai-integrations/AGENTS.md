@@ -58,12 +58,13 @@ mismatch.
 
 When reviewing PRs that add or modify files under `openspec/changes/`:
 
-- **Audit freshness**: If any `spec.md`, `design.md`, `tasks.md`, or
-  `proposal.md` file was modified in the PR, verify that the sibling
-  `audit.md` was also updated. Check that the "Last audited" timestamp
-  in `audit.md` is not earlier than the most recent changes to sibling
-  specification files. If the audit predates spec changes, flag it as
-  stale.
+- **Audit freshness**: If any `design.md`, `tasks.md`, or
+  `proposal.md` file (at the change root) or any `spec.md` file (under
+  `specs/` subdirectories) was modified in the PR, verify that the
+  change-root `audit.md` was also updated. Check that the "Last
+  audited" timestamp in `audit.md` is not earlier than the most recent
+  changes to specification files within the same change area. If the
+  audit predates spec changes, flag it as stale.
 - **Audit summary accuracy**: Verify that the CRITICAL / WARNING /
   SUGGESTION counts in `audit.md` summary tables match the number of
   detailed findings listed below them. Check per-category rows and the
