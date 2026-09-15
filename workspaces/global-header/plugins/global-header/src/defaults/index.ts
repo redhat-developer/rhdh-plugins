@@ -18,6 +18,7 @@ export * from './toolbarExtensions';
 export * from './menuItemExtensions';
 
 import {
+  sidebarPinToggleExtension,
   companyLogoExtension,
   searchExtension,
   spacerExtension,
@@ -44,6 +45,7 @@ import {
  * @public
  */
 export const defaultToolbarExtensions = [
+  sidebarPinToggleExtension,
   companyLogoExtension,
   searchExtension,
   spacerExtension,
