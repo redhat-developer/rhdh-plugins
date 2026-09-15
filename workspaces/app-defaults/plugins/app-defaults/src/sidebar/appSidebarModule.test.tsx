@@ -21,6 +21,7 @@ import {
 } from '@backstage/frontend-test-utils';
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import {
+  SidebarElementBlueprint,
   SidebarItemBlueprint,
   SidebarItemGroupBlueprint,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
@@ -31,6 +32,12 @@ import { appSidebarExtension } from './appSidebarModule';
 // subject becomes `nav-content:sidebar` instead of `nav-content:app/sidebar`.
 const itemsInput = { id: 'nav-content:sidebar', input: 'items' } as const;
 const groupsInput = { id: 'nav-content:sidebar', input: 'groups' } as const;
+const elementsInput = {
+  id: 'nav-content:sidebar',
+  input: 'elements',
+} as const;
+
+const CustomElement = () => <button type="button">Custom</button>;
 
 describe('appSidebarExtension', () => {
   it('is a nav-content extension named sidebar', () => {
@@ -70,6 +77,13 @@ describe('appSidebarExtension', () => {
           name: 'home',
           params: { title: 'Home', to: '/home', priority: 20 },
         }),
+      )
+      .add(
+        SidebarElementBlueprint.make({
+          attachTo: elementsInput,
+          name: 'custom',
+          params: { component: CustomElement, priority: 15 },
+        }),
       );
 
     const Content = tester.get(NavContentBlueprint.dataRefs.component);
@@ -85,8 +99,11 @@ describe('appSidebarExtension', () => {
       />,
     );
 
-    const links = screen.getAllByRole('link');
-    expect(links.map(l => l.textContent)).toEqual(['Home', 'Chat']);
+    const nav = screen.getByRole('navigation');
+    const texts = Array.from(nav.querySelectorAll('a, button')).map(
+      el => el.textContent,
+    );
+    expect(texts.slice(0, 3)).toEqual(['Home', 'Custom', 'Chat']);
     expect(screen.getByText('Administration')).toBeInTheDocument();
     fireEvent.mouseEnter(screen.getByTestId('item-with-submenu'));
     expect(screen.getByText('Users')).toBeInTheDocument();
