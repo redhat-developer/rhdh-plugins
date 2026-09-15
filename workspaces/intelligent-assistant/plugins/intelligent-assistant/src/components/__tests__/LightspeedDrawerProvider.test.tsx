@@ -15,7 +15,7 @@
  */
 
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerContext';
@@ -159,7 +159,7 @@ describe('LightspeedDrawerProvider', () => {
     expect(screen.queryByTestId('chatbot-modal')).not.toBeInTheDocument();
   });
 
-  it('renders ChatbotModal with LightspeedChatContainer when shouldRenderOverlayModal is true', () => {
+  it('renders ChatbotModal with LightspeedChatContainer when shouldRenderOverlayModal is true', async () => {
     const closeChatbot = jest.fn();
     mockUseLightspeedProviderState.mockReturnValue({
       contextValue: {
@@ -176,7 +176,7 @@ describe('LightspeedDrawerProvider', () => {
       </LightspeedDrawerProvider>,
     );
 
-    const modal = screen.getByTestId('chatbot-modal');
+    const modal = await waitFor(() => screen.getByTestId('chatbot-modal'));
     expect(modal).toHaveAttribute(
       'data-display-mode',
       ChatbotDisplayMode.default,
@@ -205,7 +205,10 @@ describe('LightspeedDrawerProvider', () => {
       </LightspeedDrawerProvider>,
     );
 
-    await user.click(screen.getByTestId('modal-escape-close'));
+    const escapeClose = await waitFor(() =>
+      screen.getByTestId('modal-escape-close'),
+    );
+    await user.click(escapeClose);
     expect(closeChatbot).toHaveBeenCalledTimes(1);
   });
 });

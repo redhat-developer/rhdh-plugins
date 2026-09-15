@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 
-import '@patternfly/react-core/dist/styles/base-no-reset.css';
-import '@patternfly/chatbot/dist/css/main.css';
-
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useAsync } from 'react-use';
 
@@ -29,6 +26,7 @@ import { useAllModels } from '../hooks/useAllModels';
 import { useIaChatPermission } from '../hooks/useIaChatPermission';
 import { useIaNotebooksPermission } from '../hooks/useIaNotebooksPermission';
 import { useTopicRestrictionStatus } from '../hooks/useQuestionValidation';
+import { loadChatPatternflyStyles } from '../loadChatPatternflyStyles';
 import queryClient from '../utils/queryClient';
 import FileAttachmentContextProvider from './AttachmentContext';
 import { LightspeedChat } from './LightSpeedChat';
@@ -210,6 +208,24 @@ const LightspeedChatContainerInner = () => {
  * @public
  */
 export const LightspeedChatContainer = () => {
+  const [stylesReady, setStylesReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    loadChatPatternflyStyles().then(() => {
+      if (!cancelled) {
+        setStylesReady(true);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!stylesReady) {
+    return null;
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <LightspeedChatContainerInner />
