@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type { ComponentType } from 'react';
 import type { IconComponent } from '@backstage/frontend-plugin-api';
 
 /**
@@ -67,6 +68,23 @@ export interface SidebarItemGroupData {
   icon?: SidebarIcon;
   /** Optional link target for the group entry itself. */
   to?: string;
+  /** Ordering priority. Higher values render first. Defaults to `0`. */
+  priority?: number;
+}
+
+/**
+ * Custom sidebar element contributed by a plugin via
+ * {@link SidebarElementBlueprint}. Use this for entries that need their own
+ * React component, such as the search modal or the notifications item.
+ * Elements always render at the top level of the sidebar.
+ *
+ * @public
+ */
+export interface SidebarElementData {
+  /** Extension ID of the contributing extension, used as a stable key. */
+  id: string;
+  /** Component rendered in place of a regular sidebar item. */
+  component: ComponentType<{}>;
   /** Ordering priority. Higher values render first. Defaults to `0`. */
   priority?: number;
 }

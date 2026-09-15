@@ -195,10 +195,41 @@ export default createFrontendPlugin({
 | `to`       | `string`                  | No       | Optional link target for the group entry itself            |
 | `priority` | `number`                  | No       | Ordering, higher renders first (default: `0`)              |
 
+### Contributing Custom Sidebar Elements
+
+Entries that need their own React component, such as the search modal or the
+notifications item, use `SidebarElementBlueprint`. The component renders at
+the top level in the slot determined by `priority`; elements cannot be placed
+inside a group.
+
+```typescript
+import { SidebarElementBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
+
+const notificationsElement = SidebarElementBlueprint.make({
+  name: 'notifications',
+  params: {
+    component: NotificationsSidebarItem,
+    priority: -50,
+  },
+});
+```
+
+`SidebarElementBlueprint` parameters:
+
+| Param       | Type                | Required | Description                                   |
+| ----------- | ------------------- | -------- | --------------------------------------------- |
+| `component` | `ComponentType<{}>` | Yes      | Component rendered in place of a regular item |
+| `priority`  | `number`            | No       | Ordering, higher renders first (default: `0`) |
+
+Only `priority` can be overridden from `app-config.yaml`
+(`sidebar-element:<plugin>/<name>`).
+
 Ordering rules:
 
-- Top-level entries (groups and ungrouped items) are sorted by `priority`,
-  higher first, ties broken by title.
+- Top-level entries (groups, ungrouped items and custom elements) are sorted
+  by `priority`, higher first, ties broken by title (or extension id for
+  elements).
 - Items inside a group are sorted the same way and render in an expandable
   submenu. An item whose `group` is not registered renders at the top level.
 - Nav items that Backstage auto-discovers from page extensions are merged in at
@@ -230,6 +261,7 @@ app:
 - `appDrawerModule` -- frontend module (registers the drawer wrapper extension)
 - `SidebarItemBlueprint` / `sidebarItemDataRef` -- blueprint and data ref for sidebar entries
 - `SidebarItemGroupBlueprint` / `sidebarItemGroupDataRef` -- blueprint and data ref for sidebar groups
+- `SidebarElementBlueprint` / `sidebarElementDataRef` -- blueprint and data ref for custom sidebar components
 - `TemplateCardActionBlueprint` -- blueprint for custom template card actions
 - `TemplateCardBadgeBlueprint` -- blueprint for template card badges
 - `templateCardExtension` -- extensible scaffolder template card component
@@ -237,7 +269,7 @@ app:
 - `useAppDrawer` -- hook to control drawers
 - `AppDrawerContent` / `AppDrawerApi` / `ApplicationDrawerProps` / `DrawerPanelProps` types
 - `TemplateCardActionData` / `TemplateCardActionProps` / `TemplateCardBadgeData` types
-- `SidebarIcon` / `SidebarItemData` / `SidebarItemGroupData` types
+- `SidebarIcon` / `SidebarItemData` / `SidebarItemGroupData` / `SidebarElementData` types
 
 ### Legacy entry (`@red-hat-developer-hub/backstage-plugin-app-react/legacy`)
 

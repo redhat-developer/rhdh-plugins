@@ -14,6 +14,7 @@ import { NavContentComponent } from '@backstage/plugin-app-react';
 import type { NavContentNavItems } from '@backstage/plugin-app-react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { ReactNode } from 'react';
+import { SidebarElementData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { SidebarItemData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { SidebarItemGroupData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
@@ -90,6 +91,18 @@ export const appSidebarExtension: OverridableExtensionDefinition<{
         internal: false;
       }
     >;
+    elements: ExtensionInput<
+      ConfigurableExtensionDataRef<
+        SidebarElementData,
+        'app.sidebar.element',
+        {}
+      >,
+      {
+        singleton: false;
+        optional: false;
+        internal: false;
+      }
+    >;
   };
   kind: 'nav-content';
   name: 'sidebar';
@@ -103,6 +116,7 @@ export const appSidebarModule: FrontendModule;
 
 // @public
 export interface AppSidebarProps {
+  elements?: SidebarElementData[];
   groups: SidebarItemGroupData[];
   items: SidebarItemData[];
   navItems?: NavContentNavItems;

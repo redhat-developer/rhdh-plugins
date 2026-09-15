@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-import type { ReactElement } from 'react';
+import type { ComponentType, ReactElement } from 'react';
 import type { NavContentNavItem } from '@backstage/plugin-app-react';
 import type {
+  SidebarElementData,
   SidebarIcon,
   SidebarItemData,
   SidebarItemGroupData,
@@ -45,21 +46,53 @@ export interface SidebarModelGroup {
   items: SidebarModelItem[];
 }
 
+/** A custom top-level element rendered with its own component. */
+export interface SidebarModelElement {
+  id: string;
+  component: ComponentType<{}>;
+  priority: number;
+}
+
 /** Top-level sidebar entry. */
 export type SidebarModelEntry =
   | { kind: 'item'; item: SidebarModelItem }
-  | { kind: 'group'; group: SidebarModelGroup };
+  | { kind: 'group'; group: SidebarModelGroup }
+  | { kind: 'element'; element: SidebarModelElement };
+
+/** Inputs for {@link buildSidebarModel}. */
+export interface SidebarModelInput {
+  items: SidebarItemData[];
+  groups: SidebarItemGroupData[];
+  elements?: SidebarElementData[];
+  navItems?: NavContentNavItem[];
+}
 
 const DEFAULT_PRIORITY = 0;
 
-function byPriorityThenTitle(
-  a: { priority: number; title: string },
-  b: { priority: number; title: string },
-): number {
+interface Sortable {
+  priority: number;
+  /** Tiebreaker between equal priorities: the title, or the id for elements. */
+  sortKey: string;
+}
+
+function byPriorityThenSortKey(a: Sortable, b: Sortable): number {
   if (a.priority !== b.priority) {
     return b.priority - a.priority;
   }
-  return a.title.localeCompare(b.title);
+  return a.sortKey.localeCompare(b.sortKey);
+}
+
+function sortableOf(entry: SidebarModelEntry): Sortable {
+  switch (entry.kind) {
+    case 'item':
+      return { priority: entry.item.priority, sortKey: entry.item.title };
+    case 'group':
+      return { priority: entry.group.priority, sortKey: entry.group.title };
+    case 'element':
+      return { priority: entry.element.priority, sortKey: entry.element.id };
+    default:
+      throw new Error('Unknown sidebar entry kind');
+  }
 }
 
 function toModelItem(item: SidebarItemData): SidebarModelItem {
@@ -84,12 +117,15 @@ function toModelItem(item: SidebarItemData): SidebarModelItem {
  * - Nav items auto-discovered from page extensions are merged in at the
  *   default priority unless a contributed item already links to the same
  *   path, which lets a plugin take over the placement of its own page.
+ * - Custom elements always render at the top level, sorted by priority with
+ *   their extension id as tiebreaker.
  */
-export function buildSidebarModel(
-  items: SidebarItemData[],
-  groups: SidebarItemGroupData[],
-  navItems: NavContentNavItem[] = [],
-): SidebarModelEntry[] {
+export function buildSidebarModel({
+  items,
+  groups,
+  elements = [],
+  navItems = [],
+}: SidebarModelInput): SidebarModelEntry[] {
   const groupById = new Map<string, SidebarModelGroup>();
   for (const group of groups) {
     groupById.set(group.id, {
@@ -131,15 +167,25 @@ export function buildSidebarModel(
   const entries: SidebarModelEntry[] = [
     ...topLevelItems.map(item => ({ kind: 'item' as const, item })),
     ...[...groupById.values()].map(group => {
-      group.items.sort(byPriorityThenTitle);
+      group.items.sort((a, b) =>
+        byPriorityThenSortKey(
+          { priority: a.priority, sortKey: a.title },
+          { priority: b.priority, sortKey: b.title },
+        ),
+      );
       return { kind: 'group' as const, group };
     }),
+    ...elements.map(element => ({
+      kind: 'element' as const,
+      element: {
+        id: element.id,
+        component: element.component,
+        priority: element.priority ?? DEFAULT_PRIORITY,
+      },
+    })),
   ];
 
   return entries.sort((a, b) =>
-    byPriorityThenTitle(
-      a.kind === 'item' ? a.item : a.group,
-      b.kind === 'item' ? b.item : b.group,
-    ),
+    byPriorityThenSortKey(sortableOf(a), sortableOf(b)),
   );
 }

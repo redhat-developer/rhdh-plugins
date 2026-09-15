@@ -95,6 +95,44 @@ export interface DrawerPanelProps {
 }
 
 // @public
+export const SidebarElementBlueprint: ExtensionBlueprint<{
+  kind: 'sidebar-element';
+  params: {
+    component: ComponentType<{}>;
+    priority?: number;
+  };
+  output: ExtensionDataRef<SidebarElementData, 'app.sidebar.element', {}>;
+  inputs: {};
+  config: {
+    priority: number | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+  };
+  dataRefs: {
+    element: ConfigurableExtensionDataRef<
+      SidebarElementData,
+      'app.sidebar.element',
+      {}
+    >;
+  };
+}>;
+
+// @public
+export interface SidebarElementData {
+  component: ComponentType<{}>;
+  id: string;
+  priority?: number;
+}
+
+// @public
+export const sidebarElementDataRef: ConfigurableExtensionDataRef<
+  SidebarElementData,
+  'app.sidebar.element',
+  {}
+>;
+
+// @public
 export type SidebarIcon = IconComponent | string;
 
 // @public

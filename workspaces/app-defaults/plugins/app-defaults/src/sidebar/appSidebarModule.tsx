@@ -20,6 +20,7 @@ import {
 } from '@backstage/frontend-plugin-api';
 import { NavContentBlueprint } from '@backstage/plugin-app-react';
 import {
+  sidebarElementDataRef,
   sidebarItemDataRef,
   sidebarItemGroupDataRef,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
@@ -28,11 +29,12 @@ import { AppSidebar } from './AppSidebar';
 
 /**
  * Nav content extension that renders the RHDH sidebar from contributed
- * `SidebarItemBlueprint` and `SidebarItemGroupBlueprint` extensions.
+ * `SidebarItemBlueprint`, `SidebarItemGroupBlueprint` and
+ * `SidebarElementBlueprint` extensions.
  *
- * Extension ID: `nav-content:app/sidebar`. Both blueprints from
+ * Extension ID: `nav-content:app/sidebar`. All three blueprints from
  * `@red-hat-developer-hub/backstage-plugin-app-react` attach here by
- * default, so plugins only need to declare their items and groups.
+ * default, so plugins only need to declare their items, groups and elements.
  *
  * @public
  */
@@ -41,13 +43,20 @@ export const appSidebarExtension = NavContentBlueprint.makeWithOverrides({
   inputs: {
     items: createExtensionInput([sidebarItemDataRef]),
     groups: createExtensionInput([sidebarItemGroupDataRef]),
+    elements: createExtensionInput([sidebarElementDataRef]),
   },
   factory(originalFactory, { inputs }) {
     const items = inputs.items.map(i => i.get(sidebarItemDataRef));
     const groups = inputs.groups.map(g => g.get(sidebarItemGroupDataRef));
+    const elements = inputs.elements.map(e => e.get(sidebarElementDataRef));
     return originalFactory({
       component: ({ navItems }) => (
-        <AppSidebar items={items} groups={groups} navItems={navItems} />
+        <AppSidebar
+          items={items}
+          groups={groups}
+          elements={elements}
+          navItems={navItems}
+        />
       ),
     });
   },
@@ -55,8 +64,8 @@ export const appSidebarExtension = NavContentBlueprint.makeWithOverrides({
 
 /**
  * Frontend module that provides the priority-ordered app sidebar.
- * Registers the nav content extension that accepts sidebar item and group
- * contributions via inputs.
+ * Registers the nav content extension that accepts sidebar item, group and
+ * element contributions via inputs.
  *
  * @public
  */
