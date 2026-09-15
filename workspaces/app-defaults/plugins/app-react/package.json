@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-app-react",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "license": "Apache-2.0",
   "description": "Shared UI components and extension APIs for the RHDH app shell",
   "main": "src/index.ts",
@@ -8,16 +8,12 @@
   "exports": {
     ".": "./src/index.ts",
     "./legacy": "./src/legacy/index.ts",
-    "./app-drawer-module": "./src/appDrawerModuleExport.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "legacy": [
         "src/legacy/index.ts"
-      ],
-      "app-drawer-module": [
-        "src/appDrawerModuleExport.ts"
       ],
       "package.json": [
         "package.json"

@@ -148,7 +148,7 @@ describe('DatabaseDoraDeployments', () => {
           },
           {
             catalogEntityRef: entityRef,
-            collectorId: 'github:deploymentWorkflowRuns',
+            collectorId: 'github:doraDeploymentWorkflowRuns',
             collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-1',
             commitSha: 'sha-other',
@@ -166,7 +166,7 @@ describe('DatabaseDoraDeployments', () => {
         );
         const workflowRows = await deployments.readByEntityCollectorAndWindow(
           entityRef,
-          'github:deploymentWorkflowRuns',
+          'github:doraDeploymentWorkflowRuns',
           EMPTY_INPUT_HASH,
           new Date('2026-06-01T00:00:00.000Z'),
           new Date('2026-06-30T00:00:00.000Z'),
@@ -283,7 +283,7 @@ describe('DatabaseDoraDeployments', () => {
           },
           {
             catalogEntityRef: entityRef,
-            collectorId: 'github:deploymentWorkflowRuns',
+            collectorId: 'github:doraDeploymentWorkflowRuns',
             collectorInputHash: EMPTY_INPUT_HASH,
             originalDeploymentId: 'dep-other',
             commitSha: 'sha-other',

@@ -37,7 +37,7 @@ app:
 
 #### Permission Framework Support
 
-The Adoption Insights Backend plugin has support for the permission framework.
+The Adoption Insights Backend plugin has support for the permission framework. The frontend NFS page uses an `if` predicate on `adoption-insights.events.read` so unauthorized users do not see the page or navigation entry.
 
 - When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access Adoption Insights backend API, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
 

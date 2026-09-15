@@ -2,4 +2,4 @@
 '@red-hat-developer-hub/backstage-plugin-intelligent-assistant': patch
 ---
 
-Updated dependency `react-router-dom` to `^6.30.6`.
+Add createExtensionTester coverage for the NFS extensions and modules

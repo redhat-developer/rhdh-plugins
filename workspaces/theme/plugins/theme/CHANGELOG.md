@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-theme
 
+## 1.2.1
+
+### Patch Changes
+
+- 61f08f2: Fix the RHDH entity-page layout so content can grow beyond the viewport without
+  being clipped by the main content container.
+
 ## 1.2.0
 
 ### Minor Changes

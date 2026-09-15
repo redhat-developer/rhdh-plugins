@@ -25,7 +25,7 @@ export enum ScorecardJiraAnnotations {
 }
 
 /**
- * Annotations used by the `jira:incidents` collector.
+ * Annotations used by the `jira:doraIncidents` collector.
  * `INCIDENT_PROJECT_KEY` falls back to {@link ScorecardJiraAnnotations.PROJECT_KEY}.
  * Component, label, and team are incident-specific (no fallback).
  * `INCIDENT_ISSUE_TYPE` overrides collector input `issueType` when set;

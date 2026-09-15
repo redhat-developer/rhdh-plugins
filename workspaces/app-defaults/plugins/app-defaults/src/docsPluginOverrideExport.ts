@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 
-export { appDrawerModule as default } from './drawer';
+export { docsPluginOverride as default } from './docs/docsPluginOverride';

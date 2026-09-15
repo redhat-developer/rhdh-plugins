@@ -940,3 +940,107 @@ export const fileCheckScorecardResponse = [
     },
   },
 ];
+
+export const licenseFileExistsKpiMetadataResponse = {
+  title: 'License File Exists KPI',
+  description:
+    'This KPI provides information about whether the license file exists in the repository.',
+  type: 'boolean',
+  history: true,
+  aggregationType: 'statusGrouped',
+};
+
+const FILECHECK_BOOLEAN_THRESHOLDS = {
+  rules: [
+    { key: 'exist', expression: '==true' },
+    { key: 'missing', expression: '==false' },
+  ],
+};
+
+/** Matches `scorecard.aggregationKPIs.licenseFileExistsKpi` in app-config.yaml */
+export const licenseFileExistsAggregatedResponse = {
+  id: 'filecheck.license',
+  status: 'success' as const,
+  metadata: {
+    ...licenseFileExistsKpiMetadataResponse,
+  },
+  result: {
+    values: [
+      { count: 7, name: 'exist' },
+      { count: 3, name: 'missing' },
+    ],
+    total: 10,
+    timestamp: '2026-01-24T14:10:32.776Z',
+    thresholds: FILECHECK_BOOLEAN_THRESHOLDS,
+    entitiesConsidered: 10,
+    calculationErrorCount: 0,
+  },
+};
+
+export const emptyLicenseFileExistsAggregatedResponse = {
+  ...licenseFileExistsAggregatedResponse,
+  result: {
+    total: 0,
+    values: [
+      { count: 0, name: 'exist' },
+      { count: 0, name: 'missing' },
+    ],
+    timestamp: '2026-01-24T14:10:32.858Z',
+    thresholds: FILECHECK_BOOLEAN_THRESHOLDS,
+    entitiesConsidered: 0,
+    calculationErrorCount: 0,
+  },
+};
+
+export const githubEntitiesDrillDownWithCalculationErrorsResponse = {
+  ...githubEntitiesDrillDownResponse,
+  entityHealth: {
+    totalEntities: 10,
+    calculationErrorCount: 2,
+    countsArePartial: true,
+  },
+};
+
+export const weightedKpiEntitiesDrillDownResponse = {
+  metricId: 'github.openPRs',
+  metricMetadata: {
+    title: 'GitHub Open PRs KPI (weighted health)',
+    description:
+      'Weighted health score for open PRs by threshold status across your entities.',
+    type: 'number',
+  },
+  entities: [
+    {
+      entityRef: 'component:default/red-hat-developer-hub',
+      entityNamespace: 'default',
+      entityName: 'red-hat-developer-hub',
+      entityKind: 'Component',
+      owner: 'group:default/red-hat',
+      metricValue: 9,
+      timestamp: '2026-03-12T08:09:29.732Z',
+      status: 'success',
+    },
+    {
+      entityRef: 'component:default/all-scorecards-service',
+      entityNamespace: 'default',
+      entityName: 'all-scorecards-service',
+      entityKind: 'Component',
+      owner: 'user:development/guest',
+      metricValue: 46,
+      timestamp: '2026-03-12T08:09:29.663Z',
+      status: 'warning',
+    },
+  ],
+  pagination: {
+    page: 1,
+    pageSize: 5,
+    total: 2,
+    totalPages: 1,
+    isCapped: false,
+  },
+  entityHealth: {
+    totalEntities: 2,
+    calculationErrorCount: 0,
+    countsArePartial: false,
+  },
+};

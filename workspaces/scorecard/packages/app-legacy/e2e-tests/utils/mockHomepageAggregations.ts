@@ -20,9 +20,12 @@ import { ScorecardRoutes } from '../constants/routes';
 import {
   emptyGithubAggregatedResponse,
   emptyJiraAggregatedResponse,
+  emptyLicenseFileExistsAggregatedResponse,
   emptyOpenPrsWeightedAggregatedResponse,
   githubAggregatedResponse,
   jiraAggregatedResponse,
+  licenseFileExistsAggregatedResponse,
+  licenseFileExistsKpiMetadataResponse,
   notAllowedAggregationErrorBody,
   openIssuesKpiMetadataResponse,
   openPrsKpiMetadataResponse,
@@ -40,6 +43,9 @@ function aggregationMetadataForRequestUrl(url: string): object {
   }
   if (url.includes('openPrsWeightedKpi')) {
     return openPrsWeightedKpiMetadataResponse;
+  }
+  if (url.includes('licenseFileExistsKpi')) {
+    return licenseFileExistsKpiMetadataResponse;
   }
   if (url.includes('jira.openIssues')) {
     return jiraAggregatedResponse.metadata;
@@ -80,7 +86,7 @@ export async function mockAggregationNoDataFound(page: Page): Promise<void> {
   await page.route('**/api/scorecard/aggregations/**', async route => {
     const url = route.request().url();
 
-    if (url.includes('metadata')) {
+    if (url.includes('/metadata')) {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -94,6 +100,15 @@ export async function mockAggregationNoDataFound(page: Page): Promise<void> {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify(emptyOpenPrsWeightedAggregatedResponse),
+      });
+      return;
+    }
+
+    if (url.includes(AGGREGATED_CARDS_METRIC_IDS.licenseFileExistsKpi)) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(emptyLicenseFileExistsAggregatedResponse),
       });
       return;
     }
@@ -173,6 +188,11 @@ export async function mockAllDefaultHomepageAggregationsSuccess(
     page,
     ScorecardRoutes.OPEN_PRS_WEIGHTED_KPI_AGGREGATION_ROUTE,
     openPrsWeightedAggregatedResponse,
+  );
+  await mockApiResponse(
+    page,
+    ScorecardRoutes.LICENSE_FILE_EXISTS_KPI_AGGREGATION_ROUTE,
+    licenseFileExistsAggregatedResponse,
   );
 
   await page.reload();
