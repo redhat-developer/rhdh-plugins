@@ -131,6 +131,45 @@ export class VectorStoresOperator {
   }
 
   /**
+   * Perform a fetch, retrying when lightspeed-core responds with 429 Too Many
+   * Requests. lightspeed-core bounds concurrent file uploads and vector store
+   * attaches with per-endpoint semaphores (max_concurrent_file_uploads /
+   * max_concurrent_vector_store_attaches); when those are momentarily full it
+   * rejects with 429 rather than queuing. Retrying here lets bursty batch
+   * uploads succeed instead of failing. Honors the Retry-After header when the
+   * server sends one, otherwise backs off exponentially with a cap.
+   * @param input - Request URL
+   * @param init - Fetch init options
+   * @param operation - Operation description for logging
+   * @param maxRetries - Maximum number of retries on 429 (default 8)
+   * @returns The fetch Response (may still be non-ok for callers to handle)
+   */
+  private async fetchWithRetry(
+    input: string,
+    init: RequestInit,
+    operation: string,
+    maxRetries = 8,
+  ): Promise<Response> {
+    let attempt = 0;
+    for (;;) {
+      const response = await fetch(input, init);
+      if (response.status !== 429 || attempt >= maxRetries) {
+        return response;
+      }
+      attempt += 1;
+      const retryAfter = Number(response.headers.get('retry-after'));
+      const delayMs =
+        Number.isFinite(retryAfter) && retryAfter > 0
+          ? retryAfter * 1000
+          : Math.min(2 ** attempt * 250, 5000);
+      this.logger.warn(
+        `Rate limited (429) while trying to ${operation}; retrying in ${delayMs}ms (attempt ${attempt}/${maxRetries})`,
+      );
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+    }
+  }
+
+  /**
    * Vector Stores API - mirrors LlamaStackClient.vectorStores structure
    */
   vectorStores = {
@@ -298,7 +337,7 @@ export class VectorStoresOperator {
           params,
         );
 
-        const response = await fetch(
+        const response = await this.fetchWithRetry(
           `${this.baseURL}/v1/vector-stores/${vectorStoreId}/files`,
           {
             method: 'POST',
@@ -307,6 +346,7 @@ export class VectorStoresOperator {
             },
             body: JSON.stringify(params),
           },
+          'add file to vector store',
         );
 
         if (!response.ok) {
@@ -446,11 +486,15 @@ export class VectorStoresOperator {
         formData.resume();
       });
 
-      const response = await fetch(`${this.baseURL}/v1/files`, {
-        method: 'POST',
-        body: formBuffer as unknown as BodyInit,
-        headers: formData.getHeaders(),
-      });
+      const response = await this.fetchWithRetry(
+        `${this.baseURL}/v1/files`,
+        {
+          method: 'POST',
+          body: formBuffer as unknown as BodyInit,
+          headers: formData.getHeaders(),
+        },
+        'upload file',
+      );
 
       if (!response.ok) {
         await handleHttpError(response, this.logger, 'upload file');
