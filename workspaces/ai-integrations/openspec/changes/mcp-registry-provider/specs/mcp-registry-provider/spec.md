@@ -2,7 +2,7 @@
 
 This capability defines a Backstage catalog **entity provider** that ingests MCP servers from one configured [MCP Registry](https://github.com/modelcontextprotocol/registry) into the RHDH catalog as `mcp-server` `API` entities. Multiple registries are out of scope for this implementation.
 
-On a configured schedule, the provider lists the registry's servers (`GET <baseUrl>/<apiVersion>/servers`), traverses all pages via cursor pagination, transforms each `server.json` document into an `mcp-server` `API` entity using the [`mcp-registry-server-mapping`](../../../mcp-registry-server-mapping/specs/mcp-registry-server-mapping/spec.md) contract (supplying the configured `defaultOwner` as the caller-override owner and, when present, `baseName` as the caller-override identity prefix), and commits the full set to the catalog as a single full mutation so that servers removed from the registry are pruned.
+On a configured schedule, the provider lists the registry's servers (`GET <baseUrl>/<apiVersion>/servers`), traverses all pages via cursor pagination, transforms each `server.json` document into an `mcp-server` `API` entity using the [`mcp-registry-server-mapping`](../../../mcp-registry-server-mapping/specs/mcp-registry-server-mapping/spec.md) contract (supplying the configured `defaultOwner` as the caller-override owner and, when present, `baseName` as the caller-override identity prefix), retains last-good entities when mapping fails (D6), stamps each emitted entity with `redhat.com/rhdh-mcp-registry-sync-status` (`ok` or `degraded`), and commits the full set to the catalog as a single full mutation so that servers removed from the registry are pruned.
 
 This spec covers configuration, scheduling, registry API interaction (pagination and API-version slug construction), delegation to the mapping transform, catalog mutation semantics, and error handling. It does **not** redefine the `server.json` → entity transform, which is owned by `mcp-registry-server-mapping`.
 
@@ -163,7 +163,21 @@ For every accumulated server entry, the provider SHALL extract the `server.json`
 #### Scenario: Provider attribution annotations present
 
 - **WHEN** the provider is configured with `baseUrl: https://registry.example.com/` and produces an entity
-- **THEN** the entity's mutation `locationKey` is `mcp-registry-provider` and `metadata.annotations['backstage.io/managed-by-location']` is `url:https://registry.example.com`
+- **THEN** the entity's mutation `locationKey` is `mcp-registry-provider`, `metadata.annotations['backstage.io/managed-by-location']` is `url:https://registry.example.com`, and `metadata.annotations['redhat.com/rhdh-mcp-registry-sync-status']` is `ok` when mapping succeeded for that entry in the current sync
+
+### Requirement: Emit per-entity MCP registry sync status
+
+For every entity included in a successful sync's full mutation, the provider SHALL set `metadata.annotations['redhat.com/rhdh-mcp-registry-sync-status']` to exactly `ok` or `degraded`. The value SHALL be `ok` when the mapping transform succeeds for that accumulated registry entry in the current sync. The value SHALL be `degraded` when mapping fails for that entry but a last-good entity is retained per resilient error handling (mapping-owned fields unchanged; only provider-owned annotations including this one may differ from the prior commit). The provider SHALL NOT emit other values. When a sync run fails before commit (registry transport/protocol error), the provider SHALL NOT update this annotation on any entity.
+
+#### Scenario: Successful mapping marks sync status ok
+
+- **WHEN** an accumulated server entry maps successfully in the current sync
+- **THEN** the emitted entity has `metadata.annotations['redhat.com/rhdh-mcp-registry-sync-status']: ok`
+
+#### Scenario: Mapping failure with last-good retention marks sync status degraded
+
+- **WHEN** an accumulated server entry fails mapping in the current sync but a last-good entity is retained for that `name` and `version`
+- **THEN** the emitted entity retains the last-good mapping-owned fields and has `metadata.annotations['redhat.com/rhdh-mcp-registry-sync-status']: degraded`
 
 ### Requirement: Commit ingested entities as a full mutation
 
@@ -191,7 +205,7 @@ A single accumulated server entry that cannot be mapped (e.g. it omits a `server
 #### Scenario: Mapping failure retains last-good entity for a still-listed server
 
 - **WHEN** an accumulated server entry was successfully mapped on a prior sync, the registry still lists that server, and a later sync's `server.json` fails mapping (e.g. required field removed) while `name` and `version` are still present
-- **THEN** the provider logs the mapping failure and includes the prior last-good entity unchanged in the full mutation so the catalog entry is not pruned
+- **THEN** the provider logs the mapping failure, includes the prior last-good mapping-owned fields in the full mutation, sets `redhat.com/rhdh-mcp-registry-sync-status` to `degraded`, and the catalog entry is not pruned
 
 #### Scenario: First-time mapping failure omits the entity
 

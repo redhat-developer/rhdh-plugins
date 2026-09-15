@@ -95,7 +95,7 @@ Pagination is cursor-based: omit `cursor` on the first request; pass the prior `
 
 ### D5: Delegate wholly to `mcp-registry-server-mapping`; supply `defaultOwner` and `baseName` as caller overrides
 
-**Choice:** For each server the provider calls the mapping transform, passing `defaultOwner` as the caller-override owner default and, when configured, `baseName` as the caller-override identity prefix (mapping D4). When `baseName` is omitted the mapping's default prefix `mcp.registry` applies. The provider adds only provider-level concerns on top of the transform's output: mutation `locationKey` `mcp-registry-provider` **and** `backstage.io/managed-by-location: url:<normalizedBaseUrl>` (D2). It never re-derives mapping-owned names, annotations, or `spec.remotes`.
+**Choice:** For each server the provider calls the mapping transform, passing `defaultOwner` as the caller-override owner default and, when configured, `baseName` as the caller-override identity prefix (mapping D4). When `baseName` is omitted the mapping's default prefix `mcp.registry` applies. The provider adds only provider-level concerns on top of the transform's output: mutation `locationKey` `mcp-registry-provider`, `backstage.io/managed-by-location: url:<normalizedBaseUrl>` (D2), and `redhat.com/rhdh-mcp-registry-sync-status` (D8). It never re-derives mapping-owned names, annotations, or `spec.remotes`.
 
 **Alternative considered:** Inline a copy of the mapping for "performance" — rejected; violates the single-contract goal and would drift.
 
@@ -103,7 +103,7 @@ Pagination is cursor-based: omit `cursor` on the first request; pass the prior `
 
 ### D6: Failure isolation — retain last-good on map failure, fail bad runs atomically
 
-**Choice:** Two failure tiers: (a) a single accumulated server entry that the mapping rejects (for example a missing required `server.json` field) is logged with an identifying message; the run proceeds. For that entry, if a **last-good** entity from a prior successful sync exists for the same registry identity, the provider SHALL include that entity unchanged in the full mutation so a still-listed server is not pruned because of a transient or partial `server.json` defect. Last-good lookup keys entries by `server.json` `name` and `version` when both are present (matching the mapping's canonical identity annotations `modelcontextprotocol.io/name` and `modelcontextprotocol.io/version` on the prior entity). When `name` or `version` is absent, or no prior entity exists, the entry contributes no entity to the mutation (first-time failure or uncorrelatable entry). (b) A registry-level error (unreachable, non-2xx, unparseable body, or pagination-safeguard trip) fails the whole run: **no** `applyMutation` is emitted, so the last-good catalog state is preserved, and the next scheduled tick retries.
+**Choice:** Two failure tiers: (a) a single accumulated server entry that the mapping rejects (for example a missing required `server.json` field) is logged with an identifying message; the run proceeds. For that entry, if a **last-good** entity from a prior successful sync exists for the same registry identity, the provider SHALL include that entity in the full mutation with mapping-owned fields unchanged (D5) but with `redhat.com/rhdh-mcp-registry-sync-status: degraded` (D8) so operators can see the entry is stale relative to the latest registry `server.json`. Last-good lookup keys entries by `server.json` `name` and `version` when both are present (matching the mapping's canonical identity annotations `modelcontextprotocol.io/name` and `modelcontextprotocol.io/version` on the prior entity). When `name` or `version` is absent, or no prior entity exists, the entry contributes no entity to the mutation (first-time failure or uncorrelatable entry). (b) A registry-level error (unreachable, non-2xx, unparseable body, or pagination-safeguard trip) fails the whole run: **no** `applyMutation` is emitted, so the last-good catalog state is preserved, and the next scheduled tick retries.
 
 At the start of each sync, the provider loads existing provider-managed entities (via `locationKey` `mcp-registry-provider`) into an index for last-good retention.
 
@@ -118,6 +118,14 @@ At the start of each sync, the provider loads existing provider-managed entities
 **Alternative considered:** Default `v0` to match today's registry — considered and deferred to the user's explicit choice of `v1`.
 
 **Rationale:** Following the proposal's stated `v1` establishes the forward-looking default; operators override `apiVersion` to match their registry's actual version.
+
+### D8: Per-entity sync status annotation (`redhat.com/rhdh-mcp-registry-sync-status`)
+
+**Choice:** Every entity emitted in a successful sync carries `metadata.annotations['redhat.com/rhdh-mcp-registry-sync-status']` with value `ok` or `degraded` (lowercase, no other values). Set `ok` when the mapping transform succeeds for that registry entry in the current sync. Set `degraded` when mapping fails for that entry but a last-good entity is retained (D6 tier a) — the catalog keeps the prior entity body but the annotation signals that the latest `server.json` could not be applied. When a registry-level error aborts the run (D6 tier b), no mutation is emitted and existing annotations are unchanged. Entries that fail mapping with no last-good are omitted from the mutation (no annotation).
+
+**Alternative considered:** Surface degradation only in logs — rejected; catalog consumers and the UI cannot discover per-server drift without an entity-visible signal.
+
+**Rationale:** Makes D6 per-entry failures visible in the catalog without pruning still-listed servers or overwriting mapping output with synthetic placeholders.
 
 ## Risks / Trade-offs
 
