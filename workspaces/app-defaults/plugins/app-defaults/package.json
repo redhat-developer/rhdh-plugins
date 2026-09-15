@@ -8,6 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./app-drawer-module": "./src/appDrawerModuleExport.ts",
+    "./app-sidebar-module": "./src/appSidebarModuleExport.ts",
     "./app-defaults-translations-module": "./src/appDefaultsTranslationsModuleExport.ts",
     "./catalog-plugin-override": "./src/catalogPluginOverrideExport.ts",
     "./catalog-graph-plugin-override": "./src/catalogGraphPluginOverrideExport.ts",
@@ -20,6 +21,9 @@
     "*": {
       "app-drawer-module": [
         "src/appDrawerModuleExport.ts"
+      ],
+      "app-sidebar-module": [
+        "src/appSidebarModuleExport.ts"
       ],
       "app-defaults-translations-module": [
         "src/appDefaultsTranslationsModuleExport.ts"

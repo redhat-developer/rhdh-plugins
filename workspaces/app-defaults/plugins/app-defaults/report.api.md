@@ -9,8 +9,13 @@ import { ExtensionDataRef } from '@backstage/frontend-plugin-api';
 import { ExtensionInput } from '@backstage/frontend-plugin-api';
 import { FrontendFeatureLoader } from '@backstage/frontend-plugin-api';
 import { FrontendModule } from '@backstage/frontend-plugin-api';
+import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { NavContentComponent } from '@backstage/plugin-app-react';
+import type { NavContentNavItems } from '@backstage/plugin-app-react';
 import { OverridableExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { ReactNode } from 'react';
+import { SidebarItemData } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { SidebarItemGroupData } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public
@@ -51,6 +56,57 @@ export const appDrawerExtension: OverridableExtensionDefinition<{
 
 // @public
 export const appDrawerModule: FrontendModule;
+
+// @public
+export const AppSidebar: (input: AppSidebarProps) => JSX_2.Element;
+
+// @public
+export const appSidebarExtension: OverridableExtensionDefinition<{
+  config: {};
+  configInput: {};
+  output: ExtensionDataRef<
+    NavContentComponent,
+    'core.nav-content.component',
+    {}
+  >;
+  inputs: {
+    items: ExtensionInput<
+      ConfigurableExtensionDataRef<SidebarItemData, 'app.sidebar.item', {}>,
+      {
+        singleton: false;
+        optional: false;
+        internal: false;
+      }
+    >;
+    groups: ExtensionInput<
+      ConfigurableExtensionDataRef<
+        SidebarItemGroupData,
+        'app.sidebar.item-group',
+        {}
+      >,
+      {
+        singleton: false;
+        optional: false;
+        internal: false;
+      }
+    >;
+  };
+  kind: 'nav-content';
+  name: 'sidebar';
+  params: {
+    component: NavContentComponent;
+  };
+}>;
+
+// @public
+export const appSidebarModule: FrontendModule;
+
+// @public
+export interface AppSidebarProps {
+  groups: SidebarItemGroupData[];
+  items: SidebarItemData[];
+  navItems?: NavContentNavItems;
+}
 
 // @public
 const _default: FrontendFeatureLoader;

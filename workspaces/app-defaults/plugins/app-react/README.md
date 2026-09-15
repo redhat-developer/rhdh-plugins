@@ -2,7 +2,8 @@
 
 Shared UI components and extension APIs for the RHDH app shell. Provides the
 application drawer system that lets plugins contribute persistent side panels
-with host-owned state, and the extensible scaffolder template card.
+with host-owned state, the extensible scaffolder template card, and the
+blueprints for contributing entries to the priority-ordered app sidebar.
 
 ## Installation
 
@@ -133,6 +134,92 @@ function MyDrawerContent() {
 }
 ```
 
+### Contributing Sidebar Items and Groups
+
+The sidebar is rendered by the `nav-content:app/sidebar` extension from
+`@red-hat-developer-hub/backstage-plugin-app-defaults`. Plugins contribute
+entries with `SidebarItemBlueprint` and groups with `SidebarItemGroupBlueprint`:
+
+```typescript
+import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
+import {
+  SidebarItemBlueprint,
+  SidebarItemGroupBlueprint,
+} from '@red-hat-developer-hub/backstage-plugin-app-react';
+
+const adminGroup = SidebarItemGroupBlueprint.make({
+  name: 'admin',
+  params: {
+    id: 'admin',
+    title: 'Administration',
+    icon: 'admin', // system icon key registered via IconBundleBlueprint
+    priority: -100,
+  },
+});
+
+const usersItem = SidebarItemBlueprint.make({
+  name: 'users',
+  params: {
+    title: 'Users',
+    icon: 'group',
+    to: '/admin/users',
+    group: 'admin',
+    priority: 10,
+  },
+});
+
+export default createFrontendPlugin({
+  pluginId: 'my-plugin',
+  extensions: [adminGroup, usersItem],
+});
+```
+
+`SidebarItemBlueprint` parameters:
+
+| Param      | Type                      | Required | Description                                                |
+| ---------- | ------------------------- | -------- | ---------------------------------------------------------- |
+| `title`    | `string`                  | Yes      | Text shown next to the icon                                |
+| `icon`     | `IconComponent \| string` | No       | Icon component or system icon key (fallback: generic icon) |
+| `to`       | `string`                  | No       | Link target. Required for items inside a group             |
+| `onClick`  | `() => void`              | No       | Action handler for items that do not navigate              |
+| `priority` | `number`                  | No       | Ordering, higher renders first (default: `0`)              |
+| `group`    | `string`                  | No       | `id` of the group to render the item in                    |
+
+`SidebarItemGroupBlueprint` parameters:
+
+| Param      | Type                      | Required | Description                                                |
+| ---------- | ------------------------- | -------- | ---------------------------------------------------------- |
+| `id`       | `string`                  | Yes      | Identifier referenced by `SidebarItemBlueprint.group`      |
+| `title`    | `string`                  | Yes      | Text shown next to the icon                                |
+| `icon`     | `IconComponent \| string` | No       | Icon component or system icon key (fallback: generic icon) |
+| `to`       | `string`                  | No       | Optional link target for the group entry itself            |
+| `priority` | `number`                  | No       | Ordering, higher renders first (default: `0`)              |
+
+Ordering rules:
+
+- Top-level entries (groups and ungrouped items) are sorted by `priority`,
+  higher first, ties broken by title.
+- Items inside a group are sorted the same way and render in an expandable
+  submenu. An item whose `group` is not registered renders at the top level.
+- Nav items that Backstage auto-discovers from page extensions are merged in at
+  priority `0`. Declaring an item with the same `to` as an auto-discovered page
+  replaces it, so a plugin can retitle, regroup, or reprioritize its own page.
+
+Deployers can override placement per item in `app-config.yaml`:
+
+```yaml
+app:
+  extensions:
+    - sidebar-item:my-plugin/users:
+        config:
+          title: People
+          priority: 50
+          group: directory
+    - sidebar-item-group:my-plugin/admin:
+        config:
+          priority: -10
+```
+
 ## Exports
 
 ### Main entry (`@red-hat-developer-hub/backstage-plugin-app-react`)
@@ -141,6 +228,8 @@ function MyDrawerContent() {
 - `appDrawerContentDataRef` -- extension data ref
 - `appDrawerExtension` -- drawer wrapper extension
 - `appDrawerModule` -- frontend module (registers the drawer wrapper extension)
+- `SidebarItemBlueprint` / `sidebarItemDataRef` -- blueprint and data ref for sidebar entries
+- `SidebarItemGroupBlueprint` / `sidebarItemGroupDataRef` -- blueprint and data ref for sidebar groups
 - `TemplateCardActionBlueprint` -- blueprint for custom template card actions
 - `TemplateCardBadgeBlueprint` -- blueprint for template card badges
 - `templateCardExtension` -- extensible scaffolder template card component
@@ -148,6 +237,7 @@ function MyDrawerContent() {
 - `useAppDrawer` -- hook to control drawers
 - `AppDrawerContent` / `AppDrawerApi` / `ApplicationDrawerProps` / `DrawerPanelProps` types
 - `TemplateCardActionData` / `TemplateCardActionProps` / `TemplateCardBadgeData` types
+- `SidebarIcon` / `SidebarItemData` / `SidebarItemGroupData` types
 
 ### Legacy entry (`@red-hat-developer-hub/backstage-plugin-app-react/legacy`)
 

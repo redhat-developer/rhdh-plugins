@@ -9549,6 +9549,7 @@ __metadata:
     "@backstage/core-components": "npm:^0.18.11"
     "@backstage/core-plugin-api": "npm:^1.12.7"
     "@backstage/frontend-plugin-api": "npm:^0.17.2"
+    "@backstage/frontend-test-utils": "npm:^0.6.1"
     "@backstage/plugin-app-react": "npm:^0.2.4"
     "@backstage/plugin-catalog-react": "npm:^3.2.0"
     "@backstage/plugin-permission-react": "npm:^0.5.3"

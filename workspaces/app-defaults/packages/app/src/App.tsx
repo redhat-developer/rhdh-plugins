@@ -22,20 +22,20 @@ import {
   globalHeaderModule,
   globalHeaderTranslationsModule,
 } from '@red-hat-developer-hub/backstage-plugin-global-header/alpha';
-import { navModule } from './modules/nav';
 import { drawerDemoModule } from './modules/drawer-demo';
+import { sidebarDemoModule } from './modules/sidebar-demo';
 import { templateCardDemoModule } from './modules/template-card-demo';
 
 export default createApp({
   features: [
     // Production path: feature loader with the app defaults module
-    // (drawer + template card + common icons) plus the catalog, catalog
-    // graph, scaffolder, API docs, and TechDocs empty-state overrides.
+    // (drawer + sidebar + template card + common icons) plus the catalog,
+    // catalog graph, scaffolder, API docs, and TechDocs empty-state overrides.
     appDefaultsFeatureLoader,
-    navModule,
     appAuthModule,
     appIntegrationsModule,
     drawerDemoModule,
+    sidebarDemoModule,
     templateCardDemoModule,
     globalHeaderModule,
     globalHeaderTranslationsModule,

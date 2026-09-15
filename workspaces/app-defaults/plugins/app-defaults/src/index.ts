@@ -41,6 +41,13 @@ export { appDefaultsTranslations };
 
 export { appDrawerExtension, appDrawerModule } from './drawer/appDrawerModule';
 
+export {
+  appSidebarExtension,
+  appSidebarModule,
+} from './sidebar/appSidebarModule';
+export { AppSidebar } from './sidebar/AppSidebar';
+export type { AppSidebarProps } from './sidebar/AppSidebar';
+
 /**
  * Feature loader that registers the RHDH app defaults module and all
  * plugin overrides (catalog, catalog graph, scaffolder, API docs, TechDocs)
