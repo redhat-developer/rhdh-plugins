@@ -5,8 +5,21 @@
 ```ts
 import type Button from '@mui/material/Button';
 import type { ComponentProps } from 'react';
+import type { CSSProperties } from 'react';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import type { ReactNode } from 'react';
+
+// @public
+export const CompanyLogo: (input: CompanyLogoProps) => JSX_2.Element;
+
+// @public (undocumented)
+export interface CompanyLogoProps {
+  height?: string | number;
+  layout?: CSSProperties;
+  logo?: LogoURLs;
+  to?: string;
+  width?: string | number;
+}
 
 // @public
 export const GlobalHeaderDropdown: (
@@ -65,4 +78,13 @@ export interface HeaderIconButtonProps {
   // (undocumented)
   tooltip?: string;
 }
+
+// @public
+export type LogoURLs =
+  | {
+      light: string;
+      dark: string;
+    }
+  | string
+  | undefined;
 ```

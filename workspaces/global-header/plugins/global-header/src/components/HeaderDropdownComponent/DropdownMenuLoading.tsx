@@ -14,14 +14,24 @@
  * limitations under the License.
  */
 
-import { render } from '@testing-library/react';
+import { Progress } from '@backstage/core-components';
+import MenuItem from '@mui/material/MenuItem';
 
-import { Divider } from './Divider';
-
-describe('Divider', () => {
-  it('render some default styles', () => {
-    const { debug, container } = render(<Divider />);
-    debug();
-    expect(container.firstElementChild?.nodeName).toEqual('HR');
-  });
-});
+/** Horizontal progress bar shown while lazy dropdown menu content is loading. */
+export const DropdownMenuLoading = () => (
+  <MenuItem
+    disableGutters
+    disabled
+    aria-busy="true"
+    aria-label="Loading menu"
+    sx={{
+      minWidth: 160,
+      p: 0,
+      opacity: 1,
+      display: 'block',
+      '&.Mui-disabled': { opacity: 1 },
+    }}
+  >
+    <Progress />
+  </MenuItem>
+);

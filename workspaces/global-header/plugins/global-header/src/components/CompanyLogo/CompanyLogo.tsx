@@ -19,10 +19,25 @@ import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import Box from '@mui/material/Box';
 import { defaultFullLogo } from '../../defaults/defaultFullLogo';
 import { useAppBarBackgroundScheme } from '../../hooks/useAppBarBackgroundScheme';
-import { useBrandingFullLogo } from '../../hooks/useBrandingFullLogo';
-import { CompanyLogoProps } from './types';
+import { CompanyLogoProps, LogoURLs } from './types';
 
 export type { CompanyLogoProps, LogoURLs } from './types';
+
+function resolveBrandingFullLogo(
+  logo: LogoURLs | undefined,
+  appBarBackgroundScheme: 'dark' | 'light',
+  configuredFullLogo: LogoURLs | undefined,
+): string | undefined {
+  const fullLogoURI =
+    typeof configuredFullLogo === 'string'
+      ? configuredFullLogo
+      : configuredFullLogo?.[appBarBackgroundScheme];
+
+  const propsLogoURI =
+    typeof logo === 'string' ? logo : logo?.[appBarBackgroundScheme];
+
+  return propsLogoURI ?? fullLogoURI ?? undefined;
+}
 
 const LogoRender = ({
   logoUri,
@@ -48,6 +63,11 @@ const LogoRender = ({
   );
 };
 
+/**
+ * Company logo for the global header app bar.
+ *
+ * @public
+ */
 export const CompanyLogo = ({
   logo,
   width,
@@ -55,9 +75,13 @@ export const CompanyLogo = ({
   to = '/',
 }: CompanyLogoProps) => {
   const appBarBackgroundScheme = useAppBarBackgroundScheme();
-  const logoURL =
-    useBrandingFullLogo(logo) ?? defaultFullLogo[appBarBackgroundScheme];
   const configApi = useApi(configApiRef);
+  const configuredFullLogo = configApi.getOptional<LogoURLs>(
+    'app.branding.fullLogo',
+  );
+  const logoURL =
+    resolveBrandingFullLogo(logo, appBarBackgroundScheme, configuredFullLogo) ??
+    defaultFullLogo[appBarBackgroundScheme];
   const fullLogoWidth = configApi.getOptional<number | string>(
     'app.branding.fullLogoWidth',
   );

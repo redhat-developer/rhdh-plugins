@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { lazy, Suspense, useEffect, useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import type { PropsWithChildren } from 'react';
 
 import {
@@ -41,7 +41,7 @@ import type {
 } from '../types';
 import { readConfigMenuItems } from '../utils/readConfigMenuItems';
 import { readConfigComponents } from '../utils/readConfigComponents';
-import { loadGlobalHeader, loadHeaderBundle } from '../components/loaders';
+import { loadGlobalHeader } from '../components/loaders';
 
 const LazyGlobalHeader = lazy(() =>
   loadGlobalHeader().then(GlobalHeader => ({ default: GlobalHeader })),
@@ -78,12 +78,6 @@ function GlobalHeaderWrapper({
       ),
     [extensionMenuItems, configMenuItems],
   );
-
-  // Start the shared critical header chunk only after the app shell mounts
-  // (post sign-in), not during plugin module evaluation on the sign-in page.
-  useEffect(() => {
-    void loadHeaderBundle();
-  }, []);
 
   return (
     <GlobalHeaderProvider components={allComponents} menuItems={allMenuItems}>

@@ -17,8 +17,9 @@
 /**
  * Default toolbar component extensions (`gh-component`) for the global header.
  *
- * First-paint widgets resolve through shared loaders in `components/loaders.ts`
- * (one critical async chunk). Dropdown menus use separate interaction loaders.
+ * First-paint widgets (including dropdown triggers) resolve through shared
+ * loaders in `components/loaders.ts` (one critical async chunk). Dropdown
+ * menu contents use separate interaction loaders inside each dropdown.
  *
  * @internal
  */
