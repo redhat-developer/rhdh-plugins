@@ -16,7 +16,7 @@
 
 import type { Entity } from '@backstage/catalog-model';
 
-import { getSpecRemotes } from './entityHelpers';
+import { getSpecRemotes } from './entityFields';
 
 export type UsageAction =
   | {

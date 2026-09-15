@@ -15,136 +15,16 @@
  */
 
 import {
-  createExtensionInput,
   createFrontendModule,
   createFrontendPlugin,
-  PageBlueprint,
 } from '@backstage/frontend-plugin-api';
-import type { Entity } from '@backstage/catalog-model';
-import { TranslationBlueprint } from '@backstage/plugin-app-react';
-import { EntityCardBlueprint } from '@backstage/plugin-catalog-react/alpha';
-import { isAiAsset } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 
-import {
-  AiCatalogFilterBlueprint,
-  filterDefinitionDataRef,
-} from './blueprints/AiCatalogFilterBlueprint';
-import {
-  categoryFilterDefinition,
-  providerFilterDefinition,
-  ownerFilterDefinition,
-  tagsFilterDefinition,
-} from './filters/builtInFilterDefinitions';
+import { aiCatalogFilterExtensions } from './extensions/aiCatalogFilters';
+import { aiCatalogPage } from './extensions/aiCatalogPage';
+import { entityCardExtensions } from './extensions/entityCards';
 import { rootRouteRef } from './routes';
-import { boostTranslations } from './translations';
-import { getSpecField } from './utils/entityHelpers';
+import boostTranslation from './translations';
 
-const isAgentAsset = (entity: Entity) =>
-  isAiAsset(entity) && getSpecField(entity, 'type')?.toLowerCase() === 'agent';
-
-// ---------------------------------------------------------------------------
-// Built-in filter extensions
-// ---------------------------------------------------------------------------
-const categoryFilter = AiCatalogFilterBlueprint.make({
-  name: 'category',
-  params: categoryFilterDefinition,
-});
-const providerFilter = AiCatalogFilterBlueprint.make({
-  name: 'provider',
-  params: providerFilterDefinition,
-});
-const ownerFilter = AiCatalogFilterBlueprint.make({
-  name: 'owner',
-  params: ownerFilterDefinition,
-});
-const tagsFilter = AiCatalogFilterBlueprint.make({
-  name: 'tags',
-  params: tagsFilterDefinition,
-});
-
-// ---------------------------------------------------------------------------
-// Page Blueprint — Browse page at /ai-catalog with extensible filter input
-// ---------------------------------------------------------------------------
-const aiCatalogPage = PageBlueprint.makeWithOverrides({
-  name: 'ai-catalog',
-  inputs: {
-    filters: createExtensionInput([filterDefinitionDataRef]),
-  },
-  factory(originalFactory, { inputs }) {
-    const filterDefs = inputs.filters
-      .map(f => f.get(filterDefinitionDataRef))
-      .sort((a, b) => a.priority - b.priority);
-
-    const registeredParams = new Set<string>();
-    for (const def of filterDefs) {
-      if (registeredParams.has(def.urlParam)) {
-        throw new Error(
-          `Duplicate filter urlParam '${def.urlParam}'. Each filter must use a unique URL parameter.`,
-        );
-      }
-      registeredParams.add(def.urlParam);
-    }
-
-    return originalFactory({
-      path: '/ai-catalog',
-      routeRef: rootRouteRef,
-      title: 'AI Catalog',
-      loader: () =>
-        import('./components/catalog').then(m => (
-          <m.AiCatalogPage filters={filterDefs} />
-        )),
-    });
-  },
-});
-
-// ---------------------------------------------------------------------------
-// Entity card extensions — AI asset entity overview cards
-// ---------------------------------------------------------------------------
-const assetDetailsCard = EntityCardBlueprint.make({
-  name: 'ai-asset-details',
-  params: {
-    filter: isAiAsset,
-    loader: () =>
-      import('./components/catalog/entity/AssetDetailsCard').then(m => (
-        <m.AssetDetailsCard />
-      )),
-  },
-});
-
-const agentInstructionsCard = EntityCardBlueprint.make({
-  name: 'agent-instructions',
-  params: {
-    filter: isAgentAsset,
-    loader: () =>
-      import('./components/catalog/entity/AgentInstructionsCard').then(m => (
-        <m.AgentInstructionsCard />
-      )),
-  },
-});
-
-const usageCard = EntityCardBlueprint.make({
-  name: 'usage',
-  params: {
-    filter: isAiAsset,
-    loader: () =>
-      import('./components/catalog/entity/UsageCard').then(m => (
-        <m.UsageCard />
-      )),
-  },
-});
-
-// ---------------------------------------------------------------------------
-// Translation Blueprint
-// ---------------------------------------------------------------------------
-const boostTranslation = TranslationBlueprint.make({
-  params: {
-    resource: boostTranslations,
-  },
-});
-
-// ---------------------------------------------------------------------------
-// Plugin export
-// ---------------------------------------------------------------------------
 /**
  * The Boost frontend plugin for RHDH.
  * @public
@@ -153,13 +33,8 @@ export const boostPlugin = createFrontendPlugin({
   pluginId: 'boost',
   extensions: [
     aiCatalogPage,
-    categoryFilter,
-    providerFilter,
-    ownerFilter,
-    tagsFilter,
-    assetDetailsCard,
-    agentInstructionsCard,
-    usageCard,
+    ...aiCatalogFilterExtensions,
+    ...entityCardExtensions,
   ],
   routes: {
     root: rootRouteRef,

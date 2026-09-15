@@ -22,7 +22,7 @@ import type { Entity } from '@backstage/catalog-model';
 
 /**
  * Describes a single filter in the AI Catalog browse sidebar.
- * Filters are data — the FilterSidebar renders a generic Select for each.
+ * Filters are data — CatalogFilters renders a generic Select for each.
  *
  * @public
  */
@@ -58,7 +58,7 @@ const RESERVED_PARAMS = ['q', 'view', 'page', 'pageSize'];
  * Blueprint for contributing a filter to the AI Catalog browse sidebar.
  *
  * Each filter is a plain FilterDefinition — no per-filter React component
- * needed. The FilterSidebar renders a generic Select for each definition.
+ * needed. CatalogFilters renders a generic Select for each definition.
  *
  * @example
  * ```

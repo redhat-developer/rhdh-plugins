@@ -27,11 +27,8 @@ import {
 
 import { useTranslation } from '../../hooks/useTranslation';
 import { getCategoryMeta } from '../../utils/categoryMeta';
-import {
-  entityHref,
-  getProvider,
-  getSpecField,
-} from '../../utils/entityHelpers';
+import { entityHref } from '../../utils/entityLinks';
+import { getProvider, getSpecField } from '../../utils/entityFields';
 import { AssetTypeBadge } from './AssetTypeBadge';
 import styles from './AiCatalogTable.module.css';
 
@@ -67,8 +64,8 @@ function renderAssetTypeCell(item: AiAssetRow) {
 }
 
 export interface AiCatalogTableProps {
-  entities: Entity[];
-  sort: SortState;
+  readonly entities: Entity[];
+  readonly sort: SortState;
 }
 
 export const AiCatalogTable = ({ entities, sort }: AiCatalogTableProps) => {

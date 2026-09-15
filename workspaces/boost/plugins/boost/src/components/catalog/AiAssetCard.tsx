@@ -28,17 +28,13 @@ import {
 import { RiUserLine } from '@remixicon/react';
 
 import { useTranslation } from '../../hooks/useTranslation';
-import {
-  entityHref,
-  entityRefHref,
-  getProvider,
-  getSpecField,
-} from '../../utils/entityHelpers';
+import { entityHref, entityRefHref } from '../../utils/entityLinks';
+import { getProvider, getSpecField } from '../../utils/entityFields';
 import { AssetTypeBadge } from './AssetTypeBadge';
 import styles from './AiAssetCard.module.css';
 
 export interface AiAssetCardProps {
-  entity: Entity;
+  readonly entity: Entity;
 }
 
 export const AiAssetCard = ({ entity }: AiAssetCardProps) => {

@@ -14,27 +14,22 @@
  * limitations under the License.
  */
 
-import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
-import { TranslationBlueprint } from '@backstage/plugin-app-react';
+import { Text } from '@backstage/ui';
 
-import { boostTranslationRef } from './ref';
+import { useTranslation } from '../../../../hooks/useTranslation';
+import { DetailField } from './DetailField';
+import type { RuleDetailsData } from './assetDetailsData';
 
-/**
- * Translation resource for the Boost plugin.
- * @public
- */
-export const boostTranslations = createTranslationResource({
-  ref: boostTranslationRef,
-  translations: {},
-});
+interface RuleDetailsProps {
+  readonly details: RuleDetailsData;
+}
 
-/** @public */
-const boostTranslation = TranslationBlueprint.make({
-  params: {
-    resource: boostTranslations,
-  },
-});
+export const RuleDetails = ({ details }: RuleDetailsProps) => {
+  const { t } = useTranslation();
 
-export { boostTranslationRef };
-
-export default boostTranslation;
+  return details.category ? (
+    <DetailField label={t('catalog.card.ruleCategoryLabel')}>
+      <Text variant="body-medium">{details.category}</Text>
+    </DetailField>
+  ) : null;
+};

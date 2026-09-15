@@ -14,27 +14,19 @@
  * limitations under the License.
  */
 
-import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
-import { TranslationBlueprint } from '@backstage/plugin-app-react';
+import type { ReactNode } from 'react';
+import { Flex, Text } from '@backstage/ui';
 
-import { boostTranslationRef } from './ref';
+interface DetailFieldProps {
+  readonly label: string;
+  readonly children: ReactNode;
+}
 
-/**
- * Translation resource for the Boost plugin.
- * @public
- */
-export const boostTranslations = createTranslationResource({
-  ref: boostTranslationRef,
-  translations: {},
-});
-
-/** @public */
-const boostTranslation = TranslationBlueprint.make({
-  params: {
-    resource: boostTranslations,
-  },
-});
-
-export { boostTranslationRef };
-
-export default boostTranslation;
+export const DetailField = ({ label, children }: DetailFieldProps) => (
+  <Flex direction="column" gap="1">
+    <Text variant="body-small" color="secondary">
+      {label}
+    </Text>
+    {children}
+  </Flex>
+);

@@ -19,7 +19,7 @@ import { useEntity } from '@backstage/plugin-catalog-react';
 import { Card, CardBody, CardHeader, Text } from '@backstage/ui';
 
 import { useTranslation } from '../../../hooks/useTranslation';
-import { getSpecField } from '../../../utils/entityHelpers';
+import { getSpecField } from '../../../utils/entityFields';
 
 export const AgentInstructionsCard = () => {
   const { entity } = useEntity();

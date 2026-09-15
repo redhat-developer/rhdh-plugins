@@ -18,7 +18,7 @@ import type { Entity } from '@backstage/catalog-model';
 
 import type { FilterDefinition } from '../blueprints/AiCatalogFilterBlueprint';
 import { getCategoryMeta } from '../utils/categoryMeta';
-import { getProvider, getSpecField } from '../utils/entityHelpers';
+import { getProvider, getSpecField } from '../utils/entityFields';
 
 function uniqueSorted(
   items: (string | undefined)[],

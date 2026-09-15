@@ -18,10 +18,10 @@ import type { Entity } from '@backstage/catalog-model';
 import { Badge } from '@backstage/ui';
 
 import { getCategoryMeta } from '../../utils/categoryMeta';
-import { getSpecField } from '../../utils/entityHelpers';
+import { getSpecField } from '../../utils/entityFields';
 import styles from './AssetTypeBadge.module.css';
 
-export const AssetTypeBadge = ({ entity }: { entity: Entity }) => {
+export const AssetTypeBadge = ({ entity }: { readonly entity: Entity }) => {
   const specType = getSpecField(entity, 'type');
   const categoryMeta = getCategoryMeta(specType);
   const Icon = categoryMeta.icon;

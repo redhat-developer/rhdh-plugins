@@ -7,13 +7,13 @@
   "types": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./boost-translations-module": "./src/boostTranslationsModuleExport.ts",
+    "./translations": "./src/translations/index.ts",
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
-      "boost-translations-module": [
-        "src/boostTranslationsModuleExport.ts"
+      "translations": [
+        "src/translations/index.ts"
       ],
       "package.json": [
         "package.json"
