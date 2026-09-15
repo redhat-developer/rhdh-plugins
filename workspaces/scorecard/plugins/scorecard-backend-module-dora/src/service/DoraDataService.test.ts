@@ -96,6 +96,49 @@ describe('DefaultDoraDataService', () => {
         ]);
       },
     );
+
+    it.each(databases.eachSupportedId())(
+      'forwards productionEnvironments to the deployments store - %p',
+      async databaseId => {
+        const { deploymentsDb, dataService } = await createService(databaseId);
+        const entityRef = 'component:default/service-a';
+        const collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID;
+
+        await deploymentsDb.upsert([
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-prod',
+            commitSha: 'sha-prod',
+            environment: 'production',
+            createdAt: new Date('2026-06-10T10:00:00.000Z'),
+          },
+          {
+            catalogEntityRef: entityRef,
+            collectorId,
+            collectorInputHash: EMPTY_INPUT_HASH,
+            originalDeploymentId: 'dep-staging',
+            commitSha: 'sha-staging',
+            environment: 'staging',
+            createdAt: new Date('2026-06-11T10:00:00.000Z'),
+          },
+        ]);
+
+        const rows = await dataService.readDeployments(entityRef, {
+          windowFrom: new Date('2026-06-01T00:00:00.000Z'),
+          windowTo: new Date('2026-06-30T00:00:00.000Z'),
+          collector: {
+            id: collectorId,
+            input: {},
+            inputHash: EMPTY_INPUT_HASH,
+          },
+          productionEnvironments: ['production'],
+        });
+
+        expect(rows.map(row => row.originalDeploymentId)).toEqual(['dep-prod']);
+      },
+    );
   });
 
   describe('readIncidents', () => {

@@ -32,7 +32,6 @@ import {
   type DoraMedianLeadTimeForChangesConfig,
 } from './DoraConfig';
 import { calculateMedian } from './utils/calculationUtils';
-import { isProductionEnvironment } from './utils/deploymentFilterUtils';
 
 type DoraMedianLeadTimeForChangesProviderOptions = {
   doraSyncService: DoraSyncService;
@@ -122,17 +121,14 @@ export class DoraMedianLeadTimeForChangesProvider
     const catalogEntityRef = stringifyEntityRef(entity);
 
     // Deployments are expected to be returned sorted ascending by createdAt.
-    const deployments = (
-      await this.doraDataService.readDeployments(catalogEntityRef, {
+    const deployments = await this.doraDataService.readDeployments(
+      catalogEntityRef,
+      {
         windowFrom: from,
         windowTo: to,
         collector: this.config.deploymentsCollector,
-      })
-    ).filter(deployment =>
-      isProductionEnvironment(
-        deployment.environment,
-        this.config.productionEnvironments,
-      ),
+        productionEnvironments: this.config.productionEnvironments,
+      },
     );
 
     if (deployments.length < 2) {
