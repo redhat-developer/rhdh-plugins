@@ -123,8 +123,35 @@ export interface AppSidebarProps {
 }
 
 // @public
+export const CompanyLogo: (input: CompanyLogoProps) => JSX_2.Element;
+
+// @public
+export interface CompanyLogoProps {
+  fullLogo?: LogoURLs;
+  height?: string | number;
+  iconLogo?: LogoURLs;
+  to?: string;
+  width?: string | number;
+}
+
+// @public
 const _default: FrontendFeatureLoader;
 export default _default;
+
+// @public
+export type LogoURLs =
+  | {
+      light: string;
+      dark: string;
+    }
+  | string
+  | undefined;
+
+// @public
+export const useBrandingFullLogo: (logo?: LogoURLs) => string | undefined;
+
+// @public
+export const useBrandingIconLogo: (logo?: LogoURLs) => string | undefined;
 
 // (No @packageDocumentation comment for this package)
 ```

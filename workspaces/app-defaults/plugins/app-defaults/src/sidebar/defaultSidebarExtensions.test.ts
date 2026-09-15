@@ -27,18 +27,21 @@ import {
   defaultSidebarExtensions,
   sidebarBottomDivider,
   sidebarBottomSpacer,
+  sidebarLogoElement,
   sidebarNotificationsElement,
   sidebarSearchElement,
   sidebarSettingsDivider,
 } from './defaultSidebarExtensions';
+import { CompanyLogo } from './logo/CompanyLogo';
 
 describe('defaultSidebarExtensions', () => {
-  it('registers search, spacer, dividers and notifications', () => {
+  it('registers logo, search, spacer, dividers and notifications', () => {
     const specs = defaultSidebarExtensions.map(ext =>
       JSON.parse(JSON.stringify(ext)),
     );
 
     expect(specs.map(s => `${s.kind}/${s.name}`)).toEqual([
+      'sidebar-element/logo',
       'sidebar-element/search',
       'sidebar-spacer/bottom',
       'sidebar-divider/bottom',
@@ -61,6 +64,9 @@ describe('defaultSidebarExtensions', () => {
         ) as SidebarElementData
       ).priority;
 
+    expect(priorityOf(sidebarLogoElement)).toBeGreaterThan(
+      priorityOf(sidebarSearchElement)!,
+    );
     expect(priorityOf(sidebarSearchElement)).toBeGreaterThan(0);
     expect(priorityOf(sidebarBottomSpacer)).toBeLessThan(0);
     expect(priorityOf(sidebarBottomDivider)).toBeLessThan(
@@ -72,6 +78,12 @@ describe('defaultSidebarExtensions', () => {
     expect(priorityOf(sidebarSettingsDivider)).toBeLessThan(
       priorityOf(sidebarNotificationsElement)!,
     );
+  });
+
+  it('renders the company logo without claiming a page', () => {
+    expect(
+      createExtensionTester(sidebarLogoElement).get(sidebarElementDataRef),
+    ).toMatchObject({ component: CompanyLogo, to: undefined });
   });
 
   it('renders the search modal and notifications components for their pages', () => {

@@ -22,10 +22,12 @@ import {
   SidebarSpacerBlueprint,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
+import { CompanyLogo } from './logo/CompanyLogo';
+
 /**
  * Default sidebar layout shipped with the app defaults module.
  *
- * Top to bottom: the search modal, everything contributed at priority 0
+ * Top to bottom: the company logo, the search modal, everything contributed at priority 0
  * (auto-discovered pages, plugin items and groups), a spacer that pushes the
  * rest to the bottom, a divider, the notifications item, and a final
  * divider above anything pinned to the bottom (for example a settings group
@@ -44,6 +46,15 @@ import {
  *           priority: -20
  * ```
  */
+
+/** Company logo linking home. Extension ID: `sidebar-element:app/logo`. */
+export const sidebarLogoElement = SidebarElementBlueprint.make({
+  name: 'logo',
+  params: {
+    component: CompanyLogo,
+    priority: 2000,
+  },
+});
 
 /** Search modal pinned to the top. Extension ID: `sidebar-element:app/search`. */
 export const sidebarSearchElement = SidebarElementBlueprint.make({
@@ -85,6 +96,7 @@ export const sidebarSettingsDivider = SidebarDividerBlueprint.make({
 
 /** All default sidebar layout extensions, in registration order. */
 export const defaultSidebarExtensions = [
+  sidebarLogoElement,
   sidebarSearchElement,
   sidebarBottomSpacer,
   sidebarBottomDivider,
