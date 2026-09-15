@@ -77,12 +77,17 @@ Every projected annotation key SHALL be valid for the Backstage catalog: the nam
 
 ### Requirement: Do not overwrite reserved or previously-set annotations
 
-Projection SHALL NOT overwrite annotations set by the direct mapping (for example `modelcontextprotocol.io/name`, `modelcontextprotocol.io/version`, `modelcontextprotocol.io/repository.url`, `backstage.io/source-location`) or any other reserved annotation. If a generic projected key would collide with such an annotation, the direct-mapping value SHALL win and the projection SHALL be skipped or disambiguated.
+Projection SHALL NOT overwrite annotations set by the direct mapping (for example `modelcontextprotocol.io/name`, `modelcontextprotocol.io/version`, `modelcontextprotocol.io/repository.url`, `backstage.io/source-location`) or any other reserved annotation. When a source scalar was already consumed by the direct mapping, generic projection SHALL NOT emit a second annotation for that same source path (the direct-mapping value wins; no overwrite). When a **distinct** source path sanitizes to the same annotation key as a reserved or direct-mapping annotation, the direct-mapping (or reserved) value SHALL remain unchanged and the distinct path SHALL still project under a D3 hash-suffix-disambiguated key derived from the full source path so scalar round-trip fidelity is preserved.
 
-#### Scenario: Direct-mapping annotation wins
+#### Scenario: Direct-mapping annotation wins without re-projection
 
-- **WHEN** a generic projection would produce a `modelcontextprotocol.io/name` key that collides with the canonical-name annotation set by the direct mapping
-- **THEN** the direct-mapping value is retained and the generic projection does not overwrite it
+- **WHEN** generic projection would re-emit a scalar already consumed by the direct mapping (for example the top-level `name` leaf that produced `modelcontextprotocol.io/name`)
+- **THEN** the direct-mapping annotation is retained, generic projection does not overwrite it, and no duplicate `modelcontextprotocol.io/*` annotation is emitted for that source path
+
+#### Scenario: Distinct path that sanitizes to a reserved key is hash-disambiguated
+
+- **WHEN** a scalar at a source path distinct from any natively-mapped field would sanitize to the same annotation key as a reserved direct-mapping annotation (for example `modelcontextprotocol.io/name`)
+- **THEN** the reserved annotation value is unchanged, and the distinct source scalar is projected under a hash-suffix-disambiguated `modelcontextprotocol.io/*` key so it remains recoverable
 
 ### Requirement: Redact secret-flagged input values
 
@@ -108,9 +113,28 @@ An `Input` object in `server.json` (as used by `packages[].environmentVariables[
 - **WHEN** an input object has `isSecret: false` or omits `isSecret`, with a populated `default`/`value` or `choices`
 - **THEN** that `default`/`value`/`choices` is projected into a `modelcontextprotocol.io/*` annotation as normal
 
+### Requirement: Omit null scalars and empty containers from projection
+
+The projection walker SHALL NOT emit a `modelcontextprotocol.io/*` annotation for a scalar whose value is JSON `null`. When an array or object node is empty (`[]` or `{}`), the walker SHALL NOT emit annotations for that subtree and SHALL NOT synthesize a placeholder annotation for the empty container. Object properties absent from the source document are not visited. Scalar leaves with value `false`, numeric `0`, or empty string `""` SHALL be projected and serialized as `"false"`, `"0"`, and `""` respectively. Omission under this rule SHALL NOT cause the mapping to fail.
+
+#### Scenario: Null scalar is not projected
+
+- **WHEN** a `server.json` carries a scalar leaf with value `null` (for example `repository.id: null`)
+- **THEN** no `modelcontextprotocol.io/*` annotation is emitted for that leaf and the mapping still succeeds
+
+#### Scenario: Empty array or object produces no annotations
+
+- **WHEN** a `server.json` carries an empty array or empty object (for example `icons: []` or `packages[0].environmentVariables: []`)
+- **THEN** no `modelcontextprotocol.io/*` annotations are emitted for that container or its descendants, and the mapping still succeeds
+
+#### Scenario: Falsy but present scalars are still projected
+
+- **WHEN** a projected scalar leaf is `false`, `0`, or `""`
+- **THEN** the annotation value is the string form of that scalar (`"false"`, `"0"`, or `""`)
+
 ### Requirement: Scalar round-trip fidelity
 
-Every scalar leaf present in the source `server.json` SHALL be recoverable from the produced entity — either from a native field or from a projected annotation — **except** the `default`/`value`/`choices` leaves of `isSecret: true` inputs, which are intentionally redacted per "Redact secret-flagged input values", **and** any URL refused by the emitted-URL scheme policy, which is omitted from emitted URL fields and from all `modelcontextprotocol.io/*` annotations. Null values and empty containers MAY be omitted per a documented rule; every non-null, non-redacted, non-D11-refused-URL scalar SHALL be represented.
+Every scalar leaf present in the source `server.json` SHALL be recoverable from the produced entity — either from a native field or from a projected annotation — **except** the `default`/`value`/`choices` leaves of `isSecret: true` inputs, which are intentionally redacted per "Redact secret-flagged input values"; any URL refused by the emitted-URL scheme policy, which is omitted from emitted URL fields and from all `modelcontextprotocol.io/*` annotations; and scalars or containers omitted per "Omit null scalars and empty containers from projection". Every other non-redacted, non-D11-refused-URL scalar leaf SHALL be represented.
 
 #### Scenario: All scalar leaves are recoverable
 
@@ -132,7 +156,7 @@ Every scalar leaf present in the source `server.json` SHALL be recoverable from 
 - **WHEN** a `server.json` carries an `isSecret: true` input with a populated `default`/`value` or `choices`
 - **THEN** the absence of that `default`/`value`/`choices` from the entity does NOT violate round-trip fidelity, because secret redaction is a documented exception
 
-#### Scenario: Nulls and empty containers follow the documented omission rule
+#### Scenario: Nulls and empty containers are omitted from round-trip
 
 - **WHEN** a `server.json` attribute is `null` or an empty array/object
-- **THEN** it is omitted from the annotations per the documented rule, and its omission does not cause the mapping to fail
+- **THEN** it is omitted from annotations per "Omit null scalars and empty containers from projection", its absence from the entity does not violate scalar round-trip fidelity, and the mapping does not fail

@@ -102,6 +102,8 @@ Implementation tasks produce a version-pinned `mapping-reference.md` (field-mapp
 
 **Rationale:** Backstage annotation keys allow exactly one `/` and a ≤63-char name segment over a restricted character set, making dot-separated encoding the most uniform and queryable representation that fits within those constraints.
 
+**Reserved-key collisions:** Generic projection never overwrites direct-mapping annotations. Scalars already lifted by the direct mapping are not re-projected. When a distinct source path sanitizes to the same key as a reserved annotation, apply the same D3 hash-suffix disambiguation used for sanitization collisions so the scalar still projects without clobbering the reserved value.
+
 ### D4: Entity identity — `metadata.name` = `<prefix>__<name>__<version>`
 
 **Choice:** `metadata.name` is the sanitized prefix, sanitized canonical name, and sanitized version joined by `__`. Each of those three strings is sanitized **independently** with the D3 per-segment algorithm (lowercase; illegal chars → `-`; leading `_` → `x`) before joining — not by splitting on `.` like annotation dot paths. The prefix is the constant `mcp.registry` by default; a caller MAY supply an override default (same caller-override pattern as owner and lifecycle in D5). If the override is unset, empty, or sanitizes to empty, the mapping uses `mcp.registry` — it never fails for a missing prefix, and the produced name never starts with `_`. The bare canonical name is preserved in `modelcontextprotocol.io/name` and the version in `modelcontextprotocol.io/version`, so both remain individually queryable and the identity is reconstructable together with the effective prefix. A stable hash suffix derived from the prefix, canonical name, and version is appended whenever sanitization mutates any identity segment or the joined candidate exceeds 63 characters (truncate the stem as needed). An already catalog-valid candidate that is ≤63 characters is emitted with no hash. The rule is per-input; it does not observe other documents.
@@ -117,6 +119,20 @@ Implementation tasks produce a version-pinned `mapping-reference.md` (field-mapp
 **Alternatives considered:** (a) Require caller-provided owner/lifecycle and fail if absent — rejected; a pure transform should always yield a valid entity, and ownership/lifecycle assignment belongs to the ingestion layer. (b) Derive lifecycle from a `status` field — rejected; `status` is not part of the base `server.schema.json` (verified 2026-08-21 against the draft schema).
 
 **Rationale:** `server.json` (per the base `server.schema.json`) has no owner or lifecycle fields. Defaults keep the output valid without requiring the caller to supply values that the ingestion layer should own.
+
+**Caller defaults interface:** The transform is invoked as a pure function of (`server.json`, caller defaults). Caller defaults are **not** fields in `server.json`; they are a separate optional object whose supported keys are:
+
+| Caller default | Affects                                 | When omitted   |
+| -------------- | --------------------------------------- | -------------- |
+| `prefix`       | Identity prefix in `metadata.name` (D4) | `mcp.registry` |
+| `owner`        | `spec.owner` (D5)                       | `unknown`      |
+| `lifecycle`    | `spec.lifecycle` (D5)                   | `production`   |
+
+Unset, empty, or sanitizes-to-empty `prefix` falls back to `mcp.registry` (D4). Missing `owner` or `lifecycle` never fails the mapping (D5).
+
+**Sibling [`mcp-registry-provider`](../mcp-registry-provider/):** the first catalog entity provider consumer maps `catalog.providers.mcpRegistry.defaultOwner` → caller `owner` and, when configured, `catalog.providers.mcpRegistry.baseName` → caller `prefix`. When `baseName` is omitted, the provider does not supply a `prefix` override. The provider does not currently pass a `lifecycle` override. Provider config schema and runtime behavior remain owned by `mcp-registry-provider`; this change only documents the mapping-side contract those values satisfy.
+
+Required `server.json` fields (`name`, `description`, `version`) are unrelated to caller defaults — omitting them still fails the mapping with an actionable error (see mapping spec).
 
 ### D6: Determinism and idempotency
 
@@ -171,6 +187,16 @@ The scheme gate does **not** classify hosts as public vs private and does not tr
 **Alternatives considered:** (a) Denylist only `javascript:`/`data:` — rejected; `file:`/`vbscript:`/`blob:` remain executable or local-file vectors in a catalog UI. (b) Fail the whole mapping on a bad scheme — rejected; one poisoned `websiteUrl` must not drop an otherwise valid server. (c) Block hosts that look private or loopback — rejected; that would require a host classifier this transform does not have, would break the upstream `http://localhost` example, and would still not guarantee operator-internality. (d) Allowlist plus fetch/HEAD to verify the URL — rejected; the transform is side-effect-free (D6) and must not become an SSRF client. (e) Keep a refused `repository.url` on `modelcontextprotocol.io/repository.url` for round-trip — rejected; that annotation is URL-shaped and consumers may treat it as a link. (f) Re-project a refused URL under a different key — rejected; it would still publish `javascript:`/`data:` into searchable annotations. (g) Fall through refused `websiteUrl` / `remotes[].url` to generic projection — rejected; those annotations are still links.
 
 **Rationale:** Emitted URL fields and projected URL annotations are both catalog-visible, searchable strings that consumers may treat as hyperlinks. An allowlist on **every** such emission is the smallest rule that keeps `javascript:`/`data:` (and cousins) out of the entity. Host appearance is out of scope because this is a pure function of registry JSON, not a browser, crawler, or network classifier. `data:` icon URIs are omitted as a consequence of the same allowlist.
+
+### D12: Omit null scalars and empty containers from projection
+
+**Choice:** The annotation projection walker emits only non-null scalar leaves. A scalar whose value is JSON `null` produces no `modelcontextprotocol.io/*` annotation. An empty array (`[]`) or empty object (`{}`) produces no annotations for that subtree and no placeholder annotation for the container itself — the walker does not descend because there are no child nodes. Object properties absent from the source document are not visited. Scalar leaves with value `false`, numeric `0`, or empty string `""` **are** projected, serialized as `"false"`, `"0"`, and `""` respectively. This omission rule does not fail the mapping.
+
+**Alternative considered:** Emit explicit sentinel annotations for `null` or empty containers — rejected; catalog annotations are flat string metadata, and sentinels would bloat entities without aiding discovery.
+
+**Rationale:** Aligns round-trip fidelity with “every **present** non-null scalar leaf” while keeping output sparse. Empty containers carry no scalar leaves to recover. Native-field rules (for example D8’s `spec.remotes: []`) are separate from this projection rule.
+
+**Round-trip consequence:** Deliberate exception alongside D9 and D11 — `null` scalars and empty containers are not recoverable from the entity.
 
 ## Risks / Trade-offs
 

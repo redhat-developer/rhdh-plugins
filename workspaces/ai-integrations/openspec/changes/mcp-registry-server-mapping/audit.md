@@ -1,19 +1,18 @@
 ## Audit Report: mcp-registry-server-mapping
 
-**Last audited:** 2026-09-15T13:54:55Z  
-**Autofix pass:** 2026-09-15 (batch applied: task 2.2 hash trigger, remotes scenario, D3↔D4 identity sanitization, descriptive-metadata D11 scenario, `.openspec.yaml` schema)
+**Last audited:** 2026-09-15T14:24:44Z
 
 ### Summary
 
 | Category | CRITICAL | WARNING | SUGGESTION |
 | -------- | -------- | ------- | ---------- |
-| A        | 0        | 0       | 0          |
-| B        | 0        | 0       | 0          |
-| C        | 0        | 2       | 0          |
+| A        | 0        | 0       | 2          |
+| B        | 0        | 1       | 0          |
+| C        | 0        | 0       | 0          |
 | D        | 0        | 0       | 1          |
-| E        | 0        | 1       | 0          |
+| E        | 0        | 0       | 0          |
 | F        | 0        | 0       | 0          |
-| G        | 0        | 0       | 2          |
+| G        | 0        | 0       | 3          |
 | H        | 0        | 0       | 0          |
 
 ### CRITICAL
@@ -22,12 +21,13 @@
 
 ### WARNING
 
-- **C** `openspec/changes/mcp-registry-server-mapping/specs/mcp-registry-annotation-projection/spec.md:80` — `the projection SHALL be skipped or disambiguated`. Pick one deterministic behavior: skip generic projection when the source path was consumed by direct mapping; use D3 hash-suffix disambiguation when a **distinct** source path sanitizes to a reserved key. Remove “or” and align the Direct-mapping annotation wins scenario.
-- **C** `openspec/changes/mcp-registry-server-mapping/specs/mcp-registry-annotation-projection/spec.md:113` — `Null values and empty containers MAY be omitted per a documented rule`. Define the null/empty-container omission rule in `design.md` and state it normatively here (SHALL, not MAY) so it matches the Nulls and empty containers scenario and round-trip requirement.
-- **E** `openspec/changes/mcp-registry-server-mapping/design.md:115` — Document caller override inputs expected by sibling `mcp-registry-provider` (`defaultOwner`, optional `baseName` as identity `prefix`) or state explicitly that only documented defaults (prefix/owner/lifecycle) are in scope.
+- **B** `openspec/changes/mcp-registry-server-mapping/.openspec.yaml:1` — `schema: spec-driven`. Align the change schema with repo OpenSpec config (`openspec/config.yaml` declares `schema: rhdh-spec-driven`) unless this change intentionally uses a different schema; mismatch can drop journal/rules expectations during apply.
 
 ### SUGGESTION
 
-- **G** `openspec/changes/mcp-registry-server-mapping/tasks.md:12` — Spell out null/empty-container omission rule content in task 1.4 and `design.md`, not only in `mapping-reference.md`.
-- **G** `openspec/changes/mcp-registry-server-mapping/design.md:115` — Clarify that missing required `server.json` fields (`name`, `description`, `version`) still fail (task 2.6), distinct from D5 never failing for missing owner.
-- **D** `openspec/changes/mcp-registry-server-mapping/tasks.md:1` — Add openspec journal bookends per `openspec/config.yaml`, or note journaling is handled outside this task list.
+- **A** `openspec/changes/mcp-registry-server-mapping/proposal.md:12` — `round-trip rules (with documented exceptions for secrets and refused URLs)`. Extend the proposal’s round-trip exception list to include D12 omissions (null scalars and empty containers), matching design D12 and the annotation-projection round-trip requirement.
+- **A** `openspec/changes/mcp-registry-server-mapping/design.md:131` — `Unset, empty, or sanitizes-to-empty prefix falls back to mcp.registry`. Document whether empty caller `owner` or `lifecycle` values fall back to `unknown`/`production` or are passed through, and add matching spec scenarios so provider `defaultOwner` edge cases are unambiguous.
+- **G** `openspec/changes/mcp-registry-server-mapping/specs/mcp-registry-server-mapping/spec.md:60` — Identity-sanitization example conflates leading `_` → `x` with `/` → `-` in one parenthetical; split into separate examples for the two D3 rules.
+- **G** `openspec/changes/mcp-registry-server-mapping/tasks.md:13` — In task 1.4, note that `mcp-registry-provider` does not currently pass a `lifecycle` caller override (per design), so lifecycle defaults stay mapping-side until provider adds config.
+- **G** `openspec/changes/mcp-registry-server-mapping/tasks.md:36` — Add conformance fixtures for caller `owner` and `lifecycle` overrides (and optional empty-string cases once defined) to match the caller-defaults and field-supply requirements.
+- **D** `openspec/changes/mcp-registry-server-mapping/tasks.md:1` — Add a tasks note or checklist item for `openspec/config.yaml` journal bookends (`scripts/openspec-journal.py` turn.start/turn.end during apply).

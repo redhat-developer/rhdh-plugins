@@ -191,9 +191,23 @@ Host appearance SHALL NOT affect the scheme gate. Candidates such as `http://loc
 - **WHEN** a candidate is `http://localhost:7007/api/mcp/v1`, `http://10.0.0.5:8080/mcp`, or `https://gitlab.internal/org/repo`
 - **THEN** the candidate passes the scheme policy because it is absolute `http`/`https`, and is eligible to be copied into the corresponding emitted URL field
 
+### Requirement: Accept optional caller defaults for prefix, owner, and lifecycle
+
+The mapping SHALL be invoked with `server.json` and an optional **caller defaults** object separate from the document. Supported optional caller-default keys are `prefix` (identity prefix for `metadata.name`, D4), `owner` (`spec.owner`, D5), and `lifecycle` (`spec.lifecycle`, D5). Omitted keys SHALL use the documented constants (`mcp.registry`, `unknown`, `production`). The sibling [`mcp-registry-provider`](../../../mcp-registry-provider/) maps `catalog.providers.mcpRegistry.defaultOwner` to caller `owner` and, when present, `catalog.providers.mcpRegistry.baseName` to caller `prefix`; when `baseName` is omitted, the provider does not supply a `prefix` override. Provider configuration is owned by `mcp-registry-provider`; this requirement documents the mapping contract those values satisfy.
+
+#### Scenario: Provider defaultOwner maps to spec.owner
+
+- **WHEN** the mapping is invoked with caller defaults `{ owner: "group:default/mcp-admins" }`
+- **THEN** `spec.owner` is `group:default/mcp-admins`
+
+#### Scenario: Provider baseName maps to identity prefix
+
+- **WHEN** the mapping is invoked with caller defaults `{ prefix: "com.example.registry" }` and `server.json` `name` is `io.github.user/weather` with `version` `1.0.2`
+- **THEN** `metadata.name` is derived from the sanitized stem `com.example.registry__io.github.user-weather__1.0.2` plus a stable hash suffix (sanitization changed the identity)
+
 ### Requirement: Supply catalog-required fields absent from server.json
 
-`server.json` does not carry a Backstage owner or lifecycle. The mapping SHALL set `spec.owner` to the constant `unknown` when no caller override is supplied, and to a caller-provided default when one is supplied; the mapping SHALL NOT fail for a missing owner. The mapping SHALL set `spec.lifecycle` to the constant `production` when no caller override is supplied, and to a caller-provided default lifecycle when one is supplied; the mapping SHALL NOT fail for a missing lifecycle.
+`server.json` does not carry a Backstage owner or lifecycle. The mapping SHALL set `spec.owner` to the constant `unknown` when no caller `owner` default is supplied, and to the caller `owner` value when one is supplied; the mapping SHALL NOT fail for a missing owner. The mapping SHALL set `spec.lifecycle` to the constant `production` when no caller `lifecycle` default is supplied, and to the caller `lifecycle` value when one is supplied; the mapping SHALL NOT fail for a missing lifecycle.
 
 #### Scenario: Owner defaults to unknown
 
