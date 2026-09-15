@@ -21,6 +21,7 @@ import { CatalogMetricService } from './CatalogMetricService';
 import { MetricProvidersRegistry } from '../providers/MetricProvidersRegistry';
 import {
   MockNumberProvider,
+  MockBooleanProvider,
   filecheckBatchProvider,
   filecheckBatchMetrics,
 } from '../../__fixtures__/mockProviders';
@@ -591,6 +592,78 @@ describe('CatalogMetricService', () => {
       expect(result.thresholds).toEqual({ rules: mockThresholdRules });
     });
 
+    it('should classify number value 0 instead of leaving thresholdEvaluation null', async () => {
+      mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
+        {
+          id: 1,
+          catalogEntityRef: entityRef,
+          metricId: metricId,
+          value: 0,
+          timestamp: new Date('2024-01-01T10:00:00.000Z'),
+          errorMessage: null,
+          status: 'success',
+        },
+      ] as DbMetricValue[]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        metricId,
+        from,
+        to,
+      );
+
+      expect(result.points).toEqual([
+        {
+          value: 0,
+          timestamp: '2024-01-01T10:00:00.000Z',
+          thresholdEvaluation: 'success',
+        },
+      ]);
+    });
+
+    it('should classify boolean value false instead of leaving thresholdEvaluation null', async () => {
+      const booleanProvider = new MockBooleanProvider(
+        'jira.booleanMetric',
+        'jira',
+      );
+      const booleanMetric = booleanProvider.getMetrics()[0];
+      const booleanThresholds = booleanProvider.getDefaultThresholds();
+
+      mockedRegistry.getMetric.mockReturnValue(booleanMetric);
+      (permissionUtils.filterAuthorizedMetrics as jest.Mock).mockReturnValue([
+        booleanMetric,
+      ]);
+      mockedThresholdResolver.resolveEntityThresholds.mockReturnValue(
+        booleanThresholds,
+      );
+      mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
+        {
+          id: 1,
+          catalogEntityRef: entityRef,
+          metricId: booleanMetric.id,
+          value: false,
+          timestamp: new Date('2024-01-01T10:00:00.000Z'),
+          errorMessage: null,
+          status: 'success',
+        },
+      ] as DbMetricValue[]);
+
+      const result = await service.getEntityMetricTimeSeries(
+        entityRef,
+        booleanMetric.id,
+        from,
+        to,
+      );
+
+      expect(result.points).toEqual([
+        {
+          value: false,
+          timestamp: '2024-01-01T10:00:00.000Z',
+          thresholdEvaluation: 'error',
+        },
+      ]);
+    });
+
     it('should map calculation-error rows to null value with error and omit thresholdEvaluation', async () => {
       mockedDatabase.readLatestEntityMetricValuesPerUtcDay.mockResolvedValue([
         {
@@ -692,7 +765,7 @@ describe('CatalogMetricService', () => {
           value: 5,
           timestamp: new Date('2024-01-01T10:00:00.000Z'),
           errorMessage: null,
-          status: null,
+          status: 'success',
         },
       ] as DbMetricValue[]);
 
@@ -730,7 +803,7 @@ describe('CatalogMetricService', () => {
           value: 5,
           timestamp: new Date('2024-01-01T10:00:00.000Z'),
           errorMessage: null,
-          status: null,
+          status: 'success',
         },
       ] as DbMetricValue[]);
 
@@ -772,7 +845,7 @@ describe('CatalogMetricService', () => {
           value: 5,
           timestamp: new Date('2024-01-01T10:00:00.000Z'),
           errorMessage: null,
-          status: null,
+          status: 'success',
         },
         {
           id: 2,
