@@ -522,7 +522,7 @@ export const McpConfigureServerModal = ({
               variant="secondary"
               isDanger
               onClick={() => void removePersonalToken()}
-                    isDisabled={
+              isDisabled={
                 isConfigureModalSaving ||
                 tokenValidationState === 'validating' ||
                 isUpdatingModalStatus ||
