@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { createContext } from 'react';
+import { createContext } from 'react';
 
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
 

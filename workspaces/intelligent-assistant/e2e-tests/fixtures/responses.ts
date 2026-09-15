@@ -227,42 +227,100 @@ export function notebookRagConversationChatHistoryForUploadTitle(
   ];
 }
 
+/** BYOK rag_id used in local testing guide (PR #4178). */
+export const BYOK_E2E_RAG_ID = 'my-knowledge';
+
+export const BYOK_E2E_DOC_TITLE = 'my-knowledge.md';
+
+export const BYOK_E2E_DOC_URL = 'https://example.com/my-doc';
+
+/** LCORE `referenced_documents` payload for BYOK-attributed responses. */
+export const byokReferencedDocuments = [
+  {
+    doc_title: BYOK_E2E_DOC_TITLE,
+    doc_url: BYOK_E2E_DOC_URL,
+    doc_description:
+      'Custom knowledge document used to validate BYOK source labeling.',
+    source: BYOK_E2E_RAG_ID,
+  },
+  {
+    doc_title: 'product-docs.md',
+    doc_url: 'https://example.com/product-docs',
+    doc_description: 'Secondary BYOK source for multi-source labeling.',
+    source: 'product-docs',
+  },
+];
+
+export const byokReferencedDocumentWithoutSource = [
+  {
+    doc_title: 'generic-doc.md',
+    doc_url: 'https://example.com/generic',
+    doc_description: 'Document without a LCORE source id.',
+  },
+];
+
 /** SSE `start.request_id` in {@link generateQueryResponse}. */
 const mockStreamRequestId = '0e3c4cd7-2817-4c34-91a2-6944550364df';
 
-export const generateQueryResponse = (conversationId: string) => {
-  const tokens = botResponse.match(/(\s+|[^\s]+)/g) || [];
+type QuerySseEvent = {
+  event: string;
+  data?: Record<string, unknown>;
+  done?: boolean;
+};
 
-  const events: {
-    event: string;
-    data?: Record<string, any>;
-    done?: boolean;
-  }[] = [];
-
-  events.push({
-    event: 'start',
-    data: {
-      conversation_id: conversationId,
-      request_id: mockStreamRequestId,
-    },
-  });
-
-  tokens.forEach((token, index) => {
-    events.push({
-      event: 'token',
-      data: { id: index, token, role: 'inference' },
-    });
-  });
-
-  events.push({
-    event: 'end',
-    done: true,
-  });
-
+function serializeQuerySseEvents(events: QuerySseEvent[]): string {
   return `${events
     .map(({ event, data }) => `data: ${JSON.stringify({ event, data })}\n\n`)
     .join('')}\n`;
+}
+
+function buildTokenEvents(text: string): QuerySseEvent[] {
+  const tokens = text.match(/(\s+|[^\s]+)/g) || [text];
+  return tokens.map((token, index) => ({
+    event: 'token',
+    data: { id: index, token, role: 'inference' },
+  }));
+}
+
+export const generateQueryResponse = (conversationId: string) => {
+  const events: QuerySseEvent[] = [
+    {
+      event: 'start',
+      data: {
+        conversation_id: conversationId,
+        request_id: mockStreamRequestId,
+      },
+    },
+    ...buildTokenEvents(botResponse),
+    { event: 'end', done: true },
+  ];
+
+  return serializeQuerySseEvents(events);
 };
+
+/** SSE stream ending with BYOK `referenced_documents` (LCORE `end` event). */
+export function generateQueryResponseWithReferencedDocuments(
+  conversationId: string,
+  referencedDocuments: Record<string, unknown>[] = byokReferencedDocuments,
+): string {
+  const events: QuerySseEvent[] = [
+    {
+      event: 'start',
+      data: {
+        conversation_id: conversationId,
+        request_id: mockStreamRequestId,
+      },
+    },
+    ...buildTokenEvents(botResponse),
+    {
+      event: 'end',
+      data: { referenced_documents: referencedDocuments },
+      done: true,
+    },
+  ];
+
+  return serializeQuerySseEvents(events);
+}
 
 const e2eMcpToolCallId = 'mcp_list_e2e-00000000-0000-4000-8000-000000000001';
 
@@ -270,49 +328,34 @@ const e2eMcpToolCallId = 'mcp_list_e2e-00000000-0000-4000-8000-000000000001';
 export function generateQueryResponseWithMcpToolCall(
   conversationId: string,
 ): string {
-  const events: {
-    event: string;
-    data?: Record<string, any>;
-    done?: boolean;
-  }[] = [];
-
-  events.push({
-    event: 'start',
-    data: {
-      conversation_id: conversationId,
-      request_id: mockStreamRequestId,
+  const events: QuerySseEvent[] = [
+    {
+      event: 'start',
+      data: {
+        conversation_id: conversationId,
+        request_id: mockStreamRequestId,
+      },
     },
-  });
-  events.push({
-    event: 'tool_call',
-    data: {
-      id: e2eMcpToolCallId,
-      name: 'mcp_list_tools',
-      args: { server_label: 'mcp-integration-tools' },
-      type: 'mcp_list_tools',
+    {
+      event: 'tool_call',
+      data: {
+        id: e2eMcpToolCallId,
+        name: 'mcp_list_tools',
+        args: { server_label: 'mcp-integration-tools' },
+        type: 'mcp_list_tools',
+      },
     },
-  });
-  events.push({
-    event: 'tool_result',
-    data: {
-      id: e2eMcpToolCallId,
-      status: 'success',
-      content: '{"server_label":"mcp-integration-tools","tools":[]}',
+    {
+      event: 'tool_result',
+      data: {
+        id: e2eMcpToolCallId,
+        status: 'success',
+        content: '{"server_label":"mcp-integration-tools","tools":[]}',
+      },
     },
-  });
-
-  const tokens = assistantResponse.match(/(\s+|[^\s]+)/g) || [
-    assistantResponse,
+    ...buildTokenEvents(assistantResponse),
+    { event: 'end', done: true },
   ];
-  tokens.forEach((token, index) => {
-    events.push({
-      event: 'token',
-      data: { id: index, token, role: 'inference' },
-    });
-  });
-  events.push({ event: 'end', done: true });
 
-  return `${events
-    .map(({ event, data }) => `data: ${JSON.stringify({ event, data })}\n\n`)
-    .join('')}\n`;
+  return serializeQuerySseEvents(events);
 }

@@ -39,15 +39,40 @@ export async function assertChatDialogInitialState(
 
   await assertDrawerState(page, 'open', translations);
 
-  await expect(page.locator('.pf-v6-c-drawer__panel-main'))
-    .toMatchAriaSnapshot(`
-      - heading "${translations['conversation.category.pinnedChats']}"
-      - menu:
-        - menuitem "${translations['chatbox.emptyState.noPinnedChats']}"
-      - heading "${translations['conversation.category.recent']}"
-      - menu:
-        - menuitem "${translations['chatbox.emptyState.noRecentChats']}"
-      `);
+  const drawerPanel = page.locator('.pf-v6-c-drawer__panel-main');
+
+  await expect(
+    drawerPanel.getByRole('button', {
+      name: translations['menu.newConversation'],
+    }),
+  ).toBeDisabled();
+  await expect(
+    drawerPanel.getByRole('button', { name: translations['sort.label'] }),
+  ).toBeVisible();
+  await expect(
+    drawerPanel.getByRole('heading', {
+      name: translations['conversation.category.pinnedChats'],
+      level: 3,
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    drawerPanel.getByRole('menuitem', {
+      name: translations['chatbox.emptyState.noPinnedChats'],
+    }),
+  ).toBeDisabled();
+  await expect(
+    drawerPanel.getByRole('heading', {
+      name: translations['conversation.category.recent'],
+      level: 3,
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    drawerPanel.getByRole('menuitem', {
+      name: translations['chatbox.emptyState.noRecentChats'],
+    }),
+  ).toBeDisabled();
 }
 
 export async function closeChatDrawer(
@@ -64,6 +89,9 @@ export async function openChatDrawer(
   page: Page,
   translations: LightspeedMessages,
 ) {
+  const closeButton = page.getByRole('button', {
+    name: translations['aria.closeDrawerPanel'],
+  });
   const chatHistoryMenuButton = page.getByRole('button', {
     name: translations['aria.chatHistoryMenu'],
   });
@@ -71,19 +99,20 @@ export async function openChatDrawer(
     name: translations['tooltip.expandHistoryPanel'],
   });
 
-  // Try the hamburger menu first (overlay/docked mode)
+  if (await closeButton.isVisible().catch(() => false)) {
+    return;
+  }
+
+  await expect(chatHistoryMenuButton.or(expandHistoryButton)).toBeVisible({
+    timeout: 10000,
+  });
+
   if (await chatHistoryMenuButton.isVisible().catch(() => false)) {
     await chatHistoryMenuButton.click();
   } else {
-    // In fullscreen mode, use the expand button from CollapsedHistoryStrip
-    await expect(expandHistoryButton).toBeVisible({ timeout: 5000 });
     await expandHistoryButton.click();
   }
 
-  // Wait for the drawer to open
-  const closeButton = page.getByRole('button', {
-    name: translations['aria.closeDrawerPanel'],
-  });
   await expect(closeButton).toBeVisible({ timeout: 5000 });
 }
 

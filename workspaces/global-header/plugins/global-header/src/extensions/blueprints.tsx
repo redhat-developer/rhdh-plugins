@@ -16,6 +16,7 @@
 
 import type { ComponentType } from 'react';
 import { createExtensionBlueprint } from '@backstage/frontend-plugin-api';
+import { z } from 'zod';
 
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
@@ -166,10 +167,8 @@ export const GlobalHeaderComponentBlueprint = createExtensionBlueprint({
   },
   output: [globalHeaderComponentDataRef],
   dataRefs: { componentData: globalHeaderComponentDataRef },
-  config: {
-    schema: {
-      priority: z => z.number().optional(),
-    },
+  configSchema: {
+    priority: z.number().optional(),
   },
   *factory(params: ToolbarComponentParams, { config }) {
     const component =
@@ -216,17 +215,15 @@ export const GlobalHeaderMenuItemBlueprint = createExtensionBlueprint({
   },
   output: [globalHeaderMenuItemDataRef],
   dataRefs: { menuItemData: globalHeaderMenuItemDataRef },
-  config: {
-    schema: {
-      priority: z => z.number().optional(),
-      title: z => z.string().optional(),
-      titleKey: z => z.string().optional(),
-      icon: z => z.string().optional(),
-      link: z => z.string().optional(),
-      sectionLabel: z => z.string().optional(),
-      sectionLink: z => z.string().optional(),
-      sectionLinkLabel: z => z.string().optional(),
-    },
+  configSchema: {
+    priority: z.number().optional(),
+    title: z.string().optional(),
+    titleKey: z.string().optional(),
+    icon: z.string().optional(),
+    link: z.string().optional(),
+    sectionLabel: z.string().optional(),
+    sectionLink: z.string().optional(),
+    sectionLinkLabel: z.string().optional(),
   },
   *factory(params: MenuItemParams, { config }) {
     const title = config.title ?? params.title;

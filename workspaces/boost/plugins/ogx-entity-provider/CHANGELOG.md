@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-llamastack-entity-provider
 
+## 0.5.0
+
+### Minor Changes
+
+- b4f9c3d: Add per-provider TLS connection settings (`caData` and `skipTLSVerify`) to `OgxEntityProviderConfig` so `OgxModelEntityProvider` can fetch `/v1/models` from OGX endpoints that use a private CA or self-signed certificates.
+
 ## 0.4.2
 
 ### Patch Changes

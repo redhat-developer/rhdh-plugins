@@ -16,25 +16,14 @@
 
 import { Content, Header, Page } from '@backstage/core-components';
 
-import { createStyles, makeStyles } from '@material-ui/core/styles';
-
 import { useTranslation } from '../hooks/useTranslation';
 import { LightspeedChatContainer } from './LightspeedChatContainer';
-
-const useStyles = makeStyles(() =>
-  createStyles({
-    container: {
-      padding: '0px',
-    },
-  }),
-);
 
 /**
  * Lightspeed Page - Routable fullscreen/embedded mode
  * @public
  */
 export const LightspeedPage = () => {
-  const classes = useStyles();
   const { t } = useTranslation();
 
   return (
@@ -44,7 +33,7 @@ export const LightspeedPage = () => {
         style={{ display: 'none' }}
         pageTitleOverride={t('page.title')}
       />
-      <Content className={classes.container}>
+      <Content noPadding>
         <LightspeedChatContainer />
       </Content>
     </Page>

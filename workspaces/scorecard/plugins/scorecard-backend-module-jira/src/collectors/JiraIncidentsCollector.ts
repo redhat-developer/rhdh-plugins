@@ -48,7 +48,7 @@ export class JiraIncidentsCollector
   }
 
   getCollectorId(): string {
-    return 'jira:incidents';
+    return 'jira:doraIncidents';
   }
 
   getCollectorDescription(): string {
@@ -78,6 +78,7 @@ export class JiraIncidentsCollector
         from: options.input.from,
         to: options.input.to,
         issueType: options.input.issueType,
+        updatedSince: options.input.updatedSince,
       },
       options.entity,
     );

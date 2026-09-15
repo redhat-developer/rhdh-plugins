@@ -20,6 +20,7 @@ export const incidentsCollectorInputSchema = z
   .object({
     from: z.string().datetime(),
     to: z.string().datetime(),
+    updatedSince: z.string().datetime(),
   })
   .passthrough();
 
@@ -27,6 +28,7 @@ const incidentSchema = z
   .object({
     id: z.string(),
     createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
     resolutionAt: z.string().datetime().nullable(),
   })
   .passthrough();

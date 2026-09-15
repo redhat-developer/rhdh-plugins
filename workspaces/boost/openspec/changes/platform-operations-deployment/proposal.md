@@ -1,5 +1,9 @@
 # Proposal: Platform Operations & Deployment
 
+> **Workspace status:** Follow-on backend, deployment, and administration
+> planning; not part of the current RHDH 2.1 frontend and OGX release
+> baseline.
+
 ## Why
 
 An AI platform requiring code changes or restarts for configuration changes is unusable in production. Administrators need to deploy cleanly, manage agents and orchestration, configure RAG pipelines, tune 25+ runtime parameters, and white-label the experience — all without touching source code.

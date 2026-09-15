@@ -20,6 +20,7 @@ export const AGGREGATED_CARDS_METRIC_IDS = {
   githubOpenPrsKpi: 'openPrsKpi',
   jiraOpenIssuesKpi: 'openIssuesKpi',
   gitHubOpenPrsWeightedKpi: 'openPrsWeightedKpi',
+  licenseFileExistsKpi: 'licenseFileExistsKpi',
 } as const;
 
 /** Must match `title` in App.tsx homepage widget config (Add widget picker). */
@@ -29,6 +30,7 @@ export const AGGREGATED_CARDS_WIDGET_TITLES = {
   githubOpenPrsKpi: 'Scorecard: GitHub open PRs',
   jiraOpenIssuesKpi: 'Scorecard: Jira open blocking tickets',
   gitHubOpenPrsWeightedKpi: 'Scorecard: GitHub open PRs (weighted health)',
+  licenseFileExistsKpi: 'Scorecard: LICENSE file exists',
 } as const;
 
 export const AGGREGATED_CARDS_METADATA = {
@@ -56,5 +58,10 @@ export const AGGREGATED_CARDS_METADATA = {
     id: AGGREGATED_CARDS_METRIC_IDS.gitHubOpenPrsWeightedKpi,
     title: 'Scorecard: GitHub open PRs (weighted health)',
     metricId: 'github.openPRs',
+  },
+  licenseFileExistsKpi: {
+    id: AGGREGATED_CARDS_METRIC_IDS.licenseFileExistsKpi,
+    title: 'Scorecard: LICENSE file exists',
+    metricId: 'filecheck.license',
   },
 } as const;

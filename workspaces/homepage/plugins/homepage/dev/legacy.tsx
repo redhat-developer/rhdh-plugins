@@ -32,7 +32,7 @@ import { MockSearchApi, searchApiRef } from '@backstage/plugin-search-react';
 import { visitsApiRef } from '@backstage/plugin-home';
 
 import { PluginStore } from '@openshift/dynamic-plugin-sdk';
-import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 import { ScalprumContext, ScalprumState } from '@scalprum/react-core';
 
 import { QuickAccessApi, quickAccessApiRef } from '../src/api';

@@ -18,12 +18,7 @@ import { useTheme } from '@mui/material/styles';
 import type { TranslationFunction } from '@backstage/core-plugin-api/alpha';
 
 import { CardWrapper } from '../../Common/CardWrapper';
-import {
-  formatWithMetricUnit,
-  getMatchingThresholdKey,
-  getStatusConfig,
-  resolveStatusColor,
-} from '../../../utils';
+import { formatWithMetricUnit, resolveStatusColor } from '../../../utils';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { scorecardTranslationRef } from '../../../translations';
 import { CardInfoButton } from '../components/CardInfoButton';
@@ -63,19 +58,9 @@ export const ScalarStatCard = ({
   const { t } = useTranslation();
   const { result, metadata, id: scorecardId } = scorecard;
 
-  // No successful samples: value is a placeholder (often 0) and must not
-  // pick up a success threshold color. Empty and all-failed both have total 0.
-  const matchingThresholdKey =
-    result.total > 0
-      ? getMatchingThresholdKey(result.value, result.thresholds)
-      : undefined;
-  const statusConfig = getStatusConfig({
-    evaluation: matchingThresholdKey ?? null,
-    thresholdRules: result.thresholds?.rules,
-  });
-  const resolvedColor = matchingThresholdKey
-    ? resolveStatusColor(theme, statusConfig.color)
-    : theme.palette.grey[500];
+  const resolvedColor = result.aggregationChartDisplayColor
+    ? resolveStatusColor(theme, result.aggregationChartDisplayColor)
+    : theme.palette.grey[300];
   const displayValue = formatWithMetricUnit(
     formatAggregationScoreDetail(result.value),
     metadata.unit,
@@ -109,7 +94,6 @@ export const ScalarStatCard = ({
           displayValue={displayValue}
           label={aggregationLabel}
           resolvedColor={resolvedColor}
-          thresholdStatus={matchingThresholdKey}
         />
       </CardChartContainer>
     </CardWrapper>

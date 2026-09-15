@@ -25,7 +25,7 @@ import {
   CatalogImportPage,
   catalogImportPlugin,
 } from '@backstage/plugin-catalog-import';
-import { RbacPage } from '@backstage-community/plugin-rbac';
+import { RbacPage } from '@backstage-community/plugin-rbac/legacy';
 
 import { ScaffolderPage, scaffolderPlugin } from '@backstage/plugin-scaffolder';
 import { orgPlugin } from '@backstage/plugin-org';
@@ -50,7 +50,7 @@ import { RequirePermission } from '@backstage/plugin-permission-react';
 import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
 import { githubAuthApiRef } from '@backstage/core-plugin-api';
 
-import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme';
+import { getAllThemes } from '@red-hat-developer-hub/backstage-plugin-theme/legacy';
 
 import { DynamicExtensionsPluginRouter as Extensions } from '@red-hat-developer-hub/backstage-plugin-extensions';
 import { extensionsTranslations } from '@red-hat-developer-hub/backstage-plugin-extensions/alpha';

@@ -16,6 +16,11 @@
 
 import { Collector } from '@red-hat-developer-hub/backstage-plugin-scorecard-node';
 import {
+  DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+  DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+  DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+} from '../../constants';
+import {
   Deployment,
   deploymentsCollectorInputSchema,
   deploymentsCollectorOutputSchema,
@@ -26,16 +31,17 @@ import {
   incidentsCollectorOutputSchema,
 } from '../schemas/incidentSchemas';
 import {
-  PullRequest,
   deploymentPullRequestsCollectorInputSchema,
   deploymentPullRequestsCollectorOutputSchema,
+  PullRequest,
 } from '../schemas/pullRequestSchemas';
 
 export function buildMockDeploymentsCollector(options: {
   deployments: Deployment[];
   collectorId?: string;
 }): Collector {
-  const { deployments, collectorId = 'github:deployments' } = options;
+  const { deployments, collectorId = DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID } =
+    options;
 
   return {
     getCollectorId: () => collectorId,
@@ -52,8 +58,10 @@ export function buildMockDeploymentPullRequestsCollector(options: {
   pullRequests: PullRequest[];
   collectorId?: string;
 }): Collector {
-  const { pullRequests, collectorId = 'github:deploymentPullRequests' } =
-    options;
+  const {
+    pullRequests,
+    collectorId = DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+  } = options;
 
   return {
     getCollectorId: () => collectorId,
@@ -70,7 +78,8 @@ export function buildMockIncidentsCollector(options: {
   incidents: Incident[];
   collectorId?: string;
 }): Collector {
-  const { incidents, collectorId = 'jira:incidents' } = options;
+  const { incidents, collectorId = DORA_DEFAULT_INCIDENTS_COLLECTOR_ID } =
+    options;
 
   return {
     getCollectorId: () => collectorId,

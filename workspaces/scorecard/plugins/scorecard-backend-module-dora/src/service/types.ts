@@ -1,0 +1,44 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import type { CollectorConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+export type DoraCollectorConfig = CollectorConfig & { inputHash: string };
+
+export type CollectorCallOptions = {
+  collector: DoraCollectorConfig;
+};
+
+export type WindowOptions = {
+  windowFrom: Date;
+  windowTo: Date;
+};
+
+export type LastSyncedPullRequestsCollector = {
+  id: string | null;
+  inputHash: string | null;
+};
+
+export type SyncPullRequestsForDeploymentOptions = CollectorCallOptions & {
+  deploymentId: string;
+  baseCommitSha: string; // previous deployment
+  headCommitSha: string; // current deployment
+  /**
+   * PR collector identity already stored on this deployment, if any.
+   * Compared to `collector` (the configured collector to use for this sync).
+   */
+  lastSyncedPullRequestsCollector: LastSyncedPullRequestsCollector;
+};

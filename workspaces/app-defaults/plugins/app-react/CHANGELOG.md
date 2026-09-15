@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-app-react
 
+## 1.2.0
+
+### Minor Changes
+
+- 365fcd8: Moved `appDrawerExtension` and `appDrawerModule` from `app-react` into `app-defaults`. The drawer module is now available as both a named export from the main entry point and a default export via the `/app-drawer-module` subpath of `@red-hat-developer-hub/backstage-plugin-app-defaults`. `ApplicationDrawer` is now exported from the main entry point of `app-react`.
+
+## 1.1.0
+
 ## 1.0.0
 
 ### Major Changes

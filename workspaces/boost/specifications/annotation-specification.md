@@ -5,6 +5,9 @@
 > **Epic:** RHIDP-15334 (Upstream Schema Alignment Readiness)
 > **Story:** RHIDP-15346 (Annotation specification document)
 
+> **Workspace scope:** This is follow-on schema-alignment planning. It is not
+> a current RHDH 2.1 Boost frontend/OGX release deliverable.
+
 ## Overview
 
 This document is the formal specification of all RHDH AI Asset annotations,
@@ -84,10 +87,12 @@ metadata:
 **Purpose:** Records the provenance of the AI asset — which connector and
 registry instance ingested it into the catalog.
 
-**Format:** `connector-name/registry-instance-id`, where `connector-name`
-identifies the connector type and `registry-instance-id` is the app-config
-provider instance key (e.g., `default`, `prod-kagenti`). Known
-`connector-name` values:
+**Format:** A provider-defined provenance identifier. A provider may use
+`connector-name/registry-instance-id` when it needs to distinguish registry
+instances; `registry-instance-id` is then the app-config provider instance key
+(e.g., `default`, `prod-kagenti`). The current OGX provider emits the value
+`ogx` because its release configuration has no registry-instance component.
+Known `connector-name` values include:
 
 | Token                | Connector                           |
 | -------------------- | ----------------------------------- |
@@ -100,10 +105,11 @@ provider instance key (e.g., `default`, `prod-kagenti`). Known
 Additional connector names may be added when new connectors ship. The
 CatalogProcessor/SDK today only requires a non-empty string.
 
-> **RBAC note:** `isFromConnector` policy matching
-> ([#4376](https://github.com/redhat-developer/rhdh-plugins/issues/4376)) uses
-> the **full** annotation value (e.g., `rhoai/default`). Bare connector
-> names and composite values are different policy keys.
+> **Policy note:** Conditional policy matching must use the annotation value
+> actually emitted by the provider. For providers that emit a connector and
+> registry instance, the full value (e.g., `rhoai/default`) is distinct from
+> the bare connector name. The current OGX provider emits `ogx`, so policies
+> for OGX entities must match `ogx` unless the provider contract changes.
 
 **Example:**
 
@@ -111,6 +117,14 @@ CatalogProcessor/SDK today only requires a non-empty string.
 metadata:
   annotations:
     rhdh.io/ai-asset-source: kagenti/default
+```
+
+The current OGX provider uses the following value:
+
+```yaml
+metadata:
+  annotations:
+    rhdh.io/ai-asset-source: ogx
 ```
 
 ---
@@ -131,7 +145,7 @@ but documents the current connector-emitted kinds for `agent` and
 | `skill`        | AIResource       | `skill`           | AIResource per RHDHPLAN-1113                                                                                      |
 | `rule`         | AIResource       | `rule`            | AIResource per RHDHPLAN-1113                                                                                      |
 | `skill-bundle` | AIResource       | `ai-skill-bundle` | Curated skill collections; frontend browse category                                                               |
-| `mcp-server`   | API              | `mcp-server`      | Ships in RHDH 2.1 via RHDHPLAN-1510                                                                               |
+| `mcp-server`   | API              | `mcp-server`      | Tracked by broader RHDHPLAN-1510 work; not a current Boost release deliverable                                    |
 | `ai-model`     | Resource         | `ai-model`        | Pending RHDHPLAN-404 (upstream entity schema)                                                                     |
 | `model-server` | AiModelServerAPI | `ai-model-server` | Diverged from Decision 1 (`Resource`/`ai-model-server`); connectors emit `AiModelServerAPI`. Pending RHDHPLAN-404 |
 

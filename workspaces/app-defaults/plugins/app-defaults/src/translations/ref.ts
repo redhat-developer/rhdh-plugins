@@ -24,17 +24,17 @@ export const translationRef = createTranslationRef({
   messages: {
     catalog: {
       emptyState: {
-        title: 'No catalog items found',
+        title: 'No catalog items available',
         description:
-          'Items will appear here once they are registered in the catalog.',
+          'There are no catalog entities yet, or you do not have permission to view any. They will appear here once they are registered and you have access.',
         action: 'Register a component',
       },
     },
     catalogGraph: {
       emptyState: {
-        title: 'No catalog items found',
+        title: 'No catalog items available',
         description:
-          'The catalog graph will appear here once entities are registered in the catalog.',
+          'There are no catalog entities yet, or you do not have permission to view any. The catalog graph will appear here once they are registered and you have access.',
         action: 'Go to catalog',
       },
     },
@@ -42,7 +42,7 @@ export const translationRef = createTranslationRef({
       emptyState: {
         title: 'No templates available',
         description:
-          'Software templates will appear here once they are registered in the catalog.',
+          'There are no software templates yet, or you do not have permission to view any. They will appear here once they are registered and you have access.',
         action: 'Register a template',
       },
     },
@@ -50,7 +50,7 @@ export const translationRef = createTranslationRef({
       emptyState: {
         title: 'No APIs available',
         description:
-          'API definitions will appear here once they are registered in the catalog.',
+          'There are no APIs yet, or you do not have permission to view any. They will appear here once they are registered and you have access.',
         action: 'Register an API',
       },
     },
@@ -58,7 +58,7 @@ export const translationRef = createTranslationRef({
       emptyState: {
         title: 'No documentation available',
         description:
-          'Documentation will appear here once entities with TechDocs annotations are registered.',
+          'There are no documented entities yet, or you do not have permission to view any. Documentation will appear here once entities with TechDocs annotations are registered and you have access.',
         action: 'Learn more',
       },
     },

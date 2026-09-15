@@ -51,7 +51,8 @@
 - [ ] 4.6 Implement save handler: call `POST /api/boost/admin/config` with connector key and updated fields
 - [ ] 4.7 Implement success notification: "Saved — cache refresh ≤30s; will take effect on next reconciliation cycle"
 - [ ] 4.8 Implement validation error feedback: display server-side Zod validation errors inline
-- [ ] 4.9 Implement RBAC gating: require `ai-catalog.admin` permission to access connector config section (via `permissions.authorize()`)
+- [ ] 4.9 Implement authorization gating with `boost.config.manage` via
+      `permissions.authorize()`
 - [ ] 4.10 Implement read-only view for non-admin users (if configured)
 - [ ] 4.11 Implement config change history view: display last 10 changes from audit log (timestamp, fields, old/new values, user)
 - [ ] 4.12 Add UI tests: toggle connector, verify POST request with correct payload
@@ -91,7 +92,8 @@
 - [ ] 8.4 Document propagation latency: 30s TTL + reconciliation interval
 - [ ] 8.5 Document credential rotation workflow and latency (≤60s kubelet + reconciliation interval)
 - [ ] 8.6 Add troubleshooting guide: "Config change not taking effect?" → check cache TTL, reconciliation schedule
-- [ ] 8.7 Document RBAC permissions required for connector config access (`ai-catalog.admin`)
+- [ ] 8.7 Document that connector config writes require
+      `boost.config.manage`
 
 ## 9. Schema Migration (P2)
 

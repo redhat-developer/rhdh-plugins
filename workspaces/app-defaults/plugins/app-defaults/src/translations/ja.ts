@@ -23,25 +23,25 @@ import { translationRef } from './ref';
 export default createTranslationMessages({
   ref: translationRef,
   messages: {
-    'catalog.emptyState.title': 'カタログアイテムが見つかりません',
+    'catalog.emptyState.title': 'カタログアイテムがありません',
     'catalog.emptyState.description':
-      'カタログに登録されると、ここにアイテムが表示されます。',
+      'カタログエンティティがまだ存在しないか、閲覧する権限がありません。登録され、アクセス権を得ると、ここに表示されます。',
     'catalog.emptyState.action': 'コンポーネントを登録',
-    'catalogGraph.emptyState.title': 'カタログアイテムが見つかりません',
+    'catalogGraph.emptyState.title': 'カタログアイテムがありません',
     'catalogGraph.emptyState.description':
-      'カタログにエンティティが登録されると、ここにカタロググラフが表示されます。',
+      'カタログエンティティがまだ存在しないか、閲覧する権限がありません。登録され、アクセス権を得ると、ここにカタロググラフが表示されます。',
     'catalogGraph.emptyState.action': 'カタログへ移動',
     'scaffolder.emptyState.title': 'テンプレートがありません',
     'scaffolder.emptyState.description':
-      'カタログに登録されると、ここにソフトウェアテンプレートが表示されます。',
+      'ソフトウェアテンプレートがまだ存在しないか、閲覧する権限がありません。登録され、アクセス権を得ると、ここに表示されます。',
     'scaffolder.emptyState.action': 'テンプレートを登録',
     'apiDocs.emptyState.title': 'API がありません',
     'apiDocs.emptyState.description':
-      'カタログに登録されると、ここに API 定義が表示されます。',
+      'API がまだ存在しないか、閲覧する権限がありません。登録され、アクセス権を得ると、ここに表示されます。',
     'apiDocs.emptyState.action': 'API を登録',
     'docs.emptyState.title': 'ドキュメントがありません',
     'docs.emptyState.description':
-      'TechDocs アノテーションを持つエンティティが登録されると、ここにドキュメントが表示されます。',
+      'ドキュメント化されたエンティティがまだ存在しないか、閲覧する権限がありません。TechDocs アノテーションを持つエンティティが登録され、アクセス権を得ると、ここにドキュメントが表示されます。',
     'docs.emptyState.action': '詳細を見る',
   },
 });

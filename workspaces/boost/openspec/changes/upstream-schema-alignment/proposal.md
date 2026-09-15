@@ -1,5 +1,9 @@
 # Proposal: Upstream Schema Alignment Readiness
 
+> **Workspace status:** Follow-on schema-alignment and migration-readiness
+> planning; not part of the current RHDH 2.1 frontend and OGX release
+> baseline.
+
 ## Why
 
 > **RHDHPLAN-1513 Consolidation (2026-07-08):** Epic RHIDP-15333 (Ingestion Audit Logging & Metrics) was closed — its scope has been absorbed by RHIDP-15277 (AI Catalog RBAC Audit Logging) under RHDHPLAN-1508. This schema alignment epic (RHIDP-15334) is unaffected — it remains a surviving RHDHPLAN-1513 epic alongside RHIDP-15331 (Ingestion Health Dashboard) and RHIDP-15332 (Connector Config Hot-Reload). The annotation specification (RHIDP-15346) depends on RHDHPLAN-1507's Entity-Provider SDK (RHIDP-15258) which now includes the annotation scheme after consolidation.

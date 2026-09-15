@@ -61,17 +61,16 @@ export const verifyRenameChatForm = async (
   page: Page,
   translations: LightspeedMessages,
 ) => {
-  await expect(page.locator('#rename-modal')).toContainText(
-    translations['conversation.rename.confirm.title'],
-  );
+  const dialog = page.getByRole('dialog', {
+    name: translations['conversation.rename.confirm.title'],
+  });
+  await expect(dialog).toBeVisible();
   await expect(
     page.getByRole('textbox', {
       name: translations['conversation.rename.placeholder'],
     }),
   ).toBeVisible();
-  await expect(
-    page.getByLabel(translations['conversation.rename.confirm.title']),
-  ).toMatchAriaSnapshot(`
+  await expect(dialog).toMatchAriaSnapshot(`
     - button "${translations['conversation.rename.confirm.action']}" [disabled]
     - button "${translations['common.cancel']}"
     `);
@@ -277,22 +276,22 @@ export const verifyDisablePinnedChatsOption = async (
   page: Page,
   translations: LightspeedMessages,
 ) => {
-  await expect(page.getByLabel('Chatbot', { exact: true }))
-    .toMatchAriaSnapshot(`
-    - menu:
-      - menuitem "${translations['settings.pinned.disable']} ${translations['settings.pinned.enabled.description']}"
-    `);
+  await expect(
+    page.getByRole('menuitem', {
+      name: `${translations['settings.pinned.disable']} ${translations['settings.pinned.enabled.description']}`,
+    }),
+  ).toBeVisible();
 };
 
 export const verifyEnablePinnedChatsOption = async (
   page: Page,
   translations: LightspeedMessages,
 ) => {
-  await expect(page.getByLabel('Chatbot', { exact: true }))
-    .toMatchAriaSnapshot(`
-    - menu:
-      - menuitem "${translations['settings.pinned.enable']} ${translations['settings.pinned.disabled.description']}"
-    `);
+  await expect(
+    page.getByRole('menuitem', {
+      name: `${translations['settings.pinned.enable']} ${translations['settings.pinned.disabled.description']}`,
+    }),
+  ).toBeVisible();
 };
 
 export const selectDisablePinnedChats = async (

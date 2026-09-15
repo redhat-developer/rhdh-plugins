@@ -1,5 +1,32 @@
 # @red-hat-developer-hub/backstage-plugin-app-defaults
 
+## 1.2.0
+
+### Minor Changes
+
+- 365fcd8: Moved `appDrawerExtension` and `appDrawerModule` from `app-react` into `app-defaults`. The drawer module is now available as both a named export from the main entry point and a default export via the `/app-drawer-module` subpath of `@red-hat-developer-hub/backstage-plugin-app-defaults`. `ApplicationDrawer` is now exported from the main entry point of `app-react`.
+
+### Patch Changes
+
+- 6c5ba66: Clarify the empty-state descriptions to make clear that there may be no catalog entities yet or that the user may lack permission to view any, and change the catalog and catalog graph titles from "No catalog items found" to "No catalog items available". Updated all translations (de, es, fr, it, ja).
+- Updated dependencies [365fcd8]
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.2.0
+
+## 1.1.0
+
+### Minor Changes
+
+- a05b689: Add empty-state page overrides for the catalog, catalog graph, scaffolder, API docs, and TechDocs plugins.
+
+  Each override checks whether matching catalog entities exist before rendering the original page. When none are found, a translatable empty state with an illustration, an action link, and a support button is shown instead. All overrides plus the existing app defaults module are registered together through a `createFrontendFeatureLoader` default export, so a single package import loads everything. Translations are provided for English (default), German, Spanish, French, Italian, and Japanese.
+
+- f338ef4: Expose the catalog, catalog graph, scaffolder, API docs, and TechDocs empty-state plugin overrides as individual package subpath exports (for example `@red-hat-developer-hub/backstage-plugin-app-defaults/catalog-plugin-override`), matching the `./app-defaults-translations-module` convention. Each subpath default-exports its override so it can be loaded individually; the feature loader default export continues to bundle all of them.
+
+### Patch Changes
+
+- b3f837f: Updated dependency `react-router-dom` to `^6.30.6`.
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.1.0
+
 ## 1.0.0
 
 ### Major Changes

@@ -39,11 +39,6 @@ The SDK MUST define TypeScript interfaces for AI asset entity providers covering
 - **AND** **WHEN** a provider implements the optional `delta(cursor?: string)` method
 - **THEN** it operates in incremental mode: yields only additions/updates/deletions since the cursor
 
-#### Scenario: Existing OGX provider compiles (RHIDP-15259)
-
-- **WHEN** the SDK package is published
-- **THEN** the OGX provider (`plugins/ogx-entity-provider`, formerly LlamaStack) compiles against the SDK interface without errors
-
 ### Requirement: Published SDK Package with Validation
 
 The SDK MUST be published as an installable npm package with shared validation utilities.

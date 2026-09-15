@@ -23,25 +23,25 @@ import { translationRef } from './ref';
 export default createTranslationMessages({
   ref: translationRef,
   messages: {
-    'catalog.emptyState.title': 'Nessun elemento trovato nel catalogo',
+    'catalog.emptyState.title': 'Nessun elemento disponibile nel catalogo',
     'catalog.emptyState.description':
-      'Gli elementi appariranno qui una volta registrati nel catalogo.',
+      'Non ci sono ancora entità nel catalogo, oppure non hai il permesso di visualizzarne alcuna. Appariranno qui una volta registrate e quando avrai accesso.',
     'catalog.emptyState.action': 'Registra un componente',
-    'catalogGraph.emptyState.title': 'Nessun elemento trovato nel catalogo',
+    'catalogGraph.emptyState.title': 'Nessun elemento disponibile nel catalogo',
     'catalogGraph.emptyState.description':
-      'Il grafo del catalogo apparirà qui una volta che le entità saranno registrate nel catalogo.',
+      'Non ci sono ancora entità nel catalogo, oppure non hai il permesso di visualizzarne alcuna. Il grafo del catalogo apparirà qui una volta registrate e quando avrai accesso.',
     'catalogGraph.emptyState.action': 'Vai al catalogo',
     'scaffolder.emptyState.title': 'Nessun modello disponibile',
     'scaffolder.emptyState.description':
-      'I modelli software appariranno qui una volta registrati nel catalogo.',
+      'Non ci sono ancora modelli software, oppure non hai il permesso di visualizzarne alcuno. Appariranno qui una volta registrati e quando avrai accesso.',
     'scaffolder.emptyState.action': 'Registra un modello',
     'apiDocs.emptyState.title': 'Nessuna API disponibile',
     'apiDocs.emptyState.description':
-      'Le definizioni API appariranno qui una volta registrate nel catalogo.',
+      'Non ci sono ancora API, oppure non hai il permesso di visualizzarne alcuna. Appariranno qui una volta registrate e quando avrai accesso.',
     'apiDocs.emptyState.action': "Registra un'API",
     'docs.emptyState.title': 'Nessuna documentazione disponibile',
     'docs.emptyState.description':
-      'La documentazione apparirà qui una volta che le entità con annotazioni TechDocs saranno registrate.',
+      'Non ci sono ancora entità documentate, oppure non hai il permesso di visualizzarne alcuna. La documentazione apparirà qui una volta registrate entità con annotazioni TechDocs e quando avrai accesso.',
     'docs.emptyState.action': 'Scopri di più',
   },
 });

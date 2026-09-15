@@ -1,5 +1,19 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant-backend
 
+## 5.0.2
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.0.2
+
+## 5.0.1
+
+### Patch Changes
+
+- fe51be2: Backstage version bump to v1.54.6
+- Updated dependencies [fe51be2]
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.0.1
+
 ## 5.0.0
 
 ### Major Changes
