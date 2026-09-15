@@ -262,6 +262,9 @@ Ordering rules:
 - Nav items that Backstage auto-discovers from page extensions are merged in at
   priority `0`. Declaring an item with the same `to` as an auto-discovered page
   replaces it, so a plugin can retitle, regroup, or reprioritize its own page.
+- A custom element with a `to` hides every item and auto-discovered page with
+  the same `to`, so for example the search modal replaces the plain search
+  page entry.
 
 Deployers can override placement per item in `app-config.yaml`:
 

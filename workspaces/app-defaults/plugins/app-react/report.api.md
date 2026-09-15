@@ -163,14 +163,17 @@ export const SidebarElementBlueprint: ExtensionBlueprint<{
   kind: 'sidebar-element';
   params: {
     component: ComponentType<{}>;
+    to?: string;
     priority?: number;
   };
   output: ExtensionDataRef<SidebarElementData, 'app.sidebar.element', {}>;
   inputs: {};
   config: {
+    to: string | undefined;
     priority: number | undefined;
   };
   configInput: {
+    to?: string | undefined;
     priority?: number | undefined;
   };
   dataRefs: {
@@ -187,6 +190,7 @@ export interface SidebarElementData {
   component: ComponentType<{}>;
   id: string;
   priority?: number;
+  to?: string;
 }
 
 // @public

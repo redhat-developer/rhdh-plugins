@@ -52,6 +52,7 @@ export interface SidebarModelGroup {
 export interface SidebarModelElement {
   id: string;
   component: ComponentType<{}>;
+  to?: string;
   priority: number;
 }
 
@@ -121,7 +122,9 @@ function toModelItem(item: SidebarItemData): SidebarModelItem {
  *   default priority unless a contributed item already links to the same
  *   path, which lets a plugin take over the placement of its own page.
  * - Custom elements always render at the top level, sorted by priority with
- *   their extension id as tiebreaker.
+ *   their extension id as tiebreaker. An element with a `to` hides every
+ *   contributed item and auto-discovered nav item with the same path, so the
+ *   element replaces the plain entry for that page.
  */
 export function buildSidebarModel({
   items,
@@ -142,8 +145,15 @@ export function buildSidebarModel({
     });
   }
 
+  const elementPaths = new Set(
+    elements.flatMap(element => (element.to ? [element.to] : [])),
+  );
+
   const topLevelItems: SidebarModelItem[] = [];
   for (const item of items) {
+    if (item.to && elementPaths.has(item.to)) {
+      continue;
+    }
     const group = item.group ? groupById.get(item.group) : undefined;
     if (group) {
       group.items.push(toModelItem(item));
@@ -152,9 +162,10 @@ export function buildSidebarModel({
     }
   }
 
-  const explicitPaths = new Set(
-    items.flatMap(item => (item.to ? [item.to] : [])),
-  );
+  const explicitPaths = new Set([
+    ...elementPaths,
+    ...items.flatMap(item => (item.to ? [item.to] : [])),
+  ]);
   for (const navItem of navItems) {
     if (explicitPaths.has(navItem.href)) {
       continue;
@@ -184,6 +195,7 @@ export function buildSidebarModel({
       element: {
         id: element.id,
         component: element.component,
+        to: element.to,
         priority: element.priority ?? DEFAULT_PRIORITY,
       },
     })),

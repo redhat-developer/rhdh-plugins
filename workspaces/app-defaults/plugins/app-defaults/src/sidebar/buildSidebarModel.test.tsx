@@ -173,6 +173,7 @@ describe('buildSidebarModel', () => {
         element: {
           id: 'sidebar-element:search',
           component: Search,
+          to: undefined,
           priority: 100,
         },
       },
@@ -182,11 +183,40 @@ describe('buildSidebarModel', () => {
         element: {
           id: 'sidebar-element:notifications',
           component: Notifications,
+          to: undefined,
           priority: -50,
         },
       },
       expect.objectContaining({ kind: 'group' }),
     ]);
+  });
+
+  it('hides items and auto-discovered pages that share an element path', () => {
+    const Search = () => null;
+    const entries = buildSidebarModel({
+      items: [
+        { id: 'plain-search', title: 'Search', to: '/search' },
+        { id: 'grouped-search', title: 'Search', to: '/search', group: 'g' },
+        { id: 'other', title: 'Other', to: '/other' },
+      ],
+      groups: [{ id: 'g', title: 'Group', to: '/g' }],
+      elements: [
+        { id: 'search-modal', component: Search, to: '/search', priority: 10 },
+      ],
+      navItems: [
+        navItem('page:search', 'Search', '/search'),
+        navItem('page:docs', 'Docs', '/docs'),
+      ],
+    });
+
+    expect(entries.map(idOf)).toEqual([
+      'search-modal',
+      'page:docs',
+      'g',
+      'other',
+    ]);
+    const group = entries.find(e => e.kind === 'group');
+    expect(group?.kind === 'group' ? group.group.items : undefined).toEqual([]);
   });
 
   it('breaks priority ties between elements by id', () => {

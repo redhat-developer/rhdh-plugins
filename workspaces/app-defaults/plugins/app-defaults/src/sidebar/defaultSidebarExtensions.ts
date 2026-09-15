@@ -29,7 +29,9 @@ import {
  * (auto-discovered pages, plugin items and groups), a spacer that pushes the
  * rest to the bottom, a divider, the notifications item, and a final
  * divider above anything pinned to the bottom (for example a settings group
- * with a priority below -90).
+ * with a priority below -90). The search modal and the notifications item
+ * declare their page paths, so the plain auto-discovered entries for the
+ * search and notifications pages are hidden.
  *
  * Each element can be disabled or moved from `app-config.yaml`, e.g.
  *
@@ -48,6 +50,7 @@ export const sidebarSearchElement = SidebarElementBlueprint.make({
   name: 'search',
   params: {
     component: SidebarSearchModal,
+    to: '/search',
     priority: 1000,
   },
 });
@@ -69,6 +72,7 @@ export const sidebarNotificationsElement = SidebarElementBlueprint.make({
   name: 'notifications',
   params: {
     component: NotificationsSidebarItem,
+    to: '/notifications',
     priority: -40,
   },
 });
