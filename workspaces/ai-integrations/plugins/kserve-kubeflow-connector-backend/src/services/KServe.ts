@@ -34,6 +34,7 @@ export const MODEL_PREFIX_ANNOTATION = `${ANNOTATION_PREFIX}model-`;
 export const DEFAULT_ANNOTATION = `${ANNOTATION_PREFIX}default`;
 export const OWNER_ANNOTATION = `${ANNOTATION_PREFIX}owner`;
 export const LIFECYCLE_ANNOTATION = `${ANNOTATION_PREFIX}lifecycle`;
+export const API_ENTITY_REF_ANNOTATION = `${ANNOTATION_PREFIX}api-entity-ref`;
 
 const FRAMEWORK_SKLEARN = 'sklearn';
 const FRAMEWORK_XGBOOST = 'xgboost';
@@ -268,6 +269,10 @@ function generateModelCatalog(
 
     const lifecycleVal = is.metadata.annotations[LIFECYCLE_ANNOTATION];
     if (lifecycleVal) serverAnnotations[LIFECYCLE_ANNOTATION] = lifecycleVal;
+
+    const apiEntityRefVal = is.metadata.annotations[API_ENTITY_REF_ANNOTATION];
+    if (apiEntityRefVal)
+      serverAnnotations[API_ENTITY_REF_ANNOTATION] = apiEntityRefVal;
   }
 
   const modelServer: ModelServer = {
