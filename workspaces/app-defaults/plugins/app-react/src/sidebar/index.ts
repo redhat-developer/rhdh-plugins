@@ -22,6 +22,7 @@ export { sidebarItemGroupDataRef } from './extensions/sidebarItemGroupDataRef';
 export { SidebarItemGroupBlueprint } from './extensions/SidebarItemGroupBlueprint';
 export type {
   SidebarElementData,
+  SidebarGroupSubmenu,
   SidebarIcon,
   SidebarItemData,
   SidebarItemGroupData,
