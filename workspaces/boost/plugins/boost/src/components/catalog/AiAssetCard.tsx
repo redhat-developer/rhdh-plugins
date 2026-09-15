@@ -16,56 +16,50 @@
 
 import type { Entity } from '@backstage/catalog-model';
 import {
-  Button,
   Card,
   CardBody,
   CardFooter,
   CardHeader,
+  Link,
   Tag,
   TagGroup,
   Text,
 } from '@backstage/ui';
 import { RiUserLine } from '@remixicon/react';
 
-import { getCategoryMeta } from '../../utils/categoryMeta';
-import { entityHref, getSpecField } from '../../utils/entityHelpers';
+import { useTranslation } from '../../hooks/useTranslation';
+import { entityHref, entityRefHref } from '../../utils/entityLinks';
+import { getProvider, getSpecField } from '../../utils/entityFields';
+import { AssetTypeBadge } from './AssetTypeBadge';
 import styles from './AiAssetCard.module.css';
 
 export interface AiAssetCardProps {
-  entity: Entity;
-  onCategoryClick?: (category: string) => void;
+  readonly entity: Entity;
 }
 
-export const AiAssetCard = ({ entity, onCategoryClick }: AiAssetCardProps) => {
-  const specType = getSpecField(entity, 'type');
-  const owner = getSpecField(entity, 'owner');
-  const categoryMeta = getCategoryMeta(specType);
+export const AiAssetCard = ({ entity }: AiAssetCardProps) => {
+  const { t } = useTranslation();
+  const owner = getSpecField(entity, 'owner')?.trim();
+  const displayOwner =
+    owner && owner.toLowerCase() !== 'unknown' ? owner : undefined;
   const tags = entity.metadata.tags ?? [];
   const title = entity.metadata.title ?? entity.metadata.name;
   const description = entity.metadata.description ?? '';
-  const scope = entity.metadata.annotations?.['rhdh.io/ai-asset-source'] ?? '';
+  const provider = getProvider(entity) ?? '';
+  const ownerHref = displayOwner ? entityRefHref(displayOwner) : undefined;
+  const viewDetailsLabel = t('catalog.card.viewDetails').replace(
+    '{{title}}',
+    title,
+  );
 
   return (
     <Card
       href={entityHref(entity)}
-      label={`View ${title} details`}
+      label={viewDetailsLabel}
       className={styles.card}
     >
       <CardHeader>
-        <Button
-          variant="tertiary"
-          size="small"
-          className={styles.typeBadge}
-          style={{ color: categoryMeta.color }}
-          onPress={
-            onCategoryClick && specType
-              ? () => onCategoryClick(specType)
-              : undefined
-          }
-          aria-label={`Filter by ${categoryMeta.label}`}
-        >
-          {categoryMeta.label}
-        </Button>
+        <AssetTypeBadge entity={entity} />
       </CardHeader>
       <CardBody className={styles.body}>
         <Text variant="title-small" className={styles.title}>
@@ -82,7 +76,7 @@ export const AiAssetCard = ({ entity, onCategoryClick }: AiAssetCardProps) => {
         )}
         {tags.length > 0 && (
           <div className={styles.tags}>
-            <TagGroup aria-label="Tags">
+            <TagGroup aria-label={t('catalog.card.tagsLabel')}>
               {tags.map(tag => (
                 <Tag key={tag} id={tag} size="small">
                   {tag}
@@ -94,24 +88,39 @@ export const AiAssetCard = ({ entity, onCategoryClick }: AiAssetCardProps) => {
       </CardBody>
       <CardFooter>
         <div className={styles.footer}>
-          {owner && (
+          {displayOwner && (
             <>
               <span className={styles.ownerIcon}>
                 <RiUserLine size={16} />
               </span>
-              <Text variant="body-x-small" color="secondary" truncate>
-                {owner}
-              </Text>
+              {ownerHref ? (
+                <Link
+                  href={ownerHref}
+                  variant="body-x-small"
+                  color="info"
+                  weight="bold"
+                  truncate
+                  title={displayOwner}
+                  className={styles.owner}
+                >
+                  {displayOwner}
+                </Link>
+              ) : (
+                <Text variant="body-x-small" color="secondary" truncate>
+                  {displayOwner}
+                </Text>
+              )}
             </>
           )}
-          {scope && (
-            <Text
-              variant="body-x-small"
-              color="secondary"
-              className={styles.scope}
+          {provider && (
+            <TagGroup
+              aria-label={t('catalog.card.providerLabel')}
+              className={styles.provider}
             >
-              {scope}
-            </Text>
+              <Tag id={`provider-${provider}`} size="small">
+                {provider}
+              </Tag>
+            </TagGroup>
           )}
         </div>
       </CardFooter>

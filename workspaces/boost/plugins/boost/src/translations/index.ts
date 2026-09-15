@@ -15,6 +15,8 @@
  */
 
 import { createTranslationResource } from '@backstage/core-plugin-api/alpha';
+import { createFrontendModule } from '@backstage/frontend-plugin-api';
+import { TranslationBlueprint } from '@backstage/plugin-app-react';
 
 import { boostTranslationRef } from './ref';
 
@@ -27,4 +29,23 @@ export const boostTranslations = createTranslationResource({
   translations: {},
 });
 
+/** @public */
+const boostTranslation = TranslationBlueprint.make({
+  params: {
+    resource: boostTranslations,
+  },
+});
+
+/**
+ * Translation module for the Boost plugin.
+ *
+ * @public
+ */
+export const boostTranslationsModule = createFrontendModule({
+  pluginId: 'app',
+  extensions: [boostTranslation],
+});
+
 export { boostTranslationRef };
+
+export default boostTranslationsModule;

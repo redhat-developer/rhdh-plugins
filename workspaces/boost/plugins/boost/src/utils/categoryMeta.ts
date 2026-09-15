@@ -79,10 +79,3 @@ export function getCategoryMeta(specType: string | undefined): CategoryMeta {
   if (!specType) return fallbackMeta;
   return categoryMetaMap[specType.toLowerCase()] ?? fallbackMeta;
 }
-
-export function getAllCategories(): { id: string; label: string }[] {
-  return Object.entries(categoryMetaMap).map(([id, meta]) => ({
-    id,
-    label: meta.label,
-  }));
-}

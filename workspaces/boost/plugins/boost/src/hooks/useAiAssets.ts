@@ -23,7 +23,7 @@ import {
   isAiAsset,
 } from '@red-hat-developer-hub/backstage-plugin-boost-common';
 import type { FilterDefinition } from '../blueprints/AiCatalogFilterBlueprint';
-import { applyEntityFilters } from '../utils/entityHelpers';
+import { applyEntityFilters } from '../utils/entityFiltering';
 
 export interface UseAiAssetsResult {
   /** Entities after all client-side filters. */

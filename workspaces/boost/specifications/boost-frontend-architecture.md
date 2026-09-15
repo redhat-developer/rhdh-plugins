@@ -4,7 +4,7 @@
 
 `plugins/boost` is the frontend plugin for the boost workspace in RHDH (`workspaces/boost/plugins/boost`). It is a multi-domain plugin that will grow to cover AI catalog discovery, agentic chat, agent lifecycle management, and platform administration. The AI Catalog ([RHDHPLAN-1509](https://redhat.atlassian.net/browse/RHDHPLAN-1509)) is the first feature delivered; the other domains remain future work.
 
-The plugin follows the NFS (New Frontend System) model with Blueprints. The AI Catalog uses `PageBlueprint`, `EntityCardBlueprint`, and `EntityContentBlueprint` (Usage tab), and adds a standalone page for marketplace-style browse. Chat, admin, and other domains are future work.
+The plugin follows the NFS (New Frontend System) model with Blueprints. The AI Catalog uses `PageBlueprint` and `EntityCardBlueprint`, and adds a standalone page for marketplace-style browse. Chat, admin, and other domains are future work.
 
 The boost backend already provides 30+ API routes across chat/streaming, conversations, agent lifecycle, MCP management, skills marketplace, and admin configuration. The **AI Catalog frontend does not call those routes**; browse and entity cards use `catalogApiRef`. A Boost API client for `/api/boost` is future work, not present in `plugins/boost` today.
 
@@ -77,12 +77,11 @@ plugins/boost/
         AiCatalogPage.tsx
         AiAssetCard.tsx
         AiCatalogTable.tsx
-        FilterSidebar.tsx
+        CatalogFilters.tsx
         entity/
-          SummaryCard.tsx
-          AdoptionCard.tsx
-          VersionListCard.tsx
-          UsageTab.tsx          # EntityContentBlueprint on main
+          AssetDetailsCard.tsx
+          AgentInstructionsCard.tsx
+          UsageCard.tsx
     translations/               # English scaffold; locales are a remaining change
 ```
 
@@ -102,8 +101,8 @@ The AI Catalog browse page queries AI assets through the **standard Backstage ca
 flowchart LR
   BrowsePage[AI Catalog Browse Page] -->|"getEntities(filter: kind + type)"| CatalogAPI[catalogApiRef]
   EntityCards[Entity Page Cards] -->|"useEntity()"| CatalogAPI
-  UsageTab[Usage Tab] -->|"useEntity() + permission check"| CatalogAPI
-  AdoptionCard[Adoption Card] -->|"copy or open source URL"| Browser[Browser]
+  EntityCards[Entity Cards] -->|"useEntity()"| CatalogAPI
+  UsageCard[Usage Card] -->|"copy or open source or endpoint URL"| Browser[Browser]
   GlobalSearch[Search Integration] -->|"search collator"| CatalogAPI
 ```
 
@@ -199,7 +198,7 @@ define duplicate `ai-catalog.*` entity permissions. A future backend API may
 add a narrowly scoped field-level authorization check only when it actually
 returns protected fields.
 
-The unreleased Boost backend and the current Usage tab still contain
+The unreleased Boost backend and the current Usage card still contain
 project-specific permission checks, currently named `ai-catalog.*`. These are
 current implementation examples for presentation or backend behavior, not a
 future permission-namespace requirement or the RHDH 2.1 release contract.
