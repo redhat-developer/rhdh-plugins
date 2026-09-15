@@ -58,6 +58,76 @@ import {
 } from '../tools';
 import { AdversarialAgentsSelector } from './AdversarialAgentsSelector';
 
+type ReportSummary = {
+  total_findings: number;
+  total_critical_findings: number;
+};
+
+type Severity = {
+  key: string;
+  count: number;
+  Icon: typeof ErrorIcon;
+  iconClass: string;
+  label: string;
+};
+
+const parseReportJson = (job?: Job): ReportSummary | undefined => {
+  const jsonArtifact = job?.artifacts?.find(a =>
+    ArtifactKind.from(a.type).equals(ArtifactKind.ADVERSARIAL_REPORT_JSON),
+  );
+  if (!jsonArtifact) return undefined;
+  try {
+    const parsed = JSON.parse(jsonArtifact.value);
+    const total = Number(parsed?.total_findings);
+    const critical = Number(parsed?.total_critical_findings);
+    if (!Number.isFinite(total) || !Number.isFinite(critical)) {
+      return undefined;
+    }
+    return { total_findings: total, total_critical_findings: critical };
+  } catch {
+    return undefined;
+  }
+};
+
+const FindingsSummary = ({
+  reportJson,
+  hasFindings,
+  severities,
+  noFindingsLabel,
+  className,
+}: {
+  reportJson: ReportSummary | undefined;
+  hasFindings: boolean;
+  severities: Severity[];
+  noFindingsLabel: string;
+  className: string;
+}) => {
+  if (!reportJson) return null;
+  if (!hasFindings) {
+    return <StatusOK>{noFindingsLabel}</StatusOK>;
+  }
+  return (
+    <Typography
+      variant="body2"
+      color="textSecondary"
+      component="span"
+      className={className}
+    >
+      {severities
+        .filter(s => s.count > 0)
+        .map((s, index) => (
+          <Fragment key={s.key}>
+            {index > 0 && <>&middot;</>}
+            <Box component="span" className={className}>
+              <s.Icon className={s.iconClass} />
+              {s.count} {s.label}
+            </Box>
+          </Fragment>
+        ))}
+    </Typography>
+  );
+};
+
 const useStyles = makeStyles(theme => ({
   accordionSummaryContent: {
     display: 'flex',
@@ -168,23 +238,7 @@ export const AdversarialReviewSection = ({
     ArtifactKind.from(a.type).equals(ArtifactKind.ADVERSARIAL_REPORT),
   );
 
-  const reportJson = useMemo(() => {
-    const jsonArtifact = job?.artifacts?.find(a =>
-      ArtifactKind.from(a.type).equals(ArtifactKind.ADVERSARIAL_REPORT_JSON),
-    );
-    if (!jsonArtifact) return undefined;
-    try {
-      const parsed = JSON.parse(jsonArtifact.value);
-      const total = Number(parsed?.total_findings);
-      const critical = Number(parsed?.total_critical_findings);
-      if (!Number.isFinite(total) || !Number.isFinite(critical)) {
-        return undefined;
-      }
-      return { total_findings: total, total_critical_findings: critical };
-    } catch {
-      return undefined;
-    }
-  }, [job]);
+  const reportJson = useMemo(() => parseReportJson(job), [job]);
 
   const durationSeconds = job ? getEffectiveDurationSeconds(job) : undefined;
   const duration =
@@ -211,7 +265,7 @@ export const AdversarialReviewSection = ({
     : 0;
   const hasFindings = (reportJson?.total_findings ?? 0) > 0;
 
-  const severities = [
+  const severities: Severity[] = [
     {
       key: 'critical',
       count: criticalCount,
@@ -268,34 +322,13 @@ export const AdversarialReviewSection = ({
                 ) : (
                   <PhaseStatus status={job.status} />
                 )}
-                {reportJson &&
-                  (hasFindings ? (
-                    <Typography
-                      variant="body2"
-                      color="textSecondary"
-                      component="span"
-                      className={classes.findingIndicator}
-                    >
-                      {severities
-                        .filter(s => s.count > 0)
-                        .map((s, index) => (
-                          <Fragment key={s.key}>
-                            {index > 0 && <>&middot;</>}
-                            <Box
-                              component="span"
-                              className={classes.findingIndicator}
-                            >
-                              <s.Icon className={s.iconClass} />
-                              {s.count} {s.label}
-                            </Box>
-                          </Fragment>
-                        ))}
-                    </Typography>
-                  ) : (
-                    <StatusOK>
-                      {t('modulePage.phases.adversarialNoFindings')}
-                    </StatusOK>
-                  ))}
+                <FindingsSummary
+                  reportJson={reportJson}
+                  hasFindings={hasFindings}
+                  severities={severities}
+                  noFindingsLabel={t('modulePage.phases.adversarialNoFindings')}
+                  className={classes.findingIndicator}
+                />
                 <Typography variant="body2" color="textSecondary">
                   {duration}
                 </Typography>
