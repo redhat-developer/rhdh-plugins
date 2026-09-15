@@ -136,6 +136,29 @@ export interface DrawerPanelProps {
 }
 
 // @public
+export const SidebarDividerBlueprint: ExtensionBlueprint<{
+  kind: 'sidebar-divider';
+  params: {
+    priority?: number;
+  };
+  output: ExtensionDataRef<SidebarElementData, 'app.sidebar.element', {}>;
+  inputs: {};
+  config: {
+    priority: number | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+  };
+  dataRefs: {
+    element: ConfigurableExtensionDataRef<
+      SidebarElementData,
+      'app.sidebar.element',
+      {}
+    >;
+  };
+}>;
+
+// @public
 export const SidebarElementBlueprint: ExtensionBlueprint<{
   kind: 'sidebar-element';
   params: {
@@ -281,6 +304,29 @@ export const sidebarItemGroupDataRef: ConfigurableExtensionDataRef<
   'app.sidebar.item-group',
   {}
 >;
+
+// @public
+export const SidebarSpacerBlueprint: ExtensionBlueprint<{
+  kind: 'sidebar-spacer';
+  params: {
+    priority?: number;
+  };
+  output: ExtensionDataRef<SidebarElementData, 'app.sidebar.element', {}>;
+  inputs: {};
+  config: {
+    priority: number | undefined;
+  };
+  configInput: {
+    priority?: number | undefined;
+  };
+  dataRefs: {
+    element: ConfigurableExtensionDataRef<
+      SidebarElementData,
+      'app.sidebar.element',
+      {}
+    >;
+  };
+}>;
 
 // @public
 export const TemplateCardActionBlueprint: ExtensionBlueprint<{
