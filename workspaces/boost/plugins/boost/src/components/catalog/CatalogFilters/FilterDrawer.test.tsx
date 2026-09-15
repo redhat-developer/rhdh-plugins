@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
+import { renderInTestApp } from '@backstage/test-utils';
 
 import type { FilterDefinition } from '../../../blueprints/AiCatalogFilterBlueprint';
 import { FilterDrawer } from './FilterDrawer';
-
-jest.mock('../../../hooks/useTranslation', () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
-}));
 
 const filter: FilterDefinition = {
   urlParam: 'type',
@@ -34,8 +29,8 @@ const filter: FilterDefinition = {
 };
 
 describe('FilterDrawer', () => {
-  it('opens a drawer with the registered filters', () => {
-    render(
+  it('opens a drawer with the registered filters', async () => {
+    await renderInTestApp(
       <FilterDrawer
         filters={[filter]}
         entities={[]}
@@ -44,9 +39,7 @@ describe('FilterDrawer', () => {
       />,
     );
 
-    fireEvent.click(
-      screen.getByRole('button', { name: 'catalog.toolbar.filters' }),
-    );
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText('Type')).toBeInTheDocument();

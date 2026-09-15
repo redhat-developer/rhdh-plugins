@@ -61,9 +61,8 @@ Each domain boundary has an error boundary so a failure in one surface (e.g., ca
 plugins/boost/
   src/
     index.ts                    # NFS entry point (createFrontendPlugin)
-    plugin.tsx                  # Blueprints and plugin export
+    plugin.tsx                  # Frontend plugin assembly
     routes.ts
-    boostTranslationsModuleExport.ts
     blueprints/
       AiCatalogFilterBlueprint.ts
     filters/
@@ -72,17 +71,49 @@ plugins/boost/
       useAiAssets.ts            # Wraps catalogApiRef for AI asset queries
       useUrlFilters.ts
       useTranslation.ts
+    extensions/
+      aiCatalogFilters.ts
+      aiCatalogPage.tsx
+      entityCards.tsx
+    pages/
+      AiCatalogPage.tsx
     components/
       catalog/                  # AI Catalog domain (RHDHPLAN-1509)
-        AiCatalogPage.tsx
         AiAssetCard.tsx
         AiCatalogTable.tsx
-        CatalogFilters.tsx
+        AssetTypeBadge.tsx
+        CatalogErrorBoundary.tsx
+        CatalogToolbar.tsx
+        CatalogFilters/
+          CatalogFilters.tsx
+          FilterDrawer.tsx
+        CatalogResults/
+          CatalogResults.tsx
+          CatalogEmptyState.tsx
+          CatalogErrorState.tsx
+          CatalogLoadingState.tsx
         entity/
-          AssetDetailsCard.tsx
           AgentInstructionsCard.tsx
           UsageCard.tsx
+          AssetDetails/
+            AssetDetailsCard.tsx
+            AgentDetails.tsx
+            ModelServerDetails.tsx
+            McpServerDetails.tsx
+            SkillDetails.tsx
+            RuleDetails.tsx
+            AvailableModels.tsx
+            AvailableModelsDialog.tsx
+            HandoffTargets.tsx
+    utils/
+      categoryMeta.ts
+      entityFields.ts
+      entityFiltering.ts
+      entityLinks.ts
+      usageActions.ts
     translations/               # English scaffold; locales are a remaining change
+      index.ts
+      ref.ts
 ```
 
 There is no `BoostApiClient`, `useFeatureFlags`, `usePermissions`, or `chat/` / `admin/` source tree in this plugin today.

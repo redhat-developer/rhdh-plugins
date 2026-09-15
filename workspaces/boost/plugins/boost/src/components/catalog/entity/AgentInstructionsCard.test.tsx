@@ -73,4 +73,17 @@ describe('AgentInstructionsCard', () => {
     ).toBeInTheDocument();
     expect(screen.getByText('concise').tagName).toBe('STRONG');
   });
+
+  it('sanitizes unsafe HTML in instructions', async () => {
+    const { container } = await renderWithEntity({
+      ...agent,
+      spec: {
+        ...agent.spec,
+        instructions: '<img src="x" onerror="alert(1)" />',
+      },
+    });
+
+    expect(container.querySelector('[onerror]')).toBeNull();
+    expect(container.querySelector('script')).toBeNull();
+  });
 });

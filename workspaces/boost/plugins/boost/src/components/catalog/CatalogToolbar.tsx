@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useMemo } from 'react';
 import {
   Button,
   Flex,
@@ -48,7 +49,7 @@ export const CatalogToolbar = ({
   onViewModeChange,
 }: CatalogToolbarProps) => {
   const { t } = useTranslation();
-  const viewModeKeys = new Set([viewMode]);
+  const viewModeKeys = useMemo(() => new Set([viewMode]), [viewMode]);
 
   return (
     <Flex align="center" justify="between" gap="4" className={styles.toolbar}>
