@@ -179,7 +179,7 @@ what happens when a collision with another provider is possible. If the
 provider uses caller-supplied prefixes for scoping, the specification
 should define the default and document the collision behavior.
 
-### locationKey vs managed-by-location
+### `locationKey` vs `managed-by-location`
 
 These are distinct mechanisms — do not conflate them:
 
