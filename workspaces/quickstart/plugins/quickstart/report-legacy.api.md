@@ -7,8 +7,6 @@ import { BackstagePlugin } from '@backstage/core-plugin-api';
 import { CSSProperties } from 'react';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { PropsWithChildren } from 'react';
-import { TranslationRef } from '@backstage/frontend-plugin-api';
-import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public
 export type DrawerPartialState = {
@@ -87,74 +85,6 @@ export interface QuickstartItemData {
 
 // @public
 export const quickstartPlugin: BackstagePlugin<{}, {}, {}>;
-
-// @public
-export const quickstartTranslationRef: TranslationRef<
-  'plugin.quickstart',
-  {
-    readonly 'header.title': string;
-    readonly 'header.subtitle': string;
-    readonly 'steps.setupAuthentication.title': string;
-    readonly 'steps.setupAuthentication.description': string;
-    readonly 'steps.setupAuthentication.ctaTitle': string;
-    readonly 'steps.configureRbac.title': string;
-    readonly 'steps.configureRbac.description': string;
-    readonly 'steps.configureRbac.ctaTitle': string;
-    readonly 'steps.configureGit.title': string;
-    readonly 'steps.configureGit.description': string;
-    readonly 'steps.configureGit.ctaTitle': string;
-    readonly 'steps.managePlugins.title': string;
-    readonly 'steps.managePlugins.description': string;
-    readonly 'steps.managePlugins.ctaTitle': string;
-    readonly 'steps.importApplication.title': string;
-    readonly 'steps.importApplication.description': string;
-    readonly 'steps.importApplication.ctaTitle': string;
-    readonly 'steps.learnAboutCatalog.title': string;
-    readonly 'steps.learnAboutCatalog.description': string;
-    readonly 'steps.learnAboutCatalog.ctaTitle': string;
-    readonly 'steps.exploreSelfServiceTemplates.title': string;
-    readonly 'steps.exploreSelfServiceTemplates.description': string;
-    readonly 'steps.exploreSelfServiceTemplates.ctaTitle': string;
-    readonly 'steps.findAllLearningPaths.title': string;
-    readonly 'steps.findAllLearningPaths.description': string;
-    readonly 'steps.findAllLearningPaths.ctaTitle': string;
-    readonly 'steps.setupLightspeed.title': string;
-    readonly 'steps.setupLightspeed.description': string;
-    readonly 'steps.setupLightspeed.ctaTitle': string;
-    readonly 'steps.getStartedWithLightspeed.title': string;
-    readonly 'steps.getStartedWithLightspeed.description': string;
-    readonly 'steps.getStartedWithLightspeed.ctaTitle': string;
-    readonly 'button.quickstart': string;
-    readonly 'button.openQuickstartGuide': string;
-    readonly 'button.closeDrawer': string;
-    readonly 'button.gotIt': string;
-    readonly 'snackbar.helpPrompt': string;
-    readonly 'footer.progress': string;
-    readonly 'footer.notStarted': string;
-    readonly 'footer.hide': string;
-    readonly 'content.loading': string;
-    readonly 'content.emptyState.title': string;
-    readonly 'item.expandAriaLabel': string;
-    readonly 'item.collapseAriaLabel': string;
-    readonly 'item.expandButtonAriaLabel': string;
-    readonly 'item.collapseButtonAriaLabel': string;
-    readonly 'dev.pageTitle': string;
-    readonly 'dev.pageDescription': string;
-    readonly 'dev.drawerControls': string;
-    readonly 'dev.currentState': string;
-    readonly 'dev.stateOpen': string;
-    readonly 'dev.stateClosed': string;
-    readonly 'dev.instructions': string;
-    readonly 'dev.step1': string;
-    readonly 'dev.step2': string;
-    readonly 'dev.step3': string;
-    readonly 'dev.step4': string;
-    readonly 'dev.step5': string;
-  }
->;
-
-// @public
-export const quickstartTranslations: TranslationResource<'plugin.quickstart'>;
 
 // @public
 export const useQuickstartDrawerContext: () => QuickstartDrawerContextType;

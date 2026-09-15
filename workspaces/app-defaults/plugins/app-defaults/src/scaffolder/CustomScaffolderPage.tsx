@@ -15,7 +15,6 @@
  */
 
 import { useTranslationRef } from '@backstage/frontend-plugin-api';
-import { ButtonLink } from '@backstage/ui';
 import { translationRef } from '../translations/ref';
 import { EmptyCatalogGate } from '../catalog/EmptyCatalogGate';
 
@@ -32,11 +31,7 @@ export function CustomScaffolderPage(
       emptyState={{
         title: t('scaffolder.emptyState.title'),
         description: t('scaffolder.emptyState.description'),
-        action: (
-          <ButtonLink href="/catalog-import" variant="primary">
-            {t('scaffolder.emptyState.action')}
-          </ButtonLink>
-        ),
+        importButtonTitle: t('scaffolder.emptyState.importButtonTitle'),
       }}
     >
       {props.children}
