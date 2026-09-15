@@ -40,12 +40,14 @@ export type {
   TemplateCardBadgeData,
 } from './templateCard';
 
+export { SidebarDividerBlueprint } from './sidebar';
 export { SidebarElementBlueprint } from './sidebar';
 export { sidebarElementDataRef } from './sidebar';
 export { SidebarItemBlueprint } from './sidebar';
 export { sidebarItemDataRef } from './sidebar';
 export { SidebarItemGroupBlueprint } from './sidebar';
 export { sidebarItemGroupDataRef } from './sidebar';
+export { SidebarSpacerBlueprint } from './sidebar';
 export type {
   SidebarElementData,
   SidebarGroupSubmenu,
