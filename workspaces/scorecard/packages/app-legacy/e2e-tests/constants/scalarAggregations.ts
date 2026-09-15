@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export const SCALAR_AGGREGATION_KPI_IDS = {
+export const SCALAR_AGGREGATED_CARDS_METRIC_IDS = {
   totalOpenBugs: 'totalOpenBugs',
   avgOpenPrs: 'avgOpenPrs',
   entitiesWithOpenPrs: 'entitiesWithOpenPrs',
@@ -23,7 +23,7 @@ export const SCALAR_AGGREGATION_KPI_IDS = {
 } as const;
 
 /** Must match `title` in App.tsx homepage widget config (Add widget picker). */
-export const SCALAR_AGGREGATION_KPI_WIDGET_TITLES = {
+export const SCALAR_AGGREGATED_CARDS_WIDGET_TITLES = {
   totalOpenBugs: 'Scorecard: Total open bugs',
   avgOpenPrs: 'Scorecard: Average open PRs',
   entitiesWithOpenPrs: 'Scorecard: Entities with open PRs',
@@ -31,34 +31,34 @@ export const SCALAR_AGGREGATION_KPI_WIDGET_TITLES = {
   minOpenPrs: 'Scorecard: Minimum open PRs',
 } as const;
 
-export const SCALAR_AGGREGATION_CARDS_METADATA = {
+export const SCALAR_AGGREGATED_CARDS_METADATA = {
   totalOpenBugs: {
-    id: SCALAR_AGGREGATION_KPI_IDS.totalOpenBugs,
-    title: SCALAR_AGGREGATION_KPI_WIDGET_TITLES.totalOpenBugs,
+    id: SCALAR_AGGREGATED_CARDS_METRIC_IDS.totalOpenBugs,
+    title: SCALAR_AGGREGATED_CARDS_WIDGET_TITLES.totalOpenBugs,
     metricId: 'jira.openIssues' as const,
     type: 'sum' as const,
   },
   avgOpenPrs: {
-    id: SCALAR_AGGREGATION_KPI_IDS.avgOpenPrs,
-    title: SCALAR_AGGREGATION_KPI_WIDGET_TITLES.avgOpenPrs,
+    id: SCALAR_AGGREGATED_CARDS_METRIC_IDS.avgOpenPrs,
+    title: SCALAR_AGGREGATED_CARDS_WIDGET_TITLES.avgOpenPrs,
     metricId: 'github.openPRs' as const,
     type: 'average' as const,
   },
   entitiesWithOpenPrs: {
-    id: SCALAR_AGGREGATION_KPI_IDS.entitiesWithOpenPrs,
-    title: SCALAR_AGGREGATION_KPI_WIDGET_TITLES.entitiesWithOpenPrs,
+    id: SCALAR_AGGREGATED_CARDS_METRIC_IDS.entitiesWithOpenPrs,
+    title: SCALAR_AGGREGATED_CARDS_WIDGET_TITLES.entitiesWithOpenPrs,
     metricId: 'github.openPRs' as const,
     type: 'count' as const,
   },
   maxOpenPrs: {
-    id: SCALAR_AGGREGATION_KPI_IDS.maxOpenPrs,
-    title: SCALAR_AGGREGATION_KPI_WIDGET_TITLES.maxOpenPrs,
+    id: SCALAR_AGGREGATED_CARDS_METRIC_IDS.maxOpenPrs,
+    title: SCALAR_AGGREGATED_CARDS_WIDGET_TITLES.maxOpenPrs,
     metricId: 'github.openPRs' as const,
     type: 'max' as const,
   },
   minOpenPrs: {
-    id: SCALAR_AGGREGATION_KPI_IDS.minOpenPrs,
-    title: SCALAR_AGGREGATION_KPI_WIDGET_TITLES.minOpenPrs,
+    id: SCALAR_AGGREGATED_CARDS_METRIC_IDS.minOpenPrs,
+    title: SCALAR_AGGREGATED_CARDS_WIDGET_TITLES.minOpenPrs,
     metricId: 'github.openPRs' as const,
     type: 'min' as const,
   },

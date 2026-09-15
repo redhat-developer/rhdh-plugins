@@ -14,10 +14,16 @@
  * limitations under the License.
  */
 
-import {
-  aggregationTypes,
-  DEFAULT_NUMBER_THRESHOLDS,
-} from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { aggregationTypes } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+// Inline default thresholds for e2e mocks (matches scorecard-common DEFAULT_NUMBER_THRESHOLDS)
+const DEFAULT_NUMBER_THRESHOLDS = {
+  rules: [
+    { key: 'success', expression: '<10' },
+    { key: 'warning', expression: '10-50' },
+    { key: 'error', expression: '>50' },
+  ],
+};
 
 const scalarResultBase = {
   total: 8,
