@@ -18,6 +18,12 @@ import type { DiscoveryApi, FetchApi } from '@backstage/core-plugin-api';
 import { DcmClientError } from '../errors/DcmClientError';
 
 const PLUGIN_ID = 'dcm';
+const DCM_OIDC_TOKEN_HEADER = 'X-DCM-OIDC-Token';
+
+/** Supplies a user OIDC access token when DCM authentication is enabled. @public */
+export type DcmOidcTokenProvider = () =>
+  | Promise<string | undefined>
+  | undefined;
 
 /**
  * Base class shared by all DCM API clients.
@@ -30,22 +36,33 @@ const PLUGIN_ID = 'dcm';
 export abstract class DcmBaseClient {
   protected readonly discoveryApi: DiscoveryApi;
   protected readonly fetchApi: FetchApi;
+  private readonly getAccessToken?: DcmOidcTokenProvider;
 
   /** Human-readable service name used in error messages, e.g. "Catalog". */
   protected abstract readonly serviceName: string;
 
-  constructor(options: { discoveryApi: DiscoveryApi; fetchApi: FetchApi }) {
+  constructor(options: {
+    discoveryApi: DiscoveryApi;
+    fetchApi: FetchApi;
+    getAccessToken?: DcmOidcTokenProvider;
+  }) {
     this.discoveryApi = options.discoveryApi;
     this.fetchApi = options.fetchApi;
+    this.getAccessToken = options.getAccessToken;
   }
 
   protected async fetch<T>(path: string, init?: RequestInit): Promise<T> {
     const baseUrl = await this.discoveryApi.getBaseUrl(PLUGIN_ID);
     const url = `${baseUrl}/proxy/${path}`;
     const { headers: initHeaders, ...initRest } = init ?? {};
+    const accessToken = await this.getAccessToken?.();
     const response = await this.fetchApi.fetch(url, {
       ...initRest,
-      headers: { 'Content-Type': 'application/json', ...initHeaders },
+      headers: {
+        'Content-Type': 'application/json',
+        ...initHeaders,
+        ...(accessToken ? { [DCM_OIDC_TOKEN_HEADER]: accessToken } : {}),
+      },
     });
     if (response.status === 204) {
       return undefined as unknown as T;
