@@ -314,14 +314,17 @@ export const SidebarSpacerBlueprint: ExtensionBlueprint<{
   kind: 'sidebar-spacer';
   params: {
     priority?: number;
+    grow?: boolean;
   };
   output: ExtensionDataRef<SidebarElementData, 'app.sidebar.element', {}>;
   inputs: {};
   config: {
     priority: number | undefined;
+    grow: boolean | undefined;
   };
   configInput: {
     priority?: number | undefined;
+    grow?: boolean | undefined;
   };
   dataRefs: {
     element: ConfigurableExtensionDataRef<

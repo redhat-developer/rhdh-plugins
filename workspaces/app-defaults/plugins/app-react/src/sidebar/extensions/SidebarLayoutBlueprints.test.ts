@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-import { SidebarDivider, SidebarSpace } from '@backstage/core-components';
+import {
+  SidebarDivider,
+  SidebarSpace,
+  SidebarSpacer,
+} from '@backstage/core-components';
 import { createExtensionTester } from '@backstage/frontend-test-utils';
 
 import { SidebarDividerBlueprint } from './SidebarDividerBlueprint';
@@ -63,15 +67,38 @@ describe('SidebarSpacerBlueprint', () => {
     });
   });
 
-  it('yields a SidebarSpace element with the given priority', () => {
+  it('yields a fixed SidebarSpacer element by default', () => {
     const tester = createExtensionTester(
-      SidebarSpacerBlueprint.make({ name: 'x', params: { priority: -30 } }),
+      SidebarSpacerBlueprint.make({ name: 'x', params: { priority: 5 } }),
     );
 
     expect(tester.get(sidebarElementDataRef)).toEqual({
       id: 'sidebar-spacer:x',
+      component: SidebarSpacer,
+      priority: 5,
+    });
+  });
+
+  it('yields a growing SidebarSpace element with grow, overridable from config', () => {
+    const grown = createExtensionTester(
+      SidebarSpacerBlueprint.make({
+        name: 'x',
+        params: { priority: -30, grow: true },
+      }),
+    );
+    expect(grown.get(sidebarElementDataRef)).toEqual({
+      id: 'sidebar-spacer:x',
       component: SidebarSpace,
       priority: -30,
     });
+
+    const shrunk = createExtensionTester(
+      SidebarSpacerBlueprint.make({
+        name: 'x',
+        params: { priority: -30, grow: true },
+      }),
+      { config: { grow: false } },
+    );
+    expect(shrunk.get(sidebarElementDataRef).component).toBe(SidebarSpacer);
   });
 });
