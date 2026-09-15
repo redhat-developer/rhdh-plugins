@@ -67,10 +67,22 @@ describe('buildSidebarModel', () => {
     expect(entries[0]).toMatchObject({ kind: 'item', item: { id: 'i3' } });
     expect(entries[1]).toMatchObject({
       kind: 'group',
-      group: { id: 'admin', priority: -1 },
+      group: { id: 'admin', priority: -1, submenu: 'inline' },
     });
     const group = entries[1].kind === 'group' ? entries[1].group : undefined;
     expect(group?.items.map(i => i.id)).toEqual(['i2', 'i1']);
+  });
+
+  it('keeps an explicit flyout submenu style', () => {
+    const entries = buildSidebarModel({
+      items: [],
+      groups: [{ id: 'g', title: 'Group', to: '/g', submenu: 'flyout' }],
+    });
+
+    expect(entries[0]).toMatchObject({
+      kind: 'group',
+      group: { id: 'g', submenu: 'flyout' },
+    });
   });
 
   it('orders groups among top-level items by priority', () => {

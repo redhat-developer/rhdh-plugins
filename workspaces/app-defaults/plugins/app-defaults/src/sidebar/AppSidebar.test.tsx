@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { renderInTestApp } from '@backstage/frontend-test-utils';
 import type {
   NavContentNavItem,
@@ -84,7 +84,7 @@ describe('AppSidebar', () => {
     ).not.toBeNull();
   });
 
-  it('renders groups with their items inside a submenu', async () => {
+  it('renders inline groups collapsed and expands them on click', async () => {
     await renderInTestApp(
       <AppSidebar
         items={[
@@ -96,6 +96,60 @@ describe('AppSidebar', () => {
     );
 
     expect(screen.getByText('Top')).toBeInTheDocument();
+    expect(screen.queryByText('Users')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /Administration/ }));
+    expect(screen.getByRole('link', { name: /Users/ })).toHaveAttribute(
+      'href',
+      '/admin/users',
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Administration/ }));
+    await waitFor(() =>
+      expect(screen.queryByText('Users')).not.toBeInTheDocument(),
+    );
+  });
+
+  it('starts an inline group expanded when the route matches an item', async () => {
+    await renderInTestApp(
+      <AppSidebar
+        items={[
+          { id: 'users', title: 'Users', to: '/admin/users', group: 'admin' },
+        ]}
+        groups={[{ id: 'admin', title: 'Administration' }]}
+      />,
+      { initialRouteEntries: ['/admin/users/42'] },
+    );
+
+    expect(screen.getByText('Users')).toBeInTheDocument();
+  });
+
+  it('renders an inline group with a link as a link that also toggles', async () => {
+    await renderInTestApp(
+      <AppSidebar
+        items={[
+          { id: 'users', title: 'Users', to: '/admin/users', group: 'admin' },
+        ]}
+        groups={[{ id: 'admin', title: 'Administration', to: '/admin' }]}
+      />,
+    );
+
+    const header = screen.getByRole('link', { name: /Administration/ });
+    expect(header).toHaveAttribute('href', '/admin');
+    fireEvent.click(header);
+    expect(screen.getByText('Users')).toBeInTheDocument();
+  });
+
+  it('renders flyout groups with their items inside a hover submenu', async () => {
+    await renderInTestApp(
+      <AppSidebar
+        items={[
+          { id: 'users', title: 'Users', to: '/admin/users', group: 'admin' },
+        ]}
+        groups={[{ id: 'admin', title: 'Administration', submenu: 'flyout' }]}
+      />,
+    );
+
     expect(screen.getByText('Administration')).toBeInTheDocument();
     // Submenu content is only mounted while the group entry is hovered.
     expect(screen.queryByText('Users')).not.toBeInTheDocument();

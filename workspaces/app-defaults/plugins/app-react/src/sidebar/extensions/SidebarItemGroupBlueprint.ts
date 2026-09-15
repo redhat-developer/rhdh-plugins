@@ -18,18 +18,21 @@ import { createExtensionBlueprint } from '@backstage/frontend-plugin-api';
 import { z } from 'zod';
 
 import { sidebarItemGroupDataRef } from './sidebarItemGroupDataRef';
-import type { SidebarIcon } from '../types';
+import type { SidebarGroupSubmenu, SidebarIcon } from '../types';
 
 /**
  * Blueprint for plugins to contribute a group to the app sidebar.
  *
- * A group renders as a sidebar entry with an expandable submenu. Every
+ * A group renders as a sidebar entry that collects every
  * {@link SidebarItemBlueprint} extension whose `group` matches this group's
- * `id` is rendered inside the submenu, ordered by `priority`. Groups
- * themselves are ordered among top-level items by `priority` as well.
+ * `id`, ordered by `priority`. By default the items render inline in a
+ * collapsible list below the entry (`submenu: 'inline'`); set
+ * `submenu: 'flyout'` to render them in a hover submenu next to the sidebar
+ * instead. Groups themselves are ordered among top-level items by
+ * `priority` as well.
  *
- * `title`, `icon`, `to`, and `priority` can be overridden by deployers via
- * `app-config.yaml`:
+ * `title`, `icon`, `to`, `priority`, and `submenu` can be overridden by
+ * deployers via `app-config.yaml`:
  *
  * ```yaml
  * app:
@@ -37,6 +40,7 @@ import type { SidebarIcon } from '../types';
  *     - sidebar-item-group:my-plugin/admin:
  *         config:
  *           priority: -100
+ *           submenu: flyout
  * ```
  *
  * @example
@@ -65,6 +69,7 @@ export const SidebarItemGroupBlueprint = createExtensionBlueprint({
     icon: z.string().optional(),
     to: z.string().optional(),
     priority: z.number().optional(),
+    submenu: z.enum(['inline', 'flyout']).optional(),
   },
   *factory(
     params: {
@@ -73,6 +78,7 @@ export const SidebarItemGroupBlueprint = createExtensionBlueprint({
       icon?: SidebarIcon;
       to?: string;
       priority?: number;
+      submenu?: SidebarGroupSubmenu;
     },
     { config },
   ) {
@@ -82,6 +88,7 @@ export const SidebarItemGroupBlueprint = createExtensionBlueprint({
       icon: config.icon ?? params.icon,
       to: config.to ?? params.to,
       priority: config.priority ?? params.priority,
+      submenu: config.submenu ?? params.submenu,
     });
   },
 });

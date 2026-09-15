@@ -35,8 +35,9 @@ import HelpIcon from '@mui/icons-material/HelpOutline';
  *   new tab and sinks below the auto-discovered pages via a negative priority.
  * - `Docs` and `APIs` take over the auto-discovered TechDocs and API docs
  *   nav items (same `to`) and move them into the `Documentation` group.
- * - The `Settings` group collects the user settings and app visualizer
- *   pages and sinks to the bottom via a negative priority.
+ * - The `Documentation` group uses the default inline submenu, while the
+ *   `Settings` group collects the user settings and app visualizer pages in
+ *   a flyout submenu and sinks to the bottom via a negative priority.
  */
 const searchElement = SidebarElementBlueprint.make({
   name: 'search',
@@ -105,6 +106,7 @@ const settingsGroup = SidebarItemGroupBlueprint.make({
     icon: 'manageAccounts',
     to: '/settings',
     priority: -100,
+    submenu: 'flyout',
   },
 });
 

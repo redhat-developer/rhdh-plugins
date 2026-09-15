@@ -45,6 +45,7 @@ describe('SidebarItemGroupBlueprint', () => {
           icon: 'admin',
           to: '/admin',
           priority: -10,
+          submenu: 'flyout',
         },
       }),
     );
@@ -55,17 +56,24 @@ describe('SidebarItemGroupBlueprint', () => {
       icon: 'admin',
       to: '/admin',
       priority: -10,
+      submenu: 'flyout',
     });
   });
 
-  it('lets app-config override title, icon, to and priority', () => {
+  it('lets app-config override title, icon, to, priority and submenu', () => {
     const tester = createExtensionTester(
       SidebarItemGroupBlueprint.make({
         name: 'admin',
         params: { id: 'admin', title: 'Administration', priority: -10 },
       }),
       {
-        config: { title: 'Admin', icon: 'settings', to: '/x', priority: 5 },
+        config: {
+          title: 'Admin',
+          icon: 'settings',
+          to: '/x',
+          priority: 5,
+          submenu: 'flyout',
+        },
       },
     );
 
@@ -75,6 +83,7 @@ describe('SidebarItemGroupBlueprint', () => {
       icon: 'settings',
       to: '/x',
       priority: 5,
+      submenu: 'flyout',
     });
   });
 });

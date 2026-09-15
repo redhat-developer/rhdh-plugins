@@ -94,7 +94,8 @@
     "@remixicon/react": ">=4.6.0 <4.9.0"
   },
   "peerDependencies": {
-    "react": "^16.13.1 || ^17.0.0 || ^18.0.0"
+    "react": "^16.13.1 || ^17.0.0 || ^18.0.0",
+    "react-router-dom": "^6.30.6"
   },
   "devDependencies": {
     "@backstage/cli": "^0.36.3",
