@@ -1,5 +1,17 @@
 # @red-hat-developer-hub/backstage-plugin-app-defaults
 
+## 1.2.0
+
+### Minor Changes
+
+- 365fcd8: Moved `appDrawerExtension` and `appDrawerModule` from `app-react` into `app-defaults`. The drawer module is now available as both a named export from the main entry point and a default export via the `/app-drawer-module` subpath of `@red-hat-developer-hub/backstage-plugin-app-defaults`. `ApplicationDrawer` is now exported from the main entry point of `app-react`.
+
+### Patch Changes
+
+- 6c5ba66: Clarify the empty-state descriptions to make clear that there may be no catalog entities yet or that the user may lack permission to view any, and change the catalog and catalog graph titles from "No catalog items found" to "No catalog items available". Updated all translations (de, es, fr, it, ja).
+- Updated dependencies [365fcd8]
+  - @red-hat-developer-hub/backstage-plugin-app-react@1.2.0
+
 ## 1.1.0
 
 ### Minor Changes

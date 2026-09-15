@@ -120,6 +120,18 @@ describe('useConversations', () => {
     jest.useRealTimers();
   });
 
+  it('should not fetch conversations when disabled', async () => {
+    (useApi as jest.Mock).mockReturnValue({
+      getConversations: mockGetConversations,
+    });
+
+    renderHook(() => useConversations(false), { wrapper });
+
+    await waitFor(() => {
+      expect(mockGetConversations).not.toHaveBeenCalled();
+    });
+  });
+
   it('should not refetch when all topic_summary are set', async () => {
     const mockData = [
       {

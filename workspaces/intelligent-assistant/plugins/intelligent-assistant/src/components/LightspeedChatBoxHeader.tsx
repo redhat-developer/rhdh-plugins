@@ -57,6 +57,8 @@ type LightspeedChatBoxHeaderProps = {
   hideModelSelector?: boolean;
   /** When false, omits pinned-chats and MCP entries (Chat tab only). */
   showChatTabOptions?: boolean;
+  /** When false, hides MCP settings from the header menu. */
+  showMcpSettings?: boolean;
   setDisplayMode: (mode: ChatbotDisplayMode) => void;
 };
 
@@ -97,6 +99,7 @@ export const LightspeedChatBoxHeader = ({
   isModelSelectorDisabled = false,
   hideModelSelector = false,
   showChatTabOptions = true,
+  showMcpSettings = false,
   setDisplayMode,
 }: LightspeedChatBoxHeaderProps) => {
   const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
@@ -258,17 +261,19 @@ export const LightspeedChatBoxHeader = ({
                     {t('settings.pinned.enable')}
                   </DropdownItem>
                 )}
-                <DropdownItem
-                  value="mcpSettings"
-                  key="mcpSettings"
-                  icon={<McpSettingsIcon />}
-                  onClick={onMcpSettingsClick}
-                >
-                  {t('settings.mcp.label')}
-                  <Label color="purple" isCompact style={{ marginLeft: 8 }}>
-                    {t('settings.mcp.badge')}
-                  </Label>
-                </DropdownItem>
+                {showMcpSettings && (
+                  <DropdownItem
+                    value="mcpSettings"
+                    key="mcpSettings"
+                    icon={<McpSettingsIcon />}
+                    onClick={onMcpSettingsClick}
+                  >
+                    {t('settings.mcp.label')}
+                    <Label color="purple" isCompact style={{ marginLeft: 8 }}>
+                      {t('settings.mcp.badge')}
+                    </Label>
+                  </DropdownItem>
+                )}
               </DropdownList>
             </DropdownGroup>
           </>

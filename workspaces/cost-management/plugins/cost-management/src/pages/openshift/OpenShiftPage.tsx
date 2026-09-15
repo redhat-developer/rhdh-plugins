@@ -31,6 +31,7 @@ import { PageHeader } from './components/PageHeader';
 import { TableToolbar } from './components/TableToolbar';
 import { useApi } from '@backstage/core-plugin-api';
 import { costManagementSlimApiRef } from '../../apis';
+import { usePatternFlyTheme } from '../../hooks/usePatternFlyTheme';
 import useAsync from 'react-use/lib/useAsync';
 import { CURRENCY_SYMBOLS } from '../../constants/currencies';
 import { DownloadIconButton } from './components/DownloadIconButton';
@@ -220,6 +221,7 @@ function buildCostManagementQueryParams(
 
 /** @public */
 export function OpenShiftPage() {
+  usePatternFlyTheme();
   const api = useApi(costManagementSlimApiRef);
   const [groupBy, setGroupBy] = useState('project');
   const [overheadDistribution, setOverheadDistribution] =
