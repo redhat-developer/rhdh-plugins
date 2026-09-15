@@ -95,13 +95,15 @@ Pagination is cursor-based: omit `cursor` on the first request; pass the prior `
 
 **Rationale:** The mapping is the single source of truth for entity shape; a mapping change automatically flows through the provider. `baseName` is how this provider consumes the mapping's prefix override without inventing a second identity scheme.
 
-### D6: Failure isolation — skip bad entries, fail bad runs atomically
+### D6: Failure isolation — retain last-good on map failure, fail bad runs atomically
 
-**Choice:** Two failure tiers: (a) a single server that the mapping rejects (missing required `server.json` field) is logged with an identifying message and skipped; the run proceeds and commits the rest. (b) A registry-level error (unreachable, non-2xx, unparseable body, or pagination-safeguard trip) fails the whole run: **no** `applyMutation` is emitted, so the last-good catalog state is preserved, and the next scheduled tick retries.
+**Choice:** Two failure tiers: (a) a single accumulated server entry that the mapping rejects (for example a missing required `server.json` field) is logged with an identifying message; the run proceeds. For that entry, if a **last-good** entity from a prior successful sync exists for the same registry identity, the provider SHALL include that entity unchanged in the full mutation so a still-listed server is not pruned because of a transient or partial `server.json` defect. Last-good lookup keys entries by `server.json` `name` and `version` when both are present (matching the mapping's canonical identity annotations `modelcontextprotocol.io/name` and `modelcontextprotocol.io/version` on the prior entity). When `name` or `version` is absent, or no prior entity exists, the entry contributes no entity to the mutation (first-time failure or uncorrelatable entry). (b) A registry-level error (unreachable, non-2xx, unparseable body, or pagination-safeguard trip) fails the whole run: **no** `applyMutation` is emitted, so the last-good catalog state is preserved, and the next scheduled tick retries.
 
-**Alternative considered:** Commit whatever was fetched before an error — rejected; a partial full mutation prunes entities that still exist, causing catalog flapping.
+At the start of each sync, the provider loads existing provider-managed entities (via `locationKey` `mcp-registry-provider`) into an index for last-good retention.
 
-**Rationale:** Matches the agent-native principle (predictable errors) and the full-mutation model (a partial full mutation would wrongly prune healthy entities).
+**Alternatives considered:** Omit failed entries from the full mutation — rejected; a server still present in the registry would be pruned from the catalog. Commit whatever was fetched before a pagination error — rejected; a partial full mutation prunes entities that still exist, causing catalog flapping.
+
+**Rationale:** Matches the agent-native principle (predictable errors) and the full-mutation model: membership is “every accumulated registry entry,” with fresh mapping when possible and last-good retention when mapping fails.
 
 ### D7: API-version slug is configurable, defaults to `v1`, discrepancy documented
 

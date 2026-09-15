@@ -16,7 +16,7 @@ The [`mcp-registry-server-mapping`](../mcp-registry-server-mapping/proposal.md) 
   - `pageSize` — optional registry page size, sent as `?limit=`; when omitted, `?limit=` is left unset so the MCP Registry default applies.
   - `defaultOwner` — the default `spec.owner` (a `User`/`Group` entity reference) applied to every produced `API` entity, passed as the caller-override default into the mapping.
 - Implement **cursor pagination**: the servers endpoint (`<baseUrl>/<apiVersion>/servers`) is traversed by passing the prior response's `metadata.nextCursor` as the `cursor` query parameter until the cursor is absent, null, or empty (per the [generic registry API](https://github.com/modelcontextprotocol/registry/blob/main/docs/reference/api/generic-registry-api.md#basic-example-list-servers)), or until `pageLimit` (default `10`) would be exceeded — which fails the run. A repeated cursor also fails the run. Optional `pageSize` is sent as `?limit=`; when unset, that query is omitted.
-- Specify **resilient, agent-native sync behavior**: a single server entry that fails to map is logged and skipped without aborting the run; a registry transport/protocol error fails that sync run (leaving the prior catalog state intact) and is retried on the next scheduled tick.
+- Specify **resilient, agent-native sync behavior**: a single server entry that fails to map is logged without aborting the run; when a last-good entity exists for that registry `name`/`version`, it is retained in the full mutation so still-listed servers are not pruned; a registry transport/protocol error fails that sync run (no mutation) and is retried on the next scheduled tick.
 
 ## Capabilities
 

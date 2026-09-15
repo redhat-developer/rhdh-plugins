@@ -157,7 +157,7 @@ For every accumulated server entry, the provider SHALL extract the `server.json`
 
 ### Requirement: Commit ingested entities as a full mutation
 
-At the end of each successful sync, the provider SHALL commit the complete set of produced entities to the catalog as a single **full** mutation (not incremental), so that entities for servers no longer present in the registry are removed from the catalog and re-added/updated entities reflect the latest `server.json`. The provider SHALL NOT emit a mutation for a sync run that failed to complete (see error handling), leaving the prior catalog state intact.
+At the end of each successful sync, the provider SHALL commit to the catalog as a single **full** mutation (not incremental) one entity per accumulated registry server entry: the newly mapped entity when mapping succeeds, or the **last-good** entity from a prior successful sync when mapping fails but the entry is still listed (see error handling). Servers no longer present in the accumulated set are omitted from the mutation and pruned. The provider SHALL NOT emit a mutation for a sync run that failed to complete (registry transport/protocol errors), leaving the prior catalog state intact.
 
 #### Scenario: Removed server is pruned
 
@@ -171,12 +171,22 @@ At the end of each successful sync, the provider SHALL commit the complete set o
 
 ### Requirement: Resilient, agent-native error handling
 
-A single server entry that cannot be mapped (e.g. it omits a `server.json`-required field and the mapping rejects it) SHALL be logged with an actionable message identifying the entry and SHALL be skipped, without aborting the sync or discarding the other entries. A registry transport or protocol error (unreachable host, non-2xx HTTP status, unparseable response body, or pagination-safeguard trip) SHALL fail the current sync run: the provider SHALL NOT commit a partial full mutation, SHALL log the error, and SHALL retry on the next scheduled tick, leaving the prior catalog state intact.
+A single accumulated server entry that cannot be mapped (e.g. it omits a `server.json`-required field and the mapping rejects it) SHALL be logged with an actionable message identifying the entry and SHALL NOT abort the sync. When that entry's `server.json` includes both `name` and `version`, the provider SHALL look up a last-good entity from a prior successful sync keyed by that `name` and `version` (via `modelcontextprotocol.io/name` and `modelcontextprotocol.io/version` on provider-managed entities) and SHALL include it unchanged in the full mutation when found. When `name` or `version` is absent, or no last-good entity exists, the entry contributes no entity to the mutation. A registry transport or protocol error (unreachable host, non-2xx HTTP status, unparseable response body, or pagination-safeguard trip) SHALL fail the current sync run: the provider SHALL NOT commit a mutation, SHALL log the error, and SHALL retry on the next scheduled tick, leaving the prior catalog state intact.
 
 #### Scenario: One malformed server does not abort the sync
 
 - **WHEN** one accumulated server entry fails mapping while the others succeed
-- **THEN** the provider logs the failing entry, skips it, and commits a full mutation containing the successfully mapped entities
+- **THEN** the provider logs the failing entry, commits a full mutation containing the successfully mapped entities, and retains any last-good entity for the failed entry per the rules above
+
+#### Scenario: Mapping failure retains last-good entity for a still-listed server
+
+- **WHEN** an accumulated server entry was successfully mapped on a prior sync, the registry still lists that server, and a later sync's `server.json` fails mapping (e.g. required field removed) while `name` and `version` are still present
+- **THEN** the provider logs the mapping failure and includes the prior last-good entity unchanged in the full mutation so the catalog entry is not pruned
+
+#### Scenario: First-time mapping failure omits the entity
+
+- **WHEN** an accumulated server entry fails mapping and no prior last-good entity exists for its `name` and `version`
+- **THEN** the provider logs the failure and the full mutation omits an entity for that entry
 
 #### Scenario: Registry fetch error aborts the run without a mutation
 

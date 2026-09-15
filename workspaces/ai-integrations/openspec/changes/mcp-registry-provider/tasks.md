@@ -34,13 +34,13 @@
 - [ ] 4.2 Wire scheduling via `SchedulerService.createScheduledTaskRunner(schedule)`, honoring `initialDelay`; register the single provider when config is present
 - [ ] 4.3 Implement the full-mutation commit: on successful sync call `connection.applyMutation({ type: 'full', entities })`; on a failed run emit no mutation (preserve prior catalog state)
 - [ ] 4.4 Attach provider attribution to each entity: set the mutation `locationKey` to `mcp-registry-provider` **and** set `backstage.io/managed-by-location` on the entity (they are not interchangeable — the key claims the entity ref; the annotation is catalog-visible source)
-- [ ] 4.5 Add unit tests: full mutation contents (each `DeferredEntity` has `locationKey` `mcp-registry-provider` **and** the entity carries `backstage.io/managed-by-location`, matching scenario `Provider attribution annotations present`), pruning of removed servers across two syncs, updated server reflected, and no-mutation-on-failed-run
+- [ ] 4.5 Add unit tests: full mutation contents (each `DeferredEntity` has `locationKey` `mcp-registry-provider` **and** the entity carries `backstage.io/managed-by-location`, matching scenario `Provider attribution annotations present`), pruning of removed servers across two syncs, updated server reflected, last-good retention when mapping fails for a still-listed entry, and no-mutation-on-failed-run
 
 ## 5. Mapping Integration
 
 - [ ] 5.1 Depend on the sibling `mcp-registry-server-mapping` transform and invoke it per accumulated server, passing `defaultOwner` as the caller-override owner default and, when configured, `baseName` as the caller-override identity prefix (never reimplement the mapping)
-- [ ] 5.2 Implement per-entry failure isolation: catch a mapping rejection (e.g. missing required `server.json` field), log an actionable message identifying the entry, skip it, and continue the run
-- [ ] 5.3 Add integration tests over sample `server.json` inputs → produced `mcp-server` `API` entities, asserting `spec.owner` reflects `defaultOwner` (and the mapping default `unknown` when omitted), `metadata.name` uses `baseName` as prefix when configured (and mapping default `mcp.registry` when omitted), and that one bad entry does not abort the batch
+- [ ] 5.2 Implement per-entry failure isolation: on mapping rejection, log an actionable message; when `server.json` has `name` and `version`, include the last-good provider-managed entity (indexed at sync start by `modelcontextprotocol.io/name` + `modelcontextprotocol.io/version`) in the mutation set unchanged; otherwise omit the entry; continue the run
+- [ ] 5.3 Add integration tests over sample `server.json` inputs → produced `mcp-server` `API` entities, asserting `spec.owner` reflects `defaultOwner` (and the mapping default `unknown` when omitted), `metadata.name` uses `baseName` as prefix when configured (and mapping default `mcp.registry` when omitted), that one bad entry does not abort the batch, and that a mapping failure on a previously synced server retains the last-good entity in the full mutation
 
 ## 6. End-to-End Verification & Docs
 
