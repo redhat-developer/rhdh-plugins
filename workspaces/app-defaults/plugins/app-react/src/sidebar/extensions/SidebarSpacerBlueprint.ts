@@ -14,26 +14,27 @@
  * limitations under the License.
  */
 
-import { SidebarSpace } from '@backstage/core-components';
+import { SidebarSpace, SidebarSpacer } from '@backstage/core-components';
 import { createExtensionBlueprint } from '@backstage/frontend-plugin-api';
 import { z } from 'zod';
 
 import { sidebarElementDataRef } from './sidebarElementDataRef';
 
 /**
- * Blueprint for plugins to insert a flexible spacer into the app sidebar.
+ * Blueprint for plugins to insert a spacer into the app sidebar.
  *
  * The spacer is a custom sidebar element (see {@link SidebarElementBlueprint})
- * that renders the `SidebarSpace` from `@backstage/core-components` in the
- * slot determined by `priority` (higher first). Everything with a lower
- * priority than the spacer is pushed to the bottom of the sidebar.
- * `priority` can be overridden by deployers via `app-config.yaml`.
+ * rendered in the slot determined by `priority` (higher first). By default
+ * it is a fixed gap (`SidebarSpacer` from `@backstage/core-components`).
+ * With `grow: true` it renders the flexible `SidebarSpace` instead, which
+ * pushes everything with a lower priority to the bottom of the sidebar.
+ * `priority` and `grow` can be overridden by deployers via `app-config.yaml`.
  *
  * @example
  * ```
  * const bottomSpacer = SidebarSpacerBlueprint.make({
  *   name: 'bottom',
- *   params: { priority: -30 },
+ *   params: { priority: -30, grow: true },
  * });
  * ```
  *
@@ -48,11 +49,13 @@ export const SidebarSpacerBlueprint = createExtensionBlueprint({
   },
   configSchema: {
     priority: z.number().optional(),
+    grow: z.boolean().optional(),
   },
-  *factory(params: { priority?: number }, { config, node }) {
+  *factory(params: { priority?: number; grow?: boolean }, { config, node }) {
+    const grow = config.grow ?? params.grow ?? false;
     yield sidebarElementDataRef({
       id: node.spec.id,
-      component: SidebarSpace,
+      component: grow ? SidebarSpace : SidebarSpacer,
       priority: config.priority ?? params.priority,
     });
   },
