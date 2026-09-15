@@ -14,18 +14,4 @@
  * limitations under the License.
  */
 
-import { usePermission } from '@backstage/plugin-permission-react';
-
-import { iaNotebooksPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
-
-export const useLightspeedNotebooksPermission = () => {
-  const result = usePermission({
-    permission: iaNotebooksPermission,
-  });
-
-  return {
-    loading: result.loading,
-    allowed: result.allowed,
-    iaNotebooksPermissionName: iaNotebooksPermission.name,
-  };
-};
+export { appDrawerModule as default } from './drawer/appDrawerModule';

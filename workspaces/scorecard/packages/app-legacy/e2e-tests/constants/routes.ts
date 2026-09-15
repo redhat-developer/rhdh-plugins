@@ -33,4 +33,6 @@ export const ScorecardRoutes = {
     '**/api/scorecard/aggregations/jira.openIssues',
   GITHUB_OPEN_PRS_METRIC_AGGREGATION_ROUTE:
     '**/api/scorecard/aggregations/github.openPRs',
+  LICENSE_FILE_EXISTS_KPI_AGGREGATION_ROUTE:
+    '**/api/scorecard/aggregations/licenseFileExistsKpi',
 } as const;

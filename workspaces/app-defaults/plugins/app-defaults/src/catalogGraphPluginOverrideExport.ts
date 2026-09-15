@@ -14,14 +14,4 @@
  * limitations under the License.
  */
 
-import { usePermission } from '@backstage/plugin-permission-react';
-
-import { iaChatPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
-
-export const useLightspeedDeletePermission = () => {
-  const lightspeedDeletePermissionResult = usePermission({
-    permission: iaChatPermission,
-  });
-
-  return lightspeedDeletePermissionResult;
-};
+export { catalogGraphPluginOverride as default } from './catalog-graph/catalogGraphPluginOverride';

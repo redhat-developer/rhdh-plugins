@@ -14,17 +14,4 @@
  * limitations under the License.
  */
 
-import { useTranslation } from '../hooks/useTranslation';
-import permissionRequired from '../images/permission-required.svg';
-
-export const PermissionRequiredIcon = () => {
-  const { t } = useTranslation();
-
-  return (
-    <img
-      src={permissionRequired as any}
-      alt={t('icon.permissionRequired.alt')}
-      style={{ width: 'clamp(200px, 50cqi, 600px)' }}
-    />
-  );
-};
+export { apiDocsPluginOverride as default } from './api-docs/apiDocsPluginOverride';

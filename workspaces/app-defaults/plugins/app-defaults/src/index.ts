@@ -39,15 +39,7 @@ export { appDefaultsTranslationsModule };
 
 export { appDefaultsTranslations };
 
-export { apiDocsPluginOverride };
-
-export { catalogGraphPluginOverride };
-
-export { catalogPluginOverride };
-
-export { docsPluginOverride };
-
-export { scaffolderPluginOverride };
+export { appDrawerExtension, appDrawerModule } from './drawer/appDrawerModule';
 
 /**
  * Feature loader that registers the RHDH app defaults module and all

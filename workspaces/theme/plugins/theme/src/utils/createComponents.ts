@@ -815,17 +815,17 @@ export const createComponents = (themeConfig: ThemeConfig): Components => {
               // Prevent overflow in the main container due to the margin
               maxHeight: `calc(100vh - 2 * ${general.pageInset})`,
             },
-            // NFS BUI entity pages wrap PluginHeader + tabs + Container in a
-            // classless <main>. BUI Container is flex: 1 1 0% but that only
-            // grows when main is a flex column — otherwise Topology / Scorecard
-            // stay content-height inside a tall well (RHDHBUGS-3543). Do not
-            // override Backstage Page, which uses display:grid on <main>.
-            '& > main:not([data-backstage-core-page])': {
+            // NFS BUI entity pages wrap their content in a BUI Container inside
+            // a classless <main>. The Container is flex: 1 1 0%, but that only
+            // grows when main is a flex column. Keep the main content at least
+            // viewport-height while allowing longer entity pages to grow.
+            '& > main:has([class*="bui-Container"])': {
               display: 'flex',
               flexDirection: 'column',
-              flex: 1,
-              minHeight: 0,
-              maxHeight: `calc(100% - 2 * ${general.pageInset})`,
+              flex: '1 0 auto',
+              minHeight: `calc(100vh - 2 * ${general.pageInset})`,
+              height: 'auto',
+              maxHeight: 'none !important',
             },
             // NFS / BUI pages use Container instead of <main>. Match the content
             // well color (same token as BackstageContent) and rely on flex: 1

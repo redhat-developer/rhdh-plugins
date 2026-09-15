@@ -185,23 +185,4 @@ Add `module: Legacy` to `dynamicRoutes` and `appIcons` entries that reference OF
 
 ## Development
 
-You can serve the plugin in isolation for local development. The setup is in the [dev](./dev) directory.
-
-- **NFS dev mode**: Run `yarn start` in the plugin directory to use the new frontend system with mock data.
-- **Legacy dev mode**: Run `yarn start:legacy` in the plugin directory to use the legacy app with Full Page and Tabbed Page routers.
-
-Both dev modes use mock extensions data and do not require a running backend.
-
-To run the full extensions workspace (NFS app + backend):
-
-```bash
-cd workspaces/extensions
-yarn install
-yarn start
-```
-
-For the legacy workspace app:
-
-```bash
-yarn start:legacy
-```
+See [CONTRIBUTING.md](./CONTRIBUTING.md).

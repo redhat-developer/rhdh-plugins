@@ -18,18 +18,16 @@ import { usePermission } from '@backstage/plugin-permission-react';
 
 import { iaChatPermission } from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
 
-export const useLightspeedViewPermission = (): {
+export const useIaChatPermission = (): {
   loading: boolean;
   allowed: boolean;
-  iaChatPermissionName: string;
 } => {
-  const canUseChats = usePermission({
+  const result = usePermission({
     permission: iaChatPermission,
   });
 
   return {
-    loading: canUseChats.loading,
-    allowed: canUseChats.allowed,
-    iaChatPermissionName: iaChatPermission.name,
+    loading: result.loading,
+    allowed: result.allowed,
   };
 };

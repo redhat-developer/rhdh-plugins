@@ -26,10 +26,6 @@ export function isDockerUrl(value: string): boolean {
   return value.startsWith(DOCKER_PROTO);
 }
 
-export function isHttpUrl(value: string): boolean {
-  return value.startsWith('https://') || value.startsWith('http://');
-}
-
 export function isLocalPath(value: string): boolean {
   return value.startsWith('./');
 }
