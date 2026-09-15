@@ -109,7 +109,7 @@ At the start of each sync, the provider loads existing provider-managed entities
 
 **Alternatives considered:** Omit failed entries from the full mutation — rejected; a server still present in the registry would be pruned from the catalog. Commit whatever was fetched before a pagination error — rejected; a partial full mutation prunes entities that still exist, causing catalog flapping.
 
-**Rationale:** Matches the agent-native principle (predictable errors) and the full-mutation model: membership is “every accumulated registry entry,” with fresh mapping when possible and last-good retention when mapping fails.
+**Rationale:** Matches the agent-native principle (predictable errors) and the full-mutation model: membership is every entity that mapped successfully or was last-good-retained for an accumulated entry; entries that fail mapping with no prior entity are omitted rather than forcing a placeholder.
 
 ### D7: API-version slug is configurable, defaults to `v1`, discrepancy documented
 

@@ -2,7 +2,7 @@
 
 This capability defines a Backstage catalog **entity provider** that ingests MCP servers from one configured [MCP Registry](https://github.com/modelcontextprotocol/registry) into the RHDH catalog as `mcp-server` `API` entities. Multiple registries are out of scope for this implementation.
 
-On a configured schedule, the provider lists the registry's servers (`GET <baseUrl>/<apiVersion>/servers`), traverses all pages via cursor pagination, transforms each `server.json` document into an `mcp-server` `API` entity using the [`mcp-registry-server-mapping`](../../../mcp-registry-server-mapping/specs/mcp-registry-server-mapping/spec.md) contract (supplying the configured `defaultOwner` as the caller-override owner and, when present, `baseName` as the caller-override identity prefix), retains last-good entities when mapping fails (D6), stamps each emitted entity with `redhat.com/rhdh-mcp-registry-sync-status` (`ok` or `degraded`), and commits the full set to the catalog as a single full mutation so that servers removed from the registry are pruned.
+On a configured schedule, the provider lists the registry's servers (`GET <baseUrl>/<apiVersion>/servers`), traverses all pages via cursor pagination, transforms each `server.json` document into an `mcp-server` `API` entity using the [`mcp-registry-server-mapping`](../../../mcp-registry-server-mapping/specs/mcp-registry-server-mapping/spec.md) contract (supplying the configured `defaultOwner` as the caller-override owner and, when present, `baseName` as the caller-override identity prefix), retains last-good entities when mapping fails (D6), stamps each emitted entity with `redhat.com/rhdh-mcp-registry-sync-status` (`ok` or `degraded`), and commits a full mutation of every entity produced or last-good-retained for that sync so that servers removed from the registry are pruned.
 
 This spec covers configuration, scheduling, registry API interaction (pagination and API-version slug construction), delegation to the mapping transform, catalog mutation semantics, and error handling. It does **not** redefine the `server.json` → entity transform, which is owned by `mcp-registry-server-mapping`.
 
@@ -18,6 +18,11 @@ The provider SHALL read its configuration from `catalog.providers.mcpRegistry` a
 
 - **WHEN** `catalog.providers.mcpRegistry` is configured with a `baseUrl` and a `schedule`
 - **THEN** exactly one provider is registered using the configured `baseUrl` and `schedule`, `apiVersion` defaulting to `v1`, no prefix override beyond the mapping's default, and no owner override beyond the mapping's own default
+
+#### Scenario: baseUrl only uses default schedule
+
+- **WHEN** `catalog.providers.mcpRegistry` is configured with `baseUrl` only (no `schedule`)
+- **THEN** exactly one provider is registered, `apiVersion` defaulting to `v1`, and the default schedule (`frequency: { minutes: 30 }`, `timeout: { minutes: 3 }`, no `initialDelay`) applies per the sync schedule requirement
 
 #### Scenario: baseName is accepted alongside baseUrl
 
@@ -122,6 +127,11 @@ During a sync, the provider SHALL request the registry's servers from `<baseUrl>
 - **WHEN** the provider is configured with `pageLimit: 2` and the 2nd page still has a non-empty `metadata.nextCursor`
 - **THEN** the provider does not fetch a 3rd page, logs the pagination-safeguard trip, and does not commit a mutation for this run
 
+#### Scenario: Repeated cursor trips the pagination safeguard
+
+- **WHEN** a follow-up list request would reuse a `cursor` value already seen in the same sync run
+- **THEN** the provider does not issue that request, logs the repeated-cursor safeguard trip, and does not commit a mutation for this run
+
 ### Requirement: Construct the servers endpoint from apiVersion
 
 The provider SHALL construct the servers endpoint as `<baseUrl>/<apiVersion>/servers`, where `apiVersion` is the configured value or the `v1` default. The provider SHALL join `baseUrl` and the version segment without duplicating or dropping path separators, regardless of whether `baseUrl` has a trailing slash.
@@ -138,7 +148,7 @@ The provider SHALL construct the servers endpoint as `<baseUrl>/<apiVersion>/ser
 
 ### Requirement: Map each registry server to an mcp-server API entity
 
-For every accumulated server entry, the provider SHALL extract the `server.json` document from the list entry's `.server` object and produce an `mcp-server` `API` entity by applying the `mcp-registry-server-mapping` transform, supplying the configured `defaultOwner` as the caller-override owner default and, when `baseName` is present, supplying `baseName` as the caller-override identity prefix. The provider SHALL NOT reimplement or alter the field mapping, annotation projection, or identity rules defined by `mcp-registry-server-mapping`. Each produced entity SHALL be emitted with mutation `locationKey` `mcp-registry-provider` **and** SHALL carry `backstage.io/managed-by-location` whose value is `url:` concatenated with the normalized configured `baseUrl` (trailing `/` removed), so the catalog attributes the entity to this provider's registry source.
+For every accumulated server entry, the provider SHALL extract the `server.json` document from the list entry's `.server` object and apply the `mcp-registry-server-mapping` transform, supplying the configured `defaultOwner` as the caller-override owner default and, when `baseName` is present, supplying `baseName` as the caller-override identity prefix. When mapping succeeds, the result is included in the full mutation; when mapping fails, resilient error handling (last-good retention or omission) applies instead of emitting a new mapped entity. The provider SHALL NOT reimplement or alter the field mapping, annotation projection, or identity rules defined by `mcp-registry-server-mapping`. Each produced entity SHALL be emitted with mutation `locationKey` `mcp-registry-provider` **and** SHALL carry `backstage.io/managed-by-location` whose value is `url:` concatenated with the normalized configured `baseUrl` (trailing `/` removed), so the catalog attributes the entity to this provider's registry source.
 
 #### Scenario: Server mapped with configured default owner
 
@@ -181,7 +191,7 @@ For every entity included in a successful sync's full mutation, the provider SHA
 
 ### Requirement: Commit ingested entities as a full mutation
 
-At the end of each successful sync, the provider SHALL commit to the catalog as a single **full** mutation (not incremental) one entity per accumulated registry server entry: the newly mapped entity when mapping succeeds, or the **last-good** entity from a prior successful sync when mapping fails but the entry is still listed (see error handling). Servers no longer present in the accumulated set are omitted from the mutation and pruned. The provider SHALL NOT emit a mutation for a sync run that failed to complete (registry transport/protocol errors), leaving the prior catalog state intact.
+At the end of each successful sync, the provider SHALL commit to the catalog as a single **full** mutation (not incremental) the complete set of entities for that sync: one entity per accumulated registry server entry **only when** mapping succeeds for that entry or last-good retention applies (see error handling); otherwise that entry contributes no entity. When mapping succeeds, include the newly mapped entity; when mapping fails but last-good retention applies, include the **last-good** entity from a prior successful sync. Accumulated entries that fail mapping with no last-good entity contribute **no** entity to the mutation. Servers no longer present in the accumulated set are omitted from the mutation and pruned. The provider SHALL NOT emit a mutation for a sync run that failed to complete (registry transport/protocol errors), leaving the prior catalog state intact.
 
 #### Scenario: Removed server is pruned
 
@@ -195,7 +205,9 @@ At the end of each successful sync, the provider SHALL commit to the catalog as 
 
 ### Requirement: Resilient, agent-native error handling
 
-A single accumulated server entry that cannot be mapped (e.g. it omits a `server.json`-required field and the mapping rejects it) SHALL be logged with an actionable message identifying the entry and SHALL NOT abort the sync. When that entry's `server.json` includes both `name` and `version`, the provider SHALL look up a last-good entity from a prior successful sync keyed by that `name` and `version` (via `modelcontextprotocol.io/name` and `modelcontextprotocol.io/version` on provider-managed entities) and SHALL include it unchanged in the full mutation when found. When `name` or `version` is absent, or no last-good entity exists, the entry contributes no entity to the mutation. A registry transport or protocol error (unreachable host, non-2xx HTTP status, unparseable response body, or pagination-safeguard trip) SHALL fail the current sync run: the provider SHALL NOT commit a mutation, SHALL log the error, and SHALL retry on the next scheduled tick, leaving the prior catalog state intact.
+At the start of each sync run, before mapping accumulated servers, the provider SHALL load all provider-managed catalog entities (mutation `locationKey` `mcp-registry-provider`) into a last-good index keyed by `metadata.annotations['modelcontextprotocol.io/name']` and `metadata.annotations['modelcontextprotocol.io/version']`.
+
+A single accumulated server entry that cannot be mapped (e.g. it omits a `server.json`-required field and the mapping rejects it) SHALL be logged with an actionable message identifying the entry and SHALL NOT abort the sync. When that entry's `server.json` includes both `name` and `version`, the provider SHALL look up a last-good entity in that index keyed by that `name` and `version` and SHALL include it unchanged in the full mutation when found. When `name` or `version` is absent, or no last-good entity exists, the entry contributes no entity to the mutation. A registry transport or protocol error (unreachable host, non-2xx HTTP status, unparseable response body, or pagination-safeguard trip) SHALL fail the current sync run: the provider SHALL NOT commit a mutation, SHALL log the error, and SHALL retry on the next scheduled tick, leaving the prior catalog state intact.
 
 #### Scenario: One malformed server does not abort the sync
 

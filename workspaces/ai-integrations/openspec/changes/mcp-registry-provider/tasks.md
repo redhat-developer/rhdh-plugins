@@ -14,9 +14,9 @@
 
 ## 2. Configuration
 
-- [ ] 2.1 Author `config.d.ts` declaring `catalog.providers.mcpRegistry` as a single object with `baseUrl` (required), `baseName?` (optional mapping-prefix override), `apiVersion?` (default `v1`), `schedule?` (`SchedulerServiceTaskScheduleDefinitionConfig`), `pageLimit?` (max pages per sync, default `10`), `pageSize?` (registry `?limit=` when set), and `defaultOwner?`; require `@visibility backend` annotations for backend-only fields such as `baseUrl`
+- [ ] 2.1 Author `config.d.ts` declaring `catalog.providers.mcpRegistry` as a single object with `baseUrl` (required), `baseName?` (optional mapping-prefix override), `apiVersion?` (default `v1`), `schedule?` (`SchedulerServiceTaskScheduleDefinitionConfig` in config.d.ts; runtime scheduling uses `SchedulerServiceTaskScheduleDefinition` per design D3), `pageLimit?` (max pages per sync, default `10`), `pageSize?` (registry `?limit=` when set), and `defaultOwner?`; require `@visibility backend` annotations for backend-only fields such as `baseUrl`
 - [ ] 2.2 Implement config reading: parse `catalog.providers.mcpRegistry` as a single object; register nothing (no error) when the key is absent
-- [ ] 2.3 Implement validation with actionable errors (fail fast when `baseUrl` is missing; fail fast with a multiple-registries-out-of-scope message when the value is a keyed map of instance objects); apply the `apiVersion` default (`v1`), the default schedule when `schedule` is omitted (`frequency: { minutes: 30 }`, `timeout: { minutes: 3 }`, no `initialDelay`), and the `pageLimit` default (`10` pages per sync) when omitted
+- [ ] 2.3 Implement validation with actionable errors (fail fast when `baseUrl` is missing; fail fast with a multiple-registries-out-of-scope message when the value is a keyed map of instance objects); apply the `apiVersion` default (`v1`), the default schedule when `schedule` is omitted (`frequency: { minutes: 30 }`, `timeout: { minutes: 3 }`, no `initialDelay` — same as spec requirement “Sync on the configured schedule”), and the `pageLimit` default (`10` pages per sync) when omitted
 - [ ] 2.4 Add unit tests for config parsing/validation: single object with `baseUrl`, optional `baseName`, keyed-map rejection, missing `baseUrl`, absent-config no-op, omitted `pageLimit` → `10`, explicit `pageLimit` override, omitted `pageSize` (no invented default), and explicit `pageSize`
 
 ## 3. Registry Client & Pagination
@@ -30,7 +30,7 @@
 
 ## 4. Entity Provider & Scheduling
 
-- [ ] 4.1 Implement the `EntityProvider` class: `getProviderName()` = `mcp-registry-provider`, `connect()` storing the connection, and a `run()` performing one sync
+- [ ] 4.1 Implement the `EntityProvider` class: `getProviderName()` = `mcp-registry-provider`, `connect()` storing the connection, and a `run()` performing one sync; at the start of each `run()`, load provider-managed entities (`locationKey` `mcp-registry-provider`) into a last-good index keyed by `modelcontextprotocol.io/name` and `modelcontextprotocol.io/version` before mapping (design D6)
 - [ ] 4.2 Wire scheduling via `SchedulerService.createScheduledTaskRunner(schedule)` only (no synchronous `run()` from `connect()`); register the single provider when config is present
 - [ ] 4.3 Implement the full-mutation commit: on successful sync call `connection.applyMutation({ type: 'full', entities })`; on a failed run emit no mutation (preserve prior catalog state)
 - [ ] 4.4 Attach provider attribution and sync status to each entity: set mutation `locationKey` `mcp-registry-provider`, `backstage.io/managed-by-location` to `url:` + normalized `baseUrl` (trailing `/` stripped), and `redhat.com/rhdh-mcp-registry-sync-status` to `ok` or `degraded` per D8
