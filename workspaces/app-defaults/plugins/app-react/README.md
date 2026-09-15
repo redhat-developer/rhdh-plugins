@@ -228,10 +228,11 @@ Only `priority` can be overridden from `app-config.yaml`
 ### Spacers and Dividers
 
 `SidebarSpacerBlueprint` and `SidebarDividerBlueprint` are ready-made elements
-that render the `SidebarSpace` and `SidebarDivider` from
-`@backstage/core-components`. A spacer pushes everything with a lower priority
-to the bottom of the sidebar; a divider draws a horizontal line. Both take only
-a `priority`, overridable via `sidebar-spacer:<plugin>/<name>` and
+from `@backstage/core-components`. A spacer is a fixed 8px gap
+(`SidebarSpacer`); with `grow: true` it becomes the flexible `SidebarSpace`
+that pushes everything with a lower priority to the bottom of the sidebar. A
+divider draws a horizontal line. Both take a `priority`, and the spacer a
+`grow` flag, overridable via `sidebar-spacer:<plugin>/<name>` and
 `sidebar-divider:<plugin>/<name>`.
 
 ```typescript
@@ -243,7 +244,7 @@ import {
 // Everything below priority -30 sits at the bottom, separated by a line.
 const bottomSpacer = SidebarSpacerBlueprint.make({
   name: 'bottom',
-  params: { priority: -30 },
+  params: { priority: -30, grow: true },
 });
 const bottomDivider = SidebarDividerBlueprint.make({
   name: 'bottom',

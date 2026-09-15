@@ -28,6 +28,7 @@ import {
   sidebarBottomDivider,
   sidebarBottomSpacer,
   sidebarLogoElement,
+  sidebarLogoSpacer,
   sidebarNotificationsElement,
   sidebarSearchElement,
   sidebarSettingsDivider,
@@ -35,13 +36,14 @@ import {
 import { CompanyLogo } from './logo/CompanyLogo';
 
 describe('defaultSidebarExtensions', () => {
-  it('registers logo, search, spacer, dividers and notifications', () => {
+  it('registers logo, gap, search, spacer, dividers and notifications', () => {
     const specs = defaultSidebarExtensions.map(ext =>
       JSON.parse(JSON.stringify(ext)),
     );
 
     expect(specs.map(s => `${s.kind}/${s.name}`)).toEqual([
       'sidebar-element/logo',
+      'sidebar-spacer/logo',
       'sidebar-element/search',
       'sidebar-spacer/bottom',
       'sidebar-divider/bottom',
@@ -65,6 +67,9 @@ describe('defaultSidebarExtensions', () => {
       ).priority;
 
     expect(priorityOf(sidebarLogoElement)).toBeGreaterThan(
+      priorityOf(sidebarLogoSpacer)!,
+    );
+    expect(priorityOf(sidebarLogoSpacer)).toBeGreaterThan(
       priorityOf(sidebarSearchElement)!,
     );
     expect(priorityOf(sidebarSearchElement)).toBeGreaterThan(0);
