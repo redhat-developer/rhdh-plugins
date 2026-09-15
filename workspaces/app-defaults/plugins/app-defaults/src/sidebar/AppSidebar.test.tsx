@@ -121,6 +121,26 @@ describe('AppSidebar', () => {
     );
   });
 
+  it('renders custom elements in their priority slot', async () => {
+    const Custom = () => <button type="button">Custom element</button>;
+    await renderInTestApp(
+      <AppSidebar
+        items={[
+          { id: 'top', title: 'Top', to: '/top', priority: 10 },
+          { id: 'bottom', title: 'Bottom', to: '/bottom', priority: -10 },
+        ]}
+        groups={[]}
+        elements={[{ id: 'custom', component: Custom, priority: 0 }]}
+      />,
+    );
+
+    const nav = screen.getByRole('navigation');
+    const texts = Array.from(nav.querySelectorAll('a, button')).map(
+      el => el.textContent,
+    );
+    expect(texts).toEqual(['Top', 'Custom element', 'Bottom']);
+  });
+
   it('merges auto-discovered nav items', async () => {
     await renderInTestApp(
       <AppSidebar

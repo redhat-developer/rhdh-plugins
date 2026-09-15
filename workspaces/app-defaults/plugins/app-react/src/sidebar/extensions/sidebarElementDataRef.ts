@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-export { sidebarElementDataRef } from './extensions/sidebarElementDataRef';
-export { SidebarElementBlueprint } from './extensions/SidebarElementBlueprint';
-export { sidebarItemDataRef } from './extensions/sidebarItemDataRef';
-export { SidebarItemBlueprint } from './extensions/SidebarItemBlueprint';
-export { sidebarItemGroupDataRef } from './extensions/sidebarItemGroupDataRef';
-export { SidebarItemGroupBlueprint } from './extensions/SidebarItemGroupBlueprint';
-export type {
-  SidebarElementData,
-  SidebarIcon,
-  SidebarItemData,
-  SidebarItemGroupData,
-} from './types';
+import { createExtensionDataRef } from '@backstage/frontend-plugin-api';
+
+import type { SidebarElementData } from '../types';
+
+/**
+ * Extension data ref carrying a custom sidebar element from a plugin to the
+ * sidebar.
+ *
+ * @public
+ */
+export const sidebarElementDataRef =
+  createExtensionDataRef<SidebarElementData>().with({
+    id: 'app.sidebar.element',
+  });

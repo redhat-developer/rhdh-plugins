@@ -25,6 +25,7 @@ import { iconsApiRef, useApi } from '@backstage/frontend-plugin-api';
 import type { IconComponent } from '@backstage/frontend-plugin-api';
 import type { NavContentNavItems } from '@backstage/plugin-app-react';
 import type {
+  SidebarElementData,
   SidebarItemData,
   SidebarItemGroupData,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
@@ -47,6 +48,8 @@ export interface AppSidebarProps {
   items: SidebarItemData[];
   /** Groups contributed via `SidebarItemGroupBlueprint`. */
   groups: SidebarItemGroupData[];
+  /** Custom elements contributed via `SidebarElementBlueprint`. */
+  elements?: SidebarElementData[];
   /** Nav items auto-discovered by Backstage from page extensions. */
   navItems?: NavContentNavItems;
 }
@@ -115,25 +118,50 @@ function SidebarModelGroupEntry({ group }: { group: SidebarModelGroup }) {
 }
 
 /**
- * Sidebar that renders contributed items and groups ordered by priority
- * (higher first, ties broken by title). Grouped items render in a submenu,
- * and nav items auto-discovered from page extensions are merged in unless a
+ * Sidebar that renders contributed items, groups and custom elements ordered
+ * by priority (higher first, ties broken by title). Grouped items render in a
+ * submenu, custom elements render their own component at the top level, and
+ * nav items auto-discovered from page extensions are merged in unless a
  * contributed item already links to the same path.
  *
  * @public
  */
-export const AppSidebar = ({ items, groups, navItems }: AppSidebarProps) => {
-  const entries = buildSidebarModel(items, groups, navItems?.rest() ?? []);
+export const AppSidebar = ({
+  items,
+  groups,
+  elements,
+  navItems,
+}: AppSidebarProps) => {
+  const entries = buildSidebarModel({
+    items,
+    groups,
+    elements,
+    navItems: navItems?.rest(),
+  });
 
   return (
     <Sidebar>
-      {entries.map(entry =>
-        entry.kind === 'item' ? (
-          <SidebarModelItemEntry key={entry.item.id} item={entry.item} />
-        ) : (
-          <SidebarModelGroupEntry key={entry.group.id} group={entry.group} />
-        ),
-      )}
+      {entries.map(entry => {
+        switch (entry.kind) {
+          case 'item':
+            return (
+              <SidebarModelItemEntry key={entry.item.id} item={entry.item} />
+            );
+          case 'group':
+            return (
+              <SidebarModelGroupEntry
+                key={entry.group.id}
+                group={entry.group}
+              />
+            );
+          case 'element': {
+            const Element = entry.element.component;
+            return <Element key={entry.element.id} />;
+          }
+          default:
+            return null;
+        }
+      })}
     </Sidebar>
   );
 };

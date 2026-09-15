@@ -16,7 +16,19 @@
 
 import type { NavContentNavItem } from '@backstage/plugin-app-react';
 
-import { buildSidebarModel } from './buildSidebarModel';
+import { buildSidebarModel, type SidebarModelEntry } from './buildSidebarModel';
+
+const payloadOf = (entry: SidebarModelEntry) => {
+  switch (entry.kind) {
+    case 'item':
+      return entry.item;
+    case 'group':
+      return entry.group;
+    default:
+      return entry.element;
+  }
+};
+const idOf = (entry: SidebarModelEntry) => payloadOf(entry).id;
 
 const navItem = (id: string, title: string, href: string) =>
   ({
@@ -28,30 +40,28 @@ const navItem = (id: string, title: string, href: string) =>
 
 describe('buildSidebarModel', () => {
   it('sorts top-level items by priority, higher first, then by title', () => {
-    const entries = buildSidebarModel(
-      [
+    const entries = buildSidebarModel({
+      items: [
         { id: 'c', title: 'Charlie', priority: 0 },
         { id: 'a', title: 'Alpha' },
         { id: 'z', title: 'Zulu', priority: 10 },
         { id: 'b', title: 'Bravo', priority: -5 },
       ],
-      [],
-    );
+      groups: [],
+    });
 
-    expect(
-      entries.map(e => (e.kind === 'item' ? e.item.id : e.group.id)),
-    ).toEqual(['z', 'a', 'c', 'b']);
+    expect(entries.map(idOf)).toEqual(['z', 'a', 'c', 'b']);
   });
 
   it('nests items inside their group and sorts them by priority', () => {
-    const entries = buildSidebarModel(
-      [
+    const entries = buildSidebarModel({
+      items: [
         { id: 'i1', title: 'Users', group: 'admin', priority: 1 },
         { id: 'i2', title: 'Plugins', group: 'admin', priority: 5 },
         { id: 'i3', title: 'Home', priority: 100 },
       ],
-      [{ id: 'admin', title: 'Administration', priority: -1 }],
-    );
+      groups: [{ id: 'admin', title: 'Administration', priority: -1 }],
+    });
 
     expect(entries).toHaveLength(2);
     expect(entries[0]).toMatchObject({ kind: 'item', item: { id: 'i3' } });
@@ -64,22 +74,22 @@ describe('buildSidebarModel', () => {
   });
 
   it('orders groups among top-level items by priority', () => {
-    const entries = buildSidebarModel(
-      [
+    const entries = buildSidebarModel({
+      items: [
         { id: 'top', title: 'Top', priority: 10 },
         { id: 'bottom', title: 'Bottom', priority: -10 },
       ],
-      [{ id: 'g', title: 'Middle', priority: 0 }],
-    );
+      groups: [{ id: 'g', title: 'Middle', priority: 0 }],
+    });
 
     expect(entries.map(e => e.kind)).toEqual(['item', 'group', 'item']);
   });
 
   it('keeps items with an unknown group at the top level', () => {
-    const entries = buildSidebarModel(
-      [{ id: 'orphan', title: 'Orphan', group: 'missing' }],
-      [],
-    );
+    const entries = buildSidebarModel({
+      items: [{ id: 'orphan', title: 'Orphan', group: 'missing' }],
+      groups: [],
+    });
 
     expect(entries).toEqual([
       {
@@ -97,13 +107,13 @@ describe('buildSidebarModel', () => {
   });
 
   it('merges auto-discovered nav items at the default priority', () => {
-    const entries = buildSidebarModel(
-      [{ id: 'chat', title: 'Chat', priority: 10 }],
-      [],
-      [navItem('page:catalog', 'Catalog', '/catalog')],
-    );
+    const entries = buildSidebarModel({
+      items: [{ id: 'chat', title: 'Chat', priority: 10 }],
+      groups: [],
+      navItems: [navItem('page:catalog', 'Catalog', '/catalog')],
+    });
 
-    expect(entries.map(e => (e.kind === 'item' ? e.item : e.group))).toEqual([
+    expect(entries.map(payloadOf)).toEqual([
       expect.objectContaining({ id: 'chat' }),
       expect.objectContaining({
         id: 'page:catalog',
@@ -115,20 +125,75 @@ describe('buildSidebarModel', () => {
   });
 
   it('drops auto-discovered nav items that a contributed item already links to', () => {
-    const entries = buildSidebarModel(
-      [{ id: 'my-catalog', title: 'Software', to: '/catalog', group: 'g' }],
-      [{ id: 'g', title: 'Group' }],
-      [
+    const entries = buildSidebarModel({
+      items: [
+        { id: 'my-catalog', title: 'Software', to: '/catalog', group: 'g' },
+      ],
+      groups: [{ id: 'g', title: 'Group' }],
+      navItems: [
         navItem('page:catalog', 'Catalog', '/catalog'),
         navItem('page:docs', 'Docs', '/docs'),
       ],
-    );
+    });
 
-    const ids = entries.map(e => (e.kind === 'item' ? e.item.id : e.group.id));
-    expect(ids).toEqual(['page:docs', 'g']);
+    expect(entries.map(idOf)).toEqual(['page:docs', 'g']);
+  });
+
+  it('places custom elements at the top level ordered by priority', () => {
+    const Search = () => null;
+    const Notifications = () => null;
+    const entries = buildSidebarModel({
+      items: [{ id: 'home', title: 'Home', priority: 0 }],
+      groups: [{ id: 'g', title: 'Group', priority: -100 }],
+      elements: [
+        {
+          id: 'sidebar-element:notifications',
+          component: Notifications,
+          priority: -50,
+        },
+        { id: 'sidebar-element:search', component: Search, priority: 100 },
+      ],
+    });
+
+    expect(entries).toEqual([
+      {
+        kind: 'element',
+        element: {
+          id: 'sidebar-element:search',
+          component: Search,
+          priority: 100,
+        },
+      },
+      expect.objectContaining({ kind: 'item' }),
+      {
+        kind: 'element',
+        element: {
+          id: 'sidebar-element:notifications',
+          component: Notifications,
+          priority: -50,
+        },
+      },
+      expect.objectContaining({ kind: 'group' }),
+    ]);
+  });
+
+  it('breaks priority ties between elements by id', () => {
+    const C = () => null;
+    const entries = buildSidebarModel({
+      items: [],
+      groups: [],
+      elements: [
+        { id: 'b', component: C },
+        { id: 'a', component: C },
+      ],
+    });
+
+    expect(
+      entries.map(e => (e.kind === 'element' ? e.element.id : '')),
+    ).toEqual(['a', 'b']);
   });
 
   it('returns an empty list when nothing is contributed', () => {
-    expect(buildSidebarModel([], [])).toEqual([]);
+    expect(buildSidebarModel({ items: [], groups: [] })).toEqual([]);
   });
 });

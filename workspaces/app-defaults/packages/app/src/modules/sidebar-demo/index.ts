@@ -16,15 +16,21 @@
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import {
+  SidebarElementBlueprint,
   SidebarItemBlueprint,
   SidebarItemGroupBlueprint,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
+import { SidebarSearchModal } from '@backstage/plugin-search';
 import HelpIcon from '@mui/icons-material/HelpOutline';
 
 /**
  * Demo contributions for the priority-ordered sidebar provided by
  * `@red-hat-developer-hub/backstage-plugin-app-defaults`.
  *
+ * - `Search` and `Notifications` are custom elements: they render the
+ *   `SidebarSearchModal` and `NotificationsSidebarItem` components, which
+ *   need their own hooks and context, at a fixed priority slot.
  * - `Help` is an action item (no `to`) that opens the Backstage docs in a
  *   new tab and sinks below the auto-discovered pages via a negative priority.
  * - `Docs` and `APIs` take over the auto-discovered TechDocs and API docs
@@ -32,6 +38,22 @@ import HelpIcon from '@mui/icons-material/HelpOutline';
  * - The `Settings` group collects the user settings and app visualizer
  *   pages and sinks to the bottom via a negative priority.
  */
+const searchElement = SidebarElementBlueprint.make({
+  name: 'search',
+  params: {
+    component: SidebarSearchModal,
+    priority: 1000,
+  },
+});
+
+const notificationsElement = SidebarElementBlueprint.make({
+  name: 'notifications',
+  params: {
+    component: NotificationsSidebarItem,
+    priority: -40,
+  },
+});
+
 const helpItem = SidebarItemBlueprint.make({
   name: 'help',
   params: {
@@ -110,6 +132,8 @@ const visualizerItem = SidebarItemBlueprint.make({
 export const sidebarDemoModule = createFrontendModule({
   pluginId: 'app',
   extensions: [
+    searchElement,
+    notificationsElement,
     helpItem,
     documentationGroup,
     docsItem,
