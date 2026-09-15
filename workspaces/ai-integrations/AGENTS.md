@@ -165,6 +165,169 @@ The upstream PR number must be documented in the changeset description or
 linked issue so reviewers (human and automated) can verify the upstream
 alignment.
 
+## Entity Provider Conventions
+
+Plugins that implement `EntityProvider` (from `@backstage/plugin-catalog-node`)
+must follow these conventions. The reference implementation is
+`catalog-backend-module-model-catalog` — review its provider class, `config.d.ts`,
+and test file before writing a new provider.
+
+### Source-location annotation format
+
+All `backstage.io/source-location` annotations must use the Backstage
+location-ref format with a `url:` prefix. Bare scheme URIs are rejected at
+ingestion time.
+
+```ts
+// ✅ Correct — Backstage location-ref format
+entity.metadata.annotations['backstage.io/source-location'] =
+  'url:oci://quay.io/org/model:tag';
+
+// ❌ Wrong — bare URI; collectOciErrors.ts rejects this
+entity.metadata.annotations['backstage.io/source-location'] =
+  'oci://quay.io/org/model:tag';
+```
+
+The `collectOciErrors.ts` validator in
+`catalog-backend-module-ai-resource-extensions` uses upstream
+`parseLocationRef` to enforce this. A bare `oci://…` parses as location-ref
+type `oci` instead of type `url`, which breaks UrlReader integration and
+fails validation.
+
+### Full-mutation error handling
+
+Providers using `type: 'full'` mutations must guard against replacing all
+catalog entities with an empty set on transient failures. When the
+index/list API succeeds but all individual item fetches fail, the resulting
+entity array is empty — applying `{ type: 'full', entities: [] }` deletes
+every healthy entity the provider previously ingested.
+
+Guard pattern: if the item-fetch phase produces zero entities but the index
+returned a non-empty list, skip the mutation and log a warning instead.
+
+```ts
+const keys = await fetchIndex(url, token);
+const entities = await fetchAllItems(keys);
+
+// Guard: do not wipe the catalog on transient failures
+if (entities.length === 0 && keys.length > 0) {
+  logger.warn(
+    `All ${keys.length} item fetches failed; skipping full mutation ` +
+      'to avoid deleting healthy entities',
+  );
+  return;
+}
+
+await connection.applyMutation({
+  type: 'full',
+  entities: entities.map(e => ({ entity: e, locationKey: providerName })),
+});
+```
+
+### Per-request timeout
+
+Use `AbortController` with a 30-second timeout on individual HTTP requests.
+Without a timeout, a stalled upstream endpoint blocks the provider's
+scheduled task runner indefinitely.
+
+```ts
+const controller = new AbortController();
+const timeout = setTimeout(() => controller.abort(), 30_000);
+try {
+  const res = await fetch(url, {
+    signal: controller.signal,
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  // ...
+} finally {
+  clearTimeout(timeout);
+}
+```
+
+### Response size limits
+
+Buffer and check response body size before JSON parsing. Unbounded
+responses from an upstream API can exhaust Node.js heap memory and crash
+the backend.
+
+Define a `MAX_ARTIFACT_BYTES` constant (e.g. 10 MB) and verify the
+`Content-Length` header or accumulated buffer size before calling
+`JSON.parse()`. Reject oversized responses with a descriptive error.
+
+```ts
+const MAX_ARTIFACT_BYTES = 10 * 1024 * 1024; // 10 MB
+
+const res = await fetch(url, { signal: controller.signal, headers });
+const contentLength = Number(res.headers.get('content-length') ?? '0');
+if (contentLength > MAX_ARTIFACT_BYTES) {
+  throw new Error(
+    `Response from ${url} exceeds size limit ` +
+      `(${contentLength} > ${MAX_ARTIFACT_BYTES} bytes)`,
+  );
+}
+const body = await res.text();
+if (body.length > MAX_ARTIFACT_BYTES) {
+  throw new Error(`Response body exceeds size limit`);
+}
+const data = JSON.parse(body);
+```
+
+### Pagination
+
+List API endpoints that return collections must handle pagination
+tokens or cursors. Do not assume a single request returns all results.
+Follow the upstream API's pagination scheme (typically a `nextPageToken`
+or `Link` header) and accumulate results across pages.
+
+```ts
+let allItems: Item[] = [];
+let pageToken: string | undefined;
+do {
+  const url = new URL(`${baseUrl}/list`);
+  if (pageToken) url.searchParams.set('pageToken', pageToken);
+  const res = await fetch(url.toString(), { headers });
+  const page = await res.json();
+  allItems = allItems.concat(page.items);
+  pageToken = page.nextPageToken;
+} while (pageToken);
+```
+
+### Shared patterns (`catalog-ai-skills-common`)
+
+Common entity-building logic, fetch helpers, and name-normalization
+functions should live in a shared `catalog-ai-skills-common` package
+rather than being duplicated across providers. This reduces code
+duplication (SonarQube enforces a 3% threshold) and ensures consistent
+behavior.
+
+Candidates for shared code:
+
+- Entity annotation builders (source-location, origin-location)
+- Fetch wrappers with timeout and size-limit enforcement
+- Metadata name sanitization (`sanitizeMetadataName`)
+- Tag validation helpers
+- Common provider test utilities (mock task runners, mock connections)
+
+When adding a new provider, check `catalog-ai-skills-common` for existing
+helpers before writing new ones. When duplicating logic across two or more
+providers, extract it into the shared package.
+
+### Reference implementation
+
+New entity providers should follow the structure established by
+`catalog-backend-module-model-catalog`:
+
+- **`config.d.ts`** — typed config with `@visibility backend` on all
+  backend-only fields (cluster URLs, API endpoints, credentials)
+- **`src/providers/`** — provider class implementing `EntityProvider`, with
+  `fromConfig()` static factory, scheduled task runner, and `run()` method
+- **`src/providers/config.ts`** — config reader that maps app-config to
+  typed provider config
+- **`src/providers/types.ts`** — provider-specific type definitions
+- **`src/clients/`** — API client functions separated from the provider class
+- **`src/module.ts`** — Backstage backend module that registers the provider
+  on the catalog extension point
+
 ## PR Conventions
 
 - All commits must have an `Assisted-by: <model>` footer below the sign offs
