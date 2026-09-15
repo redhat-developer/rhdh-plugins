@@ -20,11 +20,13 @@ import type { ExtensionDefinition } from '@backstage/frontend-plugin-api';
 import { createExtensionTester } from '@backstage/frontend-test-utils';
 import {
   sidebarElementDataRef,
+  sidebarItemGroupDataRef,
   type SidebarElementData,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
 
 import {
   defaultSidebarExtensions,
+  sidebarAdminGroup,
   sidebarBottomDivider,
   sidebarBottomSpacer,
   sidebarLogoElement,
@@ -32,11 +34,16 @@ import {
   sidebarNotificationsElement,
   sidebarSearchElement,
   sidebarSettingsDivider,
+  sidebarSettingsGroup,
 } from './defaultSidebarExtensions';
 import { CompanyLogo } from './logo/CompanyLogo';
 
+const priorityOf = (ext: ExtensionDefinition) =>
+  (createExtensionTester(ext).get(sidebarElementDataRef) as SidebarElementData)
+    .priority;
+
 describe('defaultSidebarExtensions', () => {
-  it('registers logo, gap, search, spacer, dividers and notifications', () => {
+  it('registers logo, gap, search, spacer, dividers, notifications and groups', () => {
     const specs = defaultSidebarExtensions.map(ext =>
       JSON.parse(JSON.stringify(ext)),
     );
@@ -49,23 +56,18 @@ describe('defaultSidebarExtensions', () => {
       'sidebar-divider/bottom',
       'sidebar-element/notifications',
       'sidebar-divider/settings',
+      'sidebar-item-group/admin',
+      'sidebar-item-group/settings',
     ]);
     specs.forEach(s =>
       expect(s.attachTo).toEqual({
         id: 'nav-content:app/sidebar',
-        input: 'elements',
+        input: s.kind === 'sidebar-item-group' ? 'groups' : 'elements',
       }),
     );
   });
 
   it('orders search first and the bottom block below the spacer', () => {
-    const priorityOf = (ext: ExtensionDefinition) =>
-      (
-        createExtensionTester(ext).get(
-          sidebarElementDataRef,
-        ) as SidebarElementData
-      ).priority;
-
     expect(priorityOf(sidebarLogoElement)).toBeGreaterThan(
       priorityOf(sidebarLogoSpacer)!,
     );
@@ -83,6 +85,25 @@ describe('defaultSidebarExtensions', () => {
     expect(priorityOf(sidebarSettingsDivider)).toBeLessThan(
       priorityOf(sidebarNotificationsElement)!,
     );
+  });
+
+  it('places the admin group above settings, below the settings divider', () => {
+    const admin = createExtensionTester(sidebarAdminGroup).get(
+      sidebarItemGroupDataRef,
+    );
+    const settings = createExtensionTester(sidebarSettingsGroup).get(
+      sidebarItemGroupDataRef,
+    );
+
+    expect(admin).toMatchObject({ id: 'admin', title: 'Administration' });
+    expect(admin.to).toBeUndefined();
+    expect(settings).toMatchObject({
+      id: 'settings',
+      title: 'Settings',
+      to: '/settings',
+    });
+    expect(admin.priority!).toBeLessThan(priorityOf(sidebarSettingsDivider)!);
+    expect(settings.priority!).toBeLessThan(admin.priority!);
   });
 
   it('renders the company logo without claiming a page', () => {

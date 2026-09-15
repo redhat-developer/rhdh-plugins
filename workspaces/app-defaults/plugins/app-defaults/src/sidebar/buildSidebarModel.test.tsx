@@ -235,6 +235,19 @@ describe('buildSidebarModel', () => {
     ).toEqual(['a', 'b']);
   });
 
+  it('drops auto-discovered nav items that a group already links to', () => {
+    const entries = buildSidebarModel({
+      items: [],
+      groups: [{ id: 'settings', title: 'Settings', to: '/settings' }],
+      navItems: [
+        navItem('page:user-settings', 'Settings', '/settings'),
+        navItem('page:docs', 'Docs', '/docs'),
+      ],
+    });
+
+    expect(entries.map(idOf)).toEqual(['page:docs', 'settings']);
+  });
+
   it('returns an empty list when nothing is contributed', () => {
     expect(buildSidebarModel({ items: [], groups: [] })).toEqual([]);
   });
