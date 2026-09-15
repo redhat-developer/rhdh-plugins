@@ -230,8 +230,9 @@ Ordering rules:
 - Top-level entries (groups, ungrouped items and custom elements) are sorted
   by `priority`, higher first, ties broken by title (or extension id for
   elements).
-- Items inside a group are sorted the same way and render in an expandable
-  submenu. An item whose `group` is not registered renders at the top level.
+- Items inside a group are sorted the same way and render below the group
+  entry or in a flyout submenu, depending on the group's `submenu` option. An
+  item whose `group` is not registered renders at the top level.
 - Nav items that Backstage auto-discovers from page extensions are merged in at
   priority `0`. Declaring an item with the same `to` as an auto-discovered page
   replaces it, so a plugin can retitle, regroup, or reprioritize its own page.
@@ -249,6 +250,7 @@ app:
     - sidebar-item-group:my-plugin/admin:
         config:
           priority: -10
+          submenu: flyout
 ```
 
 ## Exports

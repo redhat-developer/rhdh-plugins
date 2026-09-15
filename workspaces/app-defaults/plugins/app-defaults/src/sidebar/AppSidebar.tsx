@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import { isValidElement, useMemo } from 'react';
+import { isValidElement, useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Sidebar,
   SidebarItem,
   SidebarSubmenu,
   SidebarSubmenuItem,
+  useSidebarOpenState,
 } from '@backstage/core-components';
 import { iconsApiRef, useApi } from '@backstage/frontend-plugin-api';
 import type { IconComponent } from '@backstage/frontend-plugin-api';
@@ -29,6 +31,10 @@ import type {
   SidebarItemData,
   SidebarItemGroupData,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import Box from '@mui/material/Box';
+import Collapse from '@mui/material/Collapse';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExtensionIcon from '@mui/icons-material/Extension';
 
 import {
@@ -98,14 +104,66 @@ function SidebarModelSubmenuItem({ item }: { item: SidebarModelItem }) {
   return <SidebarSubmenuItem title={item.title} to={item.to} icon={icon} />;
 }
 
-function SidebarModelGroupEntry({ group }: { group: SidebarModelGroup }) {
-  const icon = useSidebarIcon(group.icon);
-  if (group.items.length === 0) {
-    if (!group.to) {
-      return null;
-    }
-    return <SidebarItem icon={icon} text={group.title} to={group.to} />;
+function isActivePath(pathname: string, to: string | undefined): boolean {
+  if (!to) {
+    return false;
   }
+  if (to === '/') {
+    return pathname === '/';
+  }
+  return pathname === to || pathname.startsWith(`${to}/`);
+}
+
+function SidebarModelInlineGroup({ group }: { group: SidebarModelGroup }) {
+  const icon = useSidebarIcon(group.icon);
+  const { pathname } = useLocation();
+  const { isOpen: isSidebarOpen } = useSidebarOpenState();
+  const hasActiveItem = group.items.some(item =>
+    isActivePath(pathname, item.to),
+  );
+  const [expanded, setExpanded] = useState(hasActiveItem);
+  useEffect(() => {
+    if (hasActiveItem) {
+      setExpanded(true);
+    }
+  }, [hasActiveItem]);
+
+  const toggle = () => setExpanded(value => !value);
+  const arrow = expanded ? (
+    <ExpandLessIcon fontSize="small" />
+  ) : (
+    <ExpandMoreIcon fontSize="small" />
+  );
+
+  return (
+    <>
+      {group.to ? (
+        <SidebarItem
+          icon={icon}
+          text={group.title}
+          to={group.to}
+          onClick={toggle}
+        >
+          {arrow}
+        </SidebarItem>
+      ) : (
+        <SidebarItem icon={icon} text={group.title} onClick={toggle}>
+          {arrow}
+        </SidebarItem>
+      )}
+      <Collapse in={expanded} unmountOnExit>
+        <Box sx={{ pl: isSidebarOpen ? 2 : 0 }}>
+          {group.items.map(item => (
+            <SidebarModelItemEntry key={item.id} item={item} />
+          ))}
+        </Box>
+      </Collapse>
+    </>
+  );
+}
+
+function SidebarModelFlyoutGroup({ group }: { group: SidebarModelGroup }) {
+  const icon = useSidebarIcon(group.icon);
   return (
     <SidebarItem icon={icon} text={group.title} to={group.to}>
       <SidebarSubmenu title={group.title}>
@@ -117,10 +175,25 @@ function SidebarModelGroupEntry({ group }: { group: SidebarModelGroup }) {
   );
 }
 
+function SidebarModelGroupEntry({ group }: { group: SidebarModelGroup }) {
+  const icon = useSidebarIcon(group.icon);
+  if (group.items.length === 0) {
+    if (!group.to) {
+      return null;
+    }
+    return <SidebarItem icon={icon} text={group.title} to={group.to} />;
+  }
+  if (group.submenu === 'flyout') {
+    return <SidebarModelFlyoutGroup group={group} />;
+  }
+  return <SidebarModelInlineGroup group={group} />;
+}
+
 /**
  * Sidebar that renders contributed items, groups and custom elements ordered
  * by priority (higher first, ties broken by title). Grouped items render in a
- * submenu, custom elements render their own component at the top level, and
+ * collapsible list below the group entry or in a flyout submenu, custom
+ * elements render their own component at the top level, and
  * nav items auto-discovered from page extensions are merged in unless a
  * contributed item already links to the same path.
  *

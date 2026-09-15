@@ -53,9 +53,23 @@ export interface SidebarItemData {
 }
 
 /**
+ * How a sidebar group presents its items.
+ *
+ * - `inline`: items render in a collapsible list directly below the group
+ *   entry. The list opens on click and starts open when the current route
+ *   matches one of the items. This is the default.
+ * - `flyout`: items render in a submenu that flies out next to the sidebar
+ *   while the group entry is hovered.
+ *
+ * @public
+ */
+export type SidebarGroupSubmenu = 'inline' | 'flyout';
+
+/**
  * Sidebar group contributed by a plugin via {@link SidebarItemGroupBlueprint}.
- * Groups render as a sidebar entry with an expandable submenu that contains
- * every {@link SidebarItemData} referencing the group's `id`.
+ * Groups render as a sidebar entry that contains every
+ * {@link SidebarItemData} referencing the group's `id`, either inline below
+ * the entry or in a flyout submenu (see {@link SidebarGroupSubmenu}).
  *
  * @public
  */
@@ -70,6 +84,8 @@ export interface SidebarItemGroupData {
   to?: string;
   /** Ordering priority. Higher values render first. Defaults to `0`. */
   priority?: number;
+  /** How the group presents its items. Defaults to `'inline'`. */
+  submenu?: SidebarGroupSubmenu;
 }
 
 /**

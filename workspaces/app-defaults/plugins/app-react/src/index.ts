@@ -48,6 +48,7 @@ export { SidebarItemGroupBlueprint } from './sidebar';
 export { sidebarItemGroupDataRef } from './sidebar';
 export type {
   SidebarElementData,
+  SidebarGroupSubmenu,
   SidebarIcon,
   SidebarItemData,
   SidebarItemGroupData,

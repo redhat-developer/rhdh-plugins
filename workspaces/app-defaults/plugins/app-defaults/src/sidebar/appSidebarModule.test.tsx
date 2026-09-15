@@ -104,8 +104,8 @@ describe('appSidebarExtension', () => {
       el => el.textContent,
     );
     expect(texts.slice(0, 3)).toEqual(['Home', 'Custom', 'Chat']);
-    expect(screen.getByText('Administration')).toBeInTheDocument();
-    fireEvent.mouseEnter(screen.getByTestId('item-with-submenu'));
+    expect(screen.queryByText('Users')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /Administration/ }));
     expect(screen.getByText('Users')).toBeInTheDocument();
   });
 });
