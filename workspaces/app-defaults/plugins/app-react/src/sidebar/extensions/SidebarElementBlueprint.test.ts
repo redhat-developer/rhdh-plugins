@@ -41,26 +41,30 @@ describe('SidebarElementBlueprint', () => {
     const tester = createExtensionTester(
       SidebarElementBlueprint.make({
         name: 'notifications',
-        params: { component: Element, priority: -50 },
+        params: { component: Element, to: '/notifications', priority: -50 },
       }),
     );
 
     expect(tester.get(sidebarElementDataRef)).toEqual({
       id: 'sidebar-element:notifications',
       component: Element,
+      to: '/notifications',
       priority: -50,
     });
   });
 
-  it('lets app-config override the priority', () => {
+  it('lets app-config override to and priority', () => {
     const tester = createExtensionTester(
       SidebarElementBlueprint.make({
         name: 'notifications',
-        params: { component: Element, priority: -50 },
+        params: { component: Element, to: '/notifications', priority: -50 },
       }),
-      { config: { priority: 7 } },
+      { config: { to: '/inbox', priority: 7 } },
     );
 
-    expect(tester.get(sidebarElementDataRef)).toMatchObject({ priority: 7 });
+    expect(tester.get(sidebarElementDataRef)).toMatchObject({
+      to: '/inbox',
+      priority: 7,
+    });
   });
 });

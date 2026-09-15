@@ -74,15 +74,17 @@ describe('defaultSidebarExtensions', () => {
     );
   });
 
-  it('renders the search modal and notifications components', () => {
+  it('renders the search modal and notifications components for their pages', () => {
     expect(
-      createExtensionTester(sidebarSearchElement).get(sidebarElementDataRef)
-        .component,
-    ).toBe(SidebarSearchModal);
+      createExtensionTester(sidebarSearchElement).get(sidebarElementDataRef),
+    ).toMatchObject({ component: SidebarSearchModal, to: '/search' });
     expect(
       createExtensionTester(sidebarNotificationsElement).get(
         sidebarElementDataRef,
-      ).component,
-    ).toBe(NotificationsSidebarItem);
+      ),
+    ).toMatchObject({
+      component: NotificationsSidebarItem,
+      to: '/notifications',
+    });
   });
 });

@@ -31,7 +31,11 @@ import { sidebarElementDataRef } from './sidebarElementDataRef';
  * alongside regular items and groups. Elements cannot be placed inside a
  * group.
  *
- * `priority` can be overridden by deployers via `app-config.yaml`:
+ * Set `to` to the path the element links to. Sidebar items and
+ * auto-discovered pages with the same `to` are hidden, so the element
+ * replaces the plain entry for that page.
+ *
+ * `to` and `priority` can be overridden by deployers via `app-config.yaml`:
  *
  * ```yaml
  * app:
@@ -47,6 +51,7 @@ import { sidebarElementDataRef } from './sidebarElementDataRef';
  *   name: 'notifications',
  *   params: {
  *     component: NotificationsSidebarItem,
+ *     to: '/notifications',
  *     priority: -50,
  *   },
  * });
@@ -62,11 +67,13 @@ export const SidebarElementBlueprint = createExtensionBlueprint({
     element: sidebarElementDataRef,
   },
   configSchema: {
+    to: z.string().optional(),
     priority: z.number().optional(),
   },
   *factory(
     params: {
       component: ComponentType<{}>;
+      to?: string;
       priority?: number;
     },
     { config, node },
@@ -74,6 +81,7 @@ export const SidebarElementBlueprint = createExtensionBlueprint({
     yield sidebarElementDataRef({
       id: node.spec.id,
       component: params.component,
+      to: config.to ?? params.to,
       priority: config.priority ?? params.priority,
     });
   },

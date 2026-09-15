@@ -101,6 +101,11 @@ export interface SidebarElementData {
   id: string;
   /** Component rendered in place of a regular sidebar item. */
   component: ComponentType<{}>;
+  /**
+   * Path the element links to, if any. Sidebar items and auto-discovered
+   * pages with the same `to` are hidden so the element replaces them.
+   */
+  to?: string;
   /** Ordering priority. Higher values render first. Defaults to `0`. */
   priority?: number;
 }
