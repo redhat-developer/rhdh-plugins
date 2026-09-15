@@ -15,55 +15,32 @@
  */
 
 import { styled } from '@mui/material/styles';
-import { Button, Tooltip } from '@patternfly/react-core';
-import { PenIcon } from '@patternfly/react-icons';
+import { Tooltip } from '@patternfly/react-core';
+import { PencilAltIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { SidebarExpandIcon } from './notebooks/SidebarCollapseIcon';
+import { FramedPlainIconButton } from './PlainIconButton';
+
+const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
 
 const Strip = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  paddingTop: theme.spacing(1.5),
-  gap: theme.spacing(1.5),
-  borderRight: '1px solid var(--pf-t--global--border--color--default)',
-  width: 48,
-  minWidth: 48,
+  gap: theme.spacing(1),
+  padding: `${theme.spacing(2)} ${theme.spacing(1)}`,
+  width: 56,
+  minWidth: 56,
   flexShrink: 0,
-  backgroundColor: 'var(--pf-t--global--background--color--primary--default)',
+  backgroundColor: floatingBg,
   height: '100%',
 }));
 
-const IconButton = styled(Button)({
-  padding: '8px !important',
-  minWidth: 0,
-  lineHeight: 1,
-  borderRadius: '8px !important',
-  border: '1px solid var(--pf-t--global--border--color--default) !important',
-  color: 'var(--pf-t--global--icon--color--regular)',
-  '& svg': {
-    width: 18,
-    height: 18,
-  },
-  '&:hover': {
-    color: 'var(--pf-t--global--icon--color--hover) !important',
-    backgroundColor:
-      'var(--pf-t--global--background--color--action--plain--hover) !important',
-  },
-});
-
-const NewChatIconButton = styled(Button)({
-  padding: '8px !important',
-  minWidth: 0,
-  lineHeight: 1,
-  borderRadius: '8px !important',
-  border: '1px solid var(--pf-t--global--border--color--default) !important',
+const NewChatIconButton = styled(FramedPlainIconButton)({
   color: 'var(--pf-t--global--color--brand--default) !important',
-  '&:hover': {
+  '&:hover:not(:disabled), &:focus-visible:not(:disabled)': {
     color: 'var(--pf-t--global--color--brand--hover) !important',
-    backgroundColor:
-      'var(--pf-t--global--background--color--action--plain--hover) !important',
   },
   '&:disabled': {
     color: 'var(--pf-t--global--text--color--disabled) !important',
@@ -86,13 +63,13 @@ export const CollapsedHistoryStrip = ({
   return (
     <Strip>
       <Tooltip content={t('tooltip.expandHistoryPanel')} position="right">
-        <IconButton
+        <FramedPlainIconButton
           variant="plain"
           onClick={onExpand}
           aria-label={t('tooltip.expandHistoryPanel')}
         >
-          <SidebarExpandIcon />
-        </IconButton>
+          <SidebarExpandIcon size={18} />
+        </FramedPlainIconButton>
       </Tooltip>
       <Tooltip content={t('tooltip.quickNewChat')} position="right">
         <NewChatIconButton
@@ -101,7 +78,7 @@ export const CollapsedHistoryStrip = ({
           aria-label={t('tooltip.quickNewChat')}
           isDisabled={newChatDisabled}
         >
-          <PenIcon />
+          <PencilAltIcon />
         </NewChatIconButton>
       </Tooltip>
     </Strip>

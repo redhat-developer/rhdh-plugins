@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { configApiRef, fetchApiRef, useApi } from '@backstage/core-plugin-api';
 
@@ -49,12 +49,18 @@ import {
   type McpServerSortColumn,
   type ServerStatus,
 } from './mcpServersDisplayUtils';
+import {
+  compactPlainCircleButtonCss,
+  mediumPlainCircleButtonCss,
+} from './PlainIconButton';
 
 type McpServer = McpConfigureServer;
 
 type McpServersSettingsProps = {
   onClose: () => void;
   backgroundColor?: string;
+  /** Fires when the settings panel root becomes scrollable (overlay/docked jump buttons). */
+  onContentOverflowChange?: (hasOverflow: boolean) => void;
 };
 
 const mcpClasses = {
@@ -109,6 +115,10 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
     fontSize: '1.125rem',
   },
   [`& .${mcpClasses.closeButton}`]: {
+    ...compactPlainCircleButtonCss,
+    // minWidth: '2.5rem !important',
+    width: '2.25rem !important',
+    height: '2.25rem !important',
     marginTop: theme.spacing(-1),
     marginRight: theme.spacing(-1),
     color: theme.palette.text.primary,
@@ -189,11 +199,22 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
     color: 'var(--pf-t--global--icon--color--subtle)',
   },
   [`& .${mcpClasses.actionButton}`]: {
+    ...mediumPlainCircleButtonCss,
     color: theme.palette.text.secondary,
     opacity: 0,
     transition: 'opacity 0.15s ease-in-out',
+    '&:focus:not(:hover), &.pf-m-clicked:not(:hover)': {
+      backgroundColor:
+        'var(--pf-t--global--background--color--action--plain--default) !important',
+      '--pf-v6-c-button--BackgroundColor':
+        'var(--pf-t--global--background--color--action--plain--default)',
+      '--pf-v6-c-button--m-plain--BackgroundColor':
+        'var(--pf-t--global--background--color--action--plain--default)',
+      '--pf-v6-c-button--m-plain--hover--BackgroundColor':
+        'var(--pf-t--global--background--color--action--plain--hover)',
+    },
   },
-  [`& .${mcpClasses.tableRow}:hover .${mcpClasses.actionButton}, & .${mcpClasses.tableRow}:focus-within .${mcpClasses.actionButton}`]:
+  [`& .${mcpClasses.tableRow}:hover .${mcpClasses.actionButton}, & .${mcpClasses.tableRow}:focus-within:has(:focus-visible) .${mcpClasses.actionButton}`]:
     {
       opacity: 1,
     },
@@ -302,8 +323,10 @@ const toUiServer = (
 export const McpServersSettings = ({
   onClose,
   backgroundColor,
+  onContentOverflowChange,
 }: McpServersSettingsProps) => {
   const { t } = useTranslation();
+  const rootRef = useRef<HTMLDivElement>(null);
   const configApi = useApi(configApiRef);
   const fetchApi = useApi(fetchApiRef);
   const { allowed: hasMcpToolsAccess, loading: mcpToolsPermissionLoading } =
@@ -515,6 +538,41 @@ export const McpServersSettings = ({
     setSortAsc(true);
   };
 
+  useEffect(() => {
+    if (!onContentOverflowChange) {
+      return undefined;
+    }
+    const el = rootRef.current;
+    if (!el) {
+      return undefined;
+    }
+
+    const updateOverflow = () => {
+      onContentOverflowChange(el.scrollHeight > el.clientHeight + 1);
+    };
+
+    updateOverflow();
+
+    const resizeObserver =
+      typeof ResizeObserver !== 'undefined'
+        ? new ResizeObserver(updateOverflow)
+        : undefined;
+    resizeObserver?.observe(el);
+    el.addEventListener('scroll', updateOverflow, { passive: true });
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', updateOverflow);
+    }
+
+    return () => {
+      resizeObserver?.disconnect();
+      el.removeEventListener('scroll', updateOverflow);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', updateOverflow);
+      }
+      onContentOverflowChange(false);
+    };
+  }, [onContentOverflowChange, servers.length, isLoading, error]);
+
   const renderSortIcon = (column: McpServerSortColumn) => {
     const isActive = sortColumn === column;
     let Icon = SortAmountDownIcon;
@@ -538,7 +596,10 @@ export const McpServersSettings = ({
   }
 
   return (
-    <StyledMcpRoot style={backgroundColor ? { backgroundColor } : undefined}>
+    <StyledMcpRoot
+      ref={rootRef}
+      style={backgroundColor ? { backgroundColor } : undefined}
+    >
       <GlobalStyles
         styles={{
           '.pf-v6-c-backdrop': {
@@ -735,7 +796,10 @@ export const McpServersSettings = ({
                     icon={<PencilAltIcon />}
                     variant="plain"
                     className={mcpClasses.actionButton}
-                    onClick={() => configureModal.open(server)}
+                    onClick={event => {
+                      configureModal.open(server);
+                      event.currentTarget.blur();
+                    }}
                   />
                 </Td>
               </Tr>
