@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
+export { SidebarDividerBlueprint } from './extensions/SidebarDividerBlueprint';
 export { sidebarElementDataRef } from './extensions/sidebarElementDataRef';
 export { SidebarElementBlueprint } from './extensions/SidebarElementBlueprint';
 export { sidebarItemDataRef } from './extensions/sidebarItemDataRef';
 export { SidebarItemBlueprint } from './extensions/SidebarItemBlueprint';
 export { sidebarItemGroupDataRef } from './extensions/sidebarItemGroupDataRef';
 export { SidebarItemGroupBlueprint } from './extensions/SidebarItemGroupBlueprint';
+export { SidebarSpacerBlueprint } from './extensions/SidebarSpacerBlueprint';
 export type {
   SidebarElementData,
   SidebarGroupSubmenu,

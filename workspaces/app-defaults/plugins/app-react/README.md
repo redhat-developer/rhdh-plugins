@@ -225,6 +225,32 @@ const notificationsElement = SidebarElementBlueprint.make({
 Only `priority` can be overridden from `app-config.yaml`
 (`sidebar-element:<plugin>/<name>`).
 
+### Spacers and Dividers
+
+`SidebarSpacerBlueprint` and `SidebarDividerBlueprint` are ready-made elements
+that render the `SidebarSpace` and `SidebarDivider` from
+`@backstage/core-components`. A spacer pushes everything with a lower priority
+to the bottom of the sidebar; a divider draws a horizontal line. Both take only
+a `priority`, overridable via `sidebar-spacer:<plugin>/<name>` and
+`sidebar-divider:<plugin>/<name>`.
+
+```typescript
+import {
+  SidebarDividerBlueprint,
+  SidebarSpacerBlueprint,
+} from '@red-hat-developer-hub/backstage-plugin-app-react';
+
+// Everything below priority -30 sits at the bottom, separated by a line.
+const bottomSpacer = SidebarSpacerBlueprint.make({
+  name: 'bottom',
+  params: { priority: -30 },
+});
+const bottomDivider = SidebarDividerBlueprint.make({
+  name: 'bottom',
+  params: { priority: -35 },
+});
+```
+
 Ordering rules:
 
 - Top-level entries (groups, ungrouped items and custom elements) are sorted
@@ -264,6 +290,7 @@ app:
 - `SidebarItemBlueprint` / `sidebarItemDataRef` -- blueprint and data ref for sidebar entries
 - `SidebarItemGroupBlueprint` / `sidebarItemGroupDataRef` -- blueprint and data ref for sidebar groups
 - `SidebarElementBlueprint` / `sidebarElementDataRef` -- blueprint and data ref for custom sidebar components
+- `SidebarSpacerBlueprint` / `SidebarDividerBlueprint` -- ready-made spacer and divider elements
 - `TemplateCardActionBlueprint` -- blueprint for custom template card actions
 - `TemplateCardBadgeBlueprint` -- blueprint for template card badges
 - `templateCardExtension` -- extensible scaffolder template card component
