@@ -17,6 +17,13 @@
 import { ConfigApi, FetchApi } from '@backstage/core-plugin-api';
 
 import {
+  SavedPrompt,
+  SavedPromptCreateRequest,
+  SavedPromptDeleteResponse,
+  SavedPromptsConfig,
+} from '@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common';
+
+import {
   TEMP_CONVERSATION_ID,
   VALID_TOPIC_RESTRICTION_PROVIDER_IDS,
 } from '../const';
@@ -316,4 +323,71 @@ export class LightspeedApiClient implements LightspeedAPI {
     }
     return await response.json();
   };
+
+  async getSavedPromptsConfig(): Promise<SavedPromptsConfig> {
+    const baseUrl = await this.getBaseUrl();
+    const result = await this.fetcher(`${baseUrl}/v1/saved-prompts/config`);
+    return await result.json();
+  }
+
+  async getSavedPrompts(): Promise<SavedPrompt[]> {
+    const baseUrl = await this.getBaseUrl();
+    const result = await this.fetcher(`${baseUrl}/v1/saved-prompts`);
+    const response = await result.json();
+    return response.prompts ?? [];
+  }
+
+  async createSavedPrompt(req: SavedPromptCreateRequest): Promise<SavedPrompt> {
+    const baseUrl = await this.getBaseUrl();
+    const response = await this.fetchApi.fetch(`${baseUrl}/v1/saved-prompts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(req),
+    });
+
+    if (!response.ok) {
+      let errorMessage = `failed to create saved prompt, status ${response.status}: ${response.statusText}`;
+      try {
+        const errorBody = await response.json();
+        if (errorBody?.error) {
+          errorMessage = errorBody.error;
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn(e);
+      }
+      throw new Error(errorMessage);
+    }
+    return await response.json();
+  }
+
+  async deleteSavedPrompt(
+    promptId: string,
+  ): Promise<SavedPromptDeleteResponse> {
+    const baseUrl = await this.getBaseUrl();
+    const response = await this.fetchApi.fetch(
+      `${baseUrl}/v1/saved-prompts/${encodeURIComponent(promptId)}`,
+      {
+        method: 'DELETE',
+        headers: {},
+      },
+    );
+
+    if (!response.ok) {
+      let errorMessage = `failed to delete saved prompt, status ${response.status}: ${response.statusText}`;
+      try {
+        const errorBody = await response.json();
+        if (errorBody?.error) {
+          errorMessage = errorBody.error;
+        }
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn(e);
+      }
+      throw new Error(errorMessage);
+    }
+    return await response.json();
+  }
 }

@@ -68,6 +68,7 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
       'Message en provenance de l’utilisateur: {{prompt}}. Message en provenance du Bot en cours de chargement.',
     'conversation.category.pinnedChats': 'Chats épinglés',
     'conversation.category.recent': 'Chats',
+    'conversation.category.savedPrompts': 'Prompts enregistrés',
     'conversation.delete': 'Supprimer',
     'conversation.delete.confirm.action': 'Supprimer',
     'conversation.delete.confirm.message':
@@ -254,6 +255,8 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'notebook.view.documents.maxReached':
       'Maximum 10 ressources autorisées. Supprimez une ressource pour en charger une nouvelle.',
     'notebook.view.documents.uploading': 'Chargement de la ressource',
+    'notebook.view.documents.uploadsInProgress':
+      "Veuillez attendre la fin des téléversements en cours avant d'ajouter d'autres ressources.",
     'notebook.view.input.disabledTooltip':
       'Sélectionnez au moins une ressource chargée pour commencer à discuter',
     'notebook.view.input.placeholder':
@@ -346,13 +349,58 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'settings.displayMode.label': "Mode d'affichage",
     'settings.displayMode.overlay': 'Superposition',
     'settings.mcp.badge': 'Nouveau',
-    'settings.mcp.label': 'Paramètres MCP',
+    'settings.panel.title': 'Paramètres',
+    'settings.mcp.label': 'Paramètres MCP et Prompts',
     'settings.pinned.disable': 'Désactiver les conversations épinglées',
     'settings.pinned.disabled.description':
       'Les conversations épinglées sont actuellement désactivées',
     'settings.pinned.enable': 'Activer les conversations épinglées',
     'settings.pinned.enabled.description':
       'Les conversation épinglées sont actuellement activées',
+    'settings.savedPrompts.disable': 'Désactiver les prompts sauvegardés',
+    'settings.savedPrompts.disabled.description':
+      'Les prompts sauvegardés sont actuellement désactivés',
+    'settings.savedPrompts.enable': 'Activer les prompts sauvegardés',
+    'settings.savedPrompts.enabled.description':
+      'Les prompts sauvegardés sont actuellement activés',
+    'savedPrompts.tab.title': 'Prompts enregistrés',
+    'savedPrompts.disabled.title': 'Les prompts enregistrés sont désactivés',
+    'savedPrompts.disabled.body':
+      "Les prompts enregistrés sont masqués dans le panneau d'historique des conversations. Activez-les pour afficher vos prompts dans la barre latérale.",
+    'savedPrompts.disabled.enableLink': 'Activer les prompts enregistrés',
+    'savedPrompts.count.zero': 'Aucun prompt',
+    'savedPrompts.count_one': '1 prompt',
+    'savedPrompts.count_other': '{{count}} prompts',
+    'savedPrompts.newPrompt': '+ Nouveau prompt',
+    'savedPrompts.form.titleLabel': 'Titre',
+    'savedPrompts.form.titlePlaceholder': 'Titre du prompt',
+    'savedPrompts.form.contentLabel': 'Prompt',
+    'savedPrompts.form.contentPlaceholder': 'Contenu du prompt',
+    'savedPrompts.form.save': 'Enregistrer',
+    'savedPrompts.form.cancel': 'Annuler',
+    'savedPrompts.validation.titleMaxLength':
+      'Le titre doit contenir {{max}} caractères ou moins.',
+    'savedPrompts.validation.contentMaxLength':
+      'Le prompt doit contenir {{max}} caractères ou moins.',
+    'savedPrompts.limitReached':
+      'Limite de prompts atteinte. Supprimez un prompt existant pour en créer un nouveau.',
+    'savedPrompts.actions.apply': 'Appliquer dans la zone de saisie',
+    'savedPrompts.actions.send': 'Envoyer directement',
+    'savedPrompts.actions.sendDisabledStreaming':
+      'Attendez la fin de la réponse',
+    'savedPrompts.actions.delete': 'Supprimer',
+    'savedPrompts.actions.menuAriaLabel': 'Actions pour {{name}}',
+    'savedPrompts.delete.confirm.title': 'Supprimer « {{name}} » ?',
+    'savedPrompts.delete.confirm.message':
+      'Ce prompt sauvegardé sera définitivement supprimé.',
+    'savedPrompts.delete.confirm.action': 'Supprimer',
+    'savedPrompts.empty.description':
+      'Enregistrez les prompts fréquemment utilisés pour les réutiliser rapidement dans vos conversations sans les retaper. Les prompts sauvegardés apparaissent également dans le panneau d’historique du chat pour un accès rapide.',
+    'savedPrompts.sidebar.showAll': 'Tout afficher',
+    'savedPrompts.sidebar.showLess': 'Afficher moins',
+    'savedPrompts.sidebar.openSettings':
+      'Ouvrir les paramètres des prompts enregistrés',
+    'savedPrompts.sidebar.empty': 'Aucun prompt enregistré pour le moment',
     'sort.alphabeticalAsc': 'Nom (A-Z)',
     'sort.alphabeticalDesc': 'Nom (Z-A)',
     'sort.label': 'Trier les conversations',
@@ -395,6 +443,7 @@ const intelligentAssistantTranslationFr = createTranslationMessages({
     'tooltip.quickNewChat': 'Nouveau chat',
     'tooltip.responseRecorded': 'Réponse enregistrée',
     'tooltip.send': 'Envoyer',
+    'tooltip.settings': 'Options du chatbot',
     'user.guest': 'Invité',
     'user.loading': '...',
   },

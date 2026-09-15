@@ -68,6 +68,7 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
       'Nachricht vom Benutzer: {{prompt}}. Nachricht vom Bot wird geladen.',
     'conversation.category.pinnedChats': 'Angeheftete Chats',
     'conversation.category.recent': 'Chats',
+    'conversation.category.savedPrompts': 'Gespeicherte Prompts',
     'conversation.delete': 'Löschen',
     'conversation.delete.confirm.action': 'Löschen',
     'conversation.delete.confirm.message':
@@ -254,6 +255,8 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebook.view.documents.maxReached':
       'Maximal 10 Ressourcen sind erlaubt. Löschen Sie eine Ressource, um eine neue hochzuladen.',
     'notebook.view.documents.uploading': 'Ressource wird hochgeladen',
+    'notebook.view.documents.uploadsInProgress':
+      'Bitte warten Sie, bis die aktuellen Uploads abgeschlossen sind, bevor Sie weitere Ressourcen hinzufügen.',
     'notebook.view.input.disabledTooltip':
       'Wählen Sie mindestens eine geladene Ressource aus, um den Chat zu starten',
     'notebook.view.input.placeholder': 'Fragen Sie zu Ihren Ressourcen...',
@@ -346,13 +349,58 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'settings.displayMode.label': 'Anzeigemodus',
     'settings.displayMode.overlay': 'Overlay',
     'settings.mcp.badge': 'Neu',
-    'settings.mcp.label': 'MCP-Einstellungen',
+    'settings.panel.title': 'Einstellungen',
+    'settings.mcp.label': 'MCP- und Prompt-Einstellungen',
     'settings.pinned.disable': 'Angeheftete Chats deaktivieren',
     'settings.pinned.disabled.description':
       'Angeheftete Chats sind derzeit deaktiviert.',
     'settings.pinned.enable': 'Angeheftete Chats aktivieren',
     'settings.pinned.enabled.description':
       'Angeheftete Chats sind derzeit aktiviert',
+    'settings.savedPrompts.disable': 'Gespeicherte Prompts deaktivieren',
+    'settings.savedPrompts.disabled.description':
+      'Gespeicherte Prompts sind derzeit deaktiviert',
+    'settings.savedPrompts.enable': 'Gespeicherte Prompts aktivieren',
+    'settings.savedPrompts.enabled.description':
+      'Gespeicherte Prompts sind derzeit aktiviert',
+    'savedPrompts.tab.title': 'Gespeicherte Prompts',
+    'savedPrompts.disabled.title': 'Gespeicherte Prompts sind deaktiviert',
+    'savedPrompts.disabled.body':
+      'Gespeicherte Prompts sind im Chat-Verlaufsbereich ausgeblendet. Aktivieren Sie sie, um Ihre Prompts in der Seitenleiste anzuzeigen.',
+    'savedPrompts.disabled.enableLink': 'Gespeicherte Prompts aktivieren',
+    'savedPrompts.count.zero': 'Keine Prompts',
+    'savedPrompts.count_one': '1 Prompt',
+    'savedPrompts.count_other': '{{count}} Prompts',
+    'savedPrompts.newPrompt': '+ Neuer Prompt',
+    'savedPrompts.form.titleLabel': 'Titel',
+    'savedPrompts.form.titlePlaceholder': 'Prompt-Titel',
+    'savedPrompts.form.contentLabel': 'Prompt',
+    'savedPrompts.form.contentPlaceholder': 'Prompt-Inhalt',
+    'savedPrompts.form.save': 'Speichern',
+    'savedPrompts.form.cancel': 'Abbrechen',
+    'savedPrompts.validation.titleMaxLength':
+      'Der Titel darf höchstens {{max}} Zeichen lang sein.',
+    'savedPrompts.validation.contentMaxLength':
+      'Der Prompt darf höchstens {{max}} Zeichen lang sein.',
+    'savedPrompts.limitReached':
+      'Prompt-Limit erreicht. Löschen Sie einen vorhandenen Prompt, um einen neuen zu erstellen.',
+    'savedPrompts.actions.apply': 'In Eingabefeld einfügen',
+    'savedPrompts.actions.send': 'Direkt senden',
+    'savedPrompts.actions.sendDisabledStreaming':
+      'Warten Sie, bis die Antwort abgeschlossen ist',
+    'savedPrompts.actions.delete': 'Löschen',
+    'savedPrompts.actions.menuAriaLabel': 'Aktionen für {{name}}',
+    'savedPrompts.delete.confirm.title': '„{{name}}“ löschen?',
+    'savedPrompts.delete.confirm.message':
+      'Dieser gespeicherte Prompt wird dauerhaft entfernt.',
+    'savedPrompts.delete.confirm.action': 'Löschen',
+    'savedPrompts.empty.description':
+      'Speichern Sie häufig verwendete Prompts, um sie in Ihren Unterhaltungen schnell wiederzuverwenden, ohne sie erneut einzugeben. Gespeicherte Prompts erscheinen auch im Chat-Verlaufsbereich für den schnellen Zugriff.',
+    'savedPrompts.sidebar.showAll': 'Alle anzeigen',
+    'savedPrompts.sidebar.showLess': 'Weniger anzeigen',
+    'savedPrompts.sidebar.openSettings':
+      'Einstellungen für gespeicherte Prompts öffnen',
+    'savedPrompts.sidebar.empty': 'Noch keine gespeicherten Prompts',
     'sort.alphabeticalAsc': 'Name (A-Z)',
     'sort.alphabeticalDesc': 'Name (Z-A)',
     'sort.label': 'Unterhaltungen sortieren',
@@ -395,6 +443,7 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'tooltip.quickNewChat': 'Neuer Chat',
     'tooltip.responseRecorded': 'Antwort aufgezeichnet',
     'tooltip.send': 'Senden',
+    'tooltip.settings': 'Chatbot-Optionen',
     'user.guest': 'Gast',
     'user.loading': '...',
   },

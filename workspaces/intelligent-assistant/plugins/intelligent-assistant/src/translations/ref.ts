@@ -336,13 +336,21 @@ export const intelligentAssistantMessages = {
   // Conversation categorization
   'conversation.category.pinnedChats': 'Pinned chats',
   'conversation.category.recent': 'Chats',
+  'conversation.category.savedPrompts': 'Saved prompts',
 
   // lightspeed settings
   'settings.pinned.enable': 'Enable pinned chats',
   'settings.pinned.disable': 'Disable pinned chats',
   'settings.pinned.enabled.description': 'Pinned chats are currently enabled',
   'settings.pinned.disabled.description': 'Pinned chats are currently disabled',
-  'settings.mcp.label': 'MCP settings',
+  'settings.savedPrompts.enable': 'Enable saved prompts',
+  'settings.savedPrompts.disable': 'Disable saved prompts',
+  'settings.savedPrompts.enabled.description':
+    'Saved prompts are currently enabled',
+  'settings.savedPrompts.disabled.description':
+    'Saved prompts are currently disabled',
+  'settings.panel.title': 'Settings',
+  'settings.mcp.label': 'MCP and Prompt Settings',
   'settings.mcp.badge': 'New',
 
   // MCP settings
@@ -442,6 +450,44 @@ export const intelligentAssistantMessages = {
 
   // Deep thinking
   'reasoning.thinking': 'Show thinking',
+
+  // Saved prompts settings
+  'savedPrompts.tab.title': 'Saved prompts',
+  'savedPrompts.disabled.title': 'Saved prompts are disabled',
+  'savedPrompts.disabled.body':
+    'Saved prompts are hidden from the chat history panel. Enable them to display your prompts in the sidebar.',
+  'savedPrompts.disabled.enableLink': 'Enable saved prompts',
+  'savedPrompts.count.zero': 'No prompts',
+  'savedPrompts.count_one': '1 prompt',
+  'savedPrompts.count_other': '{{count}} prompts',
+  'savedPrompts.newPrompt': '+ New prompt',
+  'savedPrompts.form.titleLabel': 'Title',
+  'savedPrompts.form.titlePlaceholder': 'Prompt title',
+  'savedPrompts.form.contentLabel': 'Prompt',
+  'savedPrompts.form.contentPlaceholder': 'Prompt content',
+  'savedPrompts.form.save': 'Save',
+  'savedPrompts.form.cancel': 'Cancel',
+  'savedPrompts.validation.titleMaxLength':
+    'Title must be {{max}} characters or fewer.',
+  'savedPrompts.validation.contentMaxLength':
+    'Prompt must be {{max}} characters or fewer.',
+  'savedPrompts.limitReached':
+    'Prompt limit reached. Delete an existing prompt to create a new one.',
+  'savedPrompts.actions.apply': 'Apply in input box',
+  'savedPrompts.actions.send': 'Send directly',
+  'savedPrompts.actions.sendDisabledStreaming': 'Wait for response to finish',
+  'savedPrompts.actions.delete': 'Delete',
+  'savedPrompts.actions.menuAriaLabel': 'Actions for {{name}}',
+  'savedPrompts.delete.confirm.title': "Delete '{{name}}'?",
+  'savedPrompts.delete.confirm.message':
+    'This saved prompt will be permanently removed.',
+  'savedPrompts.delete.confirm.action': 'Delete',
+  'savedPrompts.empty.description':
+    'Save frequently used prompts to quickly reuse them in your conversations without typing them again. Saved prompts also appear in the chat history panel for quick access.',
+  'savedPrompts.sidebar.showAll': 'Show all',
+  'savedPrompts.sidebar.showLess': 'Show less',
+  'savedPrompts.sidebar.openSettings': 'Open saved prompts settings',
+  'savedPrompts.sidebar.empty': 'No saved prompts yet',
 };
 
 /**

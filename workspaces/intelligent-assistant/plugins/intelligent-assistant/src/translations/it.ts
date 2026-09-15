@@ -67,6 +67,7 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
       "Messaggio dall'utente: {{prompt}}. Caricamento in corso del messaggio del bot.",
     'conversation.category.pinnedChats': 'Chat fissate',
     'conversation.category.recent': 'Chat',
+    'conversation.category.savedPrompts': 'Prompt salvati',
     'conversation.delete': 'Elimina',
     'conversation.delete.confirm.action': 'Elimina',
     'conversation.delete.confirm.message':
@@ -252,6 +253,8 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'notebook.view.documents.maxReached':
       'Sono consentite al massimo 10 risorse. Elimina una risorsa per caricarne una nuova.',
     'notebook.view.documents.uploading': 'Caricamento risorsa',
+    'notebook.view.documents.uploadsInProgress':
+      'Attendere il completamento dei caricamenti in corso prima di aggiungere altre risorse.',
     'notebook.view.input.disabledTooltip':
       'Seleziona almeno una risorsa caricata per iniziare a chattare',
     'notebook.view.input.placeholder':
@@ -344,13 +347,57 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'settings.displayMode.label': 'Modalità di visualizzazione',
     'settings.displayMode.overlay': 'Sovrapposizione',
     'settings.mcp.badge': 'Nuovo',
-    'settings.mcp.label': 'Impostazioni MCP',
+    'settings.panel.title': 'Impostazioni',
+    'settings.mcp.label': 'Impostazioni MCP e Prompt',
     'settings.pinned.disable': 'Disattiva le chat bloccate',
     'settings.pinned.disabled.description':
       'Le chat bloccate sono attualmente disabilitate',
     'settings.pinned.enable': 'Abilita le chat bloccate',
     'settings.pinned.enabled.description':
       'Le chat bloccate sono attualmente abilitate',
+    'settings.savedPrompts.disable': 'Disattiva prompt salvati',
+    'settings.savedPrompts.disabled.description':
+      'I prompt salvati sono attualmente disabilitati',
+    'settings.savedPrompts.enable': 'Abilita prompt salvati',
+    'settings.savedPrompts.enabled.description':
+      'I prompt salvati sono attualmente abilitati',
+    'savedPrompts.tab.title': 'Prompt salvati',
+    'savedPrompts.disabled.title': 'I prompt salvati sono disabilitati',
+    'savedPrompts.disabled.body':
+      'I prompt salvati sono nascosti nel pannello della cronologia chat. Abilitateli per visualizzare i prompt nella barra laterale.',
+    'savedPrompts.disabled.enableLink': 'Abilita prompt salvati',
+    'savedPrompts.count.zero': 'Nessun prompt',
+    'savedPrompts.count_one': '1 prompt',
+    'savedPrompts.count_other': '{{count}} prompt',
+    'savedPrompts.newPrompt': '+ Nuovo prompt',
+    'savedPrompts.form.titleLabel': 'Titolo',
+    'savedPrompts.form.titlePlaceholder': 'Titolo del prompt',
+    'savedPrompts.form.contentLabel': 'Prompt',
+    'savedPrompts.form.contentPlaceholder': 'Contenuto del prompt',
+    'savedPrompts.form.save': 'Salva',
+    'savedPrompts.form.cancel': 'Annulla',
+    'savedPrompts.validation.titleMaxLength':
+      'Il titolo deve contenere al massimo {{max}} caratteri.',
+    'savedPrompts.validation.contentMaxLength':
+      'Il prompt deve contenere al massimo {{max}} caratteri.',
+    'savedPrompts.limitReached':
+      'Limite di prompt raggiunto. Elimina un prompt esistente per crearne uno nuovo.',
+    'savedPrompts.actions.apply': 'Applica nella casella di input',
+    'savedPrompts.actions.send': 'Invia direttamente',
+    'savedPrompts.actions.sendDisabledStreaming':
+      'Attendere il completamento della risposta',
+    'savedPrompts.actions.delete': 'Elimina',
+    'savedPrompts.actions.menuAriaLabel': 'Azioni per {{name}}',
+    'savedPrompts.delete.confirm.title': 'Eliminare «{{name}}»?',
+    'savedPrompts.delete.confirm.message':
+      'Questo prompt salvato verrà rimosso in modo permanente.',
+    'savedPrompts.delete.confirm.action': 'Elimina',
+    'savedPrompts.empty.description':
+      'Salva i prompt usati di frequente per riutilizzarli rapidamente nelle conversazioni senza riscriverli. I prompt salvati compaiono anche nel pannello della cronologia chat per un accesso rapido.',
+    'savedPrompts.sidebar.showAll': 'Mostra tutto',
+    'savedPrompts.sidebar.showLess': 'Mostra meno',
+    'savedPrompts.sidebar.openSettings': 'Apri impostazioni prompt salvati',
+    'savedPrompts.sidebar.empty': 'Nessun prompt salvato',
     'sort.alphabeticalAsc': 'Nome (A-Z)',
     'sort.alphabeticalDesc': 'Nome (Z-A)',
     'sort.label': 'Ordina conversazioni',
@@ -393,6 +440,7 @@ const intelligentAssistantTranslationIt = createTranslationMessages({
     'tooltip.quickNewChat': 'Nuova chat',
     'tooltip.responseRecorded': 'Risposta registrata',
     'tooltip.send': 'Invia',
+    'tooltip.settings': 'Opzioni chatbot',
     'user.guest': 'Ospite',
     'user.loading': '...',
   },

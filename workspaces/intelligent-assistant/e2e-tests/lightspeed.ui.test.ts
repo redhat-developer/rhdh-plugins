@@ -23,6 +23,7 @@ import {
   openChatHistoryDrawer,
   closeChatHistoryDrawer,
   expectBackstagePageVisible,
+  waitForBackstageCatalogReady,
   expectChatbotControlsVisible,
   verifyDisplayModeMenuOptions,
   expectChatInputAreaVisible,
@@ -61,7 +62,8 @@ test.describe('Intelligent assistant UI', () => {
 
   test.describe('Chatbot Display Modes', () => {
     test.beforeEach(async () => {
-      await sharedPage.goto('/');
+      await sharedPage.goto('/catalog');
+      await waitForBackstageCatalogReady(sharedPage);
     });
 
     test('should display chatbot in overlay mode with backstage page visible', async () => {

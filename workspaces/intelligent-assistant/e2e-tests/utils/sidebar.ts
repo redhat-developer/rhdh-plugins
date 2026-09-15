@@ -51,6 +51,18 @@ export async function assertChatDialogInitialState(
   ).toBeVisible();
   await expect(
     drawerPanel.getByRole('heading', {
+      name: new RegExp(translations['conversation.category.savedPrompts']),
+    }),
+  ).toBeVisible();
+  await expect(
+    drawerPanel
+      .locator('.lightspeed-saved-prompts-group')
+      .getByRole('menuitem', {
+        name: translations['savedPrompts.sidebar.empty'],
+      }),
+  ).toBeDisabled();
+  await expect(
+    drawerPanel.getByRole('heading', {
       name: translations['conversation.category.pinnedChats'],
       level: 3,
       exact: true,

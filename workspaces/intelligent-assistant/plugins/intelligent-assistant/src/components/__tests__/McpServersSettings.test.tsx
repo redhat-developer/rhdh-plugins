@@ -100,7 +100,6 @@ const resolveStatusAfterPatch = (
 };
 
 describe('McpServersSettings', () => {
-  const onClose = jest.fn();
   let servers: McpServerResponse[];
   const mockFetch = jest.fn();
 
@@ -122,7 +121,7 @@ describe('McpServersSettings', () => {
           [fetchApiRef, { fetch: mockFetch }],
         ]}
       >
-        <McpServersSettings onClose={onClose} />
+        <McpServersSettings />
       </TestApiProvider>,
     );
 
