@@ -61,7 +61,7 @@ The provider SHALL read its configuration from `catalog.providers.mcpRegistry` a
 
 ### Requirement: Sync on the configured schedule
 
-The provider SHALL run its ingestion sync on the configured `schedule` using the Backstage `SchedulerService`. When `schedule` is omitted, the provider SHALL apply a documented default `SchedulerServiceTaskScheduleDefinition` rather than failing. The provider SHALL also perform an initial sync according to the schedule's `initialDelay` (or immediately when unset) after registration.
+The provider SHALL run ingestion sync only via `SchedulerService.createScheduledTaskRunner` on the configured `schedule` — it SHALL NOT invoke `run()` synchronously from `connect()`. When `schedule` is omitted, the provider SHALL apply the default `SchedulerServiceTaskScheduleDefinition`: `frequency: { minutes: 30 }`, `timeout: { minutes: 3 }`, with `initialDelay` omitted. The first sync SHALL occur on the scheduler's first tick: after `initialDelay` when that field is set, otherwise after one `frequency` interval following registration.
 
 #### Scenario: Scheduled sync runs at the configured frequency
 
@@ -71,7 +71,17 @@ The provider SHALL run its ingestion sync on the configured `schedule` using the
 #### Scenario: Schedule omitted uses the default
 
 - **WHEN** the provider is configured without a `schedule`
-- **THEN** the provider applies the documented default schedule and syncs on that cadence without error
+- **THEN** the provider applies the default schedule (`frequency: { minutes: 30 }`, `timeout: { minutes: 3 }`, no `initialDelay`) and syncs on that cadence without error
+
+#### Scenario: First sync is scheduler-driven, not immediate on connect
+
+- **WHEN** the provider registers and the effective schedule omits `initialDelay`
+- **THEN** the provider does not run ingestion synchronously in `connect()`, and the first full ingestion sync runs on the scheduler's first tick after approximately one `frequency` interval
+
+#### Scenario: initialDelay defers the first sync
+
+- **WHEN** the provider is configured with `schedule.initialDelay: { seconds: 60 }` and `frequency: { minutes: 30 }`
+- **THEN** the first full ingestion sync runs after about 60 seconds, and subsequent syncs run approximately every 30 minutes
 
 ### Requirement: List registry servers with cursor pagination
 

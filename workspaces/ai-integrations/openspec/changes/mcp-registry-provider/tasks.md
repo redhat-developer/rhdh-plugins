@@ -16,7 +16,7 @@
 
 - [ ] 2.1 Author `config.d.ts` declaring `catalog.providers.mcpRegistry` as a single object with `baseUrl` (required), `baseName?` (optional mapping-prefix override), `apiVersion?` (default `v1`), `schedule?` (`SchedulerServiceTaskScheduleDefinitionConfig`), `pageLimit?` (max pages per sync, default `10`), `pageSize?` (registry `?limit=` when set), and `defaultOwner?`; require `@visibility backend` annotations for backend-only fields such as `baseUrl`
 - [ ] 2.2 Implement config reading: parse `catalog.providers.mcpRegistry` as a single object; register nothing (no error) when the key is absent
-- [ ] 2.3 Implement validation with actionable errors (fail fast when `baseUrl` is missing; fail fast with a multiple-registries-out-of-scope message when the value is a keyed map of instance objects); apply the `apiVersion` default (`v1`), the documented default schedule, and the `pageLimit` default (`10` pages per sync) when omitted
+- [ ] 2.3 Implement validation with actionable errors (fail fast when `baseUrl` is missing; fail fast with a multiple-registries-out-of-scope message when the value is a keyed map of instance objects); apply the `apiVersion` default (`v1`), the default schedule when `schedule` is omitted (`frequency: { minutes: 30 }`, `timeout: { minutes: 3 }`, no `initialDelay`), and the `pageLimit` default (`10` pages per sync) when omitted
 - [ ] 2.4 Add unit tests for config parsing/validation: single object with `baseUrl`, optional `baseName`, keyed-map rejection, missing `baseUrl`, absent-config no-op, omitted `pageLimit` → `10`, explicit `pageLimit` override, omitted `pageSize` (no invented default), and explicit `pageSize`
 
 ## 3. Registry Client & Pagination
@@ -31,7 +31,7 @@
 ## 4. Entity Provider & Scheduling
 
 - [ ] 4.1 Implement the `EntityProvider` class: `getProviderName()` = `mcp-registry-provider`, `connect()` storing the connection, and a `run()` performing one sync
-- [ ] 4.2 Wire scheduling via `SchedulerService.createScheduledTaskRunner(schedule)`, honoring `initialDelay`; register the single provider when config is present
+- [ ] 4.2 Wire scheduling via `SchedulerService.createScheduledTaskRunner(schedule)` only (no synchronous `run()` from `connect()`); register the single provider when config is present
 - [ ] 4.3 Implement the full-mutation commit: on successful sync call `connection.applyMutation({ type: 'full', entities })`; on a failed run emit no mutation (preserve prior catalog state)
 - [ ] 4.4 Attach provider attribution to each entity: set the mutation `locationKey` to `mcp-registry-provider` **and** set `backstage.io/managed-by-location` on the entity (they are not interchangeable — the key claims the entity ref; the annotation is catalog-visible source)
 - [ ] 4.5 Add unit tests: full mutation contents (each `DeferredEntity` has `locationKey` `mcp-registry-provider` **and** the entity carries `backstage.io/managed-by-location`, matching scenario `Provider attribution annotations present`), pruning of removed servers across two syncs, updated server reflected, last-good retention when mapping fails for a still-listed entry, and no-mutation-on-failed-run
@@ -47,5 +47,5 @@
 - [ ] 6.1 Add an end-to-end test wiring config → mocked paginated registry → mapping → full mutation, asserting the mutation converges to the registry's current server set
 - [ ] 6.2 Verify produced entities pass the upstream `mcp-server` `API` entity schema (`McpServerApiEntity`) — reusing the mapping change's conformance expectations
 - [ ] 6.3 Verify the apiVersion discrepancy handling: default `v1` requests `<baseUrl>/v1/servers` and an override (`v0`) is honored, with a documented note for operators
-- [ ] 6.4 Finalize `README.md` / config docs: full `catalog.providers.mcpRegistry` example (`baseUrl`, optional `baseName`, `apiVersion`, `schedule`, `pageLimit` default `10` pages per sync, optional `pageSize` as `?limit=`, `defaultOwner`), note that multiple registries are out of scope, pagination behavior, and error-handling semantics
+- [ ] 6.4 Finalize `README.md` / config docs: full `catalog.providers.mcpRegistry` example (`baseUrl`, optional `baseName`, `apiVersion`, optional `schedule` — default `frequency: { minutes: 30 }`, `timeout: { minutes: 3 }`, no `initialDelay`; first sync after one `frequency` unless `initialDelay` is set), `pageLimit` default `10` pages per sync, optional `pageSize` as `?limit=`, `defaultOwner`), note that multiple registries are out of scope, pagination behavior, and error-handling semantics
 - [ ] 6.5 Run the workspace lint, typecheck, and test suite; ensure the new package builds and passes CI conventions

@@ -73,11 +73,17 @@ Pagination is cursor-based: omit `cursor` on the first request; pass the prior `
 
 ### D3: Schedule via `SchedulerService`; omitted `schedule` uses a documented default
 
-**Choice:** The provider is driven by `scheduler.createScheduledTaskRunner(schedule)` and refreshes on the configured `SchedulerServiceTaskScheduleDefinition`. When `schedule` is omitted, a documented default (e.g. `frequency: { minutes: 30 }`, `timeout: { minutes: 3 }`) is applied rather than failing. The provider connects via the standard `EntityProvider.connect` + scheduled `run()` pattern.
+**Choice:** The provider is driven solely by `scheduler.createScheduledTaskRunner(schedule)` — ingestion `run()` is **not** invoked synchronously from `connect()`. The effective schedule is the configured `SchedulerServiceTaskScheduleDefinition`, or when `schedule` is omitted the constant default:
 
-**Alternative considered:** Require `schedule` and fail if absent — rejected; a sensible default keeps first-run setup simple, consistent with the mapping's "never fail for a supplyable default" stance.
+- `frequency: { minutes: 30 }`
+- `timeout: { minutes: 3 }`
+- `initialDelay` omitted
 
-**Rationale:** A missing schedule should not block ingestion. A sensible default keeps first-run setup simple.
+**First sync:** Backstage `SchedulerService` honors `initialDelay` and `frequency` only. When `initialDelay` is set, the first tick runs after that delay; when it is omitted, the first tick runs after one `frequency` interval (not immediately on registration). Operators who need a sooner first sync set `initialDelay` explicitly (for example `{ seconds: 15 }`).
+
+**Alternative considered:** Require `schedule` and fail if absent — rejected; a sensible default keeps first-run setup simple, consistent with the mapping's "never fail for a supplyable default" stance. **Alternative considered:** Call `run()` once from `connect()` when `initialDelay` is unset — rejected; duplicates scheduler semantics and diverges from `createScheduledTaskRunner`.
+
+**Rationale:** A missing schedule should not block ingestion. Scheduling behavior stays aligned with upstream `SchedulerService` so tests and operator expectations match other catalog providers.
 
 ### D4: Full cursor pagination is mandatory
 
