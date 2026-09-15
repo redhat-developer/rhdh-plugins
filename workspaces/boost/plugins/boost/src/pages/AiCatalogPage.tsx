@@ -20,8 +20,10 @@ import type { SortDescriptor } from '@backstage/ui';
 import { CatalogErrorBoundary } from '../components/catalog/CatalogErrorBoundary';
 import { CatalogFilters } from '../components/catalog/CatalogFilters/CatalogFilters';
 import { FilterDrawer } from '../components/catalog/CatalogFilters/FilterDrawer';
+import { CatalogEmptyState } from '../components/catalog/CatalogResults/CatalogEmptyState';
+import { CatalogErrorState } from '../components/catalog/CatalogResults/CatalogErrorState';
+import { CatalogLoadingState } from '../components/catalog/CatalogResults/CatalogLoadingState';
 import { CatalogResults } from '../components/catalog/CatalogResults/CatalogResults';
-import type { CatalogViewMode } from '../components/catalog/CatalogToolbar';
 import type { FilterDefinition } from '../blueprints/AiCatalogFilterBlueprint';
 import { useAiAssets } from '../hooks/useAiAssets';
 import { useUrlFilters } from '../hooks/useUrlFilters';
@@ -95,35 +97,33 @@ const AiCatalogPageContent = ({ filters }: AiCatalogPageProps) => {
     }
   }, [error, loading, page, pageStart, setPage, totalCount]);
 
-  const results = (
-    <CatalogResults
-      loading={loading}
-      error={error}
-      retry={retry}
-      filtersCount={filters.length}
-      cardCount={Math.min(pageSize, 8)}
-      allEntitiesCount={allEntities.length}
-      hasActiveFilters={hasActiveFilters}
-      entities={entities}
-      pageEntities={pageEntities}
-      viewMode={viewMode as CatalogViewMode}
-      sort={sortState}
-      pageSize={pageSize}
-      pageStart={pageStart}
-      hasNextPage={hasNextPage}
-      hasPreviousPage={hasPreviousPage}
-      searchInputValue={searchInputValue}
-      onSearchChange={setSearch}
-      onClearFilters={clearFilters}
-      onViewModeChange={setViewMode}
-      onNextPage={() => setPage(page + 1)}
-      onPreviousPage={() => setPage(page - 1)}
-      onPageSizeChange={setPageSize}
-    />
-  );
+  if (loading) {
+    return (
+      <CatalogPageSurface>
+        <div className={styles.layout}>
+          <CatalogLoadingState
+            filterCount={filters.length}
+            cardCount={Math.min(pageSize, 8)}
+          />
+        </div>
+      </CatalogPageSurface>
+    );
+  }
 
-  if (loading || error || (allEntities.length === 0 && !hasActiveFilters)) {
-    return <CatalogPageSurface>{results}</CatalogPageSurface>;
+  if (error) {
+    return (
+      <CatalogPageSurface>
+        <CatalogErrorState onRetry={retry} />
+      </CatalogPageSurface>
+    );
+  }
+
+  if (allEntities.length === 0 && !hasActiveFilters) {
+    return (
+      <CatalogPageSurface>
+        <CatalogEmptyState onRefresh={retry} />
+      </CatalogPageSurface>
+    );
   }
 
   return (
@@ -146,7 +146,24 @@ const AiCatalogPageContent = ({ filters }: AiCatalogPageProps) => {
               onFilterChange={setFilter}
             />
           </div>
-          {results}
+          <CatalogResults
+            hasActiveFilters={hasActiveFilters}
+            entities={entities}
+            pageEntities={pageEntities}
+            viewMode={viewMode}
+            sort={sortState}
+            pageSize={pageSize}
+            pageStart={pageStart}
+            hasNextPage={hasNextPage}
+            hasPreviousPage={hasPreviousPage}
+            searchInputValue={searchInputValue}
+            onSearchChange={setSearch}
+            onClearFilters={clearFilters}
+            onViewModeChange={setViewMode}
+            onNextPage={() => setPage(page + 1)}
+            onPreviousPage={() => setPage(page - 1)}
+            onPageSizeChange={setPageSize}
+          />
         </main>
       </div>
     </CatalogPageSurface>

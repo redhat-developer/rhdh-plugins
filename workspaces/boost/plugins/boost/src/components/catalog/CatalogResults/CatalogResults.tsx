@@ -19,20 +19,12 @@ import { Grid, Flex, TablePagination, type SortState } from '@backstage/ui';
 
 import { AiAssetCard } from '../AiAssetCard';
 import { AiCatalogTable } from '../AiCatalogTable';
-import { CatalogToolbar, type CatalogViewMode } from '../CatalogToolbar';
+import { CatalogToolbar } from '../CatalogToolbar';
 import { EmptyFilteredState } from './EmptyFilteredState';
-import { CatalogEmptyState } from './CatalogEmptyState';
-import { CatalogErrorState } from './CatalogErrorState';
-import { CatalogLoadingState } from './CatalogLoadingState';
-import styles from '../../../pages/AiCatalogPage.module.css';
+import type { CatalogViewMode } from '../../../hooks/useUrlFilters';
+import styles from './CatalogResults.module.css';
 
 interface CatalogResultsProps {
-  readonly loading: boolean;
-  readonly error: Error | undefined;
-  readonly retry: () => void;
-  readonly filtersCount: number;
-  readonly cardCount: number;
-  readonly allEntitiesCount: number;
   readonly hasActiveFilters: boolean;
   readonly entities: Entity[];
   readonly pageEntities: Entity[];
@@ -52,12 +44,6 @@ interface CatalogResultsProps {
 }
 
 export const CatalogResults = ({
-  loading,
-  error,
-  retry,
-  filtersCount,
-  cardCount,
-  allEntitiesCount,
   hasActiveFilters,
   entities,
   pageEntities,
@@ -75,16 +61,6 @@ export const CatalogResults = ({
   onPreviousPage,
   onPageSizeChange,
 }: CatalogResultsProps) => {
-  if (loading) {
-    return (
-      <CatalogLoadingState filterCount={filtersCount} cardCount={cardCount} />
-    );
-  }
-
-  if (error) return <CatalogErrorState onRetry={retry} />;
-
-  if (allEntitiesCount === 0 && !hasActiveFilters) return <CatalogEmptyState />;
-
   const totalCount = entities.length;
 
   return (

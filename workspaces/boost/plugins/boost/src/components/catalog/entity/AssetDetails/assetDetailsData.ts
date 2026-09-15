@@ -93,6 +93,13 @@ export interface AssetDetailsData {
   readonly typeDetails?: AssetTypeDetailsData;
 }
 
+function hasDisplayableTypeDetails(details: AssetTypeDetailsData): boolean {
+  return Object.entries(details).some(([key, value]) => {
+    if (key === 'type' || value === undefined || value === '') return false;
+    return !Array.isArray(value) || value.length > 0;
+  });
+}
+
 export function getAssetDetailsData(entity: Entity): AssetDetailsData {
   const type = getSpecField(entity, 'type')?.toLowerCase();
   let typeDetails: AssetTypeDetailsData | undefined;
@@ -144,43 +151,15 @@ export function getAssetDetailsData(entity: Entity): AssetDetailsData {
     description: entity.metadata.description?.trim() || undefined,
     rationale: getDistinctSpecField(entity, 'rationale'),
     version: entity.metadata.annotations?.['rhdh.io/ai-asset-version'],
-    typeDetails,
+    typeDetails:
+      typeDetails && hasDisplayableTypeDetails(typeDetails)
+        ? typeDetails
+        : undefined,
   };
 }
 
 export function hasAssetDetails(data: AssetDetailsData): boolean {
-  const details = data.typeDetails;
-  if (data.description || data.rationale || data.version) return true;
-  if (!details) return false;
-
-  switch (details.type) {
-    case 'agent':
-      return Boolean(
-        details.model ||
-        details.modelsAvailable.length ||
-        details.handoffDescription ||
-        details.handoffRefs.length ||
-        details.enableRAG !== undefined ||
-        details.tools.length,
-      );
-    case 'ai-model-server':
-      return Boolean(
-        details.serverType ||
-        details.defaultModel ||
-        details.requiresApiKey !== undefined ||
-        details.modelsAvailable.length,
-      );
-    case 'mcp-server':
-      return Boolean(details.remotes.length || details.definition);
-    case 'skill':
-      return Boolean(
-        details.disciplines.length ||
-        details.categories.length ||
-        details.agents.length,
-      );
-    case 'rule':
-      return Boolean(details.category);
-    default:
-      return false;
-  }
+  return Boolean(
+    data.description || data.rationale || data.version || data.typeDetails,
+  );
 }

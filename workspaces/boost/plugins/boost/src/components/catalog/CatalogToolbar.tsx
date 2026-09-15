@@ -24,10 +24,9 @@ import {
 } from '@backstage/ui';
 import { RiGridLine, RiListUnordered } from '@remixicon/react';
 
+import type { CatalogViewMode } from '../../hooks/useUrlFilters';
 import { useTranslation } from '../../hooks/useTranslation';
 import styles from './CatalogToolbar.module.css';
-
-export type CatalogViewMode = 'grid' | 'table';
 
 interface CatalogToolbarProps {
   readonly totalCount: number;

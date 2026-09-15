@@ -81,7 +81,8 @@ export const boostMessages = {
     empty: {
       title: 'No AI assets available',
       description:
-        'AI assets will appear here once they are published to the OCI registry or synced from your catalog.',
+        'AI assets appear here after they are published or synced from your catalog. On first load, this may take a moment.',
+      refresh: 'Refresh',
       learnMore: 'Learn How to Publish',
     },
     emptyFiltered: {

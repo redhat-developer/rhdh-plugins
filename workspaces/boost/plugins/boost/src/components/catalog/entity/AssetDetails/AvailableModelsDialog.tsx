@@ -44,10 +44,6 @@ function renderModelCell(row: ModelRow) {
   return <CellText title={row.name} />;
 }
 
-function renderModelCell(row: ModelRow) {
-  return <CellText title={row.name} />;
-}
-
 export const AvailableModelsDialog = ({
   models,
 }: AvailableModelsDialogProps) => {

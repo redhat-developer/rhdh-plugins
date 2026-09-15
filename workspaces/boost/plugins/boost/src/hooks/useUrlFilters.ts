@@ -17,13 +17,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-export type ViewMode = 'grid' | 'table';
+export type CatalogViewMode = 'grid' | 'table';
 
 export interface UrlFilterState {
   search: string;
   searchInputValue: string;
   filterValues: Map<string, string[]>;
-  viewMode: ViewMode;
+  viewMode: CatalogViewMode;
   page: number;
   pageSize: number;
 }
@@ -31,7 +31,7 @@ export interface UrlFilterState {
 export interface UrlFilterActions {
   setSearch: (value: string) => void;
   setFilter: (urlParam: string, values: string[]) => void;
-  setViewMode: (mode: ViewMode) => void;
+  setViewMode: (mode: CatalogViewMode) => void;
   setPage: (page: number, options?: { replace?: boolean }) => void;
   setPageSize: (size: number) => void;
   clearFilters: () => void;
@@ -89,7 +89,7 @@ export function useUrlFilters(
 
   const rawSearch = searchParams.get('q') ?? '';
   const rawView = searchParams.get('view');
-  const viewMode: ViewMode = rawView === 'table' ? 'table' : 'grid';
+  const viewMode: CatalogViewMode = rawView === 'table' ? 'table' : 'grid';
   const rawPage = searchParams.get('page');
   const parsedPage = parseNonNegativeInteger(rawPage);
   const page = parsedPage ?? 0;
@@ -182,7 +182,7 @@ export function useUrlFilters(
   );
 
   const setViewMode = useCallback(
-    (mode: ViewMode) => {
+    (mode: CatalogViewMode) => {
       setSearchParams(prev => {
         const next = new URLSearchParams(prev);
         if (mode === 'grid') {

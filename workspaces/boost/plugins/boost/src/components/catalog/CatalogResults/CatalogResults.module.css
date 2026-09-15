@@ -15,8 +15,60 @@
  */
 
 @layer components {
+  .resultsSurface {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    width: 100%;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid var(--bui-border-1);
+    border-radius: var(--bui-radius-4);
+  }
+
+  .resultsBody {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    padding: var(--bui-space-4);
+  }
+
+  .pagination {
+    flex-shrink: 0;
+    padding: var(--bui-space-3) var(--bui-space-4);
+    border-top: 1px solid var(--bui-border-1);
+  }
+
   .emptyState {
-    min-height: 420px;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .emptyStateContent {
+    width: 100%;
+    max-width: 520px;
+    min-width: 0;
+  }
+
+  .emptyStateDescription {
+    max-width: 52ch;
+  }
+
+  .emptyStateActions {
+    flex-wrap: wrap;
+  }
+
+  .refreshButton {
+    border: 1px solid var(--bui-border-1);
+  }
+
+  .emptyStateIllustration {
+    display: block;
+    width: min(100%, 420px);
+    height: auto;
   }
 
   .errorState {

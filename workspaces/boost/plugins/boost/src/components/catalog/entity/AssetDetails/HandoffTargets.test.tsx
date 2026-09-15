@@ -33,8 +33,8 @@ jest.mock('@backstage/plugin-catalog-react', () => {
       entityRef,
       children,
     }: {
-      entityRef: Entity | string;
-      children?: ReactNode;
+      readonly entityRef: Entity | string;
+      readonly children?: ReactNode;
     }) => (
       <a href="/catalog/default/airesource/test">
         {children ??

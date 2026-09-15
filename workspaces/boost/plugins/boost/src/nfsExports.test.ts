@@ -14,25 +14,13 @@
  * limitations under the License.
  */
 
-import { createFrontendPlugin } from '@backstage/frontend-plugin-api';
+import translationsModuleDefault, {
+  boostTranslationsModule,
+} from './translations';
 
-import { aiCatalogFilterExtensions } from './extensions/aiCatalogFilters';
-import { aiCatalogPage } from './extensions/aiCatalogPage';
-import { entityCardExtensions } from './extensions/entityCards';
-import { rootRouteRef } from './routes';
-
-/**
- * The Boost frontend plugin for RHDH.
- * @public
- */
-export const boostPlugin = createFrontendPlugin({
-  pluginId: 'boost',
-  extensions: [
-    aiCatalogPage,
-    ...aiCatalogFilterExtensions,
-    ...entityCardExtensions,
-  ],
-  routes: {
-    root: rootRouteRef,
-  },
+describe('Boost NFS exports', () => {
+  it('exports the translation module as the translations entrypoint default', () => {
+    expect(boostTranslationsModule.$$type).toBe('@backstage/FrontendModule');
+    expect(translationsModuleDefault).toBe(boostTranslationsModule);
+  });
 });

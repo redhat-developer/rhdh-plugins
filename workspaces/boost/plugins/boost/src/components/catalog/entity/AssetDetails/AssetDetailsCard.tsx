@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useMemo } from 'react';
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { Badge, Card, CardBody, CardHeader, Flex, Text } from '@backstage/ui';
 
@@ -54,7 +55,7 @@ const TypeDetails = ({
 export const AssetDetailsCard = () => {
   const { entity } = useEntity();
   const { t } = useTranslation();
-  const data = getAssetDetailsData(entity);
+  const data = useMemo(() => getAssetDetailsData(entity), [entity]);
 
   if (!hasAssetDetails(data)) return null;
 

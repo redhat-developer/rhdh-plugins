@@ -22,12 +22,21 @@ import { fireEvent, screen } from '@testing-library/react';
 import { boostMessages } from '../../../../translations/ref';
 import { AssetDetailsCard } from './AssetDetailsCard';
 
+const mockHandoffTargets = jest.fn(({ refs }: { readonly refs: string[] }) => (
+  <span>{refs.join(',')}</span>
+));
+
+jest.mock('./HandoffTargets', () => ({
+  HandoffTargets: (props: { readonly refs: string[] }) =>
+    mockHandoffTargets(props),
+}));
+
 jest.mock('@backstage/plugin-catalog-react', () => {
   const actual = jest.requireActual('@backstage/plugin-catalog-react');
 
   return {
     ...actual,
-    EntityRefLinks: ({ entityRefs }: { entityRefs: string[] }) => (
+    EntityRefLinks: ({ entityRefs }: { readonly entityRefs: string[] }) => (
       <>
         {entityRefs.map(entityRef => (
           <a href={`/catalog/default/airesource/${entityRef}`} key={entityRef}>
@@ -343,5 +352,27 @@ describe('AssetDetailsCard', () => {
     expect(description).toBeInTheDocument();
     expect(description.querySelector('strong')).toBeNull();
     expect(description.querySelector('code')).toBeNull();
+  });
+
+  it('keeps handoff references stable while the entity is unchanged', async () => {
+    const entity = {
+      ...agentEntity,
+      spec: {
+        ...agentEntity.spec,
+        handoffs: ['airesource:default/support'],
+      },
+    };
+    mockHandoffTargets.mockClear();
+
+    const view = await renderWithEntity(entity);
+    const firstRefs = mockHandoffTargets.mock.calls[0][0].refs;
+
+    view.rerender(
+      <EntityProvider entity={entity}>
+        <AssetDetailsCard />
+      </EntityProvider>,
+    );
+
+    expect(mockHandoffTargets.mock.calls.at(-1)?.[0].refs).toBe(firstRefs);
   });
 });

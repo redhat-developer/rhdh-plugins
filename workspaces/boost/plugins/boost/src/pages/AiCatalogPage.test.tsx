@@ -18,7 +18,7 @@ import type { Entity } from '@backstage/catalog-model';
 import type { CatalogApi } from '@backstage/plugin-catalog-react';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import { renderInTestApp, TestApiProvider } from '@backstage/test-utils';
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 
 import {
   categoryFilterDefinition,
@@ -110,12 +110,33 @@ describe('AiCatalogPage', () => {
 
   it('shows empty state when no assets and no filters', async () => {
     mockCatalogApi.getEntities.mockResolvedValue({ items: [] });
-    await renderPage();
+    const { container } = await renderPage();
 
     await waitFor(() => {
       expect(screen.getByText(msg.empty.title)).toBeInTheDocument();
     });
+    expect(container.querySelector('img[aria-hidden="true"]')).toHaveAttribute(
+      'src',
+      expect.stringContaining('empty-state-illustration'),
+    );
+    expect(screen.getByText(msg.empty.refresh)).toBeInTheDocument();
     expect(screen.getByText(msg.empty.learnMore)).toBeInTheDocument();
+  });
+
+  it('refreshes the catalog from the empty state', async () => {
+    mockCatalogApi.getEntities
+      .mockResolvedValueOnce({ items: [] })
+      .mockResolvedValueOnce({ items: mockEntities });
+    await renderPage();
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: msg.empty.refresh }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Code Review Skill')).toBeInTheDocument();
+    });
+    expect(mockCatalogApi.getEntities).toHaveBeenCalledTimes(2);
   });
 
   it('shows error state with retry when catalog fails', async () => {

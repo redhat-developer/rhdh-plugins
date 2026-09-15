@@ -16,7 +16,6 @@
 
 import { Flex, Skeleton } from '@backstage/ui';
 
-import layoutStyles from '../../../pages/AiCatalogPage.module.css';
 import styles from './CatalogResults.module.css';
 
 const SkeletonCard = () => (
@@ -48,7 +47,7 @@ export const CatalogLoadingState = ({
   filterCount,
   cardCount,
 }: CatalogLoadingStateProps) => (
-  <div className={layoutStyles.layout}>
+  <>
     <div className={styles.loadingSidebar}>
       {Array.from({ length: filterCount }, (_, i) => (
         <div key={i}>
@@ -61,7 +60,7 @@ export const CatalogLoadingState = ({
         </div>
       ))}
     </div>
-    <div className={layoutStyles.resultsSurface}>
+    <div className={styles.resultsSurface}>
       <div className={styles.loadingToolbar}>
         <Skeleton width={80} height={24} />
         <Skeleton width={180} height={36} />
@@ -72,5 +71,5 @@ export const CatalogLoadingState = ({
         ))}
       </div>
     </div>
-  </div>
+  </>
 );

@@ -94,7 +94,9 @@ describe('getAssetDetailsData', () => {
   });
 
   it('reports whether a card has displayable content', () => {
-    expect(hasAssetDetails(getAssetDetailsData(baseEntity))).toBe(false);
+    const emptyData = getAssetDetailsData(baseEntity);
+    expect(emptyData.typeDetails).toBeUndefined();
+    expect(hasAssetDetails(emptyData)).toBe(false);
     expect(
       hasAssetDetails(
         getAssetDetailsData({

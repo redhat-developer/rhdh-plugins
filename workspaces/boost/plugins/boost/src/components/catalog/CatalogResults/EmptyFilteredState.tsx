@@ -21,7 +21,7 @@ import { useTranslation } from '../../../hooks/useTranslation';
 export const EmptyFilteredState = ({
   onClearFilters,
 }: {
-  onClearFilters: () => void;
+  readonly onClearFilters: () => void;
 }) => {
   const { t } = useTranslation();
   return (
