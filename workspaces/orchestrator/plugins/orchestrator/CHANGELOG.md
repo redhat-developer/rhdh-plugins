@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-orchestrator
 
+## 6.2.1
+
+### Patch Changes
+
+- 99d7b85: Updated the workflow instance Inputs card to use the same nested rendering format.
+
 ## 6.2.0
 
 ### Minor Changes

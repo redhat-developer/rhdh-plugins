@@ -130,7 +130,6 @@ export const McpConfigureServerModal = ({
   close,
   save,
   removePersonalToken,
-  canManageMcp,
   configureModalTitle,
   isConfigureModalSaving,
   isSaveTokenButtonDisabled,
@@ -447,7 +446,6 @@ export const McpConfigureServerModal = ({
           variant="primary"
           onClick={() => void save()}
           isDisabled={
-            !canManageMcp ||
             isConfigureModalSaving ||
             tokenValidationState === 'validating' ||
             isSaveTokenButtonDisabled ||
@@ -462,7 +460,6 @@ export const McpConfigureServerModal = ({
             isDanger
             onClick={() => void removePersonalToken()}
             isDisabled={
-              !canManageMcp ||
               isConfigureModalSaving ||
               tokenValidationState === 'validating' ||
               isUpdatingModalStatus ||
