@@ -1602,6 +1602,15 @@ describe('intelligent-assistant router tests', () => {
       expect(response.statusCode).toEqual(200);
       expect(response.body.conversation_ids).toEqual([]);
     });
+
+    it('returns 403 when permission is denied', async () => {
+      const backendServer = await startBackendServer({}, AuthorizeResult.DENY);
+      const response = await request(backendServer).get(
+        '/api/intelligent-assistant/notebook-conversation-ids',
+      );
+
+      expect(response.statusCode).toEqual(403);
+    });
   });
 
   // Regression guard: /v1/query intentionally runs validation before

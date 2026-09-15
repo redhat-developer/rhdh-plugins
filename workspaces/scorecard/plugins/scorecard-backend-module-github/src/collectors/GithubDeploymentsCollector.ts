@@ -56,7 +56,7 @@ export class GithubDeploymentsCollector
   }
 
   getCollectorId(): string {
-    return 'github:deployments';
+    return 'github:doraDeployments';
   }
 
   getCollectorDescription(): string {

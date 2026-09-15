@@ -40,6 +40,7 @@ import { notebooksApiRef } from '../../api/notebooksApi';
 import { useConversations, useNotebookSessions } from '../../hooks';
 import { useLightspeedDrawerContext } from '../../hooks/useLightspeedDrawerContext';
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
+import { MuiThemeTestProvider } from '../../test-utils/MuiThemeTestProvider';
 import FileAttachmentContextProvider from '../AttachmentContext';
 import { LightspeedChat } from '../LightSpeedChat';
 import { NotebookStreamProvider } from '../notebooks/NotebookStreamProvider';
@@ -198,34 +199,39 @@ const mockNotebooksApi = {
   }),
 };
 
-const setupLightspeedChat = (initialPath = '/intelligent-assistant') => (
-  <MemoryRouter initialEntries={[initialPath]}>
-    <TestApiProvider
-      apis={[
-        [identityApiRef, identityApi],
-        [configApiRef, configAPi],
-        [lightspeedApiRef, mockLightspeedApi],
-        [notebooksApiRef, mockNotebooksApi],
-      ]}
-    >
-      <FileAttachmentContextProvider>
-        <QueryClientProvider client={queryClient}>
-          <NotebookStreamProvider>
-            <LightspeedChat
-              selectedModel="granite"
-              profileLoading={false}
-              handleSelectedModel={() => {}}
-              topicRestrictionEnabled={false}
-              selectedProvider="openai"
-              models={[]}
-              avatar="test"
-              userName="user:test"
-            />
-          </NotebookStreamProvider>
-        </QueryClientProvider>
-      </FileAttachmentContextProvider>
-    </TestApiProvider>
-  </MemoryRouter>
+const setupLightspeedChat = (
+  initialPath = '/intelligent-assistant',
+  configApi = configAPi,
+) => (
+  <MuiThemeTestProvider>
+    <MemoryRouter initialEntries={[initialPath]}>
+      <TestApiProvider
+        apis={[
+          [identityApiRef, identityApi],
+          [configApiRef, configApi],
+          [lightspeedApiRef, mockLightspeedApi],
+          [notebooksApiRef, mockNotebooksApi],
+        ]}
+      >
+        <FileAttachmentContextProvider>
+          <QueryClientProvider client={queryClient}>
+            <NotebookStreamProvider>
+              <LightspeedChat
+                selectedModel="granite"
+                profileLoading={false}
+                handleSelectedModel={() => {}}
+                topicRestrictionEnabled={false}
+                selectedProvider="openai"
+                models={[]}
+                avatar="test"
+                userName="user:test"
+              />
+            </NotebookStreamProvider>
+          </QueryClientProvider>
+        </FileAttachmentContextProvider>
+      </TestApiProvider>
+    </MemoryRouter>
+  </MuiThemeTestProvider>
 );
 
 describe('LightspeedChat', () => {
@@ -345,6 +351,18 @@ describe('LightspeedChat', () => {
       'accept',
       'text/plain,.txt,application/json,.json,application/yaml,.yaml,.yml',
     );
+  });
+
+  it('should open the file picker when Attach is clicked', async () => {
+    render(setupLightspeedChat());
+
+    const input = screen.getByTestId('attachment-input') as HTMLInputElement;
+    const clickSpy = jest.spyOn(input, 'click');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Attach' }));
+
+    expect(clickSpy).toHaveBeenCalled();
+    clickSpy.mockRestore();
   });
 
   it('should show an alert when unsupported file types are dropped', async () => {
@@ -497,7 +515,7 @@ describe('LightspeedChat', () => {
       const searchInput = screen.getByPlaceholderText('Search');
       expect(searchInput).toBeInTheDocument();
 
-      await userEvent.type(searchInput, 'Pinned Chat One');
+      fireEvent.change(searchInput, { target: { value: 'Pinned Chat One' } });
 
       expect(searchInput).toHaveValue('Pinned Chat One');
     });
@@ -513,7 +531,9 @@ describe('LightspeedChat', () => {
 
       const searchInput = screen.getByPlaceholderText('Search');
 
-      await userEvent.type(searchInput, 'NonExistentSearchTerm12345');
+      fireEvent.change(searchInput, {
+        target: { value: 'NonExistentSearchTerm12345' },
+      });
 
       expect(searchInput).toHaveValue('NonExistentSearchTerm12345');
     });
@@ -576,7 +596,9 @@ describe('LightspeedChat', () => {
 
       const searchInput = screen.getByPlaceholderText('Search');
 
-      await userEvent.type(searchInput, 'xyz123nonexistent');
+      fireEvent.change(searchInput, {
+        target: { value: 'xyz123nonexistent' },
+      });
 
       expect(searchInput).toHaveValue('xyz123nonexistent');
     });
@@ -741,6 +763,31 @@ describe('LightspeedChat', () => {
       ).toBeInTheDocument();
     });
 
+    it('should hide Chat/Notebooks tabs when notebooks are disabled', async () => {
+      const disabledConfig = mockApis.config({
+        data: {
+          'intelligent-assistant': {
+            notebooks: {
+              enabled: false,
+            },
+          },
+        },
+      });
+
+      render(setupLightspeedChat('/intelligent-assistant', disabledConfig));
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Options')).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByRole('tab', { name: 'Chat' }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('tab', { name: 'Notebooks' }),
+      ).not.toBeInTheDocument();
+    });
+
     it('should render Chat/Notebooks tabs in docked mode', async () => {
       mockUseLightspeedDrawerContext.mockReturnValue({
         isChatbotActive: true,
@@ -893,7 +940,7 @@ describe('LightspeedChat', () => {
       });
     });
 
-    it('should show permission required state when notebooks permission is denied', async () => {
+    it('should hide tabs and show header divider when notebooks permission is denied', async () => {
       render(setupLightspeedChat());
 
       await waitFor(() => {
@@ -902,19 +949,25 @@ describe('LightspeedChat', () => {
         ).toBeInTheDocument();
       });
 
-      const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
-      await userEvent.click(notebooksTab);
+      expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+      expect(
+        screen.getByTestId('lightspeed-header-divider'),
+      ).toBeInTheDocument();
+    });
+  });
 
-      await waitFor(() => {
-        expect(screen.getByText('Missing permissions')).toBeInTheDocument();
-        expect(
-          screen.getByRole('button', { name: 'Go back' }),
-        ).toBeInTheDocument();
+  describe('chat permission denied', () => {
+    beforeEach(() => {
+      mockUsePermission.mockImplementation((args: any) => {
+        if (args.permission.name === 'intelligent-assistant.chat') {
+          return { loading: false, allowed: false };
+        }
+        return { loading: false, allowed: true };
       });
     });
 
-    it('should navigate back to chat tab when Go back is clicked', async () => {
-      render(setupLightspeedChat());
+    it('should hide tabs and show header divider when chat permission is denied', async () => {
+      render(setupLightspeedChat('/intelligent-assistant/notebooks'));
 
       await waitFor(() => {
         expect(
@@ -922,21 +975,10 @@ describe('LightspeedChat', () => {
         ).toBeInTheDocument();
       });
 
-      const notebooksTab = screen.getByRole('tab', { name: 'Notebooks' });
-      await userEvent.click(notebooksTab);
-
-      await waitFor(() => {
-        expect(screen.getByText('Missing permissions')).toBeInTheDocument();
-      });
-
-      const goBackButton = screen.getByRole('button', { name: 'Go back' });
-      await userEvent.click(goBackButton);
-
-      await waitFor(() => {
-        expect(
-          screen.queryByText('Missing permissions'),
-        ).not.toBeInTheDocument();
-      });
+      expect(screen.queryByRole('tab')).not.toBeInTheDocument();
+      expect(
+        screen.getByTestId('lightspeed-header-divider'),
+      ).toBeInTheDocument();
     });
   });
 

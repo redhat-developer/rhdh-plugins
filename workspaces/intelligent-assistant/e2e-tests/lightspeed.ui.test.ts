@@ -123,7 +123,7 @@ test.describe('Intelligent assistant UI', () => {
     await expect(sharedPage.getByLabel('Scrollable message log'))
       .toMatchAriaSnapshot(`
       - 'heading "Info alert: ${translations['aria.important']}" [level=4]'
-      - text: ${translations['disclaimer.withValidation']}
+      - text: ${translations['disclaimer']}
       `);
   });
 
@@ -167,7 +167,7 @@ test.describe('Intelligent assistant UI', () => {
       .toMatchAriaSnapshot(`
       - region "Scrollable message log":
         - 'heading "Info alert: ${translations['aria.important']}" [level=4]'
-        - text: ${translations['disclaimer.withValidation']}
+        - text: ${translations['disclaimer']}
         - heading "${greeting} ${translations['chatbox.welcome.description']}" [level=1]
         - button /.+/
         - text: /.+/

@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-adoption-insights
 
+## 1.0.1
+
+### Patch Changes
+
+- 0d097ce: The Adoption Insights page is only shown when the user is authorized for `adoption-insights.events.read`.
+  - @red-hat-developer-hub/backstage-plugin-adoption-insights-common@1.0.1
+
 ## 1.0.0
 
 ### Major Changes

@@ -49,9 +49,16 @@ export const switchToLocale = async (page: Page, locale: string) => {
   await page.locator('a').filter({ hasText: 'Home' }).click();
 };
 
+export const waitForChatbotVisible = async (page: Page) => {
+  await page.getByLabel('Chatbot', { exact: true }).waitFor({
+    state: 'visible',
+    timeout: 30_000,
+  });
+};
+
 export const openLightspeed = async (page: Page) => {
   await page.goto('/intelligent-assistant');
-  await page.locator('.pf-chatbot__messagebox').waitFor({ state: 'visible' });
+  await waitForChatbotVisible(page);
 };
 
 export const sendMessage = async (

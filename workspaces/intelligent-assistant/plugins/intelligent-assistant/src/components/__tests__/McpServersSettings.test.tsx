@@ -277,6 +277,17 @@ describe('McpServersSettings', () => {
     expect(
       within(dialog).getByRole('button', { name: 'Remove personal token' }),
     ).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole('button', { name: 'Save' }).parentElement,
+    ).toBe(
+      within(dialog).getByRole('button', { name: 'Cancel' }).parentElement,
+    );
+    expect(
+      within(dialog).getByRole('button', { name: 'Remove personal token' })
+        .parentElement,
+    ).toBe(
+      within(dialog).getByRole('button', { name: 'Cancel' }).parentElement,
+    );
   });
 
   it('shows DCR modal layout aligned with personal-token servers without token input', async () => {
@@ -318,6 +329,14 @@ describe('McpServersSettings', () => {
     expect(
       within(dialog).getByRole('button', { name: 'Cancel' }),
     ).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole('button', { name: 'Close configure modal' }),
+    ).toHaveClass('ia-mcp-modal-close');
+    expect(
+      within(dialog).getByRole('button', { name: 'Save' }).parentElement,
+    ).toBe(
+      within(dialog).getByRole('button', { name: 'Cancel' }).parentElement,
+    );
     expect(
       within(dialog).queryByLabelText('Type to filter'),
     ).not.toBeInTheDocument();

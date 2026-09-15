@@ -137,25 +137,20 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       const customProvider = DoraMedianLeadTimeForChangesProvider.fromConfig(
         new ConfigReader({
           scorecard: {
-            metricProviders: {
+            plugins: {
               dora: {
-                medianLeadTimeForChanges: {
-                  options: {
-                    collectors: {
-                      deployments: {
-                        id: customDeploymentsCollectorId,
-                        input: {
-                          artificialDeploymentFlag: true,
-                          customDeploymentsInputLabel:
-                            'deployments-custom-input',
-                        },
-                      },
-                      deploymentPullRequests: {
-                        id: customDeploymentPullRequestsCollectorId,
-                        input: {
-                          artificialPullRequestsLabel: 'prs-custom-input',
-                        },
-                      },
+                collectors: {
+                  deployments: {
+                    id: customDeploymentsCollectorId,
+                    input: {
+                      artificialDeploymentFlag: true,
+                      customDeploymentsInputLabel: 'deployments-custom-input',
+                    },
+                  },
+                  deploymentPullRequests: {
+                    id: customDeploymentPullRequestsCollectorId,
+                    input: {
+                      artificialPullRequestsLabel: 'prs-custom-input',
                     },
                   },
                 },
@@ -413,13 +408,9 @@ describe('DoraMedianLeadTimeForChangesProvider', () => {
       const customProvider = DoraMedianLeadTimeForChangesProvider.fromConfig(
         new ConfigReader({
           scorecard: {
-            metricProviders: {
+            plugins: {
               dora: {
-                medianLeadTimeForChanges: {
-                  options: {
-                    productionEnvironments: ['prod'],
-                  },
-                },
+                productionEnvironments: ['prod'],
               },
             },
           },

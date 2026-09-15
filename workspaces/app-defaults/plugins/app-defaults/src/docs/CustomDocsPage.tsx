@@ -17,7 +17,6 @@
 import { CATALOG_FILTER_EXISTS } from '@backstage/catalog-client';
 import { useTranslationRef } from '@backstage/frontend-plugin-api';
 import { TECHDOCS_ANNOTATION } from '@backstage/plugin-techdocs-common';
-import { ButtonLink } from '@backstage/ui';
 import { translationRef } from '../translations/ref';
 import { EmptyCatalogGate } from '../catalog/EmptyCatalogGate';
 
@@ -34,16 +33,7 @@ export function CustomDocsPage(props: Readonly<{ children: React.ReactNode }>) {
       emptyState={{
         title: t('docs.emptyState.title'),
         description: t('docs.emptyState.description'),
-        action: (
-          <ButtonLink
-            href="https://docs.redhat.com/en/documentation/red_hat_developer_hub"
-            target="_blank"
-            rel="noopener noreferrer"
-            variant="primary"
-          >
-            {t('docs.emptyState.action')}
-          </ButtonLink>
-        ),
+        importButtonTitle: t('docs.emptyState.importButtonTitle'),
       }}
     >
       {props.children}

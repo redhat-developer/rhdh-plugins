@@ -16,10 +16,10 @@
 
 import { Ref, useState } from 'react';
 
-import { createStyles, makeStyles } from '@material-ui/core';
 import ToggleOffOutlinedIcon from '@mui/icons-material/ToggleOffOutlined';
 import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
 import Divider from '@mui/material/Divider';
+import { styled } from '@mui/material/styles';
 import {
   ChatbotDisplayMode,
   ChatbotHeaderActions,
@@ -30,6 +30,7 @@ import {
   DropdownGroup,
   DropdownItem,
   DropdownList,
+  Icon,
   Label,
   MenuToggle,
   MenuToggleElement,
@@ -38,6 +39,7 @@ import {
   ExpandIcon,
   OpenDrawerRightIcon,
   OutlinedWindowRestoreIcon,
+  RhUiEllipsisVerticalFillIcon,
 } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
@@ -55,30 +57,36 @@ type LightspeedChatBoxHeaderProps = {
   hideModelSelector?: boolean;
   /** When false, omits pinned-chats and MCP entries (Chat tab only). */
   showChatTabOptions?: boolean;
+  /** When false, hides MCP settings from the header menu. */
+  showMcpSettings?: boolean;
   setDisplayMode: (mode: ChatbotDisplayMode) => void;
 };
 
-const useStyles = makeStyles(theme =>
-  createStyles({
-    dropdown: {
-      '& ul, & li': {
-        padding: 0,
-        margin: 0,
-      },
-    },
-    header: {
-      backgroundColor: theme.palette.action.disabled,
-    },
-    optionsToggle: {
-      '& svg': {
-        transform: 'none !important',
-      },
-    },
-    groupTitle: {
-      fontWeight: 'bold',
-    },
+const StyledDropdown = styled(Dropdown)({
+  '& ul, & li': {
+    padding: 0,
+    margin: 0,
+  },
+});
+
+const StyledOptionsDropdown = styled(ChatbotHeaderOptionsDropdown)({
+  '& ul, & li': {
+    padding: 0,
+    margin: 0,
+  },
+});
+
+const SelectorToggle = styled(MenuToggle, {
+  shouldForwardProp: prop => prop !== 'dimmed',
+})<{ dimmed?: boolean }>(({ theme, dimmed }) => ({
+  ...(dimmed && {
+    backgroundColor: theme.palette.action.disabled,
   }),
-);
+}));
+
+const StyledDropdownGroup = styled(DropdownGroup)({
+  fontWeight: 'bold',
+});
 
 export const LightspeedChatBoxHeader = ({
   selectedModel,
@@ -91,12 +99,11 @@ export const LightspeedChatBoxHeader = ({
   isModelSelectorDisabled = false,
   hideModelSelector = false,
   showChatTabOptions = true,
+  showMcpSettings = false,
   setDisplayMode,
 }: LightspeedChatBoxHeaderProps) => {
   const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
   const { t } = useTranslation();
-
-  const styles = useStyles();
 
   const maxLabelLength = Math.max(
     ...models.map(m => m.label.length),
@@ -106,8 +113,8 @@ export const LightspeedChatBoxHeader = ({
   const toggleMinWidth = `${maxLabelLength + 4}ch`;
 
   const toggle = (toggleRef: Ref<MenuToggleElement>) => (
-    <MenuToggle
-      className={isModelSelectorDisabled ? styles.header : ''}
+    <SelectorToggle
+      dimmed={isModelSelectorDisabled}
       variant="secondary"
       aria-label={t('aria.chatbotSelector')}
       ref={toggleRef}
@@ -117,7 +124,7 @@ export const LightspeedChatBoxHeader = ({
       style={{ minWidth: toggleMinWidth }}
     >
       {selectedModel}
-    </MenuToggle>
+    </SelectorToggle>
   );
 
   const handlePinningChatsToggle = (state: boolean) => {
@@ -143,8 +150,7 @@ export const LightspeedChatBoxHeader = ({
   return (
     <ChatbotHeaderActions>
       {!hideModelSelector && (
-        <Dropdown
-          className={styles.dropdown}
+        <StyledDropdown
           isOpen={isOptionsMenuOpen}
           onSelect={(_e, value) => {
             handleSelectedModel(value as string);
@@ -160,7 +166,7 @@ export const LightspeedChatBoxHeader = ({
         >
           <DropdownList>
             {models.map(model => (
-              <DropdownGroup className={styles.groupTitle} key={model.label}>
+              <StyledDropdownGroup key={model.label}>
                 <DropdownItem
                   value={model.value}
                   key={model.value}
@@ -168,18 +174,27 @@ export const LightspeedChatBoxHeader = ({
                 >
                   {model.label}
                 </DropdownItem>
-              </DropdownGroup>
+              </StyledDropdownGroup>
             ))}
           </DropdownList>
-        </Dropdown>
+        </StyledDropdown>
       )}
-      <ChatbotHeaderOptionsDropdown
-        className={styles.dropdown}
+      <StyledOptionsDropdown
         isCompact
         shouldFocusFirstItemOnOpen={false}
+        popperProps={{
+          position: 'right',
+          preventOverflow: true,
+          appendTo: () => document.body,
+        }}
         toggleProps={{
           'aria-label': t('aria.options.label'),
-          className: styles.optionsToggle,
+          className: 'pf-chatbot__button--toggle-options pf-m-compact',
+          icon: (
+            <Icon size="lg" isInline>
+              <RhUiEllipsisVerticalFillIcon />
+            </Icon>
+          ),
         }}
         tooltipProps={{
           trigger: 'manual',
@@ -246,22 +261,24 @@ export const LightspeedChatBoxHeader = ({
                     {t('settings.pinned.enable')}
                   </DropdownItem>
                 )}
-                <DropdownItem
-                  value="mcpSettings"
-                  key="mcpSettings"
-                  icon={<McpSettingsIcon />}
-                  onClick={onMcpSettingsClick}
-                >
-                  {t('settings.mcp.label')}
-                  <Label color="purple" isCompact style={{ marginLeft: 8 }}>
-                    {t('settings.mcp.badge')}
-                  </Label>
-                </DropdownItem>
+                {showMcpSettings && (
+                  <DropdownItem
+                    value="mcpSettings"
+                    key="mcpSettings"
+                    icon={<McpSettingsIcon />}
+                    onClick={onMcpSettingsClick}
+                  >
+                    {t('settings.mcp.label')}
+                    <Label color="purple" isCompact style={{ marginLeft: 8 }}>
+                      {t('settings.mcp.badge')}
+                    </Label>
+                  </DropdownItem>
+                )}
               </DropdownList>
             </DropdownGroup>
           </>
         )}
-      </ChatbotHeaderOptionsDropdown>
+      </StyledOptionsDropdown>
     </ChatbotHeaderActions>
   );
 };

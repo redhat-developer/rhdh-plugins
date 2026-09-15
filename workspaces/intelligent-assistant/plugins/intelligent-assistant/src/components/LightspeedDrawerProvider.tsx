@@ -16,27 +16,32 @@
 
 import { PropsWithChildren } from 'react';
 
-import { makeStyles } from '@mui/styles';
+import { styled } from '@mui/material/styles';
 import { ChatbotModal } from '@patternfly/chatbot';
 
-import { DOCKED_CONTENT_OFFSET } from '../const';
+import {
+  DOCKED_CONTENT_OFFSET,
+  LIGHTSPEED_OVERLAY_BOTTOM,
+  LIGHTSPEED_OVERLAY_CHATBOT_MODAL_CLASS,
+  LIGHTSPEED_OVERLAY_MAX_WIDTH,
+  LIGHTSPEED_OVERLAY_RIGHT,
+} from '../const';
 import { useLightspeedProviderState } from '../hooks/useLightspeedProviderState';
 import { LightspeedChatContainer } from './LightspeedChatContainer';
 import { LightspeedDrawerContext } from './LightspeedDrawerContext';
 import { NotebookStreamProvider } from './notebooks/NotebookStreamProvider';
 
-const useStyles = makeStyles(theme => ({
-  chatbotModal: {
-    boxShadow:
-      '0 14px 20px -7px rgba(0, 0, 0, 0.22), 0 32px 50px 6px rgba(0, 0, 0, 0.16), 0 12px 60px 12px rgba(0, 0, 0, 0.14) !important',
-    bottom: `calc(${theme?.spacing?.(2) ?? '16px'} + 5em)`,
-    right: `calc(${theme?.spacing?.(2) ?? '16px'} + 1.5em)`,
-    maxWidth: 'min(30rem, calc(100vw - 32px)) !important',
-    overflow: 'hidden' as const,
-    transition: 'margin-right 0.3s ease',
-    'body.docked-drawer-open &': {
-      marginRight: DOCKED_CONTENT_OFFSET,
-    },
+const StyledChatbotModal = styled(ChatbotModal)(() => ({
+  boxShadow:
+    '0 14px 20px -7px rgba(0, 0, 0, 0.22), 0 32px 50px 6px rgba(0, 0, 0, 0.16), 0 12px 60px 12px rgba(0, 0, 0, 0.14) !important',
+  bottom: `${LIGHTSPEED_OVERLAY_BOTTOM} !important`,
+  right: `${LIGHTSPEED_OVERLAY_RIGHT} !important`,
+  maxWidth: `${LIGHTSPEED_OVERLAY_MAX_WIDTH} !important`,
+  overflow: 'hidden',
+  transition:
+    'margin-right 0.3s ease, bottom 0.3s ease, right 0.3s ease, inset-block-end 0.3s ease, inset-inline-end 0.3s ease',
+  'body.docked-drawer-open &': {
+    marginRight: DOCKED_CONTENT_OFFSET,
   },
 }));
 
@@ -44,7 +49,6 @@ const useStyles = makeStyles(theme => ({
  * @public
  */
 export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
-  const classes = useStyles();
   const { contextValue, shouldRenderOverlayModal, closeChatbot } =
     useLightspeedProviderState();
 
@@ -53,17 +57,17 @@ export const LightspeedDrawerProvider = ({ children }: PropsWithChildren) => {
       <NotebookStreamProvider>
         {children}
         {shouldRenderOverlayModal && (
-          <ChatbotModal
+          <StyledChatbotModal
             isOpen
+            className={LIGHTSPEED_OVERLAY_CHATBOT_MODAL_CLASS}
             displayMode={contextValue.displayMode}
             disableFocusTrap
             onEscapePress={() => closeChatbot()}
             ouiaId="LightspeedChatbotModal"
             aria-labelledby="lightspeed-chatpopup-modal"
-            className={classes.chatbotModal}
           >
             <LightspeedChatContainer />
-          </ChatbotModal>
+          </StyledChatbotModal>
         )}
       </NotebookStreamProvider>
     </LightspeedDrawerContext.Provider>

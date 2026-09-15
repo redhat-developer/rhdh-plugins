@@ -43,6 +43,7 @@ import {
 } from '@backstage/dev-utils';
 import { catalogApiRef } from '@backstage/plugin-catalog-react';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
+import { permissionApiRef } from '@backstage/plugin-permission-react';
 import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
 
 import adoptionInsightsPlugin, {
@@ -52,6 +53,10 @@ import { adoptionInsightsApiRef } from '../src/api';
 import { MockAdoptionInsightsApiClient, mockCatalogApi } from './mocks';
 
 const DEFAULT_PATH = '/adoption-insights';
+
+function isPermissionDeniedPath(pathname: string): boolean {
+  return pathname.includes('permission-denied');
+}
 
 function makeMockApi<T>(name: string, api: ApiRef<T>, factory: () => T) {
   return ApiBlueprint.make({
@@ -119,6 +124,23 @@ const devNavModule = createFrontendModule({
       params: {
         component: ({ items }) => <DevSidebar items={items} />,
       },
+    }),
+    // Extension `if` predicates need a permission API. Mock it locally so
+    // isolated `yarn start` still shows the page; open /permission-denied to
+    // preview hidden nav for unauthorized users.
+    ApiBlueprint.make({
+      name: 'permission',
+      params: defineParams =>
+        defineParams({
+          api: permissionApiRef,
+          deps: {},
+          factory: () => ({
+            authorize: async () =>
+              isPermissionDeniedPath(window.location.pathname)
+                ? { result: 'DENY' as const }
+                : { result: 'ALLOW' as const },
+          }),
+        }),
     }),
   ],
 });

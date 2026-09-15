@@ -32,8 +32,16 @@ import {
   DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
   DORA_DEFAULT_PRODUCTION_ENVIRONMENTS,
   DORA_DEFAULT_STALE_AFTER_MS,
+  DORA_PLUGIN_CONFIG_PATH,
   DORA_TIME_WINDOW_DAYS,
 } from '../constants';
+
+export type DoraSharedProviderConfig = {
+  deploymentsCollector: DoraCollectorConfig;
+  incidentsCollector: DoraCollectorConfig;
+  deploymentPullRequestsCollector: DoraCollectorConfig;
+  productionEnvironments: string[];
+};
 
 export type DoraDeploymentFrequencyConfig = {
   deploymentsCollector: DoraCollectorConfig;
@@ -186,12 +194,9 @@ export function parseCollectorConfig(
   };
 }
 
-function parseProductionEnvironments(
-  config: Config,
-  metricConfigPath: string,
-): string[] {
+function parseProductionEnvironments(config: Config): string[] {
   const configured = config.getOptionalStringArray(
-    `${metricConfigPath}.options.productionEnvironments`,
+    `${DORA_PLUGIN_CONFIG_PATH}.productionEnvironments`,
   );
 
   if (!configured || configured.length === 0) {
@@ -202,24 +207,44 @@ function parseProductionEnvironments(
 }
 
 /**
+ * Parses shared DORA plugin provider configuration (`collectors`, `productionEnvironments`)
+ * from {@link DORA_PLUGIN_CONFIG_PATH}.
+ */
+export function parseDoraSharedProviderConfig(
+  config: Config,
+): DoraSharedProviderConfig {
+  const collectorsConfigPath = `${DORA_PLUGIN_CONFIG_PATH}.collectors`;
+
+  return {
+    deploymentsCollector: parseCollectorConfig(
+      config,
+      `${collectorsConfigPath}.deployments`,
+      DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
+    ),
+    deploymentPullRequestsCollector: parseCollectorConfig(
+      config,
+      `${collectorsConfigPath}.deploymentPullRequests`,
+      DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
+    ),
+    incidentsCollector: parseCollectorConfig(
+      config,
+      `${collectorsConfigPath}.incidents`,
+      DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
+    ),
+    productionEnvironments: parseProductionEnvironments(config),
+  };
+}
+
+/**
  * Parses deployment-frequency provider config from the root Backstage config.
  */
 export function parseDoraDeploymentFrequencyConfig(
   config: Config,
 ): DoraDeploymentFrequencyConfig {
-  const providerConfigPath =
-    'scorecard.metricProviders.dora.deploymentFrequency';
-
+  const shared = parseDoraSharedProviderConfig(config);
   return {
-    deploymentsCollector: parseCollectorConfig(
-      config,
-      `${providerConfigPath}.options.collectors.deployments`,
-      DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
-    ),
-    productionEnvironments: parseProductionEnvironments(
-      config,
-      providerConfigPath,
-    ),
+    deploymentsCollector: shared.deploymentsCollector,
+    productionEnvironments: shared.productionEnvironments,
   };
 }
 
@@ -229,24 +254,11 @@ export function parseDoraDeploymentFrequencyConfig(
 export function parseDoraMedianLeadTimeForChangesConfig(
   config: Config,
 ): DoraMedianLeadTimeForChangesConfig {
-  const providerConfigPath =
-    'scorecard.metricProviders.dora.medianLeadTimeForChanges';
-
+  const shared = parseDoraSharedProviderConfig(config);
   return {
-    deploymentsCollector: parseCollectorConfig(
-      config,
-      `${providerConfigPath}.options.collectors.deployments`,
-      DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
-    ),
-    deploymentPullRequestsCollector: parseCollectorConfig(
-      config,
-      `${providerConfigPath}.options.collectors.deploymentPullRequests`,
-      DORA_DEFAULT_DEPLOYMENT_PULL_REQUESTS_COLLECTOR_ID,
-    ),
-    productionEnvironments: parseProductionEnvironments(
-      config,
-      providerConfigPath,
-    ),
+    deploymentsCollector: shared.deploymentsCollector,
+    deploymentPullRequestsCollector: shared.deploymentPullRequestsCollector,
+    productionEnvironments: shared.productionEnvironments,
   };
 }
 
@@ -256,15 +268,9 @@ export function parseDoraMedianLeadTimeForChangesConfig(
 export function parseDoraMedianTimeToRestoreConfig(
   config: Config,
 ): DoraMedianTimeToRestoreConfig {
-  const providerConfigPath =
-    'scorecard.metricProviders.dora.medianTimeToRestore';
-
   return {
-    incidentsCollector: parseCollectorConfig(
-      config,
-      `${providerConfigPath}.options.collectors.incidents`,
-      DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
-    ),
+    incidentsCollector:
+      parseDoraSharedProviderConfig(config).incidentsCollector,
   };
 }
 
@@ -274,23 +280,11 @@ export function parseDoraMedianTimeToRestoreConfig(
 export function parseDoraChangeFailureRateConfig(
   config: Config,
 ): DoraChangeFailureRateConfig {
-  const providerConfigPath = 'scorecard.metricProviders.dora.changeFailureRate';
-
+  const shared = parseDoraSharedProviderConfig(config);
   return {
-    deploymentsCollector: parseCollectorConfig(
-      config,
-      `${providerConfigPath}.options.collectors.deployments`,
-      DORA_DEFAULT_DEPLOYMENTS_COLLECTOR_ID,
-    ),
-    incidentsCollector: parseCollectorConfig(
-      config,
-      `${providerConfigPath}.options.collectors.incidents`,
-      DORA_DEFAULT_INCIDENTS_COLLECTOR_ID,
-    ),
-    productionEnvironments: parseProductionEnvironments(
-      config,
-      providerConfigPath,
-    ),
+    deploymentsCollector: shared.deploymentsCollector,
+    incidentsCollector: shared.incidentsCollector,
+    productionEnvironments: shared.productionEnvironments,
   };
 }
 
@@ -301,56 +295,57 @@ export function parseDoraChangeFailureRateConfig(
  */
 export function parseDoraDataRetentionDays(config: Config): number {
   const dataRetentionDays =
-    config.getOptionalNumber('scorecard.plugins.dora.dataRetentionDays') ??
+    config.getOptionalNumber(`${DORA_PLUGIN_CONFIG_PATH}.dataRetentionDays`) ??
     DORA_DEFAULT_DATA_RETENTION_DAYS;
   if (dataRetentionDays < DORA_TIME_WINDOW_DAYS) {
     throw new Error(
-      `scorecard.plugins.dora.dataRetentionDays must be greater than or equal to ${DORA_TIME_WINDOW_DAYS}`,
+      `${DORA_PLUGIN_CONFIG_PATH}.dataRetentionDays must be greater than or equal to ${DORA_TIME_WINDOW_DAYS}`,
     );
   }
   return dataRetentionDays;
 }
 
 /**
- * Parses DORA sync service options from `scorecard.plugins.dora`.
+ * Parses DORA sync service options from {@link DORA_PLUGIN_CONFIG_PATH}.
  */
 export function parseDoraSyncConfig(config: Config): DoraSyncConfig {
   const staleAfterMs =
-    config.getOptionalNumber('scorecard.plugins.dora.staleAfterMs') ??
+    config.getOptionalNumber(`${DORA_PLUGIN_CONFIG_PATH}.staleAfterMs`) ??
     DORA_DEFAULT_STALE_AFTER_MS;
   if (staleAfterMs < 0) {
     throw new Error(
-      'scorecard.plugins.dora.staleAfterMs must be greater than or equal to 0',
+      `${DORA_PLUGIN_CONFIG_PATH}.staleAfterMs must be greater than or equal to 0`,
     );
   }
 
   const maxLookbackMs = daysToMilliseconds(DORA_TIME_WINDOW_DAYS);
 
   const deploymentLookbackMs =
-    config.getOptionalNumber('scorecard.plugins.dora.deploymentLookbackMs') ??
-    DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS;
+    config.getOptionalNumber(
+      `${DORA_PLUGIN_CONFIG_PATH}.deploymentLookbackMs`,
+    ) ?? DORA_DEFAULT_DEPLOYMENT_LOOKBACK_MS;
   if (deploymentLookbackMs < 0) {
     throw new Error(
-      'scorecard.plugins.dora.deploymentLookbackMs must be greater than or equal to 0',
+      `${DORA_PLUGIN_CONFIG_PATH}.deploymentLookbackMs must be greater than or equal to 0`,
     );
   }
   if (deploymentLookbackMs > maxLookbackMs) {
     throw new Error(
-      `scorecard.plugins.dora.deploymentLookbackMs must be less than or equal to the DORA metric computation window (${DORA_TIME_WINDOW_DAYS} days)`,
+      `${DORA_PLUGIN_CONFIG_PATH}.deploymentLookbackMs must be less than or equal to the DORA metric computation window (${DORA_TIME_WINDOW_DAYS} days)`,
     );
   }
 
   const incidentLookbackMs =
-    config.getOptionalNumber('scorecard.plugins.dora.incidentLookbackMs') ??
+    config.getOptionalNumber(`${DORA_PLUGIN_CONFIG_PATH}.incidentLookbackMs`) ??
     DORA_DEFAULT_INCIDENT_LOOKBACK_MS;
   if (incidentLookbackMs < 0) {
     throw new Error(
-      'scorecard.plugins.dora.incidentLookbackMs must be greater than or equal to 0',
+      `${DORA_PLUGIN_CONFIG_PATH}.incidentLookbackMs must be greater than or equal to 0`,
     );
   }
   if (incidentLookbackMs > maxLookbackMs) {
     throw new Error(
-      `scorecard.plugins.dora.incidentLookbackMs must be less than or equal to the DORA metric computation window (${DORA_TIME_WINDOW_DAYS} days)`,
+      `${DORA_PLUGIN_CONFIG_PATH}.incidentLookbackMs must be less than or equal to the DORA metric computation window (${DORA_TIME_WINDOW_DAYS} days)`,
     );
   }
 
