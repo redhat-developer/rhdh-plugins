@@ -16,9 +16,10 @@
 
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import type { MetricResult } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import { DataSourcesDialog } from '../DataSourcesDialog';
+import type { SourceRow } from '../DataSourcesDialogColumns';
+import type { ThresholdBucket } from '../types';
 
 const mockTableProps = {
   'aria-label': 'table',
@@ -138,60 +139,56 @@ jest.mock('../ThresholdLegend', () => ({
   ThresholdLegend: () => <div data-testid="threshold-legend" />,
 }));
 
+jest.mock('../../Common/CardLoading', () => ({
+  CardLoading: ({ dataTestId }: { dataTestId?: string }) => (
+    <div data-testid={dataTestId ?? 'card-loading'} />
+  ),
+}));
+
+jest.mock('@backstage/core-components', () => ({
+  ResponseErrorPanel: ({ error }: { error: Error }) => (
+    <div>{error.message}</div>
+  ),
+}));
+
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   <ThemeProvider theme={createTheme()}>{children}</ThemeProvider>
 );
 
-const mockMetrics: MetricResult[] = [
+const createSourceRow = (overrides: Partial<SourceRow> = {}): SourceRow => ({
+  id: '0',
+  plugin: 'Sonarqube',
+  metricId: 'sonarqube.reliabilityIssues',
+  metricDescription: 'Count of open bugs in SonarQube.',
+  value: '8',
+  evaluationKey: 'error',
+  statusLabel: 'error',
+  statusIcon: 'scorecardSuccessStatusIcon',
+  statusColor: 'success.main',
+  lastSynced: '1 hour ago',
+  thresholdExpression: '>5',
+  ...overrides,
+});
+
+const mockRows: SourceRow[] = [
+  createSourceRow(),
+  createSourceRow({
+    id: '1',
+    metricId: 'sonarqube.codeCoverage',
+    metricDescription: 'Code coverage percentage.',
+    value: '72',
+    evaluationKey: 'warning',
+    statusLabel: 'warning',
+    thresholdExpression: '60-79',
+  }),
+];
+
+const mockBuckets: ThresholdBucket[] = [
   {
-    id: 'sonarqube.reliabilityIssues',
-    status: 'success',
-    metadata: {
-      title: 'SonarQube Reliability Issues',
-      description: 'Count of open bugs in SonarQube.',
-      type: 'number',
-      history: true,
-    },
-    result: {
-      value: 8,
-      timestamp: '2026-07-01T08:29:09.683Z',
-      thresholdResult: {
-        definition: {
-          rules: [
-            { key: 'success', expression: '<1' },
-            { key: 'warning', expression: '1-5' },
-            { key: 'error', expression: '>5' },
-          ],
-        },
-        status: 'success',
-        evaluation: 'error',
-      },
-    },
-  },
-  {
-    id: 'sonarqube.codeCoverage',
-    status: 'success',
-    metadata: {
-      title: 'SonarQube Code Coverage',
-      description: 'Code coverage percentage.',
-      type: 'number',
-      history: true,
-    },
-    result: {
-      value: 72,
-      timestamp: '2026-07-01T08:29:09.683Z',
-      thresholdResult: {
-        definition: {
-          rules: [
-            { key: 'success', expression: '>=80' },
-            { key: 'warning', expression: '60-79' },
-            { key: 'error', expression: '<60' },
-          ],
-        },
-        status: 'success',
-        evaluation: 'warning',
-      },
-    },
+    key: 'error',
+    label: 'Error',
+    count: 1,
+    color: 'error.main',
   },
 ];
 
@@ -199,7 +196,8 @@ const defaultProps = {
   open: true,
   onClose: jest.fn(),
   title: 'Code Quality',
-  metrics: mockMetrics,
+  rows: mockRows,
+  buckets: mockBuckets,
 };
 
 describe('DataSourcesDialog', () => {
@@ -237,7 +235,7 @@ describe('DataSourcesDialog', () => {
     );
   });
 
-  it('should render metric rows with plugin name, check title, value, status', () => {
+  it('should pass the provided rows through to the table', () => {
     const { useTable } = jest.requireMock('@backstage/ui');
     let capturedData: any[] = [];
     useTable.mockImplementation(({ data }: any) => {
@@ -266,29 +264,15 @@ describe('DataSourcesDialog', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("should show '—' for null/undefined values", () => {
-    const metricsWithNull: MetricResult[] = [
-      {
-        id: 'sonarqube.nullMetric',
-        status: 'error',
-        metadata: {
-          title: 'Null Metric',
-          description: 'A metric with no result value.',
-          type: 'number',
-          history: false,
-        },
-        result: {
-          value: null as unknown as number,
-          timestamp: '2026-07-01T08:29:09.683Z',
-          thresholdResult: {
-            definition: { rules: [{ key: 'success', expression: '<1' }] },
-            status: 'success',
-            evaluation: null as unknown as string,
-          },
-        },
-      },
-    ];
+  it('should hide the threshold legend when buckets are omitted', () => {
+    render(<DataSourcesDialog {...defaultProps} buckets={undefined} />, {
+      wrapper: TestWrapper,
+    });
 
+    expect(screen.queryByTestId('threshold-legend')).not.toBeInTheDocument();
+  });
+
+  it('should pass collector-shaped rows through to the table', () => {
     const { useTable } = jest.requireMock('@backstage/ui');
     let capturedData: any[] = [];
     useTable.mockImplementation(({ data }: any) => {
@@ -296,12 +280,77 @@ describe('DataSourcesDialog', () => {
       return { tableProps: mockTableProps };
     });
 
-    render(<DataSourcesDialog {...defaultProps} metrics={metricsWithNull} />, {
-      wrapper: TestWrapper,
-    });
+    const collectorRows: SourceRow[] = [
+      createSourceRow({
+        plugin: 'GitHub',
+        metricId: 'dora.changeFailureRate',
+        metricDescription: 'Collects deployments from GitHub Actions.',
+        value: '--',
+        evaluationKey: 'noEvaluation',
+        statusLabel: '-- N/A',
+        statusIcon: '',
+        thresholdExpression: null,
+      }),
+      createSourceRow({
+        id: '1',
+        plugin: 'Jira',
+        metricId: 'dora.changeFailureRate',
+        metricDescription: 'Collects Jira incidents.',
+        value: '--',
+        evaluationKey: 'noEvaluation',
+        statusLabel: '-- N/A',
+        statusIcon: '',
+        thresholdExpression: null,
+      }),
+    ];
 
-    expect(capturedData[0].value).toBe('—');
-    expect(capturedData[0].statusLabel).toBe('—');
-    expect(capturedData[0].evaluationKey).toBe('noEvaluation');
+    render(
+      <DataSourcesDialog
+        {...defaultProps}
+        buckets={undefined}
+        rows={collectorRows}
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(capturedData).toHaveLength(2);
+    expect(capturedData[0].plugin).toBe('GitHub');
+    expect(capturedData[0].metricId).toBe('dora.changeFailureRate');
+    expect(capturedData[0].metricDescription).toBe(
+      'Collects deployments from GitHub Actions.',
+    );
+    expect(capturedData[0].value).toBe('--');
+    expect(capturedData[0].statusLabel).toBe('-- N/A');
+    expect(capturedData[1].plugin).toBe('Jira');
+  });
+
+  it('should show a loading state while rows are fetching', () => {
+    render(
+      <DataSourcesDialog
+        {...defaultProps}
+        rows={[]}
+        buckets={undefined}
+        isLoading
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByTestId('data-sources-loading')).toBeInTheDocument();
+    expect(screen.queryByTestId('table')).not.toBeInTheDocument();
+  });
+
+  it('should show an error panel when rows fail to load', () => {
+    render(
+      <DataSourcesDialog
+        {...defaultProps}
+        rows={[]}
+        buckets={undefined}
+        error={new Error('collectors unavailable')}
+      />,
+      { wrapper: TestWrapper },
+    );
+
+    expect(screen.getByText('collectors unavailable')).toBeInTheDocument();
+    expect(screen.queryByTestId('table')).not.toBeInTheDocument();
   });
 });
