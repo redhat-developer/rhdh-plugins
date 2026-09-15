@@ -572,10 +572,16 @@ async function innerStart(
         is.metadata.namespace,
         is.metadata.name,
       );
-      logger.debug(
-        `innerStart: Adding importKey ${importKey} for KServe LLMInferenceService ${is.metadata.namespace}/${is.metadata.name}`,
-      );
-      keys.add(importKey);
+      if (isLLMInferenceServiceReady(is, logger)) {
+        logger.debug(
+          `innerStart: Adding importKey ${importKey} for ready KServe LLMInferenceService ${is.metadata.namespace}/${is.metadata.name}`,
+        );
+        keys.add(importKey);
+      } else {
+        logger.debug(
+          `innerStart: Skipping importKey ${importKey} for non-ready KServe LLMInferenceService ${is.metadata.namespace}/${is.metadata.name}`,
+        );
+      }
     }
   } catch (error) {
     logger.error(

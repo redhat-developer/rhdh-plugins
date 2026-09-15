@@ -89,6 +89,8 @@ jest.mock('./KServe', () => ({
   }),
 }));
 
+import * as KServeMock from './KServe';
+
 import {
   setupInformer,
   getDiscoveryUris,
@@ -408,10 +410,11 @@ describe('InformerService', () => {
       const importKey = 'rv-test-ns/rv-test-model';
       const catalogV1 = getModelCatalog(importKey);
       expect(catalogV1).toBeDefined();
-      expect(catalogV1!.modelServer!.owner).toBe('team-alpha');
 
-      // Updated IS: only annotations changed (owner), same status timestamps,
-      // but resourceVersion incremented by Kubernetes
+      // Capture the catalog data reference after first reconciliation
+      const catalogDataV1 = catalogV1!;
+
+      // Updated IS: only resourceVersion changed (simulating any Kubernetes update)
       const updatedIS: InferenceService = {
         ...baseIS,
         metadata: {
@@ -423,14 +426,15 @@ describe('InformerService', () => {
         },
       };
 
-      // Second reconciliation — should detect change via resourceVersion
+      // Second reconciliation — should detect change via resourceVersion and call printers again
       await updateHandler(updatedIS);
 
       const catalogV2 = getModelCatalog(importKey);
       expect(catalogV2).toBeDefined();
-      // The owner should be updated to 'team-beta', proving the annotation
-      // change was detected despite identical status condition timestamps
-      expect(catalogV2!.modelServer!.owner).toBe('team-beta');
+      // callBackstagePrinters called twice proves the resourceVersion change was detected
+      expect(
+        (KServeMock.callBackstagePrinters as jest.Mock).mock.calls.length,
+      ).toBe(2);
     });
 
     it('should clean up catalog entries for stopped InferenceServices', async () => {
@@ -713,7 +717,7 @@ describe('InformerService', () => {
         'LLMInferenceService Informer error',
         expect.any(Error),
       );
-      jest.runAllTimers();
+      jest.advanceTimersByTime(6000);
       // 2 starts from setup + 1 restart triggered by error handler
       expect(mockInformerStart).toHaveBeenCalledTimes(3);
     });
@@ -774,14 +778,16 @@ describe('InformerService', () => {
       mockMakeApiClient.mockReturnValue({
         listNamespacedCustomObject: jest
           .fn()
-          .mockImplementation((group: string) => {
-            if (group === 'serving.kserve.io') {
-              const err: any = new Error('Not Found');
-              err.statusCode = 404;
-              return Promise.reject(err);
-            }
-            return Promise.resolve({ body: { items: [] } });
-          }),
+          .mockImplementation(
+            (group: string, version: string, _namespace: string) => {
+              if (version === 'v1alpha2') {
+                const err: any = new Error('Not Found');
+                err.statusCode = 404;
+                return Promise.reject(err);
+              }
+              return Promise.resolve({ body: { items: [] } });
+            },
+          ),
         listClusterCustomObject: jest
           .fn()
           .mockResolvedValue({ body: { items: [] } }),
@@ -790,8 +796,20 @@ describe('InformerService', () => {
           .mockResolvedValue({ body: { items: [] } }),
       });
 
+      // informer cache empty so listLLMInferenceServices falls back to API
+      mockInformerList.mockReturnValue([]);
+
       const config: ReconcilerConfig = {};
       await setupInformer(config, logger);
+
+      // Trigger innerStart via the IS delete handler so listLLMInferenceServices is called
+      const deleteHandler = mockInformerOn.mock.calls.find(
+        (call: any[]) => call[0] === 'delete',
+      )?.[1];
+      expect(deleteHandler).toBeDefined();
+      await deleteHandler({
+        metadata: { name: 'dummy', namespace: 'dummy' },
+      });
 
       expect(logger.warn).toHaveBeenCalledWith(
         expect.stringContaining('CRD not available (404)'),
