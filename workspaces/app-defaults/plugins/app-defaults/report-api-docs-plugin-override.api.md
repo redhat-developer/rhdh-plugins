@@ -358,9 +358,9 @@ const apiDocsPluginOverride: OverridableFrontendPlugin<
         defaultGroup?: [Error: `Use the 'group' param instead`];
         group?:
           | (
+              | 'development'
               | 'overview'
               | 'documentation'
-              | 'development'
               | 'deployment'
               | 'operation'
               | 'observability'
@@ -437,9 +437,9 @@ const apiDocsPluginOverride: OverridableFrontendPlugin<
         defaultGroup?: [Error: `Use the 'group' param instead`];
         group?:
           | (
+              | 'development'
               | 'overview'
               | 'documentation'
-              | 'development'
               | 'deployment'
               | 'operation'
               | 'observability'

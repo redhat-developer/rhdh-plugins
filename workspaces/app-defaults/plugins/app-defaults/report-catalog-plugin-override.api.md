@@ -763,9 +763,9 @@ const catalogPluginOverride: OverridableFrontendPlugin<
         defaultGroup?: [Error: `Use the 'group' param instead`];
         group?:
           | (
+              | 'development'
               | 'overview'
               | 'documentation'
-              | 'development'
               | 'deployment'
               | 'operation'
               | 'observability'
