@@ -31,11 +31,17 @@ import {
   TextField,
   Box,
   Switch,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
 } from '@material-ui/core';
 import type { AdversarialAgent } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { useClientService } from '../../ClientService';
 import { useTranslation } from '../../hooks/useTranslation';
 import { extractResponseError, isHttpSuccessResponse } from '../tools';
+import { TEMPLATE_AGENTS, type TemplateAgent } from './templateAgents';
 
 interface AgentDialogProps {
   open: boolean;
@@ -78,6 +84,13 @@ export const AgentDialog = ({
       setError(null);
     }
   }, [open, agent]);
+
+  const handleUseTemplate = (template: TemplateAgent) => {
+    setName(template.name);
+    setPrompt(template.prompt);
+    setPhases(new Set(template.phases));
+    setCritical(template.critical);
+  };
 
   const handlePhaseToggle = (phase: string, checked: boolean) => {
     const newPhases = new Set(phases);
@@ -142,85 +155,130 @@ export const AgentDialog = ({
           : t('adversarialAgentsPage.dialog.createTitle')}
       </DialogTitle>
       <DialogContent>
-        <Box display="flex" flexDirection="column">
-          {error && <ResponseErrorPanel error={error} />}
+        <Grid container spacing={2}>
+          <Grid item xs={isEdit ? 12 : 7}>
+            <Box display="flex" flexDirection="column">
+              {error && <ResponseErrorPanel error={error} />}
 
-          <Box mt={2}>
-            <TextField
-              label={t('adversarialAgentsPage.dialog.nameField')}
-              placeholder={t('adversarialAgentsPage.dialog.namePlaceholder')}
-              value={name}
-              onChange={e => setName(e.target.value)}
-              fullWidth
-              required
-              error={name.length > 0 && (name.length < 3 || name.length > 100)}
-              helperText={
-                name.length > 0 && (name.length < 3 || name.length > 100)
-                  ? t('adversarialAgentsPage.dialog.nameValidation')
-                  : ''
-              }
-            />
-          </Box>
+              <Box mt={2}>
+                <TextField
+                  label={t('adversarialAgentsPage.dialog.nameField')}
+                  placeholder={t(
+                    'adversarialAgentsPage.dialog.namePlaceholder',
+                  )}
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  fullWidth
+                  required
+                  error={
+                    name.length > 0 && (name.length < 3 || name.length > 100)
+                  }
+                  helperText={
+                    name.length > 0 && (name.length < 3 || name.length > 100)
+                      ? t('adversarialAgentsPage.dialog.nameValidation')
+                      : ''
+                  }
+                />
+              </Box>
 
-          <Box mt={2}>
-            <TextField
-              label={t('adversarialAgentsPage.dialog.promptField')}
-              placeholder={t('adversarialAgentsPage.dialog.promptPlaceholder')}
-              value={prompt}
-              onChange={e => setPrompt(e.target.value)}
-              multiline
-              rows={6}
-              fullWidth
-              required
-              error={
-                prompt.length > 0 &&
-                (prompt.length < 50 || prompt.length > 5000)
-              }
-              helperText={`${prompt.length}${t('adversarialAgentsPage.dialog.promptCharacterCount')}`}
-            />
-          </Box>
+              <Box mt={2}>
+                <TextField
+                  label={t('adversarialAgentsPage.dialog.promptField')}
+                  placeholder={t(
+                    'adversarialAgentsPage.dialog.promptPlaceholder',
+                  )}
+                  value={prompt}
+                  onChange={e => setPrompt(e.target.value)}
+                  multiline
+                  rows={6}
+                  fullWidth
+                  required
+                  error={
+                    prompt.length > 0 &&
+                    (prompt.length < 50 || prompt.length > 5000)
+                  }
+                  helperText={`${prompt.length}${t('adversarialAgentsPage.dialog.promptCharacterCount')}`}
+                />
+              </Box>
 
-          <Box mt={2}>
-            <FormLabel component="legend">
-              {t('adversarialAgentsPage.dialog.phasesField')}
-            </FormLabel>
-            <FormGroup>
-              {PHASES.map(phase => (
+              <Box mt={2}>
+                <FormLabel component="legend">
+                  {t('adversarialAgentsPage.dialog.phasesField')}
+                </FormLabel>
+                <FormGroup>
+                  {PHASES.map(phase => (
+                    <FormControlLabel
+                      key={phase}
+                      control={
+                        <Checkbox
+                          checked={phases.has(phase)}
+                          onChange={e =>
+                            handlePhaseToggle(phase, e.target.checked)
+                          }
+                        />
+                      }
+                      label={t(PHASE_LABELS[phase] as any, {})}
+                    />
+                  ))}
+                </FormGroup>
+                {phases.size === 0 && (
+                  <Box color="error.main" fontSize="0.75rem" mt={1}>
+                    {t('adversarialAgentsPage.dialog.phasesValidation')}
+                  </Box>
+                )}
+              </Box>
+
+              <Box mt={2}>
                 <FormControlLabel
-                  key={phase}
                   control={
-                    <Checkbox
-                      checked={phases.has(phase)}
-                      onChange={e => handlePhaseToggle(phase, e.target.checked)}
+                    <Switch
+                      checked={critical}
+                      onChange={e => setCritical(e.target.checked)}
+                      color="primary"
                     />
                   }
-                  label={t(PHASE_LABELS[phase] as any, {})}
+                  label={t('adversarialAgentsPage.dialog.criticalField')}
                 />
-              ))}
-            </FormGroup>
-            {phases.size === 0 && (
-              <Box color="error.main" fontSize="0.75rem" mt={1}>
-                {t('adversarialAgentsPage.dialog.phasesValidation')}
+                <Box fontSize="0.75rem" color="text.secondary" mt={1}>
+                  {t('adversarialAgentsPage.dialog.criticalHelper')}
+                </Box>
               </Box>
-            )}
-          </Box>
-
-          <Box mt={2}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={critical}
-                  onChange={e => setCritical(e.target.checked)}
-                  color="primary"
-                />
-              }
-              label={t('adversarialAgentsPage.dialog.criticalField')}
-            />
-            <Box fontSize="0.75rem" color="text.secondary" mt={1}>
-              {t('adversarialAgentsPage.dialog.criticalHelper')}
             </Box>
-          </Box>
-        </Box>
+          </Grid>
+
+          {!isEdit && (
+            <Grid item xs={5}>
+              <Box
+                mt={2}
+                border={1}
+                borderColor="divider"
+                borderRadius={4}
+                height="100%"
+                overflow="auto"
+              >
+                <Box px={2} pt={2}>
+                  <Typography variant="subtitle2">
+                    {t('adversarialAgentsPage.dialog.templatesTitle')}
+                  </Typography>
+                </Box>
+                <List dense>
+                  {TEMPLATE_AGENTS.map(template => (
+                    <ListItem key={template.name}>
+                      <ListItemText primary={template.name} />
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleUseTemplate(template)}
+                      >
+                        {t('adversarialAgentsPage.dialog.useTemplate')}
+                      </Button>
+                    </ListItem>
+                  ))}
+                </List>
+              </Box>
+            </Grid>
+          )}
+        </Grid>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={saving}>

@@ -416,6 +416,8 @@ const x2aPluginTranslationEs = createTranslationMessages({
     'adversarialAgentsPage.dialog.createError': 'No se pudo crear el agente',
     'adversarialAgentsPage.dialog.updateError':
       'No se pudo actualizar el agente',
+    'adversarialAgentsPage.dialog.templatesTitle': 'Plantillas',
+    'adversarialAgentsPage.dialog.useTemplate': 'Usar esta',
   },
 });
 

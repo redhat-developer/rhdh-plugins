@@ -41,10 +41,11 @@ jest.mock('@backstage/core-components', () => ({
   ),
 }));
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { AdversarialAgent } from '@red-hat-developer-hub/backstage-plugin-x2a-common';
 import { AgentDialog } from './AgentDialog';
+import { TEMPLATE_AGENTS } from './templateAgents';
 
 const VALID_PROMPT =
   'Review the migration output for security vulnerabilities, privilege escalation, and correctness issues in the generated Ansible playbooks.';
@@ -66,7 +67,7 @@ describe('AgentDialog', () => {
   });
 
   describe('create mode', () => {
-    it('renders empty form with create title', () => {
+    it('renders create form with save button disabled', () => {
       render(<AgentDialog open onClose={jest.fn()} onSaved={jest.fn()} />);
       expect(screen.getByText(/create/i)).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /save/i })).toBeDisabled();
@@ -79,12 +80,10 @@ describe('AgentDialog', () => {
         screen.getByPlaceholderText('e.g., Privilege Escalation Check'),
         'My Agent',
       );
-      await userEvent.type(
-        screen.getByPlaceholderText(
-          'Describe what this agent should check for...',
-        ),
-        VALID_PROMPT,
+      const promptField = screen.getByPlaceholderText(
+        'Describe what this agent should check for...',
       );
+      fireEvent.change(promptField, { target: { value: VALID_PROMPT } });
       await userEvent.click(screen.getByLabelText(/analyze/i));
 
       expect(screen.getByRole('button', { name: /save/i })).toBeEnabled();
@@ -100,12 +99,10 @@ describe('AgentDialog', () => {
         screen.getByPlaceholderText('e.g., Privilege Escalation Check'),
         'My Agent',
       );
-      await userEvent.type(
-        screen.getByPlaceholderText(
-          'Describe what this agent should check for...',
-        ),
-        VALID_PROMPT,
+      const promptField = screen.getByPlaceholderText(
+        'Describe what this agent should check for...',
       );
+      fireEvent.change(promptField, { target: { value: VALID_PROMPT } });
       await userEvent.click(screen.getByLabelText(/analyze/i));
 
       await userEvent.click(screen.getByRole('button', { name: /save/i }));
@@ -165,5 +162,47 @@ describe('AgentDialog', () => {
     render(<AgentDialog open onClose={onClose} onSaved={jest.fn()} />);
     await userEvent.click(screen.getByRole('button', { name: /cancel/i }));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  describe('template panel', () => {
+    it('shows all templates in create mode', () => {
+      render(<AgentDialog open onClose={jest.fn()} onSaved={jest.fn()} />);
+      for (const template of TEMPLATE_AGENTS) {
+        expect(screen.getByText(template.name)).toBeInTheDocument();
+      }
+    });
+
+    it('does not show templates in edit mode', () => {
+      render(
+        <AgentDialog
+          open
+          onClose={jest.fn()}
+          onSaved={jest.fn()}
+          agent={existingAgent}
+        />,
+      );
+      for (const template of TEMPLATE_AGENTS) {
+        expect(screen.queryByText(template.name)).not.toBeInTheDocument();
+      }
+    });
+
+    it('populates the name field when a template is selected', async () => {
+      render(<AgentDialog open onClose={jest.fn()} onSaved={jest.fn()} />);
+
+      const [firstTemplate] = TEMPLATE_AGENTS;
+      const useButtons = screen.getAllByRole('button', { name: /use this/i });
+      await userEvent.click(useButtons[0]);
+
+      expect(screen.getByDisplayValue(firstTemplate.name)).toBeInTheDocument();
+    });
+
+    it('enables save after selecting a template with all required fields', async () => {
+      render(<AgentDialog open onClose={jest.fn()} onSaved={jest.fn()} />);
+
+      const useButtons = screen.getAllByRole('button', { name: /use this/i });
+      await userEvent.click(useButtons[0]);
+
+      expect(screen.getByRole('button', { name: /save/i })).toBeEnabled();
+    });
   });
 });

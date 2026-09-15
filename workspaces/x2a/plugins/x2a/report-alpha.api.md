@@ -424,6 +424,8 @@ export const x2aPluginTranslationRef: TranslationRef<
     readonly 'adversarialAgentsPage.dialog.criticalHelper': string;
     readonly 'adversarialAgentsPage.dialog.nameValidation': string;
     readonly 'adversarialAgentsPage.dialog.phasesValidation': string;
+    readonly 'adversarialAgentsPage.dialog.templatesTitle': string;
+    readonly 'adversarialAgentsPage.dialog.useTemplate': string;
     readonly 'adversarialAgentsPage.table.name': string;
     readonly 'adversarialAgentsPage.table.phases': string;
     readonly 'adversarialAgentsPage.table.createdAt': string;

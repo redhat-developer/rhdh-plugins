@@ -413,6 +413,8 @@ const x2aPluginTranslationDe = createTranslationMessages({
       'Agent konnte nicht erstellt werden',
     'adversarialAgentsPage.dialog.updateError':
       'Agent-Aktualisierung fehlgeschlagen',
+    'adversarialAgentsPage.dialog.templatesTitle': 'Vorlagen',
+    'adversarialAgentsPage.dialog.useTemplate': 'Verwenden',
   },
 });
 
