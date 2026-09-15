@@ -19,8 +19,11 @@ import { SidebarSearchModal } from '@backstage/plugin-search';
 import {
   SidebarDividerBlueprint,
   SidebarElementBlueprint,
+  SidebarItemGroupBlueprint,
   SidebarSpacerBlueprint,
 } from '@red-hat-developer-hub/backstage-plugin-app-react';
+import GppMaybeOutlinedIcon from '@mui/icons-material/GppMaybeOutlined';
+import ManageAccountsOutlinedIcon from '@mui/icons-material/ManageAccountsOutlined';
 
 import { CompanyLogo } from './logo/CompanyLogo';
 
@@ -29,11 +32,15 @@ import { CompanyLogo } from './logo/CompanyLogo';
  *
  * Top to bottom: the company logo, a small gap, the search modal, everything contributed at priority 0
  * (auto-discovered pages, plugin items and groups), a spacer that pushes the
- * rest to the bottom, a divider, the notifications item, and a final
- * divider above anything pinned to the bottom (for example a settings group
- * with a priority below -90). The search modal and the notifications item
- * declare their page paths, so the plain auto-discovered entries for the
- * search and notifications pages are hidden.
+ * rest to the bottom, a divider, the notifications item, a final divider,
+ * the Administration group, and the Settings group. The search modal and
+ * the notifications item declare their page paths, so the plain
+ * auto-discovered entries for the search and notifications pages are hidden.
+ *
+ * The Administration group has no link of its own, so it stays hidden until
+ * a plugin contributes an item with `group: 'admin'`. The Settings group
+ * links to the settings page and replaces the auto-discovered settings
+ * entry; plugins can add items with `group: 'settings'`.
  *
  * Each element can be disabled or moved from `app-config.yaml`, e.g.
  *
@@ -100,6 +107,36 @@ export const sidebarSettingsDivider = SidebarDividerBlueprint.make({
   params: { priority: -90 },
 });
 
+/**
+ * Administration group, hidden until a plugin adds an item with
+ * `group: 'admin'`. Extension ID: `sidebar-item-group:app/admin`.
+ */
+export const sidebarAdminGroup = SidebarItemGroupBlueprint.make({
+  name: 'admin',
+  params: {
+    id: 'admin',
+    title: 'Administration',
+    icon: GppMaybeOutlinedIcon,
+    priority: -95,
+  },
+});
+
+/**
+ * Settings group at the very bottom, linking to the settings page. Plugins
+ * can add items with `group: 'settings'`. Extension ID:
+ * `sidebar-item-group:app/settings`.
+ */
+export const sidebarSettingsGroup = SidebarItemGroupBlueprint.make({
+  name: 'settings',
+  params: {
+    id: 'settings',
+    title: 'Settings',
+    icon: ManageAccountsOutlinedIcon,
+    to: '/settings',
+    priority: -100,
+  },
+});
+
 /** All default sidebar layout extensions, in registration order. */
 export const defaultSidebarExtensions = [
   sidebarLogoElement,
@@ -109,4 +146,6 @@ export const defaultSidebarExtensions = [
   sidebarBottomDivider,
   sidebarNotificationsElement,
   sidebarSettingsDivider,
+  sidebarAdminGroup,
+  sidebarSettingsGroup,
 ];

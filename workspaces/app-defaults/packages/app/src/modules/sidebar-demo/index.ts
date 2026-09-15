@@ -31,13 +31,14 @@ import HelpIcon from '@mui/icons-material/HelpOutline';
  *   Hub documentation in a new tab and sits in the bottom block next to notifications.
  * - `Docs` and `APIs` take over the auto-discovered TechDocs and API docs
  *   nav items (same `to`) and move them into the `Documentation` group.
- * - The `Documentation` group uses the default inline submenu, while the
- *   `Settings` group collects the user settings and app visualizer pages in
- *   a flyout submenu and is pinned to the very bottom via the lowest
- *   priority.
+ * - The `Documentation` group uses the default inline submenu.
+ * - `App Visualizer` joins the default `Settings` group, and `RBAC` and
+ *   `Plugins` join the default `Administration` group, which app-defaults
+ *   keeps hidden until a module contributes an item to it.
  *
- * Resulting order, top to bottom: search, auto-discovered pages,
- * Documentation, [spacer], divider, Notifications, Help, divider, Settings.
+ * Resulting order, top to bottom: logo, search, auto-discovered pages,
+ * Documentation, [spacer], divider, Notifications, Help, divider,
+ * Administration, Settings.
  */
 const helpItem = SidebarItemBlueprint.make({
   name: 'help',
@@ -86,29 +87,7 @@ const apiDocsItem = SidebarItemBlueprint.make({
   },
 });
 
-const settingsGroup = SidebarItemGroupBlueprint.make({
-  name: 'settings',
-  params: {
-    id: 'settings',
-    title: 'Settings',
-    icon: 'manageAccounts',
-    to: '/settings',
-    priority: -100,
-    submenu: 'flyout',
-  },
-});
-
-const userSettingsItem = SidebarItemBlueprint.make({
-  name: 'user-settings',
-  params: {
-    title: 'User Settings',
-    icon: 'account',
-    to: '/settings',
-    group: 'settings',
-    priority: 10,
-  },
-});
-
+/** Dummy entry for the default Settings group of app-defaults. */
 const visualizerItem = SidebarItemBlueprint.make({
   name: 'visualizer',
   params: {
@@ -119,6 +98,31 @@ const visualizerItem = SidebarItemBlueprint.make({
   },
 });
 
+/**
+ * Dummy entries for the default Administration group of app-defaults. The
+ * group only becomes visible because these items reference it.
+ */
+const rbacItem = SidebarItemBlueprint.make({
+  name: 'rbac',
+  params: {
+    title: 'RBAC',
+    icon: 'security',
+    to: '/admin/rbac',
+    group: 'admin',
+    priority: 10,
+  },
+});
+
+const pluginsItem = SidebarItemBlueprint.make({
+  name: 'plugins',
+  params: {
+    title: 'Plugins',
+    icon: 'extension',
+    to: '/admin/plugins',
+    group: 'admin',
+  },
+});
+
 export const sidebarDemoModule = createFrontendModule({
   pluginId: 'app',
   extensions: [
@@ -126,8 +130,8 @@ export const sidebarDemoModule = createFrontendModule({
     documentationGroup,
     docsItem,
     apiDocsItem,
-    settingsGroup,
-    userSettingsItem,
     visualizerItem,
+    rbacItem,
+    pluginsItem,
   ],
 });
