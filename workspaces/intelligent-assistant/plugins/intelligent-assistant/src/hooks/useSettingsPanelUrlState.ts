@@ -23,7 +23,10 @@ export type SettingsTab = 'mcp-servers' | 'saved-prompts';
 
 export const SETTINGS_TAB_PARAM = 'settingsTab';
 
-const VALID_SETTINGS_TABS: SettingsTab[] = ['mcp-servers', 'saved-prompts'];
+const VALID_SETTINGS_TABS = new Set<SettingsTab>([
+  'mcp-servers',
+  'saved-prompts',
+]);
 
 export const parseSettingsTabParam = (
   value: string | null,
@@ -31,7 +34,7 @@ export const parseSettingsTabParam = (
   if (!value) {
     return null;
   }
-  return VALID_SETTINGS_TABS.includes(value as SettingsTab)
+  return VALID_SETTINGS_TABS.has(value as SettingsTab)
     ? (value as SettingsTab)
     : null;
 };

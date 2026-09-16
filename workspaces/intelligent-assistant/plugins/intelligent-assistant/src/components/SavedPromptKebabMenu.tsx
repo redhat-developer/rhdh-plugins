@@ -13,9 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { useState } from 'react';
+import { useState, type MouseEvent, type Ref } from 'react';
 
-import { Dropdown, DropdownList, MenuToggle } from '@patternfly/react-core';
+import {
+  Dropdown,
+  DropdownList,
+  MenuToggle,
+  type MenuToggleElement,
+} from '@patternfly/react-core';
 import { EllipsisHIcon } from '@patternfly/react-icons';
 import { makeStyles } from 'tss-react/mui';
 
@@ -41,6 +46,39 @@ const useStyles = makeStyles()(() => ({
   },
 }));
 
+type SavedPromptMenuToggleProps = {
+  toggleRef: Ref<MenuToggleElement>;
+  promptName: string;
+  isOpen: boolean;
+  menuButtonClassName: string;
+  onToggle: (event: MouseEvent) => void;
+};
+
+const SavedPromptMenuToggle = ({
+  toggleRef,
+  promptName,
+  isOpen,
+  menuButtonClassName,
+  onToggle,
+}: SavedPromptMenuToggleProps) => {
+  const { t } = useTranslation();
+
+  return (
+    <MenuToggle
+      ref={toggleRef}
+      variant="plain"
+      className={menuButtonClassName}
+      aria-label={t('savedPrompts.actions.menuAriaLabel' as any, {
+        name: promptName,
+      })}
+      isExpanded={isOpen}
+      onClick={onToggle}
+    >
+      <EllipsisHIcon />
+    </MenuToggle>
+  );
+};
+
 export const SavedPromptKebabMenu = ({
   prompt,
   variant,
@@ -50,7 +88,6 @@ export const SavedPromptKebabMenu = ({
   isSendDirectlyDisabled = false,
 }: SavedPromptKebabMenuProps) => {
   const { classes } = useStyles();
-  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   const closeMenu = () => setIsOpen(false);
@@ -64,21 +101,16 @@ export const SavedPromptKebabMenu = ({
       }}
       onOpenChange={setIsOpen}
       toggle={toggleRef => (
-        <MenuToggle
-          ref={toggleRef}
-          variant="plain"
-          className={classes.menuButton}
-          aria-label={t('savedPrompts.actions.menuAriaLabel' as any, {
-            name: prompt.name,
-          })}
-          isExpanded={isOpen}
-          onClick={event => {
+        <SavedPromptMenuToggle
+          toggleRef={toggleRef}
+          promptName={prompt.name}
+          isOpen={isOpen}
+          menuButtonClassName={classes.menuButton}
+          onToggle={event => {
             event.stopPropagation();
             setIsOpen(current => !current);
           }}
-        >
-          <EllipsisHIcon />
-        </MenuToggle>
+        />
       )}
     >
       <DropdownList style={{ paddingInlineStart: 0 }}>

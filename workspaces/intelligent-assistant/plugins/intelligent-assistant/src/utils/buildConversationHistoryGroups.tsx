@@ -74,6 +74,45 @@ const disabledPlaceholderConversation = (
   },
 });
 
+type BuildCategoryChatsOptions = {
+  filteredItems: Conversation[];
+  filterValue: string;
+  sourceItems: Conversation[];
+  emptyId: string;
+  noSearchResultsId: string;
+  emptyText: string;
+  noSearchResultsText: string;
+};
+
+const buildCategoryChats = ({
+  filteredItems,
+  filterValue,
+  sourceItems,
+  emptyId,
+  noSearchResultsId,
+  emptyText,
+  noSearchResultsText,
+}: BuildCategoryChatsOptions): {
+  chats: Conversation[];
+  isNoSearchResults: boolean;
+} => {
+  if (filteredItems.length > 0) {
+    return { chats: filteredItems, isNoSearchResults: false };
+  }
+
+  const isNoSearchResults = Boolean(filterValue) && sourceItems.length > 0;
+
+  return {
+    chats: [
+      disabledPlaceholderConversation(
+        isNoSearchResults ? noSearchResultsId : emptyId,
+        isNoSearchResults ? noSearchResultsText : emptyText,
+      ),
+    ],
+    isNoSearchResults,
+  };
+};
+
 export const filterCategorizedMessages = (
   categorizedMessages: { [key: string]: Conversation[] },
   filterValue: string,
@@ -95,40 +134,32 @@ export const filterCategorizedMessages = (
     const isPinnedCategory = key === pinnedChatsKey;
 
     if (isPinnedCategory && isPinningChatsEnabled) {
-      if (filteredItems.length > 0) {
-        pinnedChats = filteredItems;
-      } else {
-        isNoPinnedChatsSearchResults =
-          Boolean(filterValue) &&
-          categorizedMessages[pinnedChatsKey].length > 0;
-        pinnedChats = [
-          disabledPlaceholderConversation(
-            isNoPinnedChatsSearchResults
-              ? 'no-pinned-chats-search-results'
-              : 'no-pinned-chats',
-            isNoPinnedChatsSearchResults
-              ? t('common.noSearchResults')
-              : t('chatbox.emptyState.noPinnedChats'),
-          ),
-        ];
-      }
-    } else if (!isPinnedCategory) {
-      if (filteredItems.length > 0) {
-        recentChats = filteredItems;
-      } else {
-        isNoRecentChatsSearchResults =
-          Boolean(filterValue) && categorizedMessages[key].length > 0;
-        recentChats = [
-          disabledPlaceholderConversation(
-            isNoRecentChatsSearchResults
-              ? 'no-recent-chats-search-results'
-              : 'no-recent-chats',
-            isNoRecentChatsSearchResults
-              ? t('common.noSearchResults')
-              : t('chatbox.emptyState.noRecentChats'),
-          ),
-        ];
-      }
+      const pinnedResult = buildCategoryChats({
+        filteredItems,
+        filterValue,
+        sourceItems: categorizedMessages[pinnedChatsKey],
+        emptyId: 'no-pinned-chats',
+        noSearchResultsId: 'no-pinned-chats-search-results',
+        emptyText: t('chatbox.emptyState.noPinnedChats'),
+        noSearchResultsText: t('common.noSearchResults'),
+      });
+      pinnedChats = pinnedResult.chats;
+      isNoPinnedChatsSearchResults = pinnedResult.isNoSearchResults;
+      return;
+    }
+
+    if (!isPinnedCategory) {
+      const recentResult = buildCategoryChats({
+        filteredItems,
+        filterValue,
+        sourceItems: categorizedMessages[key],
+        emptyId: 'no-recent-chats',
+        noSearchResultsId: 'no-recent-chats-search-results',
+        emptyText: t('chatbox.emptyState.noRecentChats'),
+        noSearchResultsText: t('common.noSearchResults'),
+      });
+      recentChats = recentResult.chats;
+      isNoRecentChatsSearchResults = recentResult.isNoSearchResults;
     }
   });
 
