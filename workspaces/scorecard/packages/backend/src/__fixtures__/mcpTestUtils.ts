@@ -24,7 +24,10 @@ import { metricsServiceMock } from '@backstage/backend-test-utils/alpha';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
 import { catalogServiceMock } from '@backstage/plugin-catalog-node/testUtils';
 import mcpPlugin from '@backstage/plugin-mcp-actions-backend';
-import scorecardPlugin from '@red-hat-developer-hub/backstage-plugin-scorecard-backend';
+import {
+  scorecardCollectorsServiceFactory,
+  scorecardPlugin,
+} from '@red-hat-developer-hub/backstage-plugin-scorecard-backend';
 import scorecardFilecheckModule from '@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-filecheck';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
@@ -127,6 +130,7 @@ export async function startMcpBackend({
   return startTestBackend({
     features: [
       mcpPlugin,
+      scorecardCollectorsServiceFactory,
       scorecardPlugin,
       scorecardFilecheckModule,
       metricsServiceMock.mock().factory,

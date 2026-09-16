@@ -17,17 +17,13 @@
 /**
  * New Frontend System API surface for the global header plugin.
  *
+ * Building-block UI (`GlobalHeaderIconButton`, `GlobalHeaderMenuItem`,
+ * `GlobalHeaderDropdown`) is exported only from `/components` so it stays off
+ * this root Module Federation sync chunk.
+ *
  * @public
  * @packageDocumentation
  */
-
-import { unstable_ClassNameGenerator as ClassNameGenerator } from '@mui/material/className';
-
-ClassNameGenerator.configure(componentName => {
-  return componentName.startsWith('v5-')
-    ? componentName
-    : `v5-${componentName}`;
-});
 
 import { createFrontendModule } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
@@ -69,20 +65,6 @@ export type {
   GlobalHeaderComponentData,
   GlobalHeaderMenuItemData,
 } from './types';
-
-// ── Building block components for plugin authors ───────────────────────
-
-export { HeaderIconButton as GlobalHeaderIconButton } from './components/HeaderIconButton/HeaderIconButton';
-export type { HeaderIconButtonProps } from './components/HeaderIconButton/HeaderIconButton';
-export { GlobalHeaderMenuItem } from './components/GlobalHeaderMenuItem';
-export type { GlobalHeaderMenuItemProps } from './components/GlobalHeaderMenuItem';
-export { GlobalHeaderDropdown } from './components/GlobalHeaderDropdown';
-export type { GlobalHeaderDropdownProps } from './components/GlobalHeaderDropdown';
-export { useBrandingFullLogo } from './hooks/useBrandingFullLogo';
-export type {
-  LogoURLs,
-  CompanyLogoProps,
-} from './components/CompanyLogo/CompanyLogo';
 
 // ── Default extensions (collections + individual for cherry-picking) ───
 

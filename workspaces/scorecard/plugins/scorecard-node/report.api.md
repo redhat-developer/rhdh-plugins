@@ -12,6 +12,7 @@ import type { JsonValue } from '@backstage/types';
 import { Metric } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricType } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { MetricValue } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+import { ServiceFactory } from '@backstage/backend-plugin-api';
 import { ServiceRef } from '@backstage/backend-plugin-api';
 import { ThresholdConfig } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 import { ThresholdRule } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -112,6 +113,13 @@ export interface ScorecardCollectorsService {
   // (undocumented)
   init(options: { collectors: Array<Collector> }): void;
 }
+
+// @public
+export const scorecardCollectorsServiceFactory: ServiceFactory<
+  ScorecardCollectorsService,
+  'plugin',
+  'singleton'
+>;
 
 // @public
 export const scorecardCollectorsServiceRef: ServiceRef<

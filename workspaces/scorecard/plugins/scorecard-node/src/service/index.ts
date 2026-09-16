@@ -15,4 +15,7 @@
  */
 
 export type { ScorecardCollectorsService } from './scorecardCollectorsService';
-export { scorecardCollectorsServiceRef } from './scorecardCollectorsService';
+export {
+  scorecardCollectorsServiceFactory,
+  scorecardCollectorsServiceRef,
+} from './scorecardCollectorsService';
