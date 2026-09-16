@@ -482,7 +482,7 @@ describe('callBackstagePrinters', () => {
     );
   });
 
-  it('should propagate system, serverType, default, owner, and lifecycle annotations to modelServer', async () => {
+  it('should propagate system, serverType, default, owner, lifecycle, and api-entity-ref annotations to modelServer', async () => {
     const is = makeInferenceService({
       annotations: {
         [SYSTEM_ANNOTATION]: 'my-system',
@@ -490,6 +490,7 @@ describe('callBackstagePrinters', () => {
         [DEFAULT_ANNOTATION]: 'preferred-model',
         [OWNER_ANNOTATION]: 'team-ai',
         [LIFECYCLE_ANNOTATION]: 'experimental',
+        [API_ENTITY_REF_ANNOTATION]: 'my-api',
       },
     });
 
@@ -514,6 +515,9 @@ describe('callBackstagePrinters', () => {
     expect(result.modelServer!.annotations![OWNER_ANNOTATION]).toBe('team-ai');
     expect(result.modelServer!.annotations![LIFECYCLE_ANNOTATION]).toBe(
       'experimental',
+    );
+    expect(result.modelServer!.annotations![API_ENTITY_REF_ANNOTATION]).toBe(
+      'my-api',
     );
   });
 

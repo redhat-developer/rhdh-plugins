@@ -27,20 +27,6 @@ const OWNER_ANNOTATION = 'rhdh.io/owner';
 const LIFECYCLE_ANNOTATION = 'rhdh.io/lifecycle';
 const API_ENTITY_REF_ANNOTATION = 'rhdh.io/api-entity-ref';
 
-function normalizeApiEntityRef(rawValue: string): string {
-  const value = rawValue.trim();
-  // Already fully qualified (e.g. api:default/my-api, api:production/my-api)
-  if (value.includes(':')) {
-    return value;
-  }
-  // Namespace-qualified (e.g. default/my-api, production/my-api)
-  if (value.includes('/')) {
-    return `api:${value}`;
-  }
-  // Bare name (e.g. my-api)
-  return `api:default/${value}`;
-}
-
 function isModelCatalog(o: any): o is ModelCatalog {
   return 'models' in o || 'modelServer' in o;
 }
@@ -140,8 +126,10 @@ export function GenerateCatalogEntities(
   const defaultOverride = modelServer.annotations?.[DEFAULT_ANNOTATION];
   const ownerOverride = modelServer.annotations?.[OWNER_ANNOTATION];
   const lifecycleOverride = modelServer.annotations?.[LIFECYCLE_ANNOTATION];
-  const apiEntityRefOverride =
-    modelServer.annotations?.[API_ENTITY_REF_ANNOTATION];
+  const apiEntityRefRaw = modelServer.annotations?.[API_ENTITY_REF_ANNOTATION];
+  const apiEntityRefNormalized = apiEntityRefRaw
+    ? normalizeApiEntityRef(apiEntityRefRaw)
+    : undefined;
 
   const entity: AiModelServerApiEntity = {
     apiVersion: 'backstage.io/v1alpha1',
@@ -158,8 +146,8 @@ export function GenerateCatalogEntities(
       lifecycle: lifecycleOverride ?? modelServer.lifecycle,
       owner: `user:${ownerOverride ?? modelServer.owner}`,
       ...(systemOverride && { system: systemOverride }),
-      ...(apiEntityRefOverride && {
-        apiEntityRef: normalizeApiEntityRef(apiEntityRefOverride),
+      ...(apiEntityRefNormalized && {
+        apiEntityRef: apiEntityRefNormalized,
       }),
       serverType: serverTypeOverride ?? modelServer.API?.type ?? 'unknown',
       serverUrl: modelServer.API?.url ?? '',
@@ -189,6 +177,23 @@ function getDefaultModel(
 
 function sanitizeMetadataName(modelName: string): string {
   return modelName.replace(/\s/g, '');
+}
+
+function normalizeApiEntityRef(rawValue: string): string {
+  const value = rawValue.trim();
+  if (!value) return '';
+  // Already fully qualified (e.g. api:default/my-api, api:production/my-api)
+  if (value.includes(':')) {
+    const kind = value.split(':')[0];
+    if (kind !== 'api') return '';
+    return value;
+  }
+  // Namespace-qualified (e.g. default/my-api, production/my-api)
+  if (value.includes('/')) {
+    return `api:${value}`;
+  }
+  // Bare name (e.g. my-api)
+  return `api:default/${value}`;
 }
 
 function sanitizeTags(tags: string[], logger?: LoggerService): string[] {

@@ -884,6 +884,66 @@ describe('Model Catalog Generator', () => {
     expect((entities[0].spec as any).apiEntityRef).toBe('api:default/my-api');
   });
 
+  it('should not set apiEntityRef when annotation is whitespace-only', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'api-ref-whitespace-only-service',
+        owner: 'example-user',
+        description: 'Service with whitespace-only api-entity-ref',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/api-entity-ref': '   ',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).apiEntityRef).toBeUndefined();
+  });
+
+  it('should not set apiEntityRef when annotation has wrong kind', () => {
+    const modelCatalog: ModelCatalog = {
+      modelServer: {
+        name: 'api-ref-wrong-kind-service',
+        owner: 'example-user',
+        description: 'Service with wrong-kind api-entity-ref',
+        lifecycle: 'production',
+        annotations: {
+          'rhdh.io/api-entity-ref': 'component:default/my-api',
+        },
+        API: {
+          url: 'https://api.example.com',
+          type: Type.Openapi,
+          spec: 'https://example.com/openapi.json',
+        },
+      },
+      models: [
+        {
+          name: 'test-model',
+          description: 'Test model',
+          lifecycle: 'production',
+          owner: 'example-user',
+        },
+      ],
+    };
+
+    const entities = GenerateCatalogEntities(modelCatalog);
+    expect((entities[0].spec as any).apiEntityRef).toBeUndefined();
+  });
+
   it('should not set apiEntityRef when annotation is absent', () => {
     const modelCatalog: ModelCatalog = {
       modelServer: {
