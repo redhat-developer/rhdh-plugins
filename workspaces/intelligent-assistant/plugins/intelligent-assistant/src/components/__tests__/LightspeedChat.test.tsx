@@ -1266,7 +1266,7 @@ describe('LightspeedChat', () => {
         screen.getByRole('button', { name: 'New chat' }),
       ).toBeInTheDocument();
       expect(
-        screen.getByRole('button', { name: 'Collapse chat history' }),
+        screen.getByRole('button', { name: 'Close drawer panel' }),
       ).toBeInTheDocument();
     });
 
