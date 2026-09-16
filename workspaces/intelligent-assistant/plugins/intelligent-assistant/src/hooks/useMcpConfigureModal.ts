@@ -64,7 +64,6 @@ export type McpCredentialsValidationResult = {
 
 export type UseMcpConfigureModalOptions = {
   servers: McpConfigureServer[];
-  canManageMcp: boolean;
   isSaving: Record<string, boolean>;
   patchServer: (
     serverName: string,
@@ -86,7 +85,6 @@ export type UseMcpConfigureModalOptions = {
  */
 export const useMcpConfigureModal = ({
   servers,
-  canManageMcp,
   isSaving,
   patchServer,
   validateServer,
@@ -318,12 +316,7 @@ export const useMcpConfigureModal = ({
   });
 
   const removePersonalToken = useCallback(async () => {
-    if (
-      !editingServer ||
-      !canManageMcp ||
-      isUpdatingModalStatus ||
-      editingServer.hasOrgToken
-    ) {
+    if (!editingServer || isUpdatingModalStatus || editingServer.hasOrgToken) {
       return;
     }
 
@@ -353,7 +346,6 @@ export const useMcpConfigureModal = ({
       setIsUpdatingModalStatus(false);
     }
   }, [
-    canManageMcp,
     editingServer,
     editingServerId,
     isUpdatingModalStatus,
@@ -362,7 +354,7 @@ export const useMcpConfigureModal = ({
   ]);
 
   const save = useCallback(async () => {
-    if (!editingServer || !canManageMcp) return;
+    if (!editingServer) return;
 
     const hasCredentialModeChange =
       modalCredentialMode !== initialCredentialMode;
@@ -485,7 +477,6 @@ export const useMcpConfigureModal = ({
       markFailedTokenAttempt();
     }
   }, [
-    canManageMcp,
     close,
     editingServer,
     initialCredentialMode,
@@ -501,12 +492,12 @@ export const useMcpConfigureModal = ({
 
   const onModalEnabledChange = useCallback(
     (_event: FormEvent, checked: boolean) => {
-      if (!editingServer || !canManageMcp) {
+      if (!editingServer) {
         return;
       }
       setModalEnabled(checked);
     },
-    [editingServer, canManageMcp],
+    [editingServer],
   );
 
   const modalVerifiedHasToken = editingServer
@@ -533,7 +524,6 @@ export const useMcpConfigureModal = ({
     : 'unknown';
 
   const isModalEnabledToggleDisabled =
-    !canManageMcp ||
     !editingServer ||
     isUpdatingModalStatus ||
     isEnabledToggleUnavailable(modalDisplayStatus) ||
@@ -599,7 +589,6 @@ export const useMcpConfigureModal = ({
     close,
     save,
     removePersonalToken,
-    canManageMcp,
     configureModalTitle,
     isConfigureModalSaving,
     isSaveTokenButtonDisabled,

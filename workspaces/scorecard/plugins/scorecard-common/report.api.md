@@ -187,6 +187,7 @@ export type MetricTimeSeriesPoint = {
   value: MetricValue | null;
   timestamp: string;
   error?: string;
+  thresholdEvaluation?: string | null;
 };
 
 // @public
@@ -203,6 +204,8 @@ export type MetricTimeSeriesResponse = {
     defaultVisualization?: ScorecardVisualizationType;
     collectorIds?: string[];
   };
+  thresholds?: ThresholdConfig;
+  thresholdsError?: string;
 };
 
 // @public (undocumented)
@@ -249,6 +252,9 @@ export type ScalarAggregationResult = ScalarAggregatedMetric & {
   thresholds: ThresholdConfig;
   aggregationChartDisplayColor: string | null;
 };
+
+// @public (undocumented)
+export type ScalarAggregationType = (typeof scalarAggregationTypes)[number];
 
 // @public
 export const scalarAggregationTypes: readonly [

@@ -73,6 +73,15 @@ const mockUsePermission = usePermission as jest.MockedFunction<
 describe('LightspeedPage', () => {
   beforeEach(() => {
     localStorage.clear();
+    mockUsePermission.mockImplementation(({ permission }) => {
+      if (permission.name === 'intelligent-assistant.chat') {
+        return { loading: false, allowed: true };
+      }
+      if (permission.name === 'intelligent-assistant.notebooks') {
+        return { loading: false, allowed: true };
+      }
+      return { loading: false, allowed: false };
+    });
     const { useAllModels } = require('../../hooks/useAllModels');
     (useAllModels as jest.Mock).mockReturnValue({
       data: [
@@ -107,8 +116,11 @@ describe('LightspeedPage', () => {
     });
   });
 
-  it('should display missing permissions alert', async () => {
-    mockUsePermission.mockReturnValue({ loading: false, allowed: false });
+  it('should show 404 page when no feature permissions are granted', async () => {
+    mockUsePermission.mockImplementation(() => ({
+      loading: false,
+      allowed: false,
+    }));
 
     await renderInTestApp(
       <TestApiProvider
@@ -122,12 +134,23 @@ describe('LightspeedPage', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('Missing permissions')).toBeInTheDocument();
+      expect(screen.queryByText('LightspeedChat')).not.toBeInTheDocument();
+      expect(screen.getByTestId('error')).toHaveTextContent(
+        'ERROR 404: Page not found',
+      );
     });
   });
 
   it('should display lightspeed chatbot', async () => {
-    mockUsePermission.mockReturnValue({ loading: false, allowed: true });
+    mockUsePermission.mockImplementation(({ permission }) => {
+      if (permission.name === 'intelligent-assistant.chat') {
+        return { loading: false, allowed: true };
+      }
+      if (permission.name === 'intelligent-assistant.notebooks') {
+        return { loading: false, allowed: true };
+      }
+      return { loading: false, allowed: false };
+    });
 
     await renderInTestApp(
       <TestApiProvider
@@ -143,17 +166,6 @@ describe('LightspeedPage', () => {
     await waitFor(() => {
       expect(screen.getByText('LightspeedChat')).toBeInTheDocument();
     });
-  });
-
-  it('should translate permission messages correctly', () => {
-    const { result } = renderHook(() => useTranslation());
-
-    expect(result.current.t('permission.required.title')).toBe(
-      'Missing permissions',
-    );
-    expect(result.current.t('permission.required.description')).toBe(
-      'To view <subject/>, contact your administrator to give the <permissions/> permission.',
-    );
   });
 
   it('should translate conversation messages correctly', () => {

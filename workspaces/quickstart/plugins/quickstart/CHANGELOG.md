@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-quickstart
 
+## 2.1.0
+
+### Minor Changes
+
+- 0613276: Backstage version bump to v1.54.6. Also bump `@red-hat-developer-hub/backstage-plugin-app-react` to `^1.0.0` (NFS exports moved off `/alpha`) and `@red-hat-developer-hub/backstage-plugin-global-header` to `^2.0.1` (`configSchema` blueprints) for `frontend-plugin-api` 0.18.0 compatibility.
+
 ## 2.0.1
 
 ### Patch Changes

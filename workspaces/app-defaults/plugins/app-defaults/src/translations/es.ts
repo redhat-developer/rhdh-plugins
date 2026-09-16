@@ -26,23 +26,23 @@ export default createTranslationMessages({
     'catalog.emptyState.title': 'No hay elementos disponibles en el catálogo',
     'catalog.emptyState.description':
       'Todavía no hay entidades en el catálogo, o no tiene permiso para ver ninguna. Aparecerán aquí una vez que se registren y tenga acceso.',
-    'catalog.emptyState.action': 'Registrar un componente',
+    'catalog.emptyState.importButtonTitle': 'Registrar un componente',
     'catalogGraph.emptyState.title':
       'No hay elementos disponibles en el catálogo',
     'catalogGraph.emptyState.description':
       'Todavía no hay entidades en el catálogo, o no tiene permiso para ver ninguna. El grafo del catálogo aparecerá aquí una vez que se registren y tenga acceso.',
-    'catalogGraph.emptyState.action': 'Ir al catálogo',
+    'catalogGraph.emptyState.importButtonTitle': 'Registrar un componente',
     'scaffolder.emptyState.title': 'No hay plantillas disponibles',
     'scaffolder.emptyState.description':
       'Todavía no hay plantillas de software, o no tiene permiso para ver ninguna. Aparecerán aquí una vez que se registren y tenga acceso.',
-    'scaffolder.emptyState.action': 'Registrar una plantilla',
+    'scaffolder.emptyState.importButtonTitle': 'Registrar una plantilla',
     'apiDocs.emptyState.title': 'No hay APIs disponibles',
     'apiDocs.emptyState.description':
       'Todavía no hay APIs, o no tiene permiso para ver ninguna. Aparecerán aquí una vez que se registren y tenga acceso.',
-    'apiDocs.emptyState.action': 'Registrar una API',
+    'apiDocs.emptyState.importButtonTitle': 'Registrar una API',
     'docs.emptyState.title': 'No hay documentación disponible',
     'docs.emptyState.description':
       'Todavía no hay entidades documentadas, o no tiene permiso para ver ninguna. La documentación aparecerá aquí una vez que se registren entidades con anotaciones de TechDocs y tenga acceso.',
-    'docs.emptyState.action': 'Más información',
+    'docs.emptyState.importButtonTitle': 'Registrar un componente',
   },
 });

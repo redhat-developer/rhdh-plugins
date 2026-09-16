@@ -15,6 +15,7 @@
  */
 
 import {
+  type ScalarAggregationType,
   scalarAggregationTypes,
   type AggregationResultByType,
   type ScalarAggregationResult,
@@ -24,7 +25,7 @@ import {
 
 export function isScalarAggregationType(
   type: string,
-): type is (typeof scalarAggregationTypes)[number] {
+): type is ScalarAggregationType {
   return (scalarAggregationTypes as readonly string[]).includes(type);
 }
 

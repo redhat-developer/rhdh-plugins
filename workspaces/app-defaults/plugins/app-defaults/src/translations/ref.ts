@@ -27,7 +27,7 @@ export const translationRef = createTranslationRef({
         title: 'No catalog items available',
         description:
           'There are no catalog entities yet, or you do not have permission to view any. They will appear here once they are registered and you have access.',
-        action: 'Register a component',
+        importButtonTitle: 'Register a component',
       },
     },
     catalogGraph: {
@@ -35,7 +35,7 @@ export const translationRef = createTranslationRef({
         title: 'No catalog items available',
         description:
           'There are no catalog entities yet, or you do not have permission to view any. The catalog graph will appear here once they are registered and you have access.',
-        action: 'Go to catalog',
+        importButtonTitle: 'Register a component',
       },
     },
     scaffolder: {
@@ -43,7 +43,7 @@ export const translationRef = createTranslationRef({
         title: 'No templates available',
         description:
           'There are no software templates yet, or you do not have permission to view any. They will appear here once they are registered and you have access.',
-        action: 'Register a template',
+        importButtonTitle: 'Register a template',
       },
     },
     apiDocs: {
@@ -51,7 +51,7 @@ export const translationRef = createTranslationRef({
         title: 'No APIs available',
         description:
           'There are no APIs yet, or you do not have permission to view any. They will appear here once they are registered and you have access.',
-        action: 'Register an API',
+        importButtonTitle: 'Register an API',
       },
     },
     docs: {
@@ -59,7 +59,7 @@ export const translationRef = createTranslationRef({
         title: 'No documentation available',
         description:
           'There are no documented entities yet, or you do not have permission to view any. Documentation will appear here once entities with TechDocs annotations are registered and you have access.',
-        action: 'Learn more',
+        importButtonTitle: 'Register a component',
       },
     },
   },

@@ -20,7 +20,7 @@ import {
   createFrontendPlugin,
 } from '@backstage/frontend-plugin-api';
 import { TranslationBlueprint } from '@backstage/plugin-app-react';
-import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react/alpha';
+import { AppDrawerContentBlueprint } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { GlobalHeaderMenuItemBlueprint } from '@red-hat-developer-hub/backstage-plugin-global-header';
 
 import { quickstartTranslations } from './translations';

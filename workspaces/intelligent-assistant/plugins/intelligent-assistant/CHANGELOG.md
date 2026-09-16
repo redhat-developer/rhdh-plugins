@@ -1,5 +1,16 @@
 # @red-hat-developer-hub/backstage-plugin-intelligent-assistant
 
+## 5.1.0
+
+### Minor Changes
+
+- c37b5f1: Gate Intelligent Assistant UI by consolidated RBAC permissions (`intelligent-assistant.chat`, `intelligent-assistant.notebooks`, `intelligent-assistant.mcp.tools`, `intelligent-assistant.skills`). Features are hidden when access is denied instead of showing permission-denied screens or read-only MCP mode.
+
+### Patch Changes
+
+- a9d54a1: Add createExtensionTester coverage for the NFS extensions and modules
+  - @red-hat-developer-hub/backstage-plugin-intelligent-assistant-common@5.1.0
+
 ## 5.0.2
 
 ### Patch Changes
