@@ -30,8 +30,7 @@ test.describe.serial('Dynamic Home Page Customization', () => {
     sharedPage = await sharedContext.newPage();
     testUtils = new TestUtils(sharedPage);
     homePageCustomization = new HomePageCustomization(sharedPage);
-    const loginUrl = process.env.APP_MODE === 'nfs' ? '/' : '/customizable';
-    await testUtils.loginAsGuest(loginUrl);
+    await testUtils.loginAsGuest('/');
   });
 
   test.afterAll(async () => {
@@ -115,8 +114,7 @@ test.describe.serial('Dynamic Home Page Customization', () => {
       expect(countBeforeLogout).toBeGreaterThan(0);
 
       await testUtils.signOut();
-      const loginUrl = process.env.APP_MODE === 'nfs' ? '/' : '/customizable';
-      await testUtils.loginAsGuest(loginUrl);
+      await testUtils.loginAsGuest('/');
       await homePageCustomization.verifyCardHidden(
         'Good (morning|afternoon|evening)',
       );
