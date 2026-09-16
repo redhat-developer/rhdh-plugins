@@ -31,7 +31,7 @@ const scorecardTranslationDe = createTranslationMessages({
     'dataSourcesDialog.statusTooltip':
       'Wert {{value}} entspricht Schwellenwert {{status}} {{expression}}',
     'dataSourcesDialog.collectorStatusTooltip':
-      'Dieser Collector liefert nur Eingabedaten. Der DORA-Metrikwert wird aus Collectors berechnet und auf der Scorecard-Karte angezeigt.',
+      'Dieser Collector liefert nur Eingabedaten. Der {{metric}}-Check-Wert wird aus Collectors berechnet und auf der Scorecard-Karte angezeigt.',
     'dataSourcesDialog.collectorEmptyValue': '--',
     'dataSourcesDialog.collectorUnavailableStatus': 'k. A.',
     'dataSourcesDialog.pluginGithub': 'GitHub',

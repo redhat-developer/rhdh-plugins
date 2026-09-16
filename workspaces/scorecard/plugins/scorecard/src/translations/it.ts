@@ -31,7 +31,7 @@ const scorecardTranslationIt = createTranslationMessages({
     'dataSourcesDialog.statusTooltip':
       'Valore {{value}} corrisponde alla soglia {{status}} {{expression}}',
     'dataSourcesDialog.collectorStatusTooltip':
-      'Questo collector fornisce solo dati di input. Il valore della metrica DORA viene calcolato dai collector e mostrato sulla scheda scorecard.',
+      'Questo collector fornisce solo dati di input. Il valore del check {{metric}} viene calcolato dai collector e mostrato sulla scheda scorecard.',
     'dataSourcesDialog.collectorEmptyValue': '--',
     'dataSourcesDialog.collectorUnavailableStatus': 'N/D',
     'dataSourcesDialog.pluginGithub': 'GitHub',

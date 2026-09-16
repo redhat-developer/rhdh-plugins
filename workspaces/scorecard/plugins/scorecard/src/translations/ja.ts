@@ -31,7 +31,7 @@ const scorecardTranslationJa = createTranslationMessages({
     'dataSourcesDialog.statusTooltip':
       '値 {{value}} はしきい値 {{status}} {{expression}} に一致します',
     'dataSourcesDialog.collectorStatusTooltip':
-      'このコレクターは入力データのみを提供します。DORA メトリック値はコレクターから計算され、スコアカードのカードに表示されます。',
+      'このコレクターは入力データのみを提供します。{{metric}} チェック値はコレクターから計算され、スコアカードのカードに表示されます。',
     'dataSourcesDialog.collectorEmptyValue': '--',
     'dataSourcesDialog.collectorUnavailableStatus': '該当なし',
     'dataSourcesDialog.pluginGithub': 'GitHub',

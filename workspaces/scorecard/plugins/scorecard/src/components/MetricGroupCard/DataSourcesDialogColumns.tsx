@@ -154,7 +154,9 @@ function getStatusTooltip(
   t: ReturnType<typeof useTranslation>['t'],
 ): string {
   if (item.isCollector) {
-    return t('dataSourcesDialog.collectorStatusTooltip');
+    return t('dataSourcesDialog.collectorStatusTooltip', {
+      metric: item.metricId,
+    } as any);
   }
   if (!item.thresholdExpression || !item.evaluationKey) {
     return '';
