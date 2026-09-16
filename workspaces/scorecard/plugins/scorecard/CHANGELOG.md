@@ -1,5 +1,58 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard
 
+## 4.3.1
+
+### Patch Changes
+
+- @red-hat-developer-hub/backstage-plugin-scorecard-common@4.3.1
+
+## 4.3.0
+
+### Minor Changes
+
+- c380e6b: Skip scalar aggregation threshold coloring when no successful samples contributed (`total` is 0). Return a null display color and keep the card grey fallback. Scalar aggregation responses now include `aggregationChartDisplayColor` (threshold-derived chart color, or `null` when `total` is 0).
+
+  **BREAKING**: Changed types in `scorecard-common` module:
+
+  - `WeightedStatusScoreAggregationResult.aggregationChartDisplayColor` widened from `string` to `string | null`.
+  - `ScalarAggregationResult` gained a required `aggregationChartDisplayColor: string | null` property.
+
+  These changes are intentional: the API can return `null` when no samples contribute, and scalar KPI results now expose the same display-color field as weighted status score aggregations.
+
+- 628533c: Add optional `titleKey` and `descriptionKey` on Scorecard layout groups so group titles and descriptions from app-config can be translated, with fallback to the configured English strings.
+- a1c3eb3: Updated DORA Mean Time to Restore to Median Time to Restore.
+- ff6683f: Add DORA metrics and a collectors framework for composing datasource data into metrics.
+
+  - New `@red-hat-developer-hub/backstage-plugin-scorecard-backend-module-dora` with Deployment Frequency, Median Lead Time for Changes, Mean Time to Restore, and Change Failure Rate
+  - New data collectors used by DORA: GitHub deployments, deployment workflow runs, and deployment pull requests; Jira incidents
+  - Metric time-series API `/metrics/catalog/:kind/:namespace/:name/time-series`
+  - Adds `defaultVisualization` to Metric metadata for sparkline
+
+- 08e6312: Render scalar aggregation KPI cards from result shape (`ScalarStatCard`) for sum, average, min, max, and count, including threshold status and an unsupported-shape fallback.
+- f3f71a5: Add unit to metric and display it in threshold legend
+- a7a1b4a: Backstage version bump to v1.54.6
+
+### Patch Changes
+
+- 1e93f4e: Add `HomePageWidgetBlueprint` for the README filecheck aggregated card so it appears in the NFS homepage add-widget dialog alongside the existing LICENSE and CODEOWNERS widgets.
+- 0754805: Scalar aggregation KPI cards now use `result.aggregationChartDisplayColor` from the backend instead of re-evaluating threshold expressions on the frontend. Min/max scalar drill-down pages now default-sort the entities table by metric value (ascending for min, descending for max).
+- 47ac76d: Export public `ScalarAggregationType` for scalar aggregation KPI types (`sum`, `average`, `count`, `min`, `max`).
+
+  Add legacy app E2E coverage for scalar and statusGrouped homepage aggregation KPI cards, including reusable Playwright registration helpers and legacy homepage widget entries for scalar KPIs.
+
+- Updated dependencies [9c1936e]
+- Updated dependencies [2bb0ec5]
+- Updated dependencies [485fadb]
+- Updated dependencies [befccc2]
+- Updated dependencies [c380e6b]
+- Updated dependencies [fea86e8]
+- Updated dependencies [ff6683f]
+- Updated dependencies [ecb789b]
+- Updated dependencies [47ac76d]
+- Updated dependencies [f3f71a5]
+- Updated dependencies [a7a1b4a]
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.3.0
+
 ## 4.2.0
 
 ### Minor Changes

@@ -14,7 +14,7 @@ de/es/fr/it/ja locale files. This work was split out of `ai-catalog-frontend`.
 - Add locale files `de.ts`, `es.ts`, `fr.ts`, `it.ts`, `ja.ts`
 - Register lazy imports in `createTranslationResource`
 
-The translation module entry (`./boost-translations-module`) already exists.
+The translation module entry (`./translations`) already exists.
 
 ## Impact
 

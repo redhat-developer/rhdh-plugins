@@ -154,7 +154,7 @@ describe('ProfileDropdown', () => {
 
     await renderComponent(catalogApi);
 
-    expect(screen.getByText(/Test/i)).toBeInTheDocument();
+    expect(screen.getByRole('button')).toHaveTextContent('Test');
   });
 
   it('should render the My Profile menu item with the correct dynamic link', async () => {

@@ -5,7 +5,7 @@ Frontend plugin for the Boost AI platform in Red Hat Developer Hub. Provides the
 ## Features
 
 - **AI Catalog browse page** at `/ai-catalog` — card grid for discovering AI skills, rules, MCP servers, agents, and models
-- **Entity-page extensions** — summary card, Adoption card, current Version card, and Usage tab on AI asset entity pages. Adoption actions copy or open browser URLs; the Version card shows the current `rhdh.io/ai-asset-version` annotation only.
+- **Entity-page extensions** — AI asset details, agent instructions, and Usage cards on AI asset entity pages. Usage actions copy or open supported source and endpoint URLs; standard TechDocs remain provided by the host application.
 - **`isAiAsset` filter** — condition filter for NFS Blueprints that matches all AI asset entity kind/type combinations
 
 ## Public API

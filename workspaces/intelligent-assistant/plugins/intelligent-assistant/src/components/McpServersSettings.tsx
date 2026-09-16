@@ -30,7 +30,6 @@ import {
   PencilAltIcon,
   SortAmountDownIcon,
   SortAmountUpIcon,
-  TimesIcon,
 } from '@patternfly/react-icons';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
@@ -53,7 +52,6 @@ import {
 type McpServer = McpConfigureServer;
 
 type McpServersSettingsProps = {
-  onClose: () => void;
   backgroundColor?: string;
 };
 
@@ -300,7 +298,6 @@ const toUiServer = (
   auth: server.auth,
 });
 export const McpServersSettings = ({
-  onClose,
   backgroundColor,
 }: McpServersSettingsProps) => {
   const { t } = useTranslation();
@@ -561,13 +558,6 @@ export const McpServersSettings = ({
             })}
           </div>
         </div>
-        <Button
-          aria-label={t('mcp.settings.closeAriaLabel')}
-          icon={<TimesIcon />}
-          variant="plain"
-          className={mcpClasses.closeButton}
-          onClick={onClose}
-        />
       </div>
       {error && (
         <Alert

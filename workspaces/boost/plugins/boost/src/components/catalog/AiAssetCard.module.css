@@ -18,15 +18,11 @@
   .card {
     height: 100%;
     min-height: 220px;
+    border: 1px solid var(--bui-border-1);
   }
 
   .body {
     flex: 1;
-  }
-
-  .typeBadge {
-    background-color: transparent;
-    border: 1px solid currentColor;
   }
 
   .title {
@@ -59,7 +55,12 @@
     flex-shrink: 0;
   }
 
-  .scope {
-    margin-left: var(--bui-space-2);
+  .owner {
+    min-width: 0;
+  }
+
+  .provider {
+    margin-left: auto;
+    flex-shrink: 0;
   }
 }

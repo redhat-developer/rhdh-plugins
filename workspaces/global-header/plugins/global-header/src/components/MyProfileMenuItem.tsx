@@ -71,12 +71,17 @@ export const MyProfileMenuItem = ({
       onClick={handleClose}
       disableRipple
       disableTouchRipple
-      sx={{ py: 0.5, color: 'inherit', textDecoration: 'none' }}
+      sx={{
+        py: 0.5,
+        px: 0,
+        width: '100%',
+        boxSizing: 'border-box',
+        display: 'flex',
+        color: 'inherit',
+        textDecoration: 'none',
+      }}
     >
-      <MenuItemLinkContent
-        icon="account_circle"
-        label={t('profile.myProfile')}
-      />
+      <MenuItemLinkContent icon="account" label={t('profile.myProfile')} />
     </MenuItem>
   );
 };

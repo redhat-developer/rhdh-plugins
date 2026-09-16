@@ -23,6 +23,7 @@ import { PathParams } from '@backstage/core-plugin-api';
 import { RouteRef } from '@backstage/core-plugin-api';
 import { RouteRef as RouteRef_2 } from '@backstage/frontend-plugin-api';
 import { ScaffolderFormDecorator } from '@backstage/plugin-scaffolder-react/alpha';
+import { ScaffolderTemplateOutputsComponent } from '@backstage/plugin-scaffolder-react/alpha';
 import { SubRouteRef } from '@backstage/core-plugin-api';
 
 // @public
@@ -475,8 +476,6 @@ const scaffolderPluginOverride: OverridableFrontendPlugin<
       };
     }>;
     'sub-page:scaffolder/tasks': OverridableExtensionDefinition<{
-      kind: 'sub-page';
-      name: 'tasks';
       config: {
         path: string | undefined;
         title: string | undefined;
@@ -503,7 +502,27 @@ const scaffolderPluginOverride: OverridableFrontendPlugin<
               optional: true;
             }
           >;
-      inputs: {};
+      inputs: {
+        templateOutputsComponents: ExtensionInput<
+          | ConfigurableExtensionDataRef<
+              ScaffolderTemplateOutputsComponent,
+              'scaffolder.template-outputs-component',
+              {}
+            >
+          | ConfigurableExtensionDataRef<
+              string[],
+              'scaffolder.template-output-template-refs',
+              {}
+            >,
+          {
+            singleton: false;
+            optional: true;
+            internal: false;
+          }
+        >;
+      };
+      kind: 'sub-page';
+      name: 'tasks';
       params: {
         path: string;
         title: string;
@@ -521,6 +540,7 @@ const scaffolderPluginOverride: OverridableFrontendPlugin<
               filter: FilterPredicate;
             }[]
           | undefined;
+        templateFilter: FilterPredicate | undefined;
         path: string | undefined;
         title: string | undefined;
       };
@@ -532,6 +552,7 @@ const scaffolderPluginOverride: OverridableFrontendPlugin<
               filter: FilterPredicate;
             }[]
           | undefined;
+        templateFilter?: FilterPredicate | undefined;
         path?: string | undefined;
         title?: string | undefined;
       };
