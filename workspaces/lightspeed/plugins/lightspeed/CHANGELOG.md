@@ -1,5 +1,12 @@
 ## @red-hat-developer-hub/backstage-plugin-lightspeed
 
+## 2.8.8
+
+### Patch Changes
+
+- 131db2d: Expose Lightspeed translation resources through the public entry point to prevent OFS issues caused by mixing OFS translation resources with NFS alpha modules.
+  - @red-hat-developer-hub/backstage-plugin-lightspeed-common@2.8.8
+
 ## 2.8.7
 
 ### Patch Changes
