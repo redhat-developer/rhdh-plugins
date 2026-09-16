@@ -582,6 +582,7 @@ describe('fetchBlob', () => {
     'http://cdn.example.com/blob',
     'https://localhost/blob',
     'https://127.0.0.1/blob',
+    'https://[::1]/blob',
   ])('should reject an unsafe redirect target: %s', async location => {
     const cancel = jest.fn().mockResolvedValue(undefined);
     global.fetch = jest.fn().mockResolvedValue({
