@@ -15,41 +15,59 @@
  */
 
 import { test, expect } from '@playwright/test';
-
-async function signInAsGuest(page: import('@playwright/test').Page) {
-  await page.goto('/');
-  const enterButton = page.getByRole('button', { name: 'Enter' });
-  await expect(enterButton).toBeVisible();
-  await enterButton.click();
-  await expect(page).toHaveURL(/\/home/);
-}
-
-async function gotoAiResourceCatalog(page: import('@playwright/test').Page) {
-  await page.goto('/catalog?filters[kind]=airesource&filters[user]=all');
-}
-
-async function expectAboutCardField(
-  page: import('@playwright/test').Page,
-  label: string,
-  value: string,
-) {
-  const field = page
-    .getByRole('heading', { name: label, exact: true })
-    .locator('..');
-  await expect(field).toContainText(value);
-}
+import { runAccessibilityTests } from './utils/accessibility';
+import { skipUnlessLocales } from './utils/localeSkip';
+import { AiExperienceMessages, getTranslations } from './utils/translations';
+import {
+  expectAboutCardField,
+  gotoAiResourceCatalog,
+  signInAsGuest,
+  switchToLocale,
+} from './utils/testHelper';
 
 test.describe('AiResource catalog QE (RHIDP-14382 / RHIDP-14746)', () => {
-  test.beforeEach(async ({ page }) => {
+  let translations: AiExperienceMessages;
+  let projectLocale: string;
+
+  test.beforeEach(async ({ page }, testInfo) => {
+    projectLocale =
+      typeof testInfo.project.use.locale === 'string'
+        ? testInfo.project.use.locale.split('-')[0]
+        : 'en';
+    translations = getTranslations(projectLocale);
+
     await signInAsGuest(page);
+    await switchToLocale(page, projectLocale);
   });
 
-  test('catalog lists git-backed AiResource entities', async ({ page }) => {
+  test('AI Experience home renders translated content', async ({ page }) => {
+    await page.goto('/home');
+
+    await expect(
+      page.getByText(translations.learn.getStarted.title, { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByRole('heading', { name: translations.sections.exploreAiModels })
+        .first(),
+    ).toBeVisible();
+  });
+
+  test('catalog lists git-backed AiResource entities', async ({
+    page,
+  }, testInfo) => {
     await gotoAiResourceCatalog(page);
 
     await expect(
       page.getByRole('link', { name: 'fraud-detection-model' }),
     ).toBeVisible();
+
+    skipUnlessLocales(testInfo, ['en'], 'Accessibility scans run on en only');
+    await runAccessibilityTests(
+      page,
+      testInfo,
+      'airesource-catalog-index-a11y.json',
+    );
   });
 
   test('catalog lists OCI-backed AiResource entities', async ({ page }) => {
@@ -65,7 +83,7 @@ test.describe('AiResource catalog QE (RHIDP-14382 / RHIDP-14746)', () => {
 
   test('git-backed AiResource entity detail page renders metadata', async ({
     page,
-  }) => {
+  }, testInfo) => {
     await page.goto('/catalog/default/airesource/fraud-detection-model');
 
     await expect(
@@ -76,6 +94,13 @@ test.describe('AiResource catalog QE (RHIDP-14382 / RHIDP-14746)', () => {
     ).toBeVisible();
     await expectAboutCardField(page, 'Lifecycle', 'production');
     await expectAboutCardField(page, 'Type', 'model');
+
+    skipUnlessLocales(testInfo, ['en'], 'Accessibility scans run on en only');
+    await runAccessibilityTests(
+      page,
+      testInfo,
+      'airesource-entity-detail-a11y.json',
+    );
   });
 
   test('OCI-backed AiResource entity detail page renders metadata', async ({

@@ -16,6 +16,7 @@
 
 import { defineConfig } from '@playwright/test';
 
+const LOCALES = ['en', 'de', 'es', 'fr', 'it', 'ja'] as const;
 const baseConfig = `${__dirname}/app-config.yaml`;
 
 export default defineConfig({
@@ -37,6 +38,8 @@ export default defineConfig({
 
   retries: process.env.CI ? 2 : 0,
 
+  workers: 1,
+
   reporter: [['html', { open: 'never', outputFolder: 'e2e-test-report' }]],
 
   use: {
@@ -48,4 +51,12 @@ export default defineConfig({
   outputDir: 'node_modules/.cache/e2e-test-results',
 
   testDir: 'packages/app/e2e-tests',
+
+  projects: LOCALES.map(locale => ({
+    name: locale,
+    use: {
+      channel: 'chrome' as const,
+      locale,
+    },
+  })),
 });
