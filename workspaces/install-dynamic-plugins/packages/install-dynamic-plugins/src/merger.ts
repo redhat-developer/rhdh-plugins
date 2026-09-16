@@ -417,6 +417,7 @@ function isObjectEqual(
 type EntryState = { disabled: boolean; level: number };
 
 type NameEntry = {
+  disabled: boolean;
   package: string;
   registry: string;
   sourceFile: string;
@@ -510,14 +511,17 @@ function recordRegistryPath(
 }
 
 /**
- * Reject ambiguous same-level image-name collisions while retaining concrete
- * registry/path identity for normal merging. Multiple explicit plugin paths
- * from the same image remain valid until RHIDP-16807 removes that syntax.
+ * Reject ambiguous same-level image-name collisions between enabled entries
+ * while retaining concrete registry/path identity for normal merging. Disabled
+ * entries only warn and never hide a later collision between enabled entries.
+ * Multiple explicit plugin paths from the same image remain valid until
+ * RHIDP-16807 removes that syntax.
  */
 function recordNameAtLevel(
   state: PreMergeState,
   registry: string,
   level: number,
+  disabled: boolean,
   pkg: string,
   sourceFile: string,
 ): void {
@@ -526,10 +530,45 @@ function recordNameAtLevel(
   const key = `${level}\0${pluginName}`;
   const existing = state.namesByLevel.get(key);
   if (!existing) {
-    state.namesByLevel.set(key, { package: pkg, registry, sourceFile });
+    state.namesByLevel.set(key, {
+      disabled,
+      package: pkg,
+      registry,
+      sourceFile,
+    });
     return;
   }
-  if (existing.registry === registry) return;
+  if (existing.registry === registry) {
+    if (existing.disabled && !disabled) {
+      state.namesByLevel.set(key, {
+        disabled,
+        package: pkg,
+        registry,
+        sourceFile,
+      });
+    }
+    return;
+  }
+  if (disabled) {
+    log(
+      `WARNING: Ignoring disabled OCI plugin configuration '${pkg}' (in ${sourceFile}) ` +
+        `when checking the plugin name '${pluginName}' against '${existing.package}' (in ${existing.sourceFile})`,
+    );
+    return;
+  }
+  if (existing.disabled) {
+    log(
+      `WARNING: Ignoring disabled OCI plugin configuration '${existing.package}' (in ${existing.sourceFile}) ` +
+        `when checking the plugin name '${pluginName}' against '${pkg}' (in ${sourceFile})`,
+    );
+    state.namesByLevel.set(key, {
+      disabled,
+      package: pkg,
+      registry,
+      sourceFile,
+    });
+    return;
+  }
   throw new InstallException(
     `Duplicate OCI plugin configurations '${existing.package}' (in ${existing.sourceFile}) and ` +
       `'${pkg}' (in ${sourceFile}) both resolve to the plugin name '${pluginName}'. ` +
@@ -552,7 +591,7 @@ function processOciEntry(
     return;
   }
   const { registry, path } = parsed;
-  recordNameAtLevel(state, registry, level, pkg, sourceFile);
+  recordNameAtLevel(state, registry, level, disabled, pkg, sourceFile);
   if (
     !recordEntryState(state, registry, path, level, disabled, pkg, sourceFile)
   )
