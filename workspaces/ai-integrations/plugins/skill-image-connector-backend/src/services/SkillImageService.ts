@@ -23,6 +23,7 @@ import { parseImageRef, fetchManifest, fetchBlob } from './OciClient';
 import type {
   OciManifest,
   OciDescriptor,
+  ImageRef,
   RegistryCredentials,
   SkillImageExtraction,
 } from './types';
@@ -105,7 +106,7 @@ export function parseTarEntries(tarBuffer: Buffer): TarEntry[] {
 
     // File size: bytes 124–135, octal ASCII
     const sizeStr = header.subarray(124, 136).toString('utf-8').trim();
-    const size = parseInt(sizeStr, 8);
+    const size = Number.parseInt(sizeStr, 8);
     if (Number.isNaN(size) || size < 0) {
       break; // Malformed header — stop parsing
     }
@@ -299,9 +300,6 @@ export async function fetchAndExtractSkillImage(
   const strategy = validateSkillImageManifest(manifest);
 
   // 3. Fetch and decode content, cancelling siblings on first failure
-  let skillImageYamlContent: string;
-  let skillsMdContent: string;
-
   // Shared abort controller so that if one blob fetch fails the sibling
   // is cancelled promptly instead of running to completion.
   const blobController = new AbortController();
@@ -309,84 +307,23 @@ export async function fetchAndExtractSkillImage(
     ? AbortSignal.any([signal, blobController.signal])
     : blobController.signal;
 
-  const cancelSiblings = <T>(p: Promise<T>): Promise<T> =>
-    p.catch(err => {
-      blobController.abort();
-      throw err;
-    });
-
-  if (strategy.mode === 'annotated') {
-    const [yamlBuf, mdBuf] = await Promise.all([
-      cancelSiblings(
-        fetchBlob(
+  const contents =
+    strategy.mode === 'annotated'
+      ? await fetchAnnotatedContents(
           imageRef,
-          strategy.skillImageYamlLayer.digest,
-          strategy.skillImageYamlLayer.size,
+          strategy,
           logger,
           credentials,
           blobSignal,
-        ),
-      ),
-      cancelSiblings(
-        fetchBlob(
+          blobController,
+        )
+      : await fetchTarContents(
           imageRef,
-          strategy.skillsMdLayer.digest,
-          strategy.skillsMdLayer.size,
+          strategy.layers,
           logger,
           credentials,
           blobSignal,
-        ),
-      ),
-    ]);
-
-    skillImageYamlContent = yamlBuf.toString('utf-8');
-    skillsMdContent = mdBuf.toString('utf-8');
-  } else {
-    // tar extraction: fetch each tar layer and search for target files
-    let yamlBuf: Buffer | undefined;
-    let mdBuf: Buffer | undefined;
-
-    for (const layer of strategy.layers) {
-      if (yamlBuf && mdBuf) {
-        break;
-      }
-      const blob = await fetchBlob(
-        imageRef,
-        layer.digest,
-        layer.size,
-        logger,
-        credentials,
-        blobSignal,
-      );
-      const tarData = maybeDecompress(blob);
-      const entries = parseTarEntries(tarData);
-
-      if (!yamlBuf) {
-        yamlBuf = findTarFile(entries, YAML_NAMES);
-      }
-      if (!mdBuf) {
-        mdBuf = findTarFile(entries, MD_NAMES);
-      }
-    }
-
-    if (!yamlBuf || !mdBuf) {
-      const missing: string[] = [];
-      if (!yamlBuf) {
-        missing.push(YAML_NAMES.join('/'));
-      }
-      if (!mdBuf) {
-        missing.push(MD_NAMES.join('/'));
-      }
-      throw new Error(
-        `Tar layers did not contain the required skill files: ${missing.join(
-          ', ',
-        )}`,
-      );
-    }
-
-    skillImageYamlContent = yamlBuf.toString('utf-8');
-    skillsMdContent = mdBuf.toString('utf-8');
-  }
+        );
 
   // 4. Write to local storage following the pattern from
   // catalog-techdoc-url-reader-backend (mkdtemp + writeFile)
@@ -401,12 +338,12 @@ export async function fetchAndExtractSkillImage(
     await Promise.all([
       fs.promises.writeFile(
         skillImageYamlPath,
-        Buffer.from(skillImageYamlContent, 'utf-8'),
+        Buffer.from(contents.skillImageYamlContent, 'utf-8'),
         { mode: 0o600 },
       ),
       fs.promises.writeFile(
         skillsMdPath,
-        Buffer.from(skillsMdContent, 'utf-8'),
+        Buffer.from(contents.skillsMdContent, 'utf-8'),
         { mode: 0o600 },
       ),
     ]);
@@ -416,8 +353,8 @@ export async function fetchAndExtractSkillImage(
     return {
       skillImageYamlPath,
       skillsMdPath,
-      skillImageYaml: skillImageYamlContent,
-      skillsMd: skillsMdContent,
+      skillImageYaml: contents.skillImageYamlContent,
+      skillsMd: contents.skillsMdContent,
     };
   } catch (error) {
     // Clean up the temp directory on failure to prevent resource leaks
@@ -431,6 +368,98 @@ export async function fetchAndExtractSkillImage(
     }
     throw error;
   }
+}
+
+interface ExtractedSkillContents {
+  skillImageYamlContent: string;
+  skillsMdContent: string;
+}
+
+async function fetchAnnotatedContents(
+  imageRef: ImageRef,
+  strategy: Extract<ExtractionStrategy, { mode: 'annotated' }>,
+  logger: LoggerService,
+  credentials: RegistryCredentials | undefined,
+  blobSignal: AbortSignal,
+  blobController: AbortController,
+): Promise<ExtractedSkillContents> {
+  const cancelSiblings = <T>(promise: Promise<T>): Promise<T> =>
+    promise.catch(error => {
+      blobController.abort();
+      throw error;
+    });
+  const [yamlBuf, mdBuf] = await Promise.all([
+    cancelSiblings(
+      fetchBlob(
+        imageRef,
+        strategy.skillImageYamlLayer.digest,
+        strategy.skillImageYamlLayer.size,
+        logger,
+        credentials,
+        blobSignal,
+      ),
+    ),
+    cancelSiblings(
+      fetchBlob(
+        imageRef,
+        strategy.skillsMdLayer.digest,
+        strategy.skillsMdLayer.size,
+        logger,
+        credentials,
+        blobSignal,
+      ),
+    ),
+  ]);
+
+  return {
+    skillImageYamlContent: yamlBuf.toString('utf-8'),
+    skillsMdContent: mdBuf.toString('utf-8'),
+  };
+}
+
+async function fetchTarContents(
+  imageRef: ImageRef,
+  layers: OciDescriptor[],
+  logger: LoggerService,
+  credentials: RegistryCredentials | undefined,
+  blobSignal: AbortSignal,
+): Promise<ExtractedSkillContents> {
+  let yamlBuf: Buffer | undefined;
+  let mdBuf: Buffer | undefined;
+
+  for (const layer of layers) {
+    if (yamlBuf && mdBuf) {
+      break;
+    }
+    const blob = await fetchBlob(
+      imageRef,
+      layer.digest,
+      layer.size,
+      logger,
+      credentials,
+      blobSignal,
+    );
+    const entries = parseTarEntries(maybeDecompress(blob));
+    yamlBuf ??= findTarFile(entries, YAML_NAMES);
+    mdBuf ??= findTarFile(entries, MD_NAMES);
+  }
+
+  if (!yamlBuf || !mdBuf) {
+    const missing = [
+      yamlBuf ? undefined : YAML_NAMES.join('/'),
+      mdBuf ? undefined : MD_NAMES.join('/'),
+    ].filter((name): name is string => Boolean(name));
+    throw new Error(
+      `Tar layers did not contain the required skill files: ${missing.join(
+        ', ',
+      )}`,
+    );
+  }
+
+  return {
+    skillImageYamlContent: yamlBuf.toString('utf-8'),
+    skillsMdContent: mdBuf.toString('utf-8'),
+  };
 }
 
 /** Removes files owned by a completed skill image extraction. */

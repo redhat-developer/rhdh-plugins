@@ -82,48 +82,53 @@ function isIpAddress(hostname: string): boolean {
   return isIP(normalizedHostname) !== 0;
 }
 
+function isPrivateIpv4Address(address: string): boolean {
+  const parts = address.split('.').map(Number);
+  if (parts.length !== 4 || parts.some(p => Number.isNaN(p))) {
+    return true; // Treat unparseable as private (deny by default)
+  }
+  return (
+    parts[0] === 10 || // 10.0.0.0/8
+    parts[0] === 127 || // 127.0.0.0/8 (loopback)
+    parts[0] === 0 || // 0.0.0.0/8
+    (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) || // 172.16.0.0/12
+    (parts[0] === 192 && parts[1] === 168) || // 192.168.0.0/16
+    (parts[0] === 169 && parts[1] === 254) || // 169.254.0.0/16 link-local
+    (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) || // 100.64.0.0/10 CGNAT
+    (parts[0] === 198 && (parts[1] === 18 || parts[1] === 19)) || // 198.18.0.0/15
+    parts[0] >= 240 // 240.0.0.0/4 reserved
+  );
+}
+
+function isPrivateIpv6Address(address: string): boolean {
+  const normalized = address.toLowerCase();
+  if (normalized === '::1' || normalized === '::') {
+    return true; // loopback or unspecified
+  }
+  // fe80::/10 (link-local)
+  if (normalized.startsWith('fe80')) {
+    return true;
+  }
+  // fc00::/7 (unique local)
+  if (normalized.startsWith('fc') || normalized.startsWith('fd')) {
+    return true;
+  }
+  // ::ffff:a.b.c.d (IPv4-mapped IPv6) — check the embedded IPv4
+  const v4Mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(normalized);
+  return v4Mapped ? isPrivateIpv4Address(v4Mapped[1]) : false;
+}
+
 /**
  * Returns true if the address belongs to a private, loopback, link-local,
  * or otherwise non-globally-routable range.
  */
 export function isPrivateAddress(address: string, family: number): boolean {
   if (family === 4) {
-    const parts = address.split('.').map(Number);
-    if (parts.length !== 4 || parts.some(p => Number.isNaN(p))) {
-      return true; // Treat unparseable as private (deny by default)
-    }
-    return (
-      parts[0] === 10 || // 10.0.0.0/8
-      parts[0] === 127 || // 127.0.0.0/8 (loopback)
-      parts[0] === 0 || // 0.0.0.0/8
-      (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) || // 172.16.0.0/12
-      (parts[0] === 192 && parts[1] === 168) || // 192.168.0.0/16
-      (parts[0] === 169 && parts[1] === 254) || // 169.254.0.0/16 link-local
-      (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) || // 100.64.0.0/10 CGNAT
-      (parts[0] === 198 && (parts[1] === 18 || parts[1] === 19)) || // 198.18.0.0/15
-      parts[0] >= 240 // 240.0.0.0/4 reserved
-    );
+    return isPrivateIpv4Address(address);
   }
 
   if (family === 6) {
-    const normalized = address.toLowerCase();
-    if (normalized === '::1' || normalized === '::') {
-      return true; // loopback or unspecified
-    }
-    // fe80::/10 (link-local)
-    if (normalized.startsWith('fe80')) {
-      return true;
-    }
-    // fc00::/7 (unique local)
-    if (normalized.startsWith('fc') || normalized.startsWith('fd')) {
-      return true;
-    }
-    // ::ffff:a.b.c.d (IPv4-mapped IPv6) — check the embedded IPv4
-    const v4Mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(normalized);
-    if (v4Mapped) {
-      return isPrivateAddress(v4Mapped[1], 4);
-    }
-    return false;
+    return isPrivateIpv6Address(address);
   }
 
   return true; // Unknown family — deny by default
