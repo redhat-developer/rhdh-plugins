@@ -40,6 +40,7 @@ import Tabs from '@mui/material/Tabs';
 import {
   Chatbot,
   ChatbotAlert,
+  ChatbotContent,
   ChatbotDisplayMode,
   ChatbotFooter,
   ChatbotHeader,
