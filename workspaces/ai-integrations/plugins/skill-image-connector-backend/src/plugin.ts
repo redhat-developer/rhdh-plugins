@@ -210,9 +210,10 @@ export const skillImageConnectorPlugin = createBackendPlugin({
           `Found ${imageConfigs.length} skill image configuration(s)`,
         );
 
-        const workDir =
-          safeGetOptionalString(config, 'backend.workingDirectory') ??
-          undefined;
+        const workDir = safeGetOptionalString(
+          config,
+          'backend.workingDirectory',
+        );
 
         // Store extraction results so they can be exposed via the API
         const extractions = new Map<string, SkillImageExtraction>();
