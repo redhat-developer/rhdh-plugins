@@ -77,15 +77,16 @@ The entity MUST include an `auth-required` tag when `modelServer.authentication`
 
 ### Requirement: Annotation-driven field overrides
 
-Five `rhdh.io/` annotations on `modelServer.annotations` act as control annotations that drive spec-level fields on the generated `AiModelServerAPI` entity. These annotations MUST NOT appear in the entity's `metadata.annotations` — they are consumed during generation and deleted before the entity is emitted.
+Six `rhdh.io/` annotations on `modelServer.annotations` act as control annotations that drive spec-level fields on the generated `AiModelServerAPI` entity. These annotations MUST NOT appear in the entity's `metadata.annotations` — they are consumed during generation and deleted before the entity is emitted.
 
-| Annotation           | Target field          | Behavior when present                           | Behavior when absent                                  |
-| -------------------- | --------------------- | ----------------------------------------------- | ----------------------------------------------------- |
-| `rhdh.io/system`     | `spec.system`         | Set to the annotation value                     | `spec.system` is omitted                              |
-| `rhdh.io/serverType` | `spec.serverType`     | Overrides the API type                          | Falls back to `modelServer.API.type` (or `'unknown'`) |
-| `rhdh.io/default`    | `spec.models.default` | Overrides with the annotation's sanitized value | Falls back to the first model's sanitized name        |
-| `rhdh.io/owner`      | `spec.owner`          | Overrides with the annotation's sanitized value | Falls back to `modelServer.owner`                     |
-| `rhdh.io/lifecycle`  | `spec.lifecycle`      | Set to the annotation value                     | Falls back to `modelServer.lifecycle`                 |
+| Annotation               | Target field          | Behavior when present                                            | Behavior when absent                                  |
+| ------------------------ | --------------------- | ---------------------------------------------------------------- | ----------------------------------------------------- |
+| `rhdh.io/system`         | `spec.system`         | Set to the annotation value                                      | `spec.system` is omitted                              |
+| `rhdh.io/serverType`     | `spec.serverType`     | Overrides the API type                                           | Falls back to `modelServer.API.type` (or `'unknown'`) |
+| `rhdh.io/default`        | `spec.models.default` | Overrides with the annotation's sanitized value                  | Falls back to the first model's sanitized name        |
+| `rhdh.io/owner`          | `spec.owner`          | Overrides with the annotation's sanitized value                  | Falls back to `modelServer.owner`                     |
+| `rhdh.io/lifecycle`      | `spec.lifecycle`      | Set to the annotation value                                      | Falls back to `modelServer.lifecycle`                 |
+| `rhdh.io/api-entity-ref` | `spec.apiEntityRef`   | Normalized to a fully qualified entity ref and set on the entity | `spec.apiEntityRef` is omitted                        |
 
 #### Scenario: System set by annotation
 
@@ -137,11 +138,26 @@ Five `rhdh.io/` annotations on `modelServer.annotations` act as control annotati
 - **WHEN** `modelServer.annotations` does not contain `rhdh.io/lifecycle` and `modelServer.lifecycle` is `'production'`
 - **THEN** the entity has `spec.lifecycle: 'production'`
 
-#### Scenario: All five overrides applied together
+#### Scenario: apiEntityRef set from bare name
 
-- **WHEN** `modelServer.annotations` contains `rhdh.io/system: 'ai-platform'`, `rhdh.io/serverType: 'openai-v1'`, `rhdh.io/default: 'gpt-4'`, `rhdh.io/owner: 'team-ai'`, and `rhdh.io/lifecycle: 'experimental'`
-- **THEN** the entity has `spec.system: 'ai-platform'`, `spec.serverType: 'openai-v1'`, `spec.models.default: 'gpt-4'`, `spec.owner: 'team-ai'`, and `spec.lifecycle: 'experimental'`
-- **AND** none of the five annotations appear in `metadata.annotations`
+- **WHEN** `modelServer.annotations` contains `rhdh.io/api-entity-ref: 'my-api'`
+- **THEN** the entity has `spec.apiEntityRef: 'api:default/my-api'`
+
+#### Scenario: apiEntityRef preserved for non-default namespace
+
+- **WHEN** `modelServer.annotations` contains `rhdh.io/api-entity-ref: 'api:production/my-api'`
+- **THEN** the entity has `spec.apiEntityRef: 'api:production/my-api'` (passed through as-is)
+
+#### Scenario: apiEntityRef absent when annotation missing
+
+- **WHEN** `modelServer.annotations` does not contain `rhdh.io/api-entity-ref`
+- **THEN** the entity has no `spec.apiEntityRef` field
+
+#### Scenario: All six overrides applied together
+
+- **WHEN** `modelServer.annotations` contains `rhdh.io/system: 'ai-platform'`, `rhdh.io/serverType: 'openai-v1'`, `rhdh.io/default: 'gpt-4'`, `rhdh.io/owner: 'team-ai'`, `rhdh.io/lifecycle: 'experimental'`, and `rhdh.io/api-entity-ref: 'my-api'`
+- **THEN** the entity has `spec.system: 'ai-platform'`, `spec.serverType: 'openai-v1'`, `spec.models.default: 'gpt-4'`, `spec.owner: 'team-ai'`, `spec.lifecycle: 'experimental'`, and `spec.apiEntityRef: 'api:default/my-api'`
+- **AND** none of the six annotations appear in `metadata.annotations`
 
 ---
 
