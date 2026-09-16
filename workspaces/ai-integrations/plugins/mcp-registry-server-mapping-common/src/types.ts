@@ -19,8 +19,6 @@ import type {
   McpServerRemote,
 } from '@backstage/catalog-model/alpha';
 
-export type { McpServerApiEntity, McpServerRemote };
-
 /**
  * A remote transport entry from MCP Registry server.json.
  *

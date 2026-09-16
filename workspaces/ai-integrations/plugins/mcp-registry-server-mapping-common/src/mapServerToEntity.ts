@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-import type { McpServerRemote } from '@backstage/catalog-model/alpha';
+import type {
+  McpServerApiEntity,
+  McpServerRemote,
+} from '@backstage/catalog-model/alpha';
 import type {
   McpServerDocument,
   McpServerMappingDefaults,
   McpServerMappingResult,
-  McpServerApiEntity,
 } from './types';
 import { deriveMetadataName } from './identity';
 import { isAllowedUrl } from './urlPolicy';
