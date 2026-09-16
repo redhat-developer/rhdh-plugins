@@ -157,13 +157,22 @@ export class VectorStoresOperator {
         return response;
       }
       attempt += 1;
+      // Release the socket back to the undici connection pool immediately. An
+      // unconsumed 429 body keeps the connection out of the pool until the
+      // Response is garbage-collected, which compounds across retries under the
+      // bursty concurrent uploads this retry logic exists to handle.
+      await response.body?.cancel();
       const retryAfter = Number(response.headers.get('retry-after'));
       const delayMs =
         Number.isFinite(retryAfter) && retryAfter > 0
           ? retryAfter * 1000
-          : Math.min(2 ** attempt * 250, 5000);
+          : // Add jitter so several requests rejected at once don't recompute
+            // the same delay and retry in lockstep, recreating the contention.
+            Math.min(2 ** attempt * 250 + Math.random() * 250, 5000);
       this.logger.warn(
-        `Rate limited (429) while trying to ${operation}; retrying in ${delayMs}ms (attempt ${attempt}/${maxRetries})`,
+        `Rate limited (429) while trying to ${operation}; retrying in ${Math.round(
+          delayMs,
+        )}ms (attempt ${attempt}/${maxRetries})`,
       );
       await new Promise(resolve => setTimeout(resolve, delayMs));
     }
