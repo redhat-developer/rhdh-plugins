@@ -14,15 +14,24 @@
  * limitations under the License.
  */
 
-/**
- * Legacy frontend system API surface for the global header plugin.
- *
- * @deprecated Use the root import instead: `import from '@red-hat-developer-hub/backstage-plugin-global-header'`
- * @packageDocumentation
- */
+import { Progress } from '@backstage/core-components';
+import MenuItem from '@mui/material/MenuItem';
 
-import './configureMuiClassName';
-
-export * from './legacy/plugin';
-
-export * from './translations';
+/** Horizontal progress bar shown while lazy dropdown menu content is loading. */
+export const DropdownMenuLoading = () => (
+  <MenuItem
+    disableGutters
+    disabled
+    aria-busy="true"
+    aria-label="Loading menu"
+    sx={{
+      minWidth: 160,
+      p: 0,
+      opacity: 1,
+      display: 'block',
+      '&.Mui-disabled': { opacity: 1 },
+    }}
+  >
+    <Progress />
+  </MenuItem>
+);
