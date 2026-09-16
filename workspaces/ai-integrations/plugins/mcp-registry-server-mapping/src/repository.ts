@@ -19,6 +19,8 @@ import { isAllowedUrl } from './urlPolicy';
 
 /**
  * Result of computing the combined repository URL.
+ *
+ * @public
  */
 export interface RepositoryUrlResult {
   /** The combined URL for Source Code link and source-location. */

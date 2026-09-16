@@ -20,7 +20,7 @@
  * Trims whitespace, parses as an absolute URL (WHATWG URL, no base),
  * and returns true only when the scheme is http or https. All other
  * schemes (javascript:, data:, file:, vbscript:, blob:, etc.),
- * relative paths, scheme-relative //host, and scp-like git@host:path
+ * relative paths, scheme-relative //host, and scp-like git\@host:path
  * are refused. Host appearance does not affect the gate.
  *
  * @public

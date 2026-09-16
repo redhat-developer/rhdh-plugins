@@ -19,7 +19,11 @@ import { createHash } from 'crypto';
 /** Maximum length for Backstage metadata.name. */
 const MAX_NAME_LENGTH = 63;
 
-/** Default identity prefix when no caller override is supplied. */
+/**
+ * Default identity prefix when no caller override is supplied.
+ *
+ * @public
+ */
 export const DEFAULT_PREFIX = 'mcp.registry';
 
 /**
