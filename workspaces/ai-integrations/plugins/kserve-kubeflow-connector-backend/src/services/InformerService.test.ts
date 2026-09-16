@@ -411,9 +411,6 @@ describe('InformerService', () => {
       const catalogV1 = getModelCatalog(importKey);
       expect(catalogV1).toBeDefined();
 
-      // Capture the catalog data reference after first reconciliation
-      const catalogDataV1 = catalogV1!;
-
       // Updated IS: only resourceVersion changed (simulating any Kubernetes update)
       const updatedIS: InferenceService = {
         ...baseIS,
@@ -779,7 +776,7 @@ describe('InformerService', () => {
         listNamespacedCustomObject: jest
           .fn()
           .mockImplementation(
-            (group: string, version: string, _namespace: string) => {
+            (_group: string, version: string, _namespace: string) => {
               if (version === 'v1alpha2') {
                 const err: any = new Error('Not Found');
                 err.statusCode = 404;
