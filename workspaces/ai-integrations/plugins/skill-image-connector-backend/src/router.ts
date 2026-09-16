@@ -35,6 +35,13 @@ export async function createRouter(
     res.status(200).json({ status: 'ok' });
   });
 
+  // Authorization note: this endpoint is accessible to all authenticated
+  // Backstage service-to-service callers.  The content served is skill
+  // metadata (skill names, descriptions, markdown documentation) — not
+  // registry credentials or secrets.  Backstage's default service auth
+  // policy applies; /health is the only unauthenticated path.  If
+  // fine-grained authorization is required in the future (e.g. per-skill
+  // visibility), add a Backstage permission policy check here.
   router.get('/images', async (_req, res) => {
     const results = Array.from(extractions.entries()).map(
       ([imageRef, extraction]) => ({

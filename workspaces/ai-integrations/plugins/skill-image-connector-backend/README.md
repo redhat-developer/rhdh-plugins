@@ -54,19 +54,24 @@ skillImageConnector:
 | `skillImageConnector.images[].credentials.tokenRealm` | `string` | Optional HTTPS token endpoint; required for cross-host token exchange and must not contain URL credentials. |
 | `skillImageConnector.allowedRegistries`               | `array`  | Required exact registry host and port allowlist for configured images.                                      |
 
-At most 25 images may be configured. Use immutable digest references in production deployments when reproducible content is required.
+At most 25 images may be configured. **Use immutable digest references (`@sha256:...`) in production.** Mutable tags can be moved or replaced by the registry; the plugin warns at startup when a tag reference is used. Digest-pinned references are verified against the manifest content, preventing tag mutation attacks.
 
-Each extracted layer is limited to 5 MB. All configuration fields use `@visibility backend` or `@visibility secret` and are not exposed to the frontend.
+Each extracted layer is limited to 5 MB. The aggregate in-memory content across all images is capped at 50 MB. All configuration fields use `@visibility backend` or `@visibility secret` and are not exposed to the frontend.
 
 ## How it works
 
 On startup the plugin:
 
-1. Reads configured image references from `app-config.yaml`.
-2. Fetches the OCI manifest from the registry using the Distribution Spec v2 HTTP API.
-3. Validates the manifest contains layers annotated with `org.opencontainers.image.title` set to `skillimage.yaml` and `SKILLS.md`.
-4. Downloads the layer blobs, verifies their SHA-256 or SHA-512 digests, and writes them to a temporary directory.
-5. Stores the extraction results in memory and exposes their contents via the `/api/skill-image-connector/images` endpoint.
+1. Cleans up stale extraction directories from any previous abnormal termination.
+2. Reads configured image references from `app-config.yaml`.
+3. Fetches the OCI manifest from the registry using the Distribution Spec v2 HTTP API.
+4. Determines the extraction strategy:
+   - **Annotated layers**: Two individual layers annotated with `org.opencontainers.image.title` set to `skillimage.yaml`/`skill.yaml` and `SKILLS.md`/`SKILL.md`.
+   - **Tar archives**: One or more `tar` or `tar+gzip` layers (as produced by `skillctl`) containing the skill files as tar entries.
+5. Downloads the layer blobs, verifies their SHA-256 or SHA-512 digests, extracts content (decompressing tar+gzip if needed), and writes files to a temporary directory.
+6. Stores the extraction results in memory and exposes their contents via the `/api/skill-image-connector/images` endpoint.
+
+Transient registry failures (network errors, 5xx responses) are retried up to 2 times with exponential backoff before marking an image as failed.
 
 ## API
 
@@ -94,4 +99,10 @@ Example response:
 }
 ```
 
-The registry allowlist and HTTPS checks do not replace network-level egress controls. Production deployments should restrict backend egress so an allowed or redirected registry cannot reach private infrastructure.
+### Security model
+
+**Egress / SSRF protection:** The plugin resolves redirect target hostnames via DNS and rejects any that resolve to private, loopback, link-local, or reserved IP ranges (including IPv4-mapped IPv6). This prevents DNS-rebinding SSRF attacks through compromised registries. The registry allowlist and HTTPS checks complement but do not replace network-level egress controls; production deployments should also restrict backend egress at the network layer.
+
+**Authorization:** The `/images` endpoint is accessible to all authenticated Backstage service-to-service callers. The content served is skill metadata (names, descriptions, documentation) — not registry credentials or secrets. Backstage's default service-to-service auth policy applies. If per-skill visibility is required, add a [Backstage permission policy](https://backstage.io/docs/permissions/overview) check.
+
+**Provenance:** When using mutable tag references, the plugin cannot guarantee that the content has not been replaced by the registry. Use digest-pinned references (`@sha256:...`) for production deployments. Manifest signature/provenance verification (e.g. cosign/sigstore) is not currently implemented; operators requiring supply-chain provenance should verify images externally before adding them to the configuration.

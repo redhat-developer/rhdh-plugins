@@ -37,6 +37,13 @@ export interface RegistryCredentials {
 /** Maximum allowed blob download size in bytes (5 MB). */
 export const MAX_BLOB_SIZE = 5 * 1024 * 1024;
 
+/**
+ * Maximum aggregate content retained in memory across all images (50 MB).
+ * Limits the combined size of decoded skillimage.yaml and SKILLS.md strings
+ * to prevent unbounded memory growth with many configured images.
+ */
+export const MAX_AGGREGATE_CONTENT_SIZE = 50 * 1024 * 1024;
+
 /** Default fetch timeout in milliseconds (30 seconds). */
 export const FETCH_TIMEOUT_MS = 30_000;
 

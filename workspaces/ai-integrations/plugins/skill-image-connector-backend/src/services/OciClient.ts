@@ -17,6 +17,7 @@
 import { InputError } from '@backstage/errors';
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import { createHash } from 'node:crypto';
+import { promises as dnsPromises } from 'node:dns';
 import { isIP } from 'node:net';
 import type { ImageRef, OciManifest, RegistryCredentials } from './types';
 import { MAX_BLOB_SIZE, FETCH_TIMEOUT_MS } from './types';
@@ -79,6 +80,80 @@ function isIpAddress(hostname: string): boolean {
     ? hostname.slice(1, -1)
     : hostname;
   return isIP(normalizedHostname) !== 0;
+}
+
+/**
+ * Returns true if the address belongs to a private, loopback, link-local,
+ * or otherwise non-globally-routable range.
+ */
+export function isPrivateAddress(address: string, family: number): boolean {
+  if (family === 4) {
+    const parts = address.split('.').map(Number);
+    if (parts.length !== 4 || parts.some(p => Number.isNaN(p))) {
+      return true; // Treat unparseable as private (deny by default)
+    }
+    return (
+      parts[0] === 10 || // 10.0.0.0/8
+      parts[0] === 127 || // 127.0.0.0/8 (loopback)
+      parts[0] === 0 || // 0.0.0.0/8
+      (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) || // 172.16.0.0/12
+      (parts[0] === 192 && parts[1] === 168) || // 192.168.0.0/16
+      (parts[0] === 169 && parts[1] === 254) || // 169.254.0.0/16 link-local
+      (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) || // 100.64.0.0/10 CGNAT
+      (parts[0] === 198 && (parts[1] === 18 || parts[1] === 19)) || // 198.18.0.0/15
+      parts[0] >= 240 // 240.0.0.0/4 reserved
+    );
+  }
+
+  if (family === 6) {
+    const normalized = address.toLowerCase();
+    if (normalized === '::1' || normalized === '::') {
+      return true; // loopback or unspecified
+    }
+    // fe80::/10 (link-local)
+    if (normalized.startsWith('fe80')) {
+      return true;
+    }
+    // fc00::/7 (unique local)
+    if (normalized.startsWith('fc') || normalized.startsWith('fd')) {
+      return true;
+    }
+    // ::ffff:a.b.c.d (IPv4-mapped IPv6) — check the embedded IPv4
+    const v4Mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(normalized);
+    if (v4Mapped) {
+      return isPrivateAddress(v4Mapped[1], 4);
+    }
+    return false;
+  }
+
+  return true; // Unknown family — deny by default
+}
+
+/**
+ * Resolves a hostname via DNS and throws if any resolved address
+ * belongs to a private or reserved IP range.  Prevents DNS-rebinding
+ * SSRF where a hostname initially resolves to a public IP (passing the
+ * allowlist) but later resolves to an internal address.
+ */
+async function validateRedirectTarget(hostname: string): Promise<void> {
+  let addresses: Array<{ address: string; family: number }>;
+  try {
+    addresses = await dnsPromises.lookup(hostname, { all: true });
+  } catch {
+    // DNS resolution failed — treat as unreachable rather than allowing
+    // the request through without validation.
+    throw new Error(
+      `Registry redirect target hostname ${hostname} could not be resolved`,
+    );
+  }
+
+  for (const addr of addresses) {
+    if (isPrivateAddress(addr.address, addr.family)) {
+      throw new Error(
+        `Registry redirect target ${hostname} resolves to non-public address ${addr.address}`,
+      );
+    }
+  }
 }
 
 function validateTag(tag: string, ref: string): void {
@@ -435,6 +510,9 @@ async function fetchWithRedirects(
     ) {
       throw new Error('Registry redirect target must be a public HTTPS URL');
     }
+    // Resolve the redirect target hostname and reject private/internal IPs
+    // to prevent DNS-rebinding SSRF attacks.
+    await validateRedirectTarget(nextUrl.hostname);
     if (nextUrl.origin !== currentUrl.origin) {
       headers = Object.fromEntries(
         Object.entries(headers).filter(
