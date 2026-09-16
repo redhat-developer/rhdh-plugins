@@ -66,8 +66,7 @@ function parseDigest(digest: string): DigestInfo | undefined {
 
   if (
     (algorithm !== 'sha256' && algorithm !== 'sha512') ||
-    !hex ||
-    hex.length !== expectedLength
+    hex?.length !== expectedLength
   ) {
     return undefined;
   }

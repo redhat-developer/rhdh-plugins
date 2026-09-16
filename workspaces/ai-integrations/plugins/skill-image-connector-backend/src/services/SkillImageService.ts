@@ -70,7 +70,7 @@ export function validateSkillImageManifest(manifest: OciManifest): {
     );
   }
 
-  const malformedLayer = manifest.layers.find(
+  const hasMalformedLayer = manifest.layers.some(
     layer =>
       !layer ||
       typeof layer.digest !== 'string' ||
@@ -78,7 +78,7 @@ export function validateSkillImageManifest(manifest: OciManifest): {
       !Number.isSafeInteger(layer.size) ||
       layer.size < 0,
   );
-  if (malformedLayer) {
+  if (hasMalformedLayer) {
     throw new TypeError(
       'Image manifest contains a layer with an invalid digest or size',
     );
