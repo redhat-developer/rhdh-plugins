@@ -53,6 +53,86 @@ function safeGetOptionalString(
   }
 }
 
+function validateTokenRealm(tokenRealm: string, imageRef: string): void {
+  let tokenRealmUrl: URL;
+  try {
+    tokenRealmUrl = new URL(tokenRealm);
+  } catch {
+    throw new InputError(
+      `Invalid credentials for skill image ${imageRef}: tokenRealm must be a valid HTTPS URL`,
+    );
+  }
+  if (
+    tokenRealmUrl.protocol !== 'https:' ||
+    tokenRealmUrl.username ||
+    tokenRealmUrl.password
+  ) {
+    throw new InputError(
+      `Invalid credentials for skill image ${imageRef}: tokenRealm must be a valid HTTPS URL without credentials`,
+    );
+  }
+}
+
+function readImageCredentials(
+  entry: Config,
+  imageRef: string,
+): RegistryCredentials | undefined {
+  const credentialsConfig = entry.getOptionalConfig('credentials');
+  if (!credentialsConfig) {
+    return undefined;
+  }
+
+  const username = safeGetOptionalString(credentialsConfig, 'username');
+  const password = safeGetOptionalString(credentialsConfig, 'password');
+  const tokenRealm = safeGetOptionalString(credentialsConfig, 'tokenRealm');
+  if (Boolean(username) !== Boolean(password)) {
+    throw new InputError(
+      `Invalid credentials for skill image ${imageRef}: username and password must be provided together`,
+    );
+  }
+  if (tokenRealm) {
+    validateTokenRealm(tokenRealm, imageRef);
+  }
+
+  if (!username && !password && !tokenRealm) {
+    return undefined;
+  }
+  return {
+    ...(username && password ? { username, password } : {}),
+    ...(tokenRealm ? { tokenRealm } : {}),
+  };
+}
+
+function parseConfiguredImage(
+  entry: Config,
+  index: number,
+  seenImageRefs: Set<string>,
+  logger?: Pick<LoggerService, 'warn'>,
+): SkillImageConfig | undefined {
+  const imageRef = safeGetOptionalString(entry, 'imageRef')?.trim();
+  if (!imageRef) {
+    logger?.warn(
+      `Skipping skill image configuration at index ${index}: imageRef is missing`,
+    );
+    return undefined;
+  }
+
+  if (seenImageRefs.has(imageRef)) {
+    logger?.warn(
+      `Skipping duplicate skill image configuration for ${imageRef}`,
+    );
+    return undefined;
+  }
+
+  seenImageRefs.add(imageRef);
+  const credentials = readImageCredentials(entry, imageRef);
+  return {
+    id: `image-${index}`,
+    imageRef,
+    ...(credentials ? { credentials } : {}),
+  };
+}
+
 /**
  * Reads skill image configuration entries from app-config.
  *
@@ -79,75 +159,16 @@ export function readSkillImageConfigs(
 
   const results: SkillImageConfig[] = [];
   const seenImageRefs = new Set<string>();
-  for (let i = 0; i < imagesConfig.length; i++) {
-    const entry = imagesConfig[i];
-    const imageRef = safeGetOptionalString(entry, 'imageRef')?.trim();
-    if (!imageRef) {
-      logger?.warn(
-        `Skipping skill image configuration at index ${i}: imageRef is missing`,
-      );
-      continue;
+  for (const [index, entry] of imagesConfig.entries()) {
+    const imageConfig = parseConfiguredImage(
+      entry,
+      index,
+      seenImageRefs,
+      logger,
+    );
+    if (imageConfig) {
+      results.push(imageConfig);
     }
-
-    if (seenImageRefs.has(imageRef)) {
-      logger?.warn(
-        `Skipping duplicate skill image configuration for ${imageRef}`,
-      );
-      continue;
-    }
-
-    seenImageRefs.add(imageRef);
-    const credentialsConfig = entry.getOptionalConfig('credentials');
-    const username = credentialsConfig
-      ? safeGetOptionalString(credentialsConfig, 'username')
-      : undefined;
-    const password = credentialsConfig
-      ? safeGetOptionalString(credentialsConfig, 'password')
-      : undefined;
-    const tokenRealm = credentialsConfig
-      ? safeGetOptionalString(credentialsConfig, 'tokenRealm')
-      : undefined;
-    if (Boolean(username) !== Boolean(password)) {
-      throw new InputError(
-        `Invalid credentials for skill image ${imageRef}: username and password must be provided together`,
-      );
-    }
-    if (tokenRealm) {
-      let tokenRealmUrl: URL;
-      try {
-        tokenRealmUrl = new URL(tokenRealm);
-      } catch {
-        throw new InputError(
-          `Invalid credentials for skill image ${imageRef}: tokenRealm must be a valid HTTPS URL`,
-        );
-      }
-      if (
-        tokenRealmUrl.protocol !== 'https:' ||
-        tokenRealmUrl.username ||
-        tokenRealmUrl.password
-      ) {
-        throw new InputError(
-          `Invalid credentials for skill image ${imageRef}: tokenRealm must be a valid HTTPS URL without credentials`,
-        );
-      }
-    }
-
-    let credentials: RegistryCredentials | undefined;
-    if (username && password) {
-      credentials = {
-        username,
-        password,
-        ...(tokenRealm ? { tokenRealm } : {}),
-      };
-    } else if (tokenRealm) {
-      credentials = { tokenRealm };
-    }
-
-    results.push({
-      id: `image-${i}`,
-      imageRef,
-      ...(credentials ? { credentials } : {}),
-    });
   }
 
   return results;

@@ -43,7 +43,12 @@ export function findLayerByTitle(
   layers: OciDescriptor[],
   title: string,
 ): OciDescriptor | undefined {
-  return layers.find(layer => layer.annotations?.[TITLE_ANNOTATION] === title);
+  for (const layer of layers) {
+    if (layer.annotations?.[TITLE_ANNOTATION] === title) {
+      return layer;
+    }
+  }
+  return undefined;
 }
 
 /**

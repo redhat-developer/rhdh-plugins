@@ -26,9 +26,18 @@ const OCI_REGISTRY_PATTERN =
   /^(?:\[[0-9a-fA-F:]+\]|[A-Za-z0-9](?:[A-Za-z0-9.-]*[A-Za-z0-9])?)(?::\d{1,5})?$/;
 const OCI_REPOSITORY_PATTERN =
   /^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*(?:\/[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)*)*$/;
-const OCI_TAG_PATTERN = /^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$/;
+const OCI_TAG_PATTERN = /^\w[\w.-]{0,127}$/;
 const DIGEST_PATTERN = /^(sha256|sha512):([0-9a-fA-F]+)$/;
 const MAX_REDIRECTS = 3;
+
+type DigestInfo = {
+  algorithm: 'sha256' | 'sha512';
+  hex: string;
+};
+
+type ParsedImageReference = Pick<ImageRef, 'repository' | 'tag'> & {
+  digest?: string;
+};
 
 function createRequestSignal(signal?: AbortSignal): AbortSignal {
   const timeoutSignal = AbortSignal.timeout(FETCH_TIMEOUT_MS);
@@ -47,6 +56,102 @@ function imageReference(imageRef: ImageRef): string {
   return `${imageRef.registry}/${imageRef.repository}${
     imageRef.digest ? `@${imageRef.digest}` : `:${imageRef.tag}`
   }`;
+}
+
+function parseDigest(digest: string): DigestInfo | undefined {
+  const match = DIGEST_PATTERN.exec(digest);
+  const algorithm = match?.[1];
+  const hex = match?.[2];
+  const expectedLength = algorithm === 'sha256' ? 64 : 128;
+
+  if (
+    (algorithm !== 'sha256' && algorithm !== 'sha512') ||
+    !hex ||
+    hex.length !== expectedLength
+  ) {
+    return undefined;
+  }
+
+  return { algorithm, hex: hex.toLowerCase() };
+}
+
+function isIpAddress(hostname: string): boolean {
+  const normalizedHostname = hostname.startsWith('[')
+    ? hostname.slice(1, -1)
+    : hostname;
+  return isIP(normalizedHostname) !== 0;
+}
+
+function validateTag(tag: string, ref: string): void {
+  if (!OCI_TAG_PATTERN.test(tag)) {
+    throw new InputError(
+      `Invalid image reference "${ref}": tag must be a valid OCI tag`,
+    );
+  }
+}
+
+function validateRepository(repository: string, ref: string): void {
+  if (!OCI_REPOSITORY_PATTERN.test(repository)) {
+    throw new InputError(
+      `Invalid image reference "${ref}": repository must be a valid OCI repository name`,
+    );
+  }
+}
+
+function parseDigestReference(
+  repoAndRef: string,
+  ref: string,
+): ParsedImageReference | undefined {
+  const atIdx = repoAndRef.indexOf('@');
+  if (atIdx === -1) {
+    return undefined;
+  }
+
+  let repository = repoAndRef.substring(0, atIdx);
+  const digest = repoAndRef.substring(atIdx + 1);
+  if (!parseDigest(digest)) {
+    throw new InputError(
+      `Invalid image reference "${ref}": digest must be a valid sha256 or sha512 digest`,
+    );
+  }
+
+  let tag = 'latest';
+  const colonIdx = repository.lastIndexOf(':');
+  if (colonIdx !== -1) {
+    tag = repository.substring(colonIdx + 1);
+    repository = repository.substring(0, colonIdx);
+    if (!tag) {
+      throw new InputError(
+        `Invalid image reference "${ref}": tag must not be empty`,
+      );
+    }
+  }
+
+  validateTag(tag, ref);
+  validateRepository(repository, ref);
+  return { repository, tag, digest };
+}
+
+function parseTagReference(
+  repoAndRef: string,
+  ref: string,
+): ParsedImageReference {
+  let repository = repoAndRef;
+  let tag = 'latest';
+  const colonIdx = repository.lastIndexOf(':');
+  if (colonIdx !== -1) {
+    tag = repository.substring(colonIdx + 1);
+    repository = repository.substring(0, colonIdx);
+    if (!tag) {
+      throw new InputError(
+        `Invalid image reference "${ref}": tag must not be empty`,
+      );
+    }
+    validateTag(tag, ref);
+  }
+
+  validateRepository(repository, ref);
+  return { repository, tag };
 }
 
 /**
@@ -75,7 +180,7 @@ export function parseImageRef(ref: string): ImageRef {
   }
 
   const registry = cleaned.substring(0, firstSlash);
-  let repoAndRef = cleaned.substring(firstSlash + 1);
+  const repoAndRef = cleaned.substring(firstSlash + 1);
 
   if (!registry || !repoAndRef) {
     throw new InputError(
@@ -89,72 +194,11 @@ export function parseImageRef(ref: string): ImageRef {
     );
   }
 
-  // Check for digest reference (@sha256:...), including tag@digest.
-  const atIdx = repoAndRef.indexOf('@');
-  let tag = 'latest';
-  if (atIdx !== -1) {
-    let repository = repoAndRef.substring(0, atIdx);
-    const digest = repoAndRef.substring(atIdx + 1);
-    const digestMatch = DIGEST_PATTERN.exec(digest);
-    if (
-      !digestMatch ||
-      digestMatch[2].length !== (digestMatch[1] === 'sha256' ? 64 : 128)
-    ) {
-      throw new InputError(
-        `Invalid image reference "${ref}": digest must be a valid sha256 or sha512 digest`,
-      );
-    }
-
-    const colonIdx = repository.lastIndexOf(':');
-    if (colonIdx !== -1) {
-      tag = repository.substring(colonIdx + 1);
-      repository = repository.substring(0, colonIdx);
-      if (!tag) {
-        throw new InputError(
-          `Invalid image reference "${ref}": tag must not be empty`,
-        );
-      }
-    }
-
-    if (!OCI_TAG_PATTERN.test(tag)) {
-      throw new InputError(
-        `Invalid image reference "${ref}": tag must be a valid OCI tag`,
-      );
-    }
-
-    if (!OCI_REPOSITORY_PATTERN.test(repository)) {
-      throw new InputError(
-        `Invalid image reference "${ref}": repository must be a valid OCI repository name`,
-      );
-    }
-
-    return { registry, repository, tag, digest };
-  }
-
-  // Check for tag — the tag follows the last colon in the repo portion
-  const colonIdx = repoAndRef.lastIndexOf(':');
-  if (colonIdx !== -1) {
-    tag = repoAndRef.substring(colonIdx + 1);
-    repoAndRef = repoAndRef.substring(0, colonIdx);
-    if (!tag) {
-      throw new InputError(
-        `Invalid image reference "${ref}": tag must not be empty`,
-      );
-    }
-    if (!OCI_TAG_PATTERN.test(tag)) {
-      throw new InputError(
-        `Invalid image reference "${ref}": tag must be a valid OCI tag`,
-      );
-    }
-  }
-
-  if (!OCI_REPOSITORY_PATTERN.test(repoAndRef)) {
-    throw new InputError(
-      `Invalid image reference "${ref}": repository must be a valid OCI repository name`,
-    );
-  }
-
-  return { registry, repository: repoAndRef, tag };
+  return {
+    registry,
+    ...(parseDigestReference(repoAndRef, ref) ??
+      parseTagReference(repoAndRef, ref)),
+  };
 }
 
 /**
@@ -164,14 +208,31 @@ export function parseImageRef(ref: string): ImageRef {
 function parseBearerChallenge(
   header: string,
 ): { realm: string; service?: string; scope?: string } | undefined {
-  const match = /^Bearer\s+(.+)/i.exec(header);
-  if (!match) {
+  const schemeEnd = header.search(/\s/);
+  if (
+    schemeEnd === -1 ||
+    header.substring(0, schemeEnd).toLowerCase() !== 'bearer'
+  ) {
     return undefined;
   }
 
   const params: Record<string, string> = {};
-  for (const paramMatch of match[1].matchAll(/([a-z]+)="([^"]*)"/gi)) {
-    params[paramMatch[1]] = paramMatch[2];
+  for (const parameter of header.substring(schemeEnd).split(',')) {
+    const equalsIndex = parameter.indexOf('=');
+    if (equalsIndex === -1) {
+      continue;
+    }
+
+    const name = parameter.substring(0, equalsIndex).trim().toLowerCase();
+    const value = parameter.substring(equalsIndex + 1).trim();
+    if (
+      name &&
+      value.length >= 2 &&
+      value.startsWith('"') &&
+      value.endsWith('"')
+    ) {
+      params[name] = value.substring(1, value.length - 1);
+    }
   }
 
   if (!params.realm) {
@@ -371,7 +432,7 @@ async function fetchWithRedirects(
       nextUrl.password ||
       nextUrl.hostname === 'localhost' ||
       nextUrl.hostname.endsWith('.localhost') ||
-      isIP(nextUrl.hostname)
+      isIpAddress(nextUrl.hostname)
     ) {
       throw new Error('Registry redirect target must be a public HTTPS URL');
     }
@@ -388,54 +449,63 @@ async function fetchWithRedirects(
   throw new Error('Registry redirect handling failed');
 }
 
-async function readResponseBuffer(
+async function validateContentLength(
+  response: Response,
+  maxSize: number,
+): Promise<void> {
+  const contentLength = response.headers?.get('content-length');
+  if (!contentLength) {
+    return;
+  }
+
+  const declaredLength = Number(contentLength);
+  if (!Number.isSafeInteger(declaredLength) || declaredLength < 0) {
+    await cancelResponseBody(response);
+    throw new Error('Registry response has an invalid Content-Length header');
+  }
+  if (declaredLength > maxSize) {
+    await cancelResponseBody(response);
+    throw new Error(
+      `Registry response size ${declaredLength} exceeds maximum allowed size ${maxSize}`,
+    );
+  }
+}
+
+async function readStreamingResponse(
   response: Response,
   maxSize: number,
 ): Promise<Buffer> {
-  const contentLength = response.headers?.get('content-length');
-  if (contentLength) {
-    const declaredLength = Number(contentLength);
-    if (!Number.isSafeInteger(declaredLength) || declaredLength < 0) {
-      throw new Error('Registry response has an invalid Content-Length header');
-    }
-    if (declaredLength > maxSize) {
-      await cancelResponseBody(response);
-      throw new Error(
-        `Registry response size ${declaredLength} exceeds maximum allowed size ${maxSize}`,
-      );
-    }
-  }
-
-  if (response.body) {
-    const reader = response.body.getReader();
-    const chunks: Buffer[] = [];
-    let totalSize = 0;
-    let done = false;
-    try {
-      while (!done) {
-        const result = await reader.read();
-        if (result.done) {
-          done = true;
-          break;
-        }
-        const chunk = Buffer.from(result.value);
-        totalSize += chunk.length;
-        if (totalSize > maxSize) {
-          await reader.cancel();
-          throw new Error(
-            `Registry response size exceeds maximum allowed size ${maxSize}`,
-          );
-        }
-        chunks.push(chunk);
+  const reader = response.body!.getReader();
+  const chunks: Buffer[] = [];
+  let totalSize = 0;
+  try {
+    for (;;) {
+      const result = await reader.read();
+      if (result.done) {
+        break;
       }
-    } finally {
-      reader.releaseLock();
+      const chunk = Buffer.from(result.value);
+      totalSize += chunk.length;
+      if (totalSize > maxSize) {
+        await reader.cancel();
+        throw new Error(
+          `Registry response size exceeds maximum allowed size ${maxSize}`,
+        );
+      }
+      chunks.push(chunk);
     }
-    return Buffer.concat(chunks, totalSize);
+  } finally {
+    reader.releaseLock();
   }
+  return Buffer.concat(chunks, totalSize);
+}
 
+async function readArrayBufferResponse(
+  response: Response,
+  maxSize: number,
+): Promise<Buffer> {
   if (typeof response.arrayBuffer !== 'function') {
-    throw new Error('Registry response does not contain a readable body');
+    throw new TypeError('Registry response does not contain a readable body');
   }
   const buffer = Buffer.from(await response.arrayBuffer());
   if (buffer.length > maxSize) {
@@ -444,6 +514,16 @@ async function readResponseBuffer(
     );
   }
   return buffer;
+}
+
+async function readResponseBuffer(
+  response: Response,
+  maxSize: number,
+): Promise<Buffer> {
+  await validateContentLength(response, maxSize);
+  return response.body
+    ? readStreamingResponse(response, maxSize)
+    : readArrayBufferResponse(response, maxSize);
 }
 
 async function readResponseJson(
@@ -502,20 +582,18 @@ export async function fetchManifest(
       })
     | undefined;
 
-  if (imageRef.digest) {
-    const digestMatch = DIGEST_PATTERN.exec(imageRef.digest);
-    if (
-      !digestMatch ||
-      digestMatch[2].length !== (digestMatch[1] === 'sha256' ? 64 : 128)
-    ) {
-      throw new Error(`Invalid manifest digest ${imageRef.digest}`);
+  const manifestDigest = imageRef.digest;
+  if (manifestDigest) {
+    const digestInfo = parseDigest(manifestDigest);
+    if (!digestInfo) {
+      throw new Error(`Invalid manifest digest ${manifestDigest}`);
     }
-    const actualDigest = createHash(digestMatch[1])
+    const actualDigest = createHash(digestInfo.algorithm)
       .update(manifestBuffer)
       .digest('hex');
-    if (actualDigest !== digestMatch[2].toLowerCase()) {
+    if (actualDigest !== digestInfo.hex) {
       throw new Error(
-        `Manifest digest mismatch for ${imageRef.digest}: got ${digestMatch[1]}:${actualDigest}`,
+        `Manifest digest mismatch for ${manifestDigest}: got ${digestInfo.algorithm}:${actualDigest}`,
       );
     }
   }
@@ -564,11 +642,8 @@ export async function fetchBlob(
   credentials?: RegistryCredentials,
   signal?: AbortSignal,
 ): Promise<Buffer> {
-  const digestMatch = DIGEST_PATTERN.exec(digest);
-  if (
-    !digestMatch ||
-    digestMatch[2].length !== (digestMatch[1] === 'sha256' ? 64 : 128)
-  ) {
+  const digestInfo = parseDigest(digest);
+  if (!digestInfo) {
     throw new Error(
       `Unsupported or invalid blob digest ${digest}; expected a sha256 or sha512 digest`,
     );
@@ -603,12 +678,12 @@ export async function fetchBlob(
   }
 
   // Verify the descriptor digest before the content is written to disk.
-  const algorithm = digestMatch[1] as 'sha256' | 'sha512';
-  const expectedHash = digestMatch[2].toLowerCase();
-  const actualHash = createHash(algorithm).update(buffer).digest('hex');
-  if (actualHash !== expectedHash) {
+  const actualHash = createHash(digestInfo.algorithm)
+    .update(buffer)
+    .digest('hex');
+  if (actualHash !== digestInfo.hex) {
     throw new Error(
-      `Blob digest mismatch for ${digest}: expected ${algorithm}:${expectedHash}, got ${algorithm}:${actualHash}`,
+      `Blob digest mismatch for ${digest}: expected ${digestInfo.algorithm}:${digestInfo.hex}, got ${digestInfo.algorithm}:${actualHash}`,
     );
   }
 
