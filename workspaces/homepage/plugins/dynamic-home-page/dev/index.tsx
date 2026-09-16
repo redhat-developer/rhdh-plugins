@@ -19,7 +19,9 @@
  */
 
 import '@backstage/cli/asset-types';
+// eslint-disable-next-line @backstage/no-ui-css-imports-in-non-frontend
 import '@backstage/ui/css/styles.css';
+// eslint-disable-next-line @backstage/no-undeclared-imports
 import ReactDOM from 'react-dom/client';
 import { createApp } from '@backstage/frontend-defaults';
 import {

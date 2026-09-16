@@ -16,6 +16,7 @@
 
 import { HomePageWidgetBlueprint } from '@backstage/plugin-home-react/alpha';
 import homePlugin from '@backstage/plugin-home/alpha';
+// eslint-disable-next-line @backstage/no-undeclared-imports
 import { compatWrapper } from '@backstage/core-compat-api';
 
 const defaultCardLayout = {
