@@ -875,6 +875,7 @@ type SavedPromptMock = {
 };
 
 const savedPromptsByPage = new WeakMap<Page, SavedPromptMock[]>();
+const savedPromptsRouteGlob = `${modelBaseUrl}/v1/saved-prompts**`;
 
 const defaultSavedPromptsConfig = {
   max_prompts_per_user: 50,
@@ -882,14 +883,20 @@ const defaultSavedPromptsConfig = {
   max_content_length: 10000,
 };
 
+/** Update seeded prompts for an existing mock route (used between tests). */
+export function seedSavedPrompts(page: Page, prompts: SavedPromptMock[] = []) {
+  savedPromptsByPage.set(page, [...prompts]);
+}
+
 /** Per-page in-memory saved prompts mock (starts empty unless seeded). */
 export async function mockSavedPrompts(
   page: Page,
   initialPrompts: SavedPromptMock[] = [],
 ) {
-  savedPromptsByPage.set(page, [...initialPrompts]);
+  seedSavedPrompts(page, initialPrompts);
 
-  await page.route(`${modelBaseUrl}/v1/saved-prompts**`, async route => {
+  await page.unroute(savedPromptsRouteGlob);
+  await page.route(savedPromptsRouteGlob, async route => {
     const url = new URL(route.request().url());
     const method = route.request().method();
     const prompts = savedPromptsByPage.get(page) ?? [];
