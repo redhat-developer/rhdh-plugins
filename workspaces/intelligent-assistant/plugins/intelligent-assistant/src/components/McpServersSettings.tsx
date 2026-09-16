@@ -37,12 +37,12 @@ import {
   SortAmountDownIcon,
   SortAmountUpIcon,
 } from '@patternfly/react-icons';
+import tableStyles, { css } from '@patternfly/react-styles';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
 import { useIaMcpToolsPermission } from '../hooks/useIaMcpToolsPermission';
 import { useMcpConfigureModal } from '../hooks/useMcpConfigureModal';
 import { useTranslation } from '../hooks/useTranslation';
-import { pf6HideNestedRhUiIconCss } from './chatShellTokens';
 import { McpConfigureServerModal } from './McpConfigureServerModal';
 import {
   compareMcpServers,
@@ -71,10 +71,8 @@ const mcpClasses = {
   headerRowWithTitle: 'ia-mcp-headerRow--withTitle',
   selectedCount: 'ia-mcp-selectedCount',
   title: 'ia-mcp-title',
-  sortHeaderButton: 'ia-mcp-sortHeaderButton',
   sortHeaderIconActive: 'ia-mcp-sortHeaderIconActive',
   sortHeaderIconInactive: 'ia-mcp-sortHeaderIconInactive',
-  nameHeaderText: 'ia-mcp-nameHeaderText',
   nameCell: 'ia-mcp-nameCell',
   nameHeaderCell: 'ia-mcp-nameHeaderCell',
   statusHeader: 'ia-mcp-statusHeader',
@@ -119,34 +117,14 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
   [`& .${mcpClasses.title}`]: {
     fontSize: '1.125rem',
   },
-  [`& .${mcpClasses.sortHeaderButton}`]: {
-    paddingLeft: 0,
-    paddingTop: 0,
-    paddingBottom: 0,
-    marginLeft: 0,
-    fontWeight: 600,
-    fontSize: '0.75rem',
-    lineHeight: '1.25rem',
-    minHeight: 'auto',
-    color: theme.palette.text.primary,
-    textDecoration: 'none !important',
-    display: 'inline-flex',
-    alignItems: 'center',
-  },
   [`& .${mcpClasses.sortHeaderIconActive}`]: {
     color: 'var(--pf-t--global--icon--color--brand--default)',
   },
   [`& .${mcpClasses.sortHeaderIconInactive}`]: {
     color: 'var(--pf-t--global--icon--color--subtle)',
   },
-  [`& .${mcpClasses.nameHeaderText}`]: {
-    fontSize: '0.75rem',
-    lineHeight: '1.25rem',
-    fontWeight: 600,
-  },
   [`& .${mcpClasses.nameHeaderCell}, & .${mcpClasses.nameCell}`]: {
     paddingLeft: '8px',
-    verticalAlign: 'middle',
   },
   [`& .${mcpClasses.nameValue}`]: {
     fontSize: '0.875rem',
@@ -156,7 +134,7 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
     paddingLeft: 0,
   },
   [`& .${mcpClasses.statusCell}`]: {
-    display: 'flex',
+    display: 'inline-flex',
     alignItems: 'center',
     gap: theme.spacing(1),
   },
@@ -176,7 +154,6 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
     color: theme.palette.text.primary,
     opacity: 0,
     transition: 'opacity 0.15s ease-in-out',
-    ...pf6HideNestedRhUiIconCss,
   },
   [`& .${mcpClasses.tableRow}:hover .${mcpClasses.actionButton}, & .${mcpClasses.tableRow}:focus-within .${mcpClasses.actionButton}`]:
     {
@@ -192,6 +169,10 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
       color: theme.palette.text.primary,
       whiteSpace: 'nowrap',
       textAlign: 'left',
+      overflow: 'visible',
+    },
+    '& tbody td': {
+      verticalAlign: 'middle',
     },
   },
   [`& .${mcpClasses.alert}`]: {
@@ -213,10 +194,15 @@ type McpServerResponse = {
 
 /** PF table cells default to a large `--pf-v6-c-table--cell--MinWidth`; inline minWidth on th/td wins in DevTools and fixes column sizing. */
 const mcpTableCellLayout = {
-  toggle: { width: '2.5rem', minWidth: '2.5rem', paddingInlineEnd: 0 },
-  name: { width: '50%', minWidth: '9rem' },
-  status: { width: '35%', minWidth: 0 },
-  action: { width: '2.5rem', minWidth: '2.5rem' },
+  toggle: {
+    width: '2.5rem',
+    minWidth: '2.5rem',
+    paddingInlineEnd: 0,
+    verticalAlign: 'middle',
+  },
+  name: { width: '50%', minWidth: '9rem', verticalAlign: 'middle' },
+  status: { width: '35%', minWidth: 0, verticalAlign: 'middle' },
+  action: { width: '2.5rem', minWidth: '2.5rem', verticalAlign: 'middle' },
 } as const satisfies Record<string, CSSProperties>;
 
 type McpServersListResponse = {
@@ -250,6 +236,54 @@ type McpCredentialsValidateResponse = {
   error?: unknown;
   toolCount: number;
   tools?: McpToolInfo[];
+};
+
+const McpTableSortHeader = ({
+  label,
+  column,
+  sortColumn,
+  sortAsc,
+  onClick,
+}: {
+  label: string;
+  column: McpServerSortColumn;
+  sortColumn: McpServerSortColumn;
+  sortAsc: boolean;
+  onClick: () => void;
+}) => {
+  const isActive = sortColumn === column;
+  let Icon = SortAmountDownIcon;
+  if (isActive && !sortAsc) {
+    Icon = SortAmountUpIcon;
+  }
+
+  return (
+    <span
+      className={css(
+        tableStyles.tableSort,
+        isActive && tableStyles.modifiers.selected,
+      )}
+    >
+      <button
+        type="button"
+        className={css(tableStyles.tableButton)}
+        onClick={onClick}
+      >
+        <span className={css(tableStyles.tableButtonContent)}>
+          {label}
+          <span className={css(tableStyles.tableSortIndicator)}>
+            <Icon
+              className={
+                isActive
+                  ? mcpClasses.sortHeaderIconActive
+                  : mcpClasses.sortHeaderIconInactive
+              }
+            />
+          </span>
+        </span>
+      </button>
+    </span>
+  );
 };
 
 const getStatusIcon = (status: ServerStatus, className: string) => {
@@ -529,24 +563,6 @@ export const McpServersSettings = ({
     };
   }, [onContentOverflowChange, servers.length, isLoading, error]);
 
-  const renderSortIcon = (column: McpServerSortColumn) => {
-    const isActive = sortColumn === column;
-    let Icon = SortAmountDownIcon;
-    if (isActive && !sortAsc) {
-      Icon = SortAmountUpIcon;
-    }
-
-    return (
-      <Icon
-        className={
-          isActive
-            ? mcpClasses.sortHeaderIconActive
-            : mcpClasses.sortHeaderIconInactive
-        }
-      />
-    );
-  };
-
   if (mcpToolsPermissionLoading || !hasMcpToolsAccess) {
     return null;
   }
@@ -609,41 +625,25 @@ export const McpServersSettings = ({
               className={mcpClasses.nameHeaderCell}
               style={mcpTableCellLayout.name}
             >
-              <Button
-                variant="link"
-                isInline
-                className={mcpClasses.sortHeaderButton}
-                icon={renderSortIcon('name')}
-                iconPosition="right"
+              <McpTableSortHeader
+                label={t('mcp.settings.name')}
+                column="name"
+                sortColumn={sortColumn}
+                sortAsc={sortAsc}
                 onClick={() => onSortColumnClick('name')}
-              >
-                <Typography
-                  component="span"
-                  className={mcpClasses.nameHeaderText}
-                >
-                  {t('mcp.settings.name')}
-                </Typography>
-              </Button>
+              />
             </Th>
             <Th
               className={mcpClasses.statusHeader}
               style={mcpTableCellLayout.status}
             >
-              <Button
-                variant="link"
-                isInline
-                className={mcpClasses.sortHeaderButton}
-                icon={renderSortIcon('status')}
-                iconPosition="right"
+              <McpTableSortHeader
+                label={t('mcp.settings.status')}
+                column="status"
+                sortColumn={sortColumn}
+                sortAsc={sortAsc}
                 onClick={() => onSortColumnClick('status')}
-              >
-                <Typography
-                  component="span"
-                  className={mcpClasses.nameHeaderText}
-                >
-                  {t('mcp.settings.status')}
-                </Typography>
-              </Button>
+              />
             </Th>
             <Th
               screenReaderText={t('mcp.settings.edit')}
