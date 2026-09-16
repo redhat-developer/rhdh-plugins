@@ -173,11 +173,13 @@ describe('fetchManifest', () => {
   });
 
   it('should throw on non-ok response', async () => {
+    const cancel = jest.fn().mockResolvedValue(undefined);
     global.fetch = jest.fn().mockResolvedValue({
       ok: false,
       status: 404,
       statusText: 'Not Found',
       headers: new Map(),
+      body: { cancel },
     });
 
     await expect(
@@ -186,6 +188,7 @@ describe('fetchManifest', () => {
         logger,
       ),
     ).rejects.toThrow('Failed to fetch manifest');
+    expect(cancel).toHaveBeenCalled();
   });
 
   it('should throw on manifest list response', async () => {
@@ -349,6 +352,7 @@ describe('fetchManifest', () => {
     const result = await fetchManifest(
       { registry: 'registry.example.com', repository: 'org/repo', tag: 'v1' },
       logger,
+      { tokenRealm: 'https://auth.example.com/token' },
     );
     expect(result).toEqual(mockManifest);
     expect(global.fetch).toHaveBeenCalledTimes(3);
@@ -379,6 +383,7 @@ describe('fetchManifest', () => {
       fetchManifest(
         { registry: 'registry.example.com', repository: 'org/repo', tag: 'v1' },
         logger,
+        { tokenRealm: 'https://auth.example.com/token' },
       ),
     ).rejects.toThrow('Failed to fetch manifest');
     expect(logger.warn).toHaveBeenCalledWith(
@@ -451,6 +456,25 @@ describe('fetchManifest', () => {
       ),
     ).rejects.toThrow('Network error');
   });
+
+  it('should require an explicit realm for anonymous cross-host token exchange', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      statusText: 'Unauthorized',
+      headers: {
+        get: () => 'Bearer realm="https://auth.example.com/token"',
+      },
+    });
+
+    await expect(
+      fetchManifest(
+        { registry: 'registry.example.com', repository: 'org/repo', tag: 'v1' },
+        logger,
+      ),
+    ).rejects.toThrow('configure credentials.tokenRealm explicitly');
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('fetchBlob', () => {
@@ -504,6 +528,76 @@ describe('fetchBlob', () => {
         logger,
       ),
     ).rejects.toThrow('Failed to fetch blob');
+  });
+
+  it('should cancel redirect response bodies and strip credentials cross-origin', async () => {
+    const content = Buffer.from('blob');
+    const digest = `sha256:${createHash('sha256')
+      .update(content)
+      .digest('hex')}`;
+    const cancel = jest.fn().mockResolvedValue(undefined);
+
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 307,
+        headers: {
+          get: (key: string) =>
+            key === 'location' ? 'https://cdn.example.com/blob' : null,
+        },
+        body: { cancel },
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () =>
+          content.buffer.slice(
+            content.byteOffset,
+            content.byteOffset + content.byteLength,
+          ),
+        headers: new Map(),
+      });
+
+    await expect(
+      fetchBlob(
+        {
+          registry: 'registry.example.com',
+          repository: 'org/repo',
+          tag: 'v1',
+        },
+        digest,
+        content.length,
+        logger,
+        { username: 'user', password: 'secret' },
+      ),
+    ).resolves.toEqual(content);
+    expect(cancel).toHaveBeenCalled();
+    expect(
+      (global.fetch as jest.Mock).mock.calls[1][1].headers.Authorization,
+    ).toBeUndefined();
+  });
+
+  it('should reject a blob whose content size differs from its descriptor', async () => {
+    const content = Buffer.from('actual content');
+    const digest = `sha256:${createHash('sha256')
+      .update(content)
+      .digest('hex')}`;
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => content.buffer,
+      headers: new Map(),
+    });
+
+    await expect(
+      fetchBlob(
+        { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
+        digest,
+        content.length + 1,
+        logger,
+      ),
+    ).rejects.toThrow('size mismatch');
   });
 
   it('should throw when expected size exceeds maximum', async () => {

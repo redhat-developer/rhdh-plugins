@@ -107,9 +107,9 @@ export function readSkillImageConfigs(
     const tokenRealm = credentialsConfig
       ? safeGetOptionalString(credentialsConfig, 'tokenRealm')
       : undefined;
-    if (Boolean(username) !== Boolean(password) || (tokenRealm && !username)) {
+    if (Boolean(username) !== Boolean(password)) {
       throw new InputError(
-        `Invalid credentials for skill image ${imageRef}: username and password must be provided together; tokenRealm requires credentials`,
+        `Invalid credentials for skill image ${imageRef}: username and password must be provided together`,
       );
     }
     if (tokenRealm) {
@@ -132,14 +132,16 @@ export function readSkillImageConfigs(
       }
     }
 
-    const credentials: RegistryCredentials | undefined =
-      username && password
-        ? {
-            username,
-            password,
-            ...(tokenRealm ? { tokenRealm } : {}),
-          }
-        : undefined;
+    let credentials: RegistryCredentials | undefined;
+    if (username && password) {
+      credentials = {
+        username,
+        password,
+        ...(tokenRealm ? { tokenRealm } : {}),
+      };
+    } else if (tokenRealm) {
+      credentials = { tokenRealm };
+    }
 
     results.push({
       id: `image-${i}`,

@@ -106,13 +106,30 @@ describe('readSkillImageConfigs', () => {
     ]);
   });
 
+  it('should allow an explicit token realm without registry credentials', () => {
+    const config = new ConfigReader({
+      skillImageConnector: {
+        images: [
+          {
+            imageRef: 'quay.io/org/skill:v1',
+            credentials: { tokenRealm: 'https://auth.example.com/token' },
+          },
+        ],
+      },
+    });
+
+    expect(readSkillImageConfigs(config)).toEqual([
+      {
+        id: 'image-0',
+        imageRef: 'quay.io/org/skill:v1',
+        credentials: { tokenRealm: 'https://auth.example.com/token' },
+      },
+    ]);
+  });
+
   it.each([
     [{ username: 'user' }, 'username and password must be provided together'],
     [{ password: 'secret' }, 'username and password must be provided together'],
-    [
-      { tokenRealm: 'https://auth.example.com/token' },
-      'tokenRealm requires credentials',
-    ],
     [
       { username: 'user', password: 'secret', tokenRealm: 'not-a-url' },
       'valid HTTPS URL',

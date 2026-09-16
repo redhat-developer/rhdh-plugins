@@ -26,10 +26,10 @@ export interface ImageRef {
   digest?: string;
 }
 
-/** Credentials used for a registry's bearer token exchange. */
+/** Credentials and optional explicit realm used for a registry's bearer token exchange. */
 export interface RegistryCredentials {
-  username: string;
-  password: string;
+  username?: string;
+  password?: string;
   /** Explicit HTTPS token realm when it differs from the registry host. */
   tokenRealm?: string;
 }

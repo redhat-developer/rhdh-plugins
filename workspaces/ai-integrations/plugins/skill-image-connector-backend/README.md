@@ -37,21 +37,22 @@ skillImageConnector:
       # credentials:
       #   username: ${OCI_REGISTRY_USERNAME}
       #   password: ${OCI_REGISTRY_PASSWORD}
-      #   # Required when the token service is on another host.
+      #   # Required when the token service is on another host, including
+      #   # anonymous token exchange.
       #   tokenRealm: https://auth.example.com/token
 ```
 
 ### Configuration fields
 
-| Field                                                 | Type     | Description                                                                                                              |
-| ----------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `skillImageConnector.images`                          | `array`  | List of OCI skill image sources to process on startup.                                                                   |
-| `skillImageConnector.images[].imageRef`               | `string` | Full OCI image reference (e.g. `quay.io/org/repo:tag` or `quay.io/org/repo@sha256:...`).                                 |
-| `skillImageConnector.images[].credentials`            | `object` | Optional backend-only credentials for private registry token exchange.                                                   |
-| `skillImageConnector.images[].credentials.username`   | `string` | Registry username; required together with `password`.                                                                    |
-| `skillImageConnector.images[].credentials.password`   | `string` | Registry password; use environment variable substitution.                                                                |
-| `skillImageConnector.images[].credentials.tokenRealm` | `string` | Optional HTTPS token endpoint; required for credentialed cross-host token exchange and must not contain URL credentials. |
-| `skillImageConnector.allowedRegistries`               | `array`  | Required exact registry host and port allowlist for configured images.                                                   |
+| Field                                                 | Type     | Description                                                                                                 |
+| ----------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------- |
+| `skillImageConnector.images`                          | `array`  | List of OCI skill image sources to process on startup.                                                      |
+| `skillImageConnector.images[].imageRef`               | `string` | Full OCI image reference (e.g. `quay.io/org/repo:tag` or `quay.io/org/repo@sha256:...`).                    |
+| `skillImageConnector.images[].credentials`            | `object` | Optional backend-only credentials or an explicit token realm for registry token exchange.                   |
+| `skillImageConnector.images[].credentials.username`   | `string` | Registry username; required together with `password`.                                                       |
+| `skillImageConnector.images[].credentials.password`   | `string` | Registry password; use environment variable substitution.                                                   |
+| `skillImageConnector.images[].credentials.tokenRealm` | `string` | Optional HTTPS token endpoint; required for cross-host token exchange and must not contain URL credentials. |
+| `skillImageConnector.allowedRegistries`               | `array`  | Required exact registry host and port allowlist for configured images.                                      |
 
 At most 25 images may be configured. Use immutable digest references in production deployments when reproducible content is required.
 
