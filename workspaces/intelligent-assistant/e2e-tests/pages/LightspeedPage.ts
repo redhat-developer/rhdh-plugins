@@ -355,7 +355,7 @@ export async function clickMcpServersNameColumn(
 }
 
 function mcpServersSettingsHeading(page: Page, t: LightspeedMessages): Locator {
-  return page.getByRole('heading', {
+  return page.getByRole('button', {
     name: t['mcp.settings.title'],
     exact: true,
   });

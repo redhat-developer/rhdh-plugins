@@ -165,6 +165,7 @@ export const SettingsPanel = ({
         {effectiveTab === 'mcp-servers' && showMcpTab && (
           <McpServersSettings
             backgroundColor={backgroundColor}
+            hideSectionTitle={showTabBar}
             onContentOverflowChange={onMcpContentOverflowChange}
           />
         )}

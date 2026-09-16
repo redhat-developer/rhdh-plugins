@@ -36,6 +36,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 import { useIaMcpToolsPermission } from '../hooks/useIaMcpToolsPermission';
 import { useMcpConfigureModal } from '../hooks/useMcpConfigureModal';
 import { useTranslation } from '../hooks/useTranslation';
+import { pf6HideNestedRhUiIconCss } from './chatShellTokens';
 import { McpConfigureServerModal } from './McpConfigureServerModal';
 import {
   compareMcpServers,
@@ -53,24 +54,26 @@ type McpServer = McpConfigureServer;
 
 type McpServersSettingsProps = {
   backgroundColor?: string;
+  /** When true, omits the section title (e.g. tab bar already shows "MCP servers"). */
+  hideSectionTitle?: boolean;
   /** Fires when the settings panel root becomes scrollable (overlay/docked jump buttons). */
   onContentOverflowChange?: (hasOverflow: boolean) => void;
 };
 
 const mcpClasses = {
   headerRow: 'ia-mcp-headerRow',
+  headerRowWithTitle: 'ia-mcp-headerRow--withTitle',
   selectedCount: 'ia-mcp-selectedCount',
   title: 'ia-mcp-title',
-  closeButton: 'ia-mcp-closeButton',
   nameHeaderButton: 'ia-mcp-nameHeaderButton',
   statusHeaderButton: 'ia-mcp-statusHeaderButton',
   sortHeaderIconActive: 'ia-mcp-sortHeaderIconActive',
   sortHeaderIconInactive: 'ia-mcp-sortHeaderIconInactive',
   nameHeaderText: 'ia-mcp-nameHeaderText',
   nameCell: 'ia-mcp-nameCell',
+  nameHeaderCell: 'ia-mcp-nameHeaderCell',
   statusHeader: 'ia-mcp-statusHeader',
   statusColumnCell: 'ia-mcp-statusColumnCell',
-  rowName: 'ia-mcp-rowName',
   nameValue: 'ia-mcp-nameValue',
   statusCell: 'ia-mcp-statusCell',
   statusValue: 'ia-mcp-statusValue',
@@ -78,8 +81,11 @@ const mcpClasses = {
   statusWarn: 'ia-mcp-statusWarn',
   statusDisabled: 'ia-mcp-statusDisabled',
   actionButton: 'ia-mcp-actionButton',
+  actionButtonVisible: 'ia-mcp-actionButton--visible',
+  actionCell: 'ia-mcp-actionCell',
   tableRow: 'ia-mcp-tableRow',
   toggleCell: 'ia-mcp-toggleCell',
+  tableShell: 'ia-mcp-tableShell',
   table: 'ia-mcp-table',
   alert: 'ia-mcp-alert',
 } as const;
@@ -95,10 +101,14 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: theme.spacing(2),
-    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(1.5),
+    marginTop: theme.spacing(1),
     marginLeft: theme.spacing(3),
     marginRight: theme.spacing(2),
+  },
+  [`& .${mcpClasses.headerRowWithTitle}`]: {
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
   },
   [`& .${mcpClasses.selectedCount}`]: {
     color: theme.palette.text.secondary,
@@ -108,18 +118,11 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
   [`& .${mcpClasses.title}`]: {
     fontSize: '1.125rem',
   },
-  [`& .${mcpClasses.closeButton}`]: {
-    width: '2.25rem !important',
-    height: '2.25rem !important',
-    marginTop: theme.spacing(-1),
-    marginRight: theme.spacing(-1),
-    color: theme.palette.text.primary,
-  },
   [`& .${mcpClasses.nameHeaderButton}`]: {
     paddingLeft: 0,
     paddingTop: 0,
     paddingBottom: 0,
-    marginLeft: '-0.85rem',
+    marginLeft: 0,
     fontWeight: 600,
     fontSize: '0.75rem',
     lineHeight: '1.25rem',
@@ -149,37 +152,43 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
     color: 'var(--pf-t--global--icon--color--subtle)',
   },
   [`& .${mcpClasses.nameHeaderText}`]: {
-    paddingLeft: '7px',
     fontSize: '0.75rem',
     lineHeight: '1.25rem',
     fontWeight: 600,
   },
-  [`& .${mcpClasses.nameCell}`]: {
-    paddingLeft: '8px !important',
-  },
-  [`& .${mcpClasses.statusHeader}`]: {
-    paddingLeft: '0 !important',
-  },
-  [`& .${mcpClasses.statusColumnCell}`]: {
-    paddingLeft: '0 !important',
-  },
-  [`& .${mcpClasses.rowName}`]: {
-    fontSize: '1rem',
-    fontWeight: 500,
+  [`& .${mcpClasses.nameHeaderCell}, & .${mcpClasses.nameCell}`]: {
+    paddingLeft: '8px',
+    maxWidth: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
+    verticalAlign: 'middle',
   },
   [`& .${mcpClasses.nameValue}`]: {
     fontSize: '0.875rem',
     fontWeight: 500,
+    display: 'block',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  [`& .${mcpClasses.statusHeader}, & .${mcpClasses.statusColumnCell}`]: {
+    paddingLeft: 0,
+    maxWidth: 0,
+    overflow: 'hidden',
   },
   [`& .${mcpClasses.statusCell}`]: {
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
     whiteSpace: 'nowrap',
+    minWidth: 0,
+    overflow: 'hidden',
   },
   [`& .${mcpClasses.statusValue}`]: {
     fontSize: '0.875rem',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   [`& .${mcpClasses.statusOk}`]: {
     color: 'var(--pf-t--global--icon--color--status--custom--default)',
@@ -191,37 +200,59 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
     color: 'var(--pf-t--global--icon--color--subtle)',
   },
   [`& .${mcpClasses.actionButton}`]: {
-    color: theme.palette.text.secondary,
+    color: theme.palette.text.primary,
     opacity: 0,
     transition: 'opacity 0.15s ease-in-out',
-    '&:focus:not(:hover), &.pf-m-clicked:not(:hover)': {
-      backgroundColor:
-        'var(--pf-t--global--background--color--action--plain--default) !important',
-      '--pf-v6-c-button--BackgroundColor':
-        'var(--pf-t--global--background--color--action--plain--default)',
-      '--pf-v6-c-button--m-plain--BackgroundColor':
-        'var(--pf-t--global--background--color--action--plain--default)',
-      '--pf-v6-c-button--m-plain--hover--BackgroundColor':
-        'var(--pf-t--global--background--color--action--plain--hover)',
-    },
+    minWidth: '2rem',
+    minHeight: '2rem',
+    ...pf6HideNestedRhUiIconCss,
   },
-  [`& .${mcpClasses.tableRow}:hover .${mcpClasses.actionButton}, & .${mcpClasses.tableRow}:focus-within:has(:focus-visible) .${mcpClasses.actionButton}`]:
-    {
-      opacity: 1,
-    },
+  [`& .${mcpClasses.actionButtonVisible}`]: {
+    opacity: 1,
+  },
+  [`& .${mcpClasses.actionCell}`]: {
+    width: '2.75rem',
+    textAlign: 'center',
+    verticalAlign: 'middle',
+    paddingInline: 0,
+  },
   [`& .${mcpClasses.toggleCell}`]: {
-    paddingRight: '0 !important',
+    width: '2.5rem',
+    paddingInlineStart: 0,
+    paddingInlineEnd: 0,
+    verticalAlign: 'middle',
+    '--pf-v6-c-table--cell--first-last-child--PaddingInlineStart': '0',
+  },
+  [`& .${mcpClasses.tableShell}`]: {
+    boxSizing: 'border-box',
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
+    paddingLeft: theme.spacing(3),
+    paddingRight: theme.spacing(2),
+    overflow: 'hidden',
   },
   [`& .${mcpClasses.table}`]: {
     width: '100%',
-    backgroundColor: 'transparent',
+    maxWidth: '100%',
+    margin: 0,
     '--pf-v6-c-table--BackgroundColor': 'transparent',
-    '--pf-v5-c-table--BackgroundColor': 'transparent',
-    '& table, & thead, & tbody, & tr, & th, & td': {
-      backgroundColor: 'transparent !important',
+    '&.pf-m-grid-md tbody tr, &.pf-m-grid-md thead tr': {
+      display: 'table-row',
+    },
+    '&.pf-m-grid-md tbody td, &.pf-m-grid-md thead th': {
+      display: 'table-cell',
+    },
+    '& table': {
+      tableLayout: 'fixed',
+      width: '100%',
+    },
+    '& th, & td': {
+      backgroundColor: 'transparent',
+      borderBottom: 0,
+      verticalAlign: 'middle',
     },
     '& th': {
-      borderBottom: 0,
       fontSize: '0.75rem',
       fontWeight: 600,
       color: theme.palette.text.primary,
@@ -229,10 +260,11 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
       textAlign: 'left',
     },
     '& td': {
-      borderBottom: 0,
       paddingTop: theme.spacing(1.5),
       paddingBottom: theme.spacing(1.5),
-      verticalAlign: 'middle',
+    },
+    '& thead th:first-of-type, & tbody td:first-of-type': {
+      paddingInlineStart: 0,
     },
   },
   [`& .${mcpClasses.alert}`]: {
@@ -313,6 +345,7 @@ const toUiServer = (
 });
 export const McpServersSettings = ({
   backgroundColor,
+  hideSectionTitle = false,
   onContentOverflowChange,
 }: McpServersSettingsProps) => {
   const { t } = useTranslation();
@@ -328,6 +361,7 @@ export const McpServersSettings = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
+  const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
 
   const getBaseUrl = useCallback(() => {
     return `${configApi.getString('backend.baseUrl')}/api/intelligent-assistant`;
@@ -600,11 +634,15 @@ export const McpServersSettings = ({
           },
         }}
       />
-      <div className={mcpClasses.headerRow}>
+      <div
+        className={`${mcpClasses.headerRow}${hideSectionTitle ? '' : ` ${mcpClasses.headerRowWithTitle}`}`}
+      >
         <div>
-          <Title headingLevel="h2" size="xl" className={mcpClasses.title}>
-            {t('mcp.settings.title')}
-          </Title>
+          {!hideSectionTitle && (
+            <Title headingLevel="h2" size="xl" className={mcpClasses.title}>
+              {t('mcp.settings.title')}
+            </Title>
+          )}
           <div className={mcpClasses.selectedCount}>
             {t('mcp.settings.selectedCount' as any, {
               selectedCount: String(selectedCount),
@@ -621,175 +659,220 @@ export const McpServersSettings = ({
           className={mcpClasses.alert}
         />
       )}
-      <Table
-        variant="compact"
-        aria-label={t('mcp.settings.tableAriaLabel')}
-        className={mcpClasses.table}
-      >
-        <Thead>
-          <Tr>
-            <Th width={10} screenReaderText={t('mcp.settings.enabled')} />
-            <Th>
-              <Button
-                variant="link"
-                className={mcpClasses.nameHeaderButton}
-                icon={renderSortIcon('name')}
-                iconPosition="right"
-                onClick={() => onSortColumnClick('name')}
-              >
-                <Typography
-                  component="span"
-                  className={mcpClasses.nameHeaderText}
-                >
-                  {t('mcp.settings.name')}
-                </Typography>
-              </Button>
-            </Th>
-            <Th className={mcpClasses.statusHeader}>
-              <Button
-                variant="link"
-                className={mcpClasses.statusHeaderButton}
-                icon={renderSortIcon('status')}
-                iconPosition="right"
-                onClick={() => onSortColumnClick('status')}
-              >
-                <Typography
-                  component="span"
-                  className={mcpClasses.nameHeaderText}
-                >
-                  {t('mcp.settings.status')}
-                </Typography>
-              </Button>
-            </Th>
-            <Th screenReaderText={t('mcp.settings.edit')} />
-          </Tr>
-        </Thead>
-        <Tbody>
-          {isLoading && (
+      <div className={mcpClasses.tableShell}>
+        <Table
+          variant="compact"
+          aria-label={t('mcp.settings.tableAriaLabel')}
+          className={mcpClasses.table}
+        >
+          <Thead>
             <Tr>
-              <Td colSpan={4}>{t('mcp.settings.loading')}</Td>
-            </Tr>
-          )}
-          {!isLoading && sortedServers.length === 0 && (
-            <Tr>
-              <Td colSpan={4}>{t('mcp.settings.noneAvailable')}</Td>
-            </Tr>
-          )}
-          {sortedServers.map(server => {
-            const displayStatus = getDisplayStatus(server);
-            const displayDetail = getDisplayDetail(server, displayStatus, t);
-            let statusClass:
-              | typeof mcpClasses.statusOk
-              | typeof mcpClasses.statusWarn
-              | typeof mcpClasses.statusDisabled = mcpClasses.statusWarn;
-            if (displayStatus === 'ok') {
-              statusClass = mcpClasses.statusOk;
-            } else if (displayStatus === 'disabled') {
-              statusClass = mcpClasses.statusDisabled;
-            }
-
-            return (
-              <Tr key={server.id} className={mcpClasses.tableRow}>
-                <Td width={10} className={mcpClasses.toggleCell}>
-                  {(() => {
-                    const isUnavailable =
-                      isEnabledToggleUnavailable(displayStatus);
-                    const isChecked = getEnabledToggleChecked(
-                      server,
-                      displayStatus,
-                    );
-                    const isRowSaving = Boolean(isSaving[server.name]);
-                    const isToggleDisabled = isUnavailable || isRowSaving;
-                    const switchControl = (
-                      <Switch
-                        id={`mcp-switch-${server.id}`}
-                        aria-label={t(
-                          'mcp.settings.toggleServerAriaLabel' as any,
-                          {
-                            serverName: server.name,
-                          },
-                        )}
-                        isChecked={isChecked}
-                        isDisabled={isToggleDisabled}
-                        onChange={(_event, checked) => {
-                          void patchServer(server.name, {
-                            enabled: checked,
-                          }).catch(() => {
-                            // patchServer already updates component error state.
-                            // Swallow here to avoid unhandled promise rejections
-                            // from event-handler fire-and-forget usage.
-                          });
-                        }}
-                      />
-                    );
-
-                    if (!isToggleDisabled) {
-                      return switchControl;
-                    }
-
-                    return (
-                      <Tooltip content={displayDetail}>
-                        <Typography component="span">
-                          {switchControl}
-                        </Typography>
-                      </Tooltip>
-                    );
-                  })()}
-                </Td>
-                <Td
-                  width={35}
-                  className={`${mcpClasses.rowName} ${mcpClasses.nameCell}`}
+              <Th
+                screenReaderText={t('mcp.settings.enabled')}
+                className={mcpClasses.toggleCell}
+              />
+              <Th className={mcpClasses.nameHeaderCell}>
+                <Button
+                  variant="link"
+                  className={mcpClasses.nameHeaderButton}
+                  icon={renderSortIcon('name')}
+                  iconPosition="right"
+                  onClick={() => onSortColumnClick('name')}
                 >
-                  <Typography component="span" className={mcpClasses.nameValue}>
-                    {server.name}
+                  <Typography
+                    component="span"
+                    className={mcpClasses.nameHeaderText}
+                  >
+                    {t('mcp.settings.name')}
                   </Typography>
-                </Td>
-                <Td width={40} className={mcpClasses.statusColumnCell}>
-                  <div className={mcpClasses.statusCell}>
-                    {getStatusIcon(displayStatus, statusClass)}
-                    {displayStatus === 'failed' ? (
-                      <Tooltip
-                        content={
-                          server.validationError ??
-                          t('mcp.settings.token.validationFailed')
-                        }
-                      >
+                </Button>
+              </Th>
+              <Th className={mcpClasses.statusHeader}>
+                <Button
+                  variant="link"
+                  className={mcpClasses.statusHeaderButton}
+                  icon={renderSortIcon('status')}
+                  iconPosition="right"
+                  onClick={() => onSortColumnClick('status')}
+                >
+                  <Typography
+                    component="span"
+                    className={mcpClasses.nameHeaderText}
+                  >
+                    {t('mcp.settings.status')}
+                  </Typography>
+                </Button>
+              </Th>
+              <Th
+                screenReaderText={t('mcp.settings.edit')}
+                className={mcpClasses.actionCell}
+              />
+            </Tr>
+          </Thead>
+          <Tbody
+            onMouseOver={event => {
+              const row = (event.target as HTMLElement).closest(
+                `tr.${mcpClasses.tableRow}`,
+              );
+              const rowId = row?.getAttribute('data-server-id');
+              if (rowId) {
+                setHoveredRowId(rowId);
+              }
+            }}
+            onMouseLeave={event => {
+              const next = event.relatedTarget;
+              if (
+                !(next instanceof Node) ||
+                !event.currentTarget.contains(next)
+              ) {
+                setHoveredRowId(null);
+              }
+            }}
+          >
+            {isLoading && (
+              <Tr>
+                <Td colSpan={4}>{t('mcp.settings.loading')}</Td>
+              </Tr>
+            )}
+            {!isLoading && sortedServers.length === 0 && (
+              <Tr>
+                <Td colSpan={4}>{t('mcp.settings.noneAvailable')}</Td>
+              </Tr>
+            )}
+            {sortedServers.map(server => {
+              const displayStatus = getDisplayStatus(server);
+              const displayDetail = getDisplayDetail(server, displayStatus, t);
+              let statusClass:
+                | typeof mcpClasses.statusOk
+                | typeof mcpClasses.statusWarn
+                | typeof mcpClasses.statusDisabled = mcpClasses.statusWarn;
+              if (displayStatus === 'ok') {
+                statusClass = mcpClasses.statusOk;
+              } else if (displayStatus === 'disabled') {
+                statusClass = mcpClasses.statusDisabled;
+              }
+
+              return (
+                <Tr
+                  key={server.id}
+                  className={mcpClasses.tableRow}
+                  data-server-id={server.id}
+                >
+                  <Td className={mcpClasses.toggleCell}>
+                    {(() => {
+                      const isUnavailable =
+                        isEnabledToggleUnavailable(displayStatus);
+                      const isChecked = getEnabledToggleChecked(
+                        server,
+                        displayStatus,
+                      );
+                      const isRowSaving = Boolean(isSaving[server.name]);
+                      const isToggleDisabled = isUnavailable || isRowSaving;
+                      const switchControl = (
+                        <Switch
+                          id={`mcp-switch-${server.id}`}
+                          aria-label={t(
+                            'mcp.settings.toggleServerAriaLabel' as any,
+                            {
+                              serverName: server.name,
+                            },
+                          )}
+                          isChecked={isChecked}
+                          isDisabled={isToggleDisabled}
+                          onChange={(_event, checked) => {
+                            void patchServer(server.name, {
+                              enabled: checked,
+                            }).catch(() => {
+                              // patchServer already updates component error state.
+                              // Swallow here to avoid unhandled promise rejections
+                              // from event-handler fire-and-forget usage.
+                            });
+                          }}
+                        />
+                      );
+
+                      if (!isToggleDisabled) {
+                        return switchControl;
+                      }
+
+                      return (
+                        <Tooltip content={displayDetail}>
+                          <Typography component="span">
+                            {switchControl}
+                          </Typography>
+                        </Tooltip>
+                      );
+                    })()}
+                  </Td>
+                  <Td className={mcpClasses.nameCell}>
+                    <Typography
+                      component="span"
+                      className={mcpClasses.nameValue}
+                    >
+                      {server.name}
+                    </Typography>
+                  </Td>
+                  <Td className={mcpClasses.statusColumnCell}>
+                    <div className={mcpClasses.statusCell}>
+                      {getStatusIcon(displayStatus, statusClass)}
+                      {displayStatus === 'failed' ? (
+                        <Tooltip
+                          content={
+                            server.validationError ??
+                            t('mcp.settings.token.validationFailed')
+                          }
+                        >
+                          <Typography
+                            component="span"
+                            className={mcpClasses.statusValue}
+                          >
+                            {displayDetail}
+                          </Typography>
+                        </Tooltip>
+                      ) : (
                         <Typography
                           component="span"
                           className={mcpClasses.statusValue}
                         >
                           {displayDetail}
                         </Typography>
-                      </Tooltip>
-                    ) : (
-                      <Typography
-                        component="span"
-                        className={mcpClasses.statusValue}
-                      >
-                        {displayDetail}
-                      </Typography>
-                    )}
-                  </div>
-                </Td>
-                <Td width={15} isActionCell style={{ textAlign: 'right' }}>
-                  <Button
-                    aria-label={t('mcp.settings.editServerAriaLabel' as any, {
-                      serverName: server.name,
-                    })}
-                    icon={<PencilAltIcon />}
-                    variant="plain"
-                    className={mcpClasses.actionButton}
-                    onClick={event => {
-                      configureModal.open(server);
-                      event.currentTarget.blur();
-                    }}
-                  />
-                </Td>
-              </Tr>
-            );
-          })}
-        </Tbody>
-      </Table>
+                      )}
+                    </div>
+                  </Td>
+                  <Td className={mcpClasses.actionCell}>
+                    <Button
+                      variant="plain"
+                      className={`${mcpClasses.actionButton}${
+                        hoveredRowId === server.id
+                          ? ` ${mcpClasses.actionButtonVisible}`
+                          : ''
+                      }`}
+                      aria-label={t('mcp.settings.editServerAriaLabel' as any, {
+                        serverName: server.name,
+                      })}
+                      onFocus={() => setHoveredRowId(server.id)}
+                      onBlur={() =>
+                        setHoveredRowId(current =>
+                          current === server.id ? null : current,
+                        )
+                      }
+                      onClick={event => {
+                        configureModal.open(server);
+                        event.currentTarget.blur();
+                      }}
+                    >
+                      <PencilAltIcon
+                        style={{ width: 18, height: 18, display: 'block' }}
+                        aria-hidden
+                      />
+                    </Button>
+                  </Td>
+                </Tr>
+              );
+            })}
+          </Tbody>
+        </Table>
+      </div>
       <McpConfigureServerModal {...configureModal} />
     </StyledMcpRoot>
   );

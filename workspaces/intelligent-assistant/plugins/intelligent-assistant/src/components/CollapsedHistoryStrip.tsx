@@ -19,9 +19,8 @@ import { Button, Tooltip } from '@patternfly/react-core';
 import { PencilAltIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
+import { LIGHTSPEED_FLOATING_BG } from './chatShellTokens';
 import { SidebarExpandIcon } from './notebooks/SidebarCollapseIcon';
-
-const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
 
 const Strip = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -32,7 +31,7 @@ const Strip = styled('div')(({ theme }) => ({
   width: 56,
   minWidth: 56,
   flexShrink: 0,
-  backgroundColor: floatingBg,
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
   height: '100%',
 }));
 

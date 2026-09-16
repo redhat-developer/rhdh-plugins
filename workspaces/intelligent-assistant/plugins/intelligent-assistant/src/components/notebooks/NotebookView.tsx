@@ -69,14 +69,9 @@ import {
   ChatMessageContentShell,
   ChatMessageScroll,
 } from '../chatMessageScrollLayout';
+import { LIGHTSPEED_FLOATING_BG } from '../chatShellTokens';
 import { LightspeedChatBox } from '../LightspeedChatBox';
-import {
-  messageBarActionsAlignCss,
-  messageBarMicrophoneActiveButtonCss,
-  messageBarMicrophoneActiveSelector,
-  messageBarSendStopButtonCss,
-  messageBarSendStopSelector,
-} from '../PlainIconButton';
+import { lightspeedMessageBarShellCss } from '../PlainIconButton';
 import { ToastAlertGroup } from '../ToastAlertGroup';
 import { AddDocumentModal } from './AddDocumentModal';
 import { DeleteDocumentModal } from './DeleteDocumentModal';
@@ -86,9 +81,7 @@ import { OverwriteConfirmModal } from './OverwriteConfirmModal';
 import { AddCircleFilledIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
 import { UploadResourceScreen } from './UploadResourceScreen';
 
-const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
-const contentBorder =
-  'var(--pf-t--global--border--width--regular) solid var(--pf-t--global--border--color--default)';
+const ExpandStripButton = Button;
 
 const Root = styled('div')({
   display: 'flex',
@@ -98,7 +91,7 @@ const Root = styled('div')({
   minWidth: 0,
   width: '100%',
   overflow: 'hidden',
-  backgroundColor: floatingBg,
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
 });
 
 const NotebookDrawerContainer = styled('div')({
@@ -113,7 +106,7 @@ const NotebookDrawerContainer = styled('div')({
     minWidth: 0,
   },
   '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
-    backgroundColor: floatingBg,
+    backgroundColor: LIGHTSPEED_FLOATING_BG,
   },
   '& .pf-v6-c-drawer:not(.pf-m-expanded) .pf-v6-c-drawer__panel, & .pf-v5-c-drawer:not(.pf-m-expanded) .pf-v5-c-drawer__panel':
     {
@@ -129,7 +122,7 @@ const StyledDrawerContent = styled(DrawerContent)({
 });
 
 const StyledDrawerContentBody = styled(DrawerContentBody)({
-  backgroundColor: floatingBg,
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
   display: 'flex',
   flexDirection: 'column',
   flex: 1,
@@ -145,8 +138,6 @@ const MainArea = styled('div')({
   minWidth: 0,
 });
 
-const ExpandStripButton = Button;
-
 const ExpandStrip = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -156,7 +147,7 @@ const ExpandStrip = styled('div')(({ theme }) => ({
   width: 56,
   minWidth: 56,
   flexShrink: 0,
-  backgroundColor: floatingBg,
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
 }));
 
 const ContentColumn = styled('div')({
@@ -172,7 +163,7 @@ const TopBar = styled('div')(({ theme }) => ({
   display: 'flex',
   justifyContent: 'flex-end',
   padding: `${theme.spacing(1.5)} ${theme.spacing(2)}`,
-  backgroundColor: floatingBg,
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
 }));
 
 const MainContent = styled('div')({
@@ -189,7 +180,7 @@ const DisclaimerStrip = styled('div')(({ theme }) => ({
   margin: 0,
   padding: `0 0 ${theme.spacing(1)}`,
   boxSizing: 'border-box',
-  backgroundColor: floatingBg,
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
 }));
 
 const DisclaimerInner = styled('div')({
@@ -204,7 +195,7 @@ const WelcomeContainer = styled('div')({
   flex: 1,
   minHeight: 0,
   overflow: 'auto',
-  backgroundColor: floatingBg,
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
 });
 
 const NotebookContentArea = styled('div')(({ theme }) => ({
@@ -242,12 +233,12 @@ const PromptPill = styled('button')(({ theme }) => ({
 }));
 
 const NotebookChatContentShell = styled(ChatMessageContentShell)({
-  backgroundColor: floatingBg,
+  backgroundColor: LIGHTSPEED_FLOATING_BG,
 });
 
 const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
   '&.pf-chatbot__footer': {
-    backgroundColor: `${floatingBg} !important`,
+    backgroundColor: `${LIGHTSPEED_FLOATING_BG} !important`,
     rowGap: 0,
     '--pf-chatbot__footer--RowGap': '0',
     alignItems: 'stretch',
@@ -263,21 +254,7 @@ const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
     rowGap: theme.spacing(1),
     boxSizing: 'border-box',
   },
-  '& .pf-chatbot__message-bar': {
-    backgroundColor:
-      theme.palette.mode === 'light'
-        ? theme.palette.grey[100]
-        : 'var(--pf-t--global--background--color--secondary--default)',
-    border: contentBorder,
-    borderRadius: 24,
-    padding: theme.spacing(0.5),
-    '&::after': {
-      display: 'none',
-    },
-  },
-  ...messageBarActionsAlignCss,
-  [messageBarMicrophoneActiveSelector]: messageBarMicrophoneActiveButtonCss,
-  [messageBarSendStopSelector]: messageBarSendStopButtonCss,
+  ...lightspeedMessageBarShellCss(theme),
 }));
 
 type NotebookViewProps = {
@@ -747,7 +724,7 @@ export const NotebookView = ({
             flexDirection: 'column',
             minHeight: 0,
             minWidth: 0,
-            backgroundColor: floatingBg,
+            backgroundColor: LIGHTSPEED_FLOATING_BG,
           }}
         >
           <UploadResourceScreen

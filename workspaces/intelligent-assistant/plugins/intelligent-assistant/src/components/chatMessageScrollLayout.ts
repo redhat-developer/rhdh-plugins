@@ -17,6 +17,8 @@
 import { styled } from '@mui/material/styles';
 import { ChatbotContent } from '@patternfly/chatbot';
 
+import { LIGHTSPEED_FLOATING_BG } from './chatShellTokens';
+
 /** Centers PF jump (back to top / bottom) buttons over the scroll region. */
 export const chatJumpButtonStyles = (hasOverflow?: boolean) =>
   ({
@@ -40,8 +42,7 @@ export const ChatMessageScroll = styled('div', {
   WebkitOverflowScrolling: 'touch',
   ...(isNewChat
     ? {
-        backgroundColor:
-          'var(--pf-t--global--background--color--floating--default) !important',
+        backgroundColor: `${LIGHTSPEED_FLOATING_BG} !important`,
       }
     : {}),
 }));
