@@ -5,4 +5,4 @@
 '@red-hat-developer-hub/backstage-plugin-app-react': minor
 ---
 
-Backstage version bump to v1.55.0
+Backstage version bump to v1.54.6
