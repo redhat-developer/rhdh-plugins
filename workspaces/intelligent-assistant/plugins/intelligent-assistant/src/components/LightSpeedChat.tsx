@@ -55,9 +55,7 @@ import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/Chat
 import {
   DropdownItem,
   Label,
-  MenuToggle,
   MenuToggleElement,
-  Button as PfButton,
   Select,
   SelectList,
   SelectOption,
@@ -66,6 +64,7 @@ import {
   type AlertProps,
 } from '@patternfly/react-core';
 import {
+  PencilAltIcon,
   PenIcon,
   PlusIcon,
   SearchIcon,
@@ -143,12 +142,90 @@ import {
   SidebarCollapseIcon,
   SidebarExpandIcon,
 } from './notebooks/SidebarCollapseIcon';
+import {
+  chatHeaderOptionsToggleCss,
+  CompactPlainIconButton,
+  compactPlainIconButtonRadiusCss,
+  CompactPlainMenuToggle,
+  compactPlainMenuToggleCss,
+  drawerCollapseButtonSizeCss,
+  drawerCollapseIconSlotCss,
+  LIGHTSPEED_MESSAGE_BAR_MODEL_SELECTOR_CLASS,
+  messageBarActionsAlignCss,
+  messageBarMicrophoneActiveButtonCss,
+  messageBarMicrophoneActiveSelector,
+  messageBarModelSelectorToggleCss,
+  messageBarSendStopButtonCss,
+  messageBarSendStopSelector,
+  plainCircleButtonAfterCss,
+} from './PlainIconButton';
 import { RenameConversationModal } from './RenameConversationModal';
 import { SavedPromptMenuItems } from './SavedPromptMenuItems';
 import { SettingsPanel } from './SettingsPanel';
 import { ToastAlertGroup } from './ToastAlertGroup';
 
 const COLLAPSE_PANEL_ICON_SVG = `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16 21V3H14V21H16ZM12 17V7L7 12L12 17Z' fill='black'/%3E%3C/svg%3E") no-repeat center`;
+
+/** Collapse control for chat history drawer (overlay, docked, and fullscreen). */
+const chatHistoryDrawerCollapseCloseCss = {
+  '& .pf-v6-c-drawer__close, & .pf-v5-c-drawer__close': {
+    marginTop: 0,
+    marginRight: 0,
+  },
+  '& .pf-v6-c-drawer__close .pf-v6-c-button svg, & .pf-v5-c-drawer__close .pf-v5-c-button svg':
+    {
+      display: 'none',
+    },
+  '& .pf-v6-c-drawer__close .pf-v6-c-button, & .pf-v5-c-drawer__close .pf-v5-c-button':
+    {
+      ...drawerCollapseButtonSizeCss,
+      ...compactPlainIconButtonRadiusCss,
+      ...plainCircleButtonAfterCss,
+      position: 'relative',
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      lineHeight: 0,
+      '--pf-v6-c-button--BorderWidth': '0',
+      '--pf-v6-c-button--m-plain--BorderWidth': '0',
+      '--pf-v6-c-button--m-plain--hover--BorderWidth': '0',
+      '--pf-v6-c-button--BackgroundColor':
+        'var(--pf-t--global--background--color--action--plain--default)',
+      '--pf-v6-c-button--hover--BackgroundColor':
+        'var(--pf-t--global--background--color--action--plain--hover)',
+      '--pf-v6-c-button--m-plain--BackgroundColor':
+        'var(--pf-t--global--background--color--action--plain--default)',
+      '--pf-v6-c-button--m-plain--hover--BackgroundColor':
+        'var(--pf-t--global--background--color--action--plain--hover)',
+      '&:hover:not(:disabled), &:focus-visible:not(:disabled)': {
+        ...compactPlainIconButtonRadiusCss,
+        backgroundColor:
+          'var(--pf-t--global--background--color--action--plain--hover) !important',
+        '--pf-v6-c-button--hover--BackgroundColor':
+          'var(--pf-t--global--background--color--action--plain--hover)',
+        '--pf-v6-c-button--m-plain--hover--BackgroundColor':
+          'var(--pf-t--global--background--color--action--plain--hover)',
+      },
+      '& .pf-v6-c-button__icon, & .pf-v5-c-button__icon':
+        drawerCollapseIconSlotCss,
+      '& .pf-v6-c-button__icon::before, & .pf-v5-c-button__icon::before': {
+        content: '""',
+        display: 'block',
+        width: 24,
+        height: 24,
+        flexShrink: 0,
+        mask: COLLAPSE_PANEL_ICON_SVG,
+        WebkitMask: COLLAPSE_PANEL_ICON_SVG,
+        maskSize: 'contain',
+        WebkitMaskSize: 'contain',
+        maskRepeat: 'no-repeat',
+        WebkitMaskRepeat: 'no-repeat',
+        maskPosition: 'center',
+        WebkitMaskPosition: 'center',
+        backgroundColor: 'currentColor',
+      },
+    },
+} as const;
 
 const ConditionalWrapper = ({
   condition,
@@ -161,17 +238,21 @@ const ConditionalWrapper = ({
 }) => (condition ? wrapper(children) : children);
 
 const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
+const contentBorder =
+  'var(--pf-t--global--border--width--regular) solid var(--pf-t--global--border--color--default)';
 
 const StyledChatbot = styled(Chatbot, {
   shouldForwardProp: prop =>
     prop !== 'isCompact' &&
+    prop !== 'isDockedMode' &&
     prop !== 'mcpDrawerFix' &&
     prop !== 'compactDrawerOpen',
 })<{
   isCompact?: boolean;
+  isDockedMode?: boolean;
   mcpDrawerFix?: boolean;
   compactDrawerOpen?: boolean;
-}>(({ isCompact, mcpDrawerFix, compactDrawerOpen }) => ({
+}>(({ isCompact, isDockedMode, mcpDrawerFix, compactDrawerOpen }) => ({
   '& h1, & h2, & h3, & h4, & h5, & h6, & p, & li': {
     margin: 0,
     padding: 0,
@@ -207,17 +288,46 @@ const StyledChatbot = styled(Chatbot, {
     },
   '& .pf-chatbot-container': {
     minHeight: 0,
+    backgroundColor: `${floatingBg} !important`,
+    borderRadius: 'inherit',
+    overflow: 'hidden',
   },
   '& .pf-chatbot__header-container': {
     flexShrink: 0,
+    backgroundColor: `${floatingBg} !important`,
+  },
+  '&.pf-chatbot--embedded': {
+    overflow: 'hidden',
+    boxShadow: 'none !important',
+    ...(isDockedMode
+      ? {
+          border: 'none !important',
+          borderInlineStart: `${contentBorder} !important`,
+          borderRadius: 0,
+        }
+      : {
+          border: `${contentBorder} !important`,
+          borderRadius: isCompact
+            ? 'var(--pf-t--global--border--radius--medium)'
+            : '1rem',
+        }),
   },
   ...(isCompact
     ? {
         height: '100% !important',
         minHeight: '0 !important',
         overflow: 'hidden',
+        '& .pf-chatbot__header .pf-v6-c-menu-toggle.pf-m-plain, & .pf-chatbot__header .pf-v5-c-menu-toggle.pf-m-plain':
+          compactPlainIconButtonRadiusCss,
       }
     : {}),
+  '& .pf-chatbot__header .pf-v6-c-menu-toggle.pf-chatbot__button--toggle-options, & .pf-chatbot__header .pf-chatbot__button--toggle-options':
+    chatHeaderOptionsToggleCss,
+  '& .pf-chatbot__history': {
+    ...chatHistoryDrawerCollapseCloseCss,
+    '& .pf-chatbot__history-search-actions .pf-v6-c-menu-toggle, & .pf-chatbot__history-search-actions .pf-v5-c-menu-toggle, & .pf-chatbot__history-actions .pf-v6-c-menu-toggle, & .pf-chatbot__history-actions .pf-v5-c-menu-toggle, & .pf-chatbot__menu-item .pf-v6-c-menu-toggle, & .pf-chatbot__menu-item .pf-v5-c-menu-toggle':
+      compactPlainMenuToggleCss,
+  },
   // Match the previous compactDrawerPanel class: only expand the history
   // panel when it is actually open. Applying 100% width while collapsed
   // lets the z-index: 1300 panel cover the Chat/Notebooks tab bar.
@@ -250,6 +360,9 @@ const StyledChatbot = styled(Chatbot, {
 const StyledChatbotHeader = styled(ChatbotHeader)(({ theme }) => ({
   padding: `${theme.spacing(3)} ${theme.spacing(3)} 0 ${theme.spacing(3)} !important`,
   backgroundColor: `${floatingBg} !important`,
+  '& + .pf-chatbot__header__divider': {
+    display: 'none',
+  },
 }));
 
 const ErrorContainer = styled('div')(({ theme }) => ({
@@ -305,8 +418,8 @@ const StyledChatbotHeaderTitle = styled(ChatbotHeaderTitle)({
 
 const HeaderDivider = styled('div')({
   flexShrink: 0,
-  paddingTop: 8,
-  borderBottom: '1px solid var(--pf-t--global--border--color--default)',
+  marginTop: '0.75rem',
+  borderBottom: contentBorder,
   backgroundColor: floatingBg,
 });
 
@@ -337,33 +450,54 @@ const NotebooksTabLabel = styled('span', {
 const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
   '&.pf-chatbot__footer': {
     backgroundColor: `${floatingBg} !important`,
+    rowGap: 0,
+    '--pf-chatbot__footer--RowGap': '0',
+    alignItems: 'stretch !important',
+    boxSizing: 'border-box',
   },
-  '&>.pf-chatbot__footer-container': {
+  '& > .pf-v6-c-divider, & > .pf-v5-c-divider': {
+    display: 'none',
+  },
+  '& > .pf-chatbot__footer-container': {
     width: '100% !important',
-    padding: `${theme.spacing(1.5)} !important`,
     maxWidth: 'unset !important',
-    margin: '0 auto',
+    margin: '0 !important',
+    padding: `${theme.spacing(1.5)} var(--pf-t--global--spacer--lg) !important`,
+    rowGap: theme.spacing(1),
+    boxSizing: 'border-box',
   },
   '& .pf-chatbot__message-bar': {
     backgroundColor:
       theme.palette.mode === 'light'
         ? theme.palette.grey[100]
         : 'var(--pf-t--global--background--color--secondary--default)',
-  },
-  '& .pf-chatbot__button--stop, & .pf-chatbot__button--attach, & .pf-chatbot__button--send, & .pf-chatbot__button--microphone':
-    {
-      borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
+    border: contentBorder,
+    borderRadius: 24,
+    padding: theme.spacing(0.5),
+    '&::after': {
+      display: 'none',
     },
+  },
+  ...messageBarActionsAlignCss,
+  [messageBarMicrophoneActiveSelector]: messageBarMicrophoneActiveButtonCss,
+  [messageBarSendStopSelector]: {
+    ...messageBarSendStopButtonCss,
+    borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
+  },
+  [`& .${LIGHTSPEED_MESSAGE_BAR_MODEL_SELECTOR_CLASS}`]: {
+    display: 'inline-flex',
+    flexShrink: 0,
+    maxWidth: '100%',
+  },
+  [`& .${LIGHTSPEED_MESSAGE_BAR_MODEL_SELECTOR_CLASS} .pf-v6-c-menu-toggle, & .${LIGHTSPEED_MESSAGE_BAR_MODEL_SELECTOR_CLASS} .pf-v5-c-menu-toggle`]:
+    messageBarModelSelectorToggleCss,
 }));
 
-const StyledMessageBar = styled(MessageBar)(({ theme }) => ({
-  border: '1px solid var(--pf-t--global--border--color--default)',
-  borderRadius: 24,
-  padding: theme.spacing(0.5),
+const StyledMessageBar = styled(MessageBar)({
   '&::after': {
     display: 'none',
   },
-}));
+});
 
 const StyledSelectList = styled(SelectList)({
   padding: 0,
@@ -1688,7 +1822,7 @@ export const LightspeedChat = ({
   const sortToggle = useCallback(
     (toggleRef: Ref<MenuToggleElement>) => (
       <Tooltip content={`${t('sort.label')} - ${getSortLabel(selectedSort)}`}>
-        <MenuToggle
+        <CompactPlainMenuToggle
           ref={toggleRef}
           aria-label={t('sort.label')}
           variant="plain"
@@ -1700,7 +1834,7 @@ export const LightspeedChat = ({
           ) : (
             <SortAmountDownIcon />
           )}
-        </MenuToggle>
+        </CompactPlainMenuToggle>
       </Tooltip>
     ),
     [t, getSortLabel, selectedSort, onSortToggle, isSortSelectOpen],
@@ -1963,6 +2097,7 @@ export const LightspeedChat = ({
       <StyledChatbot
         displayMode={ChatbotDisplayMode.embedded}
         isCompact={!isFullscreenMode}
+        isDockedMode={displayMode === ChatbotDisplayMode.docked}
         compactDrawerOpen={!isFullscreenMode && isChatHistoryDrawerOpen}
         mcpDrawerFix={isSettingsOpen && !isChatHistoryDrawerOpen}
       >
@@ -1982,42 +2117,41 @@ export const LightspeedChat = ({
                       }
                       position="bottom"
                     >
-                      <PfButton
+                      <CompactPlainIconButton
                         variant="plain"
                         onClick={onChatHistoryDrawerToggle}
                         aria-expanded={isChatHistoryDrawerOpen}
                         aria-label={t('aria.chatHistoryMenu')}
-                        size="sm"
                       >
                         {isChatHistoryDrawerOpen ? (
                           <SidebarCollapseIcon size={18} />
                         ) : (
                           <SidebarExpandIcon size={18} />
                         )}
-                      </PfButton>
+                      </CompactPlainIconButton>
                     </Tooltip>
                     {!isChatHistoryDrawerOpen && (
                       <Tooltip
                         content={t('tooltip.quickNewChat')}
                         position="bottom"
                       >
-                        <PfButton
+                        <CompactPlainIconButton
                           variant="plain"
                           onClick={onNewChat}
                           isDisabled={newChatCreated}
                           aria-label={t('tooltip.quickNewChat')}
-                          size="sm"
                         >
-                          <PenIcon
+                          <PencilAltIcon
                             style={{
                               width: 18,
                               height: 18,
+                              display: 'block',
                               color: newChatCreated
                                 ? undefined
                                 : 'var(--pf-t--global--color--brand--default)',
                             }}
                           />
-                        </PfButton>
+                        </CompactPlainIconButton>
                       </Tooltip>
                     )}
                   </HeaderActions>
