@@ -105,4 +105,33 @@ describe('readSkillImageConfigs', () => {
       },
     ]);
   });
+
+  it.each([
+    [{ username: 'user' }, 'username and password must be provided together'],
+    [{ password: 'secret' }, 'username and password must be provided together'],
+    [
+      { tokenRealm: 'https://auth.example.com/token' },
+      'tokenRealm requires credentials',
+    ],
+    [
+      { username: 'user', password: 'secret', tokenRealm: 'not-a-url' },
+      'valid HTTPS URL',
+    ],
+    [
+      {
+        username: 'user',
+        password: 'secret',
+        tokenRealm: 'http://auth.example.com/token',
+      },
+      'valid HTTPS URL',
+    ],
+  ])('should reject invalid credentials: %p', (credentials, message) => {
+    const config = new ConfigReader({
+      skillImageConnector: {
+        images: [{ imageRef: 'quay.io/org/skill:v1', credentials }],
+      },
+    });
+
+    expect(() => readSkillImageConfigs(config)).toThrow(message);
+  });
 });

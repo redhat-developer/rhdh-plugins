@@ -139,7 +139,7 @@ catalog:
           kubeflow-model-catalog-url: '${KUBEFLOW_MODEL_CATALOG_URL:-}'
           default-owner: '${OWNER:-default-owner}'
           default-lifecycle: '${LIFECYCLE:-production}'
-# Uncomment to enable the skill-image-connector plugin.
+# Uncomment to configure the skill-image-connector plugin with image sources.
 # skillImageConnector:
 #   allowedRegistries:
 #     - quay.io
