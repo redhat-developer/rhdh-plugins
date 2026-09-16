@@ -1,5 +1,24 @@
 # @red-hat-developer-hub/backstage-plugin-boost
 
+## 0.6.0
+
+### Minor Changes
+
+- fa11c87: Polish responsive AI Catalog browsing and AI asset entity details with dynamic
+  filters, accessible view switching, usage guidance, and type-aware metadata.
+
+  Entity-page extensions are consolidated into AI asset details, agent
+  instructions, and Usage cards. The separate Usage tab is not part of this
+  preview; standard TechDocs remain provided by the host application, and usage
+  content remains hidden when the usage permission is denied. Git sources that
+  point to subpaths now open their source location instead of guessing an
+  archive download.
+
+### Patch Changes
+
+- Updated dependencies [fa11c87]
+  - @red-hat-developer-hub/backstage-plugin-boost-common@0.4.3
+
 ## 0.5.4
 
 ### Patch Changes

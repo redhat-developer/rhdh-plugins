@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-boost-common
 
+## 0.4.3
+
+### Patch Changes
+
+- fa11c87: Align OGX AI asset entities with the canonical provider metadata contract and
+  harden shared AI asset type validation.
+
 ## 0.4.2
 
 ### Patch Changes
