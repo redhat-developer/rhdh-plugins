@@ -35,12 +35,28 @@ export async function createRouter(
     const results = Array.from(extractions.entries()).map(
       ([imageRef, extraction]) => ({
         imageRef,
-        skillImageYamlPath: extraction.skillImageYamlPath,
-        skillsMdPath: extraction.skillsMdPath,
+        skillImageYaml: extraction.skillImageYaml,
+        skillsMd: extraction.skillsMd,
       }),
     );
     res.status(200).json({ images: results });
   });
+
+  router.use(
+    (
+      error: Error,
+      _req: express.Request,
+      res: express.Response,
+      next: express.NextFunction,
+    ) => {
+      logger.error('Skill image connector request failed', error);
+      if (res.headersSent) {
+        next(error);
+        return;
+      }
+      res.status(500).json({ error: 'Internal server error' });
+    },
+  );
 
   return router;
 }

@@ -75,4 +75,34 @@ describe('readSkillImageConfigs', () => {
       'quay.io/gabemontero/hello-world-skill:1.0.0-draft',
     );
   });
+
+  it('should read credentials and skip duplicate image references', () => {
+    const config = new ConfigReader({
+      skillImageConnector: {
+        images: [
+          {
+            imageRef: 'quay.io/org/skill:v1',
+            credentials: {
+              username: 'user',
+              password: 'secret',
+              tokenRealm: 'https://auth.example.com/token',
+            },
+          },
+          { imageRef: 'quay.io/org/skill:v1' },
+        ],
+      },
+    });
+
+    expect(readSkillImageConfigs(config)).toEqual([
+      {
+        id: 'image-0',
+        imageRef: 'quay.io/org/skill:v1',
+        credentials: {
+          username: 'user',
+          password: 'secret',
+          tokenRealm: 'https://auth.example.com/token',
+        },
+      },
+    ]);
+  });
 });

@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-import { mockServices } from '@backstage/backend-test-utils';
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import { createHash } from 'node:crypto';
 import { parseImageRef, fetchManifest, fetchBlob } from './OciClient';
 import type { OciManifest } from './types';
+
+const validSha256Digest = `sha256:${'a'.repeat(64)}`;
 
 describe('parseImageRef', () => {
   it('should parse a full image reference with tag', () => {
@@ -86,6 +88,22 @@ describe('parseImageRef', () => {
     });
   });
 
+  it('should parse tag and digest references without leaking the tag', () => {
+    const ref = parseImageRef(`quay.io/org/repo:v1@sha256:${'a'.repeat(64)}`);
+    expect(ref).toEqual({
+      registry: 'quay.io',
+      repository: 'org/repo',
+      tag: 'v1',
+      digest: validSha256Digest,
+    });
+  });
+
+  it('should reject an empty tag', () => {
+    expect(() => parseImageRef('quay.io/org/repo:')).toThrow(
+      'tag must not be empty',
+    );
+  });
+
   it('should throw for empty string', () => {
     expect(() => parseImageRef('')).toThrow('reference must not be empty');
   });
@@ -96,13 +114,18 @@ describe('parseImageRef', () => {
 
   it('should throw for digest with invalid algorithm', () => {
     expect(() => parseImageRef('quay.io/org/repo@md5:abc')).toThrow(
-      'digest must start with a hash algorithm',
+      'digest must be a valid sha256 or sha512 digest',
     );
   });
 });
 
 describe('fetchManifest', () => {
-  const logger = mockServices.logger.mock();
+  const logger = {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+  } as unknown as LoggerService;
 
   afterEach(() => {
     jest.resetAllMocks();
@@ -215,12 +238,12 @@ describe('fetchManifest', () => {
         registry: 'quay.io',
         repository: 'org/repo',
         tag: 'latest',
-        digest: 'sha256:abcdef',
+        digest: validSha256Digest,
       },
       logger,
     );
     expect(global.fetch).toHaveBeenCalledWith(
-      'https://quay.io/v2/org/repo/manifests/sha256:abcdef',
+      `https://quay.io/v2/org/repo/manifests/${validSha256Digest}`,
       expect.any(Object),
     );
   });
@@ -271,6 +294,57 @@ describe('fetchManifest', () => {
     expect(global.fetch).toHaveBeenCalledTimes(3);
   });
 
+  it('should use configured credentials for registry and token requests', async () => {
+    const mockManifest: OciManifest = {
+      schemaVersion: 2,
+      config: {
+        mediaType: 'application/vnd.oci.image.config.v1+json',
+        digest: 'sha256:config',
+        size: 100,
+      },
+      layers: [],
+    };
+    const credentials = {
+      username: 'user',
+      password: 'secret',
+      tokenRealm: 'https://auth.example.com/token',
+    };
+
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: {
+          get: () =>
+            'Bearer realm="https://auth.example.com/token",service="registry.example.com"',
+        },
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ access_token: 'test-token-123' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => mockManifest,
+        headers: new Map(),
+      });
+
+    await fetchManifest(
+      { registry: 'registry.example.com', repository: 'org/repo', tag: 'v1' },
+      logger,
+      credentials,
+    );
+
+    const calls = (global.fetch as jest.Mock).mock.calls;
+    expect(calls[0][1].headers.Authorization).toMatch(/^Basic /);
+    expect(calls[1][1].headers.Authorization).toMatch(/^Basic /);
+    expect(calls[2][1].headers.Authorization).toBe('Bearer test-token-123');
+  });
+
   it('should throw when fetch itself rejects', async () => {
     global.fetch = jest.fn().mockRejectedValue(new Error('Network error'));
 
@@ -284,7 +358,12 @@ describe('fetchManifest', () => {
 });
 
 describe('fetchBlob', () => {
-  const logger = mockServices.logger.mock();
+  const logger = {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+  } as unknown as LoggerService;
 
   afterEach(() => {
     jest.resetAllMocks();
@@ -324,7 +403,7 @@ describe('fetchBlob', () => {
     await expect(
       fetchBlob(
         { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
-        'sha256:abc123',
+        validSha256Digest,
         100,
         logger,
       ),
@@ -335,7 +414,7 @@ describe('fetchBlob', () => {
     await expect(
       fetchBlob(
         { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
-        'sha256:abc123',
+        validSha256Digest,
         100 * 1024 * 1024, // 100 MB
         logger,
       ),
@@ -369,10 +448,66 @@ describe('fetchBlob', () => {
     await expect(
       fetchBlob(
         { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
-        'sha256:abc123',
+        validSha256Digest,
         100,
         logger,
       ),
     ).rejects.toThrow('Connection refused');
+  });
+
+  it('should verify sha512 digests', async () => {
+    const content = Buffer.from('sha512 content');
+    const digest = `sha512:${createHash('sha512')
+      .update(content)
+      .digest('hex')}`;
+
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () =>
+        content.buffer.slice(
+          content.byteOffset,
+          content.byteOffset + content.byteLength,
+        ),
+      headers: new Map(),
+    });
+
+    await expect(
+      fetchBlob(
+        { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
+        digest,
+        content.length,
+        logger,
+      ),
+    ).resolves.toEqual(content);
+  });
+
+  it('should enforce the size limit while streaming a blob', async () => {
+    const content = Buffer.from('streamed content');
+    const digest = `sha256:${createHash('sha256')
+      .update(content)
+      .digest('hex')}`;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(content);
+        controller.close();
+      },
+    });
+
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      body,
+      headers: new Map(),
+    });
+
+    await expect(
+      fetchBlob(
+        { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
+        digest,
+        content.length,
+        logger,
+      ),
+    ).resolves.toEqual(content);
   });
 });

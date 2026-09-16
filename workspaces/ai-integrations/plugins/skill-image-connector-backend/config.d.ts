@@ -16,9 +16,19 @@
 
 export interface Config {
   skillImageConnector?: {
+    /** @visibility backend */
+    allowedRegistries?: string[];
     images?: Array<{
       /** @visibility backend */
       imageRef?: string;
+      credentials?: {
+        /** @visibility backend */
+        username?: string;
+        /** @visibility backend */
+        password?: string;
+        /** @visibility backend */
+        tokenRealm?: string;
+      };
     }>;
   };
 }

@@ -18,10 +18,22 @@ import {
   coreServices,
   createBackendPlugin,
 } from '@backstage/backend-plugin-api';
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import type { Config } from '@backstage/config';
+import { InputError } from '@backstage/errors';
 import { createRouter } from './router';
-import { fetchAndExtractSkillImage } from './services/SkillImageService';
-import type { SkillImageConfig, SkillImageExtraction } from './services/types';
+import { parseImageRef } from './services/OciClient';
+import {
+  cleanupSkillImageExtraction,
+  fetchAndExtractSkillImage,
+} from './services/SkillImageService';
+import type {
+  RegistryCredentials,
+  SkillImageConfig,
+  SkillImageExtraction,
+} from './services/types';
+
+const MAX_CONFIGURED_IMAGES = 25;
 
 /**
  * Safely read an optional string from a Backstage Config object.
@@ -49,7 +61,10 @@ function safeGetOptionalString(
  *     - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
  * ```
  */
-export function readSkillImageConfigs(config: Config): SkillImageConfig[] {
+export function readSkillImageConfigs(
+  config: Config,
+  logger?: Pick<LoggerService, 'warn'>,
+): SkillImageConfig[] {
   const pluginConfig = config.getOptionalConfig('skillImageConnector');
   if (!pluginConfig) {
     return [];
@@ -61,15 +76,69 @@ export function readSkillImageConfigs(config: Config): SkillImageConfig[] {
   }
 
   const results: SkillImageConfig[] = [];
+  const seenImageRefs = new Set<string>();
   for (let i = 0; i < imagesConfig.length; i++) {
     const entry = imagesConfig[i];
-    const imageRef = safeGetOptionalString(entry, 'imageRef');
+    const imageRef = safeGetOptionalString(entry, 'imageRef')?.trim();
     if (!imageRef) {
+      logger?.warn(
+        `Skipping skill image configuration at index ${i}: imageRef is missing`,
+      );
       continue;
     }
+
+    if (seenImageRefs.has(imageRef)) {
+      logger?.warn(
+        `Skipping duplicate skill image configuration for ${imageRef}`,
+      );
+      continue;
+    }
+
+    seenImageRefs.add(imageRef);
+    const credentialsConfig = entry.getOptionalConfig('credentials');
+    const username = credentialsConfig
+      ? safeGetOptionalString(credentialsConfig, 'username')
+      : undefined;
+    const password = credentialsConfig
+      ? safeGetOptionalString(credentialsConfig, 'password')
+      : undefined;
+    const tokenRealm = credentialsConfig
+      ? safeGetOptionalString(credentialsConfig, 'tokenRealm')
+      : undefined;
+    if (Boolean(username) !== Boolean(password) || (tokenRealm && !username)) {
+      throw new InputError(
+        `Invalid credentials for skill image ${imageRef}: username and password must be provided together; tokenRealm requires credentials`,
+      );
+    }
+    if (tokenRealm) {
+      let tokenRealmUrl: URL;
+      try {
+        tokenRealmUrl = new URL(tokenRealm);
+      } catch {
+        throw new InputError(
+          `Invalid credentials for skill image ${imageRef}: tokenRealm must be a valid HTTPS URL`,
+        );
+      }
+      if (tokenRealmUrl.protocol !== 'https:') {
+        throw new InputError(
+          `Invalid credentials for skill image ${imageRef}: tokenRealm must be a valid HTTPS URL`,
+        );
+      }
+    }
+
+    const credentials: RegistryCredentials | undefined =
+      username && password
+        ? {
+            username,
+            password,
+            ...(tokenRealm ? { tokenRealm } : {}),
+          }
+        : undefined;
+
     results.push({
       id: `image-${i}`,
       imageRef,
+      ...(credentials ? { credentials } : {}),
     });
   }
 
@@ -91,15 +160,44 @@ export const skillImageConnectorPlugin = createBackendPlugin({
     env.registerInit({
       deps: {
         httpRouter: coreServices.httpRouter,
+        lifecycle: coreServices.lifecycle,
         logger: coreServices.logger,
         config: coreServices.rootConfig,
       },
-      async init({ logger, httpRouter, config }) {
+      async init({ logger, httpRouter, lifecycle, config }) {
         const pluginLogger = logger.child({
           source: 'skillImageConnectorPlugin',
         });
 
-        const imageConfigs = readSkillImageConfigs(config);
+        const imageConfigs = readSkillImageConfigs(config, pluginLogger);
+        const allowedRegistries = (
+          config
+            .getOptionalConfig('skillImageConnector')
+            ?.getOptionalStringArray('allowedRegistries') ?? []
+        )
+          .map(registry => registry.trim().toLowerCase())
+          .filter(Boolean);
+
+        if (imageConfigs.length > 0 && allowedRegistries.length === 0) {
+          throw new InputError(
+            'skillImageConnector.allowedRegistries must list at least one registry when images are configured',
+          );
+        }
+        if (imageConfigs.length > MAX_CONFIGURED_IMAGES) {
+          throw new InputError(
+            `skillImageConnector.images may contain at most ${MAX_CONFIGURED_IMAGES} entries`,
+          );
+        }
+        for (const imageConfig of imageConfigs) {
+          const registry = parseImageRef(
+            imageConfig.imageRef,
+          ).registry.toLowerCase();
+          if (!allowedRegistries.includes(registry)) {
+            throw new InputError(
+              `Registry ${registry} for ${imageConfig.imageRef} is not in skillImageConnector.allowedRegistries`,
+            );
+          }
+        }
         pluginLogger.info(
           `Found ${imageConfigs.length} skill image configuration(s)`,
         );
@@ -111,29 +209,45 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         // Store extraction results so they can be exposed via the API
         const extractions = new Map<string, SkillImageExtraction>();
 
-        // Process configured images at startup
-        for (const imgConfig of imageConfigs) {
-          try {
+        httpRouter.use(await createRouter(pluginLogger, extractions));
+        httpRouter.addAuthPolicy({
+          path: '/health',
+          allow: 'unauthenticated',
+        });
+
+        // Do not make an unavailable registry prevent the backend from starting.
+        const processing = Promise.allSettled(
+          imageConfigs.map(async imgConfig => {
             const result = await fetchAndExtractSkillImage(
               imgConfig.imageRef,
               workDir,
               pluginLogger,
+              imgConfig.credentials,
             );
             extractions.set(imgConfig.imageRef, result);
             pluginLogger.info(
-              `Successfully extracted skill image ${imgConfig.imageRef}: ` +
-                `skillimage.yaml=${result.skillImageYamlPath}, ` +
-                `SKILLS.md=${result.skillsMdPath}`,
+              `Successfully extracted skill image ${imgConfig.imageRef}`,
             );
-          } catch (error) {
-            pluginLogger.error(
-              `Failed to process skill image ${imgConfig.imageRef}`,
-              error as Error,
-            );
-          }
-        }
+          }),
+        ).then(results => {
+          results.forEach((result, index) => {
+            if (result.status === 'rejected') {
+              pluginLogger.error(
+                `Failed to process skill image ${imageConfigs[index].imageRef}`,
+                result.reason as Error,
+              );
+            }
+          });
+        });
 
-        httpRouter.use(await createRouter(pluginLogger, extractions));
+        lifecycle.addShutdownHook(async () => {
+          await processing;
+          await Promise.all(
+            Array.from(extractions.values()).map(extraction =>
+              cleanupSkillImageExtraction(extraction, pluginLogger),
+            ),
+          );
+        });
       },
     });
   },
