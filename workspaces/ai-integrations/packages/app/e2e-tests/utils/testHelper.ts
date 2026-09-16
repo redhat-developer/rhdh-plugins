@@ -26,7 +26,7 @@ const LOCALE_DISPLAY_NAMES: Record<string, string> = {
 };
 
 function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return value.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
 }
 
 export function getLocaleDisplayName(locale: string): string {

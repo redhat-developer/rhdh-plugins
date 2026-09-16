@@ -27,18 +27,25 @@ import aiExperienceTranslationJa from '../../../../plugins/ai-experience/src/tra
 export type AiExperienceMessages = typeof aiExperienceMessages;
 
 function transform(messages: typeof aiExperienceTranslationDe.messages) {
-  const result = Object.keys(messages).reduce((res, key) => {
+  const result: Record<string, unknown> = {};
+
+  for (const key of Object.keys(messages)) {
     const path = key.split('.');
-    const lastIndex = path.length - 1;
-    path.reduce((acc, currentPath, i) => {
-      acc[currentPath] =
-        lastIndex === i
-          ? (messages as Record<string, string>)[key]
-          : (acc[currentPath] as Record<string, unknown>) || {};
-      return acc[currentPath] as Record<string, unknown>;
-    }, res);
-    return res;
-  }, {} as Record<string, unknown>);
+    let current = result;
+
+    for (let index = 0; index < path.length; index++) {
+      const segment = path[index];
+      if (index === path.length - 1) {
+        current[segment] = messages[key];
+        break;
+      }
+
+      if (!current[segment]) {
+        current[segment] = {};
+      }
+      current = current[segment] as Record<string, unknown>;
+    }
+  }
 
   return result as AiExperienceMessages;
 }
