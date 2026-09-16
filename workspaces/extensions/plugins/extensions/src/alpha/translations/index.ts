@@ -19,7 +19,7 @@ import { extensionsTranslationRef } from './ref';
 
 /**
  * Translation Resource for extensions
- * @alpha
+ * @public
  */
 export const extensionsTranslations = createTranslationResource({
   ref: extensionsTranslationRef,

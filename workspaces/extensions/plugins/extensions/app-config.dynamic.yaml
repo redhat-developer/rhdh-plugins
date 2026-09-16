@@ -4,7 +4,6 @@ dynamicPlugins:
       translationResources:
         - importName: extensionsTranslations
           ref: extensionsTranslationRef
-          module: Alpha
       appIcons:
         - name: pluginsIcon
           importName: PluginsIcon

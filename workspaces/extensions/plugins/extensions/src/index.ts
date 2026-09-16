@@ -23,3 +23,8 @@ ClassNameGenerator.configure(componentName => {
 });
 
 export * from './plugin';
+
+export {
+  extensionsTranslations,
+  extensionsTranslationRef,
+} from './alpha/translations';
