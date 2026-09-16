@@ -35,7 +35,7 @@ A `FilterDefinition` interface MUST define the contract, and a Blueprint MUST wr
 - **AND** the extension attaches to `page:boost/ai-catalog` input `filters`
 - **AND** the Blueprint has no `config` schema (no deployer YAML config per filter)
 
-#### Scenario: FilterSidebar renders generic Select for each filter
+#### Scenario: CatalogFilters renders generic Select for each filter
 
 - **WHEN** the filter sidebar renders
 - **THEN** it maps over resolved `FilterDefinition[]` and renders a `<Select>` for each
@@ -57,7 +57,7 @@ Existing hardcoded filters MUST be converted to `FilterDefinition` objects regis
 - **GIVEN** the 4 built-in filter definitions (category, provider, owner, tags)
 - **THEN** each is a plain object in `src/filters/builtInFilterDefinitions.ts`
 - **AND** no filter has its own React component file
-- **AND** all share the same generic `<Select>` rendering in `FilterSidebar`
+- **AND** all share the same generic `<Select>` rendering in `CatalogFilters`
 
 ### Requirement: Disable Filters via app-config
 

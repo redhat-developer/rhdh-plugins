@@ -42,6 +42,50 @@ describe('readOgxEntityProviderConfig', () => {
     expect(result.skipTLSVerify).toBe(true);
   });
 
+  it('reads agent configuration from boost.entityProviders.ogx', () => {
+    const config = new ConfigReader({
+      boost: {
+        entityProviders: {
+          ogx: {
+            baseUrl: 'https://ogx.example.com',
+            defaultAgent: 'router',
+            maxAgentTurns: 5,
+            agents: [
+              {
+                id: 'router',
+                name: 'Router',
+                version: '1.2.3',
+                model: 'granite-8b',
+                tools: ['web-search'],
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    const result = readOgxEntityProviderConfig(config);
+
+    expect(result.defaultAgent).toBe('router');
+    expect(result.maxAgentTurns).toBe(5);
+    expect(result.agents).toEqual([
+      {
+        id: 'router',
+        name: 'Router',
+        version: '1.2.3',
+        model: 'granite-8b',
+        tools: ['web-search'],
+        description: undefined,
+        instructions: undefined,
+        handoffs: undefined,
+        handoffDescription: undefined,
+        enableRAG: undefined,
+        createdBy: undefined,
+        lifecycleStage: undefined,
+      },
+    ]);
+  });
+
   it('reads caData and skipTLSVerify from fallback boost.providers.ogx', () => {
     const config = new ConfigReader({
       boost: {
@@ -78,6 +122,35 @@ describe('readOgxEntityProviderConfig', () => {
     expect(result.baseUrl).toBe('http://localhost:8321');
     expect(result.caData).toBeUndefined();
     expect(result.skipTLSVerify).toBeUndefined();
+  });
+
+  it('treats empty optional environment values as undefined', () => {
+    const config = new ConfigReader({
+      boost: {
+        entityProviders: {
+          ogx: {
+            baseUrl: 'http://localhost:8321',
+            apiKey: '',
+            agents: [
+              {
+                id: 'empty-agent',
+                name: 'Empty Agent',
+                version: '',
+                description: '',
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    const result = readOgxEntityProviderConfig(config);
+
+    expect(result.apiKey).toBeUndefined();
+    expect(result.agents?.[0]).toMatchObject({
+      version: undefined,
+      description: undefined,
+    });
   });
 
   it('falls back to localhost when no OGX config is present', () => {
