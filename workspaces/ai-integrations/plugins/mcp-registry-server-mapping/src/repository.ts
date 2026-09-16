@@ -112,9 +112,13 @@ export function computeRepositoryUrl(
       combinedUrl = `${base}/src/HEAD/${subfolder}`;
       break;
     case 'azure-devops': {
-      // Use query parameter; check if base already has a query string
+      // Use query parameter; encode each path segment for safe query values
       const separator = base.includes('?') ? '&' : '?';
-      combinedUrl = `${base}${separator}path=/${subfolder}`;
+      const encodedSubfolder = subfolder
+        .split('/')
+        .map(encodeURIComponent)
+        .join('/');
+      combinedUrl = `${base}${separator}path=/${encodedSubfolder}`;
       break;
     }
     default:

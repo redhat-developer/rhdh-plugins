@@ -65,10 +65,13 @@ function validateRequiredFields(doc: McpServerDocument): void {
 function mapRemotes(doc: McpServerDocument): McpServerEntityRemote[] {
   const sourceRemotes = doc.remotes ?? [];
 
-  // Filter remotes whose url passes D11, preserving source order
+  // Filter remotes whose url passes D11 and type is a non-empty string,
+  // preserving source order
   const validRemotes: McpServerEntityRemote[] = [];
   for (const remote of sourceRemotes) {
     if (
+      typeof remote.type === 'string' &&
+      remote.type.length > 0 &&
       remote.url !== undefined &&
       remote.url !== null &&
       isAllowedUrl(remote.url)
@@ -195,20 +198,16 @@ export function mapServerToEntity(
   // Step 6: Map remotes
   const specRemotes = mapRemotes(doc);
 
-  // Track consumed remote paths: type and url of remotes that were
-  // copied into spec.remotes
+  // Track consumed remote paths: type and url of all remotes are consumed
+  // regardless of D11 outcome (symmetric with websiteUrl consumption).
+  // Headers and variables are NOT consumed — they go to projection.
   if (doc.remotes) {
     for (let i = 0; i < doc.remotes.length; i++) {
       const remote = doc.remotes[i];
       consumedPaths.push(`remotes.${i}.type`);
-      if (
-        remote.url !== undefined &&
-        remote.url !== null &&
-        isAllowedUrl(remote.url)
-      ) {
+      if (remote.url !== undefined && remote.url !== null) {
         consumedPaths.push(`remotes.${i}.url`);
       }
-      // Note: headers and variables are NOT consumed — they go to projection
     }
   }
 

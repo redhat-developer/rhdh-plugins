@@ -462,6 +462,22 @@ describe('mapServerToEntity', () => {
       );
     });
 
+    it('encodes Azure DevOps subfolder segments with special characters', () => {
+      const { entity } = mapServerToEntity(
+        makeMinimalDoc({
+          repository: {
+            url: 'https://dev.azure.com/org/project/_git/repo',
+            source: 'azure-devops',
+            subfolder: 'src/my&folder/file name',
+          },
+        }),
+      );
+      const link = entity.metadata.links?.find(l => l.title === 'Source Code');
+      expect(link?.url).toBe(
+        'https://dev.azure.com/org/project/_git/repo?path=/src/my%26folder/file%20name',
+      );
+    });
+
     it('falls back to path join for unknown SCM', () => {
       const { entity } = mapServerToEntity(
         makeMinimalDoc({
@@ -652,6 +668,66 @@ describe('mapServerToEntity', () => {
       expect(reservedAnnotationKeys).toEqual(
         [...reservedAnnotationKeys].sort(),
       );
+    });
+
+    it('consumes refused remote URLs symmetrically', () => {
+      const { consumedPaths } = mapServerToEntity(
+        makeMinimalDoc({
+          remotes: [
+            { type: 'valid', url: 'https://good.com/mcp' },
+            { type: 'bad', url: 'javascript:alert(1)' },
+          ],
+        }),
+      );
+
+      // Both remote URLs are consumed regardless of D11 outcome
+      expect(consumedPaths).toContain('remotes.0.url');
+      expect(consumedPaths).toContain('remotes.1.url');
+      expect(consumedPaths).toContain('remotes.0.type');
+      expect(consumedPaths).toContain('remotes.1.type');
+    });
+  });
+
+  describe('remote.type runtime validation', () => {
+    it('skips remote entry with missing type', () => {
+      const doc = makeMinimalDoc({
+        remotes: [
+          { type: undefined as unknown as string, url: 'https://a.com/mcp' },
+          { type: 'sse', url: 'https://b.com/mcp' },
+        ],
+        websiteUrl: 'https://example.com',
+      });
+      const { entity } = mapServerToEntity(doc);
+      expect(entity.spec.remotes).toEqual([
+        { type: 'sse', url: 'https://b.com/mcp' },
+      ]);
+    });
+
+    it('skips remote entry with empty string type', () => {
+      const doc = makeMinimalDoc({
+        remotes: [
+          { type: '', url: 'https://a.com/mcp' },
+          { type: 'sse', url: 'https://b.com/mcp' },
+        ],
+        websiteUrl: 'https://example.com',
+      });
+      const { entity } = mapServerToEntity(doc);
+      expect(entity.spec.remotes).toEqual([
+        { type: 'sse', url: 'https://b.com/mcp' },
+      ]);
+    });
+
+    it('falls back to D8 placeholder when all remotes have invalid type', () => {
+      const doc = makeMinimalDoc({
+        remotes: [
+          { type: undefined as unknown as string, url: 'https://a.com/mcp' },
+        ],
+        websiteUrl: 'https://example.com',
+      });
+      const { entity } = mapServerToEntity(doc);
+      expect(entity.spec.remotes).toEqual([
+        { type: 'undefined', url: 'https://example.com' },
+      ]);
     });
   });
 });
