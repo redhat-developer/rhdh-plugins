@@ -1514,7 +1514,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@axe-core/playwright@npm:^4.10.0":
+"@axe-core/playwright@npm:^4.10.0, @axe-core/playwright@npm:^4.13.0":
   version: 4.13.0
   resolution: "@axe-core/playwright@npm:4.13.0"
   dependencies:
@@ -14465,6 +14465,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "app@workspace:packages/app"
   dependencies:
+    "@axe-core/playwright": "npm:^4.13.0"
     "@backstage/app-defaults": "npm:^1.7.11"
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/cli": "npm:^0.36.5"

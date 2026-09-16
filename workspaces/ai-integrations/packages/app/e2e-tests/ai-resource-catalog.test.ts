@@ -27,10 +27,9 @@ import {
 
 test.describe('AiResource catalog QE (RHIDP-14382 / RHIDP-14746)', () => {
   let translations: AiExperienceMessages;
-  let projectLocale: string;
 
   test.beforeEach(async ({ page }, testInfo) => {
-    projectLocale =
+    const projectLocale =
       typeof testInfo.project.use.locale === 'string'
         ? testInfo.project.use.locale.split('-')[0]
         : 'en';
@@ -53,21 +52,12 @@ test.describe('AiResource catalog QE (RHIDP-14382 / RHIDP-14746)', () => {
     ).toBeVisible();
   });
 
-  test('catalog lists git-backed AiResource entities', async ({
-    page,
-  }, testInfo) => {
+  test('catalog lists git-backed AiResource entities', async ({ page }) => {
     await gotoAiResourceCatalog(page);
 
     await expect(
       page.getByRole('link', { name: 'fraud-detection-model' }),
     ).toBeVisible();
-
-    skipUnlessLocales(testInfo, ['en'], 'Accessibility scans run on en only');
-    await runAccessibilityTests(
-      page,
-      testInfo,
-      'airesource-catalog-index-a11y.json',
-    );
   });
 
   test('catalog lists OCI-backed AiResource entities', async ({ page }) => {
@@ -83,7 +73,7 @@ test.describe('AiResource catalog QE (RHIDP-14382 / RHIDP-14746)', () => {
 
   test('git-backed AiResource entity detail page renders metadata', async ({
     page,
-  }, testInfo) => {
+  }) => {
     await page.goto('/catalog/default/airesource/fraud-detection-model');
 
     await expect(
@@ -94,13 +84,7 @@ test.describe('AiResource catalog QE (RHIDP-14382 / RHIDP-14746)', () => {
     ).toBeVisible();
     await expectAboutCardField(page, 'Lifecycle', 'production');
     await expectAboutCardField(page, 'Type', 'model');
-
-    skipUnlessLocales(testInfo, ['en'], 'Accessibility scans run on en only');
-    await runAccessibilityTests(
-      page,
-      testInfo,
-      'airesource-entity-detail-a11y.json',
-    );
+    await expect(page.getByText('Relations', { exact: true })).toBeVisible();
   });
 
   test('OCI-backed AiResource entity detail page renders metadata', async ({
@@ -135,20 +119,23 @@ test.describe('AiResource catalog QE (RHIDP-14382 / RHIDP-14746)', () => {
     await expect(page.getByRole('tab', { name: 'Docs' })).toBeVisible();
   });
 
-  test('AiResource entity without techdocs-ref renders overview', async ({
-    page,
-  }) => {
-    await page.goto('/catalog/default/airesource/summarization-skills-pack');
+  // Entity page always renders Docs today; fails until conditional routing lands.
+  test.fail(
+    'AiResource entity without techdocs-ref hides Docs tab',
+    async ({ page }) => {
+      await page.goto('/catalog/default/airesource/summarization-skills-pack');
 
-    await expect(
-      page.getByRole('heading', { name: 'Summarization Skills Pack' }),
-    ).toBeVisible();
-    await expect(
-      page.getByText(
-        'Bundle of summarization prompts/skills published as one OCI artifact.',
-      ),
-    ).toBeVisible();
-  });
+      await expect(
+        page.getByRole('heading', { name: 'Summarization Skills Pack' }),
+      ).toBeVisible();
+      await expect(
+        page.getByText(
+          'Bundle of summarization prompts/skills published as one OCI artifact.',
+        ),
+      ).toBeVisible();
+      await expect(page.getByRole('tab', { name: 'Docs' })).not.toBeVisible();
+    },
+  );
 
   test('global search finds AiResource entities by name', async ({ page }) => {
     await page.goto('/search?query=fraud-detection');
@@ -160,5 +147,34 @@ test.describe('AiResource catalog QE (RHIDP-14382 / RHIDP-14746)', () => {
     await expect(
       page.getByRole('link', { name: 'PDF Processor Skill' }),
     ).toBeVisible();
+  });
+});
+
+test.describe('AiResource catalog accessibility', () => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    skipUnlessLocales(testInfo, ['en'], 'Accessibility scans run on en only');
+    await signInAsGuest(page);
+  });
+
+  test('catalog index passes accessibility scan', async ({
+    page,
+  }, testInfo) => {
+    await gotoAiResourceCatalog(page);
+    await runAccessibilityTests(
+      page,
+      testInfo,
+      'airesource-catalog-index-a11y.json',
+    );
+  });
+
+  test('entity detail page passes accessibility scan', async ({
+    page,
+  }, testInfo) => {
+    await page.goto('/catalog/default/airesource/fraud-detection-model');
+    await runAccessibilityTests(
+      page,
+      testInfo,
+      'airesource-entity-detail-a11y.json',
+    );
   });
 });

@@ -29,7 +29,7 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_URL
     ? []
     : {
-        command: `yarn start --config ${baseConfig}`,
+        command: `yarn backstage-cli repo start --config ${baseConfig}`,
         url: 'http://localhost:7007/.backstage/health/v1/readiness',
         timeout: 180_000,
         reuseExistingServer: !process.env.CI,

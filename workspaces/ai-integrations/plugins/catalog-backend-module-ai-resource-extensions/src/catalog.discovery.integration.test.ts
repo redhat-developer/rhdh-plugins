@@ -127,17 +127,18 @@ describe('AiResource catalog discovery integration (RHIDP-14382 / RHIDP-14746)',
     });
     server = backend.server;
 
-    await waitForEntities(server, 'kind=airesource', 3);
+    await waitForEntities(server, 'kind=airesource', 4);
   }, 120_000);
 
   it('ingests git and OCI AiResource entities from file location', async () => {
     const entities = aiResourcesOnly(
-      await waitForEntities(server, 'kind=airesource', 3),
+      await waitForEntities(server, 'kind=airesource', 4),
     );
 
     const names = entities.map(entity => entity.metadata.name).sort();
     expect(names).toEqual([
       'qe-git-ai-standards',
+      'qe-git-no-scope',
       'qe-oci-skills-bundle',
       'qe-oci-with-docs',
     ]);
@@ -162,7 +163,7 @@ describe('AiResource catalog discovery integration (RHIDP-14382 / RHIDP-14746)',
 
   it('filters AiResource entities by spec.type', async () => {
     const entities = aiResourcesOnly(
-      await waitForEntities(server, 'kind=airesource,spec.type=skill', 3),
+      await waitForEntities(server, 'kind=airesource,spec.type=skill', 4),
     );
 
     expect(entities.every(entity => entity.spec?.type === 'skill')).toBe(true);
@@ -173,11 +174,11 @@ describe('AiResource catalog discovery integration (RHIDP-14382 / RHIDP-14746)',
       await waitForEntities(
         server,
         'kind=airesource,spec.owner=team-ml-platform',
-        3,
+        4,
       ),
     );
 
-    expect(entities).toHaveLength(3);
+    expect(entities).toHaveLength(4);
     expect(
       entities.every(entity => entity.spec?.owner === 'team-ml-platform'),
     ).toBe(true);
@@ -188,12 +189,16 @@ describe('AiResource catalog discovery integration (RHIDP-14382 / RHIDP-14746)',
       await waitForEntities(
         server,
         'kind=airesource,spec.lifecycle=production',
-        2,
+        3,
       ),
     );
 
     const names = entities.map(entity => entity.metadata.name).sort();
-    expect(names).toEqual(['qe-git-ai-standards', 'qe-oci-with-docs']);
+    expect(names).toEqual([
+      'qe-git-ai-standards',
+      'qe-git-no-scope',
+      'qe-oci-with-docs',
+    ]);
   });
 
   it('retrieves a single AiResource entity by name', async () => {
@@ -209,6 +214,13 @@ describe('AiResource catalog discovery integration (RHIDP-14382 / RHIDP-14746)',
   });
 
   it('excludes entities without spec.scope when scope filter is applied', async () => {
+    const allEntities = aiResourcesOnly(
+      await waitForEntities(server, 'kind=airesource', 4),
+    );
+    expect(allEntities.map(entity => entity.metadata.name)).toContain(
+      'qe-git-no-scope',
+    );
+
     const scopedEntities = await waitForEntities(
       server,
       'kind=airesource,spec.scope=organization',
@@ -217,6 +229,9 @@ describe('AiResource catalog discovery integration (RHIDP-14382 / RHIDP-14746)',
 
     expect(scopedEntities).toHaveLength(1);
     expect(scopedEntities[0].metadata.name).toBe('qe-git-ai-standards');
+    expect(
+      scopedEntities.some(entity => entity.metadata.name === 'qe-git-no-scope'),
+    ).toBe(false);
   });
 
   it('stores OCI metadata and spec fields as reference only', async () => {

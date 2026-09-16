@@ -36,8 +36,10 @@ and was later consolidated into `AiResourceExtensionsProcessor` (alongside
 - [x] 4.1 Add AiResource kind support to the workspace entity page routing
 - [x] 4.2 Display asset location from `backstage.io/source-location`: HTTPS/git targets as links; `oci://` targets as copyable text
 - [x] 4.3 Ensure the standard relationships graph is present for AiResource entities
-- [x] 4.4 Show a TechDocs tab when `backstage.io/techdocs-ref` is present and hide it when absent
-- [x] 4.5 Add frontend tests covering location rendering, graph presence, and conditional TechDocs display
+- [ ] 4.4 Show a TechDocs tab when `backstage.io/techdocs-ref` is present and hide it when absent
+- [x] 4.4a E2E verifies Docs tab is shown when `backstage.io/techdocs-ref` is present
+- [ ] 4.4b E2E verifies Docs tab is hidden when `backstage.io/techdocs-ref` is absent (blocked on entity page conditional routing)
+- [x] 4.5 Add frontend tests covering graph presence and conditional TechDocs display
 
 ## 5. Discovery & Filtering
 

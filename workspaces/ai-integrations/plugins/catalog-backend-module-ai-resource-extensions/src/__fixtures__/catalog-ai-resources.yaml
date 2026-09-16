@@ -46,3 +46,16 @@ spec:
   lifecycle: production
   owner: team-ml-platform
   scope: product
+
+---
+apiVersion: backstage.io/v1alpha1
+kind: AiResource
+metadata:
+  name: qe-git-no-scope
+  description: Git-backed entity without spec.scope for filter tests
+  annotations:
+    backstage.io/source-location: url:https://github.com/my-org/qe-git-no-scope
+spec:
+  type: skill
+  lifecycle: production
+  owner: team-ml-platform
