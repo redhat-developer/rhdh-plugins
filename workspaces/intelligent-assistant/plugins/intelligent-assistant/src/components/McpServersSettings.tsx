@@ -71,8 +71,7 @@ const mcpClasses = {
   headerRowWithTitle: 'ia-mcp-headerRow--withTitle',
   selectedCount: 'ia-mcp-selectedCount',
   title: 'ia-mcp-title',
-  nameHeaderButton: 'ia-mcp-nameHeaderButton',
-  statusHeaderButton: 'ia-mcp-statusHeaderButton',
+  sortHeaderButton: 'ia-mcp-sortHeaderButton',
   sortHeaderIconActive: 'ia-mcp-sortHeaderIconActive',
   sortHeaderIconInactive: 'ia-mcp-sortHeaderIconInactive',
   nameHeaderText: 'ia-mcp-nameHeaderText',
@@ -88,7 +87,6 @@ const mcpClasses = {
   statusDisabled: 'ia-mcp-statusDisabled',
   actionButton: 'ia-mcp-actionButton',
   tableRow: 'ia-mcp-tableRow',
-  toggleCell: 'ia-mcp-toggleCell',
   table: 'ia-mcp-table',
   alert: 'ia-mcp-alert',
 } as const;
@@ -121,24 +119,11 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
   [`& .${mcpClasses.title}`]: {
     fontSize: '1.125rem',
   },
-  [`& .${mcpClasses.nameHeaderButton}`]: {
+  [`& .${mcpClasses.sortHeaderButton}`]: {
     paddingLeft: 0,
     paddingTop: 0,
     paddingBottom: 0,
     marginLeft: 0,
-    fontWeight: 600,
-    fontSize: '0.75rem',
-    lineHeight: '1.25rem',
-    minHeight: 'auto',
-    color: theme.palette.text.primary,
-    textDecoration: 'none !important',
-    display: 'inline-flex',
-    alignItems: 'center',
-  },
-  [`& .${mcpClasses.statusHeaderButton}`]: {
-    paddingLeft: 0,
-    paddingTop: 0,
-    paddingBottom: 0,
     fontWeight: 600,
     fontSize: '0.75rem',
     lineHeight: '1.25rem',
@@ -197,10 +182,6 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
     {
       opacity: 1,
     },
-  [`& .${mcpClasses.toggleCell}`]: {
-    paddingInlineEnd: 0,
-    verticalAlign: 'middle',
-  },
   [`& .${mcpClasses.table}`]: {
     width: '100%',
     /** Table sits inside padded settings content; drop PF page-chrome inset on first/last cells (24px end padding on edit column). */
@@ -211,11 +192,6 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
       color: theme.palette.text.primary,
       whiteSpace: 'nowrap',
       textAlign: 'left',
-    },
-    '& td': {
-      paddingTop: theme.spacing(1.5),
-      paddingBottom: theme.spacing(1.5),
-      verticalAlign: 'middle',
     },
   },
   [`& .${mcpClasses.alert}`]: {
@@ -237,7 +213,7 @@ type McpServerResponse = {
 
 /** PF table cells default to a large `--pf-v6-c-table--cell--MinWidth`; inline minWidth on th/td wins in DevTools and fixes column sizing. */
 const mcpTableCellLayout = {
-  toggle: { width: '2.5rem', minWidth: '2.5rem' },
+  toggle: { width: '2.5rem', minWidth: '2.5rem', paddingInlineEnd: 0 },
   name: { width: '50%', minWidth: '9rem' },
   status: { width: '35%', minWidth: 0 },
   action: { width: '2.5rem', minWidth: '2.5rem' },
@@ -627,7 +603,6 @@ export const McpServersSettings = ({
           <Tr>
             <Th
               screenReaderText={t('mcp.settings.enabled')}
-              className={mcpClasses.toggleCell}
               style={mcpTableCellLayout.toggle}
             />
             <Th
@@ -636,7 +611,8 @@ export const McpServersSettings = ({
             >
               <Button
                 variant="link"
-                className={mcpClasses.nameHeaderButton}
+                isInline
+                className={mcpClasses.sortHeaderButton}
                 icon={renderSortIcon('name')}
                 iconPosition="right"
                 onClick={() => onSortColumnClick('name')}
@@ -655,7 +631,8 @@ export const McpServersSettings = ({
             >
               <Button
                 variant="link"
-                className={mcpClasses.statusHeaderButton}
+                isInline
+                className={mcpClasses.sortHeaderButton}
                 icon={renderSortIcon('status')}
                 iconPosition="right"
                 onClick={() => onSortColumnClick('status')}
@@ -700,10 +677,7 @@ export const McpServersSettings = ({
 
             return (
               <Tr key={server.id} className={mcpClasses.tableRow}>
-                <Td
-                  className={mcpClasses.toggleCell}
-                  style={mcpTableCellLayout.toggle}
-                >
+                <Td style={mcpTableCellLayout.toggle}>
                   {(() => {
                     const isUnavailable =
                       isEnabledToggleUnavailable(displayStatus);
