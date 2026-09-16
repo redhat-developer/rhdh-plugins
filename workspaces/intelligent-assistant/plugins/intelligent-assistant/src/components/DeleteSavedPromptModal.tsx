@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import GlobalStyles from '@mui/material/GlobalStyles';
 import {
   Alert,
   Button,
@@ -23,6 +24,13 @@ import {
 } from '@patternfly/react-core';
 
 import { useTranslation } from '../hooks/useTranslation';
+
+const deleteSavedPromptModalZIndexStyles = {
+  '.delete-saved-prompt-modal-backdrop': {
+    '--pf-v6-c-backdrop--ZIndex': '2000 !important',
+    '--pf-v5-c-backdrop--ZIndex': '2000 !important',
+  },
+} as const;
 
 type DeleteSavedPromptModalProps = {
   isOpen: boolean;
@@ -44,44 +52,48 @@ export const DeleteSavedPromptModal = ({
   const { t } = useTranslation();
 
   return (
-    <Modal
-      variant="small"
-      isOpen={isOpen}
-      onClose={onClose}
-      aria-labelledby="delete-saved-prompt-modal"
-      aria-describedby="delete-saved-prompt-modal-confirmation"
-    >
-      <ModalHeader
-        title={t('savedPrompts.delete.confirm.title' as any, {
-          name: promptName || '',
-        })}
-        labelId="delete-saved-prompt-modal"
-        descriptorId="delete-saved-prompt-modal-confirmation"
-      />
-      <ModalBody id="delete-saved-prompt-modal-confirmation">
-        {t('savedPrompts.delete.confirm.message')}
-        {error && (
-          <Alert
+    <>
+      <GlobalStyles styles={deleteSavedPromptModalZIndexStyles} />
+      <Modal
+        variant="small"
+        isOpen={isOpen}
+        onClose={onClose}
+        aria-labelledby="delete-saved-prompt-modal"
+        aria-describedby="delete-saved-prompt-modal-confirmation"
+        backdropClassName="delete-saved-prompt-modal-backdrop"
+      >
+        <ModalHeader
+          title={t('savedPrompts.delete.confirm.title' as any, {
+            name: promptName || '',
+          })}
+          labelId="delete-saved-prompt-modal"
+          descriptorId="delete-saved-prompt-modal-confirmation"
+        />
+        <ModalBody id="delete-saved-prompt-modal-confirmation">
+          {t('savedPrompts.delete.confirm.message')}
+          {error && (
+            <Alert
+              variant="danger"
+              isInline
+              title={error}
+              className="pf-v6-u-mt-md"
+            />
+          )}
+        </ModalBody>
+        <ModalFooter>
+          <Button
             variant="danger"
-            isInline
-            title={error}
-            className="pf-v6-u-mt-md"
-          />
-        )}
-      </ModalBody>
-      <ModalFooter>
-        <Button
-          variant="danger"
-          onClick={onConfirm}
-          isDisabled={isDeleting}
-          isLoading={isDeleting}
-        >
-          {t('savedPrompts.delete.confirm.action')}
-        </Button>
-        <Button variant="link" onClick={onClose} isDisabled={isDeleting}>
-          {t('common.cancel')}
-        </Button>
-      </ModalFooter>
-    </Modal>
+            onClick={onConfirm}
+            isDisabled={isDeleting}
+            isLoading={isDeleting}
+          >
+            {t('savedPrompts.delete.confirm.action')}
+          </Button>
+          <Button variant="link" onClick={onClose} isDisabled={isDeleting}>
+            {t('common.cancel')}
+          </Button>
+        </ModalFooter>
+      </Modal>
+    </>
   );
 };

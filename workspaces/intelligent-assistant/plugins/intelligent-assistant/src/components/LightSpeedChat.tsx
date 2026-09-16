@@ -563,6 +563,17 @@ const FullscreenChatLayout = styled('div')({
       'var(--pf-t--global--spacer--md)',
     '--pf-v6-c-menu__item--PaddingInlineEnd': 'var(--pf-t--global--spacer--md)',
   },
+  '& .pf-chatbot__menu-item .pf-v6-c-menu__item-main, & .pf-chatbot__menu-item .pf-v5-c-menu__item-main':
+    {
+      minWidth: 0,
+      overflow: 'hidden',
+    },
+  '& .pf-chatbot__menu-item-text, & .pf-v6-c-menu__item-text, & .pf-v5-c-menu__item-text':
+    {
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    },
   '& .pf-chatbot__menu-item .pf-v6-c-menu-toggle, & .pf-chatbot__menu-item .pf-v5-c-menu-toggle':
     {
       opacity: 0,

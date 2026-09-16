@@ -49,6 +49,9 @@ const useStyles = makeStyles()(theme => ({
     minWidth: 0,
   },
   title: {
+    display: 'block',
+    minWidth: 0,
+    maxWidth: '100%',
     margin: 0,
     marginBottom: theme.spacing(0.5),
     fontWeight: 600,
@@ -107,9 +110,7 @@ export const SavedPromptCard = ({
       <div className={classes.row}>
         <div className={classes.content}>
           <Tooltip content={prompt.name}>
-            <Content component={ContentVariants.p} className={classes.title}>
-              {prompt.name}
-            </Content>
+            <span className={classes.title}>{prompt.name}</span>
           </Tooltip>
           <Tooltip content={prompt.content}>
             <Content component={ContentVariants.p} className={classes.body}>

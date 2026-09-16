@@ -181,14 +181,6 @@ export type BuildConversationHistoryGroupsResult = {
   hasNoSearchResults: boolean;
 };
 
-const truncatedTitleProps = {
-  style: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-};
-
 const getSavedPromptsShowAllLabel = (
   isExpanded: boolean,
   t: (key: string, params?: any) => string,
@@ -265,7 +257,6 @@ export const buildConversationHistoryGroups = ({
               name: prompt.name,
             }),
             menuItems: getSavedPromptMenuItems(prompt),
-            additionalProps: truncatedTitleProps,
           }))
         : [
             disabledPlaceholderConversation(
