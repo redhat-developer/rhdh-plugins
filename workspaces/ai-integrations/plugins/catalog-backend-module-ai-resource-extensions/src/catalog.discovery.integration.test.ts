@@ -127,10 +127,6 @@ describe('AiResource catalog discovery integration (RHIDP-14382 / RHIDP-14746)',
     });
     server = backend.server;
 
-    await request(server)
-      .post('/api/catalog/locations')
-      .send({ type: 'file', target: FIXTURE_PATH });
-
     await waitForEntities(server, 'kind=airesource', 3);
   }, 120_000);
 
@@ -145,13 +141,6 @@ describe('AiResource catalog discovery integration (RHIDP-14382 / RHIDP-14746)',
       'qe-oci-skills-bundle',
       'qe-oci-with-docs',
     ]);
-  });
-
-  it('returns AiResource entities via kind filter', async () => {
-    const entities = aiResourcesOnly(
-      await waitForEntities(server, 'kind=airesource', 3),
-    );
-
     expect(
       entities.every(
         entity => entity.kind.toLocaleLowerCase('en-US') === 'airesource',
@@ -219,17 +208,6 @@ describe('AiResource catalog discovery integration (RHIDP-14382 / RHIDP-14746)',
     ).toBe('url:https://github.com/my-org/qe-git-ai-standards');
   });
 
-  it('stores OCI source-location as metadata reference only', async () => {
-    const response = await request(server).get(
-      '/api/catalog/entities/by-name/airesource/default/qe-oci-skills-bundle',
-    );
-
-    expect(response.status).toBe(200);
-    expect(
-      response.body.metadata.annotations?.['backstage.io/source-location'],
-    ).toBe('url:oci://quay.io/my-org/qe-skills-bundle:v1.0.0');
-  });
-
   it('excludes entities without spec.scope when scope filter is applied', async () => {
     const scopedEntities = await waitForEntities(
       server,
@@ -241,12 +219,15 @@ describe('AiResource catalog discovery integration (RHIDP-14382 / RHIDP-14746)',
     expect(scopedEntities[0].metadata.name).toBe('qe-git-ai-standards');
   });
 
-  it('persists metadata tags and spec fields on ingested entities', async () => {
+  it('stores OCI metadata and spec fields as reference only', async () => {
     const response = await request(server).get(
       '/api/catalog/entities/by-name/airesource/default/qe-oci-skills-bundle',
     );
 
     expect(response.status).toBe(200);
+    expect(
+      response.body.metadata.annotations?.['backstage.io/source-location'],
+    ).toBe('url:oci://quay.io/my-org/qe-skills-bundle:v1.0.0');
     expect(response.body.metadata.tags).toEqual(['security', 'oci']);
     expect(response.body.spec).toMatchObject({
       type: 'skill',

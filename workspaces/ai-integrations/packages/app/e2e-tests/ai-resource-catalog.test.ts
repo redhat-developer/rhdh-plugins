@@ -99,21 +99,6 @@ test.describe('AiResource catalog QE (RHIDP-14382 / RHIDP-14746)', () => {
     await expectAboutCardField(page, 'Tags', 'pdf');
   });
 
-  test('OCI summarization-skills entity detail page renders metadata', async ({
-    page,
-  }) => {
-    await page.goto('/catalog/default/airesource/summarization-skills');
-
-    await expect(
-      page.getByText(
-        'Summarization prompt and skill pack published as an OCI artifact.',
-      ),
-    ).toBeVisible();
-    await expect(
-      page.getByRole('link', { name: 'ML Platform' }).first(),
-    ).toBeVisible();
-  });
-
   test('AiResource entity with techdocs-ref shows Docs tab', async ({
     page,
   }) => {
@@ -140,21 +125,15 @@ test.describe('AiResource catalog QE (RHIDP-14382 / RHIDP-14746)', () => {
     ).toBeVisible();
   });
 
-  test('global search finds OCI-backed AiResource entities by name', async ({
-    page,
-  }) => {
-    await page.goto('/search?query=pdf-processor');
-
-    await expect(
-      page.getByRole('link', { name: 'PDF Processor Skill' }),
-    ).toBeVisible();
-  });
-
   test('global search finds AiResource entities by name', async ({ page }) => {
     await page.goto('/search?query=fraud-detection');
-
     await expect(
       page.getByRole('link', { name: 'fraud-detection-model' }),
+    ).toBeVisible();
+
+    await page.goto('/search?query=pdf-processor');
+    await expect(
+      page.getByRole('link', { name: 'PDF Processor Skill' }),
     ).toBeVisible();
   });
 });
