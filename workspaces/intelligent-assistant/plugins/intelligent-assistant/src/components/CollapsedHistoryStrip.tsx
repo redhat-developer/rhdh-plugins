@@ -15,12 +15,11 @@
  */
 
 import { styled } from '@mui/material/styles';
-import { Tooltip } from '@patternfly/react-core';
+import { Button, Tooltip } from '@patternfly/react-core';
 import { PencilAltIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../hooks/useTranslation';
 import { SidebarExpandIcon } from './notebooks/SidebarCollapseIcon';
-import { FramedPlainIconButton } from './PlainIconButton';
 
 const floatingBg = 'var(--pf-t--global--background--color--floating--default)';
 
@@ -36,16 +35,6 @@ const Strip = styled('div')(({ theme }) => ({
   backgroundColor: floatingBg,
   height: '100%',
 }));
-
-const NewChatIconButton = styled(FramedPlainIconButton)({
-  color: 'var(--pf-t--global--color--brand--default) !important',
-  '&:hover:not(:disabled), &:focus-visible:not(:disabled)': {
-    color: 'var(--pf-t--global--color--brand--hover) !important',
-  },
-  '&:disabled': {
-    color: 'var(--pf-t--global--text--color--disabled) !important',
-  },
-});
 
 type CollapsedHistoryStripProps = {
   onExpand: () => void;
@@ -63,23 +52,28 @@ export const CollapsedHistoryStrip = ({
   return (
     <Strip>
       <Tooltip content={t('tooltip.expandHistoryPanel')} position="right">
-        <FramedPlainIconButton
+        <Button
           variant="plain"
           onClick={onExpand}
           aria-label={t('tooltip.expandHistoryPanel')}
         >
           <SidebarExpandIcon size={18} />
-        </FramedPlainIconButton>
+        </Button>
       </Tooltip>
       <Tooltip content={t('tooltip.quickNewChat')} position="right">
-        <NewChatIconButton
+        <Button
           variant="plain"
           onClick={onNewChat}
           aria-label={t('tooltip.quickNewChat')}
           isDisabled={newChatDisabled}
+          style={
+            newChatDisabled
+              ? undefined
+              : { color: 'var(--pf-t--global--color--brand--default)' }
+          }
         >
-          <PencilAltIcon />
-        </NewChatIconButton>
+          <PencilAltIcon style={{ width: 18, height: 18, display: 'block' }} />
+        </Button>
       </Tooltip>
     </Strip>
   );

@@ -15,11 +15,10 @@
  */
 
 import { styled } from '@mui/material/styles';
-import { Tooltip } from '@patternfly/react-core';
+import { Button, Tooltip } from '@patternfly/react-core';
 import { AddCircleOIcon, TimesIcon } from '@patternfly/react-icons';
 
 import { useTranslation } from '../../hooks/useTranslation';
-import { CompactPlainIconButton } from '../PlainIconButton';
 import { SidebarCollapseIcon, SidebarExpandIcon } from './SidebarCollapseIcon';
 
 const HEADER_ICON_SIZE = 18;
@@ -60,14 +59,14 @@ export const NotebookHeaderActions = ({
   return (
     <Actions className={className}>
       <Tooltip content={t('notebook.view.close')} position="bottom">
-        <CompactPlainIconButton
+        <Button
           variant="plain"
           onClick={onClose}
           aria-label={t('notebook.view.close')}
           isDisabled={uploadModalOpen}
         >
           <TimesIcon style={iconStyle} />
-        </CompactPlainIconButton>
+        </Button>
       </Tooltip>
       <Tooltip
         content={
@@ -77,7 +76,7 @@ export const NotebookHeaderActions = ({
         }
         position="bottom"
       >
-        <CompactPlainIconButton
+        <Button
           variant="plain"
           onClick={onOpenUploadModal}
           aria-label={t('notebook.view.documents.add')}
@@ -89,7 +88,7 @@ export const NotebookHeaderActions = ({
               color: 'var(--pf-t--global--color--brand--default)',
             }}
           />
-        </CompactPlainIconButton>
+        </Button>
       </Tooltip>
       <Tooltip
         content={
@@ -99,7 +98,7 @@ export const NotebookHeaderActions = ({
         }
         position="bottom"
       >
-        <CompactPlainIconButton
+        <Button
           variant="plain"
           onClick={() => onSidebarCollapsedChange(!sidebarCollapsed)}
           aria-label={
@@ -114,7 +113,7 @@ export const NotebookHeaderActions = ({
           ) : (
             <SidebarCollapseIcon size={HEADER_ICON_SIZE} />
           )}
-        </CompactPlainIconButton>
+        </Button>
       </Tooltip>
     </Actions>
   );

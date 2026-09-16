@@ -48,10 +48,6 @@ import {
   type McpServerSortColumn,
   type ServerStatus,
 } from './mcpServersDisplayUtils';
-import {
-  compactPlainCircleButtonCss,
-  mediumPlainCircleButtonCss,
-} from './PlainIconButton';
 
 type McpServer = McpConfigureServer;
 
@@ -113,8 +109,6 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
     fontSize: '1.125rem',
   },
   [`& .${mcpClasses.closeButton}`]: {
-    ...compactPlainCircleButtonCss,
-    // minWidth: '2.5rem !important',
     width: '2.25rem !important',
     height: '2.25rem !important',
     marginTop: theme.spacing(-1),
@@ -197,7 +191,6 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
     color: 'var(--pf-t--global--icon--color--subtle)',
   },
   [`& .${mcpClasses.actionButton}`]: {
-    ...mediumPlainCircleButtonCss,
     color: theme.palette.text.secondary,
     opacity: 0,
     transition: 'opacity 0.15s ease-in-out',

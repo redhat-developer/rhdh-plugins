@@ -53,8 +53,10 @@ import {
 } from '@patternfly/chatbot';
 import ChatbotConversationHistoryNav from '@patternfly/chatbot/dist/dynamic/ChatbotConversationHistoryNav';
 import {
+  Button,
   DropdownItem,
   Label,
+  MenuToggle,
   MenuToggleElement,
   Select,
   SelectList,
@@ -143,13 +145,6 @@ import {
   SidebarExpandIcon,
 } from './notebooks/SidebarCollapseIcon';
 import {
-  chatHeaderOptionsToggleCss,
-  CompactPlainIconButton,
-  compactPlainIconButtonRadiusCss,
-  CompactPlainMenuToggle,
-  compactPlainMenuToggleCss,
-  drawerCollapseButtonSizeCss,
-  drawerCollapseIconSlotCss,
   LIGHTSPEED_MESSAGE_BAR_MODEL_SELECTOR_CLASS,
   messageBarActionsAlignCss,
   messageBarMicrophoneActiveButtonCss,
@@ -157,7 +152,6 @@ import {
   messageBarModelSelectorToggleCss,
   messageBarSendStopButtonCss,
   messageBarSendStopSelector,
-  plainCircleButtonAfterCss,
 } from './PlainIconButton';
 import { RenameConversationModal } from './RenameConversationModal';
 import { SavedPromptMenuItems } from './SavedPromptMenuItems';
@@ -176,38 +170,17 @@ const chatHistoryDrawerCollapseCloseCss = {
     {
       display: 'none',
     },
+  // Chatbot history SCSS forces 2xl square + pill radius on the close control.
   '& .pf-v6-c-drawer__close .pf-v6-c-button, & .pf-v5-c-drawer__close .pf-v5-c-button':
     {
-      ...drawerCollapseButtonSizeCss,
-      ...compactPlainIconButtonRadiusCss,
-      ...plainCircleButtonAfterCss,
-      position: 'relative',
+      width: 'auto !important',
+      height: 'auto !important',
+      minWidth: 'unset !important',
+      borderRadius: 'var(--pf-t--global--border--radius--small) !important',
       display: 'inline-flex',
       alignItems: 'center',
       justifyContent: 'center',
       lineHeight: 0,
-      '--pf-v6-c-button--BorderWidth': '0',
-      '--pf-v6-c-button--m-plain--BorderWidth': '0',
-      '--pf-v6-c-button--m-plain--hover--BorderWidth': '0',
-      '--pf-v6-c-button--BackgroundColor':
-        'var(--pf-t--global--background--color--action--plain--default)',
-      '--pf-v6-c-button--hover--BackgroundColor':
-        'var(--pf-t--global--background--color--action--plain--hover)',
-      '--pf-v6-c-button--m-plain--BackgroundColor':
-        'var(--pf-t--global--background--color--action--plain--default)',
-      '--pf-v6-c-button--m-plain--hover--BackgroundColor':
-        'var(--pf-t--global--background--color--action--plain--hover)',
-      '&:hover:not(:disabled), &:focus-visible:not(:disabled)': {
-        ...compactPlainIconButtonRadiusCss,
-        backgroundColor:
-          'var(--pf-t--global--background--color--action--plain--hover) !important',
-        '--pf-v6-c-button--hover--BackgroundColor':
-          'var(--pf-t--global--background--color--action--plain--hover)',
-        '--pf-v6-c-button--m-plain--hover--BackgroundColor':
-          'var(--pf-t--global--background--color--action--plain--hover)',
-      },
-      '& .pf-v6-c-button__icon, & .pf-v5-c-button__icon':
-        drawerCollapseIconSlotCss,
       '& .pf-v6-c-button__icon::before, & .pf-v5-c-button__icon::before': {
         content: '""',
         display: 'block',
@@ -317,16 +290,10 @@ const StyledChatbot = styled(Chatbot, {
         height: '100% !important',
         minHeight: '0 !important',
         overflow: 'hidden',
-        '& .pf-chatbot__header .pf-v6-c-menu-toggle.pf-m-plain, & .pf-chatbot__header .pf-v5-c-menu-toggle.pf-m-plain':
-          compactPlainIconButtonRadiusCss,
       }
     : {}),
-  '& .pf-chatbot__header .pf-v6-c-menu-toggle.pf-chatbot__button--toggle-options, & .pf-chatbot__header .pf-chatbot__button--toggle-options':
-    chatHeaderOptionsToggleCss,
   '& .pf-chatbot__history': {
     ...chatHistoryDrawerCollapseCloseCss,
-    '& .pf-chatbot__history-search-actions .pf-v6-c-menu-toggle, & .pf-chatbot__history-search-actions .pf-v5-c-menu-toggle, & .pf-chatbot__history-actions .pf-v6-c-menu-toggle, & .pf-chatbot__history-actions .pf-v5-c-menu-toggle, & .pf-chatbot__menu-item .pf-v6-c-menu-toggle, & .pf-chatbot__menu-item .pf-v5-c-menu-toggle':
-      compactPlainMenuToggleCss,
   },
   // Match the previous compactDrawerPanel class: only expand the history
   // panel when it is actually open. Applying 100% width while collapsed
@@ -480,10 +447,7 @@ const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
   },
   ...messageBarActionsAlignCss,
   [messageBarMicrophoneActiveSelector]: messageBarMicrophoneActiveButtonCss,
-  [messageBarSendStopSelector]: {
-    ...messageBarSendStopButtonCss,
-    borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
-  },
+  [messageBarSendStopSelector]: messageBarSendStopButtonCss,
   [`& .${LIGHTSPEED_MESSAGE_BAR_MODEL_SELECTOR_CLASS}`]: {
     display: 'inline-flex',
     flexShrink: 0,
@@ -655,33 +619,10 @@ const FullscreenChatLayout = styled('div')({
     {
       display: 'none',
     },
-  '& .pf-v6-c-drawer__close, & .pf-v5-c-drawer__close': {
-    marginTop: 0,
-    marginRight: 0,
-  },
   '& .pf-v6-c-drawer__head, & .pf-v5-c-drawer__head': {
     paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
     paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
   },
-  '& .pf-v6-c-drawer__close .pf-v6-c-button svg, & .pf-v5-c-drawer__close .pf-v5-c-button svg':
-    {
-      display: 'none',
-    },
-  '& .pf-v6-c-drawer__close .pf-v6-c-button, & .pf-v5-c-drawer__close .pf-v5-c-button':
-    {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      '&::before': {
-        content: '""',
-        display: 'block',
-        width: 24,
-        height: 24,
-        mask: COLLAPSE_PANEL_ICON_SVG,
-        WebkitMask: COLLAPSE_PANEL_ICON_SVG,
-        backgroundColor: 'currentColor',
-      },
-    },
   '& .pf-chatbot__heading-container': {
     paddingInlineStart: 'var(--pf-t--global--spacer--lg)',
     paddingInlineEnd: 'var(--pf-t--global--spacer--lg)',
@@ -1822,7 +1763,7 @@ export const LightspeedChat = ({
   const sortToggle = useCallback(
     (toggleRef: Ref<MenuToggleElement>) => (
       <Tooltip content={`${t('sort.label')} - ${getSortLabel(selectedSort)}`}>
-        <CompactPlainMenuToggle
+        <MenuToggle
           ref={toggleRef}
           aria-label={t('sort.label')}
           variant="plain"
@@ -1834,7 +1775,7 @@ export const LightspeedChat = ({
           ) : (
             <SortAmountDownIcon />
           )}
-        </CompactPlainMenuToggle>
+        </MenuToggle>
       </Tooltip>
     ),
     [t, getSortLabel, selectedSort, onSortToggle, isSortSelectOpen],
@@ -2117,7 +2058,7 @@ export const LightspeedChat = ({
                       }
                       position="bottom"
                     >
-                      <CompactPlainIconButton
+                      <Button
                         variant="plain"
                         onClick={onChatHistoryDrawerToggle}
                         aria-expanded={isChatHistoryDrawerOpen}
@@ -2128,14 +2069,14 @@ export const LightspeedChat = ({
                         ) : (
                           <SidebarExpandIcon size={18} />
                         )}
-                      </CompactPlainIconButton>
+                      </Button>
                     </Tooltip>
                     {!isChatHistoryDrawerOpen && (
                       <Tooltip
                         content={t('tooltip.quickNewChat')}
                         position="bottom"
                       >
-                        <CompactPlainIconButton
+                        <Button
                           variant="plain"
                           onClick={onNewChat}
                           isDisabled={newChatCreated}
@@ -2151,7 +2092,7 @@ export const LightspeedChat = ({
                                 : 'var(--pf-t--global--color--brand--default)',
                             }}
                           />
-                        </CompactPlainIconButton>
+                        </Button>
                       </Tooltip>
                     )}
                   </HeaderActions>

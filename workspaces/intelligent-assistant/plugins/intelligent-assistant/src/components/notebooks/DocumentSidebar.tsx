@@ -25,6 +25,7 @@ import {
   DropdownList,
   HelperText,
   HelperTextItem,
+  MenuToggle,
   Spinner,
   TextInput,
   Tooltip,
@@ -40,10 +41,7 @@ import { NOTEBOOK_MAX_FILES, NOTEBOOK_MAX_TITLE_LENGTH } from '../../const';
 import { useInlineEdit } from '../../hooks/notebooks/useInlineEdit';
 import { useTranslation } from '../../hooks/useTranslation';
 import { SessionDocument } from '../../types';
-import {
-  CompactPlainMenuToggle,
-  DrawerCollapseIconButton,
-} from '../PlainIconButton';
+import { DrawerCollapseIconButton } from '../PlainIconButton';
 import { FileTypeIcon } from './FileTypeIcon';
 import { SidebarCollapseIcon } from './SidebarCollapseIcon';
 
@@ -208,7 +206,7 @@ const SpinnerContainer = styled('div')({
   alignItems: 'center',
 });
 
-const KebabToggle = styled(CompactPlainMenuToggle)({
+const KebabToggle = styled(MenuToggle)({
   flexShrink: 0,
   visibility: 'hidden',
   alignSelf: 'center',

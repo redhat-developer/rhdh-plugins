@@ -71,10 +71,7 @@ import {
 } from '../chatMessageScrollLayout';
 import { LightspeedChatBox } from '../LightspeedChatBox';
 import {
-  FramedPlainIconButton,
   messageBarActionsAlignCss,
-  messageBarAttachMicrophoneButtonCss,
-  messageBarAttachMicrophoneSelector,
   messageBarMicrophoneActiveButtonCss,
   messageBarMicrophoneActiveSelector,
   messageBarSendStopButtonCss,
@@ -148,7 +145,7 @@ const MainArea = styled('div')({
   minWidth: 0,
 });
 
-const ExpandStripButton = FramedPlainIconButton;
+const ExpandStripButton = Button;
 
 const ExpandStrip = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -279,12 +276,8 @@ const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
     },
   },
   ...messageBarActionsAlignCss,
-  [messageBarAttachMicrophoneSelector]: messageBarAttachMicrophoneButtonCss,
   [messageBarMicrophoneActiveSelector]: messageBarMicrophoneActiveButtonCss,
-  [messageBarSendStopSelector]: {
-    ...messageBarSendStopButtonCss,
-    borderRadius: 'var(--pf-t--global--border--radius--pill) !important',
-  },
+  [messageBarSendStopSelector]: messageBarSendStopButtonCss,
 }));
 
 type NotebookViewProps = {

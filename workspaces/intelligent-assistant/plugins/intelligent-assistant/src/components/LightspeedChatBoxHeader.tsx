@@ -19,7 +19,6 @@ import { Ref, useState } from 'react';
 import ToggleOffOutlinedIcon from '@mui/icons-material/ToggleOffOutlined';
 import ToggleOnOutlinedIcon from '@mui/icons-material/ToggleOnOutlined';
 import Divider from '@mui/material/Divider';
-import GlobalStyles from '@mui/material/GlobalStyles';
 import { styled } from '@mui/material/styles';
 import {
   ChatbotDisplayMode,
@@ -45,7 +44,6 @@ import {
 
 import { useTranslation } from '../hooks/useTranslation';
 import { McpSettingsIcon } from './McpSettingsIcon';
-import { chatHeaderOptionsToggleCss } from './PlainIconButton';
 
 type LightspeedChatBoxHeaderProps = {
   displayMode: ChatbotDisplayMode;
@@ -78,8 +76,6 @@ const StyledOptionsDropdown = styled(ChatbotHeaderOptionsDropdown)({
     padding: 0,
     margin: 0,
   },
-  '&& .pf-v6-c-menu-toggle.pf-chatbot__button--toggle-options, && .pf-chatbot__button--toggle-options':
-    chatHeaderOptionsToggleCss,
 });
 
 const SelectorToggle = styled(MenuToggle, {
@@ -157,12 +153,6 @@ export const LightspeedChatBoxHeader = ({
 
   return (
     <ChatbotHeaderActions>
-      <GlobalStyles
-        styles={{
-          '.pf-chatbot__header .pf-v6-c-menu-toggle.pf-chatbot__button--toggle-options':
-            chatHeaderOptionsToggleCss,
-        }}
-      />
       {!hideModelSelector && (
         <StyledDropdown
           isOpen={isOptionsMenuOpen}

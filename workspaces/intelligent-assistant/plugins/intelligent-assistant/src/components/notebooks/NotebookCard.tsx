@@ -28,6 +28,7 @@ import {
   Dropdown,
   DropdownItem,
   DropdownList,
+  MenuToggle,
   TextInput,
 } from '@patternfly/react-core';
 import {
@@ -41,7 +42,6 @@ import { useInlineEdit } from '../../hooks/notebooks/useInlineEdit';
 import { intelligentAssistantTranslationRef } from '../../translations/ref';
 import { NotebookSession } from '../../types';
 import { formatUpdatedLabel } from '../../utils/notebooks-utils';
-import { CompactPlainMenuToggle } from '../PlainIconButton';
 
 type NotebookCardProps = {
   notebook: NotebookSession;
@@ -199,7 +199,7 @@ export const NotebookCard = ({
                 setOpenNotebookMenuId(isOpen ? notebook.session_id : null)
               }
               toggle={toggleRef => (
-                <CompactPlainMenuToggle
+                <MenuToggle
                   ref={toggleRef}
                   variant="plain"
                   aria-label={t('aria.options.label')}
@@ -214,7 +214,7 @@ export const NotebookCard = ({
                   }}
                 >
                   <EllipsisVIcon />
-                </CompactPlainMenuToggle>
+                </MenuToggle>
               )}
             >
               <StyledDropdownList>

@@ -53,7 +53,6 @@ import {
 
 import { type UseMcpConfigureModalResult } from '../hooks/useMcpConfigureModal';
 import { useTranslation } from '../hooks/useTranslation';
-import { plainCircleHoverButtonCss } from './PlainIconButton';
 
 const MCP_CONFIGURE_MODAL_CLASS = 'ia-mcp-configure-modal';
 const MCP_CONFIGURE_MODAL_CLOSE_CLASS = 'ia-mcp-configure-modal-close';
@@ -85,23 +84,17 @@ const configureModalCloseHostButtonCss = {
   pointerEvents: 'auto' as const,
 };
 
-const PlainCircleHoverButton = styled(Button)({
-  '&&': plainCircleHoverButtonCss,
-});
+const ConfigureModalCloseButton = styled(Button)(({ theme }) => ({
+  color: theme.palette.text.primary,
+}));
 
-const ConfigureModalCloseButton = styled(PlainCircleHoverButton)(
-  ({ theme }) => ({
-    color: theme.palette.text.primary,
-  }),
-);
+const TokenClearButton = styled(Button)({});
 
 const StyledModal = styled(Modal)({
   '& .pf-v6-c-modal-box__body, & .pf-v5-c-modal-box__body': {
     paddingTop: 0,
   },
 });
-
-const TokenClearButton = PlainCircleHoverButton;
 
 const ModalInfoAlert = styled(Alert)({
   '--pf-v6-c-alert--m-custom--BorderColor':
