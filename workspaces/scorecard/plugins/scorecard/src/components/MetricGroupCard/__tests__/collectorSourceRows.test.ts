@@ -20,13 +20,9 @@ describe('toCollectorSourceRows', () => {
   const labels = {
     metricId: 'dora.deploymentFrequency',
     lastSynced: '1 hour ago',
-    unknownPlugin: 'Unknown',
     emptyValue: '--',
     unavailableStatus: 'N/A',
-    pluginLabels: {
-      github: 'GitHub',
-      jira: 'Jira',
-    },
+    githubPluginLabel: 'GitHub',
     statusColor: '#ccc',
   };
 
@@ -77,7 +73,7 @@ describe('toCollectorSourceRows', () => {
     ]);
   });
 
-  it('falls back to the collector id plugin name when no label is provided', () => {
+  it('capitalizes the plugin id from the collector id', () => {
     const rows = toCollectorSourceRows(
       [
         {

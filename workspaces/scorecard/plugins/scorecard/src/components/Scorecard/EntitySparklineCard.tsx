@@ -152,13 +152,9 @@ const EntitySparklineCardContent = ({
       lastSynced: metric.result?.timestamp
         ? getLastUpdatedLabel(metric.result.timestamp, locale)
         : MISSING_EVALUATION_LABEL,
-      unknownPlugin: t('dataSourcesDialog.unknownPlugin'),
       emptyValue: t('dataSourcesDialog.collectorEmptyValue'),
       unavailableStatus: t('dataSourcesDialog.collectorUnavailableStatus'),
-      pluginLabels: {
-        github: t('dataSourcesDialog.pluginGithub'),
-        jira: t('dataSourcesDialog.pluginJira'),
-      },
+      githubPluginLabel: t('dataSourcesDialog.pluginGithub'),
       statusColor: unevaluatedStatus.color,
     });
   }, [collectors, metric.id, metric.result?.timestamp, locale, t]);

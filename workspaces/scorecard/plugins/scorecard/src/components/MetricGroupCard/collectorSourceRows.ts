@@ -22,14 +22,13 @@ import type { SourceRow } from './DataSourcesDialogColumns';
 
 const pluginLabelFromCollectorId = (
   collectorId: string,
-  unknownPlugin: string,
-  pluginLabels: Record<string, string>,
+  githubPluginLabel: string,
 ): string => {
   const prefix = collectorId.split(/[.:]/)[0]?.toLowerCase();
-  if (prefix && pluginLabels[prefix]) {
-    return pluginLabels[prefix];
+  if (prefix === 'github') {
+    return githubPluginLabel;
   }
-  return extractPluginName(collectorId, unknownPlugin);
+  return extractPluginName(collectorId, collectorId);
 };
 
 export const toCollectorSourceRows = (
@@ -37,20 +36,15 @@ export const toCollectorSourceRows = (
   options: {
     metricId: string;
     lastSynced: string;
-    unknownPlugin: string;
     emptyValue: string;
     unavailableStatus: string;
-    pluginLabels: Record<string, string>;
+    githubPluginLabel: string;
     statusColor: string;
   },
 ): SourceRow[] =>
   collectors.map((collector, index) => ({
     id: String(index),
-    plugin: pluginLabelFromCollectorId(
-      collector.id,
-      options.unknownPlugin,
-      options.pluginLabels,
-    ),
+    plugin: pluginLabelFromCollectorId(collector.id, options.githubPluginLabel),
     metricId: options.metricId,
     metricDescription: collector.description,
     value: options.emptyValue,
