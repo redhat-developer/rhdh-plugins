@@ -75,7 +75,7 @@ Returns `{ "status": "ok" }` when the plugin is running.
 
 ### `GET /api/skill-image-connector/images`
 
-Returns the processing status, failed image references, and list of extracted skill images and their contents. During startup, `status` is `loading`; it becomes `ready` after all configured images have been processed, including failures. Failed images are omitted from `images` and listed in `failedImages`. Local filesystem paths are intentionally not returned.
+Returns the processing status, failed image references, and list of extracted skill images and their contents. During startup, `status` is `loading`; it becomes `ready` after all configured images have been processed when at least one image succeeded, or `failed` when every configured image failed. Failed images are omitted from `images` and listed in `failedImages`. Local filesystem paths are intentionally not returned.
 
 Example response:
 

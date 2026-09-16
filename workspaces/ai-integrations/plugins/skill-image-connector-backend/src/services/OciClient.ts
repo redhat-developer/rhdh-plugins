@@ -279,6 +279,13 @@ async function registryFetch(
   }
 
   const wwwAuth = response.headers.get('www-authenticate');
+  // The 401 body is not needed by this client. Cancel it before issuing the
+  // token request so undici can reuse the connection instead of retaining it.
+  try {
+    await response.body?.cancel();
+  } catch {
+    // Best effort; the authentication flow can still report its own failure.
+  }
   if (!wwwAuth) {
     return response;
   }

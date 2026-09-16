@@ -279,7 +279,10 @@ export const skillImageConnectorPlugin = createBackendPlugin({
               processNextImage,
             ),
           );
-          processingStatus = 'ready';
+          processingStatus =
+            imageConfigs.length > 0 && failedImages.size === imageConfigs.length
+              ? 'failed'
+              : 'ready';
         })();
 
         lifecycle.addShutdownHook(async () => {
