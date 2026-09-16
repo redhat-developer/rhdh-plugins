@@ -323,6 +323,7 @@ describe('buildColumnConfig', () => {
     const columns = buildColumnConfig(mockT as any);
     const statusCell = columns.find(c => c.id === 'status')?.cell;
     const row = createRow({
+      metricId: 'dora.deploymentFrequency',
       isCollector: true,
       thresholdExpression: null,
       evaluationKey: 'noEvaluation',
@@ -335,7 +336,7 @@ describe('buildColumnConfig', () => {
 
     expect(screen.getByText('-- N/A')).toBeInTheDocument();
     expect(screen.getByTestId('tooltip').getAttribute('data-title')).toBe(
-      'This collector provides input data only. The DORA metric value is calculated from collectors and shown on the scorecard card.',
+      'This collector provides input data only. The dora.deploymentFrequency check value is calculated from collectors and shown on the scorecard card.',
     );
   });
 });
