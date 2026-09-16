@@ -154,7 +154,6 @@ const EntitySparklineCardContent = ({
         : MISSING_EVALUATION_LABEL,
       emptyValue: t('dataSourcesDialog.collectorEmptyValue'),
       unavailableStatus: t('dataSourcesDialog.collectorUnavailableStatus'),
-      githubPluginLabel: t('dataSourcesDialog.pluginGithub'),
       statusColor: unevaluatedStatus.color,
     });
   }, [collectors, metric.id, metric.result?.timestamp, locale, t]);

@@ -20,13 +20,12 @@ import { extractPluginName } from '../../utils';
 import { MISSING_EVALUATION_BUCKET_KEY } from './thresholdBucketUtils';
 import type { SourceRow } from './DataSourcesDialogColumns';
 
-const pluginLabelFromCollectorId = (
-  collectorId: string,
-  githubPluginLabel: string,
-): string => {
+const GITHUB_PLUGIN_LABEL = 'GitHub';
+
+const pluginLabelFromCollectorId = (collectorId: string): string => {
   const prefix = collectorId.split(/[.:]/)[0]?.toLowerCase();
   if (prefix === 'github') {
-    return githubPluginLabel;
+    return GITHUB_PLUGIN_LABEL;
   }
   return extractPluginName(collectorId, collectorId);
 };
@@ -38,13 +37,12 @@ export const toCollectorSourceRows = (
     lastSynced: string;
     emptyValue: string;
     unavailableStatus: string;
-    githubPluginLabel: string;
     statusColor: string;
   },
 ): SourceRow[] =>
   collectors.map((collector, index) => ({
     id: String(index),
-    plugin: pluginLabelFromCollectorId(collector.id, options.githubPluginLabel),
+    plugin: pluginLabelFromCollectorId(collector.id),
     metricId: options.metricId,
     metricDescription: collector.description,
     value: options.emptyValue,

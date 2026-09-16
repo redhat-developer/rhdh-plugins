@@ -220,8 +220,6 @@ export const scorecardMessages = {
       'This collector provides input data only. The {{metric}} check value is calculated from collectors and shown on the scorecard card.',
     collectorEmptyValue: '--',
     collectorUnavailableStatus: 'N/A',
-    pluginGithub: 'GitHub',
-    pluginJira: 'Jira',
     columns: {
       plugin: 'PLUGIN',
       check: 'CHECK',

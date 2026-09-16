@@ -113,8 +113,6 @@ export const scorecardTranslationRef: TranslationRef<
     readonly 'dataSourcesDialog.collectorStatusTooltip': string;
     readonly 'dataSourcesDialog.collectorEmptyValue': string;
     readonly 'dataSourcesDialog.collectorUnavailableStatus': string;
-    readonly 'dataSourcesDialog.pluginGithub': string;
-    readonly 'dataSourcesDialog.pluginJira': string;
     readonly 'dataSourcesDialog.columns.plugin': string;
     readonly 'dataSourcesDialog.columns.check': string;
     readonly 'dataSourcesDialog.columns.value': string;

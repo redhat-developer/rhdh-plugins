@@ -34,8 +34,6 @@ const scorecardTranslationEs = createTranslationMessages({
       'Este recopilador proporciona solo datos de entrada. El valor del check {{metric}} se calcula a partir de los recopiladores y se muestra en la tarjeta de scorecard.',
     'dataSourcesDialog.collectorEmptyValue': '--',
     'dataSourcesDialog.collectorUnavailableStatus': 'N/D',
-    'dataSourcesDialog.pluginGithub': 'GitHub',
-    'dataSourcesDialog.pluginJira': 'Jira',
     'dataSourcesDialog.columns.plugin': 'PLUGIN',
     'dataSourcesDialog.columns.check': 'VERIFICACIÓN',
     'dataSourcesDialog.columns.value': 'VALOR',

@@ -22,7 +22,6 @@ describe('toCollectorSourceRows', () => {
     lastSynced: '1 hour ago',
     emptyValue: '--',
     unavailableStatus: 'N/A',
-    githubPluginLabel: 'GitHub',
     statusColor: '#ccc',
   };
 

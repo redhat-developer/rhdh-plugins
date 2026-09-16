@@ -34,8 +34,6 @@ const scorecardTranslationJa = createTranslationMessages({
       'このコレクターは入力データのみを提供します。{{metric}} チェック値はコレクターから計算され、スコアカードのカードに表示されます。',
     'dataSourcesDialog.collectorEmptyValue': '--',
     'dataSourcesDialog.collectorUnavailableStatus': '該当なし',
-    'dataSourcesDialog.pluginGithub': 'GitHub',
-    'dataSourcesDialog.pluginJira': 'Jira',
     'dataSourcesDialog.columns.plugin': 'PLUGIN',
     'dataSourcesDialog.columns.check': 'チェック',
     'dataSourcesDialog.columns.value': '値',
