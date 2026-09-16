@@ -61,12 +61,24 @@ describe('createRouter', () => {
     it('returns extracted image list', async () => {
       const res = await request(app).get('/images');
       expect(res.status).toBe(200);
+      expect(res.body.status).toBe('ready');
       expect(res.body.images).toHaveLength(1);
       expect(res.body.images[0]).toEqual({
         imageRef: 'quay.io/org/repo:v1',
         skillImageYaml: 'name: test',
         skillsMd: '# Test',
       });
+    });
+
+    it('reports loading while images are being processed', async () => {
+      const router = await createRouter(mockLogger, new Map(), () => 'loading');
+      const loadingApp = express();
+      loadingApp.use(router);
+
+      const res = await request(loadingApp).get('/images');
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({ status: 'loading', images: [] });
     });
   });
 });

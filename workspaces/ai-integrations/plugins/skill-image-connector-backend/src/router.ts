@@ -19,9 +19,12 @@ import express from 'express';
 import Router from 'express-promise-router';
 import type { SkillImageExtraction } from './services/types';
 
+export type SkillImageProcessingStatus = 'loading' | 'ready';
+
 export async function createRouter(
   logger: LoggerService,
   extractions: Map<string, SkillImageExtraction>,
+  getProcessingStatus: () => SkillImageProcessingStatus = () => 'ready',
 ): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -39,7 +42,10 @@ export async function createRouter(
         skillsMd: extraction.skillsMd,
       }),
     );
-    res.status(200).json({ images: results });
+    res.status(200).json({
+      status: getProcessingStatus(),
+      images: results,
+    });
   });
 
   router.use(

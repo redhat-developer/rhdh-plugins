@@ -155,6 +155,7 @@ describe('fetchManifest', () => {
       ok: true,
       status: 200,
       json: async () => mockManifest,
+      arrayBuffer: async () => Buffer.from(JSON.stringify(mockManifest)),
       headers: new Map(),
     });
 
@@ -204,6 +205,7 @@ describe('fetchManifest', () => {
       ok: true,
       status: 200,
       json: async () => mockManifestList,
+      arrayBuffer: async () => Buffer.from(JSON.stringify(mockManifestList)),
       headers: new Map(),
     });
 
@@ -213,6 +215,22 @@ describe('fetchManifest', () => {
         logger,
       ),
     ).rejects.toThrow('manifest list');
+  });
+
+  it('should reject an oversized manifest response before parsing', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => Buffer.alloc(5 * 1024 * 1024 + 1),
+      headers: new Map(),
+    });
+
+    await expect(
+      fetchManifest(
+        { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
+        logger,
+      ),
+    ).rejects.toThrow('exceeds maximum allowed size');
   });
 
   it('should use digest instead of tag when available', async () => {
@@ -225,11 +243,16 @@ describe('fetchManifest', () => {
       },
       layers: [],
     };
+    const manifestBuffer = Buffer.from(JSON.stringify(mockManifest));
+    const manifestDigest = `sha256:${createHash('sha256')
+      .update(manifestBuffer)
+      .digest('hex')}`;
 
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => mockManifest,
+      arrayBuffer: async () => manifestBuffer,
       headers: new Map(),
     });
 
@@ -238,14 +261,46 @@ describe('fetchManifest', () => {
         registry: 'quay.io',
         repository: 'org/repo',
         tag: 'latest',
-        digest: validSha256Digest,
+        digest: manifestDigest,
       },
       logger,
     );
     expect(global.fetch).toHaveBeenCalledWith(
-      `https://quay.io/v2/org/repo/manifests/${validSha256Digest}`,
+      `https://quay.io/v2/org/repo/manifests/${manifestDigest}`,
       expect.any(Object),
     );
+  });
+
+  it('should reject a digest reference when the manifest bytes do not match', async () => {
+    const manifest: OciManifest = {
+      schemaVersion: 2,
+      config: {
+        mediaType: 'application/vnd.oci.image.config.v1+json',
+        digest: 'sha256:config',
+        size: 100,
+      },
+      layers: [],
+    };
+    const manifestBuffer = Buffer.from(JSON.stringify(manifest));
+
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      arrayBuffer: async () => manifestBuffer,
+      headers: new Map(),
+    });
+
+    await expect(
+      fetchManifest(
+        {
+          registry: 'quay.io',
+          repository: 'org/repo',
+          tag: 'latest',
+          digest: validSha256Digest,
+        },
+        logger,
+      ),
+    ).rejects.toThrow('Manifest digest mismatch');
   });
 
   it('should handle 401 with bearer token exchange', async () => {
@@ -278,11 +333,14 @@ describe('fetchManifest', () => {
         ok: true,
         status: 200,
         json: async () => ({ token: 'test-token-123' }),
+        arrayBuffer: async () =>
+          Buffer.from(JSON.stringify({ token: 'test-token-123' })),
       })
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => mockManifest,
+        arrayBuffer: async () => Buffer.from(JSON.stringify(mockManifest)),
         headers: new Map(),
       });
 
@@ -325,11 +383,14 @@ describe('fetchManifest', () => {
         ok: true,
         status: 200,
         json: async () => ({ access_token: 'test-token-123' }),
+        arrayBuffer: async () =>
+          Buffer.from(JSON.stringify({ access_token: 'test-token-123' })),
       })
       .mockResolvedValueOnce({
         ok: true,
         status: 200,
         json: async () => mockManifest,
+        arrayBuffer: async () => Buffer.from(JSON.stringify(mockManifest)),
         headers: new Map(),
       });
 

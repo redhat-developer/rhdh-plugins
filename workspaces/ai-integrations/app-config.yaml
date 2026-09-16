@@ -182,12 +182,11 @@ catalog:
         #   timeout: { minutes: 3 }
         #   # Optional: defer the first sync
         #   # initialDelay: { seconds: 15 }
-# Uncomment to enable the skill-image-connector plugin.
-# skillImageConnector:
-#   allowedRegistries:
-#     - quay.io
-#   images:
-#     - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
+skillImageConnector:
+   allowedRegistries:
+     - quay.io
+   images:
+     - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
 #       # credentials:
 #       #   username: ${OCI_REGISTRY_USERNAME}
 #       #   password: ${OCI_REGISTRY_PASSWORD}

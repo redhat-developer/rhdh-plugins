@@ -32,8 +32,10 @@ import type {
   SkillImageConfig,
   SkillImageExtraction,
 } from './services/types';
+import type { SkillImageProcessingStatus } from './router';
 
 const MAX_CONFIGURED_IMAGES = 25;
+const MAX_CONCURRENT_IMAGE_FETCHES = 4;
 
 /**
  * Safely read an optional string from a Backstage Config object.
@@ -119,9 +121,13 @@ export function readSkillImageConfigs(
           `Invalid credentials for skill image ${imageRef}: tokenRealm must be a valid HTTPS URL`,
         );
       }
-      if (tokenRealmUrl.protocol !== 'https:') {
+      if (
+        tokenRealmUrl.protocol !== 'https:' ||
+        tokenRealmUrl.username ||
+        tokenRealmUrl.password
+      ) {
         throw new InputError(
-          `Invalid credentials for skill image ${imageRef}: tokenRealm must be a valid HTTPS URL`,
+          `Invalid credentials for skill image ${imageRef}: tokenRealm must be a valid HTTPS URL without credentials`,
         );
       }
     }
@@ -208,37 +214,59 @@ export const skillImageConnectorPlugin = createBackendPlugin({
 
         // Store extraction results so they can be exposed via the API
         const extractions = new Map<string, SkillImageExtraction>();
+        let processingStatus: SkillImageProcessingStatus =
+          imageConfigs.length > 0 ? 'loading' : 'ready';
 
-        httpRouter.use(await createRouter(pluginLogger, extractions));
+        httpRouter.use(
+          await createRouter(pluginLogger, extractions, () => processingStatus),
+        );
         httpRouter.addAuthPolicy({
           path: '/health',
           allow: 'unauthenticated',
         });
 
         // Do not make an unavailable registry prevent the backend from starting.
-        const processing = Promise.allSettled(
-          imageConfigs.map(async imgConfig => {
-            const result = await fetchAndExtractSkillImage(
-              imgConfig.imageRef,
-              workDir,
-              pluginLogger,
-              imgConfig.credentials,
-            );
-            extractions.set(imgConfig.imageRef, result);
-            pluginLogger.info(
-              `Successfully extracted skill image ${imgConfig.imageRef}`,
-            );
-          }),
-        ).then(results => {
-          results.forEach((result, index) => {
-            if (result.status === 'rejected') {
-              pluginLogger.error(
-                `Failed to process skill image ${imageConfigs[index].imageRef}`,
-                result.reason as Error,
-              );
+        // Limit concurrent downloads so configured images cannot multiply the
+        // per-blob memory ceiling into an avoidable startup spike.
+        const processing = (async () => {
+          let nextImageIndex = 0;
+          const processNextImage = async () => {
+            while (nextImageIndex < imageConfigs.length) {
+              const imageIndex = nextImageIndex++;
+              const imgConfig = imageConfigs[imageIndex];
+              try {
+                const result = await fetchAndExtractSkillImage(
+                  imgConfig.imageRef,
+                  workDir,
+                  pluginLogger,
+                  imgConfig.credentials,
+                );
+                extractions.set(imgConfig.imageRef, result);
+                pluginLogger.info(
+                  `Successfully extracted skill image ${imgConfig.imageRef}`,
+                );
+              } catch (error) {
+                pluginLogger.error(
+                  `Failed to process skill image ${imgConfig.imageRef}`,
+                  error as Error,
+                );
+              }
             }
-          });
-        });
+          };
+
+          await Promise.all(
+            Array.from(
+              {
+                length: Math.min(
+                  MAX_CONCURRENT_IMAGE_FETCHES,
+                  imageConfigs.length,
+                ),
+              },
+              processNextImage,
+            ),
+          );
+          processingStatus = 'ready';
+        })();
 
         lifecycle.addShutdownHook(async () => {
           await processing;

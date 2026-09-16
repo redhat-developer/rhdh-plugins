@@ -72,12 +72,13 @@ Returns `{ "status": "ok" }` when the plugin is running.
 
 ### `GET /api/skill-image-connector/images`
 
-Returns the list of extracted skill images and their contents. Local filesystem paths are intentionally not returned.
+Returns the processing status and list of extracted skill images and their contents. During startup, `status` is `loading`; it becomes `ready` after all configured images have been processed, including failures. Local filesystem paths are intentionally not returned.
 
 Example response:
 
 ```json
 {
+  "status": "ready",
   "images": [
     {
       "imageRef": "quay.io/gabemontero/hello-world-skill:1.0.0-draft",

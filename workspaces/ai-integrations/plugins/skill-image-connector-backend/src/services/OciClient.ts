@@ -177,8 +177,8 @@ async function fetchBearerToken(
   registryHost?: string,
 ): Promise<string | undefined> {
   const url = new URL(challenge.realm);
-  if (url.protocol !== 'https:') {
-    throw new Error('Registry token realm must use HTTPS');
+  if (url.protocol !== 'https:' || url.username || url.password) {
+    throw new Error('Registry token realm must use HTTPS without credentials');
   }
   if (credentials && registryHost && url.hostname !== registryHost) {
     if (!credentials.tokenRealm) {
@@ -202,7 +202,7 @@ async function fetchBearerToken(
     url.searchParams.set('scope', challenge.scope);
   }
 
-  logger.debug(`Requesting bearer token from ${url.toString()}`);
+  logger.debug('Requesting bearer token');
 
   const response = await fetch(url.toString(), {
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
@@ -407,11 +407,8 @@ async function readResponseJson(
   response: Response,
   maxSize: number,
 ): Promise<unknown> {
-  if (response.body || typeof response.arrayBuffer === 'function') {
-    const buffer = await readResponseBuffer(response, maxSize);
-    return JSON.parse(buffer.toString('utf-8'));
-  }
-  return response.json();
+  const buffer = await readResponseBuffer(response, maxSize);
+  return JSON.parse(buffer.toString('utf-8'));
 }
 
 /**
@@ -450,11 +447,30 @@ export async function fetchManifest(
     );
   }
 
-  const manifest = (await readResponseJson(response, MAX_MANIFEST_SIZE)) as
+  const manifestBuffer = await readResponseBuffer(response, MAX_MANIFEST_SIZE);
+  const manifest = JSON.parse(manifestBuffer.toString('utf-8')) as
     | (OciManifest & {
         manifests?: unknown[];
       })
     | undefined;
+
+  if (imageRef.digest) {
+    const digestMatch = DIGEST_PATTERN.exec(imageRef.digest);
+    if (
+      !digestMatch ||
+      digestMatch[2].length !== (digestMatch[1] === 'sha256' ? 64 : 128)
+    ) {
+      throw new Error(`Invalid manifest digest ${imageRef.digest}`);
+    }
+    const actualDigest = createHash(digestMatch[1])
+      .update(manifestBuffer)
+      .digest('hex');
+    if (actualDigest !== digestMatch[2].toLowerCase()) {
+      throw new Error(
+        `Manifest digest mismatch for ${imageRef.digest}: got ${digestMatch[1]}:${actualDigest}`,
+      );
+    }
+  }
 
   if (!manifest || typeof manifest !== 'object') {
     throw new TypeError('Registry returned an invalid OCI manifest object');
