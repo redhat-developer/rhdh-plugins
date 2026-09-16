@@ -199,6 +199,36 @@ describe('preMergeOciDisabledState — same-level duplicates', () => {
       preMergeOciDisabledState([['include.yaml', include]], [], 'main.yaml'),
     ).toThrow(/Duplicate OCI plugin configuration/);
   });
+
+  it('rejects different images with the same final segment and names both', () => {
+    const first = 'oci://quay.io/team-a/catalog:1.0!catalog-backend';
+    const second =
+      'oci://registry.example.com/team-b/catalog:2.0!catalog-backend';
+
+    expect(() =>
+      preMergeOciDisabledState(
+        [
+          ['first.yaml', [{ package: first }]],
+          ['second.yaml', [{ package: second }]],
+        ],
+        [],
+        'main.yaml',
+      ),
+    ).toThrow(
+      `Duplicate OCI plugin configurations '${first}' (in first.yaml) and '${second}' (in second.yaml) both resolve to the plugin name 'catalog'`,
+    );
+  });
+
+  it('preserves distinct explicit paths from the same image', () => {
+    const include: PluginSpec[] = [
+      { package: 'oci://quay.io/acme/bundle:1.0!plugin-a' },
+      { package: 'oci://quay.io/acme/bundle:1.0!plugin-b' },
+    ];
+
+    expect(() =>
+      preMergeOciDisabledState([['include.yaml', include]], [], 'main.yaml'),
+    ).not.toThrow();
+  });
 });
 
 describe('preMergeOciDisabledState — invalid OCI strings', () => {

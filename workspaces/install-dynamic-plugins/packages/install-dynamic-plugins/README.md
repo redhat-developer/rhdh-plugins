@@ -38,6 +38,22 @@ Runtime requirements: Node.js 22 or 24, and `skopeo` on `PATH` for OCI plugin su
 
 The init container invokes the wrapper `install-dynamic-plugins.sh /dynamic-plugins-root`, which delegates to the bin installed via `yarn install` from this package (see [redhat-developer/rhdh#4908](https://github.com/redhat-developer/rhdh/pull/4908)). Node.js is already present in the runtime image (it runs the Backstage backend), and `skopeo` is installed for OCI inspection — no new system packages are required.
 
+## OCI package version inheritance
+
+An OCI entry tagged with `{{inherit}}` is matched to an included plugin by its image name, the final OCI path segment. The registry host and namespace on the `{{inherit}}` entry are ignored during this lookup:
+
+```yaml
+# Included catalog entry
+- package: oci://quay.io/rhdh/backstage-plugin-catalog:v1!catalog-backend
+
+# Main configuration
+- package: oci://registry.redhat.io/rhdh/backstage-plugin-catalog:{{inherit}}!catalog-backend
+```
+
+The main entry resolves to `oci://quay.io/rhdh/backstage-plugin-catalog:v1!catalog-backend`, adopting the catalog's concrete registry and version. An explicit `!plugin-path` on the main entry takes precedence over the included path.
+
+Name matching is only used to resolve the reference. Normal merging continues to use the resolved registry, image, and plugin path, so ordinary OCI entries do not override each other merely because their image names match. Different images at the same merge level must not share a final image name because that would make name-based references ambiguous; the installer reports both conflicting entries. Multiple explicit paths from the same image remain distinct, while pathless inheritance from such an image is rejected as ambiguous.
+
 ## Architecture
 
 ```
@@ -123,4 +139,4 @@ yarn workspace @red-hat-developer-hub/cli-module-install-dynamic-plugins build
 
 - The **input contract** matches the previous Python script exactly: same `dynamic-plugins.yaml` schema (`includes`, `plugins`, `package`, `pluginConfig`, `disabled`, `pullPolicy`, `forceDownload`, `integrity`).
 - The **output contract** matches: same `app-config.dynamic-plugins.yaml`, same plugin directory layout, same `dynamic-plugin-config.hash` / `dynamic-plugin-image.hash` files.
-- `{{inherit}}` semantics, OCI path auto-detection, registry fallback, integrity algorithms, lock-file behaviour are preserved.
+- `{{inherit}}` resolves by final OCI image name across registries, then uses the concrete included package for normal merging. OCI path auto-detection, registry fallback, integrity algorithms, and lock-file behaviour are preserved.

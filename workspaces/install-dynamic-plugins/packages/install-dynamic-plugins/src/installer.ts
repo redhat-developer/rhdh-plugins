@@ -42,7 +42,9 @@ import {
   filterDisabledOciPlugins,
   mergePlugin,
   preMergeOciDisabledState,
+  resolveInheritPackage,
 } from './merger';
+import { isOciInherit } from './oci-key';
 import { computePluginHash } from './plugin-hash';
 import { Skopeo } from './skopeo';
 import { extractPluginName } from './plugin-name';
@@ -287,6 +289,29 @@ export function resolveRefPlugins(
   }
 }
 
+/**
+ * Resolve `{{inherit}}` entries against the unfiltered include lists. This has
+ * to happen before the disabled pre-merge pass: a disabled catalog entry is a
+ * valid inheritance base that a higher-precedence main entry can re-enable.
+ */
+export function resolveInheritPlugins(
+  mainPlugins: PluginSpec[],
+  includeLists: IncludePluginList[],
+): void {
+  const pluginsWithInherit = mainPlugins.filter(plugin =>
+    isOciInherit(plugin.package),
+  );
+  if (pluginsWithInherit.length === 0) return;
+
+  const candidates = includeLists.flatMap(([sourceFile, plugins]) =>
+    plugins.map(plugin => ({ package: plugin.package, sourceFile })),
+  );
+
+  for (const plugin of pluginsWithInherit) {
+    plugin.package = resolveInheritPackage(plugin.package, candidates);
+  }
+}
+
 /** Resolve include paths, substitute the catalog-index placeholder, merge
  * everything into a single `PluginMap`, and compute change-detection hashes.
  *
@@ -335,6 +360,7 @@ async function loadAllPlugins(
   const mainPlugins = content.plugins ?? [];
 
   resolveRefPlugins(mainPlugins, includeLists);
+  resolveInheritPlugins(mainPlugins, includeLists);
 
   const disabledRegistries = preMergeOciDisabledState(
     includeLists,

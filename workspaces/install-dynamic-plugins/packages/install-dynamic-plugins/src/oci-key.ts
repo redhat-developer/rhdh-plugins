@@ -19,6 +19,8 @@ import { type OciImageCache } from './image-cache';
 import { OCI_PROTO } from './protocols';
 import { RECOGNIZED_ALGORITHMS } from './types';
 
+export const INHERIT_TAG = '{{inherit}}';
+
 const OCI_PATTERN = [
   '^(',
   escape(OCI_PROTO),
@@ -74,7 +76,7 @@ export async function ociPluginKey(
   let path = m[4] ?? null;
 
   const version = (tag ?? digest) as string;
-  const inherit = tag === '{{inherit}}' && digest === undefined;
+  const inherit = tag === INHERIT_TAG && digest === undefined;
 
   if (inherit && !path) {
     // The merger will match against an earlier included plugin from the same image.
@@ -150,6 +152,12 @@ export function tryParseOciRegistryAndPath(
   const m = OCI_REGEX.exec(pkg);
   if (!m) return null;
   return { registry: m[1] as string, path: m[4] ?? null };
+}
+
+/** Return whether `pkg` is a valid OCI reference whose tag is `{{inherit}}`. */
+export function isOciInherit(pkg: string): boolean {
+  const m = OCI_REGEX.exec(pkg);
+  return m?.[2] === INHERIT_TAG && m[3] === undefined;
 }
 
 function escape(s: string): string {
