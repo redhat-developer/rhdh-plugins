@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { mockServices } from '@backstage/backend-test-utils';
+import type { LoggerService } from '@backstage/backend-plugin-api';
 import {
   findLayerByTitle,
   validateSkillImageManifest,
@@ -242,7 +242,12 @@ describe('validateSkillImageManifest', () => {
 });
 
 describe('fetchAndExtractSkillImage', () => {
-  const logger = mockServices.logger.mock();
+  const logger = {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+  } as unknown as LoggerService;
   const fs = require('node:fs');
 
   afterEach(() => {
@@ -305,10 +310,12 @@ describe('fetchAndExtractSkillImage', () => {
     expect(fs.promises.writeFile).toHaveBeenCalledWith(
       '/tmp/skill-image-xx/skillimage.yaml',
       Buffer.from(yamlContent),
+      { mode: 0o600 },
     );
     expect(fs.promises.writeFile).toHaveBeenCalledWith(
       '/tmp/skill-image-xx/SKILLS.md',
       Buffer.from(mdContent),
+      { mode: 0o600 },
     );
 
     // Verify fetchBlob was called with expectedSize parameter
@@ -317,12 +324,14 @@ describe('fetchAndExtractSkillImage', () => {
       'sha256:yaml-digest',
       yamlContent.length,
       logger,
+      undefined,
     );
     expect(mockedFetchBlob).toHaveBeenCalledWith(
       expect.any(Object),
       'sha256:md-digest',
       mdContent.length,
       logger,
+      undefined,
     );
   });
 

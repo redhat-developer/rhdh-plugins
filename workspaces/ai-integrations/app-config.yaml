@@ -141,8 +141,14 @@ catalog:
           default-lifecycle: '${LIFECYCLE:-production}'
 # Uncomment to enable the skill-image-connector plugin.
 # skillImageConnector:
+#   allowedRegistries:
+#     - quay.io
 #   images:
 #     - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
+#       # credentials:
+#       #   username: ${OCI_REGISTRY_USERNAME}
+#       #   password: ${OCI_REGISTRY_PASSWORD}
+#       #   tokenRealm: https://auth.example.com/token
 
 # Uncomment to use kubernetesPluginRef — the Backstage kubernetes plugin
 # does NOT need to be installed, only its config section is needed.

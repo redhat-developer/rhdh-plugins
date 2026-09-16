@@ -26,6 +26,14 @@ export interface ImageRef {
   digest?: string;
 }
 
+/** Credentials used for a registry's bearer token exchange. */
+export interface RegistryCredentials {
+  username: string;
+  password: string;
+  /** Explicit HTTPS token realm when it differs from the registry host. */
+  tokenRealm?: string;
+}
+
 /** Maximum allowed blob download size in bytes (50 MB). */
 export const MAX_BLOB_SIZE = 50 * 1024 * 1024;
 
@@ -66,4 +74,6 @@ export interface SkillImageConfig {
   id: string;
   /** Full image reference (e.g. "quay.io/gabemontero/hello-world-skill:1.0.0-draft"). */
   imageRef: string;
+  /** Optional credentials for a private registry. */
+  credentials?: RegistryCredentials;
 }

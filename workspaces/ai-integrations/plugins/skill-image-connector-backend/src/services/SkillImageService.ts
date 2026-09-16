@@ -19,7 +19,12 @@ import fs from 'node:fs';
 import platformPath from 'node:path';
 import os from 'node:os';
 import { parseImageRef, fetchManifest, fetchBlob } from './OciClient';
-import type { OciManifest, OciDescriptor, SkillImageExtraction } from './types';
+import type {
+  OciManifest,
+  OciDescriptor,
+  RegistryCredentials,
+  SkillImageExtraction,
+} from './types';
 
 /**
  * The annotation key used by skillimage to identify the layer title.
@@ -57,6 +62,20 @@ export function validateSkillImageManifest(manifest: OciManifest): {
       'Image manifest does not contain a layers array. ' +
         'This may indicate a manifest list, an unsupported manifest format, ' +
         'or a malformed registry response.',
+    );
+  }
+
+  const malformedLayer = manifest.layers.find(
+    layer =>
+      !layer ||
+      typeof layer.digest !== 'string' ||
+      !layer.digest ||
+      !Number.isSafeInteger(layer.size) ||
+      layer.size < 0,
+  );
+  if (malformedLayer) {
+    throw new TypeError(
+      'Image manifest contains a layer with an invalid digest or size',
     );
   }
 
@@ -102,16 +121,15 @@ export async function fetchAndExtractSkillImage(
   imageRefStr: string,
   workDir: string | undefined,
   logger: LoggerService,
+  credentials?: RegistryCredentials,
 ): Promise<SkillImageExtraction> {
   const baseDir = workDir ?? os.tmpdir();
   const imageRef = parseImageRef(imageRefStr);
 
-  logger.info(
-    `Processing skill image ${imageRef.registry}/${imageRef.repository}:${imageRef.tag}`,
-  );
+  logger.info(`Processing skill image ${imageRefStr}`);
 
   // 1. Fetch the manifest
-  const manifest = await fetchManifest(imageRef, logger);
+  const manifest = await fetchManifest(imageRef, logger, credentials);
 
   // 2. Validate the manifest has required layers
   const { skillImageYamlLayer, skillsMdLayer } =
@@ -124,8 +142,15 @@ export async function fetchAndExtractSkillImage(
       skillImageYamlLayer.digest,
       skillImageYamlLayer.size,
       logger,
+      credentials,
     ),
-    fetchBlob(imageRef, skillsMdLayer.digest, skillsMdLayer.size, logger),
+    fetchBlob(
+      imageRef,
+      skillsMdLayer.digest,
+      skillsMdLayer.size,
+      logger,
+      credentials,
+    ),
   ]);
 
   // 4. Write to local storage following the pattern from
@@ -139,8 +164,10 @@ export async function fetchAndExtractSkillImage(
     const skillsMdPath = platformPath.join(extractDir, SKILLS_MD);
 
     await Promise.all([
-      fs.promises.writeFile(skillImageYamlPath, skillImageYamlBuf),
-      fs.promises.writeFile(skillsMdPath, skillsMdBuf),
+      fs.promises.writeFile(skillImageYamlPath, skillImageYamlBuf, {
+        mode: 0o600,
+      }),
+      fs.promises.writeFile(skillsMdPath, skillsMdBuf, { mode: 0o600 }),
     ]);
 
     const skillImageYaml = skillImageYamlBuf.toString('utf-8');
@@ -165,5 +192,21 @@ export async function fetchAndExtractSkillImage(
       );
     }
     throw error;
+  }
+}
+
+/** Removes files owned by a completed skill image extraction. */
+export async function cleanupSkillImageExtraction(
+  extraction: SkillImageExtraction,
+  logger: LoggerService,
+): Promise<void> {
+  const extractDir = platformPath.dirname(extraction.skillImageYamlPath);
+  try {
+    await fs.promises.rm(extractDir, { recursive: true, force: true });
+  } catch (error) {
+    logger.warn(
+      `Failed to clean up extracted skill image directory ${extractDir}`,
+      error as Error,
+    );
   }
 }

@@ -64,8 +64,8 @@ describe('createRouter', () => {
       expect(res.body.images).toHaveLength(1);
       expect(res.body.images[0]).toEqual({
         imageRef: 'quay.io/org/repo:v1',
-        skillImageYamlPath: '/tmp/skill-image-xx/skillimage.yaml',
-        skillsMdPath: '/tmp/skill-image-xx/SKILLS.md',
+        skillImageYaml: 'name: test',
+        skillsMd: '# Test',
       });
     });
   });
