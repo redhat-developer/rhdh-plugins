@@ -303,9 +303,12 @@ export function mcpConfigureModalCancelButton(
   });
 }
 
-export function mcpConfigureModalCloseButton(page: Page): Locator {
+export function mcpConfigureModalCloseButton(
+  page: Page,
+  t: LightspeedMessages,
+): Locator {
   return mcpCredentialConfigureModal(page).getByRole('button', {
-    name: 'Close',
+    name: t['mcp.settings.closeConfigureModalAriaLabel'],
   });
 }
 
@@ -326,7 +329,7 @@ export async function expectMcpConfigureModalReady(
   page: Page,
   t: LightspeedMessages,
 ) {
-  await expect(mcpConfigureModalCloseButton(page)).toBeVisible();
+  await expect(mcpConfigureModalCloseButton(page, t)).toBeVisible();
   await expect(mcpClearTokenInputButton(page, t)).toBeVisible();
   await expect(mcpConfigureModalSaveButton(page, t)).toBeVisible();
   await expect(mcpConfigureModalCancelButton(page, t)).toBeVisible();

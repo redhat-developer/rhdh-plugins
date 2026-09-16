@@ -403,7 +403,7 @@ test.describe('Intelligent assistant MCP', () => {
             ).toBeVisible();
           }
 
-          await mcpConfigureModalCloseButton(sharedPage).click();
+          await mcpConfigureModalCloseButton(sharedPage, translations).click();
           await mcpToken.closeMcpPanel();
         });
 

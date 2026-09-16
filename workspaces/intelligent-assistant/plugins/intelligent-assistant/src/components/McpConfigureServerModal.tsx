@@ -307,7 +307,7 @@ export const McpConfigureServerModal = ({
         <div className={MCP_CONFIGURE_MODAL_CLOSE_HOST_CLASS}>
           <ConfigureModalCloseButton
             className={MCP_CONFIGURE_MODAL_CLOSE_CLASS}
-            aria-label="Close"
+            aria-label={t('mcp.settings.closeConfigureModalAriaLabel')}
             icon={<TimesIcon />}
             variant="plain"
             onClick={close}

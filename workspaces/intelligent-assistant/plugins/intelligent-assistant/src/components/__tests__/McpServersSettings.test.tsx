@@ -329,7 +329,7 @@ describe('McpServersSettings', () => {
       within(dialog).getByRole('button', { name: 'Cancel' }),
     ).toBeInTheDocument();
     expect(
-      within(dialog).getByRole('button', { name: 'Close' }),
+      within(dialog).getByRole('button', { name: 'Close configure modal' }),
     ).toBeInTheDocument();
     expect(
       within(dialog).getByRole('button', { name: 'Save' }).parentElement,
