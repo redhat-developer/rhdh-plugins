@@ -96,13 +96,5 @@
     "app-config.dynamic.yaml",
     "config.d.ts",
     "dist"
-  ],
-  "scalprum": {
-    "name": "red-hat-developer-hub.backstage-plugin-extensions",
-    "exposedModules": {
-      "PluginRoot": "./src/index.tsx",
-      "Alpha": "./src/alpha/index.tsx",
-      "Legacy": "./src/legacy.ts"
-    }
-  }
+  ]
 }

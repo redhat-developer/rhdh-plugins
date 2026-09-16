@@ -128,6 +128,9 @@ describe('OgxModelEntityProvider', () => {
     expect(entity.spec.lifecycle).toBe('production');
     expect(entity.spec.serverType).toBe('openai-v1');
     expect(entity.spec.serverUrl).toBe('http://localhost:8321');
+    expect(entity.metadata.links).toEqual([
+      { title: 'API', url: 'http://localhost:8321' },
+    ]);
     expect(entity.spec.models.discoverable).toBe(true);
     expect(entity.spec.models.available).toEqual([
       'meta-llama/Llama-3.1-8B-Instruct',
@@ -163,6 +166,7 @@ describe('OgxModelEntityProvider', () => {
     expect(entity.metadata.annotations[AI_ASSET_VERSION_ANNOTATION]).toBe(
       '2.1.0',
     );
+    expect(entity.metadata.labels).toBeUndefined();
   });
 
   it('should normalize version when no serverVersion is configured', async () => {
@@ -187,6 +191,7 @@ describe('OgxModelEntityProvider', () => {
     expect(entity.metadata.annotations[AI_ASSET_VERSION_ANNOTATION]).toBe(
       '0.0.0-unknown',
     );
+    expect(entity.spec.owner).toBe('unknown');
   });
 
   it('should send Authorization header when apiKey is configured', async () => {

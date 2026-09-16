@@ -29,6 +29,7 @@ import { LIGHTSPEED_APP_DRAWER_ID, LIGHTSPEED_PATH } from '../const';
 import type { FileContent } from '../types';
 import { useBackstageUserIdentity } from './useBackstageUserIdentity';
 import { useDisplayModeSettings } from './useDisplayModeSettings';
+import type { SettingsTab } from './useSettingsPanelUrlState';
 
 function lightspeedRoutePath(conversationId?: string): string {
   return conversationId
@@ -70,6 +71,10 @@ export function useLightspeedProviderState(): {
   const [activeNotebookId, setActiveNotebookId] = useState<string | undefined>(
     undefined,
   );
+  const [settingsTab, setSettingsTabState] = useState<SettingsTab | null>(null);
+  const setSettingsTab = useCallback((tab: SettingsTab | null) => {
+    setSettingsTabState(tab);
+  }, []);
   const shellViewTabRef = useRef(shellViewTab);
   shellViewTabRef.current = shellViewTab;
   const setShellViewTab = useCallback((tab: number) => {
@@ -272,10 +277,16 @@ export function useLightspeedProviderState(): {
         isLightspeedRouteRef.current &&
         !isOnNotebooksPathRef.current
       ) {
-        navigate(lightspeedRoutePath(id), { replace: true });
+        navigate(
+          {
+            pathname: lightspeedRoutePath(id),
+            search: location.search,
+          },
+          { replace: true },
+        );
       }
     },
-    [navigate],
+    [navigate, location.search],
   );
 
   const setDraftMessage = useCallback((message: string) => {
@@ -364,6 +375,8 @@ export function useLightspeedProviderState(): {
       setShellViewTab,
       activeNotebookId,
       setActiveNotebookId,
+      settingsTab,
+      setSettingsTab,
     }),
     [
       isOpen,
@@ -382,6 +395,8 @@ export function useLightspeedProviderState(): {
       setShellViewTab,
       activeNotebookId,
       setActiveNotebookId,
+      settingsTab,
+      setSettingsTab,
     ],
   );
 

@@ -54,6 +54,33 @@ mismatch.
   - If the change affects the data flow or architecture described in a design.md, update the relevant section to match the new implementation
   - If the change adds user-facing configuration (new annotations, config keys, API surface), update the affected plugin's README with usage documentation
 
+### OpenSpec specification review
+
+When reviewing PRs that add or modify files under `openspec/changes/`:
+
+- **Audit freshness**: If any `design.md`, `tasks.md`, or
+  `proposal.md` file (at the change root) or any `spec.md` file (under
+  `specs/` subdirectories) was modified in the PR, verify that the
+  change-root `audit.md` was also updated. Check that the "Last
+  audited" timestamp in `audit.md` is not earlier than the most recent
+  changes to specification files within the same change area. If the
+  audit predates spec changes, flag it as stale.
+- **Audit summary accuracy**: Verify that the CRITICAL / WARNING /
+  SUGGESTION counts in `audit.md` summary tables match the number of
+  detailed findings listed below them. Check per-category rows and the
+  total row.
+- **Cross-document references**: Check that references between documents
+  within the same change area are accurate:
+  - `proposal.md` references to future work or sibling changes should
+    reflect what is actually in the PR branch
+  - Design decision IDs (D1, D2, ...) referenced in `spec.md` scenarios
+    must exist in `design.md`
+  - Task items in `tasks.md` should align with the design decisions and
+    spec capabilities they reference
+- **Journal alignment**: If `journal.jsonl` exists, its audit entries
+  (findings counts) should be consistent with the current `audit.md`
+  content
+
 ## Backstage Backend Conventions
 
 ### Service-to-service auth (`targetPluginId`)

@@ -55,14 +55,16 @@ export function sanitizeEntityName(name: string): string {
 }
 
 /**
- * Maps createdBy user reference to a catalog owner ref.
+ * Maps a createdBy user reference to a catalog owner ref.
+ *
+ * Returns undefined when the source does not provide an owner. Provider
+ * callers must choose a schema-valid fallback when their entity schema
+ * requires an owner.
  *
  * @internal
  */
-export function mapOwner(createdBy?: string): string {
-  if (!createdBy) {
-    return 'unknown';
-  }
+export function mapOwner(createdBy?: string): string | undefined {
+  if (!createdBy) return undefined;
   if (createdBy.includes(':') || createdBy.includes('/')) {
     return createdBy;
   }

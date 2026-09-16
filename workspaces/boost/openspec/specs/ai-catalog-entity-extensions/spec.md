@@ -2,102 +2,137 @@
 
 > **Status: Implemented** — Current RHDH 2.1 release source of truth.
 >
-> **Scope:** `plugins/boost` entity-page cards and Usage tab. Catalog entity
-> visibility remains a Catalog/RHDH concern; this spec covers frontend
+> **Scope:** `plugins/boost` entity-page cards for AI catalog assets. Catalog
+> entity visibility remains a Catalog/RHDH concern; this spec covers frontend
 > presentation only.
 
 ## Purpose
 
-This specification describes the frontend entity-page extensions delivered by
-the AI Catalog plugin. Catalog entity discovery is governed by Backstage's
-built-in `catalog.entity.read` permission; the Usage tab behavior below is
-field-level presentation and must not be treated as a second entity-visibility
-permission.
+This specification describes the entity-page extensions delivered by the AI
+Catalog plugin. AI assets use a small set of composable cards rather than a
+separate card for every individual field. Type-specific fields are grouped in
+the AI asset details card, while agent instructions and usage actions have
+their own cards when applicable.
 
-The current frontend may still use the existing
-`ai-catalog.asset.access.usage-docs` check as a presentation gate for the
-Usage tab. That check is transitional UI behavior: it is not the Catalog
-entity-visibility control and it is not a backend security boundary. If a
-future API returns protected fields, the API must enforce authorization at its
-response boundary.
+Catalog entity discovery is governed by Backstage's built-in
+`catalog.entity.read` permission. The transitional
+`ai-catalog.asset.access.usage-docs` permission may gate the Usage card, but it
+is not an entity-visibility control or a backend security boundary.
 
 ## Requirements
 
-### Requirement: Summary Card
+### Requirement: AI asset details card
 
-The Summary card MUST render on AI asset entity pages when the entity contains
-at least one supported summary field.
+The AI asset details card MUST render on AI asset entity pages when the entity
+contains a description, rationale, version, or supported type-specific field.
+It MUST omit itself when there is no supported content.
 
-#### Scenario: Summary card renders on AI entity
+#### Scenario: Details card renders for supported content
 
-- **WHEN** an AI asset has a description, rationale, available model, agent
-  instruction, handoff description, or RAG setting
-- **THEN** `entity-card:boost/summary` renders the available summary fields
+- **WHEN** an AI asset has a description, rationale, version, or supported
+  type-specific metadata
+- **THEN** `entity-card:boost/ai-asset-details` renders the available fields
 
-#### Scenario: Summary card has no supported data
+#### Scenario: Description-only asset
 
-- **WHEN** an AI asset has none of the supported summary fields
-- **THEN** the Summary card is not rendered
+- **WHEN** an AI asset has only `metadata.description`
+- **THEN** the details card renders the description
 
-#### Scenario: Summary card absent on non-AI entity
+#### Scenario: Details card has no supported data
 
-- **WHEN** a developer views a catalog entity page for a non-AI entity
-- **THEN** the Summary card is not rendered
+- **WHEN** an AI asset has none of the supported fields
+- **THEN** the details card is not rendered
 
-### Requirement: Adoption Card
+#### Scenario: Details card absent on non-AI entity
 
-The Adoption card MUST copy or open a URL in the browser. It MUST NOT call a
-Boost backend.
+- **WHEN** a user views a catalog entity page for a non-AI entity
+- **THEN** the details card is not rendered
 
-#### Scenario: Copy or open action exists
+### Requirement: Type-specific asset details
 
-- **WHEN** the entity has a skill command, OCI pull, git archive link, or MCP remote
-- **THEN** the card exposes that action in the browser
+The details card MUST present fields according to the AI asset type without
+requiring separate cards for each field.
 
-#### Scenario: No action
+#### Scenario: Agent details
 
-- **WHEN** there is no adoption action
-- **THEN** the Adoption card is not rendered
+- **WHEN** an agent has model, tools, RAG, handoff description, handoff
+  targets, or related model data
+- **THEN** the card renders the available values
+- **AND** handoff targets link to resolvable catalog entities
 
-### Requirement: Version Card
+#### Scenario: Model-server details
 
-The Version card MUST show only the current annotated version.
+- **WHEN** a model server has server type, API-key requirement, default model,
+  or available models
+- **THEN** the card renders the available values
+- **AND** a large model inventory is available through a focused models view
 
-#### Scenario: Current version annotation exists
+#### Scenario: Other AI asset details
 
-- **WHEN** `rhdh.io/ai-asset-version` is present
-- **THEN** `entity-card:boost/version-list` shows that version
-- **AND** it does not list a version history
+- **WHEN** a skill, rule, or MCP server has supported type-specific metadata
+- **THEN** the card renders the metadata using the appropriate field
+  presentation
 
-### Requirement: Usage Tab
+### Requirement: Agent instructions card
 
-The Usage tab MUST be a Boost `EntityContentBlueprint` on AI assets. It MUST NOT
-replace the Catalog TechDocs tab.
+The agent instructions card MUST render only for agents with instructions and
+MUST render the instruction content as Markdown.
 
-Usage authorization is an API/data-boundary concern. If a future backend API
-returns protected usage data, that API MUST enforce field-level authorization;
-the frontend MUST NOT rely on hiding a tab as the security boundary.
+#### Scenario: Agent instructions exist
 
-#### Scenario: Current usage permission denies access
+- **WHEN** an agent has non-empty instructions
+- **THEN** `entity-card:boost/agent-instructions` renders the instructions
+  using Markdown content
+
+#### Scenario: Agent instructions are absent
+
+- **WHEN** an agent has no instructions
+- **THEN** the instructions card is not rendered
+
+### Requirement: Usage card
+
+The Usage card MUST expose a safe, type-specific usage action when one can be
+derived from the entity. It MUST NOT call a Boost backend.
+
+#### Scenario: Usage action exists
+
+- **WHEN** the entity has a supported skill command, OCI pull command, model
+  server endpoint, MCP endpoint, Git archive, or Git source location
+- **THEN** `entity-card:boost/usage` exposes the corresponding copy or link
+  action
+
+#### Scenario: Git subpath source
+
+- **WHEN** a Git source points to a repository subpath rather than a
+  repository root
+- **THEN** the Usage card opens the source location instead of guessing an
+  archive download
+
+#### Scenario: No usage action
+
+- **WHEN** there is no safe supported usage action
+- **THEN** the Usage card is not rendered
+
+#### Scenario: Usage permission denies access
 
 - **WHEN** `ai-catalog.asset.access.usage-docs` denies access to the entity
-- **THEN** the Usage tab shows a permission-denied message
-- **AND** it links to the owner when the entity has a valid owner reference
+- **THEN** the Usage card is not rendered
+- **AND** the entity remains discoverable through the Catalog permission model
 
-#### Scenario: Entity visibility is independent from usage presentation
-
-- **WHEN** a user is authorized to read an entity through `catalog.entity.read`
-- **AND** `ai-catalog.asset.access.usage-docs` denies access to the entity
-- **THEN** the entity remains discoverable
-- **AND** the Usage tab shows its permission-denied state
-
-#### Scenario: Current usage permission allows access
+#### Scenario: Usage permission allows access
 
 - **WHEN** `ai-catalog.asset.access.usage-docs` allows access to the entity
-- **THEN** the Usage tab links to TechDocs and `metadata.links` when present
-- **AND** the Catalog TechDocs tab is unchanged
+- **THEN** the Usage card may render its supported usage action
 
-#### Scenario: Tab visibility
+### Requirement: Standard TechDocs behavior
 
-- **WHEN** a developer views a non-AI entity page
-- **THEN** the Usage tab is not present
+The AI Catalog plugin MUST NOT replace or duplicate the standard Backstage
+TechDocs experience with a dedicated Usage tab. TechDocs remain available
+through the host application's normal entity-page extensions.
+
+#### Scenario: Standard TechDocs remain available
+
+- **WHEN** a user views an AI asset with TechDocs configured
+- **THEN** the host application's standard TechDocs experience remains
+  available
+- **AND** the Boost plugin does not add a separate Usage tab for it
