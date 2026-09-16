@@ -866,13 +866,7 @@ export async function mockFeedbackReceived(page: Page) {
   });
 }
 
-type SavedPromptMock = {
-  id: string;
-  name: string;
-  content: string;
-  created_at: string;
-  updated_at: string;
-};
+import type { SavedPromptMock } from '../fixtures/responses';
 
 const savedPromptsByPage = new WeakMap<Page, SavedPromptMock[]>();
 const savedPromptsRouteGlob = `${modelBaseUrl}/v1/saved-prompts**`;

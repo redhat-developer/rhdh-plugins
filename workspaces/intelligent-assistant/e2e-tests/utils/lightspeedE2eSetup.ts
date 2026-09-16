@@ -72,7 +72,7 @@ async function waitForLoggedInShell(page: Page) {
   throw new Error('Timed out waiting for logged-in app shell');
 }
 
-async function loginAsGuest(page: Page) {
+export async function loginAsGuest(page: Page) {
   const enter = page.getByRole('button', { name: 'Enter' });
   const maxAttempts = 3;
 

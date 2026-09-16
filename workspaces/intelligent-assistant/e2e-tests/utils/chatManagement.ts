@@ -524,31 +524,3 @@ export const verifySortDropdownVisible = async (
 export const closeSortDropdown = async (page: Page) => {
   await page.keyboard.press('Escape');
 };
-
-export const savedPromptSidebarItem = (
-  page: Page,
-  translations: LightspeedMessages,
-  promptName: string,
-): Locator =>
-  page
-    .getByLabel('Chatbot', { exact: true })
-    .getByRole('menu', {
-      name: new RegExp(translations['conversation.category.savedPrompts']),
-    })
-    .getByRole('menuitem', { name: promptName, exact: true });
-
-export const openSavedPromptsSettingsTab = async (
-  page: Page,
-  translations: LightspeedMessages,
-) => {
-  await openChatbotSettings(page, translations);
-  await page
-    .getByRole('menuitem', { name: translations['settings.mcp.label'] })
-    .click();
-  await page
-    .getByRole('button', { name: translations['savedPrompts.tab.title'] })
-    .click();
-  await expect(
-    page.getByRole('button', { name: translations['savedPrompts.newPrompt'] }),
-  ).toBeVisible();
-};
