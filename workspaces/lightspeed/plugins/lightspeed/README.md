@@ -175,7 +175,6 @@ global:
             red-hat-developer-hub.backstage-plugin-lightspeed:
               translationResources:
                 - importName: lightspeedTranslations
-                  module: Alpha
                   ref: lightspeedTranslationRef
               dynamicRoutes:
                 - path: /lightspeed
@@ -226,7 +225,6 @@ dynamicPlugins:
     red-hat-developer-hub.backstage-plugin-lightspeed:
       translationResources:
         - importName: lightspeedTranslations
-          module: Alpha
           ref: lightspeedTranslationRef
       dynamicRoutes:
         - path: /lightspeed
