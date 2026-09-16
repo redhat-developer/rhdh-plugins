@@ -71,7 +71,7 @@ function normalizeBoundaries(s: string): string {
   }
 
   // Fix trailing non-alphanumeric
-  if (chars.length > 0 && !/^[a-z0-9]$/.test(chars.at(chars.length - 1)!)) {
+  if (chars.length > 0 && !/^[a-z0-9]$/.test(chars.at(-1)!)) {
     chars[chars.length - 1] = 'x';
   }
 

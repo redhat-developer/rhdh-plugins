@@ -25,6 +25,8 @@ export type {
   McpServerDocument,
   McpServerRemote,
   McpRegistryRemote,
+  McpRegistryIcon,
+  McpRegistryPackage,
   McpServerRepository,
   McpServerMappingDefaults,
   McpServerApiEntity,

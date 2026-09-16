@@ -287,11 +287,13 @@ export function mapServerToEntity(
     entity.metadata.links = links;
   }
 
+  // Sort for deterministic output (separate statements per review feedback)
+  consumedPaths.sort((a, b) => a.localeCompare(b));
+  reservedAnnotationKeys.sort((a, b) => a.localeCompare(b));
+
   return {
     entity,
-    consumedPaths: consumedPaths.sort((a, b) => a.localeCompare(b)),
-    reservedAnnotationKeys: reservedAnnotationKeys.sort((a, b) =>
-      a.localeCompare(b),
-    ),
+    consumedPaths,
+    reservedAnnotationKeys,
   };
 }

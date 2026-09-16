@@ -317,9 +317,9 @@ describe('mapServerToEntity', () => {
       const { entity } = mapServerToEntity(
         makeMinimalDoc({ name: 'io.github.user/weather' }),
       );
-      expect(entity.metadata.annotations['modelcontextprotocol.io/name']).toBe(
-        'io.github.user/weather',
-      );
+      expect(
+        entity.metadata.annotations?.['modelcontextprotocol.io/name'],
+      ).toBe('io.github.user/weather');
     });
 
     it('preserves version in annotation', () => {
@@ -327,7 +327,7 @@ describe('mapServerToEntity', () => {
         makeMinimalDoc({ version: '2.0.0' }),
       );
       expect(
-        entity.metadata.annotations['modelcontextprotocol.io/version'],
+        entity.metadata.annotations?.['modelcontextprotocol.io/version'],
       ).toBe('2.0.0');
     });
 
@@ -346,10 +346,10 @@ describe('mapServerToEntity', () => {
       );
       expect(v1.entity.metadata.name).not.toBe(v2.entity.metadata.name);
       expect(
-        v1.entity.metadata.annotations['modelcontextprotocol.io/name'],
+        v1.entity.metadata.annotations?.['modelcontextprotocol.io/name'],
       ).toBe('io.github.user/weather');
       expect(
-        v2.entity.metadata.annotations['modelcontextprotocol.io/name'],
+        v2.entity.metadata.annotations?.['modelcontextprotocol.io/name'],
       ).toBe('io.github.user/weather');
     });
 
@@ -614,7 +614,9 @@ describe('mapServerToEntity', () => {
           },
         }),
       );
-      expect(entity.metadata.annotations['backstage.io/source-location']).toBe(
+      expect(
+        entity.metadata.annotations?.['backstage.io/source-location'],
+      ).toBe(
         'url:https://github.com/modelcontextprotocol/servers/tree/HEAD/src/everything',
       );
     });
@@ -630,7 +632,7 @@ describe('mapServerToEntity', () => {
         }),
       );
       expect(
-        entity.metadata.annotations['modelcontextprotocol.io/repository.url'],
+        entity.metadata.annotations?.['modelcontextprotocol.io/repository.url'],
       ).toBe('https://github.com/modelcontextprotocol/servers');
     });
 
@@ -723,7 +725,7 @@ describe('mapServerToEntity', () => {
       const link = entity.metadata.links?.find(l => l.title === 'Source Code');
       expect(link?.url).toBe('https://github.com/org/repo');
       expect(
-        entity.metadata.annotations['modelcontextprotocol.io/repository.url'],
+        entity.metadata.annotations?.['modelcontextprotocol.io/repository.url'],
       ).toBe('https://github.com/org/repo');
     });
 
@@ -736,7 +738,7 @@ describe('mapServerToEntity', () => {
         }),
       );
       expect(
-        entity.metadata.annotations['modelcontextprotocol.io/repository.url'],
+        entity.metadata.annotations?.['modelcontextprotocol.io/repository.url'],
       ).toBe('https://github.com/org/repo.git/');
       // Combined URL uses normalized base
       const link = entity.metadata.links?.find(l => l.title === 'Source Code');
@@ -774,7 +776,7 @@ describe('mapServerToEntity', () => {
       const link = entity.metadata.links?.find(l => l.title === 'Source Code');
       expect(link?.url).toBe('https://gitlab.internal/org/repo');
       expect(
-        entity.metadata.annotations['modelcontextprotocol.io/repository.url'],
+        entity.metadata.annotations?.['modelcontextprotocol.io/repository.url'],
       ).toBe('https://gitlab.internal/org/repo');
     });
   });
@@ -816,7 +818,7 @@ describe('mapServerToEntity', () => {
         }),
       );
 
-      const keys = Object.keys(entity.metadata.annotations);
+      const keys = Object.keys(entity.metadata.annotations ?? {});
       const sortedKeys = [...keys].sort((a, b) => a.localeCompare(b));
       expect(keys).toEqual(sortedKeys);
     });
