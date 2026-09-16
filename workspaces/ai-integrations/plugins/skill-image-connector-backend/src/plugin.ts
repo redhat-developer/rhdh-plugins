@@ -25,6 +25,7 @@ import { createRouter } from './router';
 import { parseImageRef } from './services/OciClient';
 import {
   cleanupSkillImageExtraction,
+  cleanupStaleExtractionDirs,
   fetchAndExtractSkillImage,
 } from './services/SkillImageService';
 import type {
@@ -32,10 +33,16 @@ import type {
   SkillImageConfig,
   SkillImageExtraction,
 } from './services/types';
+import { MAX_AGGREGATE_CONTENT_SIZE } from './services/types';
 import type { SkillImageProcessingStatus } from './router';
 
 const MAX_CONFIGURED_IMAGES = 25;
 const MAX_CONCURRENT_IMAGE_FETCHES = 4;
+
+/** Maximum number of retry attempts for transient registry failures. */
+const MAX_RETRIES = 2;
+/** Base delay for exponential backoff in milliseconds. */
+const RETRY_BASE_DELAY_MS = 2_000;
 
 /**
  * Safely read an optional string from a Backstage Config object.
@@ -175,6 +182,77 @@ export function readSkillImageConfigs(
 }
 
 /**
+ * Returns true if the error is likely transient and the operation
+ * should be retried (network errors, 5xx responses, timeouts).
+ */
+function isTransientError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const msg = error.message;
+    // Network-level and timeout failures
+    if (
+      msg.includes('ECONNREFUSED') ||
+      msg.includes('ECONNRESET') ||
+      msg.includes('ETIMEDOUT') ||
+      msg.includes('ENOTFOUND') ||
+      msg.includes('UND_ERR_CONNECT_TIMEOUT') ||
+      error.name === 'AbortError' ||
+      error.name === 'TimeoutError'
+    ) {
+      return true;
+    }
+    // HTTP 5xx from registry
+    if (/\b5\d{2}\b/.test(msg) && msg.includes('Failed to fetch')) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Attempts to fetch and extract a skill image with retry and exponential
+ * backoff for transient failures.  Permanent errors (4xx, validation
+ * failures) are not retried.
+ */
+async function fetchWithRetry(
+  imageRefStr: string,
+  workDir: string | undefined,
+  logger: LoggerService,
+  credentials?: RegistryCredentials,
+  signal?: AbortSignal,
+): Promise<SkillImageExtraction> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (signal?.aborted) {
+      throw new Error('Processing was aborted');
+    }
+    try {
+      return await fetchAndExtractSkillImage(
+        imageRefStr,
+        workDir,
+        logger,
+        credentials,
+        signal,
+      );
+    } catch (error) {
+      lastError = error;
+      if (attempt < MAX_RETRIES && isTransientError(error)) {
+        const delayMs = RETRY_BASE_DELAY_MS * 2 ** attempt;
+        logger.warn(
+          `Transient failure fetching ${imageRefStr} (attempt ${attempt + 1}/${
+            MAX_RETRIES + 1
+          }), retrying in ${delayMs}ms`,
+          error as Error,
+        );
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw lastError;
+}
+
+/**
  * skillImageConnectorPlugin backend plugin
  *
  * Fetches OCI skill images configured in app-config, validates they
@@ -218,12 +296,19 @@ export const skillImageConnectorPlugin = createBackendPlugin({
           );
         }
         for (const imageConfig of imageConfigs) {
-          const registry = parseImageRef(
-            imageConfig.imageRef,
-          ).registry.toLowerCase();
+          const parsed = parseImageRef(imageConfig.imageRef);
+          const registry = parsed.registry.toLowerCase();
           if (!allowedRegistries.includes(registry)) {
             throw new InputError(
               `Registry ${registry} for ${imageConfig.imageRef} is not in skillImageConnector.allowedRegistries`,
+            );
+          }
+          // Warn when a mutable tag is used instead of a digest reference
+          if (!parsed.digest) {
+            pluginLogger.warn(
+              `Image ${imageConfig.imageRef} uses a mutable tag. ` +
+                'Use a digest reference (e.g. @sha256:...) in production ' +
+                'to ensure reproducible content and prevent tag mutation attacks.',
             );
           }
         }
@@ -235,6 +320,10 @@ export const skillImageConnectorPlugin = createBackendPlugin({
           config,
           'backend.workingDirectory',
         );
+
+        // Clean up stale extraction directories from previous abnormal
+        // terminations (crash, OOM, forced kill) before starting new work.
+        await cleanupStaleExtractionDirs(workDir, pluginLogger);
 
         // Store extraction results so they can be exposed via the API
         const extractions = new Map<string, SkillImageExtraction>();
@@ -259,6 +348,10 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         // Limit concurrent downloads so configured images cannot multiply the
         // per-blob memory ceiling into an avoidable startup spike.
         const processingAbortController = new AbortController();
+
+        // Track aggregate content size to bound total in-memory retention.
+        let aggregateContentSize = 0;
+
         const processing = (async () => {
           let nextImageIndex = 0;
           const processNextImage = async () => {
@@ -269,17 +362,38 @@ export const skillImageConnectorPlugin = createBackendPlugin({
               const imageIndex = nextImageIndex++;
               const imgConfig = imageConfigs[imageIndex];
               try {
-                const result = await fetchAndExtractSkillImage(
+                const result = await fetchWithRetry(
                   imgConfig.imageRef,
                   workDir,
                   pluginLogger,
                   imgConfig.credentials,
                   processingAbortController.signal,
                 );
-                extractions.set(imgConfig.imageRef, result);
-                pluginLogger.info(
-                  `Successfully extracted skill image ${imgConfig.imageRef}`,
-                );
+
+                // Enforce aggregate content budget before accepting the result
+                const contentSize =
+                  Buffer.byteLength(result.skillImageYaml, 'utf-8') +
+                  Buffer.byteLength(result.skillsMd, 'utf-8');
+                if (
+                  aggregateContentSize + contentSize >
+                  MAX_AGGREGATE_CONTENT_SIZE
+                ) {
+                  pluginLogger.error(
+                    `Aggregate content budget exceeded after ${imgConfig.imageRef}; ` +
+                      `${
+                        aggregateContentSize + contentSize
+                      } bytes would exceed ` +
+                      `${MAX_AGGREGATE_CONTENT_SIZE} byte limit`,
+                  );
+                  await cleanupSkillImageExtraction(result, pluginLogger);
+                  failedImages.add(imgConfig.imageRef);
+                } else {
+                  aggregateContentSize += contentSize;
+                  extractions.set(imgConfig.imageRef, result);
+                  pluginLogger.info(
+                    `Successfully extracted skill image ${imgConfig.imageRef}`,
+                  );
+                }
               } catch (error) {
                 if (!processingAbortController.signal.aborted) {
                   failedImages.add(imgConfig.imageRef);

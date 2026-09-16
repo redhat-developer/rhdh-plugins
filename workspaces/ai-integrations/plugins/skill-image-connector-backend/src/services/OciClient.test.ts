@@ -16,8 +16,23 @@
 
 import type { LoggerService } from '@backstage/backend-plugin-api';
 import { createHash } from 'node:crypto';
-import { parseImageRef, fetchManifest, fetchBlob } from './OciClient';
+import {
+  parseImageRef,
+  fetchManifest,
+  fetchBlob,
+  isPrivateAddress,
+} from './OciClient';
 import type { OciManifest } from './types';
+
+// Mock DNS resolution so redirect tests don't fail with real DNS lookups.
+// By default, resolve all hostnames to a public IP.
+jest.mock('node:dns', () => ({
+  promises: {
+    lookup: jest
+      .fn()
+      .mockResolvedValue([{ address: '93.184.216.34', family: 4 }]),
+  },
+}));
 
 const validSha256Digest = `sha256:${'a'.repeat(64)}`;
 
@@ -485,6 +500,14 @@ describe('fetchBlob', () => {
     debug: jest.fn(),
   } as unknown as LoggerService;
 
+  beforeEach(() => {
+    // Re-establish the DNS mock after resetAllMocks clears it.
+    const dns = require('node:dns');
+    (dns.promises.lookup as jest.Mock).mockResolvedValue([
+      { address: '93.184.216.34', family: 4 },
+    ]);
+  });
+
   afterEach(() => {
     jest.resetAllMocks();
   });
@@ -619,6 +642,29 @@ describe('fetchBlob', () => {
         logger,
       ),
     ).rejects.toThrow('did not include a Location');
+  });
+
+  it('should reject a redirect whose hostname resolves to a private IP (DNS rebinding)', async () => {
+    const dns = require('node:dns');
+    (dns.promises.lookup as jest.Mock).mockResolvedValueOnce([
+      { address: '10.0.0.1', family: 4 },
+    ]);
+    const cancel = jest.fn().mockResolvedValue(undefined);
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 302,
+      headers: { get: () => 'https://evil.example.com/blob' },
+      body: { cancel },
+    });
+
+    await expect(
+      fetchBlob(
+        { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
+        validSha256Digest,
+        1,
+        logger,
+      ),
+    ).rejects.toThrow('non-public address');
   });
 
   it('should enforce the maximum redirect count', async () => {
@@ -769,5 +815,71 @@ describe('fetchBlob', () => {
         logger,
       ),
     ).resolves.toEqual(content);
+  });
+});
+
+describe('isPrivateAddress', () => {
+  it.each([
+    ['10.0.0.1', 4],
+    ['10.255.255.255', 4],
+    ['127.0.0.1', 4],
+    ['127.255.255.255', 4],
+    ['192.168.0.1', 4],
+    ['192.168.255.255', 4],
+    ['172.16.0.1', 4],
+    ['172.31.255.255', 4],
+    ['169.254.0.1', 4],
+    ['0.0.0.0', 4],
+    ['100.64.0.1', 4],
+    ['100.127.255.255', 4],
+    ['198.18.0.1', 4],
+    ['198.19.0.1', 4],
+    ['240.0.0.1', 4],
+  ])('should detect IPv4 private address %s', (address, family) => {
+    expect(isPrivateAddress(address, family)).toBe(true);
+  });
+
+  it.each([
+    ['8.8.8.8', 4],
+    ['1.1.1.1', 4],
+    ['172.15.255.255', 4],
+    ['172.32.0.0', 4],
+    ['100.63.255.255', 4],
+    ['100.128.0.0', 4],
+    ['198.17.255.255', 4],
+    ['198.20.0.0', 4],
+    ['239.255.255.255', 4],
+  ])('should allow IPv4 public address %s', (address, family) => {
+    expect(isPrivateAddress(address, family)).toBe(false);
+  });
+
+  it.each([
+    ['::1', 6],
+    ['::', 6],
+    ['fe80::1', 6],
+    ['fd00::1', 6],
+    ['fc00::1', 6],
+  ])('should detect IPv6 private address %s', (address, family) => {
+    expect(isPrivateAddress(address, family)).toBe(true);
+  });
+
+  it.each([
+    ['2001:db8::1', 6],
+    ['2607:f8b0:4004:800::200e', 6],
+  ])('should allow IPv6 public address %s', (address, family) => {
+    expect(isPrivateAddress(address, family)).toBe(false);
+  });
+
+  it('should detect private IPv4-mapped IPv6 address', () => {
+    expect(isPrivateAddress('::ffff:10.0.0.1', 6)).toBe(true);
+    expect(isPrivateAddress('::ffff:192.168.1.1', 6)).toBe(true);
+  });
+
+  it('should allow public IPv4-mapped IPv6 address', () => {
+    expect(isPrivateAddress('::ffff:8.8.8.8', 6)).toBe(false);
+  });
+
+  it('should deny unknown address family', () => {
+    expect(isPrivateAddress('something', 99)).toBe(true);
   });
 });
