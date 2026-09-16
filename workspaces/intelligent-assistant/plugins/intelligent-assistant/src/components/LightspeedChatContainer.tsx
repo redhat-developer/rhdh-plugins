@@ -22,15 +22,13 @@ import { useAsync } from 'react-use';
 
 import { identityApiRef, useApi } from '@backstage/core-plugin-api';
 
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
 import { QueryClientProvider } from '@tanstack/react-query';
 
 import { useAllModels } from '../hooks/useAllModels';
-import { useLightspeedViewPermission } from '../hooks/useLightspeedViewPermission';
+import { useIaChatPermission } from '../hooks/useIaChatPermission';
+import { useIaNotebooksPermission } from '../hooks/useIaNotebooksPermission';
 import { useTopicRestrictionStatus } from '../hooks/useQuestionValidation';
-import { useTranslation } from '../hooks/useTranslation';
 import queryClient from '../utils/queryClient';
 import FileAttachmentContextProvider from './AttachmentContext';
 import { LightspeedChat } from './LightSpeedChat';
@@ -39,7 +37,6 @@ import {
   LightspeedChatModelsLoading,
   ModelsLoadErrorEmptyState,
 } from './LightspeedChatModelsState';
-import PermissionRequiredState from './PermissionRequiredState';
 
 const THEME_DARK = 'dark';
 const THEME_DARK_CLASS = 'pf-v6-theme-dark';
@@ -52,22 +49,25 @@ const LightspeedChatContainerInner = () => {
   const {
     palette: { mode },
   } = useTheme();
-  const { t } = useTranslation();
 
   const identityApi = useApi(identityApiRef);
+
+  const { allowed: hasChatAccess, loading: chatPermissionLoading } =
+    useIaChatPermission();
+
+  const { allowed: hasNotebooksAccess, loading: notebooksPermissionLoading } =
+    useIaNotebooksPermission();
+
+  const permissionsLoading =
+    chatPermissionLoading || notebooksPermissionLoading;
+  const hasPluginAccess = hasChatAccess || hasNotebooksAccess;
 
   const {
     data: models,
     isLoading: modelsLoading,
     isError: modelsError,
     refetch: refetchModels,
-  } = useAllModels();
-
-  const {
-    allowed: hasViewAccess,
-    loading,
-    iaChatPermissionName,
-  } = useLightspeedViewPermission();
+  } = useAllModels(hasChatAccess);
 
   const { value: profile, loading: profileLoading } = useAsync(
     async () => await identityApi.getProfileInfo(),
@@ -76,7 +76,8 @@ const LightspeedChatContainerInner = () => {
   const [selectedModel, setSelectedModel] = useState('');
   const [selectedProvider, setSelectedProvider] = useState('');
 
-  const { data: topicRestrictionEnabled } = useTopicRestrictionStatus();
+  const { data: topicRestrictionEnabled } =
+    useTopicRestrictionStatus(hasChatAccess);
 
   const modelsItems = useMemo(
     () =>
@@ -103,33 +104,35 @@ const LightspeedChatContainerInner = () => {
 
   // Load last selected model from localStorage
   useEffect(() => {
-    if (modelsItems.length > 0) {
-      try {
-        const storedData = localStorage.getItem(LAST_SELECTED_MODEL_KEY);
-        const parsedData = storedData ? JSON.parse(storedData) : null;
+    if (!hasChatAccess || modelsItems.length === 0) {
+      return;
+    }
 
-        const storedModel = parsedData?.model
-          ? modelsItems.find(m => m.value === parsedData.model)
-          : null;
+    try {
+      const storedData = localStorage.getItem(LAST_SELECTED_MODEL_KEY);
+      const parsedData = storedData ? JSON.parse(storedData) : null;
 
-        if (storedModel) {
-          setSelectedModel(storedModel.value);
-          setSelectedProvider(storedModel.provider);
-        } else {
-          setSelectedModel(modelsItems[0].value);
-          setSelectedProvider(modelsItems[0].provider);
-        }
-      } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error(
-          'Error loading last selected model from localStorage:',
-          error,
-        );
+      const storedModel = parsedData?.model
+        ? modelsItems.find(m => m.value === parsedData.model)
+        : null;
+
+      if (storedModel) {
+        setSelectedModel(storedModel.value);
+        setSelectedProvider(storedModel.provider);
+      } else {
         setSelectedModel(modelsItems[0].value);
         setSelectedProvider(modelsItems[0].provider);
       }
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(
+        'Error loading last selected model from localStorage:',
+        error,
+      );
+      setSelectedModel(modelsItems[0].value);
+      setSelectedProvider(modelsItems[0].provider);
     }
-  }, [modelsItems]);
+  }, [hasChatAccess, modelsItems]);
 
   // Save selected model to localStorage
   useEffect(() => {
@@ -152,52 +155,41 @@ const LightspeedChatContainerInner = () => {
     }
   }, [selectedModel, selectedProvider]);
 
-  if (loading) {
+  if (permissionsLoading) {
     // Never return null inside the overlay modal: PatternFly's focus-trap requires at least
     // one tabbable node (e.g. after removing the modal close button). Locale switches can
     // briefly re-enter this loading state.
     return <LightspeedChatModelsLoading />;
   }
 
-  if (!hasViewAccess) {
-    return (
-      <PermissionRequiredState
-        subject={t('permission.subject.plugin')}
-        permissions={[iaChatPermissionName]}
-        action={
-          <Button
-            variant="outlined"
-            color="primary"
-            target="_blank"
-            href="https://github.com/redhat-developer/rhdh-plugins/blob/main/workspaces/intelligent-assistant/plugins/intelligent-assistant/README.md#permission-framework-support"
-          >
-            {t('common.readMore')} &nbsp; <OpenInNewIcon />
-          </Button>
-        }
-      />
-    );
+  if (!hasPluginAccess) {
+    return null;
   }
 
-  if (modelsLoading) {
+  if (hasChatAccess && modelsLoading) {
     return <LightspeedChatModelsLoading />;
   }
 
   // TanStack Query can keep the last successful `data` while `isError` is true after a
   // failed refetch. Prefer showing chat when we still have LLM rows; only use the full-page
   // error state when there is nothing usable to render.
-  if (modelsError && modelsItems.length === 0) {
+  if (hasChatAccess && modelsError && modelsItems.length === 0) {
     return <ModelsLoadErrorEmptyState onRetry={() => refetchModels()} />;
   }
 
-  if (modelsItems.length === 0) {
+  if (hasChatAccess && modelsItems.length === 0) {
     return <LcoreNotConfiguredEmptyState />;
   }
+
+  const resolvedSelectedModel = selectedModel || modelsItems[0]?.value || '';
+  const resolvedSelectedProvider =
+    selectedProvider || modelsItems[0]?.provider || '';
 
   return (
     <FileAttachmentContextProvider>
       <LightspeedChat
-        selectedModel={selectedModel}
-        selectedProvider={selectedProvider}
+        selectedModel={resolvedSelectedModel}
+        selectedProvider={resolvedSelectedProvider}
         topicRestrictionEnabled={topicRestrictionEnabled ?? false}
         handleSelectedModel={item => {
           setSelectedModel(item);

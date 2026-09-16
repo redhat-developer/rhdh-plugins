@@ -59,6 +59,8 @@ type LightspeedChatBoxHeaderProps = {
   hideModelSelector?: boolean;
   /** When false, omits pinned-chats and MCP entries (Chat tab only). */
   showChatTabOptions?: boolean;
+  /** When false, shows prompt-only settings label and opens saved-prompts tab. */
+  showMcpSettings?: boolean;
   setDisplayMode: (mode: ChatbotDisplayMode) => void;
 };
 
@@ -101,6 +103,7 @@ export const LightspeedChatBoxHeader = ({
   isModelSelectorDisabled = false,
   hideModelSelector = false,
   showChatTabOptions = true,
+  showMcpSettings = false,
   setDisplayMode,
 }: LightspeedChatBoxHeaderProps) => {
   const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false);
@@ -291,7 +294,11 @@ export const LightspeedChatBoxHeader = ({
                   icon={<McpSettingsIcon />}
                   onClick={onMcpSettingsClick}
                 >
-                  {t('settings.mcp.label')}
+                  {t(
+                    showMcpSettings
+                      ? 'settings.mcp.label'
+                      : 'settings.prompt.label',
+                  )}
                   <Label color="purple" isCompact style={{ marginLeft: 8 }}>
                     {t('settings.mcp.badge')}
                   </Label>

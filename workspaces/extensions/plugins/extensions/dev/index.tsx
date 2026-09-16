@@ -27,7 +27,6 @@ import ReactDOM from 'react-dom/client';
 import {
   ApiBlueprint,
   createFrontendModule,
-  createFrontendPlugin,
   pluginHeaderActionsApiRef,
 } from '@backstage/frontend-plugin-api';
 import {
@@ -43,10 +42,10 @@ import {
   SidebarSignOutButton,
 } from '@backstage/dev-utils';
 
-import { extensionsPage, extensionsTranslationsModule } from '../src/alpha';
-import { rhdhThemeModule } from '@red-hat-developer-hub/backstage-plugin-theme/alpha';
+import extensionsPlugin from '../src';
+import translations from '../src/translations';
+import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 import { extensionsApiRef, dynamicPluginsInfoApiRef } from '../src/api';
-import { allRoutes } from '../src/routes';
 import { MockExtensionsApi } from './__data__/mockExtensions';
 
 const mockDynamicPluginsInfo = {
@@ -90,11 +89,9 @@ const pluginHeaderActionsModule = createFrontendModule({
   extensions: [mockPluginHeaderActionsApi],
 });
 
-const extensionsDevPlugin = createFrontendPlugin({
+const extensionsDevModule = createFrontendModule({
   pluginId: 'extensions',
-  info: { packageJson: () => import('../package.json') },
-  extensions: [mockExtensionApi, mockDynamicPluginsInfoApi, extensionsPage],
-  routes: allRoutes,
+  extensions: [mockExtensionApi, mockDynamicPluginsInfoApi],
 });
 
 const devSidebarContent = NavContentBlueprint.make({
@@ -129,8 +126,9 @@ const devNavModule = createFrontendModule({
 const app = createApp({
   features: [
     pluginHeaderActionsModule,
-    extensionsTranslationsModule,
-    extensionsDevPlugin,
+    translations,
+    extensionsPlugin,
+    extensionsDevModule,
     devNavModule,
     rhdhThemeModule,
   ],

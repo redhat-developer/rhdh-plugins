@@ -116,7 +116,6 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'footer.accuracy.label':
       'KI-generierte Inhalte sollten vor der Verwendung stets überprüft werden.',
     'icon.lightspeed.alt': 'Symbol des intelligenten Assistenten',
-    'icon.permissionRequired.alt': "Symbol für 'Berechtigung erforderlich'",
     'lcore.loadError.description':
       'Das Backend des intelligenten Assistenten hat keine Modellliste zurückgegeben. Prüfen Sie, ob der Dienst läuft und erreichbar ist, und versuchen Sie es erneut.',
     'lcore.loadError.title': 'Modelle konnten nicht geladen werden',
@@ -166,8 +165,6 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'mcp.settings.name': 'Name',
     'mcp.settings.noneAvailable': 'Keine MCP-Server verfügbar.',
     'mcp.settings.personalAccessToken': 'Persönlicher Zugriffstoken',
-    'mcp.settings.readOnlyAccess':
-      'Sie haben schreibgeschützten Zugriff auf MCP-Server.',
     'mcp.settings.removePersonalToken': 'Persönlichen Token entfernen',
     'mcp.settings.savedToken': 'Gespeicherter Token',
     'mcp.settings.selectedCount':
@@ -298,13 +295,6 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'notebooks.updated.yesterday': 'Vor 1 Tag aktualisiert',
     'page.subtitle': 'KI-gestützter Entwicklungsassistent',
     'page.title': 'Intelligenter Assistent',
-    'permission.notebooks.goBack': 'Zurück',
-    'permission.required.description':
-      'Um <subject/> anzuzeigen, wenden Sie sich an Ihren Administrator, um die Berechtigung <permissions/> zu erhalten.',
-    'permission.required.title': 'Fehlende Berechtigungen',
-    'permission.subject.notebooks':
-      'die Notizbücher des intelligenten Assistenten',
-    'permission.subject.plugin': 'das Plugin des intelligenten Assistenten',
     'prompts.codeOptimization.message':
       'Können Sie gängige Methoden zur Codeoptimierung vorschlagen, um eine bessere Performance zu erzielen?',
     'prompts.codeOptimization.title':
@@ -351,6 +341,7 @@ const intelligentAssistantTranslationDe = createTranslationMessages({
     'settings.mcp.badge': 'Neu',
     'settings.panel.title': 'Einstellungen',
     'settings.mcp.label': 'MCP- und Prompt-Einstellungen',
+    'settings.prompt.label': 'Prompt-Einstellungen',
     'settings.pinned.disable': 'Angeheftete Chats deaktivieren',
     'settings.pinned.disabled.description':
       'Angeheftete Chats sind derzeit deaktiviert.',

@@ -1,6 +1,6 @@
 {
   "name": "@red-hat-developer-hub/backstage-plugin-intelligent-assistant",
-  "version": "5.0.1",
+  "version": "5.1.0",
   "main": "src/index.tsx",
   "types": "src/index.tsx",
   "license": "Apache-2.0",
@@ -95,6 +95,7 @@
   "devDependencies": {
     "@backstage/cli": "^0.36.5",
     "@backstage/dev-utils": "^1.1.26",
+    "@backstage/frontend-test-utils": "^0.6.3",
     "@backstage/test-utils": "^1.7.21",
     "@ianvs/prettier-plugin-sort-imports": "^4.4.0",
     "@spotify/prettier-config": "^15.0.0",

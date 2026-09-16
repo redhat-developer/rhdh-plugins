@@ -15,10 +15,10 @@
  */
 
 import { createApp } from '@backstage/frontend-defaults';
-import { extensionsTranslationsModule } from '@red-hat-developer-hub/backstage-plugin-extensions/alpha';
+import translations from '@red-hat-developer-hub/backstage-plugin-extensions/translations';
 import { navModule } from './modules/nav';
 import { signInModule } from './modules/signIn';
 
 export default createApp({
-  features: [navModule, extensionsTranslationsModule, signInModule],
+  features: [navModule, translations, signInModule],
 });

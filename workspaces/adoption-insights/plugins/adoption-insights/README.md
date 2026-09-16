@@ -35,6 +35,10 @@ yarn workspace app-legacy add @red-hat-developer-hub/backstage-plugin-adoption-i
 
 The Adoption Insights plugin has support for the permission framework.
 
+When using the **new frontend system**, the Adoption Insights page is registered with an `if` predicate for `adoption-insights.events.read`. When permission checks deny access, the page and sidebar entry are not registered for that session.
+
+> **Legacy (OFS) note:** The `./legacy` entry point still uses `usePermission` on the page and shows a permission-required empty state on direct navigation. The legacy sidebar item is not gated.
+
 - When [RBAC permission](https://github.com/backstage/community-plugins/tree/main/workspaces/rbac/plugins/rbac-backend#installation) framework is enabled, for non-admin users to access adoption insights UI, the role associated with your user should have the following permission policies associated with it. Add the following in your permission policies configuration file named `rbac-policy.csv`:
 
 ```CSV

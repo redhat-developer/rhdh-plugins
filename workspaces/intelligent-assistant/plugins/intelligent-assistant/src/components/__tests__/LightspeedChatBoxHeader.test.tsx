@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 import { ChatbotDisplayMode } from '@patternfly/chatbot';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 
 import { mockUseTranslation } from '../../test-utils/mockTranslations';
 import { LightspeedChatBoxHeader } from '../LightspeedChatBoxHeader';
@@ -73,5 +73,24 @@ describe('LightspeedChatBoxHeader', () => {
         />,
       ),
     ).not.toThrow();
+  });
+
+  it('should show MCP and Prompt Settings when showMcpSettings is true', () => {
+    render(<LightspeedChatBoxHeader {...defaultProps} showMcpSettings />);
+
+    fireEvent.click(screen.getByLabelText('Options'));
+    expect(screen.getByText('MCP and Prompt Settings')).toBeInTheDocument();
+  });
+
+  it('should show Prompt Settings when showMcpSettings is false', () => {
+    render(
+      <LightspeedChatBoxHeader {...defaultProps} showMcpSettings={false} />,
+    );
+
+    fireEvent.click(screen.getByLabelText('Options'));
+    expect(screen.getByText('Prompt Settings')).toBeInTheDocument();
+    expect(
+      screen.queryByText('MCP and Prompt Settings'),
+    ).not.toBeInTheDocument();
   });
 });

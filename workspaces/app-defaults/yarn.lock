@@ -9494,8 +9494,11 @@ __metadata:
     "@backstage/plugin-api-docs": "npm:^0.14.2"
     "@backstage/plugin-app-react": "npm:^0.2.4"
     "@backstage/plugin-catalog": "npm:^2.0.6"
+    "@backstage/plugin-catalog-common": "npm:^1.1.10"
     "@backstage/plugin-catalog-graph": "npm:^0.6.5"
+    "@backstage/plugin-catalog-import": "npm:^0.13.14"
     "@backstage/plugin-catalog-react": "npm:^3.1.0"
+    "@backstage/plugin-permission-react": "npm:^0.5.3"
     "@backstage/plugin-scaffolder": "npm:^1.38.0"
     "@backstage/plugin-techdocs": "npm:^1.17.7"
     "@backstage/plugin-techdocs-common": "npm:^0.1.1"
@@ -17961,10 +17964,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"electron-to-chromium@npm:1.5.422":
-  version: 1.5.422
-  resolution: "electron-to-chromium@npm:1.5.422"
-  checksum: 10c0/bd388e0d3ab94e6fe792e27eab886071050f8f7575f1ec20e30e530733d1f8270eeff7a0e75e42c9405de54addd8df3d1f9d58b40e53f0a44fbe4fb8f1e7b930
+"electron-to-chromium@npm:^1.5.402":
+  version: 1.5.425
+  resolution: "electron-to-chromium@npm:1.5.425"
+  checksum: 10c0/c911780d2a0914a97a677e3d0782a608699aac6891d56035b1ee96fe214e1c0b9e947a87af21cb99d117c77b3343cc7bac77b9411310840838d4b62b04f56d7b
   languageName: node
   linkType: hard
 

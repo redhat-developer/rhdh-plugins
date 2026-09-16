@@ -20,10 +20,6 @@ export { DrawerPanel } from '../legacy/DrawerPanel';
 
 export { appDrawerContentDataRef } from './extensions/appDrawerContentDataRef';
 export { AppDrawerContentBlueprint } from './extensions/AppDrawerContentBlueprint';
-export {
-  appDrawerExtension,
-  appDrawerModule,
-} from './extensions/appDrawerModule';
 
 export type { ApplicationDrawerProps } from '../legacy/ApplicationDrawer';
 export type { DrawerPanelProps } from '../legacy/DrawerPanel';

@@ -1,5 +1,18 @@
 # @red-hat-developer-hub/cli-module-install-dynamic-plugins
 
+## 0.5.0
+
+### Minor Changes
+
+- 06e3017: Restrict `ref://` resolution to OCI packages in include files.
+
+  **BREAKING CHANGES**
+
+  `ref://` no longer resolves to `https://`, `http://`, or `./` packages from
+  include files. `extractPluginName()` is OCI-only, so only `oci://` entries
+  are indexed for lookup. Configurations that relied on `ref://` resolving to
+  non-OCI packages must use an explicit package URL instead.
+
 ## 0.4.1
 
 ### Patch Changes

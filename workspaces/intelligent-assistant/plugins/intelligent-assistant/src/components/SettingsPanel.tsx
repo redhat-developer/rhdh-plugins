@@ -45,6 +45,8 @@ type SettingsPanelProps = {
   savedPromptsError?: string | null;
   onCreateSavedPrompt?: (name: string, content: string) => Promise<void>;
   onRequestSavedPromptDelete?: (prompt: SavedPrompt) => void;
+  /** When false, hides the MCP tab and shows saved prompts only. */
+  showMcpSettings?: boolean;
 };
 
 const useStyles = makeStyles()(theme => ({
@@ -111,9 +113,14 @@ export const SettingsPanel = ({
   savedPromptsError,
   onCreateSavedPrompt,
   onRequestSavedPromptDelete,
+  showMcpSettings = true,
 }: SettingsPanelProps) => {
   const { t } = useTranslation();
   const { classes } = useStyles();
+  const showMcpTab = showMcpSettings;
+  const showSavedPromptsTab = true;
+  const showTabBar = showMcpTab && showSavedPromptsTab;
+  const effectiveTab = showMcpTab ? activeTab : 'saved-prompts';
 
   return (
     <div className={classes.root}>
@@ -129,28 +136,34 @@ export const SettingsPanel = ({
         />
       </div>
 
-      <div className={classes.tabBar}>
-        <Button
-          variant="plain"
-          className={`${classes.tabButton} ${activeTab === 'mcp-servers' ? classes.tabButtonActive : ''}`}
-          onClick={() => onTabChange('mcp-servers')}
-        >
-          {t('mcp.settings.title')}
-        </Button>
-        <Button
-          variant="plain"
-          className={`${classes.tabButton} ${activeTab === 'saved-prompts' ? classes.tabButtonActive : ''}`}
-          onClick={() => onTabChange('saved-prompts')}
-        >
-          {t('savedPrompts.tab.title')}
-        </Button>
-      </div>
+      {showTabBar && (
+        <div className={classes.tabBar}>
+          {showMcpTab && (
+            <Button
+              variant="plain"
+              className={`${classes.tabButton} ${effectiveTab === 'mcp-servers' ? classes.tabButtonActive : ''}`}
+              onClick={() => onTabChange('mcp-servers')}
+            >
+              {t('mcp.settings.title')}
+            </Button>
+          )}
+          {showSavedPromptsTab && (
+            <Button
+              variant="plain"
+              className={`${classes.tabButton} ${effectiveTab === 'saved-prompts' ? classes.tabButtonActive : ''}`}
+              onClick={() => onTabChange('saved-prompts')}
+            >
+              {t('savedPrompts.tab.title')}
+            </Button>
+          )}
+        </div>
+      )}
 
       <div className={classes.tabContent}>
-        {activeTab === 'mcp-servers' && (
+        {effectiveTab === 'mcp-servers' && showMcpTab && (
           <McpServersSettings backgroundColor={backgroundColor} />
         )}
-        {activeTab === 'saved-prompts' && (
+        {effectiveTab === 'saved-prompts' && (
           <SavedPromptsSettings
             isSavedPromptsEnabled={isSavedPromptsEnabled}
             onEnableSavedPrompts={onEnableSavedPrompts}

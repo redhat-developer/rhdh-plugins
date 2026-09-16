@@ -129,7 +129,7 @@ describe('useWelcomePrompts', () => {
       },
     ];
 
-    const { result } = renderHook(() => useWelcomePrompts(savedPrompts), {
+    const { result } = renderHook(() => useWelcomePrompts(true, savedPrompts), {
       wrapper,
     });
 

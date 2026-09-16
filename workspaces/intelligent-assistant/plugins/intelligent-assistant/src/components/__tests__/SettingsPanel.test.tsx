@@ -89,4 +89,22 @@ describe('SettingsPanel', () => {
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it('should hide MCP tab and show saved prompts when showMcpSettings is false', () => {
+    render(
+      <SettingsPanel
+        {...defaultProps}
+        activeTab="mcp-servers"
+        showMcpSettings={false}
+      />,
+    );
+
+    expect(
+      screen.queryByRole('button', { name: 'MCP servers' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByTestId('saved-prompts-settings')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('mcp-servers-settings'),
+    ).not.toBeInTheDocument();
+  });
 });

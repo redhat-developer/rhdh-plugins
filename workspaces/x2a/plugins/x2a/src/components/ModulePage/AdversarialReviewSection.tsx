@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 
-import { LogViewer, Progress } from '@backstage/core-components';
+import { LogViewer, Progress, StatusOK } from '@backstage/core-components';
 import {
   Accordion,
   AccordionDetails,
@@ -30,6 +30,7 @@ import {
   Typography,
   makeStyles,
 } from '@material-ui/core';
+import ErrorIcon from '@material-ui/icons/Error';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import WarningIcon from '@material-ui/icons/Warning';
 import {
@@ -56,6 +57,76 @@ import {
   secondsBetween,
 } from '../tools';
 import { AdversarialAgentsSelector } from './AdversarialAgentsSelector';
+
+type ReportSummary = {
+  total_findings: number;
+  total_critical_findings: number;
+};
+
+type Severity = {
+  key: string;
+  count: number;
+  Icon: typeof ErrorIcon;
+  iconClass: string;
+  label: string;
+};
+
+const parseReportJson = (job?: Job): ReportSummary | undefined => {
+  const jsonArtifact = job?.artifacts?.find(a =>
+    ArtifactKind.from(a.type).equals(ArtifactKind.ADVERSARIAL_REPORT_JSON),
+  );
+  if (!jsonArtifact) return undefined;
+  try {
+    const parsed = JSON.parse(jsonArtifact.value);
+    const total = Number(parsed?.total_findings);
+    const critical = Number(parsed?.total_critical_findings);
+    if (!Number.isFinite(total) || !Number.isFinite(critical)) {
+      return undefined;
+    }
+    return { total_findings: total, total_critical_findings: critical };
+  } catch {
+    return undefined;
+  }
+};
+
+const FindingsSummary = ({
+  reportJson,
+  hasFindings,
+  severities,
+  noFindingsLabel,
+  className,
+}: {
+  reportJson: ReportSummary | undefined;
+  hasFindings: boolean;
+  severities: Severity[];
+  noFindingsLabel: string;
+  className: string;
+}) => {
+  if (!reportJson) return null;
+  if (!hasFindings) {
+    return <StatusOK>{noFindingsLabel}</StatusOK>;
+  }
+  return (
+    <Typography
+      variant="body2"
+      color="textSecondary"
+      component="span"
+      className={className}
+    >
+      {severities
+        .filter(s => s.count > 0)
+        .map((s, index) => (
+          <Fragment key={s.key}>
+            {index > 0 && <>&middot;</>}
+            <Box component="span" className={className}>
+              <s.Icon className={s.iconClass} />
+              {s.count} {s.label}
+            </Box>
+          </Fragment>
+        ))}
+    </Typography>
+  );
+};
 
 const useStyles = makeStyles(theme => ({
   accordionSummaryContent: {
@@ -84,13 +155,23 @@ const useStyles = makeStyles(theme => ({
     flex: '1 1 300px',
     minWidth: 0,
   },
-  criticalWarningIcon: {
-    color: theme.palette.warning.main ?? '#f57c00',
+  warningTooltip: {
+    fontSize: theme.typography.body2.fontSize,
+  },
+  findingIndicator: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+  },
+  criticalIcon: {
+    color: theme.palette.error.main ?? '#d32f2f',
     fontSize: '1.1rem',
     verticalAlign: 'middle',
   },
-  warningTooltip: {
-    fontSize: theme.typography.body2.fontSize,
+  warningIcon: {
+    color: theme.palette.warning.main ?? '#f57c00',
+    fontSize: '1.1rem',
+    verticalAlign: 'middle',
   },
 }));
 
@@ -157,20 +238,7 @@ export const AdversarialReviewSection = ({
     ArtifactKind.from(a.type).equals(ArtifactKind.ADVERSARIAL_REPORT),
   );
 
-  const reportJson = useMemo(() => {
-    const jsonArtifact = job?.artifacts?.find(a =>
-      ArtifactKind.from(a.type).equals(ArtifactKind.ADVERSARIAL_REPORT_JSON),
-    );
-    if (!jsonArtifact) return undefined;
-    try {
-      return JSON.parse(jsonArtifact.value) as {
-        total_findings: number;
-        total_critical_findings: number;
-      };
-    } catch {
-      return undefined;
-    }
-  }, [job]);
+  const reportJson = useMemo(() => parseReportJson(job), [job]);
 
   const durationSeconds = job ? getEffectiveDurationSeconds(job) : undefined;
   const duration =
@@ -186,6 +254,51 @@ export const AdversarialReviewSection = ({
 
   const jobStatus = job?.status ? JobStatus.from(job.status) : undefined;
   const isActive = jobStatus?.isActive() ?? false;
+  const isSuccess = jobStatus?.isSuccess() ?? false;
+
+  const criticalCount = reportJson?.total_critical_findings ?? 0;
+  const warningCount = reportJson
+    ? Math.max(
+        0,
+        reportJson.total_findings - reportJson.total_critical_findings,
+      )
+    : 0;
+  const hasFindings = (reportJson?.total_findings ?? 0) > 0;
+
+  const severities: Severity[] = [
+    {
+      key: 'critical',
+      count: criticalCount,
+      Icon: ErrorIcon,
+      iconClass: classes.criticalIcon,
+      label: t('modulePage.phases.adversarialCriticalFindings'),
+    },
+    {
+      key: 'warning',
+      count: warningCount,
+      Icon: WarningIcon,
+      iconClass: classes.warningIcon,
+      label: t('modulePage.phases.adversarialWarningFindings'),
+    },
+  ];
+
+  const findingCountField = (
+    count: number,
+    Icon: typeof ErrorIcon,
+    iconClass: string,
+  ) =>
+    reportJson === undefined ? (
+      empty
+    ) : (
+      <Typography
+        variant="subtitle2"
+        component="div"
+        className={classes.findingIndicator}
+      >
+        {count > 0 && <Icon className={iconClass} />}
+        <b>{count}</b>
+      </Typography>
+    );
 
   return (
     <Box>
@@ -198,17 +311,24 @@ export const AdversarialReviewSection = ({
             </Typography>
             {job ? (
               <>
-                <PhaseStatus status={job.status} />
-                {reportJson && (
-                  <Typography variant="body2" color="textSecondary">
-                    {reportJson.total_critical_findings}{' '}
-                    {t('modulePage.phases.adversarialCriticalFindings')}{' '}
-                    &middot;{' '}
-                    {reportJson.total_findings -
-                      reportJson.total_critical_findings}{' '}
-                    {t('modulePage.phases.adversarialWarningFindings')}
+                {isSuccess ? (
+                  <Typography
+                    variant="body2"
+                    color="textSecondary"
+                    component="span"
+                  >
+                    {t('modulePage.phases.adversarialCompleted')}
                   </Typography>
+                ) : (
+                  <PhaseStatus status={job.status} />
                 )}
+                <FindingsSummary
+                  reportJson={reportJson}
+                  hasFindings={hasFindings}
+                  severities={severities}
+                  noFindingsLabel={t('modulePage.phases.adversarialNoFindings')}
+                  className={classes.findingIndicator}
+                />
                 <Typography variant="body2" color="textSecondary">
                   {duration}
                 </Typography>
@@ -225,7 +345,7 @@ export const AdversarialReviewSection = ({
                     )}
                     classes={{ tooltip: classes.warningTooltip }}
                   >
-                    <WarningIcon className={classes.criticalWarningIcon} />
+                    <WarningIcon className={classes.warningIcon} />
                   </Tooltip>
                 )}
               </>
@@ -264,7 +384,13 @@ export const AdversarialReviewSection = ({
               <Grid item xs={2}>
                 <ItemField
                   label={t('modulePage.phases.status')}
-                  value={<PhaseStatus status={job.status} />}
+                  value={
+                    isSuccess ? (
+                      t('modulePage.phases.adversarialCompleted')
+                    ) : (
+                      <PhaseStatus status={job.status} />
+                    )
+                  }
                 />
               </Grid>
               <Grid item xs={10}>
@@ -289,27 +415,35 @@ export const AdversarialReviewSection = ({
               <Grid item xs={3}>
                 <ItemField
                   label={t('modulePage.phases.adversarialCriticalFindings')}
-                  value={
-                    reportJson !== undefined
-                      ? String(reportJson.total_critical_findings)
-                      : empty
-                  }
+                  value={findingCountField(
+                    criticalCount,
+                    ErrorIcon,
+                    classes.criticalIcon,
+                  )}
                 />
               </Grid>
               <Grid item xs={3}>
                 <ItemField
                   label={t('modulePage.phases.adversarialWarningFindings')}
-                  value={
-                    reportJson !== undefined
-                      ? String(
-                          reportJson.total_findings -
-                            reportJson.total_critical_findings,
-                        )
-                      : empty
-                  }
+                  value={findingCountField(
+                    warningCount,
+                    WarningIcon,
+                    classes.warningIcon,
+                  )}
                 />
               </Grid>
-              <Grid item xs={3} />
+              <Grid item xs={3}>
+                {reportJson !== undefined && !hasFindings && (
+                  <ItemField
+                    label={t('modulePage.phases.adversarialResult')}
+                    value={
+                      <StatusOK>
+                        {t('modulePage.phases.adversarialNoFindings')}
+                      </StatusOK>
+                    }
+                  />
+                )}
+              </Grid>
 
               <Grid item xs={3}>
                 <ItemField

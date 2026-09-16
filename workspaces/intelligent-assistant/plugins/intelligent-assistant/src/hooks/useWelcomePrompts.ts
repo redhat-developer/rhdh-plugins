@@ -30,11 +30,13 @@ import { useTopicRestrictionStatus } from './useQuestionValidation';
 import { useTranslation } from './useTranslation';
 
 export const useWelcomePrompts = (
+  enabled = true,
   savedPrompts?: SavedPrompt[],
 ): SamplePrompts => {
   const configApi: ConfigApi = useApi(configApiRef);
   const { t } = useTranslation();
-  const { data: questionValidationEnabled } = useTopicRestrictionStatus();
+  const { data: questionValidationEnabled } =
+    useTopicRestrictionStatus(enabled);
 
   return useMemo(() => {
     const translatePrompts = (prompts: SamplePrompts): SamplePrompts => {
