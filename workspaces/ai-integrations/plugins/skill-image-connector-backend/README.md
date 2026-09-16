@@ -43,16 +43,19 @@ skillImageConnector:
 
 ### Configuration fields
 
-| Field                                      | Type     | Description                                                                                                                                           |
-| ------------------------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `skillImageConnector.images`               | `array`  | List of OCI skill image sources to process on startup.                                                                                                |
-| `skillImageConnector.images[].imageRef`    | `string` | Full OCI image reference (e.g. `quay.io/org/repo:tag` or `quay.io/org/repo@sha256:...`).                                                              |
-| `skillImageConnector.images[].credentials` | `object` | Optional backend-only credentials for private registry token exchange. Add `tokenRealm` when the registry advertises a token service on another host. |
-| `skillImageConnector.allowedRegistries`    | `array`  | Required exact registry host and port allowlist for configured images.                                                                                |
+| Field                                                 | Type     | Description                                                                                                              |
+| ----------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `skillImageConnector.images`                          | `array`  | List of OCI skill image sources to process on startup.                                                                   |
+| `skillImageConnector.images[].imageRef`               | `string` | Full OCI image reference (e.g. `quay.io/org/repo:tag` or `quay.io/org/repo@sha256:...`).                                 |
+| `skillImageConnector.images[].credentials`            | `object` | Optional backend-only credentials for private registry token exchange.                                                   |
+| `skillImageConnector.images[].credentials.username`   | `string` | Registry username; required together with `password`.                                                                    |
+| `skillImageConnector.images[].credentials.password`   | `string` | Registry password; use environment variable substitution.                                                                |
+| `skillImageConnector.images[].credentials.tokenRealm` | `string` | Optional HTTPS token endpoint; required for credentialed cross-host token exchange and must not contain URL credentials. |
+| `skillImageConnector.allowedRegistries`               | `array`  | Required exact registry host and port allowlist for configured images.                                                   |
 
 At most 25 images may be configured. Use immutable digest references in production deployments when reproducible content is required.
 
-All configuration fields have `@visibility backend` and are not exposed to the frontend.
+Each extracted layer is limited to 5 MB. All configuration fields use `@visibility backend` or `@visibility secret` and are not exposed to the frontend.
 
 ## How it works
 
@@ -72,13 +75,14 @@ Returns `{ "status": "ok" }` when the plugin is running.
 
 ### `GET /api/skill-image-connector/images`
 
-Returns the processing status and list of extracted skill images and their contents. During startup, `status` is `loading`; it becomes `ready` after all configured images have been processed, including failures. Local filesystem paths are intentionally not returned.
+Returns the processing status, failed image references, and list of extracted skill images and their contents. During startup, `status` is `loading`; it becomes `ready` after all configured images have been processed, including failures. Failed images are omitted from `images` and listed in `failedImages`. Local filesystem paths are intentionally not returned.
 
 Example response:
 
 ```json
 {
   "status": "ready",
+  "failedImages": [],
   "images": [
     {
       "imageRef": "quay.io/gabemontero/hello-world-skill:1.0.0-draft",
@@ -88,3 +92,5 @@ Example response:
   ]
 }
 ```
+
+The registry allowlist and HTTPS checks do not replace network-level egress controls. Production deployments should restrict backend egress so an allowed or redirected registry cannot reach private infrastructure.

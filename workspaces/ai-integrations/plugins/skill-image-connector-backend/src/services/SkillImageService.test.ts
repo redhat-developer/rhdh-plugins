@@ -325,12 +325,14 @@ describe('fetchAndExtractSkillImage', () => {
       yamlContent.length,
       logger,
       undefined,
+      undefined,
     );
     expect(mockedFetchBlob).toHaveBeenCalledWith(
       expect.any(Object),
       'sha256:md-digest',
       mdContent.length,
       logger,
+      undefined,
       undefined,
     );
   });

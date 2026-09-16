@@ -352,6 +352,38 @@ describe('fetchManifest', () => {
     expect(global.fetch).toHaveBeenCalledTimes(3);
   });
 
+  it('should fall back when the bearer token response is invalid JSON', async () => {
+    const headersMap = new Map([
+      ['www-authenticate', 'Bearer realm="https://auth.example.com/token"'],
+    ]);
+
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        statusText: 'Unauthorized',
+        headers: { get: (key: string) => headersMap.get(key) ?? null },
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        arrayBuffer: async () => Buffer.from('not-json'),
+        headers: new Map(),
+      });
+
+    await expect(
+      fetchManifest(
+        { registry: 'registry.example.com', repository: 'org/repo', tag: 'v1' },
+        logger,
+      ),
+    ).rejects.toThrow('Failed to fetch manifest');
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Bearer token response was not valid JSON',
+      expect.any(Error),
+    );
+  });
+
   it('should use configured credentials for registry and token requests', async () => {
     const mockManifest: OciManifest = {
       schemaVersion: 2,
