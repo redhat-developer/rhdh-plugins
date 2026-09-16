@@ -9948,6 +9948,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping@workspace:plugins/mcp-registry-server-mapping":
+  version: 0.0.0-use.local
+  resolution: "@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping@workspace:plugins/mcp-registry-server-mapping"
+  dependencies:
+    "@backstage/cli": "npm:^0.36.5"
+  languageName: unknown
+  linkType: soft
+
 "@red-hat-developer-hub/backstage-plugin-theme@npm:^0.15.0":
   version: 0.15.0
   resolution: "@red-hat-developer-hub/backstage-plugin-theme@npm:0.15.0"
