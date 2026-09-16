@@ -32,6 +32,7 @@
     "@backstage/backend-plugin-api": "^1.10.0",
     "@backstage/catalog-model": "^1.10.0",
     "@backstage/plugin-catalog-node": "^2.2.4",
+    "@red-hat-developer-hub/backstage-plugin-boost-connector-utils": "workspace:^",
     "@red-hat-developer-hub/backstage-plugin-boost-entity-provider-sdk": "workspace:^",
     "undici": "^6.21.1"
   },

@@ -14,7 +14,7 @@ The `boost-backend` plugin and Kagenti packages are development scaffolding;
 they are not released for RHDH 2.1. Browse and entity cards use
 `catalogApiRef` only and do not call a Boost backend.
 
-The unreleased backend and the current Usage tab still contain project-specific
+The unreleased backend and the current Usage card still contain project-specific
 permission checks, currently named `ai-catalog.*`. These checks are not the
 RHDH 2.1 entity-visibility contract; the current browse experience uses the
 Catalog API, and any future backend release must reconcile its selected
@@ -35,12 +35,13 @@ Archived from `ai-catalog-frontend` (snapshot:
 | --------------------------------- | ------------------------------------------------------------ |
 | `ai-catalog-browse-view`          | `/ai-catalog` card/table, search, pagination                 |
 | `ai-catalog-filter-customization` | NFS `AiCatalogFilterBlueprint` (type, provider, owner, tags) |
-| `ai-catalog-entity-extensions`    | Summary, Adoption, Version cards; Usage tab                  |
+| `ai-catalog-entity-extensions`    | AI asset details, agent instructions, and Usage cards        |
 | `ai-catalog-dynamic-plugin`       | Overlay export in `rhdh-plugin-export-overlays`              |
 
-On `main` today: Usage tab is a Boost entity-content tab (it may link to
-TechDocs; it is not the Catalog TechDocs tab). There is no Boost API client
-and no catalog download proxy.
+The current frontend uses composable entity cards for AI asset details, agent
+instructions, and supported usage actions. It does not add a separate Boost
+Usage tab or duplicate the host application's standard TechDocs tab. There is
+no Boost API client and no catalog download proxy.
 
 ## OGX provider status
 

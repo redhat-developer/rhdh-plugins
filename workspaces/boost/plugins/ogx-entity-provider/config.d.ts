@@ -47,6 +47,39 @@ export interface Config {
          * @configScope yaml-only
          */
         skipTLSVerify?: boolean;
+        /** Upstream refresh interval for model entities, in seconds.
+         * @configScope yaml-only
+         */
+        modelRefreshIntervalSeconds?: number;
+        /** Upstream refresh interval for agent entities, in seconds.
+         * @configScope yaml-only
+         */
+        agentRefreshIntervalSeconds?: number;
+        /** ID of the default/entry-point agent.
+         * @configScope yaml-only
+         */
+        defaultAgent?: string;
+        /** Maximum number of agent turns in a conversation.
+         * @configScope yaml-only
+         */
+        maxAgentTurns?: number;
+        /** Static agents to publish as catalog entities.
+         * @configScope yaml-only
+         */
+        agents?: Array<{
+          id: string;
+          name: string;
+          version?: string;
+          description?: string;
+          instructions?: string;
+          model?: string;
+          tools?: string[];
+          handoffs?: string[];
+          handoffDescription?: string;
+          enableRAG?: boolean;
+          createdBy?: string;
+          lifecycleStage?: 'draft' | 'pending' | 'published' | 'archived';
+        }>;
       };
     };
 
@@ -74,6 +107,31 @@ export interface Config {
          * @configScope yaml-only
          */
         skipTLSVerify?: boolean;
+        /** ID of the default/entry-point agent.
+         * @configScope yaml-only
+         */
+        defaultAgent?: string;
+        /** Maximum number of agent turns in a conversation.
+         * @configScope yaml-only
+         */
+        maxAgentTurns?: number;
+        /** Static agents to publish as catalog entities.
+         * @configScope yaml-only
+         */
+        agents?: Array<{
+          id: string;
+          name: string;
+          version?: string;
+          description?: string;
+          instructions?: string;
+          model?: string;
+          tools?: string[];
+          handoffs?: string[];
+          handoffDescription?: string;
+          enableRAG?: boolean;
+          createdBy?: string;
+          lifecycleStage?: 'draft' | 'pending' | 'published' | 'archived';
+        }>;
       };
     };
   };

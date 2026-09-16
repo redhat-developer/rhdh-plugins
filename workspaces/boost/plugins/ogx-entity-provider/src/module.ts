@@ -19,6 +19,7 @@ import {
   createBackendModule,
 } from '@backstage/backend-plugin-api';
 import { catalogProcessingExtensionPoint } from '@backstage/plugin-catalog-node';
+import { safeGetOptionalString } from '@red-hat-developer-hub/backstage-plugin-boost-connector-utils';
 
 import { OgxModelEntityProvider } from './providers/OgxModelEntityProvider';
 import { OgxAgentEntityProvider } from './providers/OgxAgentEntityProvider';
@@ -128,17 +129,17 @@ export function readOgxEntityProviderConfig(
   if (epConfig) {
     return {
       baseUrl: epConfig.getString('baseUrl'),
-      apiKey: epConfig.getOptionalString('apiKey'),
+      apiKey: safeGetOptionalString(epConfig, 'apiKey'),
       modelRefreshIntervalSeconds: epConfig.getOptionalNumber(
         'modelRefreshIntervalSeconds',
       ),
       agentRefreshIntervalSeconds: epConfig.getOptionalNumber(
         'agentRefreshIntervalSeconds',
       ),
-      defaultAgent: epConfig.getOptionalString('defaultAgent'),
+      defaultAgent: safeGetOptionalString(epConfig, 'defaultAgent'),
       maxAgentTurns: epConfig.getOptionalNumber('maxAgentTurns'),
       agents: readAgentConfigs(epConfig),
-      caData: epConfig.getOptionalString('caData'),
+      caData: safeGetOptionalString(epConfig, 'caData'),
       skipTLSVerify: epConfig.getOptionalBoolean('skipTLSVerify'),
     };
   }
@@ -149,11 +150,11 @@ export function readOgxEntityProviderConfig(
   if (providerConfig) {
     return {
       baseUrl: providerConfig.getString('baseUrl'),
-      apiKey: providerConfig.getOptionalString('apiKey'),
-      defaultAgent: providerConfig.getOptionalString('defaultAgent'),
+      apiKey: safeGetOptionalString(providerConfig, 'apiKey'),
+      defaultAgent: safeGetOptionalString(providerConfig, 'defaultAgent'),
       maxAgentTurns: providerConfig.getOptionalNumber('maxAgentTurns'),
       agents: readAgentConfigs(providerConfig),
-      caData: providerConfig.getOptionalString('caData'),
+      caData: safeGetOptionalString(providerConfig, 'caData'),
       skipTLSVerify: providerConfig.getOptionalBoolean('skipTLSVerify'),
     };
   }
@@ -186,17 +187,21 @@ function readAgentConfigs(
   return agentConfigs.map(agentConfig => ({
     id: agentConfig.getString('id'),
     name: agentConfig.getString('name'),
-    description: agentConfig.getOptionalString('description'),
-    instructions: agentConfig.getOptionalString('instructions'),
-    model: agentConfig.getOptionalString('model'),
+    version: safeGetOptionalString(agentConfig, 'version'),
+    description: safeGetOptionalString(agentConfig, 'description'),
+    instructions: safeGetOptionalString(agentConfig, 'instructions'),
+    model: safeGetOptionalString(agentConfig, 'model'),
     tools: agentConfig.getOptionalStringArray('tools'),
     handoffs: agentConfig.getOptionalStringArray('handoffs'),
-    handoffDescription: agentConfig.getOptionalString('handoffDescription'),
+    handoffDescription: safeGetOptionalString(
+      agentConfig,
+      'handoffDescription',
+    ),
     enableRAG: agentConfig.has('enableRAG')
       ? String(agentConfig.getOptional('enableRAG')) === 'true'
       : undefined,
-    createdBy: agentConfig.getOptionalString('createdBy'),
-    lifecycleStage: agentConfig.getOptionalString('lifecycleStage') as
+    createdBy: safeGetOptionalString(agentConfig, 'createdBy'),
+    lifecycleStage: safeGetOptionalString(agentConfig, 'lifecycleStage') as
       | 'draft'
       | 'pending'
       | 'published'

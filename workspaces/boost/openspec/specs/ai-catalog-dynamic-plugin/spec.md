@@ -45,8 +45,10 @@ The OCI-packaged plugin MUST load correctly in an RHDH deployment.
 
 - **GIVEN** the boost frontend dynamic plugin is installed
 - **WHEN** a user navigates to a catalog entity page for an AI asset
-- **THEN** the Summary, Adoption, and Version cards render when their required entity data exists
-- **AND** the Usage tab (`entity-content:boost/usage`) is present on AI assets
+- **THEN** the AI asset details, agent instructions, and Usage cards render when their required entity data exists
+- **AND** they use the `entity-card:boost/ai-asset-details`,
+  `entity-card:boost/agent-instructions`, and `entity-card:boost/usage`
+  extension IDs
 
 #### Scenario: Extensions absent on non-AI entities
 
@@ -60,16 +62,16 @@ Deployers MUST be able to customize the plugin via `app.extensions` in `app-conf
 
 #### Scenario: Disable an entity card
 
-- **GIVEN** the deployer sets `entity-card:boost/adoption: false` in `app.extensions`
+- **GIVEN** the deployer sets `entity-card:boost/ai-asset-details: false` in `app.extensions`
 - **WHEN** a user views an AI asset entity page
-- **THEN** the Download/Adopt Card is not rendered
+- **THEN** the AI asset details card is not rendered
 - **AND** other boost cards still render
 
 #### Scenario: Change entity filter on a card
 
-- **GIVEN** the deployer sets `entity-card:boost/summary` with a `config.filter` that excludes AI asset kinds
+- **GIVEN** the deployer sets `entity-card:boost/ai-asset-details` with a `config.filter` that excludes AI asset kinds
 - **WHEN** a user views an AiResource entity page
-- **THEN** the summary card is not rendered (filter excludes AiResource)
+- **THEN** the AI asset details card is not rendered (filter excludes AiResource)
 
 #### Scenario: Disable the page
 

@@ -1,6 +1,6 @@
 # Tasks: AI Catalog frontend translations (RHIDP-15479)
 
-- [x] 1. Translation module auto-discovery entry (`./boost-translations-module`) already exists
+- [x] 1. Translation module auto-discovery entry (`./translations`) already exists
 - [ ] 2. Create `src/translations/de.ts`
 - [ ] 3. Create `src/translations/es.ts`
 - [ ] 4. Create `src/translations/fr.ts`
