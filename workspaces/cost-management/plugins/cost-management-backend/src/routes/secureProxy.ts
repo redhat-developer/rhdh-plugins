@@ -284,20 +284,15 @@ function parseClientQueryParams(
 }
 
 /**
- * Appends server-side RBAC cluster/project filters to the target URL
- * using the appropriate key format for ROS vs Cost Management APIs.
+ * Appends RBAC-authorized cluster/project filters to the upstream URL
+ * using `filter[exact:…]` keys.
  */
 function injectRbacFilters(targetUrl: URL, access: AccessResult): void {
-  const clusterKey =
-    access.filterStyle === 'ros' ? 'cluster' : 'filter[exact:cluster]';
-  const projectKey =
-    access.filterStyle === 'ros' ? 'project' : 'filter[exact:project]';
-
   access.clusterFilters.forEach(c =>
-    targetUrl.searchParams.append(clusterKey, c),
+    targetUrl.searchParams.append('filter[exact:cluster]', c),
   );
   access.projectFilters.forEach(p =>
-    targetUrl.searchParams.append(projectKey, p),
+    targetUrl.searchParams.append('filter[exact:project]', p),
   );
 }
 
@@ -355,13 +350,12 @@ export const secureProxy: (options: RouterOptions) => RequestHandler =
           .json({ error: 'Invalid proxy path: traversal not allowed' });
       }
 
-      // Express qs parser converts bracket keys like filter[time_scope_value]
-      // into nested objects, losing the flat key format the RHCC API expects.
-      const rbacControlledKeys = new Set(
-        access.filterStyle === 'ros'
-          ? ['cluster', 'project']
-          : ['filter[exact:cluster]', 'filter[exact:project]'],
-      );
+      // Remove filter[exact:cluster] and filter[exact:project] from client
+      // params — these are injected by the server via injectRbacFilters().
+      const rbacControlledKeys = new Set([
+        'filter[exact:cluster]',
+        'filter[exact:project]',
+      ]);
 
       const clientParams = parseClientQueryParams(
         req.originalUrl,
