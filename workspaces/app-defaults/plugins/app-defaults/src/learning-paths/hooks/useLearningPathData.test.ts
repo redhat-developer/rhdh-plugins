@@ -142,7 +142,7 @@ describe('useLearningPathData', () => {
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
       expect(result.current.error).toEqual(
-        new Error('learning path at index 0 is missing a valid url'),
+        new TypeError('learning path at index 0 is missing a valid url'),
       );
     });
   });

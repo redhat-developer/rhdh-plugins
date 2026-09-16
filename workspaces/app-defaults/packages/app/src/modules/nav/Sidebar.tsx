@@ -59,9 +59,7 @@ const NavSidebarItem = ({
 }: {
   item: NavContentNavItem;
   text: string;
-}) => (
-  <SidebarItem icon={() => item.icon} to={item.href} text={text} />
-);
+}) => <SidebarItem icon={() => item.icon} to={item.href} text={text} />;
 
 const AppSidebarNav = ({ navItems }: NavContentComponentProps) => {
   const { t } = useTranslationRef(translationRef);

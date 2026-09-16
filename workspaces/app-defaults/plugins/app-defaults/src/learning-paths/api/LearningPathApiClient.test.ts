@@ -44,9 +44,11 @@ describe('LearningPathApiClient', () => {
   });
 
   it('fetches learning paths from the default developer hub proxy path', async () => {
-    const fetchMock = jest.spyOn(global, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify(learningPathData), { status: 200 }),
-    );
+    const fetchMock = jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(
+        new Response(JSON.stringify(learningPathData), { status: 200 }),
+      );
 
     const client = new LearningPathApiClient({
       discoveryApi: discoveryApi as any,
@@ -70,9 +72,11 @@ describe('LearningPathApiClient', () => {
 
   it('uses a configured developer hub proxy path', async () => {
     configApi.getOptionalString.mockReturnValue('/custom-hub');
-    jest.spyOn(global, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify(learningPathData), { status: 200 }),
-    );
+    jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(
+        new Response(JSON.stringify(learningPathData), { status: 200 }),
+      );
 
     const client = new LearningPathApiClient({
       discoveryApi: discoveryApi as any,
@@ -90,9 +94,11 @@ describe('LearningPathApiClient', () => {
 
   it('omits the authorization header when no identity token is available', async () => {
     identityApi.getCredentials.mockResolvedValue({ token: undefined });
-    jest.spyOn(global, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify(learningPathData), { status: 200 }),
-    );
+    jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(
+        new Response(JSON.stringify(learningPathData), { status: 200 }),
+      );
 
     const client = new LearningPathApiClient({
       discoveryApi: discoveryApi as any,
@@ -129,9 +135,11 @@ describe('LearningPathApiClient', () => {
   });
 
   it('throws when the proxy response is not an array', async () => {
-    jest.spyOn(global, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ items: [] }), { status: 200 }),
-    );
+    jest
+      .spyOn(global, 'fetch')
+      .mockResolvedValue(
+        new Response(JSON.stringify({ items: [] }), { status: 200 }),
+      );
 
     const client = new LearningPathApiClient({
       discoveryApi: discoveryApi as any,

@@ -55,10 +55,14 @@
     "typescript": "~5.8.0"
   },
   "resolutions": {
+    "@backstage/catalog-model": "1.10.0",
+    "@backstage/core-components": "0.18.13",
+    "@backstage/core-plugin-api": "1.12.9",
+    "@backstage/frontend-plugin-api": "0.18.0",
+    "@backstage/plugin-catalog-react": "3.2.2",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@backstage/plugin-catalog": "2.0.8",
-    "@backstage/plugin-catalog-react": "3.2.2",
     "refractor@npm:3.6.0/prismjs": "^1.30.0"
   },
   "prettier": "@backstage/cli/config/prettier"
