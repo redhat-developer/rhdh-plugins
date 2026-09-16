@@ -30,20 +30,31 @@ import type {
 /**
  * Restricts the query to production-like environments: null/empty environment
  * (treated as production) or a case-insensitive match against `productionEnvironments`.
+ *
+ * If `productionEnvironments` is empty the filter is skipped entirely, which has
+ * the same effect as passing `undefined` to the caller (all rows are returned).
+ *
+ * **SQLite limitation:** `LOWER()` in SQLite only folds ASCII characters (A-Z → a-z).
+ * Non-ASCII environment names (e.g. `PRÖD`) will not match a configured value that
+ * differs only in Unicode case (`pröd`) when running on SQLite. This is not a concern
+ * in practice because deployment environment names are virtually always ASCII, and
+ * SQLite is only used for local development; PostgreSQL (the production database)
+ * handles Unicode `LOWER()` correctly.
  */
 function applyProductionEnvironmentFilter(
   query: Knex.QueryBuilder,
   productionEnvironments: string[],
 ): void {
+  if (productionEnvironments.length === 0) {
+    return;
+  }
   const lowered = productionEnvironments.map(name => name.toLowerCase());
   query.andWhere(builder => {
     builder.whereNull('environment').orWhere('environment', '');
-    if (lowered.length > 0) {
-      builder.orWhereRaw(
-        `LOWER(??) IN (${lowered.map(() => '?').join(', ')})`,
-        ['environment', ...lowered],
-      );
-    }
+    builder.orWhereRaw(`LOWER(??) IN (${lowered.map(() => '?').join(', ')})`, [
+      'environment',
+      ...lowered,
+    ]);
   });
 }
 
