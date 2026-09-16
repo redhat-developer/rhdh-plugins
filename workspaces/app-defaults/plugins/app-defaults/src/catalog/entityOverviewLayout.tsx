@@ -27,8 +27,6 @@ import type { EntityContentLayoutProps } from '@backstage/plugin-catalog-react/a
 
 import { Grid } from './entityPage/Grid';
 
-const fullWidthColumn = { xs: '1 / -1' } as const;
-
 const leftColumn = {
   lg: '1 / span 4',
   md: '1 / span 6',
@@ -58,8 +56,10 @@ export const EntityOverviewLayout = ({ cards }: EntityContentLayoutProps) => {
 
   const hasInfo = infoCards.length > 0;
   const hasContent = contentCards.length > 0;
-  const infoColumn = hasInfo && !hasContent ? fullWidthColumn : leftColumn;
-  const contentColumn = hasContent && !hasInfo ? fullWidthColumn : rightColumn;
+  // Legacy RHDH keeps About/Links in the left band even when Overview has no
+  // right-column cards (e.g. components after dependency cards move off Overview).
+  const infoColumn = leftColumn;
+  const contentColumn = rightColumn;
 
   return (
     <Grid container>

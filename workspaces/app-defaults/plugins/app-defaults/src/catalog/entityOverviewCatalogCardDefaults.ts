@@ -14,15 +14,22 @@
  * limitations under the License.
  */
 
-import { entityDependenciesLayoutExtension } from './entityDependenciesLayoutExtension';
-import { entityOverviewLayoutExtension } from './entityOverviewLayoutExtension';
+import catalogPlugin from '@backstage/plugin-catalog/alpha';
 
 /**
- * Catalog entity page layout overrides for app-defaults (RHIDP-16564).
+ * RHDH overview column defaults without `app.extensions` config.
  *
  * @internal
  */
-export const entityPageLayoutExtensions = [
-  entityOverviewLayoutExtension,
-  entityDependenciesLayoutExtension,
+export const entityOverviewCatalogCardDefaults = [
+  catalogPlugin.getExtension('entity-card:catalog/about').override({
+    factory(originalFactory) {
+      return originalFactory({ params: { type: 'info' } });
+    },
+  }),
+  catalogPlugin.getExtension('entity-card:catalog/links').override({
+    factory(originalFactory) {
+      return originalFactory({ params: { type: 'info' } });
+    },
+  }),
 ];

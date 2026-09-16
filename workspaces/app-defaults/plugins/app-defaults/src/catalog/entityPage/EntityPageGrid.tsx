@@ -14,15 +14,11 @@
  * limitations under the License.
  */
 
-import { entityDependenciesLayoutExtension } from './entityDependenciesLayoutExtension';
-import { entityOverviewLayoutExtension } from './entityOverviewLayoutExtension';
+import type { ReactNode } from 'react';
 
-/**
- * Catalog entity page layout overrides for app-defaults (RHIDP-16564).
- *
- * @internal
- */
-export const entityPageLayoutExtensions = [
-  entityOverviewLayoutExtension,
-  entityDependenciesLayoutExtension,
-];
+import { Grid } from './Grid';
+
+/** 12-column entity tab layout matching legacy RHDH EntityPage. */
+export const EntityPageGrid = ({ children }: { children: ReactNode }) => (
+  <Grid container>{children}</Grid>
+);

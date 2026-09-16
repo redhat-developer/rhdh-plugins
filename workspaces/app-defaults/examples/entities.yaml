@@ -1,11 +1,35 @@
 ---
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-domain
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: example-domain
+  description: Demo domain for example entities.
+spec:
+  owner: guests
+---
 # https://backstage.io/docs/features/software-catalog/descriptor-format#kind-system
 apiVersion: backstage.io/v1alpha1
 kind: System
 metadata:
   name: examples
+  description: Example system for app-defaults demos.
+  tags:
+    - demo
+    - examples
+  links:
+    - url: https://backstage.io/docs/features/software-catalog/system-model
+      title: System model docs
+      icon: docs
+    - url: https://github.com/backstage/backstage
+      title: Backstage on GitHub
+      icon: github
+    - url: https://developers.redhat.com/products/rhdh/overview
+      title: Red Hat Developer Hub
+      icon: catalog
 spec:
   owner: guests
+  domain: example-domain
 ---
 # https://backstage.io/docs/features/software-catalog/descriptor-format#kind-component
 apiVersion: backstage.io/v1alpha1
@@ -26,6 +50,10 @@ apiVersion: backstage.io/v1alpha1
 kind: API
 metadata:
   name: example-grpc-api
+  description: Example gRPC API; provided by example-website and consumed by example-grpc-api-consumer.
+  tags:
+    - grpc
+    - demo
 spec:
   type: grpc
   lifecycle: experimental
@@ -41,3 +69,16 @@ spec:
     message ExampleMessage {
       string example = 1;
     };
+---
+# Consumes example-grpc-api (apiConsumedBy on the API entity).
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: example-grpc-api-consumer
+  description: Demo service that consumes example-grpc-api.
+spec:
+  type: service
+  lifecycle: experimental
+  owner: guests
+  system: examples
+  consumesApis: [example-grpc-api]

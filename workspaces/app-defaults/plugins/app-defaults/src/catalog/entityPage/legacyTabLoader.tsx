@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-import { entityDependenciesLayoutExtension } from './entityDependenciesLayoutExtension';
-import { entityOverviewLayoutExtension } from './entityOverviewLayoutExtension';
+import type { ComponentType } from 'react';
 
-/**
- * Catalog entity page layout overrides for app-defaults (RHIDP-16564).
- *
- * @internal
- */
-export const entityPageLayoutExtensions = [
-  entityOverviewLayoutExtension,
-  entityDependenciesLayoutExtension,
-];
+import { EntityPageGrid } from './EntityPageGrid';
+
+/** Lazy tab body wrapped in the legacy 12-column entity grid. */
+export function legacyTabLoader(
+  importContent: () => Promise<{ Content: ComponentType }>,
+) {
+  return async () => {
+    const { Content } = await importContent();
+    return (
+      <EntityPageGrid>
+        <Content />
+      </EntityPageGrid>
+    );
+  };
+}

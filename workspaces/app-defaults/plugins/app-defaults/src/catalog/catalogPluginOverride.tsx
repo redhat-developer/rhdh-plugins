@@ -17,17 +17,24 @@
 import { coreExtensionData } from '@backstage/frontend-plugin-api';
 import catalogPlugin from '@backstage/plugin-catalog/alpha';
 import { CustomCatalogPage } from './CustomCatalogPage';
+import { entityDependenciesCatalogCardAttachments } from './entityDependenciesCardAttachments';
+import { entityOverviewCatalogCardDefaults } from './entityOverviewCatalogCardDefaults';
 import { entityPageLayoutExtensions } from './entityPageLayoutExtensions';
+import { entityPageTabExtensions } from './entityPageTabExtensions';
 
 /**
  * Override of the Backstage catalog plugin that adds an empty state
- * when no catalog entities are available, plus the RHDH overview layout.
+ * when no catalog entities are available, RHDH overview layout, NFS Dependencies tab,
+ * and legacy System Diagram entity tab.
  *
  * @public
  */
 export const catalogPluginOverride = catalogPlugin.withOverrides({
   extensions: [
+    ...entityOverviewCatalogCardDefaults,
+    ...entityDependenciesCatalogCardAttachments,
     ...entityPageLayoutExtensions,
+    ...entityPageTabExtensions,
     catalogPlugin.getExtension('page:catalog').override({
       factory(originalFactory) {
         const original = originalFactory();

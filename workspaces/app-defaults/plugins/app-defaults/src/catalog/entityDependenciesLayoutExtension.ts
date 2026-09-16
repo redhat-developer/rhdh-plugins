@@ -14,15 +14,26 @@
  * limitations under the License.
  */
 
-import { entityDependenciesLayoutExtension } from './entityDependenciesLayoutExtension';
-import { entityOverviewLayoutExtension } from './entityOverviewLayoutExtension';
+import { EntityContentLayoutBlueprint } from '@backstage/plugin-catalog-react/alpha';
 
 /**
- * Catalog entity page layout overrides for app-defaults (RHIDP-16564).
+ * Column layout for the RHDH Dependencies entity tab.
  *
  * @internal
  */
-export const entityPageLayoutExtensions = [
-  entityOverviewLayoutExtension,
-  entityDependenciesLayoutExtension,
-];
+export const entityDependenciesLayoutExtension =
+  EntityContentLayoutBlueprint.makeWithOverrides({
+    name: 'rhdh-dependencies',
+    attachTo: {
+      id: 'entity-content:catalog/rhdh-dependencies',
+      input: 'layouts',
+    },
+    factory(originalFactory) {
+      return originalFactory({
+        loader: async () =>
+          import('./entityDependenciesLayout').then(
+            m => m.EntityDependenciesLayout,
+          ),
+      });
+    },
+  });

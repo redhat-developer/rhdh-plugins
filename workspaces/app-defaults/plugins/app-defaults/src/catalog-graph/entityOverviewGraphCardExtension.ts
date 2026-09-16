@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
-import { entityDependenciesLayoutExtension } from './entityDependenciesLayoutExtension';
-import { entityOverviewLayoutExtension } from './entityOverviewLayoutExtension';
+import { isKind } from '@backstage/plugin-catalog';
+
+import { makeRhdhEntityRelationsGraphCardExtension } from './rhdhEntityRelationsGraphCardExtension';
 
 /**
- * Catalog entity page layout overrides for app-defaults (RHIDP-16564).
+ * Relations graph on Overview for API and System only (legacy RHDH). Components
+ * use {@link entityDependenciesGraphCardExtension} on the Dependencies tab.
  *
  * @internal
  */
-export const entityPageLayoutExtensions = [
-  entityOverviewLayoutExtension,
-  entityDependenciesLayoutExtension,
-];
+export const entityOverviewGraphCardExtension =
+  makeRhdhEntityRelationsGraphCardExtension({
+    name: 'rhdh-overview-relations',
+    attachTo: {
+      id: 'entity-content:catalog/overview',
+      input: 'cards',
+    },
+    filter: isKind(['api', 'system']),
+    type: 'content',
+  });
