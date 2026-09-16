@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-catalog-backend-module-model-catalog
 
+## 1.1.0
+
+### Minor Changes
+
+- e15e722: Add support for the `rhdh.io/api-entity-ref` annotation on KServe InferenceServices. The annotation value is normalized to a fully qualified entity reference and set as `spec.apiEntityRef` on the generated `AiModelServerAPI` entity.
+
 ## 1.0.2
 
 ### Patch Changes
