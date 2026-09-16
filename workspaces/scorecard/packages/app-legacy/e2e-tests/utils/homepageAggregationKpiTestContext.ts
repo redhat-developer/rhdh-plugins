@@ -13,4 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export { extensionsTranslationsModule as default } from './alpha';
+
+import type { Page } from '@playwright/test';
+import type { HomePage } from '../pages/HomePage';
+import type { ScorecardDrillDownPage } from '../pages/ScorecardDrillDownPage';
+import type { ScorecardMessages } from './translationUtils';
+
+export type HomepageAggregationKpiTestContext = {
+  page: Page;
+  homePage: HomePage;
+  scorecardDrillDownPage: ScorecardDrillDownPage;
+  translations: ScorecardMessages;
+  currentLocale: string;
+};
