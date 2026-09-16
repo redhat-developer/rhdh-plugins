@@ -16,7 +16,6 @@
 
 import { SchedulerServiceTaskScheduleDefinitionConfig } from '@backstage/backend-plugin-api';
 import {
-  aggregationTypes,
   ThresholdConfig,
   AggregationThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
@@ -36,7 +35,7 @@ export interface Config {
             /** Metric ID for which the aggregation is calculated */
             metricId: string;
             /** Status grouped aggregation type */
-            type: typeof aggregationTypes.statusGrouped;
+            type: 'statusGrouped';
           }
         | {
             /** Title of the aggregation */
@@ -46,7 +45,7 @@ export interface Config {
             /** Metric ID for which the aggregation is calculated */
             metricId: string;
             /** Weighted status score aggregation type */
-            type: typeof aggregationTypes.weightedStatusScore;
+            type: 'weightedStatusScore';
             /** Options specific to the weighted status score aggregation type */
             options: {
               /** Required: Status scores for the aggregation */
@@ -70,12 +69,7 @@ export interface Config {
             /** Metric ID for which the aggregation is calculated */
             metricId: string;
             /** Scalar aggregation type */
-            type:
-              | typeof aggregationTypes.sum
-              | typeof aggregationTypes.average
-              | typeof aggregationTypes.max
-              | typeof aggregationTypes.min
-              | typeof aggregationTypes.count;
+            type: 'sum' | 'average' | 'max' | 'min' | 'count';
             /** Optional: filter applied when aggregating scalar KPI values */
             filter?: {
               /** Threshold status key to include (e.g. success, warning, error) */
