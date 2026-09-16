@@ -10,7 +10,7 @@ app:
     - page:catalog:
         config:
           path: /
-
+    - entity-card:catalog-graph/relations: false
 organization:
   name: My Company
 
