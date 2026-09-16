@@ -209,7 +209,7 @@ async function fetchBearerToken(
     ) {
       throw new Error('Registry token realm is not the configured token realm');
     }
-  } else if (registryHost && url.hostname !== registryHost) {
+  } else if (registryHost && url.host !== registryHost) {
     throw new Error(
       'Registry token realm differs from the registry host; configure credentials.tokenRealm explicitly',
     );
@@ -311,7 +311,7 @@ async function registryFetch(
     challenge,
     logger,
     credentials,
-    new URL(url).hostname,
+    new URL(url).host,
     requestSignal,
   );
   if (!token) {
