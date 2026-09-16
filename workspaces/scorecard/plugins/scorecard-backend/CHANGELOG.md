@@ -1,5 +1,13 @@
 # @red-hat-developer-hub/backstage-plugin-scorecard-backend
 
+## 4.3.1
+
+### Patch Changes
+
+- 52e46db: Fix config schema generation during `prepack` by using string literal aggregation types in `config.d.ts` instead of `typeof aggregationTypes.*` references that Backstage cannot resolve.
+  - @red-hat-developer-hub/backstage-plugin-scorecard-common@4.3.1
+  - @red-hat-developer-hub/backstage-plugin-scorecard-node@4.3.1
+
 ## 4.3.0
 
 ### Minor Changes
