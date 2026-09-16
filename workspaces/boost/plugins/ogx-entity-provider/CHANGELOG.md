@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-llamastack-entity-provider
 
+## 0.6.0
+
+### Minor Changes
+
+- fa11c87: Align OGX AI asset entities with the canonical provider metadata contract and
+  harden shared AI asset type validation.
+
 ## 0.5.0
 
 ### Minor Changes
