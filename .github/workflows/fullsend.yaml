@@ -1,5 +1,5 @@
-# This file is managed by fullsend. Do not edit it directly.
-# Upstream: https://github.com/fullsend-ai/fullsend/blob/main/internal/scaffold/fullsend-repo/.github/workflows/fullsend.yaml
+# Based on fullsend scaffold; customized to disable review auto-trigger.
+# Upstream: https://github.com/fullsend-ai/fullsend/blob/main/internal/scaffold/fullsend-repo/templates/shim-per-repo.yaml
 ---
 # fullsend shim workflow (per-repo installation mode)
 # Routes events to agent workflows via reusable-dispatch.yml.
@@ -25,7 +25,7 @@ on:
   issue_comment:
     types: [created]
   pull_request_target:
-    types: [opened, synchronize, ready_for_review, closed, labeled, unlabeled]
+    types: [closed, labeled, unlabeled]
     # Monorepo: only auto-dispatch on workspaces enrolled for fullsend.
     # Slash commands on other workspaces still work via issue_comment.
     paths:
@@ -43,7 +43,8 @@ jobs:
       (github.event_name != 'pull_request_target' && github.event_name != 'pull_request_review'
        || github.event.pull_request.head.ref != 'fullsend/scaffold-install')
       && (github.event_name != 'issue_comment'
-       || github.event.comment.user.type != 'Bot')
+       || (startsWith(github.event.comment.body, '/fs-')
+           && github.event.comment.user.type != 'Bot'))
     permissions:
       actions: write
       id-token: write
