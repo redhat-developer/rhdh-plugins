@@ -106,17 +106,9 @@
     "prettier": "3.9.6",
     "react": "16.13.1 || ^17.0.0 || ^18.0.0"
   },
-  "scalprum": {
-    "name": "red-hat-developer-hub.backstage-plugin-bulk-import",
-    "exposedModules": {
-      "PluginRoot": "./src/index.tsx",
-      "Legacy": "./src/legacyExports.ts"
-    }
-  },
   "configSchema": "config.d.ts",
   "files": [
     "dist",
-    "dist-scalprum",
     "app-config.yaml",
     "config.d.ts"
   ],

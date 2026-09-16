@@ -110,19 +110,8 @@
   "files": [
     "dist",
     "config.d.ts",
-    "dist-scalprum",
     "app-config.yaml"
   ],
-  "scalprum": {
-    "name": "red-hat-developer-hub.backstage-plugin-intelligent-assistant",
-    "exposedModules": {
-      "PluginRoot": "./src/index.tsx",
-      "Alpha": "./src/alpha.ts",
-      "Legacy": "./src/legacy.ts",
-      "IntelligentAssistantFABModule": "./src/lightspeedFABModuleExport.ts",
-      "IntelligentAssistantTranslationsModule": "./src/lightspeedTranslationsModuleExport.ts"
-    }
-  },
   "configSchema": "config.d.ts",
   "repository": {
     "type": "git",
