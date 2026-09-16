@@ -8,6 +8,13 @@ This mapping targets the **draft** MCP Registry `server.json` schema:
 - **Retrieval date:** 2026-09-16
 - **Status:** Draft (pre-1.0)
 
+## Entity Type
+
+The produced entity uses `McpServerApiEntity` from `@backstage/catalog-model/alpha`.
+This type overrides the standard `ApiEntityV1alpha1` by replacing the required
+`spec.definition` string field with a `spec.remotes[]` array of `McpServerRemote`
+entries. The `McpServerRemote` type is also imported from `@backstage/catalog-model/alpha`.
+
 ## Field Mapping Table
 
 Each `server.json` attribute is mapped to one of:
@@ -22,12 +29,12 @@ Each `server.json` attribute is mapped to one of:
 | `version`               | Dedicated annotation | `modelcontextprotocol.io/version`                                                                                                                                                     | Original value, individually queryable                              |
 | `title`                 | Native               | `metadata.title`                                                                                                                                                                      | Verbatim when present                                               |
 | `description`           | Native               | `metadata.description`                                                                                                                                                                | Required field                                                      |
-| `websiteUrl`            | Native               | `metadata.links[]` `{ url, title: "Website" }`                                                                                                                                        | Only when D11 passes; refused URLs not projected                    |
-| `repository.url`        | Native + dedicated   | `metadata.links[]` `{ url, title: "Source Code" }` (combined) + `backstage.io/source-location` (`url:<combined>`) + `modelcontextprotocol.io/repository.url` (original, unnormalized) | Only when D11 passes                                                |
+| `websiteUrl`            | Native               | `metadata.links[]` `{ url, title: "Website" }`                                                                                                                                        | Only when D11 passes; refused URLs not projected; always consumed   |
+| `repository.url`        | Native + dedicated   | `metadata.links[]` `{ url, title: "Source Code" }` (combined) + `backstage.io/source-location` (`url:<combined>`) + `modelcontextprotocol.io/repository.url` (original, unnormalized) | Only when D11 passes; always consumed                               |
 | `repository.source`     | Projected annotation | `modelcontextprotocol.io/repository.source`                                                                                                                                           | Used by SCM-aware combination algorithm; still projected            |
 | `repository.id`         | Projected annotation | `modelcontextprotocol.io/repository.id`                                                                                                                                               |                                                                     |
 | `repository.subfolder`  | Projected annotation | `modelcontextprotocol.io/repository.subfolder`                                                                                                                                        | Used in combination algorithm; still projected                      |
-| `remotes[].type`        | Native               | `spec.remotes[].type`                                                                                                                                                                 | Consumed by direct mapping (type always copied)                     |
+| `remotes[].type`        | Native               | `spec.remotes[].type`                                                                                                                                                                 | Runtime-validated: must be non-empty string; always consumed        |
 | `remotes[].url`         | Native               | `spec.remotes[].url`                                                                                                                                                                  | Only when D11 passes; always consumed (symmetric with websiteUrl)   |
 | `remotes[].headers`     | Projected annotation | `modelcontextprotocol.io/remotes.<i>.headers.*`                                                                                                                                       | Projected, not dropped; D9 secret redaction applies                 |
 | `remotes[].variables`   | Projected annotation | `modelcontextprotocol.io/remotes.<i>.variables.*`                                                                                                                                     | Projected, not dropped; D9 secret redaction applies                 |
@@ -38,6 +45,17 @@ Each `server.json` attribute is mapped to one of:
 | _(absent)_              | Native               | `spec.type`: `"mcp-server"`                                                                                                                                                           | Constant                                                            |
 | _(absent)_              | Native               | `spec.owner`                                                                                                                                                                          | Default `"unknown"`; caller override via `owner`                    |
 | _(absent)_              | Native               | `spec.lifecycle`                                                                                                                                                                      | Default `"production"`; caller override via `lifecycle`             |
+
+## Consumed Path Tracking
+
+The direct mapping tracks consumed paths symmetrically:
+
+- **`websiteUrl`**: Always consumed when present, regardless of D11 outcome.
+- **`remotes[i].type`**: Always consumed when the remote entry exists.
+- **`remotes[i].url`**: Always consumed when the remote entry has a URL, regardless of D11 outcome (symmetric with websiteUrl).
+- **`repository.url`**: Always consumed when repository is present, regardless of D11 outcome.
+
+This ensures the annotation projection sibling never re-projects paths the direct mapping has already evaluated.
 
 ## Annotation Key Rules (D3)
 

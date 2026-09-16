@@ -24,7 +24,7 @@ export type { McpServerApiEntity, McpServerRemote };
 /**
  * A remote transport entry from MCP Registry server.json.
  *
- * Extends the Backstage {@link McpServerRemote} with optional
+ * Extends the Backstage `McpServerRemote` with optional
  * source-document fields that the direct mapping does not carry
  * through to the entity.
  *
@@ -37,19 +37,35 @@ export interface McpRegistryRemote extends McpServerRemote {
 }
 
 /**
- * Repository metadata from MCP Registry server.json.
+ * Repository metadata for the MCP server source code. Enables users
+ * and security experts to inspect the code, improving transparency.
  *
  * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | Repository definition}
  * @public
  */
 export interface McpServerRepository {
-  /** Repository URL for browsing source code. */
+  /**
+   * Repository URL for browsing source code. Should support both
+   * web browsing and git clone operations.
+   */
   url: string;
-  /** Repository hosting service identifier (e.g., 'github', 'gitlab'). */
+  /**
+   * Repository hosting service identifier. Used by registries to
+   * determine validation and API access methods (e.g., 'github',
+   * 'gitlab', 'bitbucket', 'azure-devops').
+   */
   source?: string;
-  /** Repository identifier from the hosting service. */
+  /**
+   * Repository identifier from the hosting service (e.g., GitHub
+   * repo ID). Should remain stable across repository renames and
+   * may be used to detect repository resurrection attacks.
+   */
   id?: string;
-  /** Relative path from repository root to the server location. */
+  /**
+   * Optional relative path from repository root to the server
+   * location within a monorepo or nested package structure. Must
+   * be a clean relative path.
+   */
   subfolder?: string;
 }
 
@@ -100,36 +116,93 @@ export interface McpRegistryPackage {
 }
 
 /**
- * A single MCP Registry server.json document. Fields match the
+ * A single MCP Registry server.json document derived from the
  * ServerDetail definition in the draft server.json schema. Unknown
- * fields are passed through to the annotation projection sibling.
+ * fields are passed through to the annotation projection sibling
+ * via the index signature.
  *
  * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail definition}
  * @public
  */
 export interface McpServerDocument {
-  /** Server name in reverse-DNS format. */
+  /**
+   * Server name in reverse-DNS format. Must contain exactly one
+   * forward slash separating namespace from server name.
+   *
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail.name}
+   */
   name: string;
-  /** Optional human-readable display name. */
+  /**
+   * Optional human-readable title or display name for the MCP server.
+   * Clients MAY choose to use this for display purposes.
+   *
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail.title}
+   */
   title?: string;
-  /** Human-readable explanation of server functionality. */
+  /**
+   * Clear human-readable explanation of server functionality. Should
+   * focus on capabilities, not implementation details.
+   *
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail.description}
+   */
   description: string;
-  /** Version string (SHOULD follow semver). */
+  /**
+   * Version string for this server. SHOULD follow semantic versioning
+   * (e.g., '1.0.2', '2.1.0-alpha'). Version ranges are rejected.
+   *
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail.version}
+   */
   version: string;
-  /** Optional URL to the server's homepage or documentation. */
+  /**
+   * Optional URL to the server's homepage, documentation, or project
+   * website. Provides a central link for users to learn more about
+   * the server.
+   *
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail.websiteUrl}
+   */
   websiteUrl?: string;
-  /** Optional repository metadata for source code. */
+  /**
+   * Optional repository metadata for the MCP server source code.
+   * Recommended for transparency and security inspection.
+   *
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | Repository}
+   */
   repository?: McpServerRepository;
-  /** Remote transport entries. */
+  /**
+   * Remote transport entries (streamable-http or sse with optional
+   * variables for URL template resolution).
+   *
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | RemoteTransport}
+   */
   remotes?: McpRegistryRemote[];
-  /** Optional set of icons for UI display. */
+  /**
+   * Optional set of sized icons that the client can display in a
+   * user interface.
+   *
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | Icon}
+   */
   icons?: McpRegistryIcon[];
-  /** Package entries for installation. */
+  /**
+   * Package entries for installation via registries (npm, pypi,
+   * cargo, oci, etc.) or direct download.
+   *
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | Package}
+   */
   packages?: McpRegistryPackage[];
-  /** JSON Schema URI for the server.json format. */
+  /**
+   * JSON Schema URI for the server.json format.
+   *
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail.$schema}
+   */
   $schema?: string;
-  /** Extension metadata using reverse DNS namespacing. */
+  /**
+   * Extension metadata using reverse DNS namespacing for
+   * vendor-specific data.
+   *
+   * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | ServerDetail._meta}
+   */
   _meta?: Record<string, unknown>;
+  /** Pass-through for unknown fields (annotation projection). */
   [key: string]: unknown;
 }
 

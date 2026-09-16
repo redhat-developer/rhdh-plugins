@@ -757,10 +757,10 @@ describe('mapServerToEntity', () => {
       expect(
         entity.metadata.links?.find(l => l.title === 'Source Code'),
       ).toBeUndefined();
-      expect(entity.metadata.annotations).not.toHaveProperty(
+      expect(entity.metadata.annotations ?? {}).not.toHaveProperty(
         'backstage.io/source-location',
       );
-      expect(entity.metadata.annotations).not.toHaveProperty(
+      expect(entity.metadata.annotations ?? {}).not.toHaveProperty(
         'modelcontextprotocol.io/repository.url',
       );
     });

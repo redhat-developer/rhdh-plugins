@@ -28,6 +28,21 @@ export function deriveMetadataName(
 export function isAllowedUrl(candidate: string | undefined | null): boolean;
 
 // @public
+export interface LinksResult {
+  // (undocumented)
+  annotations: Record<string, string>;
+  // (undocumented)
+  consumedPaths: string[];
+  // (undocumented)
+  links: Array<{
+    url: string;
+    title: string;
+  }>;
+  // (undocumented)
+  reservedAnnotationKeys: string[];
+}
+
+// @public
 export function mapRemotes(doc: McpServerDocument): McpServerRemote[];
 
 // @public
@@ -37,25 +52,50 @@ export function mapServerToEntity(
 ): McpServerMappingResult;
 
 // @public
+export interface McpRegistryIcon {
+  mimeType?: string;
+  sizes?: string[];
+  src: string;
+  theme?: 'light' | 'dark';
+}
+
+// @public
+export interface McpRegistryPackage {
+  environmentVariables?: unknown[];
+  fileSha256?: string;
+  identifier: string;
+  packageArguments?: unknown[];
+  registryBaseUrl?: string;
+  registryType: string;
+  runtimeArguments?: unknown[];
+  runtimeHint?: string;
+  transport: unknown;
+  version?: string;
+}
+
+// @public
+export interface McpRegistryRemote extends McpServerRemote {
+  // (undocumented)
+  headers?: unknown[];
+  // (undocumented)
+  variables?: unknown;
+}
+
 export { McpServerApiEntity };
 
 // @public
 export interface McpServerDocument {
-  // (undocumented)
+  $schema?: string;
   [key: string]: unknown;
-  // (undocumented)
   description: string;
-  // (undocumented)
+  icons?: McpRegistryIcon[];
+  _meta?: Record<string, unknown>;
   name: string;
-  // (undocumented)
+  packages?: McpRegistryPackage[];
   remotes?: McpRegistryRemote[];
-  // (undocumented)
   repository?: McpServerRepository;
-  // (undocumented)
   title?: string;
-  // (undocumented)
   version: string;
-  // (undocumented)
   websiteUrl?: string;
 }
 
@@ -73,26 +113,13 @@ export interface McpServerMappingResult {
   reservedAnnotationKeys: string[];
 }
 
-// @public
-export interface McpRegistryRemote extends McpServerRemote {
-  // (undocumented)
-  headers?: unknown[];
-  // (undocumented)
-  variables?: unknown;
-}
-
-// @public
 export { McpServerRemote };
 
 // @public
 export interface McpServerRepository {
-  // (undocumented)
   id?: string;
-  // (undocumented)
   source?: string;
-  // (undocumented)
   subfolder?: string;
-  // (undocumented)
   url: string;
 }
 

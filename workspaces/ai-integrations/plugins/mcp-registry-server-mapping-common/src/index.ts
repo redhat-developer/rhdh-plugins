@@ -39,6 +39,7 @@ export {
   buildLinks,
   trackConsumedRemotePaths,
 } from './mapServerToEntity';
+export type { LinksResult } from './mapServerToEntity';
 export { isAllowedUrl } from './urlPolicy';
 export {
   deriveMetadataName,

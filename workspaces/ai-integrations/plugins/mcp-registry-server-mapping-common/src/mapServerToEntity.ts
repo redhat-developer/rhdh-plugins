@@ -110,8 +110,12 @@ export function mapRemotes(doc: McpServerDocument): McpServerRemote[] {
   );
 }
 
-/** Intermediate result from building links and their tracking data. */
-interface LinksResult {
+/**
+ * Intermediate result from building links and their tracking data.
+ *
+ * @public
+ */
+export interface LinksResult {
   links: Array<{ url: string; title: string }>;
   consumedPaths: string[];
   reservedAnnotationKeys: string[];
@@ -253,10 +257,10 @@ export function mapServerToEntity(
   consumedPaths.push(...trackConsumedRemotePaths(doc));
 
   // Step 7: Sort annotation keys for determinism
+  const annotationKeys = Object.keys(annotations);
+  annotationKeys.sort((a, b) => a.localeCompare(b));
   const sortedAnnotations: Record<string, string> = {};
-  for (const key of Object.keys(annotations).sort((a, b) =>
-    a.localeCompare(b),
-  )) {
+  for (const key of annotationKeys) {
     sortedAnnotations[key] = annotations[key];
   }
 
