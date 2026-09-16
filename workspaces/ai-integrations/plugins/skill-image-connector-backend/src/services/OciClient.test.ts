@@ -320,6 +320,7 @@ describe('fetchManifest', () => {
         'Bearer realm="https://auth.example.com/token",service="registry.example.com",scope="repository:org/repo:pull"',
       ],
     ]);
+    const cancelUnauthorizedBody = jest.fn().mockResolvedValue(undefined);
 
     global.fetch = jest
       .fn()
@@ -328,6 +329,7 @@ describe('fetchManifest', () => {
         status: 401,
         statusText: 'Unauthorized',
         headers: { get: (k: string) => headersMap.get(k) ?? null },
+        body: { cancel: cancelUnauthorizedBody },
       })
       .mockResolvedValueOnce({
         ok: true,
@@ -350,6 +352,7 @@ describe('fetchManifest', () => {
     );
     expect(result).toEqual(mockManifest);
     expect(global.fetch).toHaveBeenCalledTimes(3);
+    expect(cancelUnauthorizedBody).toHaveBeenCalled();
   });
 
   it('should fall back when the bearer token response is invalid JSON', async () => {

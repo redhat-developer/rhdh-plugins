@@ -19,7 +19,7 @@ import express from 'express';
 import Router from 'express-promise-router';
 import type { SkillImageExtraction } from './services/types';
 
-export type SkillImageProcessingStatus = 'loading' | 'ready';
+export type SkillImageProcessingStatus = 'loading' | 'ready' | 'failed';
 
 export async function createRouter(
   logger: LoggerService,
