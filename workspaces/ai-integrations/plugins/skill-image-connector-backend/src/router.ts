@@ -25,6 +25,7 @@ export async function createRouter(
   logger: LoggerService,
   extractions: Map<string, SkillImageExtraction>,
   getProcessingStatus: () => SkillImageProcessingStatus = () => 'ready',
+  getFailedImages: () => string[] = () => [],
 ): Promise<express.Router> {
   const router = Router();
   router.use(express.json());
@@ -44,6 +45,7 @@ export async function createRouter(
     );
     res.status(200).json({
       status: getProcessingStatus(),
+      failedImages: getFailedImages(),
       images: results,
     });
   });

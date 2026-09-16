@@ -122,6 +122,7 @@ export async function fetchAndExtractSkillImage(
   workDir: string | undefined,
   logger: LoggerService,
   credentials?: RegistryCredentials,
+  signal?: AbortSignal,
 ): Promise<SkillImageExtraction> {
   const baseDir = workDir ?? os.tmpdir();
   const imageRef = parseImageRef(imageRefStr);
@@ -129,7 +130,7 @@ export async function fetchAndExtractSkillImage(
   logger.info(`Processing skill image ${imageRefStr}`);
 
   // 1. Fetch the manifest
-  const manifest = await fetchManifest(imageRef, logger, credentials);
+  const manifest = await fetchManifest(imageRef, logger, credentials, signal);
 
   // 2. Validate the manifest has required layers
   const { skillImageYamlLayer, skillsMdLayer } =
@@ -143,6 +144,7 @@ export async function fetchAndExtractSkillImage(
       skillImageYamlLayer.size,
       logger,
       credentials,
+      signal,
     ),
     fetchBlob(
       imageRef,
@@ -150,6 +152,7 @@ export async function fetchAndExtractSkillImage(
       skillsMdLayer.size,
       logger,
       credentials,
+      signal,
     ),
   ]);
 

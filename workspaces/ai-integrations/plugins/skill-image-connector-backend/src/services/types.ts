@@ -34,8 +34,8 @@ export interface RegistryCredentials {
   tokenRealm?: string;
 }
 
-/** Maximum allowed blob download size in bytes (50 MB). */
-export const MAX_BLOB_SIZE = 50 * 1024 * 1024;
+/** Maximum allowed blob download size in bytes (5 MB). */
+export const MAX_BLOB_SIZE = 5 * 1024 * 1024;
 
 /** Default fetch timeout in milliseconds (30 seconds). */
 export const FETCH_TIMEOUT_MS = 30_000;

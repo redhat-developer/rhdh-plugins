@@ -30,6 +30,11 @@ const OCI_TAG_PATTERN = /^[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}$/;
 const DIGEST_PATTERN = /^(sha256|sha512):([0-9a-fA-F]+)$/;
 const MAX_REDIRECTS = 3;
 
+function createRequestSignal(signal?: AbortSignal): AbortSignal {
+  const timeoutSignal = AbortSignal.timeout(FETCH_TIMEOUT_MS);
+  return signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
+}
+
 /**
  * Parses an image reference string into its components.
  *
@@ -175,6 +180,7 @@ async function fetchBearerToken(
   logger: LoggerService,
   credentials?: RegistryCredentials,
   registryHost?: string,
+  signal?: AbortSignal,
 ): Promise<string | undefined> {
   const url = new URL(challenge.realm);
   if (url.protocol !== 'https:' || url.username || url.password) {
@@ -205,7 +211,7 @@ async function fetchBearerToken(
   logger.debug('Requesting bearer token');
 
   const response = await fetch(url.toString(), {
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    signal: createRequestSignal(signal),
     redirect: 'error',
     headers: credentials
       ? {
@@ -223,11 +229,18 @@ async function fetchBearerToken(
     return undefined;
   }
 
-  const body = (await readResponseJson(response, 1024 * 1024)) as {
-    token?: string;
-    access_token?: string;
-  } | null;
-  return body?.token ?? body?.access_token;
+  let body: { token?: unknown; access_token?: unknown } | null;
+  try {
+    body = (await readResponseJson(response, 1024 * 1024)) as {
+      token?: unknown;
+      access_token?: unknown;
+    } | null;
+  } catch (error) {
+    logger.warn('Bearer token response was not valid JSON', error as Error);
+    return undefined;
+  }
+  const token = body?.token ?? body?.access_token;
+  return typeof token === 'string' && token ? token : undefined;
 }
 
 /**
@@ -240,6 +253,7 @@ async function registryFetch(
   init: RequestInit,
   logger: LoggerService,
   credentials?: RegistryCredentials,
+  signal?: AbortSignal,
 ): Promise<Response> {
   const headers = {
     ...((init.headers ?? {}) as Record<string, string>),
@@ -251,12 +265,14 @@ async function registryFetch(
         }
       : {}),
   };
-  const response = await fetchWithRedirects(url, {
-    ...init,
-    headers,
-    redirect: 'error',
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-  });
+  const response = await fetchWithRedirects(
+    url,
+    {
+      ...init,
+      headers,
+    },
+    signal,
+  );
 
   if (response.status !== 401) {
     return response;
@@ -277,21 +293,24 @@ async function registryFetch(
     logger,
     credentials,
     new URL(url).hostname,
+    signal,
   );
   if (!token) {
     return response;
   }
 
   logger.debug('Retrying request with bearer token');
-  return fetchWithRedirects(url, {
-    ...init,
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    headers: {
-      ...headers,
-      Authorization: `Bearer ${token}`,
+  return fetchWithRedirects(
+    url,
+    {
+      ...init,
+      headers: {
+        ...headers,
+        Authorization: `Bearer ${token}`,
+      },
     },
-    redirect: 'error',
-  });
+    signal,
+  );
 }
 
 /**
@@ -301,6 +320,7 @@ async function registryFetch(
 async function fetchWithRedirects(
   url: string,
   init: RequestInit,
+  signal?: AbortSignal,
 ): Promise<Response> {
   let currentUrl = new URL(url);
   let headers = { ...((init.headers ?? {}) as Record<string, string>) };
@@ -310,6 +330,7 @@ async function fetchWithRedirects(
       ...init,
       headers,
       redirect: 'manual',
+      signal: createRequestSignal(signal),
     });
     if (![301, 302, 303, 307, 308].includes(response.status)) {
       return response;
@@ -422,6 +443,7 @@ export async function fetchManifest(
   imageRef: ImageRef,
   logger: LoggerService,
   credentials?: RegistryCredentials,
+  signal?: AbortSignal,
 ): Promise<OciManifest> {
   const reference = imageRef.digest ?? imageRef.tag;
   const url = `https://${imageRef.registry}/v2/${imageRef.repository}/manifests/${reference}`;
@@ -439,6 +461,7 @@ export async function fetchManifest(
     },
     logger,
     credentials,
+    signal,
   );
 
   if (!response.ok) {
@@ -500,8 +523,8 @@ export async function fetchManifest(
 }
 
 /**
- * Downloads a blob (layer) from the registry, verifies its SHA-256
- * digest, and returns it as a Buffer.
+ * Downloads a blob (layer) from the registry, verifies its SHA-256 or
+ * SHA-512 digest, and returns it as a Buffer.
  *
  * Enforces a maximum download size (MAX_BLOB_SIZE) to prevent
  * out-of-memory conditions from oversized or malicious blobs.
@@ -512,6 +535,7 @@ export async function fetchBlob(
   expectedSize: number,
   logger: LoggerService,
   credentials?: RegistryCredentials,
+  signal?: AbortSignal,
 ): Promise<Buffer> {
   const digestMatch = DIGEST_PATTERN.exec(digest);
   if (
@@ -534,7 +558,7 @@ export async function fetchBlob(
   const url = `https://${imageRef.registry}/v2/${imageRef.repository}/blobs/${digest}`;
   logger.debug(`Fetching blob ${digest} from ${url}`);
 
-  const response = await registryFetch(url, {}, logger, credentials);
+  const response = await registryFetch(url, {}, logger, credentials, signal);
 
   if (!response.ok) {
     throw new Error(
@@ -543,12 +567,6 @@ export async function fetchBlob(
   }
 
   const buffer = await readResponseBuffer(response, MAX_BLOB_SIZE);
-
-  if (buffer.length > MAX_BLOB_SIZE) {
-    throw new Error(
-      `Blob ${digest} actual size ${buffer.length} exceeds maximum allowed size ${MAX_BLOB_SIZE}`,
-    );
-  }
 
   if (buffer.length !== expectedSize) {
     throw new Error(

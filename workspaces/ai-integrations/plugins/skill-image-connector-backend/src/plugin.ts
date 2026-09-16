@@ -214,11 +214,17 @@ export const skillImageConnectorPlugin = createBackendPlugin({
 
         // Store extraction results so they can be exposed via the API
         const extractions = new Map<string, SkillImageExtraction>();
+        const failedImages = new Set<string>();
         let processingStatus: SkillImageProcessingStatus =
           imageConfigs.length > 0 ? 'loading' : 'ready';
 
         httpRouter.use(
-          await createRouter(pluginLogger, extractions, () => processingStatus),
+          await createRouter(
+            pluginLogger,
+            extractions,
+            () => processingStatus,
+            () => Array.from(failedImages),
+          ),
         );
         httpRouter.addAuthPolicy({
           path: '/health',
@@ -228,10 +234,14 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         // Do not make an unavailable registry prevent the backend from starting.
         // Limit concurrent downloads so configured images cannot multiply the
         // per-blob memory ceiling into an avoidable startup spike.
+        const processingAbortController = new AbortController();
         const processing = (async () => {
           let nextImageIndex = 0;
           const processNextImage = async () => {
-            while (nextImageIndex < imageConfigs.length) {
+            while (
+              !processingAbortController.signal.aborted &&
+              nextImageIndex < imageConfigs.length
+            ) {
               const imageIndex = nextImageIndex++;
               const imgConfig = imageConfigs[imageIndex];
               try {
@@ -240,16 +250,20 @@ export const skillImageConnectorPlugin = createBackendPlugin({
                   workDir,
                   pluginLogger,
                   imgConfig.credentials,
+                  processingAbortController.signal,
                 );
                 extractions.set(imgConfig.imageRef, result);
                 pluginLogger.info(
                   `Successfully extracted skill image ${imgConfig.imageRef}`,
                 );
               } catch (error) {
-                pluginLogger.error(
-                  `Failed to process skill image ${imgConfig.imageRef}`,
-                  error as Error,
-                );
+                if (!processingAbortController.signal.aborted) {
+                  failedImages.add(imgConfig.imageRef);
+                  pluginLogger.error(
+                    `Failed to process skill image ${imgConfig.imageRef}`,
+                    error as Error,
+                  );
+                }
               }
             }
           };
@@ -269,6 +283,7 @@ export const skillImageConnectorPlugin = createBackendPlugin({
         })();
 
         lifecycle.addShutdownHook(async () => {
+          processingAbortController.abort();
           await processing;
           await Promise.all(
             Array.from(extractions.values()).map(extraction =>
