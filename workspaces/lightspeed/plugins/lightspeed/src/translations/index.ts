@@ -20,7 +20,7 @@ import { lightspeedTranslationRef } from './ref';
 
 /**
  * Translation Resource for Developer lightspeed
- * @alpha
+ * @public
  **/
 export const lightspeedTranslations = createTranslationResource({
   ref: lightspeedTranslationRef,
@@ -33,5 +33,8 @@ export const lightspeedTranslations = createTranslationResource({
   },
 });
 
-// @alpha
+/**
+ * Translation reference for Developer lightspeed
+ * @public
+ **/
 export { lightspeedTranslationRef };

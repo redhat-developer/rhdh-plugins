@@ -27,3 +27,10 @@ export type {
   DrawerStateExposerProps,
   DrawerState,
 } from './components/LightspeedDrawerStateExposer';
+
+/**
+ * Translation resource for the lightspeed plugin
+ *
+ * @public
+ */
+export * from './translations';

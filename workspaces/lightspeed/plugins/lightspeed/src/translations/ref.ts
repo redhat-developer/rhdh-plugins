@@ -397,7 +397,7 @@ export const lightspeedMessages = {
 
 /**
  * Translation Reference for Developer Lightspeed
- * @alpha
+ * @public
  **/
 export const lightspeedTranslationRef = createTranslationRef({
   id: 'plugin.lightspeed',
