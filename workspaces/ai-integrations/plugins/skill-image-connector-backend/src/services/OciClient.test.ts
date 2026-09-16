@@ -578,6 +578,71 @@ describe('fetchBlob', () => {
     ).toBeUndefined();
   });
 
+  it.each([
+    'http://cdn.example.com/blob',
+    'https://localhost/blob',
+    'https://127.0.0.1/blob',
+  ])('should reject an unsafe redirect target: %s', async location => {
+    const cancel = jest.fn().mockResolvedValue(undefined);
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 302,
+      headers: { get: () => location },
+      body: { cancel },
+    });
+
+    await expect(
+      fetchBlob(
+        { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
+        validSha256Digest,
+        1,
+        logger,
+      ),
+    ).rejects.toThrow('public HTTPS URL');
+    expect(cancel).toHaveBeenCalled();
+  });
+
+  it('should reject redirects without a Location header', async () => {
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: false,
+      status: 302,
+      headers: { get: () => null },
+      body: { cancel: jest.fn().mockResolvedValue(undefined) },
+    });
+
+    await expect(
+      fetchBlob(
+        { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
+        validSha256Digest,
+        1,
+        logger,
+      ),
+    ).rejects.toThrow('did not include a Location');
+  });
+
+  it('should enforce the maximum redirect count', async () => {
+    const responses = Array.from({ length: 4 }, (_, index) => ({
+      ok: false,
+      status: 307,
+      headers: { get: () => `https://cdn.example.com/blob-${index}` },
+      body: { cancel: jest.fn().mockResolvedValue(undefined) },
+    }));
+    global.fetch = jest.fn();
+    for (const response of responses) {
+      (global.fetch as jest.Mock).mockResolvedValueOnce(response);
+    }
+
+    await expect(
+      fetchBlob(
+        { registry: 'quay.io', repository: 'org/repo', tag: 'v1' },
+        validSha256Digest,
+        1,
+        logger,
+      ),
+    ).rejects.toThrow('maximum redirect count');
+    expect(global.fetch).toHaveBeenCalledTimes(4);
+  });
+
   it('should reject a blob whose content size differs from its descriptor', async () => {
     const content = Buffer.from('actual content');
     const digest = `sha256:${createHash('sha256')
@@ -586,7 +651,11 @@ describe('fetchBlob', () => {
     global.fetch = jest.fn().mockResolvedValue({
       ok: true,
       status: 200,
-      arrayBuffer: async () => content.buffer,
+      arrayBuffer: async () =>
+        content.buffer.slice(
+          content.byteOffset,
+          content.byteOffset + content.byteLength,
+        ),
       headers: new Map(),
     });
 
