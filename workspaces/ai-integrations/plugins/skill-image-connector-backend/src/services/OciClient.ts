@@ -35,6 +35,20 @@ function createRequestSignal(signal?: AbortSignal): AbortSignal {
   return signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
 }
 
+async function cancelResponseBody(response: Response): Promise<void> {
+  try {
+    await response.body?.cancel();
+  } catch {
+    // Best effort; the request's failure should remain the reported error.
+  }
+}
+
+function imageReference(imageRef: ImageRef): string {
+  return `${imageRef.registry}/${imageRef.repository}${
+    imageRef.digest ? `@${imageRef.digest}` : `:${imageRef.tag}`
+  }`;
+}
+
 /**
  * Parses an image reference string into its components.
  *
@@ -186,12 +200,7 @@ async function fetchBearerToken(
   if (url.protocol !== 'https:' || url.username || url.password) {
     throw new Error('Registry token realm must use HTTPS without credentials');
   }
-  if (credentials && registryHost && url.hostname !== registryHost) {
-    if (!credentials.tokenRealm) {
-      throw new Error(
-        'Registry token realm differs from the registry host; configure credentials.tokenRealm explicitly',
-      );
-    }
+  if (credentials?.tokenRealm) {
     const configuredRealm = new URL(credentials.tokenRealm);
     if (
       configuredRealm.protocol !== 'https:' ||
@@ -200,6 +209,10 @@ async function fetchBearerToken(
     ) {
       throw new Error('Registry token realm is not the configured token realm');
     }
+  } else if (registryHost && url.hostname !== registryHost) {
+    throw new Error(
+      'Registry token realm differs from the registry host; configure credentials.tokenRealm explicitly',
+    );
   }
   if (challenge.service) {
     url.searchParams.set('service', challenge.service);
@@ -211,18 +224,20 @@ async function fetchBearerToken(
   logger.debug('Requesting bearer token');
 
   const response = await fetch(url.toString(), {
-    signal: createRequestSignal(signal),
+    signal,
     redirect: 'error',
-    headers: credentials
-      ? {
-          Authorization: `Basic ${Buffer.from(
-            `${credentials.username}:${credentials.password}`,
-          ).toString('base64')}`,
-        }
-      : undefined,
+    headers:
+      credentials?.username && credentials.password
+        ? {
+            Authorization: `Basic ${Buffer.from(
+              `${credentials.username}:${credentials.password}`,
+            ).toString('base64')}`,
+          }
+        : undefined,
   });
 
   if (!response.ok) {
+    await cancelResponseBody(response);
     logger.warn(
       `Bearer token request failed: ${response.status} ${response.statusText}`,
     );
@@ -255,9 +270,10 @@ async function registryFetch(
   credentials?: RegistryCredentials,
   signal?: AbortSignal,
 ): Promise<Response> {
+  const requestSignal = createRequestSignal(signal);
   const headers = {
     ...((init.headers ?? {}) as Record<string, string>),
-    ...(credentials
+    ...(credentials?.username && credentials.password
       ? {
           Authorization: `Basic ${Buffer.from(
             `${credentials.username}:${credentials.password}`,
@@ -271,7 +287,7 @@ async function registryFetch(
       ...init,
       headers,
     },
-    signal,
+    requestSignal,
   );
 
   if (response.status !== 401) {
@@ -281,11 +297,7 @@ async function registryFetch(
   const wwwAuth = response.headers.get('www-authenticate');
   // The 401 body is not needed by this client. Cancel it before issuing the
   // token request so undici can reuse the connection instead of retaining it.
-  try {
-    await response.body?.cancel();
-  } catch {
-    // Best effort; the authentication flow can still report its own failure.
-  }
+  await cancelResponseBody(response);
   if (!wwwAuth) {
     return response;
   }
@@ -300,7 +312,7 @@ async function registryFetch(
     logger,
     credentials,
     new URL(url).hostname,
-    signal,
+    requestSignal,
   );
   if (!token) {
     return response;
@@ -316,7 +328,7 @@ async function registryFetch(
         Authorization: `Bearer ${token}`,
       },
     },
-    signal,
+    requestSignal,
   );
 }
 
@@ -331,17 +343,19 @@ async function fetchWithRedirects(
 ): Promise<Response> {
   let currentUrl = new URL(url);
   let headers = { ...((init.headers ?? {}) as Record<string, string>) };
+  const requestSignal = signal ?? createRequestSignal();
 
   for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount++) {
     const response = await fetch(currentUrl.toString(), {
       ...init,
       headers,
       redirect: 'manual',
-      signal: createRequestSignal(signal),
+      signal: requestSignal,
     });
     if (![301, 302, 303, 307, 308].includes(response.status)) {
       return response;
     }
+    await cancelResponseBody(response);
     if (redirectCount === MAX_REDIRECTS) {
       throw new Error('Registry response exceeded the maximum redirect count');
     }
@@ -385,6 +399,7 @@ async function readResponseBuffer(
       throw new Error('Registry response has an invalid Content-Length header');
     }
     if (declaredLength > maxSize) {
+      await cancelResponseBody(response);
       throw new Error(
         `Registry response size ${declaredLength} exceeds maximum allowed size ${maxSize}`,
       );
@@ -472,8 +487,11 @@ export async function fetchManifest(
   );
 
   if (!response.ok) {
+    await cancelResponseBody(response);
     throw new Error(
-      `Failed to fetch manifest for ${imageRef.registry}/${imageRef.repository}:${imageRef.tag}: ${response.status} ${response.statusText}`,
+      `Failed to fetch manifest for ${imageReference(imageRef)}: ${
+        response.status
+      } ${response.statusText}`,
     );
   }
 
@@ -514,7 +532,9 @@ export async function fetchManifest(
     Array.isArray(manifest.manifests)
   ) {
     throw new Error(
-      `Image ${imageRef.registry}/${imageRef.repository}:${imageRef.tag} returned a manifest list (multi-platform image index). ` +
+      `Image ${imageReference(
+        imageRef,
+      )} returned a manifest list (multi-platform image index). ` +
         'This plugin requires a single-platform image manifest. ' +
         'Use a platform-specific tag or digest reference instead.',
     );
@@ -568,6 +588,7 @@ export async function fetchBlob(
   const response = await registryFetch(url, {}, logger, credentials, signal);
 
   if (!response.ok) {
+    await cancelResponseBody(response);
     throw new Error(
       `Failed to fetch blob ${digest} from ${imageRef.registry}/${imageRef.repository}: ${response.status} ${response.statusText}`,
     );
