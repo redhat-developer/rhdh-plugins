@@ -28,6 +28,7 @@ export { formatWithMetricUnit } from './formatMetricUnit';
 export { getDefaultTimeSeriesRange } from './timeSeriesRange';
 export {
   formatAggregatedTimeSeriesErrors,
+  getLatestSuccessfulThresholdEvaluation,
   getSparklineYDomain,
   toAggregationSparklinePoints,
   toMetricSparklinePoints,

@@ -25,7 +25,6 @@ import {
   type MetricTimeSeriesPoint,
   type MetricTimeSeriesResponse,
   type AggregatedMetricTimeSeriesResponse,
-  type ThresholdRule,
   aggregationTypes,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
@@ -110,30 +109,6 @@ const COLLECTOR_DESCRIPTIONS: Record<string, string> = {
   'jira:incidents': 'Collects Jira incidents.',
 };
 
-const DEPLOYMENT_FREQUENCY_RULES: ThresholdRule[] = [
-  { key: 'elite', expression: '>=7', color: 'success.main' },
-  { key: 'medium', expression: '1-7', color: 'warning.main' },
-  { key: 'error', expression: '<1', color: 'error.main' },
-];
-
-const CHANGE_FAILURE_RATE_RULES: ThresholdRule[] = [
-  { key: 'elite', expression: '<5', color: 'success.main' },
-  { key: 'medium', expression: '5-15', color: 'warning.main' },
-  { key: 'low', expression: '>15', color: 'error.main' },
-];
-
-const LEAD_TIME_RULES: ThresholdRule[] = [
-  { key: 'elite', expression: '<24', color: 'success.main' },
-  { key: 'medium', expression: '24-168', color: 'warning.main' },
-  { key: 'low', expression: '>168', color: 'error.main' },
-];
-
-const MTTR_RULES: ThresholdRule[] = [
-  { key: 'elite', expression: '<1', color: 'success.main' },
-  { key: 'medium', expression: '1-24', color: 'warning.main' },
-  { key: 'low', expression: '>24', color: 'error.main' },
-];
-
 const lastNumericPoint = (
   points: MetricTimeSeriesPoint[],
 ): MetricTimeSeriesPoint | undefined =>
@@ -147,15 +122,11 @@ const lastNumericPoints = (
 
 const sparklineMetricResult = ({
   metricId,
-  evaluation,
-  rules,
   title,
   description,
   collectorIds = DORA_COLLECTORS,
 }: {
   metricId: string;
-  evaluation: string;
-  rules: ThresholdRule[];
   title: string;
   description?: string;
   collectorIds?: string[];
@@ -180,8 +151,8 @@ const sparklineMetricResult = ({
       timestamp: latest?.timestamp ?? new Date().toISOString(),
       thresholdResult: {
         status: 'success',
-        evaluation,
-        definition: { rules },
+        evaluation: latest?.thresholdEvaluation ?? null,
+        definition: series.thresholds ?? { rules: [] },
       },
     },
   };
@@ -195,32 +166,22 @@ const sparklineMetricResult = ({
 const mockPluginSparklineMetrics: MetricResult[] = [
   sparklineMetricResult({
     metricId: 'dora.deploymentFrequency',
-    evaluation: 'elite',
-    rules: DEPLOYMENT_FREQUENCY_RULES,
     title: 'DORA - Deployment Frequency (full series + errors)',
   }),
   sparklineMetricResult({
     metricId: 'dora.changeFailureRate',
-    evaluation: 'medium',
-    rules: CHANGE_FAILURE_RATE_RULES,
     title: 'DORA - Change Failure Rate (2 points)',
   }),
   sparklineMetricResult({
     metricId: 'dora.medianLeadTimeForChanges',
-    evaluation: 'low',
-    rules: LEAD_TIME_RULES,
     title: 'DORA - Median Lead Time for Changes (1 point)',
   }),
   sparklineMetricResult({
     metricId: 'dora.meanTimeToRestore',
-    evaluation: 'elite',
-    rules: MTTR_RULES,
     title: 'DORA - Mean Time to Restore (full series + errors)',
   }),
   sparklineMetricResult({
     metricId: 'mock.sparklineEmpty',
-    evaluation: 'elite',
-    rules: DEPLOYMENT_FREQUENCY_RULES,
     title: 'Sparkline (plugin) — empty series',
     description:
       'Plugin-mode fixture with no time-series points. Tests the empty-state card without a database.',
@@ -228,19 +189,21 @@ const mockPluginSparklineMetrics: MetricResult[] = [
   }),
   sparklineMetricResult({
     metricId: 'mock.sparklineAllErrors',
-    evaluation: 'error',
-    rules: DEPLOYMENT_FREQUENCY_RULES,
     title: 'Sparkline (plugin) — all calculation errors',
     description:
       'Plugin-mode fixture where every day is a calculation failure. Tests error-day markers without a database.',
   }),
   sparklineMetricResult({
     metricId: 'mock.sparklineFetchError',
-    evaluation: 'elite',
-    rules: DEPLOYMENT_FREQUENCY_RULES,
     title: 'Sparkline (plugin) — fetch error',
     description:
       'Plugin-mode fixture that rejects the time-series request. Tests the card error panel without a database.',
+  }),
+  sparklineMetricResult({
+    metricId: 'mock.sparklineThresholdsError',
+    title: 'Sparkline (plugin) — thresholdsError',
+    description:
+      'Plugin-mode fixture where entity threshold resolution failed. Tests the thresholdsError banner with plotted values.',
   }),
 ];
 
@@ -328,6 +291,7 @@ export class MockScorecardApi implements ScorecardApi {
    * - `mock.sparklineEmpty` — no points
    * - `mock.sparklineAllErrors` — every point is a calculation failure
    * - `mock.sparklineFetchError` — request fails
+   * - `mock.sparklineThresholdsError` — values present, `thresholdsError` set
    */
   async getMetricTimeSeries({
     entity,
@@ -349,6 +313,19 @@ export class MockScorecardApi implements ScorecardApi {
     }
     if (metricId === 'mock.sparklineEmpty') {
       return { ...series, points: [] };
+    }
+    if (metricId === 'mock.sparklineThresholdsError') {
+      return {
+        metricId: series.metricId,
+        entityRef: series.entityRef,
+        metadata: series.metadata,
+        thresholdsError: 'Error: Merge thresholds failed',
+        points: series.points.map(point =>
+          point.value === null
+            ? point
+            : { ...point, thresholdEvaluation: null },
+        ),
+      };
     }
     if (metricId === 'mock.sparklineAllErrors') {
       return {

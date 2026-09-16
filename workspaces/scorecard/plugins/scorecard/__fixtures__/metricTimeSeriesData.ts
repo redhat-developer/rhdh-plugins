@@ -16,21 +16,74 @@
 
 import { stringifyEntityRef, type Entity } from '@backstage/catalog-model';
 import { subDays } from 'date-fns';
-import type {
-  MetricTimeSeriesPoint,
-  MetricTimeSeriesResponse,
+import {
+  ScorecardThresholdRuleColors,
+  type MetricTimeSeriesPoint,
+  type MetricTimeSeriesResponse,
+  type ThresholdConfig,
+  type ThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
+
+import { getMatchingThresholdKey } from '../src/utils/matchThresholdRule';
 
 type SeriesProfile = {
   title: string;
   description: string;
   unit: string;
   collectorIds: string[];
+  thresholds: ThresholdConfig;
   /** Oldest → newest. `null` is a calculation-error day. */
   dailyValues: Array<number | null>;
 };
 
 const DORA_COLLECTORS = ['github:deploymentWorkflowRuns', 'jira:incidents'];
+
+const DORA_RULE_COLORS = {
+  elite: ScorecardThresholdRuleColors.SUCCESS,
+  medium: ScorecardThresholdRuleColors.WARNING,
+  low: ScorecardThresholdRuleColors.ERROR,
+} as const;
+
+const doraRule = (
+  key: keyof typeof DORA_RULE_COLORS,
+  expression: string,
+): ThresholdRule => ({
+  key,
+  expression,
+  color: DORA_RULE_COLORS[key],
+});
+
+const DEPLOYMENT_FREQUENCY_THRESHOLDS: ThresholdConfig = {
+  rules: [
+    doraRule('elite', '>=7'),
+    doraRule('medium', '1-7'),
+    doraRule('low', '<1'),
+  ],
+};
+
+const CHANGE_FAILURE_RATE_THRESHOLDS: ThresholdConfig = {
+  rules: [
+    doraRule('elite', '<5'),
+    doraRule('medium', '5-15'),
+    doraRule('low', '>15'),
+  ],
+};
+
+const LEAD_TIME_THRESHOLDS: ThresholdConfig = {
+  rules: [
+    doraRule('elite', '<24'),
+    doraRule('medium', '24-168'),
+    doraRule('low', '>168'),
+  ],
+};
+
+const MTTR_THRESHOLDS: ThresholdConfig = {
+  rules: [
+    doraRule('elite', '<1'),
+    doraRule('medium', '1-24'),
+    doraRule('low', '>24'),
+  ],
+};
 
 const SERIES_BY_METRIC_ID: Record<string, SeriesProfile> = {
   'dora.deploymentFrequency': {
@@ -39,6 +92,7 @@ const SERIES_BY_METRIC_ID: Record<string, SeriesProfile> = {
       'Tracks how often code is successfully deployed to production over the past 30 days. Elite performers deploy on demand (multiple times per day).',
     unit: '/week',
     collectorIds: DORA_COLLECTORS,
+    thresholds: DEPLOYMENT_FREQUENCY_THRESHOLDS,
     dailyValues: [
       4.2,
       5.1,
@@ -64,6 +118,7 @@ const SERIES_BY_METRIC_ID: Record<string, SeriesProfile> = {
       'Monitors the percentage of deployments that cause a failure in production over the past 30 days. Elite performers maintain a change failure rate below 5%.',
     unit: '%',
     collectorIds: DORA_COLLECTORS,
+    thresholds: CHANGE_FAILURE_RATE_THRESHOLDS,
     dailyValues: [
       4.5,
       5.8,
@@ -89,6 +144,7 @@ const SERIES_BY_METRIC_ID: Record<string, SeriesProfile> = {
       'Measures the time from code commit to production deployment over the past 30 days. Elite performers have a lead time of less than 24 hours',
     unit: 'h',
     collectorIds: DORA_COLLECTORS,
+    thresholds: LEAD_TIME_THRESHOLDS,
     dailyValues: [
       140,
       165,
@@ -114,6 +170,7 @@ const SERIES_BY_METRIC_ID: Record<string, SeriesProfile> = {
       'Tracks the average time to restore service after an incident over the past 30 days. Elite performers restore service in under one hour.',
     unit: 'h',
     collectorIds: DORA_COLLECTORS,
+    thresholds: MTTR_THRESHOLDS,
     dailyValues: [
       8.5,
       6.2,
@@ -165,6 +222,7 @@ const toPoint = (
   value: number | null,
   timestamp: string,
   dayIndex: number,
+  thresholds: ThresholdConfig,
 ): MetricTimeSeriesPoint => {
   if (value === null) {
     return {
@@ -174,7 +232,11 @@ const toPoint = (
     };
   }
 
-  return { value, timestamp };
+  return {
+    value,
+    timestamp,
+    thresholdEvaluation: getMatchingThresholdKey(value, thresholds) ?? null,
+  };
 };
 
 /**
@@ -207,7 +269,7 @@ export const mockMetricTimeSeriesData = (
   const points = (days.length > 0 ? days : [end]).map((day, index) => {
     const value =
       profile.dailyValues[index % profile.dailyValues.length] ?? null;
-    return toPoint(value, utcDayTimestamp(day), index);
+    return toPoint(value, utcDayTimestamp(day), index, profile.thresholds);
   });
 
   return {
@@ -223,5 +285,6 @@ export const mockMetricTimeSeriesData = (
       defaultVisualization: 'sparkline',
       collectorIds: profile.collectorIds,
     },
+    thresholds: profile.thresholds,
   };
 };

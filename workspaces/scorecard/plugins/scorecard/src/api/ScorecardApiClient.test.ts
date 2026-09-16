@@ -516,6 +516,124 @@ describe('ScorecardApiClient', () => {
       ).rejects.toThrow('Invalid response format from metric time-series API');
     });
 
+    it('should accept optional thresholds, thresholdsError, and per-point thresholdEvaluation', async () => {
+      const withThresholds = {
+        ...validTimeSeries,
+        thresholds: {
+          rules: [{ key: 'elite', expression: '>=7', color: 'success.main' }],
+        },
+        points: [
+          {
+            value: 8,
+            timestamp: '2026-04-27T23:10:00.000Z',
+            thresholdEvaluation: 'elite',
+          },
+          {
+            value: 4,
+            timestamp: '2026-04-28T23:10:00.000Z',
+            thresholdEvaluation: null,
+            error: 'Error: threshold evaluation failed',
+          },
+        ],
+      };
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => withThresholds,
+      });
+
+      await expect(
+        client.getMetricTimeSeries({
+          entity,
+          metricId: 'dora.deploymentFrequency',
+          ...range,
+        }),
+      ).resolves.toEqual(withThresholds);
+    });
+
+    it('should accept a response with thresholdsError and unclassified points', async () => {
+      const withThresholdsError = {
+        ...validTimeSeries,
+        thresholdsError: 'Error: Merge thresholds failed',
+        points: [
+          {
+            value: 8,
+            timestamp: '2026-04-27T23:10:00.000Z',
+            thresholdEvaluation: null,
+          },
+        ],
+      };
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => withThresholdsError,
+      });
+
+      await expect(
+        client.getMetricTimeSeries({
+          entity,
+          metricId: 'dora.deploymentFrequency',
+          ...range,
+        }),
+      ).resolves.toEqual(withThresholdsError);
+    });
+
+    it('should throw when thresholds or thresholdsError have an invalid shape', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...validTimeSeries,
+          thresholds: { rules: [{ key: 'elite' }] },
+        }),
+      });
+
+      await expect(
+        client.getMetricTimeSeries({
+          entity,
+          metricId: 'dora.deploymentFrequency',
+          ...range,
+        }),
+      ).rejects.toThrow('Invalid response format from metric time-series API');
+
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...validTimeSeries,
+          thresholdsError: { message: 'nope' },
+        }),
+      });
+
+      await expect(
+        client.getMetricTimeSeries({
+          entity,
+          metricId: 'dora.deploymentFrequency',
+          ...range,
+        }),
+      ).rejects.toThrow('Invalid response format from metric time-series API');
+    });
+
+    it('should throw when thresholdEvaluation is not a string or null', async () => {
+      fetchApi.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          ...validTimeSeries,
+          points: [
+            {
+              value: 8,
+              timestamp: '2026-04-27T23:10:00.000Z',
+              thresholdEvaluation: 1,
+            },
+          ],
+        }),
+      });
+
+      await expect(
+        client.getMetricTimeSeries({
+          entity,
+          metricId: 'dora.deploymentFrequency',
+          ...range,
+        }),
+      ).rejects.toThrow('Invalid response format from metric time-series API');
+    });
+
     it('should throw on non-OK response', async () => {
       fetchApi.fetch.mockResolvedValue({
         ok: false,

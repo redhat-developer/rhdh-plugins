@@ -41,7 +41,10 @@ import {
   resolveStatusColor,
 } from '../../utils';
 import { toSparklineChartModel } from '../../utils/sparklineChartModel';
-import { toMetricSparklinePoints } from '../../utils/timeSeriesChartData';
+import {
+  getLatestSuccessfulThresholdEvaluation,
+  toMetricSparklinePoints,
+} from '../../utils/timeSeriesChartData';
 import { toCollectorSourceRows } from '../MetricGroupCard/collectorSourceRows';
 import { MISSING_EVALUATION_LABEL } from '../MetricGroupCard/thresholdBucketUtils';
 
@@ -90,11 +93,14 @@ const EntitySparklineCardContent = ({
   } = useMetricCollectors(metric.id, shouldFetchCollectors);
 
   const unit = series?.metadata.unit ?? metric.metadata.unit;
-  const thresholds = metric.result?.thresholdResult;
-  const matchedRule = thresholds?.definition?.rules?.find(
-    rule => rule.key === thresholds.evaluation,
+  const thresholdRules = series?.thresholds?.rules;
+  const matchingThresholdKey = getLatestSuccessfulThresholdEvaluation(
+    series?.points ?? [],
   );
   const fallbackErrorLabel = t('errors.metricDataUnavailable');
+  const thresholdsResolutionError = series?.thresholdsError
+    ? new Error(series.thresholdsError)
+    : undefined;
   const { chartData, chartColor, strokeDasharray, legendItems } = useMemo(
     () =>
       toSparklineChartModel({
@@ -108,31 +114,26 @@ const EntitySparklineCardContent = ({
             { month: 'short', day: 'numeric' },
             locale,
           ),
-        matchingThresholdKey: matchedRule?.key,
+        matchingThresholdKey,
         chartColor: resolveStatusColor(
           theme,
           getStatusConfig({
-            evaluation: thresholds?.evaluation ?? null,
-            thresholdStatus: thresholds?.status,
-            metricStatus: metric.status,
-            thresholdRules: thresholds?.definition?.rules,
+            evaluation: matchingThresholdKey ?? null,
+            thresholdRules,
           }).color,
         ),
         unit,
         theme,
         t,
-        legendRules: thresholds?.definition?.rules,
+        legendRules: thresholdRules,
       }),
     [
       series?.points,
       fallbackErrorLabel,
       locale,
-      matchedRule,
+      matchingThresholdKey,
       theme,
-      thresholds?.evaluation,
-      thresholds?.status,
-      thresholds?.definition?.rules,
-      metric.status,
+      thresholdRules,
       unit,
       t,
     ],
@@ -171,8 +172,8 @@ const EntitySparklineCardContent = ({
       return <ResponseErrorPanel error={seriesError} />;
     }
 
-    if (chartData.length === 0) {
-      return (
+    const chart =
+      chartData.length === 0 ? (
         <Box
           display="flex"
           justifyContent="center"
@@ -183,20 +184,28 @@ const EntitySparklineCardContent = ({
             {t('errors.noDataFound')}
           </Typography>
         </Box>
+      ) : (
+        <SparklineChart
+          data={chartData}
+          color={chartColor}
+          strokeDasharray={strokeDasharray}
+          unit={unit}
+          testId={`sparkline-chart-${metric.id}`}
+          legendItems={legendItems}
+          legendTestId={`sparkline-threshold-legend-${metric.id}`}
+        />
+      );
+
+    if (thresholdsResolutionError) {
+      return (
+        <>
+          <ResponseErrorPanel error={thresholdsResolutionError} />
+          {chartData.length > 0 ? chart : null}
+        </>
       );
     }
 
-    return (
-      <SparklineChart
-        data={chartData}
-        color={chartColor}
-        strokeDasharray={strokeDasharray}
-        unit={unit}
-        testId={`sparkline-chart-${metric.id}`}
-        legendItems={legendItems}
-        legendTestId={`sparkline-threshold-legend-${metric.id}`}
-      />
-    );
+    return chart;
   };
 
   return (

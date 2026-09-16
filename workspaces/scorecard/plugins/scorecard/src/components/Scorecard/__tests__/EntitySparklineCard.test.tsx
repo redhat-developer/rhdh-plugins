@@ -102,6 +102,26 @@ jest.mock('recharts', () => {
 const useMetricTimeSeriesMock = useMetricTimeSeries as jest.Mock;
 const useMetricCollectorsMock = useMetricCollectors as jest.Mock;
 
+const CHANGE_FAILURE_RATE_THRESHOLDS = {
+  rules: [
+    {
+      key: 'elite',
+      expression: '<5',
+      color: ScorecardThresholdRuleColors.SUCCESS,
+    },
+    {
+      key: 'medium',
+      expression: '5-15',
+      color: ScorecardThresholdRuleColors.WARNING,
+    },
+    {
+      key: 'low',
+      expression: '>15',
+      color: ScorecardThresholdRuleColors.ERROR,
+    },
+  ],
+};
+
 const metric: MetricResult = {
   id: 'dora.changeFailureRate',
   status: 'success',
@@ -125,7 +145,7 @@ const metric: MetricResult = {
   },
 };
 
-const lowChangeFailureRateMetric: MetricResult = {
+const snapshotOnlyThresholdMetric: MetricResult = {
   ...metric,
   result: {
     ...metric.result,
@@ -133,38 +153,33 @@ const lowChangeFailureRateMetric: MetricResult = {
     thresholdResult: {
       status: 'success',
       evaluation: 'low',
-      definition: {
-        rules: [
-          {
-            key: 'elite',
-            expression: '<5',
-            color: ScorecardThresholdRuleColors.SUCCESS,
-          },
-          {
-            key: 'medium',
-            expression: '5-15',
-            color: ScorecardThresholdRuleColors.WARNING,
-          },
-          {
-            key: 'low',
-            expression: '>15',
-            color: ScorecardThresholdRuleColors.ERROR,
-          },
-        ],
-      },
+      definition: CHANGE_FAILURE_RATE_THRESHOLDS,
     },
   },
 };
 
-const mockTimeSeries = (metricId: string) => ({
+const mockTimeSeries = (
+  metricId: string,
+  dataOverrides: Record<string, unknown> = {},
+) => ({
   data: {
     metricId,
     entityRef: 'component:default/svc',
     points: [
-      { value: 18, timestamp: '2026-04-27T12:00:00.000Z' },
-      { value: 22, timestamp: '2026-04-30T12:00:00.000Z' },
+      {
+        value: 18,
+        timestamp: '2026-04-27T12:00:00.000Z',
+        thresholdEvaluation: 'low',
+      },
+      {
+        value: 22,
+        timestamp: '2026-04-30T12:00:00.000Z',
+        thresholdEvaluation: 'low',
+      },
     ],
     metadata: metric.metadata,
+    thresholds: CHANGE_FAILURE_RATE_THRESHOLDS,
+    ...dataOverrides,
   },
   isLoading: false,
   error: undefined,
@@ -314,14 +329,14 @@ describe('EntitySparklineCard', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('should show every threshold in the legend with its rule color', () => {
+  it('should show every series threshold in the legend with its rule color', () => {
     useMetricTimeSeriesMock.mockReturnValue(
       mockTimeSeries('dora.changeFailureRate'),
     );
 
     render(
       <EntitySparklineCard
-        metric={lowChangeFailureRateMetric}
+        metric={metric}
         title="DORA - Change Failure Rate"
         description="Change failure rate"
       />,
@@ -338,26 +353,57 @@ describe('EntitySparklineCard', () => {
     expect(getLegendColor('low')).toHaveAttribute('stroke', '#d32f2f');
   });
 
-  it('should keep the full legend when the matched threshold changes', () => {
+  it('should ignore snapshot thresholdResult when building the legend', () => {
     useMetricTimeSeriesMock.mockReturnValue(
-      mockTimeSeries('dora.changeFailureRate'),
-    );
-
-    const eliteMetric: MetricResult = {
-      ...lowChangeFailureRateMetric,
-      result: {
-        ...lowChangeFailureRateMetric.result,
-        value: 2,
-        thresholdResult: {
-          ...lowChangeFailureRateMetric.result.thresholdResult,
-          evaluation: 'elite',
+      mockTimeSeries('dora.changeFailureRate', {
+        thresholds: {
+          rules: [
+            {
+              key: 'elite',
+              expression: '<5',
+              color: ScorecardThresholdRuleColors.SUCCESS,
+            },
+          ],
         },
-      },
-    };
+        points: [
+          {
+            value: 2,
+            timestamp: '2026-04-30T12:00:00.000Z',
+            thresholdEvaluation: 'elite',
+          },
+        ],
+      }),
+    );
 
     render(
       <EntitySparklineCard
-        metric={eliteMetric}
+        metric={snapshotOnlyThresholdMetric}
+        title="DORA - Change Failure Rate"
+        description="Change failure rate"
+      />,
+    );
+
+    expect(screen.getByText('Elite (<5%)')).toBeInTheDocument();
+    expect(screen.queryByText('Medium (5-15%)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Low (>15%)')).not.toBeInTheDocument();
+  });
+
+  it('should keep the full series legend when the matched threshold changes', () => {
+    useMetricTimeSeriesMock.mockReturnValue(
+      mockTimeSeries('dora.changeFailureRate', {
+        points: [
+          {
+            value: 2,
+            timestamp: '2026-04-30T12:00:00.000Z',
+            thresholdEvaluation: 'elite',
+          },
+        ],
+      }),
+    );
+
+    render(
+      <EntitySparklineCard
+        metric={metric}
         title="DORA - Change Failure Rate"
         description="Change failure rate"
       />,
@@ -366,6 +412,40 @@ describe('EntitySparklineCard', () => {
     expect(screen.getByText('Elite (<5%)')).toBeInTheDocument();
     expect(screen.getByText('Medium (5-15%)')).toBeInTheDocument();
     expect(screen.getByText('Low (>15%)')).toBeInTheDocument();
+  });
+
+  it('should show thresholdsError and still render the chart when points exist', () => {
+    useMetricTimeSeriesMock.mockReturnValue(
+      mockTimeSeries('dora.changeFailureRate', {
+        thresholds: undefined,
+        thresholdsError: 'Error: Merge thresholds failed',
+        points: [
+          {
+            value: 8,
+            timestamp: '2026-04-27T12:00:00.000Z',
+            thresholdEvaluation: null,
+          },
+        ],
+      }),
+    );
+
+    render(
+      <EntitySparklineCard
+        metric={metric}
+        title="DORA - Change Failure Rate"
+        description="Change failure rate"
+      />,
+    );
+
+    expect(screen.getByTestId('error-panel')).toHaveTextContent(
+      'Error: Merge thresholds failed',
+    );
+    expect(
+      screen.getByTestId('sparkline-chart-dora.changeFailureRate'),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('sparkline-threshold-legend-dora.changeFailureRate'),
+    ).not.toBeInTheDocument();
   });
 
   it('should open the data sources dialog with collectors after the menu click', () => {
@@ -389,7 +469,7 @@ describe('EntitySparklineCard', () => {
 
     render(
       <EntitySparklineCard
-        metric={lowChangeFailureRateMetric}
+        metric={metric}
         title="DORA - Change Failure Rate"
         description="Change failure rate"
       />,

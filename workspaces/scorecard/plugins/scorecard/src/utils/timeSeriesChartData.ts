@@ -17,7 +17,7 @@
 import type {
   MetricTimeSeriesPoint,
   ScalarAggregatedTimeSeriesPoint,
-  TimeSeriesPointError,
+  AggregatedTimeSeriesPointError,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 export type SparklineChartPoint = {
@@ -85,7 +85,7 @@ const interpolatePlotValue = (
 };
 
 export const formatAggregatedTimeSeriesErrors = (
-  errors?: TimeSeriesPointError[],
+  errors?: AggregatedTimeSeriesPointError[],
 ): string | undefined => {
   if (!errors?.length) {
     return undefined;
@@ -96,6 +96,30 @@ export const formatAggregatedTimeSeriesErrors = (
       error.count > 1 ? `${error.message} (${error.count})` : error.message,
     )
     .join('; ');
+};
+
+/**
+ * Threshold key from the latest successful point.
+ * Skips trailing `value: null` days;
+ * does not fall back to older points.
+ */
+export const getLatestSuccessfulThresholdEvaluation = (
+  points: MetricTimeSeriesPoint[],
+): string | undefined => {
+  for (let index = points.length - 1; index >= 0; index -= 1) {
+    const point = points[index];
+    if (point.value === null) {
+      continue;
+    }
+    if (
+      typeof point.thresholdEvaluation === 'string' &&
+      point.thresholdEvaluation.length > 0
+    ) {
+      return point.thresholdEvaluation;
+    }
+    return undefined;
+  }
+  return undefined;
 };
 
 /**

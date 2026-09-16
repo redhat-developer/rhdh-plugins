@@ -29,8 +29,10 @@ import type {
   MetricTimeSeriesPoint,
   AggregatedMetricTimeSeriesResponse,
   ScalarAggregatedTimeSeriesPoint,
-  TimeSeriesPointError,
+  AggregatedTimeSeriesPointError,
   CollectorMetadata,
+  ThresholdConfig,
+  ThresholdRule,
 } from '@red-hat-developer-hub/backstage-plugin-scorecard-common';
 
 import type { GetAggregatedScorecardEntitiesOptions } from '../components/types';
@@ -483,7 +485,9 @@ export class ScorecardApiClient implements ScorecardApi {
         typeof data.metricId !== 'string' ||
         typeof data.entityRef !== 'string' ||
         !Array.isArray(data.points) ||
-        !data.points.every(isMetricTimeSeriesPoint)
+        !data.points.every(isMetricTimeSeriesPoint) ||
+        !isOptionalThresholds(data.thresholds) ||
+        !isOptionalThresholdsError(data.thresholdsError)
       ) {
         throw new TypeError(
           'Invalid response format from metric time-series API',
@@ -574,6 +578,36 @@ const hasTimeSeriesPointShape = (
   typeof value.timestamp === 'string' &&
   isValidValue(value.value);
 
+function isThresholdRule(value: unknown): value is ThresholdRule {
+  return (
+    isRecord(value) &&
+    typeof value.key === 'string' &&
+    typeof value.expression === 'string' &&
+    (value.color === undefined || typeof value.color === 'string') &&
+    (value.icon === undefined || typeof value.icon === 'string')
+  );
+}
+
+function isThresholdConfig(value: unknown): value is ThresholdConfig {
+  return (
+    isRecord(value) &&
+    Array.isArray(value.rules) &&
+    value.rules.every(isThresholdRule)
+  );
+}
+
+function isOptionalThresholds(
+  value: unknown,
+): value is ThresholdConfig | undefined {
+  return value === undefined || isThresholdConfig(value);
+}
+
+function isOptionalThresholdsError(
+  value: unknown,
+): value is string | undefined {
+  return value === undefined || typeof value === 'string';
+}
+
 function isMetricTimeSeriesPoint(
   value: unknown,
 ): value is MetricTimeSeriesPoint {
@@ -583,11 +617,16 @@ function isMetricTimeSeriesPoint(
       pointValue =>
         isNullableFiniteNumber(pointValue) || typeof pointValue === 'boolean',
     ) &&
-    (value.error === undefined || typeof value.error === 'string')
+    (value.error === undefined || typeof value.error === 'string') &&
+    (value.thresholdEvaluation === undefined ||
+      value.thresholdEvaluation === null ||
+      typeof value.thresholdEvaluation === 'string')
   );
 }
 
-function isTimeSeriesPointError(value: unknown): value is TimeSeriesPointError {
+function isTimeSeriesPointError(
+  value: unknown,
+): value is AggregatedTimeSeriesPointError {
   return (
     isRecord(value) &&
     typeof value.message === 'string' &&

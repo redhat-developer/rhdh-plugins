@@ -16,6 +16,7 @@
 
 import {
   formatAggregatedTimeSeriesErrors,
+  getLatestSuccessfulThresholdEvaluation,
   getSparklineYDomain,
   toAggregationSparklinePoints,
   toMetricSparklinePoints,
@@ -207,6 +208,72 @@ describe('toAggregationSparklinePoints', () => {
         error: 'Unavailable',
       },
     ]);
+  });
+});
+
+describe('getLatestSuccessfulThresholdEvaluation', () => {
+  it('should return the latest successful point thresholdEvaluation', () => {
+    expect(
+      getLatestSuccessfulThresholdEvaluation([
+        {
+          value: 4,
+          timestamp: '2026-04-27T00:00:00.000Z',
+          thresholdEvaluation: 'elite',
+        },
+        {
+          value: 22,
+          timestamp: '2026-04-28T00:00:00.000Z',
+          thresholdEvaluation: 'low',
+        },
+      ]),
+    ).toBe('low');
+  });
+
+  it('should skip trailing calculation-error days', () => {
+    expect(
+      getLatestSuccessfulThresholdEvaluation([
+        {
+          value: 8,
+          timestamp: '2026-04-27T00:00:00.000Z',
+          thresholdEvaluation: 'elite',
+        },
+        {
+          value: null,
+          timestamp: '2026-04-28T00:00:00.000Z',
+          error: 'GitHub API 500',
+        },
+      ]),
+    ).toBe('elite');
+  });
+
+  it('should not fall back to older days when the latest successful point is unclassified', () => {
+    expect(
+      getLatestSuccessfulThresholdEvaluation([
+        {
+          value: 8,
+          timestamp: '2026-04-27T00:00:00.000Z',
+          thresholdEvaluation: 'elite',
+        },
+        {
+          value: 4,
+          timestamp: '2026-04-28T00:00:00.000Z',
+          thresholdEvaluation: null,
+          error: 'Error: threshold evaluation failed',
+        },
+      ]),
+    ).toBeUndefined();
+  });
+
+  it('should return undefined when every point is a calculation error', () => {
+    expect(
+      getLatestSuccessfulThresholdEvaluation([
+        {
+          value: null,
+          timestamp: '2026-04-27T00:00:00.000Z',
+          error: 'GitHub API 500',
+        },
+      ]),
+    ).toBeUndefined();
   });
 });
 
