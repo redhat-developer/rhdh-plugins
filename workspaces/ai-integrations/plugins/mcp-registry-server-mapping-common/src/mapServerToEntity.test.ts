@@ -16,7 +16,13 @@
 
 /* eslint-disable no-script-url */
 
-import { mapServerToEntity } from './mapServerToEntity';
+import {
+  mapServerToEntity,
+  validateRequiredFields,
+  mapRemotes,
+  buildLinks,
+  trackConsumedRemotePaths,
+} from './mapServerToEntity';
 import type { McpServerDocument } from './types';
 
 /** Minimal valid server.json document for reuse across tests. */
@@ -31,6 +37,220 @@ function makeMinimalDoc(
     ...overrides,
   };
 }
+
+describe('validateRequiredFields', () => {
+  it('does not throw for a valid document', () => {
+    expect(() => validateRequiredFields(makeMinimalDoc())).not.toThrow();
+  });
+
+  it('throws for missing name', () => {
+    expect(() => validateRequiredFields(makeMinimalDoc({ name: '' }))).toThrow(
+      /missing required field.*name/i,
+    );
+  });
+
+  it('throws for missing description', () => {
+    expect(() =>
+      validateRequiredFields(makeMinimalDoc({ description: '' })),
+    ).toThrow(/missing required field.*description/i);
+  });
+
+  it('throws for missing version', () => {
+    expect(() =>
+      validateRequiredFields(makeMinimalDoc({ version: '' })),
+    ).toThrow(/missing required field.*version/i);
+  });
+
+  it('throws for multiple missing fields', () => {
+    expect(() =>
+      validateRequiredFields({
+        name: '',
+        description: '',
+        version: '',
+      } as McpServerDocument),
+    ).toThrow(/name.*description.*version/);
+  });
+
+  it('error references the MCP server schema', () => {
+    expect(() => validateRequiredFields(makeMinimalDoc({ name: '' }))).toThrow(
+      /server\.schema\.json/,
+    );
+  });
+});
+
+describe('mapRemotes', () => {
+  it('returns valid remotes in source order', () => {
+    const result = mapRemotes(
+      makeMinimalDoc({
+        remotes: [
+          { type: 'streamable-http', url: 'https://a.com/mcp' },
+          { type: 'sse', url: 'https://b.com/mcp' },
+        ],
+      }),
+    );
+    expect(result).toEqual([
+      { type: 'streamable-http', url: 'https://a.com/mcp' },
+      { type: 'sse', url: 'https://b.com/mcp' },
+    ]);
+  });
+
+  it('filters out remotes with refused URLs', () => {
+    const result = mapRemotes(
+      makeMinimalDoc({
+        remotes: [
+          { type: 'valid', url: 'https://good.com/mcp' },
+          { type: 'bad', url: 'javascript:alert(1)' },
+        ],
+      }),
+    );
+    expect(result).toEqual([{ type: 'valid', url: 'https://good.com/mcp' }]);
+  });
+
+  it('returns D8 placeholder when no remotes declared', () => {
+    const result = mapRemotes(
+      makeMinimalDoc({
+        remotes: undefined,
+        websiteUrl: 'https://example.com',
+      }),
+    );
+    expect(result).toEqual([{ type: 'undefined', url: 'https://example.com' }]);
+  });
+
+  it('returns D8 placeholder when remotes is empty', () => {
+    const result = mapRemotes(
+      makeMinimalDoc({
+        remotes: [],
+        websiteUrl: 'https://example.com',
+      }),
+    );
+    expect(result).toEqual([{ type: 'undefined', url: 'https://example.com' }]);
+  });
+
+  it('throws when no remotes and websiteUrl absent', () => {
+    expect(() =>
+      mapRemotes(makeMinimalDoc({ remotes: undefined, websiteUrl: undefined })),
+    ).toThrow(/no valid remotes.*websiteUrl/i);
+  });
+
+  it('skips remote entries with empty string type', () => {
+    const result = mapRemotes(
+      makeMinimalDoc({
+        remotes: [
+          { type: '', url: 'https://a.com/mcp' },
+          { type: 'sse', url: 'https://b.com/mcp' },
+        ],
+        websiteUrl: 'https://example.com',
+      }),
+    );
+    expect(result).toEqual([{ type: 'sse', url: 'https://b.com/mcp' }]);
+  });
+});
+
+describe('buildLinks', () => {
+  it('returns empty when no websiteUrl or repository', () => {
+    const result = buildLinks(makeMinimalDoc());
+    expect(result.links).toHaveLength(0);
+    expect(result.consumedPaths).toHaveLength(0);
+  });
+
+  it('emits Website link when websiteUrl passes D11', () => {
+    const result = buildLinks(
+      makeMinimalDoc({ websiteUrl: 'https://weather.example.com' }),
+    );
+    expect(result.links).toContainEqual({
+      url: 'https://weather.example.com',
+      title: 'Website',
+    });
+    expect(result.consumedPaths).toContain('websiteUrl');
+  });
+
+  it('consumes websiteUrl even when refused by D11', () => {
+    const result = buildLinks(
+      makeMinimalDoc({ websiteUrl: 'javascript:alert(1)' }),
+    );
+    expect(result.links).toHaveLength(0);
+    expect(result.consumedPaths).toContain('websiteUrl');
+  });
+
+  it('emits Source Code link and annotations for valid repository', () => {
+    const result = buildLinks(
+      makeMinimalDoc({
+        repository: {
+          url: 'https://github.com/org/repo',
+          source: 'github',
+          subfolder: 'src/server',
+        },
+      }),
+    );
+    expect(result.links).toContainEqual({
+      url: 'https://github.com/org/repo/tree/HEAD/src/server',
+      title: 'Source Code',
+    });
+    expect(result.annotations['backstage.io/source-location']).toBe(
+      'url:https://github.com/org/repo/tree/HEAD/src/server',
+    );
+    expect(result.consumedPaths).toContain('repository.url');
+    expect(result.reservedAnnotationKeys).toContain(
+      'backstage.io/source-location',
+    );
+  });
+
+  it('consumes repository.url even when refused by D11', () => {
+    const result = buildLinks(
+      makeMinimalDoc({
+        repository: {
+          url: 'data:text/html,<script>alert(1)</script>',
+          source: 'github',
+        },
+      }),
+    );
+    expect(result.links).toHaveLength(0);
+    expect(result.consumedPaths).toContain('repository.url');
+    expect(result.reservedAnnotationKeys).not.toContain(
+      'backstage.io/source-location',
+    );
+  });
+});
+
+describe('trackConsumedRemotePaths', () => {
+  it('tracks type and url for all remotes', () => {
+    const paths = trackConsumedRemotePaths(
+      makeMinimalDoc({
+        remotes: [
+          { type: 'streamable-http', url: 'https://a.com/mcp' },
+          { type: 'sse', url: 'https://b.com/mcp' },
+        ],
+      }),
+    );
+    expect(paths).toContain('remotes.0.type');
+    expect(paths).toContain('remotes.0.url');
+    expect(paths).toContain('remotes.1.type');
+    expect(paths).toContain('remotes.1.url');
+  });
+
+  it('tracks refused remote URLs symmetrically', () => {
+    const paths = trackConsumedRemotePaths(
+      makeMinimalDoc({
+        remotes: [
+          { type: 'valid', url: 'https://good.com/mcp' },
+          { type: 'bad', url: 'javascript:alert(1)' },
+        ],
+      }),
+    );
+    // Both remote URLs are consumed regardless of D11 outcome
+    expect(paths).toContain('remotes.0.url');
+    expect(paths).toContain('remotes.1.url');
+    expect(paths).toContain('remotes.0.type');
+    expect(paths).toContain('remotes.1.type');
+  });
+
+  it('returns empty when no remotes', () => {
+    const paths = trackConsumedRemotePaths(
+      makeMinimalDoc({ remotes: undefined }),
+    );
+    expect(paths).toHaveLength(0);
+  });
+});
 
 describe('mapServerToEntity', () => {
   describe('entity shape', () => {
@@ -597,7 +817,7 @@ describe('mapServerToEntity', () => {
       );
 
       const keys = Object.keys(entity.metadata.annotations);
-      const sortedKeys = [...keys].sort();
+      const sortedKeys = [...keys].sort((a, b) => a.localeCompare(b));
       expect(keys).toEqual(sortedKeys);
     });
   });
@@ -664,9 +884,11 @@ describe('mapServerToEntity', () => {
         }),
       );
 
-      expect(consumedPaths).toEqual([...consumedPaths].sort());
+      expect(consumedPaths).toEqual(
+        [...consumedPaths].sort((a, b) => a.localeCompare(b)),
+      );
       expect(reservedAnnotationKeys).toEqual(
-        [...reservedAnnotationKeys].sort(),
+        [...reservedAnnotationKeys].sort((a, b) => a.localeCompare(b)),
       );
     });
 

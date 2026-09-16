@@ -14,14 +14,23 @@
  * limitations under the License.
  */
 
+import type {
+  McpServerApiEntity,
+  McpServerRemote,
+} from '@backstage/catalog-model/alpha';
+
+export type { McpServerApiEntity, McpServerRemote };
+
 /**
  * A remote transport entry from MCP Registry server.json.
  *
+ * Extends the Backstage {@link McpServerRemote} with optional
+ * source-document fields that the direct mapping does not carry
+ * through to the entity.
+ *
  * @public
  */
-export interface McpServerRemote {
-  type: string;
-  url: string;
+export interface McpRegistryRemote extends McpServerRemote {
   headers?: unknown[];
   variables?: unknown;
 }
@@ -52,7 +61,7 @@ export interface McpServerDocument {
   version: string;
   websiteUrl?: string;
   repository?: McpServerRepository;
-  remotes?: McpServerRemote[];
+  remotes?: McpRegistryRemote[];
   [key: string]: unknown;
 }
 
@@ -68,40 +77,6 @@ export interface McpServerMappingDefaults {
   owner?: string;
   /** Entity lifecycle (default: 'production'). */
   lifecycle?: string;
-}
-
-/**
- * A remote entry on the produced API entity.
- *
- * @public
- */
-export interface McpServerEntityRemote {
-  type: string;
-  url: string;
-}
-
-/**
- * The produced Backstage API entity with spec.type: mcp-server.
- *
- * @public
- */
-export interface McpServerApiEntity {
-  apiVersion: 'backstage.io/v1alpha1';
-  kind: 'API';
-  metadata: {
-    name: string;
-    title?: string;
-    description: string;
-    tags: string[];
-    links?: Array<{ url: string; title: string }>;
-    annotations: Record<string, string>;
-  };
-  spec: {
-    type: 'mcp-server';
-    lifecycle: string;
-    owner: string;
-    remotes: McpServerEntityRemote[];
-  };
 }
 
 /**

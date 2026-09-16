@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
+import type { McpServerRemote } from '@backstage/catalog-model/alpha';
 import type {
   McpServerDocument,
   McpServerMappingDefaults,
   McpServerMappingResult,
-  McpServerEntityRemote,
   McpServerApiEntity,
 } from './types';
 import { deriveMetadataName } from './identity';
@@ -27,8 +27,10 @@ import { computeRepositoryUrl } from './repository';
 
 /**
  * Validate required source fields and throw actionable errors.
+ *
+ * @public
  */
-function validateRequiredFields(doc: McpServerDocument): void {
+export function validateRequiredFields(doc: McpServerDocument): void {
   const missing: string[] = [];
 
   if (doc.name === undefined || doc.name === null || doc.name === '') {
@@ -61,13 +63,15 @@ function validateRequiredFields(doc: McpServerDocument): void {
  *
  * Returns the array of entity remotes. Throws when upstream
  * minItems: 1 cannot be satisfied.
+ *
+ * @public
  */
-function mapRemotes(doc: McpServerDocument): McpServerEntityRemote[] {
+export function mapRemotes(doc: McpServerDocument): McpServerRemote[] {
   const sourceRemotes = doc.remotes ?? [];
 
   // Filter remotes whose url passes D11 and type is a non-empty string,
   // preserving source order
-  const validRemotes: McpServerEntityRemote[] = [];
+  const validRemotes: McpServerRemote[] = [];
   for (const remote of sourceRemotes) {
     if (
       typeof remote.type === 'string' &&
@@ -106,49 +110,25 @@ function mapRemotes(doc: McpServerDocument): McpServerEntityRemote[] {
   );
 }
 
+/** Intermediate result from building links and their tracking data. */
+interface LinksResult {
+  links: Array<{ url: string; title: string }>;
+  consumedPaths: string[];
+  reservedAnnotationKeys: string[];
+  annotations: Record<string, string>;
+}
+
 /**
- * Transform one MCP Registry server.json document into one Backstage
- * API entity with spec.type: mcp-server.
- *
- * Pure function: no I/O, no timestamps, no randomness.
- * Deterministic: identical inputs produce byte-identical output.
+ * Build metadata links, associated annotations, and consumed-path
+ * tracking for websiteUrl and repository fields.
  *
  * @public
  */
-export function mapServerToEntity(
-  doc: McpServerDocument,
-  defaults?: McpServerMappingDefaults,
-): McpServerMappingResult {
-  // Step 1: Validate required fields
-  validateRequiredFields(doc);
-
-  // Step 2: Resolve caller defaults
-  const effectiveOwner = defaults?.owner ?? 'unknown';
-  const effectiveLifecycle = defaults?.lifecycle ?? 'production';
-
-  // Step 3: Derive identity
-  const metadataName = deriveMetadataName(
-    doc.name,
-    doc.version,
-    defaults?.prefix,
-  );
-
-  // Step 4: Build annotations (sorted for determinism)
-  const annotations: Record<string, string> = {};
-
-  // Identity annotations
-  annotations['modelcontextprotocol.io/name'] = doc.name;
-  annotations['modelcontextprotocol.io/version'] = doc.version;
-
-  // Track consumed paths and reserved keys
-  const consumedPaths: string[] = ['name', 'description', 'version'];
-  const reservedAnnotationKeys: string[] = [
-    'modelcontextprotocol.io/name',
-    'modelcontextprotocol.io/version',
-  ];
-
-  // Step 5: Build links
+export function buildLinks(doc: McpServerDocument): LinksResult {
   const links: Array<{ url: string; title: string }> = [];
+  const consumedPaths: string[] = [];
+  const reservedAnnotationKeys: string[] = [];
+  const annotations: Record<string, string> = {};
 
   // websiteUrl → Website link (D11)
   if (
@@ -190,6 +170,77 @@ export function mapServerToEntity(
     consumedPaths.push('repository.url');
   }
 
+  return { links, consumedPaths, reservedAnnotationKeys, annotations };
+}
+
+/**
+ * Track consumed remote paths: type and url of all remotes are consumed
+ * regardless of D11 outcome (symmetric with websiteUrl consumption).
+ * Headers and variables are NOT consumed — they go to projection.
+ *
+ * @public
+ */
+export function trackConsumedRemotePaths(doc: McpServerDocument): string[] {
+  const consumedPaths: string[] = [];
+  if (doc.remotes) {
+    for (let i = 0; i < doc.remotes.length; i++) {
+      const remote = doc.remotes[i];
+      consumedPaths.push(`remotes.${i}.type`);
+      // Consume remote URL regardless of D11 outcome — symmetric with
+      // websiteUrl consumption (present but refused → still consumed)
+      if (remote.url !== undefined && remote.url !== null) {
+        consumedPaths.push(`remotes.${i}.url`);
+      }
+    }
+  }
+  return consumedPaths;
+}
+
+/**
+ * Transform one MCP Registry server.json document into one Backstage
+ * API entity with spec.type: mcp-server.
+ *
+ * Pure function: no I/O, no timestamps, no randomness.
+ * Deterministic: identical inputs produce byte-identical output.
+ *
+ * @public
+ */
+export function mapServerToEntity(
+  doc: McpServerDocument,
+  defaults?: McpServerMappingDefaults,
+): McpServerMappingResult {
+  // Step 1: Validate required fields
+  validateRequiredFields(doc);
+
+  // Step 2: Resolve caller defaults
+  const effectiveOwner = defaults?.owner ?? 'unknown';
+  const effectiveLifecycle = defaults?.lifecycle ?? 'production';
+
+  // Step 3: Derive identity
+  const metadataName = deriveMetadataName(
+    doc.name,
+    doc.version,
+    defaults?.prefix,
+  );
+
+  // Step 4: Build identity annotations
+  const annotations: Record<string, string> = {};
+  annotations['modelcontextprotocol.io/name'] = doc.name;
+  annotations['modelcontextprotocol.io/version'] = doc.version;
+
+  const consumedPaths: string[] = ['name', 'description', 'version'];
+  const reservedAnnotationKeys: string[] = [
+    'modelcontextprotocol.io/name',
+    'modelcontextprotocol.io/version',
+  ];
+
+  // Step 5: Build links, repository annotations, and track consumed paths
+  const linksResult = buildLinks(doc);
+  const links = linksResult.links;
+  consumedPaths.push(...linksResult.consumedPaths);
+  reservedAnnotationKeys.push(...linksResult.reservedAnnotationKeys);
+  Object.assign(annotations, linksResult.annotations);
+
   // title is consumed
   if (doc.title !== undefined && doc.title !== null) {
     consumedPaths.push('title');
@@ -198,22 +249,14 @@ export function mapServerToEntity(
   // Step 6: Map remotes
   const specRemotes = mapRemotes(doc);
 
-  // Track consumed remote paths: type and url of all remotes are consumed
-  // regardless of D11 outcome (symmetric with websiteUrl consumption).
-  // Headers and variables are NOT consumed — they go to projection.
-  if (doc.remotes) {
-    for (let i = 0; i < doc.remotes.length; i++) {
-      const remote = doc.remotes[i];
-      consumedPaths.push(`remotes.${i}.type`);
-      if (remote.url !== undefined && remote.url !== null) {
-        consumedPaths.push(`remotes.${i}.url`);
-      }
-    }
-  }
+  // Track consumed remote paths symmetrically
+  consumedPaths.push(...trackConsumedRemotePaths(doc));
 
   // Step 7: Sort annotation keys for determinism
   const sortedAnnotations: Record<string, string> = {};
-  for (const key of Object.keys(annotations).sort()) {
+  for (const key of Object.keys(annotations).sort((a, b) =>
+    a.localeCompare(b),
+  )) {
     sortedAnnotations[key] = annotations[key];
   }
 
@@ -246,7 +289,9 @@ export function mapServerToEntity(
 
   return {
     entity,
-    consumedPaths: consumedPaths.sort(),
-    reservedAnnotationKeys: reservedAnnotationKeys.sort(),
+    consumedPaths: consumedPaths.sort((a, b) => a.localeCompare(b)),
+    reservedAnnotationKeys: reservedAnnotationKeys.sort((a, b) =>
+      a.localeCompare(b),
+    ),
   };
 }

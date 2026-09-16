@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 
 /** Maximum length for Backstage metadata.name. */
 const MAX_NAME_LENGTH = 63;
@@ -66,17 +66,13 @@ function normalizeBoundaries(s: string): string {
   const chars = s.split('');
 
   // Fix leading non-alphanumeric
-  while (chars.length > 0 && !/^[a-z0-9]$/.test(chars[0])) {
+  if (chars.length > 0 && !/^[a-z0-9]$/.test(chars[0])) {
     chars[0] = 'x';
-    // After replacement, check again — but since 'x' is alphanumeric, this loop
-    // will exit after one replacement at most.
-    break;
   }
 
   // Fix trailing non-alphanumeric
-  while (chars.length > 0 && !/^[a-z0-9]$/.test(chars[chars.length - 1])) {
+  if (chars.length > 0 && !/^[a-z0-9]$/.test(chars.at(chars.length - 1)!)) {
     chars[chars.length - 1] = 'x';
-    break;
   }
 
   return chars.join('');

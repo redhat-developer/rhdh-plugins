@@ -24,13 +24,19 @@
 export type {
   McpServerDocument,
   McpServerRemote,
+  McpRegistryRemote,
   McpServerRepository,
   McpServerMappingDefaults,
-  McpServerEntityRemote,
   McpServerApiEntity,
   McpServerMappingResult,
 } from './types';
-export { mapServerToEntity } from './mapServerToEntity';
+export {
+  mapServerToEntity,
+  validateRequiredFields,
+  mapRemotes,
+  buildLinks,
+  trackConsumedRemotePaths,
+} from './mapServerToEntity';
 export { isAllowedUrl } from './urlPolicy';
 export {
   deriveMetadataName,
