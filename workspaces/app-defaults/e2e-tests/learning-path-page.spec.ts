@@ -29,8 +29,6 @@ test.describe('Learning Paths', () => {
 
     await page.goto('/');
     await page.getByRole('button', { name: 'Enter' }).click();
-    await expect(page.getByRole('link', { name: 'Home' })).toBeVisible();
-
     await switchToLocale(page, locale);
   });
 

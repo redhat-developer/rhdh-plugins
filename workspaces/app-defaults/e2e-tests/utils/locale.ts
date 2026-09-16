@@ -42,10 +42,11 @@ export async function switchToLocale(
   }
 
   const displayName = getLocaleDisplayName(locale);
+  const settingsLink = page.getByRole('link', { name: 'Settings' });
 
-  await page.waitForLoadState('domcontentloaded');
-  await page.getByRole('link', { name: 'Settings' }).click();
+  await settingsLink.waitFor({ state: 'visible', timeout: 10_000 });
+  await settingsLink.click();
   await page.getByRole('button', { name: 'English' }).click();
   await page.getByRole('option', { name: displayName }).click();
-  await page.locator('a').filter({ hasText: 'Home' }).click();
+  await page.goto('/');
 }

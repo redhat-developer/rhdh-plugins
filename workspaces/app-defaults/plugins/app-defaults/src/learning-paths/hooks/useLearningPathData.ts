@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useApi } from '@backstage/core-plugin-api';
 
 import { learningPathApiRef } from '../api/LearningPathApiClient';
-import { parseLearningPathLinks } from '../api/parseLearningPathLinks';
+import { getLearningPathFallbackData } from '../api/getLearningPathFallbackData';
 import { LearningPathLink } from '../types';
 
 /** @internal */
@@ -32,16 +32,6 @@ export const useLearningPathData = (): {
   const [data, setData] = useState<LearningPathLink[]>();
   const [error, setError] = useState<Error>();
   const client = useApi(learningPathApiRef);
-
-  const fetchFallbackData = useCallback(async () => {
-    const res = await fetch('/learning-paths/data.json');
-    if (!res.ok) {
-      throw new Error(
-        `failed to fetch fallback data, status ${res.status}: ${res.statusText}`,
-      );
-    }
-    return parseLearningPathLinks(await res.json());
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -59,11 +49,11 @@ export const useLearningPathData = (): {
       } catch (apiError) {
         // eslint-disable-next-line no-console
         console.warn(
-          'Learning paths proxy request failed, using static fallback data.',
+          'Learning paths proxy request failed, using bundled fallback data.',
           apiError,
         );
         try {
-          const fallbackData = await fetchFallbackData();
+          const fallbackData = getLearningPathFallbackData();
           if (!cancelled) {
             setData(fallbackData);
             setError(undefined);
@@ -92,7 +82,7 @@ export const useLearningPathData = (): {
     return () => {
       cancelled = true;
     };
-  }, [client, fetchFallbackData]);
+  }, [client]);
 
   return { data, error, isLoading };
 };

@@ -25,6 +25,10 @@ jest.mock('@backstage/core-plugin-api', () => ({
   useApi: jest.fn(),
 }));
 
+const mockClient = {
+  getLearningPathData: jest.fn(),
+};
+
 describe('useLearningPathData', () => {
   const learningPathData = [
     {
@@ -37,9 +41,8 @@ describe('useLearningPathData', () => {
   ];
 
   beforeEach(() => {
-    (useApi as jest.Mock).mockReturnValue({
-      getLearningPathData: jest.fn(() => Promise.resolve(learningPathData)),
-    });
+    mockClient.getLearningPathData.mockResolvedValue(learningPathData);
+    (useApi as jest.Mock).mockReturnValue(mockClient);
     jest.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
@@ -59,91 +62,21 @@ describe('useLearningPathData', () => {
     });
   });
 
-  it('handles API and fallback errors', async () => {
-    (useApi as jest.Mock).mockReturnValue({
-      getLearningPathData: jest.fn(() =>
-        Promise.reject(new Error('API Error')),
-      ),
-    });
-
-    jest
-      .spyOn(global, 'fetch')
-      .mockImplementationOnce(() =>
-        Promise.reject(new Error('Fallback data fetch Error')),
-      );
+  it('uses bundled fallback data when the API fails', async () => {
+    mockClient.getLearningPathData.mockRejectedValue(new Error('API Error'));
 
     const { result } = renderHook(() => useLearningPathData());
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
-      expect(result.current.error).toEqual(
-        new Error('Fallback data fetch Error'),
-      );
-    });
-  });
-
-  it('fetches learning path data from fallback when the API fails', async () => {
-    const fallbackData = [
-      {
-        paths: 1,
-        minutes: 20,
-        description: 'Fallback description',
-        label: 'Fallback learning path',
-        url: 'https://example.com/learning-path',
-      },
-    ];
-
-    (useApi as jest.Mock).mockReturnValue({
-      getLearningPathData: jest.fn(() =>
-        Promise.reject(new Error('API Error')),
-      ),
-    });
-
-    jest
-      .spyOn(global, 'fetch')
-      .mockImplementationOnce(() =>
-        Promise.resolve(
-          new Response(JSON.stringify(fallbackData), { status: 200 }),
-        ),
-      );
-
-    const { result } = renderHook(() => useLearningPathData());
-
-    await waitFor(() => {
-      expect(result.current.data).toEqual(fallbackData);
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.data?.length).toBeGreaterThan(0);
       expect(result.current.error).toBeUndefined();
     });
 
     // eslint-disable-next-line no-console
     expect(console.warn).toHaveBeenCalledWith(
-      'Learning paths proxy request failed, using static fallback data.',
+      'Learning paths proxy request failed, using bundled fallback data.',
       expect.any(Error),
     );
-  });
-
-  it('rejects invalid fallback data', async () => {
-    (useApi as jest.Mock).mockReturnValue({
-      getLearningPathData: jest.fn(() =>
-        Promise.reject(new Error('API Error')),
-      ),
-    });
-
-    jest.spyOn(global, 'fetch').mockImplementationOnce(() =>
-      Promise.resolve(
-        new Response(JSON.stringify([{ label: 'Missing url', paths: 1 }]), {
-          status: 200,
-        }),
-      ),
-    );
-
-    const { result } = renderHook(() => useLearningPathData());
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
-      expect(result.current.error).toEqual(
-        new TypeError('learning path at index 0 is missing a valid url'),
-      );
-    });
   });
 });

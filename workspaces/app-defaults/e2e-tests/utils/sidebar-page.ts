@@ -29,14 +29,16 @@ export class SidebarPage {
   }
 
   async openReferencesLearningPaths(): Promise<void> {
-    const referencesButton = this.page.getByRole('button', {
+    const sidebar = this.page.getByRole('navigation', { name: 'sidebar nav' });
+    const referencesButton = sidebar.getByRole('button', {
       name: this.translations.references.title,
     });
+
     if (await referencesButton.isVisible()) {
       await referencesButton.click();
     }
 
-    await this.page
+    await sidebar
       .getByRole('link', {
         name: this.translations.menuItem.learningPaths,
       })
@@ -48,7 +50,7 @@ export class SidebarPage {
   async verifyLearningPathLinksOpenInNewTab(): Promise<void> {
     const learningPathLinks = this.page.getByRole('article').getByRole('link');
 
-    await expect(learningPathLinks.first()).toBeVisible({ timeout: 20000 });
+    await expect(learningPathLinks.first()).toBeVisible({ timeout: 20_000 });
 
     for (const learningPathLink of await learningPathLinks.all()) {
       await expect(learningPathLink).toBeVisible();
