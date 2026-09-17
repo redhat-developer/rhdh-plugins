@@ -100,6 +100,7 @@ const SPARKLINE_AGGREGATION_IDS = new Set([
   'avgDeploymentFrequency',
   'avgChangeFailureRate',
   'avgMedianLeadTimeForChanges',
+  'avgMedianTimeToRestore',
 ]);
 
 const DORA_COLLECTORS = [

@@ -316,6 +316,7 @@ To align with the legacy EntityPage (Scorecard on component pages and default en
    - `AggregatedCardWithAvgDeploymentFrequency` (title: **Scorecard: Average deployment frequency**)
    - `AggregatedCardWithAvgChangeFailureRate` (title: **Scorecard: Average change failure rate**)
    - `AggregatedCardWithAvgMedianLeadTimeForChanges` (title: **Scorecard: Average median lead time for changes**)
+   - `AggregatedCardWithAvgMedianTimeToRestore` (title: **Scorecard: Average median time to restore**)
 
    These widgets render the `ScorecardHomepageCard` component used in legacy apps, preconfigured with different aggregation/metric configurations.
 

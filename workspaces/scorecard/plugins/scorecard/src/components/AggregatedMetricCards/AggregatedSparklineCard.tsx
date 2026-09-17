@@ -26,9 +26,9 @@ import { useLanguage } from '../../hooks/useLanguage';
 import { useTranslation } from '../../hooks/useTranslation';
 import { formatDate } from '../../utils/entityTableUtils';
 import {
-  getMatchingThresholdKey,
-  getStatusConfig,
+  getThresholdRuleColor,
   resolveStatusColor,
+  SCORECARD_ERROR_STATE_COLOR,
   toAggregationSparklinePoints,
 } from '../../utils';
 import { toSparklineChartModel } from '../../utils/sparklineChartModel';
@@ -52,25 +52,17 @@ export const AggregatedSparklineCard = ({
   const { t } = useTranslation();
 
   const lastPoint = series.points[series.points.length - 1];
-  const lastSuccessful = [...series.points]
-    .reverse()
-    .find(point => point.status === 'success' && point.value !== null);
-  const matchingThresholdKey =
-    lastSuccessful?.value !== undefined && lastSuccessful?.value !== null
-      ? getMatchingThresholdKey(lastSuccessful.value, series.thresholds)
-      : undefined;
-  const statusConfig = getStatusConfig({
-    evaluation: matchingThresholdKey ?? null,
-    thresholdRules: series.thresholds?.rules,
-  });
-  let chartColor: string;
-  if (series.aggregationChartDisplayColor) {
-    chartColor = resolveStatusColor(theme, series.aggregationChartDisplayColor);
-  } else if (matchingThresholdKey) {
-    chartColor = resolveStatusColor(theme, statusConfig.color);
-  } else {
-    chartColor = theme.palette.grey[500];
-  }
+  const thresholdRules = series.thresholds?.rules;
+  const chartColorToken = series.aggregationChartDisplayColor;
+  const matchingThresholdKey = chartColorToken
+    ? thresholdRules?.find(
+        rule =>
+          getThresholdRuleColor(thresholdRules, rule.key) === chartColorToken,
+      )?.key
+    : undefined;
+  const chartColor = chartColorToken
+    ? resolveStatusColor(theme, chartColorToken)
+    : SCORECARD_ERROR_STATE_COLOR;
 
   const unit = series.metadata.unit;
   const fallbackErrorLabel = t('errors.metricDataUnavailable');
@@ -92,11 +84,11 @@ export const AggregatedSparklineCard = ({
         unit,
         theme,
         t,
-        legendRules: series.thresholds?.rules,
+        legendRules: thresholdRules,
       }),
     [
       series.points,
-      series.thresholds?.rules,
+      thresholdRules,
       fallbackErrorLabel,
       locale,
       matchingThresholdKey,

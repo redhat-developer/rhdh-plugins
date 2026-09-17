@@ -185,6 +185,15 @@ const _default: OverridableFrontendPlugin<
       inputs: {};
       params: HomePageWidgetBlueprintParams;
     }>;
+    'home-page-widget:scorecard/scorecard-avg-median-time-to-restore': OverridableExtensionDefinition<{
+      kind: 'home-page-widget';
+      name: 'scorecard-avg-median-time-to-restore';
+      config: {};
+      configInput: {};
+      output: ExtensionDataRef<HomePageWidgetData, 'home.widget.data', {}>;
+      inputs: {};
+      params: HomePageWidgetBlueprintParams;
+    }>;
     'home-page-widget:scorecard/scorecard-avg-open-prs': OverridableExtensionDefinition<{
       kind: 'home-page-widget';
       name: 'scorecard-avg-open-prs';

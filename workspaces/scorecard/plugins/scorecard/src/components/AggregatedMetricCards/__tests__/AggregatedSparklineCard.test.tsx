@@ -148,7 +148,7 @@ describe('AggregatedSparklineCard', () => {
     expect(swatches[2]).toHaveAttribute('stroke', '#C9190B');
   });
 
-  it('still lists every threshold when the chart color falls back to the last successful point', () => {
+  it('still lists every threshold when the backend does not send a chart color', () => {
     render(
       <AggregatedSparklineCard
         series={{

@@ -45,6 +45,7 @@ import {
   aggregatedCardWithAvgDeploymentFrequencyWidget,
   aggregatedCardWithAvgChangeFailureRateWidget,
   aggregatedCardWithAvgMedianLeadTimeForChangesWidget,
+  aggregatedCardWithAvgMedianTimeToRestoreWidget,
 } from './extensions/homePageCards';
 import { scorecardPage } from './extensions/scorecardPage';
 import { scorecardEntityLayoutGrid } from './extensions/scorecardLayoutExtensions';
@@ -90,6 +91,7 @@ export default createFrontendPlugin({
     aggregatedCardWithAvgDeploymentFrequencyWidget,
     aggregatedCardWithAvgChangeFailureRateWidget,
     aggregatedCardWithAvgMedianLeadTimeForChangesWidget,
+    aggregatedCardWithAvgMedianTimeToRestoreWidget,
   ],
   routes: {
     root: rootRouteRef,

@@ -380,3 +380,25 @@ export const aggregatedCardWithAvgMedianLeadTimeForChangesWidget =
       ),
     },
   });
+
+/**
+ * NFS widget: AggregatedCardWithAvgMedianTimeToRestore (scalar sparkline).
+ */
+export const aggregatedCardWithAvgMedianTimeToRestoreWidget =
+  HomePageWidgetBlueprint.make({
+    name: 'scorecard-avg-median-time-to-restore',
+    params: {
+      name: 'AggregatedCardWithAvgMedianTimeToRestore',
+      title: 'Scorecard: Average median time to restore',
+      layout: defaultCardLayout,
+      componentProps: {
+        Renderer: BorderlessHomeWidgetRenderer,
+      },
+      components: lazyScorecardWidget(
+        ScorecardHomepageCardWithProvider => () =>
+          (
+            <ScorecardHomepageCardWithProvider aggregationId="avgMedianTimeToRestore" />
+          ),
+      ),
+    },
+  });

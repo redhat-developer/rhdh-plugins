@@ -139,6 +139,16 @@ const SERIES_BY_AGGREGATION_ID: Record<string, SeriesProfile> = {
       270,
     ],
   },
+  avgMedianTimeToRestore: {
+    metricId: 'dora.medianTimeToRestore',
+    title: 'Average Median Time to Restore',
+    description:
+      'This KPI provides average median time to restore in hours over a 30-day window per entity.',
+    unit: 'h',
+    thresholds: LEAD_TIME_THRESHOLDS,
+    aggregationChartDisplayColor: 'success.main',
+    dailyValues: [10, 15, 20, 25, 30, 35, 40],
+  },
 };
 
 const DEFAULT_PROFILE = SERIES_BY_AGGREGATION_ID.avgDeploymentFrequency;

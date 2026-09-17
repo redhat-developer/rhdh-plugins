@@ -402,6 +402,36 @@ const mountPoints: HomePageCardMountPoint[] = [
   {
     Component: ScorecardHomepageCard as ComponentType,
     config: {
+      id: 'scorecard-avgMedianTimeToRestore',
+      title: 'Scorecard: Average median time to restore',
+      cardLayout: {
+        width: {
+          minColumns: 3,
+          maxColumns: 12,
+          defaultColumns: 4,
+        },
+        height: {
+          minRows: 5,
+          maxRows: 12,
+          defaultRows: 6,
+        },
+      },
+      layouts: {
+        xl: { w: 4, h: 6 },
+        lg: { w: 4, h: 6 },
+        md: { w: 4, h: 6 },
+        sm: { w: 4, h: 6 },
+        xs: { w: 4, h: 6 },
+        xxs: { w: 4, h: 6 },
+      },
+      props: {
+        aggregationId: 'avgMedianTimeToRestore',
+      },
+    },
+  },
+  {
+    Component: ScorecardHomepageCard as ComponentType,
+    config: {
       id: 'scorecard-totalOpenBugs',
       title: 'Scorecard: Total open bugs',
       cardLayout: {
