@@ -30,6 +30,10 @@ const scorecardTranslationJa = createTranslationMessages({
     'dataSourcesDialog.unknownPlugin': '不明',
     'dataSourcesDialog.statusTooltip':
       '値 {{value}} はしきい値 {{status}} {{expression}} に一致します',
+    'dataSourcesDialog.collectorStatusTooltip':
+      'このコレクターは入力データのみを提供します。{{metric}} チェック値はコレクターから計算され、スコアカードのカードに表示されます。',
+    'dataSourcesDialog.collectorEmptyValue': '--',
+    'dataSourcesDialog.collectorUnavailableStatus': '該当なし',
     'dataSourcesDialog.columns.plugin': 'PLUGIN',
     'dataSourcesDialog.columns.check': 'チェック',
     'dataSourcesDialog.columns.value': '値',
