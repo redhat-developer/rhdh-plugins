@@ -72,7 +72,8 @@ function normalizeSubfolder(subfolder: string): string {
 /**
  * Compute the combined repository URL per the SCM-aware algorithm.
  *
- * Returns undefined when repository.url fails D11.
+ * Returns undefined when repository.url fails D11
+ * (see openspec/changes/mcp-registry-server-mapping/design.md § D11).
  *
  * @public
  */

@@ -15,7 +15,8 @@
  */
 
 /**
- * Emitted URL scheme policy (D11).
+ * Emitted URL scheme policy (D11,
+ * see openspec/changes/mcp-registry-server-mapping/design.md § D11).
  *
  * Trims whitespace, parses as an absolute URL (WHATWG URL, no base),
  * and returns true only when the scheme is http or https. All other

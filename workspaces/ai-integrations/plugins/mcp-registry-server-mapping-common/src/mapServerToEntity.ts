@@ -61,7 +61,8 @@ export function validateRequiredFields(doc: McpServerDocument): void {
 }
 
 /**
- * Map server.json remotes to spec.remotes per D8/D11.
+ * Map server.json remotes to spec.remotes per D8/D11
+ * (see openspec/changes/mcp-registry-server-mapping/design.md § D8, D11).
  *
  * Returns the array of entity remotes. Throws when upstream
  * minItems: 1 cannot be satisfied.
@@ -71,7 +72,9 @@ export function validateRequiredFields(doc: McpServerDocument): void {
 export function mapRemotes(doc: McpServerDocument): McpServerRemote[] {
   const sourceRemotes = doc.remotes ?? [];
 
-  // Filter remotes whose url passes D11 and type is a non-empty string,
+  // Filter remotes whose url passes D11
+  // (see openspec/changes/mcp-registry-server-mapping/design.md § D11)
+  // and type is a non-empty string,
   // preserving source order
   const validRemotes: McpServerRemote[] = [];
   for (const remote of sourceRemotes) {
@@ -93,7 +96,8 @@ export function mapRemotes(doc: McpServerDocument): McpServerRemote[] {
     return validRemotes;
   }
 
-  // D8: No valid remotes — use placeholder with websiteUrl
+  // No valid remotes — use placeholder with websiteUrl
+  // (see openspec/changes/mcp-registry-server-mapping/design.md § D8)
   if (isAllowedUrl(doc.websiteUrl)) {
     return [
       {
@@ -136,7 +140,8 @@ export function buildLinks(doc: McpServerDocument): LinksResult {
   const reservedAnnotationKeys: string[] = [];
   const annotations: Record<string, string> = {};
 
-  // websiteUrl → Website link (D11)
+  // websiteUrl → Website link
+  // (see openspec/changes/mcp-registry-server-mapping/design.md § D11)
   if (
     doc.websiteUrl !== undefined &&
     doc.websiteUrl !== null &&
@@ -145,11 +150,14 @@ export function buildLinks(doc: McpServerDocument): LinksResult {
     links.push({ url: doc.websiteUrl, title: 'Website' });
     consumedPaths.push('websiteUrl');
   } else if (doc.websiteUrl !== undefined && doc.websiteUrl !== null) {
-    // websiteUrl present but refused by D11 — consumed but not emitted
+    // websiteUrl present but refused by D11
+    // (see openspec/changes/mcp-registry-server-mapping/design.md § D11)
+    // — consumed but not emitted
     consumedPaths.push('websiteUrl');
   }
 
-  // Repository URL combination (D10)
+  // Repository URL combination
+  // (see openspec/changes/mcp-registry-server-mapping/design.md § D10)
   if (doc.repository?.url !== undefined && doc.repository?.url !== null) {
     const repoResult = computeRepositoryUrl(doc.repository);
 
@@ -173,6 +181,7 @@ export function buildLinks(doc: McpServerDocument): LinksResult {
     }
 
     // repository.url is consumed regardless of D11 outcome
+    // (see openspec/changes/mcp-registry-server-mapping/design.md § D11)
     consumedPaths.push('repository.url');
   }
 
@@ -182,6 +191,7 @@ export function buildLinks(doc: McpServerDocument): LinksResult {
 /**
  * Track consumed remote paths: type and url of all remotes are consumed
  * regardless of D11 outcome (symmetric with websiteUrl consumption).
+ * See openspec/changes/mcp-registry-server-mapping/design.md § D11.
  * Headers and variables are NOT consumed — they go to projection.
  *
  * @public
@@ -192,8 +202,9 @@ export function trackConsumedRemotePaths(doc: McpServerDocument): string[] {
     for (let i = 0; i < doc.remotes.length; i++) {
       const remote = doc.remotes[i];
       consumedPaths.push(`remotes.${i}.type`);
-      // Consume remote URL regardless of D11 outcome — symmetric with
-      // websiteUrl consumption (present but refused → still consumed)
+      // Consume remote URL regardless of D11 outcome
+      // (see openspec/changes/mcp-registry-server-mapping/design.md § D11)
+      // — symmetric with websiteUrl consumption (present but refused → still consumed)
       if (remote.url !== undefined && remote.url !== null) {
         consumedPaths.push(`remotes.${i}.url`);
       }
@@ -215,21 +226,21 @@ export function mapServerToEntity(
   doc: McpServerDocument,
   defaults?: McpServerMappingDefaults,
 ): McpServerMappingResult {
-  // Step 1: Validate required fields
+  // Validate required fields
   validateRequiredFields(doc);
 
-  // Step 2: Resolve caller defaults
+  // Resolve caller defaults
   const effectiveOwner = defaults?.owner ?? 'unknown';
   const effectiveLifecycle = defaults?.lifecycle ?? 'production';
 
-  // Step 3: Derive identity
+  // Derive identity
   const metadataName = deriveMetadataName(
     doc.name,
     doc.version,
     defaults?.prefix,
   );
 
-  // Step 4: Build identity annotations
+  // Build identity annotations
   const annotations: Record<string, string> = {};
   annotations['modelcontextprotocol.io/name'] = doc.name;
   annotations['modelcontextprotocol.io/version'] = doc.version;
@@ -240,7 +251,7 @@ export function mapServerToEntity(
     'modelcontextprotocol.io/version',
   ];
 
-  // Step 5: Build links, repository annotations, and track consumed paths
+  // Build links, repository annotations, and track consumed paths
   const linksResult = buildLinks(doc);
   const links = linksResult.links;
   consumedPaths.push(...linksResult.consumedPaths);
@@ -252,13 +263,13 @@ export function mapServerToEntity(
     consumedPaths.push('title');
   }
 
-  // Step 6: Map remotes
+  // Map remotes
   const specRemotes = mapRemotes(doc);
 
   // Track consumed remote paths symmetrically
   consumedPaths.push(...trackConsumedRemotePaths(doc));
 
-  // Step 7: Sort annotation keys for determinism
+  // Sort annotation keys for determinism
   const annotationKeys = Object.keys(annotations);
   annotationKeys.sort((a, b) => a.localeCompare(b));
   const sortedAnnotations: Record<string, string> = {};
@@ -266,7 +277,7 @@ export function mapServerToEntity(
     sortedAnnotations[key] = annotations[key];
   }
 
-  // Step 8: Build the entity
+  // Build the entity
   const entity: McpServerApiEntity = {
     apiVersion: 'backstage.io/v1alpha1',
     kind: 'API',

@@ -27,7 +27,8 @@ const MAX_NAME_LENGTH = 63;
 export const DEFAULT_PREFIX = 'mcp.registry';
 
 /**
- * Sanitize a single identity segment per the D3 per-segment rules:
+ * Sanitize a single identity segment per the D3 per-segment rules
+ * (see openspec/changes/mcp-registry-server-mapping/design.md § D3):
  * - Lowercase
  * - Replace every character outside a-z, 0-9, ., _, - with -
  * - If segment begins with _, replace leading _ with x
@@ -96,7 +97,8 @@ function computeHashSuffix(
 
 /**
  * Derive `metadata.name` from the effective prefix, canonical name,
- * and version per D4.
+ * and version per D4
+ * (see openspec/changes/mcp-registry-server-mapping/design.md § D4).
  *
  * @public
  */
