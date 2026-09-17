@@ -19,7 +19,7 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 
-import { EntitySection } from '../../legacy/components/HomePageLegacyCards';
+import { EntitySectionContent } from './EntitySection';
 import { useEntities } from '../../hooks/useEntities';
 
 // jsdom does not provide ResizeObserver; required by useContainerQuery in EntitySection
@@ -90,12 +90,12 @@ const renderComponent = () =>
   render(
     <ThemeProvider theme={theme}>
       <MemoryRouter>
-        <EntitySection />
+        <EntitySectionContent />
       </MemoryRouter>
     </ThemeProvider>,
   );
 
-describe('<EntitySection />', () => {
+describe('<EntitySectionContent />', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });

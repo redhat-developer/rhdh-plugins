@@ -2,7 +2,7 @@
 
 This is a dynamic version of the upstream [home page plugin](https://github.com/backstage/backstage/tree/master/plugins/home).
 
-The plugin supports both the **New Frontend System (NFS)** and the **legacy** dynamic plugin model (Scalprum / OFS). NFS is the primary package entry point. OFS exports are available only at `./legacy`. Translations remain available at `./alpha`.
+The plugin targets Backstage's **New Frontend System (NFS)**. Translations remain available at `./alpha`.
 
 ## New Frontend System
 
@@ -80,20 +80,7 @@ app:
 - `home-page-widget:homepage/...` – Onboarding, Entity, Templates, Quick Access, Search, Featured docs, Recently/Top visited, Catalog starred (mirrored as `home-page-widget:home/...` via `homepageHomeModule`, without RH layout filtering)
 - `api:homepage/quickaccess`, `api:homepage/default-widgets`
 
-## Legacy System (Dynamic Plugins)
-
-Legacy component imports have been removed from the main package path. OFS consumers must import from `./legacy`, and dynamic plugin config needs `module: Legacy`. See `app-config.dynamic.yaml` in this package for the mount point configuration.
-
-```tsx
-import {
-  DynamicHomePage,
-  OnboardingSection,
-  homepageTranslations,
-} from '@red-hat-developer-hub/backstage-plugin-homepage/legacy';
-```
-
 ## Migration
 
 - **NFS**: change imports from `@red-hat-developer-hub/backstage-plugin-homepage/alpha` to `@red-hat-developer-hub/backstage-plugin-homepage`.
-- **OFS**: change imports from `@red-hat-developer-hub/backstage-plugin-homepage` to `@red-hat-developer-hub/backstage-plugin-homepage/legacy`, and set `module: Legacy` in dynamic plugin config.
-- **Translations**: remain available at `./alpha` (and also on the main and legacy entry points / translations module).
+- **Translations**: remain available at `./alpha` and via `homepageTranslationsModule`.

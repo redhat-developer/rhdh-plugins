@@ -22,7 +22,7 @@ import {
 } from '@backstage/core-components';
 import { useMemo } from 'react';
 import { useTranslation } from '../hooks/useTranslation';
-import { useDefaultWidgets } from '../legacy/hooks/useDefaultWidgets';
+import { useDefaultWidgets } from '../hooks/useDefaultWidgets';
 import { HeaderProps, Header } from './Header';
 import { ReadOnlyGridLayout } from './ReadOnlyGridLayout';
 import { CustomizableGridLayout } from './CustomizableGridLayout';
