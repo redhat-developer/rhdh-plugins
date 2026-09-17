@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 
@@ -56,7 +56,10 @@ import botAvatarDark from '../../images/bot-avatar-dark.svg';
 import botAvatarLight from '../../images/bot-avatar.svg';
 import userAvatar from '../../images/user-avatar.svg';
 import { NotebookSessionMetadata, SessionDocument } from '../../types';
-import { ChatbotFootnoteWithIcon } from '../../utils/lightspeed-chatbox-utils';
+import {
+  ChatbotFootnoteWithIcon,
+  enrichMessagesWithPersistedSources,
+} from '../../utils/lightspeed-chatbox-utils';
 import { runFileUploads } from '../../utils/notebook-upload-runner';
 import { LightspeedChatBox } from '../LightspeedChatBox';
 import { ToastAlertGroup } from '../ToastAlertGroup';
@@ -339,8 +342,18 @@ export const NotebookView = ({
 
   // Show the store's transcript whenever there is an active or finished stream
   // for this session; otherwise fall back to persisted server messages.
-  const messages =
-    streamStatus === 'idle' ? conversationMessages : streamMessages;
+  const messages = useMemo(() => {
+    if (streamStatus === 'idle') {
+      return conversationMessages;
+    }
+    if (streamStatus === 'complete') {
+      return enrichMessagesWithPersistedSources(
+        streamMessages,
+        conversationMessages,
+      );
+    }
+    return streamMessages;
+  }, [streamStatus, streamMessages, conversationMessages]);
 
   // Keep the local conversation id in sync when the store resolves a temp
   // conversation to its real id (written into the session query cache).
