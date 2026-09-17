@@ -84,13 +84,8 @@ export class SavedPromptsPage {
   }
 
   kebabActionMenuItem(action: 'apply' | 'send' | 'delete'): Locator {
-    const actionLabels = {
-      apply: this.t['savedPrompts.actions.apply'],
-      send: this.t['savedPrompts.actions.send'],
-      delete: this.t['savedPrompts.actions.delete'],
-    };
     return this.page.getByRole('menuitem', {
-      name: actionLabels[action],
+      name: this.t[`savedPrompts.actions.${action}`],
       exact: true,
     });
   }
