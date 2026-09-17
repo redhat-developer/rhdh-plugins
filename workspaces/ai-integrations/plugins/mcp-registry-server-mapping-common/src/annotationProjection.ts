@@ -14,27 +14,32 @@
  * limitations under the License.
  */
 
-import { fnv1a32, normalizeBoundaries, sanitizeSegment } from './identity';
+import {
+  fnv1a32,
+  MAX_NAME_LENGTH,
+  normalizeBoundaries,
+  sanitizeSegment,
+} from './identity';
 import type { McpServerDocument } from './types';
 
 /** Annotation key prefix for projected attributes. */
 const ANNOTATION_PREFIX = 'modelcontextprotocol.io/';
 
-/** Maximum length for the name segment of an annotation key. */
-const MAX_NAME_LENGTH = 63;
-
-/* ------------------------------------------------------------------ */
-/*  Annotation key construction                                        */
-/*  Helpers below are exported for direct unit-testing only; they are  */
-/*  excluded from the public API surface (not re-exported in index.ts  */
-/*  and omitted from report.api.md).                                   */
-/* ------------------------------------------------------------------ */
+/**
+ * Annotation key construction helpers.
+ *
+ * Helpers below are exported for direct unit-testing only; they are
+ * excluded from the public API surface (not re-exported in index.ts
+ * and omitted from report.api.md).
+ */
 
 /**
  * Compute stable 8-character hex hash suffix from source path
  * segments (NUL-separated for unambiguous hashing).
  *
- * @internal Exported for unit testing only.
+ * Exported for unit testing only.
+ *
+ * @internal
  */
 export function computeAnnotationHashSuffix(pathSegments: string[]): string {
   return fnv1a32(pathSegments.join('\0')).toString(16).padStart(8, '0');
@@ -44,7 +49,9 @@ export function computeAnnotationHashSuffix(pathSegments: string[]): string {
  * Build the sanitized, joined, boundary-normalized annotation name
  * segment from path segments — without a hash suffix.
  *
- * @internal Exported for unit testing only.
+ * Exported for unit testing only.
+ *
+ * @internal
  */
 export function buildBaseNameSegment(pathSegments: string[]): string {
   const sanitized = pathSegments.map(seg => {
@@ -64,7 +71,9 @@ export function buildBaseNameSegment(pathSegments: string[]): string {
  * Build the annotation name segment with a hash suffix, truncating
  * the stem when necessary so the result is at most 63 characters.
  *
- * @internal Exported for unit testing only.
+ * Exported for unit testing only.
+ *
+ * @internal
  */
 export function buildHashedNameSegment(pathSegments: string[]): string {
   const base = buildBaseNameSegment(pathSegments);
@@ -82,11 +91,9 @@ export function buildHashedNameSegment(pathSegments: string[]): string {
   return `${truncated}${hashSuffix}`;
 }
 
-/* ------------------------------------------------------------------ */
-/*  D11 URL refusal for projected scalars                              */
-/* ------------------------------------------------------------------ */
-
 /**
+ * D11 URL refusal for projected scalars.
+ *
  * Check if a scalar value is a D11-refused URL.
  *
  * A string that WHATWG-parses as an absolute URL with a non-http/https
@@ -94,7 +101,9 @@ export function buildHashedNameSegment(pathSegments: string[]): string {
  * package identifiers and descriptions) are NOT refused — a failed
  * absolute-URL parse is not a reason to drop them.
  *
- * @internal Exported for unit testing only.
+ * Exported for unit testing only.
+ *
+ * @internal
  */
 export function isRefusedUrl(value: unknown): boolean {
   if (typeof value !== 'string') {
@@ -117,16 +126,14 @@ export function isRefusedUrl(value: unknown): boolean {
   }
 }
 
-/* ------------------------------------------------------------------ */
-/*  D9 secret redaction                                                */
-/* ------------------------------------------------------------------ */
-
-/** Fields redacted from isSecret: true Input objects (D9). */
+/**
+ * Fields redacted from isSecret: true Input objects (D9).
+ *
+ * This set must be kept in sync with the upstream MCP Registry Input
+ * schema. If the schema adds new secret-bearing fields, they must be
+ * added here to prevent secret leakage into projected annotations.
+ */
 const SECRET_REDACTED_FIELDS = new Set(['default', 'value', 'choices']);
-
-/* ------------------------------------------------------------------ */
-/*  Scalar-leaf walker                                                 */
-/* ------------------------------------------------------------------ */
 
 /** Candidate scalar collected during the walk. */
 interface ScalarCandidate {
@@ -208,7 +215,7 @@ function collectScalars(
     return;
   }
 
-  // --- Scalar leaf (string, number, boolean) ---
+  // Scalar leaf (string, number, boolean)
 
   // Skip consumed paths (already lifted by direct mapping)
   if (consumed.has(dotPath)) {
@@ -228,10 +235,6 @@ function collectScalars(
   });
 }
 
-/* ------------------------------------------------------------------ */
-/*  Public API                                                         */
-/* ------------------------------------------------------------------ */
-
 /**
  * Project unmapped server.json attributes into
  * `modelcontextprotocol.io/*` annotations.
@@ -244,6 +247,12 @@ function collectScalars(
  *
  * Pure function: no I/O, no timestamps, no randomness.
  * Deterministic: identical inputs produce byte-identical output.
+ *
+ * @remarks
+ * Object-key path segments in annotation keys are normalized to
+ * lowercase (e.g., `mimeType` becomes `mimetype`). Array indices
+ * are unchanged decimal numerals. Callers constructing expected key
+ * literals must account for this lowercasing.
  *
  * @param doc - The MCP Registry server.json document
  * @param consumedPaths - Dot-separated source paths already consumed by
@@ -265,7 +274,7 @@ export function projectAnnotations(
   const consumed = new Set(consumedPaths);
   const reserved = new Set(reservedAnnotationKeys);
 
-  // Step 1: Walk the document and collect candidate scalars
+  // Walk the document and collect candidate scalars
   const candidates: ScalarCandidate[] = [];
   collectScalars(
     doc as unknown as Record<string, unknown>,
@@ -275,7 +284,7 @@ export function projectAnnotations(
     consumed,
   );
 
-  // Step 2: Compute base annotation keys for each candidate
+  // Compute base annotation keys for each candidate
   const withKeys = candidates.map(c => {
     const baseNameSeg = buildBaseNameSegment(c.segments);
     const needsTruncationHash = baseNameSeg.length > MAX_NAME_LENGTH;
@@ -289,7 +298,7 @@ export function projectAnnotations(
     };
   });
 
-  // Step 3: Detect collisions (with reserved keys and between projected)
+  // Detect collisions (with reserved keys and between projected)
   const keyGroups = new Map<string, Array<(typeof withKeys)[number]>>();
   for (const c of withKeys) {
     const group = keyGroups.get(c.baseKey) ?? [];
@@ -297,7 +306,7 @@ export function projectAnnotations(
     keyGroups.set(c.baseKey, group);
   }
 
-  // Step 4: Resolve collisions and build final annotations.
+  // Resolve collisions and build final annotations.
   // Track which source dotPath owns each final key so a FNV-1a 32-bit
   // hash collision (~1 in 4 billion per pair) is detected rather than
   // silently overwriting an earlier value.
@@ -311,8 +320,11 @@ export function projectAnnotations(
 
     for (const item of items) {
       let finalKey: string;
-      if (needsDisambiguation && !item.needsTruncationHash) {
-        // Apply hash-suffix disambiguation (D3)
+      if (needsDisambiguation) {
+        // Apply hash-suffix disambiguation (D3). For items that already
+        // have a truncation hash, buildHashedNameSegment still produces
+        // the correct disambiguated key since the hash is derived from
+        // the full source path segments.
         finalKey = `${ANNOTATION_PREFIX}${buildHashedNameSegment(
           item.segments,
         )}`;
@@ -340,7 +352,7 @@ export function projectAnnotations(
     }
   }
 
-  // Step 5: Sort keys lexicographically for determinism
+  // Sort keys lexicographically for determinism
   const sortedKeys = [...annotations.keys()].sort((a, b) => a.localeCompare(b));
   const result: Record<string, string> = {};
   for (const key of sortedKeys) {

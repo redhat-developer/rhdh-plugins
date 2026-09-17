@@ -14,8 +14,13 @@
  * limitations under the License.
  */
 
-/** Maximum length for Backstage metadata.name. */
-const MAX_NAME_LENGTH = 63;
+/**
+ * Maximum length for Backstage metadata.name and annotation key
+ * name segments.
+ *
+ * @internal
+ */
+export const MAX_NAME_LENGTH = 63;
 
 /** FNV-1a 32-bit parameters for identity hash suffixes. */
 const FNV1A_32_OFFSET_BASIS = 0x811c9dc5;
