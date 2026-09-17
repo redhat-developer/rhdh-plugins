@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 /*
- * Verifies that no workspace package.json declares a direct @material-ui/*
- * dependency outside the temporary migration allowlist.
+ * Verifies that migrated workspaces do not declare or import Material UI v4
+ * (@material-ui/*) outside the temporary migration allowlist.
+ *
+ * Checks:
+ * - package.json direct dependencies across all workspaces
+ * - source imports in workspaces that use eslint.frontend-shared.cjs
  *
  * Lockfiles are not scanned because many workspaces still resolve Material UI
- * v4 transitively through Backstage dependencies. Once upstream removes those
- * transitive packages, lockfile validation can be added here.
+ * v4 transitively through Backstage dependencies.
  *
  * Copyright Red Hat, Inc.
  *
@@ -32,9 +35,15 @@ const IGNORED_PATH_SEGMENTS = new Set([
   'node_modules',
   'dist',
   'dist-dynamic',
+  'dist-types',
   // Local dynamic-plugin install roots created during rhdh-local development.
   'dynamic-plugins-root',
 ]);
+
+const SOURCE_FILE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx']);
+
+const MATERIAL_UI_V4_IMPORT_PATTERN =
+  /(?:from|import|require)\s*(?:\(\s*)?['"]@material-ui\//;
 
 const repoRoot = join(import.meta.dirname, '..', '..');
 const allowlistPath = join(
@@ -45,10 +54,50 @@ const allowlistPath = join(
 async function loadAllowlist() {
   const content = await readFile(allowlistPath, 'utf8');
   const parsed = JSON.parse(content);
-  return new Set(parsed.allowedPackageJsonPaths);
+  return {
+    packageJsonPaths: new Set(parsed.allowedPackageJsonPaths ?? []),
+    sourcePathPrefixes: parsed.allowedSourcePathPrefixes ?? [],
+  };
 }
 
-async function walkPackageJsonFiles(dir, files = []) {
+function isIgnoredPath(fullPath) {
+  return fullPath
+    .split(/[/\\]/)
+    .some(segment => IGNORED_PATH_SEGMENTS.has(segment));
+}
+
+function isAllowlistedSourcePath(relativePath, sourcePathPrefixes) {
+  return sourcePathPrefixes.some(prefix => relativePath.startsWith(prefix));
+}
+
+async function findEnforcedWorkspaceDirs() {
+  const workspacesDir = join(repoRoot, 'workspaces');
+  const entries = await readdir(workspacesDir, { withFileTypes: true });
+  const enforced = [];
+
+  for (const entry of entries) {
+    if (!entry.isDirectory()) {
+      continue;
+    }
+
+    const eslintSharedConfigPath = join(
+      workspacesDir,
+      entry.name,
+      'eslint.frontend-shared.cjs',
+    );
+
+    try {
+      await readFile(eslintSharedConfigPath, 'utf8');
+      enforced.push(join(workspacesDir, entry.name));
+    } catch {
+      // Workspace does not participate in centralized MUI v4 ESLint enforcement.
+    }
+  }
+
+  return enforced;
+}
+
+async function walkFiles(dir, predicate, files = []) {
   const entries = await readdir(dir, { withFileTypes: true });
 
   for (const entry of entries) {
@@ -59,11 +108,11 @@ async function walkPackageJsonFiles(dir, files = []) {
     const fullPath = join(dir, entry.name);
 
     if (entry.isDirectory()) {
-      await walkPackageJsonFiles(fullPath, files);
+      await walkFiles(fullPath, predicate, files);
       continue;
     }
 
-    if (entry.isFile() && entry.name === 'package.json') {
+    if (entry.isFile() && predicate(fullPath)) {
       files.push(fullPath);
     }
   }
@@ -82,7 +131,10 @@ function collectDependencies(packageJson) {
 
 async function checkPackageJsonFiles(allowlist) {
   const workspacesDir = join(repoRoot, 'workspaces');
-  const packageJsonFiles = await walkPackageJsonFiles(workspacesDir);
+  const packageJsonFiles = await walkFiles(
+    workspacesDir,
+    path => path.endsWith('package.json'),
+  );
   const violations = [];
 
   for (const absolutePath of packageJsonFiles) {
@@ -99,7 +151,7 @@ async function checkPackageJsonFiles(allowlist) {
       continue;
     }
 
-    if (allowlist.has(relativePath)) {
+    if (allowlist.packageJsonPaths.has(relativePath)) {
       continue;
     }
 
@@ -116,13 +168,53 @@ async function checkPackageJsonFiles(allowlist) {
   return violations;
 }
 
+async function checkSourceFiles(allowlist) {
+  const enforcedWorkspaceDirs = await findEnforcedWorkspaceDirs();
+  const violations = [];
+
+  for (const workspaceDir of enforcedWorkspaceDirs) {
+    const sourceFiles = await walkFiles(workspaceDir, path => {
+      if (isIgnoredPath(path)) {
+        return false;
+      }
+
+      const extension = path.slice(path.lastIndexOf('.'));
+      return SOURCE_FILE_EXTENSIONS.has(extension);
+    });
+
+    for (const absolutePath of sourceFiles) {
+      const relativePath = relative(repoRoot, absolutePath).replaceAll('\\', '/');
+
+      if (isAllowlistedSourcePath(relativePath, allowlist.sourcePathPrefixes)) {
+        continue;
+      }
+
+      const content = await readFile(absolutePath, 'utf8');
+      if (!MATERIAL_UI_V4_IMPORT_PATTERN.test(content)) {
+        continue;
+      }
+
+      violations.push({
+        type: 'source',
+        path: relativePath,
+        message: `Forbidden @material-ui/* import in ${relativePath}. ${ALTERNATIVE_MESSAGE}`,
+      });
+    }
+  }
+
+  return violations;
+}
+
 async function main() {
   const allowlist = await loadAllowlist();
-  const violations = await checkPackageJsonFiles(allowlist);
+  const violations = [
+    ...(await checkPackageJsonFiles(allowlist)),
+    ...(await checkSourceFiles(allowlist)),
+  ];
 
   if (violations.length === 0) {
     console.log(
-      'No forbidden Material UI v4 (@material-ui/*) dependencies found.',
+      'No forbidden Material UI v4 (@material-ui/*) dependencies or imports found.',
     );
     return;
   }
@@ -136,7 +228,7 @@ async function main() {
   }
 
   console.error(
-    '\nIf a package is still migrating, add its package.json path to scripts/ci/material-ui-v4-allowlist.json temporarily.',
+    '\nIf a package is still migrating, update scripts/ci/material-ui-v4-allowlist.json temporarily.',
   );
 
   process.exit(1);
