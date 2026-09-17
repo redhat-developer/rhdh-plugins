@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { sanitizeSegment } from './identity';
+import { fnv1a32, normalizeBoundaries, sanitizeSegment } from './identity';
 import type { McpServerDocument } from './types';
 
 /** Annotation key prefix for projected attributes. */
@@ -24,55 +24,17 @@ const ANNOTATION_PREFIX = 'modelcontextprotocol.io/';
 const MAX_NAME_LENGTH = 63;
 
 /* ------------------------------------------------------------------ */
-/*  FNV-1a 32-bit hash (pure JS, non-cryptographic)                   */
-/* ------------------------------------------------------------------ */
-const FNV1A_32_OFFSET_BASIS = 0x811c9dc5;
-const FNV1A_32_PRIME = 0x01000193;
-
-function fnv1a32(input: string): number {
-  let hash = FNV1A_32_OFFSET_BASIS;
-  for (let i = 0; i < input.length; i++) {
-    hash ^= input.charCodeAt(i);
-    hash = Math.imul(hash, FNV1A_32_PRIME);
-  }
-  return hash >>> 0;
-}
-
-/* ------------------------------------------------------------------ */
-/*  Boundary normalization                                             */
-/* ------------------------------------------------------------------ */
-
-/**
- * Boundary normalization: while the first or last character is not
- * alphanumeric (a-z, 0-9), replace it with 'x'.
- */
-function normalizeBoundaries(s: string): string {
-  if (s.length === 0) {
-    return s;
-  }
-
-  const chars = s.split('');
-
-  if (!/^[a-z0-9]$/.test(chars[0])) {
-    chars[0] = 'x';
-  }
-
-  if (!/^[a-z0-9]$/.test(chars[chars.length - 1])) {
-    chars[chars.length - 1] = 'x';
-  }
-
-  return chars.join('');
-}
-
-/* ------------------------------------------------------------------ */
 /*  Annotation key construction                                        */
+/*  Helpers below are exported for direct unit-testing only; they are  */
+/*  excluded from the public API surface (not re-exported in index.ts  */
+/*  and omitted from report.api.md).                                   */
 /* ------------------------------------------------------------------ */
 
 /**
  * Compute stable 8-character hex hash suffix from source path
  * segments (NUL-separated for unambiguous hashing).
  *
- * @internal
+ * @internal Exported for unit testing only.
  */
 export function computeAnnotationHashSuffix(pathSegments: string[]): string {
   return fnv1a32(pathSegments.join('\0')).toString(16).padStart(8, '0');
@@ -82,7 +44,7 @@ export function computeAnnotationHashSuffix(pathSegments: string[]): string {
  * Build the sanitized, joined, boundary-normalized annotation name
  * segment from path segments — without a hash suffix.
  *
- * @internal
+ * @internal Exported for unit testing only.
  */
 export function buildBaseNameSegment(pathSegments: string[]): string {
   const sanitized = pathSegments.map(seg => {
@@ -102,7 +64,7 @@ export function buildBaseNameSegment(pathSegments: string[]): string {
  * Build the annotation name segment with a hash suffix, truncating
  * the stem when necessary so the result is at most 63 characters.
  *
- * @internal
+ * @internal Exported for unit testing only.
  */
 export function buildHashedNameSegment(pathSegments: string[]): string {
   const base = buildBaseNameSegment(pathSegments);
@@ -132,7 +94,7 @@ export function buildHashedNameSegment(pathSegments: string[]): string {
  * package identifiers and descriptions) are NOT refused — a failed
  * absolute-URL parse is not a reason to drop them.
  *
- * @internal
+ * @internal Exported for unit testing only.
  */
 export function isRefusedUrl(value: unknown): boolean {
   if (typeof value !== 'string') {
@@ -284,9 +246,12 @@ function collectScalars(
  * Deterministic: identical inputs produce byte-identical output.
  *
  * @param doc - The MCP Registry server.json document
- * @param consumedPaths - Source paths already consumed by direct mapping
- * @param reservedAnnotationKeys - Annotation keys set by direct mapping
- *   (projection will never overwrite these)
+ * @param consumedPaths - Dot-separated source paths already consumed by
+ *   direct mapping. Array elements use zero-based decimal indices (no
+ *   brackets). Example: `["name", "remotes.0.type", "remotes.0.url"]`.
+ * @param reservedAnnotationKeys - Full annotation keys (including the
+ *   `modelcontextprotocol.io/` prefix) set by direct mapping. Projection
+ *   will never overwrite these; collisions are hash-disambiguated.
  * @returns Lexicographically sorted Record of projected annotation
  *   key → string value
  *
@@ -332,8 +297,12 @@ export function projectAnnotations(
     keyGroups.set(c.baseKey, group);
   }
 
-  // Step 4: Resolve collisions and build final annotations
+  // Step 4: Resolve collisions and build final annotations.
+  // Track which source dotPath owns each final key so a FNV-1a 32-bit
+  // hash collision (~1 in 4 billion per pair) is detected rather than
+  // silently overwriting an earlier value.
   const annotations = new Map<string, string>();
+  const keyOwners = new Map<string, string>();
 
   for (const [baseKey, items] of keyGroups) {
     const collidesWithReserved = reserved.has(baseKey);
@@ -350,7 +319,24 @@ export function projectAnnotations(
       } else {
         finalKey = baseKey;
       }
+
+      // Guard against FNV-1a hash collisions: if the final key is
+      // already claimed by a different source path, append a counter
+      // suffix to avoid silent data loss.
+      if (
+        annotations.has(finalKey) &&
+        keyOwners.get(finalKey) !== item.dotPath
+      ) {
+        let counter = 2;
+        let candidate = `${finalKey}-${counter}`;
+        while (annotations.has(candidate)) {
+          counter++;
+          candidate = `${finalKey}-${counter}`;
+        }
+        finalKey = candidate;
+      }
       annotations.set(finalKey, item.value);
+      keyOwners.set(finalKey, item.dotPath);
     }
   }
 

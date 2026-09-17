@@ -60,8 +60,10 @@ export function sanitizeSegment(segment: string): string {
 /**
  * Boundary normalization: while the first or last character is not
  * alphanumeric (a-z, 0-9), replace it with 'x'.
+ *
+ * @internal
  */
-function normalizeBoundaries(s: string): string {
+export function normalizeBoundaries(s: string): string {
   if (s.length === 0) {
     return s;
   }
@@ -84,8 +86,10 @@ function normalizeBoundaries(s: string): string {
 /**
  * FNV-1a 32-bit hash (pure JS). Used for stable, non-cryptographic
  * disambiguation suffixes only.
+ *
+ * @internal
  */
-function fnv1a32(input: string): number {
+export function fnv1a32(input: string): number {
   let hash = FNV1A_32_OFFSET_BASIS;
   for (let i = 0; i < input.length; i++) {
     hash ^= input.charCodeAt(i);
