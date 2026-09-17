@@ -54,6 +54,8 @@ The main entry resolves to `oci://quay.io/rhdh/backstage-plugin-catalog:v1!catal
 
 Name matching is only used to resolve the reference. Normal merging continues to use the resolved registry, image, and plugin path, so ordinary OCI entries do not override each other merely because their image names match. Different images at the same merge level must not share a final image name because that would make name-based references ambiguous; the installer reports both conflicting entries. Multiple explicit paths from the same image remain distinct, while pathless inheritance from such an image is rejected as ambiguous.
 
+Include files participate directly in name-based inheritance resolution and must come from trusted sources.
+
 ## Architecture
 
 ```

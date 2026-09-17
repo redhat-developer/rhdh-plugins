@@ -118,4 +118,52 @@ describe('resolveInheritPlugins', () => {
 
     expect(main[0]!.package).toBe(`${REQUEST_IMAGE}:2.0!catalog-backend`);
   });
+
+  it('validates main name collisions against packages declared by the user', () => {
+    const includes: IncludePluginList[] = [
+      ['dpdy.yaml', [{ package: `${BASE_IMAGE}:1.0!plugin-a` }]],
+    ];
+    const main: PluginSpec[] = [
+      { package: `${REQUEST_IMAGE}:{{inherit}}!plugin-a` },
+      { package: `${REQUEST_IMAGE}:2.0!plugin-b` },
+    ];
+    const declaredPackages = main.map(plugin => plugin.package);
+
+    resolveInheritPlugins(main, includes);
+
+    expect(main[0]!.package).toBe(`${BASE_IMAGE}:1.0!plugin-a`);
+    expect(() =>
+      preMergeOciDisabledState(
+        includes,
+        main,
+        'dynamic-plugins.yaml',
+        declaredPackages,
+      ),
+    ).not.toThrow();
+  });
+
+  it('still rejects collisions between different user-declared registries', () => {
+    const includes: IncludePluginList[] = [
+      ['dpdy.yaml', [{ package: `${BASE_IMAGE}:1.0!plugin-a` }]],
+    ];
+    const main: PluginSpec[] = [
+      {
+        package:
+          'oci://request.example.com/rhdh/backstage-plugin-catalog:{{inherit}}!plugin-a',
+      },
+      { package: `${REQUEST_IMAGE}:2.0!plugin-b` },
+    ];
+    const declaredPackages = main.map(plugin => plugin.package);
+
+    resolveInheritPlugins(main, includes);
+
+    expect(() =>
+      preMergeOciDisabledState(
+        includes,
+        main,
+        'dynamic-plugins.yaml',
+        declaredPackages,
+      ),
+    ).toThrow(/both resolve to the plugin name 'backstage-plugin-catalog'/);
+  });
 });

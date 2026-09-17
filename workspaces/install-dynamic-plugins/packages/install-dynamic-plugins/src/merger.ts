@@ -273,6 +273,8 @@ export function resolveInheritPackage(
 
   const matches: ParsedInheritCandidate[] = [];
   for (const candidate of candidates) {
+    // Disabled catalog entries intentionally remain eligible: a
+    // higher-precedence inherit entry may re-enable one.
     const parsed = tryParseOciRegistryAndPath(candidate.package);
     if (
       !parsed ||
@@ -581,6 +583,7 @@ function processOciEntry(
   plugin: PluginSpec,
   level: number,
   sourceFile: string,
+  packageForNameCollision = plugin.package,
 ): void {
   const pkg = plugin.package;
   if (typeof pkg !== 'string' || !isOciUrl(pkg)) return;
@@ -591,7 +594,17 @@ function processOciEntry(
     return;
   }
   const { registry, path } = parsed;
-  recordNameAtLevel(state, registry, level, disabled, pkg, sourceFile);
+  const collisionPackage = tryParseOciRegistryAndPath(packageForNameCollision);
+  if (collisionPackage) {
+    recordNameAtLevel(
+      state,
+      collisionPackage.registry,
+      level,
+      disabled,
+      packageForNameCollision,
+      sourceFile,
+    );
+  }
   if (
     !recordEntryState(state, registry, path, level, disabled, pkg, sourceFile)
   )
@@ -681,6 +694,9 @@ export function preMergeOciDisabledState(
   includePluginLists: ReadonlyArray<IncludePluginList>,
   mainPlugins: ReadonlyArray<PluginSpec>,
   mainConfigFile: string,
+  mainPackagesForNameCollision: ReadonlyArray<string> = mainPlugins.map(
+    plugin => plugin.package,
+  ),
 ): Set<string> {
   const state: PreMergeState = {
     perEntryState: new Map(),
@@ -691,8 +707,15 @@ export function preMergeOciDisabledState(
   for (const [file, plugins] of includePluginLists) {
     for (const plugin of plugins) processOciEntry(state, plugin, 0, file);
   }
-  for (const plugin of mainPlugins)
-    processOciEntry(state, plugin, 1, mainConfigFile);
+  for (const [index, plugin] of mainPlugins.entries()) {
+    processOciEntry(
+      state,
+      plugin,
+      1,
+      mainConfigFile,
+      mainPackagesForNameCollision[index],
+    );
+  }
 
   validateAmbiguousPathless(state);
   return computeDisabledRegistries(state);

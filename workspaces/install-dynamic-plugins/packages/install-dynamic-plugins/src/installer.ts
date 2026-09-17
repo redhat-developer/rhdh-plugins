@@ -360,12 +360,19 @@ async function loadAllPlugins(
   const mainPlugins = content.plugins ?? [];
 
   resolveRefPlugins(mainPlugins, includeLists);
+  // Collision validation must use the packages the user declared. Resolving
+  // an inherit reference replaces its requested registry with the catalog's
+  // registry, which must not create a synthetic same-level name collision.
+  const mainPackagesForNameCollision = mainPlugins.map(
+    plugin => plugin.package,
+  );
   resolveInheritPlugins(mainPlugins, includeLists);
 
   const disabledRegistries = preMergeOciDisabledState(
     includeLists,
     mainPlugins,
     configFileAbs,
+    mainPackagesForNameCollision,
   );
 
   for (const [inc, plugins] of includeLists) {

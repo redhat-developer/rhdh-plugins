@@ -79,7 +79,7 @@ export async function ociPluginKey(
   const inherit = tag === INHERIT_TAG && digest === undefined;
 
   if (inherit && !path) {
-    // The merger will match against an earlier included plugin from the same image.
+    // The merger will match by final OCI path segment across registries.
     return { pluginKey: registry, version, inherit, resolvedPath: null };
   }
 
