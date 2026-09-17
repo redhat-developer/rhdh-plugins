@@ -23,6 +23,7 @@ import {
   DEFAULT_ANNOTATION,
   OWNER_ANNOTATION,
   LIFECYCLE_ANNOTATION,
+  API_ENTITY_REF_ANNOTATION,
 } from './KServe';
 import type { InferenceService } from './types';
 import { CATALOG_SOURCE_ANNOTATION, CATALOG_MODEL_ANNOTATION } from './Catalog';
@@ -511,7 +512,7 @@ describe('callBackstagePrinters', () => {
     );
   });
 
-  it('should propagate system, serverType, default, owner, and lifecycle annotations to modelServer', async () => {
+  it('should propagate system, serverType, default, owner, lifecycle, and api-entity-ref annotations to modelServer', async () => {
     const is = makeInferenceService({
       annotations: {
         [SYSTEM_ANNOTATION]: 'my-system',
@@ -519,6 +520,7 @@ describe('callBackstagePrinters', () => {
         [DEFAULT_ANNOTATION]: 'preferred-model',
         [OWNER_ANNOTATION]: 'team-ai',
         [LIFECYCLE_ANNOTATION]: 'experimental',
+        [API_ENTITY_REF_ANNOTATION]: 'my-api',
       },
     });
 
@@ -543,6 +545,9 @@ describe('callBackstagePrinters', () => {
     expect(result.modelServer!.annotations![OWNER_ANNOTATION]).toBe('team-ai');
     expect(result.modelServer!.annotations![LIFECYCLE_ANNOTATION]).toBe(
       'experimental',
+    );
+    expect(result.modelServer!.annotations![API_ENTITY_REF_ANNOTATION]).toBe(
+      'my-api',
     );
   });
 
@@ -671,6 +676,47 @@ describe('callBackstagePrinters', () => {
     expect(result.models[0].name).toBe('alpha-model');
     expect(result.models[1].name).toBe('middle-model');
     expect(result.models[2].name).toBe('zebra-model');
+  });
+
+  it('should propagate api-entity-ref annotation to modelServer', async () => {
+    const is = makeInferenceService({
+      annotations: {
+        [API_ENTITY_REF_ANNOTATION]: 'my-api',
+      },
+    });
+
+    const result = await callBackstagePrinters(
+      'owner',
+      'production',
+      is,
+      false,
+      logger,
+    );
+
+    expect(result.modelServer!.annotations).toBeDefined();
+    expect(result.modelServer!.annotations![API_ENTITY_REF_ANNOTATION]).toBe(
+      'my-api',
+    );
+  });
+
+  it('should not set api-entity-ref annotation when not present', async () => {
+    const is = makeInferenceService({
+      annotations: {
+        'rhdh.io/description': 'Custom description',
+      },
+    });
+
+    const result = await callBackstagePrinters(
+      'owner',
+      'production',
+      is,
+      false,
+      logger,
+    );
+
+    expect(
+      result.modelServer!.annotations?.[API_ENTITY_REF_ANNOTATION],
+    ).toBeUndefined();
   });
 });
 

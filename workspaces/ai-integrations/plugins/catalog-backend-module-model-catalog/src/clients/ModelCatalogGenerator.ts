@@ -25,6 +25,7 @@ const SERVER_TYPE_ANNOTATION = 'rhdh.io/serverType';
 const DEFAULT_ANNOTATION = 'rhdh.io/default';
 const OWNER_ANNOTATION = 'rhdh.io/owner';
 const LIFECYCLE_ANNOTATION = 'rhdh.io/lifecycle';
+const API_ENTITY_REF_ANNOTATION = 'rhdh.io/api-entity-ref';
 
 function isModelCatalog(o: any): o is ModelCatalog {
   return 'models' in o || 'modelServer' in o;
@@ -93,6 +94,7 @@ export function GenerateCatalogEntities(
   delete annotations[DEFAULT_ANNOTATION];
   delete annotations[OWNER_ANNOTATION];
   delete annotations[LIFECYCLE_ANNOTATION];
+  delete annotations[API_ENTITY_REF_ANNOTATION];
 
   // Collect techdocs from models — use the first one found
   for (const model of models) {
@@ -124,6 +126,10 @@ export function GenerateCatalogEntities(
   const defaultOverride = modelServer.annotations?.[DEFAULT_ANNOTATION];
   const ownerOverride = modelServer.annotations?.[OWNER_ANNOTATION];
   const lifecycleOverride = modelServer.annotations?.[LIFECYCLE_ANNOTATION];
+  const apiEntityRefRaw = modelServer.annotations?.[API_ENTITY_REF_ANNOTATION];
+  const apiEntityRefNormalized = apiEntityRefRaw
+    ? normalizeApiEntityRef(apiEntityRefRaw)
+    : undefined;
 
   const entity: AiModelServerApiEntity = {
     apiVersion: 'backstage.io/v1alpha1',
@@ -140,6 +146,9 @@ export function GenerateCatalogEntities(
       lifecycle: lifecycleOverride ?? modelServer.lifecycle,
       owner: `user:${ownerOverride ?? modelServer.owner}`,
       ...(systemOverride && { system: systemOverride }),
+      ...(apiEntityRefNormalized && {
+        apiEntityRef: apiEntityRefNormalized,
+      }),
       serverType: serverTypeOverride ?? modelServer.API?.type ?? 'unknown',
       serverUrl: modelServer.API?.url ?? '',
       requiresApiKey: modelServer.authentication ?? false,
@@ -168,6 +177,23 @@ function getDefaultModel(
 
 function sanitizeMetadataName(modelName: string): string {
   return modelName.replace(/\s/g, '');
+}
+
+function normalizeApiEntityRef(rawValue: string): string {
+  const value = rawValue.trim();
+  if (!value) return '';
+  // Already fully qualified (e.g. api:default/my-api, api:production/my-api)
+  if (value.includes(':')) {
+    const kind = value.split(':')[0];
+    if (kind !== 'api') return '';
+    return value;
+  }
+  // Namespace-qualified (e.g. default/my-api, production/my-api)
+  if (value.includes('/')) {
+    return `api:${value}`;
+  }
+  // Bare name (e.g. my-api)
+  return `api:default/${value}`;
 }
 
 function sanitizeTags(tags: string[], logger?: LoggerService): string[] {
