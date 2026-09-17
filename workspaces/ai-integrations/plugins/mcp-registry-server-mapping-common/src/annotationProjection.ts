@@ -298,6 +298,150 @@ export function collectScalarCandidates(
 }
 
 /* ------------------------------------------------------------------ */
+/*  Annotation resolution (projectAnnotations steps 2–5)               */
+/* ------------------------------------------------------------------ */
+
+/** Scalar candidate with a computed base annotation key (step 2). */
+type CandidateWithBaseKey = ScalarCandidate & {
+  baseKey: string;
+  needsTruncationHash: boolean;
+};
+
+/**
+ * Compute base annotation keys for collected scalar candidates (step 2).
+ *
+ * @internal Exported for unit testing only.
+ */
+export function attachBaseKeysToCandidates(
+  candidates: ScalarCandidate[],
+): CandidateWithBaseKey[] {
+  return candidates.map(c => {
+    const baseNameSeg = buildBaseNameSegment(c.segments);
+    const needsTruncationHash = baseNameSeg.length > MAX_NAME_LENGTH;
+    const nameSegment = needsTruncationHash
+      ? buildHashedNameSegment(c.segments)
+      : baseNameSeg;
+    return {
+      ...c,
+      baseKey: `${ANNOTATION_PREFIX}${nameSegment}`,
+      needsTruncationHash,
+    };
+  });
+}
+
+/**
+ * Group candidates by base annotation key (step 3).
+ *
+ * @internal Exported for unit testing only.
+ */
+export function groupCandidatesByBaseKey(
+  withKeys: CandidateWithBaseKey[],
+): Map<string, CandidateWithBaseKey[]> {
+  const keyGroups = new Map<string, CandidateWithBaseKey[]>();
+  for (const c of withKeys) {
+    const group = keyGroups.get(c.baseKey) ?? [];
+    group.push(c);
+    keyGroups.set(c.baseKey, group);
+  }
+  return keyGroups;
+}
+
+/**
+ * Pick the annotation key for one candidate after collision detection (D3).
+ *
+ * @internal Exported for unit testing only.
+ */
+export function resolveDisambiguatedAnnotationKey(
+  item: CandidateWithBaseKey,
+  baseKey: string,
+  needsDisambiguation: boolean,
+): string {
+  if (needsDisambiguation && !item.needsTruncationHash) {
+    // Apply hash-suffix disambiguation (D3)
+    return `${ANNOTATION_PREFIX}${buildHashedNameSegment(item.segments)}`;
+  }
+  return baseKey;
+}
+
+/**
+ * Ensure the final key is unique when FNV-1a hash collisions occur.
+ *
+ * @internal Exported for unit testing only.
+ */
+export function uniquifyAnnotationKey(
+  finalKey: string,
+  dotPath: string,
+  annotations: Map<string, string>,
+  keyOwners: Map<string, string>,
+): string {
+  // Guard against FNV-1a hash collisions: if the final key is
+  // already claimed by a different source path, append a counter
+  // suffix to avoid silent data loss.
+  if (annotations.has(finalKey) && keyOwners.get(finalKey) !== dotPath) {
+    let counter = 2;
+    let candidate = `${finalKey}-${counter}`;
+    while (annotations.has(candidate)) {
+      counter++;
+      candidate = `${finalKey}-${counter}`;
+    }
+    return candidate;
+  }
+  return finalKey;
+}
+
+/** Resolve collisions and build the annotation map (step 4). */
+function buildResolvedAnnotations(
+  keyGroups: Map<string, CandidateWithBaseKey[]>,
+  reserved: Set<string>,
+): Map<string, string> {
+  // Track which source dotPath owns each final key so a FNV-1a 32-bit
+  // hash collision (~1 in 4 billion per pair) is detected rather than
+  // silently overwriting an earlier value.
+  const annotations = new Map<string, string>();
+  const keyOwners = new Map<string, string>();
+
+  for (const [baseKey, items] of keyGroups) {
+    const collidesWithReserved = reserved.has(baseKey);
+    const hasProjectionCollision = items.length > 1;
+    const needsDisambiguation = collidesWithReserved || hasProjectionCollision;
+
+    for (const item of items) {
+      const disambiguatedKey = resolveDisambiguatedAnnotationKey(
+        item,
+        baseKey,
+        needsDisambiguation,
+      );
+      const finalKey = uniquifyAnnotationKey(
+        disambiguatedKey,
+        item.dotPath,
+        annotations,
+        keyOwners,
+      );
+      annotations.set(finalKey, item.value);
+      keyOwners.set(finalKey, item.dotPath);
+    }
+  }
+
+  return annotations;
+}
+
+/**
+ * Sort annotation entries lexicographically for determinism (step 5).
+ *
+ * @internal Exported for unit testing only.
+ */
+export function sortAnnotationEntries(
+  annotations: Map<string, string>,
+): Record<string, string> {
+  const sortedKeys = [...annotations.keys()].sort((a, b) => a.localeCompare(b));
+  const result: Record<string, string> = {};
+  for (const key of sortedKeys) {
+    result[key] = annotations.get(key)!;
+  }
+  return result;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Public API                                                         */
 /* ------------------------------------------------------------------ */
 
@@ -349,80 +493,15 @@ export function projectAnnotations(
     consumed,
   );
 
-  // Compute base annotation keys for each candidate
-  const withKeys = candidates.map(c => {
-    const baseNameSeg = buildBaseNameSegment(c.segments);
-    const needsTruncationHash = baseNameSeg.length > MAX_NAME_LENGTH;
-    const nameSegment = needsTruncationHash
-      ? buildHashedNameSegment(c.segments)
-      : baseNameSeg;
-    return {
-      ...c,
-      baseKey: `${ANNOTATION_PREFIX}${nameSegment}`,
-      needsTruncationHash,
-    };
-  });
+  // Step 2: Compute base annotation keys for each candidate
+  const withKeys = attachBaseKeysToCandidates(candidates);
 
-  // Detect collisions (with reserved keys and between projected)
-  const keyGroups = new Map<string, Array<(typeof withKeys)[number]>>();
-  for (const c of withKeys) {
-    const group = keyGroups.get(c.baseKey) ?? [];
-    group.push(c);
-    keyGroups.set(c.baseKey, group);
-  }
+  // Step 3: Detect collisions (with reserved keys and between projected)
+  const keyGroups = groupCandidatesByBaseKey(withKeys);
 
-  // Resolve collisions and build final annotations.
-  // Track which source dotPath owns each final key so a FNV-1a 32-bit
-  // hash collision (~1 in 4 billion per pair) is detected rather than
-  // silently overwriting an earlier value.
-  const annotations = new Map<string, string>();
-  const keyOwners = new Map<string, string>();
+  // Step 4: Resolve collisions and build final annotations
+  const annotations = buildResolvedAnnotations(keyGroups, reserved);
 
-  for (const [baseKey, items] of keyGroups) {
-    const collidesWithReserved = reserved.has(baseKey);
-    const hasProjectionCollision = items.length > 1;
-    const needsDisambiguation = collidesWithReserved || hasProjectionCollision;
-
-    for (const item of items) {
-      let finalKey: string;
-      if (needsDisambiguation) {
-        // Apply hash-suffix disambiguation (D3). For items that already
-        // have a truncation hash, buildHashedNameSegment still produces
-        // the correct disambiguated key since the hash is derived from
-        // the full source path segments.
-        finalKey = `${ANNOTATION_PREFIX}${buildHashedNameSegment(
-          item.segments,
-        )}`;
-      } else {
-        finalKey = baseKey;
-      }
-
-      // Guard against FNV-1a hash collisions: if the final key is
-      // already claimed by a different source path, append a counter
-      // suffix to avoid silent data loss.
-      if (
-        annotations.has(finalKey) &&
-        keyOwners.get(finalKey) !== item.dotPath
-      ) {
-        let counter = 2;
-        let candidate = `${finalKey}-${counter}`;
-        while (annotations.has(candidate)) {
-          counter++;
-          candidate = `${finalKey}-${counter}`;
-        }
-        finalKey = candidate;
-      }
-      annotations.set(finalKey, item.value);
-      keyOwners.set(finalKey, item.dotPath);
-    }
-  }
-
-  // Sort keys lexicographically for determinism
-  const sortedKeys = [...annotations.keys()].sort((a, b) => a.localeCompare(b));
-  const result: Record<string, string> = {};
-  for (const key of sortedKeys) {
-    result[key] = annotations.get(key)!;
-  }
-
-  return result;
+  // Step 5: Sort keys lexicographically for determinism
+  return sortAnnotationEntries(annotations);
 }

@@ -18,13 +18,18 @@
 
 import {
   projectAnnotations,
+  attachBaseKeysToCandidates,
   buildBaseNameSegment,
   buildChildWalkPath,
   buildHashedNameSegment,
   collectScalarCandidates,
   computeAnnotationHashSuffix,
+  groupCandidatesByBaseKey,
   isRefusedUrl,
+  resolveDisambiguatedAnnotationKey,
   shouldSkipSecretRedactedField,
+  sortAnnotationEntries,
+  uniquifyAnnotationKey,
 } from './annotationProjection';
 import type { McpServerDocument } from './types';
 
@@ -311,6 +316,152 @@ describe('collectScalarCandidates', () => {
       },
       { segments: ['input', 'name'], dotPath: 'input.name', value: 'token' },
     ]);
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/*  Annotation resolution helpers (projectAnnotations splits)            */
+/* ------------------------------------------------------------------ */
+
+describe('attachBaseKeysToCandidates', () => {
+  it('prefixes modelcontextprotocol.io and flags long name segments', () => {
+    const [shortPath] = attachBaseKeysToCandidates([
+      {
+        segments: ['icons', '0', 'mimeType'],
+        dotPath: 'icons.0.mimeType',
+        value: 'image/png',
+      },
+    ]);
+    expect(shortPath.baseKey).toBe('modelcontextprotocol.io/icons.0.mimetype');
+    expect(shortPath.needsTruncationHash).toBe(false);
+  });
+});
+
+describe('groupCandidatesByBaseKey', () => {
+  it('groups items that share the same baseKey', () => {
+    const grouped = groupCandidatesByBaseKey([
+      {
+        segments: ['a'],
+        dotPath: 'a',
+        value: '1',
+        baseKey: 'modelcontextprotocol.io/a',
+        needsTruncationHash: false,
+      },
+      {
+        segments: ['b'],
+        dotPath: 'b',
+        value: '2',
+        baseKey: 'modelcontextprotocol.io/a',
+        needsTruncationHash: false,
+      },
+      {
+        segments: ['c'],
+        dotPath: 'c',
+        value: '3',
+        baseKey: 'modelcontextprotocol.io/c',
+        needsTruncationHash: false,
+      },
+    ]);
+    expect(grouped.get('modelcontextprotocol.io/a')).toHaveLength(2);
+    expect(grouped.get('modelcontextprotocol.io/c')).toHaveLength(1);
+  });
+});
+
+describe('resolveDisambiguatedAnnotationKey', () => {
+  const baseKey = 'modelcontextprotocol.io/foo';
+  const item = {
+    segments: ['foo'],
+    dotPath: 'foo',
+    value: 'bar',
+    baseKey,
+    needsTruncationHash: false,
+  };
+
+  it('returns baseKey when disambiguation is not required', () => {
+    expect(resolveDisambiguatedAnnotationKey(item, baseKey, false)).toBe(
+      baseKey,
+    );
+  });
+
+  it('applies hash-suffix disambiguation (D3) when required', () => {
+    expect(resolveDisambiguatedAnnotationKey(item, baseKey, true)).toBe(
+      `modelcontextprotocol.io/${buildHashedNameSegment(['foo'])}`,
+    );
+  });
+
+  it('keeps truncated base key when needsTruncationHash is already set', () => {
+    expect(
+      resolveDisambiguatedAnnotationKey(
+        { ...item, needsTruncationHash: true },
+        baseKey,
+        true,
+      ),
+    ).toBe(baseKey);
+  });
+});
+
+describe('uniquifyAnnotationKey', () => {
+  it('returns the key when unclaimed or owned by the same dot path', () => {
+    const annotations = new Map([['modelcontextprotocol.io/x', 'v']]);
+    const keyOwners = new Map([['modelcontextprotocol.io/x', 'x']]);
+    expect(
+      uniquifyAnnotationKey(
+        'modelcontextprotocol.io/x',
+        'x',
+        annotations,
+        keyOwners,
+      ),
+    ).toBe('modelcontextprotocol.io/x');
+  });
+
+  it('appends a counter when a different source path claims the key', () => {
+    const annotations = new Map([['modelcontextprotocol.io/x', 'first']]);
+    const keyOwners = new Map([['modelcontextprotocol.io/x', 'path.a']]);
+    expect(
+      uniquifyAnnotationKey(
+        'modelcontextprotocol.io/x',
+        'path.b',
+        annotations,
+        keyOwners,
+      ),
+    ).toBe('modelcontextprotocol.io/x-2');
+  });
+
+  it('increments the counter until a free key is found', () => {
+    const annotations = new Map([
+      ['modelcontextprotocol.io/x', 'first'],
+      ['modelcontextprotocol.io/x-2', 'second'],
+    ]);
+    const keyOwners = new Map([
+      ['modelcontextprotocol.io/x', 'path.a'],
+      ['modelcontextprotocol.io/x-2', 'path.c'],
+    ]);
+    expect(
+      uniquifyAnnotationKey(
+        'modelcontextprotocol.io/x',
+        'path.b',
+        annotations,
+        keyOwners,
+      ),
+    ).toBe('modelcontextprotocol.io/x-3');
+  });
+});
+
+describe('sortAnnotationEntries', () => {
+  it('sorts keys lexicographically', () => {
+    expect(
+      sortAnnotationEntries(
+        new Map([
+          ['modelcontextprotocol.io/z', 'z'],
+          ['modelcontextprotocol.io/a', 'a'],
+          ['modelcontextprotocol.io/m', 'm'],
+        ]),
+      ),
+    ).toEqual({
+      'modelcontextprotocol.io/a': 'a',
+      'modelcontextprotocol.io/m': 'm',
+      'modelcontextprotocol.io/z': 'z',
+    });
   });
 });
 
