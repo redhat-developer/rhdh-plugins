@@ -1,5 +1,5 @@
 /*
- * Copyright The Backstage Authors
+ * Copyright Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,32 +14,4 @@
  * limitations under the License.
  */
 
-const materialUiMigrationEslintConfig = {
-  restrictedImports: [
-    {
-      name: '@material-ui/core',
-      message: 'Use @mui/material instead of Material UI v4.',
-    },
-    {
-      name: '@material-ui/lab',
-      message: 'Use @mui/material instead of Material UI v4.',
-    },
-    {
-      name: '@material-ui/styles',
-      message:
-        'Use @mui/styles, @mui/material (sx/styled), or Backstage UI instead of Material UI v4.',
-    },
-  ],
-  restrictedImportPatterns: ['@material-ui/*'],
-};
-
-/**
- * ESLint config for frontend packages in this workspace (MUI v4 migration guards).
- */
-const createEslintConfig = packageDir =>
-  require('@backstage/cli/config/eslint-factory')(
-    packageDir,
-    materialUiMigrationEslintConfig,
-  );
-
-module.exports = createEslintConfig;
+module.exports = require('../../eslint.frontend-shared.cjs');
