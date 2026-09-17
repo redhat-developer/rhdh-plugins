@@ -44,7 +44,7 @@ import {
   preMergeOciDisabledState,
   resolveInheritPackage,
 } from './merger';
-import { isOciInherit } from './oci-key';
+import { isOciInherit, tryParseOciRegistryAndPath } from './oci-key';
 import { computePluginHash } from './plugin-hash';
 import { Skopeo } from './skopeo';
 import { extractPluginName } from './plugin-name';
@@ -304,11 +304,32 @@ export function resolveInheritPlugins(
   if (pluginsWithInherit.length === 0) return;
 
   const candidates = includeLists.flatMap(([sourceFile, plugins]) =>
-    plugins.map(plugin => ({ package: plugin.package, sourceFile })),
+    plugins.map(plugin => ({
+      package: plugin.package,
+      disabled: isPluginDisabled(plugin),
+      sourceFile,
+    })),
   );
 
   for (const plugin of pluginsWithInherit) {
-    plugin.package = resolveInheritPackage(plugin.package, candidates);
+    const requestedPackage = plugin.package;
+    const requested = tryParseOciRegistryAndPath(requestedPackage);
+    const disabledPathless =
+      isPluginDisabled(plugin) && requested?.path === null;
+    try {
+      plugin.package = resolveInheritPackage(requestedPackage, candidates, {
+        preservePathless: disabledPathless,
+      });
+      log(
+        `\n======= Resolved {{inherit}} plugin '${requestedPackage}' to '${plugin.package}'`,
+      );
+    } catch (error) {
+      if (!disabledPathless) throw error;
+      const reason = error instanceof Error ? error.message : String(error);
+      log(
+        `WARNING: Skipping unresolved disabled {{inherit}} plugin configuration '${requestedPackage}': ${reason}`,
+      );
+    }
   }
 }
 

@@ -87,6 +87,157 @@ describe('resolveInheritPlugins', () => {
     expect(disabled.has(BASE_IMAGE)).toBe(false);
   });
 
+  it('leaves an unresolved disabled pathless entry for filtering', () => {
+    const main: PluginSpec[] = [
+      { package: `${REQUEST_IMAGE}:{{inherit}}`, disabled: true },
+    ];
+
+    expect(() => resolveInheritPlugins(main, [])).not.toThrow();
+    expect(main[0]!.package).toBe(`${REQUEST_IMAGE}:{{inherit}}`);
+
+    const disabled = preMergeOciDisabledState([], main, 'dynamic-plugins.yaml');
+    expect(filterDisabledOciPlugins(main, disabled)).toEqual([]);
+  });
+
+  it('preserves the existing error for a disabled unresolved explicit path', () => {
+    const main: PluginSpec[] = [
+      {
+        package: `${REQUEST_IMAGE}:{{inherit}}!missing-path`,
+        disabled: true,
+      },
+    ];
+
+    expect(() => resolveInheritPlugins(main, [])).toThrow(
+      /no existing plugin configuration found/,
+    );
+  });
+
+  it('resolves a disabled pathless entry before disabling a cross-registry image', () => {
+    const include: PluginSpec[] = [
+      { package: `${BASE_IMAGE}:1.0!catalog-backend` },
+    ];
+    const includes: IncludePluginList[] = [['dpdy.yaml', include]];
+    const main: PluginSpec[] = [
+      { package: `${REQUEST_IMAGE}:{{inherit}}`, disabled: true },
+    ];
+
+    resolveInheritPlugins(main, includes);
+
+    expect(main[0]!.package).toBe(`${BASE_IMAGE}:1.0`);
+    const disabled = preMergeOciDisabledState(
+      includes,
+      main,
+      'dynamic-plugins.yaml',
+    );
+    expect(filterDisabledOciPlugins(include, disabled)).toEqual([]);
+    expect(filterDisabledOciPlugins(main, disabled)).toEqual([]);
+  });
+
+  it('disables a cross-registry multi-plugin image with a pathless entry', () => {
+    const include: PluginSpec[] = [
+      { package: `${BASE_IMAGE}:1.0!plugin-a` },
+      { package: `${BASE_IMAGE}:1.0!plugin-b` },
+    ];
+    const includes: IncludePluginList[] = [['dpdy.yaml', include]];
+    const main: PluginSpec[] = [
+      { package: `${REQUEST_IMAGE}:{{inherit}}`, enabled: false },
+    ];
+
+    resolveInheritPlugins(main, includes);
+
+    expect(main[0]!.package).toBe(`${BASE_IMAGE}:1.0`);
+    const disabled = preMergeOciDisabledState(
+      includes,
+      main,
+      'dynamic-plugins.yaml',
+    );
+    expect(filterDisabledOciPlugins(include, disabled)).toEqual([]);
+    expect(filterDisabledOciPlugins(main, disabled)).toEqual([]);
+  });
+
+  it('prefers an enabled include over a disabled same-name candidate', () => {
+    const enabled = `${BASE_IMAGE}:1.0!catalog-backend`;
+    const includes: IncludePluginList[] = [
+      [
+        'dpdy.yaml',
+        [
+          {
+            package:
+              'oci://mirror.example.com/rhdh/backstage-plugin-catalog:2.0!catalog-backend',
+            disabled: true,
+          },
+          { package: enabled },
+        ],
+      ],
+    ];
+    const main: PluginSpec[] = [
+      { package: `${REQUEST_IMAGE}:{{inherit}}!catalog-backend` },
+    ];
+
+    resolveInheritPlugins(main, includes);
+
+    expect(main[0]!.package).toBe(enabled);
+  });
+
+  it('allows repeated disabled catalog rows to supply one inheritance base', async () => {
+    const catalogPackage = `${BASE_IMAGE}:1.0!catalog-backend`;
+    const include: PluginSpec[] = [
+      { package: catalogPackage, disabled: true },
+      { package: catalogPackage, disabled: true },
+    ];
+    const includes: IncludePluginList[] = [['dpdy.yaml', include]];
+    const main: PluginSpec[] = [
+      {
+        package: `${REQUEST_IMAGE}:{{inherit}}!catalog-backend`,
+        enabled: true,
+      },
+    ];
+
+    resolveInheritPlugins(main, includes);
+    const disabled = preMergeOciDisabledState(
+      includes,
+      main,
+      'dynamic-plugins.yaml',
+    );
+    const all: PluginMap = {};
+    for (const plugin of filterDisabledOciPlugins(include, disabled)) {
+      await mergePlugin(plugin, all, 'dpdy.yaml', 0);
+    }
+    for (const plugin of filterDisabledOciPlugins(main, disabled)) {
+      await mergePlugin(plugin, all, 'dynamic-plugins.yaml', 1);
+    }
+
+    expect(Object.keys(all)).toEqual([`${BASE_IMAGE}:!catalog-backend`]);
+    expect(all[`${BASE_IMAGE}:!catalog-backend`]).toMatchObject({
+      package: catalogPackage,
+      enabled: true,
+      last_modified_level: 1,
+    });
+  });
+
+  it('logs the concrete package selected during production pre-resolution', () => {
+    const write = jest
+      .spyOn(process.stdout, 'write')
+      .mockImplementation(() => true);
+    try {
+      const includes: IncludePluginList[] = [
+        ['dpdy.yaml', [{ package: `${BASE_IMAGE}:1.0!catalog-backend` }]],
+      ];
+      const main: PluginSpec[] = [
+        { package: `${REQUEST_IMAGE}:{{inherit}}!catalog-backend` },
+      ];
+
+      resolveInheritPlugins(main, includes);
+
+      const output = write.mock.calls.map(args => String(args[0])).join('\n');
+      expect(output).toContain(
+        `Resolved {{inherit}} plugin '${REQUEST_IMAGE}:{{inherit}}!catalog-backend' to '${BASE_IMAGE}:1.0!catalog-backend'`,
+      );
+    } finally {
+      write.mockRestore();
+    }
+  });
+
   it('keeps main configuration fields while applying its explicit path', () => {
     const includes: IncludePluginList[] = [
       ['dpdy.yaml', [{ package: `${BASE_IMAGE}:1.0!catalog-backend` }]],

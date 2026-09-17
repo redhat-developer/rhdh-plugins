@@ -166,6 +166,9 @@ async function mergeOciPlugin(
   let parsed = await ociPluginKey(plugin.package, imageCache);
 
   if (parsed.inherit) {
+    // The normal installer resolves inherit references from the raw include
+    // lists before filtering. Keep this fallback for direct mergePlugin users,
+    // using the entries they have already merged as the candidate set.
     if (level === 0) {
       throw new InstallException(
         `Cannot use {{inherit}} in included plugin configuration '${plugin.package}' in ${configFile}. ` +
@@ -175,7 +178,10 @@ async function mergeOciPlugin(
     const pluginName = extractPluginName(plugin.package);
     plugin.package = resolveInheritPackage(
       plugin.package,
-      Object.values(allPlugins).map(base => ({ package: base.package })),
+      Object.values(allPlugins).map(base => ({
+        package: base.package,
+        disabled: isPluginDisabled(base),
+      })),
     );
     parsed = await ociPluginKey(plugin.package, imageCache);
     log(
@@ -199,13 +205,25 @@ async function mergeOciPlugin(
     return;
   }
 
-  log(`\n======= Overriding dynamic plugin configuration ${parsed.pluginKey}`);
+  const enabledReplacesDisabledAtSameLevel =
+    existing.last_modified_level === level &&
+    isPluginDisabled(existing) &&
+    !isPluginDisabled(plugin);
   if (existing.last_modified_level === level) {
-    throw new InstallException(
-      `Duplicate plugin configuration for ${plugin.package} found in ${configFile}.`,
-    );
+    if (isPluginDisabled(plugin)) {
+      log(
+        `WARNING: Skipping duplicate disabled plugin configuration for ${plugin.package} in ${configFile}`,
+      );
+      return;
+    }
+    if (!isPluginDisabled(existing)) {
+      throw new InstallException(
+        `Duplicate plugin configuration for ${plugin.package} found in ${configFile}.`,
+      );
+    }
   }
 
+  log(`\n======= Overriding dynamic plugin configuration ${parsed.pluginKey}`);
   existing.package = plugin.package;
   if (existing.version !== parsed.version) {
     log(
@@ -218,11 +236,20 @@ async function mergeOciPlugin(
     'version',
     'last_modified_level',
   ]);
+  if (
+    enabledReplacesDisabledAtSameLevel &&
+    typeof plugin.enabled !== 'boolean' &&
+    typeof plugin.disabled !== 'boolean'
+  ) {
+    delete existing.enabled;
+    delete existing.disabled;
+  }
   existing.last_modified_level = level;
 }
 
 export type InheritCandidate = {
   package: string;
+  disabled?: boolean;
   sourceFile?: string;
 };
 
@@ -261,7 +288,8 @@ function ambiguousInheritError(
  */
 export function resolveInheritPackage(
   packageUrl: string,
-  candidates: readonly InheritCandidate[],
+  candidates: ReadonlyArray<InheritCandidate>,
+  options: { preservePathless?: boolean } = {},
 ): string {
   const requested = tryParseOciRegistryAndPath(packageUrl);
   const pluginName = extractPluginName(packageUrl);
@@ -271,7 +299,7 @@ export function resolveInheritPackage(
     );
   }
 
-  const matches: ParsedInheritCandidate[] = [];
+  const matchesByIdentity = new Map<string, ParsedInheritCandidate>();
   for (const candidate of candidates) {
     // Disabled catalog entries intentionally remain eligible: a
     // higher-precedence inherit entry may re-enable one.
@@ -284,7 +312,7 @@ export function resolveInheritPackage(
       continue;
     }
     const separator = candidate.package.indexOf('!');
-    matches.push({
+    const match: ParsedInheritCandidate = {
       ...candidate,
       image:
         separator === -1
@@ -292,8 +320,24 @@ export function resolveInheritPackage(
           : candidate.package.slice(0, separator),
       path: parsed.path,
       registry: parsed.registry,
-    });
+    };
+    const identity = `${match.image}\0${match.path ?? ''}`;
+    const existing = matchesByIdentity.get(identity);
+    if (
+      !existing ||
+      (existing.disabled === true && candidate.disabled !== true)
+    ) {
+      matchesByIdentity.set(identity, match);
+    }
   }
+
+  const uniqueMatches = [...matchesByIdentity.values()];
+  const enabledMatches = uniqueMatches.filter(
+    candidate => candidate.disabled !== true,
+  );
+  // Disabled candidates do not make an enabled match ambiguous. When every
+  // candidate is disabled, retain them so a unique base can be re-enabled.
+  const matches = enabledMatches.length > 0 ? enabledMatches : uniqueMatches;
 
   if (matches.length === 0) {
     throw new InstallException(
@@ -334,6 +378,17 @@ export function resolveInheritPackage(
       );
     }
   } else {
+    if (options.preservePathless) {
+      if (new Set(matches.map(candidate => candidate.image)).size > 1) {
+        throw ambiguousInheritError(
+          pluginName,
+          matches,
+          'The last OCI path segment must identify a single image in included files.',
+        );
+      }
+      selected = matches[0] as ParsedInheritCandidate;
+      return selected.image;
+    }
     if (matches.length > 1) {
       throw ambiguousInheritError(
         pluginName,
@@ -458,9 +513,10 @@ function logInvalidOciFormat(
 }
 
 /**
- * Record the entry's disabled state at its level. Returns `false` when the
- * entry is a duplicate at the same level (warning logged for disabled-dups,
- * throws for enabled-dups) so the caller can skip recording its path/source.
+ * Record the entry's disabled state at its level. At the same level, disabled
+ * entries are ignored, an enabled entry replaces a disabled one, and two
+ * enabled entries throw. Returns `false` when the caller should skip recording
+ * the duplicate's path/source.
  */
 function recordEntryState(
   state: PreMergeState,
@@ -479,11 +535,15 @@ function recordEntryState(
   }
   if (existing.level === level) {
     const pathSuffix = path ? `!${path}` : '';
-    if (!disabled) {
+    if (!disabled && !existing.disabled) {
       throw new InstallException(
         `Duplicate OCI plugin configuration for ${registry}${pathSuffix} ` +
           `found at the same level in ${sourceFile}: ${pkg}`,
       );
+    }
+    if (!disabled) {
+      state.perEntryState.set(key, { disabled: false, level });
+      return true;
     }
     log(
       `WARNING: Skipping duplicate disabled OCI plugin configuration for ${registry}${pathSuffix} in ${sourceFile}`,

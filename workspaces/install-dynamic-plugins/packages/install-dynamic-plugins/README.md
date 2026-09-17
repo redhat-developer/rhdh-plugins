@@ -50,9 +50,9 @@ An OCI entry tagged with `{{inherit}}` is matched to an included plugin by its i
 - package: oci://registry.redhat.io/rhdh/backstage-plugin-catalog:{{inherit}}!catalog-backend
 ```
 
-The main entry resolves to `oci://quay.io/rhdh/backstage-plugin-catalog:v1!catalog-backend`, adopting the catalog's concrete registry and version. An explicit `!plugin-path` on the main entry takes precedence over the included path.
+The main entry resolves to `oci://quay.io/rhdh/backstage-plugin-catalog:v1!catalog-backend`, adopting the catalog's concrete registry and version. An explicit `!plugin-path` on the main entry takes precedence over the included path. When it differs from the included path, it creates a distinct plugin entry, matching the operator; the included entry remains unless it is separately disabled.
 
-Name matching is only used to resolve the reference. Normal merging continues to use the resolved registry, image, and plugin path, so ordinary OCI entries do not override each other merely because their image names match. Different images at the same merge level must not share a final image name because that would make name-based references ambiguous; the installer reports both conflicting entries. Multiple explicit paths from the same image remain distinct, while pathless inheritance from such an image is rejected as ambiguous.
+Name matching is only used to resolve the reference. Normal merging continues to use the resolved registry, image, and plugin path, so ordinary OCI entries do not override each other merely because their image names match. Different enabled images at the same merge level must not share a final image name because that would make name-based references ambiguous; the installer reports both conflicting entries. Disabled candidates are ignored when an enabled match exists, while a unique disabled candidate remains available for a higher-precedence entry to re-enable. Multiple explicit paths from the same image remain distinct, while enabled pathless inheritance from such an image is rejected as ambiguous.
 
 Include files participate directly in name-based inheritance resolution and must come from trusted sources.
 
@@ -76,8 +76,9 @@ src/
 ├── tar-extract.ts        # streaming OCI / NPM extraction with security checks
 ├── npm-key.ts            # NPM package-spec parsing
 ├── oci-key.ts            # OCI package-spec parsing + {{inherit}} + auto-path
+├── plugin-name.ts        # final-segment name extraction for reference lookup
 ├── integrity.ts          # streaming SRI integrity verification
-├── merger.ts             # plugin merging + deep-merge with conflict detection
+├── merger.ts             # reference resolution + plugin/config merging
 ├── plugin-hash.ts        # hash for change-detection ("already installed?")
 ├── installer-oci.ts      # install one OCI plugin
 ├── installer-npm.ts      # install one NPM (or local) plugin

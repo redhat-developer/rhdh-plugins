@@ -200,6 +200,20 @@ describe('preMergeOciDisabledState — same-level duplicates', () => {
     ).toThrow(/Duplicate OCI plugin configuration/);
   });
 
+  it('lets an enabled entry replace a disabled duplicate at the same level', () => {
+    const include: PluginSpec[] = [
+      {
+        package: 'oci://registry.example.com/plugin:1.0!a',
+        disabled: true,
+      },
+      { package: 'oci://registry.example.com/plugin:1.0!a' },
+    ];
+
+    expect(() =>
+      preMergeOciDisabledState([['include.yaml', include]], [], 'main.yaml'),
+    ).not.toThrow();
+  });
+
   it('rejects different images with the same final segment and names both', () => {
     const first = 'oci://quay.io/team-a/catalog:1.0!catalog-backend';
     const second =

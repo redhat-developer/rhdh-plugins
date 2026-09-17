@@ -115,7 +115,7 @@ describe('mergePlugin — name-based OCI {{inherit}} lookup', () => {
     expect(override.package).toBe(`${BASE_IMAGE}:${VERSION}!catalog-backend`);
   });
 
-  it('preserves an explicit user plugin path like the operator', async () => {
+  it('adds an explicit user plugin path as a distinct entry like the operator', async () => {
     const all: PluginMap = {};
     await seedInclude(all, {
       package: `${BASE_IMAGE}:${VERSION}!catalog-backend`,
@@ -126,7 +126,9 @@ describe('mergePlugin — name-based OCI {{inherit}} lookup', () => {
     };
     await mergeMain(all, override);
 
+    const catalogKey = `${BASE_IMAGE}:!catalog-backend`;
     const customKey = `${BASE_IMAGE}:!custom-path`;
+    expect(Object.keys(all).sort()).toEqual([catalogKey, customKey].sort());
     expect(override.package).toBe(`${BASE_IMAGE}:${VERSION}!custom-path`);
     expect(all[customKey]).toMatchObject({
       package: `${BASE_IMAGE}:${VERSION}!custom-path`,
@@ -167,6 +169,40 @@ describe('mergePlugin — name-based OCI {{inherit}} lookup', () => {
     expect(message).toContain('second.yaml');
   });
 
+  it('deduplicates identical candidates before checking ambiguity', () => {
+    const candidate = `${BASE_IMAGE}:1.0!catalog-backend`;
+
+    expect(
+      resolveInheritPackage(`${REQUEST_IMAGE}:{{inherit}}`, [
+        { package: candidate, disabled: true, sourceFile: 'first.yaml' },
+        { package: candidate, disabled: true, sourceFile: 'second.yaml' },
+      ]),
+    ).toBe(candidate);
+  });
+
+  it('ignores disabled candidates when an enabled match exists', () => {
+    const enabled = `${BASE_IMAGE}:1.0!catalog-backend`;
+    const disabled =
+      'oci://mirror.example.com/rhdh/backstage-plugin-catalog:2.0!catalog-backend';
+
+    expect(
+      resolveInheritPackage(`${REQUEST_IMAGE}:{{inherit}}`, [
+        { package: disabled, disabled: true },
+        { package: enabled },
+      ]),
+    ).toBe(enabled);
+  });
+
+  it('inherits a digest from the selected catalog package', () => {
+    const candidate = `${BASE_IMAGE}@sha256:abc123!catalog-backend`;
+
+    expect(
+      resolveInheritPackage(`${REQUEST_IMAGE}:{{inherit}}!catalog-backend`, [
+        { package: candidate },
+      ]),
+    ).toBe(candidate);
+  });
+
   it('requires a path when one image supplies several plugin entries', () => {
     const candidates = [
       { package: `${BASE_IMAGE}:1.0!plugin-a` },
@@ -192,6 +228,44 @@ describe('mergePlugin — name-based OCI {{inherit}} lookup', () => {
 });
 
 describe('mergePlugin — ordinary OCI identity remains concrete', () => {
+  it('lets an enabled entry replace a disabled same-level duplicate', async () => {
+    const all: PluginMap = {};
+    const key = `${BASE_IMAGE}:!catalog-backend`;
+    await seedInclude(all, {
+      package: `${BASE_IMAGE}:1.0!catalog-backend`,
+      disabled: true,
+    });
+
+    await seedInclude(all, {
+      package: `${BASE_IMAGE}:1.0!catalog-backend`,
+    });
+
+    expect(Object.keys(all)).toEqual([key]);
+    expect(all[key]).not.toHaveProperty('enabled');
+    expect(all[key]).not.toHaveProperty('disabled');
+  });
+
+  it('preserves same-registry explicit-version overrides', async () => {
+    const all: PluginMap = {};
+    const key = `${BASE_IMAGE}:!catalog-backend`;
+    await seedInclude(all, {
+      package: `${BASE_IMAGE}:1.0!catalog-backend`,
+      pluginConfig: { source: 'catalog' },
+    });
+
+    await mergeMain(all, {
+      package: `${BASE_IMAGE}:2.0!catalog-backend`,
+      pluginConfig: { source: 'main' },
+    });
+
+    expect(Object.keys(all)).toEqual([key]);
+    expect(all[key]).toMatchObject({
+      package: `${BASE_IMAGE}:2.0!catalog-backend`,
+      version: '2.0',
+      pluginConfig: { source: 'main' },
+    });
+  });
+
   it('does not merge ordinary packages merely because their final names match', async () => {
     const all: PluginMap = {};
     await seedInclude(all, {
