@@ -11,10 +11,37 @@ CLIENT_FOLDER="${GENERATED_FOLDER}/client"
 APIDOC_TEMPLATE_FILE="./src/openapi/api-doc-template.yaml"
 APIDOC_GENERATED_FILE=${GENERATED_FOLDER}/docs/api-doc/orchestrator-api.yaml
 
+# axios >=1.19 infers an unexported unique symbol on createRequestFunction,
+# which fails declaration emit (TS2527). The typescript-axios template fix is
+# https://github.com/OpenAPITools/openapi-generator/pull/24526 — reapply it
+# until this workspace's generator includes that change.
+patch_axios_ts2527() {
+    node -e '
+const fs = require("fs");
+const file = process.argv[1];
+const source = fs.readFileSync(file, "utf8");
+const patched = source
+  .replace(
+    "(axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {",
+    "(axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH): Promise<R> => {",
+  )
+  .replace(
+    "return axios.request<T, R>(axiosRequestArgs);",
+    "return axios.request<T, R>(axiosRequestArgs) as Promise<R>;",
+  );
+if (patched === source) {
+  console.error("Failed to patch createRequestFunction for axios TS2527 in", file);
+  process.exit(1);
+}
+fs.writeFileSync(file, patched);
+' "${CLIENT_FOLDER}/common.ts"
+}
+
 openapi_generate() {
     # TypeScript Client generation
     rm -rf ${CLIENT_FOLDER}
     openapi-generator-cli generate -g typescript-axios -i ${OPENAPI_SPEC_FILE} -o ${CLIENT_FOLDER}
+    patch_axios_ts2527
 
     # Docs generation
     rm -rf ./src/generated/docs/markdown ./src/generated/docs/html ./src/generated/docs/api-doc
