@@ -36,15 +36,16 @@ const gridItemSx = {
 } as const;
 
 /**
- * RHDH Dependencies tab layout: relation graph (`type: info`) on the left,
- * dependency list cards (`type: content`) on the right.
+ * RHDH Dependencies tab layout: `type: info` cards in the left column (relations
+ * graph by default; adopters may add more), dependency list cards on the right.
+ * Multiple info cards share one grid area and stack vertically to avoid overlap.
  *
  * @internal
  */
 export const EntityDependenciesLayout = ({
   cards,
 }: EntityContentLayoutProps) => {
-  const graphCards = cards.filter(card => card.type === 'info');
+  const infoCards = cards.filter(card => card.type === 'info');
   const listCards = cards.filter(card => !card.type || card.type === 'content');
   const otherCards = cards.filter(
     card => card.type && card.type !== 'info' && card.type !== 'content',
@@ -52,19 +53,28 @@ export const EntityDependenciesLayout = ({
 
   return (
     <Grid container>
-      {graphCards.map((card, index) => (
+      {infoCards.length > 0 ? (
         <Grid
           item
-          key={card.element.key ?? index}
           sx={{
             ...gridItemSx,
             gridColumn: graphColumn,
             gridRow: { md: '1 / span 6', lg: '1 / span 6' },
           }}
         >
-          {card.element}
+          <Grid container>
+            {infoCards.map((card, index) => (
+              <Grid
+                item
+                key={card.element.key ?? index}
+                sx={{ gridColumn: '1 / -1' }}
+              >
+                {card.element}
+              </Grid>
+            ))}
+          </Grid>
         </Grid>
-      ))}
+      ) : null}
       {listCards.map((card, index) => (
         <Grid
           item

@@ -33,7 +33,7 @@ export const catalogGraphPluginOverride = catalogGraphPlugin.withOverrides({
       .getExtension('entity-card:catalog-graph/relations')
       .override({
         factory(originalFactory) {
-          // Replaced by rhdh-overview-relations / rhdh-dependencies-relations.
+          // Replaced by rhdh-overview-relations / rhdh-component-dependencies-relations.
           return originalFactory({
             params: {
               filter: () => false,

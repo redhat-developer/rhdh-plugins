@@ -27,9 +27,9 @@ import { makeRhdhEntityRelationsGraphCardExtension } from './rhdhEntityRelations
  */
 export const entityDependenciesGraphCardExtension =
   makeRhdhEntityRelationsGraphCardExtension({
-    name: 'rhdh-dependencies-relations',
+    name: 'rhdh-component-dependencies-relations',
     attachTo: {
-      id: 'entity-content:catalog/rhdh-dependencies',
+      id: 'entity-content:catalog/rhdh-component-dependencies',
       input: 'cards',
     },
     filter: isKind('component'),

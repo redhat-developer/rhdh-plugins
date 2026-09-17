@@ -19,7 +19,7 @@ import apiDocsPlugin from '@backstage/plugin-api-docs/alpha';
 
 const dependenciesTabCards = {
   attachTo: {
-    id: 'entity-content:catalog/rhdh-dependencies',
+    id: 'entity-content:catalog/rhdh-component-dependencies',
     input: 'cards',
   },
 } as const;

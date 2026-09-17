@@ -47,16 +47,16 @@ app:
 
 ### Extra entity tabs
 
-| Tab            | Extension id                                 | Entities    | Notes                                      |
-| -------------- | -------------------------------------------- | ----------- | ------------------------------------------ |
-| Dependencies   | `entity-content:catalog/rhdh-dependencies`   | `component` | NFS-composed from entity cards (see below) |
-| System Diagram | `entity-content:catalog/rhdh-system-diagram` | `system`    | Custom tab body (legacy RHDH diagram)      |
+| Tab            | Extension id                                         | Entities    | Notes                                      |
+| -------------- | ---------------------------------------------------- | ----------- | ------------------------------------------ |
+| Dependencies   | `entity-content:catalog/rhdh-component-dependencies` | `component` | NFS-composed from entity cards (see below) |
+| System Diagram | `entity-content:catalog/rhdh-system-diagram`         | `system`    | Custom tab body (legacy RHDH diagram)      |
 
 Stock Backstage tabs (Documentation group, Kubernetes, etc.) are unchanged.
 
 ### Cards moved off Overview
 
-These **stock** extension IDs stay enabled but are **re-attached** to the Dependencies tab (`entity-content:catalog/rhdh-dependencies`) via plugin overrides — they no longer appear on Overview:
+These **stock** extension IDs stay enabled but are **re-attached** to the Dependencies tab (`entity-content:catalog/rhdh-component-dependencies`) via plugin overrides — they no longer appear on Overview:
 
 - `entity-card:catalog/depends-on-components`
 - `entity-card:catalog/depends-on-resources`
@@ -68,12 +68,12 @@ To show one of these on Overview again, override its attachment back to `entity-
 
 ### Disabled or replaced on Overview
 
-| Extension                                               | Default behavior                                |
-| ------------------------------------------------------- | ----------------------------------------------- |
-| `entity-card:catalog-graph/relations`                   | Disabled in `catalog-graph-plugin-override`     |
-| `entity-card:catalog-graph/rhdh-overview-relations`     | Overview graph for **API** and **System** only  |
-| `entity-card:catalog-graph/rhdh-dependencies-relations` | Dependencies graph for **components** only      |
-| `entity-card:api-docs/definition`                       | Hidden on Overview (`api-docs-plugin-override`) |
+| Extension                                                         | Default behavior                                |
+| ----------------------------------------------------------------- | ----------------------------------------------- |
+| `entity-card:catalog-graph/relations`                             | Disabled in `catalog-graph-plugin-override`     |
+| `entity-card:catalog-graph/rhdh-overview-relations`               | Overview graph for **API** and **System** only  |
+| `entity-card:catalog-graph/rhdh-component-dependencies-relations` | Dependencies graph for **components** only      |
+| `entity-card:api-docs/definition`                                 | Hidden on Overview (`api-docs-plugin-override`) |
 
 Optional tuning (height, direction):
 
@@ -90,7 +90,7 @@ app:
 1. **Overview columns only**: disable `entity-content-layout:catalog/rhdh` (exact disable syntax depends on your app’s extension config; omit the layout extension from app-defaults by not loading `catalogPluginOverride`, or override with stock layout).
 2. **Stock relations card**: set `entity-card:catalog-graph/relations: true` (or remove `false`) and disable both `rhdh-*-relations` extensions.
 3. **Overview cards**: remove card attachment overrides by not loading app-defaults catalog / api-docs overrides, or re-attach cards to Overview in your own overrides.
-4. **Tabs**: disable `entity-content:catalog/rhdh-dependencies` and `entity-content:catalog/rhdh-system-diagram` in `app.extensions`.
+4. **Tabs**: disable `entity-content:catalog/rhdh-component-dependencies` and `entity-content:catalog/rhdh-system-diagram` in `app.extensions`.
 
 Reference: [Migrating entity pages to the new frontend system](https://github.com/redhat-developer/rhdh/blob/main/docs/dynamic-plugins/migrating-entity-pages-to-the-new-frontend-system.md) (RHDH product docs).
 

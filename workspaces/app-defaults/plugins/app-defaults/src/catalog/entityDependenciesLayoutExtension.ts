@@ -23,9 +23,9 @@ import { EntityContentLayoutBlueprint } from '@backstage/plugin-catalog-react/al
  */
 export const entityDependenciesLayoutExtension =
   EntityContentLayoutBlueprint.makeWithOverrides({
-    name: 'rhdh-dependencies',
+    name: 'rhdh-component-dependencies',
     attachTo: {
-      id: 'entity-content:catalog/rhdh-dependencies',
+      id: 'entity-content:catalog/rhdh-component-dependencies',
       input: 'layouts',
     },
     factory(originalFactory) {

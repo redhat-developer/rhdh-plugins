@@ -38,7 +38,7 @@ import { EntityDependenciesLayout } from './entityDependenciesLayout';
  */
 export const entityDependenciesContentExtension =
   EntityContentBlueprint.makeWithOverrides({
-    name: 'rhdh-dependencies',
+    name: 'rhdh-component-dependencies',
     inputs: {
       layouts: createExtensionInput([
         EntityContentLayoutBlueprint.dataRefs.filterFunction.optional(),
