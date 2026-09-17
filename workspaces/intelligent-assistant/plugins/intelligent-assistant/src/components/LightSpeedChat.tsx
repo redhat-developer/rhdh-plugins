@@ -462,6 +462,7 @@ const FlatSettings = styled(Settings)({
     width: '100%',
     maxWidth: 'none',
     border: 'none',
+    ...pf6HideNestedRhUiIconCss,
   },
   '& .pf-chatbot__settings-form-row': {
     background: LIGHTSPEED_FLOATING_BG,
@@ -511,6 +512,7 @@ const McpSettingsPane = styled('div')(({ theme }) => ({
   flexDirection: 'column',
   minHeight: 0,
   overflow: 'auto',
+  ...pf6HideNestedRhUiIconCss,
 }));
 
 const FullscreenChatLayout = styled('div')({
