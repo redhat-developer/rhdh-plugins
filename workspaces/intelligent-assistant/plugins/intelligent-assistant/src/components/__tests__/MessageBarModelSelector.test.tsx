@@ -224,6 +224,21 @@ describe('MessageBarModelSelector', () => {
     expect(screen.getByText('Granite 3.3')).toBeInTheDocument();
   });
 
+  it('shows vision screenshot indicator when enabled', () => {
+    render(
+      <MessageBarModelSelector
+        selectedModel="granite-3.3"
+        models={mockModels}
+        onSelect={mockOnSelect}
+        showVisionScreenshotIndicator
+      />,
+    );
+
+    expect(
+      screen.getByLabelText('Vision model screenshot context'),
+    ).toBeInTheDocument();
+  });
+
   it('should render with empty models list', () => {
     render(
       <MessageBarModelSelector

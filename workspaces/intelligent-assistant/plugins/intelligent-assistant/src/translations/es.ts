@@ -26,6 +26,11 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
   ref: intelligentAssistantTranslationRef,
   messages: {
     'aria.chatHistoryMenu': 'Menú del historial de chat',
+    'modelSelector.visionScreenshot.line1': 'Image analysis supported.',
+    'modelSelector.visionScreenshot.line2':
+      'A screenshot will be included with your message.',
+    'modelSelector.visionScreenshot.ariaLabel':
+      'Vision model screenshot context',
     'modelSelector.disabledTooltip':
       'Cada sesión de chat solo admite un modelo. Para cambiar de modelo, abra un nuevo chat.',
     'aria.chatbotSelector': 'Selector de chatbot',
@@ -348,6 +353,37 @@ const intelligentAssistantTranslationEs = createTranslationMessages({
     'settings.savedPrompts.enable': 'Habilitar prompts guardados',
     'settings.savedPrompts.enabled.description':
       'Los prompts guardados están habilitados actualmente',
+    'settings.screenContext.enable': 'Enable screen context',
+    'settings.screenContext.disable': 'Disable screen context',
+    'settings.screenContext.enabled.description':
+      'Screen context sharing is currently enabled',
+    'settings.screenContext.disabled.description':
+      'Screen context sharing is currently disabled',
+    'contextChip.label.paused': 'Context: paused',
+    'contextChip.label.unavailable': 'Context: unavailable',
+    'contextChip.label.softwareTemplates': 'Software templates',
+    'contextChip.tooltip.askAbout': 'Ask about {{label}}.',
+    'contextChip.tooltip.template':
+      'Ask how to fill in the {{label}} template.',
+    'contextChip.tooltip.search': 'Ask about your search: {{label}}.',
+    'contextChip.tooltip.paused':
+      'Screen context is paused. Click to resume sharing your current screen with the intelligent assistant.',
+    'contextChip.tooltip.unavailable':
+      'Screen context is not available in fullscreen mode. Switch to Overlay or Docked mode to enable it.',
+    'contextChip.tooltip.line2.fullContext':
+      'Page text and a screenshot will be sent with your message.',
+    'contextChip.tooltip.line2.adminLimited':
+      'Screen context sharing is limited by administrator settings.',
+    'contextChip.tooltip.line2.screenshotOnly':
+      'Text extraction is disabled by your administrator. Screenshot only.',
+    'contextChip.tooltip.line2.textOnlyNoVision':
+      'Text context only - your model does not support image analysis.',
+    'contextChip.tooltip.line2.textOnlyAdminScreenshotsOff':
+      'Text context only - screenshot capture is disabled by your administrator.',
+    'contextChip.tooltip.line2.textOnlyCombined':
+      'Text context only - your model does not support image analysis and screenshot capture is disabled by your administrator.',
+    'contextChip.aria.pause': 'Pause screen context: {{label}}',
+    'contextChip.aria.resume': 'Resume screen context',
     'savedPrompts.tab.title': 'Prompts guardados',
     'savedPrompts.disabled.title': 'Los prompts guardados están deshabilitados',
     'savedPrompts.disabled.body':

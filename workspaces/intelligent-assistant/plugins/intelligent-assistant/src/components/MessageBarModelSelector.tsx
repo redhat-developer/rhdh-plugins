@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import { Ref, useEffect, useState } from 'react';
+import { Fragment, Ref, useEffect, useMemo, useState } from 'react';
 
+import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import {
@@ -36,6 +37,7 @@ type MessageBarModelSelectorProps = {
   onSelect: (model: string) => void;
   disabled?: boolean;
   disabledTooltip?: string;
+  showVisionScreenshotIndicator?: boolean;
 };
 
 const SelectorToggle = styled(MenuToggle)(({ theme }) => ({
@@ -59,6 +61,18 @@ const SelectorToggle = styled(MenuToggle)(({ theme }) => ({
   },
 }));
 
+const VisionIndicatorIcon = styled(ImageOutlinedIcon)(({ theme }) => ({
+  fontSize: 16,
+  color: theme.palette.text.secondary,
+  flexShrink: 0,
+}));
+
+const VisionIndicatorWrap = styled('span')({
+  display: 'inline-flex',
+  alignItems: 'center',
+  lineHeight: 0,
+});
+
 const StyledDropdown = styled(Dropdown)({
   '& ul, & li': {
     padding: 0,
@@ -72,6 +86,7 @@ export const MessageBarModelSelector = ({
   onSelect,
   disabled = false,
   disabledTooltip,
+  showVisionScreenshotIndicator = false,
 }: MessageBarModelSelectorProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useTranslation();
@@ -85,6 +100,17 @@ export const MessageBarModelSelector = ({
   const selectedModelLabel =
     models.find(m => m.value === selectedModel)?.label ?? selectedModel;
 
+  const visionScreenshotTooltip = useMemo(
+    () => (
+      <Fragment>
+        {t('modelSelector.visionScreenshot.line1')}
+        <br />
+        {t('modelSelector.visionScreenshot.line2')}
+      </Fragment>
+    ),
+    [t],
+  );
+
   const toggle = (toggleRef: Ref<MenuToggleElement>) => (
     <SelectorToggle
       ref={toggleRef}
@@ -95,6 +121,17 @@ export const MessageBarModelSelector = ({
       aria-label={t('aria.chatbotSelector')}
     >
       {selectedModelLabel}
+      {showVisionScreenshotIndicator && (
+        <Tooltip content={visionScreenshotTooltip}>
+          <VisionIndicatorWrap
+            aria-label={t('modelSelector.visionScreenshot.ariaLabel')}
+            onClick={event => event.stopPropagation()}
+            onMouseDown={event => event.stopPropagation()}
+          >
+            <VisionIndicatorIcon aria-hidden />
+          </VisionIndicatorWrap>
+        </Tooltip>
+      )}
       <AngleDownIcon />
     </SelectorToggle>
   );
