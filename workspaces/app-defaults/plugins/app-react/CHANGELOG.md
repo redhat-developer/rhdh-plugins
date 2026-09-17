@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-app-react
 
+## 1.3.0
+
+### Minor Changes
+
+- 3625dd9: Backstage version bump to v1.54.6
+
 ## 1.2.1
 
 ## 1.2.0
