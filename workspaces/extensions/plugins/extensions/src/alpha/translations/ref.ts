@@ -397,7 +397,7 @@ export const extensionsMessages = {
 
 /**
  * Translation reference for extensions plugin
- * @alpha
+ * @public
  */
 export const extensionsTranslationRef = createTranslationRef({
   id: 'plugin.extensions',

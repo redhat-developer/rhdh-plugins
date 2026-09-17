@@ -22,6 +22,7 @@ import {
 import { makeStyles } from '@material-ui/core';
 import { LogoFull } from './LogoFull';
 import { LogoIcon } from './LogoIcon';
+
 const useSidebarLogoStyles = makeStyles({
   root: {
     width: sidebarConfig.drawerWidthClosed,

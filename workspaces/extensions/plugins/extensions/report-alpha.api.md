@@ -281,7 +281,7 @@ const extensionsPlugin: OverridableFrontendPlugin<
 >;
 export default extensionsPlugin;
 
-// @alpha
+// @public
 export const extensionsTranslationRef: TranslationRef<
   'plugin.extensions',
   {
@@ -527,7 +527,7 @@ export const extensionsTranslationRef: TranslationRef<
   }
 >;
 
-// @alpha
+// @public
 export const extensionsTranslations: TranslationResource<'plugin.extensions'>;
 
 // @alpha
