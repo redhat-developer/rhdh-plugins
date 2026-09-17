@@ -69,14 +69,13 @@ schema for both. That raises the cost of removal — the fallback code, its
 tests, the declared schema, and the OGX spec would all have to be updated
 together.
 
-## Active remaining frontend work (`openspec/changes/`)
+## Completed frontend work
 
-| Change                             | Status              |
-| ---------------------------------- | ------------------- |
-| `ai-catalog-frontend-translations` | 1/11 — locale files |
+Frontend translations (de, es, fr, it, ja) are implemented and archived
+in `openspec/specs/ai-catalog-translations/`. Playwright locale coverage
+is included.
 
-Playwright coverage from PR #4501 is implemented. Its test-infrastructure
-change is archived without adding a product-behavior spec.
+There is no remaining active frontend work in `openspec/changes/`.
 
 ## RBAC follow-on work
 
