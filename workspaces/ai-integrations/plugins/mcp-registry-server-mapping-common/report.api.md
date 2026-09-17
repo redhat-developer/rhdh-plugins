@@ -121,6 +121,13 @@ export interface McpServerRepository {
 }
 
 // @public
+export function projectAnnotations(
+  doc: McpServerDocument,
+  consumedPaths: string[],
+  reservedAnnotationKeys: string[],
+): Record<string, string>;
+
+// @public
 export interface RepositoryUrlResult {
   combinedUrl: string;
   originalUrl: string;

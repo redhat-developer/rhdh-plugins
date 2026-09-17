@@ -16,7 +16,8 @@
 
 /**
  * Deterministic transform from MCP Registry server.json documents to
- * Backstage mcp-server API entities (direct field mapping).
+ * Backstage mcp-server API entities (direct field mapping and
+ * annotation projection).
  *
  * @packageDocumentation
  */
@@ -47,3 +48,4 @@ export {
 } from './identity';
 export { computeRepositoryUrl } from './repository';
 export type { RepositoryUrlResult } from './repository';
+export { projectAnnotations } from './annotationProjection';

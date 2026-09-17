@@ -1,0 +1,1585 @@
+/*
+ * Copyright Red Hat, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* eslint-disable no-script-url */
+
+import {
+  projectAnnotations,
+  buildBaseNameSegment,
+  buildHashedNameSegment,
+  computeAnnotationHashSuffix,
+  isRefusedUrl,
+} from './annotationProjection';
+import type { McpServerDocument } from './types';
+
+/** Minimal valid server.json document for reuse across tests. */
+function makeMinimalDoc(
+  overrides?: Partial<McpServerDocument>,
+): McpServerDocument {
+  return {
+    name: 'weather',
+    description: 'A weather server',
+    version: '1.0.0',
+    remotes: [{ type: 'streamable-http', url: 'https://example.com/mcp' }],
+    ...overrides,
+  };
+}
+
+/**
+ * Consumed paths and reserved keys produced by the direct mapping
+ * for the minimal document.
+ */
+function makeMinimalConsumed(doc: McpServerDocument): {
+  consumedPaths: string[];
+  reservedAnnotationKeys: string[];
+} {
+  const consumedPaths: string[] = ['name', 'description', 'version'];
+  const reservedAnnotationKeys: string[] = [
+    'modelcontextprotocol.io/name',
+    'modelcontextprotocol.io/version',
+  ];
+
+  if (doc.title !== undefined && doc.title !== null) {
+    consumedPaths.push('title');
+  }
+
+  if (doc.websiteUrl !== undefined && doc.websiteUrl !== null) {
+    consumedPaths.push('websiteUrl');
+  }
+
+  if (doc.repository?.url !== undefined && doc.repository?.url !== null) {
+    consumedPaths.push('repository.url');
+    reservedAnnotationKeys.push(
+      'backstage.io/source-location',
+      'modelcontextprotocol.io/repository.url',
+    );
+  }
+
+  if (doc.remotes) {
+    for (let i = 0; i < doc.remotes.length; i++) {
+      consumedPaths.push(`remotes.${i}.type`);
+      if (doc.remotes[i].url !== undefined && doc.remotes[i].url !== null) {
+        consumedPaths.push(`remotes.${i}.url`);
+      }
+    }
+  }
+
+  return { consumedPaths, reservedAnnotationKeys };
+}
+
+/* ------------------------------------------------------------------ */
+/*  buildBaseNameSegment / buildHashedNameSegment (task 4.4)            */
+/* ------------------------------------------------------------------ */
+
+describe('buildBaseNameSegment', () => {
+  it('joins segments with dots', () => {
+    expect(buildBaseNameSegment(['icons', '0', 'mimeType'])).toBe(
+      'icons.0.mimetype',
+    );
+  });
+
+  it('sanitizes _meta leading underscore to x', () => {
+    expect(buildBaseNameSegment(['_meta', 'key'])).toBe('xmeta.key');
+  });
+
+  it('sanitizes slash in key to hyphen', () => {
+    expect(
+      buildBaseNameSegment([
+        '_meta',
+        'io.modelcontextprotocol.registry/publisher-provided',
+        'x',
+      ]),
+    ).toBe('xmeta.io.modelcontextprotocol.registry-publisher-provided.x');
+  });
+
+  it('boundary-normalizes non-alphanumeric segment ends', () => {
+    // A lone "/" sanitizes to "-" then boundary-normalizes to "x"
+    expect(buildBaseNameSegment(['obj', '/', 'leaf'])).toBe('obj.x.leaf');
+  });
+
+  it('leaves array indices unchanged', () => {
+    expect(buildBaseNameSegment(['packages', '0', 'identifier'])).toBe(
+      'packages.0.identifier',
+    );
+  });
+
+  it('lowercases segments', () => {
+    expect(buildBaseNameSegment(['MyKey'])).toBe('mykey');
+  });
+
+  it('applies post-join boundary normalization', () => {
+    // If the first segment sanitizes to start with non-alpha, joined
+    // string is boundary-normalized
+    expect(buildBaseNameSegment(['_top'])).toBe('xtop');
+  });
+});
+
+describe('buildHashedNameSegment', () => {
+  it('appends hash suffix to base', () => {
+    const result = buildHashedNameSegment(['packages', '0', 'identifier']);
+    expect(result).toMatch(/^packages\.0\.identifier-[0-9a-f]{8}$/);
+    expect(result.length).toBeLessThanOrEqual(63);
+  });
+
+  it('truncates and hashes when base exceeds 63 characters', () => {
+    // Create a path that sanitizes to > 63 chars
+    const segments = ['a'.repeat(30), 'b'.repeat(30), 'c'.repeat(10)];
+    const result = buildHashedNameSegment(segments);
+    expect(result.length).toBeLessThanOrEqual(63);
+    expect(result).toMatch(/-[0-9a-f]{8}$/);
+  });
+
+  it('produces deterministic output', () => {
+    const a = buildHashedNameSegment(['foo', 'bar']);
+    const b = buildHashedNameSegment(['foo', 'bar']);
+    expect(a).toBe(b);
+  });
+
+  it('produces distinct hashes for distinct paths', () => {
+    const a = computeAnnotationHashSuffix(['foo', 'bar']);
+    const b = computeAnnotationHashSuffix(['foo', 'baz']);
+    expect(a).not.toBe(b);
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/*  isRefusedUrl (D11 for projection)                                  */
+/* ------------------------------------------------------------------ */
+
+describe('isRefusedUrl', () => {
+  it('refuses javascript: URLs', () => {
+    expect(isRefusedUrl('javascript:alert(1)')).toBe(true);
+  });
+
+  it('refuses data: URLs', () => {
+    expect(isRefusedUrl('data:text/html,x')).toBe(true);
+  });
+
+  it('refuses file: URLs', () => {
+    expect(isRefusedUrl('file:///etc/passwd')).toBe(true);
+  });
+
+  it('refuses blob: URLs', () => {
+    expect(isRefusedUrl('blob:https://example.com/uuid')).toBe(true);
+  });
+
+  it('does not refuse http: URLs', () => {
+    expect(isRefusedUrl('http://localhost:7007/mcp')).toBe(false);
+  });
+
+  it('does not refuse https: URLs', () => {
+    expect(isRefusedUrl('https://example.com/icon.png')).toBe(false);
+  });
+
+  it('does not refuse non-URL strings', () => {
+    expect(isRefusedUrl('@scope/pkg')).toBe(false);
+    expect(isRefusedUrl('some description text')).toBe(false);
+    expect(isRefusedUrl('npx')).toBe(false);
+  });
+
+  it('does not refuse numbers', () => {
+    expect(isRefusedUrl(42)).toBe(false);
+  });
+
+  it('does not refuse booleans', () => {
+    expect(isRefusedUrl(true)).toBe(false);
+  });
+
+  it('does not refuse empty strings', () => {
+    expect(isRefusedUrl('')).toBe(false);
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/*  projectAnnotations — basic projection                              */
+/* ------------------------------------------------------------------ */
+
+describe('projectAnnotations', () => {
+  describe('basic projection', () => {
+    it('projects unmapped scalar leaves as annotations', () => {
+      const doc = makeMinimalDoc({
+        icons: [
+          { src: 'https://cdn.example.com/icon.png', mimeType: 'image/png' },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result['modelcontextprotocol.io/icons.0.src']).toBe(
+        'https://cdn.example.com/icon.png',
+      );
+      expect(result['modelcontextprotocol.io/icons.0.mimetype']).toBe(
+        'image/png',
+      );
+    });
+
+    it('projects nested object scalars with dot paths', () => {
+      const doc = makeMinimalDoc({
+        repository: {
+          url: 'https://github.com/org/repo',
+          source: 'github',
+          id: '12345',
+          subfolder: 'src/server',
+        },
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      // repository.url is consumed — not projected
+      expect(result).not.toHaveProperty(
+        'modelcontextprotocol.io/repository.url',
+      );
+      // Non-consumed repository sub-fields are projected
+      expect(result['modelcontextprotocol.io/repository.source']).toBe(
+        'github',
+      );
+      expect(result['modelcontextprotocol.io/repository.id']).toBe('12345');
+      expect(result['modelcontextprotocol.io/repository.subfolder']).toBe(
+        'src/server',
+      );
+    });
+
+    it('projects array elements with zero-based indices', () => {
+      const doc = makeMinimalDoc({
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: '@scope/pkg',
+            transport: { type: 'stdio' },
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result['modelcontextprotocol.io/packages.0.registrytype']).toBe(
+        'npm',
+      );
+      expect(result['modelcontextprotocol.io/packages.0.identifier']).toBe(
+        '@scope/pkg',
+      );
+      expect(result['modelcontextprotocol.io/packages.0.transport.type']).toBe(
+        'stdio',
+      );
+    });
+
+    it('serializes non-string scalars as strings', () => {
+      const doc = makeMinimalDoc({
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: 'pkg',
+            transport: { port: 8080, secure: true },
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result['modelcontextprotocol.io/packages.0.transport.port']).toBe(
+        '8080',
+      );
+      expect(
+        result['modelcontextprotocol.io/packages.0.transport.secure'],
+      ).toBe('true');
+    });
+  });
+
+  /* ---------------------------------------------------------------- */
+  /*  Consumed paths — not re-projected                                */
+  /* ---------------------------------------------------------------- */
+
+  describe('consumed paths', () => {
+    it('does not re-project name, description, version', () => {
+      const doc = makeMinimalDoc();
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      // These are consumed by direct mapping — no projection
+      expect(result).not.toHaveProperty('modelcontextprotocol.io/name');
+      expect(result).not.toHaveProperty('modelcontextprotocol.io/description');
+      expect(result).not.toHaveProperty('modelcontextprotocol.io/version');
+    });
+
+    it('does not re-project consumed remote type and url', () => {
+      const doc = makeMinimalDoc({
+        remotes: [
+          {
+            type: 'streamable-http',
+            url: 'https://example.com/mcp',
+            headers: [
+              { name: 'Authorization', isSecret: false, default: 'Bearer tok' },
+            ],
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      // type and url are consumed
+      expect(result).not.toHaveProperty(
+        'modelcontextprotocol.io/remotes.0.type',
+      );
+      expect(result).not.toHaveProperty(
+        'modelcontextprotocol.io/remotes.0.url',
+      );
+
+      // headers are NOT consumed — they project
+      expect(result['modelcontextprotocol.io/remotes.0.headers.0.name']).toBe(
+        'Authorization',
+      );
+    });
+
+    it('does not re-project consumed websiteUrl', () => {
+      const doc = makeMinimalDoc({
+        websiteUrl: 'https://weather.example.com',
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result).not.toHaveProperty('modelcontextprotocol.io/websiteurl');
+    });
+
+    it('does not re-project consumed title', () => {
+      const doc = makeMinimalDoc({ title: 'Weather Server' });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result).not.toHaveProperty('modelcontextprotocol.io/title');
+    });
+  });
+
+  /* ---------------------------------------------------------------- */
+  /*  Reserved key collision (D3 hash disambiguation)                  */
+  /* ---------------------------------------------------------------- */
+
+  describe('reserved key collision disambiguation', () => {
+    it('does not overwrite reserved annotation keys', () => {
+      // Force a scenario where a distinct source path would sanitize
+      // to the same key as a reserved annotation. We pass
+      // 'modelcontextprotocol.io/repository.source' as reserved
+      // and add a real 'repository.source' scalar.
+      const doc = makeMinimalDoc({
+        repository: {
+          url: 'https://github.com/org/repo',
+          source: 'github',
+        },
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+
+      // Artificially add the projected key as reserved to test disambiguation
+      reservedAnnotationKeys.push('modelcontextprotocol.io/repository.source');
+
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      // The projected scalar should appear under a hash-disambiguated key
+      expect(result).not.toHaveProperty(
+        'modelcontextprotocol.io/repository.source',
+      );
+
+      // Should have a hash-suffixed key containing the value
+      const keys = Object.keys(result);
+      const disambiguated = keys.find(
+        k =>
+          k.startsWith('modelcontextprotocol.io/repository.source-') &&
+          /[0-9a-f]{8}$/.test(k),
+      );
+      expect(disambiguated).toBeDefined();
+      expect(result[disambiguated!]).toBe('github');
+    });
+  });
+
+  /* ---------------------------------------------------------------- */
+  /*  Key sanitization (task 4.4)                                      */
+  /* ---------------------------------------------------------------- */
+
+  describe('key sanitization', () => {
+    it('sanitizes _meta key to xmeta', () => {
+      const doc = makeMinimalDoc({
+        _meta: { publisher: 'test-publisher' },
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result['modelcontextprotocol.io/xmeta.publisher']).toBe(
+        'test-publisher',
+      );
+    });
+
+    it('sanitizes nested key with slash to hyphen', () => {
+      const doc = makeMinimalDoc({
+        _meta: {
+          'io.modelcontextprotocol.registry/publisher-provided': {
+            x: 'value',
+          },
+        },
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(
+        result[
+          'modelcontextprotocol.io/xmeta.io.modelcontextprotocol.registry-publisher-provided.x'
+        ],
+      ).toBe('value');
+    });
+
+    it('lowercases key segments', () => {
+      const doc = makeMinimalDoc({
+        _meta: { MyCustomKey: 'value' },
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result['modelcontextprotocol.io/xmeta.mycustomkey']).toBe('value');
+    });
+  });
+
+  /* ---------------------------------------------------------------- */
+  /*  Key truncation (task 4.4)                                        */
+  /* ---------------------------------------------------------------- */
+
+  describe('key truncation', () => {
+    it('truncates and hashes when name segment exceeds 63 chars', () => {
+      // Create deeply nested path that exceeds 63 chars
+      const doc = makeMinimalDoc({
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: 'pkg',
+            transport: {
+              configuration: {
+                advancedSettings: {
+                  veryLongPropertyNameThatWillCauseThisToExceed: 'value',
+                },
+              },
+            },
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      // All keys must be ≤ 63 chars in the name segment
+      for (const key of Object.keys(result)) {
+        const nameSegment = key.replace('modelcontextprotocol.io/', '');
+        expect(nameSegment.length).toBeLessThanOrEqual(63);
+      }
+
+      // The value should still be recoverable
+      const values = Object.values(result);
+      expect(values).toContain('value');
+    });
+  });
+
+  /* ---------------------------------------------------------------- */
+  /*  Sanitization collision disambiguation (task 4.4)                 */
+  /* ---------------------------------------------------------------- */
+
+  describe('sanitization collision disambiguation', () => {
+    it('disambiguates distinct paths that sanitize to the same key', () => {
+      // Two distinct keys that sanitize identically:
+      // "my/key" → "my-key" and "my-key" → "my-key"
+      const doc = makeMinimalDoc({
+        _meta: {
+          'my/key': 'value1',
+          'my-key': 'value2',
+        },
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      // Both values must be present under distinct keys
+      const values = Object.values(result);
+      expect(values).toContain('value1');
+      expect(values).toContain('value2');
+
+      // Keys must be distinct
+      const keys = Object.keys(result).filter(k => k.includes('xmeta.my'));
+      expect(keys.length).toBe(2);
+      expect(keys[0]).not.toBe(keys[1]);
+
+      // Both should have hash suffixes
+      for (const key of keys) {
+        expect(key).toMatch(/-[0-9a-f]{8}$/);
+      }
+    });
+  });
+
+  /* ---------------------------------------------------------------- */
+  /*  D9 secret redaction (task 4.6)                                   */
+  /* ---------------------------------------------------------------- */
+
+  describe('D9 secret redaction', () => {
+    it('prunes default/value of isSecret: true env var', () => {
+      const doc = makeMinimalDoc({
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: 'pkg',
+            transport: { type: 'stdio' },
+            environmentVariables: [
+              {
+                name: 'API_KEY',
+                description: 'The API key',
+                isSecret: true,
+                default: 'sk-1234',
+                value: 'sk-live-5678',
+                placeholder: '***',
+              },
+            ],
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      // Secret default and value must NOT be projected
+      const allValues = Object.values(result);
+      expect(allValues).not.toContain('sk-1234');
+      expect(allValues).not.toContain('sk-live-5678');
+
+      // Non-secret siblings MUST project
+      expect(
+        result[
+          'modelcontextprotocol.io/packages.0.environmentvariables.0.name'
+        ],
+      ).toBe('API_KEY');
+      expect(
+        result[
+          'modelcontextprotocol.io/packages.0.environmentvariables.0.issecret'
+        ],
+      ).toBe('true');
+      expect(
+        result[
+          'modelcontextprotocol.io/packages.0.environmentvariables.0.description'
+        ],
+      ).toBe('The API key');
+      expect(
+        result[
+          'modelcontextprotocol.io/packages.0.environmentvariables.0.placeholder'
+        ],
+      ).toBe('***');
+    });
+
+    it('prunes choices of isSecret: true input', () => {
+      const doc = makeMinimalDoc({
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: 'pkg',
+            transport: { type: 'stdio' },
+            environmentVariables: [
+              {
+                name: 'TOKEN',
+                isSecret: true,
+                choices: ['tok_live_aaa', 'tok_live_bbb'],
+              },
+            ],
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      // Secret choices must NOT be projected
+      const allValues = Object.values(result);
+      expect(allValues).not.toContain('tok_live_aaa');
+      expect(allValues).not.toContain('tok_live_bbb');
+
+      // Non-secret siblings still project
+      expect(
+        result[
+          'modelcontextprotocol.io/packages.0.environmentvariables.0.name'
+        ],
+      ).toBe('TOKEN');
+      expect(
+        result[
+          'modelcontextprotocol.io/packages.0.environmentvariables.0.issecret'
+        ],
+      ).toBe('true');
+    });
+
+    it('prunes secret remote header default/value', () => {
+      const doc = makeMinimalDoc({
+        remotes: [
+          {
+            type: 'streamable-http',
+            url: 'https://example.com/mcp',
+            headers: [
+              {
+                name: 'Authorization',
+                isSecret: true,
+                default: 'Bearer secret-token',
+                value: 'Bearer live-token',
+              },
+            ],
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      const allValues = Object.values(result);
+      expect(allValues).not.toContain('Bearer secret-token');
+      expect(allValues).not.toContain('Bearer live-token');
+
+      expect(result['modelcontextprotocol.io/remotes.0.headers.0.name']).toBe(
+        'Authorization',
+      );
+      expect(
+        result['modelcontextprotocol.io/remotes.0.headers.0.issecret'],
+      ).toBe('true');
+    });
+
+    it('prunes secret remote variable default/value/choices', () => {
+      const doc = makeMinimalDoc({
+        remotes: [
+          {
+            type: 'streamable-http',
+            url: 'https://example.com/mcp',
+            variables: {
+              apiKey: {
+                name: 'apiKey',
+                isSecret: true,
+                default: 'key-12345',
+                choices: ['key-a', 'key-b'],
+                placeholder: 'your-api-key',
+              },
+            },
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      const allValues = Object.values(result);
+      expect(allValues).not.toContain('key-12345');
+      expect(allValues).not.toContain('key-a');
+      expect(allValues).not.toContain('key-b');
+
+      expect(
+        result['modelcontextprotocol.io/remotes.0.variables.apikey.name'],
+      ).toBe('apiKey');
+      expect(
+        result[
+          'modelcontextprotocol.io/remotes.0.variables.apikey.placeholder'
+        ],
+      ).toBe('your-api-key');
+    });
+
+    it('retains default/value/choices for non-secret input', () => {
+      const doc = makeMinimalDoc({
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: 'pkg',
+            transport: { type: 'stdio' },
+            environmentVariables: [
+              {
+                name: 'LOG_LEVEL',
+                isSecret: false,
+                default: 'info',
+                choices: ['debug', 'info', 'warn', 'error'],
+              },
+            ],
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(
+        result[
+          'modelcontextprotocol.io/packages.0.environmentvariables.0.default'
+        ],
+      ).toBe('info');
+      expect(
+        result[
+          'modelcontextprotocol.io/packages.0.environmentvariables.0.choices.0'
+        ],
+      ).toBe('debug');
+      expect(
+        result[
+          'modelcontextprotocol.io/packages.0.environmentvariables.0.choices.1'
+        ],
+      ).toBe('info');
+    });
+
+    it('retains default/value when isSecret is omitted', () => {
+      const doc = makeMinimalDoc({
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: 'pkg',
+            transport: { type: 'stdio' },
+            environmentVariables: [
+              {
+                name: 'PORT',
+                default: '3000',
+              },
+            ],
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(
+        result[
+          'modelcontextprotocol.io/packages.0.environmentvariables.0.default'
+        ],
+      ).toBe('3000');
+    });
+  });
+
+  /* ---------------------------------------------------------------- */
+  /*  D11 URL gating (task 4.7)                                        */
+  /* ---------------------------------------------------------------- */
+
+  describe('D11 URL gating', () => {
+    it('omits javascript: icon src from projection', () => {
+      const doc = makeMinimalDoc({
+        icons: [{ src: 'javascript:alert(1)', mimeType: 'image/png' }],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      // Refused URL not projected
+      const allValues = Object.values(result);
+      expect(allValues).not.toContain('javascript:alert(1)');
+
+      // Non-URL sibling still projects
+      expect(result['modelcontextprotocol.io/icons.0.mimetype']).toBe(
+        'image/png',
+      );
+    });
+
+    it('omits data: icon src from projection', () => {
+      const doc = makeMinimalDoc({
+        icons: [{ src: 'data:image/png;base64,abc123', mimeType: 'image/png' }],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      const allValues = Object.values(result);
+      expect(allValues).not.toContain('data:image/png;base64,abc123');
+      expect(result['modelcontextprotocol.io/icons.0.mimetype']).toBe(
+        'image/png',
+      );
+    });
+
+    it('projects http/https icon src normally', () => {
+      const doc = makeMinimalDoc({
+        icons: [
+          { src: 'https://cdn.example.com/icon.png', mimeType: 'image/png' },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result['modelcontextprotocol.io/icons.0.src']).toBe(
+        'https://cdn.example.com/icon.png',
+      );
+    });
+
+    it('projects http://localhost URL normally', () => {
+      const doc = makeMinimalDoc({
+        icons: [
+          { src: 'http://localhost:3000/icon.png', mimeType: 'image/png' },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result['modelcontextprotocol.io/icons.0.src']).toBe(
+        'http://localhost:3000/icon.png',
+      );
+    });
+
+    it('does not refuse non-URL strings', () => {
+      const doc = makeMinimalDoc({
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: '@scope/pkg',
+            transport: { type: 'stdio' },
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result['modelcontextprotocol.io/packages.0.identifier']).toBe(
+        '@scope/pkg',
+      );
+    });
+
+    it('projects non-URL siblings when remote headers url-like values are refused', () => {
+      const doc = makeMinimalDoc({
+        remotes: [
+          {
+            type: 'streamable-http',
+            url: 'https://example.com/mcp',
+            headers: [
+              {
+                name: 'X-Custom',
+                isSecret: false,
+                default: 'javascript:void(0)',
+              },
+            ],
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      // The javascript: value is refused
+      const allValues = Object.values(result);
+      expect(allValues).not.toContain('javascript:void(0)');
+
+      // Non-URL sibling still projects
+      expect(result['modelcontextprotocol.io/remotes.0.headers.0.name']).toBe(
+        'X-Custom',
+      );
+    });
+  });
+
+  /* ---------------------------------------------------------------- */
+  /*  D12 null/empty omission                                          */
+  /* ---------------------------------------------------------------- */
+
+  describe('D12 null/empty omission', () => {
+    it('omits null scalar values', () => {
+      const doc = makeMinimalDoc({
+        repository: {
+          url: 'https://github.com/org/repo',
+          source: 'github',
+          id: null as unknown as string,
+        },
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result).not.toHaveProperty(
+        'modelcontextprotocol.io/repository.id',
+      );
+      // Non-null sibling still projects
+      expect(result['modelcontextprotocol.io/repository.source']).toBe(
+        'github',
+      );
+    });
+
+    it('omits empty array (no annotations for subtree)', () => {
+      const doc = makeMinimalDoc({
+        icons: [],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      const iconKeys = Object.keys(result).filter(k => k.includes('icons'));
+      expect(iconKeys).toHaveLength(0);
+    });
+
+    it('omits empty object (no annotations for subtree)', () => {
+      const doc = makeMinimalDoc({
+        _meta: {},
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      const metaKeys = Object.keys(result).filter(k => k.includes('xmeta'));
+      expect(metaKeys).toHaveLength(0);
+    });
+
+    it('projects false as "false"', () => {
+      const doc = makeMinimalDoc({
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: 'pkg',
+            transport: { verbose: false },
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(
+        result['modelcontextprotocol.io/packages.0.transport.verbose'],
+      ).toBe('false');
+    });
+
+    it('projects 0 as "0"', () => {
+      const doc = makeMinimalDoc({
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: 'pkg',
+            transport: { retries: 0 },
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(
+        result['modelcontextprotocol.io/packages.0.transport.retries'],
+      ).toBe('0');
+    });
+
+    it('projects empty string as ""', () => {
+      const doc = makeMinimalDoc({
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: 'pkg',
+            transport: { label: '' },
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result['modelcontextprotocol.io/packages.0.transport.label']).toBe(
+        '',
+      );
+    });
+  });
+
+  /* ---------------------------------------------------------------- */
+  /*  Determinism (D6)                                                 */
+  /* ---------------------------------------------------------------- */
+
+  describe('determinism', () => {
+    it('produces byte-identical output for identical inputs', () => {
+      const doc = makeMinimalDoc({
+        icons: [
+          { src: 'https://cdn.example.com/icon.png', mimeType: 'image/png' },
+        ],
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: '@scope/pkg',
+            transport: { type: 'stdio' },
+            version: '2.0.0',
+          },
+        ],
+        _meta: { publisher: 'test' },
+        repository: {
+          url: 'https://github.com/org/repo',
+          source: 'github',
+          id: '123',
+          subfolder: 'src',
+        },
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+
+      const result1 = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+      const result2 = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(JSON.stringify(result1)).toBe(JSON.stringify(result2));
+    });
+
+    it('annotation keys are sorted lexicographically', () => {
+      const doc = makeMinimalDoc({
+        _meta: { z: '1', a: '2' },
+        icons: [
+          { src: 'https://cdn.example.com/icon.png', mimeType: 'image/png' },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      const keys = Object.keys(result);
+      const sortedKeys = [...keys].sort((a, b) => a.localeCompare(b));
+      expect(keys).toEqual(sortedKeys);
+    });
+  });
+
+  /* ---------------------------------------------------------------- */
+  /*  Round-trip fidelity (task 4.3)                                   */
+  /* ---------------------------------------------------------------- */
+
+  describe('round-trip fidelity', () => {
+    it('all non-null, non-redacted, non-refused unmapped scalars are present', () => {
+      const doc = makeMinimalDoc({
+        icons: [
+          {
+            src: 'https://cdn.example.com/icon.png',
+            mimeType: 'image/png',
+            sizes: ['48x48', 'any'],
+            theme: 'dark',
+          },
+        ],
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: '@scope/pkg',
+            transport: { type: 'stdio' },
+            version: '1.0.0',
+            runtimeHint: 'npx',
+            environmentVariables: [
+              { name: 'LOG', isSecret: false, default: 'info' },
+            ],
+          },
+        ],
+        repository: {
+          url: 'https://github.com/org/repo',
+          source: 'github',
+          id: '12345',
+          subfolder: 'src/server',
+        },
+        _meta: { publisher: 'test-publisher' },
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      // Verify specific scalars are recoverable
+      expect(result['modelcontextprotocol.io/icons.0.src']).toBe(
+        'https://cdn.example.com/icon.png',
+      );
+      expect(result['modelcontextprotocol.io/icons.0.mimetype']).toBe(
+        'image/png',
+      );
+      expect(result['modelcontextprotocol.io/icons.0.sizes.0']).toBe('48x48');
+      expect(result['modelcontextprotocol.io/icons.0.sizes.1']).toBe('any');
+      expect(result['modelcontextprotocol.io/icons.0.theme']).toBe('dark');
+      expect(result['modelcontextprotocol.io/packages.0.registrytype']).toBe(
+        'npm',
+      );
+      expect(result['modelcontextprotocol.io/packages.0.identifier']).toBe(
+        '@scope/pkg',
+      );
+      expect(result['modelcontextprotocol.io/packages.0.transport.type']).toBe(
+        'stdio',
+      );
+      expect(result['modelcontextprotocol.io/packages.0.version']).toBe(
+        '1.0.0',
+      );
+      expect(result['modelcontextprotocol.io/packages.0.runtimehint']).toBe(
+        'npx',
+      );
+      expect(
+        result[
+          'modelcontextprotocol.io/packages.0.environmentvariables.0.name'
+        ],
+      ).toBe('LOG');
+      expect(
+        result[
+          'modelcontextprotocol.io/packages.0.environmentvariables.0.default'
+        ],
+      ).toBe('info');
+      expect(result['modelcontextprotocol.io/repository.source']).toBe(
+        'github',
+      );
+      expect(result['modelcontextprotocol.io/repository.id']).toBe('12345');
+      expect(result['modelcontextprotocol.io/repository.subfolder']).toBe(
+        'src/server',
+      );
+      expect(result['modelcontextprotocol.io/xmeta.publisher']).toBe(
+        'test-publisher',
+      );
+    });
+
+    it('redacted secret leaves are exempt from round-trip', () => {
+      const doc = makeMinimalDoc({
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: 'pkg',
+            transport: { type: 'stdio' },
+            environmentVariables: [
+              {
+                name: 'SECRET',
+                isSecret: true,
+                default: 'my-secret-value',
+                value: 'live-secret',
+                choices: ['opt1', 'opt2'],
+              },
+            ],
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      // Redacted values are intentionally absent
+      const allValues = Object.values(result);
+      expect(allValues).not.toContain('my-secret-value');
+      expect(allValues).not.toContain('live-secret');
+      expect(allValues).not.toContain('opt1');
+      expect(allValues).not.toContain('opt2');
+    });
+
+    it('D11-refused URLs are exempt from round-trip', () => {
+      const doc = makeMinimalDoc({
+        icons: [
+          { src: 'javascript:alert(1)', mimeType: 'image/png' },
+          { src: 'data:image/png;base64,abc', mimeType: 'image/png' },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      const allValues = Object.values(result);
+      expect(allValues).not.toContain('javascript:alert(1)');
+      expect(allValues).not.toContain('data:image/png;base64,abc');
+    });
+
+    it('null and empty containers are omitted from round-trip', () => {
+      const doc = makeMinimalDoc({
+        repository: {
+          url: 'https://github.com/org/repo',
+          id: null as unknown as string,
+        },
+        icons: [],
+        _meta: {},
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result).not.toHaveProperty(
+        'modelcontextprotocol.io/repository.id',
+      );
+      const iconKeys = Object.keys(result).filter(k => k.includes('icons'));
+      expect(iconKeys).toHaveLength(0);
+    });
+  });
+
+  /* ---------------------------------------------------------------- */
+  /*  Full integration: wired sections (task 3.5)                      */
+  /* ---------------------------------------------------------------- */
+
+  describe('wired sections', () => {
+    it('projects remote headers and variables', () => {
+      const doc = makeMinimalDoc({
+        remotes: [
+          {
+            type: 'streamable-http',
+            url: 'https://example.com/mcp',
+            headers: [{ name: 'X-Api-Key', isSecret: false, default: 'test' }],
+            variables: {
+              region: {
+                name: 'region',
+                isSecret: false,
+                default: 'us-east-1',
+              },
+            },
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result['modelcontextprotocol.io/remotes.0.headers.0.name']).toBe(
+        'X-Api-Key',
+      );
+      expect(
+        result['modelcontextprotocol.io/remotes.0.headers.0.default'],
+      ).toBe('test');
+      expect(
+        result['modelcontextprotocol.io/remotes.0.variables.region.name'],
+      ).toBe('region');
+      expect(
+        result['modelcontextprotocol.io/remotes.0.variables.region.default'],
+      ).toBe('us-east-1');
+    });
+
+    it('projects packages with nested structures', () => {
+      const doc = makeMinimalDoc({
+        packages: [
+          {
+            registryType: 'npm',
+            identifier: '@mcp/weather',
+            transport: { type: 'stdio' },
+            version: '1.0.0',
+            runtimeHint: 'npx',
+            fileSha256: 'abc123',
+            registryBaseUrl: 'https://registry.npmjs.org',
+            packageArguments: [
+              { name: 'port', isSecret: false, default: '3000' },
+            ],
+            runtimeArguments: [
+              { name: 'verbose', isSecret: false, default: 'true' },
+            ],
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result['modelcontextprotocol.io/packages.0.registrytype']).toBe(
+        'npm',
+      );
+      expect(result['modelcontextprotocol.io/packages.0.identifier']).toBe(
+        '@mcp/weather',
+      );
+      expect(result['modelcontextprotocol.io/packages.0.version']).toBe(
+        '1.0.0',
+      );
+      expect(result['modelcontextprotocol.io/packages.0.runtimehint']).toBe(
+        'npx',
+      );
+      expect(result['modelcontextprotocol.io/packages.0.filesha256']).toBe(
+        'abc123',
+      );
+      expect(result['modelcontextprotocol.io/packages.0.registrybaseurl']).toBe(
+        'https://registry.npmjs.org',
+      );
+      expect(
+        result['modelcontextprotocol.io/packages.0.packagearguments.0.name'],
+      ).toBe('port');
+      expect(
+        result['modelcontextprotocol.io/packages.0.runtimearguments.0.name'],
+      ).toBe('verbose');
+    });
+
+    it('projects _meta with reverse-DNS keys (truncated with hash)', () => {
+      const doc = makeMinimalDoc({
+        _meta: {
+          'io.modelcontextprotocol.registry/publisher-provided': {
+            verified: true,
+            score: 42,
+          },
+        },
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      // The full name segment "xmeta.io.modelcontextprotocol.registry-
+      // publisher-provided.verified" is 66 chars, exceeding 63-char
+      // limit, so it is truncated with a hash suffix.
+      const keys = Object.keys(result);
+      const verifiedKey = keys.find(
+        k =>
+          k.startsWith(
+            'modelcontextprotocol.io/xmeta.io.modelcontextprotocol',
+          ) && result[k] === 'true',
+      );
+      const scoreKey = keys.find(
+        k =>
+          k.startsWith(
+            'modelcontextprotocol.io/xmeta.io.modelcontextprotocol',
+          ) && result[k] === '42',
+      );
+      expect(verifiedKey).toBeDefined();
+      expect(scoreKey).toBeDefined();
+
+      // Both keys must be ≤ 63 chars in the name segment
+      for (const key of [verifiedKey!, scoreKey!]) {
+        const nameSegment = key.replace('modelcontextprotocol.io/', '');
+        expect(nameSegment.length).toBeLessThanOrEqual(63);
+      }
+
+      // Both values are recoverable
+      const values = Object.values(result);
+      expect(values).toContain('true');
+      expect(values).toContain('42');
+    });
+
+    it('projects repository non-URL sub-fields', () => {
+      const doc = makeMinimalDoc({
+        repository: {
+          url: 'https://github.com/org/repo',
+          source: 'github',
+          id: '12345',
+          subfolder: 'packages/weather',
+        },
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result['modelcontextprotocol.io/repository.source']).toBe(
+        'github',
+      );
+      expect(result['modelcontextprotocol.io/repository.id']).toBe('12345');
+      expect(result['modelcontextprotocol.io/repository.subfolder']).toBe(
+        'packages/weather',
+      );
+    });
+
+    it('projects icons array', () => {
+      const doc = makeMinimalDoc({
+        icons: [
+          {
+            src: 'https://cdn.example.com/light.png',
+            mimeType: 'image/png',
+            sizes: ['48x48'],
+            theme: 'light',
+          },
+          {
+            src: 'https://cdn.example.com/dark.png',
+            mimeType: 'image/svg+xml',
+            theme: 'dark',
+          },
+        ],
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      expect(result['modelcontextprotocol.io/icons.0.src']).toBe(
+        'https://cdn.example.com/light.png',
+      );
+      expect(result['modelcontextprotocol.io/icons.0.mimetype']).toBe(
+        'image/png',
+      );
+      expect(result['modelcontextprotocol.io/icons.0.sizes.0']).toBe('48x48');
+      expect(result['modelcontextprotocol.io/icons.0.theme']).toBe('light');
+      expect(result['modelcontextprotocol.io/icons.1.src']).toBe(
+        'https://cdn.example.com/dark.png',
+      );
+      expect(result['modelcontextprotocol.io/icons.1.mimetype']).toBe(
+        'image/svg+xml',
+      );
+      expect(result['modelcontextprotocol.io/icons.1.theme']).toBe('dark');
+    });
+
+    it('returns empty record when all scalars are consumed', () => {
+      const doc = makeMinimalDoc();
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+
+      // All top-level scalars are consumed, remotes type/url consumed
+      // Only non-consumed fields would project — minimal doc has none
+      expect(Object.keys(result)).toHaveLength(0);
+    });
+  });
+});
