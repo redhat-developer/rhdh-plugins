@@ -323,15 +323,15 @@ describe('mapServerToEntity', () => {
       expect(entity.metadata.name).toBe('mcp.registry__weather__1.0.2');
     });
 
-    it('derives metadata.name with hash for reverse-DNS names', () => {
+    it('derives metadata.name with FNV-1a hash for reverse-DNS names', () => {
       const { entity } = mapServerToEntity(
         makeMinimalDoc({
           name: 'io.github.user/weather',
           version: '1.0.2',
         }),
       );
-      expect(entity.metadata.name).toMatch(
-        /^mcp\.registry__io\.github\.user-weather__1\.0\.2-[0-9a-f]{8}$/,
+      expect(entity.metadata.name).toBe(
+        'mcp.registry__io.github.user-weather__1.0.2-e2449d04',
       );
     });
 
@@ -383,7 +383,9 @@ describe('mapServerToEntity', () => {
         }),
         { prefix: 'com.example.registry' },
       );
-      expect(entity.metadata.name).toMatch(/^com\.example\.registry__/);
+      expect(entity.metadata.name).toBe(
+        'com.example.registry__io.github.user-weather__1.0.2-bf17f045',
+      );
     });
 
     it('falls back to default prefix when override is empty', () => {

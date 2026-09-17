@@ -17,6 +17,7 @@
 import {
   sanitizeSegment,
   deriveMetadataName,
+  computeIdentityHashSuffix,
   DEFAULT_PREFIX,
 } from './identity';
 
@@ -59,6 +60,24 @@ describe('sanitizeSegment', () => {
   });
 });
 
+describe('computeIdentityHashSuffix', () => {
+  it('returns 8 lowercase hex chars from FNV-1a', () => {
+    expect(computeIdentityHashSuffix('mcp.registry', 'weather', '1.0.2')).toBe(
+      '1f5d3825',
+    );
+  });
+
+  it('matches the reverse-DNS identity fixture', () => {
+    expect(
+      computeIdentityHashSuffix(
+        'mcp.registry',
+        'io.github.user/weather',
+        '1.0.2',
+      ),
+    ).toBe('e2449d04');
+  });
+});
+
 describe('deriveMetadataName', () => {
   it('returns stem without hash when no mutation and under 63 chars', () => {
     const result = deriveMetadataName('weather', '1.0.2');
@@ -66,12 +85,9 @@ describe('deriveMetadataName', () => {
     expect(result.length).toBeLessThanOrEqual(63);
   });
 
-  it('appends hash when sanitization mutates a segment', () => {
+  it('appends FNV-1a hash when sanitization mutates a segment', () => {
     const result = deriveMetadataName('io.github.user/weather', '1.0.2');
-    // The / in the name triggers mutation → hash suffix
-    expect(result).toMatch(
-      /^mcp\.registry__io\.github\.user-weather__1\.0\.2-[0-9a-f]{8}$/,
-    );
+    expect(result).toBe('mcp.registry__io.github.user-weather__1.0.2-e2449d04');
     expect(result.length).toBeLessThanOrEqual(63);
   });
 
@@ -86,7 +102,9 @@ describe('deriveMetadataName', () => {
       '1.0.2',
       'com.example.registry',
     );
-    expect(result).toMatch(/^com\.example\.registry__/);
+    expect(result).toBe(
+      'com.example.registry__io.github.user-weather__1.0.2-bf17f045',
+    );
   });
 
   it('falls back to default when prefix is empty', () => {
@@ -104,15 +122,18 @@ describe('deriveMetadataName', () => {
   it('produces distinct names for different versions of the same server', () => {
     const v1 = deriveMetadataName('io.github.user/weather', '1.0.0');
     const v2 = deriveMetadataName('io.github.user/weather', '2.0.0');
+    expect(v1).toBe('mcp.registry__io.github.user-weather__1.0.0-e444a02a');
+    expect(v2).toBe('mcp.registry__io.github.user-weather__2.0.0-ab4af357');
     expect(v1).not.toBe(v2);
   });
 
   it('truncates and hashes when exceeding 63 characters', () => {
     const longName = 'a'.repeat(50);
     const result = deriveMetadataName(longName, '1.0.0');
+    expect(result).toBe(
+      'mcp.registry__aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-a6bfead9',
+    );
     expect(result.length).toBeLessThanOrEqual(63);
-    // Should contain hash suffix since joined candidate would be too long
-    expect(result).toMatch(/-[0-9a-f]{8}$/);
   });
 
   it('produces deterministic output (same input, same output)', () => {

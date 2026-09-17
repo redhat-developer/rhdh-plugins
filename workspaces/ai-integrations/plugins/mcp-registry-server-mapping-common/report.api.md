@@ -10,6 +10,13 @@ import type { McpServerRemote } from '@backstage/catalog-model/alpha';
 export function buildLinks(doc: McpServerDocument): LinksResult;
 
 // @public
+export function computeIdentityHashSuffix(
+  prefix: string,
+  name: string,
+  version: string,
+): string;
+
+// @public
 export function computeRepositoryUrl(
   repository: McpServerRepository,
 ): RepositoryUrlResult | undefined;

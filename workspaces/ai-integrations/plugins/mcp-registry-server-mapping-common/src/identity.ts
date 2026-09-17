@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { createHash } from 'node:crypto';
-
 /** Maximum length for Backstage metadata.name. */
 const MAX_NAME_LENGTH = 63;
 
@@ -79,20 +77,37 @@ function normalizeBoundaries(s: string): string {
   return chars.join('');
 }
 
+const FNV1A_32_OFFSET_BASIS = 0x811c9dc5;
+const FNV1A_32_PRIME = 0x01000193;
+
 /**
- * Compute a stable hash suffix from the identity inputs.
- * Returns 8 hex characters derived from SHA-256 of the concatenated
- * raw inputs.
+ * FNV-1a 32-bit hash (pure JS). Used for stable, non-cryptographic
+ * disambiguation suffixes only.
  */
-function computeHashSuffix(
+function fnv1a32(input: string): number {
+  let hash = FNV1A_32_OFFSET_BASIS;
+  for (let i = 0; i < input.length; i++) {
+    hash ^= input.charCodeAt(i);
+    hash = Math.imul(hash, FNV1A_32_PRIME);
+  }
+  return hash >>> 0;
+}
+
+/**
+ * Stable 8-character lowercase hex suffix for identity disambiguation.
+ * FNV-1a 32-bit over the NUL-separated tuple (effective prefix, raw
+ * canonical name, raw version — not sanitized segments).
+ *
+ * @public
+ */
+export function computeIdentityHashSuffix(
   prefix: string,
   name: string,
   version: string,
 ): string {
-  const hash = createHash('sha256')
-    .update(`${prefix}\0${name}\0${version}`)
-    .digest('hex');
-  return hash.slice(0, 8);
+  return fnv1a32(`${prefix}\0${name}\0${version}`)
+    .toString(16)
+    .padStart(8, '0');
 }
 
 /**
@@ -145,7 +160,7 @@ export function deriveMetadataName(
   }
 
   // Append hash suffix
-  const hashSuffix = `-${computeHashSuffix(
+  const hashSuffix = `-${computeIdentityHashSuffix(
     effectivePrefix,
     canonicalName,
     version,

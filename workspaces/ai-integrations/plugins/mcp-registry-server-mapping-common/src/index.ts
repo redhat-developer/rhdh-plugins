@@ -42,6 +42,7 @@ export { isAllowedUrl } from './urlPolicy';
 export {
   deriveMetadataName,
   sanitizeSegment,
+  computeIdentityHashSuffix,
   DEFAULT_PREFIX,
 } from './identity';
 export { computeRepositoryUrl } from './repository';
