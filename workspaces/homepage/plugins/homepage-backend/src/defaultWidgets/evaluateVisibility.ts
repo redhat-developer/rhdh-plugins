@@ -46,6 +46,7 @@ export function isVisible(
       return (
         decision.result === 'ALLOW' ||
         (decision.result === 'CONDITIONAL' &&
+          // eslint-disable-next-line @typescript-eslint/no-use-before-define
           matches(defaultWidget, decision.conditions))
       );
     }) ?? false;

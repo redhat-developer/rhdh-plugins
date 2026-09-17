@@ -21,3 +21,5 @@
  */
 
 export * from './plugin';
+
+export { homepageTranslations, homepageTranslationRef } from './translations';

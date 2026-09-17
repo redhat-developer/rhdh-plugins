@@ -42,6 +42,7 @@ describe('LocalClock', () => {
     expect(screen.getByText('01:14 PM')).toBeInTheDocument();
   });
 
+  // eslint-disable-next-line jest/no-disabled-tests
   it.skip('renders nothing if format is none', () => {
     render(<LocalClock format="none" />);
     expect(screen.getByTestId).toBeInTheDocument();

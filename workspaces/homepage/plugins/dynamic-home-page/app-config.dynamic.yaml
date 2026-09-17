@@ -2,6 +2,9 @@
 dynamicPlugins:
   frontend:
     red-hat-developer-hub.backstage-plugin-dynamic-home-page:
+      translationResources:
+        - importName: homepageTranslations
+          ref: homepageTranslationRef
       dynamicRoutes:
         - path: /
           importName: DynamicHomePage
