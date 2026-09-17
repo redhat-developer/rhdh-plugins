@@ -292,6 +292,44 @@ export const transformDocumentsToSources = (
   };
 };
 
+type MessageWithRoleAndSources = {
+  role: 'user' | 'bot';
+  sources?: SourcesCardProps;
+};
+
+/** Copy `sources` from persisted bot messages when the live transcript lacks them. */
+export const enrichMessagesWithPersistedSources = <
+  T extends MessageWithRoleAndSources,
+>(
+  live: T[],
+  persisted: T[],
+): T[] => {
+  if (!live.length || !persisted.length) {
+    return live;
+  }
+
+  const persistedBots = persisted.filter(message => message.role === 'bot');
+  let botIndex = 0;
+
+  return live.map(message => {
+    if (message.role !== 'bot') {
+      return message;
+    }
+
+    const persistedBot = persistedBots[botIndex];
+    botIndex += 1;
+
+    if (
+      !persistedBot?.sources?.sources?.length ||
+      message.sources?.sources?.length
+    ) {
+      return message;
+    }
+
+    return { ...message, sources: persistedBot.sources };
+  });
+};
+
 export type SortOption =
   'newest' | 'oldest' | 'alphabeticalAsc' | 'alphabeticalDesc';
 

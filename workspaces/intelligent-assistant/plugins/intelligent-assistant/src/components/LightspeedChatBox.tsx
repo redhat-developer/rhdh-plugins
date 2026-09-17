@@ -351,9 +351,11 @@ export const LightspeedChatBox = forwardRef(
               ? extraContentParts
               : undefined;
 
+          const sourceCount = message.sources?.sources?.length ?? 0;
+
           return (
             <Message
-              key={`${message.role}-${index}`}
+              key={`${message.role}-${index}-${sourceCount}`}
               extraContent={extraContent}
               {...finalMessage}
             />
