@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-extensions
 
+## 0.17.2
+
+### Patch Changes
+
+- 8ce83f2: Expose extensions translation resources through the public entry point to prevent OFS issues caused by mixing OFS translation resources with NFS modules.
+  - @red-hat-developer-hub/backstage-plugin-extensions-common@0.17.2
+
 ## 0.17.1
 
 ### Patch Changes
