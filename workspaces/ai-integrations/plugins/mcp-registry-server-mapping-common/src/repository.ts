@@ -34,34 +34,57 @@ export interface RepositoryUrlResult {
  * - Remove trailing /
  * - Remove trailing .git suffix
  *
+ * Operates on the parsed URL pathname to correctly handle URLs
+ * with query parameters or fragment identifiers.
+ *
  * This normalization applies only to the combined URL, not to the
  * dedicated modelcontextprotocol.io/repository.url annotation.
  */
 function normalizeBase(url: string): string {
-  let base = url;
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    // Fallback for non-parseable URLs (isAllowedUrl gates before this)
+    return url;
+  }
+
+  let path = parsed.pathname;
 
   // Remove trailing /
-  while (base.endsWith('/')) {
-    base = base.slice(0, -1);
+  while (path.endsWith('/')) {
+    path = path.slice(0, -1);
   }
 
   // Remove trailing .git
-  if (base.endsWith('.git')) {
-    base = base.slice(0, -4);
+  if (path.endsWith('.git')) {
+    path = path.slice(0, -4);
   }
 
   // Re-strip trailing / that may appear after .git removal
-  while (base.endsWith('/')) {
-    base = base.slice(0, -1);
+  while (path.endsWith('/')) {
+    path = path.slice(0, -1);
   }
 
-  return base;
+  parsed.pathname = path;
+
+  // Return the normalized URL without a trailing slash
+  let result = parsed.toString();
+  while (result.endsWith('/')) {
+    result = result.slice(0, -1);
+  }
+
+  return result;
 }
 
 /**
  * Normalize the subfolder path:
  * - Trim whitespace
  * - Remove leading and trailing /
+ * - Reject path-traversal segments (..)
+ *
+ * Returns an empty string when the subfolder contains '..' segments,
+ * which causes the caller to treat it as if no subfolder was specified.
  */
 function normalizeSubfolder(subfolder: string): string {
   let s = subfolder.trim();
@@ -71,6 +94,15 @@ function normalizeSubfolder(subfolder: string): string {
   while (s.endsWith('/')) {
     s = s.slice(0, -1);
   }
+
+  // Reject path-traversal segments
+  if (s.length > 0) {
+    const segments = s.split('/');
+    if (segments.some(seg => seg === '..')) {
+      return '';
+    }
+  }
+
   return s;
 }
 
@@ -89,7 +121,7 @@ export function computeRepositoryUrl(
     return undefined;
   }
 
-  const originalUrl = repository.url;
+  const originalUrl = repository.url.trim();
   const base = normalizeBase(originalUrl);
 
   // Check if subfolder is present and non-empty

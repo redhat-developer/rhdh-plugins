@@ -58,6 +58,28 @@ describe('computeRepositoryUrl', () => {
     expect(result?.combinedUrl).toBe('https://github.com/org/repo');
   });
 
+  it('trims whitespace from repository.url', () => {
+    const result = computeRepositoryUrl({
+      url: '  https://github.com/org/repo  ',
+    });
+    expect(result?.originalUrl).toBe('https://github.com/org/repo');
+    expect(result?.combinedUrl).toBe('https://github.com/org/repo');
+  });
+
+  it('strips .git from pathname when URL has query parameters', () => {
+    const result = computeRepositoryUrl({
+      url: 'https://example.com/org/repo.git?ref=main',
+    });
+    expect(result?.combinedUrl).toBe('https://example.com/org/repo?ref=main');
+  });
+
+  it('strips .git from pathname when URL has fragment', () => {
+    const result = computeRepositoryUrl({
+      url: 'https://example.com/org/repo.git#readme',
+    });
+    expect(result?.combinedUrl).toBe('https://example.com/org/repo#readme');
+  });
+
   describe('SCM-aware subfolder combination', () => {
     it('uses /tree/HEAD/ for GitHub', () => {
       const result = computeRepositoryUrl({
@@ -165,6 +187,36 @@ describe('computeRepositoryUrl', () => {
         subfolder: '   ',
       });
       expect(result?.combinedUrl).toBe('https://github.com/org/repo');
+    });
+
+    it('rejects subfolder with .. path-traversal segments', () => {
+      const result = computeRepositoryUrl({
+        url: 'https://github.com/org/repo',
+        source: 'github',
+        subfolder: '../../etc/passwd',
+      });
+      // Path traversal subfolder is treated as no subfolder
+      expect(result?.combinedUrl).toBe('https://github.com/org/repo');
+    });
+
+    it('rejects subfolder with embedded .. segment', () => {
+      const result = computeRepositoryUrl({
+        url: 'https://github.com/org/repo',
+        source: 'github',
+        subfolder: 'src/../../../etc',
+      });
+      expect(result?.combinedUrl).toBe('https://github.com/org/repo');
+    });
+
+    it('allows subfolder segments that contain .. but are not bare ..', () => {
+      const result = computeRepositoryUrl({
+        url: 'https://github.com/org/repo',
+        source: 'github',
+        subfolder: 'src/..hidden/file',
+      });
+      expect(result?.combinedUrl).toBe(
+        'https://github.com/org/repo/tree/HEAD/src/..hidden/file',
+      );
     });
   });
 });
