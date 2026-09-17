@@ -1,5 +1,11 @@
 # @red-hat-developer-hub/backstage-plugin-dynamic-home-page
 
+## 1.13.5
+
+### Patch Changes
+
+- f076298: Expose homepage translation resources through the public plugin entry point to prevent OFS issues caused by mixing OFS translation resources with NFS modules.
+
 ## 1.13.4
 
 ### Patch Changes
