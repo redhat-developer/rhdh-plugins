@@ -67,8 +67,8 @@ When reviewing PRs that add or modify files under `openspec/changes/`:
   audit predates spec changes, flag it as stale.
 - **Audit summary accuracy**: Verify that the CRITICAL / WARNING /
   SUGGESTION counts in `audit.md` summary tables match the number of
-  detailed findings listed below them. Check per-category rows and the
-  total row.
+  detailed findings listed below them. Check per-category rows and,
+  if present, a total row.
 - **Cross-document references**: Check that references between documents
   within the same change area are accurate:
   - `proposal.md` references to future work or sibling changes should

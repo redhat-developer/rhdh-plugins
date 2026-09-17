@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import {
   SearchResultState,
   SearchResultProps,
@@ -24,10 +24,13 @@ import Autocomplete from '@mui/material/Autocomplete';
 import { createSearchLink } from '../../utils/stringUtils';
 import { useNavigate } from 'react-router-dom';
 import { SearchInput } from './SearchInput';
-import { SearchOption } from './SearchOption';
 import { useTheme } from '@mui/material/styles';
 import { useDebouncedCallback } from '../../hooks/useDebouncedCallback';
 import { useTranslation } from '../../hooks/useTranslation';
+
+const SearchOption = lazy(() =>
+  import('./SearchOption').then(m => ({ default: m.SearchOption })),
+);
 
 interface SearchBarProps {
   query: SearchResultProps['query'];
@@ -124,16 +127,18 @@ export const SearchBar = (props: SearchBarProps) => {
               />
             )}
             renderOption={(renderProps, option, { index }) => (
-              <SearchOption
-                option={option}
-                index={index}
-                options={options}
-                query={query}
-                results={results}
-                renderProps={renderProps}
-                searchLink={searchLink}
-                noResultsText={t('search.noResults')}
-              />
+              <Suspense fallback={null}>
+                <SearchOption
+                  option={option}
+                  index={index}
+                  options={options}
+                  query={query}
+                  results={results}
+                  renderProps={renderProps}
+                  searchLink={searchLink}
+                  noResultsText={t('search.noResults')}
+                />
+              </Suspense>
             )}
             ListboxProps={{
               sx: { maxHeight: '60vh' },
