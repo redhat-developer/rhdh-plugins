@@ -841,7 +841,7 @@ describe('projectAnnotations', () => {
 
       // Keys must be distinct
       const keys = Object.keys(result).filter(k => k.includes('xmeta.my'));
-      expect(keys.length).toBe(2);
+      expect(keys).toHaveLength(2);
       expect(keys[0]).not.toBe(keys[1]);
 
       // Both should have hash suffixes
