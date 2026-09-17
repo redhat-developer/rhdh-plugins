@@ -15,7 +15,8 @@
  */
 import { fireEvent, render, screen } from '@testing-library/react';
 
-import { mockUseTranslation } from '../../test-utils/mockTranslations';
+import { mockT, mockUseTranslation } from '../../test-utils/mockTranslations';
+import { intelligentAssistantMessages as t } from '../../translations/ref';
 import { SavedPromptCard } from '../SavedPromptCard';
 
 jest.mock('../../hooks/useTranslation', () => ({
@@ -34,6 +35,27 @@ describe('SavedPromptCard', () => {
   const onApplyToInput = jest.fn();
   const onSendDirectly = jest.fn();
   const onDelete = jest.fn();
+
+  const renderSettingsCard = () =>
+    render(
+      <SavedPromptCard
+        prompt={mockPrompt}
+        variant="settings"
+        onApplyToInput={onApplyToInput}
+        onSendDirectly={onSendDirectly}
+        onDelete={onDelete}
+      />,
+    );
+
+  const openKebabMenu = () => {
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: mockT('savedPrompts.actions.menuAriaLabel', {
+          name: mockPrompt.name,
+        }),
+      }),
+    );
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -107,26 +129,33 @@ describe('SavedPromptCard', () => {
     expect(screen.getByText('not-a-date')).toBeInTheDocument();
   });
 
-  it('should wire kebab menu actions to card handlers', () => {
-    render(
-      <SavedPromptCard
-        prompt={mockPrompt}
-        variant="settings"
-        onApplyToInput={onApplyToInput}
-        onSendDirectly={onSendDirectly}
-        onDelete={onDelete}
-      />,
-    );
+  it('should call onApplyToInput with prompt content when Apply in input box is selected', () => {
+    renderSettingsCard();
+    openKebabMenu();
+    fireEvent.click(screen.getByText(t['savedPrompts.actions.apply']));
 
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: 'Actions for Performance Optimization',
-      }),
-    );
-    fireEvent.click(screen.getByText('Apply in input box'));
+    expect(onApplyToInput).toHaveBeenCalledWith(mockPrompt.content);
+    expect(onSendDirectly).not.toHaveBeenCalled();
+    expect(onDelete).not.toHaveBeenCalled();
+  });
 
-    expect(onApplyToInput).toHaveBeenCalledWith(
-      'Analyze my application performance and suggest improvements.',
-    );
+  it('should call onSendDirectly with prompt content when Send directly is selected', () => {
+    renderSettingsCard();
+    openKebabMenu();
+    fireEvent.click(screen.getByText(t['savedPrompts.actions.send']));
+
+    expect(onSendDirectly).toHaveBeenCalledWith(mockPrompt.content);
+    expect(onApplyToInput).not.toHaveBeenCalled();
+    expect(onDelete).not.toHaveBeenCalled();
+  });
+
+  it('should call onDelete with the full prompt when Delete is selected', () => {
+    renderSettingsCard();
+    openKebabMenu();
+    fireEvent.click(screen.getByText(t['savedPrompts.actions.delete']));
+
+    expect(onDelete).toHaveBeenCalledWith(mockPrompt);
+    expect(onApplyToInput).not.toHaveBeenCalled();
+    expect(onSendDirectly).not.toHaveBeenCalled();
   });
 });

@@ -45,7 +45,7 @@ test.describe('Intelligent assistant saved prompts', () => {
 
   test('shows seeded saved prompts in the chat history sidebar', async () => {
     await savedPrompts.openChatHistoryDrawer();
-    await savedPrompts.expectSavedPromptVisibleInSidebar(
+    await savedPrompts.expectSavedPromptsSidebarLoaded(
       E2E_SAVED_PROMPT_DEPLOY_CHECKLIST.name,
     );
   });
@@ -55,9 +55,49 @@ test.describe('Intelligent assistant saved prompts', () => {
     await savedPrompts.applySavedPromptFromSidebar(
       E2E_SAVED_PROMPT_DEPLOY_CHECKLIST.name,
     );
+    await savedPrompts.closeChatHistoryDrawer();
     await savedPrompts.expectMessageInputValue(
       E2E_SAVED_PROMPT_DEPLOY_CHECKLIST.content,
     );
+  });
+
+  test('opens saved prompts settings from the sidebar gear control', async () => {
+    await savedPrompts.openSavedPromptsSettingsFromSidebarGear();
+    await savedPrompts.expectSavedPromptsSettingsPanelVisible();
+  });
+
+  test('applies a saved prompt via the settings kebab menu', async () => {
+    await savedPrompts.openSavedPromptsSettingsTab();
+    await savedPrompts.applySavedPromptFromKebab(
+      E2E_SAVED_PROMPT_DEPLOY_CHECKLIST.name,
+      'settings',
+    );
+    await savedPrompts.expectMessageInputValue(
+      E2E_SAVED_PROMPT_DEPLOY_CHECKLIST.content,
+    );
+  });
+
+  test('sends a saved prompt directly from the settings kebab menu', async () => {
+    await savedPrompts.openSavedPromptsSettingsTab();
+    await savedPrompts.sendSavedPromptFromKebab(
+      E2E_SAVED_PROMPT_DEPLOY_CHECKLIST.name,
+      'settings',
+    );
+    await savedPrompts.expectUserMessageWithText(
+      E2E_SAVED_PROMPT_DEPLOY_CHECKLIST.content,
+    );
+  });
+
+  test('deletes a saved prompt from the settings kebab menu', async () => {
+    await savedPrompts.openSavedPromptsSettingsTab();
+    await savedPrompts.deleteSavedPromptFromKebab(
+      E2E_SAVED_PROMPT_DEPLOY_CHECKLIST.name,
+      'settings',
+    );
+    await savedPrompts.expectSavedPromptHiddenInSettings(
+      E2E_SAVED_PROMPT_DEPLOY_CHECKLIST.name,
+    );
+    await savedPrompts.expectEmptySavedPromptsSettingsVisible();
   });
 
   test('creates a saved prompt from the settings panel', async () => {
