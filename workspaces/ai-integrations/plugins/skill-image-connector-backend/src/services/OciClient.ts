@@ -283,6 +283,10 @@ export function parseImageRef(ref: string): ImageRef {
 /**
  * Parses a WWW-Authenticate header value to extract bearer token
  * challenge parameters (realm, service, scope).
+ *
+ * Implements a quoted-string-aware parser per RFC 7235 so that commas
+ * inside quoted parameter values (e.g. scope="repository:org/repo:pull,push")
+ * are not treated as parameter separators.
  */
 function parseBearerChallenge(
   header: string,
@@ -296,21 +300,65 @@ function parseBearerChallenge(
   }
 
   const params: Record<string, string> = {};
-  for (const parameter of header.substring(schemeEnd).split(',')) {
-    const equalsIndex = parameter.indexOf('=');
-    if (equalsIndex === -1) {
-      continue;
+  const paramsStr = header.substring(schemeEnd).trim();
+
+  let pos = 0;
+  while (pos < paramsStr.length) {
+    // Skip whitespace and commas between parameters
+    while (
+      pos < paramsStr.length &&
+      (paramsStr[pos] === ',' || paramsStr[pos] === ' ')
+    ) {
+      pos++;
+    }
+    if (pos >= paramsStr.length) {
+      break;
     }
 
-    const name = parameter.substring(0, equalsIndex).trim().toLowerCase();
-    const value = parameter.substring(equalsIndex + 1).trim();
-    if (
-      name &&
-      value.length >= 2 &&
-      value.startsWith('"') &&
-      value.endsWith('"')
-    ) {
-      params[name] = value.substring(1, value.length - 1);
+    const eqIdx = paramsStr.indexOf('=', pos);
+    if (eqIdx === -1) {
+      break;
+    }
+
+    const name = paramsStr.substring(pos, eqIdx).trim().toLowerCase();
+    pos = eqIdx + 1;
+
+    // Skip whitespace after '='
+    while (pos < paramsStr.length && paramsStr[pos] === ' ') {
+      pos++;
+    }
+    if (pos >= paramsStr.length) {
+      break;
+    }
+
+    let value: string;
+    if (paramsStr[pos] === '"') {
+      // Quoted string — find closing quote, respecting backslash escapes
+      pos++; // skip opening quote
+      let valueEnd = pos;
+      while (valueEnd < paramsStr.length && paramsStr[valueEnd] !== '"') {
+        if (paramsStr[valueEnd] === '\\' && valueEnd + 1 < paramsStr.length) {
+          valueEnd += 2; // skip escaped character
+        } else {
+          valueEnd++;
+        }
+      }
+      value = paramsStr.substring(pos, valueEnd).replace(/\\(.)/g, '$1');
+      pos = valueEnd < paramsStr.length ? valueEnd + 1 : valueEnd;
+    } else {
+      // Unquoted token — read until comma or whitespace
+      const tokenEnd = paramsStr.substring(pos).search(/[,\s]/);
+      if (tokenEnd === -1) {
+        value = paramsStr.substring(pos);
+        pos = paramsStr.length;
+      } else {
+        value = paramsStr.substring(pos, pos + tokenEnd);
+        pos += tokenEnd;
+      }
+    }
+
+    if (name) {
+      params[name] = value;
     }
   }
 

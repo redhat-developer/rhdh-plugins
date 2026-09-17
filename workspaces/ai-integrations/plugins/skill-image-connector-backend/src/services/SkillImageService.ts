@@ -20,6 +20,7 @@ import platformPath from 'node:path';
 import os from 'node:os';
 import { gunzipSync } from 'node:zlib';
 import { parseImageRef, fetchManifest, fetchBlob } from './OciClient';
+import { MAX_BLOB_SIZE } from './types';
 import type {
   OciManifest,
   OciDescriptor,
@@ -74,7 +75,7 @@ interface TarEntry {
  */
 function maybeDecompress(buf: Buffer): Buffer {
   if (buf.length >= 2 && buf[0] === 0x1f && buf[1] === 0x8b) {
-    return gunzipSync(buf);
+    return gunzipSync(buf, { maxOutputLength: MAX_BLOB_SIZE });
   }
   return buf;
 }
@@ -331,6 +332,14 @@ export async function fetchAndExtractSkillImage(
     platformPath.join(baseDir, 'skill-image-'),
   );
 
+  // Write an owner lock file so stale-dir cleanup can distinguish
+  // directories that are actively in use from genuinely stale ones.
+  await fs.promises.writeFile(
+    platformPath.join(extractDir, '.owner'),
+    `${process.pid}`,
+    { mode: 0o600 },
+  );
+
   try {
     const skillImageYamlPath = platformPath.join(extractDir, OUT_YAML);
     const skillsMdPath = platformPath.join(extractDir, OUT_MD);
@@ -479,9 +488,35 @@ export async function cleanupSkillImageExtraction(
 }
 
 /**
+ * Returns true if a process with the given PID is still running.
+ * Uses signal 0 which validates the PID without sending a signal.
+ */
+function isProcessAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error: unknown) {
+    // EPERM: process exists but we lack permission to signal it
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      (error as NodeJS.ErrnoException).code === 'EPERM'
+    ) {
+      return true;
+    }
+    // ESRCH or other: process does not exist
+    return false;
+  }
+}
+
+/**
  * Removes stale `skill-image-*` temporary directories that may have been
  * left behind by a previous process that crashed, was OOM-killed, or
  * otherwise terminated abnormally before cleanup could run.
+ *
+ * Directories with an `.owner` file referencing a still-running process
+ * are preserved to prevent multi-instance race conditions where one
+ * backend instance deletes another's active extraction directories.
  */
 export async function cleanupStaleExtractionDirs(
   workDir: string | undefined,
@@ -497,6 +532,24 @@ export async function cleanupStaleExtractionDirs(
     );
     for (const dir of staleDirs) {
       const dirPath = platformPath.join(baseDir, dir.name);
+      // Check for an .owner lock file — if the owning process is still
+      // alive, skip this directory to avoid destroying another instance's
+      // active extractions.
+      try {
+        const ownerContent = await fs.promises.readFile(
+          platformPath.join(dirPath, '.owner'),
+          'utf-8',
+        );
+        const ownerPid = Number.parseInt(ownerContent.trim(), 10);
+        if (!Number.isNaN(ownerPid) && isProcessAlive(ownerPid)) {
+          logger.debug(
+            `Skipping extraction directory ${dirPath} owned by running process ${ownerPid}`,
+          );
+          continue;
+        }
+      } catch {
+        // No .owner file or unreadable — treat as stale
+      }
       try {
         await fs.promises.rm(dirPath, { recursive: true, force: true });
         logger.info(`Cleaned up stale extraction directory ${dirPath}`);

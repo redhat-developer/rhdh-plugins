@@ -20,6 +20,7 @@ import {
   findLayerByTitle,
   validateSkillImageManifest,
   fetchAndExtractSkillImage,
+  cleanupStaleExtractionDirs,
   parseTarEntries,
 } from './SkillImageService';
 import { fetchManifest, fetchBlob } from './OciClient';
@@ -37,6 +38,8 @@ jest.mock('node:fs', () => ({
     mkdtemp: jest.fn(),
     writeFile: jest.fn(),
     rm: jest.fn(),
+    readdir: jest.fn(),
+    readFile: jest.fn(),
   },
 }));
 
@@ -410,7 +413,13 @@ describe('fetchAndExtractSkillImage', () => {
     );
     expect(result.skillsMdPath).toBe('/tmp/skill-image-xx/SKILLS.md');
 
-    expect(fs.promises.writeFile).toHaveBeenCalledTimes(2);
+    // 3 writeFile calls: .owner lock, skillimage.yaml, SKILLS.md
+    expect(fs.promises.writeFile).toHaveBeenCalledTimes(3);
+    expect(fs.promises.writeFile).toHaveBeenCalledWith(
+      '/tmp/skill-image-xx/.owner',
+      `${process.pid}`,
+      { mode: 0o600 },
+    );
     expect(fs.promises.writeFile).toHaveBeenCalledWith(
       '/tmp/skill-image-xx/skillimage.yaml',
       Buffer.from(yamlContent),
@@ -620,9 +629,11 @@ describe('fetchAndExtractSkillImage', () => {
     (fs.promises.mkdtemp as jest.Mock).mockResolvedValue(
       '/tmp/skill-image-fail',
     );
-    (fs.promises.writeFile as jest.Mock).mockRejectedValue(
-      new Error('Disk full'),
-    );
+    // First writeFile call (.owner lock) succeeds; subsequent content
+    // writes fail to simulate a disk-full scenario.
+    (fs.promises.writeFile as jest.Mock)
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValue(new Error('Disk full'));
     (fs.promises.rm as jest.Mock).mockResolvedValue(undefined);
 
     await expect(
@@ -633,5 +644,115 @@ describe('fetchAndExtractSkillImage', () => {
       recursive: true,
       force: true,
     });
+  });
+
+  it('should reject gzip bomb that decompresses past MAX_BLOB_SIZE', async () => {
+    // Create content that decompresses well past the 5 MB limit.
+    // A 6 MB zero buffer compresses to a few KB with gzip.
+    const largeContent = Buffer.alloc(6 * 1024 * 1024, 0);
+    const compressed = gzipSync(largeContent);
+
+    const manifest: OciManifest = {
+      schemaVersion: 2,
+      config: {
+        mediaType: 'application/vnd.oci.image.config.v1+json',
+        digest: 'sha256:cfg',
+        size: 10,
+      },
+      layers: [
+        {
+          mediaType: 'application/vnd.oci.image.layer.v1.tar+gzip',
+          digest: 'sha256:bomb-digest',
+          size: compressed.length,
+        },
+      ],
+    };
+
+    mockedFetchManifest.mockResolvedValue(manifest);
+    mockedFetchBlob.mockResolvedValueOnce(compressed);
+
+    await expect(
+      fetchAndExtractSkillImage('quay.io/org/bomb:v1', '/tmp', logger),
+    ).rejects.toThrow();
+  });
+});
+
+describe('cleanupStaleExtractionDirs', () => {
+  const logger = {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+  } as unknown as LoggerService;
+  const fs = require('node:fs');
+
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('should remove stale directories without an .owner file', async () => {
+    (fs.promises.readdir as jest.Mock).mockResolvedValue([
+      { name: 'skill-image-abc123', isDirectory: () => true },
+      { name: 'other-dir', isDirectory: () => true },
+    ]);
+    // No .owner file — readFile throws ENOENT
+    (fs.promises.readFile as jest.Mock).mockRejectedValue(
+      Object.assign(new Error('ENOENT'), { code: 'ENOENT' }),
+    );
+    (fs.promises.rm as jest.Mock).mockResolvedValue(undefined);
+
+    await cleanupStaleExtractionDirs('/tmp', logger);
+
+    // Only the skill-image- prefixed directory should be removed
+    expect(fs.promises.rm).toHaveBeenCalledTimes(1);
+    expect(fs.promises.rm).toHaveBeenCalledWith('/tmp/skill-image-abc123', {
+      recursive: true,
+      force: true,
+    });
+  });
+
+  it('should preserve directories owned by the current (alive) process', async () => {
+    (fs.promises.readdir as jest.Mock).mockResolvedValue([
+      { name: 'skill-image-active', isDirectory: () => true },
+    ]);
+    // Return the current process PID as the owner
+    (fs.promises.readFile as jest.Mock).mockResolvedValue(`${process.pid}`);
+
+    await cleanupStaleExtractionDirs('/tmp', logger);
+
+    expect(fs.promises.rm).not.toHaveBeenCalled();
+  });
+
+  it('should not remove non-skill-image directories', async () => {
+    (fs.promises.readdir as jest.Mock).mockResolvedValue([
+      { name: 'other-directory', isDirectory: () => true },
+      { name: 'regular-file', isDirectory: () => false },
+    ]);
+
+    await cleanupStaleExtractionDirs('/tmp', logger);
+
+    expect(fs.promises.rm).not.toHaveBeenCalled();
+  });
+
+  it('should handle readdir errors gracefully', async () => {
+    (fs.promises.readdir as jest.Mock).mockRejectedValue(new Error('EACCES'));
+
+    // Should not throw
+    await cleanupStaleExtractionDirs('/tmp', logger);
+    expect(logger.debug).toHaveBeenCalled();
+  });
+
+  it('should handle rm errors gracefully for individual directories', async () => {
+    (fs.promises.readdir as jest.Mock).mockResolvedValue([
+      { name: 'skill-image-broken', isDirectory: () => true },
+    ]);
+    (fs.promises.readFile as jest.Mock).mockRejectedValue(
+      Object.assign(new Error('ENOENT'), { code: 'ENOENT' }),
+    );
+    (fs.promises.rm as jest.Mock).mockRejectedValue(new Error('EBUSY'));
+
+    // Should not throw — individual failures are logged, not propagated
+    await cleanupStaleExtractionDirs('/tmp', logger);
+    expect(logger.warn).toHaveBeenCalled();
   });
 });

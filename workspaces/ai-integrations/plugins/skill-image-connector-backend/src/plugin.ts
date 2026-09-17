@@ -209,6 +209,34 @@ function isTransientError(error: unknown): boolean {
 }
 
 /**
+ * Returns a promise that resolves after the given delay, but rejects
+ * immediately if the abort signal fires — preventing shutdown from
+ * blocking on retry backoff timers.
+ */
+function abortAwareDelay(ms: number, signal?: AbortSignal): Promise<void> {
+  if (signal?.aborted) {
+    return Promise.reject(new Error('Processing was aborted'));
+  }
+  if (!signal) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+  return new Promise<void>((resolve, reject) => {
+    const state = {
+      timer: undefined as ReturnType<typeof setTimeout> | undefined,
+    };
+    const onAbort = () => {
+      clearTimeout(state.timer);
+      reject(new Error('Processing was aborted'));
+    };
+    state.timer = setTimeout(() => {
+      signal.removeEventListener('abort', onAbort);
+      resolve();
+    }, ms);
+    signal.addEventListener('abort', onAbort, { once: true });
+  });
+}
+
+/**
  * Attempts to fetch and extract a skill image with retry and exponential
  * backoff for transient failures.  Permanent errors (4xx, validation
  * failures) are not retried.
@@ -243,7 +271,7 @@ async function fetchWithRetry(
           }), retrying in ${delayMs}ms`,
           error as Error,
         );
-        await new Promise(resolve => setTimeout(resolve, delayMs));
+        await abortAwareDelay(delayMs, signal);
       } else {
         throw error;
       }
