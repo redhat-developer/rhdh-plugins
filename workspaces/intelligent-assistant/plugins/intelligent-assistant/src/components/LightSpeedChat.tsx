@@ -154,9 +154,7 @@ import {
 } from './notebooks/SidebarCollapseIcon';
 import {
   chatHistoryDrawerCollapseCloseCss,
-  LIGHTSPEED_MESSAGE_BAR_MODEL_SELECTOR_CLASS,
   lightspeedMessageBarShellCss,
-  messageBarModelSelectorToggleCss,
 } from './PlainIconButton';
 import { RenameConversationModal } from './RenameConversationModal';
 import { SavedPromptMenuItems } from './SavedPromptMenuItems';
@@ -374,30 +372,11 @@ const NotebooksTabLabel = styled('span', {
 const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
   '&.pf-chatbot__footer': {
     backgroundColor: `${LIGHTSPEED_FLOATING_BG} !important`,
-    rowGap: 0,
-    '--pf-chatbot__footer--RowGap': '0',
-    alignItems: 'stretch !important',
-    boxSizing: 'border-box',
   },
   '& > .pf-v6-c-divider, & > .pf-v5-c-divider': {
     display: 'none',
   },
-  '& > .pf-chatbot__footer-container': {
-    width: '100% !important',
-    maxWidth: 'unset !important',
-    margin: '0 !important',
-    padding: `${theme.spacing(1.5)} var(--pf-t--global--spacer--lg) !important`,
-    rowGap: theme.spacing(1),
-    boxSizing: 'border-box',
-  },
   ...lightspeedMessageBarShellCss(theme),
-  [`& .${LIGHTSPEED_MESSAGE_BAR_MODEL_SELECTOR_CLASS}`]: {
-    display: 'inline-flex',
-    flexShrink: 0,
-    maxWidth: '100%',
-  },
-  [`& .${LIGHTSPEED_MESSAGE_BAR_MODEL_SELECTOR_CLASS} .pf-v6-c-menu-toggle, & .${LIGHTSPEED_MESSAGE_BAR_MODEL_SELECTOR_CLASS} .pf-v5-c-menu-toggle`]:
-    messageBarModelSelectorToggleCss,
 }));
 
 const StyledMessageBar = styled(MessageBar)({

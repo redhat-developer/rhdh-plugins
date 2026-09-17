@@ -108,11 +108,6 @@ const NotebookDrawerContainer = styled('div')({
   '& .pf-v6-c-drawer__panel, & .pf-v5-c-drawer__panel': {
     backgroundColor: LIGHTSPEED_FLOATING_BG,
   },
-  '& .pf-v6-c-drawer:not(.pf-m-expanded) .pf-v6-c-drawer__panel, & .pf-v5-c-drawer:not(.pf-m-expanded) .pf-v5-c-drawer__panel':
-    {
-      '--pf-v6-c-drawer__panel--BorderInlineStartWidth': '0',
-      '--pf-v6-c-drawer__panel--BorderInlineEndWidth': '0',
-    },
 });
 
 const StyledDrawerContent = styled(DrawerContent)({
@@ -245,14 +240,6 @@ const StyledChatbotFooter = styled(ChatbotFooter)(({ theme }) => ({
   },
   '& > .pf-v6-c-divider, & > .pf-v5-c-divider': {
     display: 'none',
-  },
-  '& > .pf-chatbot__footer-container': {
-    width: '95% !important',
-    maxWidth: 'unset !important',
-    margin: '0 auto !important',
-    padding: `${theme.spacing(1.5)} 0 !important`,
-    rowGap: theme.spacing(1),
-    boxSizing: 'border-box',
   },
   ...lightspeedMessageBarShellCss(theme),
 }));
