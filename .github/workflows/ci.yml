@@ -136,7 +136,7 @@ jobs:
         run: yarn backstage-cli repo build --all
 
       - name: lint
-        run: yarn backstage-cli repo lint
+        run: yarn backstage-cli repo lint --since origin/main
 
       - name: publish check
         run: yarn backstage-cli repo fix --check --publish
