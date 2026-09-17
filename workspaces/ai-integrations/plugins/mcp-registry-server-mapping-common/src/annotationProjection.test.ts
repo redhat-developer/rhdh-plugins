@@ -19,9 +19,12 @@
 import {
   projectAnnotations,
   buildBaseNameSegment,
+  buildChildWalkPath,
   buildHashedNameSegment,
+  collectScalarCandidates,
   computeAnnotationHashSuffix,
   isRefusedUrl,
+  shouldSkipSecretRedactedField,
 } from './annotationProjection';
 import type { McpServerDocument } from './types';
 
@@ -200,6 +203,114 @@ describe('isRefusedUrl', () => {
 
   it('does not refuse empty strings', () => {
     expect(isRefusedUrl('')).toBe(false);
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/*  Scalar walk helpers (collectScalars splits)                          */
+/* ------------------------------------------------------------------ */
+
+describe('buildChildWalkPath', () => {
+  it('uses the segment alone as dot path at the root', () => {
+    expect(buildChildWalkPath({ segments: [], dotPath: '' }, 'name')).toEqual({
+      segments: ['name'],
+      dotPath: 'name',
+    });
+  });
+
+  it('joins nested segments with dots', () => {
+    expect(
+      buildChildWalkPath({ segments: ['remotes'], dotPath: 'remotes' }, '0'),
+    ).toEqual({
+      segments: ['remotes', '0'],
+      dotPath: 'remotes.0',
+    });
+  });
+});
+
+describe('shouldSkipSecretRedactedField', () => {
+  it('skips default, value, and choices when isSecret is true', () => {
+    expect(shouldSkipSecretRedactedField(true, 'default')).toBe(true);
+    expect(shouldSkipSecretRedactedField(true, 'value')).toBe(true);
+    expect(shouldSkipSecretRedactedField(true, 'choices')).toBe(true);
+  });
+
+  it('does not skip other keys on secret inputs', () => {
+    expect(shouldSkipSecretRedactedField(true, 'name')).toBe(false);
+    expect(shouldSkipSecretRedactedField(true, 'isSecret')).toBe(false);
+  });
+
+  it('does not skip redacted field names when isSecret is false', () => {
+    expect(shouldSkipSecretRedactedField(false, 'default')).toBe(false);
+    expect(shouldSkipSecretRedactedField(false, 'value')).toBe(false);
+  });
+});
+
+describe('collectScalarCandidates', () => {
+  it('returns no candidates for null, undefined, or empty containers (D12)', () => {
+    expect(collectScalarCandidates(null)).toEqual([]);
+    expect(collectScalarCandidates(undefined)).toEqual([]);
+    expect(collectScalarCandidates([])).toEqual([]);
+    expect(collectScalarCandidates({})).toEqual([]);
+  });
+
+  it('collects scalar leaves with dot paths and string values', () => {
+    expect(
+      collectScalarCandidates({
+        count: 2,
+        enabled: false,
+        label: 'x',
+      }),
+    ).toEqual([
+      { segments: ['count'], dotPath: 'count', value: '2' },
+      { segments: ['enabled'], dotPath: 'enabled', value: 'false' },
+      { segments: ['label'], dotPath: 'label', value: 'x' },
+    ]);
+  });
+
+  it('walks array indices as decimal path segments', () => {
+    expect(collectScalarCandidates({ tags: ['a', 'b'] })).toEqual([
+      { segments: ['tags', '0'], dotPath: 'tags.0', value: 'a' },
+      { segments: ['tags', '1'], dotPath: 'tags.1', value: 'b' },
+    ]);
+  });
+
+  it('omits consumed dot paths', () => {
+    expect(
+      collectScalarCandidates({ name: 'weather', extra: 'keep' }, ['name']),
+    ).toEqual([{ segments: ['extra'], dotPath: 'extra', value: 'keep' }]);
+  });
+
+  it('omits D11-refused URL scalars', () => {
+    expect(
+      collectScalarCandidates({
+        safe: 'https://example.com',
+        unsafe: 'javascript:alert(1)',
+      }),
+    ).toEqual([
+      { segments: ['safe'], dotPath: 'safe', value: 'https://example.com' },
+    ]);
+  });
+
+  it('prunes D9 secret default/value/choices but keeps other fields', () => {
+    expect(
+      collectScalarCandidates({
+        input: {
+          isSecret: true,
+          name: 'token',
+          default: 'secret-default',
+          value: 'secret-live',
+          choices: ['a'],
+        },
+      }),
+    ).toEqual([
+      {
+        segments: ['input', 'isSecret'],
+        dotPath: 'input.isSecret',
+        value: 'true',
+      },
+      { segments: ['input', 'name'], dotPath: 'input.name', value: 'token' },
+    ]);
   });
 });
 

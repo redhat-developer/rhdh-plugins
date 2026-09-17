@@ -145,80 +145,48 @@ interface ScalarCandidate {
   value: string;
 }
 
+/** Path state while walking a document subtree. */
+type ScalarWalkPath = Pick<ScalarCandidate, 'segments' | 'dotPath'>;
+
+type ScalarWalkContext = ScalarWalkPath & {
+  candidates: ScalarCandidate[];
+  consumed: Set<string>;
+};
+
 /**
- * Recursively walk a value, collecting non-consumed scalar leaves.
+ * Extend a walk path with one segment (array index or object key).
  *
- * Applies D9 secret redaction, D11 URL refusal, and D12 null/empty
- * omission inline during the walk.
+ * @internal Exported for unit testing only.
  */
-function collectScalars(
-  node: unknown,
-  segments: string[],
-  dotPath: string,
-  candidates: ScalarCandidate[],
-  consumed: Set<string>,
-): void {
-  // D12: null or undefined → no annotation
-  if (node === null || node === undefined) {
-    return;
-  }
+export function buildChildWalkPath(
+  walk: ScalarWalkPath,
+  segment: string,
+): ScalarWalkPath {
+  const dotPath =
+    walk.dotPath.length > 0 ? `${walk.dotPath}.${segment}` : segment;
+  return { segments: [...walk.segments, segment], dotPath };
+}
 
-  if (Array.isArray(node)) {
-    // D12: empty array → no annotations for this subtree
-    if (node.length === 0) {
-      return;
-    }
+/**
+ * Whether a field on an `isSecret: true` Input object must not be projected (D9).
+ *
+ * @internal Exported for unit testing only.
+ */
+export function shouldSkipSecretRedactedField(
+  isSecret: boolean,
+  fieldKey: string,
+): boolean {
+  return isSecret && SECRET_REDACTED_FIELDS.has(fieldKey);
+}
 
-    for (let i = 0; i < node.length; i++) {
-      const idx = String(i);
-      const childSegments = [...segments, idx];
-      const childDotPath = dotPath.length > 0 ? `${dotPath}.${idx}` : idx;
-      collectScalars(
-        node[i],
-        childSegments,
-        childDotPath,
-        candidates,
-        consumed,
-      );
-    }
-    return;
-  }
-
-  if (typeof node === 'object') {
-    const obj = node as Record<string, unknown>;
-    const keys = Object.keys(obj);
-
-    // D12: empty object → no annotations for this subtree
-    if (keys.length === 0) {
-      return;
-    }
-
-    // D9: check if this is an isSecret: true Input object
-    const isSecret = obj.isSecret === true;
-
-    for (const key of keys) {
-      // D9: skip redacted fields for secret inputs
-      if (isSecret && SECRET_REDACTED_FIELDS.has(key)) {
-        continue;
-      }
-
-      const childSegments = [...segments, key];
-      const childDotPath = dotPath.length > 0 ? `${dotPath}.${key}` : key;
-      collectScalars(
-        obj[key],
-        childSegments,
-        childDotPath,
-        candidates,
-        consumed,
-      );
-    }
-    return;
-  }
-
-  // Scalar leaf (string, number, boolean)
-
+/**
+ * Collect scalar leaf candidates under a single scalar value (D11, consumed paths).
+ *
+ * @internal Exported for unit testing only.
+ */
+function collectScalarLeaf(node: unknown, walk: ScalarWalkContext): void {
   // Skip consumed paths (already lifted by direct mapping)
-  if (consumed.has(dotPath)) {
+  if (walk.consumed.has(walk.dotPath)) {
     return;
   }
 
@@ -228,12 +196,110 @@ function collectScalars(
   }
 
   // Serialize to string (D12: false → "false", 0 → "0", "" → "")
-  candidates.push({
-    segments: [...segments],
-    dotPath,
+  walk.candidates.push({
+    segments: [...walk.segments],
+    dotPath: walk.dotPath,
     value: String(node),
   });
 }
+
+/** Walk array children; D12 empty array omits the whole subtree. */
+function collectScalarsFromArray(
+  node: unknown[],
+  walk: ScalarWalkContext,
+): void {
+  // D12: empty array → no annotations for this subtree
+  if (node.length === 0) {
+    return;
+  }
+
+  for (let i = 0; i < node.length; i++) {
+    const childWalk = buildChildWalkPath(walk, String(i));
+    collectScalars(node[i], childWalk, walk.candidates, walk.consumed);
+  }
+}
+
+/** Walk object children; D9 secret redaction and D12 empty object omission. */
+function collectScalarsFromObject(
+  obj: Record<string, unknown>,
+  walk: ScalarWalkContext,
+): void {
+  const keys = Object.keys(obj);
+
+  // D12: empty object → no annotations for this subtree
+  if (keys.length === 0) {
+    return;
+  }
+
+  // D9: check if this is an isSecret: true Input object
+  const isSecret = obj.isSecret === true;
+
+  for (const key of keys) {
+    // D9: skip redacted fields for secret inputs
+    if (shouldSkipSecretRedactedField(isSecret, key)) {
+      continue;
+    }
+
+    const childWalk = buildChildWalkPath(walk, key);
+    collectScalars(obj[key], childWalk, walk.candidates, walk.consumed);
+  }
+}
+
+/**
+ * Recursively walk a value, collecting non-consumed scalar leaves.
+ *
+ * Applies D9 secret redaction, D11 URL refusal, and D12 null/empty
+ * omission inline during the walk.
+ */
+function collectScalars(
+  node: unknown,
+  path: ScalarWalkPath,
+  candidates: ScalarCandidate[],
+  consumed: Set<string>,
+): void {
+  const walk: ScalarWalkContext = { ...path, candidates, consumed };
+
+  // D12: null or undefined → no annotation
+  if (node === null || node === undefined) {
+    return;
+  }
+
+  if (Array.isArray(node)) {
+    collectScalarsFromArray(node, walk);
+    return;
+  }
+
+  if (typeof node === 'object') {
+    collectScalarsFromObject(node as Record<string, unknown>, walk);
+    return;
+  }
+
+  // --- Scalar leaf (string, number, boolean) ---
+  collectScalarLeaf(node, walk);
+}
+
+/**
+ * Walk a JSON-like value and return scalar leaf candidates (walker unit tests).
+ *
+ * @internal Exported for unit testing only.
+ */
+export function collectScalarCandidates(
+  node: unknown,
+  consumedPaths: string[] = [],
+): ScalarCandidate[] {
+  const candidates: ScalarCandidate[] = [];
+  collectScalars(
+    node,
+    { segments: [], dotPath: '' },
+    candidates,
+    new Set(consumedPaths),
+  );
+  return candidates;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Public API                                                         */
+/* ------------------------------------------------------------------ */
 
 /**
  * Project unmapped server.json attributes into
@@ -278,8 +344,7 @@ export function projectAnnotations(
   const candidates: ScalarCandidate[] = [];
   collectScalars(
     doc as unknown as Record<string, unknown>,
-    [],
-    '',
+    { segments: [], dotPath: '' },
     candidates,
     consumed,
   );
