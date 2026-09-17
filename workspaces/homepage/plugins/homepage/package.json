@@ -23,16 +23,12 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./alpha": "./src/alpha.ts",
     "./homepage-translations-module": "./src/homepageTranslationsModuleExport.ts",
     "./package.json": "./package.json"
   },
   "sideEffects": false,
   "typesVersions": {
     "*": {
-      "alpha": [
-        "src/alpha.ts"
-      ],
       "homepage-translations-module": [
         "src/homepageTranslationsModuleExport.ts"
       ],
