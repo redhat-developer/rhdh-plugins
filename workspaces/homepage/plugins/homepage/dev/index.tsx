@@ -46,11 +46,12 @@ import {
   starredEntitiesApiRef,
 } from '@backstage/plugin-catalog-react';
 import homePlugin from '@backstage/plugin-home/alpha';
-import {
-  homepagePlugin,
-  homepageHomeModule,
-  homepageTranslationsModule,
-} from '@red-hat-developer-hub/backstage-plugin-homepage';
+import homepagePlugin from '@red-hat-developer-hub/backstage-plugin-homepage/';
+// import {
+//   homepageHomeModule,
+// } from '@red-hat-developer-hub/backstage-plugin-homepage';
+import homepageTranslationsModule from '@red-hat-developer-hub/backstage-plugin-homepage/homepage-translations-module';
+
 import rhdhThemeModule from '@red-hat-developer-hub/backstage-plugin-theme';
 import { quickAccessApiRef } from '../src/api';
 import { visitsApiRef } from '@backstage/plugin-home';
@@ -157,7 +158,7 @@ const app = createApp({
     searchPlugin,
     homePlugin,
     homepagePlugin,
-    homepageHomeModule,
+    // homepageHomeModule,
     homepageTranslationsModule,
     homepageApiMocksModule,
     catalogDevModule,
