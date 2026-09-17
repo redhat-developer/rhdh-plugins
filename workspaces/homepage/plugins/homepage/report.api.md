@@ -24,11 +24,6 @@ import { TranslationRef } from '@backstage/frontend-plugin-api';
 import { TranslationResource } from '@backstage/frontend-plugin-api';
 
 // @public
-const homepageHomeModule: FrontendModule;
-export { homepageHomeModule as homePageModule };
-export { homepageHomeModule };
-
-// @public
 const homepagePlugin: OverridableFrontendPlugin<
   {
     root: RouteRef<undefined>;
@@ -304,11 +299,6 @@ const homepagePlugin: OverridableFrontendPlugin<
   }
 >;
 export default homepagePlugin;
-export { homepagePlugin as homePagePlugin };
-export { homepagePlugin };
-
-// @public
-export const homepageRouteRef: RouteRef<undefined>;
 
 // @public
 export const homepageTranslationRef: TranslationRef<

@@ -1,25 +1,31 @@
 app:
   title: Homepage Backstage App
   baseUrl: http://localhost:3000
+
   packages: all
+
   extensions:
     - api:app/app-language:
         config:
           availableLanguages: ['en', 'de', 'fr', 'it', 'es', 'ja']
           defaultLanguage: 'en'
-    # Disable the nav items that we're manually rendering in packages/app/src/modules/nav/Sidebar.tsx
+
     - api:home/visits: true
+
     - app-root-element:home/visit-listener: true
+
     # Community home page (optional). Disable when using page:homepage alone.
     - page:home:
         config:
-          path: /home
+          path: /home # Default, just to make it more explicit
           title: Home
+
     # Homepage-owned page (configurable path). Disable with page:homepage: false.
     - page:homepage:
         config:
-          path: /
-          title: Dynamic Homepage
+          path: /homepage # Default is / but to make it more explicit here
+          title: Homepage
+
     - home-page-layout:homepage/dynamic-homepage-layout:
         config:
           customizable: true # false for read-only homepage layout

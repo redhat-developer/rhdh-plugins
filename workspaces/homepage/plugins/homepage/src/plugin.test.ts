@@ -20,9 +20,7 @@ import {
   homepageHomeModule,
   homepagePlugin,
   homepageTranslationsModule,
-  homePageModule,
-  homePagePlugin,
-} from '.';
+} from './plugin';
 import { homepageTranslationRef, homepageTranslations } from './translations';
 import { homePageLayoutExtension } from './extensions/homePageLayoutExtension';
 import { HOMEPAGE_PAGE_ID } from './extensions/homepageAttach';
@@ -40,6 +38,7 @@ import {
   RecentlyVisitedWidget,
   TopVisitedWidget,
 } from './extensions/homePageCards';
+
 import { quickAccessApi, defaultWidgetsApi } from './extensions/apis';
 
 type ExtensionAttach = { id: string; input: string };
@@ -75,7 +74,6 @@ describe('Dynamic Home Page plugin (NFS)', () => {
       expect(homepagePlugin.$$type).toBe('@backstage/FrontendPlugin');
       expect(homepagePlugin.id).toBe('homepage');
       expect(homepagePlugin.id).not.toBe(homePlugin.id);
-      expect(homePagePlugin).toBe(homepagePlugin);
       expect(homepagePlugin.getExtension(HOMEPAGE_PAGE_ID)).toBeDefined();
       expect(
         homepagePlugin.getExtension(
@@ -98,7 +96,6 @@ describe('Dynamic Home Page plugin (NFS)', () => {
       expect(homepageHomeModule).toBeDefined();
       expect(homepageHomeModule.$$type).toBe('@backstage/FrontendModule');
       expect(homepageHomeModule.pluginId).toBe('home');
-      expect(homePageModule).toBe(homepageHomeModule);
       expect(communityHomeWidgets).toHaveLength(9);
 
       const extensions = getRuntimeExtensions(homepageHomeModule);
