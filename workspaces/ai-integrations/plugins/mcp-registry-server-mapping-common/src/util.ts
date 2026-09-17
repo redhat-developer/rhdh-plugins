@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
+/** Format a dot-separated object path for error messages, using `<root>` when empty. */
 function formatObjectDotPath(objectDotPath: string): string {
   return objectDotPath.length > 0 ? objectDotPath : '<root>';
 }
 
 /**
  * Require that a present object property is a boolean.
+ *
+ * @internal
  */
 export function requireBooleanProperty(
   obj: Record<string, unknown>,

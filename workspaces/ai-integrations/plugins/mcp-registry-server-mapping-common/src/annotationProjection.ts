@@ -157,7 +157,9 @@ type ScalarWalkContext = ScalarWalkPath & {
 /**
  * Extend a walk path with one segment (array index or object key).
  *
- * @internal Exported for unit testing only.
+ * Exported for unit testing only.
+ *
+ * @internal
  */
 export function buildChildWalkPath(
   walk: ScalarWalkPath,
@@ -171,7 +173,9 @@ export function buildChildWalkPath(
 /**
  * Whether a field on an `isSecret: true` Input object must not be projected (D9).
  *
- * @internal Exported for unit testing only.
+ * Exported for unit testing only.
+ *
+ * @internal
  */
 export function shouldSkipSecretRedactedField(
   isSecret: boolean,
@@ -459,7 +463,11 @@ function buildResolvedAnnotations(
 export function sortAnnotationEntries(
   annotations: Map<string, string>,
 ): Record<string, string> {
-  const sortedKeys = [...annotations.keys()].sort((a, b) => a.localeCompare(b));
+  const sortedKeys = [...annotations.keys()].sort((a, b) => {
+    if (a < b) return -1;
+    if (a > b) return 1;
+    return 0;
+  });
   const result: Record<string, string> = {};
   for (const key of sortedKeys) {
     result[key] = annotations.get(key)!;
