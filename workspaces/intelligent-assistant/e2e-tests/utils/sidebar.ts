@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 import { Page, expect, Locator } from '@playwright/test';
+import {
+  chatHistoryDrawerCloseButton,
+  chatHistoryMenuButton,
+  closeChatHistoryDrawer,
+  isChatHistoryDrawerOpen,
+  openChatHistoryDrawer,
+} from './chatHistoryDrawer';
 import { LightspeedMessages } from './translations';
 
 export async function assertChatDialogInitialState(
@@ -24,17 +31,13 @@ export async function assertChatDialogInitialState(
     translations['chatbox.header.title'],
   );
 
-  const chatHistoryMenuButton = page.getByRole('button', {
-    name: translations['aria.chatHistoryMenu'],
-  });
-  const closeDrawerButton = page.getByRole('button', {
-    name: translations['tooltip.collapseHistoryPanel'],
-  });
+  const menu = chatHistoryMenuButton(page, translations);
+  const drawerClose = chatHistoryDrawerCloseButton(page, translations);
 
-  if (await chatHistoryMenuButton.isVisible().catch(() => false)) {
-    await expect(chatHistoryMenuButton).toBeVisible();
+  if (await menu.isVisible().catch(() => false)) {
+    await expect(menu).toBeVisible();
   } else {
-    await expect(closeDrawerButton).toBeVisible();
+    await expect(drawerClose).toBeVisible();
   }
 
   await assertDrawerState(page, 'open', translations);
@@ -91,41 +94,14 @@ export async function closeChatDrawer(
   page: Page,
   translations: LightspeedMessages,
 ) {
-  const closeButton = page.getByRole('button', {
-    name: translations['tooltip.collapseHistoryPanel'],
-  });
-  await closeButton.click();
+  await closeChatHistoryDrawer(page, translations);
 }
 
 export async function openChatDrawer(
   page: Page,
   translations: LightspeedMessages,
 ) {
-  const closeButton = page.getByRole('button', {
-    name: translations['tooltip.collapseHistoryPanel'],
-  });
-  const chatHistoryMenuButton = page.getByRole('button', {
-    name: translations['aria.chatHistoryMenu'],
-  });
-  const expandHistoryButton = page.getByRole('button', {
-    name: translations['tooltip.expandHistoryPanel'],
-  });
-
-  if (await closeButton.isVisible().catch(() => false)) {
-    return;
-  }
-
-  await expect(chatHistoryMenuButton.or(expandHistoryButton)).toBeVisible({
-    timeout: 10000,
-  });
-
-  if (await chatHistoryMenuButton.isVisible().catch(() => false)) {
-    await chatHistoryMenuButton.click();
-  } else {
-    await expandHistoryButton.click();
-  }
-
-  await expect(closeButton).toBeVisible({ timeout: 5000 });
+  await openChatHistoryDrawer(page, translations);
 }
 
 export async function assertDrawerState(
@@ -138,19 +114,24 @@ export async function assertDrawerState(
     closed: (locator: Locator) => expect(locator).toBeHidden(),
   };
 
-  const checks = [
-    page.getByRole('button', {
-      name: translations['tooltip.collapseHistoryPanel'],
-    }),
-    page.getByPlaceholder(translations['chatbox.search.placeholder']),
-  ];
-
-  for (const locator of checks) {
-    await expectations[state](locator);
-  }
-
+  const search = page.getByPlaceholder(
+    translations['chatbox.search.placeholder'],
+  );
+  const drawerClose = chatHistoryDrawerCloseButton(page, translations);
   const resizeSeparator = page.locator('.pf-v6-c-drawer__splitter');
+
+  await expectations[state](search);
   await expectations[state](resizeSeparator);
+
+  if (state === 'open' && (await isChatHistoryDrawerOpen(page, translations))) {
+    if (await drawerClose.isVisible().catch(() => false)) {
+      await expect(drawerClose).toBeVisible();
+    } else {
+      await expect(chatHistoryMenuButton(page, translations)).toBeVisible();
+    }
+  } else if (state === 'closed') {
+    await expect(drawerClose).toBeHidden();
+  }
 }
 
 export async function verifySidePanelConversation(

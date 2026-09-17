@@ -22,6 +22,11 @@ import {
   type McpServersListMock,
 } from '../fixtures/responses';
 import { waitForChatbotVisible } from '../utils/testHelper';
+import { chatHistoryMenuButton } from '../utils/chatHistoryDrawer';
+export {
+  openChatHistoryDrawer,
+  closeChatHistoryDrawer,
+} from '../utils/chatHistoryDrawer';
 import {
   LightspeedMessages,
   evaluateMessage,
@@ -55,43 +60,6 @@ export async function selectDisplayMode(
     Fullscreen: t['settings.displayMode.fullscreen'],
   };
   await page.getByRole('menuitem', { name: modeMap[mode] }).click();
-}
-
-export async function openChatHistoryDrawer(page: Page, t: LightspeedMessages) {
-  const closeButton = page.getByRole('button', {
-    name: t['tooltip.collapseHistoryPanel'],
-  });
-  const chatHistoryMenuButton = page.getByRole('button', {
-    name: t['aria.chatHistoryMenu'],
-  });
-  const expandHistoryButton = page.getByRole('button', {
-    name: t['tooltip.expandHistoryPanel'],
-  });
-
-  if (await closeButton.isVisible().catch(() => false)) {
-    return;
-  }
-
-  await expect(chatHistoryMenuButton.or(expandHistoryButton)).toBeVisible({
-    timeout: 10000,
-  });
-
-  if (await chatHistoryMenuButton.isVisible().catch(() => false)) {
-    await chatHistoryMenuButton.click();
-  } else {
-    await expandHistoryButton.click();
-  }
-
-  await expect(closeButton).toBeVisible({ timeout: 5000 });
-}
-
-export async function closeChatHistoryDrawer(
-  page: Page,
-  t: LightspeedMessages,
-) {
-  await page
-    .getByRole('button', { name: t['tooltip.collapseHistoryPanel'] })
-    .click();
 }
 
 // Legacy app-legacy uses BackstagePage; NFS uses BUI header titles.
@@ -146,11 +114,9 @@ export async function expectChatbotControlsVisible(
   t: LightspeedMessages,
 ) {
   await expect(page.locator('.pf-chatbot__header')).toBeVisible();
-  const chatHistoryMenuButton = page.getByRole('button', {
-    name: t['aria.chatHistoryMenu'],
-  });
-  if (await chatHistoryMenuButton.isVisible().catch(() => false)) {
-    await expect(chatHistoryMenuButton).toBeVisible();
+  const menu = chatHistoryMenuButton(page, t);
+  if (await menu.isVisible().catch(() => false)) {
+    await expect(menu).toBeVisible();
   }
   await expect(
     page.getByRole('button', { name: t['aria.options.label'] }),
