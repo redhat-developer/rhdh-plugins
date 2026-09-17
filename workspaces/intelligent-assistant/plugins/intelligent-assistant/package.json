@@ -77,6 +77,7 @@
     "@patternfly/chatbot": "6.9.0-prerelease.2",
     "@patternfly/react-core": "6.6.0",
     "@patternfly/react-icons": "^6.5.0",
+    "@patternfly/react-styles": "^6.6.1",
     "@patternfly/react-table": "^6.4.1",
     "@red-hat-developer-hub/backstage-plugin-app-react": "^1.0.0",
     "@red-hat-developer-hub/backstage-plugin-intelligent-assistant-common": "workspace:^",

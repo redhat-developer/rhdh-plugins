@@ -37,7 +37,8 @@ import {
   SortAmountDownIcon,
   SortAmountUpIcon,
 } from '@patternfly/react-icons';
-import tableStyles, { css } from '@patternfly/react-styles';
+import { css } from '@patternfly/react-styles';
+import tableStyles from '@patternfly/react-styles/css/components/Table/table';
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table';
 
 import { useIaMcpToolsPermission } from '../hooks/useIaMcpToolsPermission';
