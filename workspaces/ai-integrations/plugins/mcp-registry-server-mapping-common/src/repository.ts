@@ -50,6 +50,11 @@ function normalizeBase(url: string): string {
     base = base.slice(0, -4);
   }
 
+  // Re-strip trailing / that may appear after .git removal
+  while (base.endsWith('/')) {
+    base = base.slice(0, -1);
+  }
+
   return base;
 }
 

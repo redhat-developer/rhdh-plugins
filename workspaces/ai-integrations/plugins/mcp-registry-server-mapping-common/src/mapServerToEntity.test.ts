@@ -132,6 +132,23 @@ describe('mapRemotes', () => {
     ).toThrow(/no valid remotes.*websiteUrl/i);
   });
 
+  it('throws with type-filtered hint when all remotes have invalid type and no websiteUrl', () => {
+    expect(() =>
+      mapRemotes(
+        makeMinimalDoc({
+          remotes: [
+            {
+              type: undefined as unknown as string,
+              url: 'https://a.com/mcp',
+            },
+            { type: '', url: 'https://b.com/mcp' },
+          ],
+          websiteUrl: undefined,
+        }),
+      ),
+    ).toThrow(/filtered.*type.*missing or empty/i);
+  });
+
   it('skips remote entries with empty string type', () => {
     const result = mapRemotes(
       makeMinimalDoc({
@@ -289,6 +306,11 @@ describe('mapServerToEntity', () => {
 
     it('omits metadata.title when doc.title is absent', () => {
       const { entity } = mapServerToEntity(makeMinimalDoc());
+      expect(entity.metadata.title).toBeUndefined();
+    });
+
+    it('omits metadata.title when doc.title is empty string', () => {
+      const { entity } = mapServerToEntity(makeMinimalDoc({ title: '' }));
       expect(entity.metadata.title).toBeUndefined();
     });
   });

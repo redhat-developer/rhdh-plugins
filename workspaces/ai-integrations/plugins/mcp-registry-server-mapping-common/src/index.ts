@@ -22,10 +22,6 @@
  */
 
 export type {
-  McpServerApiEntity,
-  McpServerRemote,
-} from '@backstage/catalog-model/alpha';
-export type {
   McpServerDocument,
   McpRegistryRemote,
   McpRegistryIcon,

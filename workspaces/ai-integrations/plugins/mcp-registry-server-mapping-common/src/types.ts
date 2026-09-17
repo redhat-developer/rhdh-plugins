@@ -30,7 +30,9 @@ import type {
  * @public
  */
 export interface McpRegistryRemote extends McpServerRemote {
+  /** Optional HTTP headers for the remote transport connection. */
   headers?: unknown[];
+  /** Optional URL template variables for resolving dynamic remote URLs. */
   variables?: unknown;
 }
 

@@ -16,7 +16,7 @@
     "directory": "workspaces/ai-integrations/plugins/mcp-registry-server-mapping-common"
   },
   "backstage": {
-    "role": "common-library",
+    "role": "node-library",
     "pluginId": "mcp-registry-provider",
     "pluginPackage": "@red-hat-developer-hub/backstage-plugin-mcp-registry-server-mapping-common",
     "pluginPackages": [

@@ -48,6 +48,10 @@ describe('sanitizeSegment', () => {
     expect(sanitizeSegment('/')).toBe('x');
   });
 
+  it('returns empty string for empty input', () => {
+    expect(sanitizeSegment('')).toBe('');
+  });
+
   it('leaves valid segments unchanged', () => {
     expect(sanitizeSegment('weather')).toBe('weather');
     expect(sanitizeSegment('mcp.registry')).toBe('mcp.registry');

@@ -87,7 +87,7 @@ export function mapRemotes(doc: McpServerDocument): McpServerRemote[] {
     ) {
       validRemotes.push({
         type: remote.type,
-        url: remote.url,
+        url: remote.url.trim(),
       });
     }
   }
@@ -102,16 +102,26 @@ export function mapRemotes(doc: McpServerDocument): McpServerRemote[] {
     return [
       {
         type: 'undefined',
-        url: doc.websiteUrl!,
+        url: doc.websiteUrl!.trim(),
       },
     ];
   }
 
-  // Cannot satisfy upstream minItems: 1
+  // Cannot satisfy upstream minItems: 1 — produce an actionable message
+  const typeFilteredCount = sourceRemotes.filter(
+    r => typeof r.type !== 'string' || r.type.length === 0,
+  ).length;
+  const typeFilteredHint =
+    typeFilteredCount > 0
+      ? ` (${typeFilteredCount} remote(s) were filtered because their ` +
+        `"type" field is missing or empty)`
+      : '';
+
   throw new Error(
     `MCP Registry server.json has no valid remotes and no valid websiteUrl ` +
-      `to use as a placeholder. At least one remote with an http/https URL, ` +
-      `or a valid websiteUrl, is required to satisfy upstream ` +
+      `to use as a placeholder${typeFilteredHint}. At least one remote ` +
+      `with an http/https URL and a non-empty "type" string, or a valid ` +
+      `websiteUrl, is required to satisfy upstream ` +
       `spec.remotes minItems: 1 (McpServerApiEntity schema).`,
   );
 }
@@ -122,9 +132,13 @@ export function mapRemotes(doc: McpServerDocument): McpServerRemote[] {
  * @public
  */
 export interface LinksResult {
+  /** URL links to include in entity metadata. */
   links: Array<{ url: string; title: string }>;
+  /** Source document paths consumed during link building. */
   consumedPaths: string[];
+  /** Annotation keys reserved by the direct mapping (not available to projection). */
   reservedAnnotationKeys: string[];
+  /** Annotations produced during link building (source-location, repository URL). */
   annotations: Record<string, string>;
 }
 
@@ -147,7 +161,7 @@ export function buildLinks(doc: McpServerDocument): LinksResult {
     doc.websiteUrl !== null &&
     isAllowedUrl(doc.websiteUrl)
   ) {
-    links.push({ url: doc.websiteUrl, title: 'Website' });
+    links.push({ url: doc.websiteUrl.trim(), title: 'Website' });
     consumedPaths.push('websiteUrl');
   } else if (doc.websiteUrl !== undefined && doc.websiteUrl !== null) {
     // websiteUrl present but refused by D11
