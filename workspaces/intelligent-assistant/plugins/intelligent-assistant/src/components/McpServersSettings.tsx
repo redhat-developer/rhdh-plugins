@@ -24,7 +24,6 @@ import {
 
 import { configApiRef, fetchApiRef, useApi } from '@backstage/core-plugin-api';
 
-import GlobalStyles from '@mui/material/GlobalStyles';
 import { styled } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { Alert, Button, Switch, Title, Tooltip } from '@patternfly/react-core';
@@ -573,16 +572,6 @@ export const McpServersSettings = ({
       ref={rootRef}
       style={backgroundColor ? { backgroundColor } : undefined}
     >
-      <GlobalStyles
-        styles={{
-          '.pf-v6-c-backdrop': {
-            zIndex: '1400 !important',
-          },
-          '.pf-v5-c-backdrop': {
-            zIndex: '1400 !important',
-          },
-        }}
-      />
       <div
         className={`${mcpClasses.headerRow}${hideSectionTitle ? '' : ` ${mcpClasses.headerRowWithTitle}`}`}
       >

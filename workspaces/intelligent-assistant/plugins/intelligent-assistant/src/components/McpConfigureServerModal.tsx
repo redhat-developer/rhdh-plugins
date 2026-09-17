@@ -55,7 +55,16 @@ import { type UseMcpConfigureModalResult } from '../hooks/useMcpConfigureModal';
 import { useTranslation } from '../hooks/useTranslation';
 
 const MCP_CONFIGURE_MODAL_CLASS = 'ia-mcp-configure-modal';
+const MCP_CONFIGURE_MODAL_BACKDROP_CLASS = 'ia-mcp-configure-modal-backdrop';
 const MCP_CONFIGURE_MODAL_CLOSE_CLASS = 'ia-mcp-configure-modal-close';
+
+/** Above docked settings drawer (1300); scoped via Modal backdropClassName. */
+const mcpConfigureModalBackdropZIndexStyles = {
+  [`.${MCP_CONFIGURE_MODAL_BACKDROP_CLASS}`]: {
+    '--pf-v6-c-backdrop--ZIndex': '1400 !important',
+    '--pf-v5-c-backdrop--ZIndex': '1400 !important',
+  },
+} as const;
 
 const MCP_CONFIGURE_MODAL_CLOSE_HOST_CLASS =
   'ia-mcp-configure-modal-close-host';
@@ -268,26 +277,29 @@ export const McpConfigureServerModal = ({
 
   return (
     <>
-      {isOpen ? (
-        <GlobalStyles
-          styles={{
-            [modalDefaultCloseHideSelector]: {
-              display: 'none',
-            },
-            [modalCloseHostSiblingMarginResetSelector]: {
-              marginInlineEnd: '0 !important',
-            },
-            [modalHeaderAfterCloseHostSelector]: {
-              marginInlineEnd:
-                'var(--pf-v6-c-modal-box__close--sibling--MarginInlineEnd)',
-            },
-            [`.${MCP_CONFIGURE_MODAL_CLASS} .${MCP_CONFIGURE_MODAL_CLOSE_HOST_CLASS}`]:
-              configureModalCloseHostCss,
-            [`.${MCP_CONFIGURE_MODAL_CLASS} .${MCP_CONFIGURE_MODAL_CLOSE_HOST_CLASS} .${MCP_CONFIGURE_MODAL_CLOSE_CLASS}`]:
-              configureModalCloseHostButtonCss,
-          }}
-        />
-      ) : null}
+      <GlobalStyles
+        styles={{
+          ...mcpConfigureModalBackdropZIndexStyles,
+          ...(isOpen
+            ? {
+                [modalDefaultCloseHideSelector]: {
+                  display: 'none',
+                },
+                [modalCloseHostSiblingMarginResetSelector]: {
+                  marginInlineEnd: '0 !important',
+                },
+                [modalHeaderAfterCloseHostSelector]: {
+                  marginInlineEnd:
+                    'var(--pf-v6-c-modal-box__close--sibling--MarginInlineEnd)',
+                },
+                [`.${MCP_CONFIGURE_MODAL_CLASS} .${MCP_CONFIGURE_MODAL_CLOSE_HOST_CLASS}`]:
+                  configureModalCloseHostCss,
+                [`.${MCP_CONFIGURE_MODAL_CLASS} .${MCP_CONFIGURE_MODAL_CLOSE_HOST_CLASS} .${MCP_CONFIGURE_MODAL_CLOSE_CLASS}`]:
+                  configureModalCloseHostButtonCss,
+              }
+            : {}),
+        }}
+      />
       <StyledModal
         className={MCP_CONFIGURE_MODAL_CLASS}
         variant="small"
@@ -296,6 +308,7 @@ export const McpConfigureServerModal = ({
         onClose={close}
         aria-labelledby="mcp-configure-modal"
         aria-describedby="mcp-configure-modal-body"
+        backdropClassName={MCP_CONFIGURE_MODAL_BACKDROP_CLASS}
       >
         <div className={MCP_CONFIGURE_MODAL_CLOSE_HOST_CLASS}>
           <ConfigureModalCloseButton
