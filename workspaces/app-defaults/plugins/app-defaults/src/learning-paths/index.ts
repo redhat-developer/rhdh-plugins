@@ -15,12 +15,3 @@
  */
 
 export { learningPathsModule } from './learningPathsModule';
-export {
-  LearningPathApiClient,
-  learningPathApiRef,
-} from './api/LearningPathApiClient';
-export type {
-  LearningPathApi,
-  LearningPathApiClientOptions,
-} from './api/LearningPathApiClient';
-export type { LearningPathLink } from './types';

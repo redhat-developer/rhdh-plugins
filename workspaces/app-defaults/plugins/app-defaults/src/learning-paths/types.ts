@@ -17,7 +17,7 @@
 /**
  * A single learning path card entry.
  *
- * @public
+ * @internal
  */
 export type LearningPathLink = {
   label: string;

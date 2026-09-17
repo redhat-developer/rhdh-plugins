@@ -32,15 +32,11 @@ import { UserSettingsSignInAvatar } from '@backstage/plugin-user-settings';
 import { NotificationsSidebarItem } from '@backstage/plugin-notifications';
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
 import { translationRef } from '@red-hat-developer-hub/backstage-plugin-app-defaults';
-import BookmarksIcon from '@mui/icons-material/Bookmarks';
 import ChatIcon from '@mui/icons-material/Chat';
 import MenuIcon from '@mui/icons-material/Menu';
 import SearchIcon from '@mui/icons-material/Search';
 
 import { SidebarLogo } from './SidebarLogo';
-
-const LEARNING_PATHS_PAGE_ID = 'page:app/learning-paths';
-const API_DOCS_PAGE_ID = 'page:api-docs';
 
 const ChatDrawerItem = () => {
   const { toggleDrawer } = useAppDrawer();
@@ -73,11 +69,6 @@ const AppSidebarNav = ({ navItems }: NavContentComponentProps) => {
 
   nav.take('page:search');
 
-  const referencesItems = [
-    nav.take(API_DOCS_PAGE_ID),
-    nav.take(LEARNING_PATHS_PAGE_ID),
-  ].filter(Boolean);
-
   return (
     <Sidebar>
       <SidebarLogo />
@@ -89,17 +80,7 @@ const AppSidebarNav = ({ navItems }: NavContentComponentProps) => {
         {nav.take('page:catalog')}
         {nav.take('page:scaffolder')}
         <SidebarDivider />
-        {referencesItems.length > 0 && (
-          <>
-            <SidebarGroup
-              label={t('references.title')}
-              icon={<BookmarksIcon />}
-            >
-              {referencesItems}
-            </SidebarGroup>
-            <SidebarDivider />
-          </>
-        )}
+        {nav.take('page:app/learning-paths')}
         <SidebarScrollWrapper>
           {nav.rest({ sortBy: 'title' })}
         </SidebarScrollWrapper>

@@ -15,9 +15,6 @@
  */
 
 export type LearningPathsE2eMessages = {
-  references: {
-    title: string;
-  };
   menuItem: {
     learningPaths: string;
   };
@@ -27,9 +24,6 @@ export type LearningPathsE2eMessages = {
 };
 
 const enMessages: LearningPathsE2eMessages = {
-  references: {
-    title: 'References',
-  },
   menuItem: {
     learningPaths: 'Learning Paths',
   },
@@ -41,27 +35,22 @@ const enMessages: LearningPathsE2eMessages = {
 const localeMessages: Record<string, LearningPathsE2eMessages> = {
   en: enMessages,
   de: {
-    references: { title: 'Referenzen' },
     menuItem: { learningPaths: 'Lernpfade' },
     learningPaths: { title: 'Lernpfade' },
   },
   es: {
-    references: { title: 'Referencias' },
     menuItem: { learningPaths: 'Rutas de aprendizaje' },
     learningPaths: { title: 'Rutas de aprendizaje' },
   },
   fr: {
-    references: { title: 'Références' },
     menuItem: { learningPaths: "Parcours d'apprentissage" },
     learningPaths: { title: "Parcours d'apprentissage" },
   },
   it: {
-    references: { title: 'Riferimenti' },
     menuItem: { learningPaths: 'Learning Path' },
     learningPaths: { title: 'Learning Path' },
   },
   ja: {
-    references: { title: 'リファレンス' },
     menuItem: { learningPaths: 'ラーニングパス' },
     learningPaths: { title: 'ラーニングパス' },
   },

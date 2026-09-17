@@ -44,17 +44,7 @@ export { translationRef } from './translations';
 
 export { appDrawerExtension, appDrawerModule } from './drawer/appDrawerModule';
 
-export {
-  learningPathsModule,
-  learningPathApiRef,
-  LearningPathApiClient,
-} from './learning-paths';
-
-export type {
-  LearningPathApi,
-  LearningPathApiClientOptions,
-  LearningPathLink,
-} from './learning-paths';
+export { learningPathsModule } from './learning-paths';
 
 /**
  * Feature loader that registers the RHDH app defaults module and all

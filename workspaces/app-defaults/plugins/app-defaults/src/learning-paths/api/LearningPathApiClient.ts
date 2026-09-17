@@ -29,7 +29,7 @@ const DEFAULT_PROXY_PATH = '/developer-hub';
 /**
  * API for loading Learning Paths catalog data from the Developer Hub proxy.
  *
- * @public
+ * @internal
  */
 export interface LearningPathApi {
   /**
@@ -47,7 +47,7 @@ export interface LearningPathApi {
 /**
  * ApiRef for {@link LearningPathApi}.
  *
- * @public
+ * @internal
  */
 export const learningPathApiRef = createApiRef<LearningPathApi>({
   id: 'app.developer-hub.learning-path.service',
@@ -56,7 +56,7 @@ export const learningPathApiRef = createApiRef<LearningPathApi>({
 /**
  * Options for constructing a {@link LearningPathApiClient}.
  *
- * @public
+ * @internal
  */
 export type LearningPathApiClientOptions = {
   discoveryApi: DiscoveryApi;
@@ -67,7 +67,7 @@ export type LearningPathApiClientOptions = {
 /**
  * Client that loads Learning Paths data via the backend proxy.
  *
- * @public
+ * @internal
  */
 export class LearningPathApiClient implements LearningPathApi {
   private readonly discoveryApi: DiscoveryApi;

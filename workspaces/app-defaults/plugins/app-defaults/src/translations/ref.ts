@@ -64,9 +64,6 @@ export const translationRef = createTranslationRef({
         importButtonTitle: 'Register a component',
       },
     },
-    references: {
-      title: 'References',
-    },
     menuItem: {
       learningPaths: 'Learning Paths',
     },

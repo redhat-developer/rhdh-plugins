@@ -28,17 +28,9 @@ export class SidebarPage {
     this.translations = getLearningPathsTranslations(locale);
   }
 
-  async openReferencesLearningPaths(): Promise<void> {
-    const sidebar = this.page.getByRole('navigation', { name: 'sidebar nav' });
-    const referencesButton = sidebar.getByRole('button', {
-      name: this.translations.references.title,
-    });
-
-    if (await referencesButton.isVisible()) {
-      await referencesButton.click();
-    }
-
-    await sidebar
+  async openLearningPaths(): Promise<void> {
+    await this.page
+      .getByRole('navigation', { name: 'sidebar nav' })
       .getByRole('link', {
         name: this.translations.menuItem.learningPaths,
       })

@@ -15,7 +15,7 @@
  */
 
 import { useAppDrawer } from '@red-hat-developer-hub/backstage-plugin-app-react';
-import { GlobalHeaderMenuItem } from '@red-hat-developer-hub/backstage-plugin-global-header';
+import { GlobalHeaderMenuItem } from '@red-hat-developer-hub/backstage-plugin-global-header/components';
 
 /**
  * Help-dropdown menu item that toggles the demo help drawer.

@@ -9640,9 +9640,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@red-hat-developer-hub/backstage-plugin-global-header@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:2.0.1"
+"@red-hat-developer-hub/backstage-plugin-global-header@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@red-hat-developer-hub/backstage-plugin-global-header@npm:3.0.0"
   dependencies:
     "@backstage/catalog-model": "npm:^1.10.0"
     "@backstage/core-components": "npm:^0.18.13"
@@ -9672,7 +9672,7 @@ __metadata:
     react: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-dom: ^16.13.1 || ^17.0.0 || ^18.0.0
     react-router-dom: ^6.0.0
-  checksum: 10c0/7eecbcb84b1dac8087193edf33ab46c4ccf01e3a80d8bc58a4c110eed31f61c011ea21ffd98764a485ace95a9995b44255749b1400cbaef8e2b1d0681d435470
+  checksum: 10c0/29f3d6ee62425c889781cacb7601c119b46fe2c85eeefc6327182ce274a06ba8996f2bd39a92f19e90260ef5792aa48282a9cb94045702a0ce92e4ac8a0e9a36
   languageName: node
   linkType: hard
 
@@ -14377,7 +14377,7 @@ __metadata:
     "@red-hat-developer-hub/backstage-plugin-app-defaults": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-app-integrations": "workspace:^"
     "@red-hat-developer-hub/backstage-plugin-app-react": "workspace:^"
-    "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^2.0.1"
+    "@red-hat-developer-hub/backstage-plugin-global-header": "npm:^3.0.0"
     "@testing-library/dom": "npm:^10.0.0"
     "@testing-library/jest-dom": "npm:^6.0.0"
     "@testing-library/react": "npm:^16.0.0"

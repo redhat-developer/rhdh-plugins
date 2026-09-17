@@ -39,7 +39,7 @@ test.describe('Learning Paths', () => {
     const sidebarPage = new SidebarPage(page, locale);
     const translations = getLearningPathsTranslations(locale);
 
-    await sidebarPage.openReferencesLearningPaths();
+    await sidebarPage.openLearningPaths();
 
     await expect(page).toHaveURL(/\/learning-paths\/?$/);
     await expect(
