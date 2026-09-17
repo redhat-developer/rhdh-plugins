@@ -187,10 +187,6 @@ skillImageConnector:
      - quay.io
    images:
      - imageRef: quay.io/gabemontero/hello-world-skill:1.0.0-draft
-#       # credentials:
-#       #   username: ${OCI_REGISTRY_USERNAME}
-#       #   password: ${OCI_REGISTRY_PASSWORD}
-#       #   tokenRealm: https://auth.example.com/token
 
 # Uncomment to use kubernetesPluginRef — the Backstage Kubernetes plugin
 # does NOT need to be installed, only its config section is needed.
