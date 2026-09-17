@@ -176,6 +176,7 @@ describe('ScorecardHomepageCard', () => {
 
     expect(useAggregatedScorecard).toHaveBeenCalledWith({
       aggregationId: 'github.openPRs',
+      enabled: true,
     });
   });
 
@@ -198,6 +199,7 @@ describe('ScorecardHomepageCard', () => {
 
     expect(useAggregatedScorecard).toHaveBeenCalledWith({
       aggregationId: 'agg.primary',
+      enabled: true,
     });
   });
 
@@ -214,6 +216,7 @@ describe('ScorecardHomepageCard', () => {
 
     expect(useAggregatedScorecard).toHaveBeenCalledWith({
       aggregationId: 'kpi.only',
+      enabled: true,
     });
   });
 
@@ -230,6 +233,7 @@ describe('ScorecardHomepageCard', () => {
 
     expect(useAggregatedScorecard).toHaveBeenCalledWith({
       aggregationId: 'github.openPRs',
+      enabled: true,
     });
   });
 
