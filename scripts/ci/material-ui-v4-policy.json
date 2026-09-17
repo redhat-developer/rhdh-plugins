@@ -1,5 +1,20 @@
 {
-  "description": "Temporary migration allowlist. Remove entries as workspaces migrate to MUI v5 / Backstage UI.",
+  "description": "Material UI v4 enforcement policy for rhdh-plugins. Single source of truth for migrated workspace scope, CI verify checks, and future lint expansion.",
+  "migratedWorkspaces": [
+    "adoption-insights",
+    "ai-integrations",
+    "app-defaults",
+    "bulk-import",
+    "extensions",
+    "global-header",
+    "homepage",
+    "intelligent-assistant",
+    "orchestrator",
+    "quickstart",
+    "scorecard",
+    "theme",
+    "translations"
+  ],
   "allowedPackageJsonPaths": [
     "workspaces/augment/packages/app/package.json",
     "workspaces/cost-management/packages/app-legacy/package.json",

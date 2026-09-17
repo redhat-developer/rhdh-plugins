@@ -3,9 +3,11 @@
  * Verifies that migrated workspaces do not declare or import Material UI v4
  * (@material-ui/*) outside the temporary migration allowlist.
  *
+ * Policy: scripts/ci/material-ui-v4-policy.json (migrated workspace scope)
+ *
  * Checks:
  * - package.json direct dependencies across all workspaces
- * - source imports in workspaces that use eslint.frontend-shared.cjs
+ * - source imports in workspaces listed in material-ui-v4-policy.json
  *
  * Lockfiles are not scanned because many workspaces still resolve Material UI
  * v4 transitively through Backstage dependencies.
@@ -25,7 +27,7 @@
  * limitations under the License.
  */
 
-import { readFile, readdir } from 'node:fs/promises';
+import { access, readFile, readdir } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 const ALTERNATIVE_MESSAGE =
@@ -46,15 +48,15 @@ const MATERIAL_UI_V4_IMPORT_PATTERN =
   /(?:from|import|require)\s*(?:\(\s*)?['"]@material-ui\//;
 
 const repoRoot = join(import.meta.dirname, '..', '..');
-const allowlistPath = join(
-  import.meta.dirname,
-  'material-ui-v4-allowlist.json',
-);
+const policyPath = join(import.meta.dirname, 'material-ui-v4-policy.json');
 
-async function loadAllowlist() {
-  const content = await readFile(allowlistPath, 'utf8');
+async function loadPolicy() {
+  const content = await readFile(policyPath, 'utf8');
   const parsed = JSON.parse(content);
+  const migratedWorkspaces = parsed.migratedWorkspaces ?? [];
+
   return {
+    migratedWorkspaces,
     packageJsonPaths: new Set(parsed.allowedPackageJsonPaths ?? []),
     sourcePathPrefixes: parsed.allowedSourcePathPrefixes ?? [],
   };
@@ -70,31 +72,55 @@ function isAllowlistedSourcePath(relativePath, sourcePathPrefixes) {
   return sourcePathPrefixes.some(prefix => relativePath.startsWith(prefix));
 }
 
-async function findEnforcedWorkspaceDirs() {
-  const workspacesDir = join(repoRoot, 'workspaces');
-  const entries = await readdir(workspacesDir, { withFileTypes: true });
-  const enforced = [];
+async function fileExists(path) {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
-  for (const entry of entries) {
-    if (!entry.isDirectory()) {
+function getMigratedWorkspaceDirs(migratedWorkspaces) {
+  const workspacesDir = join(repoRoot, 'workspaces');
+  return migratedWorkspaces.map(name => join(workspacesDir, name));
+}
+
+async function reportMigratedWorkspaceDrift(migratedWorkspaces) {
+  const workspacesDir = join(repoRoot, 'workspaces');
+  const warnings = [];
+
+  for (const workspaceName of migratedWorkspaces) {
+    const workspaceDir = join(workspacesDir, workspaceName);
+
+    if (!(await fileExists(workspaceDir))) {
+      warnings.push(
+        `migratedWorkspaces entry "${workspaceName}" has no workspaces/${workspaceName} directory.`,
+      );
       continue;
     }
 
     const eslintSharedConfigPath = join(
-      workspacesDir,
-      entry.name,
+      workspaceDir,
       'eslint.frontend-shared.cjs',
     );
 
-    try {
-      await readFile(eslintSharedConfigPath, 'utf8');
-      enforced.push(join(workspacesDir, entry.name));
-    } catch {
-      // Workspace does not participate in centralized MUI v4 ESLint enforcement.
+    if (!(await fileExists(eslintSharedConfigPath))) {
+      warnings.push(
+        `migratedWorkspaces entry "${workspaceName}" is missing eslint.frontend-shared.cjs.`,
+      );
     }
   }
 
-  return enforced;
+  if (warnings.length > 0) {
+    console.warn(
+      'Material UI v4 policy drift detected (scripts/ci/material-ui-v4-policy.json):\n',
+    );
+    for (const warning of warnings) {
+      console.warn(`- ${warning}`);
+    }
+    console.warn('');
+  }
 }
 
 async function walkFiles(dir, predicate, files = []) {
@@ -129,11 +155,10 @@ function collectDependencies(packageJson) {
   };
 }
 
-async function checkPackageJsonFiles(allowlist) {
+async function checkPackageJsonFiles(policy) {
   const workspacesDir = join(repoRoot, 'workspaces');
-  const packageJsonFiles = await walkFiles(
-    workspacesDir,
-    path => path.endsWith('package.json'),
+  const packageJsonFiles = await walkFiles(workspacesDir, path =>
+    path.endsWith('package.json'),
   );
   const violations = [];
 
@@ -151,7 +176,7 @@ async function checkPackageJsonFiles(allowlist) {
       continue;
     }
 
-    if (allowlist.packageJsonPaths.has(relativePath)) {
+    if (policy.packageJsonPaths.has(relativePath)) {
       continue;
     }
 
@@ -168,11 +193,17 @@ async function checkPackageJsonFiles(allowlist) {
   return violations;
 }
 
-async function checkSourceFiles(allowlist) {
-  const enforcedWorkspaceDirs = await findEnforcedWorkspaceDirs();
+async function checkSourceFiles(policy) {
+  const enforcedWorkspaceDirs = getMigratedWorkspaceDirs(
+    policy.migratedWorkspaces,
+  );
   const violations = [];
 
   for (const workspaceDir of enforcedWorkspaceDirs) {
+    if (!(await fileExists(workspaceDir))) {
+      continue;
+    }
+
     const sourceFiles = await walkFiles(workspaceDir, path => {
       if (isIgnoredPath(path)) {
         return false;
@@ -183,9 +214,12 @@ async function checkSourceFiles(allowlist) {
     });
 
     for (const absolutePath of sourceFiles) {
-      const relativePath = relative(repoRoot, absolutePath).replaceAll('\\', '/');
+      const relativePath = relative(repoRoot, absolutePath).replaceAll(
+        '\\',
+        '/',
+      );
 
-      if (isAllowlistedSourcePath(relativePath, allowlist.sourcePathPrefixes)) {
+      if (isAllowlistedSourcePath(relativePath, policy.sourcePathPrefixes)) {
         continue;
       }
 
@@ -206,10 +240,12 @@ async function checkSourceFiles(allowlist) {
 }
 
 async function main() {
-  const allowlist = await loadAllowlist();
+  const policy = await loadPolicy();
+  await reportMigratedWorkspaceDrift(policy.migratedWorkspaces);
+
   const violations = [
-    ...(await checkPackageJsonFiles(allowlist)),
-    ...(await checkSourceFiles(allowlist)),
+    ...(await checkPackageJsonFiles(policy)),
+    ...(await checkSourceFiles(policy)),
   ];
 
   if (violations.length === 0) {
@@ -228,7 +264,7 @@ async function main() {
   }
 
   console.error(
-    '\nIf a package is still migrating, update scripts/ci/material-ui-v4-allowlist.json temporarily.',
+    '\nIf a package is still migrating, update scripts/ci/material-ui-v4-policy.json temporarily.',
   );
 
   process.exit(1);
