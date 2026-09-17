@@ -17,6 +17,10 @@
 /** Maximum length for Backstage metadata.name. */
 const MAX_NAME_LENGTH = 63;
 
+/** FNV-1a 32-bit parameters for identity hash suffixes. */
+const FNV1A_32_OFFSET_BASIS = 0x811c9dc5;
+const FNV1A_32_PRIME = 0x01000193;
+
 /**
  * Default identity prefix when no caller override is supplied.
  *
@@ -76,9 +80,6 @@ function normalizeBoundaries(s: string): string {
 
   return chars.join('');
 }
-
-const FNV1A_32_OFFSET_BASIS = 0x811c9dc5;
-const FNV1A_32_PRIME = 0x01000193;
 
 /**
  * FNV-1a 32-bit hash (pure JS). Used for stable, non-cryptographic
