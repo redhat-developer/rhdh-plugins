@@ -1,5 +1,12 @@
 # @red-hat-developer-hub/backstage-plugin-bulk-import
 
+## 7.3.6
+
+### Patch Changes
+
+- eaf344a: Expose bulk import translation resources through the public entry point to prevent OFS issues caused by mixing OFS translation resources with NFS alpha modules.
+  - @red-hat-developer-hub/backstage-plugin-bulk-import-common@7.3.6
+
 ## 7.3.5
 
 ### Patch Changes
