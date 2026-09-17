@@ -208,6 +208,8 @@ jobs:
           node-version: 24
       - name: Install root dependencies
         run: yarn install --immutable
+        env:
+          YARN_ENABLE_SCRIPTS: 'false'
       - name: Verify no Material UI v4 packages
         run: node scripts/ci/verify-no-material-ui-v4.js
 
