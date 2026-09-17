@@ -157,7 +157,8 @@ export function tryParseOciRegistryAndPath(
 /** Return whether `pkg` is a valid OCI reference whose tag is `{{inherit}}`. */
 export function isOciInherit(pkg: string): boolean {
   const m = OCI_REGEX.exec(pkg);
-  return m?.[2] === INHERIT_TAG && m[3] === undefined;
+  if (!m) return false;
+  return m[2] === INHERIT_TAG && m[3] === undefined;
 }
 
 function escape(s: string): string {

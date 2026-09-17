@@ -379,13 +379,10 @@ export function resolveInheritPackage(
     }
   } else {
     if (options.preservePathless) {
-      if (new Set(matches.map(candidate => candidate.image)).size > 1) {
-        throw ambiguousInheritError(
-          pluginName,
-          matches,
-          'The last OCI path segment must identify a single image in included files.',
-        );
-      }
+      // Disabled pathless entries operate on the image repository, whose
+      // pre-merge identity intentionally excludes version and plugin path.
+      // The registry check above already guarantees one concrete repository,
+      // so any matching version can carry that identity into disabled filtering.
       selected = matches[0] as ParsedInheritCandidate;
       return selected.image;
     }
@@ -647,6 +644,12 @@ function processOciEntry(
 ): void {
   const pkg = plugin.package;
   if (typeof pkg !== 'string' || !isOciUrl(pkg)) return;
+  if (level === 0 && isOciInherit(pkg)) {
+    throw new InstallException(
+      `Cannot use {{inherit}} in included plugin configuration '${pkg}' in ${sourceFile}. ` +
+        `Only top-level dynamic plugin configuration may use {{inherit}}.`,
+    );
+  }
   const disabled = isPluginDisabled(plugin);
   const parsed = tryParseOciRegistryAndPath(pkg);
   if (!parsed) {

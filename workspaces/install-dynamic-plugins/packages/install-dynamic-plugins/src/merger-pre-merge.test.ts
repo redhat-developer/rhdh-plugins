@@ -166,6 +166,25 @@ describe('preMergeOciDisabledState — path-less + multiple explicit paths', () 
 });
 
 describe('preMergeOciDisabledState — same-level duplicates', () => {
+  it('reports forbidden included inherit before checking name collisions', () => {
+    const first = 'oci://quay.io/team-a/catalog:{{inherit}}!plugin-a';
+    const second =
+      'oci://registry.example.com/team-b/catalog:{{inherit}}!plugin-b';
+
+    expect(() =>
+      preMergeOciDisabledState(
+        [
+          ['first.yaml', [{ package: first }]],
+          ['second.yaml', [{ package: second }]],
+        ],
+        [],
+        'main.yaml',
+      ),
+    ).toThrow(
+      `Cannot use {{inherit}} in included plugin configuration '${first}' in first.yaml`,
+    );
+  });
+
   it('warns and ignores duplicate disabled entries at the same level', () => {
     const warn = jest
       .spyOn(process.stdout, 'write')

@@ -45,12 +45,14 @@ describe('resolveInheritPlugins', () => {
         pluginConfig: { source: 'main' },
       },
     ];
+    const declaredPackages = main.map(plugin => plugin.package);
 
     resolveInheritPlugins(main, includes);
     const disabled = preMergeOciDisabledState(
       includes,
       main,
       'dynamic-plugins.yaml',
+      declaredPackages,
     );
     const all: PluginMap = {};
     for (const plugin of filterDisabledOciPlugins(includes[0]![1], disabled)) {
@@ -75,6 +77,7 @@ describe('resolveInheritPlugins', () => {
     const main: PluginSpec[] = [
       { package: `${REQUEST_IMAGE}:{{inherit}}`, enabled: true },
     ];
+    const declaredPackages = main.map(plugin => plugin.package);
 
     resolveInheritPlugins(main, includes);
 
@@ -83,6 +86,7 @@ describe('resolveInheritPlugins', () => {
       includes,
       main,
       'dynamic-plugins.yaml',
+      declaredPackages,
     );
     expect(disabled.has(BASE_IMAGE)).toBe(false);
   });
@@ -91,11 +95,17 @@ describe('resolveInheritPlugins', () => {
     const main: PluginSpec[] = [
       { package: `${REQUEST_IMAGE}:{{inherit}}`, disabled: true },
     ];
+    const declaredPackages = main.map(plugin => plugin.package);
 
     expect(() => resolveInheritPlugins(main, [])).not.toThrow();
     expect(main[0]!.package).toBe(`${REQUEST_IMAGE}:{{inherit}}`);
 
-    const disabled = preMergeOciDisabledState([], main, 'dynamic-plugins.yaml');
+    const disabled = preMergeOciDisabledState(
+      [],
+      main,
+      'dynamic-plugins.yaml',
+      declaredPackages,
+    );
     expect(filterDisabledOciPlugins(main, disabled)).toEqual([]);
   });
 
@@ -120,6 +130,7 @@ describe('resolveInheritPlugins', () => {
     const main: PluginSpec[] = [
       { package: `${REQUEST_IMAGE}:{{inherit}}`, disabled: true },
     ];
+    const declaredPackages = main.map(plugin => plugin.package);
 
     resolveInheritPlugins(main, includes);
 
@@ -128,6 +139,7 @@ describe('resolveInheritPlugins', () => {
       includes,
       main,
       'dynamic-plugins.yaml',
+      declaredPackages,
     );
     expect(filterDisabledOciPlugins(include, disabled)).toEqual([]);
     expect(filterDisabledOciPlugins(main, disabled)).toEqual([]);
@@ -142,6 +154,7 @@ describe('resolveInheritPlugins', () => {
     const main: PluginSpec[] = [
       { package: `${REQUEST_IMAGE}:{{inherit}}`, enabled: false },
     ];
+    const declaredPackages = main.map(plugin => plugin.package);
 
     resolveInheritPlugins(main, includes);
 
@@ -150,6 +163,31 @@ describe('resolveInheritPlugins', () => {
       includes,
       main,
       'dynamic-plugins.yaml',
+      declaredPackages,
+    );
+    expect(filterDisabledOciPlugins(include, disabled)).toEqual([]);
+    expect(filterDisabledOciPlugins(main, disabled)).toEqual([]);
+  });
+
+  it('disables cross-registry candidates with different versions and paths', () => {
+    const include: PluginSpec[] = [
+      { package: `${BASE_IMAGE}:1.0!plugin-a` },
+      { package: `${BASE_IMAGE}:2.0!plugin-b` },
+    ];
+    const includes: IncludePluginList[] = [['dpdy.yaml', include]];
+    const main: PluginSpec[] = [
+      { package: `${REQUEST_IMAGE}:{{inherit}}`, disabled: true },
+    ];
+    const declaredPackages = main.map(plugin => plugin.package);
+
+    resolveInheritPlugins(main, includes);
+
+    expect(main[0]!.package).toBe(`${BASE_IMAGE}:1.0`);
+    const disabled = preMergeOciDisabledState(
+      includes,
+      main,
+      'dynamic-plugins.yaml',
+      declaredPackages,
     );
     expect(filterDisabledOciPlugins(include, disabled)).toEqual([]);
     expect(filterDisabledOciPlugins(main, disabled)).toEqual([]);
@@ -192,12 +230,14 @@ describe('resolveInheritPlugins', () => {
         enabled: true,
       },
     ];
+    const declaredPackages = main.map(plugin => plugin.package);
 
     resolveInheritPlugins(main, includes);
     const disabled = preMergeOciDisabledState(
       includes,
       main,
       'dynamic-plugins.yaml',
+      declaredPackages,
     );
     const all: PluginMap = {};
     for (const plugin of filterDisabledOciPlugins(include, disabled)) {
