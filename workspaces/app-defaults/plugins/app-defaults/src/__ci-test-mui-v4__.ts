@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
+// TEMPORARY: remove before merge — validates CI catches @material-ui/* imports.
 import { Button } from '@material-ui/core';
 
-// Temporary CI test file — remove after verifying MUI v4 enforcement.
 export const _ciTestMuiV4 = Button;
