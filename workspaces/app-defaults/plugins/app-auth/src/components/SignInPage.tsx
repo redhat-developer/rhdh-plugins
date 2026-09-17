@@ -48,6 +48,7 @@ import { signInTranslationRef } from '../translations/signIn';
 
 const createProviders = (t: (key: string, params?: any) => string) =>
   new Map<string, SignInProviderConfig | string>([
+    ['guest', 'guest'],
     [
       'auth0',
       {
@@ -211,11 +212,7 @@ export function SignInPage(props: SignInPageProps): React.JSX.Element {
   const signInPage = configApi.getOptional<string | string[]>('signInPage');
   let providerNames: string[];
   if (signInPage === undefined) {
-    providerNames =
-      configApi
-        .getOptionalConfig('auth.providers')
-        ?.keys()
-        ?.filter(providerId => providerId !== 'guest') ?? [];
+    providerNames = configApi.getOptionalConfig('auth.providers')?.keys() ?? [];
   } else {
     providerNames = Array.isArray(signInPage) ? signInPage : [signInPage];
   }
@@ -245,7 +242,11 @@ export function SignInPage(props: SignInPageProps): React.JSX.Element {
     );
   }
 
-  if (providerConfigs.some(config => typeof config === 'string')) {
+  if (
+    providerConfigs.some(
+      config => typeof config === 'string' && config !== 'guest',
+    )
+  ) {
     const proxiedProvider = providerConfigs.find(
       config => typeof config === 'string',
     ) as string;
