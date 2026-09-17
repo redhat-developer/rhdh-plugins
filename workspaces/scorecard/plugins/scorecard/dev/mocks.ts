@@ -98,9 +98,9 @@ export const mockCatalogApi = new InMemoryCatalogClient({
 
 const SPARKLINE_AGGREGATION_IDS = new Set([
   'avgDeploymentFrequency',
-  'avgChangeFailureRate',
-  'avgMedianLeadTimeForChanges',
-  'avgMedianTimeToRestore',
+  'changeFailureRateKpi',
+  'medianLeadTimeForChangesKpi',
+  'medianTimeToRestoreKpi',
 ]);
 
 const DORA_COLLECTORS = [

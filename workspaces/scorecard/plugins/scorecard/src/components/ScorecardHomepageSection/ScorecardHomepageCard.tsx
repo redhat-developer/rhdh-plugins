@@ -58,6 +58,10 @@ export const ScorecardHomepageCard = ({
   } = useAggregationMetadata({ aggregationId: resolvedScorecardId });
 
   const isSparkline = isSparklineVisualization(metadata?.visualization);
+  const snapshotEnabled = hasAggregationId
+    ? Boolean(metadata) && !isSparkline
+    : true;
+  const seriesEnabled = Boolean(metadata) && isSparkline;
 
   const {
     data,
@@ -65,7 +69,7 @@ export const ScorecardHomepageCard = ({
     error: snapshotError,
   } = useAggregatedScorecard({
     aggregationId: resolvedScorecardId,
-    enabled: hasAggregationId ? Boolean(metadata) && !isSparkline : true,
+    enabled: snapshotEnabled,
   });
 
   const {
@@ -74,7 +78,7 @@ export const ScorecardHomepageCard = ({
     error: seriesError,
   } = useAggregationTimeSeries({
     aggregationId: resolvedScorecardId,
-    enabled: Boolean(metadata) && isSparkline,
+    enabled: seriesEnabled,
   });
 
   const aggregatedMetricDetails =
@@ -99,12 +103,11 @@ export const ScorecardHomepageCard = ({
   );
 
   const cardDataTestId = `scorecard-homepage-card-${resolvedScorecardId}`;
-  const isLoading = metadataLoading || snapshotLoading || seriesLoading;
+  const isLoading =
+    metadataLoading ||
+    (snapshotEnabled && snapshotLoading) ||
+    (seriesEnabled && seriesLoading);
   const error = metadataError || snapshotError || seriesError;
-
-  if (isLoading) {
-    return <CardLoading dataTestId={cardDataTestId} />;
-  }
 
   if (error) {
     return (
@@ -115,6 +118,10 @@ export const ScorecardHomepageCard = ({
         cardDataTestId={cardDataTestId}
       />
     );
+  }
+
+  if (isLoading) {
+    return <CardLoading dataTestId={cardDataTestId} />;
   }
 
   if (isSparkline) {

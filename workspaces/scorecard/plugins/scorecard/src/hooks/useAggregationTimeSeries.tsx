@@ -36,6 +36,8 @@ export const useAggregationTimeSeries = ({
   const { t } = useTranslation();
   const scorecardApi = useApi(scorecardApiRef);
 
+  const queryEnabled = Boolean(aggregationId?.trim()) && enabled;
+
   const { error, isLoading, data } = useQuery({
     queryKey: [
       'aggregationTimeSeries',
@@ -61,12 +63,12 @@ export const useAggregationTimeSeries = ({
         );
       }
     },
-    enabled: Boolean(aggregationId?.trim()) && enabled,
+    enabled: queryEnabled,
   });
 
   return {
     data,
-    isLoading,
+    isLoading: queryEnabled && isLoading,
     error: error ?? undefined,
   };
 };

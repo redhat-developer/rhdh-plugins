@@ -323,7 +323,7 @@ export const aggregatedCardWithAvgDeploymentFrequencyWidget =
     name: 'scorecard-avg-deployment-frequency',
     params: {
       name: 'AggregatedCardWithAvgDeploymentFrequency',
-      title: 'Scorecard: Average deployment frequency',
+      title: 'Scorecard: DORA - Deployment Frequency',
       layout: defaultCardLayout,
       componentProps: {
         Renderer: BorderlessHomeWidgetRenderer,
@@ -345,7 +345,7 @@ export const aggregatedCardWithAvgChangeFailureRateWidget =
     name: 'scorecard-avg-change-failure-rate',
     params: {
       name: 'AggregatedCardWithAvgChangeFailureRate',
-      title: 'Scorecard: Average change failure rate',
+      title: 'Scorecard: DORA - Change Failure Rate',
       layout: defaultCardLayout,
       componentProps: {
         Renderer: BorderlessHomeWidgetRenderer,
@@ -353,7 +353,7 @@ export const aggregatedCardWithAvgChangeFailureRateWidget =
       components: lazyScorecardWidget(
         ScorecardHomepageCardWithProvider => () =>
           (
-            <ScorecardHomepageCardWithProvider aggregationId="avgChangeFailureRate" />
+            <ScorecardHomepageCardWithProvider aggregationId="changeFailureRateKpi" />
           ),
       ),
     },
@@ -367,7 +367,7 @@ export const aggregatedCardWithAvgMedianLeadTimeForChangesWidget =
     name: 'scorecard-avg-median-lead-time-for-changes',
     params: {
       name: 'AggregatedCardWithAvgMedianLeadTimeForChanges',
-      title: 'Scorecard: Average median lead time for changes',
+      title: 'Scorecard: DORA - Lead Time for Changes',
       layout: defaultCardLayout,
       componentProps: {
         Renderer: BorderlessHomeWidgetRenderer,
@@ -375,7 +375,7 @@ export const aggregatedCardWithAvgMedianLeadTimeForChangesWidget =
       components: lazyScorecardWidget(
         ScorecardHomepageCardWithProvider => () =>
           (
-            <ScorecardHomepageCardWithProvider aggregationId="avgMedianLeadTimeForChanges" />
+            <ScorecardHomepageCardWithProvider aggregationId="medianLeadTimeForChangesKpi" />
           ),
       ),
     },
@@ -389,7 +389,7 @@ export const aggregatedCardWithAvgMedianTimeToRestoreWidget =
     name: 'scorecard-avg-median-time-to-restore',
     params: {
       name: 'AggregatedCardWithAvgMedianTimeToRestore',
-      title: 'Scorecard: Average median time to restore',
+      title: 'Scorecard: DORA - Median Time to Restore',
       layout: defaultCardLayout,
       componentProps: {
         Renderer: BorderlessHomeWidgetRenderer,
@@ -397,7 +397,29 @@ export const aggregatedCardWithAvgMedianTimeToRestoreWidget =
       components: lazyScorecardWidget(
         ScorecardHomepageCardWithProvider => () =>
           (
-            <ScorecardHomepageCardWithProvider aggregationId="avgMedianTimeToRestore" />
+            <ScorecardHomepageCardWithProvider aggregationId="medianTimeToRestoreKpi" />
+          ),
+      ),
+    },
+  });
+
+/**
+ * NFS widget: AggregatedCardWithDeprecatedDoraChangeFailureRate.
+ */
+export const aggregatedCardWithDeprecatedDoraChangeFailureRateWidget =
+  HomePageWidgetBlueprint.make({
+    name: 'scorecard-deprecated-dora-change-failure-rate',
+    params: {
+      name: 'AggregatedCardWithDeprecatedDoraChangeFailureRate',
+      title: 'Scorecard: DORA - Change Failure Rate (deprecated metricId)',
+      layout: defaultCardLayout,
+      componentProps: {
+        Renderer: BorderlessHomeWidgetRenderer,
+      },
+      components: lazyScorecardWidget(
+        ScorecardHomepageCardWithProvider => () =>
+          (
+            <ScorecardHomepageCardWithProvider metricId="dora.changeFailureRate" />
           ),
       ),
     },

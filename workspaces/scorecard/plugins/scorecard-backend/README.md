@@ -204,7 +204,7 @@ scorecard:
       type: average
       metricId: jira.openIssues
     avgDeploymentFrequency:
-      title: Average deployment frequency
+      title: Deployment Frequency KPI
       description: Mean weekly production deploys across catalog entities you own.
       type: average
       metricId: dora.deploymentFrequency
@@ -498,7 +498,7 @@ curl -X GET "{{url}}/api/scorecard/aggregations/avgDeploymentFrequency/time-seri
   "id": "avgDeploymentFrequency",
   "metricId": "dora.deploymentFrequency",
   "metadata": {
-    "title": "Average Deployment Frequency",
+    "title": "Deployment Frequency KPI",
     "description": "This KPI provides average weekly production deploys over a 30-day window per entity.",
     "type": "number",
     "unit": "/week",

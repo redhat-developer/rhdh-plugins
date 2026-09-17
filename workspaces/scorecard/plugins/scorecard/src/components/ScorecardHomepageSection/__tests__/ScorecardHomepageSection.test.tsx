@@ -160,6 +160,43 @@ describe('ScorecardHomepageCard', () => {
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
   });
 
+  it('should show an error when metadata is not found instead of staying in a loading state', () => {
+    useAggregationMetadata.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error(
+        'Failed to fetch aggregation metadata: 404 Not Found. NotFoundError',
+      ),
+    });
+    useAggregatedScorecard.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      error: undefined,
+    });
+    useAggregationTimeSeries.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      error: undefined,
+    });
+
+    render(<ScorecardHomepageCard aggregationId="missingKpi" />, {
+      wrapper: TestWrapper,
+    });
+
+    expect(useAggregatedScorecard).toHaveBeenCalledWith({
+      aggregationId: 'missingKpi',
+      enabled: false,
+    });
+    expect(useAggregationTimeSeries).toHaveBeenCalledWith({
+      aggregationId: 'missingKpi',
+      enabled: false,
+    });
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    expect(screen.getByTestId('response-error-panel')).toHaveTextContent(
+      'Failed to fetch aggregation metadata: 404 Not Found. NotFoundError',
+    );
+  });
+
   it('should treat empty aggregationId as unset and pass metricId to useAggregatedScorecard', () => {
     useAggregatedScorecard.mockReturnValue({
       data: undefined,

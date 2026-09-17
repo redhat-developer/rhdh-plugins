@@ -240,7 +240,7 @@ Add a **`scorecard.aggregationKPIs`** entry when you need a custom title, a diff
 scorecard:
   aggregationKPIs:
     avgDeploymentFrequency:
-      title: Average Deployment Frequency
+      title: Deployment Frequency KPI
       description: This KPI provides average weekly production deploys over a 30-day window per entity.
       type: average
       metricId: dora.deploymentFrequency
@@ -416,7 +416,7 @@ KPI configuration:
 scorecard:
   aggregationKPIs:
     avgDeploymentFrequency:
-      title: Average Deployment Frequency
+      title: Deployment Frequency KPI
       description: This KPI provides average weekly production deploys over a 30-day window per entity.
       type: average
       metricId: dora.deploymentFrequency
@@ -459,7 +459,7 @@ Example response for KPI without filter and one UTC day 2026-08-24:
   "id": "avgDeploymentFrequency",
   "metricId": "dora.deploymentFrequency",
   "metadata": {
-    "title": "Average Deployment Frequency",
+    "title": "Deployment Frequency KPI",
     "description": "This KPI provides average weekly production deploys over a 30-day window per entity.",
     "type": "number",
     "unit": "/week",

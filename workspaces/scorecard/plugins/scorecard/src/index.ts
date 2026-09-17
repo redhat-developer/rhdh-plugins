@@ -46,6 +46,7 @@ import {
   aggregatedCardWithAvgChangeFailureRateWidget,
   aggregatedCardWithAvgMedianLeadTimeForChangesWidget,
   aggregatedCardWithAvgMedianTimeToRestoreWidget,
+  aggregatedCardWithDeprecatedDoraChangeFailureRateWidget,
 } from './extensions/homePageCards';
 import { scorecardPage } from './extensions/scorecardPage';
 import { scorecardEntityLayoutGrid } from './extensions/scorecardLayoutExtensions';
@@ -92,6 +93,7 @@ export default createFrontendPlugin({
     aggregatedCardWithAvgChangeFailureRateWidget,
     aggregatedCardWithAvgMedianLeadTimeForChangesWidget,
     aggregatedCardWithAvgMedianTimeToRestoreWidget,
+    aggregatedCardWithDeprecatedDoraChangeFailureRateWidget,
   ],
   routes: {
     root: rootRouteRef,

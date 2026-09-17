@@ -57,101 +57,113 @@ const LEAD_TIME_THRESHOLDS: ThresholdConfig = {
   ],
 };
 
-const SERIES_BY_AGGREGATION_ID: Record<string, SeriesProfile> = {
-  avgDeploymentFrequency: {
-    metricId: 'dora.deploymentFrequency',
-    title: 'Average Deployment Frequency',
-    description:
-      'This KPI provides average weekly production deploys over a 30-day window per entity.',
-    unit: '/week',
-    thresholds: DEPLOYMENT_FREQUENCY_THRESHOLDS,
-    aggregationChartDisplayColor: 'success.main',
-    dailyValues: [
-      4.2,
-      5.1,
-      6.8,
-      null,
-      7.4,
-      8.1,
-      9.0,
-      6.5,
-      5.8,
-      7.2,
-      8.6,
-      3.1,
-      null,
-      6.9,
-      7.5,
-      8.2,
-    ],
-  },
-  avgChangeFailureRate: {
-    metricId: 'dora.changeFailureRate',
-    title: 'Average Change Failure Rate',
-    description:
-      'This KPI provides average change failure rate over a 30-day window per entity.',
-    unit: '%',
-    thresholds: CHANGE_FAILURE_RATE_THRESHOLDS,
-    aggregationChartDisplayColor: 'warning.main',
-    dailyValues: [
-      3.5,
-      4.1,
-      5.2,
-      6.8,
-      null,
-      7.5,
-      8.9,
-      10.2,
-      9.5,
-      11.0,
-      8.8,
-      7.5,
-      null,
-      9.2,
-      10.5,
-      8.0,
-    ],
-  },
-  avgMedianLeadTimeForChanges: {
-    metricId: 'dora.medianLeadTimeForChanges',
-    title: 'Average Median Lead Time for Changes',
-    description:
-      'This KPI provides average median lead time for changes in hours over a 30-day window per entity.',
-    unit: 'h',
-    thresholds: LEAD_TIME_THRESHOLDS,
-    aggregationChartDisplayColor: 'error.main',
-    dailyValues: [
-      120,
-      140,
-      160,
-      185,
-      null,
-      200,
-      220,
-      250,
-      230,
-      210,
-      240,
-      260,
-      null,
-      280,
-      300,
-      270,
-    ],
-  },
-  avgMedianTimeToRestore: {
-    metricId: 'dora.medianTimeToRestore',
-    title: 'Average Median Time to Restore',
-    description:
-      'This KPI provides average median time to restore in hours over a 30-day window per entity.',
-    unit: 'h',
-    thresholds: LEAD_TIME_THRESHOLDS,
-    aggregationChartDisplayColor: 'success.main',
-    dailyValues: [10, 15, 20, 25, 30, 35, 40],
-  },
+const DEPLOYMENT_FREQUENCY_PROFILE: SeriesProfile = {
+  metricId: 'dora.deploymentFrequency',
+  title: 'Deployment Frequency KPI',
+  description:
+    'This KPI provides average weekly production deploys over a 30-day window per entity.',
+  unit: '/week',
+  thresholds: DEPLOYMENT_FREQUENCY_THRESHOLDS,
+  aggregationChartDisplayColor: 'success.main',
+  dailyValues: [
+    4.2,
+    5.1,
+    6.8,
+    null,
+    7.4,
+    8.1,
+    9.0,
+    6.5,
+    5.8,
+    7.2,
+    8.6,
+    3.1,
+    null,
+    6.9,
+    7.5,
+    8.2,
+  ],
 };
 
-const DEFAULT_PROFILE = SERIES_BY_AGGREGATION_ID.avgDeploymentFrequency;
+const CHANGE_FAILURE_RATE_PROFILE: SeriesProfile = {
+  metricId: 'dora.changeFailureRate',
+  title: 'Change Failure Rate KPI',
+  description:
+    'This KPI provides average change failure rate over a 30-day window per entity.',
+  unit: '%',
+  thresholds: CHANGE_FAILURE_RATE_THRESHOLDS,
+  aggregationChartDisplayColor: 'warning.main',
+  dailyValues: [
+    3.5,
+    4.1,
+    5.2,
+    6.8,
+    null,
+    7.5,
+    8.9,
+    10.2,
+    9.5,
+    11.0,
+    8.8,
+    7.5,
+    null,
+    9.2,
+    10.5,
+    8.0,
+  ],
+};
+
+const LEAD_TIME_PROFILE: SeriesProfile = {
+  metricId: 'dora.medianLeadTimeForChanges',
+  title: 'Median Lead Time for Changes KPI',
+  description:
+    'This KPI provides average median lead time for changes in hours over a 30-day window per entity.',
+  unit: 'h',
+  thresholds: LEAD_TIME_THRESHOLDS,
+  aggregationChartDisplayColor: 'error.main',
+  dailyValues: [
+    120,
+    140,
+    160,
+    185,
+    null,
+    200,
+    220,
+    250,
+    230,
+    210,
+    240,
+    260,
+    null,
+    280,
+    300,
+    270,
+  ],
+};
+
+const TIME_TO_RESTORE_PROFILE: SeriesProfile = {
+  metricId: 'dora.medianTimeToRestore',
+  title: 'Median Time to Restore KPI',
+  description:
+    'This KPI provides average median time to restore in hours over a 30-day window per entity.',
+  unit: 'h',
+  thresholds: LEAD_TIME_THRESHOLDS,
+  aggregationChartDisplayColor: 'success.main',
+  dailyValues: [10, 15, 20, 25, 30, 35, 40],
+};
+
+const SERIES_BY_AGGREGATION_ID: Record<string, SeriesProfile> = {
+  avgDeploymentFrequency: DEPLOYMENT_FREQUENCY_PROFILE,
+  'dora.deploymentFrequency': DEPLOYMENT_FREQUENCY_PROFILE,
+  changeFailureRateKpi: CHANGE_FAILURE_RATE_PROFILE,
+  'dora.changeFailureRate': CHANGE_FAILURE_RATE_PROFILE,
+  medianLeadTimeForChangesKpi: LEAD_TIME_PROFILE,
+  'dora.medianLeadTimeForChanges': LEAD_TIME_PROFILE,
+  medianTimeToRestoreKpi: TIME_TO_RESTORE_PROFILE,
+  'dora.medianTimeToRestore': TIME_TO_RESTORE_PROFILE,
+};
+
+const DEFAULT_PROFILE = DEPLOYMENT_FREQUENCY_PROFILE;
 
 const utcDayTimestamp = (date: Date): string =>
   new Date(

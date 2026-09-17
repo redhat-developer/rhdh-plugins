@@ -152,6 +152,23 @@ describe('useAggregationTimeSeries', () => {
     );
   });
 
+  it('should not report loading when the query is disabled', () => {
+    mockUseQuery.mockReturnValue({
+      isLoading: true,
+      error: null,
+      data: undefined,
+    } as any);
+
+    const { result } = renderHook(() =>
+      useAggregationTimeSeries({
+        aggregationId: 'avgDeploymentFrequency',
+        enabled: false,
+      }),
+    );
+
+    expect(result.current.isLoading).toBe(false);
+  });
+
   it('should call getAggregationTimeSeries with aggregationId and a 30-day range', async () => {
     mockScorecardApi.getAggregationTimeSeries.mockResolvedValue(timeSeries);
     mockUseQuery.mockReturnValue({
