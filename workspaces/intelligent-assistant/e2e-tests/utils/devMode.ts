@@ -25,6 +25,7 @@ import {
   mockedMcpServersResponse,
   modelBaseUrl,
   type McpServersListMock,
+  type SavedPromptMock,
 } from '../fixtures/responses';
 
 let mcpServersMockState: McpServersListMock;
@@ -865,8 +866,6 @@ export async function mockFeedbackReceived(page: Page) {
     });
   });
 }
-
-import type { SavedPromptMock } from '../fixtures/responses';
 
 const savedPromptsByPage = new WeakMap<Page, SavedPromptMock[]>();
 const savedPromptsRouteGlob = `${modelBaseUrl}/v1/saved-prompts**`;

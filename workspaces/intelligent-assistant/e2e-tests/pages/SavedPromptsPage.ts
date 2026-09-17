@@ -133,14 +133,14 @@ export class SavedPromptsPage {
     const closeSettings = this.page.getByRole('button', {
       name: this.t['mcp.settings.closeAriaLabel'],
     });
-    if (await closeSettings.isVisible().catch(() => false)) {
+    if (await closeSettings.isVisible()) {
       await closeSettings.click();
     }
 
     const closeFab = this.page.getByRole('button', {
       name: this.t['tooltip.fab.close'],
     });
-    if (await closeFab.isVisible().catch(() => false)) {
+    if (await closeFab.isVisible()) {
       await closeFab.click();
     }
   }
@@ -193,26 +193,22 @@ export class SavedPromptsPage {
 
   /** Seeded prompts are listed in the drawer group, not the empty placeholder row. */
   async expectSavedPromptsSidebarLoaded(promptName: string): Promise<void> {
-    await expect(this.savedPromptsHistoryDrawer()).toBeVisible({
+    await expect(this.savedPromptSidebarItem(promptName)).toBeVisible({
       timeout: 15_000,
     });
-    await expect
-      .poll(
-        async () => {
-          const emptyVisible = await this.savedPromptsMenu()
-            .getByRole('menuitem', {
-              name: this.t['savedPrompts.sidebar.empty'],
-            })
-            .isVisible()
-            .catch(() => false);
-          const promptVisible = await this.savedPromptSidebarItem(promptName)
-            .isVisible()
-            .catch(() => false);
-          return !emptyVisible && promptVisible;
-        },
-        { timeout: 15_000 },
-      )
-      .toBe(true);
+    await expect(
+      this.savedPromptsMenu().getByRole('menuitem', {
+        name: this.t['savedPrompts.sidebar.empty'],
+      }),
+    ).toBeHidden();
+  }
+
+  async expectSavedPromptsSidebarEmpty(): Promise<void> {
+    await expect(
+      this.savedPromptsMenu().getByRole('menuitem', {
+        name: this.t['savedPrompts.sidebar.empty'],
+      }),
+    ).toBeVisible({ timeout: 15_000 });
   }
 
   openSavedPromptsSettingsGearButton(): Locator {

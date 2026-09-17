@@ -98,6 +98,9 @@ test.describe('Intelligent assistant saved prompts', () => {
       E2E_SAVED_PROMPT_DEPLOY_CHECKLIST.name,
     );
     await savedPrompts.expectEmptySavedPromptsSettingsVisible();
+    await savedPrompts.closeSettingsPanel();
+    await savedPrompts.openChatHistoryDrawer();
+    await savedPrompts.expectSavedPromptsSidebarEmpty();
   });
 
   test('creates a saved prompt from the settings panel', async () => {
