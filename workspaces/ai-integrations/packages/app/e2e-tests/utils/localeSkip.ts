@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-import { test, expect } from '@playwright/test';
+import { test, type TestInfo } from '@playwright/test';
 
-test('App should render the welcome page', async ({ page }) => {
-  await page.goto('/');
-
-  const enterButton = page.getByRole('button', { name: 'Enter' });
-  await expect(enterButton).toBeVisible();
-  await enterButton.click();
-
-  await expect(page.getByText('My Company Catalog')).toBeVisible();
-});
+/**
+ * Skips the current test unless the Playwright project `name` (locale) is in `locales`.
+ */
+export function skipUnlessLocales(
+  testInfo: TestInfo,
+  locales: string[],
+  reason: string,
+): void {
+  if (!locales.includes(testInfo.project.name)) {
+    test.skip(true, reason);
+  }
+}
