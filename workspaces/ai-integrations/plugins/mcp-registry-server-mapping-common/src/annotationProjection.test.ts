@@ -31,6 +31,7 @@ import {
   sortAnnotationEntries,
   uniquifyAnnotationKey,
 } from './annotationProjection';
+import { buildLinks, trackConsumedRemotePaths } from './mapServerToEntity';
 import type { McpServerDocument } from './types';
 
 /** Minimal valid server.json document for reuse across tests. */
@@ -48,7 +49,7 @@ function makeMinimalDoc(
 
 /**
  * Consumed paths and reserved keys produced by the direct mapping
- * for the minimal document.
+ * for the minimal document (mirrors mapServerToEntity hand-off).
  */
 function makeMinimalConsumed(doc: McpServerDocument): {
   consumedPaths: string[];
@@ -60,30 +61,15 @@ function makeMinimalConsumed(doc: McpServerDocument): {
     'modelcontextprotocol.io/version',
   ];
 
+  const linksResult = buildLinks(doc);
+  consumedPaths.push(...linksResult.consumedPaths);
+  reservedAnnotationKeys.push(...linksResult.reservedAnnotationKeys);
+
   if (doc.title !== undefined && doc.title !== null) {
     consumedPaths.push('title');
   }
 
-  if (doc.websiteUrl !== undefined && doc.websiteUrl !== null) {
-    consumedPaths.push('websiteUrl');
-  }
-
-  if (doc.repository?.url !== undefined && doc.repository?.url !== null) {
-    consumedPaths.push('repository.url');
-    reservedAnnotationKeys.push(
-      'backstage.io/source-location',
-      'modelcontextprotocol.io/repository.url',
-    );
-  }
-
-  if (doc.remotes) {
-    for (let i = 0; i < doc.remotes.length; i++) {
-      consumedPaths.push(`remotes.${i}.type`);
-      if (doc.remotes[i].url !== undefined && doc.remotes[i].url !== null) {
-        consumedPaths.push(`remotes.${i}.url`);
-      }
-    }
-  }
+  consumedPaths.push(...trackConsumedRemotePaths(doc));
 
   return { consumedPaths, reservedAnnotationKeys };
 }
@@ -317,6 +303,18 @@ describe('collectScalarCandidates', () => {
       { segments: ['input', 'name'], dotPath: 'input.name', value: 'token' },
     ]);
   });
+
+  it('throws when isSecret is present but not a boolean', () => {
+    expect(() =>
+      collectScalarCandidates({
+        input: {
+          isSecret: 'true',
+          name: 'token',
+          default: 'secret-default',
+        },
+      }),
+    ).toThrow('isSecret must be a boolean at "input" (received string)');
+  });
 });
 
 /* ------------------------------------------------------------------ */
@@ -445,6 +443,26 @@ describe('uniquifyAnnotationKey', () => {
       ),
     ).toBe('modelcontextprotocol.io/x-3');
   });
+
+  it('truncates counter-suffixed keys when the name segment exceeds 63 characters', () => {
+    const prefix = 'modelcontextprotocol.io/';
+    const longName = 'a'.repeat(63);
+    const finalKey = `${prefix}${longName}`;
+    const annotations = new Map([[finalKey, 'first']]);
+    const keyOwners = new Map([[finalKey, 'path.a']]);
+    const result = uniquifyAnnotationKey(
+      finalKey,
+      'path.b',
+      annotations,
+      keyOwners,
+    );
+    expect(result.startsWith(prefix)).toBe(true);
+    const nameSegment = result.slice(prefix.length);
+    expect(nameSegment.length).toBeLessThanOrEqual(63);
+    expect(nameSegment).toMatch(/-2$/);
+    expect(result).not.toBe(finalKey);
+    expect(annotations.has(result)).toBe(false);
+  });
 });
 
 describe('sortAnnotationEntries', () => {
@@ -522,6 +540,39 @@ describe('projectAnnotations', () => {
       expect(result['modelcontextprotocol.io/repository.subfolder']).toBe(
         'src/server',
       );
+    });
+
+    it('consumes repository.url without reserving annotations when D11 rejects the URL', () => {
+      const doc = makeMinimalDoc({
+        repository: {
+          url: 'javascript:alert(1)',
+          source: 'github',
+          id: '12345',
+        },
+      });
+      const { consumedPaths, reservedAnnotationKeys } =
+        makeMinimalConsumed(doc);
+
+      expect(consumedPaths).toContain('repository.url');
+      expect(reservedAnnotationKeys).not.toContain(
+        'modelcontextprotocol.io/repository.url',
+      );
+      expect(reservedAnnotationKeys).not.toContain(
+        'backstage.io/source-location',
+      );
+
+      const result = projectAnnotations(
+        doc,
+        consumedPaths,
+        reservedAnnotationKeys,
+      );
+      expect(result).not.toHaveProperty(
+        'modelcontextprotocol.io/repository.url',
+      );
+      expect(result['modelcontextprotocol.io/repository.source']).toBe(
+        'github',
+      );
+      expect(result['modelcontextprotocol.io/repository.id']).toBe('12345');
     });
 
     it('projects array elements with zero-based indices', () => {

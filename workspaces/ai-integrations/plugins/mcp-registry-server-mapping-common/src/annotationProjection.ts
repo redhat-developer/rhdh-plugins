@@ -21,6 +21,7 @@ import {
   sanitizeSegment,
 } from './identity';
 import type { McpServerDocument } from './types';
+import { requireBooleanProperty } from './util';
 
 /** Annotation key prefix for projected attributes. */
 const ANNOTATION_PREFIX = 'modelcontextprotocol.io/';
@@ -179,11 +180,7 @@ export function shouldSkipSecretRedactedField(
   return isSecret && SECRET_REDACTED_FIELDS.has(fieldKey);
 }
 
-/**
- * Collect scalar leaf candidates under a single scalar value (D11, consumed paths).
- *
- * @internal Exported for unit testing only.
- */
+/** Record one scalar leaf unless its path is consumed or the value is a D11-refused URL. */
 function collectScalarLeaf(node: unknown, walk: ScalarWalkContext): void {
   // Skip consumed paths (already lifted by direct mapping)
   if (walk.consumed.has(walk.dotPath)) {
@@ -231,8 +228,10 @@ function collectScalarsFromObject(
     return;
   }
 
-  // D9: check if this is an isSecret: true Input object
-  const isSecret = obj.isSecret === true;
+  // D9: check if this is an isSecret: true Input object (omit => false)
+  const isSecret = Object.prototype.hasOwnProperty.call(obj, 'isSecret')
+    ? requireBooleanProperty(obj, 'isSecret', walk.dotPath)
+    : false;
 
   for (const key of keys) {
     // D9: skip redacted fields for secret inputs
@@ -364,6 +363,33 @@ export function resolveDisambiguatedAnnotationKey(
 }
 
 /**
+ * Append a numeric counter suffix to a projected key, truncating the stem
+ * when needed so the name segment stays within the Backstage 63-char limit.
+ */
+function buildCounterSuffixedAnnotationKey(
+  finalKey: string,
+  counter: number,
+): string {
+  const suffix = `-${counter}`;
+  if (!finalKey.startsWith(ANNOTATION_PREFIX)) {
+    const combined = `${finalKey}${suffix}`;
+    return combined.length <= MAX_NAME_LENGTH
+      ? combined
+      : normalizeBoundaries(combined.slice(0, MAX_NAME_LENGTH));
+  }
+
+  const nameSegment = finalKey.slice(ANNOTATION_PREFIX.length);
+  const combinedSegment = `${nameSegment}${suffix}`;
+  if (combinedSegment.length <= MAX_NAME_LENGTH) {
+    return `${ANNOTATION_PREFIX}${combinedSegment}`;
+  }
+
+  const maxStem = MAX_NAME_LENGTH - suffix.length;
+  const truncatedStem = normalizeBoundaries(nameSegment.slice(0, maxStem));
+  return `${ANNOTATION_PREFIX}${truncatedStem}${suffix}`;
+}
+
+/**
  * Ensure the final key is unique when FNV-1a hash collisions occur.
  *
  * @internal Exported for unit testing only.
@@ -379,10 +405,10 @@ export function uniquifyAnnotationKey(
   // suffix to avoid silent data loss.
   if (annotations.has(finalKey) && keyOwners.get(finalKey) !== dotPath) {
     let counter = 2;
-    let candidate = `${finalKey}-${counter}`;
+    let candidate = buildCounterSuffixedAnnotationKey(finalKey, counter);
     while (annotations.has(candidate)) {
       counter++;
-      candidate = `${finalKey}-${counter}`;
+      candidate = buildCounterSuffixedAnnotationKey(finalKey, counter);
     }
     return candidate;
   }
