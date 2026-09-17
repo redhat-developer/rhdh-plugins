@@ -22,10 +22,8 @@
  * limitations under the License.
  */
 
-import { readFile, readdir } from 'fs/promises';
-import { join, relative } from 'path';
-
-const MATERIAL_UI_V4_SCOPE = /^@material-ui\//;
+import { readFile, readdir } from 'node:fs/promises';
+import { join, relative } from 'node:path';
 
 const ALTERNATIVE_MESSAGE =
   'Material UI v4 (@material-ui/*) is deprecated. Use @mui/* (MUI v5), Backstage UI (@backstage/ui), or Canon design system instead.';
@@ -94,7 +92,7 @@ async function checkPackageJsonFiles(allowlist) {
     const dependencies = collectDependencies(packageJson);
 
     const materialUiDependencies = Object.keys(dependencies).filter(name =>
-      MATERIAL_UI_V4_SCOPE.test(name),
+      name.startsWith('@material-ui/'),
     );
 
     if (materialUiDependencies.length === 0) {
