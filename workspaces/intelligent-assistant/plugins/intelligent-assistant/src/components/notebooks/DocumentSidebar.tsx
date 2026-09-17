@@ -350,19 +350,6 @@ export const DocumentSidebar = ({
     onSave: newName => onRenameNotebook?.(newName),
   });
 
-  const {
-    isEditing: isEditingTitle,
-    editValue: editTitle,
-    setEditValue: setEditTitle,
-    inputRef: titleInputRef,
-    startEditing: startEditingTitle,
-    save: saveTitle,
-    handleKeyDown: handleTitleKeyDown,
-  } = useInlineEdit({
-    currentName: notebookName,
-    onSave: newName => onRenameNotebook?.(newName),
-  });
-
   if (collapsed) {
     return null;
   }
