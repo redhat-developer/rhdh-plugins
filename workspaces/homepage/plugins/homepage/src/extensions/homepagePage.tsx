@@ -51,7 +51,7 @@ export const homepagePage = PageBlueprint.makeWithOverrides({
       path: '/',
       noHeader: true,
       routeRef: homepageRouteRef,
-      title: 'Home',
+      title: 'Homepage',
       icon: <HomeIcon fontSize="inherit" />,
       loader: async () => {
         const LazyDefaultLayout = lazy(() =>
