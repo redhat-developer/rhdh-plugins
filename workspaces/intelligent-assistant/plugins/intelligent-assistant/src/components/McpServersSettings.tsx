@@ -71,8 +71,6 @@ const mcpClasses = {
   headerRowWithTitle: 'ia-mcp-headerRow--withTitle',
   selectedCount: 'ia-mcp-selectedCount',
   title: 'ia-mcp-title',
-  sortHeaderIconActive: 'ia-mcp-sortHeaderIconActive',
-  sortHeaderIconInactive: 'ia-mcp-sortHeaderIconInactive',
   nameCell: 'ia-mcp-nameCell',
   nameHeaderCell: 'ia-mcp-nameHeaderCell',
   statusHeader: 'ia-mcp-statusHeader',
@@ -116,12 +114,6 @@ const StyledMcpRoot = styled('div')(({ theme }) => ({
   },
   [`& .${mcpClasses.title}`]: {
     fontSize: '1.125rem',
-  },
-  [`& .${mcpClasses.sortHeaderIconActive}`]: {
-    color: 'var(--pf-t--global--icon--color--brand--default)',
-  },
-  [`& .${mcpClasses.sortHeaderIconInactive}`]: {
-    color: 'var(--pf-t--global--icon--color--subtle)',
   },
   [`& .${mcpClasses.nameHeaderCell}, & .${mcpClasses.nameCell}`]: {
     paddingLeft: '8px',
@@ -272,13 +264,7 @@ const McpTableSortHeader = ({
         <span className={css(tableStyles.tableButtonContent)}>
           {label}
           <span className={css(tableStyles.tableSortIndicator)}>
-            <Icon
-              className={
-                isActive
-                  ? mcpClasses.sortHeaderIconActive
-                  : mcpClasses.sortHeaderIconInactive
-              }
-            />
+            <Icon />
           </span>
         </span>
       </button>
