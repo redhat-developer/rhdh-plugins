@@ -15,6 +15,25 @@
  */
 
 /**
+ * Parse `value` as an absolute WHATWG URL (no base).
+ *
+ * Returns the parsed URL, or `null` when the string is not a valid
+ * absolute URL (relative paths, scheme-relative `//host`, scp-like
+ * `git@host:path`, etc.).
+ *
+ * Exported for unit testing only.
+ *
+ * @internal
+ */
+export function parseAbsoluteUrl(value: string): URL | null {
+  try {
+    return new URL(value);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Emitted URL scheme policy (D11,
  * see openspec/changes/mcp-registry-server-mapping/design.md § D11).
  *
@@ -36,12 +55,12 @@ export function isAllowedUrl(candidate: string | undefined | null): boolean {
     return false;
   }
 
-  try {
-    const parsed = new URL(trimmed);
-    const protocol = parsed.protocol.toLocaleLowerCase('en-US');
-    return protocol === 'http:' || protocol === 'https:';
-  } catch {
+  const parsed = parseAbsoluteUrl(trimmed);
+  if (parsed === null) {
     // Not a valid absolute URL (relative paths, scp-like, etc.)
     return false;
   }
+
+  const protocol = parsed.protocol.toLocaleLowerCase('en-US');
+  return protocol === 'http:' || protocol === 'https:';
 }

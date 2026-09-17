@@ -21,6 +21,7 @@ import {
   sanitizeSegment,
 } from './identity';
 import type { McpServerDocument } from './types';
+import { parseAbsoluteUrl } from './urlPolicy';
 import { requireBooleanProperty } from './util';
 
 /** Annotation key prefix for projected attributes. */
@@ -116,23 +117,32 @@ export function isRefusedUrl(value: unknown): boolean {
     return false;
   }
 
-  try {
-    const parsed = new URL(trimmed);
-    // It IS a valid absolute URL — refused when scheme is not http/https
-    const protocol = parsed.protocol.toLocaleLowerCase('en-US');
-    return protocol !== 'http:' && protocol !== 'https:';
-  } catch {
+  const parsed = parseAbsoluteUrl(trimmed);
+  if (parsed === null) {
     // Not a valid absolute URL (relative path, bare string, etc.)
     return false;
   }
+
+  // It IS a valid absolute URL — refused when scheme is not http/https
+  const protocol = parsed.protocol.toLocaleLowerCase('en-US');
+  return protocol !== 'http:' && protocol !== 'https:';
 }
 
 /**
- * Fields redacted from isSecret: true Input objects (D9).
+ * Fields redacted from `isSecret: true` Input objects (D9).
  *
- * This set must be kept in sync with the upstream MCP Registry Input
- * schema. If the schema adds new secret-bearing fields, they must be
- * added here to prevent secret leakage into projected annotations.
+ * Keep in sync with `#/definitions/Input` in the draft server.json
+ * schema — specifically `Input.default`, `Input.value`, and
+ * `Input.choices` (gated by `Input.isSecret`). If the schema adds new
+ * secret-bearing fields, add them here to prevent leakage into
+ * projected annotations.
+ *
+ * Input (via `KeyValueInput` / `InputWithVariables`) appears under:
+ * - `packages[].environmentVariables[]`
+ * - `packages[].packageArguments[]` / `packages[].runtimeArguments[]`
+ * - `remotes[].headers[]` / `remotes[].variables`
+ *
+ * @see {@link https://raw.githubusercontent.com/modelcontextprotocol/registry/refs/heads/main/docs/reference/server-json/draft/server.schema.json | Input definition (`#/definitions/Input`)}
  */
 const SECRET_REDACTED_FIELDS = new Set(['default', 'value', 'choices']);
 
