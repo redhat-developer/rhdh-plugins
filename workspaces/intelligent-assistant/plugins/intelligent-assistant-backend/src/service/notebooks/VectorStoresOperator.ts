@@ -150,32 +150,35 @@ export class VectorStoresOperator {
     operation: string,
     maxRetries = 8,
   ): Promise<Response> {
-    let attempt = 0;
-    for (;;) {
+    // attempt 0 is the initial request; 1..maxRetries are the retries.
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
       const response = await fetch(input, init);
-      if (response.status !== 429 || attempt >= maxRetries) {
+      if (response.status !== 429 || attempt === maxRetries) {
         return response;
       }
-      attempt += 1;
       // Release the socket back to the undici connection pool immediately. An
       // unconsumed 429 body keeps the connection out of the pool until the
       // Response is garbage-collected, which compounds across retries under the
       // bursty concurrent uploads this retry logic exists to handle.
       await response.body?.cancel();
+      const retry = attempt + 1;
       const retryAfter = Number(response.headers.get('retry-after'));
       const delayMs =
         Number.isFinite(retryAfter) && retryAfter > 0
           ? retryAfter * 1000
           : // Add jitter so several requests rejected at once don't recompute
             // the same delay and retry in lockstep, recreating the contention.
-            Math.min(2 ** attempt * 250 + Math.random() * 250, 5000);
+            Math.min(2 ** retry * 250 + Math.random() * 250, 5000);
       this.logger.warn(
         `Rate limited (429) while trying to ${operation}; retrying in ${Math.round(
           delayMs,
-        )}ms (attempt ${attempt}/${maxRetries})`,
+        )}ms (attempt ${retry}/${maxRetries})`,
       );
       await new Promise(resolve => setTimeout(resolve, delayMs));
     }
+    // Unreachable: the final iteration (attempt === maxRetries) always returns.
+    // Present only to satisfy the Promise<Response> return-type checker.
+    throw new Error(`Exhausted retries while trying to ${operation}`);
   }
 
   /**
